@@ -15,7 +15,7 @@ class operation__analysis extends ChadoField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings  = [
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'operation',
     // The name of the term.
@@ -70,7 +70,7 @@ class operation__analysis extends ChadoField {
     }
   }
 
-  
+
   /**
    * @see TripalField::elementInfo()
    */
@@ -78,7 +78,7 @@ class operation__analysis extends ChadoField {
     $field_term = $this->getFieldTermID();
 
     $name_term = chado_get_semweb_term('analysis', 'name');
-    
+
     return [
       $field_term => [
         'operations' => ['eq', 'contains', 'starts'],
@@ -119,8 +119,8 @@ class operation__analysis extends ChadoField {
 
     // If the column is the field name then we're during a search on the full
     // scientific name.
-    if ($condition['column'] == $field_term_id or 
-        $condition['column'] == $name_term) {      
+    if ($condition['column'] == $field_term_id or
+      $condition['column'] == $name_term) {
       $query->condition("$alias.name", $condition['value'], $operator);
     }
   }

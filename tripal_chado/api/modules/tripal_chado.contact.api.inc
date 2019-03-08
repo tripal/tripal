@@ -22,10 +22,10 @@
  *   An array of values to be inserted. Valid keys include:
  *   - name: The name of the contact.
  *   - description: Text describing the contact.
- *   - type_name: The type of contact.  Must be a term in the tripal_contact 
+ *   - type_name: The type of contact.  Must be a term in the tripal_contact
  *     vocabulary.
  *   - properties: An associative array containing a list of key value pairs for
- *     the properites. The key's must be valid terms in the tripal_contact 
+ *     the properites. The key's must be valid terms in the tripal_contact
  *     vocabulary (e.g. Affiliation, Address, etc).
  *
  * @return
@@ -43,29 +43,29 @@ function chado_insert_contact($values) {
   $properties = $values['properties'];
 
   // check to see if this contact name already exists.
-  $values =  array('name' => $name);
-  $options = array('statement_name' => 'sel_contact_na');
-  $contact = chado_select_record('contact', array('contact_id'), $values, $options);
+  $values = ['name' => $name];
+  $options = ['statement_name' => 'sel_contact_na'];
+  $contact = chado_select_record('contact', ['contact_id'], $values, $options);
 
   if (count($contact) == 0) {
-    $cvterm = chado_get_cvterm(array(
+    $cvterm = chado_get_cvterm([
       'name' => $type,
-      'cv_id' => array('name' => 'tripal_contact')
-    ));
+      'cv_id' => ['name' => 'tripal_contact'],
+    ]);
     if (!$cvterm) {
       tripal_report_error('tripal_contact', TRIPAL_ERROR, "Cannot find contact type '%type'",
-        array('%type' => $type));
+        ['%type' => $type]);
       return FALSE;
     }
-    $values =  array(
+    $values = [
       'name' => $name,
       'description' => '',
       'type_id' => $cvterm->cvterm_id,
-    );
-    $options = array('statement_name' => 'ins_contact_nadety');
+    ];
+    $options = ['statement_name' => 'ins_contact_nadety'];
     $contact = chado_insert_record('contact', $values, $options);
     if (!$contact) {
-      tripal_report_error('tripal_contact', TRIPAL_ERROR, 'Could not add the contact', array());
+      tripal_report_error('tripal_contact', TRIPAL_ERROR, 'Could not add the contact', []);
       return FALSE;
     }
   }
@@ -77,36 +77,36 @@ function chado_insert_contact($values) {
   // field because it is only 255 characters long and may not be enough
   if ($description) {
     chado_insert_property(
-      array(
+      [
         'table' => 'contact',
         'id' => $contact['contact_id'],
-      ),
-      array(
+      ],
+      [
         'type_name' => 'contact_description',
         'cv_name' => 'tripal_contact',
         'value' => $description,
-      ),
-      array(
+      ],
+      [
         'update_if_present' => TRUE,
-      )
+      ]
     );
   }
 
   // add in the other properties provided
   foreach ($properties as $key => $value) {
     $success = chado_insert_property(
-      array('table' => 'contact', 'id' => $contact['contact_id']),
-      array(
+      ['table' => 'contact', 'id' => $contact['contact_id']],
+      [
         'type_name' => $key,
         'cv_name' => 'tripal_contact',
         'value' => $value,
-      ),
-      array('update_if_present' => TRUE)
+      ],
+      ['update_if_present' => TRUE]
     );
 
     if (!$success) {
       tripal_report_error('tripal_contact', TRIPAL_ERROR,
-        "Could not add the contact property '%prop'", array('%prop' => $key));
+        "Could not add the contact property '%prop'", ['%prop' => $key]);
       return FALSE;
     }
   }
@@ -126,15 +126,15 @@ function chado_insert_contact($values) {
  * @ingroup tripal_contact_api
  */
 function chado_autocomplete_contact($text) {
-  $matches = array();
+  $matches = [];
 
   $sql = "SELECT * FROM {contact} WHERE lower(name) like lower(:name) ";
-  $args = array();
+  $args = [];
   $args[':name'] = $text . '%';
   $sql .= "ORDER BY name ";
   $sql .= "LIMIT 25 OFFSET 0 ";
   $results = chado_query($sql, $args);
-  $items = array();
+  $items = [];
   foreach ($results as $contact) {
     // Don't include the null contact
     if ($contact->name == 'null') {

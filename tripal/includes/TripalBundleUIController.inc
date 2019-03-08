@@ -10,7 +10,7 @@
 class TripalBundleUIController extends EntityDefaultUIController {
 
   public function __construct($entity_type, $entity_info) {
-     parent::__construct($entity_type, $entity_info);
+    parent::__construct($entity_type, $entity_info);
   }
 
   /**
@@ -27,15 +27,15 @@ class TripalBundleUIController extends EntityDefaultUIController {
     unset($items[$this->path . '/import']);
 
     // Add an action link to Admin > Structure > Tripal Content Types for adding types.
-    $items[$this->path . '/add'] = array(
+    $items[$this->path . '/add'] = [
       'title' => 'Add Tripal Content Type',
       'description' => 'Add data type content',
       'page callback' => 'drupal_get_form',
-      'page arguments' => array('tripal_admin_add_type_form'),
-      'access arguments' => array('manage tripal content types'),
+      'page arguments' => ['tripal_admin_add_type_form'],
+      'access arguments' => ['manage tripal content types'],
       'type' => MENU_LOCAL_ACTION,
-      'weight' => 2
-    );
+      'weight' => 2,
+    ];
 
     return $items;
   }
@@ -49,10 +49,10 @@ class TripalBundleUIController extends EntityDefaultUIController {
     // The edit form for the entity type by default expects a function,
     // named after the entity type but we can't dynamically create these
     // functions. We'll use a single form for all entity types.
-    $forms[$this->entityType . '_form'] = array(
+    $forms[$this->entityType . '_form'] = [
       'callback' => 'tripal_tripal_bundle_form',
-      'callback arguments' => array($this->entityType)
-    );
+      'callback arguments' => [$this->entityType],
+    ];
 
     return $forms;
   }
@@ -60,7 +60,7 @@ class TripalBundleUIController extends EntityDefaultUIController {
   /**
    * Renders the Bundle overview table
    */
-  public function overviewTable($conditions = array()) {
+  public function overviewTable($conditions = []) {
     $entities = entity_load($this->entityType, FALSE, $conditions);
 
     // Sort the entities by label.
@@ -68,9 +68,9 @@ class TripalBundleUIController extends EntityDefaultUIController {
     foreach ($entities as $entity) {
       $sorted[$entity->label] = $entity;
     }
-    ksort($sorted, SORT_STRING|SORT_FLAG_CASE);
+    ksort($sorted, SORT_STRING | SORT_FLAG_CASE);
 
-    $rows = array();
+    $rows = [];
     foreach ($sorted as $entity) {
       // Get the term for this content type
       $additional_cols = [$entity->term->name . ' (' . l($entity->accession, 'cv/lookup/' . $entity->term->vocab->vocabulary . '/' . $entity->term->accession) . ')'];
@@ -79,30 +79,30 @@ class TripalBundleUIController extends EntityDefaultUIController {
         $additional_cols);
     }
     // Assemble the right table header.
-    $header = array(t('Label'));
+    $header = [t('Label')];
     if (!empty($this->entityInfo['exportable'])) {
       $header[] = t('Status');
     }
-    $header[] = array(
+    $header[] = [
       'data' => t('Term'),
-    );
+    ];
     // Add operations with the right colspan.
     $field_ui = !empty($this->entityInfo['bundle of']) && module_exists('field_ui');
     $exportable = !empty($this->entityInfo['exportable']);
     $colspan = 3;
     $colspan = $field_ui ? $colspan + 2 : $colspan;
     $colspan = $exportable ? $colspan + 1 : $colspan;
-    $header[] = array(
+    $header[] = [
       'data' => t('Operations'),
       'colspan' => $colspan,
-    );
+    ];
 
-    $render = array(
+    $render = [
       '#theme' => 'table',
       '#header' => $header,
       '#rows' => $rows,
       '#empty' => t('None.'),
-    );
+    ];
     return $render;
   }
 
@@ -114,7 +114,8 @@ class TripalBundleUIController extends EntityDefaultUIController {
  * @param $form
  *    The default form array. Usually empty.
  * @param $form_state
- *    Build information for the form including the entity type and submitted values.
+ *    Build information for the form including the entity type and submitted
+ *   values.
  * @param $entityDataType
  *    A string indicating the entity type. This will always be TripalBundle.
  */
@@ -124,79 +125,79 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
   $term = NULL;
   $vocab = NULL;
   if (preg_match('/bio_data_(\d+)/', $bundle->name, $matches)) {
-    $term = entity_load('TripalTerm', array('id' => $matches[1]));
+    $term = entity_load('TripalTerm', ['id' => $matches[1]]);
     $term = reset($term);
-    $vocab = entity_load('TripalVocab', array('id' => $term->vocab_id));
+    $vocab = entity_load('TripalVocab', ['id' => $term->vocab_id]);
     $vocab = reset($vocab);
   }
 
   // Add a validate and submit handler to save the data in this form.
-  $form['#validate'] = array('tripal_tripal_bundle_form_validate');
-  $form['#submit'] = array('tripal_tripal_bundle_form_submit');
+  $form['#validate'] = ['tripal_tripal_bundle_form_validate'];
+  $form['#submit'] = ['tripal_tripal_bundle_form_submit'];
   $form['#bundle'] = $bundle;
 
   // @TODO: Move this into a css file.
-  $form['#attached']['css'] = array(
-    array(
+  $form['#attached']['css'] = [
+    [
       'data' => '
         th.side-header { width: 220px; }',
       'type' => 'inline',
-    ),
-  );
+    ],
+  ];
 
   if ($term) {
 
-    $rows = array(
-      array(
-        array(
+    $rows = [
+      [
+        [
           'header' => TRUE,
           'data' => 'Vocabulary',
-          'class' => array('side-header')
-        ),
-        $vocab->vocabulary
-      ),
-      array(
-        array(
+          'class' => ['side-header'],
+        ],
+        $vocab->vocabulary,
+      ],
+      [
+        [
           'header' => TRUE,
           'data' => 'Term Name',
-          'class' => array('side-header')
-        ),
-        $term->name
-      ),
-      array(
-        array(
+          'class' => ['side-header'],
+        ],
+        $term->name,
+      ],
+      [
+        [
           'header' => TRUE,
           'data' => 'Accession',
-          'class' => array('side-header')
-        ),
-        $term->accession
-      ),
-      array(
-        array(
+          'class' => ['side-header'],
+        ],
+        $term->accession,
+      ],
+      [
+        [
           'header' => TRUE,
           'data' => 'Definition',
-          'class' => array('side-header')
-        ),
-        $term->definition
-      )
-    );
-    $table_vars = array(
-      'header' => array(),
+          'class' => ['side-header'],
+        ],
+        $term->definition,
+      ],
+    ];
+    $table_vars = [
+      'header' => [],
       'rows' => $rows,
-      'attributes' => array(),
+      'attributes' => [],
       'caption' => '',
       'sticky' => FALSE,
-      'colgroups' => array(),
+      'colgroups' => [],
       'empty' => '',
-    );
-    $form['term'] = array(
+    ];
+    $form['term'] = [
       '#type' => 'item',
       '#title' => t('Vocabulary Term'),
-      '#markup' => theme_table($table_vars)
-    );
+      '#markup' => theme_table($table_vars),
+    ];
   }
 
-  $form['label'] = array(
+  $form['label'] = [
     '#type' => 'textfield',
     '#title' => t('Name'),
     '#required' => TRUE,
@@ -205,14 +206,14 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
       this name begin with a capital letter and contain only letters, numbers, and spaces.
       This name must be unique.'),
     '#default_value' => $bundle->label,
-  );
+  ];
 
-  $form['description'] = array(
+  $form['description'] = [
     '#type' => 'textarea',
     '#title' => t('Description'),
     '#required' => TRUE,
     '#description' => t('Describe this content type. The text will be displayed on the <em>Add new content page</em>.'),
-  );
+  ];
   if ($term) {
     $form['description']['#default_value'] = tripal_get_bundle_variable('description', $bundle->id, $term->definition);
   }
@@ -230,23 +231,23 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
     $ajax_field_var = TRUE;
   }
 
-  $form['hide_empty_field'] = array(
+  $form['hide_empty_field'] = [
     '#type' => 'checkbox',
     '#title' => t('Hide empty fields'),
     '#description' => t('Uncheck this box if you would like to show all empty fields.'),
     '#default_value' => $hide_empty_field_var,
     '#weight' => 9,
-  );
+  ];
 
-  $form['ajax_field'] = array(
+  $form['ajax_field'] = [
     '#type' => 'checkbox',
     '#title' => t('Load field using AJAX'),
     '#description' => t('Uncheck this box if you do not want field data to load by ajax, this may signifiantly increase page load times.'),
     '#default_value' => $ajax_field_var,
     '#weight' => 9,
-  );
+  ];
 
-  $form['ajax_field disclaimer'] = array(
+  $form['ajax_field disclaimer'] = [
     '#type' => 'item',
     '#markup' => t(
       '<p>Please note, if both "Hide empty fields" and "Load field using AJAX" 
@@ -254,27 +255,27 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
        in some jumpiness of content as the page finishes loading.</p>'
     ),
     '#weight' => 10,
-  );
+  ];
 
-  $form['additional_settings'] = array(
+  $form['additional_settings'] = [
     '#type' => 'vertical_tabs',
     '#weight' => 99,
-  );
+  ];
 
   // Set Title Format.
   //-------------------------
   $title_format = tripal_get_title_format($bundle);
 
-  $form['set_titles'] = array(
+  $form['set_titles'] = [
     '#type' => 'fieldset',
     '#title' => t('Page Title options'),
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
     '#tree' => TRUE,
     '#group' => 'additional_settings',
-  );
+  ];
 
-  $form['set_titles']['explanation'] = array(
+  $form['set_titles']['explanation'] = [
     '#type' => 'item',
     '#markup' => t('<p>The format below is used to determine the title displayed on %type content
       pages. This ensures all content of this type is consistent while still allowing you
@@ -283,10 +284,10 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
       <p>Keep in mind that it might be confusing to users if more than
       one page has the same title. We recommend you <strong>choose a combination of tokens that
       will uniquely identify your content</strong>.</p>',
-      array('%type' => $bundle->label)),
-  );
+      ['%type' => $bundle->label]),
+  ];
 
-  $form['set_titles']['title_format'] = array(
+  $form['set_titles']['title_format'] = [
     '#type' => 'textarea',
     '#title' => t('Page Title Format'),
     '#description' => t('You may rearrange elements in this text box to customize the page
@@ -294,63 +295,65 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
       between the tokens.'),
     '#required' => TRUE,
     '#default_value' => $title_format,
-    '#rows' => 1
-  );
+    '#rows' => 1,
+  ];
 
-  $form['set_titles']['token_display'] = array(
+  $form['set_titles']['token_display'] = [
     '#type' => 'fieldset',
     '#title' => t('Available Tokens'),
     '#description' => t('Copy the token and paste it into the "Custom Page Title" text field above.'),
     '#collapsible' => TRUE,
-    '#collapsed' => TRUE
-  );
+    '#collapsed' => TRUE,
+  ];
 
   $tokens = tripal_get_entity_tokens($bundle);
-  $form['set_titles']['tokens'] = array(
+  $form['set_titles']['tokens'] = [
     '#type' => 'hidden',
-    '#value' => serialize($tokens)
-  );
+    '#value' => serialize($tokens),
+  ];
 
-  $form['set_titles']['token_display']['content'] = array(
+  $form['set_titles']['token_display']['content'] = [
     '#type' => 'item',
     '#markup' => theme_token_list($tokens),
-  );
-  $form['set_titles']['bp_explanation'] = array(
+  ];
+  $form['set_titles']['bp_explanation'] = [
     '#type' => 'item',
     '#markup' => t('Retroactively apply the new title pattern to
         existing content by clicking the button below.',
-      array('%type' => $bundle->label)),
-  );
-  $form['set_titles']['bulk_update'] = array(
+      ['%type' => $bundle->label]),
+  ];
+  $form['set_titles']['bulk_update'] = [
     '#type' => 'submit',
     '#value' => t('Bulk update all titles'),
     //'#submit' => array('tripal_bulk_update_submit'),
-  );
+  ];
 
   // Set URL Alias Pattern.
   //-------------------------
   $url_pattern = tripal_get_bundle_variable('url_format', $bundle->id, '');
-  if (!$url_pattern) $url_pattern = str_replace(' ', '', $term->name) . '/[TripalEntity__entity_id]';
+  if (!$url_pattern) {
+    $url_pattern = str_replace(' ', '', $term->name) . '/[TripalEntity__entity_id]';
+  }
 
-  $form['url'] = array(
+  $form['url'] = [
     '#type' => 'fieldset',
     '#title' => t('URL Path options'),
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
     '#tree' => TRUE,
     '#group' => 'additional_settings',
-  );
+  ];
 
-  $form['url']['explanation'] = array(
+  $form['url']['explanation'] = [
     '#type' => 'item',
     '#markup' => t('<p>The pattern below is used to specify the URL of %type content pages.
     This allows you to present more friendly, informative URLs to your user.</p>
     <p><strong>You must choose a combination of tokens that results in a unique path for
     each page!</strong></p>',
-    array('%type' => $bundle->label)),
-  );
+      ['%type' => $bundle->label]),
+  ];
 
-  $form['url']['url_pattern'] = array(
+  $form['url']['url_pattern'] = [
     '#type' => 'textarea',
     '#title' => t('URL Alias Pattern'),
     '#description' => t('You may rearrange elements in this text box to customize the url
@@ -358,54 +361,54 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
       valid, unique URL</strong>. Leave this field blank to use the original path.'),
     '#default_value' => $url_pattern,
     '#required' => TRUE,
-    '#rows' => 1
-  );
+    '#rows' => 1,
+  ];
 
 
   $tokens = tripal_get_entity_tokens($bundle);
-  $form['url']['tokens'] = array(
+  $form['url']['tokens'] = [
     '#type' => 'hidden',
-    '#value' => serialize($tokens)
-  );
+    '#value' => serialize($tokens),
+  ];
 
-  $form['url']['token_display'] = array(
+  $form['url']['token_display'] = [
     '#type' => 'fieldset',
     '#title' => t('Available Tokens'),
     '#description' => t('Copy the token and paste it into the "URL Alias Pattern" ' .
       'text field above. Please choose tokens that will guarantee a unique URL.'),
     '#collapsible' => TRUE,
-    '#collapsed' => TRUE
-  );
+    '#collapsed' => TRUE,
+  ];
 
-  $form['url']['token_display']['content'] = array(
+  $form['url']['token_display']['content'] = [
     '#type' => 'item',
     '#markup' => theme_token_list($tokens),
-  );
-  $form['url']['bp_explanation'] = array(
+  ];
+  $form['url']['bp_explanation'] = [
     '#type' => 'item',
     '#markup' => t('Retroactively apply the new url alias pattern to
         existing content by clicking the button below.',
-      array('%type' => $bundle->label)),
-  );
-  $form['url']['bulk_update'] = array(
+      ['%type' => $bundle->label]),
+  ];
+  $form['url']['bulk_update'] = [
     '#type' => 'submit',
     '#value' => t('Bulk update all aliases'),
     //'#submit' => array('tripal_bulk_update_submit'),
-  );
+  ];
   // Submit Buttons
   //-------------------------
 
-  $form['save'] = array(
+  $form['save'] = [
     '#type' => 'submit',
     '#value' => t('Save Content Type'),
-    '#weight' => 100
-  );
+    '#weight' => 100,
+  ];
 
-  $form['delete'] = array(
+  $form['delete'] = [
     '#type' => 'submit',
     '#value' => t('Delete Content Type'),
-    '#weight' => 101
-  );
+    '#weight' => 101,
+  ];
 
   return $form;
 }
@@ -416,7 +419,7 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
 function tripal_tripal_bundle_form_validate($form, $form_state) {
   // VALIDATE: That there is a value passed for the hide_empty_field option. If
   // no value passed default to hide field.
-  if(empty($form_state['values']['hide_empty_field'])){
+  if (empty($form_state['values']['hide_empty_field'])) {
     $form_state['values']['hide_empty_field'] = TRUE;
   }
   if (empty($form_state['values']['ajax_field'])) {
@@ -434,29 +437,29 @@ function tripal_tripal_bundle_form_validate($form, $form_state) {
 
     if ($tokens_missing) {
       $msg = t('You must only use tokens listed under available tokens. You used the following incorrect tokens: %tokens',
-        array('%tokens' => implode(', ', $tokens_missing)));
+        ['%tokens' => implode(', ', $tokens_missing)]);
       form_set_error('set_titles][title_format', $msg);
     }
 
   }
   else {
     $msg = t('You should use at least one token in your title format or the title for all %type pages will be the same.',
-      array('%type' => $form_state['build_info']['args'][0]->label));
+      ['%type' => $form_state['build_info']['args'][0]->label]);
     form_set_error('set_titles][title_format', $msg);
   }
 
   // PART 2: URL Alias'
   if ($form_state['values']['url']['url_pattern']) {
-    $url_pattern = trim($form_state['values']['url']['url_pattern']);    
+    $url_pattern = trim($form_state['values']['url']['url_pattern']);
     $tokens_available = unserialize($form_state['values']['url']['tokens']);
-    
+
     // For backwards compatibility we should warn uses if they use the word 
     // 'feature' as this conflicts with the feature lookup tool. 
     if (preg_match('/^feature\//', $url_pattern)) {
       $msg = t('The word "feature" should not be used first in the pattern as it conflicts with the feature lookup tool provided by Tripal');
       form_set_error('url][url_pattern', $msg);
     }
-    
+
     // Now make sure the tokens are valid.
     if (preg_match_all('/(\[\w+\])/', $url_pattern, $matches)) {
 
@@ -467,14 +470,14 @@ function tripal_tripal_bundle_form_validate($form, $form_state) {
 
       if ($tokens_missing) {
         $msg = t('You must only use tokens listed under available tokens. You used the following incorrect tokens: %tokens',
-          array('%tokens' => implode(', ', $tokens_missing)));
+          ['%tokens' => implode(', ', $tokens_missing)]);
         form_set_error('url][url_pattern', $msg);
       }
 
     }
     else {
       $msg = t('You should use at least one token in your URL pattern or the URL for all %type pages will be the same.',
-        array('%type' => $form_state['build_info']['args'][0]->label));
+        ['%type' => $form_state['build_info']['args'][0]->label]);
       form_set_error('url][url_pattern', $msg);
     }
   }
@@ -490,7 +493,7 @@ function tripal_tripal_bundle_form_submit($form, &$form_state) {
   $bundle = $form_state['build_info']['args'][0];
 
   if ($trigger == 'Save Content Type' or $trigger == 'Bulk update all aliases' or
-      $trigger == 'Bulk update all titles') {
+    $trigger == 'Bulk update all titles') {
 
     // Save the label.
     $bundle->label = $form_state['values']['label'];
@@ -520,41 +523,41 @@ function tripal_tripal_bundle_form_submit($form, &$form_state) {
     if ($trigger == 'Bulk update all titles') {
       $update = $form_state['input']['set_titles']['title_format'];
       $type = 'title';
-      $args = array(
+      $args = [
         'bundle_id' => $bundle->name,
         'update' => $update,
-        'type' => $type
-      );
-      $includes = array(
+        'type' => $type,
+      ];
+      $includes = [
         module_load_include('inc', 'tripal', 'includes/tripal.bulk_update'),
-      );
+      ];
       tripal_add_job('Update all aliases for content type: ' . $bundle->label, 'tripal',
         'tripal_update_all_urls_and_titles', $args, $user->uid, 10, $includes);
     }
-    elseif ($trigger == 'Bulk update all aliases'){
+    elseif ($trigger == 'Bulk update all aliases') {
       $update = $url_pattern;
       $type = 'alias';
-      $args = array(
+      $args = [
         'bundle_id' => $bundle->name,
         'update' => $update,
-        'type' => $type
-      );
-      $includes = array(
+        'type' => $type,
+      ];
+      $includes = [
         module_load_include('inc', 'tripal', 'includes/tripal.bulk_update'),
-      );
+      ];
       tripal_add_job('Update all aliases for content type: ' . $bundle->label, 'tripal',
         'tripal_update_all_urls_and_titles', $args, $user->uid, 10, $includes);
     }
 
     $form_state['redirect'] = 'admin/structure/bio_data';
-    drupal_set_message(t('Successfully saved %type content type.', array('%type' => $form_state['build_info']['args'][0]->label)));
+    drupal_set_message(t('Successfully saved %type content type.', ['%type' => $form_state['build_info']['args'][0]->label]));
   }
 
   else {
-    $form_state['redirect'] = array(
+    $form_state['redirect'] = [
       'admin/structure/bio_data/manage/' . $bundle->name . '/delete',
-      array('query' => array('destination' => 'admin/structure/bio_data'))
-    );
+      ['query' => ['destination' => 'admin/structure/bio_data']],
+    ];
   }
 }
 
@@ -587,13 +590,15 @@ function tripal_admin_add_type_form($form, &$form_state) {
   }
 
   // Set the stage to step1 if it isn't already set.
-  if (!isset($form_state['stage'])) $form_state['stage'] = 'step1';
+  if (!isset($form_state['stage'])) {
+    $form_state['stage'] = 'step1';
+  }
   $stage = $form_state['stage'];
 
 
   // Get the selected term.
   if (array_key_exists('values', $form_state) and
-      array_key_exists('term', $form_state['values'])) {
+    array_key_exists('term', $form_state['values'])) {
     $selected_term = $form_state['values']['term'];
   }
   else {
@@ -606,7 +611,7 @@ function tripal_admin_add_type_form($form, &$form_state) {
   // Get the selected storage element.
   $default_store = 'term_chado_storage';
   if (array_key_exists('values', $form_state) and
-      array_key_exists('store_select', $form_state['values'])) {
+    array_key_exists('store_select', $form_state['values'])) {
     $default_store = $form_state['values']['store_select'];
   }
 
@@ -656,11 +661,11 @@ function tripal_admin_add_type_form_step1(&$form, &$form_state) {
     'tripal_admin_add_type_form_ajax_callback');
 
   if ($term_name) {
-    $form['term_match']['step1-continue'] = array(
+    $form['term_match']['step1-continue'] = [
       '#type' => 'submit',
       '#value' => t('Continue'),
       '#name' => 'step1-continue',
-    );
+    ];
   }
 }
 
@@ -688,13 +693,13 @@ function tripal_admin_add_type_form_step1_summary(&$form, &$form_state, $selecte
     '#markup' => 'Name: ' . $selected_term->name .
       '<br>Vocabulary: ' . $selected_term->cv_id->name . ' (' . $selected_term->dbxref_id->db_id->name . ') ' .
       '<br>Term ID: ' . $selected_term->dbxref_id->db_id->name . ':' . $selected_term->dbxref_id->accession . '.  ' .
-      '<br>Definition:  ' . $definition
+      '<br>Definition:  ' . $definition,
   ];
-  $form['term_summary']['step1-return'] = array(
+  $form['term_summary']['step1-return'] = [
     '#type' => 'submit',
     '#value' => t('Pick a different term'),
     '#name' => 'step1-return',
-  );
+  ];
 }
 
 /**
@@ -703,33 +708,33 @@ function tripal_admin_add_type_form_step1_summary(&$form, &$form_state, $selecte
 function tripal_admin_add_type_form_step2(&$form, &$form_state, $stores, $selected_term, $default_store) {
 
   // Now let the user select where the data type will be stored.
-  $form['storage'] = array(
+  $form['storage'] = [
     '#type' => 'fieldset',
     '#title' => t('Step 2: Storage'),
     '#description' => t('The primary record for each content of this type
           must be stored in a single storage backend. Please select the
-          storage method and settings for this content type.')
-  );
+          storage method and settings for this content type.'),
+  ];
 
-  $store_options = array(0 => '-- Select --');
+  $store_options = [0 => '-- Select --'];
   foreach ($stores as $store_type => $store) {
     $store_options[$store_type] = $store['label'];
   }
 
-  $form['storage']['store_select'] = array(
+  $form['storage']['store_select'] = [
     '#type' => 'select',
     '#title' => 'Storage backend',
     '#options' => $store_options,
     '#default_value' => $default_store,
-    '#description' => 'Select a storage background for this content type.'
-  );
+    '#description' => 'Select a storage background for this content type.',
+  ];
 
   if ($default_store) {
-    $form['term_match']['step2-continue'] = array(
+    $form['term_match']['step2-continue'] = [
       '#type' => 'submit',
       '#value' => t('Continue'),
       '#name' => 'step2-continue',
-    );
+    ];
   }
 }
 
@@ -755,13 +760,13 @@ function tripal_admin_add_type_form_step2_summary(&$form, &$form_state, $stores,
   $form['store_summary']['details'] = [
     '#type' => 'item',
     '#title' => t('Storage backend'),
-    '#markup' => $stores[$default_store]['label']
+    '#markup' => $stores[$default_store]['label'],
   ];
-  $form['term_summary']['step1-return'] = array(
+  $form['term_summary']['step1-return'] = [
     '#type' => 'submit',
     '#value' => t('Pick a different term'),
     '#name' => 'step1-return',
-  );
+  ];
 }
 
 /**
@@ -785,13 +790,14 @@ function tripal_admin_add_type_form_step3(&$form, &$form_state, $stores, $select
   }
 
   // Add in the button for the cases of no terms or too many.
-  $form['submit_button'] = array(
+  $form['submit_button'] = [
     '#type' => 'submit',
     '#value' => t('Create content type'),
     '#name' => 'create-content',
     '#disabled' => $submit_disabled,
-  );
+  ];
 }
+
 /**
  * Implements an AJAX callback for the tripal_chado_vocab_select_term_form.
  */
@@ -799,6 +805,7 @@ function tripal_admin_add_type_form_ajax_callback($form, $form_state) {
 
   return $form;
 }
+
 /**
  * Implements hook_validate() for the tripal_admin_add_type_form.
  *
@@ -813,7 +820,7 @@ function tripal_admin_add_type_form_validate($form, &$form_state) {
     return;
   }
 
-  if ($clicked_button =='step1-continue') {
+  if ($clicked_button == 'step1-continue') {
     $form_state['rebuild'] = TRUE;
     $form_state['stage'] = 'step2';
 
@@ -826,11 +833,11 @@ function tripal_admin_add_type_form_validate($form, &$form_state) {
     }
 
   }
-  if ($clicked_button =='step1-return') {
+  if ($clicked_button == 'step1-return') {
     $form_state['rebuild'] = TRUE;
     $form_state['stage'] = 'step1';
   }
-  if ($clicked_button =='step2-continue') {
+  if ($clicked_button == 'step2-continue') {
 
     if (!$store_select) {
       form_set_error('store_select', 'Please select only one vocabulary term.');
@@ -856,6 +863,7 @@ function tripal_admin_add_type_form_validate($form, &$form_state) {
     $form_state['rebuild'] = TRUE;
   }
 }
+
 /**
  * Implements hook_submit() for the tripal_admin_add_type_form.
  */
@@ -871,7 +879,10 @@ function tripal_admin_add_type_form_submit($form, &$form_state) {
 
     // Before we try to add this type, check to see if it already exists
     // as a bundle.
-    $term = tripal_load_term_entity(['vocabulary' => $vocabulary, 'accession' => $accession]);
+    $term = tripal_load_term_entity([
+      'vocabulary' => $vocabulary,
+      'accession' => $accession,
+    ]);
     if (!$term) {
 
       // Call the submit hook for this form for the storage method that
@@ -879,21 +890,21 @@ function tripal_admin_add_type_form_submit($form, &$form_state) {
       $stores = module_invoke_all('vocab_storage_info');
       $selected_store_module = $stores[$store_select]['module'];
 
-      $storage_args = array();
+      $storage_args = [];
       $function = $selected_store_module . '_field_storage_bundle_mapping_form_submit';
       if (function_exists($function)) {
         $function($form, $form_state, $term, $storage_args);
       }
 
-      $args = array(
+      $args = [
         'vocabulary' => $vocabulary,
         'accession' => $accession,
         'term_name' => $term_name,
         'storage_args' => $storage_args,
-      );
+      ];
 
       global $user;
-      $job_id = tripal_add_job("Create content type: " . $term_name . ' ('. $vocabulary . ':' . $accession . ')',
+      $job_id = tripal_add_job("Create content type: " . $term_name . ' (' . $vocabulary . ':' . $accession . ')',
         'tripal', 'tripal_create_bundle', [$args], $user->uid);
 
       if (!$job_id) {
@@ -906,7 +917,7 @@ function tripal_admin_add_type_form_submit($form, &$form_state) {
       }
     }
     else {
-      drupal_set_message("The term ". $term->name . " (" . $vocabulary . ':' . $accession. ") already exists as a content type.", 'warning');
+      drupal_set_message("The term " . $term->name . " (" . $vocabulary . ':' . $accession . ") already exists as a content type.", 'warning');
     }
   }
 }
@@ -924,11 +935,11 @@ function tripal_admin_access($entity) {
   }
 
   // Get the bundle object.
-  $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+  $bundle = tripal_load_bundle_entity(['name' => $bundle_name]);
 
   if (!$bundle) {
     tripal_report_error('tripal', TRIPAL_WARNING,
-      'Unable to load bundle :name when creating permissions.', array(':name' => $bundle_name));
+      'Unable to load bundle :name when creating permissions.', [':name' => $bundle_name]);
     return FALSE;
   }
 
@@ -945,8 +956,10 @@ function tripal_admin_access($entity) {
       $admin_rid = key($admin_roles);
     }
     // The rid 3 is Drupal's default for the admin user.
-    else if (in_array(3, array_keys($admin_roles))) {
-      $admin_rid = 3;
+    else {
+      if (in_array(3, array_keys($admin_roles))) {
+        $admin_rid = 3;
+      }
     }
   }
 
@@ -957,12 +970,12 @@ function tripal_admin_access($entity) {
   }
 
   // Define the permissions.
-  $permission_for_role = array(
+  $permission_for_role = [
     'create ' . $bundle->name => TRUE,
     'view ' . $bundle->name => TRUE,
     'edit ' . $bundle->name => TRUE,
     'delete ' . $bundle->name => TRUE,
-  );
+  ];
 
   // Assign the permissions
   user_role_change_permissions($admin_rid, $permission_for_role);

@@ -4,16 +4,18 @@ class remote__data_widget extends WebServicesFieldWidget {
 
   // The default label for this field.
   public static $default_label = 'Remote Data';
+
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('remote__data');
- 
+  public static $field_types = ['remote__data'];
+
   /**
    * @see TripalFieldWidget::form()
    */
   public function form(&$widget, &$form, &$form_state, $langcode, $items, $delta, $element) {
     parent::form($widget, $form, $form_state, $langcode, $items, $delta, $element);
-    
+
   }
+
   /**
    * Performs validation of the widgetForm.
    *

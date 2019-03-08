@@ -40,7 +40,7 @@
 function hook_tripal_ws_value(&$items, $field, $instance) {
   // The image module doesn't properly set the 'value' field, so we'll do it
   // here.
-  if($field['type'] == 'image' and $field['module'] == 'image') {
+  if ($field['type'] == 'image' and $field['module'] == 'image') {
     foreach ($items as $delta => $details) {
       if ($items[$delta] and array_key_exists('uri', $items[$delta])) {
         $items[$delta]['value']['schema:url'] = file_create_url($items[$delta]['uri']);
@@ -64,7 +64,7 @@ function hook_tripal_ws_value(&$items, $field, $instance) {
  * @ingroup tripal_ws_api
  */
 function tripal_get_web_services() {
-  $services = array();
+  $services = [];
 
   $modules = module_list(TRUE);
   foreach ($modules as $module) {
@@ -130,7 +130,7 @@ function tripal_add_site($name, $url, $version, $description) {
   // When inserting a record.
   $check_url =
     db_select('tripal_sites', 'ts')
-      ->fields('ts', array('id'))
+      ->fields('ts', ['id'])
       ->condition('url', $url)
       ->condition('version', $version)
       ->execute()
@@ -138,7 +138,7 @@ function tripal_add_site($name, $url, $version, $description) {
 
   $check_name =
     db_select('tripal_sites', 'ts')
-      ->fields('ts', array('id'))
+      ->fields('ts', ['id'])
       ->condition('name', $name)
       ->execute()
       ->fetchField();
@@ -154,12 +154,12 @@ function tripal_add_site($name, $url, $version, $description) {
   }
   if ($write_to_db === TRUE) {
     db_insert('tripal_sites')
-    ->fields(array(
+      ->fields([
         'name' => $name,
         'url' => $url,
         'version' => $version,
-        'description' => $description
-      ))
+        'description' => $description,
+      ])
       ->execute();
     drupal_set_message(t('Tripal site \'' . $name . '\' has been added.'));
     return $write_to_db;
@@ -253,7 +253,7 @@ function tripal_get_remote_content($site_id, $path = '', $query = '') {
   if (!$remote_site) {
     $data = [
       'error' => t('Could not find a remote tripal site using the id provided: !id.',
-        array('!id' => $site_id))
+        ['!id' => $site_id]),
     ];
     _tripal_report_ws_error($data);
     return $data;
@@ -265,7 +265,7 @@ function tripal_get_remote_content($site_id, $path = '', $query = '') {
   if (!$data) {
     $data = [
       'error' => t('Could not connect to the remote web service using the url: !url',
-        ['!url' => $ws_url])
+        ['!url' => $ws_url]),
     ];
     _tripal_report_ws_error($data);
     return $data;
@@ -275,7 +275,7 @@ function tripal_get_remote_content($site_id, $path = '', $query = '') {
   // connection error (not a Tripal web servcies error).
   if (property_exists($data, 'error')) {
     $data = [
-      'error' => $data->error
+      'error' => $data->error,
     ];
     _tripal_report_ws_error($data);
     return $data;
@@ -303,7 +303,7 @@ function _tripal_report_ws_error($data) {
   $error = '</pre>' . print_r($data['error'], TRUE) . '</pre>';
   tripal_report_error('tripal_ws', TRIPAL_ERROR,
     'Tripal remote web services reports the following error: !error.',
-    array('!error' => $error));
+    ['!error' => $error]);
 }
 
 /**
@@ -316,6 +316,7 @@ function _tripal_report_ws_error($data) {
  * @param $cache_id
  *   A unique ID for caching of this context result to speed furture
  *   queries.
+ *
  * @return
  *   The JSON-LD context mapping array, or FALSE if the context could not
  *   be retrieved.
@@ -338,8 +339,8 @@ function tripal_get_remote_context($context_url, $cache_id) {
   $context = drupal_http_request($context_url);
   if (!$context) {
     tripal_report_error('tripal_ws', TRIPAL_ERROR,
-        'There was a poblem retrieving the context from the remote site: !context_url.',
-        array('!context_url' => $context_url));
+      'There was a poblem retrieving the context from the remote site: !context_url.',
+      ['!context_url' => $context_url]);
     return FALSE;
   }
   $context = drupal_json_decode($context->data);
@@ -368,6 +369,7 @@ function tripal_get_remote_context($context_url, $cache_id) {
  * @param $field_accession
  *   The controlled vocabulary term accession for the property (i.e. field) of
  *   the Class (i.e. content type).
+ *
  * @return
  *   The JSON-LD context mapping array.
  *
@@ -395,14 +397,16 @@ function tripal_clear_remote_cache($site_id) {
   if (!$site_id) {
     throw new Exception('Please provide a numeric site ID for the tripal_clear_remote_cache function.');
   }
-  cache_clear_all('trp_ws_context_' . $site_id , 'cache', TRUE);
-  cache_clear_all('trp_ws_doc_' . $site_id , 'cache', TRUE);
+  cache_clear_all('trp_ws_context_' . $site_id, 'cache', TRUE);
+  cache_clear_all('trp_ws_doc_' . $site_id, 'cache', TRUE);
 }
+
 /**
  * Retrieves the API documentation for a remote Tripal web service.
  *
  * @param $site_id
  *   The numeric site ID for the remote Tripal site.
+ *
  * @return
  *   The vocabulary of a remote Tripal web service, or FALSE if an error
  *   occured.
@@ -429,7 +433,7 @@ function tripal_get_remote_API_doc($site_id) {
     ->fetchObject();
 
   if (!$remote_site) {
-    throw new Exception(t('Cannot find a remote site with id: "!id"', array('!id' => $site_id)));
+    throw new Exception(t('Cannot find a remote site with id: "!id"', ['!id' => $site_id]));
   }
 
   // Build the URL to the remote web services.
@@ -444,7 +448,7 @@ function tripal_get_remote_API_doc($site_id) {
 
   if (!$data) {
     tripal_report_error('tripal_ws', TRIPAL_ERROR,
-        t('Could not connect to the remote web service.'));
+      t('Could not connect to the remote web service.'));
     return FALSE;
   }
 
@@ -452,8 +456,8 @@ function tripal_get_remote_API_doc($site_id) {
   // connection error (not a Tripal web servcies error).
   if (property_exists($data, 'error')) {
     tripal_report_error('tripal_ws', TRIPAL_ERROR,
-        'Remote web services document reports the following error: !error. Using URL: !url',
-      array('!error' => $error, '!url' => $ws_url));
+      'Remote web services document reports the following error: !error. Using URL: !url',
+      ['!error' => $error, '!url' => $ws_url]);
     return FALSE;
   }
 
@@ -464,8 +468,8 @@ function tripal_get_remote_API_doc($site_id) {
   if (array_key_exists('error', $data)) {
     $error = '</pre>' . print_r($data['error'], TRUE) . '</pre>';
     tripal_report_error('tripal_ws', TRIPAL_ERROR,
-        'Tripal Remote web services document reports the following error: !error. Using URL: !url',
-      array('!error' => $error, '!url' => $ws_url));
+      'Tripal Remote web services document reports the following error: !error. Using URL: !url',
+      ['!error' => $error, '!url' => $ws_url]);
     return FALSE;
   }
 
@@ -491,6 +495,7 @@ function tripal_get_remote_API_doc($site_id) {
  *   The controlled vocabulary term accessions for the fields available
  *   on the remote content type.  Any remote fields that matches these IDs will
  *   be added to the entity returned.
+ *
  * @return
  *    An array of fake entity objects where the key is the entity_id and
  *    the value is the object.
@@ -543,8 +548,8 @@ function tripal_load_remote_entities($remote_entity_ids, $site_id, $bundle_acces
   $total_items = $results['totalItems'];
   $members = $results['member'];
 
-  $entities = array();
-  foreach($members as $member) {
+  $entities = [];
+  foreach ($members as $member) {
     // Start building the fake entity.
     $entity_id = preg_replace('/^.*?(\d+)$/', '$1', $member['@id']);
     $entity = new stdClass();
@@ -585,6 +590,7 @@ function tripal_load_remote_entities($remote_entity_ids, $site_id, $bundle_acces
  *   The controlled vocabulary term accessions for the fields available
  *   on the remote content type.  Any remote fields that matches these IDs will
  *   be added to the entity returned.
+ *
  * @return
  *    A fake entity object.
  *
@@ -647,8 +653,8 @@ function tripal_load_remote_entity($remote_entity_id, $site_id, $bundle_accessio
     // to get that field through a separate call.
     $attached = TRUE;
     if (array_key_exists($field_id, $context) and is_array($context[$field_id]) and
-        array_key_exists('@type', $context[$field_id]) and $context[$field_id]['@type'] == '@id'){
-          $attached = FALSE;
+      array_key_exists('@type', $context[$field_id]) and $context[$field_id]['@type'] == '@id') {
+      $attached = FALSE;
     }
 
     // Set the value for this field.
@@ -666,8 +672,8 @@ function tripal_load_remote_entity($remote_entity_id, $site_id, $bundle_accessio
       $field_data = drupal_http_request($value);
       if (!$field_data) {
         tripal_report_error('tripal_ws', TRIPAL_ERROR,
-           'There was a poblem retrieving the unattached field, "!field:", for the remote entity: !entity_id.',
-            array('!field' => $field_id, '!entity_id' => $remote_entity_id));
+          'There was a poblem retrieving the unattached field, "!field:", for the remote entity: !entity_id.',
+          ['!field' => $field_id, '!entity_id' => $remote_entity_id]);
         $value = '';
       }
       $field_data = drupal_json_decode($field_data->data);
@@ -702,44 +708,44 @@ function tripal_load_remote_entity($remote_entity_id, $site_id, $bundle_accessio
 function _tripal_update_remote_entity_field($field_data, $context, $depth = 0) {
 
 
-    // Check if this is an array.
-    if ($field_data['@type'] == 'Collection') {
-      $members = array();
-      foreach ($field_data['member'] as $member) {
-        $next_depth = $depth + 1;
-        $members[] = _tripal_update_remote_entity_field($member, $context, $next_depth);
-      }
-
-      // If we only have one item then just return it as a single item.
-      // TODO: we may need to check cardinality of the field and be more
-      // strict about how we return the value.
-      if ($field_data['totalItems'] == 1){
-        return $members[0];
-      }
-      else {
-        return $members;
-      }
+  // Check if this is an array.
+  if ($field_data['@type'] == 'Collection') {
+    $members = [];
+    foreach ($field_data['member'] as $member) {
+      $next_depth = $depth + 1;
+      $members[] = _tripal_update_remote_entity_field($member, $context, $next_depth);
     }
 
-    $value = array();
-    foreach ($field_data as $k => $v) {
-      // Skip the JSON-LD keys.
-      if ($k == '@id' or $k == '@type' or $k == '@context') {
-        continue;
-      }
-      // Find the term accession for this element, and if the key's value is an
-      // array then recurse.
-      $accession = $context[$k];
-      if (is_array($v)) {
-        $next_depth = $depth + 1;
-        $subvalue = _tripal_update_remote_entity_field($v, $context, $next_depth);
-        $value[$accession] = $subvalue;
-      }
-      else {
-        $value[$accession] = $v;
-      }
+    // If we only have one item then just return it as a single item.
+    // TODO: we may need to check cardinality of the field and be more
+    // strict about how we return the value.
+    if ($field_data['totalItems'] == 1) {
+      return $members[0];
     }
-    return $value;
+    else {
+      return $members;
+    }
+  }
+
+  $value = [];
+  foreach ($field_data as $k => $v) {
+    // Skip the JSON-LD keys.
+    if ($k == '@id' or $k == '@type' or $k == '@context') {
+      continue;
+    }
+    // Find the term accession for this element, and if the key's value is an
+    // array then recurse.
+    $accession = $context[$k];
+    if (is_array($v)) {
+      $next_depth = $depth + 1;
+      $subvalue = _tripal_update_remote_entity_field($v, $context, $next_depth);
+      $value[$accession] = $subvalue;
+    }
+    else {
+      $value[$accession] = $v;
+    }
+  }
+  return $value;
 
 }
 
@@ -757,13 +763,14 @@ function _tripal_update_remote_entity_field($field_data, $context, $depth = 0) {
  * @param $field_accession
  *   The controlled vocabulary term accession for the property (i.e. field) of
  *   the Class (i.e. content type).
+ *
  * @return
  *   An array similar to that returned by the field_info_field function
  *   of Drupal for local fields.
  *
  * @ingroup tripal_ws_api
  */
-function tripal_get_remote_field_info($site_id, $bundle_accession, $field_accession){
+function tripal_get_remote_field_info($site_id, $bundle_accession, $field_accession) {
 
   // Get the site documentation (loads from cache if already retrieved).
   $site_doc = tripal_get_remote_API_doc($site_id);
@@ -775,13 +782,13 @@ function tripal_get_remote_field_info($site_id, $bundle_accession, $field_access
   list($vocab, $accession) = explode(':', $field_accession);
   $field_name = 'tripal_remote_site_' . $site_id . '_' . $field_accession;
 
-  $field = array(
+  $field = [
     'field_name' => $field_name,
     'type' => $field_name,
-    'storage' => array(
-      'type' => 'tripal_remote_site'
-    ),
-  );
+    'storage' => [
+      'type' => 'tripal_remote_site',
+    ],
+  ];
   return $field;
 }
 
@@ -799,13 +806,14 @@ function tripal_get_remote_field_info($site_id, $bundle_accession, $field_access
  * @param $field_accession
  *   The controlled vocabulary term accession for the property (i.e. field) of
  *   the Class (i.e. content type).
+ *
  * @return
  *   An array similar to that returned by the field_info_instance function
  *   of Drupal for local fields.
  *
  * @ingroup tripal_ws_api
  */
-function tripal_get_remote_field_instance_info($site_id, $bundle_accession, $field_accession){
+function tripal_get_remote_field_instance_info($site_id, $bundle_accession, $field_accession) {
 
   // Get the site documentation (loads from cache if already retrieved).
   $site_doc = tripal_get_remote_API_doc($site_id);
@@ -817,18 +825,18 @@ function tripal_get_remote_field_instance_info($site_id, $bundle_accession, $fie
   $field_name = 'tripal_remote_site_' . $site_id . '_' . $field_accession;
 
   list($vocab, $accession) = explode(':', $field_accession);
-  $instance = array(
+  $instance = [
     'label' => $property['hydra:title'],
     'description' => $property['hydra:description'],
     'formatters' => $property['tripal_formatters'],
-    'settings' => array(
+    'settings' => [
       'term_vocabulary' => $vocab,
-      'term_accession' => $accession
-    ),
+      'term_accession' => $accession,
+    ],
     'field_name' => $field_name,
     'entity_type' => 'TripalEntity',
     'bundle_name' => $bundle_accession,
-  );
+  ];
   return $instance;
 }
 
@@ -844,13 +852,14 @@ function tripal_get_remote_field_instance_info($site_id, $bundle_accession, $fie
  * @param $bundle_accession
  *   The controlled vocabulary term accession for the content type
  *   on the remote Tripal site.
+ *
  * @return
  *   A PHP array corresponding to the Hydra Class stanza (i.e. a content type).
  *   Returns NULL if the class ID cannot be found.
  *
  * @ingroup tripal_ws_api
  */
-function tripal_get_remote_content_doc($site_id, $bundle_accession){
+function tripal_get_remote_content_doc($site_id, $bundle_accession) {
 
   // Get the site documentation (loads from cache if already retrieved).
   $site_doc = tripal_get_remote_API_doc($site_id);
@@ -880,6 +889,7 @@ function tripal_get_remote_content_doc($site_id, $bundle_accession){
  * @param $field_accession
  *   The controlled vocabulary term accession for the property (i.e. field) of
  *   the Class (i.e. content type).
+ *
  * @return
  *   A PHP array corresponding to the Hydra property stanza (field) that
  *   belongs to the given Class (i.e. a content type).  Retruns NULL if the
@@ -887,7 +897,7 @@ function tripal_get_remote_content_doc($site_id, $bundle_accession){
  *
  * @ingroup tripal_ws_api
  */
-function tripal_get_remote_field_doc($site_id, $bundle_accession, $field_accession){
+function tripal_get_remote_field_doc($site_id, $bundle_accession, $field_accession) {
 
   // Get the site documentation (loads from cache if already retrieved).
   $site_doc = tripal_get_remote_API_doc($site_id);
@@ -919,6 +929,7 @@ function tripal_get_remote_field_doc($site_id, $bundle_accession, $field_accessi
  * @param $field_accession
  *   The controlled vocabulary term accession for the property (i.e. field) of
  *   the Class (i.e. content type).
+ *
  * @return
  *   An array of field downloader class names that are compoatible with the
  *   field and which exist on this site.
@@ -927,7 +938,7 @@ function tripal_get_remote_field_doc($site_id, $bundle_accession, $field_accessi
  */
 function tripal_get_remote_field_formatters($site_id, $bundle_accession, $field_accession) {
 
-  $flist = array();
+  $flist = [];
 
   // Get the site documentation (loads from cache if already retrieved).
   $site_doc = tripal_get_remote_API_doc($site_id);
@@ -937,7 +948,7 @@ function tripal_get_remote_field_formatters($site_id, $bundle_accession, $field_
   }
 
   $formatters = $property['tripal_formatters'];
-  foreach($formatters as $formatter) {
+  foreach ($formatters as $formatter) {
     if (tripal_load_include_downloader_class($formatter)) {
       $flist[$formatter] = $formatter::$full_label;
     }

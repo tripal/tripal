@@ -1,8 +1,8 @@
 <h3>Module Description:</h3>
 
 <p>
-  The Tripal Phylotree module is an interface for the Chado Phylotree
-module for visualizing and browsing phylogenetic gene trees.
+    The Tripal Phylotree module is an interface for the Chado Phylotree
+    module for visualizing and browsing phylogenetic gene trees.
 </p>
 
 <h3>Setup Instructions:</h3>

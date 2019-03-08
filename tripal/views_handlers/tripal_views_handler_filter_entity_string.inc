@@ -12,13 +12,17 @@
  * @ingroup views_filter_handlers
  */
 class tripal_views_handler_filter_entity_string extends views_handler_filter {
+
   // exposed filter options
   var $always_multiple = TRUE;
 
   function option_definition() {
     $options = parent::option_definition();
 
-    $options['expose']['contains']['required'] = array('default' => FALSE, 'bool' => TRUE);
+    $options['expose']['contains']['required'] = [
+      'default' => FALSE,
+      'bool' => TRUE,
+    ];
 
     return $options;
   }
@@ -30,83 +34,83 @@ class tripal_views_handler_filter_entity_string extends views_handler_filter {
    */
   function operators() {
     // The operators keys must match the ones used in the TripalFieldQuery
-    $operators = array(
-      '=' => array(
+    $operators = [
+      '=' => [
         'title' => t('Is equal to'),
         'short' => t('='),
         'method' => 'op_equal',
         'values' => 1,
-      ),
-      '<>' => array(
+      ],
+      '<>' => [
         'title' => t('Is not equal to'),
         'short' => t('!='),
         'method' => 'op_equal',
         'values' => 1,
-      ),
-      'CONTAINS' => array(
+      ],
+      'CONTAINS' => [
         'title' => t('Contains'),
         'short' => t('contains'),
         'method' => 'op_contains',
         'values' => 1,
-      ),
-      'STARTS WITH' => array(
+      ],
+      'STARTS WITH' => [
         'title' => t('Starts with'),
         'short' => t('begins'),
         'method' => 'op_starts',
         'values' => 1,
-      ),
-      'NOT STARTS' => array(
+      ],
+      'NOT STARTS' => [
         'title' => t('Does not start with'),
         'short' => t('not_begins'),
         'method' => 'op_not_starts',
         'values' => 1,
-      ),
-      'ENDS WITH' => array(
+      ],
+      'ENDS WITH' => [
         'title' => t('Ends with'),
         'short' => t('ends'),
         'method' => 'op_ends',
         'values' => 1,
-      ),
-      'NOT ENDS' => array(
+      ],
+      'NOT ENDS' => [
         'title' => t('Does not end with'),
         'short' => t('not_ends'),
         'method' => 'op_not_ends',
         'values' => 1,
-      ),
-      'NOT' => array(
+      ],
+      'NOT' => [
         'title' => t('Does not contain'),
         'short' => t('!has'),
         'method' => 'op_not',
         'values' => 1,
-      ),
-    );
+      ],
+    ];
     // if the definition allows for the empty operator, add it.
     if (!empty($this->definition['allow empty'])) {
-      $operators += array(
-        'empty' => array(
+      $operators += [
+        'empty' => [
           'title' => t('Is empty (NULL)'),
           'method' => 'op_empty',
           'short' => t('empty'),
           'values' => 0,
-        ),
-        'not empty' => array(
+        ],
+        'not empty' => [
           'title' => t('Is not empty (NOT NULL)'),
           'method' => 'op_empty',
           'short' => t('not empty'),
           'values' => 0,
-        ),
-      );
+        ],
+      ];
     }
     // Add regexp support for MySQL.
     if (Database::getConnection()->databaseType() == 'mysql') {
-      $operators += array(
-        'regular_expression' => array(
+      $operators += [
+        'regular_expression' => [
           'title' => t('Regular expression'),
           'short' => t('regex'),
           'method' => 'op_regex',
           'values' => 1,
-        ),
-      );
+        ],
+      ];
     }
 
     return $operators;
@@ -116,7 +120,7 @@ class tripal_views_handler_filter_entity_string extends views_handler_filter {
    * Build strings from the operators() for 'select' options
    */
   function operator_options($which = 'title') {
-    $options = array();
+    $options = [];
     foreach ($this->operators() as $id => $info) {
       $options[$id] = $info[$which];
     }
@@ -134,7 +138,7 @@ class tripal_views_handler_filter_entity_string extends views_handler_filter {
 
     $options = $this->operator_options('short');
     $output = '';
-    if(!empty($options[$this->operator])) {
+    if (!empty($options[$this->operator])) {
       $output = check_plain($options[$this->operator]);
     }
     if (in_array($this->operator, $this->operator_values(1))) {
@@ -144,7 +148,7 @@ class tripal_views_handler_filter_entity_string extends views_handler_filter {
   }
 
   function operator_values($values = 1) {
-    $options = array();
+    $options = [];
     foreach ($this->operators() as $id => $info) {
       if (isset($info['values']) && $info['values'] == $values) {
         $options[] = $id;
@@ -179,29 +183,29 @@ class tripal_views_handler_filter_entity_string extends views_handler_filter {
     }
 
     if ($which == 'all' || $which == 'value') {
-      $form['value'] = array(
+      $form['value'] = [
         '#type' => 'textfield',
         '#title' => t('Value'),
         '#size' => 30,
         '#default_value' => $this->value,
-      );
+      ];
       if (!empty($form_state['exposed']) && !isset($form_state['input'][$identifier])) {
         $form_state['input'][$identifier] = $this->value;
       }
 
       if ($which == 'all') {
-        $form['value'] += array(
-          '#dependency' => array($source => $this->operator_values(1)),
-        );
+        $form['value'] += [
+          '#dependency' => [$source => $this->operator_values(1)],
+        ];
       }
     }
 
     if (!isset($form['value'])) {
       // Ensure there is something in the 'value'.
-      $form['value'] = array(
+      $form['value'] = [
         '#type' => 'value',
-        '#value' => NULL
-      );
+        '#value' => NULL,
+      ];
     }
   }
 

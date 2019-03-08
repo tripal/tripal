@@ -8,12 +8,12 @@
  * Prepares Chado for Tripal use
  */
 function tripal_chado_prepare_form($form, $form_state) {
-  $form = array();
+  $form = [];
 
   if (variable_get('tripal_chado_is_prepared') == TRUE) {
     drupal_set_message('Your site is prepared.');
   }
-  $form['instructions'] = array(
+  $form['instructions'] = [
     '#type' => 'item',
     '#title' => 'Prepare Drupal for Chado.',
     '#description' => t("Before a Drupal site can use Chado (via Tripal), both
@@ -21,13 +21,13 @@ function tripal_chado_prepare_form($form, $form_state) {
         materialized views, custom tables and controlled vocabularies to Chado.
         It will also add some management tables to Drupal and add some default
         content types for biological and ancillary data."),
-  );
+  ];
 
-  $form['prepare-button'] = array(
+  $form['prepare-button'] = [
     '#type' => 'submit',
     '#value' => t('Prepare this site'),
     '#name' => 'prepare-chado',
-  );
+  ];
   return $form;
 }
 
@@ -38,16 +38,16 @@ function tripal_chado_prepare_form($form, $form_state) {
  * @param $form_state
  */
 function tripal_chado_prepare_form_submit($form, $form_state) {
-   if ($form_state['clicked_button']['#name'] == "prepare-chado") {
-     global $user;
-     $args = array();
-     $includes = array(
-        module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.setup'),
-     );
-     tripal_add_job('Prepare Chado', 'tripal_chado',
-       'tripal_chado_prepare_chado', $args,
-       $user->uid, 10, $includes);
-   }
+  if ($form_state['clicked_button']['#name'] == "prepare-chado") {
+    global $user;
+    $args = [];
+    $includes = [
+      module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.setup'),
+    ];
+    tripal_add_job('Prepare Chado', 'tripal_chado',
+      'tripal_chado_prepare_chado', $args,
+      $user->uid, 10, $includes);
+  }
 }
 
 /**
@@ -57,10 +57,10 @@ function tripal_chado_prepare_form_submit($form, $form_state) {
  * @param $form_state
  */
 function tripal_chado_prepare_drush_submit() {
-  $args = array();
-  $includes = array(
+  $args = [];
+  $includes = [
     module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.setup'),
-  );
+  ];
   tripal_add_job('Prepare Chado', 'tripal_chado',
     'tripal_chado_prepare_chado', $args,
     1, 10, $includes);
@@ -83,7 +83,7 @@ function tripal_chado_load_ontologies() {
   chado_insert_cv(
     'ncit',
     'The NCIt OBO Edition project aims to increase integration of the NCIt with OBO Library ontologies. NCIt is a reference terminology that includes broad coverage of the cancer domain, including cancer related diseases, findings and abnormalities. NCIt OBO Edition releases should be considered experimental.'
-    );
+  );
 
   $term = chado_insert_cvterm([
     'id' => 'NCIT:C25693',
@@ -94,81 +94,81 @@ function tripal_chado_load_ontologies() {
 
 
   // Add the rdfs:comment vocabulary.
-  chado_insert_db(array(
+  chado_insert_db([
     'name' => 'rdfs',
     'description' => 'Resource Description Framework Schema',
     'url' => 'https://www.w3.org/TR/rdf-schema/',
     'urlprefix' => 'http://www.w3.org/2000/01/rdf-schema#{accession}',
-  ));
+  ]);
   chado_insert_cv(
     'rdfs',
     'Resource Description Framework Schema'
-    );
-  $name = chado_insert_cvterm(array(
+  );
+  $name = chado_insert_cvterm([
     'id' => 'rdfs:comment',
     'name' => 'comment',
     'cv_name' => 'rdfs',
     'definition' => 'A human-readable description of a resource\'s name.',
-  ));
+  ]);
 
   // Insert commonly used ontologies into the tables.
-  $ontologies = array(
-    array(
+  $ontologies = [
+    [
       'name' => 'Relationship Ontology (legacy)',
       'path' => '{tripal_chado}/files/legacy_ro.obo',
       'auto_load' => FALSE,
       'cv_name' => 'ro',
       'db_name' => 'RO',
-    ),
-    array(
+    ],
+    [
       'name' => 'Gene Ontology',
       'path' => 'http://purl.obolibrary.org/obo/go.obo',
       'auto_load' => FALSE,
       'cv_name' => 'cellualar_component',
       'db_name' => 'GO',
-    ),
-    array(
+    ],
+    [
       'name' => 'Taxonomic Rank',
       'path' => 'http://purl.obolibrary.org/obo/taxrank.obo',
       'auto_load' => TRUE,
       'cv_name' => 'taxonomic_rank',
-      'db_name' => 'TAXRANK'
-    ),
-    array(
+      'db_name' => 'TAXRANK',
+    ],
+    [
       'name' => 'Tripal Contact',
       'path' => '{tripal_chado}/files/tcontact.obo',
       'auto_load' => TRUE,
       'cv_name' => 'tripal_contact',
-      'db_name' => 'TContact'
-    ),
-    array(
+      'db_name' => 'TContact',
+    ],
+    [
       'name' => 'Tripal Publication',
       'path' => '{tripal_chado}/files/tpub.obo',
       'auto_load' => TRUE,
       'cv_name' => 'tripal_pub',
       'db_name' => 'TPUB',
-    ),
-     array(
-       'name' => 'Sequence Ontology',
-       'path' => 'http://purl.obolibrary.org/obo/so.obo',
-       'auto_load' => TRUE,
-       'cv_name' => 'sequence',
-       'db_name' => 'SO',
-     ),
+    ],
+    [
+      'name' => 'Sequence Ontology',
+      'path' => 'http://purl.obolibrary.org/obo/so.obo',
+      'auto_load' => TRUE,
+      'cv_name' => 'sequence',
+      'db_name' => 'SO',
+    ],
 
-  );
+  ];
 
   module_load_include('inc', 'tripal_chado', 'includes/TripalImporter/OBOImporter');
   for ($i = 0; $i < count($ontologies); $i++) {
     $obo_id = chado_insert_obo($ontologies[$i]['name'], $ontologies[$i]['path']);
     if ($ontologies[$i]['auto_load'] == TRUE) {
       // Only load ontologies that are not already in the cv table.
-      $cv = chado_get_cv(array('name' => $ontologies[$i]['cv_name']));
-      $db = chado_get_db(array('name' => $ontologies[$i]['db_name']));
+      $cv = chado_get_cv(['name' => $ontologies[$i]['cv_name']]);
+      $db = chado_get_db(['name' => $ontologies[$i]['db_name']]);
       if (!$cv or !$db) {
         print "Loading ontology: " . $ontologies[$i]['name'] . " ($obo_id)...\n";
         $obo_importer = new OBOImporter();
-        $obo_importer->create(array('obo_id' => $obo_id));
+        $obo_importer->create(['obo_id' => $obo_id]);
         $obo_importer->run();
         $obo_importer->postRun();
       }
@@ -178,6 +178,7 @@ function tripal_chado_load_ontologies() {
     }
   }
 }
+
 /**
  * Prepares Chado for use by Tripal.
  */
@@ -274,9 +275,9 @@ function tripal_chado_prepare_chado($job = NULL) {
     tripal_chado_prepare_genetic_types($job);
     tripal_chado_prepare_germplasm_types($job);
     tripal_chado_prepare_expression_types($job);
-    
+
     // Add the supported loaders
-    variable_set('tripal_pub_supported_dbs', array('PMID', 'AGL'));
+    variable_set('tripal_pub_supported_dbs', ['PMID', 'AGL']);
 
     // Set a variable to indicate the site is prepared.
     variable_set('tripal_chado_is_prepared', TRUE);
@@ -284,8 +285,7 @@ function tripal_chado_prepare_chado($job = NULL) {
     if ($report_progress) {
       $job->setProgress(100);
     }
-  }
-  catch (Exception $e) {
+  } catch (Exception $e) {
     $job->logMessage($e);
     throw new Exception($e);
   }
@@ -302,86 +302,86 @@ function tripal_chado_prepare_general_types($job) {
   //
   // Create the 'Organism' entity type. This uses the obi:organism term.
   //
-  $args = array(
+  $args = [
     'vocabulary' => 'OBI',
     'accession' => '0100026',
     'term_name' => 'organism',
-    'storage_args' => array(
+    'storage_args' => [
       'data_table' => 'organism',
-    ),
-    'category' => 'General'
-  );
+    ],
+    'category' => 'General',
+  ];
   _tripal_chado_prepare_create_bundle($args, $job);
 
   //
   // Create the 'Analysis' entity type. This uses the local:analysis term.
   //
-  $args = array(
+  $args = [
     'vocabulary' => 'operation',
     'accession' => '2945',
     'term_name' => 'Analysis',
-    'storage_args' => array(
+    'storage_args' => [
       'data_table' => 'analysis',
-    ),
-    'category' => 'General'
-  );
+    ],
+    'category' => 'General',
+  ];
   _tripal_chado_prepare_create_bundle($args, $job);
 
   //
   // Create the 'Project' entity type. This uses the local:project term.
   //
-  $args = array(
+  $args = [
     'vocabulary' => 'NCIT',
     'accession' => 'C47885',
     'term_name' => 'Project',
-    'storage_args' => array(
+    'storage_args' => [
       'data_table' => 'project',
-    ),
-    'category' => 'General'
-  );
+    ],
+    'category' => 'General',
+  ];
   _tripal_chado_prepare_create_bundle($args, $job);
 
 
   //
   // Create the 'Study' entity type. This uses the local:project term.
   //
-  $args = array(
+  $args = [
     'vocabulary' => 'SIO',
     'accession' => '001066',
     'term_name' => 'Study',
-    'storage_args' => array(
+    'storage_args' => [
       'data_table' => 'study',
-    ),
-    'category' => 'General'
-  );
+    ],
+    'category' => 'General',
+  ];
   _tripal_chado_prepare_create_bundle($args, $job);
 
   //
   // Create the 'Contact' entity type. This uses the local:contact term.
   //
-  $args = array(
+  $args = [
     'vocabulary' => 'local',
     'accession' => 'contact',
     'term_name' => 'contact',
-    'storage_args' => array(
+    'storage_args' => [
       'data_table' => 'contact',
-    ),
-    'category' => 'General'
-  );
+    ],
+    'category' => 'General',
+  ];
   _tripal_chado_prepare_create_bundle($args, $job);
 
   //
   // Create the 'Publication' entity type.
   //
-  $args = array(
+  $args = [
     'vocabulary' => 'TPUB',
     'accession' => '0000002',
     'term_name' => 'Publication',
-    'storage_args' => array(
+    'storage_args' => [
       'data_table' => 'pub',
-    ),
-    'category' => 'General'
-  );
+    ],
+    'category' => 'General',
+  ];
   $bundle = tripal_load_bundle_entity(['accession' => $args['vocabulary'] . ':' . $args['accession']]);
   if (!$bundle) {
     // Import a publication so we get all of the properties before
@@ -391,30 +391,30 @@ function tripal_chado_prepare_general_types($job) {
     _tripal_chado_prepare_create_bundle($args, $job);
 
     // Now remove the publication that was added above.
-    $values = array(
-      'dbxref_id' => array(
+    $values = [
+      'dbxref_id' => [
         'accession' => '24163125',
-        'db_id' => array(
+        'db_id' => [
           'name' => 'PMID',
-        ),
-      ),
-    );
-    $result = chado_select_record('pub_dbxref', array('pub_id'), $values);
-    chado_delete_record('pub', array('pub_id' => $result[0]->pub_id));
+        ],
+      ],
+    ];
+    $result = chado_select_record('pub_dbxref', ['pub_id'], $values);
+    chado_delete_record('pub', ['pub_id' => $result[0]->pub_id]);
   }
 
   //
   // Create the 'Protocol' entity type.
   //
-  $args = array(
+  $args = [
     'vocabulary' => 'sep',
     'accession' => '00101',
     'term_name' => 'Protocol',
-    'storage_args' => array(
+    'storage_args' => [
       'data_table' => 'protocol',
-    ),
-    'category' => 'General'
-  );
+    ],
+    'category' => 'General',
+  ];
   _tripal_chado_prepare_create_bundle($args, $job);
 }
 
@@ -425,126 +425,126 @@ function tripal_chado_prepare_genomic_types($job) {
   //
   // Create the 'Gene' entity type.
   //
-  $args = array(
+  $args = [
     'vocabulary' => 'SO',
     'accession' => '0000704',
     'term_name' => 'gene',
-    'storage_args' => array(
+    'storage_args' => [
       'data_table' => 'feature',
       'type_column' => 'type_id',
-    ),
+    ],
     'category' => 'Genomic',
-  );
+  ];
   _tripal_chado_prepare_create_bundle($args, $job);
 
   //
   // Create the 'mRNA' entity type.
   //
-  $args = array(
+  $args = [
     'vocabulary' => 'SO',
     'accession' => '0000234',
     'term_name' => 'mRNA',
-    'storage_args' => array(
+    'storage_args' => [
       'data_table' => 'feature',
       'type_column' => 'type_id',
-    ),
+    ],
     'category' => 'Genomic',
-  );
+  ];
   _tripal_chado_prepare_create_bundle($args, $job);
 
   //
   // Create the 'Phylogenetic tree' entity type.
   //
-  $args = array(
+  $args = [
     'vocabulary' => 'data',
     'accession' => '0872',
     'term_name' => 'Phylogenetic tree',
-    'storage_args' => array(
+    'storage_args' => [
       'data_table' => 'phylotree',
-    ),
+    ],
     'category' => 'Genomic',
-  );
+  ];
   _tripal_chado_prepare_create_bundle($args, $job);
 
   // Create the 'Physical Map' entity type.
   $cvterm = tripal_get_cvterm(['id' => 'rdfs:type']);
-  $args = array(
+  $args = [
     'vocabulary' => 'data',
     'accession' => '1280',
     'term_name' => 'Physical Map',
-    'storage_args' => array(
+    'storage_args' => [
       'data_table' => 'featuremap',
       'type_linker_table' => 'featuremapprop',
       'type_column' => 'type_id',
       'type_id' => $cvterm->cvterm_id,
-      'type_value' => 'physical'
-    ),
+      'type_value' => 'physical',
+    ],
     'category' => 'Genomic',
-  );
+  ];
   _tripal_chado_prepare_create_bundle($args, $job);
 
   // Create the 'DNA Library' entity type.
-  $args = array(
+  $args = [
     'vocabulary' => 'NCIT',
     'accession' => 'C16223',
     'term_name' => 'DNA Library',
-    'storage_args' => array(
+    'storage_args' => [
       'data_table' => 'library',
       'type_column' => 'type_id',
-    ),
+    ],
     'category' => 'Genomic',
-  );
+  ];
   _tripal_chado_prepare_create_bundle($args, $job);
 
   // Create the 'Genome Assembly' entity type.
   $cvterm = tripal_get_cvterm(['id' => 'rdfs:type']);
-  $args = array(
+  $args = [
     'vocabulary' => 'operation',
     'accession' => '0525',
     'term_name' => 'Genome Assembly',
-    'storage_args' => array(
+    'storage_args' => [
       'data_table' => 'analysis',
       'type_linker_table' => 'analysisprop',
       'type_column' => 'type_id',
       'type_id' => $cvterm->cvterm_id,
-      'type_value' => 'genome_assembly'
-    ),
+      'type_value' => 'genome_assembly',
+    ],
     'category' => 'Genomic',
-  );
+  ];
   _tripal_chado_prepare_create_bundle($args, $job);
 
   // Create the 'Genome Annotation' entity type.
   $cvterm = tripal_get_cvterm(['id' => 'rdfs:type']);
-  $args = array(
+  $args = [
     'vocabulary' => 'operation',
     'accession' => '0362',
     'term_name' => 'Genome Annotation',
-    'storage_args' => array(
+    'storage_args' => [
       'data_table' => 'analysis',
       'type_linker_table' => 'analysisprop',
       'type_column' => 'type_id',
       'type_id' => $cvterm->cvterm_id,
-      'type_value' => 'genome_annotation'
-    ),
+      'type_value' => 'genome_annotation',
+    ],
     'category' => 'Genomic',
-  );
+  ];
   _tripal_chado_prepare_create_bundle($args, $job);
 
   // Create the 'Genome Annotation' entity type.
   $cvterm = tripal_get_cvterm(['id' => 'rdfs:type']);
-  $args = array(
+  $args = [
     'vocabulary' => 'local',
     'accession' => 'Genome Project',
     'term_name' => 'Genome Project',
-    'storage_args' => array(
+    'storage_args' => [
       'data_table' => 'project',
       'type_linker_table' => 'projectprop',
       'type_column' => 'type_id',
       'type_id' => $cvterm->cvterm_id,
-      'type_value' => 'genome_project'
-    ),
+      'type_value' => 'genome_project',
+    ],
     'category' => 'Genomic',
-  );
+  ];
   $bundle = tripal_load_bundle_entity(['accession' => $args['vocabulary'] . ':' . $args['accession']]);
   _tripal_chado_prepare_create_bundle($args, $job);
 }
@@ -556,45 +556,45 @@ function tripal_chado_prepare_expression_types($job) {
   //
   // Create the 'biological sample' entity type.
   //
-  $args = array(
+  $args = [
     'vocabulary' => 'sep',
     'accession' => '00195',
     'term_name' => 'biological sample',
-    'storage_args' => array(
+    'storage_args' => [
       'data_table' => 'biomaterial',
-    ),
+    ],
     'Expression',
-  );
+  ];
   $bundle = tripal_load_bundle_entity(['accession' => $args['vocabulary'] . ':' . $args['accession']]);
   _tripal_chado_prepare_create_bundle($args, $job);
 
   //
   // Create the 'Assay' entity type.
   //
-  $args = array(
+  $args = [
     'vocabulary' => 'OBI',
     'accession' => '0000070',
     'term_name' => 'Assay',
-    'storage_args' => array(
+    'storage_args' => [
       'data_table' => 'assay',
-    ),
+    ],
     'Expression',
-  );
+  ];
   $bundle = tripal_load_bundle_entity(['accession' => $args['vocabulary'] . ':' . $args['accession']]);
   _tripal_chado_prepare_create_bundle($args, $job);
 
   //
   // Create the 'Array Design' entity type.
   //
-  $args = array(
+  $args = [
     'vocabulary' => 'EFO',
     'accession' => '0000269',
     'term_name' => 'Assay Design',
-    'storage_args' => array(
+    'storage_args' => [
       'data_table' => 'arraydesign',
-    ),
+    ],
     'Expression',
-  );
+  ];
   _tripal_chado_prepare_create_bundle($args, $job);
 }
 
@@ -609,77 +609,77 @@ function tripal_chado_prepare_germplasm_types($job) {
   /**
    * SPF:  We need a bit more testing before we add this conteont type as
    * it resolves to the cvterm table. Currently, it can't be created.
-  $args = array(
-    'vocabulary' => 'NCIT',
-    'accession' => 'C85496',
-    'term_name' => 'Phenotypic Trait',
-    'storage_args' => array(
-      'data_table' => 'cvterm',
-      'type_column' => 'type_id',
-    ),
-    'category' => 'Germplasm/Breeding',
-  );
-  _tripal_chado_prepare_create_bundle($args, $job);
-  */
+   * $args = array(
+   * 'vocabulary' => 'NCIT',
+   * 'accession' => 'C85496',
+   * 'term_name' => 'Phenotypic Trait',
+   * 'storage_args' => array(
+   * 'data_table' => 'cvterm',
+   * 'type_column' => 'type_id',
+   * ),
+   * 'category' => 'Germplasm/Breeding',
+   * );
+   * _tripal_chado_prepare_create_bundle($args, $job);
+   */
 
   //
   // Create the 'Germplasm Accession' entity type.
   //
-  $args = array(
+  $args = [
     'vocabulary' => 'CO_010',
     'accession' => '0000044',
     'term_name' => 'Germplasm Accession',
-    'storage_args' => array(
+    'storage_args' => [
       'data_table' => 'stock',
       'type_column' => 'type_id',
-    ),
+    ],
     'category' => 'Germplasm/Breeding',
-  );
+  ];
   _tripal_chado_prepare_create_bundle($args, $job);
 
   //
   // Create the 'Breeding Cross' entity type.
   //
-  $args = array(
+  $args = [
     'vocabulary' => 'CO_010',
     'accession' => '0000255',
     'term_name' => 'Generated germplasm (breeding cross)',
-    'storage_args' => array(
+    'storage_args' => [
       'data_table' => 'stock',
       'type_column' => 'type_id',
-    ),
+    ],
     'category' => 'Germplasm/Breeding',
-  );
+  ];
   _tripal_chado_prepare_create_bundle($args, $job);
 
   //
   // Create the 'Germplasm Variety' entity type.
   //
-  $args = array(
+  $args = [
     'vocabulary' => 'CO_010',
     'accession' => '0000029',
     'term_name' => 'Cultivar (germplasm variety)',
-    'storage_args' => array(
+    'storage_args' => [
       'data_table' => 'stock',
       'type_column' => 'type_id',
-    ),
+    ],
     'category' => 'Germplasm/Breeding',
-  );
+  ];
   _tripal_chado_prepare_create_bundle($args, $job);
 
   //
   // Create the 'Germplasm Variety' entity type.
   //
-  $args = array(
+  $args = [
     'vocabulary' => 'CO_010',
     'accession' => '0000162',
     'term_name' => 'Recombinant Inbred Line',
-    'storage_args' => array(
+    'storage_args' => [
       'data_table' => 'stock',
       'type_column' => 'type_id',
-    ),
+    ],
     'category' => 'Germplasm/Breeding',
-  );
+  ];
   _tripal_chado_prepare_create_bundle($args, $job);
 }
 
@@ -692,82 +692,83 @@ function tripal_chado_prepare_genetic_types($job) {
   // Create the 'Genetic Map' entity type.
   //
   $cvterm = tripal_get_cvterm(['id' => 'rdfs:type']);
-  $args = array(
+  $args = [
     'vocabulary' => 'data',
     'accession' => '1278',
     'term_name' => 'Genetic Map',
-    'storage_args' => array(
+    'storage_args' => [
       'data_table' => 'featuremap',
       'type_linker_table' => 'featuremapprop',
       'type_column' => 'type_id',
       'type_id' => $cvterm->cvterm_id,
-      'type_value' => 'genetic'
-    ),
+      'type_value' => 'genetic',
+    ],
     'category' => 'Genetic',
-  );
+  ];
   _tripal_chado_prepare_create_bundle($args, $job);
 
   //
   // Create the 'QTL' entity type.
   //
-  $args = array(
+  $args = [
     'vocabulary' => 'SO',
     'accession' => '0000771',
     'term_name' => 'QTL',
-    'storage_args' => array(
+    'storage_args' => [
       'data_table' => 'feature',
       'type_column' => 'type_id',
-    ),
+    ],
     'category' => 'Genetic',
-  );
+  ];
   _tripal_chado_prepare_create_bundle($args, $job);
 
   //
   // Create the 'Sequence Variant' entity type.
   //
-  $args = array(
+  $args = [
     'vocabulary' => 'SO',
     'accession' => '0001060',
     'term_name' => 'Sequence Variant',
-    'storage_args' => array(
+    'storage_args' => [
       'data_table' => 'feature',
       'type_column' => 'type_id',
-    ),
+    ],
     'category' => 'Genetic',
-  );
+  ];
   _tripal_chado_prepare_create_bundle($args, $job);
 
   //
   // Create the 'Genetic Marker' entity type.
   //
-  $args = array(
+  $args = [
     'vocabulary' => 'SO',
     'accession' => '0001645',
     'term_name' => 'Genetic Marker',
-    'storage_args' => array(
+    'storage_args' => [
       'data_table' => 'feature',
       'type_column' => 'type_id',
-    ),
+    ],
     'category' => 'Genetic',
-  );
+  ];
   _tripal_chado_prepare_create_bundle($args, $job);
 
 
   //
   // Create the 'Heritable Phenotypic Marker' entity type.
   //
-  $args = array(
+  $args = [
     'vocabulary' => 'SO',
     'accession' => '0001500',
     'term_name' => 'Heritable Phenotypic Marker',
-    'storage_args' => array(
+    'storage_args' => [
       'data_table' => 'feature',
       'type_column' => 'type_id',
-    ),
+    ],
     'category' => 'Genetic',
-  );
+  ];
   _tripal_chado_prepare_create_bundle($args, $job);
 }
+
 /**
  * A helper function to consolidate the  code used to create a bundle.
  */
@@ -797,7 +798,7 @@ function _tripal_chado_prepare_create_bundle($args, $job) {
  * For Chado v1.2 or greater these tables are not needed as they are part of the
  * schema update.
  */
-function tripal_chado_add_v1_1_custom_tables(){
+function tripal_chado_add_v1_1_custom_tables() {
   module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.chado_v1_1');
   tripal_chado_add_analysisfeatureprop_table();
 }
@@ -808,7 +809,7 @@ function tripal_chado_add_v1_1_custom_tables(){
  * For Chado v1.3 these tables are not needed as they are part of the
  * schema update.
  */
-function tripal_chado_add_v1_2_custom_tables(){
+function tripal_chado_add_v1_2_custom_tables() {
   module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.chado_v1.2');
   tripal_chado_add_contactprop_table();
   tripal_chado_add_featuremap_dbxref_table();
@@ -823,7 +824,7 @@ function tripal_chado_add_v1_2_custom_tables(){
  * These are tables that Chado uses to manage the site (i.e. temporary
  * loading tables) and not for primary data storage.
  */
-function tripal_chado_add_vx_x_custom_tables(){
+function tripal_chado_add_vx_x_custom_tables() {
   module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.chado_vx_x');
 
   // Add in custom tables.
@@ -860,6 +861,13 @@ function tripal_chado_fix_v1_3_custom_tables() {
   // Remove the previously managed custom tables from the
   // tripal_custom_tables table.
   db_delete('tripal_custom_tables')
-    ->condition('table_name', array('analysisfeatureprop', 'featuremap_dbxref', 'contactprop', 'featuremapprop', 'featureposprop', 'pubauthor_contact'))
+    ->condition('table_name', [
+      'analysisfeatureprop',
+      'featuremap_dbxref',
+      'contactprop',
+      'featuremapprop',
+      'featureposprop',
+      'pubauthor_contact',
+    ])
     ->execute();
 }

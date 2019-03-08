@@ -213,19 +213,19 @@ class NewickImporter extends TripalImporter {
 
     $arguments = $this->arguments['run_args'];
 
-    $options = array(
-      'name'         => $arguments["tree_name"],
-      'description'  => $arguments["description"],
-      'analysis_id'  => $arguments["analysis_id"],
-      'leaf_type'    => $arguments["leaf_type"],
-      'tree_file'    => $this->arguments['files'][0]['file_path'],
-      'format'       => 'newick',
-      'dbxref'       => $arguments["dbxref"],
-      'match'        => $arguments["match"],
-      'name_re'      => $arguments["name_re"],
-    );
-    $errors = array();
-    $warnings = array();
+    $options = [
+      'name' => $arguments["tree_name"],
+      'description' => $arguments["description"],
+      'analysis_id' => $arguments["analysis_id"],
+      'leaf_type' => $arguments["leaf_type"],
+      'tree_file' => $this->arguments['files'][0]['file_path'],
+      'format' => 'newick',
+      'dbxref' => $arguments["dbxref"],
+      'match' => $arguments["match"],
+      'name_re' => $arguments["name_re"],
+    ];
+    $errors = [];
+    $warnings = [];
     chado_insert_phylotree($options, $errors, $warnings);
   }
 }

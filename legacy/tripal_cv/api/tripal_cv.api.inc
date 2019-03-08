@@ -48,9 +48,12 @@ function tripal_get_default_cv($table, $field) {
     FROM {tripal_cv_defaults}
     WHERE table_name = :table and field_name = :field
   ";
-  $cv_id = db_query($sql, array(':table' => $table, ':field' => $field))->fetchField();
+  $cv_id = db_query($sql, [
+    ':table' => $table,
+    ':field' => $field,
+  ])->fetchField();
 
-  return tripal_get_cv(array('cv_id' => $cv_id));
+  return tripal_get_cv(['cv_id' => $cv_id]);
 }
 
 /**
@@ -78,7 +81,7 @@ function tripal_get_default_cv($table, $field) {
  */
 function tripal_get_default_cv_table($cv_id) {
   $default = db_select('tripal_cv_defaults', 't')
-    ->fields('t', array('table_name', 'field_name'))
+    ->fields('t', ['table_name', 'field_name'])
     ->condition('cv_id', $cv_id)
     ->execute()
     ->fetchObject();
@@ -111,28 +114,28 @@ function tripal_get_default_cv_table($cv_id) {
 function tripal_get_cvterm_default_select_options($table, $field, $field_desc) {
 
   $default_cv = tripal_get_default_cv($table, $field);
-  $options = array();
+  $options = [];
 
   if ($default_cv) {
     $options = tripal_get_cvterm_select_options($default_cv->cv_id);
 
     if (count($options) == 0) {
       tripal_set_message('There are no ' . $field_desc . '. Please ' .
-          l('add terms',
-              'admin/tripal/loaders/chado_vocabs/chado_cv/' .$default_cv->cv_id. '/cvterm/add',
-              array('attributes' => array('target' => '_blank'))) . ' to the ' .
-          $default_cv->name .' vocabulary.',
-          TRIPAL_WARNING);
+        l('add terms',
+          'admin/tripal/loaders/chado_vocabs/chado_cv/' . $default_cv->cv_id . '/cvterm/add',
+          ['attributes' => ['target' => '_blank']]) . ' to the ' .
+        $default_cv->name . ' vocabulary.',
+        TRIPAL_WARNING);
     }
 
   }
   else {
-    tripal_set_message('There is not a default vocabulary set for ' . $field_desc . '. '.
-        'Please set one using the ' .
-        l('vocabulary defaults configuration page',
-            'admin/tripal/vocab/defaults',
-            array('attributes' => array('target' => '_blank'))) . '.',
-        TRIPAL_WARNING);
+    tripal_set_message('There is not a default vocabulary set for ' . $field_desc . '. ' .
+      'Please set one using the ' .
+      l('vocabulary defaults configuration page',
+        'admin/tripal/vocab/defaults',
+        ['attributes' => ['target' => '_blank']]) . '.',
+      TRIPAL_WARNING);
   }
 
   return $options;
@@ -160,10 +163,10 @@ function tripal_set_default_cv($table, $field, $cv_name, $cv_id = FALSE) {
 
   // Get the CV object
   if ($cv_id) {
-    $cv = tripal_get_cv(array('cv_id' => $cv_id));
+    $cv = tripal_get_cv(['cv_id' => $cv_id]);
   }
   else {
-    $cv = tripal_get_cv(array('name' => $cv_name));
+    $cv = tripal_get_cv(['name' => $cv_name]);
   }
 
   if ($cv) {
@@ -175,24 +178,24 @@ function tripal_set_default_cv($table, $field, $cv_name, $cv_id = FALSE) {
 
     // now add the default value
     $cv_default_id = db_insert('tripal_cv_defaults')
-      ->fields(array(
+      ->fields([
         'table_name' => $table,
         'field_name' => $field,
-        'cv_id'      => $cv->cv_id,
-      ))
+        'cv_id' => $cv->cv_id,
+      ])
       ->execute();
 
     if (!$cv_default_id) {
       tripal_report_error('tripal_chado', TRIPAL_WARNING,
         "Cannot set default vocabulary for %table.%field. Check the error logs.",
-        array('%table' => $table, '%field' => $field));
+        ['%table' => $table, '%field' => $field]);
       return FALSE;
     }
   }
   else {
     tripal_report_error('tripal_chado', TRIPAL_WARNING,
       "Cannot set default vocabulary for %table.%field. The vocabulary name, '%cvname', doesn't exist.",
-      array('%table' => $table, '%field' => $field, '%cvname' => $cv_name));
+      ['%table' => $table, '%field' => $field, '%cvname' => $cv_name]);
     return FALSE;
   }
 }

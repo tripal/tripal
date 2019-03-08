@@ -24,7 +24,7 @@ class data__protein_sequence extends ChadoField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings  = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'data',
     // The name of the term.
@@ -35,15 +35,15 @@ class data__protein_sequence extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
-  );
+  ];
 
   // Indicates the download formats for this field.  The list must be the
   // name of a child class of the TripalFieldDownloader.
-  public static $download_formatters = array(
+  public static $download_formatters = [
     'TripalTabDownloader',
     'TripalCSVDownloader',
     'TripalProteinFASTADownloader',
-  );
+  ];
 
   // The default widget for this field.
   public static $default_widget = 'data__protein_sequence_widget';
@@ -57,18 +57,19 @@ class data__protein_sequence extends ChadoField {
    */
   public function elementInfo() {
     $field_term = $this->getFieldTermID();
-    $info = array(
-      $field_term => array(
+    $info = [
+      $field_term => [
         'label' => 'Protein sequence',
         'help' => 'The polypeptide sequence derived from mRNA',
         'sortable' => FALSE,
         'searchable' => FALSE,
         'type' => 'xs:string',
         'readonly' => FALSE,
-      ),
-    );
+      ],
+    ];
     return $info;
   }
+
   /**
    * @see TripalField::load()
    */
@@ -78,9 +79,9 @@ class data__protein_sequence extends ChadoField {
     $num_seqs = 0;
 
     // Set some defauls for the empty record
-    $entity->{$field_name}['und'][0] = array(
+    $entity->{$field_name}['und'][0] = [
       'value' => '',
-    );
+    ];
 
     // Look for protein sequences based on the relationship of this field.
     $sql = "
@@ -95,7 +96,7 @@ class data__protein_sequence extends ChadoField {
         RCVT.name = 'derives_from'
       ORDER BY FR.rank ASC
     ";
-    $proteins = chado_query($sql, array(':feature_id' => $feature->feature_id));
+    $proteins = chado_query($sql, [':feature_id' => $feature->feature_id]);
     while ($protein = $proteins->fetchObject()) {
       $entity->{$field_name}['und'][$num_seqs]['value'] = $protein->residues;
       // Because we'll be saving a feature we need to maintain all of it's

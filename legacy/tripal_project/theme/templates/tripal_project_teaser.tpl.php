@@ -1,5 +1,5 @@
 <?php
-$node    = $variables['node'];
+$node = $variables['node'];
 $project = $variables['node']->project;
 
 // get the project description.  The first iteration of the project
@@ -19,26 +19,26 @@ if (property_exists($node, 'description')) {
   $description = $project->description;
 }
 else {
-  $record = array(
+  $record = [
     'table' => 'project',
     'id' => $project->project_id,
-  );
-  $property = array(
+  ];
+  $property = [
     'type_name' => 'Project Description',
     'cv_name' => 'project_property',
-  );
+  ];
   $projectprop = chado_get_property($record, $property);
   $description = $projectprop->value;
 } ?>
 
-<div class="tripal_project-teaser tripal-teaser"> 
-  <div class="tripal-project-teaser-title tripal-teaser-title"><?php 
-    print l($node->title, "node/$node->nid", array('html' => TRUE));?>
-  </div>
-  <div class="tripal-project-teaser-text tripal-teaser-text"><?php 
-    print substr($description, 0, 650);
-    if (strlen($description) > 650) {
-      print "... " . l("[more]", "node/$node->nid");
-    } ?>
-  </div>
+<div class="tripal_project-teaser tripal-teaser">
+    <div class="tripal-project-teaser-title tripal-teaser-title"><?php
+      print l($node->title, "node/$node->nid", ['html' => TRUE]); ?>
+    </div>
+    <div class="tripal-project-teaser-text tripal-teaser-text"><?php
+      print substr($description, 0, 650);
+      if (strlen($description) > 650) {
+        print "... " . l("[more]", "node/$node->nid");
+      } ?>
+    </div>
 </div>

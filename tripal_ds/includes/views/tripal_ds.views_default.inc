@@ -1,10 +1,10 @@
 <?php
 
 /**
-* Implements hook_views_default_views().
-*/
+ * Implements hook_views_default_views().
+ */
 function tripal_ds_views_default_views() {
-  
+
   $view = new view();
   $view->name = 'tripal_content_type_toc';
   $view->description = '';
@@ -86,8 +86,8 @@ return $result;';
   $handler->display->display_options['pager']['options']['offset'] = '0';
 
 
-$views[$view->name] = $view;
+  $views[$view->name] = $view;
 
-// Return views.
-return $views;
+  // Return views.
+  return $views;
 }

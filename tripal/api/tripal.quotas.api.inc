@@ -13,12 +13,12 @@
 function tripal_get_user_quota($uid) {
   $quota = db_select('tripal_custom_quota', 'tgcq')->fields('tgcq', [
     'custom_quota',
-    'custom_expiration'
+    'custom_expiration',
   ])
     ->condition('uid', $uid)
     ->execute()
     ->fetchObject();
-  if (! $quota) {
+  if (!$quota) {
     $quota = new stdClass();
     $quota->custom_quota = variable_get('tripal_default_file_quota', pow(20, 6));
     $quota->custom_expiration = variable_get('tripal_default_file_expiration', '60');
@@ -35,14 +35,14 @@ function tripal_get_user_quota($uid) {
  *          quota
  * @param
  *          $expriation
- *          
+ *
  * @return The inserted record.
  */
 function tripal_set_user_quota($uid, $quota, $expriation) {
   $values = [
     'uid' => $uid,
     'custom_quota' => $quota,
-    'custom_expiration' => $expriation
+    'custom_expiration' => $expriation,
   ];
   return db_insert('tripal_custom_quota')->fields($values)->execute();
 }
@@ -52,7 +52,7 @@ function tripal_set_user_quota($uid, $quota, $expriation) {
  *
  * @param $uid The
  *          User ID for whom the quota will be removed.
- *          
+ *
  * @return
  */
 function tripal_remove_user_quota($uid) {
@@ -64,7 +64,7 @@ function tripal_remove_user_quota($uid) {
  *
  * @param $uid The
  *          User ID.
- *          
+ *
  * @return The total number of bytes currently used.
  */
 function tripal_get_user_usage($uid) {
@@ -89,7 +89,7 @@ function tripal_expire_files(TripalJob $job = NULL) {
     ->execute();
   while ($result = $results->fetchObject()) {
     if (time() > $result->expiration_date) {
-      
+
       $file = file_load($result->fid);
       if ($file) {
         if ($job) {
@@ -97,7 +97,7 @@ function tripal_expire_files(TripalJob $job = NULL) {
         }
         // First remove the file from the file system.
         file_delete($file, TRUE);
-        
+
         // Remove the file from our file expiration table.
         $query = db_delete('tripal_expiration_files');
         $query->condition('fid', $result->fid);
@@ -109,32 +109,31 @@ function tripal_expire_files(TripalJob $job = NULL) {
 
 /**
  * Resets the expiration data of a file managed by Tripal.
- * 
+ *
  * @param $fid
  *   The file ID of the file to reset.
- *   
+ *
  * @return
  *   The new expiration date on success, FALSE on failure.
  */
 function tripal_reset_file_expiration($fid) {
-  
+
   $file = file_load($fid);
   try {
     $quota = tripal_get_user_quota($file->uid);
     $custom_expiration = $quota->custom_expiration;
     $expiration_date = time() + $custom_expiration * 24 * 60 * 60;
-    
+
     db_delete('tripal_expiration_files')
-       ->condition('fid', $fid)
-       ->execute();
+      ->condition('fid', $fid)
+      ->execute();
     db_insert('tripal_expiration_files')
       ->fields([
         'fid' => $file->fid,
         'expiration_date' => $expiration_date,
       ])
-      ->execute();  
-  }
-  catch (Exception $e) {
+      ->execute();
+  } catch (Exception $e) {
     tripal_report_error('trp_quota', TRIPAL_ERROR, $e->getMessage());
     return FALSE;
   }

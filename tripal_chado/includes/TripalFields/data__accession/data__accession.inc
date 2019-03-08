@@ -24,7 +24,7 @@ class data__accession extends ChadoField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings  = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'data',
     // The name of the term.
@@ -35,7 +35,8 @@ class data__accession extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
-  );
+  ];
+
   // The default widget for this field.
   public static $default_widget = 'data__accession_widget';
 
@@ -56,12 +57,12 @@ class data__accession extends ChadoField {
 
 
     // Set some defauls for the empty record
-    $entity->{$field_name}['und'][0] = array(
+    $entity->{$field_name}['und'][0] = [
       'value' => '',
       'chado-' . $field_table . '__' . $field_column => '',
       'db_id' => '',
       'accession' => '',
-    );
+    ];
 
     // Get the primary dbxref record (if it's not NULL).  Because we have a
     // dbxref_id passed in by the base record, we will only have one record.
@@ -70,12 +71,12 @@ class data__accession extends ChadoField {
       $value = $dbxref->db_id->name . ':' . $dbxref->accession;
       // Skip the local:null accession as it is just a placeholder.
       if ($value != 'local:null') {
-        $entity->{$field_name}['und'][0] = array(
+        $entity->{$field_name}['und'][0] = [
           'value' => $dbxref->accession,
           'chado-' . $field_table . '__' . $field_column => $record->$field_column->$field_column,
           'db_id' => $dbxref->db_id->db_id,
           'accession' => $dbxref->accession,
-        );
+        ];
       }
     }
   }
@@ -151,22 +152,22 @@ class data__accession extends ChadoField {
       // we borrow the code from the 'form_error' function and append the field
       // so that the proper field is highlighted on error.
       if (!$db_id and $accession) {
-        $errors[$field_name][$delta]['und'][] = array(
+        $errors[$field_name][$delta]['und'][] = [
           'message' => t("A database and the accession must both be provided for the primary cross reference."),
           'error' => 'chado_base__dbxref',
-        );
+        ];
       }
       if ($db_id and !$accession) {
-        $errors[$field_name][$delta]['und'][] = array(
+        $errors[$field_name][$delta]['und'][] = [
           'message' => t("A database and the accession must both be provided for the primary cross reference."),
           'error' => 'chado_base__dbxref',
-        );
+        ];
       }
       if (!$db_id and !$accession) {
-        $errors[$field_name][$delta]['und'][] = array(
+        $errors[$field_name][$delta]['und'][] = [
           'message' => t("A database and the accession must both be provided for the primary cross reference."),
           'error' => 'chado_base__dbxref',
-        );
+        ];
       }
     }
   }

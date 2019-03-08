@@ -14,22 +14,22 @@ $pub = chado_expand_var($pub, 'field', 'pub.title');
 $pub = chado_expand_var($pub, 'field', 'pub.volumetitle');
 
 // get the citation
-$values = array(
+$values = [
   'pub_id' => $pub->pub_id,
-  'type_id' => array(
+  'type_id' => [
     'name' => 'Citation',
-  ),
-);
+  ],
+];
 $citation = chado_generate_var('pubprop', $values);
 $citation = chado_expand_var($citation, 'field', 'pubprop.value');
 
 // get the abstract
-$values = array(
+$values = [
   'pub_id' => $pub->pub_id,
-  'type_id' => array(
+  'type_id' => [
     'name' => 'Abstract',
-  ),
-);
+  ],
+];
 $abstract = chado_generate_var('pubprop', $values);
 $abstract = chado_expand_var($abstract, 'field', 'pubprop.value');
 $abstract_text = '';
@@ -38,12 +38,12 @@ if ($abstract) {
 }
 
 // get the author list
-$values = array(
+$values = [
   'pub_id' => $pub->pub_id,
-  'type_id' => array(
+  'type_id' => [
     'name' => 'Authors',
-  ),
-);
+  ],
+];
 $authors = chado_generate_var('pubprop', $values);
 $authors = chado_expand_var($authors, 'field', 'pubprop.value');
 $authors_list = 'N/A';
@@ -52,7 +52,7 @@ if ($authors) {
 }
 
 // get the first database cross-reference with a url
-$options = array('return_array' => 1);
+$options = ['return_array' => 1];
 $pub = chado_expand_var($pub, 'table', 'pub_dbxref', $options);
 $dbxref = NULL;
 if ($pub->pub_dbxref) {
@@ -65,20 +65,20 @@ if ($pub->pub_dbxref) {
 
 // get the URL
 // get the author list
-$values = array(
+$values = [
   'pub_id' => $pub->pub_id,
-  'type_id' => array(
+  'type_id' => [
     'name' => 'URL',
-  ),
-);
-$options = array('return_array' => 1);
+  ],
+];
+$options = ['return_array' => 1];
 $urls = chado_generate_var('pubprop', $values, $options);
 $urls = chado_expand_var($urls, 'field', 'pubprop.value');
 $url = '';
 if (count($urls) > 0) {
   $url = $urls[0]->value;
 } ?>
-<div class="tripal_pub-data-block-desc tripal-data-block-desc"></div> <?php
+    <div class="tripal_pub-data-block-desc tripal-data-block-desc"></div> <?php
 
 // To simplify the template, we have a subdirectory named 'pub_types'.  This directory
 // should have include files each specific to a publication type. If the type is

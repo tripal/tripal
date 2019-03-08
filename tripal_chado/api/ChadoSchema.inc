@@ -1,13 +1,16 @@
 <?php
+
 /**
- * Provides an application programming interface (API) for describing Chado tables.
+ * Provides an application programming interface (API) for describing Chado
+ * tables.
  *
- * If you need the Drupal-style array definition for any table, use the following:
+ * If you need the Drupal-style array definition for any table, use the
+ * following:
+ *
  * @code
-
-    $chado_schema = new \ChadoSchema();
-    $table_schema = $chado_schema->getTableSchema($table_name);
-
+ *
+ * $chado_schema = new \ChadoSchema();
+ * $table_schema = $chado_schema->getTableSchema($table_name);
  * @endcode
  *
  * where the variable $table contains the name of the table you want to
@@ -17,26 +20,25 @@
  *
  * Additionally, here are some other examples of how to use this class:
  * @code
-
-    // Retrieve the schema array for the organism table in chado 1.2
-    $chado_schema = new \ChadoSchema('1.2');
-    $table_schema = $chado_schema->getTableSchema('organism');
-
-    // Retrieve all chado tables.
-    $chado_schema = new \ChadoSchema();
-    $tables = $chado_schema->getTableNames();
-    $base_tables = $chado_schema->getbaseTables();
-
-    // Check the feature.type_id foreign key constraint
-    $chado_schema = new \ChadoSchema();
-    $exists = $chado_schema ->checkFKConstraintExists('feature','type_id');
-
-    // Check Sequence exists
-    $chado_schema = new \ChadoSchema();
-    $exists = $chado_schema->checkSequenceExists('organism','organism_id');
-    // Or just check the primary key directly
-    $compliant = $chado_schema->checkPrimaryKey('organism');
-
+ *
+ * // Retrieve the schema array for the organism table in chado 1.2
+ * $chado_schema = new \ChadoSchema('1.2');
+ * $table_schema = $chado_schema->getTableSchema('organism');
+ *
+ * // Retrieve all chado tables.
+ * $chado_schema = new \ChadoSchema();
+ * $tables = $chado_schema->getTableNames();
+ * $base_tables = $chado_schema->getbaseTables();
+ *
+ * // Check the feature.type_id foreign key constraint
+ * $chado_schema = new \ChadoSchema();
+ * $exists = $chado_schema ->checkFKConstraintExists('feature','type_id');
+ *
+ * // Check Sequence exists
+ * $chado_schema = new \ChadoSchema();
+ * $exists = $chado_schema->checkSequenceExists('organism','organism_id');
+ * // Or just check the primary key directly
+ * $compliant = $chado_schema->checkPrimaryKey('organism');
  * @endcode
  */
 class ChadoSchema {
@@ -57,8 +59,8 @@ class ChadoSchema {
    * The ChadoSchema constructor.
    *
    * @param string $version
-   *   The current version for this site. E.g. "1.3". If a version is not provided, the
-   *   version of the current database will be looked up.
+   *   The current version for this site. E.g. "1.3". If a version is not
+   *   provided, the version of the current database will be looked up.
    */
   public function __construct($version = NULL, $schema_name = NULL) {
 
@@ -119,9 +121,9 @@ class ChadoSchema {
   }
 
   /**
-   * Retrieves the list of tables in the Chado schema.  By default it only returns
-   * the default Chado tables, but can return custom tables added to the
-   * Chado schema if requested.
+   * Retrieves the list of tables in the Chado schema.  By default it only
+   * returns the default Chado tables, but can return custom tables added to
+   * the Chado schema if requested.
    *
    * @param $include_custom
    *   Optional.  Set as TRUE to include any custom tables created in the
@@ -129,11 +131,12 @@ class ChadoSchema {
    *   tripal_chado_chado_create_table() function.
    *
    * @returns
-   *   An associative array where the key and value pairs are the Chado table names.
+   *   An associative array where the key and value pairs are the Chado table
+   *   names.
    */
   public function getTableNames($include_custom = FALSE) {
 
-    $tables = array();
+    $tables = [];
     if ($this->version == '1.3') {
       $tables_v1_3 = tripal_chado_chado_get_v1_3_tables();
       foreach ($tables_v1_3 as $table) {
@@ -194,7 +197,7 @@ class ChadoSchema {
     // An API call we can call directly.  The only time this occurs is
     // during an upgrade of a major Drupal version and tripal_core is disabled.
     if ((!$table_arr or !is_array($table_arr)) and
-          function_exists('tripal_chado_' . $hook_name)) {
+      function_exists('tripal_chado_' . $hook_name)) {
       $api_hook = "tripal_chado_" . $hook_name;
       $table_arr = $api_hook();
     }
@@ -221,7 +224,7 @@ class ChadoSchema {
   public function getCustomTableSchema($table) {
 
     $sql = "SELECT schema FROM {tripal_custom_tables} WHERE table_name = :table_name";
-    $results = db_query($sql, array(':table_name' => $table));
+    $results = db_query($sql, [':table_name' => $table]);
     $custom = $results->fetchObject();
     if (!$custom) {
       return FALSE;
@@ -234,24 +237,32 @@ class ChadoSchema {
   /**
    *  Returns all chado base tables.
    *
-   *  Base tables are those that contain the primary record for a data type. For
+   *  Base tables are those that contain the primary record for a data type.
+   * For
    *  example, feature, organism, stock, are all base tables.  Other tables
-   *  include linker tables (which link two or more base tables), property tables,
-   *  and relationship tables.  These provide additional information about
-   *  primary data records and are therefore not base tables.  This function
-   *  retreives only the list of tables that are considered 'base' tables.
+   *  include linker tables (which link two or more base tables), property
+   * tables, and relationship tables.  These provide additional information
+   * about primary data records and are therefore not base tables.  This
+   * function retreives only the list of tables that are considered 'base'
+   * tables.
    *
-   *  @return
+   * @return
    *    An array of base table names.
    *
-   *  @ingroup tripal_chado_schema_api
+   * @ingroup tripal_chado_schema_api
    */
   function getBaseTables() {
 
     // Initialize the base tables with those tables that are missing a type.
     // Ideally they should have a type, but that's for a future version of Chado.
-    $base_tables = array('organism', 'project', 'analysis', 'biomaterial',
-      'eimage', 'assay');
+    $base_tables = [
+      'organism',
+      'project',
+      'analysis',
+      'biomaterial',
+      'eimage',
+      'assay',
+    ];
 
     // We'll use the cvterm table to guide which tables are base tables. Typically
     // base tables (with a few exceptions) all have a type.  Iterate through the
@@ -262,13 +273,13 @@ class ChadoSchema {
 
       // Ignore the cvterm tables, relationships, chadoprop tables.
       if ($tablename == 'cvterm_dbxref' || $tablename == 'cvterm_relationship' ||
-          $tablename == 'cvtermpath' || $tablename == 'cvtermprop' || $tablename == 'chadoprop' ||
-          $tablename == 'cvtermsynonym' || preg_match('/_relationship$/', $tablename) ||
-          preg_match('/_cvterm$/', $tablename) ||
-          // Ignore prop tables
-          preg_match('/prop$/', $tablename) || preg_match('/prop_.+$/', $tablename) ||
-          // Ignore nd_tables
-          preg_match('/^nd_/', $tablename)) {
+        $tablename == 'cvtermpath' || $tablename == 'cvtermprop' || $tablename == 'chadoprop' ||
+        $tablename == 'cvtermsynonym' || preg_match('/_relationship$/', $tablename) ||
+        preg_match('/_cvterm$/', $tablename) ||
+        // Ignore prop tables
+        preg_match('/prop$/', $tablename) || preg_match('/prop_.+$/', $tablename) ||
+        // Ignore nd_tables
+        preg_match('/^nd_/', $tablename)) {
         continue;
       }
       else {
@@ -278,7 +289,7 @@ class ChadoSchema {
 
     // Remove any linker tables that have snuck in.  Linker tables are those
     // whose foreign key constraints link to two or more base table.
-    $final_list = array();
+    $final_list = [];
     foreach ($base_tables as $i => $tablename) {
       // A few tables break our rule and seems to look
       // like a linking table, but we want to keep it as a base table.
@@ -321,9 +332,10 @@ class ChadoSchema {
    * Vocbulary terms that represent content types in Tripal must be mapped to
    * Chado tables.  A cvterm can only be mapped to one base table in Chado.
    * This function will return an object that contains the chado table and
-   * foreign key field to which the cvterm is mapped.  The 'chado_table' property
-   * of the returned object contains the name of the table, and the 'chado_field'
-   * property contains the name of the foreign key field (e.g. type_id), and the
+   * foreign key field to which the cvterm is mapped.  The 'chado_table'
+   * property of the returned object contains the name of the table, and the
+   * 'chado_field' property contains the name of the foreign key field (e.g.
+   * type_id), and the
    * 'cvterm' property contains a cvterm object.
    *
    * @params
@@ -332,11 +344,12 @@ class ChadoSchema {
    *     - vocabulary: the short name for the vocabulary (e.g. SO, GO, PATO)
    *     - accession:  the accession for the term.
    *     - bundle_id:  the ID for the bundle to which a term is associated.
-   *   The 'vocabulary' and 'accession' must be used together, the 'cvterm_id' can
-   *   be used on it's own.
+   *   The 'vocabulary' and 'accession' must be used together, the 'cvterm_id'
+   *   can be used on it's own.
+   *
    * @return
-   *   An object containing the chado_table and chado_field properties or NULL if
-   *   if no mapping was found for the term.
+   *   An object containing the chado_table and chado_field properties or NULL
+   *   if if no mapping was found for the term.
    */
   public function getCvtermMapping($params) {
     return chado_get_cvterm_mapping($params);
@@ -407,7 +420,7 @@ class ChadoSchema {
         'ChadoSchema',
         TRIPAL_WARNING,
         'Unable to check the type of !table!column since it doesn\'t appear to exist in your site database.',
-        array('!column' => $column, '!table' => $table)
+        ['!column' => $column, '!table' => $table]
       );
       return FALSE;
     }
@@ -424,7 +437,7 @@ class ChadoSchema {
           'ChadoSchema',
           TRIPAL_WARNING,
           'Unable to check the type of !table!column due to being unable to find the schema definition.',
-          array('!column' => $column, '!table' => $table)
+          ['!column' => $column, '!table' => $table]
         );
         return FALSE;
       }
@@ -460,7 +473,11 @@ class ChadoSchema {
               ORDER  BY ordinal_position
               LIMIT 1';
     $type = db_query($query,
-      array(':table' => $table, ':column' => $column, ':schema' => $this->schema_name))->fetchField();
+      [
+        ':table' => $table,
+        ':column' => $column,
+        ':schema' => $this->schema_name,
+      ])->fetchField();
 
     // Finally we do the check!
     if ($type === $expected_type) {
@@ -489,19 +506,20 @@ class ChadoSchema {
    *   The name of the column the sequence is used to populate.
    *
    * @return
-   *   TRUE if the seqeuence exists in the chado schema and FALSE if it does not.
+   *   TRUE if the seqeuence exists in the chado schema and FALSE if it does
+   *   not.
    *
    * @ingroup tripal_chado_schema_api
    */
   public function checkSequenceExists($table, $column) {
 
-    $prefixed_table = $this->schema_name.'.'.$table;
+    $prefixed_table = $this->schema_name . '.' . $table;
     $sequence_name = db_query('SELECT pg_get_serial_sequence(:table, :column);',
-      array(':table' => $prefixed_table, ':column' => $column))->fetchField();
+      [':table' => $prefixed_table, ':column' => $column])->fetchField();
 
 
     // Remove prefixed table from sequence name
-    $sequence_name = str_replace($this->schema_name.'.', '', $sequence_name);
+    $sequence_name = str_replace($this->schema_name . '.', '', $sequence_name);
 
     return chado_sequence_exists($sequence_name);
   }
@@ -532,7 +550,7 @@ class ChadoSchema {
         'ChadoSchema',
         TRIPAL_NOTICE,
         'Cannot check the validity of the primary key for "!table" since there is no record of one.',
-        array('!table' => $table)
+        ['!table' => $table]
       );
       return NULL;
     }
@@ -554,7 +572,7 @@ class ChadoSchema {
       "SELECT 1
       FROM information_schema.table_constraints
       WHERE table_name=:table AND constraint_type = 'PRIMARY KEY'",
-      array(':table' => $table))->fetchField();
+      [':table' => $table])->fetchField();
     if (!$constraint_exists) {
       return FALSE;
     }
@@ -570,7 +588,8 @@ class ChadoSchema {
    * @param $constraint_name
    *   The name of the constraint you want to check.
    * @param $type
-   *   The type of constraint. Should be one of "PRIMARY KEY", "UNIQUE", or "FOREIGN KEY".
+   *   The type of constraint. Should be one of "PRIMARY KEY", "UNIQUE", or
+   *   "FOREIGN KEY".
    *
    * @return
    *   TRUE if the constraint exists and false otherwise.
@@ -582,7 +601,11 @@ class ChadoSchema {
       "SELECT 1
       FROM information_schema.table_constraints
       WHERE table_name=:table AND constraint_type = :type AND constraint_name = :name",
-      array(':table' => $table, ':name' => $constraint_name, ':type' => $type))->fetchField();
+      [
+        ':table' => $table,
+        ':name' => $constraint_name,
+        ':type' => $type,
+      ])->fetchField();
     if (!$constraint_exists) {
       return FALSE;
     }

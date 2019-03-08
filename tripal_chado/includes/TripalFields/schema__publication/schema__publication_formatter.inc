@@ -1,31 +1,32 @@
 <?php
 
 class schema__publication_formatter extends ChadoFieldFormatter {
+
   // The default lable for this field.
   public static $default_label = 'Publication';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('schema__publication');
+  public static $field_types = ['schema__publication'];
 
   /**
    *
    * @see TripalFieldFormatter::view()
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
-    $list_items = array();
+    $list_items = [];
     $chado_table = $this->instance['settings']['chado_table'];
 
     // If there are no items, we don't want to return any markup.
     if (count($items) == 0 or (count($items) == 1 and empty($items[0]['value']))) {
-      $element[0] = array(
+      $element[0] = [
         '#type' => 'markup',
         '#markup' => 'There are no publications associated with this record.',
-      );
+      ];
       return;
     }
 
     foreach ($items as $delta => $item) {
-      if(empty($item['value'])){
+      if (empty($item['value'])) {
         continue;
       }
       $title = isset($item['value']['TPUB:0000039']) ? $item['value']['TPUB:0000039'] : '';
@@ -50,18 +51,18 @@ class schema__publication_formatter extends ChadoFieldFormatter {
       $list = $list_items[0];
     }
     if (count($list_items) > 1) {
-      $list = array(
+      $list = [
         'title' => '',
         'items' => $list_items,
         'type' => 'ol',
-        'attributes' => array(),
-      );
+        'attributes' => [],
+      ];
       $list = theme_item_list($list);
     }
 
-    $element[0] = array(
+    $element[0] = [
       '#type' => 'markup',
       '#markup' => $list,
-    );
+    ];
   }
 }
