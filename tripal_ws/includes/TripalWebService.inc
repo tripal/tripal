@@ -13,10 +13,12 @@ class TripalWebService {
    * The human-readable label for this web service.
    */
   public static $label = 'Base WebService';
+
   /**
    * A bit of text to describe what this service provides.
    */
   public static $description = 'This is the base class for Tripal web services as is not meant to be used on it\'s own';
+
   /**
    * A machine-readable type for this service. This name must be unique
    * among all Tripal web services and is used to form the URL to access
@@ -76,17 +78,17 @@ class TripalWebService {
     $this->resource = new TripalWebServiceResource($base_path);
 
     // Intialize the private members variables.
-    $this->path = array();
-    $this->params = array();
+    $this->path = [];
+    $this->params = [];
     $this->base_path = $base_path;
-    $this->documentation = array();
+    $this->documentation = [];
 
-    $this->addDocClass(array(
+    $this->addDocClass([
       "id" => "http://www.w3.org/ns/hydra/core#Resource",
       "term" => 'hydra:Resource',
       "title" => "Resource",
       'subClassOf' => NULL,
-    ));
+    ]);
 
   }
 
@@ -118,18 +120,20 @@ class TripalWebService {
    *   version are automatically removed from the array. For example, a
    *   URL of the type http://localhost/web-services/content/v0.1/Gene/sequence
    *   will result in a $path array containing the following:
-   *   @code
+   *
+   * @code
    *     array(
    *       'Gene',
    *       'sequence',
    *     );
-   *   @endcode
+   * @endcode
    *
    * @param unknown $path
    */
   public function setPath($path) {
     $this->path = $path;
   }
+
   /**
    * Sets the parameters for the resource.
    *
@@ -190,7 +194,6 @@ class TripalWebService {
   }
 
 
-
   /**
    * Returns the full web service response.
    *
@@ -217,10 +220,10 @@ class TripalWebService {
       throw new Exception('Could not access the tripal/ws/context directory on the server for storing web services context files.');
     }
 
-    $context = $this->resource ? $this->resource->getContext() : array();
-    $context = array(
-      '@context' => $context
-    );
+    $context = $this->resource ? $this->resource->getContext() : [];
+    $context = [
+      '@context' => $context,
+    ];
     $cfh = fopen($context_file_path, "w");
     if (flock($cfh, LOCK_EX)) {
       fwrite($cfh, json_encode($context));
@@ -228,11 +231,11 @@ class TripalWebService {
       fclose($cfh);
     }
     else {
-      throw new Exception(t('Error locking file: @file.', array('@file' => $context_file_path)));
+      throw new Exception(t('Error locking file: @file.', ['@file' => $context_file_path]));
     }
 
     $fid = db_select('file_managed', 'fm')
-      ->fields('fm', array('fid'))
+      ->fields('fm', ['fid'])
       ->condition('uri', $context_file_path)
       ->execute()
       ->fetchField();
@@ -248,11 +251,11 @@ class TripalWebService {
     }
 
     $type = $this->resource ? $this->resource->getType() : 'unknown';
-    $json_ld = array(
+    $json_ld = [
       '@context' => file_create_url($context_file_path),
       '@id' => '',
       '@type' => $type,
-    );
+    ];
     $data = $this->getData();
     return array_merge($json_ld, $data);
   }
@@ -282,13 +285,13 @@ class TripalWebService {
     if ($this->resource) {
       return $this->resource->getData();
     }
-    return array();
+    return [];
   }
 
   /**
    * Sets the resource to be returned by this web service.
    *
-   * @param $resource.
+   * @param $resource .
    *   An implementation of a TripalWebServiceResource.
    */
   public function setResource($resource) {
@@ -299,7 +302,6 @@ class TripalWebService {
 
     $this->resource = $resource;
   }
-
 
 
   /**
@@ -341,7 +343,7 @@ class TripalWebService {
    *  $ops argument. Finally, resources may have properties (or fields). These
    *  properties should be defined using the $props arugment.
    *
-   *  @param $details.
+   * @param $details .
    *    An array of key/value pairs providing the details for the class. Valid
    *    keys include:
    *      - id: The unique IRI for this class.
@@ -354,7 +356,7 @@ class TripalWebService {
    *        to NULL.
    *      - type: (Optional). Indicates the type of class. Defaults to
    *        hydra:Class
-   *  @param $ops
+   * @param $ops
    *    If the resource supports CRUD functionality then those functions should
    *    be defined using this argument.  This is an associative array with
    *    the following keys: GET, POST, PUT, DELETE. These keys, if provided,
@@ -381,7 +383,7 @@ class TripalWebService {
    *        example an HTTP 404 error means "Not Found".  You can sepecify this
    *        code and provide a description appropriate for the method and
    *        class.
-   *  @param $props.
+   * @param $props .
    *    Defines the list of properties that the resource provides.  This is an
    *    array of properties where each property is an associative array
    *    containing the following keys:
@@ -403,7 +405,7 @@ class TripalWebService {
    *      - domain: the @id of the rdfs:domain.
    *      - range:  the @id of the rdfs:range.
    */
-  protected function addDocClass($details = array(), $ops = array(), $props = array()) {
+  protected function addDocClass($details = [], $ops = [], $props = []) {
     $supported_class = new TripalWebServiceResource($this->getServicePath());
 
     // Add the context which all classes will need
@@ -443,7 +445,7 @@ class TripalWebService {
     }
 
     // Now add the supported operations.
-    $class_ops = array();
+    $class_ops = [];
     foreach ($ops as $op => $op_details) {
       $class_ops[] = $this->generateDocClassOp($supported_class, $op, $op_details);
     }
@@ -451,7 +453,7 @@ class TripalWebService {
     $supported_class->addProperty('supportedOperation', $class_ops);
 
     // Now add in the supported proprerties.
-    $class_props = array();
+    $class_props = [];
     foreach ($props as $prop) {
       $class_props[] = $this->generateDocClassProp($supported_class, $prop);
     }
@@ -465,30 +467,30 @@ class TripalWebService {
    * A helper function for the addClass() function for generating a property.
    */
   private function generateDocClassProp($supported_class, $prop) {
-    $supported_class->addContextItem('property', array(
+    $supported_class->addContextItem('property', [
       "@id" => "hydra:property",
-      "@type" => "@id"
-    ));
-    $supported_class->addContextItem('domain', array(
+      "@type" => "@id",
+    ]);
+    $supported_class->addContextItem('domain', [
       "@id" => "rdfs:domain",
-      "@type" => "@id"
-    ));
-    $supported_class->addContextItem('range', array(
+      "@type" => "@id",
+    ]);
+    $supported_class->addContextItem('range', [
       "@id" => "rdfs:range",
-      "@type" => "@id"
-    ));
+      "@type" => "@id",
+    ]);
     $supported_class->addContextItem('readable', 'hydra:readable');
     $supported_class->addContextItem('writeable', 'hydra:writeable');
     $supported_class->addContextItem('required', 'hydra:required');
     $supported_class->addContextItem('tripal_formatters', 'tripal:tripal_formatters');
-    $class_prop = array(
+    $class_prop = [
       'property' => $prop['type'],
       'hydra:title' => $prop['title'],
       'hydra:description' => array_key_exists('description', $prop) ? $prop['description'] : NULL,
       'required' => array_key_exists('required', $prop) ? $prop['required'] : NULL,
       'readable' => array_key_exists('readonly', $prop) ? $prop['readonly'] : NULL,
       'writeable' => array_key_exists('writeonly', $prop) ? $prop['writeonly'] : NULL,
-    );
+    ];
     if (array_key_exists('domain', $prop)) {
       $class_prop['domain'] = $prop['domain'];
     }
@@ -496,7 +498,7 @@ class TripalWebService {
       $class_prop['range'] = $prop['range'];
     }
     if (array_key_exists('operations', $prop)) {
-      $class_prop['supportedOperation'] = array();
+      $class_prop['supportedOperation'] = [];
       foreach ($prop['operations'] as $op => $op_details) {
         $class_prop['supportedOperation'][] = $this->generateOp($supported_class, $op, $op_details);
       }
@@ -506,25 +508,26 @@ class TripalWebService {
     }
     return $class_prop;
   }
+
   /**
    * A helper function for the addClass() function for generating an operation.
    */
   private function generateDocClassOp($supported_class, $op, $op_details) {
 
     if ($op != 'GET' and $op != 'PUT' and $op != 'DELETE' and $op != 'POST') {
-      throw new Exception(t('The method, @method, provided to the TripalWebService::addClass function is not an oppropriate operations.', array('@method' => $op)));
+      throw new Exception(t('The method, @method, provided to the TripalWebService::addClass function is not an oppropriate operations.', ['@method' => $op]));
     }
 
     if (!array_key_exists('type', $op_details)) {
-      throw new Exception(t('Please provide a type in the operations array passed to the TripalWebService::addClass() function: @details', array('@details' => print_r($op_details, TRUE))));
+      throw new Exception(t('Please provide a type in the operations array passed to the TripalWebService::addClass() function: @details', ['@details' => print_r($op_details, TRUE)]));
     }
     if (!array_key_exists('label', $op_details)) {
-      throw new Exception(t('Please provide a label in the operations array passed to the TripalWebService::addClass() function: @details', array('@details' => print_r($op_details, TRUE))));
+      throw new Exception(t('Please provide a label in the operations array passed to the TripalWebService::addClass() function: @details', ['@details' => print_r($op_details, TRUE)]));
     }
 
     $class_op = new TripalWebServiceResource($this->base_path);
     $class_op->setID($op_details['type']);
-    switch($op) {
+    switch ($op) {
       case 'GET':
         $class_op->setType('hydra:Operation');
         break;
@@ -542,31 +545,31 @@ class TripalWebService {
     $class_op->addContextItem('method', 'hydra:method');
     $class_op->addContextItem('label', 'rdfs:label');
     $class_op->addContextItem('description', 'rdfs:comment');
-    $class_op->addContextItem('expects', array(
+    $class_op->addContextItem('expects', [
       "@id" => "hydra:expects",
-      "@type" => "@id"
-    ));
-    $class_op->addContextItem('returns', array(
+      "@type" => "@id",
+    ]);
+    $class_op->addContextItem('returns', [
       "@id" => "hydra:returns",
-      "@type" => "@id"
-    ));
+      "@type" => "@id",
+    ]);
     $class_op->addContextItem('statusCodes', 'hydra:statusCodes');
     $class_op->addContextItem('code', 'hydra:statusCode');
 
     $class_op->addProperty('method', $op);
     $class_op->addProperty('label', array_key_exists('label', $op_details) ? $op_details['label'] : 'Retrieves an instance of this resource');
     $class_op->addProperty('description', array_key_exists('description', $op_details) ? $op_details['description'] : NULL);
-    $status_codes = array_key_exists('statusCodes', $op_details) ? $op_details['statusCodes'] : array();
+    $status_codes = array_key_exists('statusCodes', $op_details) ? $op_details['statusCodes'] : [];
     foreach ($status_codes as $code) {
       if (array_key_exists('code', $code) and array_key_exists('description', $code)) {
         $class_op->addProperty('statusCodes', $code);
       }
       else {
-        throw new Exception(t('The status code provided to TripalWebService::addClass function is improperly formatted @code.', array('@code' => print_r($code, TRUE))));
+        throw new Exception(t('The status code provided to TripalWebService::addClass function is improperly formatted @code.', ['@code' => print_r($code, TRUE)]));
       }
     }
     if (count($status_codes) == 0) {
-      $class_op->addProperty('statusCodes', array());
+      $class_op->addProperty('statusCodes', []);
     }
     $class_op->addProperty('expects', array_key_exists('expects', $op_details) ? $op_details['expects'] : NULL);
     $class_op->addProperty('returns', array_key_exists('returns', $op_details) ? $op_details['returns'] : ' "http://www.w3.org/2002/07/owl#Nothing",');
@@ -588,7 +591,7 @@ class TripalWebService {
    * @return
    *   The id (the term name but with spaces replaced with underscores).
    */
-  protected function getContextTerm($term, $sanitize = array()) {
+  protected function getContextTerm($term, $sanitize = []) {
     if (!$term) {
       $backtrace = debug_backtrace();
       throw new Exception('getContextTerm: Please provide a non NUll or non empty $term.');
@@ -608,6 +611,7 @@ class TripalWebService {
     }
     return $key_adj;
   }
+
   /**
    * Adds a term to the '@context' section for a given resource.
    *
@@ -620,10 +624,11 @@ class TripalWebService {
    *   no sanitizing occurs.  The two valid types are 'lowercase', and 'spacing'
    *   where 'lowercase' converts the term name to all lowercase and
    *   'spacing' replaces any spaces with underscores.
+   *
    * @return
    *   The id (the term name but with spaces replaced with underscores).
    */
-  protected function addContextTerm($resource, $term, $sanitize = array()) {
+  protected function addContextTerm($resource, $term, $sanitize = []) {
     if (!is_a($resource, 'TripalWebServiceResource')) {
       throw new Exception('addContextTerm: Please provide a $resource of type TripalWebServiceResource.');
     }
@@ -698,10 +703,11 @@ class TripalWebService {
    *   no sanitizing occurs.  The two valid types are 'lowercase', and 'spacing'
    *   where 'lowercase' converts the term name to all lowercase and
    *   'spacing' replaces any spaces with underscores.
+   *
    * @return $key
    *   The key (the term name but with spaces replaced with underscores).
    */
-  public function addResourceProperty($resource, $term, $value, $sanitize = array()) {
+  public function addResourceProperty($resource, $term, $value, $sanitize = []) {
     if (!is_a($resource, 'TripalWebServiceResource')) {
       throw new Exception('addProperty: Please provide a $resource of type TripalWebServiceResource.');
     }
@@ -712,6 +718,7 @@ class TripalWebService {
     // Then add the property.
     $resource->addProperty($key, $value);
   }
+
   /**
    * Sets the type for the given resource.
    *
@@ -727,7 +734,7 @@ class TripalWebService {
    *   where 'lowercase' converts the term name to all lowercase and
    *   'spacing' replaces any spaces with underscores.
    */
-  public function setResourceType($resource, $term, $sanitize = array('spacing')) {
+  public function setResourceType($resource, $term, $sanitize = ['spacing']) {
 
     if (!is_a($resource, 'TripalWebServiceResource')) {
       throw new Exception('addProperty: Please provide a $resource of type TripalWebServiceResource.');

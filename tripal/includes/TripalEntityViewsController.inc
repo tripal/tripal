@@ -1,4 +1,5 @@
 <?php
+
 /**
  *
  */
@@ -37,11 +38,11 @@ class TripalEntityViewsController extends EntityDefaultViewsController {
     $data['tripal_entity']['table']['base']['query class'] = 'tripal_views_query';
 
     // Join with the User's table.
-    $data['users']['table']['join']['tripal_entity'] = array(
+    $data['users']['table']['join']['tripal_entity'] = [
       'handler' => 'views_join',
       'left_field' => 'uid',
       'field' => 'uid',
-    );
+    ];
 
     // It is not intended that the following fields will ever be used by the
     // end-user within Views.

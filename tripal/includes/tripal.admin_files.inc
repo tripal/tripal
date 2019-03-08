@@ -6,7 +6,7 @@
 function tripal_admin_add_custom_form($form, &$form_state) {
 
   $username = '';
-  $default_quota = variable_get('tripal_default_file_quota', pow(20,6));
+  $default_quota = variable_get('tripal_default_file_quota', pow(20, 6));
   $default_expiration = variable_get('tripal_default_file_expiration', '60');
 
   if (array_key_exists('values', $form_state)) {
@@ -17,38 +17,38 @@ function tripal_admin_add_custom_form($form, &$form_state) {
 
 
   // Textfield (ajax call based off of existing users) for users on the site
-  $form['username'] = array (
+  $form['username'] = [
     '#type' => 'textfield',
     '#title' => 'User',
     '#autocomplete_path' => 'admin/tripal/files/quota/user/autocomplete',
     '#default_value' => $username,
-  );
+  ];
 
   // Custom quota textfield (prepopulated with defualt value)
-  $form['quota'] = array (
+  $form['quota'] = [
     '#type' => 'textfield',
     '#title' => 'Custom User Quota',
     '#description' => 'Set the number of megabytes that a user can consume. The number must be followed by the suffix "MB" (megabytes) or "GB" (gigabytes) with no space between the number and the suffix (e.g.: 200MB).',
     '#default_value' => tripal_format_bytes($default_quota),
-  );
+  ];
 
   // Custom exp date textfield (prepopulated with defualt value)
-  $form['expiration'] = array (
+  $form['expiration'] = [
     '#type' => 'textfield',
     '#title' => 'Days to Expire',
     '#description' => 'The number of days that a user uploaded file can remain on the server before it is automatically removed.',
     '#default_value' => $default_expiration,
-  );
+  ];
 
   // Submit button
-  $form['button'] = array (
+  $form['button'] = [
     '#type' => 'submit',
     '#value' => t('Submit'),
-  );
-  $form['cancel'] = array(
+  ];
+  $form['cancel'] = [
     '#type' => 'markup',
     '#markup' => l('Cancel', 'admin/tripal/files/quota'),
-  );
+  ];
 
   return $form;
 
@@ -65,14 +65,14 @@ function tripal_admin_add_custom_form_validate($form, &$form_state) {
 
   // Make sure the username is a valid user.
   $sql = "SELECT uid FROM {users} WHERE name = :name";
-  $uid = db_query($sql,array(':name' => $username))->fetchField();
+  $uid = db_query($sql, [':name' => $username])->fetchField();
   if (!$uid) {
     form_set_error('username', 'Cannot find this username');
   }
 
   // Does a quota already exist for this user? If so, then don't add it again
   $check = db_select('tripal_custom_quota', 'tgcq')
-    ->fields('tgcq', array('uid'))
+    ->fields('tgcq', ['uid'])
     ->condition('uid', $uid)
     ->execute()
     ->fetchField();
@@ -104,7 +104,7 @@ function tripal_admin_add_custom_form_submit($form, &$form_state) {
   // if the 2nd element of the qutoa string occupied by a valid suffix we need to check to see
   // what we have to multiply the value by (1024 for GB 1024^2 for TB because
   // we assume that the initial number is already in MB)
-  $matches = array();
+  $matches = [];
   $multiplier = 'MB';
   $size = $quota;
   if (preg_match("/^(\d+)(MB|GB|TB)$/", $quota, $matches)) {
@@ -114,19 +114,19 @@ function tripal_admin_add_custom_form_submit($form, &$form_state) {
 
   switch ($multiplier) {
     case 'GB':
-      $size = (int) $quota * pow(10,9);
+      $size = (int) $quota * pow(10, 9);
       break;
     case 'TB':
-      $size = (int) $quota * pow(10,12);
+      $size = (int) $quota * pow(10, 12);
       break;
     default:
-      $size = (int) $quota * pow(10,6);
+      $size = (int) $quota * pow(10, 6);
       break;
   }
 
   // Get the UID of the given user.
   $sql = "SELECT uid FROM {users} WHERE name = :name";
-  $uid = db_query($sql,array(':name' => $username))->fetchField();
+  $uid = db_query($sql, [':name' => $username])->fetchField();
 
   // Stripaluota.
   tripal_set_user_quota($uid, $size, $expiration);
@@ -134,7 +134,7 @@ function tripal_admin_add_custom_form_submit($form, &$form_state) {
   // TODO: check to make sure that the quota was actually set, can we assume
   // it will always work?
 
-  drupal_set_message(t('Custom quota set for the user: @username', array('@username' => $username)));
+  drupal_set_message(t('Custom quota set for the user: @username', ['@username' => $username]));
   drupal_goto('admin/tripal/files/quota');
 }
 
@@ -154,43 +154,43 @@ function tripal_admin_edit_quota_form($form, &$form_state, $uid) {
 
   $user = user_load($uid);
 
-  $form['uid'] = array(
+  $form['uid'] = [
     '#type' => 'value',
-    '#value' => $uid
-  );
+    '#value' => $uid,
+  ];
 
   // Textfield (ajax call based off of existing users) for users on the site
-  $form['username'] = array (
+  $form['username'] = [
     '#type' => 'item',
     '#title' => 'User',
     '#markup' => $user->name,
-  );
+  ];
 
   // Custom quota textfield (prepopulated with defualt value)
-  $form['quota'] = array (
+  $form['quota'] = [
     '#type' => 'textfield',
     '#title' => 'Custom User Quota',
     '#description' => 'Set the number of megabytes that a user can consume. The number must be followed by the suffix "MB" (megabytes) or "GB" (gigabytes) with no space between the number and the suffix (e.g.: 200MB).',
     '#default_value' => tripal_format_bytes($default_quota),
-  );
+  ];
 
   // Custom exp date textfield (prepopulated with defualt value)
-  $form['expiration'] = array (
+  $form['expiration'] = [
     '#type' => 'textfield',
     '#title' => 'Days to Expire',
     '#description' => 'The number of days that a user uploaded file can remain on the server before it is automatically removed.',
     '#default_value' => $default_expiration,
-  );
+  ];
 
   // Submit button
-  $form['button'] = array (
+  $form['button'] = [
     '#type' => 'submit',
     '#value' => t('Submit'),
-  );
-  $form['cancel'] = array(
+  ];
+  $form['cancel'] = [
     '#type' => 'markup',
     '#markup' => l('Cancel', 'admin/tripal/files/quota'),
-  );
+  ];
 
   return $form;
 }
@@ -198,7 +198,7 @@ function tripal_admin_edit_quota_form($form, &$form_state, $uid) {
 /**
  * Same validate as the add user with the exception of no duplicate entry
  **/
-function tripal_admin_edit_quota_form_validate($form, &$form_state){
+function tripal_admin_edit_quota_form_validate($form, &$form_state) {
 
   $uid = $form_state['values']['uid'];
   $quota = $form_state['values']['quota'];
@@ -226,7 +226,7 @@ function tripal_admin_edit_quota_form_submit($form, &$form_state) {
   // if the 2nd element of the qutoa string occupied by a valid suffix we need to check to see
   // what we have to multiply the value by (1024 for GB 1024^2 for TB because
   // we assume that the initial number is already in MB)
-  $matches = array();
+  $matches = [];
   $multiplier = 'MB';
   $size = $quota;
   if (preg_match("/^\d+(\.\d+)*(MB|GB|TB)$/", $quota, $matches)) {
@@ -236,13 +236,13 @@ function tripal_admin_edit_quota_form_submit($form, &$form_state) {
 
   switch ($multiplier) {
     case 'GB':
-      $size = (int) $quota * pow(10,9);
+      $size = (int) $quota * pow(10, 9);
       break;
     case 'TB':
-      $size = (int) $quota * pow(10,12);
+      $size = (int) $quota * pow(10, 12);
       break;
     default:
-      $size = (int) $quota * pow(10,6);
+      $size = (int) $quota * pow(10, 6);
       break;
   }
 
@@ -252,7 +252,7 @@ function tripal_admin_edit_quota_form_submit($form, &$form_state) {
 
   $user = user_load($uid);
 
-  drupal_set_message(t('Custom quota set for the user: @username', array('@username' => $user->name)));
+  drupal_set_message(t('Custom quota set for the user: @username', ['@username' => $user->name]));
   drupal_goto('admin/tripal/files/quota');
 }
 
@@ -260,28 +260,28 @@ function tripal_admin_edit_quota_form_submit($form, &$form_state) {
  * Implements the form for setting the default file settings.
  */
 function tripal_admin_manage_files_form($form, &$form_state) {
-  
+
   if (array_key_exists('values', $form_state)) {
     $upload_max = $form_state['values']['upload_max'];
   }
   else {
     $upload_max = tripal_format_bytes(variable_get('tripal_upload_max_size', 10000000000));
   }
-  
+
   $form['php_defaults'] = [
     '#type' => 'item',
     '#title' => 'PHP Maximum Upload Size',
     '#description' => t('Your php.ini file is currently configured with this size as the maximum size allowed for a single file during upload. However, Tripal uses an HTML5 uploader that supports much larger file sizes.  It works by breaking the file into chunks and uploading each chunk separately. Therefore this becomes the maximum allowed size of a chunk.'),
     '#markup' => ini_get("upload_max_filesize"),
   ];
-  
+
   $form['upload_max'] = [
     '#type' => 'textfield',
     '#title' => 'Maximum file size',
     '#description' => t('Set the maximum size that a file can have for upload. The number must be followed by the suffix "MB" (megabytes) or "GB" (gigabytes) with no space between the number and the suffix (e.g.: 200MB).  No user will be allowed to upload a file larger than this when Tripal\'s file upload tool is used.'),
     '#default_value' => $upload_max,
   ];
-  
+
   $form['update_defaults'] = [
     '#type' => 'submit',
     '#value' => t('Save'),
@@ -294,42 +294,43 @@ function tripal_admin_manage_files_form($form, &$form_state) {
  **/
 function tripal_admin_manage_files_form_validate($form, &$form_state) {
   $upload_max = $form_state['values']['upload_max'];
-  
+
   // Validate the quota string.
   if (!preg_match("/^\d+(\.\d+)*(MB|GB|TB)$/", $upload_max)) {
     form_set_error('upload_max', t('Please provide a maximum size in the format indicated.'));
   }
 }
+
 /**
  * Implements the submit function of the tripal_admin_manage_files_form.
  **/
 function tripal_admin_manage_files_form_submit($form, &$form_state) {
   $upload_max = $form_state['values']['upload_max'];
-    
+
   // if the 2nd element of the qutoa string occupied by a valid suffix we need to check to see
   // what we have to multiply the value by (1024 for GB 1024^2 for TB because
   // we assume that the initial number is already in MB)
-  $matches = array();
+  $matches = [];
   $multiplier = 'MB';
   $size = $upload_max;
   if (preg_match("/^(\d+(?:\.\d+)*)(MB|GB|TB)$/", $upload_max, $matches)) {
     $multiplier = $matches[2];
     $size = $matches[1];
   }
-  
+
   switch ($multiplier) {
     case 'GB':
-      $size = (int) ($size * pow(10,9));
+      $size = (int) ($size * pow(10, 9));
       break;
     case 'TB':
-      $size = (int) ($size * pow(10,12));
+      $size = (int) ($size * pow(10, 12));
       break;
     default:
-      $size = (int) ($size * pow(10,6));
+      $size = (int) ($size * pow(10, 6));
       break;
   }
   variable_set('tripal_upload_max_size', $size);
-    
+
   drupal_set_message('Default settings have been set.');
 }
 
@@ -343,8 +344,8 @@ function tripal_admin_manage_files_form_submit($form, &$form_state) {
 function tripal_admin_manage_quota_form($form, &$form_state) {
   // Provide overall server consumption (and space remaining)
   $total_size = 0;
-  
-  $default_quota = variable_get('tripal_default_file_quota', pow(20,6));
+
+  $default_quota = variable_get('tripal_default_file_quota', pow(20, 6));
   $default_expiration = variable_get('tripal_default_file_expiration', '60');
 
   if (array_key_exists('values', $form_state)) {
@@ -357,94 +358,94 @@ function tripal_admin_manage_quota_form($form, &$form_state) {
   // and calculate the total.
   $sql = "SELECT DISTINCT fid FROM {file_usage} WHERE module = 'tripal'";
   $fids = db_query($sql);
-  while($fid = $fids->fetchObject()) {
+  while ($fid = $fids->fetchObject()) {
     $sql = "SELECT filesize FROM {file_managed} WHERE fid = :fid";
-    $total_size += db_query($sql, array (':fid' => $fid->fid))->fetchObject()->filesize;
+    $total_size += db_query($sql, [':fid' => $fid->fid])->fetchObject()->filesize;
   }
-  $form['total_size'] = array (
+  $form['total_size'] = [
     '#type' => 'item',
     '#title' => t('Total Current Usage'),
     '#description' => t('The total amount of space consumed by user file uploads.'),
     '#markup' => tripal_format_bytes($total_size),
-  );
+  ];
 
   // TODO: add a D3 chart showing the amount of storage used by each user.
 
-  $form['default_quota'] = array (
+  $form['default_quota'] = [
     '#type' => 'textfield',
     '#title' => 'Default System-Wide User Quota',
     '#description' => t('Set the number of megabytes that a user can consume. The number must be followed by the suffix "MB" (megabytes) or "GB" (gigabytes) with no space between the number and the suffix (e.g.: 200MB).'),
     '#default_value' => tripal_format_bytes($default_quota),
-  );
+  ];
 
-  $form['default_expiration_date'] = array (
+  $form['default_expiration_date'] = [
     '#type' => 'textfield',
     '#title' => 'Default System-Wide Expiration Date',
     '#description' => t('The number of days that a user uploaded file can remain on the server before it is automatically removed'),
     '#default_value' => $default_expiration,
-  );
+  ];
 
   // Populate the table from the custom quota db table (users, quota, exp date).
-  $header = array(
+  $header = [
     'uid' => t('UID'),
     'user' => t('Users'),
     'custom_quota' => t('Custom Quota'),
     'exp_date' => t('Expiration Date'),
     'actions' => t('Actions'),
-  );
+  ];
 
   // API call to the gather the users that have a custom quota
-  $rows = array();
+  $rows = [];
   $query = "SELECT * FROM {tripal_custom_quota}";
   $data = db_query($query);
-  while($entry = $data->fetchObject()) {
+  while ($entry = $data->fetchObject()) {
     $user = user_load($entry->uid);
-    $rows[] = array(
+    $rows[] = [
       'uid' => $user->uid,
       'user' => $user->name,
       'custom_quota' => tripal_format_bytes($entry->custom_quota),
       'exp_date' => $entry->custom_expiration,
-    );
+    ];
   }
 
   // Add the Actions links
-  foreach($rows as $key => $entry){
+  foreach ($rows as $key => $entry) {
     $rows[$key]['actions'] = l('Edit', 'admin/tripal/files/quota/edit/' . $entry['uid']) . ' | ' .
       l('Remove', 'admin/tripal/files/quota/remove/' . $entry['uid']);
   }
 
-  $form['custom'] = array(
+  $form['custom'] = [
     '#type' => 'fieldset',
     '#title' => 'Custom Settings',
     '#description' => t('The settings above apply to all users.  The following allows for custom user settings that override the defaults set above.'),
     '#collapsed' => TRUE,
     '#collapsible' => FALSE,
-  );
+  ];
 
-  $form['custom']['links'] = array(
+  $form['custom']['links'] = [
     '#type' => 'markup',
     '#markup' => '<br>' . l('Add Custom User Quota', 'admin/tripal/files/quota/add'),
-  );
+  ];
 
-  $form['custom']['custom_quotas'] = array(
+  $form['custom']['custom_quotas'] = [
     '#type' => 'item',
     '#title' => t('Custom User Quotas'),
 
-    '#markup' => theme_table(array(
+    '#markup' => theme_table([
       'header' => $header,
       'rows' => $rows,
-      'attributes' => array(),
+      'attributes' => [],
       'caption' => '',
       'sticky' => TRUE,
       'empty' => 'There are no custom user quotas.',
-      'colgroups' => array(),
-    )),
-  );
+      'colgroups' => [],
+    ]),
+  ];
 
-  $form['update_defaults'] = array (
+  $form['update_defaults'] = [
     '#type' => 'submit',
     '#value' => t('Save'),
-  );
+  ];
 
   return $form;
 }
@@ -479,7 +480,7 @@ function tripal_admin_manage_quota_form_submit($form, &$form_state) {
   // if the 2nd element of the qutoa string occupied by a valid suffix we need to check to see
   // what we have to multiply the value by (1024 for GB 1024^2 for TB because
   // we assume that the initial number is already in MB)
-  $matches = array();
+  $matches = [];
   $multiplier = 'MB';
   $size = $quota;
   if (preg_match("/^(\d+(?:\.\d+)*)(MB|GB|TB)$/", $quota, $matches)) {
@@ -489,13 +490,13 @@ function tripal_admin_manage_quota_form_submit($form, &$form_state) {
 
   switch ($multiplier) {
     case 'GB':
-      $size = (int) ($size * pow(10,9));
+      $size = (int) ($size * pow(10, 9));
       break;
     case 'TB':
-      $size = (int) ($size * pow(10,12));
+      $size = (int) ($size * pow(10, 12));
       break;
     default:
-      $size = (int) ($size * pow(10,6));
+      $size = (int) ($size * pow(10, 6));
       break;
   }
 
@@ -512,12 +513,12 @@ function tripal_admin_manage_quota_form_submit($form, &$form_state) {
  * @return Boolean value to confirm removal from the table.
  **/
 function tripal_admin_remove_quota_form($form, &$form_state, $uid) {
-  $form = array();
+  $form = [];
 
-  $form['uid'] = array(
+  $form['uid'] = [
     '#type' => 'value',
     '#value' => $uid,
-  );
+  ];
 
   $user = user_load($uid);
   if (!$user) {
@@ -551,13 +552,13 @@ function tripal_admin_remove_quota_form_submit($form, &$form_state) {
  */
 function tripal_admin_file_usage_page() {
   // set the breadcrumb
-  $breadcrumb = array();
+  $breadcrumb = [];
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
   $breadcrumb[] = l('User File Management', 'admin/tripal/files');
   drupal_set_breadcrumb($breadcrumb);
-  
+
   $content = [
     [
       '#type' => 'markup',

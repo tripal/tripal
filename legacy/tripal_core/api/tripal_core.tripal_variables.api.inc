@@ -48,8 +48,8 @@ function tripal_add_node_variable($nid, $name, $value, $rank = 0) {
       // rank is already used then don't continue.
       if ($rank > 0 and $rank == $value->rank) {
         tripal_report_error('tripal_core', TRIPAL_ERROR,
-            "The rank for the term, '$term', is already used for node $nid. " .
-            "Cannot add the variable.", array());
+          "The rank for the term, '$term', is already used for node $nid. " .
+          "Cannot add the variable.", []);
         return FALSE;
       }
       if ($value->rank > $max_rank) {
@@ -61,13 +61,13 @@ function tripal_add_node_variable($nid, $name, $value, $rank = 0) {
 
   // Add the new variable.
   $node_variable_id = db_insert('tripal_node_variables')
-    ->fields(array(
+    ->fields([
       'variable_id' => $variable->variable_id,
       'nid' => $nid,
       'value' => $value,
-      'rank' => $rank
-     ))
-     ->execute();
+      'rank' => $rank,
+    ])
+    ->execute();
   return $node_variable_id;
 }
 
@@ -84,11 +84,12 @@ function tripal_add_node_variable($nid, $name, $value, $rank = 0) {
  *   Optional.  The name of the variable.
  * @param $rank
  *   Optional.  The rank of the variable to retreive.
+ *
  * @return
  *   An array of variable objects.
  */
 function tripal_get_node_variables($nid, $name = '', $rank = '') {
-  $variables = array();
+  $variables = [];
   if (!$nid) {
     return $variables;
   }
@@ -105,7 +106,7 @@ function tripal_get_node_variables($nid, $name = '', $rank = '') {
   $results = $query->execute();
 
   // Build the  variables array and return it.
-  while($variable = $results->fetchObject()) {
+  while ($variable = $results->fetchObject()) {
     $variables[] = $variable;
   }
   return $variables;

@@ -4,11 +4,11 @@ class TripalStorage {
 
   // An associative array containing information about this storage backend.
   // The valid keys are those specified in the hook_field_storage_info().
-  static $information = array(
+  static $information = [
     'label' => '',
     'description' => '',
-    'settings' => array(),
-  );
+    'settings' => [],
+  ];
 
   /**
    * Provides default information about this storage type.
@@ -22,9 +22,9 @@ class TripalStorage {
    */
   public function info() {
     $class = get_called_class();
-    return array(
+    return [
       $class => $class::$information,
-    );
+    ];
   }
 
   /**
@@ -51,7 +51,7 @@ class TripalStorage {
    *      should be loaded.
    */
   public function load($entity_type, $entities, $age,
-    $fields, $options) {
+                       $fields, $options) {
 
   }
 

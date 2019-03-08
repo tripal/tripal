@@ -1,4 +1,5 @@
 <?php
+
 namespace Tests\tripal_chado\fields;
 
 use StatonLab\TripalTestSuite\DBTransaction;
@@ -9,6 +10,7 @@ use StatonLab\TripalTestSuite\Database\Factory;
  * Test ChadoField->getValueList() Method.
  */
 class ChadoFieldGetValuesListTest extends TripalTestCase {
+
   // Uncomment to auto start and rollback db transactions per test method.
   use DBTransaction;
 
@@ -35,26 +37,26 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
 
     // Retrieve the values.
     // $values will be an array containing the distinct set of values for this field instance.
-    $values = $instance->getValueList(array('limit' => 5));
+    $values = $instance->getValueList(['limit' => 5]);
 
     // Ensure we have values returned!
     $this->assertTrue(
       is_array($values),
       t(
         'No values returned for @field_name (bundle: @bundle_name, bundle base table: @bundle_base_table, chado table: @chado_table, chado column: @chado_column).',
-        array(
+        [
           '@field_name' => $field_name,
           '@bundle_name' => $bundle_name,
           '@bundle_base_table' => $info['bundle_base_table'],
           '@chado_table' => $info['instance_info']['settings']['chado_table'],
           '@chado_column' => $info['instance_info']['settings']['chado_column'],
-        )
+        ]
       )
     );
 
     // Ensure there are no more then 5 as specified in the limit above.
     $this->assertLessThanOrEqual(5, sizeof($values),
-      t('Returned too many results for @field_name.', array('@field_name' => $field_name)));
+      t('Returned too many results for @field_name.', ['@field_name' => $field_name]));
 
     // Ensure a known value is in the list.
     // Note: The following generates fake data with a fixed value for the column this
@@ -64,7 +66,7 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
     if ($fake_value !== FALSE) {
 
       // Re-generate the values...
-      $values = $instance->getValueList(array('limit' => 200));
+      $values = $instance->getValueList(['limit' => 200]);
 
       // And ensure our fake value is in the returned list.
       // We can only check this if all the results are returned.
@@ -79,7 +81,8 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
   }
 
   /**
-   * DataProvider: a list of fields who store their data in the base table of a bundle.
+   * DataProvider: a list of fields who store their data in the base table of a
+   * bundle.
    *
    * Each element describes a field instance and consists of:
    *   - the machine name of the field (e.g. obi__organism).
@@ -88,7 +91,8 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
    *       - instance_info: information about the field instance.
    *       - field_info: information about the field.
    *       - bundle: the TripalBundle object.
-   *       - bundle_base_table: if applicable, the chado base table the bundle stores it's data in.
+   *       - bundle_base_table: if applicable, the chado base table the bundle
+   * stores it's data in.
    *       - base_schema: the Tripal Schema array for the bundle_base_table.
    */
   public function getBaseFields() {
@@ -101,7 +105,8 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
   }
 
   /**
-   * Test for fields based on columns in the base table that are also foreign keys.
+   * Test for fields based on columns in the base table that are also foreign
+   * keys.
    *
    * @dataProvider getBaseFkFields
    * @group current
@@ -120,26 +125,26 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
 
     // Retrieve the values using defaults.
     // $values will be an array containing the distinct set of values for this field instance.
-    $values = $instance->getValueList(array('limit' => 5));
+    $values = $instance->getValueList(['limit' => 5]);
 
     // Ensure we have values returned!
     $this->assertTrue(
       is_array($values),
       t(
         'No values returned for @field_name with no label string set (bundle: @bundle_name, bundle base table: @bundle_base_table, chado table: @chado_table, chado column: @chado_column).',
-        array(
+        [
           '@field_name' => $field_name,
           '@bundle_name' => $bundle_name,
           '@bundle_base_table' => $info['bundle_base_table'],
           '@chado_table' => $info['instance_info']['settings']['chado_table'],
           '@chado_column' => $info['instance_info']['settings']['chado_column'],
-        )
+        ]
       )
     );
 
     // Ensure there are no more then 5 as specified in the limit above.
     $this->assertLessThanOrEqual(5, sizeof($values),
-      t('Returned too many results for @field_name.', array('@field_name' => $field_name)));
+      t('Returned too many results for @field_name.', ['@field_name' => $field_name]));
 
     // Ensure it works with a label string set.
     // Ensure a known value is in the list.
@@ -157,10 +162,13 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
       $column1 = $fk_table_fields[$use_in_label[0]];
       $column2 = $fk_table_fields[$use_in_label[1]];
       // The label string consists of tokens of the form [column_name].
-      $label_string = '['.$column2.'] (['.$column1.'])';
+      $label_string = '[' . $column2 . '] ([' . $column1 . '])';
 
       // Re-generate the values...
-      $values = $instance->getValueList(array('limit' => 200, 'label_string' => $label_string));
+      $values = $instance->getValueList([
+        'limit' => 200,
+        'label_string' => $label_string,
+      ]);
 
       // And ensure our fake value is in the returned list.
       // We can only check this if all the results are returned.
@@ -168,7 +176,7 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
       // less then the limit, we will go ahead with the test.
       // @note: this tests all fields on TravisCI since there is no pre-existing data.
       if (sizeof($values) < 200) {
-        $fixed_key = $fake_fk_record->{$info['fk_table'].'_id'};
+        $fixed_key = $fake_fk_record->{$info['fk_table'] . '_id'};
         $this->assertArrayHasKey($fixed_key, $values, "\nThe following array should but does not contain our fake record: " . print_r($fake_fk_record, TRUE));
 
         // Now test the label of the fake record option is what we expect
@@ -181,7 +189,8 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
   }
 
   /**
-   * DataProvider: a list of fields who store their data in the base table of a bundle.
+   * DataProvider: a list of fields who store their data in the base table of a
+   * bundle.
    *
    * Each element describes a field instance and consists of:
    *   - the machine name of the field (e.g. obi__organism).
@@ -190,7 +199,8 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
    *       - instance_info: information about the field instance.
    *       - field_info: information about the field.
    *       - bundle: the TripalBundle object.
-   *       - bundle_base_table: if applicable, the chado base table the bundle stores it's data in.
+   *       - bundle_base_table: if applicable, the chado base table the bundle
+   * stores it's data in.
    *       - base_schema: the Tripal Schema array for the bundle_base_table.
    */
   public function getBaseFkFields() {
@@ -227,13 +237,13 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
 
     try {
 
-    // Retrieve the values.
-    // $values will be an array containing the distinct set of values for this field instance.
-    $values = $instance->getValueList(array('limit' => 5));
+      // Retrieve the values.
+      // $values will be an array containing the distinct set of values for this field instance.
+      $values = $instance->getValueList(['limit' => 5]);
 
-    // @todo Check that we got the correct warning message.
-    // Currently we can't check this because we need to supress the error in order to keep it from printing
-    // but once we do, we can't access it ;-P
+      // @todo Check that we got the correct warning message.
+      // Currently we can't check this because we need to supress the error in order to keep it from printing
+      // but once we do, we can't access it ;-P
 
     } catch (Exception $e) {
       $this->fail("Although we don't support values lists for $field_name, it still shouldn't produce an exception!");
@@ -248,7 +258,8 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
   }
 
   /**
-   * DataProvider: a list of fields who store their data in the base table of a bundle.
+   * DataProvider: a list of fields who store their data in the base table of a
+   * bundle.
    *
    * Each element describes a field instance and consists of:
    *   - the machine name of the field (e.g. obi__organism).
@@ -257,7 +268,8 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
    *       - instance_info: information about the field instance.
    *       - field_info: information about the field.
    *       - bundle: the TripalBundle object.
-   *       - bundle_base_table: if applicable, the chado base table the bundle stores it's data in.
+   *       - bundle_base_table: if applicable, the chado base table the bundle
+   * stores it's data in.
    *       - base_schema: the Tripal Schema array for the bundle_base_table.
    */
   public function getNonBaseFields() {
@@ -275,16 +287,16 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
   private function retrieveFieldList() {
     if ($this->field_list === NULL) {
 
-      $this->field_list = array();
+      $this->field_list = [];
 
       // field_info_instances() retrieves a list of all the field instances in the current site,
       // indexed by the bundle it is attached to.
       // @todo use fake bundles here to make these tests less dependant upon the current site.
       $bundles = field_info_instances('TripalEntity');
-      foreach($bundles as $bundle_name => $fields) {
+      foreach ($bundles as $bundle_name => $fields) {
 
         // Load the bundle object to later determine the chado table.
-        $bundle = tripal_load_bundle_entity(array('name'=> $bundle_name));
+        $bundle = tripal_load_bundle_entity(['name' => $bundle_name]);
 
         // For each field instance...
         foreach ($fields as $field_name => $instance_info) {
@@ -321,7 +333,7 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
               $rel = 'base';
               // and then check the schema to see if we're wrong :-)
               foreach ($base_schema['foreign keys'] as $schema_info) {
-                if (isset($schema_info['columns'][ $field_column ])) {
+                if (isset($schema_info['columns'][$field_column])) {
                   $rel = 'foreign key';
                   $rel_table = $schema_info['table'];
                 }
@@ -330,7 +342,7 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
           }
 
           // Store all the info about bundle, field, instance, schema for use in the test.
-          $info = array(
+          $info = [
             'field_name' => $field_name,
             'bundle_name' => $bundle_name,
             'bundle' => $bundle,
@@ -339,7 +351,7 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
             'field_info' => $field_info,
             'instance_info' => $instance_info,
             'fk_table' => $rel_table,
-          );
+          ];
 
           // Create a unique key.
           $key = $bundle_name . '--' . $field_name;
@@ -347,18 +359,18 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
           // If this bundle uses chado and we know the fields relationship to the base
           // chado table, then we want to index the field list by that relationship.
           if ($rel) {
-            $this->field_list[$storage][$rel][$key] = array(
+            $this->field_list[$storage][$rel][$key] = [
               $field_name,
               $bundle_name,
-              $info
-            );
+              $info,
+            ];
           }
           else {
-            $this->field_list[$storage][$key] = array(
+            $this->field_list[$storage][$key] = [
               $field_name,
               $bundle_name,
-              $info
-            );
+              $info,
+            ];
           }
 
         }
@@ -371,9 +383,9 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
   /**
    * Generate fake data for a given bundle.
    *
-   * If only the first parameter is provided this function adds fake data to the indicated
-   * chado table. If the third parameter is provided the generated fake data will
-   * have a fixed value for the indicated column.
+   * If only the first parameter is provided this function adds fake data to
+   * the indicated chado table. If the third parameter is provided the
+   * generated fake data will have a fixed value for the indicated column.
    *
    * @return
    *   Returns FALSE if it was unable to create fake data.
@@ -382,13 +394,13 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
     $faker = \Faker\Factory::create();
 
     // First, do we have a factory? We can't generate data without one...
-    if (!Factory::exists('chado.'.$chado_table)) {
+    if (!Factory::exists('chado.' . $chado_table)) {
       return FALSE;
     }
 
     // Create fake data -TripalTestSuite will use faker for all values.
     if ($fixed_column === FALSE) {
-      factory('chado.'.$chado_table, 50)->create();
+      factory('chado.' . $chado_table, 50)->create();
       return TRUE;
     }
 
@@ -405,13 +417,13 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
         $fake_value = $faker->randomNumber();
       }
       elseif (($column_type == 'varchar') OR ($column_type == 'text')) {
-        $fake_value = $faker->words(2,TRUE);
+        $fake_value = $faker->words(2, TRUE);
       }
 
       if ($fake_value !== NULL) {
-        factory('chado.'.$chado_table)->create(array(
+        factory('chado.' . $chado_table)->create([
           $fixed_column => $fake_value,
-        ));
+        ]);
         return $fake_value;
       }
     }
@@ -419,18 +431,18 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
     // use it in our fake data for the chado table.
     else {
       // Create our fixed fake record in the related table.
-      $fake_table_record = factory('chado.'.$fk_table)->create();
+      $fake_table_record = factory('chado.' . $fk_table)->create();
 
       // Again, if we don't have a factory :-( there's nothing we can do.
-      if (!Factory::exists('chado.'.$fk_table)) {
+      if (!Factory::exists('chado.' . $fk_table)) {
         return FALSE;
       }
 
       // Now create our fake records.
-      if (isset($fake_table_record->{$fk_table.'_id'})) {
-        factory('chado.'.$chado_table)->create(array(
-          $fixed_column => $fake_table_record->{$fk_table.'_id'},
-        ));
+      if (isset($fake_table_record->{$fk_table . '_id'})) {
+        factory('chado.' . $chado_table)->create([
+          $fixed_column => $fake_table_record->{$fk_table . '_id'},
+        ]);
 
         return $fake_table_record;
       }

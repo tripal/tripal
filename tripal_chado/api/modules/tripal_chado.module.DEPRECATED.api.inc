@@ -21,22 +21,22 @@
  * Retrieves a chado analysis variable.
  *
  * @param $itentifier
- *   an array with the key stating what the identifier is. Supported keys 
+ *   an array with the key stating what the identifier is. Supported keys
  *   (only on of the following unique keys is required):
  *    - analysis_id: the chado analysis.analysis_id primary key.
  *    - nid: the drupal node.nid primary key.
  *   There are also some specially handled keys. They are:
- *    - property: An array/object describing the property to select records for. 
- *      It should at least have either a type_name (if unique across cvs) or 
- *      type_id. Other supported keys include: cv_id/cv_name (of the type), 
+ *    - property: An array/object describing the property to select records for.
+ *      It should at least have either a type_name (if unique across cvs) or
+ *      type_id. Other supported keys include: cv_id/cv_name (of the type),
  *      value and rank.
  * @param $options
  *   An array of options. Supported keys include:
- *     - Any keys supported by chado_generate_var(). See that function 
+ *     - Any keys supported by chado_generate_var(). See that function
  *       definition for additional details.
  *
- * NOTE: the $identifier parameter can really be any array similar to $values 
- * passed into chado_select_record(). It should fully specify the stock record 
+ * NOTE: the $identifier parameter can really be any array similar to $values
+ * passed into chado_select_record(). It should fully specify the stock record
  * to be returned.
  *
  * @return
@@ -49,19 +49,20 @@ function tripal_get_analysis($identifier, $options) {
 }
 
 /**
- * Returns a list of analyses that are currently synced with Drupal to use in 
+ * Returns a list of analyses that are currently synced with Drupal to use in
  * select lists.
  *
  * @param $syncd_only
- *   Whether or not to return all chado analyses or just those sync'd with 
+ *   Whether or not to return all chado analyses or just those sync'd with
  *   drupal. Defaults to TRUE (only sync'd analyses).
+ *
  * @return
- *   An array of analyses sync'd with Drupal where each value is the analysis 
+ *   An array of analyses sync'd with Drupal where each value is the analysis
  *   scientific name and the keys are analysis_id's.
  *
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
-function tripal_get_analysis_select_options($syncd_only = true) {
+function tripal_get_analysis_select_options($syncd_only = TRUE) {
   return chado_get_analysis_select_options($syncd_only);
 }
 
@@ -73,10 +74,10 @@ function tripal_get_analysis_select_options($syncd_only = true) {
  *   An array of values to be inserted. Valid keys include:
  *   - name: The name of the contact.
  *   - description: Text describing the contact.
- *   - type_name: The type of contact.  Must be a term in the tripal_contact 
+ *   - type_name: The type of contact.  Must be a term in the tripal_contact
  *     vocabulary.
  *   - properties: An associative array containing a list of key value pairs for
- *     the properites. The key's must be valid terms in the tripal_contact 
+ *     the properites. The key's must be valid terms in the tripal_contact
  *     vocabulary (e.g. Affiliation, Address, etc).
  *
  * @return
@@ -110,27 +111,27 @@ function tripal_autocomplete_contact($text) {
  * Retrieves a chado controlled vocabulary variable
  *
  * @param $identifier
- *   An array with the key stating what the identifier is. Supported keys (only 
+ *   An array with the key stating what the identifier is. Supported keys (only
  *   on of the following unique keys is required):
  *    - cv_id: the chado cv.cv_id primary key.
  *    - name: the chado cv.name field (assume unique).
  * @param $options
  *   An array of options. Supported keys include:
- *     - Any keys supported by chado_generate_var(). See that function 
+ *     - Any keys supported by chado_generate_var(). See that function
  *       definition fot additional details.
  *
- * NOTE: the $identifier parameter can really be any array similar to $values 
- * passed into chado_select_record(). It should fully specify the cv record to 
+ * NOTE: the $identifier parameter can really be any array similar to $values
+ * passed into chado_select_record(). It should fully specify the cv record to
  * be returned.
  *
  * @return
- *   If unique values were passed in as an identifier then an object describing 
- *   the cv will be returned (will be a chado variable from 
+ *   If unique values were passed in as an identifier then an object describing
+ *   the cv will be returned (will be a chado variable from
  *   chado_generate_var()). Otherwise, FALSE will be returned.
  *
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
-function tripal_get_cv($identifiers, $options = array()) {
+function tripal_get_cv($identifiers, $options = []) {
   return chado_get_cv($identifiers, $options);
 }
 
@@ -181,7 +182,7 @@ function tripal_get_cv_select_options() {
  *
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
-function tripal_get_cvterm($identifiers, $options = array()) {
+function tripal_get_cvterm($identifiers, $options = []) {
   return chado_get_cvterm($identifiers, $options);
 }
 
@@ -202,14 +203,14 @@ function tripal_get_cvterm($identifiers, $options = array()) {
  *
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
-function tripal_get_cvterm_select_options($cv_id, $rel_type = false) {
+function tripal_get_cvterm_select_options($cv_id, $rel_type = FALSE) {
   return chado_get_cvterm_select_options($cv_id, $rel_type);
 }
 
 /**
  * Duplicate of fill_cvtermpath() stored procedure in Chado.
  *
- * Identifies all of the root terms of the controlled vocabulary. 
+ * Identifies all of the root terms of the controlled vocabulary.
  *
  * @param $cvid
  *   The controlled vocabulary ID from the cv table of Chado (i.e. cv.cv_id).
@@ -217,7 +218,7 @@ function tripal_get_cvterm_select_options($cv_id, $rel_type = false) {
  *
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
-function tripal_update_cvtermpath($cv_id, $job_id = null) {
+function tripal_update_cvtermpath($cv_id, $job_id = NULL) {
   return chado_update_cvtermpath($cv_id, $job_id);
 }
 
@@ -283,7 +284,7 @@ function tripal_insert_cv($name, $definition) {
  *
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
-function tripal_insert_cvterm($term, $options = array()) {
+function tripal_insert_cvterm($term, $options = []) {
   return chado_insert_cvterm($term, $options);
 }
 
@@ -291,7 +292,7 @@ function tripal_insert_cvterm($term, $options = array()) {
  * TODO: deprecate this function
  *
  * Avoid using this function as it will be deprecated in future releases.
- * 
+ *
  * This function allows other modules to programatically
  * submit an ontology for loading into Chado.
  *
@@ -353,7 +354,7 @@ function tripal_insert_obo($name, $path) {
  *
  * @return
  *   An instance of an OBO record object.
- * 
+ *
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_get_obo($values) {
@@ -399,11 +400,11 @@ function tripal_autocomplete_cvterm($cv_id, $string = '') {
  * Add a record to a cvterm linking table (ie: feature_cvterm).
  *
  * @param $basetable
- *   The base table to which the cvterm should be linked/associated. Thus to 
+ *   The base table to which the cvterm should be linked/associated. Thus to
  *   associate a cvterm to a feature the basetable=feature and cvterm_id is
  *   added to the feature_cvterm table.
  * @param $record_id
- *   The primary key of the basetable to associate the cvterm with. This should 
+ *   The primary key of the basetable to associate the cvterm with. This should
  *   be in integer.
  * @param $cvterm
  *   An associative array describing the cvterm. Valid keys include:
@@ -412,12 +413,12 @@ function tripal_autocomplete_cvterm($cv_id, $string = '') {
  *     - cv_id: the primary key of the cv the cvterm belongs to.
  * @param $options
  *   An associative array of options. Valid keys include:
- *     - insert_cvterm: Insert the cvterm if it doesn't already exist. FALSE is 
+ *     - insert_cvterm: Insert the cvterm if it doesn't already exist. FALSE is
  *       the default.
  *
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
-function tripal_associate_cvterm($basetable, $record_id, $cvterm, $options = array()) {
+function tripal_associate_cvterm($basetable, $record_id, $cvterm, $options = []) {
   return chado_associate_cvterm($basetable, $record_id, $cvterm, $options);
 }
 
@@ -426,6 +427,7 @@ function tripal_associate_cvterm($basetable, $record_id, $cvterm, $options = arr
  * Retrieves a chado db variable.
  *
  * Example Usage:
+ *
  * @code
  *   $select_values = array(
  *     'name' => 'SOFP'
@@ -444,27 +446,27 @@ function tripal_associate_cvterm($basetable, $record_id, $cvterm, $options = arr
  * @endcode
  *
  * @param $identifier
- *   An array with the key stating what the identifier is. Supported keys (only 
+ *   An array with the key stating what the identifier is. Supported keys (only
  *   on of the following unique keys is required):
  *    - db_id: the chado db.db_id primary key.
  *    - name: the chado db.name field (assume unique).
  * @param $options
  *   An array of options. Supported keys include:
- *     - Any keys supported by chado_generate_var(). See that function 
+ *     - Any keys supported by chado_generate_var(). See that function
  *       definition for additional details.
  *
- * NOTE: the $identifier parameter can really be any array similar to $values 
- * passed into chado_select_record(). It should fully specify the db record to 
+ * NOTE: the $identifier parameter can really be any array similar to $values
+ * passed into chado_select_record(). It should fully specify the db record to
  * be returned.
  *
  * @return
- *   If unique values were passed in as an identifier then an object describing 
- *   the cv will be returned (will be a chado variable from 
+ *   If unique values were passed in as an identifier then an object describing
+ *   the cv will be returned (will be a chado variable from
  *   chado_generate_var()). Otherwise, an array of objects will be returned.
  *
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
-function tripal_get_db($identifiers, $options = array()) {
+function tripal_get_db($identifiers, $options = []) {
   return chado_get_db($identifiers, $options);
 }
 
@@ -485,6 +487,7 @@ function tripal_get_db_select_options() {
  * Retrieves a chado database reference variable.
  *
  * Example Usage:
+ *
  * @code
  *   $identifiers = array(
  *     'accession' => 'synonym',
@@ -494,7 +497,7 @@ function tripal_get_db_select_options() {
  *   );
  *   $dbxref_object = tripal_get_dbxref($identifiers);
  * @endcode
- *  The above code selects the synonym database reference and returns the 
+ *  The above code selects the synonym database reference and returns the
  *  following object:
  * @code
  *  $dbxref_object = stdClass Object (
@@ -514,27 +517,27 @@ function tripal_get_db_select_options() {
  *   An array apropriate for use with the chado_generate_var for uniquely
  *   identifying a dbxref record. Alternatively, there are also some specially
  *   handled keys. They are:
- *    - property: An array/object describing the property to select records for. 
- *      It should at least have either a type_name (if unique across cvs) or 
- *      type_id. Other supported keys include: cv_id/cv_name (of the type), 
+ *    - property: An array/object describing the property to select records for.
+ *      It should at least have either a type_name (if unique across cvs) or
+ *      type_id. Other supported keys include: cv_id/cv_name (of the type),
  *      value and rank.
  * @param $options
  *   An array of options. Supported keys include:
- *     - Any keys supported by chado_generate_var(). See that function 
+ *     - Any keys supported by chado_generate_var(). See that function
  *       definition for additional details.
  *
- * NOTE: the $identifier parameter can really be any array similar to $values 
- * passed into chado_select_record(). It should fully specify the dbxref record 
+ * NOTE: the $identifier parameter can really be any array similar to $values
+ * passed into chado_select_record(). It should fully specify the dbxref record
  * to be returned.
  *
  * @return
- *   If unique values were passed in as an identifier then an object describing 
- *   the dbxref will be returned (will be a chado variable from 
+ *   If unique values were passed in as an identifier then an object describing
+ *   the dbxref will be returned (will be a chado variable from
  *   chado_generate_var()). Otherwise, FALSE will be returned.
  *
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
-function tripal_get_dbxref($identifiers, $options = array()) {
+function tripal_get_dbxref($identifiers, $options = []) {
   return chado_get_dbxref($identifiers, $options);
 }
 
@@ -543,17 +546,17 @@ function tripal_get_dbxref($identifiers, $options = array()) {
  *
  * If the URL and URL prefix are provided for the database record of a cvterm
  * then a URL can be created for the term.  By default, the db.name and
- * dbxref.accession are concatenated and appended to the end of the db.urlprefix.
- * But Tripal supports the use of {db} and {accession} tokens when if present
- * in the db.urlprefix string will be replaced with the db.name and
- * dbxref.accession respectively.
+ * dbxref.accession are concatenated and appended to the end of the
+ * db.urlprefix. But Tripal supports the use of {db} and {accession} tokens
+ * when if present in the db.urlprefix string will be replaced with the db.name
+ * and dbxref.accession respectively.
  *
  * @param $dbxref
  *   A dbxref object as created by the chado_generate_var() function.
  *
  * @return
  *   A string containing the URL.
- * 
+ *
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_get_dbxref_url($dbxref) {
@@ -565,12 +568,12 @@ function tripal_get_dbxref_url($dbxref) {
  *
  * @param $values
  *   An associative array of the values of the db (those to be inserted):
- *   - name: The name of the database. This name is usually used as the prefix 
+ *   - name: The name of the database. This name is usually used as the prefix
  *     for CV term accessions.
- *   - description: (Optional) A description of the database.  By default no 
+ *   - description: (Optional) A description of the database.  By default no
  *     description is required.
  *   - url: (Optional) The URL for the database.
- *   - urlprefix: (Optional) The URL that is to be used as a prefix when 
+ *   - urlprefix: (Optional) The URL that is to be used as a prefix when
  *     constructing a link to a database term.
  * @param $options
  *   Optional. An associative array of options that can include:
@@ -584,7 +587,7 @@ function tripal_get_dbxref_url($dbxref) {
  *
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
-function tripal_insert_db($values, $options = array()) {
+function tripal_insert_db($values, $options = []) {
   return chado_insert_db($values, $options);
 }
 
@@ -612,25 +615,25 @@ function tripal_insert_dbxref($values) {
  * Add a record to a database reference linking table (ie: feature_dbxref).
  *
  * @param $basetable
- *   The base table for which the dbxref should be associated. Thus to associate 
+ *   The base table for which the dbxref should be associated. Thus to associate
  *   a dbxref with a feature the basetable=feature and dbxref_id is added to the
  *   feature_dbxref table.
  * @param $record_id
- *   The primary key of the basetable to associate the dbxref with. This should 
+ *   The primary key of the basetable to associate the dbxref with. This should
  *   be in integer.
  * @param $dbxref
- *   An associative array describing the dbxref. Valid keys include: 
- *   'accession' => the accession for the dbxref, 'db_name' => the name of the 
+ *   An associative array describing the dbxref. Valid keys include:
+ *   'accession' => the accession for the dbxref, 'db_name' => the name of the
  *    database the dbxref belongs to.
  *   'db_id' => the primary key of the database the dbxref belongs to.
  * @param $options
  *   An associative array of options. Valid keys include:
- *    - insert_dbxref: Insert the dbxref if it doesn't already exist. TRUE is 
+ *    - insert_dbxref: Insert the dbxref if it doesn't already exist. TRUE is
  *      the default.
  *
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
-function tripal_associate_dbxref($basetable, $record_id, $dbxref, $options = array()) {
+function tripal_associate_dbxref($basetable, $record_id, $dbxref, $options = []) {
   return chado_associate_dbxref($basetable, $record_id, $dbxref, $options);
 }
 
@@ -698,15 +701,16 @@ function tripal_reverse_compliment_sequence($sequence) {
  *    - name: The feature name. This will appear on the FASTA definition line.
  *    - parent_id:  (optional) only retrieve a sequence if 'derive_from_parent'
  *      is true and the parent matches this ID.
- *    - featureloc_id: (optional) only retrieve a sequence if 
- *      'derive_from_parent' is true and the alignment is defined with this 
+ *    - featureloc_id: (optional) only retrieve a sequence if
+ *      'derive_from_parent' is true and the alignment is defined with this
  *      featureloc_id.
  * @param $options
  *   An associative array of options. Valid keys include:
  *    - width: Indicate the number of bases to use per line.  A new line will
  *      be added after the specified number of bases on each line.
  *    - is_html: Set to '1' if  the sequence is meant to be displayed on a web
- *      page. This will cause a <br> tag to separate lines of the FASTA sequence.
+ *      page. This will cause a <br> tag to separate lines of the FASTA
+ *   sequence.
  *    - derive_from_parent: Set to '1' if the sequence should be obtained from
  *      the parent to which this feature is aligned.
  *    - aggregate: Set to '1' if the sequence should only contain sub features,
@@ -718,7 +722,8 @@ function tripal_reverse_compliment_sequence($sequence) {
  *      include in the output.
  *    - sub_feature_types: Only include sub features (or child features) of
  *      the types provided in the array.
- *    - relationship_type: If a relationship name is provided (e.g. sequence_of)
+ *    - relationship_type: If a relationship name is provided (e.g.
+ *   sequence_of)
  *      then any sequences that are in relationships of this type with matched
  *      sequences are also included.
  *    - relationship_part: If a relationship is provided in the preceeding
@@ -747,16 +752,19 @@ function tripal_get_feature_sequences($feature, $options) {
  * Retrieves the bulk sequences for a given feature.
  *
  * @param $options
- *   An associative array of options for selecting a feature. Valid keys include:
+ *   An associative array of options for selecting a feature. Valid keys
+ *   include:
  *    - org_commonname: The common name of the organism for which sequences
  *      should be retrieved
- *    - genus: The genus of the organism for which sequences should be retrieved
+ *    - genus: The genus of the organism for which sequences should be
+ *   retrieved
  *    - species: The species of the organism for which sequences should be
  *      retrieved
  *    - analysis_name: The name of an analysis to which sequences belong. Only
  *      those that are associated with the analysis will be retrieved.
  *    - type: The type of feature (a sequence ontology term).
- *    - feature_name: the name of the feature. Can be an array of feature names.
+ *    - feature_name: the name of the feature. Can be an array of feature
+ *   names.
  *    - feature_uname: the uniquename of the feature.  Can be an array of
  *      feature unique names.
  *    - upstream: An integer specifing the number of upstream bases to include
@@ -770,7 +778,8 @@ function tripal_get_feature_sequences($feature, $options) {
  *      obtain just the coding sequence of an mRNA.
  *    - sub_feature_types: Only include sub features (or child features) of
  *      the types provided in the array
- *    - relationship_type: If a relationship name is provided (e.g. sequence_of)
+ *    - relationship_type: If a relationship name is provided (e.g.
+ *   sequence_of)
  *      then any sequences that are in relationships of this type with matched
  *      sequences are also included
  *    - relationship_part: If a relationship is provided in the preceeding
@@ -781,6 +790,7 @@ function tripal_get_feature_sequences($feature, $options) {
  *    - is_html: Set to '1' if  the sequence is meant to be displayed on a
  *      web page. This will cause a <br> tag to separate lines of the FASTA
  *      sequence.
+ *
  * @return
  *   Returns an array of sequences. The sequences will be in an array with the
  *   following keys for each sequence:
@@ -802,15 +812,15 @@ function tripal_get_bulk_feature_sequences($options) {
  * Returns a definition line that can be used in a FASTA file.
  *
  * @param $feature
- *   A single feature object containing all the fields from the chado.feature 
- *   table. Best case is to provide an object generated by the 
+ *   A single feature object containing all the fields from the chado.feature
+ *   table. Best case is to provide an object generated by the
  *   chado_generate_var() function.
  * @param $notes
  *   Optional: additional notes to be added to the definition line.
  * @param $featureloc
  *   Optional: a single featureloc object generated using chado_generate_var
  *   that contains a record from the chado.featureloc table. Provide this if the
- *   sequence was obtained by using the alignment rather than from the 
+ *   sequence was obtained by using the alignment rather than from the
  *   feature.residues column.
  * @param $type
  *   Optional: the type of sequence. By default the feature type is used.
@@ -819,12 +829,12 @@ function tripal_get_bulk_feature_sequences($options) {
  *
  * @return
  *   A string of the format: uniquename|name|type|feature_id
- *   or if an alignment:  srcfeature_name:fmin..fmax[+-]; alignment of 
+ *   or if an alignment:  srcfeature_name:fmin..fmax[+-]; alignment of
  *   uniquename|name|type|feature_id.
- * 
+ *
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
-function tripal_get_fasta_defline($feature, $notes = '', $featureloc = null, $type = '', $length = 0) {
+function tripal_get_fasta_defline($feature, $notes = '', $featureloc = NULL, $type = '', $length = 0) {
   return chado_get_fasta_defline($feature, $notes, $featureloc, $type, $length);
 }
 
@@ -835,9 +845,9 @@ function tripal_get_fasta_defline($feature, $notes = '', $featureloc = null, $ty
  *   A single featureloc object generated using chado_generate_var that
  *   contains a record from the chado.featureloc table.
  *
- *  @return
+ * @return
  *   A string of the format: uniquename:featurelocmin..featurelocmax.strand
- * 
+ *
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_get_location_string($featureloc) {
@@ -848,32 +858,33 @@ function tripal_get_location_string($featureloc) {
  * Retrieves a chado organism variable.
  *
  * @param $identifier
- *   An array with the key stating what the identifier is. Supported keys (only 
+ *   An array with the key stating what the identifier is. Supported keys (only
  *   on of the following unique keys is required):
  *    - organism_id: the chado organism.organism_id primary key.
- *    - genus & species: the chado organism.genus field & organism.species field.
- *   There are also some specially handled keys. They are:
- *    - property: An array/object describing the property to select records for. 
- *      It should at least have either a type_name (if unique across cvs) or 
- *      type_id. Other supported keys include: cv_id/cv_name (of the type), 
+ *    - genus & species: the chado organism.genus field & organism.species
+ *   field. There are also some specially handled keys. They are:
+ *    - property: An array/object describing the property to select records
+ *   for.
+ *      It should at least have either a type_name (if unique across cvs) or
+ *      type_id. Other supported keys include: cv_id/cv_name (of the type),
  *      value and rank.
  * @param $options
  *   An array of options. Supported keys include:
- *     - Any keys supported by chado_generate_var(). See that function 
+ *     - Any keys supported by chado_generate_var(). See that function
  *      definition for additional details.
  *
- * NOTE: the $identifier parameter can really be any array similar to $values 
- * passed into chado_select_record(). It should fully specify the organism 
+ * NOTE: the $identifier parameter can really be any array similar to $values
+ * passed into chado_select_record(). It should fully specify the organism
  * record to be returned.
  *
  * @return
- *   If unique values were passed in as an identifier then an object describing 
- *   the organism will be returned (will be a chado variable from 
+ *   If unique values were passed in as an identifier then an object describing
+ *   the organism will be returned (will be a chado variable from
  *   chado_generate_var()). Otherwise, FALSE will be returned.
  *
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
-function tripal_get_organism($identifiers, $options = array()) {
+function tripal_get_organism($identifiers, $options = []) {
   return chado_get_organism($identifiers, $options);
 }
 
@@ -882,6 +893,7 @@ function tripal_get_organism($identifiers, $options = array()) {
  *
  * @param $organism
  *   An organism object.
+ *
  * @return
  *   The full scientific name of the organism.
  *
@@ -892,19 +904,20 @@ function tripal_get_organism_scientific_name($organism) {
 }
 
 /**
- * Returns a list of organisms that are currently synced with Drupal to use in 
+ * Returns a list of organisms that are currently synced with Drupal to use in
  * select lists.
  *
  * @param $syncd_only
- *   Whether or not to return all chado organisms or just those sync'd with 
+ *   Whether or not to return all chado organisms or just those sync'd with
  *   drupal. Defaults to TRUE (only sync'd organisms).
+ *
  * @return
- *   An array of organisms sync'd with Drupal where each value is the organism 
+ *   An array of organisms sync'd with Drupal where each value is the organism
  *   scientific name and the keys are organism_id's.
  *
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
-function tripal_get_organism_select_options($syncd_only = true) {
+function tripal_get_organism_select_options($syncd_only = TRUE) {
   return chado_get_organism_select_options($syncd_only);
 }
 
@@ -945,6 +958,7 @@ function tripal_autocomplete_organism($text) {
  *
  * @param $rank
  *   The rank below species.
+ *
  * @return
  *   The proper abbreviation for the rank.
  *
@@ -979,6 +993,7 @@ function tripal_abbreviate_infraspecific_rank($rank) {
  *   to the user as information by a drupal_set_message() if appropriate. The
  *   keys of the array will be name of the field from the options array and the
  *   value is the error message.
+ *
  * @return
  *   If validation failes then FALSE is returned.  Any options that do not pass
  *   validation checks will be added in the $errors array with the key being
@@ -988,7 +1003,7 @@ function tripal_abbreviate_infraspecific_rank($rank) {
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
-  return chado_validate_phylotree($val_type, $options, $errors, $warnings); 
+  return chado_validate_phylotree($val_type, $options, $errors, $warnings);
 }
 
 /**
@@ -1015,7 +1030,7 @@ function tripal_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
  *     'tree_file':  The path of the file containing the phylogenetic tree to
  *                   import or a Drupal managed_file numeric ID.
  *     'format':     The file format. Currently only 'newick is supported'.
- * 
+ *
  *  Optional keys:
  *     'dbxref':     A database cross-reference of the form DB:ACCESSION.
  *                   Where DB is the database name, which is already present
@@ -1042,6 +1057,7 @@ function tripal_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
  *   to the user as information by a drupal_set_message() if appropriate. The
  *   keys of the array will be name of the field from the options array and the
  *   value is the error message.
+ *
  * @return
  *   TRUE for success and FALSE for failure.
  *
@@ -1157,7 +1173,7 @@ function tripal_assign_phylogeny_tree_indices(&$tree, &$index = 1) {
  *
  * @param $tree
  *   The tree array.
- * @param $phylotree.
+ * @param $phylotree .
  *   The phylotree object (from Chado).
  * @param $options
  *   The options provide some direction for how the tree is imported.  The
@@ -1185,16 +1201,16 @@ function tripal_assign_phylogeny_tree_indices(&$tree, &$index = 1) {
  *
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
-function tripal_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = array(), $parent = null) {
+function tripal_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], $parent = NULL) {
   return chado_phylogeny_import_tree($tree, $phylotree, $options, $vocab, $parent);
 }
 
 /**
  * Get the vocabulary terms used to describe nodes in the tree.
  *
- * @return 
+ * @return
  *  Array of vocab info or FALSE on failure.
- * 
+ *
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_phylogeny_get_node_types_vocab() {
@@ -1227,9 +1243,9 @@ function tripal_phylogeny_get_node_types_vocab() {
  *     'match':      Set to 'uniquename' if the leaf nodes should be matched
  *                   with the feature uniquename.
  *
- *  @ingroup tripal_chado_module_DEPRECATED_api
+ * @ingroup tripal_chado_module_DEPRECATED_api
  */
-function tripal_phylogeny_import_tree_file($file_name, $format, $options = array(), $job_id = null) {
+function tripal_phylogeny_import_tree_file($file_name, $format, $options = [], $job_id = NULL) {
   return chado_phylogeny_import_tree_file($file_name, $format, $options, $job_id);
 }
 
@@ -1247,30 +1263,30 @@ function tripal_phylogeny_import_tree_file($file_name, $format, $options = array
  *   There are also some specially handled keys. They are:
  *    - property: An array describing the property to select records for. It
  *      should at least have either a 'type_name' key (if unique across cvs) or
- *      'type_id' key. Other supported keys include: 'cv_id', 'cv_name' 
+ *      'type_id' key. Other supported keys include: 'cv_id', 'cv_name'
  *      (of the type), 'value' and 'rank'
- *    - dbxref: The database cross reference accession.  It should be in the 
+ *    - dbxref: The database cross reference accession.  It should be in the
  *      form DB:ACCESSION, where DB is the database name and ACCESSION is the
  *      unique publication identifier (e.g. PMID:4382934)
  *    - dbxref_id:  The dbxref.dbxref_id of the publication.
  * @param $options
  *   An array of options. Supported keys include:
- *     - Any keys supported by chado_generate_var(). See that function 
+ *     - Any keys supported by chado_generate_var(). See that function
  *       definition for additional details.
  *
- * NOTE: the $identifier parameter can really be any array similar to $values 
- * passed into chado_select_record(). It should fully specify the pub record to 
+ * NOTE: the $identifier parameter can really be any array similar to $values
+ * passed into chado_select_record(). It should fully specify the pub record to
  * be returned.
  *
  * @return
- *   If a singe publication is retreived using the identifiers, then a 
- *   publication array will be returned.  The array is of the same format 
- *   returned by the chado_generate_var() function. Otherwise, FALSE will be 
+ *   If a singe publication is retreived using the identifiers, then a
+ *   publication array will be returned.  The array is of the same format
+ *   returned by the chado_generate_var() function. Otherwise, FALSE will be
  *   returned.
  *
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
-function tripal_get_publication($identifiers, $options = array()) {
+function tripal_get_publication($identifiers, $options = []) {
   return chado_get_publication($identifiers, $options);
 }
 
@@ -1280,26 +1296,28 @@ function tripal_get_publication($identifiers, $options = array()) {
  * unique by a combination of the title, publication type, published year and
  * series name (e.g. journal name or conference name). The site administrator
  * can configure how publications are determined to be unique.  This function
- * uses the configuration specified by the administrator to look for publications
- * that match the details specified by the $pub_details argument
+ * uses the configuration specified by the administrator to look for
+ * publications that match the details specified by the $pub_details argument
  * and indicates if one ore more publications match the criteria.
  *
  * @param $pub_details
- *   An associative array with details about the publications. The expected keys
+ *   An associative array with details about the publications. The expected
+ *   keys
  *   are:
  *     'Title':              The title of the publication.
  *     'Year':               The published year of the publication.
- *     'Publication Type':   An array of publication types. A publication can 
+ *     'Publication Type':   An array of publication types. A publication can
  *                           have more than one type.
  *     'Series Name':        The series name of the publication.
  *     'Journal Name':       An alternative to 'Series Name'.
  *     'Conference Name':    An alternative to 'Series Name'.
- *     'Citation':           The publication citation (this is the value saved 
+ *     'Citation':           The publication citation (this is the value saved
  *                           in the pub.uniquename field and must be unique).
- *   
+ *
  *     If this key is present it will also be checked
- *     'Publication Dbxref': A database cross reference of the form DB:ACCESSION 
- *                           where DB is the name of the database and ACCESSION 
+ *     'Publication Dbxref': A database cross reference of the form
+ *   DB:ACCESSION
+ *                           where DB is the name of the database and ACCESSION
  *                           is the unique identifier (e.g PMID:3483139).
  *
  * @return
@@ -1346,7 +1364,7 @@ function tripal_autocomplete_pub($string = '') {
  *
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
-function tripal_import_pub_by_dbxref($pub_dbxref, $do_contact = false, $do_update = true) {
+function tripal_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_update = TRUE) {
   return chado_import_pub_by_dbxref($pub_dbxref, $do_contact, $do_update);
 }
 
@@ -1362,7 +1380,7 @@ function tripal_import_pub_by_dbxref($pub_dbxref, $do_contact = false, $do_updat
  *
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
-function tripal_execute_active_pub_importers($report_email = false, $do_update = false) {
+function tripal_execute_active_pub_importers($report_email = FALSE, $do_update = FALSE) {
   return chado_execute_active_pub_importers($report_email, TRUE, $do_update);
 }
 
@@ -1388,7 +1406,7 @@ function tripal_execute_active_pub_importers($report_email = false, $do_update =
  *
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
-function tripal_reimport_publications($do_contact = false, $dbxref = null, $db = null) {
+function tripal_reimport_publications($do_contact = FALSE, $dbxref = NULL, $db = NULL) {
   return chado_reimport_publications($do_contact, $dbxref, $db);
 }
 
@@ -1422,12 +1440,13 @@ function tripal_pub_create_citations($options) {
  *   are the publication ontology term names and values are the
  *   corresponding details.  The pub array can contain the following
  *   keys with corresponding values:
- *     - Publication Type:  an array of publication types. a publication can 
+ *     - Publication Type:  an array of publication types. a publication can
  *       have more than one type.
  *     - Authors: a  string containing all of the authors of a publication.
  *     - Journal Name:  a string containing the journal name.
- *     - Journal Abbreviation: a string containing the journal name abbreviation.
- *     - Series Name: a string containing the series (e.g. conference 
+ *     - Journal Abbreviation: a string containing the journal name
+ *   abbreviation.
+ *     - Series Name: a string containing the series (e.g. conference
  *       proceedings) name.
  *     - Series Abbreviation: a string containing the series name abbreviation
  *     - Volume: the serives volume number.
@@ -1456,7 +1475,7 @@ function tripal_pub_create_citation($pub) {
  * @return
  *   An array with the following keys:  'Citation', 'Abstract', 'Authors',
  *   'URL'. All keys are term names in the Tripal Publication Ontology :TPUB.
- * 
+ *
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
 function tripal_get_minimal_pub_info($pub) {
@@ -1469,32 +1488,32 @@ function tripal_get_minimal_pub_info($pub) {
  * Retrieves a chado stock variable
  *
  * @param $identifier
- *   An array with the key stating what the identifier is. Supported keys (only 
+ *   An array with the key stating what the identifier is. Supported keys (only
  *   one of the following unique keys is required):
  *    - stock_id: the chado stock.stock_id primary key
  *    - nid: the drupal nid of the stock
  *   There are also some specially handled keys. They are:
- *    - property: An array/object describing the property to select records for. 
- *      It should at least have either a type_name (if unique across cvs) or 
- *      type_id. Other supported keys include: cv_id/cv_name (of the type), 
+ *    - property: An array/object describing the property to select records for.
+ *      It should at least have either a type_name (if unique across cvs) or
+ *      type_id. Other supported keys include: cv_id/cv_name (of the type),
  *      value and rank
  * @param $options
  *   An array of options. Supported keys include:
- *     - Any keys supported by chado_generate_var(). See that function 
+ *     - Any keys supported by chado_generate_var(). See that function
  *      definition for additional details.
  *
  * NOTE: the $identifier parameter can really be any array similar to $values
- * passed into chado_select_record(). It should fully specify the stock record 
+ * passed into chado_select_record(). It should fully specify the stock record
  * to be returned.
  *
  * @return
- *   If unique values were passed in as an identifier then an object describing 
- *   the stock will be returned (will be a chado variable from 
+ *   If unique values were passed in as an identifier then an object describing
+ *   the stock will be returned (will be a chado variable from
  *   chado_generate_var()). Otherwise, FALSE will be returned.
  *
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
-function tripal_get_stock($identifiers, $options = array()) {
+function tripal_get_stock($identifiers, $options = []) {
   return chado_get_stock($identifiers, $options);
 }
 
@@ -1502,12 +1521,12 @@ function tripal_get_stock($identifiers, $options = array()) {
  * Retrieves a chado stock variable.
  *
  * @param $identifier
- *   An array with the key stating what the identifier is. Supported keys 
+ *   An array with the key stating what the identifier is. Supported keys
  *   include any field in the stock table. See the chado_select_record() $values
  *   parameter for additional details including an example.
  * @param $options
  *   An array of options. Supported keys include:
- *     - Any keys supported by chado_generate_var(). See that function 
+ *     - Any keys supported by chado_generate_var(). See that function
  *       definition for additional details.
  *
  * @return
@@ -1515,6 +1534,6 @@ function tripal_get_stock($identifiers, $options = array()) {
  *
  * @ingroup tripal_chado_module_DEPRECATED_api
  */
-function tripal_get_multiple_stocks($identifiers, $options = array()) {
+function tripal_get_multiple_stocks($identifiers, $options = []) {
   return chado_get_multiple_stocks($identifiers, $options);
 }

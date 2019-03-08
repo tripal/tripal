@@ -1,7 +1,8 @@
 <?php
+
 /**
- * This class can be included at the top of your TripalTestCase to facillitate testing
- * fields, widgets and formatters.
+ * This class can be included at the top of your TripalTestCase to facillitate
+ * testing fields, widgets and formatters.
  */
 class TripalFieldTestHelper {
 
@@ -37,12 +38,15 @@ class TripalFieldTestHelper {
    * Specifcally, initialize the widget class and save it for further testing.
    *
    * @param $bundle_name
-   *   The name of the bundle the field should be attached to. This bundle must already exist.
+   *   The name of the bundle the field should be attached to. This bundle must
+   *   already exist.
    * @param $machine_names
    *   An array of machine names including:
    *    - field_name: the name of the field (REQUIRED)
-   *    - widget_name: the name of the widget (Only required for widget testing)
-   *    - formatter_name: the name of the formatter (Only required for formatter testing)
+   *    - widget_name: the name of the widget (Only required for widget
+   *   testing)
+   *    - formatter_name: the name of the formatter (Only required for
+   *   formatter testing)
    * @param $field_info
    *   The Drupal information for the field you want to test.
    * @param $instance_info
@@ -66,7 +70,7 @@ class TripalFieldTestHelper {
 
     $class_name = '\\' . $this->class_name;
     $class_path = DRUPAL_ROOT . '/' . drupal_get_path('module', 'tripal_chado')
-      . '/includes/TripalFields/'.$machine_names['field_name'].'/'.$this->class_name.'.inc';
+      . '/includes/TripalFields/' . $machine_names['field_name'] . '/' . $this->class_name . '.inc';
     if ((include_once($class_path)) == TRUE) {
 
       // Save the field information.
@@ -82,7 +86,7 @@ class TripalFieldTestHelper {
       $this->instance_info = $instance_info;
 
       // Load the bundle.
-      $this->bundle = tripal_load_bundle_entity(array('name'=> $bundle_name));
+      $this->bundle = tripal_load_bundle_entity(['name' => $bundle_name]);
 
       // The entity from the specified bundle that the field should be attached to.
       $this->entity = $entity;
@@ -103,14 +107,16 @@ class TripalFieldTestHelper {
 
   /**
    * Retrieve the field information for a given field.
+   *
    * @see https://api.drupal.org/api/drupal/modules%21field%21field.info.inc/function/field_info_field/7.x
    *
    * @param $field_name
    *   The name of the field to retrieve. $field_name can only refer to a
    *   non-deleted, active field.
+   *
    * @return
-   *   The field array as returned by field_info_field() and used when initializing
-   *   this class.
+   *   The field array as returned by field_info_field() and used when
+   *   initializing this class.
    */
   public function getFieldInfo($field_name) {
 
@@ -123,16 +129,19 @@ class TripalFieldTestHelper {
 
   /**
    * Retrieve the field instance information for a given field.
+   *
    * @see https://api.drupal.org/api/drupal/modules%21field%21field.info.inc/function/field_info_instance/7.x
    *
    * @param $bundle_name
-   *   The name of the bundle you want the field attached to. For example, bio_data_1.
+   *   The name of the bundle you want the field attached to. For example,
+   *   bio_data_1.
    * @param $field_name
-   *   The name of the field to retrieve the instance of. $field_name can only refer to a
-   *   non-deleted, active field.
+   *   The name of the field to retrieve the instance of. $field_name can only
+   *   refer to a non-deleted, active field.
+   *
    * @return
-   *   The field instance array as returned by field_info_instance() and used when
-   *   initializing this class.
+   *   The field instance array as returned by field_info_instance() and used
+   *   when initializing this class.
    */
   public function getInstanceInfo($bundle_name, $field_name) {
 
@@ -150,7 +159,8 @@ class TripalFieldTestHelper {
    * @param $delta
    *   The delta for the $element you want to fake.
    * @param $langcode
-   *   The language code for the field/widget. This should usually be LANGUAGE_NONE.
+   *   The language code for the field/widget. This should usually be
+   *   LANGUAGE_NONE.
    * @param $required
    *   True if the widget is required and false otherwise.
    *
@@ -178,7 +188,7 @@ class TripalFieldTestHelper {
       '#field' => $this->field_info,
       '#instance' => $this->instance_info,
       '#theme' => 'tripal_field_default',
-      'element_validate' => ['tripal_field_widget_form_validate']
+      'element_validate' => ['tripal_field_widget_form_validate'],
     ];
   }
 
@@ -203,10 +213,12 @@ class TripalFieldTestHelper {
    * @param $delta
    *   The delta for the $element you want to fake.
    * @param $langcode
-   *   The language code for the field/widget. This should usually be LANGUAGE_NONE.
+   *   The language code for the field/widget. This should usually be
+   *   LANGUAGE_NONE.
    * @param $values
-   *    An array of values where the key is the form element name and the value is
-   *    the fake user submmitted value.
+   *    An array of values where the key is the form element name and the value
+   *   is the fake user submmitted value.
+   *
    * @return
    *   A fake $form_state array for use in testing.
    */

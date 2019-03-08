@@ -18,77 +18,77 @@ if ($project->description) {
   $description = $project->description;
 }
 else {
-  $record = array(
+  $record = [
     'table' => 'project',
     'id' => $project->project_id,
-  );
-  $property = array(
+  ];
+  $property = [
     'type_name' => 'Project Description',
     'cv_name' => 'project_property',
-  );
+  ];
   $projectprop = chado_get_property($record, $property);
   $description = $projectprop->value;
 } ?>
 
-<div class="tripal_project-data-block-desc tripal-data-block-desc"></div><?php 
+    <div class="tripal_project-data-block-desc tripal-data-block-desc"></div><?php
 
 // the $headers array is an array of fields to use as the colum headers. 
 // additional documentation can be found here 
 // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
 // This table for the project has a vertical header (down the first column)
 // so we do not provide headers here, but specify them in the $rows array below.
-$headers = array();
+$headers = [];
 
 // the $rows array contains an array of rows where each row is an array
 // of values for each column of the table in that row.  Additional documentation
 // can be found here:
 // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7 
-$rows = array();
+$rows = [];
 
 // Project Name row
-$rows[] = array(
-  array(
+$rows[] = [
+  [
     'data' => 'Project Name',
     'header' => TRUE,
     'width' => '20%',
-  ),
-  $project->name
-);
+  ],
+  $project->name,
+];
 // allow site admins to see the feature ID
 if (user_access('view ids')) {
   // Project ID
-  $rows[] = array(
-    array(
+  $rows[] = [
+    [
       'data' => 'Project ID',
       'header' => TRUE,
       'class' => 'tripal-site-admin-only-table-row',
-    ),
-    array(
+    ],
+    [
       'data' => $project->project_id,
       'class' => 'tripal-site-admin-only-table-row',
-    ),
-  );
+    ],
+  ];
 }
 // the $table array contains the headers and rows array as well as other
 // options for controlling the display of the table.  Additional
 // documentation can be found here:
 // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-$table = array(
+$table = [
   'header' => $headers,
   'rows' => $rows,
-  'attributes' => array(
+  'attributes' => [
     'id' => 'tripal_project-table-base',
-    'class' => 'tripal-data-table'
-  ),
+    'class' => 'tripal-data-table',
+  ],
   'sticky' => FALSE,
   'caption' => '',
-  'colgroups' => array(),
+  'colgroups' => [],
   'empty' => '',
-);
+];
 
 // once we have our table array structure defined, we call Drupal's theme_table()
 // function to generate the table.
 print theme_table($table);
 if ($description) { ?>
-  <div style="text-align: justify"><?php print $description; ?></div> <?php  
+    <div style="text-align: justify"><?php print $description; ?></div> <?php
 } 

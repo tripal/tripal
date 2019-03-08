@@ -10,7 +10,7 @@
  * @ingroup tripal_genetic
  */
 function tripal_genetic_views_default_views() {
-  $views = array();
+  $views = [];
 
   // User View ("Search Biological Content")
   // Remember, if you change the name/path of this view,
@@ -46,12 +46,12 @@ function tripal_genetic_defaultvalue_user_genotypes() {
 
   // Change the path
   $view->display['page_1']->display_options['path'] = 'chado/genotype';
-  $view->display['page_1']->display_options['menu'] = array(
+  $view->display['page_1']->display_options['menu'] = [
     'type' => 'normal',
     'title' => 'Genotypes',
     'description' => 'Genetic variations such as SNPs, MNPs and indels.',
-    'weight' => '-10'
-  );
+    'weight' => '-10',
+  ];
   unset($view->display['page_1']->display_options['tab_options']);
 
   // Remove edit/delete node
@@ -102,26 +102,26 @@ function tripal_genetic_defaultviews_admin_genotypes() {
   $handler->display->display_options['pager']['options']['quantity'] = '9';
   $handler->display->display_options['style_plugin'] = 'table';
   $handler->display->display_options['style_options']['grouping'] = '';
-  $handler->display->display_options['style_options']['columns'] = array(
+  $handler->display->display_options['style_options']['columns'] = [
     'uniquename' => 'uniquename',
     'name' => 'name',
     'description' => 'description',
-  );
+  ];
   $handler->display->display_options['style_options']['default'] = 'uniquename';
-  $handler->display->display_options['style_options']['info'] = array(
-    'uniquename' => array(
+  $handler->display->display_options['style_options']['info'] = [
+    'uniquename' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'name' => array(
+    ],
+    'name' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'description' => array(
+    ],
+    'description' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-  );
+    ],
+  ];
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['text']['id'] = 'area';
   $handler->display->display_options['empty']['text']['table'] = 'views';
@@ -156,11 +156,11 @@ function tripal_genetic_defaultviews_admin_genotypes() {
   $handler->display->display_options['filters']['uniquename']['expose']['label'] = 'Unique Name Contains';
   $handler->display->display_options['filters']['uniquename']['expose']['operator'] = 'uniquename_op';
   $handler->display->display_options['filters']['uniquename']['expose']['identifier'] = 'uniquename';
-  $handler->display->display_options['filters']['uniquename']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['uniquename']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Chado Genotype: Description */
   $handler->display->display_options['filters']['description']['id'] = 'description';
   $handler->display->display_options['filters']['description']['table'] = 'genotype';
@@ -172,11 +172,11 @@ function tripal_genetic_defaultviews_admin_genotypes() {
   $handler->display->display_options['filters']['description']['expose']['label'] = 'Description Contains';
   $handler->display->display_options['filters']['description']['expose']['operator'] = 'description_op';
   $handler->display->display_options['filters']['description']['expose']['identifier'] = 'description';
-  $handler->display->display_options['filters']['description']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['description']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');

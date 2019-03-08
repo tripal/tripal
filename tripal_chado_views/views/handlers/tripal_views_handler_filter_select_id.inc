@@ -7,8 +7,8 @@
 /**
  * This Handler provides a select list for the type field
  *
- *  NOTE: This handler only works when applied to the type_id field in the base_table of
- *  this view.
+ *  NOTE: This handler only works when applied to the type_id field in the
+ * base_table of this view.
  *
  * @ingroup tripal_views
  */
@@ -20,7 +20,7 @@ class tripal_views_handler_filter_select_id extends tripal_views_handler_filter_
   function init(&$view, &$options) {
     parent::init($view, $options);
 
-    if (preg_match('/(\w+)_id/',$this->field,$matches)) {
+    if (preg_match('/(\w+)_id/', $this->field, $matches)) {
       $this->parent_table = $matches[1];
     }
   }
@@ -30,7 +30,8 @@ class tripal_views_handler_filter_select_id extends tripal_views_handler_filter_
    * Override this function in extended handlers to easily change option list.
    *
    * @return
-   *   An array of options where the key is the value of this field in the database
+   *   An array of options where the key is the value of this field in the
+   *   database
    */
   function get_select_options() {
 
@@ -40,7 +41,7 @@ class tripal_views_handler_filter_select_id extends tripal_views_handler_filter_
     // First check that this table has a name field.
     $table_desc = chado_get_schema($this->parent_table);
     if (!isset($table_desc['fields'][$name_field])) {
-      return array();
+      return [];
     }
 
     // If the "Show All" options is set then show all the "names" from
@@ -56,8 +57,11 @@ class tripal_views_handler_filter_select_id extends tripal_views_handler_filter_
       // Simply grab all the values from the table referenced by
       // the foreign key constraint. Since we use the id as the key of
       // the options there is no need to use DISTRINCT in the query.
-      $resource = chado_select_record($this->parent_table, array($this->field, $name_field), $args);
-      $options = array();
+      $resource = chado_select_record($this->parent_table, [
+        $this->field,
+        $name_field,
+      ], $args);
+      $options = [];
       foreach ($resource as $r) {
         $options[$r->{$this->field}] = $r->{$name_field};
       }
@@ -95,15 +99,15 @@ class tripal_views_handler_filter_select_id extends tripal_views_handler_filter_
             FROM {!foreign_table}
             WHERE !id_field IN (SELECT col FROM t where col IS NOT NULL)
             ORDER BY !name_field ASC";
-      $sql = format_string($sql, array(
+      $sql = format_string($sql, [
         '!filter_table' => $this->table,
         '!foreign_table' => $this->parent_table,
         '!id_field' => $this->field,
-        '!name_field' => $name_field
-      ));
+        '!name_field' => $name_field,
+      ]);
 
       $resource = chado_query($sql, $arguments);
-      $options = array();
+      $options = [];
 
       if ($this->options['select_optional']) {
         $options['All'] = '- Any -';

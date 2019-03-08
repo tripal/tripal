@@ -10,7 +10,7 @@
  * @ingroup tripal_legacy_stock
  */
 function tripal_stock_views_default_views() {
-  $views = array();
+  $views = [];
 
   // User View ("Search Biological Content")
   // Remember, if you change the name/path of this view,
@@ -46,12 +46,12 @@ function tripal_stock_defaultvalue_user_stocks() {
 
   // Change the path
   $view->display['page_1']->display_options['path'] = 'chado/stock';
-  $view->display['page_1']->display_options['menu'] = array(
+  $view->display['page_1']->display_options['menu'] = [
     'type' => 'normal',
     'title' => 'Stocks',
     'description' => 'A stock is the physical entities of an organism, either living or preserved.',
-    'weight' => '-10'
-  );
+    'weight' => '-10',
+  ];
   unset($view->display['page_1']->display_options['tab_options']);
 
   // Change the permission
@@ -106,7 +106,7 @@ function tripal_stock_defaultview_admin_stocks() {
   $handler->display->display_options['pager']['options']['quantity'] = '9';
   $handler->display->display_options['style_plugin'] = 'table';
   $handler->display->display_options['style_options']['grouping'] = '';
-  $handler->display->display_options['style_options']['columns'] = array(
+  $handler->display->display_options['style_options']['columns'] = [
     'uniquename' => 'uniquename',
     'name_2' => 'name_2',
     'name' => 'name',
@@ -114,57 +114,57 @@ function tripal_stock_defaultview_admin_stocks() {
     'all_dbxref' => 'all_dbxref',
     'all_properties' => 'all_properties',
     'all_relationships' => 'all_relationships',
-  );
+  ];
   $handler->display->display_options['style_options']['default'] = '-1';
-  $handler->display->display_options['style_options']['info'] = array(
-    'uniquename' => array(
+  $handler->display->display_options['style_options']['info'] = [
+    'uniquename' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'name_2' => array(
+    ],
+    'name_2' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'name' => array(
+    ],
+    'name' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'common_name' => array(
+    ],
+    'common_name' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'all_dbxref' => array(
+    ],
+    'all_dbxref' => [
       'separator' => '',
-    ),
-    'all_properties' => array(
+    ],
+    'all_properties' => [
       'separator' => '',
-    ),
-    'all_relationships' => array(
+    ],
+    'all_relationships' => [
       'separator' => '',
-    ),
-  );
+    ],
+  ];
   /* Header: Global: Action Links */
   $handler->display->display_options['header']['action_links_area']['id'] = 'action_links_area';
   $handler->display->display_options['header']['action_links_area']['table'] = 'views';
   $handler->display->display_options['header']['action_links_area']['field'] = 'action_links_area';
   $handler->display->display_options['header']['action_links_area']['label'] = 'Action Links';
   $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
-  $handler->display->display_options['header']['action_links_area']['link-1'] = array(
+  $handler->display->display_options['header']['action_links_area']['link-1'] = [
     'label-1' => 'Add Stock',
     'path-1' => 'node/add/tripal-stock',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-2'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-2'] = [
     'label-2' => '',
     'path-2' => '',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-3'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-3'] = [
     'label-3' => '',
     'path-3' => '',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-4'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-4'] = [
     'label-4' => '',
     'path-4' => '',
-  );
+  ];
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['text']['id'] = 'area';
   $handler->display->display_options['empty']['text']['table'] = 'views';
@@ -249,11 +249,11 @@ function tripal_stock_defaultview_admin_stocks() {
   $handler->display->display_options['filters']['common_name']['expose']['label'] = 'Organism';
   $handler->display->display_options['filters']['common_name']['expose']['operator'] = 'common_name_op';
   $handler->display->display_options['filters']['common_name']['expose']['identifier'] = 'organism_common_name';
-  $handler->display->display_options['filters']['common_name']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['common_name']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Chado Stock: Type Id */
   $handler->display->display_options['filters']['type_id']['id'] = 'type_id';
   $handler->display->display_options['filters']['type_id']['table'] = 'stock';
@@ -265,11 +265,11 @@ function tripal_stock_defaultview_admin_stocks() {
   $handler->display->display_options['filters']['type_id']['expose']['label'] = 'Type';
   $handler->display->display_options['filters']['type_id']['expose']['operator'] = 'type_id_op';
   $handler->display->display_options['filters']['type_id']['expose']['identifier'] = 'type_id';
-  $handler->display->display_options['filters']['type_id']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['type_id']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Chado Stock: Name */
   $handler->display->display_options['filters']['name']['id'] = 'name';
   $handler->display->display_options['filters']['name']['table'] = 'stock';
@@ -281,11 +281,11 @@ function tripal_stock_defaultview_admin_stocks() {
   $handler->display->display_options['filters']['name']['expose']['label'] = 'Name Contains';
   $handler->display->display_options['filters']['name']['expose']['operator'] = 'name_op';
   $handler->display->display_options['filters']['name']['expose']['identifier'] = 'name';
-  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
 
   /** MANUALLY ADD since filter handler no exporting correctly */
   $handler->display->display_options['filters']['common_name']['expose']['values_form_type'] = 'select';
@@ -309,14 +309,14 @@ function tripal_stock_defaultview_admin_stocks() {
   $handler->display->display_options['tab_options']['weight'] = '0';
 
   /** MANUALLY ADD since filter handler no exporting correctly
-  $handler->display->display_options['filters']['common_name']['expose']['values_form_type'] = 'select';
-  $handler->display->display_options['filters']['common_name']['expose']['select_multiple'] = FALSE;
-  $handler->display->display_options['filters']['common_name']['expose']['select_optional'] = TRUE;
-  $handler->display->display_options['filters']['common_name']['expose']['max_length'] = 40;
-  $handler->display->display_options['filters']['type_id']['expose']['values_form_type'] = 'select';
-  $handler->display->display_options['filters']['type_id']['expose']['select_multiple'] = FALSE;
-  $handler->display->display_options['filters']['type_id']['expose']['select_optional'] = TRUE;
-  $handler->display->display_options['filters']['type_id']['expose']['max_length'] = 40;
-  */
+   * $handler->display->display_options['filters']['common_name']['expose']['values_form_type'] = 'select';
+   * $handler->display->display_options['filters']['common_name']['expose']['select_multiple'] = FALSE;
+   * $handler->display->display_options['filters']['common_name']['expose']['select_optional'] = TRUE;
+   * $handler->display->display_options['filters']['common_name']['expose']['max_length'] = 40;
+   * $handler->display->display_options['filters']['type_id']['expose']['values_form_type'] = 'select';
+   * $handler->display->display_options['filters']['type_id']['expose']['select_multiple'] = FALSE;
+   * $handler->display->display_options['filters']['type_id']['expose']['select_optional'] = TRUE;
+   * $handler->display->display_options['filters']['type_id']['expose']['max_length'] = 40;
+   */
   return $view;
 }

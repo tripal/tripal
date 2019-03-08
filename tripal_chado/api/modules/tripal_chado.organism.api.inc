@@ -2,7 +2,7 @@
 /**
  * @file
  * Provides API functions specificially for managing feature
- * records in Chado.  
+ * records in Chado.
  */
 
 /**
@@ -18,37 +18,38 @@
  * Retrieves a chado organism variable.
  *
  * @param $identifier
- *   An array with the key stating what the identifier is. Supported keys (only 
+ *   An array with the key stating what the identifier is. Supported keys (only
  *   on of the following unique keys is required):
  *    - organism_id: the chado organism.organism_id primary key.
- *    - genus & species: the chado organism.genus field & organism.species field.
- *   There are also some specially handled keys. They are:
- *    - property: An array/object describing the property to select records for. 
- *      It should at least have either a type_name (if unique across cvs) or 
- *      type_id. Other supported keys include: cv_id/cv_name (of the type), 
+ *    - genus & species: the chado organism.genus field & organism.species
+ *   field. There are also some specially handled keys. They are:
+ *    - property: An array/object describing the property to select records
+ *   for.
+ *      It should at least have either a type_name (if unique across cvs) or
+ *      type_id. Other supported keys include: cv_id/cv_name (of the type),
  *      value and rank.
  * @param $options
  *   An array of options. Supported keys include:
- *     - Any keys supported by chado_generate_var(). See that function 
+ *     - Any keys supported by chado_generate_var(). See that function
  *      definition for additional details.
  *
- * NOTE: the $identifier parameter can really be any array similar to $values 
- * passed into chado_select_record(). It should fully specify the organism 
+ * NOTE: the $identifier parameter can really be any array similar to $values
+ * passed into chado_select_record(). It should fully specify the organism
  * record to be returned.
  *
  * @return
- *   If unique values were passed in as an identifier then an object describing the organism
- *   will be returned (will be a chado variable from chado_generate_var()). Otherwise,
- *   NULL will be returned.
+ *   If unique values were passed in as an identifier then an object describing
+ *   the organism will be returned (will be a chado variable from
+ *   chado_generate_var()). Otherwise, NULL will be returned.
  *
  * @ingroup tripal_organism_api
  */
-function chado_get_organism($identifiers, $options = array()) {
+function chado_get_organism($identifiers, $options = []) {
 
   // Set Defaults.
   if (!isset($options['include_fk'])) {
     // Tells chado_generate_var not to follow any foreign keys.
-    $options['include_fk'] = array();
+    $options['include_fk'] = [];
   }
 
   // Error Checking of parameters.
@@ -58,9 +59,9 @@ function chado_get_organism($identifiers, $options = array()) {
       TRIPAL_ERROR,
       "chado_get_organism: The identifier passed in is expected to be an array with the key
         matching a column name in the organism table (ie: organism_id or name). You passed in %identifier.",
-      array(
-        '%identifier'=> print_r($identifiers, TRUE)
-      )
+      [
+        '%identifier' => print_r($identifiers, TRUE),
+      ]
     );
   }
   elseif (empty($identifiers)) {
@@ -70,9 +71,9 @@ function chado_get_organism($identifiers, $options = array()) {
       "chado_get_organism: You did not pass in anything to identify the organism you want. The identifier
         is expected to be an array with the key matching a column name in the organism table
         (ie: organism_id or name). You passed in %identifier.",
-      array(
-        '%identifier'=> print_r($identifiers, TRUE)
-      )
+      [
+        '%identifier' => print_r($identifiers, TRUE),
+      ]
     );
   }
 
@@ -81,8 +82,8 @@ function chado_get_organism($identifiers, $options = array()) {
     $property = $identifiers['property'];
     unset($identifiers['property']);
     $organism = chado_get_record_with_property(
-      array('table' => 'organism', 'base_records' => $identifiers),
-      array('type_name' => $property),
+      ['table' => 'organism', 'base_records' => $identifiers],
+      ['type_name' => $property],
       $options
     );
   }
@@ -105,9 +106,9 @@ function chado_get_organism($identifiers, $options = array()) {
       'tripal_organism_api',
       TRIPAL_ERROR,
       "chado_get_organism: The identifiers you passed in were not unique. You passed in %identifier.",
-      array(
-        '%identifier'=> print_r($identifiers, TRUE)
-      )
+      [
+        '%identifier' => print_r($identifiers, TRUE),
+      ]
     );
   }
 
@@ -120,9 +121,9 @@ function chado_get_organism($identifiers, $options = array()) {
       "chado_get_organism: chado_generate_var() failed to return a organism based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look
         for a chado_generate_var error for additional clues. You passed in %identifier.",
-      array(
-        '%identifier'=> print_r($identifiers, TRUE)
-      )
+      [
+        '%identifier' => print_r($identifiers, TRUE),
+      ]
     );
   }
 
@@ -137,6 +138,7 @@ function chado_get_organism($identifiers, $options = array()) {
  *
  * @param $organism
  *   An organism object.
+ *
  * @return
  *   The full scientific name of the organism.
  *
@@ -155,7 +157,7 @@ function chado_get_organism_scientific_name($organism) {
       }
     }
     else {
-      $rank_term = chado_get_cvterm(array('cvterm_id' => $organism->type_id));
+      $rank_term = chado_get_cvterm(['cvterm_id' => $organism->type_id]);
       if ($rank_term) {
         $rank = $rank_term->name;
       }
@@ -165,28 +167,31 @@ function chado_get_organism_scientific_name($organism) {
       $rank = chado_abbreviate_infraspecific_rank($rank);
       $name .= ' ' . $rank . ' ' . $organism->infraspecific_name;
     }
-    else if ($organism->infraspecific_name) {
-      $name .= ' ' . $organism->infraspecific_name;
+    else {
+      if ($organism->infraspecific_name) {
+        $name .= ' ' . $organism->infraspecific_name;
+      }
     }
   }
   return $name;
 }
 
 /**
- * Returns a list of organisms that are currently synced with Drupal to use in 
+ * Returns a list of organisms that are currently synced with Drupal to use in
  * select lists.
  *
  * @param $syncd_only
- *   Whether or not to return all chado organisms or just those sync'd with 
+ *   Whether or not to return all chado organisms or just those sync'd with
  *   drupal. Defaults to TRUE (only sync'd organisms).
+ *
  * @return
- *   An array of organisms sync'd with Drupal where each value is the organism 
+ *   An array of organisms sync'd with Drupal where each value is the organism
  *   scientific name and the keys are organism_id's.
  *
  * @ingroup tripal_organism_api
  */
 function chado_get_organism_select_options($syncd_only = TRUE) {
-  $org_list = array();
+  $org_list = [];
   $org_list[] = 'Select an organism';
 
   if ($syncd_only) {
@@ -205,7 +210,7 @@ function chado_get_organism_select_options($syncd_only = TRUE) {
   }
   else {
     // use this SQL statement for getting the organisms
-    $csql =  "SELECT * FROM {organism} ORDER BY genus, species";
+    $csql = "SELECT * FROM {organism} ORDER BY genus, species";
     $orgs = chado_query($csql);
 
     // Iterate through the organisms and build an array of those that are synced.
@@ -242,7 +247,7 @@ function chado_get_organism_image_url($organism) {
   // is the current way for handling uploaded images. It allows the file to
   // keep it's proper name and extension.
   $fid = db_select('file_usage', 'fu')
-    ->fields('fu', array('fid'))
+    ->fields('fu', ['fid'])
     ->condition('module', 'tripal_organism')
     ->condition('type', 'organism_image')
     ->condition('id', $nid)
@@ -257,7 +262,7 @@ function chado_get_organism_image_url($organism) {
   // tripal and we keep it for backwards compatibility.
   $base_path = realpath('.');
   $image_dir = tripal_get_files_dir('tripal_organism') . "/images";
-  $image_name =  $organism->genus . "_" . $organism->species . ".jpg";
+  $image_name = $organism->genus . "_" . $organism->species . ".jpg";
   $image_path = "$base_path/$image_dir/$image_name";
 
   if (file_exists($image_path)) {
@@ -291,7 +296,7 @@ function chado_get_organism_image_url($organism) {
  * @ingroup tripal_organism_api
  */
 function chado_autocomplete_organism($text) {
-  $matches = array();
+  $matches = [];
   $genus = $text;
   $species = '';
   if (preg_match('/^(.*?)\s+(.*)$/', $text, $matches)) {
@@ -299,16 +304,16 @@ function chado_autocomplete_organism($text) {
     $species = $matches[2];
   }
   $sql = "SELECT * FROM {organism} WHERE lower(genus) like lower(:genus) ";
-  $args = array();
+  $args = [];
   $args[':genus'] = $genus . '%';
   if ($species) {
     $sql .= "AND lower(species) like lower(:species) ";
-    $args[':species'] =  $species . '%';
+    $args[':species'] = $species . '%';
   }
   $sql .= "ORDER BY genus, species ";
   $sql .= "LIMIT 25 OFFSET 0 ";
   $results = chado_query($sql, $args);
-  $items = array(['args' => [$sql => $args]]);
+  $items = [['args' => [$sql => $args]]];
   foreach ($results as $organism) {
     $name = chado_get_organism_scientific_name($organism);
     $items["$name [id: $organism->organism_id]"] = $name;
@@ -321,6 +326,7 @@ function chado_autocomplete_organism($text) {
  *
  * @param $rank
  *   The rank below species.
+ *
  * @return
  *   The proper abbreviation for the rank.
  *
@@ -328,7 +334,7 @@ function chado_autocomplete_organism($text) {
  */
 function chado_abbreviate_infraspecific_rank($rank) {
   $abb = '';
-  switch($rank) {
+  switch ($rank) {
     case 'no_rank':
       $abb = '';
       break;

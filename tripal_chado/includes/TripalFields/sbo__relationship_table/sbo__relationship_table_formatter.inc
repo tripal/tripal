@@ -6,12 +6,12 @@ class sbo__relationship_table_formatter extends ChadoFieldFormatter {
   public static $default_label = 'Relationship Table by Type';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('sbo__relationship');
+  public static $field_types = ['sbo__relationship'];
 
-  public static $default_settings = array(
+  public static $default_settings = [
     'subject_caption' => 'This @content_type is <em>@rel_type</em> the following:',
     'object_caption' => 'The following are <em>@rel_type</em> this @content_type:',
-  );
+  ];
 
   /**
    *
@@ -24,25 +24,27 @@ class sbo__relationship_table_formatter extends ChadoFieldFormatter {
 
     // Ensure the default are set if the value is not configured.
     foreach ($this::$default_settings as $key => $value) {
-      if (!isset($settings[$key])) { $settings[$key] = $value; }
+      if (!isset($settings[$key])) {
+        $settings[$key] = $value;
+      }
     }
 
-    $element = array();
-    $element['subject_caption'] = array(
+    $element = [];
+    $element['subject_caption'] = [
       '#type' => 'textfield',
       '#title' => 'Caption: where current entity is the subject.',
       '#description' => 'This labels the relationship tables where the current entity is the subject of the relationship.',
       '#default_value' => $settings['subject_caption'],
-    );
+    ];
 
-    $element['object_caption'] = array(
+    $element['object_caption'] = [
       '#type' => 'textfield',
       '#title' => 'Caption: where current entity is the object.',
       '#description' => 'This labels the relationship tables where the current entity is the object of the relationship.',
       '#default_value' => $settings['object_caption'],
-    );
+    ];
 
-    $element['tokens'] = array(
+    $element['tokens'] = [
       '#type' => 'item',
       '#title' => 'Tokens',
       '#markup' => 'The following tokens should be used in <strong>both the above captions</strong>:</p>
@@ -50,7 +52,7 @@ class sbo__relationship_table_formatter extends ChadoFieldFormatter {
                        <li>@rel_type: the type name of the current relationship.</li>
                        <li>@content_type: the human-readable name of the content type for the current entity.</li>
                      </ul>',
-    );
+    ];
 
     return $element;
   }
@@ -64,14 +66,17 @@ class sbo__relationship_table_formatter extends ChadoFieldFormatter {
 
     // Ensure the default are set if the value is not configured.
     foreach ($this::$default_settings as $key => $value) {
-      if (!isset($settings[$key])) { $settings[$key] = $value; }
+      if (!isset($settings[$key])) {
+        $settings[$key] = $value;
+      }
     }
 
     $summary = t('<strong>Subject Caption:</strong> @subject<br><strong>Object Caption:</strong> @object',
-        array(
-          '@subject' => $settings['subject_caption'],
-          '@object' => $settings['object_caption'])
-        );
+      [
+        '@subject' => $settings['subject_caption'],
+        '@object' => $settings['object_caption'],
+      ]
+    );
 
     return $summary;
   }
@@ -85,21 +90,23 @@ class sbo__relationship_table_formatter extends ChadoFieldFormatter {
     // Get the settings and set defaults.
     $settings = $display['settings'];
     foreach ($this::$default_settings as $key => $value) {
-      if (!isset($settings[$key])) { $settings[$key] = $value; }
+      if (!isset($settings[$key])) {
+        $settings[$key] = $value;
+      }
     }
 
     // Headers depending on which fields are available.
-    $headers = array(
-      'all' => array('Name', 'Unique Name', 'Species', 'Type'),
-      'nst' => array('Name', 'Species', 'Type'),
-      'nut' => array('Name', 'Unique Name', 'Type'),
-      'nt' => array('Name', 'Type'),
-    );
+    $headers = [
+      'all' => ['Name', 'Unique Name', 'Species', 'Type'],
+      'nst' => ['Name', 'Species', 'Type'],
+      'nut' => ['Name', 'Unique Name', 'Type'],
+      'nt' => ['Name', 'Type'],
+    ];
 
     // This is an array of tables where each table corresponds to a relationship type.
     // The header is the same for all tables and the caption includes a sentence
     // stating the relationship type.
-    $tables = array();
+    $tables = [];
 
     // For each relationship...
     foreach ($items as $delta => $item) {
@@ -120,15 +127,20 @@ class sbo__relationship_table_formatter extends ChadoFieldFormatter {
       $relationship_type = $item['value']['local:relationship_type'];
 
       // Make types more readable.
-      foreach(array('subject_type', 'object_type', 'relationship_type') as $var) {
-        $$var = ucwords(str_replace('_',' ', $$var));
+      foreach (['subject_type', 'object_type', 'relationship_type'] as $var) {
+        $$var = ucwords(str_replace('_', ' ', $$var));
       }
 
       // Handle some special cases.
       // For mRNA objects we don't want to show the CDS, exons, 5' UTR, etc.
       // we want to show the parent gene and the protein.
       if ($object_type == 'mRNA' and
-          (in_array($subject_type, array('CDS', 'exon', 'five_prime_UTR', 'three_prime_UTR')))) {
+        (in_array($subject_type, [
+          'CDS',
+          'exon',
+          'five_prime_UTR',
+          'three_prime_UTR',
+        ]))) {
         continue;
       }
 
@@ -151,14 +163,18 @@ class sbo__relationship_table_formatter extends ChadoFieldFormatter {
         list($entity_type, $object_entity_id) = explode(':', $item['value']['local:relationship_object']['entity']);
         if ($object_entity_id != $entity->id) {
           $object_name = l($object_name, 'bio_data/' . $object_entity_id);
-          if ($object_uniquename) { $object_uniquename = l($object_uniquename, 'bio_data/' . $object_entity_id); }
+          if ($object_uniquename) {
+            $object_uniquename = l($object_uniquename, 'bio_data/' . $object_entity_id);
+          }
         }
       }
       if (array_key_exists('entity', $item['value']['local:relationship_subject'])) {
         list($entity_type, $subject_entity_id) = explode(':', $item['value']['local:relationship_subject']['entity']);
         if ($subject_entity_id != $entity->id) {
           $subject_name = l($subject_name, 'bio_data/' . $subject_entity_id);
-          if ($subject_uniquename) { $subject_uniquename = l($subject_uniquename, 'bio_data/' . $subject_entity_id); }
+          if ($subject_uniquename) {
+            $subject_uniquename = l($subject_uniquename, 'bio_data/' . $subject_entity_id);
+          }
         }
       }
 
@@ -172,50 +188,64 @@ class sbo__relationship_table_formatter extends ChadoFieldFormatter {
       // Add the related entity to the tables array by type of relationship.
       if ($is_subject) {
         $tables[$relationship_type]['caption'] = t($settings['subject_caption'],
-          array('@rel_type' => $relationship_type, '@content_type' => $entity->rdfs__type['und'][0]['value']));
+          [
+            '@rel_type' => $relationship_type,
+            '@content_type' => $entity->rdfs__type['und'][0]['value'],
+          ]);
 
-        $row = array();
+        $row = [];
         $row['name'] = $object_name;
-        if ($object_uniquename) { $row['uniquename'] = $object_uniquename; }
-        if ($object_species) { $row['species'] = $object_species; }
+        if ($object_uniquename) {
+          $row['uniquename'] = $object_uniquename;
+        }
+        if ($object_species) {
+          $row['species'] = $object_species;
+        }
         $row['type'] = $object_type;
 
         $tables[$relationship_type]['rows'][] = $row;
       }
       else {
         $tables[$relationship_type]['caption'] = t($settings['object_caption'],
-          array('@rel_type' => $relationship_type, '@content_type' => $entity->rdfs__type['und'][0]['value']));
+          [
+            '@rel_type' => $relationship_type,
+            '@content_type' => $entity->rdfs__type['und'][0]['value'],
+          ]);
 
-        $row = array();
+        $row = [];
         $row['name'] = $subject_name;
-        if ($subject_uniquename) { $row['uniquename'] = $subject_uniquename; }
-        if ($subject_species) { $row['species'] = $subject_species; }
+        if ($subject_uniquename) {
+          $row['uniquename'] = $subject_uniquename;
+        }
+        if ($subject_species) {
+          $row['species'] = $subject_species;
+        }
         $row['type'] = $subject_type;
 
         $tables[$relationship_type]['rows'][] = $row;
       }
     }
 
-    $element[0] = array(
+    $element[0] = [
       '#type' => 'markup',
       '#tree' => TRUE,
-    );
+    ];
 
     foreach ($tables as $relationship_type => $details) {
 
-      $table_id = 'sbo__relationship-'.$item['value']['local:relationship_subject']['rdfs:type']; //$this->getPagerElementID();
-      $element[0][$relationship_type] = array(
+      $table_id = 'sbo__relationship-' . $item['value']['local:relationship_subject']['rdfs:type']; //$this->getPagerElementID();
+      $element[0][$relationship_type] = [
         '#type' => 'markup',
         '#theme' => 'table',
-        '#header' => $headers[ $details['header_type'] ],
+        '#header' => $headers[$details['header_type']],
         '#rows' => $details['rows'],
         '#caption' => $details['caption'],
         '#sticky' => FALSE,
-        '#attributes' => array(
+        '#attributes' => [
           'class' => 'tripal-data-table',
           'id' => $table_id,
-        ),
-      );
+        ],
+      ];
     }
   }
 }

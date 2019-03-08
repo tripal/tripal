@@ -1,25 +1,32 @@
 <?php
+
 /**
  * @file
  * OWL redesign using Classes (Objects)
  */
 class OWLStanza {
+
   // The XMLReader object.
   private $owl = NULL;
+
   // A boolean (TRUE or FALSE) indicating if children should be parsed.
   private $parse_children = TRUE;
+
   // The XML element tag name (e.g. ‘owl:ObjectProperty’,
   // ‘owl:AnnotationProperty’, 'owl:Ontology').
   private $tag_name = '';
+
   // A key/value associative array of all of the attributes.
-  private $attributes = array ();
+  private $attributes = [];
+
   // An array of OWLStanza objects.
-  private $children = array ();
+  private $children = [];
+
   // The text value of a XML element.
   private $value;
+
   // Indicates if there is no more to read from the OWL XML file.
   private $is_finished = FALSE;
-
 
 
   /**
@@ -60,67 +67,69 @@ class OWLStanza {
    * This function is to parse each of the OWL Stanzas of the ro.owl file.
    */
 
-    private function parse() {
+  private function parse() {
 
-      // Make sure we are at the beginning of an element.
-      while ($this->owl->nodeType != XMLReader::ELEMENT) {
-        // In the event we've hit the end of the file, then return.
-        if ($this->is_finished) {
-          return;
-        }
-        $this->owl_read();
-       }
-
-      $this->tag_name = $this->owl->name;
-
-      $has_value = $this->owl->hasValue;
-      $is_empty = $this->owl->isEmptyElement;
-
-      // Get the attributes.
-      $num_attrs = $this->owl->attributeCount;
-      if ($num_attrs > 0) {
-        $this->owl->moveToFirstAttribute();
-        for ($i = 0; $i < $num_attrs; $i++) {
-          $this->attributes[$this->owl->name] = $this->owl->value;
-          $this->owl->moveToNextAttribute();
-        }
-      }
-
-      // If this element is empty then just return.
-      if ($is_empty) {
+    // Make sure we are at the beginning of an element.
+    while ($this->owl->nodeType != XMLReader::ELEMENT) {
+      // In the event we've hit the end of the file, then return.
+      if ($this->is_finished) {
         return;
       }
+      $this->owl_read();
+    }
 
-      // Determine if the element has a value. If so, then set the value for the class.
-      if ($this->owl->hasValue) {
-        $this->owl_read();
-        $this->value = $this->owl->value;
+    $this->tag_name = $this->owl->name;
+
+    $has_value = $this->owl->hasValue;
+    $is_empty = $this->owl->isEmptyElement;
+
+    // Get the attributes.
+    $num_attrs = $this->owl->attributeCount;
+    if ($num_attrs > 0) {
+      $this->owl->moveToFirstAttribute();
+      for ($i = 0; $i < $num_attrs; $i++) {
+        $this->attributes[$this->owl->name] = $this->owl->value;
+        $this->owl->moveToNextAttribute();
       }
+    }
 
-      // Get the children that should be parsed within the Stanza.
-      if ($this->parse_children == TRUE) {
-        while ($this->owl_read()) {
-          if ($this->owl->nodeType == XMLReader::END_ELEMENT and $this->owl->name == $this->tag_name) {
-            return;
-          }
-          else if ($this->owl->nodeType == XMLReader::ELEMENT) {
+    // If this element is empty then just return.
+    if ($is_empty) {
+      return;
+    }
+
+    // Determine if the element has a value. If so, then set the value for the class.
+    if ($this->owl->hasValue) {
+      $this->owl_read();
+      $this->value = $this->owl->value;
+    }
+
+    // Get the children that should be parsed within the Stanza.
+    if ($this->parse_children == TRUE) {
+      while ($this->owl_read()) {
+        if ($this->owl->nodeType == XMLReader::END_ELEMENT and $this->owl->name == $this->tag_name) {
+          return;
+        }
+        else {
+          if ($this->owl->nodeType == XMLReader::ELEMENT) {
             $child = new OWLStanza($this->owl);
             $this->children[] = $child;
           }
         }
       }
     }
+  }
 
 
-   /**
-    * Get the Value
-    *
-    * @ return The text value of a XML element.
-    */
+  /**
+   * Get the Value
+   *
+   * @ return The text value of a XML element.
+   */
 
-    public function getValue() {
-      return $this->value;
-    }
+  public function getValue() {
+    return $this->value;
+  }
 
   /**
    * Gets the children array.
@@ -130,21 +139,23 @@ class OWLStanza {
   public function getChildren() {
     return $this->children;
   }
+
   /**
    * Sets the children array.
    *
    * @param $children
    * An array of OWLStanza objects containing the children elements.
+   *
    * @return FALSE if the array was not set, TRUE otherwise.
    */
   public function setChildren($children) {
     // Makes sure the incoming argument is an array.
-    if (! is_array ( $children )) {
+    if (!is_array($children)) {
       return FALSE;
     }
     // Make sure that all of the array elements are OWLStanza objects.
-    foreach ( $children as $child ) {
-      if (get_class ( $child ) != 'OWLStanza') {
+    foreach ($children as $child) {
+      if (get_class($child) != 'OWLStanza') {
         return FALSE;
       }
     }
@@ -178,11 +189,13 @@ class OWLStanza {
   public function getTagName() {
     return $this->tag_name;
   }
+
   /**
    * Sets the tag name.
    *
    * @param $tag_name The
    *          XML element tag name
+   *
    * @return value element tag name.
    */
   public function setTagName($tag_name) {
@@ -204,17 +217,19 @@ class OWLStanza {
    * Sets the attributes array.
    *
    * @param $attributes An
-   *          array containing a key/value associative array of all of the attributes.
+   *          array containing a key/value associative array of all of the
+   *   attributes.
+   *
    * @return FALSE if the array was not set, TRUE otherwise.
    */
   public function setAttributes($attributes) {
     // Makes sure the incoming argument is an array.
-    if (! is_array ( $attributes )) {
+    if (!is_array($attributes)) {
       return FALSE;
     }
     // Make sure that all of the array are key/values.
-    foreach ( $attributes as $attribute_name ) {
-      if (get_class ($attribute_name ) != 'OWLStanza') {
+    foreach ($attributes as $attribute_name) {
+      if (get_class($attribute_name) != 'OWLStanza') {
         return FALSE;
       }
     }
@@ -226,10 +241,11 @@ class OWLStanza {
    *
    * @param
    *          $attribute_name
+   *
    * @return An|NULL
    */
   public function getAttribute($attribute_name) {
-    foreach ($this->attributes as $aname => $value ) {
+    foreach ($this->attributes as $aname => $value) {
       if ($aname == $attribute_name) {
         return $value;
       }
@@ -262,7 +278,7 @@ class OWLStanza {
     // Iterate through the attributes and add them to our XML string.
     if (count($this->attributes) > 0) {
       foreach ($this->attributes as $aname => $value) {
-        $xml .=  " " . $aname . '="' . $value . '"';
+        $xml .= " " . $aname . '="' . $value . '"';
       }
     }
 
@@ -287,7 +303,7 @@ class OWLStanza {
     foreach ($this->children as $child) {
       // We want to add two character indentation to all lines returned by
       // the child XML.
-      $childs .= preg_replace("/^/","  ", $child->getXML());
+      $childs .= preg_replace("/^/", "  ", $child->getXML());
     }
     $xml .= ">\n";
     $xml .= $childs;

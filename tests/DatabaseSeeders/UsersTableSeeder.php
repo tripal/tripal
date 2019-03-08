@@ -4,13 +4,12 @@ namespace Tests\DatabaseSeeders;
 
 use StatonLab\TripalTestSuite\Database\Seeder;
 
-class UsersTableSeeder extends Seeder
-{
+class UsersTableSeeder extends Seeder {
+
   /**
    * Seeds the database with users.
    */
-  public function up()
-  {
+  public function up() {
     $new_user = [
       'name' => 'test user',
       'pass' => 'secret',

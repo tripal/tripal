@@ -1,11 +1,12 @@
 <?php
 
 class sbo__phenotype_widget extends ChadoFieldWidget {
+
   // The default lable for this field.
   public static $default_label = 'Phenotype';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('sbo__phenotype');
+  public static $field_types = ['sbo__phenotype'];
 
   /**
    *

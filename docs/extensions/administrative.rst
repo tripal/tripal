@@ -23,6 +23,10 @@ Tripal Curator is a Toolbox for curating Chado Properties.  Split properties int
 Tripal HeadQuarters
 -------------------
 
+.. image:: https://tripal.readthedocs.io/en/7.x-3.x/_images/Tripal-Gold.png
+  :target: https://tripal.readthedocs.io/en/7.x-3.x/extensions/module_rating.html#Gold
+  :alt: Tripal Rating: Gold
+
 Tripal HeadQuarters (HQ) provides an administrative layer for Tripal, giving users limited access to content creation forms which must be approved by an admin before they are inserted into the database. Admins can use Chado-specific permissions to define organism or project-specific administrative rights.
 
 `Documentation <https://tripal-hq.readthedocs.io/en/latest/index.html>`__
