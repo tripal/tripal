@@ -70,7 +70,7 @@ function chado_get_publication($identifiers, $options = []) {
     );
   }
 
-  // If one of the identifiers is property then use 
+  // If one of the identifiers is property then use
   // chado_get_record_with_property().
   if (array_key_exists('property', $identifiers)) {
     $property = $identifiers['property'];
@@ -124,7 +124,7 @@ function chado_get_publication($identifiers, $options = []) {
     }
 
   }
-  // Else we have a simple case and we can just use chado_generate_var to get 
+  // Else we have a simple case and we can just use chado_generate_var to get
   // the pub.
   else {
     // Try to get the pub.
@@ -192,7 +192,7 @@ function chado_get_publication($identifiers, $options = []) {
  */
 function chado_publication_exists($pub_details) {
 
-  // First try to find the publication using the accession number if that key 
+  // First try to find the publication using the accession number if that key
   // exists in the details array.
   if (array_key_exists('Publication Dbxref', $pub_details)) {
     $pub = chado_get_publication(['dbxref' => $pub_details['Publication Dbxref']]);
@@ -239,7 +239,7 @@ function chado_publication_exists($pub_details) {
     return [];
   }
 
-  // Get the series name.  The pub.series_name field is only 255 chars so we 
+  // Get the series name.  The pub.series_name field is only 255 chars so we
   // must truncate to be safe.
   $series_name = '';
   if (array_key_exists('Series Name', $pub_details)) {
@@ -252,7 +252,7 @@ function chado_publication_exists($pub_details) {
     $series_name = substr($pub_details['Conference Name'], 0, 255);
   }
 
-  // Make sure the publication is unique using the prefereed import 
+  // Make sure the publication is unique using the prefereed import
   // duplication check.
   $import_dups_check = variable_get('tripal_pub_import_duplicate_check', 'title_year_media');
   $pubs = [];
@@ -530,7 +530,7 @@ function chado_execute_pub_importer($import_id, $publish = TRUE,
     $total_pubs = 0;
 
     // Loop until we have a $pubs array that does not have
-    // our requested numer of records.  This means we've hit the end    
+    // our requested numer of records.  This means we've hit the end
     do {
       // retrieve the pubs for this page. We'll retreive 100 at a time
       tripal_report_error($message_type, TRIPAL_INFO,
@@ -674,7 +674,7 @@ function chado_reimport_publications($do_contact = FALSE, $dbxref = NULL,
   $transaction = db_transaction();
   try {
 
-    // Get a list of all publications by their Dbxrefs that have supported 
+    // Get a list of all publications by their Dbxrefs that have supported
     // databases.
     $sql = "
       SELECT DB.name as db_name, DBX.accession
@@ -801,7 +801,7 @@ function chado_pub_create_citations($options) {
     if ($pub_arr) {
       $citation = chado_pub_create_citation($pub_arr);
       print $citation . "\n\n";
-      // Replace if citation exists. This condition is never TRUE if 
+      // Replace if citation exists. This condition is never TRUE if
       // $skip_existing is TRUE.
       if ($pub_arr['Citation']) {
         $sql = "
@@ -1208,10 +1208,12 @@ function chado_get_minimal_pub_info($pub) {
     ],
   ];
   $abstract = chado_generate_var('pubprop', $values, $options);
-  $abstract = chado_expand_var($abstract, 'field', 'pubprop.value');
   $abstract_text = '';
-  if ($abstract) {
-    $abstract_text = htmlspecialchars($abstract->value);
+  if($abstract) {
+    $abstract = chado_expand_var($abstract, 'field', 'pubprop.value');
+    if ($abstract) {
+      $abstract_text = htmlspecialchars($abstract->value);
+    }
   }
 
   // Get the author list.
@@ -1226,10 +1228,12 @@ function chado_get_minimal_pub_info($pub) {
     ],
   ];
   $authors = chado_generate_var('pubprop', $values, $options);
-  $authors = chado_expand_var($authors, 'field', 'pubprop.value');
   $authors_list = 'N/A';
-  if ($authors) {
-    $authors_list = $authors->value;
+  if($authors) {
+    $authors = chado_expand_var($authors, 'field', 'pubprop.value');
+    if ($authors) {
+      $authors_list = $authors->value;
+    }
   }
 
   // Get the first database cross-reference with a url.
