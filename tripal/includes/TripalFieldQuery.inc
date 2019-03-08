@@ -247,4 +247,11 @@ class TripalFieldQuery extends EntityFieldQuery {
       throw new EntityFieldQueryException(t("Field storage engine not found."));
     }
   }
+
+  /**
+   * Allows query object to be dumped as a string.
+   */
+  public function __toString() {
+    return print_r($this, TRUE);
+  }
 }
