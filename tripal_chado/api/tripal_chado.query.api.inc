@@ -2143,25 +2143,3 @@ function chado_replace_table_prefix($string) {
 
   return $string;
 }
-
-/**
- * Replaces the schema name form public to the correct drupal schema name.
- *
- * @param string $table The table name with a prefix such as "public."
- *
- * @return mixed
- *    The table name with the correct prefix.
- */
-function chado_replace_schema_prefix($table) {
-  if (strpos($table, 'public.') === 0) {
-    $replace = chado_get_schema_name('drupal') . '.';
-    return str_replace('public.', $replace, $table);
-  }
-
-  if (strpos($table, 'chado.') === 0) {
-    $replace = chado_get_schema_name('chado') . '.';
-    return str_replace('chado.', $replace, $table);
-  }
-
-  return $table;
-}

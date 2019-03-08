@@ -180,7 +180,7 @@ class ChadoPrefixExtender extends SelectQueryExtender {
   /**
    * Checks if a table is a chado table.
    *
-   * @param string $table
+   * @param string $table The table name.
    *
    * @return bool
    */
@@ -220,7 +220,30 @@ class ChadoPrefixExtender extends SelectQueryExtender {
     // Now that the schema has been set, we can replace it with the correct
     // name. Note that schema names can be altered by developers so we need to
     // to run the following function to obtain the final name.
-    $table = chado_replace_schema_prefix($table);
+    $table = static::getRealSchema($table);
+
+    return $table;
+  }
+
+  /**
+   * Allows altered schema names to be replaces correctly.
+   *
+   * @param string $table
+   *     The table name with a prefix such as "chado." or "public."
+   *
+   * @return mixed
+   *    The table name with the correct prefix.
+   */
+  public static function getRealSchema($table) {
+    if (strpos($table, 'public.') === 0) {
+      $replace = chado_get_schema_name('drupal') . '.';
+      return str_replace('public.', $replace, $table);
+    }
+
+    if (strpos($table, 'chado.') === 0) {
+      $replace = chado_get_schema_name('chado') . '.';
+      return str_replace('chado.', $replace, $table);
+    }
 
     return $table;
   }

@@ -238,4 +238,29 @@ class ChadoQueryTest extends TripalTestCase {
     $this->assertNotEmpty($found);
     $this->assertEquals($feature_cvterm['cvterm_id'], $found->cvterm_id);
   }
+
+  /**
+   * @group api
+   * @group chado
+   * @group chado_db_select
+   */
+  public function test_is_chado_table_returns_correct_results() {
+    $this->assertTrue(\ChadoPrefixExtender::isChadoTable('analysis'));
+    $this->assertTrue(\ChadoPrefixExtender::isChadoTable('feature_cvtermprop'));
+    $this->assertFalse(\ChadoPrefixExtender::isChadoTable('users'));
+  }
+
+  /**
+   * @group api
+   * @group chado
+   * @group chado_db_select
+   */
+  public function test_get_real_schema_returns_correct_results() {
+    $chado = chado_get_schema_name('chado');
+    $public = chado_get_schema_name('drupal');
+
+    $this->assertEquals($chado . '.analysis', \ChadoPrefixExtender::getRealSchema('chado.analysis'));
+    $this->assertEquals($public . '.users', \ChadoPrefixExtender::getRealSchema('public.users'));
+    $this->assertEquals('users', \ChadoPrefixExtender::getRealSchema('users'));
+  }
 }
