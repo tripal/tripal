@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @class
  * Purpose:
@@ -35,7 +36,7 @@ class remote__data extends WebServicesField {
   // Drupal will automatically change these settings for all fields.
   // Once instances exist for a field type then these settings cannot be
   // changed.
-  public static $default_settings = array(
+  public static $default_settings = [
     'storage' => 'field_tripal_ws_storage',
     // It is expected that all fields set a 'value' in the load() function.
     // In many cases, the value may be an associative array of key/value pairs.
@@ -43,8 +44,8 @@ class remote__data extends WebServicesField {
     // be a controlled vocabulary term (e.g. rdfs:type). Keys in the load()
     // function that are supported by the query() function should be
     // listed here.
-    'searchable_keys' => array(),
-  );
+    'searchable_keys' => [],
+  ];
 
   // Provide a list of instance specific settings. These can be access within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
@@ -53,7 +54,7 @@ class remote__data extends WebServicesField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. schema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'schema',
     // The name of the term.
@@ -70,14 +71,14 @@ class remote__data extends WebServicesField {
     // attached asynchronously.
     'auto_attach' => FALSE,
     // Settings to allow the site admin to set the remote data source info.
-    'data_info' => array(
+    'data_info' => [
       'query' => '',
       'remote_site' => '',
       'description' => '',
       'rd_field_name' => '',
       'site_logo' => '',
-    ),
-  );
+    ],
+  ];
 
   // A boolean specifying that users should not be allowed to create
   // fields and instances of this field type through the UI. Such
@@ -123,6 +124,7 @@ class remote__data extends WebServicesField {
       }
     }
   }
+
   /**
    * @see WebServicesField::load()
    */
@@ -137,18 +139,18 @@ class remote__data extends WebServicesField {
     $field_type = $this->field['type'];
 
     // Set some defaults for the empty record.
-    $entity->{$field_name}['und'][0] = array(
+    $entity->{$field_name}['und'][0] = [
       'value' => '',
       'remote_entity' => NULL,
       'error' => FALSE,
       'warning' => FALSE,
       'admin_message' => '',
       'query_str' => '',
-    );
+    ];
 
     // Get the query set by the admin for this field and replace any tokens
     $query_str = $this->instance['settings']['data_info']['query'];
-    $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
+    $bundle = tripal_load_bundle_entity(['name' => $entity->bundle]);
     $query_str = tripal_replace_entity_tokens($query_str, $entity, $bundle);
 
     // Make the request.
@@ -162,9 +164,9 @@ class remote__data extends WebServicesField {
       $context = $context['@context'];
     }
 
-    if(!$data){
+    if (!$data) {
       $entity->{$field_name}['und'][0]['value'] = 'ERROR: there was a problem retrieving content for this field.';
-      $entity->{$field_name}['und'][0]['admin_message'] =  "The remote service returned no data.";
+      $entity->{$field_name}['und'][0]['admin_message'] = "The remote service returned no data.";
       $entity->{$field_name}['und'][0]['remote_entity'] = NULL;
       $entity->{$field_name}['und'][0]['error'] = TRUE;
       $entity->{$field_name}['und'][0]['warning'] = FALSE;
@@ -175,7 +177,7 @@ class remote__data extends WebServicesField {
     if (array_key_exists('error', $data)) {
       $entity->{$field_name}['und'][0]['value'] = 'ERROR: there was a problem retrieving content for this field.';
       $entity->{$field_name}['und'][0]['admin_message'] = "The  content is currently not available because the " .
-          "remote service reported the following error: " . $data['error'] . ".";
+        "remote service reported the following error: " . $data['error'] . ".";
       $entity->{$field_name}['und'][0]['remote_entity'] = NULL;
       $entity->{$field_name}['und'][0]['error'] = TRUE;
       $entity->{$field_name}['und'][0]['warning'] = FALSE;
@@ -187,7 +189,7 @@ class remote__data extends WebServicesField {
     if ($num_items == 0) {
       $entity->{$field_name}['und'][0]['value'] = 'Content is unavailable on the remote service.';
       $entity->{$field_name}['und'][0]['admin_message'] = "The query to the remote service returned an empty result set. If you " .
-          "think this is an error, please check the query string and the remote service to verify. ";
+        "think this is an error, please check the query string and the remote service to verify. ";
       $entity->{$field_name}['und'][0]['warning'] = TRUE;
       $entity->{$field_name}['und'][0]['error'] = FALSE;
       $entity->{$field_name}['und'][0]['remote_entity'] = NULL;
@@ -210,7 +212,7 @@ class remote__data extends WebServicesField {
       $query_field = $subfields[0];
 
       // Next get the the details about this member.
-      $query_field_url =  $context[$content_type] . '/' . $remote_entity_id . '/' . $query_field;
+      $query_field_url = $context[$content_type] . '/' . $remote_entity_id . '/' . $query_field;
       $field_data = $this->makeRemoteRequest($query_field_url);
 
       // If we encounter any type of error, we'll reset the field and return.
@@ -218,7 +220,7 @@ class remote__data extends WebServicesField {
         $entity->{$field_name} = [];
         $entity->{$field_name}['und'][0]['value'] = 'ERROR: there was a problem retrieving secific content for this field.';
         $entity->{$field_name}['und'][0]['admin_message'] = "While iterating through the list of results, the " .
-          "remote service reported the following error: " . $field_data['error'] . ". " ;
+          "remote service reported the following error: " . $field_data['error'] . ". ";
         $entity->{$field_name}['und'][0]['remote_entity'] = NULL;
         $entity->{$field_name}['und'][0]['error'] = TRUE;
         $entity->{$field_name}['und'][0]['warning'] = FALSE;
@@ -247,43 +249,46 @@ class remote__data extends WebServicesField {
       list($path, $q) = explode('?', $query);
     }
 
-    if(empty($remote_site)) {
+    if (empty($remote_site)) {
       tripal_report_error('tripal_ws', TRIPAL_ERROR, 'Unable to find remote_site in remote__data field while attempting to build the remote URL.');
-      return null;
+      return NULL;
     }
 
     return tripal_build_remote_content_url($remote_site, $path, $q);
   }
-   /**
-    * Makes a request to a remote Tripal web services site.
-    *
-    * @param $query
-    *   The query string. This string is added to the URL for the remote
-    *   website.
-    * @return array on success or null if request fails.
-    */
-   private function makeRemoteRequest($query) {
-     $path = $query;
-     $q = '';
-     if (preg_match('/\?/', $query)) {
-       list($path, $q) = explode('?', $query);
-     }
 
-    if(empty($this->remote_site)) {
-      tripal_report_error('tripal_ws', TRIPAL_ERROR, 'Unable to find remote_site while attempting to make the request.');
-      return null;
+  /**
+   * Makes a request to a remote Tripal web services site.
+   *
+   * @param $query
+   *   The query string. This string is added to the URL for the remote
+   *   website.
+   *
+   * @return array on success or null if request fails.
+   */
+  private function makeRemoteRequest($query) {
+    $path = $query;
+    $q = '';
+    if (preg_match('/\?/', $query)) {
+      list($path, $q) = explode('?', $query);
     }
 
-     try {
-       $data = tripal_get_remote_content($this->remote_site->id, $path, $q);
-     } catch (Exception $exception) {
-      tripal_report_error('tripal_ws', TRIPAL_ERROR, $exception->getMessage());
-       return null;
-     }
+    if (empty($this->remote_site)) {
+      tripal_report_error('tripal_ws', TRIPAL_ERROR, 'Unable to find remote_site while attempting to make the request.');
+      return NULL;
+    }
 
-     return $data;
-   }
-   /**
+    try {
+      $data = tripal_get_remote_content($this->remote_site->id, $path, $q);
+    } catch (Exception $exception) {
+      tripal_report_error('tripal_ws', TRIPAL_ERROR, $exception->getMessage());
+      return NULL;
+    }
+
+    return $data;
+  }
+
+  /**
    *
    * @see TripalField::settingsForm()
    */
@@ -295,13 +300,13 @@ class remote__data extends WebServicesField {
     $settings = '';
     $site_list = '';
 
-    $tokens = array();
+    $tokens = [];
     // Get the form info from the bundle about to be saved.
-    $bundle = tripal_load_bundle_entity(array('name' => $instance['bundle']));
+    $bundle = tripal_load_bundle_entity(['name' => $instance['bundle']]);
     // Retrieve all available tokens.
     $tokens = tripal_get_entity_tokens($bundle);
 
-    $element['data_info'] = array(
+    $element['data_info'] = [
       '#type' => 'fieldset',
       '#title' => 'Remote Data Settings',
       '#description' => 'These settings allow you to provide a Tripal web
@@ -312,7 +317,7 @@ class remote__data extends WebServicesField {
       '#collapsed' => FALSE,
       '#prefix' => "<div id='set_titles-fieldset'>",
       '#suffix' => '</div>',
-    );
+    ];
 
     // Get the site info from the tripal_sites table.
     $sites = db_select('tripal_sites', 's')
@@ -323,81 +328,81 @@ class remote__data extends WebServicesField {
       $rows[$site->id] = $site->name;
     }
 
-    $element['data_info']['remote_site'] = array(
+    $element['data_info']['remote_site'] = [
       '#type' => 'select',
       '#title' => t('Remote Tripal Site'),
       '#options' => $rows,
       '#default_value' => $this->instance['settings']['data_info']['remote_site'],
-    );
+    ];
 
-    $element['data_info']['query'] = array(
+    $element['data_info']['query'] = [
       '#type' => 'textarea',
       '#title' => 'Query to Execute',
       '#description' => 'Enter the query that will retreive the remote records. ',
       '#default_value' => $this->instance['settings']['data_info']['query'],
       '#rows' => 3,
-      '#required' => TRUE
-    );
+      '#required' => TRUE,
+    ];
     $element['data_info']['query_instructions'] = [
       '#type' => 'fieldset',
       '#title' => 'Query to Execute Instructions',
-      '#description' => 'If the full URL to the remote tripal content web '.
-        'service is "https://[tripal_site]/web-services/content/v0.1/". Then '.
-        'this field should contain the text immediately after the '.
-        '"content/v0.1" portion of the URL. For information about building '.
-        'web services queries see the online documentation at '.
-        l('The Tripal v3 User\'s Guide', 'http://tripal.info/tutorials/v3.x/web-services').
-        '. For example, suppose this field is attached to an Organism content '.
-        'type on the local site, and you want to retrieve a field for the '.
-        'same organism on a remote Tripal site. To retrieve the matching '.
-        'record, you will want to query on the genus and species, since it '.
-        'is unique and, you want them to match the organism for each specific '.
-        'local organism page. You can use tokens to do this (see the '.
-        '"Available Tokens" fieldset below). For this example, the full '.
-        'remote web service endpoint would be '.
-        '"https://[tripal_site]/web-services/content/v0.1/Organism" '.
-        'and the query text should be '.
+      '#description' => 'If the full URL to the remote tripal content web ' .
+        'service is "https://[tripal_site]/web-services/content/v0.1/". Then ' .
+        'this field should contain the text immediately after the ' .
+        '"content/v0.1" portion of the URL. For information about building ' .
+        'web services queries see the online documentation at ' .
+        l('The Tripal v3 User\'s Guide', 'http://tripal.info/tutorials/v3.x/web-services') .
+        '. For example, suppose this field is attached to an Organism content ' .
+        'type on the local site, and you want to retrieve a field for the ' .
+        'same organism on a remote Tripal site. To retrieve the matching ' .
+        'record, you will want to query on the genus and species, since it ' .
+        'is unique and, you want them to match the organism for each specific ' .
+        'local organism page. You can use tokens to do this (see the ' .
+        '"Available Tokens" fieldset below). For this example, the full ' .
+        'remote web service endpoint would be ' .
+        '"https://[tripal_site]/web-services/content/v0.1/Organism" ' .
+        'and the query text should be ' .
         '"Organism?genus=[taxrank__genus]&species=[taxrank__species]".',
       '#collapsible' => TRUE,
-      '#collapsed' => TRUE
+      '#collapsed' => TRUE,
     ];
     $element['data_info']['query_instructions']['instructions'] = [
       '#type' => 'markup',
-      '#markup' => '',      
+      '#markup' => '',
     ];
-    
-    $element['data_info']['token_display']['tokens'] = array(
+
+    $element['data_info']['token_display']['tokens'] = [
       '#type' => 'hidden',
-      '#value' => serialize($tokens)
-    );
-    
-    $element['data_info']['token_display'] = array(
+      '#value' => serialize($tokens),
+    ];
+
+    $element['data_info']['token_display'] = [
       '#type' => 'fieldset',
       '#title' => 'Available Tokens',
       '#description' => 'Copy the token and paste it into the "Query" text field above.',
       '#collapsible' => TRUE,
-      '#collapsed' => TRUE
-    );
-    
-    $element['data_info']['token_display']['content'] = array(
+      '#collapsed' => TRUE,
+    ];
+
+    $element['data_info']['token_display']['content'] = [
       '#type' => 'item',
       '#markup' => theme_token_list($tokens),
-    );
-    
-    $element['data_info']['rd_field_name'] = array(
+    ];
+
+    $element['data_info']['rd_field_name'] = [
       '#type' => 'textfield',
       '#title' => 'Field to Display',
       '#description' => 'Enter the key from the results returned by the "Query to Execute" that should be displayed. See the example below for more details.',
       '#default_value' => $this->instance['settings']['data_info']['rd_field_name'],
-      '#required' => TRUE
-    );
-    
+      '#required' => TRUE,
+    ];
+
     $element['data_info']['rd_field_name_instructions'] = [
       '#type' => 'fieldset',
       '#title' => 'Field to Display Instructions',
       '#description' => '',
       '#collapsible' => TRUE,
-      '#collapsed' => TRUE
+      '#collapsed' => TRUE,
     ];
     $element['data_info']['rd_field_name_instructions']['insructions'] = [
       '#type' => 'markup',
@@ -430,20 +435,20 @@ class remote__data extends WebServicesField {
       ',
     ];
 
-    $element['data_info']['description'] = array(
+    $element['data_info']['description'] = [
       '#type' => 'textarea',
       '#title' => 'Description',
       '#description' => 'Describe the data being pulled in.',
-      '#default_value' =>  $this->instance['settings']['data_info']['description'],
-      '#rows' => 1
-    );
+      '#default_value' => $this->instance['settings']['data_info']['description'],
+      '#rows' => 1,
+    ];
 
     $fid = $this->instance['settings']['data_info']['site_logo'] ? $this->instance['settings']['data_info']['site_logo'] : NULL;
     $file = NULL;
     if ($fid) {
       $file = file_load($fid);
     }
-    $element['data_info']['site_logo'] = array(
+    $element['data_info']['site_logo'] = [
       '#title' => 'Remote Site Logo',
       '#description' => t('When data is taken from a remote site and shown to the user,
          the site from which the data was retrieved is indicated.  If you would like to
@@ -451,15 +456,18 @@ class remote__data extends WebServicesField {
       '#type' => 'managed_file',
       '#default_value' => $file ? $file->fid : NULL,
       '#theme' => 'image_widget',
-      '#attached' => array(
-        'css' => array(
+      '#attached' => [
+        'css' => [
           'image-preview' => drupal_get_path('module', 'image') . '/image.css',
-        ),
-      ),
-      'preview' => array(
-        '#markup' => theme('image_style', array('style_name' => 'thumbnail', 'path' => $file ? $file->uri : '')),
-      ),
-    );
+        ],
+      ],
+      'preview' => [
+        '#markup' => theme('image_style', [
+          'style_name' => 'thumbnail',
+          'path' => $file ? $file->uri : '',
+        ]),
+      ],
+    ];
 
     return $element;
   }
@@ -473,7 +481,7 @@ class remote__data extends WebServicesField {
     // If we have a site logo then add usage information.
     if ($site_logo) {
       $file = file_load($site_logo);
-      $file_usage  = file_usage_list($file);
+      $file_usage = file_usage_list($file);
       if (!array_key_exists('tripal_ws', $file_usage)) {
         file_usage_add($file, 'tripal_ws', 'site-logo', 1);
       }

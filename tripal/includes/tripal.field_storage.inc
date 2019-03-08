@@ -9,16 +9,16 @@
  * content_type field which adds a type field to every entity.
  */
 function tripal_field_storage_info() {
-  return array(
-    'tripal_no_storage' => array(
+  return [
+    'tripal_no_storage' => [
       'label' => t('Tripal'),
       'description' => t('The NULL storage is a placeholder for field values
           that are not stored in any storage backend (e.g. entity types).'),
-      'settings' => array(
+      'settings' => [
         'tripal_storage_api' => TRUE,
-      ),
-    ),
-  );
+      ],
+    ],
+  ];
 }
 
 /**
@@ -27,7 +27,7 @@ function tripal_field_storage_info() {
  * Responsible for loading the fields and adding their values to the entity.
  */
 function tripal_field_storage_load($entity_type, $entities, $age,
-    $fields, $options) {
+                                   $fields, $options) {
 
   $load_current = $age == FIELD_LOAD_CURRENT;
   global $language;
@@ -37,7 +37,7 @@ function tripal_field_storage_load($entity_type, $entities, $age,
 
     // Iterate through the entity's fields so we can get the column names
     // that need to be selected from each of the tables represented.
-    $tables = array();
+    $tables = [];
     foreach ($fields as $field_id => $ids) {
 
       // By the time this hook runs, the relevant field definitions have been
@@ -70,14 +70,14 @@ function tripal_field_storage_load($entity_type, $entities, $age,
  */
 function tripal_field_storage_query($query) {
 
-  $filter = array();
-  $entity_ids = array();
+  $filter = [];
+  $entity_ids = [];
 
   // Create the initial query.
   $select = db_select('tripal_entity', 'TE');
   $select->join('tripal_bundle', 'TB', 'TE.bundle = TB.name');
-  $select->fields('TE', array('id'));
-  $select->fields('TB', array('name'));
+  $select->fields('TE', ['id']);
+  $select->fields('TB', ['name']);
 
   // Apply any entity condition filters.
   if ($query->entityConditions) {
@@ -144,18 +144,18 @@ function tripal_field_storage_query($query) {
     $select->where('1=0');
   }
 
-//   dpm($query);
-//   dpm($select->__toString());
-//   dpm($select->getArguments());
+  //   dpm($query);
+  //   dpm($select->__toString());
+  //   dpm($select->getArguments());
 
   // Perform the query and return the results.
   $entities = $select->execute();
 
-  $result = array(
-    'TripalEntity' => array(),
-  );
+  $result = [
+    'TripalEntity' => [],
+  ];
   while ($entity = $entities->fetchObject()) {
-    $ids = array($entity->id, '0', $entity->name);
+    $ids = [$entity->id, '0', $entity->name];
     $result['TripalEntity'][$entity->id] = entity_create_stub_entity('TripalEntity', $ids);
   }
   return $result;

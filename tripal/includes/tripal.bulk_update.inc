@@ -10,17 +10,17 @@
 function tripal_update_all_urls_and_titles($bundle_id, $update, $type) {
 
   // Load all the entity_ids.
-  $entity_table = 'chado_'.$bundle_id;
+  $entity_table = 'chado_' . $bundle_id;
   $entities = db_select($entity_table, 'e')
-    ->fields('e', array('entity_id'))
+    ->fields('e', ['entity_id'])
     ->orderBy('entity_id', 'ASC')
     ->execute();
   $num_entities = $entities->rowCount();
-  
+
   // Parse the $update variable for tokens and load those tokens.
   preg_match_all("/\[.*?\]/", $update, $bundle_tokens);
 
-  $fields = array();
+  $fields = [];
   foreach ($bundle_tokens as $bundle_token) {
     $elements = explode(',', $bundle_token[0]);
     $field_name = array_shift($elements);
@@ -60,7 +60,7 @@ function tripal_update_all_urls_and_titles($bundle_id, $update, $type) {
     }
     $i++;
   }
-  
+
   // To speed up bulk alias updating the following function was skipped
   // over. We'll add it back here to complete the process.
   if ($type == 'alias') {

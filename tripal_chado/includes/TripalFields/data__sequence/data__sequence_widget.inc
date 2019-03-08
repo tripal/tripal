@@ -1,11 +1,12 @@
 <?php
 
 class data__sequence_widget extends ChadoFieldWidget {
+
   // The default lable for this field.
   public static $default_label = 'Sequence';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('data__sequence');
+  public static $field_types = ['data__sequence'];
 
   /**
    *
@@ -26,16 +27,16 @@ class data__sequence_widget extends ChadoFieldWidget {
       $residues = $items[0]['value'];
     }
     if (array_key_exists('values', $form_state) and
-        array_key_exists($field_name, $form_state['values'])) {
+      array_key_exists($field_name, $form_state['values'])) {
       $residues = $form_state['values'][$field_name][$langcode][$delta]['value'];
     }
 
-    $widget['value'] = array(
+    $widget['value'] = [
       '#type' => 'value',
       '#value' => $residues,
-    );
+    ];
 
-    $widget['chado-' . $field_table . '__' . $field_column] = array(
+    $widget['chado-' . $field_table . '__' . $field_column] = [
       '#type' => 'textarea',
       '#title' => $element['#title'],
       '#description' => $element['#description'],
@@ -43,9 +44,9 @@ class data__sequence_widget extends ChadoFieldWidget {
       '#default_value' => $residues,
       '#delta' => $delta,
       '#cols' => 30,
-    );
+    ];
   }
-  
+
   /**
    * @see TripalFieldWidget::validateDefaults()
    */
@@ -53,11 +54,11 @@ class data__sequence_widget extends ChadoFieldWidget {
     $field_name = $this->field['field_name'];
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
-    
+
     $value = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $field_column];
     $form_state['values'][$field_name]['und'][$delta]['value'] = $value;
   }
-  
+
   /**
    *
    * @see TripalFieldWidget::submit()
@@ -66,7 +67,7 @@ class data__sequence_widget extends ChadoFieldWidget {
     $field_name = $this->field['field_name'];
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
-    
+
     // Remove any white spaces.
     $residues = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $field_column];
     if ($residues) {

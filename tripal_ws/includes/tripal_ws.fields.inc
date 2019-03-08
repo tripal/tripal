@@ -8,7 +8,7 @@
  * Implements hook_bundle_fields_info().
  */
 function tripal_ws_bundle_fields_info($entity_type, $bundle) {
-  $fields = array();
+  $fields = [];
 
   // No fields are added programmatically.
   return $fields;
@@ -18,7 +18,7 @@ function tripal_ws_bundle_fields_info($entity_type, $bundle) {
  * Implements hook_bundle_instances_info().
  */
 function tripal_ws_bundle_instances_info($entity_type, $bundle) {
-  $instances = array();
+  $instances = [];
 
   // No field instances are added programmatically.
   return $instances;
@@ -37,12 +37,12 @@ function tripal_ws_bundle_instances_info($entity_type, $bundle) {
 function tripal_ws_bundle_create_user_field($new_field, $bundle) {
 
   // Get the table this bundle is mapped to.
-  $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
+  $term = tripal_load_term_entity(['term_id' => $bundle->term_id]);
   $vocab = $term->vocab;
-  $params = array(
+  $params = [
     'vocabulary' => $vocab->vocabulary,
     'accession' => $term->accession,
-  );
+  ];
 
   // We allow site admins to add new chado_linker__prop fields to an entity.
   // This function will allow us to properly add them.  But at this point we
@@ -53,43 +53,43 @@ function tripal_ws_bundle_create_user_field($new_field, $bundle) {
     $field_type = 'remote__data';
 
     // First add the field.
-    field_create_field(array(
+    field_create_field([
       'field_name' => $field_name,
       'type' => $field_type,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
       'locked' => FALSE,
-      'storage' => array(
+      'storage' => [
         'type' => 'field_tripal_ws_storage',
-      ),
-    ));
+      ],
+    ]);
 
     // Now add the instance
-    field_create_instance(array(
+    field_create_instance([
       'field_name' => $field_name,
       'entity_type' => 'TripalEntity',
       'bundle' => $bundle->name,
       'label' => $new_field['label'],
       'description' => '',
       'required' => FALSE,
-      'settings' => array(
+      'settings' => [
         'auto_attach' => FALSE,
         'term_vocabulary' => '',
         'term_accession' => '',
-        'term_name' => ''
-      ),
-      'widget' => array(
+        'term_name' => '',
+      ],
+      'widget' => [
         'type' => 'remote__data_widget',
-        'settings' => array(
+        'settings' => [
           'display_label' => 1,
-        ),
-      ),
-      'display' => array(
-        'default' => array(
+        ],
+      ],
+      'display' => [
+        'default' => [
           'label' => 'inline',
           'type' => 'remote__data_formatter',
-          'settings' => array(),
-        ),
-      ),
-    ));
+          'settings' => [],
+        ],
+      ],
+    ]);
   }
 }

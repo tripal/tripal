@@ -26,17 +26,17 @@ class TripalDaemon extends DrushDaemon {
   // Keep track of whether we are running a Tripal job or not
   // and if so, which Tripal jobs are we running.
   // If this array is empty then we are waiting for jobs ;-).
-  protected $tripal_jobs = array();
+  protected $tripal_jobs = [];
 
   // Queue of Tripal Jobs waiting to be run.
-  protected $queue = array();
+  protected $queue = [];
 
   // Boolean as to whether we are aloud to process jobs in parallel.
   // @todo: Implement actually changing this setting.
   // NOTE: Can't be set via a drush option to trpjob-daemon since
   // tripal daemon calls drush daemon which then forks and can't
   // pass on the options to the child.
-  protected $do_parallel = FALSE; 
+  protected $do_parallel = FALSE;
 
   // Maximum number of jobs that can be run in parallel.
   // @todo: Implement actually changing this setting (see above note).
@@ -156,7 +156,7 @@ class TripalDaemon extends DrushDaemon {
     $this->tripal_jobs[$job_id] = $job;
     $this->setStatus();
     // And log the details.
-    $this->log('Job (ID='.$job_id.') Started at '.format_date(time(), 'small').'.');
+    $this->log('Job (ID=' . $job_id . ') Started at ' . format_date(time(), 'small') . '.');
 
     // Parallel:
     if ($this->do_parallel) {
@@ -176,9 +176,9 @@ class TripalDaemon extends DrushDaemon {
       unset($this->tripal_jobs[$job_id]);
       $this->setStatus();
       // And log the details.
-      $this->log('Job (ID='.$job_id.') Completed');
-      $this->log('End DateTime: '.format_date($job->getEndTime(), 'small'), '', 1);
-      $this->log('Status: '.$job->getStatus(), '', 1);
+      $this->log('Job (ID=' . $job_id . ') Completed');
+      $this->log('End DateTime: ' . format_date($job->getEndTime(), 'small'), '', 1);
+      $this->log('Status: ' . $job->getStatus(), '', 1);
 
     }
   }
@@ -204,15 +204,15 @@ class TripalDaemon extends DrushDaemon {
     drush_invoke_process(
       '@self',                               // Obviously run on the current site.
       'trp-run-jobs',                        // Run the tripal job launcher.
-      array(),                               // No arguments (only options below).
-      array(
+      [],                               // No arguments (only options below).
+      [
         'job_id' => $job_id,                 // The job to be run.
         'username' => $username,             // The user to run it as.
         'single' => 1,                       // Only run a single job!
         'parallel' => $this->do_parallel,    // We're aloud to run in parallel.
         'max_jobs' => $this->max_num_jobs,   // But only this many jobs at once.
-      ),
-      array('fork' => TRUE)                  // This tells drush to spawn a new process.
+      ],
+      ['fork' => TRUE]                  // This tells drush to spawn a new process.
     );
 
   }
@@ -225,9 +225,8 @@ class TripalDaemon extends DrushDaemon {
     // Run the job.
     try {
       $job->run();
-    }
-    catch (Exception $e) {
-      $job->logMessage($e->getMessage(), array(), TRIPAL_ERROR);
+    } catch (Exception $e) {
+      $job->logMessage($e->getMessage(), [], TRIPAL_ERROR);
     }
 
     return $job;
@@ -244,7 +243,7 @@ class TripalDaemon extends DrushDaemon {
     if ($job_id) {
       $job = new TripalJob();
       $job->load($job_id);
-      $jobs = array($job_id);
+      $jobs = [$job_id];
     }
     elseif (!empty($this->tripal_jobs)) {
       $jobs = array_keys($this->tripal_jobs);
@@ -255,7 +254,7 @@ class TripalDaemon extends DrushDaemon {
 
     $results = db_query(
       'SELECT job_id, pid, end_time, status FROM {tripal_jobs} WHERE job_id IN (:jobs)',
-      array(':jobs' => $jobs));
+      [':jobs' => $jobs]);
     foreach ($results as $job) {
       // If the system still thinks the job is running then check it's pid.
       if ($job->status == 'Running') {
@@ -278,9 +277,9 @@ class TripalDaemon extends DrushDaemon {
         unset($this->tripal_jobs[$job->job_id]);
         $this->setStatus();
         // And log the details.
-        $this->log('Job (ID='.$job->job_id.') Completed');
-        $this->log('End DateTime: '.format_date($job->end_time, 'small'), '', 1);
-        $this->log('Status: '.$job->status, '', 1);
+        $this->log('Job (ID=' . $job->job_id . ') Completed');
+        $this->log('End DateTime: ' . format_date($job->end_time, 'small'), '', 1);
+        $this->log('Status: ' . $job->status, '', 1);
 
       }
     }

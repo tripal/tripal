@@ -13,7 +13,7 @@ function tripal_pub_admin_pub_view() {
   $output = '';
 
   // set the breadcrumb
-  $breadcrumb = array();
+  $breadcrumb = [];
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
@@ -22,7 +22,7 @@ function tripal_pub_admin_pub_view() {
   drupal_set_breadcrumb($breadcrumb);
 
   // Add the view
-  $view = views_embed_view('tripal_pub_admin_publications','default');
+  $view = views_embed_view('tripal_pub_admin_publications', 'default');
   if (isset($view)) {
     $output .= $view;
   }
@@ -32,7 +32,7 @@ function tripal_pub_admin_pub_view() {
       . 'administrative interface are disabled. <strong>Click each of the following links to '
       . 'enable the pertinent views</strong>:</p>';
     $output .= '<ul>';
-      $output .= '<li>'.l('Publications View', 'admin/tripal/legacy/tripal_pub/views/pubs/enable').'</li>';
+    $output .= '<li>' . l('Publications View', 'admin/tripal/legacy/tripal_pub/views/pubs/enable') . '</li>';
     $output .= '</ul>';
   }
 
@@ -45,30 +45,32 @@ function tripal_pub_admin_pub_view() {
  * @ingroup tripal_legacy_pub
  */
 function tripal_pub_admin() {
-  $form = array();
+  $form = [];
 
   // If your module is using the Chado Node: Title & Path API to allow custom titles
   // for your node type then you need to add the configuration form for this functionality.
-  $details = array(
-    'module' => 'tripal_pub',       // the name of the MODULE implementing the content type
-    'content_type' => 'chado_pub',   // the name of the content type
-      // An array of options to use under "Page Titles"
-      // the key should be the token and the value should be the human-readable option
-    'options' => array(
+  $details = [
+    'module' => 'tripal_pub',
+    // the name of the MODULE implementing the content type
+    'content_type' => 'chado_pub',
+    // the name of the content type
+    // An array of options to use under "Page Titles"
+    // the key should be the token and the value should be the human-readable option
+    'options' => [
       '[pub.title]' => 'Publication Title',
-        // there should always be one options matching the unique constraint.
-      '[pub.uniquename]' => 'Unique Contraint: Citation of the Publication.'
-    ),
+      // there should always be one options matching the unique constraint.
+      '[pub.uniquename]' => 'Unique Contraint: Citation of the Publication.',
+    ],
     // the token indicating the unique constraint in the options array
-    'unique_option' => '[pub.uniquename]'
-  );
+    'unique_option' => '[pub.uniquename]',
+  ];
   // This call adds the configuration form to your current form
   // This sub-form handles it's own validation & submit
   chado_add_admin_form_set_title($form, $form_state, $details);
 
   // -----------------------------------------
   // add the field set for syncing publications
-  $form['import'] = array(
+  $form['import'] = [
     '#type' => 'fieldset',
     '#title' => t('Import Settings'),
     '#description' => t('During import, Tripal will attempt to find duplicate publications,
@@ -77,17 +79,17 @@ function tripal_pub_admin() {
        (e.g. Journal Article etc.).
        There are several options for how to find a duplicate publication.  Choose the
        option that best suits your needs.'),
-  );
-  $form['import']['import_duplicate_check'] = array(
+  ];
+  $form['import']['import_duplicate_check'] = [
     '#type' => 'radios',
     '#title' => t('Unique Constraint'),
-    '#options' => array(
+    '#options' => [
       'title_year' => t('Title and Year'),
       'title_year_media' => t('Title, Year, Media name (e.g. Journal Name, etc.)'),
       'title_year_type' => t('Title, Year, Media type (e.g. Journal, Conference Proceedings, etc.'),
-    ),
+    ],
     '#default_value' => variable_get('tripal_pub_import_duplicate_check', 'title_year_media'),
-  );
+  ];
 
   // -----------------------------------------
   // get the list of publication types.  In the Tripal publication
@@ -106,10 +108,10 @@ function tripal_pub_admin() {
     ORDER BY CVTS.name ASC
   ";
   $results = chado_query($sql);
-  $pub_types = array();
+  $pub_types = [];
   while ($pub_type = $results->fetchObject()) {
     $pub_types[$pub_type->cvterm_id] = $pub_type->name;
-    if (strcmp($pub_type->name,"Journal Article") == 0) {
+    if (strcmp($pub_type->name, "Journal Article") == 0) {
       $d_type_id = $pub_type->cvterm_id;
     }
   }
@@ -117,19 +119,19 @@ function tripal_pub_admin() {
   // override the default by using the stored variable
   $d_type_id = variable_get('tripal_pub_default_type', $d_type_id);
 
-  $form['default_type'] = array(
+  $form['default_type'] = [
     '#type' => 'fieldset',
     '#title' => t('Default Publication Type'),
-  );
-  $form['default_type']['type_id'] = array(
+  ];
+  $form['default_type']['type_id'] = [
     '#type' => 'select',
     '#title' => t('Publication Type'),
     '#options' => $pub_types,
     '#description' => t('Please set a default publiation type used for manual entry of a new
       publication.  This is useful in the event that someone is manually adding the same
       publication type repetitively'),
-    '#default_value' => $d_type_id
-  );
+    '#default_value' => $d_type_id,
+  ];
 
   return system_settings_form($form);
 }
@@ -141,7 +143,7 @@ function tripal_pub_admin() {
  */
 function tripal_pub_admin_validate($form, &$form_state) {
   global $user;  // we need access to the user info
-  $job_args = array();
+  $job_args = [];
 
   $import_duplicate_check = $form_state['values']['import_duplicate_check'];
   variable_set('tripal_pub_import_duplicate_check', $import_duplicate_check);
@@ -170,9 +172,9 @@ function tripal_pub_set_pub_url($node, $pub_id) {
   $url_alias = "pub/$pub_id";
 
   // remove any previous alias
-  db_query("DELETE FROM {url_alias} WHERE source = :source", array(':source' => $node_url));
+  db_query("DELETE FROM {url_alias} WHERE source = :source", [':source' => $node_url]);
   // add the new alias
-  $path_alias = array("source" => $node_url, "alias" => $url_alias);
+  $path_alias = ["source" => $node_url, "alias" => $url_alias];
   path_save($path_alias);
 
   return $url_alias;

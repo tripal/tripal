@@ -64,7 +64,7 @@ class operation__analysis_widget extends ChadoFieldWidget {
 
     // Set the linker field appropriately.
     $linker_field = 'chado-' . $field_table . '__' . $field_column;
-    
+
     // Make sure the value is set to the organism_id
     $analysis_id = $form_state['values'][$field_name]['und'][0][$linker_field];
     $form_state['values'][$field_name]['und'][0]['value'] = $analysis_id;

@@ -10,7 +10,7 @@
  * @defgroup tripal_bulk_loader_api Bulk Loader
  * @ingroup tripal_api
  * @{
- * All functions in this file provide an API to administrative management of 
+ * All functions in this file provide an API to administrative management of
  * bulk loader templates.
  * @}
  */
@@ -43,12 +43,12 @@
  *   the option and the value being the error message.  If validation
  *   is successful then TRUE is returned.
  *
- *  @ingroup tripal_bulk_loader_api
+ * @ingroup tripal_bulk_loader_api
  */
-function tripal_validate_bulk_loader_template($val_type, &$options, &$errors, &$warnings = array()) {
+function tripal_validate_bulk_loader_template($val_type, &$options, &$errors, &$warnings = []) {
   $template_array = trim($options['template_array']);
   $template_name = trim($options['template_name']);
-  $strict = array_key_exists('strict', $options)  ? $options['strict'] : FALSE;
+  $strict = array_key_exists('strict', $options) ? $options['strict'] : FALSE;
 
   // Make sure the template array is one of the supported types
   // DEPRECATED: A stringified version of the array (causes security issues)
@@ -92,7 +92,7 @@ function tripal_validate_bulk_loader_template($val_type, &$options, &$errors, &$
 
   // Make sure the template name is unique
   $name_exists = db_select('tripal_bulk_loader_template', 'tblt')
-    ->fields('tblt', array('template_id'))
+    ->fields('tblt', ['template_id'])
     ->condition('name', $template_name)
     ->execute()
     ->fetchField();
@@ -125,10 +125,11 @@ function tripal_validate_bulk_loader_template($val_type, &$options, &$errors, &$
  *   to the user as information by a drupal_set_message() if appropriate. The
  *   keys of the array will be name of the field from the options array and the
  *   value is the error message.
+ *
  * @return
  *   TRUE for success and FALSE for failure.
- * 
- *  @ingroup tripal_bulk_loader_api
+ *
+ * @ingroup tripal_bulk_loader_api
  */
 function tripal_insert_bulk_loader_template($options, &$errors, &$warnings) {
 
@@ -149,7 +150,7 @@ function tripal_insert_bulk_loader_template($options, &$errors, &$warnings) {
   // be reomved in future versions of Tripal, but to support transfers of
   // templates between v1.1 and v2.x sites we support it.
   if (preg_match('/^array/', $template_array)) {
-    $tarray = array();
+    $tarray = [];
     eval("\$tarray = $template_array;");
     $template_array = serialize($tarray);
   }
@@ -169,12 +170,12 @@ function tripal_insert_bulk_loader_template($options, &$errors, &$warnings) {
     return FALSE;
   }
 
-  $record = array(
+  $record = [
     'name' => $template_name,
     'template_array' => $template_array,
     'created' => time(),
-    'changed' => time()
-  );
+    'changed' => time(),
+  ];
   if (!drupal_write_record('tripal_bulk_loader_template', $record)) {
     return FALSE;
   }
@@ -182,7 +183,7 @@ function tripal_insert_bulk_loader_template($options, &$errors, &$warnings) {
 }
 
 /**
- * Meant to be called from a form_validate function to ensure a newly added bulk 
+ * Meant to be called from a form_validate function to ensure a newly added bulk
  * loader record name is unique and not empty.
  *
  * @param $new_record_name
@@ -190,14 +191,14 @@ function tripal_insert_bulk_loader_template($options, &$errors, &$warnings) {
  * @param $template_id
  *   The template_id of the template to add the record to
  * @param $template_array
- *   The array describing the template. Optional -will be loaded using 
+ *   The array describing the template. Optional -will be loaded using
  *   template_id if not provided
  * @param $current_priority
- *   The priority of the already existing record -checks that the name only 
+ *   The priority of the already existing record -checks that the name only
  *   occurs on this particular record
  *
  * @return
- *   TRUE if the record name is not empty and not already in the template_array; 
+ *   TRUE if the record name is not empty and not already in the template_array;
  *   FALSE otherwise
  *
  * @ingroup tripal_bulk_loader_api
@@ -206,7 +207,7 @@ function tripal_is_bulk_loader_record_name_unique($new_record_name, $template_id
 
   // get the template array if it's not supplied
   if (empty($template_array)) {
-    $template = db_query("SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=:template", array(':template' => $template_id))->fetchObject();
+    $template = db_query("SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=:template", [':template' => $template_id])->fetchObject();
     $template_array = unserialize($template->template_array);
     if (!is_array($template_array)) {
       return TRUE;
@@ -245,12 +246,12 @@ function tripal_is_bulk_loader_record_name_unique($new_record_name, $template_id
 function tripal_delete_bulk_loader_record($delete_priority, $template_array) {
 
   if (empty($template_array)) {
-    drupal_set_message("Unable to delete record with a priority of $priority since the template was not supplied",'error');
+    drupal_set_message("Unable to delete record with a priority of $priority since the template was not supplied", 'error');
     return FALSE;
   }
 
-  $new_template_array = array();
-  $i=0;
+  $new_template_array = [];
+  $i = 0;
   foreach ($template_array as $priority => $record) {
     if ($priority != $delete_priority) {
       $new_template_array[$i] = $record;
@@ -279,15 +280,15 @@ function tripal_delete_bulk_loader_record($delete_priority, $template_array) {
 function tripal_delete_bulk_loader_field($priority, $delete_field_index, $template_array) {
 
   if (empty($template_array)) {
-    drupal_set_message("Unable to delete record with a priority of $priority since the template was not supplied",'error');
+    drupal_set_message("Unable to delete record with a priority of $priority since the template was not supplied", 'error');
     return FALSE;
   }
 
   // Re-order the remaining fields of the same record to ensure that the indicies are
   // 0 to size and. If this is not done, weird behaviour may result
   $new_template_array = $template_array;
-  $new_template_array[$priority]['fields'] = array();
-  $i=0;
+  $new_template_array[$priority]['fields'] = [];
+  $i = 0;
   foreach ($template_array[$priority]['fields'] as $field_index => $field_details) {
     if ($field_index != $delete_field_index) {
       $new_template_array[$priority]['fields'][$i] = $field_details;

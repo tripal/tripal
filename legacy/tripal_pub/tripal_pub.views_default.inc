@@ -10,7 +10,7 @@
  * @ingroup tripal_legacy_pub
  */
 function tripal_pub_views_default_views() {
-  $views = array();
+  $views = [];
 
   // Main default view
   $view = tripal_pub_defaultview_admin_publications();
@@ -56,60 +56,60 @@ function tripal_pub_defaultview_admin_publications() {
   $handler->display->display_options['pager']['options']['quantity'] = '9';
   $handler->display->display_options['style_plugin'] = 'table';
   $handler->display->display_options['style_options']['grouping'] = '';
-  $handler->display->display_options['style_options']['columns'] = array(
+  $handler->display->display_options['style_options']['columns'] = [
     'title' => 'title',
     'pyear' => 'pyear',
     'type' => 'type',
     'all_dbxref' => 'all_dbxref',
     'all_properties' => 'all_properties',
     'all_relationships' => 'all_relationships',
-  );
+  ];
   $handler->display->display_options['style_options']['default'] = '-1';
-  $handler->display->display_options['style_options']['info'] = array(
-    'title' => array(
+  $handler->display->display_options['style_options']['info'] = [
+    'title' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'type' => array(
+    ],
+    'type' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'pyear' => array(
+    ],
+    'pyear' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'all_dbxref' => array(
+    ],
+    'all_dbxref' => [
       'separator' => '',
-    ),
-    'all_properties' => array(
+    ],
+    'all_properties' => [
       'separator' => '',
-    ),
-    'all_relationships' => array(
+    ],
+    'all_relationships' => [
       'separator' => '',
-    ),
-  );
+    ],
+  ];
   /* Header: Global: Action Links */
   $handler->display->display_options['header']['action_links_area']['id'] = 'action_links_area';
   $handler->display->display_options['header']['action_links_area']['table'] = 'views';
   $handler->display->display_options['header']['action_links_area']['field'] = 'action_links_area';
   $handler->display->display_options['header']['action_links_area']['label'] = 'Action Links';
   $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
-  $handler->display->display_options['header']['action_links_area']['link-1'] = array(
+  $handler->display->display_options['header']['action_links_area']['link-1'] = [
     'label-1' => 'Add Publication',
     'path-1' => 'node/add/tripal-pub',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-2'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-2'] = [
     'label-2' => '',
     'path-2' => '',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-3'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-3'] = [
     'label-3' => '',
     'path-3' => '',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-4'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-4'] = [
     'label-4' => '',
     'path-4' => '',
-  );
+  ];
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['text']['id'] = 'area';
   $handler->display->display_options['empty']['text']['table'] = 'views';
@@ -168,11 +168,11 @@ function tripal_pub_defaultview_admin_publications() {
   $handler->display->display_options['filters']['title']['expose']['label'] = 'Title Contains';
   $handler->display->display_options['filters']['title']['expose']['operator'] = 'title_op';
   $handler->display->display_options['filters']['title']['expose']['identifier'] = 'pub_title';
-  $handler->display->display_options['filters']['title']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['title']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Chado Pub: Type Id */
   $handler->display->display_options['filters']['type_id']['id'] = 'type_id';
   $handler->display->display_options['filters']['type_id']['table'] = 'pub';
@@ -184,11 +184,11 @@ function tripal_pub_defaultview_admin_publications() {
   $handler->display->display_options['filters']['type_id']['expose']['label'] = 'Type';
   $handler->display->display_options['filters']['type_id']['expose']['operator'] = 'type_id_op';
   $handler->display->display_options['filters']['type_id']['expose']['identifier'] = 'type_id';
-  $handler->display->display_options['filters']['type_id']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['type_id']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
 
   /** MANUALLY ADD since filter handler no exporting correctly */
   $handler->display->display_options['filters']['type_id']['expose']['values_form_type'] = 'select';
@@ -208,11 +208,11 @@ function tripal_pub_defaultview_admin_publications() {
   $handler->display->display_options['tab_options']['weight'] = '0';
 
   /** MANUALLY ADD since filter handler no exporting correctly
-  $handler->display->display_options['filters']['type_id']['expose']['values_form_type'] = 'select';
-  $handler->display->display_options['filters']['type_id']['expose']['select_multiple'] = FALSE;
-  $handler->display->display_options['filters']['type_id']['expose']['select_optional'] = TRUE;
-  $handler->display->display_options['filters']['type_id']['expose']['max_length'] = 40;
-  */
+   * $handler->display->display_options['filters']['type_id']['expose']['values_form_type'] = 'select';
+   * $handler->display->display_options['filters']['type_id']['expose']['select_multiple'] = FALSE;
+   * $handler->display->display_options['filters']['type_id']['expose']['select_optional'] = TRUE;
+   * $handler->display->display_options['filters']['type_id']['expose']['max_length'] = 40;
+   */
 
   return $view;
 }

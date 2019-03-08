@@ -1,11 +1,12 @@
 <?php
 
 class sio__references_widget extends ChadoFieldWidget {
+
   // The default lable for this field.
   public static $default_label = 'References';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('sio__references');
+  public static $field_types = ['sio__references'];
 
   /**
    *

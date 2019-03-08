@@ -13,7 +13,8 @@ class TaxonomyImporterTest extends TripalTestCase {
   use DBTransaction;
 
   /**
-   * Adds an organism and checks that the importer runs and adds some properties to it.
+   * Adds an organism and checks that the importer runs and adds some
+   * properties to it.
    *
    */
   public function testImportExistingTaxonomyLoader() {
@@ -26,7 +27,7 @@ class TaxonomyImporterTest extends TripalTestCase {
       'common_name' => 'pillbug',
       'type_id' => NULL,
     ];
-    
+
     $organism = factory('chado.organism')->create($org);
     $file = [];
     $run_args = ['import_existing' => TRUE];

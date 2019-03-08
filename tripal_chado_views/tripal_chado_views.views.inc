@@ -20,53 +20,52 @@ include 'views/handlers/tripal_views_handler_area_action_links.inc';
  */
 function tripal_chado_views_views_handlers() {
 
-  return array(
-    'info' => array(
+  return [
+    'info' => [
       'path' => drupal_get_path('module', 'tripal_chado_views') . '/views/handlers',
-    ),
-    'handlers' => array(
+    ],
+    'handlers' => [
 
       // Custom Tripal Field Handlers
       /** CANT FIX UNTIL Tripal Feature is working
-      'tripal_views_handler_field_sequence' => array(
-        'parent' => 'views_handler_field',
-      ),
-      */
+       * 'tripal_views_handler_field_sequence' => array(
+       * 'parent' => 'views_handler_field',
+       * ),
+       */
 
       // Custom area handler
-      'tripal_views_handler_area_action_links' => array(
+      'tripal_views_handler_area_action_links' => [
         'parent' => 'views_handler_area',
-      ),
+      ],
 
       // Custom Tripal Filter Handlers
-      'tripal_views_handler_filter_no_results' => array(
-        'parent' => 'views_handler_filter'
-      ),
-      'tripal_views_handler_filter_select_cvterm' => array(
+      'tripal_views_handler_filter_no_results' => [
+        'parent' => 'views_handler_filter',
+      ],
+      'tripal_views_handler_filter_select_cvterm' => [
         'parent' => 'tripal_views_handler_filter_select_string',
-      ),
-      'tripal_views_handler_filter_select_id' => array(
+      ],
+      'tripal_views_handler_filter_select_id' => [
         'parent' => 'tripal_views_handler_filter_select_string',
-      ),
-      'tripal_views_handler_filter_select_string' => array(
+      ],
+      'tripal_views_handler_filter_select_string' => [
         'parent' => 'views_handler_filter_string',
-      ),
-      'tripal_views_handler_filter_textarea' => array(
+      ],
+      'tripal_views_handler_filter_textarea' => [
         'parent' => 'views_handler_filter',
-      ),
-      'tripal_views_handler_filter_file_upload' => array(
+      ],
+      'tripal_views_handler_filter_file_upload' => [
         'parent' => 'views_handler_filter',
-      ),
+      ],
       /** D7 @todo: get handlers working
-
-      */
+       */
       /** CANT FIX UNTIL Tripal Feature is working
-      'tripal_views_handler_filter_sequence' => array(
-        'parent' => 'chado_views_handler_filter_string',
-      ),
-      */
-    ),
-  );
+       * 'tripal_views_handler_filter_sequence' => array(
+       * 'parent' => 'chado_views_handler_filter_string',
+       * ),
+       */
+    ],
+  ];
 }
 
 /**
@@ -107,12 +106,13 @@ function tripal_chado_views_views_pre_render(&$view) {
  *
  * @return a data array formatted for the Views module
  *
- * D7 @todo: Add support for materialized views relationships using the new method
+ * D7 @todo: Add support for materialized views relationships using the new
+ *   method
  *
  * @ingroup tripal_chado_views
  */
 function tripal_chado_views_views_data() {
-  $data = array();
+  $data = [];
 
   // Manually integrate the drupal.tripal_views* tables
   $data = tripal_chado_views_views_data_tripal_views_tables($data);
@@ -126,21 +126,21 @@ function tripal_chado_views_views_data() {
   // DEFINE GLOBAL FIELDS
   // Filter handler that lets the admin say:
   // "Show no results until they enter search parameters"
-  $data['views']['search_results'] = array(
+  $data['views']['search_results'] = [
     'title' => t('Delay Results'),
     'help' => t('Delay results until Apply/Search is clicked by the user.'),
-    'filter' => array(
+    'filter' => [
       'handler' => 'tripal_views_handler_filter_no_results',
-    ),
-  );
+    ],
+  ];
 
-  $data['views']['action_links_area'] = array(
+  $data['views']['action_links_area'] = [
     'title' => t('Action Links'),
     'help' => t('Add action links to the view.'),
-    'area' => array(
+    'area' => [
       'handler' => 'tripal_views_handler_area_action_links',
-    ),
-  );
+    ],
+  ];
 
   $tvi_query = db_query('SELECT * FROM {tripal_views}');
 
@@ -160,7 +160,7 @@ function tripal_chado_views_views_data() {
 
     // holds the base table name and fields
     $base_table = '';
-    $base_fields = array();
+    $base_fields = [];
 
     // indicated whether the current table is a base table or not
     $is_base_table = $tvi_row->base_table;
@@ -174,7 +174,7 @@ function tripal_chado_views_views_data() {
       // get the base table name from the materialized view
       // D7 TODO: Check DBTNG changes work
       $sql = "SELECT name, mv_specs FROM {tripal_mviews} WHERE mview_id = :id";
-      $mview_table = db_query($sql, array(':id' => $mview_id));
+      $mview_table = db_query($sql, [':id' => $mview_id]);
       $mview_table = $mview_table->fetchObject();
       if ($mview_table) {
         $base_table = $mview_table->name;
@@ -197,17 +197,17 @@ function tripal_chado_views_views_data() {
         preg_match("/^(.*?)\ (.*?)$/", $column, $matches);
         $column_name = $matches[1];
         $column_type = $matches[2];
-        $base_fields[$column_name] = array(
+        $base_fields[$column_name] = [
           'column_name' => $column_name,
           'type' => $column_type,
-        );
+        ];
       }
 
       // get the field name and descriptions
       // D7 TODO: Check DBTNG changes work
       $sql = "SELECT * FROM {tripal_views_field} WHERE setup_id=:setup";
-      $query = db_query($sql, array(':setup' => $setup_id));
-      foreach($query as $field) {
+      $query = db_query($sql, [':setup' => $setup_id]);
+      foreach ($query as $field) {
         $base_fields[$field->column_name]['name'] = $field->name;
         $base_fields[$field->column_name]['help'] = $field->description;
       }
@@ -221,15 +221,15 @@ function tripal_chado_views_views_data() {
 
       $fields = $table_desc['fields'];
       if (!is_array($fields)) {
-        $fields = array();
+        $fields = [];
       }
       foreach ($fields as $column => $attrs) {
-        $base_fields[$column] = array(
+        $base_fields[$column] = [
           'column_name' => $column,
           // Add a default for type since module developers may sometimes need to use a
           // PostgreSQL-specific type.
           'type' => (isset($attrs['type'])) ? $attrs['type'] : 'text',
-        );
+        ];
         // If PostgreSQL-specifc types are needed the module developer should be given
         // a way to set the most closely matching type for views. They should also be
         // allowed to override the type for views. This can be done by adding a views_type
@@ -240,19 +240,19 @@ function tripal_chado_views_views_data() {
         // Tell admin about this feature and warn them that we made an assumption for them.
         if (!isset($attrs['type']) AND !isset($attrs['views_type'])) {
           tripal_report_error(
-              'tripal_views',
-              TRIPAL_WARNING,
-              "Unable to determine the type for %column thus we have defaulted to type 'text'.
+            'tripal_views',
+            TRIPAL_WARNING,
+            "Unable to determine the type for %column thus we have defaulted to type 'text'.
               Tip: This may be due to setting a  postgresql-specific type. Solution: Add a
               'views_type' to your schema definition to specify what type should be used.",
-              array('%column' => $column)
+            ['%column' => $column]
           );
         }
       }
 
       // get the field name and descriptions
       $sql = "SELECT * FROM {tripal_views_field} WHERE setup_id=:setup";
-      $query = db_query($sql, array(':setup' => $setup_id));
+      $query = db_query($sql, [':setup' => $setup_id]);
       foreach ($query as $field) {
         $base_fields[$field->column_name]['name'] = $field->name;
         $base_fields[$field->column_name]['help'] = $field->description;
@@ -263,32 +263,32 @@ function tripal_chado_views_views_data() {
     $data[$base_table]['table']['group'] = t("$tvi_row->name");
 
     if ($is_base_table) {
-      $data[$base_table]['table']['base'] = array(
+      $data[$base_table]['table']['base'] = [
         'group' => "$tvi_row->name",
         'title' => "$tvi_row->name",
-        'help'  => $tvi_row->comment,
-        'search_path' => $chado_schema
-      );
+        'help' => $tvi_row->comment,
+        'search_path' => $chado_schema,
+      ];
     }
     else {
-      $data[$base_table]['table'] = array(
+      $data[$base_table]['table'] = [
         'group' => "$tvi_row->name",
         'title' => "$tvi_row->name",
-        'help'  => $tvi_row->comment,
-        'search_path' => $chado_schema
-      );
+        'help' => $tvi_row->comment,
+        'search_path' => $chado_schema,
+      ];
     }
 
     // ADD THE FIELDS TO THE DATA ARRAY
     foreach ($base_fields as $column_name => $base_field) {
       if (!isset($base_field['name'])) {
-        $data[$base_table][$column_name] = array(
+        $data[$base_table][$column_name] = [
           'title' => t($column_name),
           'help' => t($column_name),
-          'field' => array(
+          'field' => [
             'click sortable' => TRUE,
-          ),
-        );
+          ],
+        ];
 
         tripal_report_error(
           'tripal_chado_views',
@@ -296,26 +296,29 @@ function tripal_chado_views_views_data() {
           "The name and help were not set for %table.%column. As a consequence the column
             name has been used... You should ensure that the 'name' and 'help' keys for
             this field are set in the integration array (priority = %priority)",
-          array(
-            '%table'=> $base_table,
+          [
+            '%table' => $base_table,
             '%column' => $column_name,
-            '%priority' => $tvi_row->priority
-          )
+            '%priority' => $tvi_row->priority,
+          ]
         );
       }
       else {
-        $data[$base_table][$column_name] = array(
+        $data[$base_table][$column_name] = [
           'title' => t($base_field['name']),
           'help' => t($base_field['help']),
-          'field' => array(
+          'field' => [
             'click sortable' => TRUE,
-          ),
-        );
+          ],
+        ];
       }
 
       // now add the handlers
       $sql = "SELECT * FROM {tripal_views_handlers} WHERE setup_id = :setup AND column_name = :column";
-      $handlers = db_query($sql, array(':setup' => $setup_id, ':column' => $column_name));
+      $handlers = db_query($sql, [
+        ':setup' => $setup_id,
+        ':column' => $column_name,
+      ]);
       $num_handlers = 0;
       foreach ($handlers as $handler) {
         $num_handlers++;
@@ -339,11 +342,11 @@ function tripal_chado_views_views_data() {
             key for this field is set in the integration array (priority = %priority).
             The supported keys include 'field', 'filter', 'sort', 'relationship'. Look
             at the tripal_add_views_integration() for additional details.",
-          array(
-            '%table'=> $base_table,
+          [
+            '%table' => $base_table,
             '%column' => $column_name,
-            '%priority' => $tvi_row->priority
-          )
+            '%priority' => $tvi_row->priority,
+          ]
         );
       }
     }
@@ -353,9 +356,9 @@ function tripal_chado_views_views_data() {
     // this keeps the list of available fields manageable
     // all other tables should be added via relationships
     $sql = "SELECT * FROM {tripal_views_join} WHERE setup_id = :setup";
-    $joins = db_query($sql, array(':setup' => $setup_id));
+    $joins = db_query($sql, [':setup' => $setup_id]);
     if (!isset($joins)) {
-      $joins = array();
+      $joins = [];
     }
     foreach ($joins as $join) {
       $left_table = $join->left_table;
@@ -374,10 +377,10 @@ function tripal_chado_views_views_data() {
 
       // add join entry
       if (!$join->relationship_only) {
-        $data[$left_table]['table']['join'][$base_table] = array(
+        $data[$left_table]['table']['join'][$base_table] = [
           'left_field' => $base_field,
           'field' => $left_field,
-        );
+        ];
         if ($handler) {
           $data[$left_table]['table']['join'][$base_table]['handler'] = $handler;
         }
@@ -390,7 +393,7 @@ function tripal_chado_views_views_data() {
       if (isset($data[$base_table][$base_field]['relationship'])) {
         tripal_report_error('tripal_chado_views', TRIPAL_NOTICE,
           'DEPRECATED: Currently using tripal_views_handlers to store relationship for %base => %left when you should be using tripal_views_joins.',
-          array('%base' => $base_table, '%left' => $left_table));
+          ['%base' => $base_table, '%left' => $left_table]);
       }
 
       // Add relationship entry.
@@ -420,18 +423,21 @@ function tripal_chado_views_views_data() {
         $improved_fake_field = $base_field . '_to_' . $left_table . "." . $previous_left_field;
         $data[$base_table][$improved_fake_field] = $data[$base_table][$fake_field];
       }
-      $data[$base_table][$fake_field] = array(
+      $data[$base_table][$fake_field] = [
         'title' => "$base_title.$base_field => $left_title.$left_field",
-        'help' => t("Joins @base to @left", array('@base' => "$base_title.$base_field", '@left' => "$left_title.$left_field")),
-        'relationship' => array(
+        'help' => t("Joins @base to @left", [
+          '@base' => "$base_title.$base_field",
+          '@left' => "$left_title.$left_field",
+        ]),
+        'relationship' => [
           'handler' => $join->relationship_handler,
           'title' => t("$base_field => $left_title ($left_field)"),
           'label' => t("$base_field => $left_title ($left_field)"),
           'real field' => $base_field,
           'base' => $left_table,
-          'base field' => $left_field
-        )
-      );
+          'base field' => $left_field,
+        ],
+      ];
       if (!empty($join->arguments)) {
         array_merge($data[$base_table][$fake_field]['relationship'], unserialize($join->arguments));
       }
@@ -442,151 +448,152 @@ function tripal_chado_views_views_data() {
 }
 
 /**
- * Describes the tripal views integration tables to views for the administration views
+ * Describes the tripal views integration tables to views for the
+ * administration views
  *
  * @ingroup tripal_chado_views
  */
 function tripal_chado_views_views_data_tripal_views_tables($data) {
 
   $data['tripal_views']['table']['group'] = t('Chado Views Integration');
-  $data['tripal_views']['table']['base'] = array(
+  $data['tripal_views']['table']['base'] = [
     'field' => 'setup_id', // This is the identifier field for the view.
     'title' => t('Chado Views Integration'),
     'help' => t('Specifications on how to integrate various tables with Drupal Views'),
     'weight' => -10,
-  );
+  ];
 
   // Implicit Join to Materialized Views
-  $data['tripal_views']['table']['join'] = array(
-    'tripal_mviews' => array(
+  $data['tripal_views']['table']['join'] = [
+    'tripal_mviews' => [
       'left_field' => 'mview_id',
       'field' => 'mview_id',
-    ),
-  );
+    ],
+  ];
 
   // setup_id
-  $data['tripal_views']['setup_id'] = array(
+  $data['tripal_views']['setup_id'] = [
     'title' => t('Setup ID'),
     'help' => t('Primary key of the integration'),
-    'field' => array(
+    'field' => [
       'handler' => 'views_handler_field_numeric',
       'click sortable' => TRUE,
-    ),
-    'filter' => array(
+    ],
+    'filter' => [
       'handler' => 'views_handler_filter_numeric',
-    ),
-    'sort' => array(
+    ],
+    'sort' => [
       'handler' => 'views_handler_sort',
-    ),
-  );
+    ],
+  ];
 
   // mview_id
-  $data['tripal_views']['mview_id'] = array(
+  $data['tripal_views']['mview_id'] = [
     'title' => t('Materialized View ID'),
     'help' => t('The primary key of the Mview integrated.'),
-    'field' => array(
+    'field' => [
       'handler' => 'views_handler_field_numeric',
       'click sortable' => TRUE,
-    ),
-    'filter' => array(
+    ],
+    'filter' => [
       'handler' => 'views_handler_filter_numeric',
-    ),
-    'sort' => array(
+    ],
+    'sort' => [
       'handler' => 'views_handler_sort',
-    ),
-  );
+    ],
+  ];
 
   // base_table
-  $data['tripal_views']['base_table'] = array(
+  $data['tripal_views']['base_table'] = [
     'title' => t('Base Table?'),
     'help' => t('Whether the table being integrated should be considered a base table.'),
-    'field' => array(
+    'field' => [
       'handler' => 'views_handler_field_boolean',
       'click sortable' => TRUE,
-    ),
-    'filter' => array(
+    ],
+    'filter' => [
       'handler' => 'views_handler_filter_boolean_operator',
       'label' => t('Base Table?'),
       'type' => 'yes-no',
       'use equal' => TRUE,
-    ),
-    'sort' => array(
+    ],
+    'sort' => [
       'handler' => 'views_handler_sort',
-    ),
-  );
+    ],
+  ];
 
   // table_name
-  $data['tripal_views']['table_name'] = array(
+  $data['tripal_views']['table_name'] = [
     'title' => t('Chado Table Name'),
     'help' => t('The name of the table being integrated'),
-    'field' => array(
+    'field' => [
       'handler' => 'views_handler_field',
       'click sortable' => TRUE, // This is use by the table display plugin.
-    ),
-    'sort' => array(
+    ],
+    'sort' => [
       'handler' => 'views_handler_sort',
-    ),
-    'filter' => array(
+    ],
+    'filter' => [
       'handler' => 'views_handler_filter_string',
-    ),
-    'argument' => array(
+    ],
+    'argument' => [
       'handler' => 'views_handler_argument_string',
-    ),
-  );
+    ],
+  ];
 
   // priority
-  $data['tripal_views']['priority'] = array(
+  $data['tripal_views']['priority'] = [
     'title' => t('Priority'),
     'help' => t('The priority of the integration.'),
-    'field' => array(
+    'field' => [
       'handler' => 'views_handler_field_numeric',
       'click sortable' => TRUE,
-    ),
-    'filter' => array(
+    ],
+    'filter' => [
       'handler' => 'views_handler_filter_numeric',
-    ),
-    'sort' => array(
+    ],
+    'sort' => [
       'handler' => 'views_handler_sort',
-    ),
-  );
+    ],
+  ];
 
   // name
-  $data['tripal_views']['name'] = array(
+  $data['tripal_views']['name'] = [
     'title' => t('Name'),
     'help' => t('The name of the integration'),
-    'field' => array(
+    'field' => [
       'handler' => 'views_handler_field',
       'click sortable' => TRUE, // This is use by the table display plugin.
-    ),
-    'sort' => array(
+    ],
+    'sort' => [
       'handler' => 'views_handler_sort',
-    ),
-    'filter' => array(
+    ],
+    'filter' => [
       'handler' => 'views_handler_filter_string',
-    ),
-    'argument' => array(
+    ],
+    'argument' => [
       'handler' => 'views_handler_argument_string',
-    ),
-  );
+    ],
+  ];
 
   // comment
-  $data['tripal_views']['comment'] = array(
+  $data['tripal_views']['comment'] = [
     'title' => t('Description'),
     'help' => t('Short description or comment about this integration.'),
-    'field' => array(
+    'field' => [
       'handler' => 'views_handler_field',
       'click sortable' => TRUE, // This is use by the table display plugin.
-    ),
-    'sort' => array(
+    ],
+    'sort' => [
       'handler' => 'views_handler_sort',
-    ),
-    'filter' => array(
+    ],
+    'filter' => [
       'handler' => 'views_handler_filter_string',
-    ),
-    'argument' => array(
+    ],
+    'argument' => [
       'handler' => 'views_handler_argument_string',
-    ),
-  );
+    ],
+  ];
 
   return $data;
 }
@@ -600,84 +607,84 @@ function tripal_chado_views_views_data_tripal_views_tables($data) {
  */
 function tripal_chado_views_views_data_alter(&$data) {
 
-    // ADD IN NODE JOINS & RELATIONSHIPS
-    // D7 @todo: Create custom handler to allow join from Node => Base (ie: organism)
-    //           with the addition of a single relationship
-    // D7 @todo: Create custom handler to allow join from Base (ie: organism)
-    //           with the addition of a single relationship
-    // D7 @todo: Add support for Mview <-> Node joins and relationships
-    $tvi_query = db_query('SELECT * FROM {tripal_views} WHERE base_table=1');
-    foreach ($tvi_query as $tvi_row) {
+  // ADD IN NODE JOINS & RELATIONSHIPS
+  // D7 @todo: Create custom handler to allow join from Node => Base (ie: organism)
+  //           with the addition of a single relationship
+  // D7 @todo: Create custom handler to allow join from Base (ie: organism)
+  //           with the addition of a single relationship
+  // D7 @todo: Add support for Mview <-> Node joins and relationships
+  $tvi_query = db_query('SELECT * FROM {tripal_views} WHERE base_table=1');
+  foreach ($tvi_query as $tvi_row) {
 
-      //ids we'll use for queries
-      $setup_id = $tvi_row->setup_id;
-      $base_table = $tvi_row->table_name;
-      $linker_table = 'chado_' . $base_table;
-      $base_title = ucwords(str_replace('_', ' ', $base_table));
+    //ids we'll use for queries
+    $setup_id = $tvi_row->setup_id;
+    $base_table = $tvi_row->table_name;
+    $linker_table = 'chado_' . $base_table;
+    $base_title = ucwords(str_replace('_', ' ', $base_table));
 
-      // add in joins to the node tables if the Chado schema is local
-      $is_local = isset($GLOBALS["chado_is_local"]) && $GLOBALS["chado_is_local"];
-      if ($is_local) {
-        // if a node linking table exists then add in the joins
-        if (db_table_exists($linker_table)) {
+    // add in joins to the node tables if the Chado schema is local
+    $is_local = isset($GLOBALS["chado_is_local"]) && $GLOBALS["chado_is_local"];
+    if ($is_local) {
+      // if a node linking table exists then add in the joins
+      if (db_table_exists($linker_table)) {
 
-          // Adds content (node) fields to chado base table field lists automatically
-          $data['node']['table']['join'][$linker_table] = array(
-            'left_field' => 'nid',
-            'field' => 'nid',
-          );
-          $data[$linker_table]['table']['join'][$base_table] = array(
-            'left_field' => $base_table . '_id',
-            'field' => $base_table . '_id',
-          );
-          $data['node']['table']['join'][$base_table] = array(
-            'left_table' => $linker_table,
-            'left_field' => 'nid',
-            'field' => 'nid',
-          );
+        // Adds content (node) fields to chado base table field lists automatically
+        $data['node']['table']['join'][$linker_table] = [
+          'left_field' => 'nid',
+          'field' => 'nid',
+        ];
+        $data[$linker_table]['table']['join'][$base_table] = [
+          'left_field' => $base_table . '_id',
+          'field' => $base_table . '_id',
+        ];
+        $data['node']['table']['join'][$base_table] = [
+          'left_table' => $linker_table,
+          'left_field' => 'nid',
+          'field' => 'nid',
+        ];
 
-          // Adds in a chado base table => node relationship
-          // This allows controlled joining to multiple nodes per line
-          // Use Case:  link to feature and organism nodes on a feature listing
-          // D7 todo: a custom relationship handler to get from feature.organism_id => organism node
-          //      without 1st needing to add relationship to organism table
-          $base_field = $base_table . '_id';
-          $data[$linker_table][$base_field] = array(
-            'group' => $base_title,
-            'title' => $base_title . 'Node',
-            'help' => t("Links @base_title to it's node.", array('@base_title' => $base_title)),
-            'relationship' => array(
-              'handler' => 'views_handler_relationship',
-              'title' => t("@base_title => Node", array('@base_title' => $base_title)),
-              'label' => t("@base_title => Node", array('@base_title' => $base_title)),
-              'real field' => 'nid',
-              'base' => 'node',
-              'base field' => 'nid'
-            ),
-          );
+        // Adds in a chado base table => node relationship
+        // This allows controlled joining to multiple nodes per line
+        // Use Case:  link to feature and organism nodes on a feature listing
+        // D7 todo: a custom relationship handler to get from feature.organism_id => organism node
+        //      without 1st needing to add relationship to organism table
+        $base_field = $base_table . '_id';
+        $data[$linker_table][$base_field] = [
+          'group' => $base_title,
+          'title' => $base_title . 'Node',
+          'help' => t("Links @base_title to it's node.", ['@base_title' => $base_title]),
+          'relationship' => [
+            'handler' => 'views_handler_relationship',
+            'title' => t("@base_title => Node", ['@base_title' => $base_title]),
+            'label' => t("@base_title => Node", ['@base_title' => $base_title]),
+            'real field' => 'nid',
+            'base' => 'node',
+            'base field' => 'nid',
+          ],
+        ];
 
-          // Add Chado fields to a node-based view
-          // This will only be done with relationships
-          $base_field = $base_table . '_id';
-          $data['node'][$base_field] = array(
-            'group' => $base_title,
-            'title' => $base_title,
-            'help' => t("Links node to chado @base_title.", array('@base_title' => $base_title)),
-            'relationship' => array(
-              'handler' => 'views_handler_relationship',
-              'title' => t("Node => @base_title", array('@base_title' => $base_title)),
-              'label' => t("Node => @base_title", array('@base_title' => $base_title)),
-              'real field' => 'nid',
-              'base' => $linker_table,
-              'base field' => 'nid'
-            ),
-          );
+        // Add Chado fields to a node-based view
+        // This will only be done with relationships
+        $base_field = $base_table . '_id';
+        $data['node'][$base_field] = [
+          'group' => $base_title,
+          'title' => $base_title,
+          'help' => t("Links node to chado @base_title.", ['@base_title' => $base_title]),
+          'relationship' => [
+            'handler' => 'views_handler_relationship',
+            'title' => t("Node => @base_title", ['@base_title' => $base_title]),
+            'label' => t("Node => @base_title", ['@base_title' => $base_title]),
+            'real field' => 'nid',
+            'base' => $linker_table,
+            'base field' => 'nid',
+          ],
+        ];
 
-        }
       }
     }
+  }
 
-    return $data;
+  return $data;
 }
 
 /**

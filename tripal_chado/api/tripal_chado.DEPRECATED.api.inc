@@ -32,8 +32,8 @@
  *
  * @ingroup tripal_chado_DEPRECATED_api
  */
-function tripal_chado_publish_records($values, $job_id = null) {
-  return chado_publish_records($values, $job_id = null);
+function tripal_chado_publish_records($values, $job_id = NULL) {
+  return chado_publish_records($values, $job_id = NULL);
 }
 
 /**
@@ -41,6 +41,7 @@ function tripal_chado_publish_records($values, $job_id = null) {
  *
  * @param $base_table
  *    The name of a base table in Chado.
+ *
  * @return
  *    An array of tokens where the key is the machine_name of the token.
  *
@@ -63,7 +64,7 @@ function tripal_get_chado_tokens($base_table) {
  * @return
  *   The string will all tokens replaced with values.
  *
- *  @ingroup tripal_chado_DEPRECATED_api
+ * @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_replace_chado_tokens($string, $record) {
   return chado_replace_tokens($string, $record);
@@ -72,12 +73,12 @@ function tripal_replace_chado_tokens($string, $record) {
 /**
  * Migrate Tripal content types
  *
- * Migrate specified Tripal content type and publish all its content. The content type
- * will be created if it does not already exist.
+ * Migrate specified Tripal content type and publish all its content. The
+ * content type will be created if it does not already exist.
  *
  * @param $type
- *   A type array specifying the vocabular, accession, term_name, and chado data_table
- *   e.g.
+ *   A type array specifying the vocabular, accession, term_name, and chado
+ *   data_table e.g.
  *     $type = array(
  *       'vocabulary' => 'OBI',
  *       'accession' => '0100026',
@@ -86,10 +87,11 @@ function tripal_replace_chado_tokens($string, $record) {
  *         'data_table' => $table
  *       )
  *     )
+ *
  * @ingroup tripal_chado_DEPRECATED_api
  */
-function tripal_chado_migrate_tripal_content_type($type = array()) {
-  return chado_migrate_tripal_content_type($type = array());
+function tripal_chado_migrate_tripal_content_type($type = []) {
+  return chado_migrate_tripal_content_type($type = []);
 }
 
 
@@ -120,7 +122,7 @@ function tripal_chado_migrate_tripal_content_type($type = array()) {
  *
  * @ingroup tripal_chado_DEPRECATED_api
  */
-function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = null, $redirect = true) {
+function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = NULL, $redirect = TRUE) {
   return chado_add_mview($name, $modulename, $mv_schema, $query, $comment, $redirect);
 }
 
@@ -158,9 +160,9 @@ function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = nul
  * @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
-  $indexed, $query, $special_index, $comment = null, $mv_schema = null) {
+                           $indexed, $query, $special_index, $comment = NULL, $mv_schema = NULL) {
   return chado_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
-    $indexed, $query, $special_index, $comment = null,$mv_schema = null);
+    $indexed, $query, $special_index, $comment = NULL, $mv_schema = NULL);
 }
 
 /**
@@ -265,6 +267,7 @@ function hook_tripal_get_schema_name_alter($schema_name, $context) {
  * @param $schema
  *   Wehter you want the schema name for 'chado' or 'drupal'. Chado is the
  *   default.
+ *
  * @return
  *   The name of the PostgreSQL schema housing the $schema specified.
  *
@@ -326,10 +329,10 @@ function tripal_add_chado_semweb_table($chado_table) {
  * @return boolean
  *   Returns TRUE if the association was made successfully and FALSE otherwise.
  *
- *  @ingroup tripal_chado_DEPRECATED_api
+ * @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_associate_chado_semweb_term($chado_table, $chado_column, $term,
-    $update = false) {
+                                            $update = FALSE) {
   return chado_associate_semweb_term($chado_table, $chado_column, $term, $update);
 }
 
@@ -351,9 +354,9 @@ function tripal_associate_chado_semweb_term($chado_table, $chado_column, $term,
  *   the 'return_object' options is provided then a cvterm object is returned.
  *   returns NULL if no term is mapped to the table and column.
  *
- *  @ingroup tripal_chado_DEPRECATED_api
+ * @ingroup tripal_chado_DEPRECATED_api
  */
-function tripal_get_chado_semweb_term($chado_table, $chado_column, $options = array()) {
+function tripal_get_chado_semweb_term($chado_table, $chado_column, $options = []) {
   return chado_get_semweb_term($chado_table, $chado_column, $options);
 }
 
@@ -362,14 +365,16 @@ function tripal_get_chado_semweb_term($chado_table, $chado_column, $options = ar
  *
  * @param $cvterm
  *   A cvterm object.
+ *
  * @return
  *   The semantic web name for the term.
  *
- *  @ingroup tripal_chado_DEPRECATED_api
+ * @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_format_chado_semweb_term($cvterm) {
   return chado_format_semweb_term($cvterm);
 }
+
 /**
  * Retreive the column name in a Chado table that matches a given term.
  *
@@ -383,7 +388,7 @@ function tripal_format_chado_semweb_term($cvterm) {
  *   The name of the Chado column that matches the given term or FALSE if the
  *   term is not mapped to the Chado table.
  *
- *  @ingroup tripal_chado_DEPRECATED_api
+ * @ingroup tripal_chado_DEPRECATED_api
  */
 function tripal_get_chado_semweb_column($chado_table, $term) {
   return chado_get_semweb_column($chado_table, $term);

@@ -1,11 +1,12 @@
 <?php
 
 class data__sequence_coordinates_widget extends ChadoFieldWidget {
+
   // The default lable for this field.
   public static $default_label = 'Sequence Coordinates';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('data__sequence_coordinates');
+  public static $field_types = ['data__sequence_coordinates'];
 
   /**
    *

@@ -7,17 +7,17 @@ $num_results_per_page = 25;
 $pager_id = 3;
 
 // get the features aligned on this map
-$options = array(
+$options = [
   'return_array' => 1,
-  'order_by' => array('name' => 'ASC'),
-  'pager' => array(
+  'order_by' => ['name' => 'ASC'],
+  'pager' => [
     'limit' => $num_results_per_page,
-    'element' => $pager_id
-  ),
-  'include_fk' => array(
-    'type_id' => 1
-  ),
-);
+    'element' => $pager_id,
+  ],
+  'include_fk' => [
+    'type_id' => 1,
+  ],
+];
 
 $organism = chado_expand_var($organism, 'table', 'stock', $options);
 $stocks = $organism->stock;
@@ -27,51 +27,54 @@ $total_records = chado_pager_get_count($pager_id);
 
 
 if (count($stocks) > 0) { ?>
-  <div class="tripal_organism-data-block-desc tripal-data-block-desc">This organism is associated with <?php print number_format($total_records) ?> stock(s):</div> <?php
+    <div class="tripal_organism-data-block-desc tripal-data-block-desc">This
+        organism is associated with <?php print number_format($total_records) ?>
+        stock(s):
+    </div> <?php
 
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
   // This table for the analysis has a vertical header (down the first column)
   // so we do not provide headers here, but specify them in the $rows array below.
-  $headers = array('Name', 'Type');
+  $headers = ['Name', 'Type'];
 
   // the $rows array contains an array of rows where each row is an array
   // of values for each column of the table in that row.  Additional documentation
   // can be found here:
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-  $rows = array();
+  $rows = [];
 
-  foreach ($stocks as $stock){
+  foreach ($stocks as $stock) {
     $name = $stock->name;
     if (!$name) {
       $name = $stock->uniquename;
     }
     if (property_exists($stock, 'nid')) {
-      $name = l($name, "node/$stock->nid", array('attributes' => array('target' => '_blank')));
+      $name = l($name, "node/$stock->nid", ['attributes' => ['target' => '_blank']]);
     }
 
-    $rows[] = array(
+    $rows[] = [
       $name,
-      $stock->type_id->name
-    );
+      $stock->type_id->name,
+    ];
   }
   // the $table array contains the headers and rows array as well as other
   // options for controlling the display of the table.  Additional
   // documentation can be found here:
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-  $table = array(
+  $table = [
     'header' => $headers,
     'rows' => $rows,
-    'attributes' => array(
+    'attributes' => [
       'id' => 'tripal_organism-table-stocks',
-      'class' => 'tripal-data-table'
-    ),
+      'class' => 'tripal-data-table',
+    ],
     'sticky' => FALSE,
     'caption' => '',
-    'colgroups' => array(),
+    'colgroups' => [],
     'empty' => '',
-  );
+  ];
   // once we have our table array structure defined, we call Drupal's theme_table()
   // function to generate the table.
   print theme_table($table);
@@ -86,14 +89,14 @@ if (count($stocks) > 0) { ?>
   // Drupal won't reset the parameter if it already exists.
   $get = $_GET;
   unset($_GET['pane']);
-  $pager = array(
-    'tags' => array(),
+  $pager = [
+    'tags' => [],
     'element' => $pager_id,
-    'parameters' => array(
-      'pane' => 'stocks'
-    ),
+    'parameters' => [
+      'pane' => 'stocks',
+    ],
     'quantity' => $num_results_per_page,
-  );
+  ];
   print theme_pager($pager);
   $_GET = $get;
 

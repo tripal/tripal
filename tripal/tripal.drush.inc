@@ -57,74 +57,74 @@ function tripal_drush_help($command) {
  * @ingroup tripal_drush
  */
 function tripal_drush_command() {
-  $items = array();
+  $items = [];
 
-  $items['trp-get-currjob'] = array(
+  $items['trp-get-currjob'] = [
     'description' => dt('Returns details about the currently running job including percent complete.'),
-    'arguments'   => array(),
-    'examples' => array(
+    'arguments' => [],
+    'examples' => [
       'Standard example' => 'drush trp-get-currjob',
-    ),
-  );
-  $items['trp-run-jobs'] = array(
+    ],
+  ];
+  $items['trp-run-jobs'] = [
     'description' => dt('Launches jobs waiting in the queue. Only one job can execute at a time unless the --parallel=1 option is provided.'),
-    'examples' => array(
+    'examples' => [
       'Single Job' => 'drush trp-run-jobs --username=administrator',
       'Parallel Job' => 'drush trp-run-jobs --username=administrator --parallel=1',
       'Max-jobs Job' => 'drush trp-run-jobs --username=administrator --parallel=1 --max_jobs=10',
-    ),
-    'arguments' => array(),
-    'options' => array(
-      'user' => array(
+    ],
+    'arguments' => [],
+    'options' => [
+      'user' => [
         'description' => dt('DEPRECATED. Conflicts with Drush 7.x --user argument. Please use the --username argument.'),
-      ),
-      'username' => array(
+      ],
+      'username' => [
         'description' => dt('The Drupal user name for which the job should be run.  The permissions for this user will be used.'),
-      ),
+      ],
       'parallel' => dt('Normally jobs are executed one at a time. But if you are certain no conflicts will occur with other currently running jobs you may set this argument to a value of 1 to make the job run in parallel with other running jobs.'),
       'job_id' => dt('Provide a job_id to run a specific job. Only jobs that have not been run already can be used'),
       'max_jobs' => dt('Indicate the maximum number of concurrent jobs. Default is -1 (unlimited). Ignore if not running parallel jobs'),
       'single' => dt('Execute only one queued job'),
-    ),
-  );
-  $items['trp-rerun-job'] = array(
+    ],
+  ];
+  $items['trp-rerun-job'] = [
     'description' => dt('Re-run a specific job from the queue.'),
-    'examples' => array(
+    'examples' => [
       'Single Job' => 'drush trp-rerun-job --username=administrator --job_id=2',
       'Parallel Job' => 'drush trp-rerun-job --username=administrator  --job_id=2 --parallel=1',
       'Max-jobs Job' => 'drush trp-run-jobs --username=administrator --parallel=1 --max_jobs=10',
-    ),
-    'arguments' => array(),
-    'options' => array(
-      'user' => array(
+    ],
+    'arguments' => [],
+    'options' => [
+      'user' => [
         'description' => dt('DEPRECATED. Conflicts with Drush 7.x --user argument. Please use the --username argument.'),
-      ),
-      'username' => array(
+      ],
+      'username' => [
         'description' => dt('The Drupal user name for which the job should be run.  The permissions for this user will be used.'),
-      ),
-      'job_id' => array(
+      ],
+      'job_id' => [
         'description' => dt('The job ID to run.'),
         'required' => TRUE,
-      ),
+      ],
       'parallel' => dt('Normally jobs are executed one at a time. But if you are certain no conflicts will occur with other currently running jobs you may set this argument to a value of 1 to make the job run in parallel with other running jobs.'),
       'max_jobs' => dt('Indicate the maximum number of concurrent jobs. Default is -1 (unlimited). Ignore if not running parallel jobs'),
       'single' => dt('Execute only one queued job'),
-    ),
-  );
-  $items['trp-prepare-chado'] = array(
+    ],
+  ];
+  $items['trp-prepare-chado'] = [
     'description' => dt('Prepares a new Tripal installation with content types, requires the username of an administrator to run.'),
-    'arguments'   => array(),
-    'examples' => array(
+    'arguments' => [],
+    'examples' => [
       'Standard example' => 'drush trp-prepare-chado --user=administrator',
-    ),
-  );
-  $items['trp-set-permissions'] = array(
+    ],
+  ];
+  $items['trp-set-permissions'] = [
     'description' => dt('Gives view, edit, delete, create priveleges to administrators for all tripal content types.'),
-    'arguments'   => array(),
-    'examples' => array(
+    'arguments' => [],
+    'examples' => [
       'Standard example' => 'drush trp-set-permissions --user=administrator',
-    ),
-  );
+    ],
+  ];
   return $items;
 }
 
@@ -136,7 +136,7 @@ function tripal_drush_command() {
 function drush_tripal_set_user($username) {
   if ($username) {
     $sql = "SELECT uid FROM {users} WHERE name = :name";
-    $results = db_query($sql, array(':name' => $username));
+    $results = db_query($sql, [':name' => $username]);
     $u = $results->fetchObject();
     if (!$u) {
       drush_print(date('Y-m-d H:i:s'));
@@ -163,16 +163,18 @@ function drush_tripal_set_user($username) {
  */
 function drush_tripal_trp_run_jobs_install($username) {
   $parallel = drush_get_option('parallel');
-  $job_id   = drush_get_option('job_id');
+  $job_id = drush_get_option('job_id');
   $max_jobs = drush_get_option('max_jobs', -1);
-  $single   = drush_get_option('single', 0);
+  $single = drush_get_option('single', 0);
 
   drush_tripal_set_user($username);
 
   drush_print("\n" . date('Y-m-d H:i:s'));
   if ($parallel) {
     drush_print("Tripal Job Launcher (in parallel)");
-    if ($max_jobs !== -1) drush_print("Maximum number of jobs is " . $max_jobs);
+    if ($max_jobs !== -1) {
+      drush_print("Maximum number of jobs is " . $max_jobs);
+    }
     drush_print("Running as user '$username'");
     drush_print("-------------------");
     tripal_launch_job($parallel, $job_id, $max_jobs, $single);
@@ -194,9 +196,9 @@ function drush_tripal_trp_run_jobs_install($username) {
  */
 function drush_tripal_trp_run_jobs() {
   $parallel = drush_get_option('parallel');
-  $job_id   = drush_get_option('job_id');
+  $job_id = drush_get_option('job_id');
   $max_jobs = drush_get_option('max_jobs', -1);
-  $single   = drush_get_option('single', 0);
+  $single = drush_get_option('single', 0);
 
   // Unfortunately later versions of Drush use the '--user' argument which
   // makes it incompatible with how Tripal was using it.  For backwards
@@ -220,7 +222,9 @@ function drush_tripal_trp_run_jobs() {
   drush_print("\n" . date('Y-m-d H:i:s'));
   if ($parallel) {
     drush_print("Tripal Job Launcher (in parallel)");
-    if ($max_jobs !== -1) drush_print("Maximum number of jobs is " . $max_jobs);
+    if ($max_jobs !== -1) {
+      drush_print("Maximum number of jobs is " . $max_jobs);
+    }
     drush_print("Running as user '$username'");
     drush_print("-------------------");
     tripal_launch_job($parallel, $job_id, $max_jobs, $single);
@@ -260,9 +264,9 @@ function drush_tripal_trp_rerun_job() {
   }
 
   $parallel = drush_get_option('parallel');
-  $job_id   = drush_get_option('job_id');
+  $job_id = drush_get_option('job_id');
   $max_jobs = drush_get_option('max_jobs', -1);
-  $single   = drush_get_option('single', 0);
+  $single = drush_get_option('single', 0);
 
   drush_tripal_set_user($username);
   $new_job_id = tripal_rerun_job($job_id, FALSE);
@@ -291,7 +295,7 @@ function drush_tripal_trp_rerun_job() {
  * @ingroup tripal_drush
  */
 function drush_tripal_trp_get_currjob() {
-  $sql =  "
+  $sql = "
     SELECT *
     FROM {tripal_jobs} TJ
     WHERE TJ.end_time IS NULL and NOT TJ.start_time IS NULL
@@ -301,13 +305,13 @@ function drush_tripal_trp_get_currjob() {
   foreach ($jobs as $job) {
     $job_pid = $job->pid;
     $output = "Name: " . $job->job_name . "\n" .
-        "Submitted: " . date(DATE_RFC822, $job->submit_date) . "\n" .
-        "Started: " . date(DATE_RFC822, $job->start_time) . "\n" .
-        "Module: " . $job->modulename . "\n" .
-        "Callback: " . $job->callback . "\n" .
-        "Process ID: " . $job->pid . "\n" .
-        "Progress: " . $job->progress . "%\n".
-        "Current Date: " . date('Y-m-d H:i:s') . "\n";
+      "Submitted: " . date(DATE_RFC822, $job->submit_date) . "\n" .
+      "Started: " . date(DATE_RFC822, $job->start_time) . "\n" .
+      "Module: " . $job->modulename . "\n" .
+      "Callback: " . $job->callback . "\n" .
+      "Process ID: " . $job->pid . "\n" .
+      "Progress: " . $job->progress . "%\n" .
+      "Current Date: " . date('Y-m-d H:i:s') . "\n";
     drush_print(date('Y-m-d H:i:s'));
     drush_print($output);
   }
@@ -342,8 +346,8 @@ function drush_tripal_trp_prepare_chado() {
   drush_tripal_set_user($username);
 
   print_r("Now preparing the site by creating content types.\n");
-  $prepare = drush_invoke_process('@self', 'php-eval', array("module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.setup'); tripal_chado_prepare_drush_submit();"), array());
-  drush_invoke_process('@self', 'php-eval', array("module_load_include('inc', 'tripal', 'tripal.drush'); drush_tripal_trp_run_jobs_install(" . $username . ");"), array());
+  $prepare = drush_invoke_process('@self', 'php-eval', ["module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.setup'); tripal_chado_prepare_drush_submit();"], []);
+  drush_invoke_process('@self', 'php-eval', ["module_load_include('inc', 'tripal', 'tripal.drush'); drush_tripal_trp_run_jobs_install(" . $username . ");"], []);
   if (!$prepare) {
     echo "An error occurred when attempting to install Chado. Please navigate to your new site and finish the installation process from the 'Install Tripal' section as described in the online help, found here http://tripal.info/tutorials/v3.x/installation/tripal \n";
     exit;
@@ -371,8 +375,8 @@ function drush_tripal_trp_set_permissions() {
   }
 
   drush_tripal_set_user($username);
-  $permissions = array();
-    
+  $permissions = [];
+
   $bundles = tripal_get_content_types();
 
   foreach ($bundles as $bundles => $bundle) {
@@ -380,8 +384,8 @@ function drush_tripal_trp_set_permissions() {
       ' edit ' . $bundle->name, ' delete ' . $bundle->name);
   }
   $string_permissions = implode(",", $permissions);
-  $args4 = array('administrator', $string_permissions);
-  $options4 = array();
+  $args4 = ['administrator', $string_permissions];
+  $options4 = [];
   drush_invoke_process('@self', 'role-add-perm', $args4, $options4);
 
   drush_print(dt(""));

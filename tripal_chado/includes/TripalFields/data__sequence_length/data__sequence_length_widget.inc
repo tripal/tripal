@@ -1,11 +1,12 @@
 <?php
 
 class data__sequence_length_widget extends ChadoFieldWidget {
+
   // The default lable for this field.
   public static $default_label = 'Sequence length';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('data__sequence_length');
+  public static $field_types = ['data__sequence_length'];
 
   /**
    *
@@ -18,19 +19,19 @@ class data__sequence_length_widget extends ChadoFieldWidget {
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
 
-    $widget['value'] = array(
+    $widget['value'] = [
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
-    );
+    ];
 
-    $widget['chado-feature__seqlen'] =  array(
+    $widget['chado-feature__seqlen'] = [
       '#type' => 'value',
       '#value' => 0,
       '#title' => $element['#title'],
       '#description' => $element['#description'],
       '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
       '#delta' => $delta,
-    );
+    ];
   }
 
   /**
@@ -44,8 +45,8 @@ class data__sequence_length_widget extends ChadoFieldWidget {
     $field_column = $this->instance['settings']['chado_column'];
 
     // Get the residues so we can calculate the length.
-    if ($form_state['values']['data__sequence']['und'][0]['chado-feature__residues']){
-      $residues =  $form_state['values']['data__sequence']['und'][0]['chado-feature__residues'];
+    if ($form_state['values']['data__sequence']['und'][0]['chado-feature__residues']) {
+      $residues = $form_state['values']['data__sequence']['und'][0]['chado-feature__residues'];
       // Remove spaces and new lines from the residues string.
       $residues = preg_replace('/\s/', '', $residues);
       $length = strlen($residues);

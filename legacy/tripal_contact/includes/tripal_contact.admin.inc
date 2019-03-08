@@ -7,8 +7,8 @@
  */
 
 /**
- * Launchpage for contact administration. Makes sure views are enabled and if not provides
- * links to enable them.
+ * Launchpage for contact administration. Makes sure views are enabled and if
+ * not provides links to enable them.
  *
  * @ingroup tripal_legacy_contact
  */
@@ -16,7 +16,7 @@ function tripal_contact_admin_contact_view() {
   $output = '';
 
   // set the breadcrumb
-  $breadcrumb = array();
+  $breadcrumb = [];
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
@@ -25,7 +25,7 @@ function tripal_contact_admin_contact_view() {
   drupal_set_breadcrumb($breadcrumb);
 
   // Add the view
-  $view = views_embed_view('tripal_contact_admin_contacts','default');
+  $view = views_embed_view('tripal_contact_admin_contacts', 'default');
   if (isset($view)) {
     $output .= $view;
   }
@@ -35,7 +35,7 @@ function tripal_contact_admin_contact_view() {
       . 'administrative interface are disabled. <strong>Click each of the following links to '
       . 'enable the pertinent views</strong>:</p>';
     $output .= '<ul>';
-      $output .= '<li>'.l('Contacts View', 'admin/tripal/legacy/tripal_contact/views/contacts/enable').'</li>';
+    $output .= '<li>' . l('Contacts View', 'admin/tripal/legacy/tripal_contact/views/contacts/enable') . '</li>';
     $output .= '</ul>';
   }
 
@@ -48,36 +48,38 @@ function tripal_contact_admin_contact_view() {
  * @ingroup tripal_legacy_contact
  */
 function tripal_contact_admin() {
-  $form = array();
+  $form = [];
 
   // If your module is using the Chado Node: Title & Path API to allow custom titles
   // for your node type then you need to add the configuration form for this functionality.
-  $details = array(
-    'module' => 'tripal_contact',       // the name of the MODULE implementing the content type
-    'content_type' => 'chado_contact',   // the name of the content type
-      // An array of options to use under "Page Titles"
-      // the key should be the token and the value should be the human-readable option
-    'options' => array(
+  $details = [
+    'module' => 'tripal_contact',
+    // the name of the MODULE implementing the content type
+    'content_type' => 'chado_contact',
+    // the name of the content type
+    // An array of options to use under "Page Titles"
+    // the key should be the token and the value should be the human-readable option
+    'options' => [
       '[contact.name]' => 'Contact Name Only',
-        // there should always be one options matching the unique constraint.
-      '[contact.name]' => 'Unique Contraint: The name of the contact'
-    ),
+      // there should always be one options matching the unique constraint.
+      '[contact.name]' => 'Unique Contraint: The name of the contact',
+    ],
     // the token indicating the unique constraint in the options array
-    'unique_option' => '[contact.name]'
-  );
+    'unique_option' => '[contact.name]',
+  ];
   // This call adds the configuration form to your current form
   // This sub-form handles it's own validation & submit
   chado_add_admin_form_set_title($form, $form_state, $details);
 
   // URL ALIAS
-  $details = array(
+  $details = [
     'module' => 'tripal_contact',
     'content_type' => 'chado_contact',
-    'options' => array(
+    'options' => [
       '/contact/[contact.contact_id]' => 'Contact ID',
-      '/contact/[contact.name]' => 'Unique Contraint: The name of the contact'
-    ),
-  );
+      '/contact/[contact.name]' => 'Unique Contraint: The name of the contact',
+    ],
+  ];
 
   // This call adds the configuration form to your current form
   // This sub-form handles it's own validation & submit

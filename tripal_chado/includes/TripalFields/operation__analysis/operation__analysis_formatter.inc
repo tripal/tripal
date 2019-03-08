@@ -13,9 +13,9 @@ class operation__analysis_formatter extends ChadoFieldFormatter {
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
     if (count($items) > 0) {
-      
+
       $name_term = chado_get_semweb_term('analysis', 'name');
-      
+
       $content = $items[0]['value'][$name_term];
       if (array_key_exists('entity', $items[0]['value'])) {
         list($entity_type, $entity_id) = explode(':', $items[0]['value']['entity']);
