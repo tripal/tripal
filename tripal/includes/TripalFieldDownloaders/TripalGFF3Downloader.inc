@@ -1,6 +1,7 @@
 <?php
 
 class TripalGFF3Downloader extends TripalFieldDownloader {
+
   /**
    * Sets the label shown to the user describing this formatter.
    */

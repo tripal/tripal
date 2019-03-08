@@ -8,33 +8,37 @@
  * @defgroup tripal_schema_v1_11_api Chado v1.11 Schema
  * @ingroup tripal_chado_schema_api
  * @{
- * Provides an application programming interface (API) for describing Chado tables.
- * This API consists of a set of functions, one for each table in Chado.  Each
- * function simply returns a Drupal style array that defines the table.
+ * Provides an application programming interface (API) for describing Chado
+ *   tables. This API consists of a set of functions, one for each table in
+ *   Chado.  Each function simply returns a Drupal style array that defines the
+ *   table.
  *
- * Because Drupal 6 does not handle foreign key (FK) relationships, which are needed to
- * for Tripal Views, they have been added to the schema defintitions below.
+ * Because Drupal 6 does not handle foreign key (FK) relationships, which are
+ *   needed to for Tripal Views, they have been added to the schema
+ *   defintitions below.
  *
- * The functions provided in this documentation should not be called as is, but if you need
- * the Drupal-style array definition for any table, use the following function
- * call:
+ * The functions provided in this documentation should not be called as is, but
+ *   if you need the Drupal-style array definition for any table, use the
+ *   following function call:
  *
  *   $table_desc = chado_get_schema($table)
  *
  * where the variable $table contains the name of the table you want to
- * retireve.  The chado_get_schema function determines the appropriate version of
- * Chado and uses the Drupal hook infrastructure to call the appropriate
- * hook function to retrieve the table schema.
+ * retireve.  The chado_get_schema function determines the appropriate version
+ *   of Chado and uses the Drupal hook infrastructure to call the appropriate
+ *   hook function to retrieve the table schema.
  *
- * If you need to augment these schema definitions within your own module, you need to
- * implement the hook_chado_schema_v1_11_[table name]() hook where [table name] is the
- * name of the chado table whose schema definition you want to augment.
+ * If you need to augment these schema definitions within your own module, you
+ *   need to implement the hook_chado_schema_v1_11_[table name]() hook where
+ *   [table name] is the name of the chado table whose schema definition you
+ *   want to augment.
  * @}
  */
 
 /**
  * Implements hook_chado_schema_v1_11_acquisition()
  * Purpose: To describe the structure of 'acquisition' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -46,84 +50,86 @@
  *
  */
 function tripal_chado_chado_schema_v1_11_acquisition() {
-  $description =  array(
+  $description = [
     'table' => 'acquisition',
-    'fields' => array(
-      'acquisition_id' => array(
+    'fields' => [
+      'acquisition_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'assay_id' => array(
+      ],
+      'assay_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'protocol_id' => array(
+      ],
+      'protocol_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'channel_id' => array(
+      ],
+      'channel_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'acquisitiondate' => array(
+      ],
+      'acquisitiondate' => [
         'type' => 'datetime',
         'not NULL' => '',
         'default' => 'ow(',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'uri' => array(
+      ],
+      'uri' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'acquisition_id',
-    ),
-    'unique keys' => array(
-      'acquisition_c1' => array(
+    ],
+    'unique keys' => [
+      'acquisition_c1' => [
         0 => 'name',
-      ),
-    ),
-    'indexes' => array(
-      'acquisition_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'acquisition_idx1' => [
         0 => 'assay_id',
-      ),
-      'acquisition_idx2' => array(
+      ],
+      'acquisition_idx2' => [
         0 => 'protocol_id',
-      ),
-      'acquisition_idx3' => array(
+      ],
+      'acquisition_idx3' => [
         0 => 'channel_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'protocol' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'protocol' => [
         'table' => 'protocol',
-        'columns' => array(
+        'columns' => [
           'protocol_id' => 'protocol_id',
-        ),
-      ),
-      'channel' => array(
+        ],
+      ],
+      'channel' => [
         'table' => 'channel',
-        'columns' => array(
+        'columns' => [
           'channel_id' => 'channel_id',
-        ),
-      ),
-      'assay' => array(
+        ],
+      ],
+      'assay' => [
         'table' => 'assay',
-        'columns' => array(
+        'columns' => [
           'assay_id' => 'assay_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_acquisition_relationship()
  * Purpose: To describe the structure of 'acquisition_relationship' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -135,78 +141,80 @@ function tripal_chado_chado_schema_v1_11_acquisition() {
  *
  */
 function tripal_chado_chado_schema_v1_11_acquisition_relationship() {
-  $description =  array(
+  $description = [
     'table' => 'acquisition_relationship',
-    'fields' => array(
-      'acquisition_relationship_id' => array(
+    'fields' => [
+      'acquisition_relationship_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'subject_id' => array(
+      ],
+      'subject_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'object_id' => array(
+      ],
+      'object_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'acquisition_relationship_id',
-    ),
-    'unique keys' => array(
-      'acquisition_relationship_c1' => array(
+    ],
+    'unique keys' => [
+      'acquisition_relationship_c1' => [
         0 => 'subject_id',
         1 => 'object_id',
         2 => 'type_id',
         3 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'acquisition_relationship_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'acquisition_relationship_idx1' => [
         0 => 'subject_id',
-      ),
-      'acquisition_relationship_idx2' => array(
+      ],
+      'acquisition_relationship_idx2' => [
         0 => 'type_id',
-      ),
-      'acquisition_relationship_idx3' => array(
+      ],
+      'acquisition_relationship_idx3' => [
         0 => 'object_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'acquisition' => array(
+        ],
+      ],
+      'acquisition' => [
         'table' => 'acquisition',
-        'columns' => array(
+        'columns' => [
           'subject_id' => 'acquisition_id',
           'object_id' => 'acquisition_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_acquisitionprop()
  * Purpose: To describe the structure of 'acquisitionprop' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -218,69 +226,71 @@ function tripal_chado_chado_schema_v1_11_acquisition_relationship() {
  *
  */
 function tripal_chado_chado_schema_v1_11_acquisitionprop() {
-  $description =  array(
+  $description = [
     'table' => 'acquisitionprop',
-    'fields' => array(
-      'acquisitionprop_id' => array(
+    'fields' => [
+      'acquisitionprop_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'acquisition_id' => array(
+      ],
+      'acquisition_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'acquisitionprop_id',
-    ),
-    'unique keys' => array(
-      'acquisitionprop_c1' => array(
+    ],
+    'unique keys' => [
+      'acquisitionprop_c1' => [
         0 => 'acquisition_id',
         1 => 'type_id',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'acquisitionprop_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'acquisitionprop_idx1' => [
         0 => 'acquisition_id',
-      ),
-      'acquisitionprop_idx2' => array(
+      ],
+      'acquisitionprop_idx2' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'acquisition' => array(
+        ],
+      ],
+      'acquisition' => [
         'table' => 'acquisition',
-        'columns' => array(
+        'columns' => [
           'acquisition_id' => 'acquisition_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_analysis()
  * Purpose: To describe the structure of 'analysis' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -292,85 +302,87 @@ function tripal_chado_chado_schema_v1_11_acquisitionprop() {
  *
  */
 function tripal_chado_chado_schema_v1_11_analysis() {
-  $description =  array(
-    'referring_tables' => array(
+  $description = [
+    'referring_tables' => [
       0 => 'analysisfeature',
       1 => 'analysisprop',
       2 => 'phylotree',
       3 => 'quantification',
-    ),
+    ],
     'table' => 'analysis',
-    'fields' => array(
-      'analysis_id' => array(
+    'fields' => [
+      'analysis_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-      'description' => array(
+      ],
+      'description' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'program' => array(
+      ],
+      'program' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '1',
-      ),
-      'programversion' => array(
+      ],
+      'programversion' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '1',
-      ),
-      'algorithm' => array(
+      ],
+      'algorithm' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-      'sourcename' => array(
+      ],
+      'sourcename' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-      'sourceversion' => array(
+      ],
+      'sourceversion' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-      'sourceuri' => array(
+      ],
+      'sourceuri' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'timeexecuted' => array(
+      ],
+      'timeexecuted' => [
         'type' => 'datetime',
         'not NULL' => '1',
         'default' => 'ow(',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'analysis_id',
-    ),
-    'unique keys' => array(
-      'analysis_c1' => array(
+    ],
+    'unique keys' => [
+      'analysis_c1' => [
         0 => 'program',
         1 => 'programversion',
         2 => 'sourcename',
-      ),
-    ),
-    'indexes' => array(
-    ),
-    'foreign keys' => array(
-    ),
-  );
+      ],
+    ],
+    'indexes' => [
+    ],
+    'foreign keys' => [
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_analysisprop()
  *
- * Purpose: To describe the structure of 'analysisprop' to tripal.  This table doesn't
- * exist in Chado v1.1 (it does in v1.2), so we need to describe it here
+ * Purpose: To describe the structure of 'analysisprop' to tripal.  This table
+ * doesn't exist in Chado v1.1 (it does in v1.2), so we need to describe it
+ * here
  *
  * @see chado_insert_record()
  * @see chado_update_record()
@@ -383,63 +395,65 @@ function tripal_chado_chado_schema_v1_11_analysis() {
  *
  */
 function tripal_chado_chado_schema_v1_11_analysisprop() {
-  $description =  array(
+  $description = [
     'table' => 'analysisprop',
-    'fields' => array(
-      'analysisprop_id' => array(
+    'fields' => [
+      'analysisprop_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'analysis_id' => array(
+      ],
+      'analysis_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'analysisprop_id',
-    ),
-    'unique keys' => array(
-      'analysisprop_c1' => array(
+    ],
+    'unique keys' => [
+      'analysisprop_c1' => [
         0 => 'analysis_id',
         1 => 'type_id',
-      ),
-    ),
-    'indexes' => array(
-      'analysisprop_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'analysisprop_idx1' => [
         0 => 'analysis_id',
-      ),
-      'analysisprop_idx2' => array(
+      ],
+      'analysisprop_idx2' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'analysis' => array(
+        ],
+      ],
+      'analysis' => [
         'table' => 'analysis',
-        'columns' => array(
+        'columns' => [
           'analysis_id' => 'analysis_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_analysisfeature()
  * Purpose: To describe the structure of 'analysisfeature' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -451,80 +465,81 @@ function tripal_chado_chado_schema_v1_11_analysisprop() {
  *
  */
 function tripal_chado_chado_schema_v1_11_analysisfeature() {
-  $description =  array(
+  $description = [
     'table' => 'analysisfeature',
-    'fields' => array(
-      'analysisfeature_id' => array(
+    'fields' => [
+      'analysisfeature_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'feature_id' => array(
+      ],
+      'feature_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'analysis_id' => array(
+      ],
+      'analysis_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'rawscore' => array(
+      ],
+      'rawscore' => [
         'type' => 'float',
         'size' => 'big',
         'not NULL' => '',
-      ),
-      'normscore' => array(
+      ],
+      'normscore' => [
         'type' => 'float',
         'size' => 'big',
         'not NULL' => '',
-      ),
-      'significance' => array(
+      ],
+      'significance' => [
         'type' => 'float',
         'size' => 'big',
         'not NULL' => '',
-      ),
-      'identity' => array(
+      ],
+      'identity' => [
         'type' => 'float',
         'size' => 'big',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'analysisfeature_id',
-    ),
-    'unique keys' => array(
-      'analysisfeature_c1' => array(
+    ],
+    'unique keys' => [
+      'analysisfeature_c1' => [
         0 => 'feature_id',
         1 => 'analysis_id',
-      ),
-    ),
-    'indexes' => array(
-      'analysisfeature_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'analysisfeature_idx1' => [
         0 => 'feature_id',
-      ),
-      'analysisfeature_idx2' => array(
+      ],
+      'analysisfeature_idx2' => [
         0 => 'analysis_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'feature' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'feature' => [
         'table' => 'feature',
-        'columns' => array(
+        'columns' => [
           'feature_id' => 'feature_id',
-        ),
-      ),
-      'analysis' => array(
+        ],
+      ],
+      'analysis' => [
         'table' => 'analysis',
-        'columns' => array(
+        'columns' => [
           'analysis_id' => 'analysis_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
 
 /**
  * Implements hook_chado_schema_v1_11_arraydesign()
  * Purpose: To describe the structure of 'arraydesign' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -536,140 +551,142 @@ function tripal_chado_chado_schema_v1_11_analysisfeature() {
  *
  */
 function tripal_chado_chado_schema_v1_11_arraydesign() {
-  $description =  array(
+  $description = [
     'table' => 'arraydesign',
-    'fields' => array(
-      'arraydesign_id' => array(
+    'fields' => [
+      'arraydesign_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'manufacturer_id' => array(
+      ],
+      'manufacturer_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'platformtype_id' => array(
+      ],
+      'platformtype_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'substratetype_id' => array(
+      ],
+      'substratetype_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'protocol_id' => array(
+      ],
+      'protocol_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'dbxref_id' => array(
+      ],
+      'dbxref_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'text',
         'not NULL' => '1',
-      ),
-      'version' => array(
+      ],
+      'version' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'description' => array(
+      ],
+      'description' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'array_dimensions' => array(
+      ],
+      'array_dimensions' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'element_dimensions' => array(
+      ],
+      'element_dimensions' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'num_of_elements' => array(
+      ],
+      'num_of_elements' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'num_array_columns' => array(
+      ],
+      'num_array_columns' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'num_array_rows' => array(
+      ],
+      'num_array_rows' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'num_grid_columns' => array(
+      ],
+      'num_grid_columns' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'num_grid_rows' => array(
+      ],
+      'num_grid_rows' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'num_sub_columns' => array(
+      ],
+      'num_sub_columns' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'num_sub_rows' => array(
+      ],
+      'num_sub_rows' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'arraydesign_id',
-    ),
-    'unique keys' => array(
-      'arraydesign_c1' => array(
+    ],
+    'unique keys' => [
+      'arraydesign_c1' => [
         0 => 'name',
-      ),
-    ),
-    'indexes' => array(
-      'arraydesign_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'arraydesign_idx1' => [
         0 => 'manufacturer_id',
-      ),
-      'arraydesign_idx2' => array(
+      ],
+      'arraydesign_idx2' => [
         0 => 'platformtype_id',
-      ),
-      'arraydesign_idx3' => array(
+      ],
+      'arraydesign_idx3' => [
         0 => 'substratetype_id',
-      ),
-      'arraydesign_idx4' => array(
+      ],
+      'arraydesign_idx4' => [
         0 => 'protocol_id',
-      ),
-      'arraydesign_idx5' => array(
+      ],
+      'arraydesign_idx5' => [
         0 => 'dbxref_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'dbxref' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'dbxref' => [
         'table' => 'dbxref',
-        'columns' => array(
+        'columns' => [
           'dbxref_id' => 'dbxref_id',
-        ),
-      ),
-      'cvterm' => array(
+        ],
+      ],
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'platformtype_id' => 'cvterm_id',
           'substratetype_id' => 'cvterm_id',
-        ),
-      ),
-      'contact' => array(
+        ],
+      ],
+      'contact' => [
         'table' => 'contact',
-        'columns' => array(
+        'columns' => [
           'manufacturer_id' => 'contact_id',
-        ),
-      ),
-      'protocol' => array(
+        ],
+      ],
+      'protocol' => [
         'table' => 'protocol',
-        'columns' => array(
+        'columns' => [
           'protocol_id' => 'protocol_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_arraydesignprop()
  * Purpose: To describe the structure of 'arraydesignprop' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -681,69 +698,71 @@ function tripal_chado_chado_schema_v1_11_arraydesign() {
  *
  */
 function tripal_chado_chado_schema_v1_11_arraydesignprop() {
-  $description =  array(
+  $description = [
     'table' => 'arraydesignprop',
-    'fields' => array(
-      'arraydesignprop_id' => array(
+    'fields' => [
+      'arraydesignprop_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'arraydesign_id' => array(
+      ],
+      'arraydesign_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'arraydesignprop_id',
-    ),
-    'unique keys' => array(
-      'arraydesignprop_c1' => array(
+    ],
+    'unique keys' => [
+      'arraydesignprop_c1' => [
         0 => 'arraydesign_id',
         1 => 'type_id',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'arraydesignprop_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'arraydesignprop_idx1' => [
         0 => 'arraydesign_id',
-      ),
-      'arraydesignprop_idx2' => array(
+      ],
+      'arraydesignprop_idx2' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'arraydesign' => array(
+        ],
+      ],
+      'arraydesign' => [
         'table' => 'arraydesign',
-        'columns' => array(
+        'columns' => [
           'arraydesign_id' => 'arraydesign_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_assay()
  * Purpose: To describe the structure of 'assay' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -755,105 +774,107 @@ function tripal_chado_chado_schema_v1_11_arraydesignprop() {
  *
  */
 function tripal_chado_chado_schema_v1_11_assay() {
-  $description =  array(
+  $description = [
     'table' => 'assay',
-    'fields' => array(
-      'assay_id' => array(
+    'fields' => [
+      'assay_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'arraydesign_id' => array(
+      ],
+      'arraydesign_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'protocol_id' => array(
+      ],
+      'protocol_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'assaydate' => array(
+      ],
+      'assaydate' => [
         'type' => 'datetime',
         'not NULL' => '',
         'default' => 'ow(',
-      ),
-      'arrayidentifier' => array(
+      ],
+      'arrayidentifier' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'arraybatchidentifier' => array(
+      ],
+      'arraybatchidentifier' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'operator_id' => array(
+      ],
+      'operator_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'dbxref_id' => array(
+      ],
+      'dbxref_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'description' => array(
+      ],
+      'description' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'assay_id',
-    ),
-    'unique keys' => array(
-      'assay_c1' => array(
+    ],
+    'unique keys' => [
+      'assay_c1' => [
         0 => 'name',
-      ),
-    ),
-    'indexes' => array(
-      'assay_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'assay_idx1' => [
         0 => 'arraydesign_id',
-      ),
-      'assay_idx2' => array(
+      ],
+      'assay_idx2' => [
         0 => 'protocol_id',
-      ),
-      'assay_idx3' => array(
+      ],
+      'assay_idx3' => [
         0 => 'operator_id',
-      ),
-      'assay_idx4' => array(
+      ],
+      'assay_idx4' => [
         0 => 'dbxref_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'dbxref' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'dbxref' => [
         'table' => 'dbxref',
-        'columns' => array(
+        'columns' => [
           'dbxref_id' => 'dbxref_id',
-        ),
-      ),
-      'contact' => array(
+        ],
+      ],
+      'contact' => [
         'table' => 'contact',
-        'columns' => array(
+        'columns' => [
           'operator_id' => 'contact_id',
-        ),
-      ),
-      'protocol' => array(
+        ],
+      ],
+      'protocol' => [
         'table' => 'protocol',
-        'columns' => array(
+        'columns' => [
           'protocol_id' => 'protocol_id',
-        ),
-      ),
-      'arraydesign' => array(
+        ],
+      ],
+      'arraydesign' => [
         'table' => 'arraydesign',
-        'columns' => array(
+        'columns' => [
           'arraydesign_id' => 'arraydesign_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_assay_biomaterial()
  * Purpose: To describe the structure of 'assay_biomaterial' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -865,79 +886,81 @@ function tripal_chado_chado_schema_v1_11_assay() {
  *
  */
 function tripal_chado_chado_schema_v1_11_assay_biomaterial() {
-  $description =  array(
+  $description = [
     'table' => 'assay_biomaterial',
-    'fields' => array(
-      'assay_biomaterial_id' => array(
+    'fields' => [
+      'assay_biomaterial_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'assay_id' => array(
+      ],
+      'assay_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'biomaterial_id' => array(
+      ],
+      'biomaterial_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'channel_id' => array(
+      ],
+      'channel_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'assay_biomaterial_id',
-    ),
-    'unique keys' => array(
-      'assay_biomaterial_c1' => array(
+    ],
+    'unique keys' => [
+      'assay_biomaterial_c1' => [
         0 => 'assay_id',
         1 => 'biomaterial_id',
         2 => 'channel_id',
         3 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'assay_biomaterial_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'assay_biomaterial_idx1' => [
         0 => 'assay_id',
-      ),
-      'assay_biomaterial_idx2' => array(
+      ],
+      'assay_biomaterial_idx2' => [
         0 => 'biomaterial_id',
-      ),
-      'assay_biomaterial_idx3' => array(
+      ],
+      'assay_biomaterial_idx3' => [
         0 => 'channel_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'channel' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'channel' => [
         'table' => 'channel',
-        'columns' => array(
+        'columns' => [
           'channel_id' => 'channel_id',
-        ),
-      ),
-      'assay' => array(
+        ],
+      ],
+      'assay' => [
         'table' => 'assay',
-        'columns' => array(
+        'columns' => [
           'assay_id' => 'assay_id',
-        ),
-      ),
-      'biomaterial' => array(
+        ],
+      ],
+      'biomaterial' => [
         'table' => 'biomaterial',
-        'columns' => array(
+        'columns' => [
           'biomaterial_id' => 'biomaterial_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_assay_project()
  * Purpose: To describe the structure of 'assay_project' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -949,59 +972,61 @@ function tripal_chado_chado_schema_v1_11_assay_biomaterial() {
  *
  */
 function tripal_chado_chado_schema_v1_11_assay_project() {
-  $description =  array(
+  $description = [
     'table' => 'assay_project',
-    'fields' => array(
-      'assay_project_id' => array(
+    'fields' => [
+      'assay_project_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'assay_id' => array(
+      ],
+      'assay_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'project_id' => array(
+      ],
+      'project_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'assay_project_id',
-    ),
-    'unique keys' => array(
-      'assay_project_c1' => array(
+    ],
+    'unique keys' => [
+      'assay_project_c1' => [
         0 => 'assay_id',
         1 => 'project_id',
-      ),
-    ),
-    'indexes' => array(
-      'assay_project_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'assay_project_idx1' => [
         0 => 'assay_id',
-      ),
-      'assay_project_idx2' => array(
+      ],
+      'assay_project_idx2' => [
         0 => 'project_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'project' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'project' => [
         'table' => 'project',
-        'columns' => array(
+        'columns' => [
           'project_id' => 'project_id',
-        ),
-      ),
-      'assay' => array(
+        ],
+      ],
+      'assay' => [
         'table' => 'assay',
-        'columns' => array(
+        'columns' => [
           'assay_id' => 'assay_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_assayprop()
  * Purpose: To describe the structure of 'assayprop' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -1013,69 +1038,71 @@ function tripal_chado_chado_schema_v1_11_assay_project() {
  *
  */
 function tripal_chado_chado_schema_v1_11_assayprop() {
-  $description =  array(
+  $description = [
     'table' => 'assayprop',
-    'fields' => array(
-      'assayprop_id' => array(
+    'fields' => [
+      'assayprop_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'assay_id' => array(
+      ],
+      'assay_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'assayprop_id',
-    ),
-    'unique keys' => array(
-      'assayprop_c1' => array(
+    ],
+    'unique keys' => [
+      'assayprop_c1' => [
         0 => 'assay_id',
         1 => 'type_id',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'assayprop_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'assayprop_idx1' => [
         0 => 'assay_id',
-      ),
-      'assayprop_idx2' => array(
+      ],
+      'assayprop_idx2' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'assay' => array(
+        ],
+      ],
+      'assay' => [
         'table' => 'assay',
-        'columns' => array(
+        'columns' => [
           'assay_id' => 'assay_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_biomaterial()
  * Purpose: To describe the structure of 'biomaterial' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -1087,79 +1114,81 @@ function tripal_chado_chado_schema_v1_11_assayprop() {
  *
  */
 function tripal_chado_chado_schema_v1_11_biomaterial() {
-  $description =  array(
+  $description = [
     'table' => 'biomaterial',
-    'fields' => array(
-      'biomaterial_id' => array(
+    'fields' => [
+      'biomaterial_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'taxon_id' => array(
+      ],
+      'taxon_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'biosourceprovider_id' => array(
+      ],
+      'biosourceprovider_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'dbxref_id' => array(
+      ],
+      'dbxref_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'description' => array(
+      ],
+      'description' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'biomaterial_id',
-    ),
-    'unique keys' => array(
-      'biomaterial_c1' => array(
+    ],
+    'unique keys' => [
+      'biomaterial_c1' => [
         0 => 'name',
-      ),
-    ),
-    'indexes' => array(
-      'biomaterial_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'biomaterial_idx1' => [
         0 => 'taxon_id',
-      ),
-      'biomaterial_idx2' => array(
+      ],
+      'biomaterial_idx2' => [
         0 => 'biosourceprovider_id',
-      ),
-      'biomaterial_idx3' => array(
+      ],
+      'biomaterial_idx3' => [
         0 => 'dbxref_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'dbxref' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'dbxref' => [
         'table' => 'dbxref',
-        'columns' => array(
+        'columns' => [
           'dbxref_id' => 'dbxref_id',
-        ),
-      ),
-      'organism' => array(
+        ],
+      ],
+      'organism' => [
         'table' => 'organism',
-        'columns' => array(
+        'columns' => [
           'taxon_id' => 'organism_id',
-        ),
-      ),
-      'contact' => array(
+        ],
+      ],
+      'contact' => [
         'table' => 'contact',
-        'columns' => array(
+        'columns' => [
           'biosourceprovider_id' => 'contact_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_biomaterial_dbxref()
  * Purpose: To describe the structure of 'biomaterial_dbxref' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -1171,59 +1200,61 @@ function tripal_chado_chado_schema_v1_11_biomaterial() {
  *
  */
 function tripal_chado_chado_schema_v1_11_biomaterial_dbxref() {
-  $description =  array(
+  $description = [
     'table' => 'biomaterial_dbxref',
-    'fields' => array(
-      'biomaterial_dbxref_id' => array(
+    'fields' => [
+      'biomaterial_dbxref_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'biomaterial_id' => array(
+      ],
+      'biomaterial_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'dbxref_id' => array(
+      ],
+      'dbxref_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'biomaterial_dbxref_id',
-    ),
-    'unique keys' => array(
-      'biomaterial_dbxref_c1' => array(
+    ],
+    'unique keys' => [
+      'biomaterial_dbxref_c1' => [
         0 => 'biomaterial_id',
         1 => 'dbxref_id',
-      ),
-    ),
-    'indexes' => array(
-      'biomaterial_dbxref_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'biomaterial_dbxref_idx1' => [
         0 => 'biomaterial_id',
-      ),
-      'biomaterial_dbxref_idx2' => array(
+      ],
+      'biomaterial_dbxref_idx2' => [
         0 => 'dbxref_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'dbxref' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'dbxref' => [
         'table' => 'dbxref',
-        'columns' => array(
+        'columns' => [
           'dbxref_id' => 'dbxref_id',
-        ),
-      ),
-      'biomaterial' => array(
+        ],
+      ],
+      'biomaterial' => [
         'table' => 'biomaterial',
-        'columns' => array(
+        'columns' => [
           'biomaterial_id' => 'biomaterial_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_biomaterial_relationship()
  * Purpose: To describe the structure of 'biomaterial_relationship' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -1235,68 +1266,70 @@ function tripal_chado_chado_schema_v1_11_biomaterial_dbxref() {
  *
  */
 function tripal_chado_chado_schema_v1_11_biomaterial_relationship() {
-  $description =  array(
+  $description = [
     'table' => 'biomaterial_relationship',
-    'fields' => array(
-      'biomaterial_relationship_id' => array(
+    'fields' => [
+      'biomaterial_relationship_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'subject_id' => array(
+      ],
+      'subject_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'object_id' => array(
+      ],
+      'object_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'biomaterial_relationship_id',
-    ),
-    'unique keys' => array(
-      'biomaterial_relationship_c1' => array(
+    ],
+    'unique keys' => [
+      'biomaterial_relationship_c1' => [
         0 => 'subject_id',
         1 => 'object_id',
         2 => 'type_id',
-      ),
-    ),
-    'indexes' => array(
-      'biomaterial_relationship_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'biomaterial_relationship_idx1' => [
         0 => 'subject_id',
-      ),
-      'biomaterial_relationship_idx2' => array(
+      ],
+      'biomaterial_relationship_idx2' => [
         0 => 'object_id',
-      ),
-      'biomaterial_relationship_idx3' => array(
+      ],
+      'biomaterial_relationship_idx3' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'biomaterial' => array(
+        ],
+      ],
+      'biomaterial' => [
         'table' => 'biomaterial',
-        'columns' => array(
+        'columns' => [
           'subject_id' => 'biomaterial_id',
           'object_id' => 'biomaterial_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_biomaterial_treatment()
  * Purpose: To describe the structure of 'biomaterial_treatment' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -1308,81 +1341,83 @@ function tripal_chado_chado_schema_v1_11_biomaterial_relationship() {
  *
  */
 function tripal_chado_chado_schema_v1_11_biomaterial_treatment() {
-  $description =  array(
+  $description = [
     'table' => 'biomaterial_treatment',
-    'fields' => array(
-      'biomaterial_treatment_id' => array(
+    'fields' => [
+      'biomaterial_treatment_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'biomaterial_id' => array(
+      ],
+      'biomaterial_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'treatment_id' => array(
+      ],
+      'treatment_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'unittype_id' => array(
+      ],
+      'unittype_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'float',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'biomaterial_treatment_id',
-    ),
-    'unique keys' => array(
-      'biomaterial_treatment_c1' => array(
+    ],
+    'unique keys' => [
+      'biomaterial_treatment_c1' => [
         0 => 'biomaterial_id',
         1 => 'treatment_id',
-      ),
-    ),
-    'indexes' => array(
-      'biomaterial_treatment_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'biomaterial_treatment_idx1' => [
         0 => 'biomaterial_id',
-      ),
-      'biomaterial_treatment_idx2' => array(
+      ],
+      'biomaterial_treatment_idx2' => [
         0 => 'treatment_id',
-      ),
-      'biomaterial_treatment_idx3' => array(
+      ],
+      'biomaterial_treatment_idx3' => [
         0 => 'unittype_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'unittype_id' => 'cvterm_id',
-        ),
-      ),
-      'biomaterial' => array(
+        ],
+      ],
+      'biomaterial' => [
         'table' => 'biomaterial',
-        'columns' => array(
+        'columns' => [
           'biomaterial_id' => 'biomaterial_id',
-        ),
-      ),
-      'treatment' => array(
+        ],
+      ],
+      'treatment' => [
         'table' => 'treatment',
-        'columns' => array(
+        'columns' => [
           'treatment_id' => 'treatment_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_biomaterialprop()
  * Purpose: To describe the structure of 'biomaterialprop' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -1394,69 +1429,71 @@ function tripal_chado_chado_schema_v1_11_biomaterial_treatment() {
  *
  */
 function tripal_chado_chado_schema_v1_11_biomaterialprop() {
-  $description =  array(
+  $description = [
     'table' => 'biomaterialprop',
-    'fields' => array(
-      'biomaterialprop_id' => array(
+    'fields' => [
+      'biomaterialprop_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'biomaterial_id' => array(
+      ],
+      'biomaterial_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'biomaterialprop_id',
-    ),
-    'unique keys' => array(
-      'biomaterialprop_c1' => array(
+    ],
+    'unique keys' => [
+      'biomaterialprop_c1' => [
         0 => 'biomaterial_id',
         1 => 'type_id',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'biomaterialprop_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'biomaterialprop_idx1' => [
         0 => 'biomaterial_id',
-      ),
-      'biomaterialprop_idx2' => array(
+      ],
+      'biomaterialprop_idx2' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'biomaterial' => array(
+        ],
+      ],
+      'biomaterial' => [
         'table' => 'biomaterial',
-        'columns' => array(
+        'columns' => [
           'biomaterial_id' => 'biomaterial_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_cell_line()
  * Purpose: To describe the structure of 'cell_line' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -1468,63 +1505,65 @@ function tripal_chado_chado_schema_v1_11_biomaterialprop() {
  *
  */
 function tripal_chado_chado_schema_v1_11_cell_line() {
-  $description =  array(
+  $description = [
     'table' => 'cell_line',
-    'fields' => array(
-      'cell_line_id' => array(
+    'fields' => [
+      'cell_line_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-      'uniquename' => array(
+      ],
+      'uniquename' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '1',
-      ),
-      'organism_id' => array(
+      ],
+      'organism_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'timeaccessioned' => array(
+      ],
+      'timeaccessioned' => [
         'type' => 'datetime',
         'not NULL' => '1',
         'default' => 'ow(',
-      ),
-      'timelastmodified' => array(
+      ],
+      'timelastmodified' => [
         'type' => 'datetime',
         'not NULL' => '1',
         'default' => 'ow(',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'cell_line_id',
-    ),
-    'unique keys' => array(
-      'cell_line_c1' => array(
+    ],
+    'unique keys' => [
+      'cell_line_c1' => [
         0 => 'uniquename',
         1 => 'organism_id',
-      ),
-    ),
-    'indexes' => array(
-    ),
-    'foreign keys' => array(
-      'organism' => array(
+      ],
+    ],
+    'indexes' => [
+    ],
+    'foreign keys' => [
+      'organism' => [
         'table' => 'organism',
-        'columns' => array(
+        'columns' => [
           'organism_id' => 'organism_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_cell_line_cvterm()
  * Purpose: To describe the structure of 'cell_line_cvterm' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -1536,70 +1575,72 @@ function tripal_chado_chado_schema_v1_11_cell_line() {
  *
  */
 function tripal_chado_chado_schema_v1_11_cell_line_cvterm() {
-  $description =  array(
+  $description = [
     'table' => 'cell_line_cvterm',
-    'fields' => array(
-      'cell_line_cvterm_id' => array(
+    'fields' => [
+      'cell_line_cvterm_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'cell_line_id' => array(
+      ],
+      'cell_line_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'cvterm_id' => array(
+      ],
+      'cvterm_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'cell_line_cvterm_id',
-    ),
-    'unique keys' => array(
-      'cell_line_cvterm_c1' => array(
+    ],
+    'unique keys' => [
+      'cell_line_cvterm_c1' => [
         0 => 'cell_line_id',
         1 => 'cvterm_id',
         2 => 'pub_id',
         3 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'indexes' => [
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'cvterm_id' => 'cvterm_id',
-        ),
-      ),
-      'pub' => array(
+        ],
+      ],
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-      'cell_line' => array(
+        ],
+      ],
+      'cell_line' => [
         'table' => 'cell_line',
-        'columns' => array(
+        'columns' => [
           'cell_line_id' => 'cell_line_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_cell_line_cvtermprop()
  * Purpose: To describe the structure of 'cell_line_cvtermprop' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -1611,63 +1652,65 @@ function tripal_chado_chado_schema_v1_11_cell_line_cvterm() {
  *
  */
 function tripal_chado_chado_schema_v1_11_cell_line_cvtermprop() {
-  $description =  array(
+  $description = [
     'table' => 'cell_line_cvtermprop',
-    'fields' => array(
-      'cell_line_cvtermprop_id' => array(
+    'fields' => [
+      'cell_line_cvtermprop_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'cell_line_cvterm_id' => array(
+      ],
+      'cell_line_cvterm_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'cell_line_cvtermprop_id',
-    ),
-    'unique keys' => array(
-      'cell_line_cvtermprop_c1' => array(
+    ],
+    'unique keys' => [
+      'cell_line_cvtermprop_c1' => [
         0 => 'cell_line_cvterm_id',
         1 => 'type_id',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'indexes' => [
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'cell_line_cvterm' => array(
+        ],
+      ],
+      'cell_line_cvterm' => [
         'table' => 'cell_line_cvterm',
-        'columns' => array(
+        'columns' => [
           'cell_line_cvterm_id' => 'cell_line_cvterm_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_cell_line_dbxref()
  * Purpose: To describe the structure of 'cell_line_dbxref' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -1679,58 +1722,60 @@ function tripal_chado_chado_schema_v1_11_cell_line_cvtermprop() {
  *
  */
 function tripal_chado_chado_schema_v1_11_cell_line_dbxref() {
-  $description =  array(
+  $description = [
     'table' => 'cell_line_dbxref',
-    'fields' => array(
-      'cell_line_dbxref_id' => array(
+    'fields' => [
+      'cell_line_dbxref_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'cell_line_id' => array(
+      ],
+      'cell_line_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'dbxref_id' => array(
+      ],
+      'dbxref_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'is_current' => array(
+      ],
+      'is_current' => [
         'type' => 'boolean',
         'not NULL' => '1',
         'default' => 'true',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'cell_line_dbxref_id',
-    ),
-    'unique keys' => array(
-      'cell_line_dbxref_c1' => array(
+    ],
+    'unique keys' => [
+      'cell_line_dbxref_c1' => [
         0 => 'cell_line_id',
         1 => 'dbxref_id',
-      ),
-    ),
-    'indexes' => array(
-    ),
-    'foreign keys' => array(
-      'dbxref' => array(
+      ],
+    ],
+    'indexes' => [
+    ],
+    'foreign keys' => [
+      'dbxref' => [
         'table' => 'dbxref',
-        'columns' => array(
+        'columns' => [
           'dbxref_id' => 'dbxref_id',
-        ),
-      ),
-      'cell_line' => array(
+        ],
+      ],
+      'cell_line' => [
         'table' => 'cell_line',
-        'columns' => array(
+        'columns' => [
           'cell_line_id' => 'cell_line_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_cell_line_feature()
  * Purpose: To describe the structure of 'cell_line_feature' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -1742,64 +1787,66 @@ function tripal_chado_chado_schema_v1_11_cell_line_dbxref() {
  *
  */
 function tripal_chado_chado_schema_v1_11_cell_line_feature() {
-  $description =  array(
+  $description = [
     'table' => 'cell_line_feature',
-    'fields' => array(
-      'cell_line_feature_id' => array(
+    'fields' => [
+      'cell_line_feature_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'cell_line_id' => array(
+      ],
+      'cell_line_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'feature_id' => array(
+      ],
+      'feature_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'cell_line_feature_id',
-    ),
-    'unique keys' => array(
-      'cell_line_feature_c1' => array(
+    ],
+    'unique keys' => [
+      'cell_line_feature_c1' => [
         0 => 'cell_line_id',
         1 => 'feature_id',
         2 => 'pub_id',
-      ),
-    ),
-    'indexes' => array(
-    ),
-    'foreign keys' => array(
-      'pub' => array(
+      ],
+    ],
+    'indexes' => [
+    ],
+    'foreign keys' => [
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-      'feature' => array(
+        ],
+      ],
+      'feature' => [
         'table' => 'feature',
-        'columns' => array(
+        'columns' => [
           'feature_id' => 'feature_id',
-        ),
-      ),
-      'cell_line' => array(
+        ],
+      ],
+      'cell_line' => [
         'table' => 'cell_line',
-        'columns' => array(
+        'columns' => [
           'cell_line_id' => 'cell_line_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_cell_line_library()
  * Purpose: To describe the structure of 'cell_line_library' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -1811,64 +1858,66 @@ function tripal_chado_chado_schema_v1_11_cell_line_feature() {
  *
  */
 function tripal_chado_chado_schema_v1_11_cell_line_library() {
-  $description =  array(
+  $description = [
     'table' => 'cell_line_library',
-    'fields' => array(
-      'cell_line_library_id' => array(
+    'fields' => [
+      'cell_line_library_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'cell_line_id' => array(
+      ],
+      'cell_line_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'library_id' => array(
+      ],
+      'library_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'cell_line_library_id',
-    ),
-    'unique keys' => array(
-      'cell_line_library_c1' => array(
+    ],
+    'unique keys' => [
+      'cell_line_library_c1' => [
         0 => 'cell_line_id',
         1 => 'library_id',
         2 => 'pub_id',
-      ),
-    ),
-    'indexes' => array(
-    ),
-    'foreign keys' => array(
-      'pub' => array(
+      ],
+    ],
+    'indexes' => [
+    ],
+    'foreign keys' => [
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-      'library' => array(
+        ],
+      ],
+      'library' => [
         'table' => 'library',
-        'columns' => array(
+        'columns' => [
           'library_id' => 'library_id',
-        ),
-      ),
-      'cell_line' => array(
+        ],
+      ],
+      'cell_line' => [
         'table' => 'cell_line',
-        'columns' => array(
+        'columns' => [
           'cell_line_id' => 'cell_line_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_cell_line_pub()
  * Purpose: To describe the structure of 'cell_line_pub' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -1880,53 +1929,55 @@ function tripal_chado_chado_schema_v1_11_cell_line_library() {
  *
  */
 function tripal_chado_chado_schema_v1_11_cell_line_pub() {
-  $description =  array(
+  $description = [
     'table' => 'cell_line_pub',
-    'fields' => array(
-      'cell_line_pub_id' => array(
+    'fields' => [
+      'cell_line_pub_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'cell_line_id' => array(
+      ],
+      'cell_line_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'cell_line_pub_id',
-    ),
-    'unique keys' => array(
-      'cell_line_pub_c1' => array(
+    ],
+    'unique keys' => [
+      'cell_line_pub_c1' => [
         0 => 'cell_line_id',
         1 => 'pub_id',
-      ),
-    ),
-    'indexes' => array(
-    ),
-    'foreign keys' => array(
-      'pub' => array(
+      ],
+    ],
+    'indexes' => [
+    ],
+    'foreign keys' => [
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-      'cell_line' => array(
+        ],
+      ],
+      'cell_line' => [
         'table' => 'cell_line',
-        'columns' => array(
+        'columns' => [
           'cell_line_id' => 'cell_line_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_cell_line_relationship()
  * Purpose: To describe the structure of 'cell_line_relationship' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -1938,59 +1989,61 @@ function tripal_chado_chado_schema_v1_11_cell_line_pub() {
  *
  */
 function tripal_chado_chado_schema_v1_11_cell_line_relationship() {
-  $description =  array(
+  $description = [
     'table' => 'cell_line_relationship',
-    'fields' => array(
-      'cell_line_relationship_id' => array(
+    'fields' => [
+      'cell_line_relationship_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'subject_id' => array(
+      ],
+      'subject_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'object_id' => array(
+      ],
+      'object_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'cell_line_relationship_id',
-    ),
-    'unique keys' => array(
-      'cell_line_relationship_c1' => array(
+    ],
+    'unique keys' => [
+      'cell_line_relationship_c1' => [
         0 => 'subject_id',
         1 => 'object_id',
         2 => 'type_id',
-      ),
-    ),
-    'indexes' => array(
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'indexes' => [
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'cell_line' => array(
+        ],
+      ],
+      'cell_line' => [
         'table' => 'cell_line',
-        'columns' => array(
+        'columns' => [
           'subject_id' => 'cell_line_id',
           'object_id' => 'cell_line_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_cell_line_synonym()
  * Purpose: To describe the structure of 'cell_line_synonym' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -2002,74 +2055,76 @@ function tripal_chado_chado_schema_v1_11_cell_line_relationship() {
  *
  */
 function tripal_chado_chado_schema_v1_11_cell_line_synonym() {
-  $description =  array(
+  $description = [
     'table' => 'cell_line_synonym',
-    'fields' => array(
-      'cell_line_synonym_id' => array(
+    'fields' => [
+      'cell_line_synonym_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'cell_line_id' => array(
+      ],
+      'cell_line_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'synonym_id' => array(
+      ],
+      'synonym_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'is_current' => array(
+      ],
+      'is_current' => [
         'type' => 'boolean',
         'not NULL' => '1',
         'default' => 'false',
-      ),
-      'is_internal' => array(
+      ],
+      'is_internal' => [
         'type' => 'boolean',
         'not NULL' => '1',
         'default' => 'false',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'cell_line_synonym_id',
-    ),
-    'unique keys' => array(
-      'cell_line_synonym_c1' => array(
+    ],
+    'unique keys' => [
+      'cell_line_synonym_c1' => [
         0 => 'synonym_id',
         1 => 'cell_line_id',
         2 => 'pub_id',
-      ),
-    ),
-    'indexes' => array(
-    ),
-    'foreign keys' => array(
-      'pub' => array(
+      ],
+    ],
+    'indexes' => [
+    ],
+    'foreign keys' => [
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-      'synonym' => array(
+        ],
+      ],
+      'synonym' => [
         'table' => 'synonym',
-        'columns' => array(
+        'columns' => [
           'synonym_id' => 'synonym_id',
-        ),
-      ),
-      'cell_line' => array(
+        ],
+      ],
+      'cell_line' => [
         'table' => 'cell_line',
-        'columns' => array(
+        'columns' => [
           'cell_line_id' => 'cell_line_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_cell_lineprop()
  * Purpose: To describe the structure of 'cell_lineprop' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -2081,63 +2136,65 @@ function tripal_chado_chado_schema_v1_11_cell_line_synonym() {
  *
  */
 function tripal_chado_chado_schema_v1_11_cell_lineprop() {
-  $description =  array(
+  $description = [
     'table' => 'cell_lineprop',
-    'fields' => array(
-      'cell_lineprop_id' => array(
+    'fields' => [
+      'cell_lineprop_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'cell_line_id' => array(
+      ],
+      'cell_line_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'cell_lineprop_id',
-    ),
-    'unique keys' => array(
-      'cell_lineprop_c1' => array(
+    ],
+    'unique keys' => [
+      'cell_lineprop_c1' => [
         0 => 'cell_line_id',
         1 => 'type_id',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'indexes' => [
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'cell_line' => array(
+        ],
+      ],
+      'cell_line' => [
         'table' => 'cell_line',
-        'columns' => array(
+        'columns' => [
           'cell_line_id' => 'cell_line_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_cell_lineprop_pub()
  * Purpose: To describe the structure of 'cell_lineprop_pub' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -2149,53 +2206,55 @@ function tripal_chado_chado_schema_v1_11_cell_lineprop() {
  *
  */
 function tripal_chado_chado_schema_v1_11_cell_lineprop_pub() {
-  $description =  array(
+  $description = [
     'table' => 'cell_lineprop_pub',
-    'fields' => array(
-      'cell_lineprop_pub_id' => array(
+    'fields' => [
+      'cell_lineprop_pub_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'cell_lineprop_id' => array(
+      ],
+      'cell_lineprop_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'cell_lineprop_pub_id',
-    ),
-    'unique keys' => array(
-      'cell_lineprop_pub_c1' => array(
+    ],
+    'unique keys' => [
+      'cell_lineprop_pub_c1' => [
         0 => 'cell_lineprop_id',
         1 => 'pub_id',
-      ),
-    ),
-    'indexes' => array(
-    ),
-    'foreign keys' => array(
-      'pub' => array(
+      ],
+    ],
+    'indexes' => [
+    ],
+    'foreign keys' => [
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-      'cell_lineprop' => array(
+        ],
+      ],
+      'cell_lineprop' => [
         'table' => 'cell_lineprop',
-        'columns' => array(
+        'columns' => [
           'cell_lineprop_id' => 'cell_lineprop_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_channel()
  * Purpose: To describe the structure of 'channel' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -2207,40 +2266,42 @@ function tripal_chado_chado_schema_v1_11_cell_lineprop_pub() {
  *
  */
 function tripal_chado_chado_schema_v1_11_channel() {
-  $description =  array(
+  $description = [
     'table' => 'channel',
-    'fields' => array(
-      'channel_id' => array(
+    'fields' => [
+      'channel_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'text',
         'not NULL' => '1',
-      ),
-      'definition' => array(
+      ],
+      'definition' => [
         'type' => 'text',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'channel_id',
-    ),
-    'unique keys' => array(
-      'channel_c1' => array(
+    ],
+    'unique keys' => [
+      'channel_c1' => [
         0 => 'name',
-      ),
-    ),
-    'indexes' => array(
-    ),
-    'foreign keys' => array(
-    ),
-  );
+      ],
+    ],
+    'indexes' => [
+    ],
+    'foreign keys' => [
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_contact()
  * Purpose: To describe the structure of 'contact' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -2252,52 +2313,54 @@ function tripal_chado_chado_schema_v1_11_channel() {
  *
  */
 function tripal_chado_chado_schema_v1_11_contact() {
-  $description =  array(
+  $description = [
     'table' => 'contact',
-    'fields' => array(
-      'contact_id' => array(
+    'fields' => [
+      'contact_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '1',
-      ),
-      'description' => array(
+      ],
+      'description' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'contact_id',
-    ),
-    'unique keys' => array(
-      'contact_c1' => array(
+    ],
+    'unique keys' => [
+      'contact_c1' => [
         0 => 'name',
-      ),
-    ),
-    'indexes' => array(
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'indexes' => [
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_contact_relationship()
  * Purpose: To describe the structure of 'contact_relationship' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -2309,68 +2372,70 @@ function tripal_chado_chado_schema_v1_11_contact() {
  *
  */
 function tripal_chado_chado_schema_v1_11_contact_relationship() {
-  $description =  array(
+  $description = [
     'table' => 'contact_relationship',
-    'fields' => array(
-      'contact_relationship_id' => array(
+    'fields' => [
+      'contact_relationship_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'subject_id' => array(
+      ],
+      'subject_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'object_id' => array(
+      ],
+      'object_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'contact_relationship_id',
-    ),
-    'unique keys' => array(
-      'contact_relationship_c1' => array(
+    ],
+    'unique keys' => [
+      'contact_relationship_c1' => [
         0 => 'subject_id',
         1 => 'object_id',
         2 => 'type_id',
-      ),
-    ),
-    'indexes' => array(
-      'contact_relationship_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'contact_relationship_idx1' => [
         0 => 'type_id',
-      ),
-      'contact_relationship_idx2' => array(
+      ],
+      'contact_relationship_idx2' => [
         0 => 'subject_id',
-      ),
-      'contact_relationship_idx3' => array(
+      ],
+      'contact_relationship_idx3' => [
         0 => 'object_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'contact' => array(
+        ],
+      ],
+      'contact' => [
         'table' => 'contact',
-        'columns' => array(
+        'columns' => [
           'subject_id' => 'contact_id',
           'object_id' => 'contact_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_control()
  * Purpose: To describe the structure of 'control' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -2382,88 +2447,90 @@ function tripal_chado_chado_schema_v1_11_contact_relationship() {
  *
  */
 function tripal_chado_chado_schema_v1_11_control() {
-  $description =  array(
+  $description = [
     'table' => 'control',
-    'fields' => array(
-      'control_id' => array(
+    'fields' => [
+      'control_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'assay_id' => array(
+      ],
+      'assay_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'tableinfo_id' => array(
+      ],
+      'tableinfo_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'row_id' => array(
+      ],
+      'row_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'control_id',
-    ),
-    'unique keys' => array(
-    ),
-    'indexes' => array(
-      'control_idx1' => array(
+    ],
+    'unique keys' => [
+    ],
+    'indexes' => [
+      'control_idx1' => [
         0 => 'type_id',
-      ),
-      'control_idx2' => array(
+      ],
+      'control_idx2' => [
         0 => 'assay_id',
-      ),
-      'control_idx3' => array(
+      ],
+      'control_idx3' => [
         0 => 'tableinfo_id',
-      ),
-      'control_idx4' => array(
+      ],
+      'control_idx4' => [
         0 => 'row_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'tableinfo' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'tableinfo' => [
         'table' => 'tableinfo',
-        'columns' => array(
+        'columns' => [
           'tableinfo_id' => 'tableinfo_id',
-        ),
-      ),
-      'cvterm' => array(
+        ],
+      ],
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'assay' => array(
+        ],
+      ],
+      'assay' => [
         'table' => 'assay',
-        'columns' => array(
+        'columns' => [
           'assay_id' => 'assay_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_cv()
  * Purpose: To describe the structure of 'cv' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -2475,41 +2542,43 @@ function tripal_chado_chado_schema_v1_11_control() {
  *
  */
 function tripal_chado_chado_schema_v1_11_cv() {
-  $description =  array(
+  $description = [
     'table' => 'cv',
-    'fields' => array(
-      'cv_id' => array(
+    'fields' => [
+      'cv_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '1',
-      ),
-      'definition' => array(
+      ],
+      'definition' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'cv_id',
-    ),
-    'unique keys' => array(
-      'cv_c1' => array(
+    ],
+    'unique keys' => [
+      'cv_c1' => [
         0 => 'name',
-      ),
-    ),
-    'indexes' => array(
-    ),
-    'foreign keys' => array(
-    ),
-  );
+      ],
+    ],
+    'indexes' => [
+    ],
+    'foreign keys' => [
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_cvterm()
  * Purpose: To describe the structure of 'cvterm' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -2521,85 +2590,87 @@ function tripal_chado_chado_schema_v1_11_cv() {
  *
  */
 function tripal_chado_chado_schema_v1_11_cvterm() {
-  $description =  array(
+  $description = [
     'table' => 'cvterm',
-    'fields' => array(
-      'cvterm_id' => array(
+    'fields' => [
+      'cvterm_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'cv_id' => array(
+      ],
+      'cv_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'varchar',
         'length' => '1024',
         'not NULL' => '1',
-      ),
-      'definition' => array(
+      ],
+      'definition' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'dbxref_id' => array(
+      ],
+      'dbxref_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'is_obsolete' => array(
-        'type' => 'int',
-        'not NULL' => '1',
-        'default' => '0',
-      ),
-      'is_relationshiptype' => array(
+      ],
+      'is_obsolete' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+      'is_relationshiptype' => [
+        'type' => 'int',
+        'not NULL' => '1',
+        'default' => '0',
+      ],
+    ],
+    'primary key' => [
       0 => 'cvterm_id',
-    ),
-    'unique keys' => array(
-      'cvterm_c1' => array(
+    ],
+    'unique keys' => [
+      'cvterm_c1' => [
         0 => 'name',
         1 => 'cv_id',
         2 => 'is_obsolete',
-      ),
-      'cvterm_c2' => array(
+      ],
+      'cvterm_c2' => [
         0 => 'dbxref_id',
-      ),
-    ),
-    'indexes' => array(
-      'cvterm_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'cvterm_idx1' => [
         0 => 'cv_id',
-      ),
-      'cvterm_idx2' => array(
+      ],
+      'cvterm_idx2' => [
         0 => 'name',
-      ),
-      'cvterm_idx3' => array(
+      ],
+      'cvterm_idx3' => [
         0 => 'dbxref_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'dbxref' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'dbxref' => [
         'table' => 'dbxref',
-        'columns' => array(
+        'columns' => [
           'dbxref_id' => 'dbxref_id',
-        ),
-      ),
-      'cv' => array(
+        ],
+      ],
+      'cv' => [
         'table' => 'cv',
-        'columns' => array(
+        'columns' => [
           'cv_id' => 'cv_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_cvterm_dbxref()
  * Purpose: To describe the structure of 'cvterm_dbxref' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -2611,64 +2682,66 @@ function tripal_chado_chado_schema_v1_11_cvterm() {
  *
  */
 function tripal_chado_chado_schema_v1_11_cvterm_dbxref() {
-  $description =  array(
+  $description = [
     'table' => 'cvterm_dbxref',
-    'fields' => array(
-      'cvterm_dbxref_id' => array(
+    'fields' => [
+      'cvterm_dbxref_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'cvterm_id' => array(
+      ],
+      'cvterm_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'dbxref_id' => array(
+      ],
+      'dbxref_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'is_for_definition' => array(
+      ],
+      'is_for_definition' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'cvterm_dbxref_id',
-    ),
-    'unique keys' => array(
-      'cvterm_dbxref_c1' => array(
+    ],
+    'unique keys' => [
+      'cvterm_dbxref_c1' => [
         0 => 'cvterm_id',
         1 => 'dbxref_id',
-      ),
-    ),
-    'indexes' => array(
-      'cvterm_dbxref_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'cvterm_dbxref_idx1' => [
         0 => 'cvterm_id',
-      ),
-      'cvterm_dbxref_idx2' => array(
+      ],
+      'cvterm_dbxref_idx2' => [
         0 => 'dbxref_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'dbxref' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'dbxref' => [
         'table' => 'dbxref',
-        'columns' => array(
+        'columns' => [
           'dbxref_id' => 'dbxref_id',
-        ),
-      ),
-      'cvterm' => array(
+        ],
+      ],
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'cvterm_id' => 'cvterm_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_cvterm_relationship()
  * Purpose: To describe the structure of 'cvterm_relationship' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -2680,63 +2753,65 @@ function tripal_chado_chado_schema_v1_11_cvterm_dbxref() {
  *
  */
 function tripal_chado_chado_schema_v1_11_cvterm_relationship() {
-  $description =  array(
+  $description = [
     'table' => 'cvterm_relationship',
-    'fields' => array(
-      'cvterm_relationship_id' => array(
+    'fields' => [
+      'cvterm_relationship_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'subject_id' => array(
+      ],
+      'subject_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'object_id' => array(
+      ],
+      'object_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'cvterm_relationship_id',
-    ),
-    'unique keys' => array(
-      'cvterm_relationship_c1' => array(
+    ],
+    'unique keys' => [
+      'cvterm_relationship_c1' => [
         0 => 'subject_id',
         1 => 'object_id',
         2 => 'type_id',
-      ),
-    ),
-    'indexes' => array(
-      'cvterm_relationship_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'cvterm_relationship_idx1' => [
         0 => 'type_id',
-      ),
-      'cvterm_relationship_idx2' => array(
+      ],
+      'cvterm_relationship_idx2' => [
         0 => 'subject_id',
-      ),
-      'cvterm_relationship_idx3' => array(
+      ],
+      'cvterm_relationship_idx3' => [
         0 => 'object_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
           'subject_id' => 'cvterm_id',
           'object_id' => 'cvterm_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_cvtermpath()
  * Purpose: To describe the structure of 'cvtermpath' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -2748,81 +2823,83 @@ function tripal_chado_chado_schema_v1_11_cvterm_relationship() {
  *
  */
 function tripal_chado_chado_schema_v1_11_cvtermpath() {
-  $description =  array(
+  $description = [
     'table' => 'cvtermpath',
-    'fields' => array(
-      'cvtermpath_id' => array(
+    'fields' => [
+      'cvtermpath_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'subject_id' => array(
+      ],
+      'subject_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'object_id' => array(
+      ],
+      'object_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'cv_id' => array(
+      ],
+      'cv_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pathdistance' => array(
+      ],
+      'pathdistance' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'cvtermpath_id',
-    ),
-    'unique keys' => array(
-      'cvtermpath_c1' => array(
+    ],
+    'unique keys' => [
+      'cvtermpath_c1' => [
         0 => 'subject_id',
         1 => 'object_id',
         2 => 'type_id',
         3 => 'pathdistance',
-      ),
-    ),
-    'indexes' => array(
-      'cvtermpath_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'cvtermpath_idx1' => [
         0 => 'type_id',
-      ),
-      'cvtermpath_idx2' => array(
+      ],
+      'cvtermpath_idx2' => [
         0 => 'subject_id',
-      ),
-      'cvtermpath_idx3' => array(
+      ],
+      'cvtermpath_idx3' => [
         0 => 'object_id',
-      ),
-      'cvtermpath_idx4' => array(
+      ],
+      'cvtermpath_idx4' => [
         0 => 'cv_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cv' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cv' => [
         'table' => 'cv',
-        'columns' => array(
+        'columns' => [
           'cv_id' => 'cv_id',
-        ),
-      ),
-      'cvterm' => array(
+        ],
+      ],
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
           'subject_id' => 'cvterm_id',
           'object_id' => 'cvterm_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_cvtermprop()
  * Purpose: To describe the structure of 'cvtermprop' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -2834,66 +2911,68 @@ function tripal_chado_chado_schema_v1_11_cvtermpath() {
  *
  */
 function tripal_chado_chado_schema_v1_11_cvtermprop() {
-  $description =  array(
+  $description = [
     'table' => 'cvtermprop',
-    'fields' => array(
-      'cvtermprop_id' => array(
+    'fields' => [
+      'cvtermprop_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'cvterm_id' => array(
+      ],
+      'cvterm_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '1',
         'default' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'cvtermprop_id',
-    ),
-    'unique keys' => array(
-      'cvterm_id' => array(
+    ],
+    'unique keys' => [
+      'cvterm_id' => [
         0 => 'cvterm_id',
         1 => 'type_id',
         2 => 'value',
         3 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'cvtermprop_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'cvtermprop_idx1' => [
         0 => 'cvterm_id',
-      ),
-      'cvtermprop_idx2' => array(
+      ],
+      'cvtermprop_idx2' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'cvterm_id' => 'cvterm_id',
           'type_id' => 'cvterm_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_cvtermsynonym()
  * Purpose: To describe the structure of 'cvtermsynonym' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -2905,56 +2984,58 @@ function tripal_chado_chado_schema_v1_11_cvtermprop() {
  *
  */
 function tripal_chado_chado_schema_v1_11_cvtermsynonym() {
-  $description =  array(
+  $description = [
     'table' => 'cvtermsynonym',
-    'fields' => array(
-      'cvtermsynonym_id' => array(
+    'fields' => [
+      'cvtermsynonym_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'cvterm_id' => array(
+      ],
+      'cvterm_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'synonym' => array(
+      ],
+      'synonym' => [
         'type' => 'varchar',
         'length' => '1024',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'cvtermsynonym_id',
-    ),
-    'unique keys' => array(
-      'cvtermsynonym_c1' => array(
+    ],
+    'unique keys' => [
+      'cvtermsynonym_c1' => [
         0 => 'cvterm_id',
         1 => 'synonym',
-      ),
-    ),
-    'indexes' => array(
-      'cvtermsynonym_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'cvtermsynonym_idx1' => [
         0 => 'cvterm_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'cvterm_id' => 'cvterm_id',
           'type_id' => 'cvterm_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_db()
  * Purpose: To describe the structure of 'db' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -2966,52 +3047,54 @@ function tripal_chado_chado_schema_v1_11_cvtermsynonym() {
  *
  */
 function tripal_chado_chado_schema_v1_11_db() {
-  $description =  array(
+  $description = [
     'table' => 'db',
-    'fields' => array(
-      'db_id' => array(
+    'fields' => [
+      'db_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '1',
-      ),
-      'description' => array(
+      ],
+      'description' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-      'urlprefix' => array(
+      ],
+      'urlprefix' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-      'url' => array(
+      ],
+      'url' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'db_id',
-    ),
-    'unique keys' => array(
-      'db_c1' => array(
+    ],
+    'unique keys' => [
+      'db_c1' => [
         0 => 'name',
-      ),
-    ),
-    'indexes' => array(
-    ),
-    'foreign keys' => array(
-    ),
-  );
+      ],
+    ],
+    'indexes' => [
+    ],
+    'foreign keys' => [
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_dbxref()
  * Purpose: To describe the structure of 'dbxref' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -3023,68 +3106,70 @@ function tripal_chado_chado_schema_v1_11_db() {
  *
  */
 function tripal_chado_chado_schema_v1_11_dbxref() {
-  $description =  array(
+  $description = [
     'table' => 'dbxref',
-    'fields' => array(
-      'dbxref_id' => array(
+    'fields' => [
+      'dbxref_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'db_id' => array(
+      ],
+      'db_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'accession' => array(
+      ],
+      'accession' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '1',
-      ),
-      'version' => array(
+      ],
+      'version' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '1',
         'default' => '',
-      ),
-      'description' => array(
+      ],
+      'description' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'dbxref_id',
-    ),
-    'unique keys' => array(
-      'dbxref_c1' => array(
+    ],
+    'unique keys' => [
+      'dbxref_c1' => [
         0 => 'db_id',
         1 => 'accession',
         2 => 'version',
-      ),
-    ),
-    'indexes' => array(
-      'dbxref_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'dbxref_idx1' => [
         0 => 'db_id',
-      ),
-      'dbxref_idx2' => array(
+      ],
+      'dbxref_idx2' => [
         0 => 'accession',
-      ),
-      'dbxref_idx3' => array(
+      ],
+      'dbxref_idx3' => [
         0 => 'version',
-      ),
-    ),
-    'foreign keys' => array(
-      'db' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'db' => [
         'table' => 'db',
-        'columns' => array(
+        'columns' => [
           'db_id' => 'db_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_dbxrefprop()
  * Purpose: To describe the structure of 'dbxrefprop' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -3096,70 +3181,72 @@ function tripal_chado_chado_schema_v1_11_dbxref() {
  *
  */
 function tripal_chado_chado_schema_v1_11_dbxrefprop() {
-  $description =  array(
+  $description = [
     'table' => 'dbxrefprop',
-    'fields' => array(
-      'dbxrefprop_id' => array(
+    'fields' => [
+      'dbxrefprop_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'dbxref_id' => array(
+      ],
+      'dbxref_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '1',
         'default' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'dbxrefprop_id',
-    ),
-    'unique keys' => array(
-      'dbxrefprop_c1' => array(
+    ],
+    'unique keys' => [
+      'dbxrefprop_c1' => [
         0 => 'dbxref_id',
         1 => 'type_id',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'dbxrefprop_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'dbxrefprop_idx1' => [
         0 => 'dbxref_id',
-      ),
-      'dbxrefprop_idx2' => array(
+      ],
+      'dbxrefprop_idx2' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'dbxref' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'dbxref' => [
         'table' => 'dbxref',
-        'columns' => array(
+        'columns' => [
           'dbxref_id' => 'dbxref_id',
-        ),
-      ),
-      'cvterm' => array(
+        ],
+      ],
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_eimage()
  * Purpose: To describe the structure of 'eimage' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -3171,43 +3258,45 @@ function tripal_chado_chado_schema_v1_11_dbxrefprop() {
  *
  */
 function tripal_chado_chado_schema_v1_11_eimage() {
-  $description =  array(
+  $description = [
     'table' => 'eimage',
-    'fields' => array(
-      'eimage_id' => array(
+    'fields' => [
+      'eimage_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'eimage_data' => array(
+      ],
+      'eimage_data' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'eimage_type' => array(
+      ],
+      'eimage_type' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '1',
-      ),
-      'image_uri' => array(
+      ],
+      'image_uri' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'eimage_id',
-    ),
-    'unique keys' => array(
-    ),
-    'indexes' => array(
-    ),
-    'foreign keys' => array(
-    ),
-  );
+    ],
+    'unique keys' => [
+    ],
+    'indexes' => [
+    ],
+    'foreign keys' => [
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_element()
  * Purpose: To describe the structure of 'element' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -3219,85 +3308,87 @@ function tripal_chado_chado_schema_v1_11_eimage() {
  *
  */
 function tripal_chado_chado_schema_v1_11_element() {
-  $description =  array(
+  $description = [
     'table' => 'element',
-    'fields' => array(
-      'element_id' => array(
+    'fields' => [
+      'element_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'feature_id' => array(
+      ],
+      'feature_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'arraydesign_id' => array(
+      ],
+      'arraydesign_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'dbxref_id' => array(
+      ],
+      'dbxref_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'element_id',
-    ),
-    'unique keys' => array(
-      'element_c1' => array(
+    ],
+    'unique keys' => [
+      'element_c1' => [
         0 => 'feature_id',
         1 => 'arraydesign_id',
-      ),
-    ),
-    'indexes' => array(
-      'element_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'element_idx1' => [
         0 => 'feature_id',
-      ),
-      'element_idx2' => array(
+      ],
+      'element_idx2' => [
         0 => 'arraydesign_id',
-      ),
-      'element_idx3' => array(
+      ],
+      'element_idx3' => [
         0 => 'type_id',
-      ),
-      'element_idx4' => array(
+      ],
+      'element_idx4' => [
         0 => 'dbxref_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'dbxref' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'dbxref' => [
         'table' => 'dbxref',
-        'columns' => array(
+        'columns' => [
           'dbxref_id' => 'dbxref_id',
-        ),
-      ),
-      'cvterm' => array(
+        ],
+      ],
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'feature' => array(
+        ],
+      ],
+      'feature' => [
         'table' => 'feature',
-        'columns' => array(
+        'columns' => [
           'feature_id' => 'feature_id',
-        ),
-      ),
-      'arraydesign' => array(
+        ],
+      ],
+      'arraydesign' => [
         'table' => 'arraydesign',
-        'columns' => array(
+        'columns' => [
           'arraydesign_id' => 'arraydesign_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_element_relationship()
  * Purpose: To describe the structure of 'element_relationship' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -3309,81 +3400,83 @@ function tripal_chado_chado_schema_v1_11_element() {
  *
  */
 function tripal_chado_chado_schema_v1_11_element_relationship() {
-  $description =  array(
+  $description = [
     'table' => 'element_relationship',
-    'fields' => array(
-      'element_relationship_id' => array(
+    'fields' => [
+      'element_relationship_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'subject_id' => array(
+      ],
+      'subject_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'object_id' => array(
+      ],
+      'object_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'element_relationship_id',
-    ),
-    'unique keys' => array(
-      'element_relationship_c1' => array(
+    ],
+    'unique keys' => [
+      'element_relationship_c1' => [
         0 => 'subject_id',
         1 => 'object_id',
         2 => 'type_id',
         3 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'element_relationship_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'element_relationship_idx1' => [
         0 => 'subject_id',
-      ),
-      'element_relationship_idx2' => array(
+      ],
+      'element_relationship_idx2' => [
         0 => 'type_id',
-      ),
-      'element_relationship_idx3' => array(
+      ],
+      'element_relationship_idx3' => [
         0 => 'object_id',
-      ),
-      'element_relationship_idx4' => array(
+      ],
+      'element_relationship_idx4' => [
         0 => 'value',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'element' => array(
+        ],
+      ],
+      'element' => [
         'table' => 'element',
-        'columns' => array(
+        'columns' => [
           'subject_id' => 'element_id',
           'object_id' => 'element_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_elementresult()
  * Purpose: To describe the structure of 'elementresult' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -3395,67 +3488,69 @@ function tripal_chado_chado_schema_v1_11_element_relationship() {
  *
  */
 function tripal_chado_chado_schema_v1_11_elementresult() {
-  $description =  array(
+  $description = [
     'table' => 'elementresult',
-    'fields' => array(
-      'elementresult_id' => array(
+    'fields' => [
+      'elementresult_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'element_id' => array(
+      ],
+      'element_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'quantification_id' => array(
+      ],
+      'quantification_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'signal' => array(
+      ],
+      'signal' => [
         'type' => 'float',
         'size' => 'big',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'elementresult_id',
-    ),
-    'unique keys' => array(
-      'elementresult_c1' => array(
+    ],
+    'unique keys' => [
+      'elementresult_c1' => [
         0 => 'element_id',
         1 => 'quantification_id',
-      ),
-    ),
-    'indexes' => array(
-      'elementresult_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'elementresult_idx1' => [
         0 => 'element_id',
-      ),
-      'elementresult_idx2' => array(
+      ],
+      'elementresult_idx2' => [
         0 => 'quantification_id',
-      ),
-      'elementresult_idx3' => array(
+      ],
+      'elementresult_idx3' => [
         0 => 'signal',
-      ),
-    ),
-    'foreign keys' => array(
-      'quantification' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'quantification' => [
         'table' => 'quantification',
-        'columns' => array(
+        'columns' => [
           'quantification_id' => 'quantification_id',
-        ),
-      ),
-      'element' => array(
+        ],
+      ],
+      'element' => [
         'table' => 'element',
-        'columns' => array(
+        'columns' => [
           'element_id' => 'element_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_elementresult_relationship()
  * Purpose: To describe the structure of 'elementresult_relationship' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -3467,81 +3562,83 @@ function tripal_chado_chado_schema_v1_11_elementresult() {
  *
  */
 function tripal_chado_chado_schema_v1_11_elementresult_relationship() {
-  $description =  array(
+  $description = [
     'table' => 'elementresult_relationship',
-    'fields' => array(
-      'elementresult_relationship_id' => array(
+    'fields' => [
+      'elementresult_relationship_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'subject_id' => array(
+      ],
+      'subject_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'object_id' => array(
+      ],
+      'object_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'elementresult_relationship_id',
-    ),
-    'unique keys' => array(
-      'elementresult_relationship_c1' => array(
+    ],
+    'unique keys' => [
+      'elementresult_relationship_c1' => [
         0 => 'subject_id',
         1 => 'object_id',
         2 => 'type_id',
         3 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'elementresult_relationship_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'elementresult_relationship_idx1' => [
         0 => 'subject_id',
-      ),
-      'elementresult_relationship_idx2' => array(
+      ],
+      'elementresult_relationship_idx2' => [
         0 => 'type_id',
-      ),
-      'elementresult_relationship_idx3' => array(
+      ],
+      'elementresult_relationship_idx3' => [
         0 => 'object_id',
-      ),
-      'elementresult_relationship_idx4' => array(
+      ],
+      'elementresult_relationship_idx4' => [
         0 => 'value',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'elementresult' => array(
+        ],
+      ],
+      'elementresult' => [
         'table' => 'elementresult',
-        'columns' => array(
+        'columns' => [
           'subject_id' => 'elementresult_id',
           'object_id' => 'elementresult_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_environment()
  * Purpose: To describe the structure of 'environment' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -3553,43 +3650,45 @@ function tripal_chado_chado_schema_v1_11_elementresult_relationship() {
  *
  */
 function tripal_chado_chado_schema_v1_11_environment() {
-  $description =  array(
+  $description = [
     'table' => 'environment',
-    'fields' => array(
-      'environment_id' => array(
+    'fields' => [
+      'environment_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'uniquename' => array(
+      ],
+      'uniquename' => [
         'type' => 'text',
         'not NULL' => '1',
-      ),
-      'description' => array(
+      ],
+      'description' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'environment_id',
-    ),
-    'unique keys' => array(
-      'environment_c1' => array(
+    ],
+    'unique keys' => [
+      'environment_c1' => [
         0 => 'uniquename',
-      ),
-    ),
-    'indexes' => array(
-      'environment_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'environment_idx1' => [
         0 => 'uniquename',
-      ),
-    ),
-    'foreign keys' => array(
-    ),
-  );
+      ],
+    ],
+    'foreign keys' => [
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_environment_cvterm()
  * Purpose: To describe the structure of 'environment_cvterm' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -3601,59 +3700,61 @@ function tripal_chado_chado_schema_v1_11_environment() {
  *
  */
 function tripal_chado_chado_schema_v1_11_environment_cvterm() {
-  $description =  array(
+  $description = [
     'table' => 'environment_cvterm',
-    'fields' => array(
-      'environment_cvterm_id' => array(
+    'fields' => [
+      'environment_cvterm_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'environment_id' => array(
+      ],
+      'environment_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'cvterm_id' => array(
+      ],
+      'cvterm_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'environment_cvterm_id',
-    ),
-    'unique keys' => array(
-      'environment_cvterm_c1' => array(
+    ],
+    'unique keys' => [
+      'environment_cvterm_c1' => [
         0 => 'environment_id',
         1 => 'cvterm_id',
-      ),
-    ),
-    'indexes' => array(
-      'environment_cvterm_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'environment_cvterm_idx1' => [
         0 => 'environment_id',
-      ),
-      'environment_cvterm_idx2' => array(
+      ],
+      'environment_cvterm_idx2' => [
         0 => 'cvterm_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'cvterm_id' => 'cvterm_id',
-        ),
-      ),
-      'environment' => array(
+        ],
+      ],
+      'environment' => [
         'table' => 'environment',
-        'columns' => array(
+        'columns' => [
           'environment_id' => 'environment_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_expression()
  * Purpose: To describe the structure of 'expression' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -3665,45 +3766,47 @@ function tripal_chado_chado_schema_v1_11_environment_cvterm() {
  *
  */
 function tripal_chado_chado_schema_v1_11_expression() {
-  $description =  array(
+  $description = [
     'table' => 'expression',
-    'fields' => array(
-      'expression_id' => array(
+    'fields' => [
+      'expression_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'uniquename' => array(
+      ],
+      'uniquename' => [
         'type' => 'text',
         'not NULL' => '1',
-      ),
-      'md5checksum' => array(
+      ],
+      'md5checksum' => [
         'type' => 'char',
         'length' => '32',
         'not NULL' => '',
-      ),
-      'description' => array(
+      ],
+      'description' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'expression_id',
-    ),
-    'unique keys' => array(
-      'expression_c1' => array(
+    ],
+    'unique keys' => [
+      'expression_c1' => [
         0 => 'uniquename',
-      ),
-    ),
-    'indexes' => array(
-    ),
-    'foreign keys' => array(
-    ),
-  );
+      ],
+    ],
+    'indexes' => [
+    ],
+    'foreign keys' => [
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_expression_cvterm()
  * Purpose: To describe the structure of 'expression_cvterm' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -3715,73 +3818,75 @@ function tripal_chado_chado_schema_v1_11_expression() {
  *
  */
 function tripal_chado_chado_schema_v1_11_expression_cvterm() {
-  $description =  array(
+  $description = [
     'table' => 'expression_cvterm',
-    'fields' => array(
-      'expression_cvterm_id' => array(
+    'fields' => [
+      'expression_cvterm_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'expression_id' => array(
+      ],
+      'expression_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'cvterm_id' => array(
+      ],
+      'cvterm_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-      'cvterm_type_id' => array(
+      ],
+      'cvterm_type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'expression_cvterm_id',
-    ),
-    'unique keys' => array(
-      'expression_cvterm_c1' => array(
+    ],
+    'unique keys' => [
+      'expression_cvterm_c1' => [
         0 => 'expression_id',
         1 => 'cvterm_id',
         2 => 'cvterm_type_id',
-      ),
-    ),
-    'indexes' => array(
-      'expression_cvterm_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'expression_cvterm_idx1' => [
         0 => 'expression_id',
-      ),
-      'expression_cvterm_idx2' => array(
+      ],
+      'expression_cvterm_idx2' => [
         0 => 'cvterm_id',
-      ),
-      'expression_cvterm_idx3' => array(
+      ],
+      'expression_cvterm_idx3' => [
         0 => 'cvterm_type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'cvterm_id' => 'cvterm_id',
           'cvterm_type_id' => 'cvterm_id',
-        ),
-      ),
-      'expression' => array(
+        ],
+      ],
+      'expression' => [
         'table' => 'expression',
-        'columns' => array(
+        'columns' => [
           'expression_id' => 'expression_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_expression_cvtermprop()
  * Purpose: To describe the structure of 'expression_cvtermprop' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -3793,69 +3898,71 @@ function tripal_chado_chado_schema_v1_11_expression_cvterm() {
  *
  */
 function tripal_chado_chado_schema_v1_11_expression_cvtermprop() {
-  $description =  array(
+  $description = [
     'table' => 'expression_cvtermprop',
-    'fields' => array(
-      'expression_cvtermprop_id' => array(
+    'fields' => [
+      'expression_cvtermprop_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'expression_cvterm_id' => array(
+      ],
+      'expression_cvterm_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'expression_cvtermprop_id',
-    ),
-    'unique keys' => array(
-      'expression_cvtermprop_c1' => array(
+    ],
+    'unique keys' => [
+      'expression_cvtermprop_c1' => [
         0 => 'expression_cvterm_id',
         1 => 'type_id',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'expression_cvtermprop_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'expression_cvtermprop_idx1' => [
         0 => 'expression_cvterm_id',
-      ),
-      'expression_cvtermprop_idx2' => array(
+      ],
+      'expression_cvtermprop_idx2' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'expression_cvterm' => array(
+        ],
+      ],
+      'expression_cvterm' => [
         'table' => 'expression_cvterm',
-        'columns' => array(
+        'columns' => [
           'expression_cvterm_id' => 'expression_cvterm_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_expression_image()
  * Purpose: To describe the structure of 'expression_image' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -3867,59 +3974,61 @@ function tripal_chado_chado_schema_v1_11_expression_cvtermprop() {
  *
  */
 function tripal_chado_chado_schema_v1_11_expression_image() {
-  $description =  array(
+  $description = [
     'table' => 'expression_image',
-    'fields' => array(
-      'expression_image_id' => array(
+    'fields' => [
+      'expression_image_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'expression_id' => array(
+      ],
+      'expression_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'eimage_id' => array(
+      ],
+      'eimage_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'expression_image_id',
-    ),
-    'unique keys' => array(
-      'expression_image_c1' => array(
+    ],
+    'unique keys' => [
+      'expression_image_c1' => [
         0 => 'expression_id',
         1 => 'eimage_id',
-      ),
-    ),
-    'indexes' => array(
-      'expression_image_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'expression_image_idx1' => [
         0 => 'expression_id',
-      ),
-      'expression_image_idx2' => array(
+      ],
+      'expression_image_idx2' => [
         0 => 'eimage_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'expression' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'expression' => [
         'table' => 'expression',
-        'columns' => array(
+        'columns' => [
           'expression_id' => 'expression_id',
-        ),
-      ),
-      'eimage' => array(
+        ],
+      ],
+      'eimage' => [
         'table' => 'eimage',
-        'columns' => array(
+        'columns' => [
           'eimage_id' => 'eimage_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_expression_pub()
  * Purpose: To describe the structure of 'expression_pub' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -3931,59 +4040,61 @@ function tripal_chado_chado_schema_v1_11_expression_image() {
  *
  */
 function tripal_chado_chado_schema_v1_11_expression_pub() {
-  $description =  array(
+  $description = [
     'table' => 'expression_pub',
-    'fields' => array(
-      'expression_pub_id' => array(
+    'fields' => [
+      'expression_pub_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'expression_id' => array(
+      ],
+      'expression_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'expression_pub_id',
-    ),
-    'unique keys' => array(
-      'expression_pub_c1' => array(
+    ],
+    'unique keys' => [
+      'expression_pub_c1' => [
         0 => 'expression_id',
         1 => 'pub_id',
-      ),
-    ),
-    'indexes' => array(
-      'expression_pub_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'expression_pub_idx1' => [
         0 => 'expression_id',
-      ),
-      'expression_pub_idx2' => array(
+      ],
+      'expression_pub_idx2' => [
         0 => 'pub_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'pub' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-      'expression' => array(
+        ],
+      ],
+      'expression' => [
         'table' => 'expression',
-        'columns' => array(
+        'columns' => [
           'expression_id' => 'expression_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_expressionprop()
  * Purpose: To describe the structure of 'expressionprop' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -3995,69 +4106,71 @@ function tripal_chado_chado_schema_v1_11_expression_pub() {
  *
  */
 function tripal_chado_chado_schema_v1_11_expressionprop() {
-  $description =  array(
+  $description = [
     'table' => 'expressionprop',
-    'fields' => array(
-      'expressionprop_id' => array(
+    'fields' => [
+      'expressionprop_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'expression_id' => array(
+      ],
+      'expression_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'expressionprop_id',
-    ),
-    'unique keys' => array(
-      'expressionprop_c1' => array(
+    ],
+    'unique keys' => [
+      'expressionprop_c1' => [
         0 => 'expression_id',
         1 => 'type_id',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'expressionprop_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'expressionprop_idx1' => [
         0 => 'expression_id',
-      ),
-      'expressionprop_idx2' => array(
+      ],
+      'expressionprop_idx2' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'expression' => array(
+        ],
+      ],
+      'expression' => [
         'table' => 'expression',
-        'columns' => array(
+        'columns' => [
           'expression_id' => 'expression_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_feature()
  * Purpose: To describe the structure of 'feature' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -4069,116 +4182,116 @@ function tripal_chado_chado_schema_v1_11_expressionprop() {
  *
  */
 function tripal_chado_chado_schema_v1_11_feature() {
-  $description =  array(
+  $description = [
     'table' => 'feature',
-    'fields' => array(
-      'feature_id' => array(
+    'fields' => [
+      'feature_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'dbxref_id' => array(
+      ],
+      'dbxref_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'organism_id' => array(
+      ],
+      'organism_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-      'uniquename' => array(
+      ],
+      'uniquename' => [
         'type' => 'text',
         'not NULL' => '1',
-      ),
-      'residues' => array(
+      ],
+      'residues' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'seqlen' => array(
+      ],
+      'seqlen' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'md5checksum' => array(
+      ],
+      'md5checksum' => [
         'type' => 'char',
         'length' => '32',
         'not NULL' => '',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'is_analysis' => array(
+      ],
+      'is_analysis' => [
         'type' => 'boolean',
         'not NULL' => '1',
         'default' => 'false',
-      ),
-      'is_obsolete' => array(
+      ],
+      'is_obsolete' => [
         'type' => 'boolean',
         'not NULL' => '1',
         'default' => 'false',
-      ),
-      'timeaccessioned' => array(
+      ],
+      'timeaccessioned' => [
         'type' => 'datetime',
         'not NULL' => '1',
         'default' => 'ow(',
-      ),
-      'timelastmodified' => array(
+      ],
+      'timelastmodified' => [
         'type' => 'datetime',
         'not NULL' => '1',
         'default' => 'ow(',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'feature_id',
-    ),
-    'unique keys' => array(
-      'feature_c1' => array(
+    ],
+    'unique keys' => [
+      'feature_c1' => [
         0 => 'organism_id',
         1 => 'uniquename',
         2 => 'type_id',
-      ),
-    ),
-    'indexes' => array(
-      'feature_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'feature_idx1' => [
         0 => 'dbxref_id',
-      ),
-      'feature_idx2' => array(
+      ],
+      'feature_idx2' => [
         0 => 'organism_id',
-      ),
-      'feature_idx3' => array(
+      ],
+      'feature_idx3' => [
         0 => 'type_id',
-      ),
-      'feature_idx4' => array(
+      ],
+      'feature_idx4' => [
         0 => 'uniquename',
-      ),
-      'feature_name_ind1' => array(
+      ],
+      'feature_name_ind1' => [
         0 => 'name',
-      ),
-    ),
-    'foreign keys' => array(
-      'organism' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'organism' => [
         'table' => 'organism',
-        'columns' => array(
+        'columns' => [
           'organism_id' => 'organism_id',
-        ),
-      ),
-      'dbxref' => array(
+        ],
+      ],
+      'dbxref' => [
         'table' => 'dbxref',
-        'columns' => array(
+        'columns' => [
           'dbxref_id' => 'dbxref_id',
-        ),
-      ),
-      'cvterm' => array(
+        ],
+      ],
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-    ),
-    'referring_tables' => array(
+        ],
+      ],
+    ],
+    'referring_tables' => [
       0 => 'analysisfeature',
       1 => 'element',
       2 => 'feature_cvterm',
@@ -4196,13 +4309,15 @@ function tripal_chado_chado_schema_v1_11_feature() {
       14 => 'library_feature',
       15 => 'phylonode',
       16 => 'wwwuser_feature',
-    ),
-  );
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_feature_cvterm()
  * Purpose: To describe the structure of 'feature_cvterm' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -4214,84 +4329,86 @@ function tripal_chado_chado_schema_v1_11_feature() {
  *
  */
 function tripal_chado_chado_schema_v1_11_feature_cvterm() {
-  $description =  array(
+  $description = [
     'table' => 'feature_cvterm',
-    'fields' => array(
-      'feature_cvterm_id' => array(
+    'fields' => [
+      'feature_cvterm_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'feature_id' => array(
+      ],
+      'feature_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'cvterm_id' => array(
+      ],
+      'cvterm_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'is_not' => array(
+      ],
+      'is_not' => [
         'type' => 'boolean',
         'not NULL' => '1',
         'default' => 'false',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'feature_cvterm_id',
-    ),
-    'unique keys' => array(
-      'feature_cvterm_c1' => array(
+    ],
+    'unique keys' => [
+      'feature_cvterm_c1' => [
         0 => 'feature_id',
         1 => 'cvterm_id',
         2 => 'pub_id',
         3 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'feature_cvterm_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'feature_cvterm_idx1' => [
         0 => 'feature_id',
-      ),
-      'feature_cvterm_idx2' => array(
+      ],
+      'feature_cvterm_idx2' => [
         0 => 'cvterm_id',
-      ),
-      'feature_cvterm_idx3' => array(
+      ],
+      'feature_cvterm_idx3' => [
         0 => 'pub_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'feature' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'feature' => [
         'table' => 'feature',
-        'columns' => array(
+        'columns' => [
           'feature_id' => 'feature_id',
-        ),
-      ),
-      'cvterm' => array(
+        ],
+      ],
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'cvterm_id' => 'cvterm_id',
-        ),
-      ),
-      'pub' => array(
+        ],
+      ],
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_feature_cvterm_dbxref()
  * Purpose: To describe the structure of 'feature_cvterm_dbxref' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -4303,59 +4420,61 @@ function tripal_chado_chado_schema_v1_11_feature_cvterm() {
  *
  */
 function tripal_chado_chado_schema_v1_11_feature_cvterm_dbxref() {
-  $description =  array(
+  $description = [
     'table' => 'feature_cvterm_dbxref',
-    'fields' => array(
-      'feature_cvterm_dbxref_id' => array(
+    'fields' => [
+      'feature_cvterm_dbxref_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'feature_cvterm_id' => array(
+      ],
+      'feature_cvterm_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'dbxref_id' => array(
+      ],
+      'dbxref_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'feature_cvterm_dbxref_id',
-    ),
-    'unique keys' => array(
-      'feature_cvterm_dbxref_c1' => array(
+    ],
+    'unique keys' => [
+      'feature_cvterm_dbxref_c1' => [
         0 => 'feature_cvterm_id',
         1 => 'dbxref_id',
-      ),
-    ),
-    'indexes' => array(
-      'feature_cvterm_dbxref_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'feature_cvterm_dbxref_idx1' => [
         0 => 'feature_cvterm_id',
-      ),
-      'feature_cvterm_dbxref_idx2' => array(
+      ],
+      'feature_cvterm_dbxref_idx2' => [
         0 => 'dbxref_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'feature_cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'feature_cvterm' => [
         'table' => 'feature_cvterm',
-        'columns' => array(
+        'columns' => [
           'feature_cvterm_id' => 'feature_cvterm_id',
-        ),
-      ),
-      'dbxref' => array(
+        ],
+      ],
+      'dbxref' => [
         'table' => 'dbxref',
-        'columns' => array(
+        'columns' => [
           'dbxref_id' => 'dbxref_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_feature_cvterm_pub()
  * Purpose: To describe the structure of 'feature_cvterm_pub' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -4367,59 +4486,61 @@ function tripal_chado_chado_schema_v1_11_feature_cvterm_dbxref() {
  *
  */
 function tripal_chado_chado_schema_v1_11_feature_cvterm_pub() {
-  $description =  array(
+  $description = [
     'table' => 'feature_cvterm_pub',
-    'fields' => array(
-      'feature_cvterm_pub_id' => array(
+    'fields' => [
+      'feature_cvterm_pub_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'feature_cvterm_id' => array(
+      ],
+      'feature_cvterm_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'feature_cvterm_pub_id',
-    ),
-    'unique keys' => array(
-      'feature_cvterm_pub_c1' => array(
+    ],
+    'unique keys' => [
+      'feature_cvterm_pub_c1' => [
         0 => 'feature_cvterm_id',
         1 => 'pub_id',
-      ),
-    ),
-    'indexes' => array(
-      'feature_cvterm_pub_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'feature_cvterm_pub_idx1' => [
         0 => 'feature_cvterm_id',
-      ),
-      'feature_cvterm_pub_idx2' => array(
+      ],
+      'feature_cvterm_pub_idx2' => [
         0 => 'pub_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'feature_cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'feature_cvterm' => [
         'table' => 'feature_cvterm',
-        'columns' => array(
+        'columns' => [
           'feature_cvterm_id' => 'feature_cvterm_id',
-        ),
-      ),
-      'pub' => array(
+        ],
+      ],
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_feature_cvtermprop()
  * Purpose: To describe the structure of 'feature_cvtermprop' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -4431,69 +4552,71 @@ function tripal_chado_chado_schema_v1_11_feature_cvterm_pub() {
  *
  */
 function tripal_chado_chado_schema_v1_11_feature_cvtermprop() {
-  $description =  array(
+  $description = [
     'table' => 'feature_cvtermprop',
-    'fields' => array(
-      'feature_cvtermprop_id' => array(
+    'fields' => [
+      'feature_cvtermprop_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'feature_cvterm_id' => array(
+      ],
+      'feature_cvterm_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'feature_cvtermprop_id',
-    ),
-    'unique keys' => array(
-      'feature_cvtermprop_c1' => array(
+    ],
+    'unique keys' => [
+      'feature_cvtermprop_c1' => [
         0 => 'feature_cvterm_id',
         1 => 'type_id',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'feature_cvtermprop_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'feature_cvtermprop_idx1' => [
         0 => 'feature_cvterm_id',
-      ),
-      'feature_cvtermprop_idx2' => array(
+      ],
+      'feature_cvtermprop_idx2' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'feature_cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'feature_cvterm' => [
         'table' => 'feature_cvterm',
-        'columns' => array(
+        'columns' => [
           'feature_cvterm_id' => 'feature_cvterm_id',
-        ),
-      ),
-      'cvterm' => array(
+        ],
+      ],
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_feature_dbxref()
  * Purpose: To describe the structure of 'feature_dbxref' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -4505,64 +4628,66 @@ function tripal_chado_chado_schema_v1_11_feature_cvtermprop() {
  *
  */
 function tripal_chado_chado_schema_v1_11_feature_dbxref() {
-  $description =  array(
+  $description = [
     'table' => 'feature_dbxref',
-    'fields' => array(
-      'feature_dbxref_id' => array(
+    'fields' => [
+      'feature_dbxref_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'feature_id' => array(
+      ],
+      'feature_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'dbxref_id' => array(
+      ],
+      'dbxref_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'is_current' => array(
+      ],
+      'is_current' => [
         'type' => 'boolean',
         'not NULL' => '1',
         'default' => 'true',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'feature_dbxref_id',
-    ),
-    'unique keys' => array(
-      'feature_dbxref_c1' => array(
+    ],
+    'unique keys' => [
+      'feature_dbxref_c1' => [
         0 => 'feature_id',
         1 => 'dbxref_id',
-      ),
-    ),
-    'indexes' => array(
-      'feature_dbxref_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'feature_dbxref_idx1' => [
         0 => 'feature_id',
-      ),
-      'feature_dbxref_idx2' => array(
+      ],
+      'feature_dbxref_idx2' => [
         0 => 'dbxref_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'feature' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'feature' => [
         'table' => 'feature',
-        'columns' => array(
+        'columns' => [
           'feature_id' => 'feature_id',
-        ),
-      ),
-      'dbxref' => array(
+        ],
+      ],
+      'dbxref' => [
         'table' => 'dbxref',
-        'columns' => array(
+        'columns' => [
           'dbxref_id' => 'dbxref_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_feature_expression()
  * Purpose: To describe the structure of 'feature_expression' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -4574,73 +4699,75 @@ function tripal_chado_chado_schema_v1_11_feature_dbxref() {
  *
  */
 function tripal_chado_chado_schema_v1_11_feature_expression() {
-  $description =  array(
+  $description = [
     'table' => 'feature_expression',
-    'fields' => array(
-      'feature_expression_id' => array(
+    'fields' => [
+      'feature_expression_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'expression_id' => array(
+      ],
+      'expression_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'feature_id' => array(
+      ],
+      'feature_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'feature_expression_id',
-    ),
-    'unique keys' => array(
-      'feature_expression_c1' => array(
+    ],
+    'unique keys' => [
+      'feature_expression_c1' => [
         0 => 'expression_id',
         1 => 'feature_id',
         2 => 'pub_id',
-      ),
-    ),
-    'indexes' => array(
-      'feature_expression_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'feature_expression_idx1' => [
         0 => 'expression_id',
-      ),
-      'feature_expression_idx2' => array(
+      ],
+      'feature_expression_idx2' => [
         0 => 'feature_id',
-      ),
-      'feature_expression_idx3' => array(
+      ],
+      'feature_expression_idx3' => [
         0 => 'pub_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'pub' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-      'feature' => array(
+        ],
+      ],
+      'feature' => [
         'table' => 'feature',
-        'columns' => array(
+        'columns' => [
           'feature_id' => 'feature_id',
-        ),
-      ),
-      'expression' => array(
+        ],
+      ],
+      'expression' => [
         'table' => 'expression',
-        'columns' => array(
+        'columns' => [
           'expression_id' => 'expression_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_feature_expressionprop()
  * Purpose: To describe the structure of 'feature_expressionprop' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -4652,69 +4779,71 @@ function tripal_chado_chado_schema_v1_11_feature_expression() {
  *
  */
 function tripal_chado_chado_schema_v1_11_feature_expressionprop() {
-  $description =  array(
+  $description = [
     'table' => 'feature_expressionprop',
-    'fields' => array(
-      'feature_expressionprop_id' => array(
+    'fields' => [
+      'feature_expressionprop_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'feature_expression_id' => array(
+      ],
+      'feature_expression_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'feature_expressionprop_id',
-    ),
-    'unique keys' => array(
-      'feature_expressionprop_c1' => array(
+    ],
+    'unique keys' => [
+      'feature_expressionprop_c1' => [
         0 => 'feature_expression_id',
         1 => 'type_id',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'feature_expressionprop_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'feature_expressionprop_idx1' => [
         0 => 'feature_expression_id',
-      ),
-      'feature_expressionprop_idx2' => array(
+      ],
+      'feature_expressionprop_idx2' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'feature_expression' => array(
+        ],
+      ],
+      'feature_expression' => [
         'table' => 'feature_expression',
-        'columns' => array(
+        'columns' => [
           'feature_expression_id' => 'feature_expression_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_feature_genotype()
  * Purpose: To describe the structure of 'feature_genotype' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -4726,86 +4855,88 @@ function tripal_chado_chado_schema_v1_11_feature_expressionprop() {
  *
  */
 function tripal_chado_chado_schema_v1_11_feature_genotype() {
-  $description =  array(
+  $description = [
     'table' => 'feature_genotype',
-    'fields' => array(
-      'feature_genotype_id' => array(
+    'fields' => [
+      'feature_genotype_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'feature_id' => array(
+      ],
+      'feature_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'genotype_id' => array(
+      ],
+      'genotype_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'chromosome_id' => array(
+      ],
+      'chromosome_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'cgroup' => array(
+      ],
+      'cgroup' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'cvterm_id' => array(
+      ],
+      'cvterm_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'feature_genotype_id',
-    ),
-    'unique keys' => array(
-      'feature_genotype_c1' => array(
+    ],
+    'unique keys' => [
+      'feature_genotype_c1' => [
         0 => 'feature_id',
         1 => 'genotype_id',
         2 => 'cvterm_id',
         3 => 'chromosome_id',
         4 => 'rank',
         5 => 'cgroup',
-      ),
-    ),
-    'indexes' => array(
-      'feature_genotype_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'feature_genotype_idx1' => [
         0 => 'feature_id',
-      ),
-      'feature_genotype_idx2' => array(
+      ],
+      'feature_genotype_idx2' => [
         0 => 'genotype_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'cvterm_id' => 'cvterm_id',
-        ),
-      ),
-      'feature' => array(
+        ],
+      ],
+      'feature' => [
         'table' => 'feature',
-        'columns' => array(
+        'columns' => [
           'feature_id' => 'feature_id',
           'chromosome_id' => 'feature_id',
-        ),
-      ),
-      'genotype' => array(
+        ],
+      ],
+      'genotype' => [
         'table' => 'genotype',
-        'columns' => array(
+        'columns' => [
           'genotype_id' => 'genotype_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_feature_phenotype()
  * Purpose: To describe the structure of 'feature_phenotype' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -4817,59 +4948,61 @@ function tripal_chado_chado_schema_v1_11_feature_genotype() {
  *
  */
 function tripal_chado_chado_schema_v1_11_feature_phenotype() {
-  $description =  array(
+  $description = [
     'table' => 'feature_phenotype',
-    'fields' => array(
-      'feature_phenotype_id' => array(
+    'fields' => [
+      'feature_phenotype_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'feature_id' => array(
+      ],
+      'feature_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'phenotype_id' => array(
+      ],
+      'phenotype_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'feature_phenotype_id',
-    ),
-    'unique keys' => array(
-      'feature_phenotype_c1' => array(
+    ],
+    'unique keys' => [
+      'feature_phenotype_c1' => [
         0 => 'feature_id',
         1 => 'phenotype_id',
-      ),
-    ),
-    'indexes' => array(
-      'feature_phenotype_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'feature_phenotype_idx1' => [
         0 => 'feature_id',
-      ),
-      'feature_phenotype_idx2' => array(
+      ],
+      'feature_phenotype_idx2' => [
         0 => 'phenotype_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'feature' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'feature' => [
         'table' => 'feature',
-        'columns' => array(
+        'columns' => [
           'feature_id' => 'feature_id',
-        ),
-      ),
-      'phenotype' => array(
+        ],
+      ],
+      'phenotype' => [
         'table' => 'phenotype',
-        'columns' => array(
+        'columns' => [
           'phenotype_id' => 'phenotype_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_feature_pub()
  * Purpose: To describe the structure of 'feature_pub' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -4881,59 +5014,61 @@ function tripal_chado_chado_schema_v1_11_feature_phenotype() {
  *
  */
 function tripal_chado_chado_schema_v1_11_feature_pub() {
-  $description =  array(
+  $description = [
     'table' => 'feature_pub',
-    'fields' => array(
-      'feature_pub_id' => array(
+    'fields' => [
+      'feature_pub_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'feature_id' => array(
+      ],
+      'feature_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'feature_pub_id',
-    ),
-    'unique keys' => array(
-      'feature_pub_c1' => array(
+    ],
+    'unique keys' => [
+      'feature_pub_c1' => [
         0 => 'feature_id',
         1 => 'pub_id',
-      ),
-    ),
-    'indexes' => array(
-      'feature_pub_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'feature_pub_idx1' => [
         0 => 'feature_id',
-      ),
-      'feature_pub_idx2' => array(
+      ],
+      'feature_pub_idx2' => [
         0 => 'pub_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'pub' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-      'feature' => array(
+        ],
+      ],
+      'feature' => [
         'table' => 'feature',
-        'columns' => array(
+        'columns' => [
           'feature_id' => 'feature_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_feature_pubprop()
  * Purpose: To describe the structure of 'feature_pubprop' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -4945,66 +5080,68 @@ function tripal_chado_chado_schema_v1_11_feature_pub() {
  *
  */
 function tripal_chado_chado_schema_v1_11_feature_pubprop() {
-  $description =  array(
+  $description = [
     'table' => 'feature_pubprop',
-    'fields' => array(
-      'feature_pubprop_id' => array(
+    'fields' => [
+      'feature_pubprop_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'feature_pub_id' => array(
+      ],
+      'feature_pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'feature_pubprop_id',
-    ),
-    'unique keys' => array(
-      'feature_pubprop_c1' => array(
+    ],
+    'unique keys' => [
+      'feature_pubprop_c1' => [
         0 => 'feature_pub_id',
         1 => 'type_id',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'feature_pubprop_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'feature_pubprop_idx1' => [
         0 => 'feature_pub_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'feature_pub' => array(
+        ],
+      ],
+      'feature_pub' => [
         'table' => 'feature_pub',
-        'columns' => array(
+        'columns' => [
           'feature_pub_id' => 'feature_pub_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_feature_relationship()
  * Purpose: To describe the structure of 'feature_relationship' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -5016,78 +5153,80 @@ function tripal_chado_chado_schema_v1_11_feature_pubprop() {
  *
  */
 function tripal_chado_chado_schema_v1_11_feature_relationship() {
-  $description =  array(
+  $description = [
     'table' => 'feature_relationship',
-    'fields' => array(
-      'feature_relationship_id' => array(
+    'fields' => [
+      'feature_relationship_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'subject_id' => array(
+      ],
+      'subject_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'object_id' => array(
+      ],
+      'object_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'feature_relationship_id',
-    ),
-    'unique keys' => array(
-      'feature_relationship_c1' => array(
+    ],
+    'unique keys' => [
+      'feature_relationship_c1' => [
         0 => 'subject_id',
         1 => 'object_id',
         2 => 'type_id',
         3 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'feature_relationship_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'feature_relationship_idx1' => [
         0 => 'subject_id',
-      ),
-      'feature_relationship_idx2' => array(
+      ],
+      'feature_relationship_idx2' => [
         0 => 'object_id',
-      ),
-      'feature_relationship_idx3' => array(
+      ],
+      'feature_relationship_idx3' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'feature' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'feature' => [
         'table' => 'feature',
-        'columns' => array(
+        'columns' => [
           'object_id' => 'feature_id',
           'subject_id' => 'feature_id',
-        ),
-      ),
-      'cvterm' => array(
+        ],
+      ],
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_feature_relationship_pub()
  * Purpose: To describe the structure of 'feature_relationship_pub' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -5099,59 +5238,61 @@ function tripal_chado_chado_schema_v1_11_feature_relationship() {
  *
  */
 function tripal_chado_chado_schema_v1_11_feature_relationship_pub() {
-  $description =  array(
+  $description = [
     'table' => 'feature_relationship_pub',
-    'fields' => array(
-      'feature_relationship_pub_id' => array(
+    'fields' => [
+      'feature_relationship_pub_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'feature_relationship_id' => array(
+      ],
+      'feature_relationship_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'feature_relationship_pub_id',
-    ),
-    'unique keys' => array(
-      'feature_relationship_pub_c1' => array(
+    ],
+    'unique keys' => [
+      'feature_relationship_pub_c1' => [
         0 => 'feature_relationship_id',
         1 => 'pub_id',
-      ),
-    ),
-    'indexes' => array(
-      'feature_relationship_pub_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'feature_relationship_pub_idx1' => [
         0 => 'feature_relationship_id',
-      ),
-      'feature_relationship_pub_idx2' => array(
+      ],
+      'feature_relationship_pub_idx2' => [
         0 => 'pub_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'pub' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-      'feature_relationship' => array(
+        ],
+      ],
+      'feature_relationship' => [
         'table' => 'feature_relationship',
-        'columns' => array(
+        'columns' => [
           'feature_relationship_id' => 'feature_relationship_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_feature_relationshipprop()
  * Purpose: To describe the structure of 'feature_relationshipprop' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -5163,69 +5304,72 @@ function tripal_chado_chado_schema_v1_11_feature_relationship_pub() {
  *
  */
 function tripal_chado_chado_schema_v1_11_feature_relationshipprop() {
-  $description =  array(
+  $description = [
     'table' => 'feature_relationshipprop',
-    'fields' => array(
-      'feature_relationshipprop_id' => array(
+    'fields' => [
+      'feature_relationshipprop_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'feature_relationship_id' => array(
+      ],
+      'feature_relationship_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'feature_relationshipprop_id',
-    ),
-    'unique keys' => array(
-      'feature_relationshipprop_c1' => array(
+    ],
+    'unique keys' => [
+      'feature_relationshipprop_c1' => [
         0 => 'feature_relationship_id',
         1 => 'type_id',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'feature_relationshipprop_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'feature_relationshipprop_idx1' => [
         0 => 'feature_relationship_id',
-      ),
-      'feature_relationshipprop_idx2' => array(
+      ],
+      'feature_relationshipprop_idx2' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'feature_relationship' => array(
+        ],
+      ],
+      'feature_relationship' => [
         'table' => 'feature_relationship',
-        'columns' => array(
+        'columns' => [
           'feature_relationship_id' => 'feature_relationship_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_feature_relationshipprop_pub()
- * Purpose: To describe the structure of 'feature_relationshipprop_pub' to tripal
+ * Purpose: To describe the structure of 'feature_relationshipprop_pub' to
+ * tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -5237,59 +5381,61 @@ function tripal_chado_chado_schema_v1_11_feature_relationshipprop() {
  *
  */
 function tripal_chado_chado_schema_v1_11_feature_relationshipprop_pub() {
-  $description =  array(
+  $description = [
     'table' => 'feature_relationshipprop_pub',
-    'fields' => array(
-      'feature_relationshipprop_pub_id' => array(
+    'fields' => [
+      'feature_relationshipprop_pub_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'feature_relationshipprop_id' => array(
+      ],
+      'feature_relationshipprop_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'feature_relationshipprop_pub_id',
-    ),
-    'unique keys' => array(
-      'feature_relationshipprop_pub_c1' => array(
+    ],
+    'unique keys' => [
+      'feature_relationshipprop_pub_c1' => [
         0 => 'feature_relationshipprop_id',
         1 => 'pub_id',
-      ),
-    ),
-    'indexes' => array(
-      'feature_relationshipprop_pub_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'feature_relationshipprop_pub_idx1' => [
         0 => 'feature_relationshipprop_id',
-      ),
-      'feature_relationshipprop_pub_idx2' => array(
+      ],
+      'feature_relationshipprop_pub_idx2' => [
         0 => 'pub_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'feature_relationshipprop' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'feature_relationshipprop' => [
         'table' => 'feature_relationshipprop',
-        'columns' => array(
+        'columns' => [
           'feature_relationshipprop_id' => 'feature_relationshipprop_id',
-        ),
-      ),
-      'pub' => array(
+        ],
+      ],
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_feature_synonym()
  * Purpose: To describe the structure of 'feature_synonym' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -5301,83 +5447,85 @@ function tripal_chado_chado_schema_v1_11_feature_relationshipprop_pub() {
  *
  */
 function tripal_chado_chado_schema_v1_11_feature_synonym() {
-  $description =  array(
+  $description = [
     'table' => 'feature_synonym',
-    'fields' => array(
-      'feature_synonym_id' => array(
+    'fields' => [
+      'feature_synonym_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'synonym_id' => array(
+      ],
+      'synonym_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'feature_id' => array(
+      ],
+      'feature_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'is_current' => array(
+      ],
+      'is_current' => [
         'type' => 'boolean',
         'not NULL' => '1',
         'default' => 'false',
-      ),
-      'is_internal' => array(
+      ],
+      'is_internal' => [
         'type' => 'boolean',
         'not NULL' => '1',
         'default' => 'false',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'feature_synonym_id',
-    ),
-    'unique keys' => array(
-      'feature_synonym_c1' => array(
+    ],
+    'unique keys' => [
+      'feature_synonym_c1' => [
         0 => 'synonym_id',
         1 => 'feature_id',
         2 => 'pub_id',
-      ),
-    ),
-    'indexes' => array(
-      'feature_synonym_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'feature_synonym_idx1' => [
         0 => 'synonym_id',
-      ),
-      'feature_synonym_idx2' => array(
+      ],
+      'feature_synonym_idx2' => [
         0 => 'feature_id',
-      ),
-      'feature_synonym_idx3' => array(
+      ],
+      'feature_synonym_idx3' => [
         0 => 'pub_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'feature' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'feature' => [
         'table' => 'feature',
-        'columns' => array(
+        'columns' => [
           'feature_id' => 'feature_id',
-        ),
-      ),
-      'synonym' => array(
+        ],
+      ],
+      'synonym' => [
         'table' => 'synonym',
-        'columns' => array(
+        'columns' => [
           'synonym_id' => 'synonym_id',
-        ),
-      ),
-      'pub' => array(
+        ],
+      ],
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_featureloc()
  * Purpose: To describe the structure of 'featureloc' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -5389,112 +5537,114 @@ function tripal_chado_chado_schema_v1_11_feature_synonym() {
  *
  */
 function tripal_chado_chado_schema_v1_11_featureloc() {
-  $description =  array(
+  $description = [
     'table' => 'featureloc',
-    'fields' => array(
-      'featureloc_id' => array(
+    'fields' => [
+      'featureloc_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'feature_id' => array(
+      ],
+      'feature_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'srcfeature_id' => array(
+      ],
+      'srcfeature_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'fmin' => array(
+      ],
+      'fmin' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'is_fmin_partial' => array(
+      ],
+      'is_fmin_partial' => [
         'type' => 'boolean',
         'not NULL' => '1',
         'default' => 'false',
-      ),
-      'fmax' => array(
+      ],
+      'fmax' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'is_fmax_partial' => array(
+      ],
+      'is_fmax_partial' => [
         'type' => 'boolean',
         'not NULL' => '1',
         'default' => 'false',
-      ),
-      'strand' => array(
+      ],
+      'strand' => [
         'type' => 'int',
         'size' => 'small',
         'not NULL' => '',
-      ),
-      'phase' => array(
+      ],
+      'phase' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'residue_info' => array(
+      ],
+      'residue_info' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'locgroup' => array(
+      ],
+      'locgroup' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'featureloc_id',
-    ),
-    'unique keys' => array(
-      'featureloc_c1' => array(
+    ],
+    'unique keys' => [
+      'featureloc_c1' => [
         0 => 'feature_id',
         1 => 'locgroup',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'binloc_boxrange' => array(
+      ],
+    ],
+    'indexes' => [
+      'binloc_boxrange' => [
         0 => 'fmin',
-      ),
-      'binloc_boxrange_src' => array(
+      ],
+      'binloc_boxrange_src' => [
         0 => 'srcfeature_id',
         1 => 'fmin',
-      ),
-      'featureloc_idx1' => array(
+      ],
+      'featureloc_idx1' => [
         0 => 'feature_id',
-      ),
-      'featureloc_idx2' => array(
+      ],
+      'featureloc_idx2' => [
         0 => 'srcfeature_id',
-      ),
-      'featureloc_idx3' => array(
+      ],
+      'featureloc_idx3' => [
         0 => 'srcfeature_id',
         1 => 'fmin',
         2 => 'fmax',
-      ),
-    ),
-    'foreign keys' => array(
-      'feature' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'feature' => [
         'table' => 'feature',
-        'columns' => array(
+        'columns' => [
           'feature_id' => 'feature_id',
           'srcfeature_id' => 'feature_id',
-        ),
-      ),
-    ),
-    'referring_tables' => array(
+        ],
+      ],
+    ],
+    'referring_tables' => [
       0 => 'analysisfeature',
       1 => 'featureloc_pub',
-    ),
-  );
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_featureloc_pub()
  * Purpose: To describe the structure of 'featureloc_pub' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -5506,59 +5656,61 @@ function tripal_chado_chado_schema_v1_11_featureloc() {
  *
  */
 function tripal_chado_chado_schema_v1_11_featureloc_pub() {
-  $description =  array(
+  $description = [
     'table' => 'featureloc_pub',
-    'fields' => array(
-      'featureloc_pub_id' => array(
+    'fields' => [
+      'featureloc_pub_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'featureloc_id' => array(
+      ],
+      'featureloc_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'featureloc_pub_id',
-    ),
-    'unique keys' => array(
-      'featureloc_pub_c1' => array(
+    ],
+    'unique keys' => [
+      'featureloc_pub_c1' => [
         0 => 'featureloc_id',
         1 => 'pub_id',
-      ),
-    ),
-    'indexes' => array(
-      'featureloc_pub_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'featureloc_pub_idx1' => [
         0 => 'featureloc_id',
-      ),
-      'featureloc_pub_idx2' => array(
+      ],
+      'featureloc_pub_idx2' => [
         0 => 'pub_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'pub' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-      'featureloc' => array(
+        ],
+      ],
+      'featureloc' => [
         'table' => 'featureloc',
-        'columns' => array(
+        'columns' => [
           'featureloc_id' => 'featureloc_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_featuremap()
  * Purpose: To describe the structure of 'featuremap' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -5570,51 +5722,53 @@ function tripal_chado_chado_schema_v1_11_featureloc_pub() {
  *
  */
 function tripal_chado_chado_schema_v1_11_featuremap() {
-  $description =  array(
+  $description = [
     'table' => 'featuremap',
-    'fields' => array(
-      'featuremap_id' => array(
+    'fields' => [
+      'featuremap_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-      'description' => array(
+      ],
+      'description' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'unittype_id' => array(
+      ],
+      'unittype_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'featuremap_id',
-    ),
-    'unique keys' => array(
-      'featuremap_c1' => array(
+    ],
+    'unique keys' => [
+      'featuremap_c1' => [
         0 => 'name',
-      ),
-    ),
-    'indexes' => array(
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'indexes' => [
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'unittype_id' => 'cvterm_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_featuremap_pub()
  * Purpose: To describe the structure of 'featuremap_pub' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -5626,55 +5780,57 @@ function tripal_chado_chado_schema_v1_11_featuremap() {
  *
  */
 function tripal_chado_chado_schema_v1_11_featuremap_pub() {
-  $description =  array(
+  $description = [
     'table' => 'featuremap_pub',
-    'fields' => array(
-      'featuremap_pub_id' => array(
+    'fields' => [
+      'featuremap_pub_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'featuremap_id' => array(
+      ],
+      'featuremap_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'featuremap_pub_id',
-    ),
-    'unique keys' => array(
-    ),
-    'indexes' => array(
-      'featuremap_pub_idx1' => array(
+    ],
+    'unique keys' => [
+    ],
+    'indexes' => [
+      'featuremap_pub_idx1' => [
         0 => 'featuremap_id',
-      ),
-      'featuremap_pub_idx2' => array(
+      ],
+      'featuremap_pub_idx2' => [
         0 => 'pub_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'pub' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-      'featuremap' => array(
+        ],
+      ],
+      'featuremap' => [
         'table' => 'featuremap',
-        'columns' => array(
+        'columns' => [
           'featuremap_id' => 'featuremap_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_featurepos()
  * Purpose: To describe the structure of 'featurepos' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -5686,68 +5842,70 @@ function tripal_chado_chado_schema_v1_11_featuremap_pub() {
  *
  */
 function tripal_chado_chado_schema_v1_11_featurepos() {
-  $description =  array(
+  $description = [
     'table' => 'featurepos',
-    'fields' => array(
-      'featurepos_id' => array(
+    'fields' => [
+      'featurepos_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'featuremap_id' => array(
+      ],
+      'featuremap_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'feature_id' => array(
+      ],
+      'feature_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'map_feature_id' => array(
+      ],
+      'map_feature_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'mappos' => array(
+      ],
+      'mappos' => [
         'type' => 'float',
         'size' => 'big',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'featurepos_id',
-    ),
-    'unique keys' => array(
-    ),
-    'indexes' => array(
-      'featurepos_idx1' => array(
+    ],
+    'unique keys' => [
+    ],
+    'indexes' => [
+      'featurepos_idx1' => [
         0 => 'featuremap_id',
-      ),
-      'featurepos_idx2' => array(
+      ],
+      'featurepos_idx2' => [
         0 => 'feature_id',
-      ),
-      'featurepos_idx3' => array(
+      ],
+      'featurepos_idx3' => [
         0 => 'map_feature_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'feature' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'feature' => [
         'table' => 'feature',
-        'columns' => array(
+        'columns' => [
           'feature_id' => 'feature_id',
           'map_feature_id' => 'feature_id',
-        ),
-      ),
-      'featuremap' => array(
+        ],
+      ],
+      'featuremap' => [
         'table' => 'featuremap',
-        'columns' => array(
+        'columns' => [
           'featuremap_id' => 'featuremap_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_featureprop()
  * Purpose: To describe the structure of 'featureprop' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -5759,73 +5917,75 @@ function tripal_chado_chado_schema_v1_11_featurepos() {
  *
  */
 function tripal_chado_chado_schema_v1_11_featureprop() {
-  $description =  array(
+  $description = [
     'table' => 'featureprop',
-    'fields' => array(
-      'featureprop_id' => array(
+    'fields' => [
+      'featureprop_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'feature_id' => array(
+      ],
+      'feature_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'featureprop_id',
-    ),
-    'unique keys' => array(
-      'featureprop_c1' => array(
+    ],
+    'unique keys' => [
+      'featureprop_c1' => [
         0 => 'feature_id',
         1 => 'type_id',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'featureprop_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'featureprop_idx1' => [
         0 => 'feature_id',
-      ),
-      'featureprop_idx2' => array(
+      ],
+      'featureprop_idx2' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'feature' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'feature' => [
         'table' => 'feature',
-        'columns' => array(
+        'columns' => [
           'feature_id' => 'feature_id',
-        ),
-      ),
-      'cvterm' => array(
+        ],
+      ],
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-    ),
-    'referring_tables' => array(
+        ],
+      ],
+    ],
+    'referring_tables' => [
       0 => 'analysisfeature',
       1 => 'featureprop_pub',
-    ),
-  );
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_featureprop_pub()
  * Purpose: To describe the structure of 'featureprop_pub' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -5837,59 +5997,61 @@ function tripal_chado_chado_schema_v1_11_featureprop() {
  *
  */
 function tripal_chado_chado_schema_v1_11_featureprop_pub() {
-  $description =  array(
+  $description = [
     'table' => 'featureprop_pub',
-    'fields' => array(
-      'featureprop_pub_id' => array(
+    'fields' => [
+      'featureprop_pub_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'featureprop_id' => array(
+      ],
+      'featureprop_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'featureprop_pub_id',
-    ),
-    'unique keys' => array(
-      'featureprop_pub_c1' => array(
+    ],
+    'unique keys' => [
+      'featureprop_pub_c1' => [
         0 => 'featureprop_id',
         1 => 'pub_id',
-      ),
-    ),
-    'indexes' => array(
-      'featureprop_pub_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'featureprop_pub_idx1' => [
         0 => 'featureprop_id',
-      ),
-      'featureprop_pub_idx2' => array(
+      ],
+      'featureprop_pub_idx2' => [
         0 => 'pub_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'pub' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-      'featureprop' => array(
+        ],
+      ],
+      'featureprop' => [
         'table' => 'featureprop',
-        'columns' => array(
+        'columns' => [
           'featureprop_id' => 'featureprop_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_featurerange()
  * Purpose: To describe the structure of 'featurerange' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -5901,92 +6063,94 @@ function tripal_chado_chado_schema_v1_11_featureprop_pub() {
  *
  */
 function tripal_chado_chado_schema_v1_11_featurerange() {
-  $description =  array(
+  $description = [
     'table' => 'featurerange',
-    'fields' => array(
-      'featurerange_id' => array(
+    'fields' => [
+      'featurerange_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'featuremap_id' => array(
+      ],
+      'featuremap_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'feature_id' => array(
+      ],
+      'feature_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'leftstartf_id' => array(
+      ],
+      'leftstartf_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'leftendf_id' => array(
+      ],
+      'leftendf_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'rightstartf_id' => array(
+      ],
+      'rightstartf_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'rightendf_id' => array(
+      ],
+      'rightendf_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'rangestr' => array(
+      ],
+      'rangestr' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'featurerange_id',
-    ),
-    'unique keys' => array(
-    ),
-    'indexes' => array(
-      'featurerange_idx1' => array(
+    ],
+    'unique keys' => [
+    ],
+    'indexes' => [
+      'featurerange_idx1' => [
         0 => 'featuremap_id',
-      ),
-      'featurerange_idx2' => array(
+      ],
+      'featurerange_idx2' => [
         0 => 'feature_id',
-      ),
-      'featurerange_idx3' => array(
+      ],
+      'featurerange_idx3' => [
         0 => 'leftstartf_id',
-      ),
-      'featurerange_idx4' => array(
+      ],
+      'featurerange_idx4' => [
         0 => 'leftendf_id',
-      ),
-      'featurerange_idx5' => array(
+      ],
+      'featurerange_idx5' => [
         0 => 'rightstartf_id',
-      ),
-      'featurerange_idx6' => array(
+      ],
+      'featurerange_idx6' => [
         0 => 'rightendf_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'feature' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'feature' => [
         'table' => 'feature',
-        'columns' => array(
+        'columns' => [
           'feature_id' => 'feature_id',
           'leftstartf_id' => 'feature_id',
           'leftendf_id' => 'feature_id',
           'rightstartf_id' => 'feature_id',
           'rightendf_id' => 'feature_id',
-        ),
-      ),
-      'featuremap' => array(
+        ],
+      ],
+      'featuremap' => [
         'table' => 'featuremap',
-        'columns' => array(
+        'columns' => [
           'featuremap_id' => 'featuremap_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_genotype()
  * Purpose: To describe the structure of 'genotype' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -5998,59 +6162,61 @@ function tripal_chado_chado_schema_v1_11_featurerange() {
  *
  */
 function tripal_chado_chado_schema_v1_11_genotype() {
-  $description =  array(
+  $description = [
     'table' => 'genotype',
-    'fields' => array(
-      'genotype_id' => array(
+    'fields' => [
+      'genotype_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'uniquename' => array(
+      ],
+      'uniquename' => [
         'type' => 'text',
         'not NULL' => '1',
-      ),
-      'description' => array(
+      ],
+      'description' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'genotype_id',
-    ),
-    'unique keys' => array(
-      'genotype_c1' => array(
+    ],
+    'unique keys' => [
+      'genotype_c1' => [
         0 => 'uniquename',
-      ),
-    ),
-    'indexes' => array(
-      'genotype_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'genotype_idx1' => [
         0 => 'uniquename',
-      ),
-      'genotype_idx2' => array(
+      ],
+      'genotype_idx2' => [
         0 => 'name',
-      ),
-    ),
-    'foreign keys' => array(
-    ),
-    'referring_tables' => array(
+      ],
+    ],
+    'foreign keys' => [
+    ],
+    'referring_tables' => [
       'analysisfeature',
       'feature_genotype',
       'phendesc',
       'phenotype_comparison',
       'phenstatement',
       'stock_genotype',
-    )
-  );
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_library()
  * Purpose: To describe the structure of 'library' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -6062,9 +6228,9 @@ function tripal_chado_chado_schema_v1_11_genotype() {
  *
  */
 function tripal_chado_chado_schema_v1_11_library() {
-  $description =  array(
+  $description = [
     'table' => 'library',
-    'referring_tables' => array(
+    'referring_tables' => [
       0 => 'cell_line_library',
       1 => 'library_cvterm',
       2 => 'library_dbxref',
@@ -6072,89 +6238,91 @@ function tripal_chado_chado_schema_v1_11_library() {
       4 => 'library_pub',
       5 => 'library_synonym',
       6 => 'libraryprop',
-    ),
-    'fields' => array(
-      'library_id' => array(
+    ],
+    'fields' => [
+      'library_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'organism_id' => array(
+      ],
+      'organism_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-      'uniquename' => array(
+      ],
+      'uniquename' => [
         'type' => 'text',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'is_obsolete' => array(
+      ],
+      'is_obsolete' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-      'timeaccessioned' => array(
+      ],
+      'timeaccessioned' => [
         'type' => 'datetime',
         'not NULL' => '1',
         'default' => 'ow(',
-      ),
-      'timelastmodified' => array(
+      ],
+      'timelastmodified' => [
         'type' => 'datetime',
         'not NULL' => '1',
         'default' => 'ow(',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'library_id',
-    ),
-    'unique keys' => array(
-      'library_c1' => array(
+    ],
+    'unique keys' => [
+      'library_c1' => [
         0 => 'organism_id',
         1 => 'uniquename',
         2 => 'type_id',
-      ),
-    ),
-    'indexes' => array(
-      'library_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'library_idx1' => [
         0 => 'organism_id',
-      ),
-      'library_idx2' => array(
+      ],
+      'library_idx2' => [
         0 => 'type_id',
-      ),
-      'library_idx3' => array(
+      ],
+      'library_idx3' => [
         0 => 'uniquename',
-      ),
-      'library_name_ind1' => array(
+      ],
+      'library_name_ind1' => [
         0 => 'name',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'organism' => array(
+        ],
+      ],
+      'organism' => [
         'table' => 'organism',
-        'columns' => array(
+        'columns' => [
           'organism_id' => 'organism_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_library_cvterm()
  * Purpose: To describe the structure of 'library_cvterm' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -6166,73 +6334,75 @@ function tripal_chado_chado_schema_v1_11_library() {
  *
  */
 function tripal_chado_chado_schema_v1_11_library_cvterm() {
-  $description =  array(
+  $description = [
     'table' => 'library_cvterm',
-    'fields' => array(
-      'library_cvterm_id' => array(
+    'fields' => [
+      'library_cvterm_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'library_id' => array(
+      ],
+      'library_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'cvterm_id' => array(
+      ],
+      'cvterm_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'library_cvterm_id',
-    ),
-    'unique keys' => array(
-      'library_cvterm_c1' => array(
+    ],
+    'unique keys' => [
+      'library_cvterm_c1' => [
         0 => 'library_id',
         1 => 'cvterm_id',
         2 => 'pub_id',
-      ),
-    ),
-    'indexes' => array(
-      'library_cvterm_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'library_cvterm_idx1' => [
         0 => 'library_id',
-      ),
-      'library_cvterm_idx2' => array(
+      ],
+      'library_cvterm_idx2' => [
         0 => 'cvterm_id',
-      ),
-      'library_cvterm_idx3' => array(
+      ],
+      'library_cvterm_idx3' => [
         0 => 'pub_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'cvterm_id' => 'cvterm_id',
-        ),
-      ),
-      'pub' => array(
+        ],
+      ],
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-      'library' => array(
+        ],
+      ],
+      'library' => [
         'table' => 'library',
-        'columns' => array(
+        'columns' => [
           'library_id' => 'library_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_library_dbxref()
  * Purpose: To describe the structure of 'library_dbxref' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -6244,64 +6414,66 @@ function tripal_chado_chado_schema_v1_11_library_cvterm() {
  *
  */
 function tripal_chado_chado_schema_v1_11_library_dbxref() {
-  $description =  array(
+  $description = [
     'table' => 'library_dbxref',
-    'fields' => array(
-      'library_dbxref_id' => array(
+    'fields' => [
+      'library_dbxref_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'library_id' => array(
+      ],
+      'library_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'dbxref_id' => array(
+      ],
+      'dbxref_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'is_current' => array(
+      ],
+      'is_current' => [
         'type' => 'boolean',
         'not NULL' => '1',
         'default' => 'true',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'library_dbxref_id',
-    ),
-    'unique keys' => array(
-      'library_dbxref_c1' => array(
+    ],
+    'unique keys' => [
+      'library_dbxref_c1' => [
         0 => 'library_id',
         1 => 'dbxref_id',
-      ),
-    ),
-    'indexes' => array(
-      'library_dbxref_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'library_dbxref_idx1' => [
         0 => 'library_id',
-      ),
-      'library_dbxref_idx2' => array(
+      ],
+      'library_dbxref_idx2' => [
         0 => 'dbxref_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'dbxref' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'dbxref' => [
         'table' => 'dbxref',
-        'columns' => array(
+        'columns' => [
           'dbxref_id' => 'dbxref_id',
-        ),
-      ),
-      'library' => array(
+        ],
+      ],
+      'library' => [
         'table' => 'library',
-        'columns' => array(
+        'columns' => [
           'library_id' => 'library_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_library_feature()
  * Purpose: To describe the structure of 'library_feature' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -6313,59 +6485,61 @@ function tripal_chado_chado_schema_v1_11_library_dbxref() {
  *
  */
 function tripal_chado_chado_schema_v1_11_library_feature() {
-  $description =  array(
+  $description = [
     'table' => 'library_feature',
-    'fields' => array(
-      'library_feature_id' => array(
+    'fields' => [
+      'library_feature_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'library_id' => array(
+      ],
+      'library_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'feature_id' => array(
+      ],
+      'feature_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'library_feature_id',
-    ),
-    'unique keys' => array(
-      'library_feature_c1' => array(
+    ],
+    'unique keys' => [
+      'library_feature_c1' => [
         0 => 'library_id',
         1 => 'feature_id',
-      ),
-    ),
-    'indexes' => array(
-      'library_feature_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'library_feature_idx1' => [
         0 => 'library_id',
-      ),
-      'library_feature_idx2' => array(
+      ],
+      'library_feature_idx2' => [
         0 => 'feature_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'feature' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'feature' => [
         'table' => 'feature',
-        'columns' => array(
+        'columns' => [
           'feature_id' => 'feature_id',
-        ),
-      ),
-      'library' => array(
+        ],
+      ],
+      'library' => [
         'table' => 'library',
-        'columns' => array(
+        'columns' => [
           'library_id' => 'library_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_library_pub()
  * Purpose: To describe the structure of 'library_pub' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -6377,59 +6551,61 @@ function tripal_chado_chado_schema_v1_11_library_feature() {
  *
  */
 function tripal_chado_chado_schema_v1_11_library_pub() {
-  $description =  array(
+  $description = [
     'table' => 'library_pub',
-    'fields' => array(
-      'library_pub_id' => array(
+    'fields' => [
+      'library_pub_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'library_id' => array(
+      ],
+      'library_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'library_pub_id',
-    ),
-    'unique keys' => array(
-      'library_pub_c1' => array(
+    ],
+    'unique keys' => [
+      'library_pub_c1' => [
         0 => 'library_id',
         1 => 'pub_id',
-      ),
-    ),
-    'indexes' => array(
-      'library_pub_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'library_pub_idx1' => [
         0 => 'library_id',
-      ),
-      'library_pub_idx2' => array(
+      ],
+      'library_pub_idx2' => [
         0 => 'pub_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'pub' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-      'library' => array(
+        ],
+      ],
+      'library' => [
         'table' => 'library',
-        'columns' => array(
+        'columns' => [
           'library_id' => 'library_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_library_synonym()
  * Purpose: To describe the structure of 'library_synonym' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -6441,83 +6617,85 @@ function tripal_chado_chado_schema_v1_11_library_pub() {
  *
  */
 function tripal_chado_chado_schema_v1_11_library_synonym() {
-  $description =  array(
+  $description = [
     'table' => 'library_synonym',
-    'fields' => array(
-      'library_synonym_id' => array(
+    'fields' => [
+      'library_synonym_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'synonym_id' => array(
+      ],
+      'synonym_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'library_id' => array(
+      ],
+      'library_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'is_current' => array(
+      ],
+      'is_current' => [
         'type' => 'boolean',
         'not NULL' => '1',
         'default' => 'true',
-      ),
-      'is_internal' => array(
+      ],
+      'is_internal' => [
         'type' => 'boolean',
         'not NULL' => '1',
         'default' => 'false',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'library_synonym_id',
-    ),
-    'unique keys' => array(
-      'library_synonym_c1' => array(
+    ],
+    'unique keys' => [
+      'library_synonym_c1' => [
         0 => 'synonym_id',
         1 => 'library_id',
         2 => 'pub_id',
-      ),
-    ),
-    'indexes' => array(
-      'library_synonym_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'library_synonym_idx1' => [
         0 => 'synonym_id',
-      ),
-      'library_synonym_idx2' => array(
+      ],
+      'library_synonym_idx2' => [
         0 => 'library_id',
-      ),
-      'library_synonym_idx3' => array(
+      ],
+      'library_synonym_idx3' => [
         0 => 'pub_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'pub' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-      'synonym' => array(
+        ],
+      ],
+      'synonym' => [
         'table' => 'synonym',
-        'columns' => array(
+        'columns' => [
           'synonym_id' => 'synonym_id',
-        ),
-      ),
-      'library' => array(
+        ],
+      ],
+      'library' => [
         'table' => 'library',
-        'columns' => array(
+        'columns' => [
           'library_id' => 'library_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_libraryprop()
  * Purpose: To describe the structure of 'libraryprop' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -6529,69 +6707,71 @@ function tripal_chado_chado_schema_v1_11_library_synonym() {
  *
  */
 function tripal_chado_chado_schema_v1_11_libraryprop() {
-  $description =  array(
+  $description = [
     'table' => 'libraryprop',
-    'fields' => array(
-      'libraryprop_id' => array(
+    'fields' => [
+      'libraryprop_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'library_id' => array(
+      ],
+      'library_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'libraryprop_id',
-    ),
-    'unique keys' => array(
-      'libraryprop_c1' => array(
+    ],
+    'unique keys' => [
+      'libraryprop_c1' => [
         0 => 'library_id',
         1 => 'type_id',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'libraryprop_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'libraryprop_idx1' => [
         0 => 'library_id',
-      ),
-      'libraryprop_idx2' => array(
+      ],
+      'libraryprop_idx2' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'library' => array(
+        ],
+      ],
+      'library' => [
         'table' => 'library',
-        'columns' => array(
+        'columns' => [
           'library_id' => 'library_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_libraryprop_pub()
  * Purpose: To describe the structure of 'libraryprop_pub' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -6603,59 +6783,61 @@ function tripal_chado_chado_schema_v1_11_libraryprop() {
  *
  */
 function tripal_chado_chado_schema_v1_11_libraryprop_pub() {
-  $description =  array(
+  $description = [
     'table' => 'libraryprop_pub',
-    'fields' => array(
-      'libraryprop_pub_id' => array(
+    'fields' => [
+      'libraryprop_pub_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'libraryprop_id' => array(
+      ],
+      'libraryprop_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'libraryprop_pub_id',
-    ),
-    'unique keys' => array(
-      'libraryprop_pub_c1' => array(
+    ],
+    'unique keys' => [
+      'libraryprop_pub_c1' => [
         0 => 'libraryprop_id',
         1 => 'pub_id',
-      ),
-    ),
-    'indexes' => array(
-      'libraryprop_pub_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'libraryprop_pub_idx1' => [
         0 => 'libraryprop_id',
-      ),
-      'libraryprop_pub_idx2' => array(
+      ],
+      'libraryprop_pub_idx2' => [
         0 => 'pub_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'pub' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-      'libraryprop' => array(
+        ],
+      ],
+      'libraryprop' => [
         'table' => 'libraryprop',
-        'columns' => array(
+        'columns' => [
           'libraryprop_id' => 'libraryprop_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_magedocumentation()
  * Purpose: To describe the structure of 'magedocumentation' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -6667,66 +6849,68 @@ function tripal_chado_chado_schema_v1_11_libraryprop_pub() {
  *
  */
 function tripal_chado_chado_schema_v1_11_magedocumentation() {
-  $description =  array(
+  $description = [
     'table' => 'magedocumentation',
-    'fields' => array(
-      'magedocumentation_id' => array(
+    'fields' => [
+      'magedocumentation_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'mageml_id' => array(
+      ],
+      'mageml_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'tableinfo_id' => array(
+      ],
+      'tableinfo_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'row_id' => array(
+      ],
+      'row_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'mageidentifier' => array(
+      ],
+      'mageidentifier' => [
         'type' => 'text',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'magedocumentation_id',
-    ),
-    'unique keys' => array(
-    ),
-    'indexes' => array(
-      'magedocumentation_idx1' => array(
+    ],
+    'unique keys' => [
+    ],
+    'indexes' => [
+      'magedocumentation_idx1' => [
         0 => 'mageml_id',
-      ),
-      'magedocumentation_idx2' => array(
+      ],
+      'magedocumentation_idx2' => [
         0 => 'tableinfo_id',
-      ),
-      'magedocumentation_idx3' => array(
+      ],
+      'magedocumentation_idx3' => [
         0 => 'row_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'tableinfo' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'tableinfo' => [
         'table' => 'tableinfo',
-        'columns' => array(
+        'columns' => [
           'tableinfo_id' => 'tableinfo_id',
-        ),
-      ),
-      'mageml' => array(
+        ],
+      ],
+      'mageml' => [
         'table' => 'mageml',
-        'columns' => array(
+        'columns' => [
           'mageml_id' => 'mageml_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_mageml()
  * Purpose: To describe the structure of 'mageml' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -6738,37 +6922,39 @@ function tripal_chado_chado_schema_v1_11_magedocumentation() {
  *
  */
 function tripal_chado_chado_schema_v1_11_mageml() {
-  $description =  array(
+  $description = [
     'table' => 'mageml',
-    'fields' => array(
-      'mageml_id' => array(
+    'fields' => [
+      'mageml_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'mage_package' => array(
+      ],
+      'mage_package' => [
         'type' => 'text',
         'not NULL' => '1',
-      ),
-      'mage_ml' => array(
+      ],
+      'mage_ml' => [
         'type' => 'text',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'mageml_id',
-    ),
-    'unique keys' => array(
-    ),
-    'indexes' => array(
-    ),
-    'foreign keys' => array(
-    ),
-  );
+    ],
+    'unique keys' => [
+    ],
+    'indexes' => [
+    ],
+    'foreign keys' => [
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_materialized_view()
  * Purpose: To describe the structure of 'materialized_view' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -6780,70 +6966,72 @@ function tripal_chado_chado_schema_v1_11_mageml() {
  *
  */
 function tripal_chado_chado_schema_v1_11_materialized_view() {
-  $description =  array(
+  $description = [
     'table' => 'materialized_view',
-    'fields' => array(
-      'materialized_view_id' => array(
+    'fields' => [
+      'materialized_view_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'last_update' => array(
+      ],
+      'last_update' => [
         'type' => 'datetime',
         'not NULL' => '',
-      ),
-      'refresh_time' => array(
+      ],
+      'refresh_time' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'varchar',
         'length' => '64',
         'not NULL' => '',
-      ),
-      'mv_schema' => array(
+      ],
+      'mv_schema' => [
         'type' => 'varchar',
         'length' => '64',
         'not NULL' => '',
-      ),
-      'mv_table' => array(
+      ],
+      'mv_table' => [
         'type' => 'varchar',
         'length' => '128',
         'not NULL' => '',
-      ),
-      'mv_specs' => array(
+      ],
+      'mv_specs' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'indexed' => array(
+      ],
+      'indexed' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'query' => array(
+      ],
+      'query' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'special_index' => array(
+      ],
+      'special_index' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
-    ),
-    'unique keys' => array(
-      'name' => array(
+      ],
+    ],
+    'primary key' => [
+    ],
+    'unique keys' => [
+      'name' => [
         0 => 'name',
-      ),
-    ),
-    'indexes' => array(
-    ),
-    'foreign keys' => array(
-    ),
-  );
+      ],
+    ],
+    'indexes' => [
+    ],
+    'foreign keys' => [
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_organism()
  * Purpose: To describe the structure of 'organism' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -6855,52 +7043,52 @@ function tripal_chado_chado_schema_v1_11_materialized_view() {
  *
  */
 function tripal_chado_chado_schema_v1_11_organism() {
-  $description =  array(
+  $description = [
     'table' => 'organism',
-    'fields' => array(
-      'organism_id' => array(
+    'fields' => [
+      'organism_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'abbreviation' => array(
+      ],
+      'abbreviation' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-      'genus' => array(
+      ],
+      'genus' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '1',
-      ),
-      'species' => array(
+      ],
+      'species' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '1',
-      ),
-      'common_name' => array(
+      ],
+      'common_name' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-      'comment' => array(
+      ],
+      'comment' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'organism_id',
-    ),
-    'unique keys' => array(
-      'organism_c1' => array(
+    ],
+    'unique keys' => [
+      'organism_c1' => [
         0 => 'genus',
         1 => 'species',
-      ),
-    ),
-    'indexes' => array(
-    ),
-    'foreign keys' => array(
-    ),
-    'referring_tables' => array(
+      ],
+    ],
+    'indexes' => [
+    ],
+    'foreign keys' => [
+    ],
+    'referring_tables' => [
       0 => 'biomaterial',
       1 => 'feature',
       2 => 'library',
@@ -6909,13 +7097,15 @@ function tripal_chado_chado_schema_v1_11_organism() {
       5 => 'phylonode_organism',
       6 => 'stock',
       7 => 'wwwuser_organism',
-    ),
-  );
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_organism_dbxref()
  * Purpose: To describe the structure of 'organism_dbxref' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -6927,59 +7117,61 @@ function tripal_chado_chado_schema_v1_11_organism() {
  *
  */
 function tripal_chado_chado_schema_v1_11_organism_dbxref() {
-  $description =  array(
+  $description = [
     'table' => 'organism_dbxref',
-    'fields' => array(
-      'organism_dbxref_id' => array(
+    'fields' => [
+      'organism_dbxref_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'organism_id' => array(
+      ],
+      'organism_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'dbxref_id' => array(
+      ],
+      'dbxref_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'organism_dbxref_id',
-    ),
-    'unique keys' => array(
-      'organism_dbxref_c1' => array(
+    ],
+    'unique keys' => [
+      'organism_dbxref_c1' => [
         0 => 'organism_id',
         1 => 'dbxref_id',
-      ),
-    ),
-    'indexes' => array(
-      'organism_dbxref_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'organism_dbxref_idx1' => [
         0 => 'organism_id',
-      ),
-      'organism_dbxref_idx2' => array(
+      ],
+      'organism_dbxref_idx2' => [
         0 => 'dbxref_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'dbxref' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'dbxref' => [
         'table' => 'dbxref',
-        'columns' => array(
+        'columns' => [
           'dbxref_id' => 'dbxref_id',
-        ),
-      ),
-      'organism' => array(
+        ],
+      ],
+      'organism' => [
         'table' => 'organism',
-        'columns' => array(
+        'columns' => [
           'organism_id' => 'organism_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_organismprop()
  * Purpose: To describe the structure of 'organismprop' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -6991,69 +7183,71 @@ function tripal_chado_chado_schema_v1_11_organism_dbxref() {
  *
  */
 function tripal_chado_chado_schema_v1_11_organismprop() {
-  $description =  array(
+  $description = [
     'table' => 'organismprop',
-    'fields' => array(
-      'organismprop_id' => array(
+    'fields' => [
+      'organismprop_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'organism_id' => array(
+      ],
+      'organism_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'organismprop_id',
-    ),
-    'unique keys' => array(
-      'organismprop_c1' => array(
+    ],
+    'unique keys' => [
+      'organismprop_c1' => [
         0 => 'organism_id',
         1 => 'type_id',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'organismprop_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'organismprop_idx1' => [
         0 => 'organism_id',
-      ),
-      'organismprop_idx2' => array(
+      ],
+      'organismprop_idx2' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'organism' => array(
+        ],
+      ],
+      'organism' => [
         'table' => 'organism',
-        'columns' => array(
+        'columns' => [
           'organism_id' => 'organism_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_phendesc()
  * Purpose: To describe the structure of 'phendesc' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -7065,88 +7259,90 @@ function tripal_chado_chado_schema_v1_11_organismprop() {
  *
  */
 function tripal_chado_chado_schema_v1_11_phendesc() {
-  $description =  array(
+  $description = [
     'table' => 'phendesc',
-    'fields' => array(
-      'phendesc_id' => array(
+    'fields' => [
+      'phendesc_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'genotype_id' => array(
+      ],
+      'genotype_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'environment_id' => array(
+      ],
+      'environment_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'description' => array(
+      ],
+      'description' => [
         'type' => 'text',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'phendesc_id',
-    ),
-    'unique keys' => array(
-      'phendesc_c1' => array(
+    ],
+    'unique keys' => [
+      'phendesc_c1' => [
         0 => 'genotype_id',
         1 => 'environment_id',
         2 => 'type_id',
         3 => 'pub_id',
-      ),
-    ),
-    'indexes' => array(
-      'phendesc_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'phendesc_idx1' => [
         0 => 'genotype_id',
-      ),
-      'phendesc_idx2' => array(
+      ],
+      'phendesc_idx2' => [
         0 => 'environment_id',
-      ),
-      'phendesc_idx3' => array(
+      ],
+      'phendesc_idx3' => [
         0 => 'pub_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'pub' => array(
+        ],
+      ],
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-      'genotype' => array(
+        ],
+      ],
+      'genotype' => [
         'table' => 'genotype',
-        'columns' => array(
+        'columns' => [
           'genotype_id' => 'genotype_id',
-        ),
-      ),
-      'environment' => array(
+        ],
+      ],
+      'environment' => [
         'table' => 'environment',
-        'columns' => array(
+        'columns' => [
           'environment_id' => 'environment_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_phenotype()
  * Purpose: To describe the structure of 'phenotype' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -7158,74 +7354,76 @@ function tripal_chado_chado_schema_v1_11_phendesc() {
  *
  */
 function tripal_chado_chado_schema_v1_11_phenotype() {
-  $description =  array(
+  $description = [
     'table' => 'phenotype',
-    'fields' => array(
-      'phenotype_id' => array(
+    'fields' => [
+      'phenotype_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'uniquename' => array(
+      ],
+      'uniquename' => [
         'type' => 'text',
         'not NULL' => '1',
-      ),
-      'observable_id' => array(
+      ],
+      'observable_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'attr_id' => array(
+      ],
+      'attr_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'cvalue_id' => array(
+      ],
+      'cvalue_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'assay_id' => array(
+      ],
+      'assay_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'phenotype_id',
-    ),
-    'unique keys' => array(
-      'phenotype_c1' => array(
+    ],
+    'unique keys' => [
+      'phenotype_c1' => [
         0 => 'uniquename',
-      ),
-    ),
-    'indexes' => array(
-      'phenotype_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'phenotype_idx1' => [
         0 => 'cvalue_id',
-      ),
-      'phenotype_idx2' => array(
+      ],
+      'phenotype_idx2' => [
         0 => 'observable_id',
-      ),
-      'phenotype_idx3' => array(
+      ],
+      'phenotype_idx3' => [
         0 => 'attr_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'observable_id' => 'cvterm_id',
           'attr_id' => 'cvterm_id',
           'cvalue_id' => 'cvterm_id',
           'assay_id' => 'cvterm_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_phenotype_comparison()
  * Purpose: To describe the structure of 'phenotype_comparison' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -7237,111 +7435,113 @@ function tripal_chado_chado_schema_v1_11_phenotype() {
  *
  */
 function tripal_chado_chado_schema_v1_11_phenotype_comparison() {
-  $description =  array(
+  $description = [
     'table' => 'phenotype_comparison',
-    'fields' => array(
-      'phenotype_comparison_id' => array(
+    'fields' => [
+      'phenotype_comparison_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'genotype1_id' => array(
+      ],
+      'genotype1_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'environment1_id' => array(
+      ],
+      'environment1_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'genotype2_id' => array(
+      ],
+      'genotype2_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'environment2_id' => array(
+      ],
+      'environment2_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'phenotype1_id' => array(
+      ],
+      'phenotype1_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'phenotype2_id' => array(
+      ],
+      'phenotype2_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'organism_id' => array(
+      ],
+      'organism_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'phenotype_comparison_id',
-    ),
-    'unique keys' => array(
-      'phenotype_comparison_c1' => array(
+    ],
+    'unique keys' => [
+      'phenotype_comparison_c1' => [
         0 => 'genotype1_id',
         1 => 'environment1_id',
         2 => 'genotype2_id',
         3 => 'environment2_id',
         4 => 'phenotype1_id',
         5 => 'pub_id',
-      ),
-    ),
-    'indexes' => array(
-      'phenotype_comparison_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'phenotype_comparison_idx1' => [
         0 => 'genotype1_id',
-      ),
-      'phenotype_comparison_idx2' => array(
+      ],
+      'phenotype_comparison_idx2' => [
         0 => 'genotype2_id',
-      ),
-      'phenotype_comparison_idx4' => array(
+      ],
+      'phenotype_comparison_idx4' => [
         0 => 'pub_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'pub' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-      'organism' => array(
+        ],
+      ],
+      'organism' => [
         'table' => 'organism',
-        'columns' => array(
+        'columns' => [
           'organism_id' => 'organism_id',
-        ),
-      ),
-      'phenotype' => array(
+        ],
+      ],
+      'phenotype' => [
         'table' => 'phenotype',
-        'columns' => array(
+        'columns' => [
           'phenotype1_id' => 'phenotype_id',
           'phenotype2_id' => 'phenotype_id',
-        ),
-      ),
-      'genotype' => array(
+        ],
+      ],
+      'genotype' => [
         'table' => 'genotype',
-        'columns' => array(
+        'columns' => [
           'genotype1_id' => 'genotype_id',
           'genotype2_id' => 'genotype_id',
-        ),
-      ),
-      'environment' => array(
+        ],
+      ],
+      'environment' => [
         'table' => 'environment',
-        'columns' => array(
+        'columns' => [
           'environment1_id' => 'environment_id',
           'environment2_id' => 'environment_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_phenotype_comparison_cvterm()
  * Purpose: To describe the structure of 'phenotype_comparison_cvterm' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -7353,74 +7553,76 @@ function tripal_chado_chado_schema_v1_11_phenotype_comparison() {
  *
  */
 function tripal_chado_chado_schema_v1_11_phenotype_comparison_cvterm() {
-  $description =  array(
+  $description = [
     'table' => 'phenotype_comparison_cvterm',
-    'fields' => array(
-      'phenotype_comparison_cvterm_id' => array(
+    'fields' => [
+      'phenotype_comparison_cvterm_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'phenotype_comparison_id' => array(
+      ],
+      'phenotype_comparison_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'cvterm_id' => array(
+      ],
+      'cvterm_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'phenotype_comparison_cvterm_id',
-    ),
-    'unique keys' => array(
-      'phenotype_comparison_cvterm_c1' => array(
+    ],
+    'unique keys' => [
+      'phenotype_comparison_cvterm_c1' => [
         0 => 'phenotype_comparison_id',
         1 => 'cvterm_id',
-      ),
-    ),
-    'indexes' => array(
-      'phenotype_comparison_cvterm_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'phenotype_comparison_cvterm_idx1' => [
         0 => 'phenotype_comparison_id',
-      ),
-      'phenotype_comparison_cvterm_idx2' => array(
+      ],
+      'phenotype_comparison_cvterm_idx2' => [
         0 => 'cvterm_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'cvterm_id' => 'cvterm_id',
-        ),
-      ),
-      'pub' => array(
+        ],
+      ],
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-      'phenotype_comparison' => array(
+        ],
+      ],
+      'phenotype_comparison' => [
         'table' => 'phenotype_comparison',
-        'columns' => array(
+        'columns' => [
           'phenotype_comparison_id' => 'phenotype_comparison_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_phenotype_cvterm()
  * Purpose: To describe the structure of 'phenotype_cvterm' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -7432,65 +7634,67 @@ function tripal_chado_chado_schema_v1_11_phenotype_comparison_cvterm() {
  *
  */
 function tripal_chado_chado_schema_v1_11_phenotype_cvterm() {
-  $description =  array(
+  $description = [
     'table' => 'phenotype_cvterm',
-    'fields' => array(
-      'phenotype_cvterm_id' => array(
+    'fields' => [
+      'phenotype_cvterm_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'phenotype_id' => array(
+      ],
+      'phenotype_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'cvterm_id' => array(
+      ],
+      'cvterm_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'phenotype_cvterm_id',
-    ),
-    'unique keys' => array(
-      'phenotype_cvterm_c1' => array(
+    ],
+    'unique keys' => [
+      'phenotype_cvterm_c1' => [
         0 => 'phenotype_id',
         1 => 'cvterm_id',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'phenotype_cvterm_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'phenotype_cvterm_idx1' => [
         0 => 'phenotype_id',
-      ),
-      'phenotype_cvterm_idx2' => array(
+      ],
+      'phenotype_cvterm_idx2' => [
         0 => 'cvterm_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'cvterm_id' => 'cvterm_id',
-        ),
-      ),
-      'phenotype' => array(
+        ],
+      ],
+      'phenotype' => [
         'table' => 'phenotype',
-        'columns' => array(
+        'columns' => [
           'phenotype_id' => 'phenotype_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_phenstatement()
  * Purpose: To describe the structure of 'phenstatement' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -7502,92 +7706,94 @@ function tripal_chado_chado_schema_v1_11_phenotype_cvterm() {
  *
  */
 function tripal_chado_chado_schema_v1_11_phenstatement() {
-  $description =  array(
+  $description = [
     'table' => 'phenstatement',
-    'fields' => array(
-      'phenstatement_id' => array(
+    'fields' => [
+      'phenstatement_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'genotype_id' => array(
+      ],
+      'genotype_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'environment_id' => array(
+      ],
+      'environment_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'phenotype_id' => array(
+      ],
+      'phenotype_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'phenstatement_id',
-    ),
-    'unique keys' => array(
-      'phenstatement_c1' => array(
+    ],
+    'unique keys' => [
+      'phenstatement_c1' => [
         0 => 'genotype_id',
         1 => 'phenotype_id',
         2 => 'environment_id',
         3 => 'type_id',
         4 => 'pub_id',
-      ),
-    ),
-    'indexes' => array(
-      'phenstatement_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'phenstatement_idx1' => [
         0 => 'genotype_id',
-      ),
-      'phenstatement_idx2' => array(
+      ],
+      'phenstatement_idx2' => [
         0 => 'phenotype_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'pub' => array(
+        ],
+      ],
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-      'phenotype' => array(
+        ],
+      ],
+      'phenotype' => [
         'table' => 'phenotype',
-        'columns' => array(
+        'columns' => [
           'phenotype_id' => 'phenotype_id',
-        ),
-      ),
-      'genotype' => array(
+        ],
+      ],
+      'genotype' => [
         'table' => 'genotype',
-        'columns' => array(
+        'columns' => [
           'genotype_id' => 'genotype_id',
-        ),
-      ),
-      'environment' => array(
+        ],
+      ],
+      'environment' => [
         'table' => 'environment',
-        'columns' => array(
+        'columns' => [
           'environment_id' => 'environment_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_phylonode()
  * Purpose: To describe the structure of 'phylonode' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -7599,95 +7805,97 @@ function tripal_chado_chado_schema_v1_11_phenstatement() {
  *
  */
 function tripal_chado_chado_schema_v1_11_phylonode() {
-  $description =  array(
+  $description = [
     'table' => 'phylonode',
-    'fields' => array(
-      'phylonode_id' => array(
+    'fields' => [
+      'phylonode_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'phylotree_id' => array(
+      ],
+      'phylotree_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'parent_phylonode_id' => array(
+      ],
+      'parent_phylonode_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'left_idx' => array(
+      ],
+      'left_idx' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'right_idx' => array(
+      ],
+      'right_idx' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'feature_id' => array(
+      ],
+      'feature_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'label' => array(
+      ],
+      'label' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-      'distance' => array(
+      ],
+      'distance' => [
         'type' => 'float',
         'size' => 'big',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'phylonode_id',
-    ),
-    'unique keys' => array(
-      'phylotree_id' => array(
+    ],
+    'unique keys' => [
+      'phylotree_id' => [
         0 => 'phylotree_id',
         1 => 'left_idx',
-      ),
-      'phylonode_phylotree_id_key1' => array(
+      ],
+      'phylonode_phylotree_id_key1' => [
         0 => 'phylotree_id',
         1 => 'right_idx',
-      ),
-    ),
-    'indexes' => array(
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'indexes' => [
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'feature' => array(
+        ],
+      ],
+      'feature' => [
         'table' => 'feature',
-        'columns' => array(
+        'columns' => [
           'feature_id' => 'feature_id',
-        ),
-      ),
-      'phylotree' => array(
+        ],
+      ],
+      'phylotree' => [
         'table' => 'phylotree',
-        'columns' => array(
+        'columns' => [
           'phylotree_id' => 'phylotree_id',
-        ),
-      ),
-      'phylonode' => array(
+        ],
+      ],
+      'phylonode' => [
         'table' => 'phylonode',
-        'columns' => array(
+        'columns' => [
           'parent_phylonode_id' => 'phylonode_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_phylonode_dbxref()
  * Purpose: To describe the structure of 'phylonode_dbxref' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -7699,59 +7907,61 @@ function tripal_chado_chado_schema_v1_11_phylonode() {
  *
  */
 function tripal_chado_chado_schema_v1_11_phylonode_dbxref() {
-  $description =  array(
+  $description = [
     'table' => 'phylonode_dbxref',
-    'fields' => array(
-      'phylonode_dbxref_id' => array(
+    'fields' => [
+      'phylonode_dbxref_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'phylonode_id' => array(
+      ],
+      'phylonode_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'dbxref_id' => array(
+      ],
+      'dbxref_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'phylonode_dbxref_id',
-    ),
-    'unique keys' => array(
-      'phylonode_id' => array(
+    ],
+    'unique keys' => [
+      'phylonode_id' => [
         0 => 'phylonode_id',
         1 => 'dbxref_id',
-      ),
-    ),
-    'indexes' => array(
-      'phylonode_dbxref_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'phylonode_dbxref_idx1' => [
         0 => 'phylonode_id',
-      ),
-      'phylonode_dbxref_idx2' => array(
+      ],
+      'phylonode_dbxref_idx2' => [
         0 => 'dbxref_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'dbxref' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'dbxref' => [
         'table' => 'dbxref',
-        'columns' => array(
+        'columns' => [
           'dbxref_id' => 'dbxref_id',
-        ),
-      ),
-      'phylonode' => array(
+        ],
+      ],
+      'phylonode' => [
         'table' => 'phylonode',
-        'columns' => array(
+        'columns' => [
           'phylonode_id' => 'phylonode_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_phylonode_organism()
  * Purpose: To describe the structure of 'phylonode_organism' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -7763,58 +7973,60 @@ function tripal_chado_chado_schema_v1_11_phylonode_dbxref() {
  *
  */
 function tripal_chado_chado_schema_v1_11_phylonode_organism() {
-  $description =  array(
+  $description = [
     'table' => 'phylonode_organism',
-    'fields' => array(
-      'phylonode_organism_id' => array(
+    'fields' => [
+      'phylonode_organism_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'phylonode_id' => array(
+      ],
+      'phylonode_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'organism_id' => array(
+      ],
+      'organism_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'phylonode_organism_id',
-    ),
-    'unique keys' => array(
-      'phylonode_id' => array(
+    ],
+    'unique keys' => [
+      'phylonode_id' => [
         0 => 'phylonode_id',
-      ),
-    ),
-    'indexes' => array(
-      'phylonode_organism_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'phylonode_organism_idx1' => [
         0 => 'phylonode_id',
-      ),
-      'phylonode_organism_idx2' => array(
+      ],
+      'phylonode_organism_idx2' => [
         0 => 'organism_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'organism' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'organism' => [
         'table' => 'organism',
-        'columns' => array(
+        'columns' => [
           'organism_id' => 'organism_id',
-        ),
-      ),
-      'phylonode' => array(
+        ],
+      ],
+      'phylonode' => [
         'table' => 'phylonode',
-        'columns' => array(
+        'columns' => [
           'phylonode_id' => 'phylonode_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_phylonode_pub()
  * Purpose: To describe the structure of 'phylonode_pub' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -7826,59 +8038,61 @@ function tripal_chado_chado_schema_v1_11_phylonode_organism() {
  *
  */
 function tripal_chado_chado_schema_v1_11_phylonode_pub() {
-  $description =  array(
+  $description = [
     'table' => 'phylonode_pub',
-    'fields' => array(
-      'phylonode_pub_id' => array(
+    'fields' => [
+      'phylonode_pub_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'phylonode_id' => array(
+      ],
+      'phylonode_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'phylonode_pub_id',
-    ),
-    'unique keys' => array(
-      'phylonode_id' => array(
+    ],
+    'unique keys' => [
+      'phylonode_id' => [
         0 => 'phylonode_id',
         1 => 'pub_id',
-      ),
-    ),
-    'indexes' => array(
-      'phylonode_pub_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'phylonode_pub_idx1' => [
         0 => 'phylonode_id',
-      ),
-      'phylonode_pub_idx2' => array(
+      ],
+      'phylonode_pub_idx2' => [
         0 => 'pub_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'pub' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-      'phylonode' => array(
+        ],
+      ],
+      'phylonode' => [
         'table' => 'phylonode',
-        'columns' => array(
+        'columns' => [
           'phylonode_id' => 'phylonode_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_phylonode_relationship()
  * Purpose: To describe the structure of 'phylonode_relationship' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -7890,82 +8104,84 @@ function tripal_chado_chado_schema_v1_11_phylonode_pub() {
  *
  */
 function tripal_chado_chado_schema_v1_11_phylonode_relationship() {
-  $description =  array(
+  $description = [
     'table' => 'phylonode_relationship',
-    'fields' => array(
-      'phylonode_relationship_id' => array(
+    'fields' => [
+      'phylonode_relationship_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'subject_id' => array(
+      ],
+      'subject_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'object_id' => array(
+      ],
+      'object_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'phylotree_id' => array(
+      ],
+      'phylotree_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'phylonode_relationship_id',
-    ),
-    'unique keys' => array(
-      'subject_id' => array(
+    ],
+    'unique keys' => [
+      'subject_id' => [
         0 => 'subject_id',
         1 => 'object_id',
         2 => 'type_id',
-      ),
-    ),
-    'indexes' => array(
-      'phylonode_relationship_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'phylonode_relationship_idx1' => [
         0 => 'subject_id',
-      ),
-      'phylonode_relationship_idx2' => array(
+      ],
+      'phylonode_relationship_idx2' => [
         0 => 'object_id',
-      ),
-      'phylonode_relationship_idx3' => array(
+      ],
+      'phylonode_relationship_idx3' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'phylotree' => array(
+        ],
+      ],
+      'phylotree' => [
         'table' => 'phylotree',
-        'columns' => array(
+        'columns' => [
           'phylotree_id' => 'phylotree_id',
-        ),
-      ),
-      'phylonode' => array(
+        ],
+      ],
+      'phylonode' => [
         'table' => 'phylonode',
-        'columns' => array(
+        'columns' => [
           'subject_id' => 'phylonode_id',
           'object_id' => 'phylonode_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_phylonodeprop()
  * Purpose: To describe the structure of 'phylonodeprop' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -7977,71 +8193,73 @@ function tripal_chado_chado_schema_v1_11_phylonode_relationship() {
  *
  */
 function tripal_chado_chado_schema_v1_11_phylonodeprop() {
-  $description =  array(
+  $description = [
     'table' => 'phylonodeprop',
-    'fields' => array(
-      'phylonodeprop_id' => array(
+    'fields' => [
+      'phylonodeprop_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'phylonode_id' => array(
+      ],
+      'phylonode_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '1',
         'default' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'phylonodeprop_id',
-    ),
-    'unique keys' => array(
-      'phylonode_id' => array(
+    ],
+    'unique keys' => [
+      'phylonode_id' => [
         0 => 'phylonode_id',
         1 => 'type_id',
         2 => 'value',
         3 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'phylonodeprop_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'phylonodeprop_idx1' => [
         0 => 'phylonode_id',
-      ),
-      'phylonodeprop_idx2' => array(
+      ],
+      'phylonodeprop_idx2' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'phylonode' => array(
+        ],
+      ],
+      'phylonode' => [
         'table' => 'phylonode',
-        'columns' => array(
+        'columns' => [
           'phylonode_id' => 'phylonode_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_phylotree()
  * Purpose: To describe the structure of 'phylotree' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -8053,71 +8271,73 @@ function tripal_chado_chado_schema_v1_11_phylonodeprop() {
  *
  */
 function tripal_chado_chado_schema_v1_11_phylotree() {
-  $description =  array(
+  $description = [
     'table' => 'phylotree',
-    'fields' => array(
-      'phylotree_id' => array(
+    'fields' => [
+      'phylotree_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'dbxref_id' => array(
+      ],
+      'dbxref_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'analysis_id' => array(
+      ],
+      'analysis_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'comment' => array(
+      ],
+      'comment' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'phylotree_id',
-    ),
-    'unique keys' => array(
-    ),
-    'indexes' => array(
-      'phylotree_idx1' => array(
+    ],
+    'unique keys' => [
+    ],
+    'indexes' => [
+      'phylotree_idx1' => [
         0 => 'phylotree_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'dbxref' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'dbxref' => [
         'table' => 'dbxref',
-        'columns' => array(
+        'columns' => [
           'dbxref_id' => 'dbxref_id',
-        ),
-      ),
-      'cvterm' => array(
+        ],
+      ],
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'analysis' => array(
+        ],
+      ],
+      'analysis' => [
         'table' => 'analysis',
-        'columns' => array(
+        'columns' => [
           'analysis_id' => 'analysis_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_phylotree_pub()
  * Purpose: To describe the structure of 'phylotree_pub' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -8129,59 +8349,61 @@ function tripal_chado_chado_schema_v1_11_phylotree() {
  *
  */
 function tripal_chado_chado_schema_v1_11_phylotree_pub() {
-  $description =  array(
+  $description = [
     'table' => 'phylotree_pub',
-    'fields' => array(
-      'phylotree_pub_id' => array(
+    'fields' => [
+      'phylotree_pub_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'phylotree_id' => array(
+      ],
+      'phylotree_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'phylotree_pub_id',
-    ),
-    'unique keys' => array(
-      'phylotree_id' => array(
+    ],
+    'unique keys' => [
+      'phylotree_id' => [
         0 => 'phylotree_id',
         1 => 'pub_id',
-      ),
-    ),
-    'indexes' => array(
-      'phylotree_pub_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'phylotree_pub_idx1' => [
         0 => 'phylotree_id',
-      ),
-      'phylotree_pub_idx2' => array(
+      ],
+      'phylotree_pub_idx2' => [
         0 => 'pub_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'pub' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-      'phylotree' => array(
+        ],
+      ],
+      'phylotree' => [
         'table' => 'phylotree',
-        'columns' => array(
+        'columns' => [
           'phylotree_id' => 'phylotree_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_project()
  * Purpose: To describe the structure of 'project' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -8193,42 +8415,44 @@ function tripal_chado_chado_schema_v1_11_phylotree_pub() {
  *
  */
 function tripal_chado_chado_schema_v1_11_project() {
-  $description =  array(
+  $description = [
     'table' => 'project',
-    'fields' => array(
-      'project_id' => array(
+    'fields' => [
+      'project_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '1',
-      ),
-      'description' => array(
+      ],
+      'description' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'project_id',
-    ),
-    'unique keys' => array(
-      'project_c1' => array(
+    ],
+    'unique keys' => [
+      'project_c1' => [
         0 => 'name',
-      ),
-    ),
-    'indexes' => array(
-    ),
-    'foreign keys' => array(
-    ),
-  );
+      ],
+    ],
+    'indexes' => [
+    ],
+    'foreign keys' => [
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_protocol()
  * Purpose: To describe the structure of 'protocol' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -8240,91 +8464,93 @@ function tripal_chado_chado_schema_v1_11_project() {
  *
  */
 function tripal_chado_chado_schema_v1_11_protocol() {
-  $description =  array(
+  $description = [
     'table' => 'protocol',
-    'fields' => array(
-      'protocol_id' => array(
+    'fields' => [
+      'protocol_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'dbxref_id' => array(
+      ],
+      'dbxref_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'text',
         'not NULL' => '1',
-      ),
-      'uri' => array(
+      ],
+      'uri' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'protocoldescription' => array(
+      ],
+      'protocoldescription' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'hardwaredescription' => array(
+      ],
+      'hardwaredescription' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'softwaredescription' => array(
+      ],
+      'softwaredescription' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'protocol_id',
-    ),
-    'unique keys' => array(
-      'protocol_c1' => array(
+    ],
+    'unique keys' => [
+      'protocol_c1' => [
         0 => 'name',
-      ),
-    ),
-    'indexes' => array(
-      'protocol_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'protocol_idx1' => [
         0 => 'type_id',
-      ),
-      'protocol_idx2' => array(
+      ],
+      'protocol_idx2' => [
         0 => 'pub_id',
-      ),
-      'protocol_idx3' => array(
+      ],
+      'protocol_idx3' => [
         0 => 'dbxref_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'dbxref' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'dbxref' => [
         'table' => 'dbxref',
-        'columns' => array(
+        'columns' => [
           'dbxref_id' => 'dbxref_id',
-        ),
-      ),
-      'cvterm' => array(
+        ],
+      ],
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'pub' => array(
+        ],
+      ],
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_protocolparam()
  * Purpose: To describe the structure of 'protocolparam' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -8336,76 +8562,78 @@ function tripal_chado_chado_schema_v1_11_protocol() {
  *
  */
 function tripal_chado_chado_schema_v1_11_protocolparam() {
-  $description =  array(
+  $description = [
     'table' => 'protocolparam',
-    'fields' => array(
-      'protocolparam_id' => array(
+    'fields' => [
+      'protocolparam_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'protocol_id' => array(
+      ],
+      'protocol_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'text',
         'not NULL' => '1',
-      ),
-      'datatype_id' => array(
+      ],
+      'datatype_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'unittype_id' => array(
+      ],
+      'unittype_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'protocolparam_id',
-    ),
-    'unique keys' => array(
-    ),
-    'indexes' => array(
-      'protocolparam_idx1' => array(
+    ],
+    'unique keys' => [
+    ],
+    'indexes' => [
+      'protocolparam_idx1' => [
         0 => 'protocol_id',
-      ),
-      'protocolparam_idx2' => array(
+      ],
+      'protocolparam_idx2' => [
         0 => 'datatype_id',
-      ),
-      'protocolparam_idx3' => array(
+      ],
+      'protocolparam_idx3' => [
         0 => 'unittype_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'datatype_id' => 'cvterm_id',
           'unittype_id' => 'cvterm_id',
-        ),
-      ),
-      'protocol' => array(
+        ],
+      ],
+      'protocol' => [
         'table' => 'protocol',
-        'columns' => array(
+        'columns' => [
           'protocol_id' => 'protocol_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_pub()
  * Purpose: To describe the structure of 'pub' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -8417,102 +8645,104 @@ function tripal_chado_chado_schema_v1_11_protocolparam() {
  *
  */
 function tripal_chado_chado_schema_v1_11_pub() {
-  $description =  array(
+  $description = [
     'table' => 'pub',
-    'fields' => array(
-      'pub_id' => array(
+    'fields' => [
+      'pub_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'title' => array(
+      ],
+      'title' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'volumetitle' => array(
+      ],
+      'volumetitle' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'volume' => array(
+      ],
+      'volume' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-      'series_name' => array(
+      ],
+      'series_name' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-      'issue' => array(
+      ],
+      'issue' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-      'pyear' => array(
+      ],
+      'pyear' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-      'pages' => array(
+      ],
+      'pages' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-      'miniref' => array(
+      ],
+      'miniref' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-      'uniquename' => array(
+      ],
+      'uniquename' => [
         'type' => 'text',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'is_obsolete' => array(
+      ],
+      'is_obsolete' => [
         'type' => 'boolean',
         'not NULL' => '',
         'default' => 'false',
-      ),
-      'publisher' => array(
+      ],
+      'publisher' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-      'pubplace' => array(
+      ],
+      'pubplace' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'pub_id',
-    ),
-    'unique keys' => array(
-      'pub_c1' => array(
+    ],
+    'unique keys' => [
+      'pub_c1' => [
         0 => 'uniquename',
-      ),
-    ),
-    'indexes' => array(
-      'pub_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'pub_idx1' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_pub_dbxref()
  * Purpose: To describe the structure of 'pub_dbxref' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -8524,64 +8754,66 @@ function tripal_chado_chado_schema_v1_11_pub() {
  *
  */
 function tripal_chado_chado_schema_v1_11_pub_dbxref() {
-  $description =  array(
+  $description = [
     'table' => 'pub_dbxref',
-    'fields' => array(
-      'pub_dbxref_id' => array(
+    'fields' => [
+      'pub_dbxref_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'dbxref_id' => array(
+      ],
+      'dbxref_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'is_current' => array(
+      ],
+      'is_current' => [
         'type' => 'boolean',
         'not NULL' => '1',
         'default' => 'true',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'pub_dbxref_id',
-    ),
-    'unique keys' => array(
-      'pub_dbxref_c1' => array(
+    ],
+    'unique keys' => [
+      'pub_dbxref_c1' => [
         0 => 'pub_id',
         1 => 'dbxref_id',
-      ),
-    ),
-    'indexes' => array(
-      'pub_dbxref_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'pub_dbxref_idx1' => [
         0 => 'pub_id',
-      ),
-      'pub_dbxref_idx2' => array(
+      ],
+      'pub_dbxref_idx2' => [
         0 => 'dbxref_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'dbxref' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'dbxref' => [
         'table' => 'dbxref',
-        'columns' => array(
+        'columns' => [
           'dbxref_id' => 'dbxref_id',
-        ),
-      ),
-      'pub' => array(
+        ],
+      ],
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_pub_relationship()
  * Purpose: To describe the structure of 'pub_relationship' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -8593,68 +8825,70 @@ function tripal_chado_chado_schema_v1_11_pub_dbxref() {
  *
  */
 function tripal_chado_chado_schema_v1_11_pub_relationship() {
-  $description =  array(
+  $description = [
     'table' => 'pub_relationship',
-    'fields' => array(
-      'pub_relationship_id' => array(
+    'fields' => [
+      'pub_relationship_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'subject_id' => array(
+      ],
+      'subject_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'object_id' => array(
+      ],
+      'object_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'pub_relationship_id',
-    ),
-    'unique keys' => array(
-      'pub_relationship_c1' => array(
+    ],
+    'unique keys' => [
+      'pub_relationship_c1' => [
         0 => 'subject_id',
         1 => 'object_id',
         2 => 'type_id',
-      ),
-    ),
-    'indexes' => array(
-      'pub_relationship_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'pub_relationship_idx1' => [
         0 => 'subject_id',
-      ),
-      'pub_relationship_idx2' => array(
+      ],
+      'pub_relationship_idx2' => [
         0 => 'object_id',
-      ),
-      'pub_relationship_idx3' => array(
+      ],
+      'pub_relationship_idx3' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'pub' => array(
+        ],
+      ],
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'subject_id' => 'pub_id',
           'object_id' => 'pub_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_pubauthor()
  * Purpose: To describe the structure of 'pubauthor' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -8666,70 +8900,72 @@ function tripal_chado_chado_schema_v1_11_pub_relationship() {
  *
  */
 function tripal_chado_chado_schema_v1_11_pubauthor() {
-  $description =  array(
+  $description = [
     'table' => 'pubauthor',
-    'fields' => array(
-      'pubauthor_id' => array(
+    'fields' => [
+      'pubauthor_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'editor' => array(
+      ],
+      'editor' => [
         'type' => 'boolean',
         'not NULL' => '',
         'default' => 'false',
-      ),
-      'surname' => array(
+      ],
+      'surname' => [
         'type' => 'varchar',
         'length' => '100',
         'not NULL' => '1',
-      ),
-      'givennames' => array(
+      ],
+      'givennames' => [
         'type' => 'varchar',
         'length' => '100',
         'not NULL' => '',
-      ),
-      'suffix' => array(
+      ],
+      'suffix' => [
         'type' => 'varchar',
         'length' => '100',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'pubauthor_id',
-    ),
-    'unique keys' => array(
-      'pubauthor_c1' => array(
+    ],
+    'unique keys' => [
+      'pubauthor_c1' => [
         0 => 'pub_id',
         1 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'pubauthor_idx2' => array(
+      ],
+    ],
+    'indexes' => [
+      'pubauthor_idx2' => [
         0 => 'pub_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'pub' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_pubprop()
  * Purpose: To describe the structure of 'pubprop' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -8741,68 +8977,70 @@ function tripal_chado_chado_schema_v1_11_pubauthor() {
  *
  */
 function tripal_chado_chado_schema_v1_11_pubprop() {
-  $description =  array(
+  $description = [
     'table' => 'pubprop',
-    'fields' => array(
-      'pubprop_id' => array(
+    'fields' => [
+      'pubprop_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '1',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'pubprop_id',
-    ),
-    'unique keys' => array(
-      'pubprop_c1' => array(
+    ],
+    'unique keys' => [
+      'pubprop_c1' => [
         0 => 'pub_id',
         1 => 'type_id',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'pubprop_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'pubprop_idx1' => [
         0 => 'pub_id',
-      ),
-      'pubprop_idx2' => array(
+      ],
+      'pubprop_idx2' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'pub' => array(
+        ],
+      ],
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_quantification()
  * Purpose: To describe the structure of 'quantification' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -8814,98 +9052,100 @@ function tripal_chado_chado_schema_v1_11_pubprop() {
  *
  */
 function tripal_chado_chado_schema_v1_11_quantification() {
-  $description =  array(
+  $description = [
     'table' => 'quantification',
-    'fields' => array(
-      'quantification_id' => array(
+    'fields' => [
+      'quantification_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'acquisition_id' => array(
+      ],
+      'acquisition_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'operator_id' => array(
+      ],
+      'operator_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'protocol_id' => array(
+      ],
+      'protocol_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'analysis_id' => array(
+      ],
+      'analysis_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'quantificationdate' => array(
+      ],
+      'quantificationdate' => [
         'type' => 'datetime',
         'not NULL' => '',
         'default' => 'ow(',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'uri' => array(
+      ],
+      'uri' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'quantification_id',
-    ),
-    'unique keys' => array(
-      'quantification_c1' => array(
+    ],
+    'unique keys' => [
+      'quantification_c1' => [
         0 => 'name',
         1 => 'analysis_id',
-      ),
-    ),
-    'indexes' => array(
-      'quantification_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'quantification_idx1' => [
         0 => 'acquisition_id',
-      ),
-      'quantification_idx2' => array(
+      ],
+      'quantification_idx2' => [
         0 => 'operator_id',
-      ),
-      'quantification_idx3' => array(
+      ],
+      'quantification_idx3' => [
         0 => 'protocol_id',
-      ),
-      'quantification_idx4' => array(
+      ],
+      'quantification_idx4' => [
         0 => 'analysis_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'analysis' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'analysis' => [
         'table' => 'analysis',
-        'columns' => array(
+        'columns' => [
           'analysis_id' => 'analysis_id',
-        ),
-      ),
-      'contact' => array(
+        ],
+      ],
+      'contact' => [
         'table' => 'contact',
-        'columns' => array(
+        'columns' => [
           'operator_id' => 'contact_id',
-        ),
-      ),
-      'protocol' => array(
+        ],
+      ],
+      'protocol' => [
         'table' => 'protocol',
-        'columns' => array(
+        'columns' => [
           'protocol_id' => 'protocol_id',
-        ),
-      ),
-      'acquisition' => array(
+        ],
+      ],
+      'acquisition' => [
         'table' => 'acquisition',
-        'columns' => array(
+        'columns' => [
           'acquisition_id' => 'acquisition_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_quantification_relationship()
  * Purpose: To describe the structure of 'quantification_relationship' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -8917,68 +9157,70 @@ function tripal_chado_chado_schema_v1_11_quantification() {
  *
  */
 function tripal_chado_chado_schema_v1_11_quantification_relationship() {
-  $description =  array(
+  $description = [
     'table' => 'quantification_relationship',
-    'fields' => array(
-      'quantification_relationship_id' => array(
+    'fields' => [
+      'quantification_relationship_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'subject_id' => array(
+      ],
+      'subject_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'object_id' => array(
+      ],
+      'object_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'quantification_relationship_id',
-    ),
-    'unique keys' => array(
-      'quantification_relationship_c1' => array(
+    ],
+    'unique keys' => [
+      'quantification_relationship_c1' => [
         0 => 'subject_id',
         1 => 'object_id',
         2 => 'type_id',
-      ),
-    ),
-    'indexes' => array(
-      'quantification_relationship_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'quantification_relationship_idx1' => [
         0 => 'subject_id',
-      ),
-      'quantification_relationship_idx2' => array(
+      ],
+      'quantification_relationship_idx2' => [
         0 => 'type_id',
-      ),
-      'quantification_relationship_idx3' => array(
+      ],
+      'quantification_relationship_idx3' => [
         0 => 'object_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'quantification' => array(
+        ],
+      ],
+      'quantification' => [
         'table' => 'quantification',
-        'columns' => array(
+        'columns' => [
           'subject_id' => 'quantification_id',
           'object_id' => 'quantification_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_quantificationprop()
  * Purpose: To describe the structure of 'quantificationprop' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -8990,69 +9232,71 @@ function tripal_chado_chado_schema_v1_11_quantification_relationship() {
  *
  */
 function tripal_chado_chado_schema_v1_11_quantificationprop() {
-  $description =  array(
+  $description = [
     'table' => 'quantificationprop',
-    'fields' => array(
-      'quantificationprop_id' => array(
+    'fields' => [
+      'quantificationprop_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'quantification_id' => array(
+      ],
+      'quantification_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'quantificationprop_id',
-    ),
-    'unique keys' => array(
-      'quantificationprop_c1' => array(
+    ],
+    'unique keys' => [
+      'quantificationprop_c1' => [
         0 => 'quantification_id',
         1 => 'type_id',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'quantificationprop_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'quantificationprop_idx1' => [
         0 => 'quantification_id',
-      ),
-      'quantificationprop_idx2' => array(
+      ],
+      'quantificationprop_idx2' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'quantification' => array(
+        ],
+      ],
+      'quantification' => [
         'table' => 'quantification',
-        'columns' => array(
+        'columns' => [
           'quantification_id' => 'quantification_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_stock()
  * Purpose: To describe the structure of 'stock' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -9064,106 +9308,108 @@ function tripal_chado_chado_schema_v1_11_quantificationprop() {
  *
  */
 function tripal_chado_chado_schema_v1_11_stock() {
-  $description =  array(
+  $description = [
     'table' => 'stock',
-    'referring_tables' => array(
-        1 => 'stock_cvterm',
-        2 => 'stock_dbxref',
-        3 => 'stock_genotype',
-        4 => 'stock_pub',
-        5 => 'stock_relationship',
-        7 => 'stockcollection_stock',
-        8 => 'stockprop',
-     ),
-    'fields' => array(
-      'stock_id' => array(
+    'referring_tables' => [
+      1 => 'stock_cvterm',
+      2 => 'stock_dbxref',
+      3 => 'stock_genotype',
+      4 => 'stock_pub',
+      5 => 'stock_relationship',
+      7 => 'stockcollection_stock',
+      8 => 'stockprop',
+    ],
+    'fields' => [
+      'stock_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'dbxref_id' => array(
+      ],
+      'dbxref_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'organism_id' => array(
+      ],
+      'organism_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-      'uniquename' => array(
+      ],
+      'uniquename' => [
         'type' => 'text',
         'not NULL' => '1',
-      ),
-      'description' => array(
+      ],
+      'description' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'is_obsolete' => array(
+      ],
+      'is_obsolete' => [
         'type' => 'boolean',
         'not NULL' => '1',
         'default' => 'false',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'stock_id',
-    ),
-    'unique keys' => array(
-      'stock_c1' => array(
+    ],
+    'unique keys' => [
+      'stock_c1' => [
         0 => 'organism_id',
         1 => 'uniquename',
         2 => 'type_id',
-      ),
-    ),
-    'indexes' => array(
-      'stock_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'stock_idx1' => [
         0 => 'dbxref_id',
-      ),
-      'stock_idx2' => array(
+      ],
+      'stock_idx2' => [
         0 => 'organism_id',
-      ),
-      'stock_idx3' => array(
+      ],
+      'stock_idx3' => [
         0 => 'type_id',
-      ),
-      'stock_idx4' => array(
+      ],
+      'stock_idx4' => [
         0 => 'uniquename',
-      ),
-      'stock_name_ind1' => array(
+      ],
+      'stock_name_ind1' => [
         0 => 'name',
-      ),
-    ),
-    'foreign keys' => array(
-      'dbxref' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'dbxref' => [
         'table' => 'dbxref',
-        'columns' => array(
+        'columns' => [
           'dbxref_id' => 'dbxref_id',
-        ),
-      ),
-      'cvterm' => array(
+        ],
+      ],
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'organism' => array(
+        ],
+      ],
+      'organism' => [
         'table' => 'organism',
-        'columns' => array(
+        'columns' => [
           'organism_id' => 'organism_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_stock_cvterm()
  * Purpose: To describe the structure of 'stock_cvterm' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -9175,73 +9421,75 @@ function tripal_chado_chado_schema_v1_11_stock() {
  *
  */
 function tripal_chado_chado_schema_v1_11_stock_cvterm() {
-  $description =  array(
+  $description = [
     'table' => 'stock_cvterm',
-    'fields' => array(
-      'stock_cvterm_id' => array(
+    'fields' => [
+      'stock_cvterm_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'stock_id' => array(
+      ],
+      'stock_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'cvterm_id' => array(
+      ],
+      'cvterm_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'stock_cvterm_id',
-    ),
-    'unique keys' => array(
-      'stock_cvterm_c1' => array(
+    ],
+    'unique keys' => [
+      'stock_cvterm_c1' => [
         0 => 'stock_id',
         1 => 'cvterm_id',
         2 => 'pub_id',
-      ),
-    ),
-    'indexes' => array(
-      'stock_cvterm_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'stock_cvterm_idx1' => [
         0 => 'stock_id',
-      ),
-      'stock_cvterm_idx2' => array(
+      ],
+      'stock_cvterm_idx2' => [
         0 => 'cvterm_id',
-      ),
-      'stock_cvterm_idx3' => array(
+      ],
+      'stock_cvterm_idx3' => [
         0 => 'pub_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'cvterm_id' => 'cvterm_id',
-        ),
-      ),
-      'pub' => array(
+        ],
+      ],
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-      'stock' => array(
+        ],
+      ],
+      'stock' => [
         'table' => 'stock',
-        'columns' => array(
+        'columns' => [
           'stock_id' => 'stock_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_stock_dbxref()
  * Purpose: To describe the structure of 'stock_dbxref' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -9253,64 +9501,66 @@ function tripal_chado_chado_schema_v1_11_stock_cvterm() {
  *
  */
 function tripal_chado_chado_schema_v1_11_stock_dbxref() {
-  $description =  array(
+  $description = [
     'table' => 'stock_dbxref',
-    'fields' => array(
-      'stock_dbxref_id' => array(
+    'fields' => [
+      'stock_dbxref_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'stock_id' => array(
+      ],
+      'stock_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'dbxref_id' => array(
+      ],
+      'dbxref_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'is_current' => array(
+      ],
+      'is_current' => [
         'type' => 'boolean',
         'not NULL' => '1',
         'default' => 'true',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'stock_dbxref_id',
-    ),
-    'unique keys' => array(
-      'stock_dbxref_c1' => array(
+    ],
+    'unique keys' => [
+      'stock_dbxref_c1' => [
         0 => 'stock_id',
         1 => 'dbxref_id',
-      ),
-    ),
-    'indexes' => array(
-      'stock_dbxref_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'stock_dbxref_idx1' => [
         0 => 'stock_id',
-      ),
-      'stock_dbxref_idx2' => array(
+      ],
+      'stock_dbxref_idx2' => [
         0 => 'dbxref_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'dbxref' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'dbxref' => [
         'table' => 'dbxref',
-        'columns' => array(
+        'columns' => [
           'dbxref_id' => 'dbxref_id',
-        ),
-      ),
-      'stock' => array(
+        ],
+      ],
+      'stock' => [
         'table' => 'stock',
-        'columns' => array(
+        'columns' => [
           'stock_id' => 'stock_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_stock_genotype()
  * Purpose: To describe the structure of 'stock_genotype' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -9322,59 +9572,61 @@ function tripal_chado_chado_schema_v1_11_stock_dbxref() {
  *
  */
 function tripal_chado_chado_schema_v1_11_stock_genotype() {
-  $description =  array(
+  $description = [
     'table' => 'stock_genotype',
-    'fields' => array(
-      'stock_genotype_id' => array(
+    'fields' => [
+      'stock_genotype_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'stock_id' => array(
+      ],
+      'stock_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'genotype_id' => array(
+      ],
+      'genotype_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'stock_genotype_id',
-    ),
-    'unique keys' => array(
-      'stock_genotype_c1' => array(
+    ],
+    'unique keys' => [
+      'stock_genotype_c1' => [
         0 => 'stock_id',
         1 => 'genotype_id',
-      ),
-    ),
-    'indexes' => array(
-      'stock_genotype_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'stock_genotype_idx1' => [
         0 => 'stock_id',
-      ),
-      'stock_genotype_idx2' => array(
+      ],
+      'stock_genotype_idx2' => [
         0 => 'genotype_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'genotype' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'genotype' => [
         'table' => 'genotype',
-        'columns' => array(
+        'columns' => [
           'genotype_id' => 'genotype_id',
-        ),
-      ),
-      'stock' => array(
+        ],
+      ],
+      'stock' => [
         'table' => 'stock',
-        'columns' => array(
+        'columns' => [
           'stock_id' => 'stock_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_stock_pub()
  * Purpose: To describe the structure of 'stock_pub' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -9386,59 +9638,61 @@ function tripal_chado_chado_schema_v1_11_stock_genotype() {
  *
  */
 function tripal_chado_chado_schema_v1_11_stock_pub() {
-  $description =  array(
+  $description = [
     'table' => 'stock_pub',
-    'fields' => array(
-      'stock_pub_id' => array(
+    'fields' => [
+      'stock_pub_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'stock_id' => array(
+      ],
+      'stock_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'stock_pub_id',
-    ),
-    'unique keys' => array(
-      'stock_pub_c1' => array(
+    ],
+    'unique keys' => [
+      'stock_pub_c1' => [
         0 => 'stock_id',
         1 => 'pub_id',
-      ),
-    ),
-    'indexes' => array(
-      'stock_pub_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'stock_pub_idx1' => [
         0 => 'stock_id',
-      ),
-      'stock_pub_idx2' => array(
+      ],
+      'stock_pub_idx2' => [
         0 => 'pub_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'pub' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-      'stock' => array(
+        ],
+      ],
+      'stock' => [
         'table' => 'stock',
-        'columns' => array(
+        'columns' => [
           'stock_id' => 'stock_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_stock_relationship()
  * Purpose: To describe the structure of 'stock_relationship' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -9450,78 +9704,80 @@ function tripal_chado_chado_schema_v1_11_stock_pub() {
  *
  */
 function tripal_chado_chado_schema_v1_11_stock_relationship() {
-  $description =  array(
+  $description = [
     'table' => 'stock_relationship',
-    'fields' => array(
-      'stock_relationship_id' => array(
+    'fields' => [
+      'stock_relationship_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'subject_id' => array(
+      ],
+      'subject_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'object_id' => array(
+      ],
+      'object_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'stock_relationship_id',
-    ),
-    'unique keys' => array(
-      'stock_relationship_c1' => array(
+    ],
+    'unique keys' => [
+      'stock_relationship_c1' => [
         0 => 'subject_id',
         1 => 'object_id',
         2 => 'type_id',
         3 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'stock_relationship_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'stock_relationship_idx1' => [
         0 => 'subject_id',
-      ),
-      'stock_relationship_idx2' => array(
+      ],
+      'stock_relationship_idx2' => [
         0 => 'object_id',
-      ),
-      'stock_relationship_idx3' => array(
+      ],
+      'stock_relationship_idx3' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'stock' => array(
+        ],
+      ],
+      'stock' => [
         'table' => 'stock',
-        'columns' => array(
+        'columns' => [
           'subject_id' => 'stock_id',
           'object_id' => 'stock_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_stock_relationship_pub()
  * Purpose: To describe the structure of 'stock_relationship_pub' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -9533,59 +9789,61 @@ function tripal_chado_chado_schema_v1_11_stock_relationship() {
  *
  */
 function tripal_chado_chado_schema_v1_11_stock_relationship_pub() {
-  $description =  array(
+  $description = [
     'table' => 'stock_relationship_pub',
-    'fields' => array(
-      'stock_relationship_pub_id' => array(
+    'fields' => [
+      'stock_relationship_pub_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'stock_relationship_id' => array(
+      ],
+      'stock_relationship_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'stock_relationship_pub_id',
-    ),
-    'unique keys' => array(
-      'stock_relationship_pub_c1' => array(
+    ],
+    'unique keys' => [
+      'stock_relationship_pub_c1' => [
         0 => 'stock_relationship_id',
         1 => 'pub_id',
-      ),
-    ),
-    'indexes' => array(
-      'stock_relationship_pub_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'stock_relationship_pub_idx1' => [
         0 => 'stock_relationship_id',
-      ),
-      'stock_relationship_pub_idx2' => array(
+      ],
+      'stock_relationship_pub_idx2' => [
         0 => 'pub_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'pub' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-      'stock_relationship' => array(
+        ],
+      ],
+      'stock_relationship' => [
         'table' => 'stock_relationship',
-        'columns' => array(
+        'columns' => [
           'stock_relationship_id' => 'stock_relationship_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_stockcollection()
  * Purpose: To describe the structure of 'stockcollection' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -9597,74 +9855,76 @@ function tripal_chado_chado_schema_v1_11_stock_relationship_pub() {
  *
  */
 function tripal_chado_chado_schema_v1_11_stockcollection() {
-  $description =  array(
+  $description = [
     'table' => 'stockcollection',
-    'fields' => array(
-      'stockcollection_id' => array(
+    'fields' => [
+      'stockcollection_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'contact_id' => array(
+      ],
+      'contact_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '',
-      ),
-      'uniquename' => array(
+      ],
+      'uniquename' => [
         'type' => 'text',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'stockcollection_id',
-    ),
-    'unique keys' => array(
-      'stockcollection_c1' => array(
+    ],
+    'unique keys' => [
+      'stockcollection_c1' => [
         0 => 'uniquename',
         1 => 'type_id',
-      ),
-    ),
-    'indexes' => array(
-      'stockcollection_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'stockcollection_idx1' => [
         0 => 'contact_id',
-      ),
-      'stockcollection_idx2' => array(
+      ],
+      'stockcollection_idx2' => [
         0 => 'type_id',
-      ),
-      'stockcollection_idx3' => array(
+      ],
+      'stockcollection_idx3' => [
         0 => 'uniquename',
-      ),
-      'stockcollection_name_ind1' => array(
+      ],
+      'stockcollection_name_ind1' => [
         0 => 'name',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'contact' => array(
+        ],
+      ],
+      'contact' => [
         'table' => 'contact',
-        'columns' => array(
+        'columns' => [
           'contact_id' => 'contact_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_stockcollection_stock()
  * Purpose: To describe the structure of 'stockcollection_stock' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -9676,59 +9936,61 @@ function tripal_chado_chado_schema_v1_11_stockcollection() {
  *
  */
 function tripal_chado_chado_schema_v1_11_stockcollection_stock() {
-  $description =  array(
+  $description = [
     'table' => 'stockcollection_stock',
-    'fields' => array(
-      'stockcollection_stock_id' => array(
+    'fields' => [
+      'stockcollection_stock_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'stockcollection_id' => array(
+      ],
+      'stockcollection_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'stock_id' => array(
+      ],
+      'stock_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'stockcollection_stock_id',
-    ),
-    'unique keys' => array(
-      'stockcollection_stock_c1' => array(
+    ],
+    'unique keys' => [
+      'stockcollection_stock_c1' => [
         0 => 'stockcollection_id',
         1 => 'stock_id',
-      ),
-    ),
-    'indexes' => array(
-      'stockcollection_stock_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'stockcollection_stock_idx1' => [
         0 => 'stockcollection_id',
-      ),
-      'stockcollection_stock_idx2' => array(
+      ],
+      'stockcollection_stock_idx2' => [
         0 => 'stock_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'stock' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'stock' => [
         'table' => 'stock',
-        'columns' => array(
+        'columns' => [
           'stock_id' => 'stock_id',
-        ),
-      ),
-      'stockcollection' => array(
+        ],
+      ],
+      'stockcollection' => [
         'table' => 'stockcollection',
-        'columns' => array(
+        'columns' => [
           'stockcollection_id' => 'stockcollection_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_stockcollectionprop()
  * Purpose: To describe the structure of 'stockcollectionprop' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -9740,69 +10002,71 @@ function tripal_chado_chado_schema_v1_11_stockcollection_stock() {
  *
  */
 function tripal_chado_chado_schema_v1_11_stockcollectionprop() {
-  $description =  array(
+  $description = [
     'table' => 'stockcollectionprop',
-    'fields' => array(
-      'stockcollectionprop_id' => array(
+    'fields' => [
+      'stockcollectionprop_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'stockcollection_id' => array(
+      ],
+      'stockcollection_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'stockcollectionprop_id',
-    ),
-    'unique keys' => array(
-      'stockcollectionprop_c1' => array(
+    ],
+    'unique keys' => [
+      'stockcollectionprop_c1' => [
         0 => 'stockcollection_id',
         1 => 'type_id',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'stockcollectionprop_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'stockcollectionprop_idx1' => [
         0 => 'stockcollection_id',
-      ),
-      'stockcollectionprop_idx2' => array(
+      ],
+      'stockcollectionprop_idx2' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'stockcollection' => array(
+        ],
+      ],
+      'stockcollection' => [
         'table' => 'stockcollection',
-        'columns' => array(
+        'columns' => [
           'stockcollection_id' => 'stockcollection_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_stockprop()
  * Purpose: To describe the structure of 'stockprop' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -9814,69 +10078,71 @@ function tripal_chado_chado_schema_v1_11_stockcollectionprop() {
  *
  */
 function tripal_chado_chado_schema_v1_11_stockprop() {
-  $description =  array(
+  $description = [
     'table' => 'stockprop',
-    'fields' => array(
-      'stockprop_id' => array(
+    'fields' => [
+      'stockprop_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'stock_id' => array(
+      ],
+      'stock_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'stockprop_id',
-    ),
-    'unique keys' => array(
-      'stockprop_c1' => array(
+    ],
+    'unique keys' => [
+      'stockprop_c1' => [
         0 => 'stock_id',
         1 => 'type_id',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'stockprop_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'stockprop_idx1' => [
         0 => 'stock_id',
-      ),
-      'stockprop_idx2' => array(
+      ],
+      'stockprop_idx2' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'stock' => array(
+        ],
+      ],
+      'stock' => [
         'table' => 'stock',
-        'columns' => array(
+        'columns' => [
           'stock_id' => 'stock_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_stockprop_pub()
  * Purpose: To describe the structure of 'stockprop_pub' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -9888,59 +10154,61 @@ function tripal_chado_chado_schema_v1_11_stockprop() {
  *
  */
 function tripal_chado_chado_schema_v1_11_stockprop_pub() {
-  $description =  array(
+  $description = [
     'table' => 'stockprop_pub',
-    'fields' => array(
-      'stockprop_pub_id' => array(
+    'fields' => [
+      'stockprop_pub_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'stockprop_id' => array(
+      ],
+      'stockprop_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'stockprop_pub_id',
-    ),
-    'unique keys' => array(
-      'stockprop_pub_c1' => array(
+    ],
+    'unique keys' => [
+      'stockprop_pub_c1' => [
         0 => 'stockprop_id',
         1 => 'pub_id',
-      ),
-    ),
-    'indexes' => array(
-      'stockprop_pub_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'stockprop_pub_idx1' => [
         0 => 'stockprop_id',
-      ),
-      'stockprop_pub_idx2' => array(
+      ],
+      'stockprop_pub_idx2' => [
         0 => 'pub_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'pub' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-      'stockprop' => array(
+        ],
+      ],
+      'stockprop' => [
         'table' => 'stockprop',
-        'columns' => array(
+        'columns' => [
           'stockprop_id' => 'stockprop_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_study()
  * Purpose: To describe the structure of 'study' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -9952,79 +10220,81 @@ function tripal_chado_chado_schema_v1_11_stockprop_pub() {
  *
  */
 function tripal_chado_chado_schema_v1_11_study() {
-  $description =  array(
+  $description = [
     'table' => 'study',
-    'fields' => array(
-      'study_id' => array(
+    'fields' => [
+      'study_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'contact_id' => array(
+      ],
+      'contact_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'pub_id' => array(
+      ],
+      'pub_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'dbxref_id' => array(
+      ],
+      'dbxref_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'text',
         'not NULL' => '1',
-      ),
-      'description' => array(
+      ],
+      'description' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'study_id',
-    ),
-    'unique keys' => array(
-      'study_c1' => array(
+    ],
+    'unique keys' => [
+      'study_c1' => [
         0 => 'name',
-      ),
-    ),
-    'indexes' => array(
-      'study_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'study_idx1' => [
         0 => 'contact_id',
-      ),
-      'study_idx2' => array(
+      ],
+      'study_idx2' => [
         0 => 'pub_id',
-      ),
-      'study_idx3' => array(
+      ],
+      'study_idx3' => [
         0 => 'dbxref_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'dbxref' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'dbxref' => [
         'table' => 'dbxref',
-        'columns' => array(
+        'columns' => [
           'dbxref_id' => 'dbxref_id',
-        ),
-      ),
-      'pub' => array(
+        ],
+      ],
+      'pub' => [
         'table' => 'pub',
-        'columns' => array(
+        'columns' => [
           'pub_id' => 'pub_id',
-        ),
-      ),
-      'contact' => array(
+        ],
+      ],
+      'contact' => [
         'table' => 'contact',
-        'columns' => array(
+        'columns' => [
           'contact_id' => 'contact_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_study_assay()
  * Purpose: To describe the structure of 'study_assay' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -10036,59 +10306,61 @@ function tripal_chado_chado_schema_v1_11_study() {
  *
  */
 function tripal_chado_chado_schema_v1_11_study_assay() {
-  $description =  array(
+  $description = [
     'table' => 'study_assay',
-    'fields' => array(
-      'study_assay_id' => array(
+    'fields' => [
+      'study_assay_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'study_id' => array(
+      ],
+      'study_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'assay_id' => array(
+      ],
+      'assay_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'study_assay_id',
-    ),
-    'unique keys' => array(
-      'study_assay_c1' => array(
+    ],
+    'unique keys' => [
+      'study_assay_c1' => [
         0 => 'study_id',
         1 => 'assay_id',
-      ),
-    ),
-    'indexes' => array(
-      'study_assay_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'study_assay_idx1' => [
         0 => 'study_id',
-      ),
-      'study_assay_idx2' => array(
+      ],
+      'study_assay_idx2' => [
         0 => 'assay_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'assay' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'assay' => [
         'table' => 'assay',
-        'columns' => array(
+        'columns' => [
           'assay_id' => 'assay_id',
-        ),
-      ),
-      'study' => array(
+        ],
+      ],
+      'study' => [
         'table' => 'study',
-        'columns' => array(
+        'columns' => [
           'study_id' => 'study_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_studydesign()
  * Purpose: To describe the structure of 'studydesign' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -10100,46 +10372,48 @@ function tripal_chado_chado_schema_v1_11_study_assay() {
  *
  */
 function tripal_chado_chado_schema_v1_11_studydesign() {
-  $description =  array(
+  $description = [
     'table' => 'studydesign',
-    'fields' => array(
-      'studydesign_id' => array(
+    'fields' => [
+      'studydesign_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'study_id' => array(
+      ],
+      'study_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'description' => array(
+      ],
+      'description' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'studydesign_id',
-    ),
-    'unique keys' => array(
-    ),
-    'indexes' => array(
-      'studydesign_idx1' => array(
+    ],
+    'unique keys' => [
+    ],
+    'indexes' => [
+      'studydesign_idx1' => [
         0 => 'study_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'study' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'study' => [
         'table' => 'study',
-        'columns' => array(
+        'columns' => [
           'study_id' => 'study_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_studydesignprop()
  * Purpose: To describe the structure of 'studydesignprop' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -10151,69 +10425,71 @@ function tripal_chado_chado_schema_v1_11_studydesign() {
  *
  */
 function tripal_chado_chado_schema_v1_11_studydesignprop() {
-  $description =  array(
+  $description = [
     'table' => 'studydesignprop',
-    'fields' => array(
-      'studydesignprop_id' => array(
+    'fields' => [
+      'studydesignprop_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'studydesign_id' => array(
+      ],
+      'studydesign_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'studydesignprop_id',
-    ),
-    'unique keys' => array(
-      'studydesignprop_c1' => array(
+    ],
+    'unique keys' => [
+      'studydesignprop_c1' => [
         0 => 'studydesign_id',
         1 => 'type_id',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'studydesignprop_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'studydesignprop_idx1' => [
         0 => 'studydesign_id',
-      ),
-      'studydesignprop_idx2' => array(
+      ],
+      'studydesignprop_idx2' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'studydesign' => array(
+        ],
+      ],
+      'studydesign' => [
         'table' => 'studydesign',
-        'columns' => array(
+        'columns' => [
           'studydesign_id' => 'studydesign_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_studyfactor()
  * Purpose: To describe the structure of 'studyfactor' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -10225,63 +10501,65 @@ function tripal_chado_chado_schema_v1_11_studydesignprop() {
  *
  */
 function tripal_chado_chado_schema_v1_11_studyfactor() {
-  $description =  array(
+  $description = [
     'table' => 'studyfactor',
-    'fields' => array(
-      'studyfactor_id' => array(
+    'fields' => [
+      'studyfactor_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'studydesign_id' => array(
+      ],
+      'studydesign_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'text',
         'not NULL' => '1',
-      ),
-      'description' => array(
+      ],
+      'description' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'studyfactor_id',
-    ),
-    'unique keys' => array(
-    ),
-    'indexes' => array(
-      'studyfactor_idx1' => array(
+    ],
+    'unique keys' => [
+    ],
+    'indexes' => [
+      'studyfactor_idx1' => [
         0 => 'studydesign_id',
-      ),
-      'studyfactor_idx2' => array(
+      ],
+      'studyfactor_idx2' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'studydesign' => array(
+        ],
+      ],
+      'studydesign' => [
         'table' => 'studydesign',
-        'columns' => array(
+        'columns' => [
           'studydesign_id' => 'studydesign_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_studyfactorvalue()
  * Purpose: To describe the structure of 'studyfactorvalue' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -10293,68 +10571,70 @@ function tripal_chado_chado_schema_v1_11_studyfactor() {
  *
  */
 function tripal_chado_chado_schema_v1_11_studyfactorvalue() {
-  $description =  array(
+  $description = [
     'table' => 'studyfactorvalue',
-    'fields' => array(
-      'studyfactorvalue_id' => array(
+    'fields' => [
+      'studyfactorvalue_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'studyfactor_id' => array(
+      ],
+      'studyfactor_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'assay_id' => array(
+      ],
+      'assay_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'factorvalue' => array(
+      ],
+      'factorvalue' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'studyfactorvalue_id',
-    ),
-    'unique keys' => array(
-    ),
-    'indexes' => array(
-      'studyfactorvalue_idx1' => array(
+    ],
+    'unique keys' => [
+    ],
+    'indexes' => [
+      'studyfactorvalue_idx1' => [
         0 => 'studyfactor_id',
-      ),
-      'studyfactorvalue_idx2' => array(
+      ],
+      'studyfactorvalue_idx2' => [
         0 => 'assay_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'assay' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'assay' => [
         'table' => 'assay',
-        'columns' => array(
+        'columns' => [
           'assay_id' => 'assay_id',
-        ),
-      ),
-      'studyfactor' => array(
+        ],
+      ],
+      'studyfactor' => [
         'table' => 'studyfactor',
-        'columns' => array(
+        'columns' => [
           'studyfactor_id' => 'studyfactor_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_studyprop()
  * Purpose: To describe the structure of 'studyprop' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -10366,69 +10646,71 @@ function tripal_chado_chado_schema_v1_11_studyfactorvalue() {
  *
  */
 function tripal_chado_chado_schema_v1_11_studyprop() {
-  $description =  array(
+  $description = [
     'table' => 'studyprop',
-    'fields' => array(
-      'studyprop_id' => array(
+    'fields' => [
+      'studyprop_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'study_id' => array(
+      ],
+      'study_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'value' => array(
+      ],
+      'value' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'studyprop_id',
-    ),
-    'unique keys' => array(
-      'study_id' => array(
+    ],
+    'unique keys' => [
+      'study_id' => [
         0 => 'study_id',
         1 => 'type_id',
         2 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-      'studyprop_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'studyprop_idx1' => [
         0 => 'study_id',
-      ),
-      'studyprop_idx2' => array(
+      ],
+      'studyprop_idx2' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'study' => array(
+        ],
+      ],
+      'study' => [
         'table' => 'study',
-        'columns' => array(
+        'columns' => [
           'study_id' => 'study_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_studyprop_feature()
  * Purpose: To describe the structure of 'studyprop_feature' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -10440,69 +10722,71 @@ function tripal_chado_chado_schema_v1_11_studyprop() {
  *
  */
 function tripal_chado_chado_schema_v1_11_studyprop_feature() {
-  $description =  array(
+  $description = [
     'table' => 'studyprop_feature',
-    'fields' => array(
-      'studyprop_feature_id' => array(
+    'fields' => [
+      'studyprop_feature_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'studyprop_id' => array(
+      ],
+      'studyprop_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'feature_id' => array(
+      ],
+      'feature_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'studyprop_feature_id',
-    ),
-    'unique keys' => array(
-      'studyprop_id' => array(
+    ],
+    'unique keys' => [
+      'studyprop_id' => [
         0 => 'studyprop_id',
         1 => 'feature_id',
-      ),
-    ),
-    'indexes' => array(
-      'studyprop_feature_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'studyprop_feature_idx1' => [
         0 => 'studyprop_id',
-      ),
-      'studyprop_feature_idx2' => array(
+      ],
+      'studyprop_feature_idx2' => [
         0 => 'feature_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'feature' => array(
+        ],
+      ],
+      'feature' => [
         'table' => 'feature',
-        'columns' => array(
+        'columns' => [
           'feature_id' => 'feature_id',
-        ),
-      ),
-      'studyprop' => array(
+        ],
+      ],
+      'studyprop' => [
         'table' => 'studyprop',
-        'columns' => array(
+        'columns' => [
           'studyprop_id' => 'studyprop_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_synonym()
  * Purpose: To describe the structure of 'synonym' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -10514,56 +10798,58 @@ function tripal_chado_chado_schema_v1_11_studyprop_feature() {
  *
  */
 function tripal_chado_chado_schema_v1_11_synonym() {
-  $description =  array(
+  $description = [
     'table' => 'synonym',
-    'fields' => array(
-      'synonym_id' => array(
+    'fields' => [
+      'synonym_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'synonym_sgml' => array(
+      ],
+      'synonym_sgml' => [
         'type' => 'varchar',
         'length' => '255',
         'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'synonym_id',
-    ),
-    'unique keys' => array(
-      'synonym_c1' => array(
+    ],
+    'unique keys' => [
+      'synonym_c1' => [
         0 => 'name',
         1 => 'type_id',
-      ),
-    ),
-    'indexes' => array(
-      'synonym_idx1' => array(
+      ],
+    ],
+    'indexes' => [
+      'synonym_idx1' => [
         0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_tableinfo()
  * Purpose: To describe the structure of 'tableinfo' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -10575,65 +10861,67 @@ function tripal_chado_chado_schema_v1_11_synonym() {
  *
  */
 function tripal_chado_chado_schema_v1_11_tableinfo() {
-  $description =  array(
+  $description = [
     'table' => 'tableinfo',
-    'fields' => array(
-      'tableinfo_id' => array(
+    'fields' => [
+      'tableinfo_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'varchar',
         'length' => '30',
         'not NULL' => '1',
-      ),
-      'primary_key_column' => array(
+      ],
+      'primary_key_column' => [
         'type' => 'varchar',
         'length' => '30',
         'not NULL' => '',
-      ),
-      'is_view' => array(
+      ],
+      'is_view' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-      'view_on_table_id' => array(
+      ],
+      'view_on_table_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'superclass_table_id' => array(
+      ],
+      'superclass_table_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'is_updateable' => array(
+      ],
+      'is_updateable' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '1',
-      ),
-      'modification_date' => array(
+      ],
+      'modification_date' => [
         'type' => 'date',
         'not NULL' => '1',
         'default' => 'ow(',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'tableinfo_id',
-    ),
-    'unique keys' => array(
-      'tableinfo_c1' => array(
+    ],
+    'unique keys' => [
+      'tableinfo_c1' => [
         0 => 'name',
-      ),
-    ),
-    'indexes' => array(
-    ),
-    'foreign keys' => array(
-    ),
-  );
+      ],
+    ],
+    'indexes' => [
+    ],
+    'foreign keys' => [
+    ],
+  ];
   return $description;
 }
+
 /**
  * Implements hook_chado_schema_v1_11_treatment()
  * Purpose: To describe the structure of 'treatment' to tripal
+ *
  * @see chado_insert_record()
  * @see chado_update_record()
  * @see chado_select_record()
@@ -10645,72 +10933,72 @@ function tripal_chado_chado_schema_v1_11_tableinfo() {
  *
  */
 function tripal_chado_chado_schema_v1_11_treatment() {
-  $description =  array(
+  $description = [
     'table' => 'treatment',
-    'fields' => array(
-      'treatment_id' => array(
+    'fields' => [
+      'treatment_id' => [
         'type' => 'serial',
         'not NULL' => '1',
-      ),
-      'rank' => array(
+      ],
+      'rank' => [
         'type' => 'int',
         'not NULL' => '1',
         'default' => '0',
-      ),
-      'biomaterial_id' => array(
+      ],
+      'biomaterial_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'type_id' => array(
+      ],
+      'type_id' => [
         'type' => 'int',
         'not NULL' => '1',
-      ),
-      'protocol_id' => array(
+      ],
+      'protocol_id' => [
         'type' => 'int',
         'not NULL' => '',
-      ),
-      'name' => array(
+      ],
+      'name' => [
         'type' => 'text',
         'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
+      ],
+    ],
+    'primary key' => [
       0 => 'treatment_id',
-    ),
-    'unique keys' => array(
-    ),
-    'indexes' => array(
-      'treatment_idx1' => array(
+    ],
+    'unique keys' => [
+    ],
+    'indexes' => [
+      'treatment_idx1' => [
         0 => 'biomaterial_id',
-      ),
-      'treatment_idx2' => array(
+      ],
+      'treatment_idx2' => [
         0 => 'type_id',
-      ),
-      'treatment_idx3' => array(
+      ],
+      'treatment_idx3' => [
         0 => 'protocol_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
+      ],
+    ],
+    'foreign keys' => [
+      'cvterm' => [
         'table' => 'cvterm',
-        'columns' => array(
+        'columns' => [
           'type_id' => 'cvterm_id',
-        ),
-      ),
-      'protocol' => array(
+        ],
+      ],
+      'protocol' => [
         'table' => 'protocol',
-        'columns' => array(
+        'columns' => [
           'protocol_id' => 'protocol_id',
-        ),
-      ),
-      'biomaterial' => array(
+        ],
+      ],
+      'biomaterial' => [
         'table' => 'biomaterial',
-        'columns' => array(
+        'columns' => [
           'biomaterial_id' => 'biomaterial_id',
-        ),
-      ),
-    ),
-  );
+        ],
+      ],
+    ],
+  ];
   return $description;
 }
 
@@ -10724,7 +11012,7 @@ function tripal_chado_chado_schema_v1_11_treatment() {
  *
  */
 function tripal_chado_chado_get_v1_11_tables() {
-  $tables = array(
+  $tables = [
     'acquisition',
     'acquisition_relationship',
     'acquisitionprop',
@@ -10868,7 +11156,7 @@ function tripal_chado_chado_get_v1_11_tables() {
     'studyprop_feature',
     'synonym',
     'tableinfo',
-    'treatment'
-  );
+    'treatment',
+  ];
   return $tables;
 }

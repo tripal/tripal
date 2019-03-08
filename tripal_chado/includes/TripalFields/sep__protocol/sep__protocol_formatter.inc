@@ -33,11 +33,11 @@ class sep__protocol_formatter extends ChadoFieldFormatter {
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
     if ($items[0]['value']) {
-      
-      $protocol_name_term = chado_get_semweb_term('protocol', 'name');
-      $protocol_type_term = chado_get_semweb_term('protocol', 'type_id');    
 
-      $protocol_name =  $items[0]['value'][$protocol_name_term];
+      $protocol_name_term = chado_get_semweb_term('protocol', 'name');
+      $protocol_type_term = chado_get_semweb_term('protocol', 'type_id');
+
+      $protocol_name = $items[0]['value'][$protocol_name_term];
       $content = $protocol_name;
       if (array_key_exists('entity_id', $items[0]['value'])) {
         list($entity_type, $entity_id) = explode(':', $items[0]['value']['entity_id']);

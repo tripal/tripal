@@ -15,6 +15,7 @@ class ChadoQueryTest extends TripalTestCase {
    * See PR 827.
    */
   public function test_filter_level() {
+
     $stock = factory('chado.stock')->create(['uniquename' => 'octopus_core_test_name']);
 
     // Test 1. Pass a single filter.
@@ -31,6 +32,7 @@ class ChadoQueryTest extends TripalTestCase {
     $this->assertNotNull($object->stock_id);
     $this->assertEquals($stock->stock_id, $object->stock_id);
 
+
     // Test 2 Pass an array of filters with a single item.
     $selector = [
       'stock_id' => $stock->stock_id,
@@ -45,6 +47,7 @@ class ChadoQueryTest extends TripalTestCase {
 
     $this->assertNotNull($object->stock_id);
     $this->assertEquals($stock->stock_id, $object->stock_id);
+
 
     // Test 3 Pass an array of filters with multiple items.
     $selector = [

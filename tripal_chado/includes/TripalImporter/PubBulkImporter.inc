@@ -1,6 +1,7 @@
 <?php
 
 class PubBulkImporter extends TripalImporter {
+
   /**
    * The name of this loader.  This name will be presented to the site
    * user.
@@ -22,7 +23,7 @@ class PubBulkImporter extends TripalImporter {
   /**
    * An array containing the extensions of allowed file types.
    */
-  public static $file_types = array();
+  public static $file_types = [];
 
 
   /**
@@ -63,14 +64,14 @@ class PubBulkImporter extends TripalImporter {
   /**
    * Indicates the methods that the file uploader will support.
    */
-  public static $methods = array(
+  public static $methods = [
     // Allow the user to upload a file to the server.
     'file_upload' => FALSE,
     // Allow the user to provide the path on the Tripal server for the file.
     'file_local' => FALSE,
     // Allow the user to provide a remote URL for the file.
     'file_remote' => FALSE,
-  );
+  ];
 
   /**
    * Indicates if the file must be provided.  An example when it may not be
@@ -86,7 +87,7 @@ class PubBulkImporter extends TripalImporter {
    * be a separate array containing a machine_name, name, and description
    * keys.  This information is used to build the help text for the loader.
    */
-  public static $argument_list = array();
+  public static $argument_list = [];
 
 
   /**
@@ -95,7 +96,7 @@ class PubBulkImporter extends TripalImporter {
    * zero indicates an unlimited number of uploaded files are allowed.
    */
   public static $cardinality = 0;
-  
+
   /**
    * Be default, all loaders are automatically added to the Admin >
    * Tripal > Data Loaders menu.  However, if this loader should be
@@ -116,15 +117,15 @@ class PubBulkImporter extends TripalImporter {
    * in the menu and set of permissions.
    */
   public static $callback = 'tripal_pub_importers_list';
-  
+
   /**
    * The name of the module that provides the callback function.
    */
   public static $callback_module = 'tripal_chado';
-  
+
   /**
    * An include path for the callback function.  Use a relative path within
-   * this scope of this module 
+   * this scope of this module
    * (e.g. includes/loaders/tripal_chado_pub_importers).
    */
   public static $callback_path = 'includes/loaders/tripal_chado.pub_importers.inc';

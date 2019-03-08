@@ -11,18 +11,18 @@ function tripal_core_node_toc_form($form, &$form_state, $node) {
 
   $form["#tree"] = TRUE;
 
-  $form["instructions"] = array(
+  $form["instructions"] = [
     '#type' => 'fieldset',
     '#collapsed' => TRUE,
     '#collapsible' => TRUE,
     '#title' => 'Instructions',
-  );
+  ];
   $admin_link = l(
     $type_info->name . " TOC administrative page",
     "admin/tripal/legacy/" . $type_info->module . "/" . $node->type . "toc",
-    array('attributes' => array('target' => '_blank'))
+    ['attributes' => ['target' => '_blank']]
   );
-  $form["instructions"]["main"] = array(
+  $form["instructions"]["main"] = [
     '#markup' => '<p>' . t("Below is a list of the titles of
       content panes that can appear on this page.  These titles appear in the
       the following order in the Table of Contents (TOC). You may rename
@@ -32,12 +32,12 @@ function tripal_core_node_toc_form($form, &$form_state, $node) {
       '<p>' . t('The list below shows all possible content panes that can appear.
       However, those without content are automatically hidden and do not
       appear in the TOC.' . '</p>'),
-  );
+  ];
 
-  $form['node'] = array(
+  $form['node'] = [
     '#type' => 'value',
     '#value' => $node,
-  );
+  ];
 
   // Get the content array for this node, then pass it through the
   // tripal_core_node_view_alter which generates the TOC.  After that
@@ -51,7 +51,7 @@ function tripal_core_node_toc_form($form, &$form_state, $node) {
   tripal_core_node_view_alter($build);
 
   // Iterate through the built items and add form elemetns for each one.
-  foreach(element_children($build) as $key) {
+  foreach (element_children($build) as $key) {
     $element = $build[$key];
 
     if (array_key_exists('#tripal_toc_id', $element)) {
@@ -65,102 +65,103 @@ function tripal_core_node_toc_form($form, &$form_state, $node) {
       // interface that created the link.
       $is_link = array_key_exists('#is_link', $element) ? $element['#is_link'] : FALSE;
       if (!$is_link) {
-        $form['toc_items'][$toc_id]['title'] = array(
+        $form['toc_items'][$toc_id]['title'] = [
           '#type' => 'textfield',
           '#default_value' => $toc_title,
-        );
+        ];
       }
       else {
-        $form['toc_items'][$toc_id]['title'] = array(
+        $form['toc_items'][$toc_id]['title'] = [
           '#markup' => '<i>link title:</i> ' . $toc_title,
           '#value' => $toc_title,
-        );
+        ];
       }
-      $form['toc_items'][$toc_id]['hide'] = array(
+      $form['toc_items'][$toc_id]['hide'] = [
         '#type' => 'checkbox',
         '#default_value' => $toc_hide,
-      );
-      $form['toc_items'][$toc_id]['weight'] = array(
+      ];
+      $form['toc_items'][$toc_id]['weight'] = [
         '#type' => 'textfield',
         '#default_value' => $toc_weight,
-        '#attributes' => array(
-          'class' => array('tripal-node-toc-items-weights'),
-        ),
+        '#attributes' => [
+          'class' => ['tripal-node-toc-items-weights'],
+        ],
         '#size' => 5,
-      );
+      ];
     }
   }
   $form['toc_items']['#theme'] = 'tripal_node_toc_items_table';
 
-  $form['submit'] = array(
+  $form['submit'] = [
     '#type' => 'submit',
     '#name' => 'toc_submit',
     '#value' => t('Submit'),
-  );
-  $form['unset'] = array(
+  ];
+  $form['unset'] = [
     '#type' => 'submit',
     '#name' => 'toc_unset',
     '#value' => t('Unset Node Customizations'),
-  );
+  ];
 
   // Check to see if this node's TOC is specifically being managed.
   $sql = "SELECT count(*) FROM {tripal_toc} where nid = :nid";
-  $managed_items = db_query($sql, array(':nid' => $node->nid))->fetchField();
+  $managed_items = db_query($sql, [':nid' => $node->nid])->fetchField();
 
   if ($managed_items > 0) {
-    $form['is_managed'] = array(
+    $form['is_managed'] = [
       '#markup' => '<p><font color="red">' .
-      t('This page currently has customiations to the TOC.</font> This means
+        t('This page currently has customiations to the TOC.</font> This means
         that any customzations for the content type are overriden. Click the
         "Unset Node Customizations" button above to remove page-level
         customizations and default to the content type settings.') . '</p>',
-    );
+    ];
   }
 
 
   return $form;
 }
+
 /**
  *
  * @param $variables
  */
 function theme_tripal_node_toc_items_table($variables) {
   $elements = $variables['element'];
-  $toc_items = array();
+  $toc_items = [];
 
   // Sort the toc_items using a custom sort function. But we need to include
   // only the items we want in the table (exclude renderable stuff).
-  foreach(element_children($elements) as $key) {
+  foreach (element_children($elements) as $key) {
     $toc_items[] = $elements[$key];
   }
   usort($toc_items, 'theme_tripal_node_sort_toc_items');
 
   // Build the table header.
-  $headers = array('Content Pane Name', 'Hide', 'Weight');
+  $headers = ['Content Pane Name', 'Hide', 'Weight'];
 
   // Format the form elements as rows in the table.
-  $rows = array();
+  $rows = [];
   foreach ($toc_items as $key => $item) {
-    $rows[] = array(
-      'data' => array(
+    $rows[] = [
+      'data' => [
         drupal_render($item['title']),
         drupal_render($item['hide']),
         drupal_render($item['weight']),
-      ),
-      'class' => array('draggable'),
-    );
+      ],
+      'class' => ['draggable'],
+    ];
   }
 
   // Theme and return the table.
-  $table = array(
+  $table = [
     'header' => $headers,
     'rows' => $rows,
-    'attributes' => array("id" => 'tripal-node-toc-items-table'),
+    'attributes' => ["id" => 'tripal-node-toc-items-table'],
     'sticky' => TRUE,
     'caption' => t('Content Panes Available in the TOC'),
-    'colgroups' => array(),
+    'colgroups' => [],
     'empty' => t('There are no content panes for this page'),
-  );
+  ];
   drupal_add_tabledrag('tripal-node-toc-items-table', 'order', 'sibling', 'tripal-node-toc-items-weights');
   return theme_table($table);
 }
@@ -196,12 +197,13 @@ function tripal_core_node_toc_form_validate($form, &$form_state) {
     }
   }
 }
+
 /**
  * Implements hook_submit for the tripal_core_node_toc_form.
  */
 function tripal_core_node_toc_form_submit($form, &$form_state) {
   $toc_items = $form_state['values']['toc_items'];
-  $node      = $form_state['values']['node'];
+  $node = $form_state['values']['node'];
 
   if ($form_state['clicked_button']['#name'] == "toc_submit") {
     $transaction = db_transaction();
@@ -214,19 +216,18 @@ function tripal_core_node_toc_form_submit($form, &$form_state) {
       // Second add in any new settings for this node
       foreach ($toc_items as $toc_id => $item) {
         db_insert('tripal_toc')
-          ->fields(array(
+          ->fields([
             'node_type' => $node->type,
             'key' => $toc_id,
             'title' => array_key_exists('title', $item) ? $item['title'] : '',
             'weight' => $item['weight'],
             'nid' => $node->nid,
             'hide' => $item['hide'],
-          ))
+          ])
           ->execute();
       }
       drupal_set_message("TOC changes successfully applied to this node only.");
-    }
-    catch (Exception $e) {
+    } catch (Exception $e) {
       $transaction->rollback();
       drupal_set_message("Failed to apply TOC changes.", "error");
     }
@@ -240,8 +241,7 @@ function tripal_core_node_toc_form_submit($form, &$form_state) {
         ->execute();
 
       drupal_set_message("TOC is no longer customized specifically for this page. Now using the content type settings.");
-    }
-    catch (Exception $e) {
+    } catch (Exception $e) {
       $transaction->rollback();
       drupal_set_message("Failed to apply TOC changes.", "error");
     }
@@ -281,7 +281,7 @@ function tripal_core_node_view_build_toc(&$build) {
 
   $cache = cache_get("theme_registry:$theme", 'cache');
   $node = $build['#node'];
-  $toc = array();
+  $toc = [];
   $toc_html = '';
 
   // If we are looking at a Tripal node template then we want to
@@ -291,7 +291,7 @@ function tripal_core_node_view_build_toc(&$build) {
 
     // Iterate through all the elements of the $build array and for those
     // that are wanting to provide content for this node.
-    $markup = array();
+    $markup = [];
     foreach ($build as $key => $value) {
       $value = $build[$key];
 
@@ -358,7 +358,7 @@ function tripal_core_node_view_build_toc(&$build) {
           // Add the link to the TOC
           $parts = explode("|", $element['#markup']);
           if (count($parts) == 2) {
-            $toc[$weight][$parts[0]] = "<div id=\"$toc_item_id\" class=\"tripal_toc_list_item\">" . l($parts[0], $parts[1], array('attributes' => array('target' => '_blank'))) . "</div>";
+            $toc[$weight][$parts[0]] = "<div id=\"$toc_item_id\" class=\"tripal_toc_list_item\">" . l($parts[0], $parts[1], ['attributes' => ['target' => '_blank']]) . "</div>";
           }
           else {
             $toc[$weight][$parts[0]] = "<div id=\"$toc_item_id\" class=\"tripal_toc_list_item\">" . $element['#markup'] . "</div>";
@@ -446,8 +446,8 @@ function tripal_core_node_view_build_toc(&$build) {
       // INITIALIZE THE CONTENT VARIABLES
       //-----------------------
       $toc_item_title = $key;
-      $toc_item_id    = $key;
-      $toc_item_link  = '';
+      $toc_item_id = $key;
+      $toc_item_link = '';
       $weight = 0;
       $hide = 0;
 
@@ -508,16 +508,16 @@ function tripal_core_node_view_build_toc(&$build) {
       }
 
       // Setup the content array for this element
-      $build[$key] = array(
+      $build[$key] = [
         '#markup' => $markup,
         '#tripal_toc_id' => $toc_item_id,
         '#tripal_toc_title' => $toc_item_title,
         '#weight' => $weight,
         '#hide' => $hide,
-      );
+      ];
 
 
-        // if we still don't have markup then skip this one
+      // if we still don't have markup then skip this one
       if (!$markup) {
         continue;
       }
@@ -537,10 +537,10 @@ function tripal_core_node_view_build_toc(&$build) {
             customize the way the content above is presented.  Tripal provides a template
             file for each pane of content.  To customize, copy the template file to your
             site's default theme, edit then " .
-            l('clear the Drupal cache', 'admin/config/development/performance', array('attributes' => array('target' => '_blank'))) . ".
+            l('clear the Drupal cache', 'admin/config/development/performance', ['attributes' => ['target' => '_blank']]) . ".
             Currently, the content above is provided by this template: <br><br>$path",
             TRIPAL_INFO,
-            array('return_html' => 1)
+            ['return_html' => 1]
           );
         }
       }
@@ -602,7 +602,7 @@ function tripal_core_get_toc_overrides($nid, $key, $node_type, $mode) {
   if ($mode != "manage_type") {
     // First look to see if the node has customizations for this item.
     $toc_item_overrides = db_select('tripal_toc', 'tc')
-      ->fields('tc', array('title', 'weight', 'hide'))
+      ->fields('tc', ['title', 'weight', 'hide'])
       ->condition('key', $key)
       ->condition('nid', $nid)
       ->execute()
@@ -611,18 +611,18 @@ function tripal_core_get_toc_overrides($nid, $key, $node_type, $mode) {
       $override_title = $toc_item_overrides->title;
       $override_weight = $toc_item_overrides->weight;
       $override_hide = $toc_item_overrides->hide;
-      return array(
-        'title'  => $override_title,
+      return [
+        'title' => $override_title,
         'weight' => $override_weight,
-        'hide'   => $override_hide,
-      );
+        'hide' => $override_hide,
+      ];
     }
   }
 
   // If there are no specific node customizations then look to see if there
   // are customizations for this content type.
   $toc_item_overrides = db_select('tripal_toc', 'tc')
-    ->fields('tc', array('title', 'weight', 'hide'))
+    ->fields('tc', ['title', 'weight', 'hide'])
     ->condition('node_type', $node_type)
     ->condition('key', $key)
     ->isNull('nid')
@@ -634,11 +634,11 @@ function tripal_core_get_toc_overrides($nid, $key, $node_type, $mode) {
     $override_hide = $toc_item_overrides->hide;
   }
 
-  return array(
+  return [
     'title' => $override_title,
     'weight' => $override_weight,
     'hide' => $override_hide,
-  );
+  ];
 
 }
 
@@ -656,13 +656,13 @@ function tripal_core_content_type_toc_form($form, &$form_state, $content_type) {
   // Get a single node of this type so we can get all the possible content
   // for it.
   $sql = "SELECT nid FROM {node} WHERE type = :type LIMIT 1 OFFSET 0";
-  $nid = db_query($sql, array(':type' => $content_type))->fetchField();
+  $nid = db_query($sql, [':type' => $content_type])->fetchField();
   if (!$nid) {
-    $form["not_available"] = array(
+    $form["not_available"] = [
       '#markup' => t('Please sync at least one %type_name record. A node
           must exist before customizations to the Table of Contents (TOC) can
-          be performed.', array('%type_name' => $type_info->name)),
-    );
+          be performed.', ['%type_name' => $type_info->name]),
+    ];
     return $form;
   }
 
@@ -681,32 +681,32 @@ function tripal_core_content_type_toc_form($form, &$form_state, $content_type) {
   $build["#node"] = $node;
   tripal_core_node_view_alter($build);
 
-  $form["instructions"] = array(
+  $form["instructions"] = [
     '#type' => 'fieldset',
     '#collapsed' => TRUE,
     '#collapsible' => TRUE,
     '#title' => 'Instructions',
-  );
-  $form["instructions"]["main"] = array(
+  ];
+  $form["instructions"]["main"] = [
     '#markup' => '</p>' . t('Below is a list of the titles of
       content panes that can appear on all %type_name pages.  You may rename
       the titles or drag and drop them to change the order.  Content that appears
       only on a single page can not be ordered here, but must be ordered using
       the TOC tab on the page itself.  If a page has customized TOC settings
       then those settings will take precedent over these.',
-        array('%type_name' => $type_info->name)) . '</p>' .
-    '<p>' . t('The list below shows all possible content
+        ['%type_name' => $type_info->name]) . '</p>' .
+      '<p>' . t('The list below shows all possible content
       panes that can appear. However, those without content are automatically
       hidden and do not appear in the TOC.' . '</p>'),
-  );
+  ];
 
-  $form['content_type'] = array(
+  $form['content_type'] = [
     '#type' => 'value',
     '#value' => $content_type,
-  );
+  ];
 
   // Iterate through the built items and add form elemetns for each one.
-  foreach(element_children($build) as $key) {
+  foreach (element_children($build) as $key) {
     $element = $build[$key];
 
     if (array_key_exists('#tripal_toc_id', $element)) {
@@ -714,36 +714,36 @@ function tripal_core_content_type_toc_form($form, &$form_state, $content_type) {
       $toc_title = $element['#tripal_toc_title'];
       $toc_weight = $element['#weight'];
       $toc_hide = $element['#hide'];
-      $form['toc_items'][$toc_id]['title'] = array(
+      $form['toc_items'][$toc_id]['title'] = [
         '#type' => 'textfield',
         '#default_value' => $toc_title,
-      );
-      $form['toc_items'][$toc_id]['hide'] = array(
+      ];
+      $form['toc_items'][$toc_id]['hide'] = [
         '#type' => 'checkbox',
         '#default_value' => $toc_hide,
-      );
-      $form['toc_items'][$toc_id]['weight'] = array(
+      ];
+      $form['toc_items'][$toc_id]['weight'] = [
         '#type' => 'textfield',
         '#default_value' => $toc_weight,
-        '#attributes' => array(
-          'class' => array('tripal-node-toc-items-weights'),
-        ),
+        '#attributes' => [
+          'class' => ['tripal-node-toc-items-weights'],
+        ],
         '#size' => 5,
-      );
+      ];
     }
   }
   $form['toc_items']['#theme'] = 'tripal_node_toc_items_table';
 
-  $form['submit'] = array(
+  $form['submit'] = [
     '#type' => 'submit',
     '#name' => 'toc_submit',
     '#value' => t('Submit'),
-  );
-  $form['unset'] = array(
+  ];
+  $form['unset'] = [
     '#type' => 'submit',
     '#name' => 'toc_unset',
     '#value' => t('Reset to Defaults'),
-  );
+  ];
 
   return $form;
 }
@@ -762,11 +762,12 @@ function tripal_core_content_type_toc_form_validate($form, &$form_state) {
     }
   }
 }
+
 /**
  * Implements hook_submit for the tripal_core_node_toc_form.
  */
 function tripal_core_content_type_toc_form_submit($form, &$form_state) {
-  $toc_items    = $form_state['values']['toc_items'];
+  $toc_items = $form_state['values']['toc_items'];
   $content_type = $form_state['values']['content_type'];
 
   if ($form_state['clicked_button']['#name'] == "toc_submit") {
@@ -781,18 +782,17 @@ function tripal_core_content_type_toc_form_submit($form, &$form_state) {
       // Second add in any new settings for this node
       foreach ($toc_items as $toc_id => $item) {
         db_insert('tripal_toc')
-        ->fields(array(
-          'node_type' => $content_type,
-          'key' => $toc_id,
-          'title' => $item['title'],
-          'weight' => $item['weight'],
-          'hide' => $item['hide'],
-        ))
-        ->execute();
+          ->fields([
+            'node_type' => $content_type,
+            'key' => $toc_id,
+            'title' => $item['title'],
+            'weight' => $item['weight'],
+            'hide' => $item['hide'],
+          ])
+          ->execute();
       }
       drupal_set_message("TOC changes successfully applied to this content type.");
-    }
-    catch (Exception $e) {
+    } catch (Exception $e) {
       $transaction->rollback();
       drupal_set_message("Failed to apply TOC changes.", "error");
     }
@@ -807,8 +807,7 @@ function tripal_core_content_type_toc_form_submit($form, &$form_state) {
         ->execute();
 
       drupal_set_message("The TOC is reset to defaults for this content type.");
-    }
-    catch (Exception $e) {
+    } catch (Exception $e) {
       $transaction->rollback();
       drupal_set_message("Failed to apply TOC changes.", "error");
     }

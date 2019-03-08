@@ -2,41 +2,41 @@
 
 /**
  * @file
-* Administration Interface for deleting multiple analyses
-*/
+ * Administration Interface for deleting multiple analyses
+ */
 
 /**
  * A form for indicating the analyses to delete
-*
-* @ingroup tripal_legacy_analysis
-*/
+ *
+ * @ingroup tripal_legacy_analysis
+ */
 function tripal_analysis_delete_form() {
   // get the list of analyses
   $sql = "SELECT * FROM {analysis} ORDER BY name";
   $org_rset = chado_query($sql);
-  $analyses = array();
+  $analyses = [];
   while ($analysis = $org_rset->fetchObject()) {
     $analyses[$analysis->analysis_id] = "$analysis->name";
   }
 
-  $form['desc'] = array(
-      '#markup' => t("Use the following form to delete analyses which may or may
+  $form['desc'] = [
+    '#markup' => t("Use the following form to delete analyses which may or may
         not be synced. Please be cautious. Deleting an analysis will cause all
         data associated with the analysis to also be deleted."),
-  );
+  ];
 
-  $form['analyses'] = array(
-      '#title'       => t('analysis'),
-      '#type'        => 'checkboxes',
-      '#options'     => $analyses,
-      '#prefix'      => '<div style="height: 400px; overflow: scroll">',
-      '#suffix'      => '</div><br>',
-  );
+  $form['analyses'] = [
+    '#title' => t('analysis'),
+    '#type' => 'checkboxes',
+    '#options' => $analyses,
+    '#prefix' => '<div style="height: 400px; overflow: scroll">',
+    '#suffix' => '</div><br>',
+  ];
 
-  $form['button'] = array(
-      '#type' => 'submit',
-      '#value' => t('Delete analyses'),
-  );
+  $form['button'] = [
+    '#type' => 'submit',
+    '#value' => t('Delete analyses'),
+  ];
   return $form;
 }
 
@@ -49,8 +49,8 @@ function tripal_analysis_delete_form_submit($form, &$form_state) {
   global $user;
 
   // Convert the analyses input into an array of just ids.
-  $analyses   = $form_state['values']['analyses'];
-  $org_ids = array();
+  $analyses = $form_state['values']['analyses'];
+  $org_ids = [];
   foreach ($analyses as $id => $val) {
     if ($val != 0) {
       $org_ids[] = $id;
@@ -58,10 +58,10 @@ function tripal_analysis_delete_form_submit($form, &$form_state) {
   }
 
   if (count($org_ids) > 0) {
-    $args = array($org_ids);
+    $args = [$org_ids];
 
     tripal_add_job("Delete analysis", 'tripal_analysis',
-    'tripal_analysis_delete_analyses', $args, $user->uid);
+      'tripal_analysis_delete_analyses', $args, $user->uid);
     drupal_set_message(t("analyses will disappear from the list below once the job completes."));
   }
   else {
@@ -92,21 +92,20 @@ function tripal_analysis_delete_analyses($analyses, $job = NULL) {
   // begin the transaction
   $transaction = db_transaction();
   print "\nNOTE: Deleting analyses is performed using a database transaction. \n" .
-      "If the load fails or is terminated prematurely then the entire set of \n" .
-      "deletions is rolled back and will not be found in the database\n\n";
+    "If the load fails or is terminated prematurely then the entire set of \n" .
+    "deletions is rolled back and will not be found in the database\n\n";
 
   try {
-    $values = array(
-        'analysis_id' => $analyses
-    );
-    $num_deletes = chado_select_record('analysis', array('count(*) as cnt'), $values);
+    $values = [
+      'analysis_id' => $analyses,
+    ];
+    $num_deletes = chado_select_record('analysis', ['count(*) as cnt'], $values);
     print "Deleting " . $num_deletes[0]->cnt . " analyses\n";
     chado_delete_record('analysis', $values);
 
     print "Removing orphaned analysis pages\n";
     chado_cleanup_orphaned_nodes('analysis');
-  }
-  catch (Exception $e) {
+  } catch (Exception $e) {
     print "\n"; // make sure we start errors on new line
     $transaction->rollback();
     print "FAILED: Rolling back database changes...\n";

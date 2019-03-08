@@ -4,7 +4,7 @@
  * @file
  * Provides an application programming interface (API) for working with
  * data file importers using the TripalImporter class.
- * 
+ *
  */
 
 /**
@@ -40,7 +40,7 @@ function hook_handle_uploaded_file($file, $type) {
 /**
  * Implements hook_importer_finish().
  *
- * This hook is executed before a TripalImporter has started.  This allows 
+ * This hook is executed before a TripalImporter has started.  This allows
  * modules to implement specific actions prior to execution.
  *
  * @param $importer
@@ -49,23 +49,23 @@ function hook_handle_uploaded_file($file, $type) {
  *   The job_id
  */
 function hook_importer_start($importer) {
-  
+
 }
 
 /**
  * Implements hook_importer_finish().
- * 
+ *
  * This hook is executed once a TripalImporter has completed but it's run
  * and post run activities.  This allows modules to implement specific actions
  * once loaders are completed.
- * 
+ *
  * @param $importer
  *   The instance of the TripalImporter class that just completed its run.
  * @param $job_id
- *   The job_id 
+ *   The job_id
  */
 function hook_importer_finish($importer) {
-  
+
 }
 
 /**
@@ -83,7 +83,7 @@ function hook_importer_finish($importer) {
  * @ingroup tripal_importer_api
  */
 function tripal_get_importers() {
-  $importers = array();
+  $importers = [];
 
   $modules = module_list(TRUE);
   foreach ($modules as $module) {
@@ -139,6 +139,7 @@ function tripal_load_include_importer_class($class) {
  *
  * @param $import_id
  *   The ID of the import record.
+ *
  * @throws Exception
  *
  * @ingroup tripal_importer_api
@@ -150,11 +151,11 @@ function tripal_run_importer($import_id, TripalJob $job = NULL) {
   $loader->setJob($job);
   $loader->prepareFiles();
 
-  print "\nRunning '".$loader::$name."' importer";
+  print "\nRunning '" . $loader::$name . "' importer";
 
   print "\nNOTE: Loading of file is performed using a database transaction. \n" .
-        "If it fails or is terminated prematurely then all insertions and \n" .
-        "updates are rolled back and will not be found in the database\n\n";
+    "If it fails or is terminated prematurely then all insertions and \n" .
+    "updates are rolled back and will not be found in the database\n\n";
 
   try {
     // Call the hook_importer_start functions.
@@ -163,13 +164,13 @@ function tripal_run_importer($import_id, TripalJob $job = NULL) {
       $function = $module . '_importer_start';
       $function($loader);
     }
-    
+
     // Run the loader
     tripal_run_importer_run($loader, $job);
 
     // Handle the post run.
     tripal_run_importer_post_run($loader, $job);
-    
+
     // Call the hook_importer_finish functions.
     $modules = module_implements('importer_finish');
     foreach ($modules as $module) {
@@ -186,10 +187,9 @@ function tripal_run_importer($import_id, TripalJob $job = NULL) {
 
     // Clear the Drupal cache
     //cache_clear_all();
-  }
-  catch (Exception $e) {
+  } catch (Exception $e) {
     if ($job) {
-      $job->logMessage($e->getMessage(), array(), TRIPAL_ERROR);
+      $job->logMessage($e->getMessage(), [], TRIPAL_ERROR);
     }
     if ($loader) {
       $loader->cleanFile();
@@ -204,6 +204,7 @@ function tripal_run_importer($import_id, TripalJob $job = NULL) {
  *   The TripalImporter object.
  * @param $job
  *   The TripalJob object.$this
+ *
  * @throws Exception
  *
  * @ingroup tripal_importer_api
@@ -224,13 +225,13 @@ function tripal_run_importer_run($loader, $job) {
       $loader->logMessage('Removing downloaded file...');
       unlink($temp);
     }
-  }
-  catch (Exception $e) {
+  } catch (Exception $e) {
     // Rollback and re-throw the error.
     $transaction->rollback();
     throw $e;
   }
 }
+
 /**
  * Second step of the tripal_run_importer.
  *
@@ -238,6 +239,7 @@ function tripal_run_importer_run($loader, $job) {
  *   The TripalImporter object.
  * @param $job
  *   The TripalJob object.
+ *
  * @throws Exception
  *
  * @ingroup tripal_importer_api
@@ -245,10 +247,9 @@ function tripal_run_importer_run($loader, $job) {
 function tripal_run_importer_post_run($loader, $job) {
   // the transaction
   $transaction = db_transaction();
-  try {    
+  try {
     $loader->postRun();
-  }
-  catch (Exception $e) {
+  } catch (Exception $e) {
     // Rollback and re-throw the error.
     $transaction->rollback();
     throw $e;

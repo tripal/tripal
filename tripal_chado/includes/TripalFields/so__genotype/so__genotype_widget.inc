@@ -1,11 +1,12 @@
 <?php
 
 class so__genotype_widget extends ChadoFieldWidget {
+
   // The default lable for this field.
   public static $default_label = 'Genotype';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('so__genotype');
+  public static $field_types = ['so__genotype'];
 
   /**
    *

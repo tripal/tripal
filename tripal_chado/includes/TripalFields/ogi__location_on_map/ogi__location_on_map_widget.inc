@@ -1,11 +1,12 @@
 <?php
 
 class ogi__location_on_map_widget extends ChadoFieldWidget {
+
   // The default lable for this field.
   public static $default_label = 'Location on Map';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('ogi__location_on_map');
+  public static $field_types = ['ogi__location_on_map'];
 
   /**
    *

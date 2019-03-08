@@ -24,7 +24,7 @@ class data__sequence_checksum extends ChadoField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings  = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'data',
     // The name of the term.
@@ -35,7 +35,7 @@ class data__sequence_checksum extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
-  );
+  ];
 
   // The default widget for this field.
   public static $default_widget = 'data__sequence_checksum_widget';
@@ -49,6 +49,7 @@ class data__sequence_checksum extends ChadoField {
   // An array containing details about the field. The format of this array
   // is the same as that returned by field_info_fields()
   protected $field;
+
   // An array containing details about an instance of the field. A field does
   // not have to have an instance.  But if dealing with an instance (such as
   // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
@@ -59,16 +60,16 @@ class data__sequence_checksum extends ChadoField {
    */
   public function elementInfo() {
     $field_term = $this->getFieldTermID();
-    return array(
-      $field_term => array(
-        'operations' => array(),
+    return [
+      $field_term => [
+        'operations' => [],
         'sortable' => FALSE,
         'searchable' => FALSE,
         'type' => 'xs:string',
         'readonly' => TRUE,
         'required' => FALSE,
-      ),
-    );
+      ],
+    ];
   }
 
 }

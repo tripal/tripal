@@ -25,7 +25,7 @@ class schema__publication extends ChadoField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings  = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'schema',
     // The name of the term.
@@ -36,7 +36,7 @@ class schema__publication extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
-  );
+  ];
 
 
   // The default widget for this field.
@@ -51,6 +51,7 @@ class schema__publication extends ChadoField {
   // An array containing details about the field. The format of this array
   // is the same as that returned by field_info_fields()
   protected $field;
+
   // An array containing details about an instance of the field. A field does
   // not have to have an instance.  But if dealing with an instance (such as
   // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
@@ -61,16 +62,17 @@ class schema__publication extends ChadoField {
    */
   public function elementInfo() {
     $field_term = $this->getFieldTermID();
-    return array(
-      $field_term => array(
-        'operations' => array(),
+    return [
+      $field_term => [
+        'operations' => [],
         'sortable' => FALSE,
         'searchable' => FALSE,
         'type' => 'xs:string',
         'readonly' => TRUE,
-      ),
-    );
+      ],
+    ];
   }
+
   /**
    *
    * @see TripalField::load()
@@ -107,27 +109,27 @@ class schema__publication extends ChadoField {
       $linker_table = $base_table . '_pub';
 
       // Set some defaults for the empty record.
-      $entity->{$field_name}['und'][0] = array(
-        'value' => array(),
+      $entity->{$field_name}['und'][0] = [
+        'value' => [],
         'chado-' . $field_table . '__' . $pkey => '',
         'chado-' . $field_table . '__' . $fkey_lcolumn => '',
         'chado-' . $field_table . '__' . 'pub_id' => '',
-      );
+      ];
     }
     // Otherwise, the base table has a pub_id field.
     else {
-      $entity->{$field_name}['und'][0] = array(
-        'value' => array(),
+      $entity->{$field_name}['und'][0] = [
+        'value' => [],
         'chado-' . $field_table . '__' . $field_column => '',
-      );
+      ];
     }
 
     // Get the list of publications
-    $pubs = array();
+    $pubs = [];
     if ($linker_table) {
-      $options = array(
+      $options = [
         'return_array' => 1,
-      );
+      ];
       $record = chado_expand_var($record, 'table', $linker_table, $options);
       if (property_exists($record, $linker_table) and is_array($record->$linker_table) and count($record->$linker_table) > 0) {
         $i = 0;

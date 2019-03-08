@@ -32,18 +32,18 @@ class sep__protocol_widget extends ChadoFieldWidget {
 
     $protocol_term = chado_get_semweb_term($field_column, $field_table);
     $protocol_name_term = chado_get_semweb_term('protocol', 'name');
-    $protocol_type_term = chado_get_semweb_term('protocol', 'type_id');    
+    $protocol_type_term = chado_get_semweb_term('protocol', 'type_id');
 
     // Set defaults for the form elements.
     $protocol_name = '';
     $protocol_id = '';
-    
+
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.
     if (count($items) > 0 and array_key_exists($delta, $items)) {
       $protocol_name = array_key_exists($protocol_name_term, $items[$delta]['value']) ? $items[$delta]['value'][$protocol_name_term] : $protocol_name;
     }
-    
+
     // Get the list of protocols
     $protocols = [];
     $sql = "SELECT * FROM {protocol}";
@@ -54,11 +54,11 @@ class sep__protocol_widget extends ChadoFieldWidget {
         $protocol_id = $protocol->protocol_id;
       }
     }
-    
-    $widget['value'] = array(
+
+    $widget['value'] = [
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
-    );
+    ];
 
     $widget[$linker_field] = [
       '#type' => 'select',
@@ -80,9 +80,9 @@ class sep__protocol_widget extends ChadoFieldWidget {
     $field_name = $this->field['field_name'];
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
-    
-    $linker_field = 'chado-' . $field_table . '__' . $field_column;    
-    
+
+    $linker_field = 'chado-' . $field_table . '__' . $field_column;
+
     // Make sure the value is set to the organism_id
     $protocol_id = $form_state['values'][$field_name]['und'][0][$linker_field];
     if ($protocol_id) {

@@ -21,8 +21,8 @@ class TripalChadoPropertyAPITest extends TripalTestCase {
    */
   public function test_chado_insert_property($prop_table, $base_table) {
 
-    $base_record = factory('chado.'.$base_table)->create();
-    $base_pkey = $base_table.'_id';
+    $base_record = factory('chado.' . $base_table)->create();
+    $base_pkey = $base_table . '_id';
     $term = factory('chado.cvterm')->create();
 
     $value = 'chado_API_test_value';
@@ -36,9 +36,9 @@ class TripalChadoPropertyAPITest extends TripalTestCase {
 
     chado_insert_property($record, $property);
 
-    $result = db_select('chado.'.$prop_table, 'p')
+    $result = db_select('chado.' . $prop_table, 'p')
       ->fields('p')
-      ->condition('p.'.$base_pkey, $base_record->{$base_pkey})
+      ->condition('p.' . $base_pkey, $base_record->{$base_pkey})
       ->execute()
       ->fetchObject();
 
@@ -61,8 +61,8 @@ class TripalChadoPropertyAPITest extends TripalTestCase {
    */
   public function test_chado_get_property($prop_table, $base_table) {
 
-    $base_record = factory('chado.'.$base_table)->create();
-    $base_pkey = $base_table.'_id';
+    $base_record = factory('chado.' . $base_table)->create();
+    $base_pkey = $base_table . '_id';
     $term = factory('chado.cvterm')->create();
 
     $value = 'chado_API_test_value';
@@ -79,7 +79,7 @@ class TripalChadoPropertyAPITest extends TripalTestCase {
     $this->assertNotFalse($retrieved);
     $this->assertEquals($value, $retrieved->value);
 
-    $record = ['prop_id' => $prop[$prop_table.'_id'], 'table' => $base_table];
+    $record = ['prop_id' => $prop[$prop_table . '_id'], 'table' => $base_table];
     $retrieved = chado_get_property($record, $property);
 
     $this->assertNotNull($retrieved);
@@ -97,8 +97,8 @@ class TripalChadoPropertyAPITest extends TripalTestCase {
    */
   public function test_chado_update_property($prop_table, $base_table) {
 
-    $base_record = factory('chado.'.$base_table)->create();
-    $base_pkey = $base_table.'_id';
+    $base_record = factory('chado.' . $base_table)->create();
+    $base_pkey = $base_table . '_id';
     $term = factory('chado.cvterm')->create();
 
     $value = 'chado_API_test_value';
@@ -118,9 +118,9 @@ class TripalChadoPropertyAPITest extends TripalTestCase {
     chado_update_property($record, $property);
 
 
-    $result = db_select('chado.'.$prop_table, 'p')
+    $result = db_select('chado.' . $prop_table, 'p')
       ->fields('p')
-      ->condition('p.'.$base_pkey, $base_record->{$base_pkey})
+      ->condition('p.' . $base_pkey, $base_record->{$base_pkey})
       ->execute()
       ->fetchObject();
 
@@ -142,8 +142,8 @@ class TripalChadoPropertyAPITest extends TripalTestCase {
    */
   public function test_chado_delete_property($prop_table, $base_table) {
 
-    $base_record = factory('chado.'.$base_table)->create();
-    $base_pkey = $base_table.'_id';
+    $base_record = factory('chado.' . $base_table)->create();
+    $base_pkey = $base_table . '_id';
     $term = factory('chado.cvterm')->create();
 
     $value = 'chado_API_test_value';
@@ -159,9 +159,9 @@ class TripalChadoPropertyAPITest extends TripalTestCase {
 
     chado_delete_property($record, $property);
 
-    $result = db_select('chado.'.$prop_table, 'p')
+    $result = db_select('chado.' . $prop_table, 'p')
       ->fields('p')
-      ->condition('p.'.$base_pkey, $base_record->{$base_pkey})
+      ->condition('p.' . $base_pkey, $base_record->{$base_pkey})
       ->execute()
       ->fetchObject();
 
@@ -170,7 +170,7 @@ class TripalChadoPropertyAPITest extends TripalTestCase {
 
     $prop = chado_insert_property($record, $property);
 
-    $record = ['prop_id' => $prop[$prop_table.'_id'], 'table' => $base_table];
+    $record = ['prop_id' => $prop[$prop_table . '_id'], 'table' => $base_table];
     chado_delete_property($record, $property);
   }
 
@@ -178,7 +178,7 @@ class TripalChadoPropertyAPITest extends TripalTestCase {
   /**
    * Tests chado_get_record_with_property() with all prop tables.
    *
-   * Note: chado_get_record_with_property() gets all records in the base table 
+   * Note: chado_get_record_with_property() gets all records in the base table
    *   assigned one or more properties.
    *
    * @dataProvider propTableProvider
@@ -189,8 +189,8 @@ class TripalChadoPropertyAPITest extends TripalTestCase {
    */
   function test_chado_get_record_with_property($prop_table, $base_table) {
 
-    $base_record = factory('chado.'.$base_table)->create();
-    $base_pkey = $base_table.'_id';
+    $base_record = factory('chado.' . $base_table)->create();
+    $base_pkey = $base_table . '_id';
     $term = factory('chado.cvterm')->create();
 
     $value = 'chado_API_test_value';
@@ -210,7 +210,7 @@ class TripalChadoPropertyAPITest extends TripalTestCase {
     $this->assertNotEmpty($records);
     $this->assertEquals(1, count($records));
 
-    $base_record = factory('chado.'.$base_table)->create();
+    $base_record = factory('chado.' . $base_table)->create();
     $record = ['table' => $base_table, 'id' => $base_record->{$base_pkey}];
     chado_insert_property($record, $property);
     $records = chado_get_record_with_property($record, $property);
@@ -232,7 +232,7 @@ class TripalChadoPropertyAPITest extends TripalTestCase {
     $base_tables = chado_get_base_tables();
     foreach ($base_tables as $base) {
       $prop = $base . 'prop';
-      if (chado_table_exists($prop) AND Factory::exists('chado.'.$base)) {
+      if (chado_table_exists($prop) AND Factory::exists('chado.' . $base)) {
         $prop_tables[] = [$prop, $base];
       }
     }

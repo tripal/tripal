@@ -1,9 +1,13 @@
 <?php
+
 class tripal_views_handler_filter_boolean_operator extends tripal_views_handler_filter {
+
   // exposed filter options
   var $always_multiple = TRUE;
+
   // Don't display empty space where the operator would be.
   var $no_operator = TRUE;
+
   // Whether to accept NULL as a false value or not
   var $accept_null = FALSE;
 
@@ -15,8 +19,10 @@ class tripal_views_handler_filter_boolean_operator extends tripal_views_handler_
     if (isset($this->definition['accept null'])) {
       $this->accept_null = (bool) $this->definition['accept null'];
     }
-    else if (isset($this->definition['accept_null'])) {
-      $this->accept_null = (bool) $this->definition['accept_null'];
+    else {
+      if (isset($this->definition['accept_null'])) {
+        $this->accept_null = (bool) $this->definition['accept_null'];
+      }
     }
     $this->value_options = NULL;
     parent::construct();
@@ -37,19 +43,19 @@ class tripal_views_handler_filter_boolean_operator extends tripal_views_handler_
   function get_value_options() {
     if (isset($this->definition['type'])) {
       if ($this->definition['type'] == 'yes-no') {
-        $this->value_options = array(1 => t('Yes'), 0 => t('No'));
+        $this->value_options = [1 => t('Yes'), 0 => t('No')];
       }
       if ($this->definition['type'] == 'on-off') {
-        $this->value_options = array(1 => t('On'), 0 => t('Off'));
+        $this->value_options = [1 => t('On'), 0 => t('Off')];
       }
       if ($this->definition['type'] == 'enabled-disabled') {
-        $this->value_options = array(1 => t('Enabled'), 0 => t('Disabled'));
+        $this->value_options = [1 => t('Enabled'), 0 => t('Disabled')];
       }
     }
 
     // Provide a fallback if the above didn't set anything.
     if (!isset($this->value_options)) {
-      $this->value_options = array(1 => t('True'), 0 => t('False'));
+      $this->value_options = [1 => t('True'), 0 => t('False')];
     }
   }
 
@@ -62,7 +68,7 @@ class tripal_views_handler_filter_boolean_operator extends tripal_views_handler_
   }
 
   function operator_form(&$form, &$form_state) {
-    $form['operator'] = array();
+    $form['operator'] = [];
   }
 
   function value_form(&$form, &$form_state) {
@@ -78,12 +84,12 @@ class tripal_views_handler_filter_boolean_operator extends tripal_views_handler_
       // Configuring a filter: use radios for clarity.
       $filter_form_type = 'radios';
     }
-    $form['value'] = array(
+    $form['value'] = [
       '#type' => $filter_form_type,
       '#title' => $this->value_value,
       '#options' => $this->value_options,
       '#default_value' => $this->value,
-    );
+    ];
     if (!empty($this->options['exposed'])) {
       $identifier = $this->options['expose']['identifier'];
       if (!empty($form_state['exposed']) && !isset($form_state['input'][$identifier])) {
@@ -95,7 +101,7 @@ class tripal_views_handler_filter_boolean_operator extends tripal_views_handler_
         if ($form['value']['#type'] != 'select') {
           $any_label = check_plain($any_label);
         }
-        $form['value']['#options'] = array('All' => $any_label) + $form['value']['#options'];
+        $form['value']['#options'] = ['All' => $any_label] + $form['value']['#options'];
       }
     }
   }

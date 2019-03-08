@@ -15,7 +15,7 @@ class efo__array_design extends ChadoField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings  = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'EFO',
     // The name of the term.
@@ -26,7 +26,7 @@ class efo__array_design extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
-  );
+  ];
 
   // The default widget for this field.
   public static $default_widget = 'efo__array_design_widget';
@@ -54,17 +54,17 @@ class efo__array_design extends ChadoField {
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
     $linker_field = 'chado-' . $field_table . '__' . $field_column;
-    
+
     // Get the field values.
     foreach ($items as $delta => $values) {
 
       // Get the field values.
       $arraydesign_id = $values[$linker_field];
       if (!$arraydesign_id or $arraydesign_id == 0) {
-        $errors[$field_name]['und'][0][] = array(
-          'message' =>  t("Please specify an array design."),
-          'error' => 'efo__array_design'
-        );
+        $errors[$field_name]['und'][0][] = [
+          'message' => t("Please specify an array design."),
+          'error' => 'efo__array_design',
+        ];
       }
     }
   }
@@ -87,18 +87,18 @@ class efo__array_design extends ChadoField {
     $version_term = chado_get_semweb_term('arraydesign', 'version');
 
     // Set some defaults for the empty record.
-    $entity->{$field_name}['und'][0] = array(
-      'value' => array(),
-    );
+    $entity->{$field_name}['und'][0] = [
+      'value' => [],
+    ];
 
     if (!$record) {
       return;
     }
     $linker_field = 'chado-' . $field_table . '__' . $field_column;
-    $entity->{$field_name}['und'][0]['value'] = array(
+    $entity->{$field_name}['und'][0]['value'] = [
       $name_term => $record->{$field_column}->name,
       $version_term => $record->{$field_column}->version,
-    );
+    ];
     $entity->{$field_name}['und'][0][$linker_field] = $record->{$field_column}->arraydesign_id;
 
     // Is there a published entity for this arraydesign?
@@ -107,7 +107,7 @@ class efo__array_design extends ChadoField {
     }
   }
 
-  
+
   /**
    * @see TripalField::elementInfo()
    */
@@ -116,39 +116,39 @@ class efo__array_design extends ChadoField {
 
     $name_term = chado_get_semweb_term('arraydesign', 'name');
     $version_term = chado_get_semweb_term('arraydesign', 'version');
-    
-    return array(
-      $field_term => array(
-        'operations' => array('eq', 'contains', 'starts'),
+
+    return [
+      $field_term => [
+        'operations' => ['eq', 'contains', 'starts'],
         'sortable' => TRUE,
         'searchable' => TRUE,
         'readonly' => FALSE,
         'type' => 'xs:complexType',
-        'elements' => array(
-          $name_term => array(
+        'elements' => [
+          $name_term => [
             'searchable' => TRUE,
             'name' => 'name',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'operations' => ['eq', 'ne', 'contains', 'starts'],
             'sortable' => FALSE,
             'type' => 'xs:string',
             'readonly' => TRUE,
             'required' => FALSE,
-          ),
-          $version_term => array(
+          ],
+          $version_term => [
             'searchable' => TRUE,
             'name' => 'version',
-            'operations' => array('eq', 'ne'),
+            'operations' => ['eq', 'ne'],
             'sortable' => TRUE,
             'readonly' => FALSE,
             'type' => 'xs:string',
             'required' => TRUE,
-          ),
-          'entity' => array(
+          ],
+          'entity' => [
             'searchable' => FALSE,
-          ),
-        ),
-      ),
-    );
+          ],
+        ],
+      ],
+    ];
   }
 
   /**
@@ -167,8 +167,8 @@ class efo__array_design extends ChadoField {
 
     // If the column is the field name then we're during a search on the full
     // scientific name.
-    if ($condition['column'] == $field_term_id or 
-        $condition['column'] == $name_term) {      
+    if ($condition['column'] == $field_term_id or
+      $condition['column'] == $name_term) {
       $query->condition("$alias.name", $condition['value'], $operator);
     }
     // If the column is a subfield.

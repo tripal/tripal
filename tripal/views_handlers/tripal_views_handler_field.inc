@@ -29,7 +29,7 @@ class tripal_views_handler_field extends views_handler_field {
     if (isset($this->field_alias)) {
       // Since fields should always have themselves already added, just
       // add a sort on the field.
-      $params = $this->options['group_type'] != 'group' ? array('function' => $this->options['group_type']) : array();
+      $params = $this->options['group_type'] != 'group' ? ['function' => $this->options['group_type']] : [];
       $this->query->add_orderby($this->table_alias, $this->real_field, $order, $this->field_alias, $params);
     }
   }
@@ -72,8 +72,11 @@ class tripal_views_handler_field extends views_handler_field {
   function render($values) {
 
     list ($vocabulary, $accession) = explode('__', $this->table_alias);
-    $term = tripal_load_term_entity(array('vocabulary' => $vocabulary, 'accession' => $accession));
-    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+    $term = tripal_load_term_entity([
+      'vocabulary' => $vocabulary,
+      'accession' => $accession,
+    ]);
+    $bundle = tripal_load_bundle_entity(['term_id' => $term->id]);
     $field_name = $this->field_alias;
     $field = field_info_field($field_name);
     $instance = field_info_instance('TripalEntity', $field_name, $bundle->name);

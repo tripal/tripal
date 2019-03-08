@@ -46,13 +46,39 @@ function tripal_chado_views_integrate_all_chado_tables() {
 
   // Hardcode a list of base tables since there isn't really a programatic way
   // to determine which tables in the chado schema should be base tables.
-  $base_tables = array(
-    'acquisition', 'analysis', 'assay', 'biomaterial', 'contact', 'cv', 'cvterm',
-    'db', 'dbxref', 'environment', 'expression', 'feature', 'featuremap', 'genotype',
-    'library', 'nd_experiment', 'nd_geolocation', 'nd_protocol', 'nd_reagent',
-    'organism', 'phendesc', 'phenotype', 'phenstatement', 'phylonode', 'phylotree',
-    'project', 'protocol', 'pub', 'stock', 'study', 'synonym'
-  );
+  $base_tables = [
+    'acquisition',
+    'analysis',
+    'assay',
+    'biomaterial',
+    'contact',
+    'cv',
+    'cvterm',
+    'db',
+    'dbxref',
+    'environment',
+    'expression',
+    'feature',
+    'featuremap',
+    'genotype',
+    'library',
+    'nd_experiment',
+    'nd_geolocation',
+    'nd_protocol',
+    'nd_reagent',
+    'organism',
+    'phendesc',
+    'phenotype',
+    'phenstatement',
+    'phylonode',
+    'phylotree',
+    'project',
+    'protocol',
+    'pub',
+    'stock',
+    'study',
+    'synonym',
+  ];
 
   // For each chado table, generate an integration array, keeping the above
   // details in mind, and save that integration with Tripal Views through the API.
@@ -89,6 +115,7 @@ function tripal_chado_views_integrate_all_chado_tables() {
  *
  * @param $tablename
  *   The table to generate the tripal views integration array for
+ *
  * @return
  *   The tripal views integration array which is the parameter for
  *   tripal_add_views_integration($defn_array)
@@ -101,161 +128,161 @@ function tripal_chado_views_get_integration_array_for_chado_table($table_name, $
   $schema = chado_get_schema($table_name);
 
   // Base definition array
-  $defn_array = array(
+  $defn_array = [
     'table' => $table_name,
     'type' => 'chado',
     'name' => 'Chado ' . ucwords(str_replace('_', ' ', $table_name)),
     'description' => (!empty($schema['description'])) ? $schema['description'] : ' ',
     'priority' => $priority,
     'base_table' => $base_table,
-    'fields' => array(),
-  );
+    'fields' => [],
+  ];
   // Add fields
   if (!isset($schema['fields'])) {
     tripal_report_error('tripal_chado_views', TRIPAL_NOTICE,
-      'There are no fields defined for %table in the Chado Schema API.', array('%table' => $table_name));
+      'There are no fields defined for %table in the Chado Schema API.', ['%table' => $table_name]);
     return FALSE;
   }
   foreach ($schema['fields'] as $field_name => $field_schema) {
 
     // Base field definition
     if (!empty($field_name)) {
-      $defn_array['fields'][$field_name] = array(
+      $defn_array['fields'][$field_name] = [
         'name' => $field_name,
         'title' => ucwords(str_replace('_', ' ', $field_name)),
         'type' => (isset($field_schema['type'])) ? $field_schema['type'] : 'text',
         'description' => (!empty($field_schema['description'])) ? $field_schema['description'] : ucwords(str_replace('_', ' ', $field_name)),
-        'handlers' => array(),
-        'joins' => array()
-      );
+        'handlers' => [],
+        'joins' => [],
+      ];
 
       // Add handlers based on type
       if (preg_match('/^int/', $field_schema['type'])) {
-        $defn_array['fields'][$field_name]['handlers'] = array(
+        $defn_array['fields'][$field_name]['handlers'] = [
           /** D6
-          'field' => array('name' => 'chado_views_handler_field_numeric'),
-          'filter' => array('name' => 'chado_views_handler_filter_numeric'),
-          'sort' => array('name' => 'chado_views_handler_sort'),
-          */
-          'field' => array('name' => 'views_handler_field_numeric'),
-          'filter' => array('name' => 'views_handler_filter_numeric'),
-          'sort' => array('name' => 'views_handler_sort'),
-          'argument' => array('name' => 'views_handler_argument_numeric'),
-        );
+           * 'field' => array('name' => 'chado_views_handler_field_numeric'),
+           * 'filter' => array('name' => 'chado_views_handler_filter_numeric'),
+           * 'sort' => array('name' => 'chado_views_handler_sort'),
+           */
+          'field' => ['name' => 'views_handler_field_numeric'],
+          'filter' => ['name' => 'views_handler_filter_numeric'],
+          'sort' => ['name' => 'views_handler_sort'],
+          'argument' => ['name' => 'views_handler_argument_numeric'],
+        ];
       }
       // Set the defaults for a serial type.
       elseif (preg_match('/^serial/', $field_schema['type'])) {
-        $defn_array['fields'][$field_name]['handlers'] = array(
+        $defn_array['fields'][$field_name]['handlers'] = [
           /** D6
-          'field' => array('name' => 'chado_views_handler_field_numeric'),
-          'filter' => array('name' => 'chado_views_handler_filter_numeric'),
-          'sort' => array('name' => 'chado_views_handler_sort'),
-          */
-          'field' => array('name' => 'views_handler_field_numeric'),
-          'filter' => array('name' => 'views_handler_filter_numeric'),
-          'sort' => array('name' => 'views_handler_sort'),
-          'argument' => array('name' => 'views_handler_argument_numeric'),
-        );
+           * 'field' => array('name' => 'chado_views_handler_field_numeric'),
+           * 'filter' => array('name' => 'chado_views_handler_filter_numeric'),
+           * 'sort' => array('name' => 'chado_views_handler_sort'),
+           */
+          'field' => ['name' => 'views_handler_field_numeric'],
+          'filter' => ['name' => 'views_handler_filter_numeric'],
+          'sort' => ['name' => 'views_handler_sort'],
+          'argument' => ['name' => 'views_handler_argument_numeric'],
+        ];
         $defn_array['fields'][$field_name]['type'] = 'int';
       }
       // Set the defaults for a varchar type.
       elseif (preg_match('/^varchar/', $field_schema['type'])) {
-        $defn_array['fields'][$field_name]['handlers'] = array(
+        $defn_array['fields'][$field_name]['handlers'] = [
           /** D6
-          'field' => array('name' => 'chado_views_handler_field'),
-          'filter' => array('name' => 'chado_views_handler_filter_string'),
-          'sort' => array('name' => 'chado_views_handler_sort'),
-          */
-          'field' => array('name' => 'views_handler_field'),
-          'filter' => array('name' => 'views_handler_filter_string'),
-          'sort' => array('name' => 'views_handler_sort'),
-          'argument' => array('name' => 'views_handler_argument_string'),
-        );
+           * 'field' => array('name' => 'chado_views_handler_field'),
+           * 'filter' => array('name' => 'chado_views_handler_filter_string'),
+           * 'sort' => array('name' => 'chado_views_handler_sort'),
+           */
+          'field' => ['name' => 'views_handler_field'],
+          'filter' => ['name' => 'views_handler_filter_string'],
+          'sort' => ['name' => 'views_handler_sort'],
+          'argument' => ['name' => 'views_handler_argument_string'],
+        ];
       }
       // Set the defaults for a text type.
       elseif (preg_match('/^text/', $field_schema['type'])) {
-        $defn_array['fields'][$field_name]['handlers'] = array(
+        $defn_array['fields'][$field_name]['handlers'] = [
           /** D6
-          'field' => array('name' => 'chado_views_handler_field'),
-          'filter' => array('name' => 'chado_views_handler_filter_string'),
-          'sort' => array('name' => 'chado_views_handler_sort'),
-          */
-          'field' => array('name' => 'views_handler_field'),
-          'filter' => array('name' => 'views_handler_filter_string'),
-          'sort' => array('name' => 'views_handler_sort'),
-          'argument' => array('name' => 'views_handler_argument_string'),
-        );
+           * 'field' => array('name' => 'chado_views_handler_field'),
+           * 'filter' => array('name' => 'chado_views_handler_filter_string'),
+           * 'sort' => array('name' => 'chado_views_handler_sort'),
+           */
+          'field' => ['name' => 'views_handler_field'],
+          'filter' => ['name' => 'views_handler_filter_string'],
+          'sort' => ['name' => 'views_handler_sort'],
+          'argument' => ['name' => 'views_handler_argument_string'],
+        ];
       }
       // Set the defaults for a char type.
       elseif (preg_match('/^char/', $field_schema['type'])) {
-        $defn_array['fields'][$field_name]['handlers'] = array(
+        $defn_array['fields'][$field_name]['handlers'] = [
           /** D6
-           'field' => array('name' => 'chado_views_handler_field'),
-        'filter' => array('name' => 'chado_views_handler_filter_string'),
-        'sort' => array('name' => 'chado_views_handler_sort'),
-        */
-          'field' => array('name' => 'views_handler_field'),
-          'filter' => array('name' => 'views_handler_filter_string'),
-          'sort' => array('name' => 'views_handler_sort'),
-          'argument' => array('name' => 'views_handler_argument_string'),
-        );
+           * 'field' => array('name' => 'chado_views_handler_field'),
+           * 'filter' => array('name' => 'chado_views_handler_filter_string'),
+           * 'sort' => array('name' => 'chado_views_handler_sort'),
+           */
+          'field' => ['name' => 'views_handler_field'],
+          'filter' => ['name' => 'views_handler_filter_string'],
+          'sort' => ['name' => 'views_handler_sort'],
+          'argument' => ['name' => 'views_handler_argument_string'],
+        ];
       }
       // Set the defaults for a boolean type.
       elseif (preg_match('/^boolean/', $field_schema['type'])) {
-        $defn_array['fields'][$field_name]['handlers'] = array(
+        $defn_array['fields'][$field_name]['handlers'] = [
           /**
-          'field' => array('name' => 'chado_views_handler_field_boolean'),
-          'filter' => array('name' => 'chado_views_handler_filter_boolean_operator'),
-          'sort' => array('name' => 'chado_views_handler_sort'),
-          */
-          'field' => array('name' => 'views_handler_field_boolean'),
-          'filter' => array('name' => 'views_handler_filter_boolean_operator'),
-          'sort' => array('name' => 'views_handler_sort'),
-        );
+           * 'field' => array('name' => 'chado_views_handler_field_boolean'),
+           * 'filter' => array('name' => 'chado_views_handler_filter_boolean_operator'),
+           * 'sort' => array('name' => 'chado_views_handler_sort'),
+           */
+          'field' => ['name' => 'views_handler_field_boolean'],
+          'filter' => ['name' => 'views_handler_filter_boolean_operator'],
+          'sort' => ['name' => 'views_handler_sort'],
+        ];
       }
       // Set the defaults for a datatime type.
       elseif (preg_match('/^datetime/', $field_schema['type'])) {
-        $defn_array['fields'][$field_name]['handlers'] = array(
+        $defn_array['fields'][$field_name]['handlers'] = [
           /** D6
-          'field' => array('name' => 'chado_views_handler_field_date'),
-          'filter' => array('name' => 'chado_views_handler_filter_date'),
-          'sort' => array('name' => 'views_handler_sort_date'),
-          */
-          'field' => array('name' => 'views_handler_field_date'),
-          'filter' => array('name' => 'views_handler_filter_date'),
-          'sort' => array('name' => 'views_handler_sort_date'),
-          'argument' => array('name' => 'views_handler_argument_date'),
-        );
+           * 'field' => array('name' => 'chado_views_handler_field_date'),
+           * 'filter' => array('name' => 'chado_views_handler_filter_date'),
+           * 'sort' => array('name' => 'views_handler_sort_date'),
+           */
+          'field' => ['name' => 'views_handler_field_date'],
+          'filter' => ['name' => 'views_handler_filter_date'],
+          'sort' => ['name' => 'views_handler_sort_date'],
+          'argument' => ['name' => 'views_handler_argument_date'],
+        ];
       }
       // Set the defaults for a float type.
       elseif (preg_match('/^float/', $field_schema['type'])) {
-        $defn_array['fields'][$field_name]['handlers'] = array(
-          'field' => array('name' => 'views_handler_field_numeric'),
-          'filter' => array('name' => 'views_handler_filter_numeric'),
-          'sort' => array('name' => 'views_handler_sort'),
-          'argument' => array('name' => 'views_handler_argument_numeric'),
-        );
+        $defn_array['fields'][$field_name]['handlers'] = [
+          'field' => ['name' => 'views_handler_field_numeric'],
+          'filter' => ['name' => 'views_handler_filter_numeric'],
+          'sort' => ['name' => 'views_handler_sort'],
+          'argument' => ['name' => 'views_handler_argument_numeric'],
+        ];
       }
       // If the type is not recognize the default to a string handler.
       else {
-        $defn_array['fields'][$field_name]['handlers'] = array(
+        $defn_array['fields'][$field_name]['handlers'] = [
           /** D6
-          'field' => array('name' => 'chado_views_handler_field'),
-          'filter' => array('name' => 'chado_views_handler_filter_string'),
-          'sort' => array('name' => 'chado_views_handler_sort'),
-          */
-          'field' => array('name' => 'views_handler_field'),
-          'filter' => array('name' => 'views_handler_filter_string'),
-          'sort' => array('name' => 'views_handler_sort'),
-          'argument' => array('name' => 'views_handler_argument_string'),
-        );
+           * 'field' => array('name' => 'chado_views_handler_field'),
+           * 'filter' => array('name' => 'chado_views_handler_filter_string'),
+           * 'sort' => array('name' => 'chado_views_handler_sort'),
+           */
+          'field' => ['name' => 'views_handler_field'],
+          'filter' => ['name' => 'views_handler_filter_string'],
+          'sort' => ['name' => 'views_handler_sort'],
+          'argument' => ['name' => 'views_handler_argument_string'],
+        ];
       }
 
       // Specify specialty handlers
       if ($field_name == 'type_id' OR $field_name == 'cvterm_id') {
         $defn_array['fields'][$field_name]['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_cvterm';
       }
-      if (preg_match('/name/',$field_name)) {
+      if (preg_match('/name/', $field_name)) {
         $defn_array['fields'][$field_name]['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_string';
       }
     }
@@ -263,7 +290,7 @@ function tripal_chado_views_get_integration_array_for_chado_table($table_name, $
 
   // Add Joins & Relationships for foreign keys to fields
   if (!isset($schema['foreign keys'])) {
-    $schema['foreign keys'] = array();
+    $schema['foreign keys'] = [];
   }
   foreach ($schema['foreign keys'] as $foreign_key_schema) {
     foreach ($foreign_key_schema['columns'] as $left_field => $right_field) {
@@ -271,12 +298,12 @@ function tripal_chado_views_get_integration_array_for_chado_table($table_name, $
       // Note: Even though there can only be a single join  for a foreign key
       // we make the joins an array keyed by left_field to ensure that both
       // foeign key and referring_tables (see below) can be processed the same.
-      $defn_array['fields'][$left_field]['joins'][ $foreign_key_schema['table'] ][ $right_field ] = array(
+      $defn_array['fields'][$left_field]['joins'][$foreign_key_schema['table']][$right_field] = [
         'table' => $foreign_key_schema['table'],
         'field' => $right_field,
         'handler' => 'views_handler_join',
         'relationship_handler' => 'views_handler_relationship',
-      );
+      ];
     }
   }
 
@@ -296,12 +323,12 @@ function tripal_chado_views_get_integration_array_for_chado_table($table_name, $
         // Also notice that it doesn't matter whether this is the first or second
         // reverse join on this table ($referring_table) to be added since
         // having $left_field as the key keeps them separate.
-        $defn_array['fields'][$right_field]['joins'][ $referring_table ][ $left_field ] = array(
+        $defn_array['fields'][$right_field]['joins'][$referring_table][$left_field] = [
           'table' => $referring_table,
           'field' => $left_field,
           'relationship_handler' => 'views_handler_relationship',
-          'relationship_only' => 1
-        );
+          'relationship_only' => 1,
+        ];
 
       }
     }

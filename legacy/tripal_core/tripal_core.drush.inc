@@ -45,107 +45,107 @@ function tripal_core_drush_help($command) {
  * @ingroup tripal_drush
  */
 function tripal_core_drush_command() {
-  $items = array();
+  $items = [];
 
-  $items['trp-clean-nodes'] = array(
+  $items['trp-clean-nodes'] = [
     'description' => dt('Removes orphaned Drupal nodes.'),
-    'arguments' => array(),
-    'examples' => array(
-      'Standard Example' => 'drush trp-clean-nodes table=feature'
-    ),
-    'options' => array(
-      'table' => array(
+    'arguments' => [],
+    'examples' => [
+      'Standard Example' => 'drush trp-clean-nodes table=feature',
+    ],
+    'options' => [
+      'table' => [
         'description' => dt('The name of the table that corresonds to the node type to ' .
           'clean up. (e.g organism, feature, stock, library, analysis, pub, etc.)'),
         'required' => TRUE,
-      ),
-    ),
-  );
+      ],
+    ],
+  ];
 
   // DEPRECATED COMMANDS. Deprecated as of Tripal v2.0-rc
-  $items['tripal-mview-update'] = array(
+  $items['tripal-mview-update'] = [
     'description' => dt('DEPRECATED. Please see: trp-refresh-mview.'),
-    'arguments' => array(),
-    'examples' => array(
+    'arguments' => [],
+    'examples' => [
       'By Materialized View ID' => 'drush tripal-update-mview --mview_id=5',
-      'By Table Name' => 'drush tripal-update-mview --table_name=organism_feature_count'
-    ),
-    'options' => array(
+      'By Table Name' => 'drush tripal-update-mview --table_name=organism_feature_count',
+    ],
+    'options' => [
       'mview_id' => dt('The ID of the materialized view to update'),
       'table_name' => dt('The name of the materialized view table to update.'),
-    ),
-    'aliases' => array('trpmv-up')
-  );
-  $items['tripal-jobs-current'] = array(
+    ],
+    'aliases' => ['trpmv-up'],
+  ];
+  $items['tripal-jobs-current'] = [
     'description' => dt('DEPRECATED. Please see: trp-get-currjob.'),
-    'arguments'   => array(),
-    'examples' => array(
+    'arguments' => [],
+    'examples' => [
       'Standard example' => 'drush tripal-jobs-current',
-    ),
-    'aliases' => array('trpjob-cur'),
-  );
-  $items['tripal-jobs-launch'] = array(
+    ],
+    'aliases' => ['trpjob-cur'],
+  ];
+  $items['tripal-jobs-launch'] = [
     'description' => dt('DEPRECATED. Please see: trp-run-jobs. '),
-    'examples' => array(
+    'examples' => [
       'Normal Job' => 'drush tripal-jobs-launch admin',
-      'Parallel Job' => 'drush tripal-jobs-launch admin --parallel=1'
-    ),
-    'arguments' => array(
+      'Parallel Job' => 'drush tripal-jobs-launch admin --parallel=1',
+    ],
+    'arguments' => [
       'username' => dt('The Drupal username under which the job should be run.  The permissions for this user will be used.'),
-    ),
-    'options' => array(
+    ],
+    'options' => [
       'parallel' => dt('Normally jobs are executed one at a time. But if you are certain no conflicts will occur with other currently running jobs you may set this argument to a value of 1 to make the job run in parallel with other running jobs.'),
       'job_id' => dt('Provide a job_id to run a specific job. Only jobs that have not been run already can be used'),
-    ),
-    'aliases' => array('trpjob-run')
-  );
-  $items['tripal-jobs-rerun'] = array(
+    ],
+    'aliases' => ['trpjob-run'],
+  ];
+  $items['tripal-jobs-rerun'] = [
     'description' => dt('DEPRECATED. Please see: trp-rerun-job. '),
-    'examples' => array(
+    'examples' => [
       'Normal Job' => 'drush tripal-jobs-rerun admin 2',
-      'Parallel Job' => 'drush tripal-jobs-rerun admin  2 --parallel=1'
-    ),
-    'arguments' => array(
+      'Parallel Job' => 'drush tripal-jobs-rerun admin  2 --parallel=1',
+    ],
+    'arguments' => [
       'username' => dt('The Drupal username under which the job should be run.  The permissions for this user will be used.'),
       'job_id' => dt('The job ID to run.'),
-    ),
-    'options' => array(
+    ],
+    'options' => [
       'parallel' => dt('Normally jobs are executed one at a time. But if you are certain no conflicts will occur with other currently running jobs you may set this argument to a value of 1 to make the job run in parallel with other running jobs.'),
-    ),
-    'aliases' => array('trpjob-rerun')
-  );
-  $items['tripal-chado-version'] = array(
+    ],
+    'aliases' => ['trpjob-rerun'],
+  ];
+  $items['tripal-chado-version'] = [
     'description' => dt('DEPRECATED. Please see: trp-get-cversion. '),
-    'arguments' => array(),
-    'examples' => array(
+    'arguments' => [],
+    'examples' => [
       'Standard Example' => 'drush tripal-chado-version',
-    ),
-    'aliases' => array('trpchado-ver')
-  );
-  $items['tripal-chadotable-desc'] = array(
+    ],
+    'aliases' => ['trpchado-ver'],
+  ];
+  $items['tripal-chadotable-desc'] = [
     'description' => dt('DEPRECATED. Please see: trp-get-table. '),
-    'arguments' => array(
+    'arguments' => [
       'table_name' => dt('The name of the chado table.'),
-    ),
-    'examples' => array(
-      'By Table Name' => 'drush tripal-chadotable-desc --table_name=feature'
-    ),
-    'options' => array(
+    ],
+    'examples' => [
+      'By Table Name' => 'drush tripal-chadotable-desc --table_name=feature',
+    ],
+    'options' => [
       'section' => dt('Only return the specified section of the schema table description. Possible sections include: description, fields, primary key, unique keys, foreign keys, indexes, referring_tables.'),
-    ),
-    'aliases' => array('trpschema-tbl')
-  );
-  $items['tripal-node-clean'] = array(
+    ],
+    'aliases' => ['trpschema-tbl'],
+  ];
+  $items['tripal-node-clean'] = [
     'description' => dt('DEPRECATED. Please see: trp-clean-nodes.'),
-    'arguments' => array(
+    'arguments' => [
       'module' => dt('The name of the chado-centric module to clean-up.'),
-    ),
-    'examples' => array(
-      'By Table Name' => 'drush tripal-node-clean feature'
-    ),
-    'options' => array(),
-    'aliases' => array('trpnode-cln')
-  );
+    ],
+    'examples' => [
+      'By Table Name' => 'drush tripal-node-clean feature',
+    ],
+    'options' => [],
+    'aliases' => ['trpnode-cln'],
+  ];
 
   return $items;
 }
@@ -172,7 +172,7 @@ function drush_tripal_core_tripal_jobs_launch($username) {
 
   drush_tripal_core_set_user($username);
 
-  drush_print("\n\nDEPRECATED: This drush command is outdated.\nIt will ".
+  drush_print("\n\nDEPRECATED: This drush command is outdated.\nIt will " .
     "continue to work but please consider using the 'trp-run-jobs' command.\n\n");
 
   if ($parallel) {
@@ -198,8 +198,8 @@ function drush_tripal_core_tripal_jobs_launch($username) {
  */
 function drush_tripal_core_tripal_jobs_rerun($username, $job_id) {
 
-  drush_print("\n\nDEPRECATED: This drush command is outdated.\nIt will ".
-      "continue to work but please consider using the 'trp-rerun-job' command.\n\n");
+  drush_print("\n\nDEPRECATED: This drush command is outdated.\nIt will " .
+    "continue to work but please consider using the 'trp-rerun-job' command.\n\n");
 
   drush_tripal_core_set_user($username);
   $new_job_id = tripal_rerun_job($job_id, FALSE);
@@ -215,8 +215,8 @@ function drush_tripal_core_tripal_jobs_rerun($username, $job_id) {
  * @ingroup tripal_drush
  */
 function drush_tripal_core_tripal_jobs_current() {
-  drush_print("\n\nDEPRECATED: This drush command is outdated.\nIt will ".
-      "continue to work but please consider using the 'trp-get-currjob' command.\n\n");
+  drush_print("\n\nDEPRECATED: This drush command is outdated.\nIt will " .
+    "continue to work but please consider using the 'trp-get-currjob' command.\n\n");
 
   drush_tripal_core_trp_get_currjob();
 }
@@ -231,20 +231,20 @@ function drush_tripal_core_tripal_update_mview() {
   $mview_id = drush_get_option('mview_id');
   $table_name = drush_get_option('table_name');
 
-  drush_print("\n\nDEPRECATED: This drush command is outdated.\nIt will ".
-      "continue to work but please consider using the 'trp-refresh-mview' command.\n\n");
+  drush_print("\n\nDEPRECATED: This drush command is outdated.\nIt will " .
+    "continue to work but please consider using the 'trp-refresh-mview' command.\n\n");
 
   // Either table_name or mview is required
   if (!$mview_id) {
     if ($table_name) {
       // if table_name supplied use that to get mview_id
       $sql = "SELECT mview_id FROM {tripal_mviews} WHERE mv_table = :mv_table";
-      $results = db_query($sql, array(':mv_table' => $table_name));
+      $results = db_query($sql, [':mv_table' => $table_name]);
       $r = $resuls->fetchObject();
       if (!$r->mview_id) {
         drush_set_error('No Materialized View associated with that table_name.');
       }
-      $mview_id=$r->mview_id;
+      $mview_id = $r->mview_id;
     }
     else {
       drush_set_error('Either mview_id OR table_name are required.');
@@ -267,8 +267,8 @@ function drush_tripal_core_tripal_update_mview() {
  * @ingroup tripal_drush
  */
 function drush_tripal_core_tripal_chado_version() {
-  drush_print("\n\nDEPRECATED: This drush command is outdated.\nIt will ".
-      "continue to work but please consider using the 'trp-get-cversion' command.\n\n");
+  drush_print("\n\nDEPRECATED: This drush command is outdated.\nIt will " .
+    "continue to work but please consider using the 'trp-get-cversion' command.\n\n");
 
   drush_tripal_core_trp_get_cversion();
 }
@@ -285,8 +285,8 @@ function drush_tripal_core_tripal_chado_version() {
 function drush_tripal_core_tripal_chadotable_desc($table_name) {
   $section = drush_get_option('section');
 
-  drush_print("\n\nDEPRECATED: This drush command is outdated.\nIt will ".
-      "continue to work but please consider using the 'trp-get-table' command.\n\n");
+  drush_print("\n\nDEPRECATED: This drush command is outdated.\nIt will " .
+    "continue to work but please consider using the 'trp-get-table' command.\n\n");
 
   drush_print("Schema API Description for $table_name:");
   $desc = chado_get_schema($table_name);

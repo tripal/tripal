@@ -2,12 +2,12 @@
 
 /**
  * Provide a class for basic querying of Chado.
- * 
+ *
  * Specifically tihs class provides select, insert, update and delete.
  *
- * Eventually this class is meants to replace the existing 
- * chado_select_record(), chado_insert_record(), chado_update_record() and 
- * chado_delete_record() API functions to create a cleaner, more maintainable 
+ * Eventually this class is meants to replace the existing
+ * chado_select_record(), chado_insert_record(), chado_update_record() and
+ * chado_delete_record() API functions to create a cleaner, more maintainable
  * and more easily tested interface to querying Chado.
  *
  * @todo Add documentation for save() and delete().
@@ -16,69 +16,71 @@
  * - Select/Find
  *     The following example selects an organism with the scientific name
  *     "Tripalus databasica" from the organism table of Chado.
- *     @code
-             // First we create an instance of the ChadoRecord class
-             // specifying the table we want to query.
-             $record = new \ChadoRecord('organism');
-
-             // Next we indicate the values we know.
-             $record->setValues([
-               'genus' => 'Tripalus',
-               'species' => 'databasica',
-             ]);
-
-             // And finally we simply ask the class to find the chado record
-             // we indicated when we set the values above.
-             $success = $record->find();
-             if ($success) {
-               // Retrieve the values if we were successful in finding the record.
-               $result = $record->getValues();
-             }
- *     @endcode
+ * @code
+ * // First we create an instance of the ChadoRecord class
+ * // specifying the table we want to query.
+ * $record = new \ChadoRecord('organism');
+ *
+ * // Next we indicate the values we know.
+ * $record->setValues([
+ * 'genus' => 'Tripalus',
+ * 'species' => 'databasica',
+ * ]);
+ *
+ * // And finally we simply ask the class to find the chado record
+ * // we indicated when we set the values above.
+ * $success = $record->find();
+ * if ($success) {
+ * // Retrieve the values if we were successful in finding the record.
+ * $result = $record->getValues();
+ * }
+ * @endcode
  * - Insert:
  *     The following example inserts a sample record into the stock table.
- *     @code
-             // First we create an instance of the ChadoRecord class
-             // specifying the table we want to query.
-             $record = new \ChadoRecord('stock');
-
-             // Next we indicate the values we know.
-             $record->setValues([
-               'name' => 'My Favourite Plant',
-               'uniquename' => 'Plectranthus scutellarioides Trailing Plum Brocade',
-               'organism_id' => [ 'genus' => 'Tripalus', 'species' => 'databasica' ],
-               'type_id' => [ 'name' => 'sample', 'cv_id' => [ 'name' => 'Sample processing and separation techniques' ] ],
-             ]);
-
-             // And finally, we ask the class to insert the chado record
-             // we described when we set the values above.
-             $result = $record->insert();
- *     @endcode
+ * @code
+ * // First we create an instance of the ChadoRecord class
+ * // specifying the table we want to query.
+ * $record = new \ChadoRecord('stock');
+ *
+ * // Next we indicate the values we know.
+ * $record->setValues([
+ * 'name' => 'My Favourite Plant',
+ * 'uniquename' => 'Plectranthus scutellarioides Trailing Plum Brocade',
+ * 'organism_id' => [ 'genus' => 'Tripalus', 'species' => 'databasica' ],
+ * 'type_id' => [ 'name' => 'sample', 'cv_id' => [ 'name' => 'Sample processing
+ *   and separation techniques' ] ],
+ * ]);
+ *
+ * // And finally, we ask the class to insert the chado record
+ * // we described when we set the values above.
+ * $result = $record->insert();
+ * @endcode
  * - Update:
- *     The following example updates the "Tripalus databasica" record to specify the common name.
- *     @code
-             // For brevity we're going to hardcode the original record
-             // including the id although you would Never do this in practice.
-             // Rather you would first find the record as shown in a previous example.
-             $original_record = [
-               'organism_id' => 1,
-               'genus' => 'Tripalus',
-               'species' => 'databasica',
-             ];
-
-             // First we create an instance of the ChadoRecord class
-             // specifying the table we want to query.
-             // NOTICE: this time we set the record_id when creating the instance.
-             $record = new \ChadoRecord('organism', $original_record['organism_id']);
-
-             // Now we set the values we want to change.
-             $record->setValues([
-               'common_name' => 'Tripal',
-             ]);
-
-             // And then tell the class to update the record.
-             $record->update();
- *     @endcode
+ *     The following example updates the "Tripalus databasica" record to
+ *   specify the common name.
+ * @code
+ * // For brevity we're going to hardcode the original record
+ * // including the id although you would Never do this in practice.
+ * // Rather you would first find the record as shown in a previous example.
+ * $original_record = [
+ * 'organism_id' => 1,
+ * 'genus' => 'Tripalus',
+ * 'species' => 'databasica',
+ * ];
+ *
+ * // First we create an instance of the ChadoRecord class
+ * // specifying the table we want to query.
+ * // NOTICE: this time we set the record_id when creating the instance.
+ * $record = new \ChadoRecord('organism', $original_record['organism_id']);
+ *
+ * // Now we set the values we want to change.
+ * $record->setValues([
+ * 'common_name' => 'Tripal',
+ * ]);
+ *
+ * // And then tell the class to update the record.
+ * $record->update();
+ * @endcode
  */
 class ChadoRecord {
 
@@ -126,6 +128,7 @@ class ChadoRecord {
 
   /**
    * The list of column names in the table.
+   *
    * @var array
    */
   protected $column_names = [];
@@ -184,16 +187,24 @@ class ChadoRecord {
         $values = $result->fetchAssoc();
         if (empty($values)) {
           $message = t('ChadoRecord::_construct(). Could not find a record in table, !table, with the given !pkey: !record_id.',
-            ['!pkey' => $this->pkey, '!record_id' => $record_id, '!table' => $this->table_name]);
+            [
+              '!pkey' => $this->pkey,
+              '!record_id' => $record_id,
+              '!table' => $this->table_name,
+            ]);
           throw new Exception($message);
         }
         $this->record_id = $record_id;
         $this->values = $values;
         $this->missing_required_col = [];
-      }
-      catch (Exception $e) {
+      } catch (Exception $e) {
         $message = t('ChadoRecord::_construct(). Could not find a record in table, !table, with the given !pkey: !record_id. ERROR: !error',
-          ['!pkey' => $this->pkey, '!record_id' => $record_id, '!table' => $this->table_name, '!error' => $e->getMessage()]);
+          [
+            '!pkey' => $this->pkey,
+            '!record_id' => $record_id,
+            '!table' => $this->table_name,
+            '!error' => $e->getMessage(),
+          ]);
         throw new Exception($message);
       }
     }
@@ -250,10 +261,14 @@ class ChadoRecord {
       $this->insert();
     }
     if ($num_matches > 1) {
-      $message = t('ChadoRecord::save(). Could not save the record into the table, !table. '.
-        'Multiple records already exist that match the values: !values. '.
+      $message = t('ChadoRecord::save(). Could not save the record into the table, !table. ' .
+        'Multiple records already exist that match the values: !values. ' .
         'Please provide a set of values that can uniquely identify a record.',
-        ['!table' => $this->table_name, '!values' => print_r($this->values, TRUE), '!error' => $e->getMessage()]);
+        [
+          '!table' => $this->table_name,
+          '!values' => print_r($this->values, TRUE),
+          '!error' => $e->getMessage(),
+        ]);
       throw new Exception($message);
     }
   }
@@ -277,12 +292,14 @@ class ChadoRecord {
 
     // Additionally, make sure we have all the required values!
     if (!empty($this->missing_required_col)) {
-      $message = t('ChadoRecord::insert(). The columns named, "!columns", ' . 
+      $message = t('ChadoRecord::insert(). The columns named, "!columns", ' .
         'require a value for the table: "!table". You can set these values ' .
         'using ChadoRecord::setValues(). Current values: !values.',
-        ['!columns' => implode('", "', array_keys($this->missing_required_col)), 
-         '!table' => $this->table_name,
-         '!values' => print_r($this->values, TRUE)]);
+        [
+          '!columns' => implode('", "', array_keys($this->missing_required_col)),
+          '!table' => $this->table_name,
+          '!values' => print_r($this->values, TRUE),
+        ]);
       throw new Exception($message);
     }
 
@@ -298,9 +315,9 @@ class ChadoRecord {
     $sql = 'INSERT INTO {' . $this->table_name . '} (' .
       implode(", ", $insert_cols) . ') VALUES (' .
       implode(", ", $insert_vals) . ')';
-      if ($this->pkey) {
-        $sql .= ' RETURNING ' . $this->pkey;
-      }
+    if ($this->pkey) {
+      $sql .= ' RETURNING ' . $this->pkey;
+    }
     try {
       $result = chado_query($sql, $insert_args);
       if ($this->pkey) {
@@ -308,13 +325,14 @@ class ChadoRecord {
         $this->values[$this->pkey] = $record_id;
         $this->record_id = $record_id;
       }
-    }
-    catch (Exception $e) {
-      $message = t('ChadoRecord::insert(). Could not insert a record into the ' . 
+    } catch (Exception $e) {
+      $message = t('ChadoRecord::insert(). Could not insert a record into the ' .
         'table, !table, with the following values: !values. ERROR: !error',
-        ['!table' => $this->table_name, 
-         '!values' => print_r($this->values, TRUE), 
-         '!error' => $e->getMessage()]);
+        [
+          '!table' => $this->table_name,
+          '!values' => print_r($this->values, TRUE),
+          '!error' => $e->getMessage(),
+        ]);
       throw new Exception($message);
     }
   }
@@ -333,7 +351,7 @@ class ChadoRecord {
 
     // Make sure we have values for this record before updating.
     if (empty($this->values)) {
-      $message = t('ChadoRecord::update(). Could not update a record into the ' . 
+      $message = t('ChadoRecord::update(). Could not update a record into the ' .
         'table, !table, without any values.',
         ['!table' => $this->table_name]);
       throw new Exception($message);
@@ -341,12 +359,14 @@ class ChadoRecord {
 
     // Additionally, make sure we have all the required values!
     if (!empty($this->missing_required_col)) {
-      $message = t('ChadoRecord::update(). The columns named, "!columns", ' . 
-        'require a value for the table: "!table". You can set these values ' . 
+      $message = t('ChadoRecord::update(). The columns named, "!columns", ' .
+        'require a value for the table: "!table". You can set these values ' .
         'using ChadoRecord::setValues(). Current values: !values.',
-        ['!columns' => implode('", "', $this->missing_required_col), 
-         '!table' => $this->table_name,
-         '!values' => print_r($this->values, TRUE)]);
+        [
+          '!columns' => implode('", "', $this->missing_required_col),
+          '!table' => $this->table_name,
+          '!values' => print_r($this->values, TRUE),
+        ]);
       throw new Exception($message);
     }
 
@@ -354,8 +374,10 @@ class ChadoRecord {
     if (!$this->record_id) {
       $message = t('ChadoRecord::update(). Could not update a record in the ' .
         'table, !table, without a record ID. Current values: !values.',
-        ['!table' => $this->table_name,
-         '!values' => print_r($this->values, TRUE)]);
+        [
+          '!table' => $this->table_name,
+          '!values' => print_r($this->values, TRUE),
+        ]);
       throw new Exception($message);
     }
 
@@ -378,15 +400,16 @@ class ChadoRecord {
     // Now try the update.
     try {
       chado_query($sql, $update_args);
-    }
-    catch (Exception $e) {
+    } catch (Exception $e) {
       $message = t('ChadoRecord::update(). Could not update a record in the ' .
         'table, !table, with !record_id as the record ID and the following ' .
         'values: !values. ERROR: !error',
-        ['!table' => $this->table_name,
-         '!record_id' => $this->record_id,
-         '!values' => print_r($this->values, TRUE),
-         '!error' => $e->getMessage()]);
+        [
+          '!table' => $this->table_name,
+          '!record_id' => $this->record_id,
+          '!values' => print_r($this->values, TRUE),
+          '!error' => $e->getMessage(),
+        ]);
       throw new Exception($message);
     }
   }
@@ -410,13 +433,14 @@ class ChadoRecord {
     try {
       $sql = 'DELETE FROM {' . $this->table_name . '} WHERE ' . $this->pkey . ' = :record_id';
       chado_query($sql, [':record_id' => $this->record_id]);
-    }
-    catch (Exception $e) {
+    } catch (Exception $e) {
       $message = t('ChadoRecord::delete(). Could not delete a record in the table, !table, with !record_id as the record ID. ERROR: !error',
-        ['!table' => $this->table_name,
-         '!record_id' => $this->record_id,
-         '!error' => $e->getMessage()]);
-        throw new Exception($message);
+        [
+          '!table' => $this->table_name,
+          '!record_id' => $this->record_id,
+          '!error' => $e->getMessage(),
+        ]);
+      throw new Exception($message);
     }
   }
 
@@ -450,11 +474,13 @@ class ChadoRecord {
         $this->values[$column] = $value;
       }
       else {
-        $message = t('ChadoRecord::setValues(). The column named, "!column", ' . 
+        $message = t('ChadoRecord::setValues(). The column named, "!column", ' .
           'does not exist in table: "!table". Values: !values".',
-          ['!column' => $column, 
-           '!table' => $this->table_name, 
-           '!values' => print_r($values, TRUE)]);
+          [
+            '!column' => $column,
+            '!table' => $this->table_name,
+            '!values' => print_r($values, TRUE),
+          ]);
         throw new Exception($message);
       }
     }
@@ -482,13 +508,15 @@ class ChadoRecord {
     // Ensure that no values are arrays.
     foreach ($values as $column => $value) {
       if (is_array($value)) {
-        $message = t('ChadoRecord::setValues(). The column named, "!column", ' . 
+        $message = t('ChadoRecord::setValues(). The column named, "!column", ' .
           'must be a single value but is currently: "!values". NOTE: this function ' .
           'currently does not support expanding foreign key relationships or ' .
           'multiple values for a given column.',
-          ['!column' => $column, 
-           '!table' => $this->table_name, 
-           '!values' => implode('", "', $value)]);
+          [
+            '!column' => $column,
+            '!table' => $this->table_name,
+            '!values' => implode('", "', $value),
+          ]);
         throw new Exception($message);
       }
     }
@@ -523,22 +551,26 @@ class ChadoRecord {
 
     // Make sure the column is valid.
     if (!in_array($column_name, $this->column_names)) {
-      $message = t('ChadoRecord::setValue(). The column named, "!column", does ' . 
+      $message = t('ChadoRecord::setValue(). The column named, "!column", does ' .
         'not exist in table: "!table".',
-        ['!column' => $column_name, 
-         '!table' => $this->table_name]);
+        [
+          '!column' => $column_name,
+          '!table' => $this->table_name,
+        ]);
       throw new Exception($message);
     }
 
     // Make sure that the value is not NULL if this is a required field.
     if (!in_array($column_name, $this->required_cols) and $value == '__NULL__') {
-      $message = t('ChadoRecord::setValue(). The column named, "!column", ' . 
+      $message = t('ChadoRecord::setValue(). The column named, "!column", ' .
         'requires a value for the table: "!table".',
-        ['!column' => $column_name, 
-         '!table' => $this->table_name]);
+        [
+          '!column' => $column_name,
+          '!table' => $this->table_name,
+        ]);
       throw new Exception($message);
     }
-    
+
     // Remove from the missing list if it was there.
     if (isset($this->missing_required_col[$column_name])) {
       unset($this->missing_required_col[$column_name]);
@@ -546,13 +578,15 @@ class ChadoRecord {
 
     // Ensure that no values are arrays.
     if (is_array($value)) {
-      $message = t('ChadoRecord::setValue(). The column named, "!column", ' . 
-        'must be a single value but is currently: "!values". NOTE: this function ' . 
+      $message = t('ChadoRecord::setValue(). The column named, "!column", ' .
+        'must be a single value but is currently: "!values". NOTE: this function ' .
         'currently does not support expanding foreign key relationships or ' .
         'multiple values for a given column.',
-        ['!column' => $column, 
-         '!table' => $this->table_name, 
-         '!values' => implode('", "', $value)]);
+        [
+          '!column' => $column,
+          '!table' => $this->table_name,
+          '!values' => implode('", "', $value),
+        ]);
       throw new Exception($message);
     }
 
@@ -569,10 +603,12 @@ class ChadoRecord {
 
     // Make sure the column is valid.
     if (!in_array($column_name, $this->column_names)) {
-      $message = t('ChadoRecord::getValue(). The column named, "!column", ' . 
+      $message = t('ChadoRecord::getValue(). The column named, "!column", ' .
         'does not exist in table: "!table".',
-        ['!column' => $column_name, 
-         '!table' => $this->table_name]);
+        [
+          '!column' => $column_name,
+          '!table' => $this->table_name,
+        ]);
       throw new Exception($message);
     }
 
@@ -586,9 +622,9 @@ class ChadoRecord {
    * this function to find matching record.  The values provided to the
    * setValues function must uniquely identify a record.
    *
-   * @todo Support options from chado_select_record: skip_validation, has_record,
-   *   return_sql, case_insensitive_columns, regex_columns, order_by, is_duplicate,
-   *   pager, limit, offset.
+   * @todo Support options from chado_select_record: skip_validation,
+   *   has_record, return_sql, case_insensitive_columns, regex_columns,
+   *   order_by, is_duplicate, pager, limit, offset.
    * @todo Support following the foreign key
    * @todo Support complex filtering (e.g. fmin > 50)
    * @todo Support multiple records being returned?
@@ -603,7 +639,7 @@ class ChadoRecord {
 
     // Make sure we have values for this record before searching.
     if (empty($this->values)) {
-      $message = t('ChadoRecord::find(). Could not find a record from ' . 
+      $message = t('ChadoRecord::find(). Could not find a record from ' .
         'the table, !table, without any values.',
         ['!table' => $this->table_name]);
       throw new Exception($message);
@@ -618,13 +654,14 @@ class ChadoRecord {
     }
     try {
       $results = chado_query($sql, $select_args);
-    }
-    catch (Exception $e) {
-      $message = t('ChadoRecord::find(). Could not find a record in the ' . 
+    } catch (Exception $e) {
+      $message = t('ChadoRecord::find(). Could not find a record in the ' .
         'table, !table, with the following values: !values. ERROR: !error',
-        ['!table' => $this->table_name, 
-         '!values' => print_r($this->values, TRUE), 
-         '!error' => $e->getMessage()]);
+        [
+          '!table' => $this->table_name,
+          '!values' => print_r($this->values, TRUE),
+          '!error' => $e->getMessage(),
+        ]);
       throw new Exception($message);
     }
 
@@ -638,7 +675,7 @@ class ChadoRecord {
         $this->values[$column] = $value;
       }
       $this->record_id = $record[$this->pkey];
-      
+
       // We are no longer missing any required columns because we loaded
       // from the database record.
       $this->missing_required_col = [];
