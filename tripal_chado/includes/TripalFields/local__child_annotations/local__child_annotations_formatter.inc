@@ -34,6 +34,7 @@ class local__child_annotations_formatter extends ChadoFieldFormatter {
     $data = $entity->{'local__child_annotations'}['und'];
 
     if (!$data) {
+
       return;
     }
 
@@ -41,6 +42,10 @@ class local__child_annotations_formatter extends ChadoFieldFormatter {
 
       $child = $value['value'];
       // Assumption: we're on the gene entity.  We've got an array of mRNA feature ID's.
+
+      if (!$child) {
+        continue;
+      }
       $header = [
         'Feature Name',
         'Feature Type',

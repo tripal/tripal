@@ -48,6 +48,11 @@ class local__child_properties_formatter extends ChadoFieldFormatter {
         'Property Value',
       ];
 
+      if (!$child) {
+        continue;
+      }
+
+
       $info = $child['info'];
       $name = $info->uniquename;
       $element[0][$i] = [
