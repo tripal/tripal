@@ -136,16 +136,6 @@ class sbo__database_cross_reference extends ChadoField {
       return;
     }
 
-    // Set some defaults for the empty record.
-    $entity->{$field_name}['und'][0] = [
-      'value' => '',
-      'chado-' . $field_table . '__' . $pkey => '',
-      'chado-' . $field_table . '__' . $fkey_lcolumn => $record->$fkey_rcolumn,
-      'chado-' . $field_table . '__dbxref_id' => '',
-      'db_id' => '',
-      'accession' => '',
-    ];
-
     $linker_table = $base_table . '_dbxref';
     $options = ['return_array' => 1];
     $record = chado_expand_var($record, 'table', $linker_table, $options);
