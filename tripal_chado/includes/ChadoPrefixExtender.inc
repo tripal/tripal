@@ -202,7 +202,6 @@ class ChadoPrefixExtender extends SelectQueryExtender {
    * @return string
    *   The table with the correct prefix.
    *
-   * @see chado_replace_schema_prefix()
    */
   public static function getTable($table) {
     // No schema was provided.
