@@ -1733,7 +1733,9 @@ function chado_query($sql, $args = []) {
     // and Drupal tables should be enclosed in square brackets
     // (ie: [tripal_jobs] ).
     $chado_schema_name = chado_get_schema_name('chado');
-    $sql = chado_replace_table_prefix($sql);
+    $drupal_schema_name = chado_get_schema_name('drupal');
+    $sql = preg_replace('/\{(.*?)\}/', $chado_schema_name . '.$1', $sql);
+    $sql = preg_replace('/\[(\w+)\]/', $drupal_schema_name . '.$1', $sql);
 
     // Add an alter hook to allow module developers to change the query right
     // before it's  executed. Since all queriying of chado by Tripal eventually
@@ -2123,23 +2125,4 @@ function hook_chado_get_schema_name_alter($schema_name, $context) {
  */
 function chado_db_select($table, $alias = NULL, array $options = []) {
   return ChadoPrefixExtender::select($table, $alias, $options);
-}
-
-
-/**
- * Replaces [] and {} placeholders using chado_get_schema_name().
- *
- * @param $string
- *   Input string to replace table prefixes for.
- *
- * @return string
- *   Output string with correct table prefixes.
- */
-function chado_replace_table_prefix($string) {
-  $chado_schema_name = chado_get_schema_name('chado');
-  $drupal_schema_name = chado_get_schema_name('drupal');
-  $string = preg_replace('/\{(.*?)\}/', $chado_schema_name . '.$1', $string);
-  $string = preg_replace('/\[(\w+)\]/', $drupal_schema_name . '.$1', $string);
-
-  return $string;
 }
