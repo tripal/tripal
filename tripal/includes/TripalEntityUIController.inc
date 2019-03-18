@@ -927,8 +927,6 @@ function tripal_entity_delete_form_submit($form, &$form_state) {
  */
 function _tripal_entity_add_access() {
   global $user;
-
-
   $types = tripal_get_content_types();
   foreach ($types as $type) {
     if (user_access('create ' . $type->name, $user)) {
