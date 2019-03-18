@@ -109,6 +109,16 @@ function tripal_menu() {
     'file path' => drupal_get_path('module', 'system'),
   );
 
+  $items['admin/content/bio_data/add'] = [
+    'title' => 'Add Tripal Content',
+    'description' => t('Create new Tripal Content.'),
+    'page callback' => 'tripal_add_page',
+    'access arguments' => ['administer tripal'],
+    'file' => 'includes/TripalEntityUIController.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+    'type' => MENU_LOCAL_ACTION,
+  ];
+
   $items['admin/content/bio_data/unpublish'] = [
     'title' => 'Unpublish Orphaned Content',
     'description' => t('Unpublish content that has no associated records in the data store.'),
