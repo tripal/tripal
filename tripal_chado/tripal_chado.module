@@ -701,6 +701,7 @@ function tripal_chado_menu() {
     'file' => 'includes/tripal_chado.db.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_NORMAL_ITEM,
+    'weight' => 7,
   );
   $items['admin/tripal/loaders/chado_db/edit/%'] = array(
     'title' => 'Edit a Database Reference',
