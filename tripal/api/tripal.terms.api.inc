@@ -362,7 +362,7 @@ function tripal_get_term_details($vocabulary, $accession) {
           'tripal',
           TRIPAL_ERROR,
           "Unable to find term for :vocab, :accession.",
-          [':vocab' => $vocabulary, ':accession' => $accession]
+          [':vocab' => $vocabulary, ':accession' => $accession, ':function' => $function]
         );
         return FALSE;
       }
