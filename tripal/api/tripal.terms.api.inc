@@ -355,7 +355,17 @@ function tripal_get_term_details($vocabulary, $accession) {
     $module = $stores[$keys[0]]['module'];
     $function = $module . '_vocab_get_term';
     if (function_exists($function)) {
+
       $term = $function($vocabulary, $accession);
+      if (!$term) {
+        tripal_report_error(
+          'tripal',
+          TRIPAL_ERROR,
+          "Unable to find term for :vocab, :accession.",
+          [':vocab' => $vocabulary, ':accession' => $accession]
+        );
+        return FALSE;
+      }
 
       // If the vocabulary is missing then we have a problem.
       if (!array_key_exists('vocabulary', $term)) {
