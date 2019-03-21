@@ -90,7 +90,7 @@ function tripal_chado_publish_form($form, &$form_state) {
 
         // Now call the widget callback function to let the module adjust the
         // element as needed.
-        if (!isset($instance['widget']['module'](( {
+        if (!isset($instance['widget']['module'])) {
           tripal_report_error(
             'tripal_chado',
             TRIPAL_ERROR,
