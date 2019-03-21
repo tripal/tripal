@@ -90,10 +90,22 @@ function tripal_chado_publish_form($form, &$form_state) {
 
         // Now call the widget callback function to let the module adjust the
         // element as needed.
+        if (!isset($instance['widget']['module'](( {
+          tripal_report_error(
+            'tripal_chado',
+            TRIPAL_ERROR,
+            "No module set for field :name widget.",
+            [':name' => $instance['field_name']]
+          );
+          $instance['widget']['module'] = 'tripal';
+        }
         $function = $instance['widget']['module'] . '_field_widget_form';
         $items = [];
         $delta = 0;
-        $element = $function($form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
+        $element = [];
+        if (function_exists($function)) {
+          $element = $function($form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
+        }
 
         // None of these fields are required, so turn off that setting.
         $element['#required'] = FALSE;
