@@ -57,7 +57,7 @@ script:
   - mv ../tripal sites/all/modules/tripal
 
   # Run a docker container with tripal 2 pre-installed
-  - docker run -it -d --rm --name tripal2 -v "$(pwd)/tripal":/modules/tripal statonlab/tripal2
+  - docker run -it -d --rm --name tripal2 -v "$(pwd)/sites/all/modules/tripal":/tripal statonlab/tripal2
 
   # Apply patches
   - wget --no-check-certificate https://drupal.org/files/drupal.pgsql-bytea.27.patch
@@ -82,4 +82,5 @@ script:
 
   # Test Tripal v2 to v3 upgrade steps
   - docker exec -it tripal2 drush pm-disable tripal_core -y
+  - docker exec -it tripal2 bash -c "rm -rf /modules/tripal && ln -s /tripal /modules/tripal"
   - docker exec -it tripal2 drush en -y tripal
