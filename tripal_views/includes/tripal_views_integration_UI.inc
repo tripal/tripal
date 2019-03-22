@@ -1399,6 +1399,8 @@ function tripal_views_integration_discover_handlers() {
   $handlers[] = 'views_handler_filter_numeric';
   $handlers[] = 'views_handler_filter_date';
   $handlers[] = 'views_handler_filter_many_to_one';
+  $handlers[] = 'tripal_views_handler_filter_select_cvterm';
+  $handlers[] = 'tripal_views_handler_filter_select_string';
 
   // relationship handlers
   $handlers[] = 'views_handler_relationship';
