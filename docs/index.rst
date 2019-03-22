@@ -13,3 +13,4 @@ Welcome to Tripal's documentation!
    user_guide
    dev_guide
    extensions
+   contributing

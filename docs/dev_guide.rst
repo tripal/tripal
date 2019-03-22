@@ -16,5 +16,4 @@ Developer's Guide
    dev_guide/custom_data_loader
    dev_guide/custom_web_services
    dev_guide/rtd
-   dev_guide/contributing
    dev_guide/tutorials
