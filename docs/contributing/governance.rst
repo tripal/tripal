@@ -135,4 +135,4 @@ At any time the TPMC may communicate with members of the TSC with expertise in s
 Changes to this Document
 --------------------------
 
-These guidelines are binding to the Tripal Community. If you have comments or questions, please `post them as a Github issue <https://github.com/tripal/tripal/issues/new?template=discussion.md>`_ or ask them at the user's meeting. Changes to this document will be made after adequate discussion has occurred and the project management committee has voted in favor of the change.
+These guidelines define the structure for official Tripal Management and Governance. If you have comments or questions, please `post them as a Github issue <https://github.com/tripal/tripal/issues/new?template=discussion.md>`_ or ask them at the user's meeting. Changes to this document will be made after adequate discussion has occurred and the project management committee has voted in favor of the change.

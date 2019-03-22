@@ -1,5 +1,5 @@
-Contributing to Tripal Core Code
-================================
+Tripal Community
+==================
 
 
 

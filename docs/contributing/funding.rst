@@ -1,6 +1,6 @@
 
-Proposal Development
-=====================
+Funding Proposal Development
+==============================
 
 Tripal fully supports all community members who want to submit grant proposals for Tripal extensions. Extension development is outside the purview of the Tripal governance structure, although the Tripal Project Management Committee (TPMC) and Tripal Steering Committee (TSC) are available to help with grant submissions, through alignment with Tripal core long term goals, letters of support, etc.
 
