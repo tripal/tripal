@@ -5,31 +5,6 @@
  */
 
 /**
- * Implements hook_disable().
- *
- * Perform actions when the module is disabled by the site administrator
- *
- * @ingroup tripal_example
- */
-function tripal_example_disable() {
-
-  // EXPLANATION: If you are using Drupal Views you want to ensure that any
-  // default views that your module provides are disabled when the module is
-  // disabled. Default views are specified in the
-  // [module name].views.default.inc file. The following code will disable these
-  // views. If your module does not create any default views you can remove the
-  // following code.
-
-  // Disable all default views provided by this module
-  require_once("tripal_example.views_default.inc");
-  $views = tripal_example_views_default_views();
-  foreach (array_keys($views) as $view_name) {
-    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
-  }
-
-}
-
-/**
  * Implements hook_requirements().
  *
  * Performs check to see if all required dependencies are met. Drupal will

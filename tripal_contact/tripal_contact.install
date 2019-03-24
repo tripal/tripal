@@ -8,23 +8,6 @@
  */
 
 /**
- * Implements hook_disable().
- * Disable default views when module is disabled
- *
- * @ingroup tripal_contact
- */
-function tripal_contact_disable() {
-
-  // Disable all default views provided by this module
-  require_once("tripal_contact.views_default.inc");
-  $views = tripal_contact_views_default_views();
-  foreach (array_keys($views) as $view_name) {
-    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
-  }
-
-}
-
-/**
  * Implementation of hook_requirements().
  *
  * @ingroup tripal_contact
