@@ -118,6 +118,18 @@ function tripal_enable() {
     db_rename_table('tripal_variables2', 'tripal_variables');
   }
 
+  if (db_table_exists('tripal_custom_quota2')) {
+    $sql = "DROP TABLE tripal_custom_quota";
+    db_query($sql);
+    db_rename_table('tripal_custom_quota2', 'tripal_custom_quota');
+  }
+
+  if (db_table_exists('tripal_expiration_files2')) {
+    $sql = "DROP TABLE tripal_expiration_files";
+    db_query($sql);
+    db_rename_table('tripal_expiration_files2', 'tripal_expiration_files');
+  }
+
   // schema change
   if (!db_field_exists('tripal_jobs', 'includes')) {
     $sql = "ALTER TABLE tripal_jobs ADD COLUMN includes text";
@@ -151,6 +163,14 @@ function tripal_schema() {
     if (db_table_exists('tripal_variables')) {
       db_rename_table('tripal_variables', 'tripal_variables2');
     }
+
+    if (db_table_exists('tripal_custom_quota')) {
+      db_rename_table('tripal_custom_quota', 'tripal_custom_quota2');
+    }
+    if (db_table_exists('tripal_expiration_files')) {
+      db_rename_table('tripal_expiration_files', 'tripal_expiration_files2');
+    }
+
     variable_set ('tripal_v2_upgrade_v3_check', TRUE);
   }
   $schema = array();
@@ -159,12 +179,7 @@ function tripal_schema() {
   $schema['tripal_token_formats'] = tripal_tripal_token_formats_schema();
   $schema['tripal_variables'] = tripal_tripal_variables_schema();
   $schema['tripal_expiration_files'] = tripal_tripal_expiration_files_schema();
-  // Only create the quota table if it doesn't already exist.
-  // This is needed b/c the module defining this table changed from tripal_core to tripal
-  // and this confuses the Drupal Schema API.
-  if (!db_table_exists('tripal_custom_quota')) {
-    $schema['tripal_custom_quota'] = tripal_tripal_custom_quota_schema();
-  }
+  $schema['tripal_custom_quota'] = tripal_tripal_custom_quota_schema();
   
   // Adds a table for managing TripalEntity entities.
   $schema['tripal_vocab'] = tripal_tripal_vocab_schema();
