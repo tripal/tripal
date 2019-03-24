@@ -158,10 +158,14 @@ function tripal_schema() {
   $schema['tripal_jobs'] = tripal_tripal_jobs_schema();
   $schema['tripal_token_formats'] = tripal_tripal_token_formats_schema();
   $schema['tripal_variables'] = tripal_tripal_variables_schema();
-  $schema['tripal_custom_quota'] = tripal_tripal_custom_quota_schema();
   $schema['tripal_expiration_files'] = tripal_tripal_expiration_files_schema();
-
-
+  // Only create the quota table if it doesn't already exist.
+  // This is needed b/c the module defining this table changed from tripal_core to tripal
+  // and this confuses the Drupal Schema API.
+  if (!db_table_exists('tripal_custom_quota')) {
+    $schema['tripal_custom_quota'] = tripal_tripal_custom_quota_schema();
+  }
+  
   // Adds a table for managing TripalEntity entities.
   $schema['tripal_vocab'] = tripal_tripal_vocab_schema();
   $schema['tripal_term'] = tripal_tripal_term_schema();
