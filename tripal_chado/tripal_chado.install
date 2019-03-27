@@ -29,6 +29,11 @@ function tripal_chado_install() {
       )
     ";
     chado_query($sql);
+
+    //Fix the SOFP feature_property issue from the legacy feature_property module.
+    
+    tripal_chado_fix_legacy_SOFP_7338();
+
   }
 
   tripal_insert_variable('bundle_category', 'Bundles can be categorized to allow for grouping');
@@ -681,6 +686,52 @@ function tripal_chado_chado_cvterm_mapping_schema() {
     ),
   );
   return $schema;
+}
+
+
+
+/**
+ * Fixes a problem with the legacy feature_property/SOFP
+ * ontology where all terms are relationships.
+ */
+
+function tripal_chado_fix_legacy_SOFP_7338() {
+
+  $sofp =  chado_get_db(['name' => 'SOFP']);
+  $fp = chado_get_cv(['name' => 'feature_property']);
+
+  if (!$sofp || !$fp) {
+    // No need to update unless the SOFP db exists
+    return;
+  }
+  $terms = chado_select_record('cvterm', ['cvterm_id', 'name'], [
+    'dbxref_id' => [
+      'db_id' => [
+        'name' => 'SOFP',
+      ],
+    ],
+    'cv_id' => ['name' => 'feature_property'],
+  ]);
+
+  if (empty($terms)) {
+    return;
+  }
+
+  foreach ($terms as $term) {
+
+    $id = $term->cvterm_id;
+    $name = $term->name;
+
+    if ($name == 'linked_to') {
+      continue;
+    }
+    chado_update_record('cvterm', ['cvterm_id' => $id], ['is_relationshiptype' => 0]);
+  }
+
+  //repopulate the mview.
+  print("repopulating the db2cv mview...");
+  $mview_id = chado_get_mview_id('db2cv_mview');
+  chado_populate_mview($mview_id);
 }
 
 /**
@@ -1868,6 +1919,7 @@ function tripal_chado_update_7337() {
     'urlprefix' => 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={accession}',
   ));
 }
+
 /**
  * Correctly flag SOFP terms as "not" relationships, allowing the mview to
  * populate them.
@@ -1877,41 +1929,7 @@ function tripal_chado_update_7338() {
   try {
     // Get all SOFP terms and set their is_relationshiptype to 0
 
-    $sofp =  chado_get_db(['name' => 'SOFP']);
-    $fp = chado_get_cv(['name' => 'feature_property']);
-
-    if (!$sofp || !$fp) {
-      // No need to update unless the SOFP db exists
-      return;
-    }
-    $terms = chado_select_record('cvterm', ['cvterm_id', 'name'], [
-      'dbxref_id' => [
-        'db_id' => [
-          'name' => 'SOFP',
-        ],
-      ],
-      'cv_id' => ['name' => 'feature_property'],
-    ]);
-
-    if (empty($terms)) {
-      return;
-    }
-
-    foreach ($terms as $term) {
-
-      $id = $term->cvterm_id;
-      $name = $term->name;
-
-      if ($name == 'linked_to') {
-        continue;
-      }
-      chado_update_record('cvterm', ['cvterm_id' => $id], ['is_relationshiptype' => 0]);
-    }
-
-    //repopulate the mview.
-    print("repopulating the db2cv mview...");
-    $mview_id = chado_get_mview_id('db2cv_mview');
-    chado_populate_mview($mview_id);
+    tripal_chado_fix_legacy_SOFP_7338();
 
   } catch (\PDOException $e) {
     $error = $e->getMessage();
