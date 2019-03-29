@@ -4,13 +4,13 @@
  * Implements hook_field_storage_info().
  */
 function tripal_ws_field_storage_info() {
-  return array(
-    'field_tripal_ws_storage' => array(
+  return [
+    'field_tripal_ws_storage' => [
       'label' => t('Tripal Web Services'),
       'description' => t('Retrieves fields data from a remote site using Tripal web services.'),
-      'settings' => array(),
-    ),
-  );
+      'settings' => [],
+    ],
+  ];
 }
 
 /**
@@ -20,7 +20,7 @@ function tripal_ws_field_storage_info() {
  * their values to the entity.
  */
 function tripal_ws_field_storage_load($entity_type, $entities, $age,
-    $fields, $options) {
+                                      $fields, $options) {
 
   $load_current = $age == FIELD_LOAD_CURRENT;
   global $language;
@@ -47,7 +47,7 @@ function tripal_ws_field_storage_load($entity_type, $entities, $age,
       // TODO: how to deal with deleted fields?
       $instance = field_info_instance($entity_type, $field_name, $entity->bundle);
 
-	  if (!$instance) {
+      if (!$instance) {
         continue;
       }
 
@@ -69,6 +69,7 @@ function tripal_ws_field_storage_load($entity_type, $entities, $age,
 function tripal_ws_field_storage_query($query) {
 
 }
+
 /**
  * Implements hook_field_storage_write().
  */

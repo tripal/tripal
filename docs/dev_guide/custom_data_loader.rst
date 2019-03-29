@@ -343,8 +343,9 @@ To import data into Chado we will use the Tripal API. After splitting each line 
     // to load the entire file into memory but rather to iterate over each
     // line separately.
     $bytes_read = 0;
-    while ($line = fgets($file_path)) {
-
+    $in_fh = fopen($file_path, "r");
+    while ($line = fgets($in_fh)) {
+  
       // Calculate how many bytes we have read from the file and let the
       // importer know how many have been processed so it can provide a
       // progress indicator.

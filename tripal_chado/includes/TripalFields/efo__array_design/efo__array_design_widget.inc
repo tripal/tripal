@@ -6,7 +6,7 @@ class efo__array_design_widget extends ChadoFieldWidget {
   public static $default_label = 'Array Design';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('efo__array_design');
+  public static $field_types = ['efo__array_design'];
 
 
   /**
@@ -30,10 +30,10 @@ class efo__array_design_widget extends ChadoFieldWidget {
       $arraydesign_id = $items[0][$linker_field];
     }
 
-    $widget['value'] = array(
+    $widget['value'] = [
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
-    );
+    ];
     $sql = "SELECT arraydesign_id, name, version FROM {arraydesign} ORDER BY name";
     $results = chado_query($sql);
     $options = ['' => '- Select an array design -'];
@@ -43,7 +43,7 @@ class efo__array_design_widget extends ChadoFieldWidget {
         $options[$r->arraydesign_id] = $r->name . '(' . $r->version . ')';
       }
     }
-    $widget[$linker_field] = array(
+    $widget[$linker_field] = [
       '#type' => 'select',
       '#title' => $element['#title'],
       '#description' => $element['#description'],
@@ -52,7 +52,7 @@ class efo__array_design_widget extends ChadoFieldWidget {
       '#required' => $element['#required'],
       '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
       '#delta' => $delta,
-    );
+    ];
   }
 
   /**
@@ -67,7 +67,7 @@ class efo__array_design_widget extends ChadoFieldWidget {
 
     // Set the linker field appropriately.
     $linker_field = 'chado-' . $field_table . '__' . $field_column;
-    
+
     // Make sure the value is set to the organism_id
     $arraydesign_id = $form_state['values'][$field_name]['und'][0][$linker_field];
     $form_state['values'][$field_name]['und'][0]['value'] = $arraydesign_id;

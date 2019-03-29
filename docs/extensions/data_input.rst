@@ -42,3 +42,11 @@ The Tripal Plant PopGen Submit (TPPS) Module supports a flexible submission inte
 
 `Documentation <https://tpps.readthedocs.io/en/latest/>`__
 `Repository <https://gitlab.com/TreeGenes/TGDR>`__
+
+Migrate Chado
+-------------
+
+This module is a collection of destination plugins to import biological data to a Chado database using `Drupal Migrate <https://www.drupal.org/project/migrate>`_. The Migrate module provides a flexible framework for migrating content into Drupal from other sources (e.g., when converting a web site to Drupal). Content is imported and rolled back using a bundled web interface (Migrate UI module) or included Drush commands (strongly recommended).
+
+`Documentation <https://www.drupal.org/docs/7/modules/migrate-chado>`__
+`Repository <https://www.drupal.org/project/migrate_chado>`__

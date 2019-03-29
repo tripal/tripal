@@ -23,64 +23,66 @@ $object_rels = $all_relationships['object'];
 $subject_rels = $all_relationships['subject'];
 
 if (count($object_rels) > 0 or count($subject_rels) > 0) { ?>
-  <div class="tripal_project-data-block-desc tripal-data-block-desc">This project is related to the following other projects:</div> <?php
+    <div class="tripal_project-data-block-desc tripal-data-block-desc">This
+        project is related to the following other projects:
+    </div> <?php
 
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-  $headers = array('Relationship');
-  
+  $headers = ['Relationship'];
+
   // the $rows array contains an array of rows where each row is an array
   // of values for each column of the table in that row.  Additional documentation
   // can be found here:
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-  $rows = array();
-  
+  $rows = [];
+
   // first add in the subject relationships.  
-  foreach ($subject_rels as $rel_type => $objects){ 
-    foreach ($objects as $object){
+  foreach ($subject_rels as $rel_type => $objects) {
+    foreach ($objects as $object) {
       // link the project to it's node
       $object_name = $object->record->object_project_id->name;
       if (property_exists($object->record, 'nid')) {
-        $object_name = l($object_name, "node/" . $object->record->nid, array('attributes' => array('target' => "_blank")));
+        $object_name = l($object_name, "node/" . $object->record->nid, ['attributes' => ['target' => "_blank"]]);
       }
-      $rows[] = array(
+      $rows[] = [
         "$project->name is a \"$rel_type\" of $object_name",
-      ); 
+      ];
     }
   }
-  
+
   // second add in the object relationships.  
-  foreach ($object_rels as $rel_type => $subjects){
-    foreach ($subjects as $subject){
+  foreach ($object_rels as $rel_type => $subjects) {
+    foreach ($subjects as $subject) {
       // link the project to it's node
       $subject_name = $subject->record->subject_project_id->name;
       if (property_exists($subject->record, 'nid')) {
-        $subject_name = l($subject_name, "node/" . $subject->record->nid, array('attributes' => array('target' => "_blank")));
+        $subject_name = l($subject_name, "node/" . $subject->record->nid, ['attributes' => ['target' => "_blank"]]);
       }
-      $rows[] = array(
+      $rows[] = [
         "$subject_name is a \"$rel_type\" of $project->name",
-      ); 
+      ];
     }
   }
   // the $table array contains the headers and rows array as well as other
   // options for controlling the display of the table.  Additional
   // documentation can be found here:
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-  $table = array(
+  $table = [
     'header' => $headers,
     'rows' => $rows,
-    'attributes' => array(
+    'attributes' => [
       'id' => 'tripal_project-table-relationship-subject',
-      'class' => 'tripal-data-table'
-    ),
+      'class' => 'tripal-data-table',
+    ],
     'sticky' => FALSE,
     'caption' => '',
-    'colgroups' => array(),
+    'colgroups' => [],
     'empty' => '',
-  );
-   
+  ];
+
   // once we have our table array structure defined, we call Drupal's theme_table()
   // function to generate the table.
-  print theme_table($table); 
+  print theme_table($table);
 }

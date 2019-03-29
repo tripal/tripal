@@ -1,16 +1,17 @@
 <?php
 
 class data__sequence_coordinates_table_formatter extends ChadoFieldFormatter {
+
   // The default lable for this field.
   public static $default_label = 'Sequence Coordinate Table';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('data__sequence_coordinates');
+  public static $field_types = ['data__sequence_coordinates'];
 
-  public static $default_settings = array(
+  public static $default_settings = [
     'caption' => 'This @content_type has the following sequence coordinates:',
     'expand_strand' => TRUE,
-  );
+  ];
 
   /**
    *
@@ -23,36 +24,39 @@ class data__sequence_coordinates_table_formatter extends ChadoFieldFormatter {
 
     // Ensure the default are set if the value is not configured.
     foreach ($this::$default_settings as $key => $value) {
-      if (!isset($settings[$key])) { $settings[$key] = $value; }
+      if (!isset($settings[$key])) {
+        $settings[$key] = $value;
+      }
     }
 
-    $element = array();
+    $element = [];
 
-    $element['expand_strand'] = array(
+    $element['expand_strand'] = [
       '#type' => 'textfield',
       '#title' => 'Expand Strand',
       '#description' => 'Expands the strand to full words versus "+" or "-".',
       '#default_value' => $settings['expand_strand'],
-    );
+    ];
 
-    $element['caption'] = array(
+    $element['caption'] = [
       '#type' => 'textfield',
       '#title' => 'Caption',
       '#description' => 'Provides a caption for the table describing the purpose to the user.',
       '#default_value' => $settings['caption'],
-    );
+    ];
 
-    $element['tokens'] = array(
+    $element['tokens'] = [
       '#type' => 'item',
       '#title' => 'Tokens',
       '#markup' => 'The following tokens should be used in <strong>both the above captions</strong>:</p>
                      <ul>
                        <li>@content_type: the human-readable name of the content type for the current entity.</li>
                      </ul>',
-    );
+    ];
 
     return $element;
   }
+
   /**
    * @see TripalFieldFormatter::settingsSummary()
    */
@@ -63,7 +67,9 @@ class data__sequence_coordinates_table_formatter extends ChadoFieldFormatter {
 
     // Ensure the default are set if the value is not configured.
     foreach ($this::$default_settings as $key => $value) {
-      if (!isset($settings[$key])) { $settings[$key] = $value; }
+      if (!isset($settings[$key])) {
+        $settings[$key] = $value;
+      }
     }
 
     $summary = t('<strong>Caption:</strong> ' . $settings['caption']);
@@ -80,12 +86,14 @@ class data__sequence_coordinates_table_formatter extends ChadoFieldFormatter {
     // Get the settings and set defaults.
     $settings = $display['settings'];
     foreach ($this::$default_settings as $key => $value) {
-      if (!isset($settings[$key])) { $settings[$key] = $value; }
+      if (!isset($settings[$key])) {
+        $settings[$key] = $value;
+      }
     }
 
     // Replace tokens in the caption.
     $settings['caption'] = t($settings['caption'],
-      array('@content_type' => $entity->rdfs__type['und'][0]['value']));
+      ['@content_type' => $entity->rdfs__type['und'][0]['value']]);
 
     // Determine the terms for each column.
     $reference_term = 'data:3002';
@@ -95,8 +103,8 @@ class data__sequence_coordinates_table_formatter extends ChadoFieldFormatter {
     $phase_term = chado_get_semweb_term('featureloc', 'phase');
 
     // For each location, add it to the table.
-    $header = array('Name','Location','Strand');
-    $rows = array();
+    $header = ['Name', 'Location', 'Strand'];
+    $rows = [];
     foreach ($items as $item) {
       if (!empty($item['value'])) {
 
@@ -113,21 +121,21 @@ class data__sequence_coordinates_table_formatter extends ChadoFieldFormatter {
           }
         }
 
-        $rows[] = array(
+        $rows[] = [
           $item['value'][$reference_term],
           $item['value'][$fmin_term] . '..' . $fmax = $item['value'][$fmax_term],
-          $strand
-        );
+          $strand,
+        ];
       }
     }
 
     // Add the markup for the table.
-    $element[0] = array(
+    $element[0] = [
       '#type' => 'markup',
       '#theme' => 'table',
       '#header' => $header,
       '#rows' => $rows,
       '#caption' => $settings['caption'],
-    );
+    ];
   }
 }

@@ -11,7 +11,7 @@ class rdfs__type extends TripalField {
   // Provide a list of global settings. These can be accessed within the
   // globalSettingsForm.  When the globalSettingsForm is submitted then
   // Drupal will automatically change these settings for all fields.
-  public static $default_settings = array();
+  public static $default_settings = [];
 
   // Provide a list of instance specific settings. These can be access within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
@@ -20,7 +20,7 @@ class rdfs__type extends TripalField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings  = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'rdfs',
     // The name of the term.
@@ -31,7 +31,7 @@ class rdfs__type extends TripalField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => TRUE,
-  );
+  ];
 
   // Set this to the name of the storage backend that by default will support
   // this field.
@@ -47,17 +47,17 @@ class rdfs__type extends TripalField {
    * @see TripalField::load()
    */
   public function load($entity) {
-    $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
+    $bundle = tripal_load_bundle_entity(['name' => $entity->bundle]);
     $entity->{$this->field['field_name']}['und'][0]['value'] = $bundle->label;
   }
 
 
   /**
-   *  @see TripalField::settingsForm()
+   * @see TripalField::settingsForm()
    */
   public function settingsForm($has_data) {
     $settings = $this->field['settings'];
-    $element = array();
+    $element = [];
 
     $element['#field'] = $this->field;
     $element['#instance'] = $this->instance;
@@ -65,8 +65,9 @@ class rdfs__type extends TripalField {
 
     return $element;
   }
+
   /**
-   *  @see TripalField::settingsFormValidate()
+   * @see TripalField::settingsFormValidate()
    */
   public function settingsFormValidate($form, &$form_state) {
 

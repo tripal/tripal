@@ -11,13 +11,13 @@ function theme_tripal_chado_date_combo($variables) {
   $instance = field_info_instance($element['#entity_type'], $element['#field_name'], $element['#bundle']);
 
   // Group start/end items together in fieldset.
-  $fieldset = array(
+  $fieldset = [
     '#title' => t($element['#title']) . ' ' . ($element['#delta'] > 0 ? intval($element['#delta'] + 1) : ''),
     '#value' => '',
     '#description' => !empty($element['#fieldset_description']) ? $element['#fieldset_description'] : '',
-    '#attributes' => array(),
+    '#attributes' => [],
     '#children' => $element['#children'],
-    '#attributes' => array('class' => array('collapsible', 'collapsed')),
-  );
-  return theme('fieldset', array('element' => $fieldset));
+    '#attributes' => ['class' => ['collapsible', 'collapsed']],
+  ];
+  return theme('fieldset', ['element' => $fieldset]);
 }

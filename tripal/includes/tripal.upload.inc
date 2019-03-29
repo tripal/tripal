@@ -10,15 +10,15 @@ function tripal_file_upload($type, $filename, $action = NULL, $chunk = 0) {
   $user_dir = tripal_get_user_files_dir($user);
   if (!tripal_is_user_files_dir_writeable($user)) {
     $message = 'The user\'s data directory is not writeable: !user_dir.';
-    watchdog('tripal', $message, array('!user_dir' => $user_dir), WATCHDOG_ERROR);
-    drupal_json_output(array(
-      'status'  => 'failed',
+    watchdog('tripal', $message, ['!user_dir' => $user_dir], WATCHDOG_ERROR);
+    drupal_json_output([
+      'status' => 'failed',
       'message' => $message,
       'file_id' => '',
-    ));
+    ]);
     return;
   }
-  
+
   // Make sure we don't go over the user's quota, but only do this check
   // before loading the first chunk so we don't repeat it over and over again.
   if ($action == 'check' and $chunk == 0) {
@@ -26,27 +26,27 @@ function tripal_file_upload($type, $filename, $action = NULL, $chunk = 0) {
     $quota = tripal_get_user_quota($user->uid);
     $quota_size = $quota->custom_quota;
     if ($file_size + $usage > $quota_size) {
-      drupal_json_output(array(
+      drupal_json_output([
         'status' => 'failed',
         'message' => t("Unfortunately, you can not upload this file as the size exceeds the remainder of your quota. See your account page under the 'Uploads' tab to manage your uploaded files."),
         'file_id' => '',
-      ));
+      ]);
       return;
     }
-    
+
     // Make sure we don't go over the max file upload size.
     $upload_max = variable_get('tripal_upload_max_size', 10000000000);
     if ($file_size > $upload_max) {
       $message = t("Unfortunately, you can not upload this file as the size exceeds the the maximum file size allowed by this site: " . tripal_format_bytes($upload_max) . '. ');
-      
+
       if (user_access('administer tripal')) {
         $message .= t('You can manage the file upload by visiting: Home » Administration » Tripal » User File Management.');
       }
-      drupal_json_output(array(
+      drupal_json_output([
         'status' => 'failed',
         'message' => $message,
         'file_id' => '',
-      ));
+      ]);
       return;
     }
   }
@@ -55,19 +55,19 @@ function tripal_file_upload($type, $filename, $action = NULL, $chunk = 0) {
   // is allowed to stop the upload as needed.
   $hook_name = $module . '_file_upload_check';
   if (function_exists($hook_name)) {
-    $details = array(
+    $details = [
       'filename' => $filename,
       'file_size' => $file_size,
       'chunk_size' => $chunk_size,
-    );
+    ];
     $message = '';
     $status = $hook_name($action, $details, $message);
     if ($status === FALSE) {
-      drupal_json_output(array(
+      drupal_json_output([
         'status' => 'failed',
         'message' => $message,
         'file_id' => '',
-      ));
+      ]);
       return;
     }
   }
@@ -85,6 +85,7 @@ function tripal_file_upload($type, $filename, $action = NULL, $chunk = 0) {
       break;
   }
 }
+
 /**
  * Merges all chunks into a single file
  */
@@ -112,7 +113,7 @@ function tripal_file_upload_merge($filename, $type, $user_dir) {
 
     // Open the new merged file.
     $merge_fh = fopen($merge_file, "w");
-    if ($merge_fh){
+    if ($merge_fh) {
       if (flock($merge_fh, LOCK_EX)) {
         $chunks_written = $log['chunks_written'];
         $max_chunk = max(array_keys($chunks_written));
@@ -157,12 +158,12 @@ function tripal_file_upload_merge($filename, $type, $user_dir) {
     $status = 'failed';
     $message = 'Merge file is missing after upload ' . $merge_file . '.';
   }
-  
+
   $file_id = NULL;
 
   // If the file has been successfully merged then do a few other things...
-  if ($status != 'failed') {   
-    
+  if ($status != 'failed') {
+
     // See if this file is already managed if so, then it has been uploaded
     // before and we don't need to add a managed item again.
     $fid = db_select('file_managed', 'fm')
@@ -170,7 +171,7 @@ function tripal_file_upload_merge($filename, $type, $user_dir) {
       ->condition('uri', $merge_file)
       ->execute()
       ->fetchField();
-    
+
     // Add the file if it is not already managed.
     if (!$fid) {
       $file = new stdClass();
@@ -182,27 +183,27 @@ function tripal_file_upload_merge($filename, $type, $user_dir) {
       $file = file_save($file);
       $fid = $file->fid;
     }
-    
+
     // Reload the file object to get a full object.
     $file_id = $fid;
     $file = file_load($fid);
-    
+
     // Set the file as being managed by Tripal.
     file_usage_add($file, 'tripal', $type, 0);
-    
+
     // Set the file expiration.
     tripal_reset_file_expiration($fid);
-    
+
     // Generate an md5 file the uploaded file.
     $full_path = drupal_realpath($file->uri);
     $md5sum = md5_file($full_path);
     $md5sum_file = fopen("$full_path.md5", "w");
     fwrite($md5sum_file, $md5sum);
     fclose($md5sum_file);
-    
+
     // Remove the temporary directory.
     file_unmanaged_delete_recursive($temp_dir);
-    
+
     // Now let the submitting module deal with it.
     $function = $module . '_handle_uploaded_file';
     if (function_exists($function)) {
@@ -212,14 +213,15 @@ function tripal_file_upload_merge($filename, $type, $user_dir) {
   }
 
   if ($status == 'failed') {
-    watchdog('tripal', $message, array(), WATCHDOG_ERROR);
+    watchdog('tripal', $message, [], WATCHDOG_ERROR);
   }
-  drupal_json_output(array(
-    'status'  => $status,
+  drupal_json_output([
+    'status' => $status,
     'message' => $message,
     'file_id' => $file_id,
-  ));
+  ]);
 }
+
 /**
  * Checks the size of a chunk to see if is fully uploaded.
  *
@@ -254,12 +256,13 @@ function tripal_file_upload_verify($filename, $chunk, $user_dir) {
     }
   }
 
-  drupal_json_output(array(
+  drupal_json_output([
     'status' => 'success',
     'message' => '',
-    'curr_chunk'  => $i,
-  ));
+    'curr_chunk' => $i,
+  ]);
 }
+
 /**
  * Saves the contents of the file being sent to the server.
  *
@@ -301,6 +304,7 @@ function tripal_file_upload_put($filename, $chunk, $user_dir) {
   $log['chunks_written'][$chunk] = $size;
   tripal_file_upoad_write_log($temp_dir, $log);
 }
+
 /**
  * Reads the upload log file.
  *
@@ -332,12 +336,13 @@ function tripal_file_upload_read_log($temp_dir) {
     fclose($fh);
   }
   if (!is_array($log)) {
-    $log = array(
-      'chunks_written' => array(),
-    );
+    $log = [
+      'chunks_written' => [],
+    ];
   }
   return $log;
 }
+
 /**
  * Writes the upload log file.
  *
@@ -357,9 +362,9 @@ function tripal_file_upoad_write_log($temp_dir, $log) {
   $log_file = $temp_dir . '/tripal_upload.log';
 
   if (!$log or !is_array($log)) {
-    $log = array(
-      'chunks_written' => array(),
-    );
+    $log = [
+      'chunks_written' => [],
+    ];
   }
 
   // Get the last chunk read

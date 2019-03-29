@@ -78,8 +78,8 @@ class FASTAImporterTest extends TripalTestCase {
     $query = db_select('chado.feature_relationship', 'fr')
       ->fields('fr')
       ->condition('fr.object_id', $mrna_1->feature_id);
-      $query->join('chado.feature', 'f', 'f.feature_id = fr.subject_id');
-      $result = $query->execute()
+    $query->join('chado.feature', 'f', 'f.feature_id = fr.subject_id');
+    $result = $query->execute()
       ->fetchObject();
 
     $this->assertNotFalse($result, 'relationship was not added to parente feature when regexp not provided (same parent/child name).');

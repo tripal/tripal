@@ -1,11 +1,12 @@
 <?php
 
 class sbo__relationship_widget extends ChadoFieldWidget {
+
   // The default lable for this field.
   public static $default_label = 'Relationship';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('sbo__relationship');
+  public static $field_types = ['sbo__relationship'];
 
   // --------------------------------------------------------------------------
   //              PROTECTED CLASS MEMBERS -- DO NOT OVERRIDE
@@ -16,12 +17,14 @@ class sbo__relationship_widget extends ChadoFieldWidget {
   // this field.
   // Note: both are ChadoSchema objects.
   protected $schema;
+
   protected $base_schema;
 
   // The column which indicated the subject/object_id in the current
   // relationship table. This allows us to support exceptions in the common
   // chado naming conventions.
   protected $subject_id_column;
+
   protected $object_id_column;
 
   // An array of columns to use as the "name" of the subject and object.
@@ -133,7 +136,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
 
     // Check $form_state['values'] to see if an AJAX call set the values.
     if (array_key_exists('values', $form_state) and
-        array_key_exists($field_name, $form_state['values'])) {
+      array_key_exists($field_name, $form_state['values'])) {
       $record_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $pkey];
       $subject_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $subject_id_key];
       $object_id = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $object_id_key];
@@ -168,7 +171,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     // Check if we have autocomplete available for this base table
     $autocomplete_path = "admin/tripal/storage/chado/auto_name/$base_table";
     $has_autocomplete = db_query('SELECT 1 FROM menu_router WHERE path=:path',
-      array(':path' => $autocomplete_path.'/%'))->fetchField();
+      [':path' => $autocomplete_path . '/%'])->fetchField();
 
     // Save some values for later...
     $widget['#table_name'] = $field_table;
@@ -177,54 +180,54 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     $widget['#base_table'] = $base_table;
     $widget['#chado_record_id'] = isset($form['#entity']) ? $form['#entity']->chado_record_id : '';
     //$widget['#element_validate'] = array('sbo__relationship_validate');
-    $widget['#prefix'] =  "<span id='$field_table-$delta'>";
-    $widget['#suffix'] =  "</span>";
+    $widget['#prefix'] = "<span id='$field_table-$delta'>";
+    $widget['#suffix'] = "</span>";
 
     // Save the values needed by the Chado Storage API.
     //-------------------------------------------------
-    $widget['value'] = array(
+    $widget['value'] = [
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
-    );
-    $widget['chado-' . $field_table . '__' . $pkey] = array(
+    ];
+    $widget['chado-' . $field_table . '__' . $pkey] = [
       '#type' => 'value',
       '#default_value' => $record_id,
-    );
-    $widget['chado-' . $field_table . '__' . $subject_id_key] = array(
+    ];
+    $widget['chado-' . $field_table . '__' . $subject_id_key] = [
       '#type' => 'value',
       '#default_value' => $subject_id,
-    );
-    $widget['chado-' . $field_table . '__type_id'] = array(
+    ];
+    $widget['chado-' . $field_table . '__type_id'] = [
       '#type' => 'value',
       '#default_value' => $type_id,
-    );
-    $widget['chado-' . $field_table . '__' . $object_id_key] = array(
+    ];
+    $widget['chado-' . $field_table . '__' . $object_id_key] = [
       '#type' => 'value',
       '#default_value' => $object_id,
-    );
+    ];
     if (array_key_exists('value', $this->schema['fields'])) {
-      $widget['chado-' . $field_table . '__value'] = array(
+      $widget['chado-' . $field_table . '__value'] = [
         '#type' => 'value',
         '#default_value' => $value,
-      );
+      ];
     }
     if (array_key_exists('rank', $this->schema['fields'])) {
-      $widget['chado-' . $field_table . '__rank'] = array(
+      $widget['chado-' . $field_table . '__rank'] = [
         '#type' => 'value',
         '#default_value' => $rank,
-      );
+      ];
     }
 
     // Subject:
     //----------
-    $widget['subject_name'] = array(
+    $widget['subject_name'] = [
       '#type' => 'textfield',
       '#title' => t('Subject'),
       '#default_value' => $subject_label,
       '#required' => $element['#required'],
       '#maxlength' => array_key_exists($subject_id_key, $this->schema['fields']) && array_key_exists('length', $this->schema['fields'][$subject_id_key]) ? $this->schema['fields'][$subject_id_key]['length'] : 255,
       '#size' => 35,
-    );
+    ];
     // Add autocomplete if we have one for this base table.
     if ($has_autocomplete) {
       $widget['subject_name']['#autocomplete_path'] = $autocomplete_path;
@@ -235,13 +238,13 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     $rtype_options = $this->get_rtype_select_options();
     if ($rtype_options) {
 
-      $widget['type_id'] = array(
+      $widget['type_id'] = [
         '#type' => 'select',
         '#title' => t('Relationship Type'),
         '#options' => $rtype_options,
         '#empty_option' => 'Select a Type',
         '#default_value' => $default_type_id,
-      );
+      ];
       if ($type_id && !key_exists($type_id, $rtype_options)) {
         form_set_error($this->field['field_name'] . '[' . $langcode . '][' . $delta . '][type_id]', 'Illegal option detected for Relationship Type. Please contact site administrator to fix the problem');
       }
@@ -251,13 +254,13 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     // then we will need to provide a cv + type autocomplete.
     else {
       // Set up available cvterms for selection
-      $vocs = array();
+      $vocs = [];
       $vocs = chado_get_cv_select_options();
       unset($vocs[0]);
       $cv_id = isset($form_state['values'][$field_name][$langcode][$delta]['vocabulary']) ? $form_state['values'][$field_name][$langcode][$delta]['vocabulary'] : 0;
       // Try getting the cv_id from cvterm for existing records
       if (!$cv_id && $type_id) {
-        $cvterm = chado_get_cvterm(array('cvterm_id' => $type_id));
+        $cvterm = chado_get_cvterm(['cvterm_id' => $type_id]);
         if (isset($cvterm->cv_id->cv_id)) {
           $cv_id = $cvterm->cv_id->cv_id;
           $default_term = $cvterm->name;
@@ -266,28 +269,28 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       if (!$cv_id) {
         $cv_id = $default_voc;
       }
-      $widget['vocabulary'] = array(
+      $widget['vocabulary'] = [
         '#type' => 'select',
         '#title' => t('Vocabulary'),
         '#options' => $vocs,
         '#required' => $element['#required'],
         '#default_value' => $cv_id,
         '#empty_option' => 'Select a Vocabulary',
-        '#ajax' => array(
+        '#ajax' => [
           'callback' => "sbo__relationship_widget_form_ajax_callback",
           'wrapper' => "$field_table-$delta",
           'effect' => 'fade',
-          'method' => 'replace'
-        ),
-      );
-      $widget['type_name'] = array(
+          'method' => 'replace',
+        ],
+      ];
+      $widget['type_name'] = [
         '#type' => 'textfield',
         '#title' => t('Relationship Type'),
         '#size' => 15,
         '#default_value' => $default_term,
         '#disabled' => TRUE,
-        '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/$cv_id"
-      );
+        '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/$cv_id",
+      ];
       if ($cv_id) {
         $widget['type_name']['#disabled'] = FALSE;
       }
@@ -295,14 +298,14 @@ class sbo__relationship_widget extends ChadoFieldWidget {
 
     // Object:
     //--------
-    $widget['object_name'] = array(
+    $widget['object_name'] = [
       '#type' => 'textfield',
       '#title' => t('Object'),
       '#default_value' => $object_label,
       '#required' => $element['#required'],
       '#maxlength' => array_key_exists($object_id_key, $this->schema['fields']) && array_key_exists('length', $this->schema['fields'][$object_id_key]) ? $this->schema['fields'][$object_id_key]['length'] : 255,
       '#size' => 35,
-    );
+    ];
     // Add autocomplete if we have one for this base table.
     if ($has_autocomplete) {
       $widget['object_name']['#autocomplete_path'] = $autocomplete_path;
@@ -320,12 +323,13 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
     $base_table = $this->instance['settings']['base_table'];
-    $chado_record_id = array_key_exists('#entity', $element)? $element['#entity']->chado_record_id : NULL;
+    $chado_record_id = array_key_exists('#entity', $element) ? $element['#entity']->chado_record_id : NULL;
 
     $fkeys = $this->schema['foreign keys'];
 
-    // 'nd_reagent_relationship' and 'project_relationship' have different column names from
-    // subject_id/object_id. Retrieve the column names determined in the form.
+    // The tables 'nd_reagent_relationship' and 'project_relationship' have
+    // different column names from subject_id/object_id. Retrieve the column
+    // names determined in the form.
     $subject_id_key = $this->subject_id_column;
     $object_id_key = $this->object_id_column;
 
@@ -333,7 +337,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     $voc_id = array_key_exists('vocabulary', $form_state['values'][$field_name][$langcode][$delta]) ? $form_state['values'][$field_name][$langcode][$delta]['vocabulary'] : '';
     $type_name = array_key_exists('type_name', $form_state['values'][$field_name][$langcode][$delta]) ? $form_state['values'][$field_name][$langcode][$delta]['type_name'] : '';
     $subject_id = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $subject_id_key]) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $subject_id_key] : '';
-    $object_id = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key]) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key]: '';
+    $object_id = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key]) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key] : '';
     $type_id = isset($form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__type_id']) ? $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__type_id'] : '';
 
     $subject_name = isset($form_state['values'][$field_name][$langcode][$delta]['subject_name']) ? $form_state['values'][$field_name][$langcode][$delta]['subject_name'] : '';
@@ -346,45 +350,59 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       return;
     }
 
-    // Do not proceed if subject ID or object ID does not exist
-    if (!key_exists($subject_id_key, $fkeys[$base_table]['columns']) ||
-        !key_exists($object_id_key, $fkeys[$base_table]['columns'])) {
+    // Catch the case where a user is trying to remove a relationship. All
+    // widget fields are empty but the $type_id is not.  We must therefore
+    // make sure everything is empty.
+    if (!$type_name && !$subject_name && !$object_name) {
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $subject_id_key] = '';
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key] = '';
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__type_id'] = '';
+      $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__value'] = '';
+      if (array_key_exists('rank', $this->schema['fields'])) {
+        $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__rank'] = '';
+      }
       return;
     }
 
-    // Validation is occuring in the field::validate() but we need to know if it finds errors.
-    // As such, I'm calling it here to check.
-    // Also, field::validate() doesn't seem to always show it's errors
-    // OR stop form submission? so we need to ensure that happens here.
+    // Do not proceed if subject ID or object ID does not exist.
+    if (!key_exists($subject_id_key, $fkeys[$base_table]['columns']) ||
+      !key_exists($object_id_key, $fkeys[$base_table]['columns'])) {
+      return;
+    }
+
+    // Validation is occurring in the field::validate() but we need to know if
+    // it finds errors. As such, I'm calling it here to check. Also,
+    // field::validate() doesn't seem to always show it's errors OR stop form
+    // submission so we need to ensure that happens here.
     // sbo__relationship::validate($entity_type, $entity, $langcode, $items, &$errors)
     $errors = $this->field_instance->validateItem($form_state['values'][$field_name][$langcode][$delta], $element['#chado_record_id']);
     if ($errors) {
       foreach ($errors as $error) {
         switch ($error['element']) {
           case 'subject':
-            form_set_error('sbo__relationship]['.$langcode.']['.$delta.'][subject_name', $error['message']);
+            form_set_error('sbo__relationship][' . $langcode . '][' . $delta . '][subject_name', $error['message']);
             break;
           case 'type':
-            form_set_error('sbo__relationship]['.$langcode.']['.$delta, $error['message']);
+            form_set_error('sbo__relationship][' . $langcode . '][' . $delta, $error['message']);
             break;
           case 'object':
-            form_set_error('sbo__relationship]['.$langcode.']['.$delta.'][object_name', $error['message']);
+            form_set_error('sbo__relationship][' . $langcode . '][' . $delta . '][object_name', $error['message']);
             break;
           default:
-            form_set_error('sbo__relationship]['.$langcode.']['.$delta, $error['message']);
+            form_set_error('sbo__relationship][' . $langcode . '][' . $delta, $error['message']);
         }
       }
-
-    // Ensure data is prepared for the storage backend:
-    //-------------------------------------------------
     }
+    // If there are no other validation errors then ensure data is prepared for
+    // the storage back-end.
     else {
 
+      // Get the relationship type record.
       if ($type_name && $voc_id) {
-        $val = array(
+        $val = [
           'cv_id' => $voc_id,
-          'name' => $type_name
-        );
+          'name' => $type_name,
+        ];
         $cvterm = chado_generate_var('cvterm', $val);
 
         if (isset($cvterm->cvterm_id)) {
@@ -395,10 +413,10 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       // Get the subject ID.
       $subject_id = '';
       $fkey_rcolumn = $fkeys[$base_table]['columns'][$subject_id_key];
-      $matches = array();
+      $matches = [];
       // First check if it's in the textfield due to use of the autocomplete.
       if (preg_match('/\[id: (\d+)\]/', $subject_name, $matches)) {
-        $subject_id =  $matches[1];
+        $subject_id = $matches[1];
       }
       // Otherwise we need to look it up using the name field determined in the
       // constructor for the current field. There may be more then one name field
@@ -406,7 +424,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       else {
         $sql = 'SELECT ' . $fkey_rcolumn . ' FROM {' . $base_table . '} WHERE ' . implode('||', $this->base_name_columns) . '=:keyword';
         $subject = chado_query($sql, [':keyword' => $subject_name])->fetchAll();
-        if(count($subject) > 0) {
+        if (count($subject) > 0) {
           $subject_id = $subject[0]->$fkey_rcolumn;
         }
       }
@@ -414,7 +432,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       // Get the object ID.
       $object_id = '';
       $fkey_rcolumn = $fkeys[$base_table]['columns'][$object_id_key];
-      $matches = array();
+      $matches = [];
       // First check if it's in the textfield due to use of the autocomplete.
       if (preg_match('/\[id: (\d+)\]/', $object_name, $matches)) {
         $object_id = $matches[1];
@@ -430,8 +448,8 @@ class sbo__relationship_widget extends ChadoFieldWidget {
         }
       }
 
-      // If we have all three values required for a relationship...
-      // Then set them as the chado field storage expects them to be set.
+      // If we have all three values required for a relationship
+      // then set them as the chado field storage expects them to be set.
       if ($subject_id && $object_id && $type_id) {
         // Set the IDs according to the values that were determined above.
         $form_state['values'][$field_name][$langcode][$delta]['value'] = 'value must be set but is not used';
@@ -483,19 +501,19 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     $layout = "
       <div class=\"chado-linker--relationship-widget\">
         <div class=\"chado-linker--relationship-widget-item\">" .
-          drupal_render($element['subject_name']) . "
+      drupal_render($element['subject_name']) . "
         </div>
         <div class=\"chado-linker--relationship-widget-item\">" .
-          drupal_render($element['vocabulary']) . "
+      drupal_render($element['vocabulary']) . "
         </div>
         <div class=\"chado-linker--relationship-widget-item\">" .
-          drupal_render($element['type_name']) . "
+      drupal_render($element['type_name']) . "
         </div>
         <div class=\"chado-linker--relationship-widget-item\">" .
-          drupal_render($element['type_id']) . "
+      drupal_render($element['type_id']) . "
         </div>
         <div>" .
-          drupal_render($element['object_name']) . "
+      drupal_render($element['object_name']) . "
         </div>
       </div>
     ";
@@ -525,11 +543,11 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     $option1_vocabs = '';
     $option2_parent = '';
     $option2_vocab = '';
-    $option3_rtypes  = '';
+    $option3_rtypes = '';
     if (array_key_exists('relationships', $instance)) {
       $settings = $instance['settings']['relationships'];
       $option1_vocabs = $settings['option1_vocabs'];
-      $option2_vocab  = $settings['option2_vocab'];
+      $option2_vocab = $settings['option2_vocab'];
       $option2_parent = $settings['option2_parent'];
       $option3_rtypes = $settings['relationship_types'];
     }
@@ -539,48 +557,49 @@ class sbo__relationship_widget extends ChadoFieldWidget {
     $option1_test = $option1_vocabs;
 
     // Option 3: Custom list of Relationship Types
-    $rtype_options = array();
+    $rtype_options = [];
     if ($option3_rtypes) {
       $rtypes = explode(PHP_EOL, $option3_rtypes);
-      foreach($rtypes AS $rtype) {
+      foreach ($rtypes AS $rtype) {
         // Ignore empty lines
         if (trim($rtype) == '') {
           continue;
         }
-        $term = chado_get_cvterm(array('name' => trim($rtype)));
+        $term = chado_get_cvterm(['name' => trim($rtype)]);
         // Try to get term with vocabulary specified
         if (!$term) {
           $tmp = explode('|', trim($rtype), 2);
-          $cv = chado_get_cv(array('name' => trim($tmp[0])));
+          $cv = chado_get_cv(['name' => trim($tmp[0])]);
           $rtype = trim($tmp[1]);
-          $term = chado_get_cvterm(array('name' => $rtype, 'cv_id' => $cv->cv_id));
+          $term = chado_get_cvterm(['name' => $rtype, 'cv_id' => $cv->cv_id]);
         }
         $rtype_options[$term->cvterm_id] = $term->name;
       }
       return $rtype_options;
     }
     // Option 2: Child terms of a selected cvterm
-    else if ($option2_vocab) {
-      $values = array(
-        'cv_id' => $option2_vocab,
-        'name' => $option2_parent
-      );
-      $parent_term = chado_get_cvterm($values);
+    else {
+      if ($option2_vocab) {
+        $values = [
+          'cv_id' => $option2_vocab,
+          'name' => $option2_parent,
+        ];
+        $parent_term = chado_get_cvterm($values);
 
-      // If the term wasn't found then see if it's a synonym.
-      if(!$parent_term) {
-        $values = array(
-          'synonym' => array(
-            'name' => trim($option2_parent),
-          )
-        );
-        $synonym = chado_get_cvterm($values);
-        if ($synonym && $synonym->cv_id->cv_id == $option2_vocab) {
-          $parent_term = $synonym;
+        // If the term wasn't found then see if it's a synonym.
+        if (!$parent_term) {
+          $values = [
+            'synonym' => [
+              'name' => trim($option2_parent),
+            ],
+          ];
+          $synonym = chado_get_cvterm($values);
+          if ($synonym && $synonym->cv_id->cv_id == $option2_vocab) {
+            $parent_term = $synonym;
+          }
         }
-      }
-      // Get the child terms of the parent term found above.
-      $sql = "
+        // Get the child terms of the parent term found above.
+        $sql = "
         SELECT subject_id,
           (SELECT name from {cvterm} where cvterm_id = subject_id) AS name
         FROM {cvtermpath}
@@ -589,35 +608,38 @@ class sbo__relationship_widget extends ChadoFieldWidget {
           cv_id = :parent_cv_id
         ORDER BY name
        ";
-      $args = array(
-        ':parent_cvterm_id' => $parent_term->cvterm_id,
-        ':parent_cv_id' => $parent_term->cv_id->cv_id
-      );
-      $results = chado_query($sql, $args);
-      while($child = $results->fetchObject()) {
-        $rtype_options[$child->subject_id] = $child->name;
+        $args = [
+          ':parent_cvterm_id' => $parent_term->cvterm_id,
+          ':parent_cv_id' => $parent_term->cv_id->cv_id,
+        ];
+        $results = chado_query($sql, $args);
+        while ($child = $results->fetchObject()) {
+          $rtype_options[$child->subject_id] = $child->name;
+        }
+        return $rtype_options;
       }
-      return $rtype_options;
-    }
-    // Option 1: All terms of selected vocabularies
-    else if ($option1_test && array_pop($option1_test)) {
-      $sql = "SELECT cvterm_id, name FROM {cvterm} WHERE cv_id IN (:cv_id) ORDER BY name";
-      $results = chado_query($sql, array(':cv_id' => $option1_vocabs));
-      while ($obj = $results->fetchObject()) {
-        $rtype_options[$obj->cvterm_id] = $obj->name;
+      // Option 1: All terms of selected vocabularies
+      else {
+        if ($option1_test && array_pop($option1_test)) {
+          $sql = "SELECT cvterm_id, name FROM {cvterm} WHERE cv_id IN (:cv_id) ORDER BY name";
+          $results = chado_query($sql, [':cv_id' => $option1_vocabs]);
+          while ($obj = $results->fetchObject()) {
+            $rtype_options[$obj->cvterm_id] = $obj->name;
+          }
+          return $rtype_options;
+        }
+        // Default option:
+        // Let the form deal with this by providing a type autocomplete?
+        else {
+          return FALSE;
+        }
       }
-      return $rtype_options;
-    }
-    // Default option:
-    // Let the form deal with this by providing a type autocomplete?
-    else {
-      return FALSE;
     }
   }
 
 }
 
-function theme_sbo__relationship_instance_settings ($variables) {
+function theme_sbo__relationship_instance_settings($variables) {
   $element = $variables['element'];
   $option1 = $element['option1'];
   $option1_vocabs = $element['option1_vocabs'];
@@ -668,10 +690,10 @@ function sbo__relationship_widget_form_ajax_callback(&$form, $form_state) {
  * An Ajax callback for the relationshp instance setting form.
  */
 function sbo__relationship_instance_settings_form_ajax_callback(&$form, &$form_state) {
-  $acpath  = $form['instance']['settings']['relationships']['option2_parent']['#autocomplete_path'];
-  $acpath .=  $form_state['values']['instance']['settings']['relationships']['option2_vocab'] . '/';
-  $urlval  = $form['instance']['settings']['relationships']['option2_parent']['#autocomplete_input']['#url_value'];
-  $urlval .=  $form_state['values']['instance']['settings']['relationships']['option2_vocab'];
+  $acpath = $form['instance']['settings']['relationships']['option2_parent']['#autocomplete_path'];
+  $acpath .= $form_state['values']['instance']['settings']['relationships']['option2_vocab'] . '/';
+  $urlval = $form['instance']['settings']['relationships']['option2_parent']['#autocomplete_input']['#url_value'];
+  $urlval .= $form_state['values']['instance']['settings']['relationships']['option2_vocab'];
   // Reset value if a different vocabulary is selected
   $form['instance']['settings']['relationships']['option2_parent']['#value'] = NULL;
   $form_state['values']['instance']['settings']['relationships']['option2_parent'] = NULL;

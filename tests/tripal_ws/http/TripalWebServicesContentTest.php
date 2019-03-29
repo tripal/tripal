@@ -5,7 +5,7 @@ namespace Tests\tripal_ws\http;
 use StatonLab\TripalTestSuite\DBTransaction;
 use StatonLab\TripalTestSuite\TripalTestCase;
 
-class TripalWebServicesContentTest extends TripalTestCase{
+class TripalWebServicesContentTest extends TripalTestCase {
 
   // Uncomment to auto start and rollback db transactions per test method.
   use DBTransaction;
@@ -33,7 +33,9 @@ class TripalWebServicesContentTest extends TripalTestCase{
     ]);
   }
 
-  /** @test */
+  /** @test
+   * @group ws
+   */
   public function testGettingListOfEntitiesInABundle() {
     // Get bundle label
     $label = db_query('SELECT label FROM tripal_bundle LIMIT 1')->fetchField();

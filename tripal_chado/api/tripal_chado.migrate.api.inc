@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  * @file
  * Provides an application programming interface (API) to migrate content.
@@ -14,13 +14,13 @@
 
 /**
  * Migrate Tripal content types
- * 
- * Migrate specified Tripal content type and publish all its content. The content type 
- * will be created if it does not already exist.
- * 
+ *
+ * Migrate specified Tripal content type and publish all its content. The
+ * content type will be created if it does not already exist.
+ *
  * @param $type
- *   A type array specifying the vocabular, accession, term_name, and chado data_table
- *   e.g.
+ *   A type array specifying the vocabular, accession, term_name, and chado
+ *   data_table e.g.
  *     $type = array(
  *       'vocabulary' => 'OBI',
  *       'accession' => '0100026',
@@ -29,10 +29,11 @@
  *         'data_table' => $table
  *       )
  *     )
+ *
  * @ingroup tripal_chado_migrate_api
  */
-function chado_migrate_tripal_content_type($type = array()) {
-    
+function chado_migrate_tripal_content_type($type = []) {
+
   // Check if the term already exists.
   $term = tripal_load_term_entity($type);
   // If term doesn't exist, create a new bundle for this term.
@@ -43,11 +44,11 @@ function chado_migrate_tripal_content_type($type = array()) {
   }
   // Create bundle name.
   $bundle_name = 'bio_data_' . $term->id;
-    
+
   // Publish records for the bundle.
-  $value = array(
+  $value = [
     'sync_node' => 1,
-    'bundle_name' => $bundle_name
-  );
+    'bundle_name' => $bundle_name,
+  ];
   chado_publish_records($value);
 }

@@ -52,13 +52,13 @@
  * @ingroup tripal_terms_api
  */
 function hook_vocab_storage_info() {
-  return array(
-    'term_chado_storage' => array(
+  return [
+    'term_chado_storage' => [
       'label' => t('Chado'),
       'description' => t('Integrates terms stored in the local Chado database with Tripal entities.'),
-      'settings' => array(),
-    ),
-  );
+      'settings' => [],
+    ],
+  ];
 }
 
 /**
@@ -149,12 +149,13 @@ function hook_vocab_get_term($vocabulary, $accession) {
  * @param $element
  *   The pager element. This is equivalent to the element from the
  *   pager_default_initialize() function of Drupal.
- * 
+ *
  * @ingroup tripal_terms_api
  */
 function hook_vocab_get_terms($vocabulary, $limit = 25, $element = 0) {
   // See the tripal_chado_vocab_get_terms() function for an example.
 }
+
 /**
  * Hook used by the default term storage backend to provide children for a term.
  *
@@ -220,7 +221,7 @@ function hook_vocab_get_root_terms($vocabulary) {
  *       prefix does not support appending then the exact location for the
  *       position of the short_name and the term accession will be
  *       specified with the {db} and {accession} tags respectively.
- * 
+ *
  * @ingroup tripal_terms_api
  */
 function hook_vocab_get_vocabulary($vocabulary) {
@@ -234,7 +235,7 @@ function hook_vocab_get_vocabulary($vocabulary) {
  *   An array of vocabularies where each entry in the array is compatible
  *   with the array returned by the tripal_get_vocabulary_details()
  *   function.
- * 
+ *
  * @ingroup tripal_terms_api
  */
 function hook_vocab_get_vocabularies() {
@@ -259,10 +260,11 @@ function hook_vocab_get_vocabularies() {
  *     -url : The URL for the term.
  *     -name : The name of the term.
  *     -definition : The term's description.
+ *
  * @return
  *   TRUE if the term was added, FALSE otherwise.  If the term already exists
  *   it will be updated and the return value will be TRUE.
- * 
+ *
  * @ingroup tripal_terms_api
  */
 function hook_vocab_add_term($details) {
@@ -285,10 +287,11 @@ function hook_vocab_add_term($details) {
  *     -url : The URL for the term.
  *     -name : The name of the term.
  *     -definition : The term's description.
+ *
  * @return
  *   TRUE if the term was added, FALSE otherwise.  If the term already exists
  *   it will be updated and the return value will be TRUE.
- * 
+ *
  * @ingroup tripal_terms_api
  */
 function tripal_add_term($details) {
@@ -352,8 +355,18 @@ function tripal_get_term_details($vocabulary, $accession) {
     $module = $stores[$keys[0]]['module'];
     $function = $module . '_vocab_get_term';
     if (function_exists($function)) {
+
       $term = $function($vocabulary, $accession);
-      
+      if (!$term) {
+        tripal_report_error(
+          'tripal',
+          TRIPAL_ERROR,
+          "Unable to find term for :vocab, :accession using :function.",
+          [':vocab' => $vocabulary, ':accession' => $accession, ':function' => $function]
+        );
+        return FALSE;
+      }
+
       // If the vocabulary is missing then we have a problem.
       if (!array_key_exists('vocabulary', $term)) {
         tripal_report_error('tripal_term', TRIPAL_ERROR, "The term is missing a vocabulary entry.");
@@ -373,18 +386,18 @@ function tripal_get_term_details($vocabulary, $accession) {
       }
       // Let the user know that the url is missing.
       if ($url_missing) {
-//         tripal_add_notification(
-//           "Missing CV term URL", 
-//           t("The controlled vocabulary, %vocab, is missing a URL. Tripal will handle " .
-//             "this by linking to the cv/lookup page of this site. However, the correct " .
-//             "should be updated for this site", 
-//             ['%vocab' => $term['vocabulary']['short_name']]),
-//           'Controlled Vocabularies', 
-//           NULL, 
-//           'mising-vocab-' . $term['vocabulary']['short_name']
-//         );
+        //         tripal_add_notification(
+        //           "Missing CV term URL", 
+        //           t("The controlled vocabulary, %vocab, is missing a URL. Tripal will handle " .
+        //             "this by linking to the cv/lookup page of this site. However, the correct " .
+        //             "should be updated for this site", 
+        //             ['%vocab' => $term['vocabulary']['short_name']]),
+        //           'Controlled Vocabularies', 
+        //           NULL, 
+        //           'mising-vocab-' . $term['vocabulary']['short_name']
+        //         );
       }
-      
+
       return $term;
     }
   }
@@ -422,6 +435,7 @@ function tripal_get_vocabulary_root_terms($vocabulary) {
     }
   }
 }
+
 /**
  * Retrieves the immediate children of the given term.
  *
@@ -506,7 +520,7 @@ function tripal_get_vocabulary_details($vocabulary) {
  * @param $element
  *   The pager element. This is equivalent to the element from the
  *   pager_default_initialize() function of Drupal.
- * 
+ *
  * @ingroup tripal_terms_api
  */
 function tripal_get_vocabulary_terms($vocabulary, $limit = 25, $element = 0) {
@@ -528,7 +542,7 @@ function tripal_get_vocabulary_terms($vocabulary, $limit = 25, $element = 0) {
  *   An array of vocabularies where each entry in the array is compatible
  *   with the array returned by the tripal_get_vocabulary_details()
  *   function.
- * 
+ *
  * @ingroup tripal_terms_api
  */
 function tripal_get_vocabularies() {
@@ -578,14 +592,14 @@ function tripal_get_vocabularies() {
  * @ingroup tripal_terms_api
  */
 function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
-    $title = 'Vocabulary Term', $description = '', $is_required,
-    $field_name = '', $delta = 0, $callback = '', $wrapper = '', $validate = [], 
-    $weight = 0) {
-  
+                                     $title = 'Vocabulary Term', $description = '', $is_required,
+                                     $field_name = '', $delta = 0, $callback = '', $wrapper = '', $validate = [],
+                                     $weight = 0) {
+
   if (!$callback) {
     $callback = 'tripal_get_term_lookup_form_ajax_callback';
   }
-  
+
   if (!$wrapper) {
     $ajax_wrapper_id = 'tripal-vocab-select-form-' . $delta;
     if ($field_name) {
@@ -595,7 +609,7 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
   else {
     $ajax_wrapper_id = $wrapper;
   }
-  
+
   $term_name = $default_name;
   if (array_key_exists('values', $form_state) and array_key_exists('term_name' . $delta, $form_state['values'])) {
     $term_name = $form_state['values']['term_name' . $delta];
@@ -616,7 +630,7 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
   $form_state['storage'][$ajax_wrapper_id]['term_match_field'] = $field_name;
   $form_state['storage'][$ajax_wrapper_id]['term_match_delta'] = $delta;
 
-  $form['term_match' . $delta] = array(
+  $form['term_match' . $delta] = [
     '#type' => 'fieldset',
     '#collapsible' => FALSE,
     '#collapsed' => FALSE,
@@ -624,54 +638,54 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
     '#prefix' => '<div id = "' . $ajax_wrapper_id . '">',
     '#suffix' => '</div>',
     '#weight' => $weight,
-  );
-  $form['term_match' . $delta]['term_name' . $delta] = array(
-    '#title'  => t('Type'),
+  ];
+  $form['term_match' . $delta]['term_name' . $delta] = [
+    '#title' => t('Type'),
     '#type' => 'textfield',
     '#description' => $description,
     '#required' => $is_required,
     '#default_value' => $term_name,
     '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/",
-  );
-  $form['term_match' . $delta]['select_button' . $delta] = array(
+  ];
+  $form['term_match' . $delta]['select_button' . $delta] = [
     '#type' => 'button',
     '#value' => t('Lookup Term'),
     '#name' => 'select_cvterm_' . $ajax_wrapper_id,
     '#validate' => $validate,
-    '#ajax' => array(
+    '#ajax' => [
       'callback' => $callback,
       'wrapper' => $ajax_wrapper_id,
       'effect' => 'fade',
-      'method' => 'replace'
-    ),
-  );
+      'method' => 'replace',
+    ],
+  ];
   if (empty($validate)) {
     $form['term_match' . $delta]['select_button' . $delta]['#limit_validation_errors'] = [];
   }
-  
+
 
   // If the term has been provided by the user then we want to search for
   // matching terms in the database and let them select among any matches.
   if ($term_name) {
     $submit_disabled = TRUE;
-    $form['term_match' . $delta]['terms_list' . $delta] = array(
+    $form['term_match' . $delta]['terms_list' . $delta] = [
       '#type' => 'fieldset',
       '#title' => t('Matching Terms'),
       '#description' => t('Please select the best matching term. If the 
         same term exists in multiple vocabularies you will see more than 
-        one option below.')
-    );
-    $match = array(
+        one option below.'),
+    ];
+    $match = [
       'name' => $term_name,
-    );
+    ];
     // TODO: this should not call the chado functions because we're in the
     // tripal module.
-    $terms = chado_generate_var('cvterm', $match, array('return_array' => TRUE));
+    $terms = chado_generate_var('cvterm', $match, ['return_array' => TRUE]);
     if ($terms) {
       $terms = chado_expand_var($terms, 'field', 'cvterm.definition');
     }
     $num_terms = 0;
-    $selected_term = '';  
+    $selected_term = '';
 
     // Let the user select from any matching terms. Sometimes there may be
     // more than one that match.
@@ -679,35 +693,35 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
       // Save the user a click by setting the default value as 1 if there's
       // only one matching term.
       $checked = FALSE;
-      $attrs = array();
+      $attrs = [];
       if ($num_terms == 0 and count($terms) == 1) {
         $checked = TRUE;
-        $attrs = array('checked' => 'checked');
+        $attrs = ['checked' => 'checked'];
       }
-      $term_element_name = 'term-' . $term->cvterm_id  . '-' . $delta;
+      $term_element_name = 'term-' . $term->cvterm_id . '-' . $delta;
       $definition = property_exists($term, 'definition') ? $term->definition : '';
-      $form['term_match' . $delta]['terms_list' . $delta][$term_element_name] = array(
+      $form['term_match' . $delta]['terms_list' . $delta][$term_element_name] = [
         '#type' => 'checkbox',
-        '#title' =>  $term->name,
+        '#title' => $term->name,
         '#default_value' => $checked,
         '#attributes' => $attrs,
         '#description' => '<b>Vocabulary:</b> ' . $term->cv_id->name . ' (' . $term->dbxref_id->db_id->name . ') ' . $term->cv_id->definition .
           '<br><b>Term ID: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
           '<br><b>Definition:</b>  ' . $definition,
-      );
+      ];
 
       if (array_key_exists('values', $form_state) and array_key_exists($term_element_name, $form_state['values']) and
-          $form_state['values'][$term_element_name] == 1) {
+        $form_state['values'][$term_element_name] == 1) {
         $selected_term = $term;
       }
       $num_terms++;
     }
-    
+
     // Next find terms that are synonyms
-    $match = array(
+    $match = [
       'synonym' => $term_name,
-    );
-    $termsyn = chado_generate_var('cvtermsynonym', $match, array('return_array' => TRUE));
+    ];
+    $termsyn = chado_generate_var('cvtermsynonym', $match, ['return_array' => TRUE]);
     // Let the user select from any matching terms. Sometimes there may be
     // more than one that match.
     foreach ($termsyn as $synonym) {
@@ -715,37 +729,37 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
       // Save the user a click by setting the default value as 1 if there's
       // only one matching term.
       $checked = FALSE;
-      $attrs = array();
+      $attrs = [];
       if ($num_terms == 0 and count($terms) == 1) {
         $checked = TRUE;
-        $attrs = array('checked' => 'checked');
+        $attrs = ['checked' => 'checked'];
       }
       $term_element_name = 'term-' . $term->cvterm_id . '-' . $delta;
       $definition = property_exists($term, 'definition') ? $term->definition : '';
-      $form['term_match' . $delta]['terms_list' . $delta][$term_element_name] = array(
+      $form['term_match' . $delta]['terms_list' . $delta][$term_element_name] = [
         '#type' => 'checkbox',
-        '#title' =>  $term->name,
+        '#title' => $term->name,
         '#default_value' => $checked,
         '#attributes' => $attrs,
         '#description' => '<b>Vocabulary:</b> ' . $term->cv_id->name . ' (' . $term->dbxref_id->db_id->name . ') ' . $term->cv_id->definition .
-        '<br><b>Term: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
-        '<br><b>Definition:</b>  ' . $definition . 
-        '<br><b>Synonym:</b> ' . $synonym->synonym,
-      );
-      
+          '<br><b>Term: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
+          '<br><b>Definition:</b>  ' . $definition .
+          '<br><b>Synonym:</b> ' . $synonym->synonym,
+      ];
+
       if (array_key_exists('values', $form_state) and array_key_exists($term_element_name, $form_state['values']) and
         $form_state['values'][$term_element_name] == 1) {
         $selected_term = $term;
       }
       $num_terms++;
     }
-    
-    
+
+
     if ($num_terms == 0) {
-      $form['term_match'. $delta]['terms_list'. $delta]['none'. $delta] = array(
+      $form['term_match' . $delta]['terms_list' . $delta]['none' . $delta] = [
         '#type' => 'item',
-        '#markup' => '<i>' . t('There is no term that matches the entered text.') . '</i>'
-      );
+        '#markup' => '<i>' . t('There is no term that matches the entered text.') . '</i>',
+      ];
     }
   }
 }
@@ -769,12 +783,12 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
  * @ingroup tripal_terms_api
  */
 function tripal_get_term_lookup_form_result($form, $form_state, $field_name = '', $delta = 0) {
-  $values = array();
-  $selected = array();
+  $values = [];
+  $selected = [];
   if ($field_name) {
-    if (array_key_exists('term_match' . $delta, $form_state['values'][$field_name]['und'][$delta]) and 
-        array_key_exists('terms_list' . $delta, $form_state['values'][$field_name]['und'][$delta]['term_match'. $delta])) {
-      $values = $form_state['values'][$field_name]['und'][$delta]['term_match'. $delta]['terms_list'. $delta];
+    if (array_key_exists('term_match' . $delta, $form_state['values'][$field_name]['und'][$delta]) and
+      array_key_exists('terms_list' . $delta, $form_state['values'][$field_name]['und'][$delta]['term_match' . $delta])) {
+      $values = $form_state['values'][$field_name]['und'][$delta]['term_match' . $delta]['terms_list' . $delta];
     }
   }
   else {
@@ -783,10 +797,10 @@ function tripal_get_term_lookup_form_result($form, $form_state, $field_name = ''
 
   if (is_array($values)) {
     foreach ($values as $key => $value) {
-      $matches = array();
+      $matches = [];
       if (preg_match("/^term-(\d+)-$delta$/", $key, $matches) and $values['term-' . $matches[1] . '-' . $delta]) {
         $cvterm_id = $matches[1];
-        $selected[] = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
+        $selected[] = chado_generate_var('cvterm', ['cvterm_id' => $cvterm_id]);
       }
     }
   }
@@ -800,14 +814,14 @@ function tripal_get_term_lookup_form_result($form, $form_state, $field_name = ''
  */
 function tripal_get_term_lookup_form_ajax_callback($form, $form_state) {
   $ajax_wrapper_id = $form_state['triggering_element']['#ajax']['wrapper'];
-  
+
   $field_name = $form_state['storage'][$ajax_wrapper_id]['term_match_field'];
   $delta = $form_state['storage'][$ajax_wrapper_id]['term_match_delta'];
-  
+
   // If this form is in a field then we need to dig a bit deeper to return
   // the form elements.
   if ($field_name) {
-    return $form[$field_name]['und'][$delta]['term_match'. $delta];
+    return $form[$field_name]['und'][$delta]['term_match' . $delta];
   }
   else {
     return $form['term_match' . $delta];

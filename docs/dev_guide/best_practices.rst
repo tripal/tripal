@@ -13,7 +13,7 @@ Before staring your development work, it is suggested that you download and inst
 Add your module to Tripal.info
 ------------------------------
 
-Do your best to list and upate your modules at http://tripal.info/extensions.
+Add your modules to the Tripal ReadtheDocs :doc:`../extensions` list. The :doc:`../extensions/module_rating` was designed to give guidance on Tripal module development best practices.
 
 
 Coding Best Practices

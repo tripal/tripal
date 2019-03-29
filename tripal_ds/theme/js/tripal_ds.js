@@ -3,6 +3,9 @@
     attach: function (context, settings){
       // Add a close button for each pane except for the te_base
       $('div.tripal_pane').each(function (i) {
+        if($(this).find('.tripal_pane-fieldset-buttons').length > 0) {
+          return;
+        }
         $(this).prepend(
           '<div class="tripal_pane-fieldset-buttons">' +
             '<div id="tripal-pane-close-button" class="tripal-pane-button">' +
@@ -34,7 +37,7 @@
           }
         });
       });
-      
+
       // Move the tripal pane to the first position when its TOC item is clicked.
       $('.tripal_pane-toc-list-item-link').each(function (i) {
         var id = '.tripal_pane-fieldset-' + $(this).attr('id');
@@ -63,6 +66,18 @@
             // Trigger expansion event to allow the pane content
             // to react to the size change
             $(id).trigger($.Event('tripal_ds_pane_expanded', {id: id}));
+            
+            // Trigger a window resize event to notify charting modules that
+            // the container dimensions has changed
+            if (typeof Event !== 'undefined') {
+              window.dispatchEvent(new Event('resize'));
+            }
+            else {
+              // Support IE
+              var event = window.document.createEvent('UIEvents');
+              event.initUIEvent('resize', true, false, window, 0);
+              window.dispatchEvent(event);
+            }
           });
           return false;
         });

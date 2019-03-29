@@ -1,5 +1,5 @@
-Contributing to Tripal Core Code
-================================
+Tripal Community
+==================
 
 
 
@@ -12,3 +12,4 @@ Contributing to Tripal Core Code
    contributing/tests
    contributing/documentation
    contributing/governance
+   contributing/funding

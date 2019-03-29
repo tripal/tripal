@@ -54,19 +54,17 @@ function tripal_create_collection($details) {
     $collection_id = $collection->getCollectionID();
     $collection->addBundle($details);
 
-    
-    
+
     drupal_set_message(t("Collection '%name' created with %num_recs record(s). Files for this collection are not yet created.  To generate files, check the !view.",
-      array(
-        '%name' => $details['collection_name'],
-        '%num_recs' => count($details['ids']),
-        '!view' => l('files page', 'user/' . $user->uid . '/files'),
-      ))
+        [
+          '%name' => $details['collection_name'],
+          '%num_recs' => count($details['ids']),
+          '!view' => l('files page', 'user/' . $user->uid . '/files'),
+        ])
     );
     return $collection;
-  }
-  catch (Exception $e) {
-    drupal_set_message(t("Failed to create the collection '%name': " . $e->getMessage(), array('%name' =>  $details['collection_name'])), 'error');
+  } catch (Exception $e) {
+    drupal_set_message(t("Failed to create the collection '%name': " . $e->getMessage(), ['%name' => $details['collection_name']]), 'error');
     return FALSE;
   }
 
@@ -92,9 +90,9 @@ function tripal_get_user_collections($uid) {
     throw new Exception('tripal_get_user_collections: Invalid $uid provided.');
   }
 
-  $collections = array();
+  $collections = [];
   $results = db_select('tripal_collection', 'tc')
-    ->fields('tc', array('collection_id'))
+    ->fields('tc', ['collection_id'])
     ->condition('uid', $uid)
     ->execute();
   while ($collection_id = $results->fetchField()) {
@@ -115,7 +113,7 @@ function tripal_expire_collections() {
   $ctime = time();
 
   $query = db_select('tripal_collection', 'tc');
-  $query->fields('tc', array('collection_id'));
+  $query->fields('tc', ['collection_id']);
   $query->where("((($ctime - create_date) / 60) / 60) / 24 >= $max_days");
   $results = $query->execute();
   while ($collection_id = $results->fetchField()) {
@@ -161,7 +159,7 @@ function tripal_get_collection($values) {
 
   if ($name and $uid) {
     $collection_id = db_select('tripal_collection', 'tc')
-      ->fields('tc', array('collection_id'))
+      ->fields('tc', ['collection_id'])
       ->condition('uid', $uid)
       ->condition('collection_name', $name)
       ->execute()
@@ -175,9 +173,8 @@ function tripal_get_collection($values) {
     $collection = new TripalEntityCollection();
     $collection->load($collection_id);
     return $collection;
-  }
-  catch (Exception $e) {
-    drupal_set_message(t("Failed to load the collection with id '%id': " . $e->getMessage(), array('%id' =>  $collection_id)), 'error');
+  } catch (Exception $e) {
+    drupal_set_message(t("Failed to load the collection with id '%id': " . $e->getMessage(), ['%id' => $collection_id]), 'error');
     return FALSE;
   }
 }

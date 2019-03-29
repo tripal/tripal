@@ -1,11 +1,12 @@
 <?php
 
 class so__transcript_widget extends ChadoFieldWidget {
+
   // The default lable for this field.
   public static $default_label = 'Transcript';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('so__transcript');
+  public static $field_types = ['so__transcript'];
 
   /**
    *

@@ -163,7 +163,7 @@ Next, the required modules will be downloaded:
   Project libraries (7.x-2.3) downloaded to /var/www/html/sites/all/modules/libraries.
   redirect (7.x-1.0-rc3) downloaded to /var/www/html/sites/all/modules/redirect.
   Project token (7.x-1.7) downloaded to /var/www/html/sites/all/modules/token.
-  Project tripal (7.x-3.0-rc1) downloaded to /var/www/html/sites/all/modules/tripal.
+  Project tripal (7.x-3.1) downloaded to /var/www/html/sites/all/modules/tripal.
   Project tripal contains 24 modules: tripal_daemon, tripal, tripal_chado, tripal_ws, tripal_bulk_loader, tripal_chado_views, tripal_ds, tripal_contact, tripal_natural_diversity, tripal_views, tripal_core, tripal_library, tripal_organism, tripal_featuremap, tripal_genetic, tripal_db, tripal_analysis, tripal_phenotype, tripal_pub, tripal_stock, tripal_project, tripal_cv, tripal_phylogeny, tripal_feature.
   Project uuid (7.x-1.0) downloaded to /var/www/html/sites/all/modules/uuid.
   Project uuid contains 4 modules: uuid_services, uuid_path, uuid_services_example, uuid_path

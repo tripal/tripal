@@ -1,9 +1,11 @@
 <?php
+
 /**
  * A class the controller will use for instantiating the TripalTerm entity.
  */
 class TripalVocab extends Entity {
-  public function __construct($values = array(), $entity_type) {
+
+  public function __construct($values = [], $entity_type) {
     parent::__construct($values, $entity_type);
 
   }
@@ -13,7 +15,7 @@ class TripalVocab extends Entity {
   }
 
   protected function defaultUri() {
-    return array('path' => 'vocabulary/' . $this->id);
+    return ['path' => 'vocabulary/' . $this->id];
   }
 
 }

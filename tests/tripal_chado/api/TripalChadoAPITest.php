@@ -5,7 +5,7 @@ namespace Tests\tripal_chado\api;
 use StatonLab\TripalTestSuite\DBTransaction;
 use StatonLab\TripalTestSuite\TripalTestCase;
 
-class TripalChadoAPITest extends TripalTestCase{
+class TripalChadoAPITest extends TripalTestCase {
 
   use DBTransaction;
 

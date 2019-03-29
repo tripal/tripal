@@ -432,7 +432,12 @@ function tripal_ds_update_ds_layout($bundle_name, $field_name, $tripal_pane_name
       }
     }
     //Update the ds_layout_settings table with the new layout info.
-    drupal_write_record('ds_layout_settings', $layout_info);
+    db_update('ds_layout_settings')
+        ->fields(array(
+            'settings' => serialize($layout_info),
+        ))
+        ->condition('ds_layout_settings.id', $ds_identifier, '=')
+        ->execute();
   }
 }
 /*
