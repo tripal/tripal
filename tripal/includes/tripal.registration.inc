@@ -271,7 +271,7 @@ function tripal_registration_form_submit($form, &$form_state) {
 
 function tripal_registration_remote_submit($data) {
   global $base_url;
-  $endpoint = 'http://upgrade.tripal.info/web/registration/content/50619jdi8ciayjhygidf';
+  $endpoint = 'http://tripal.info/registration/content/50619jdi8ciayjhygidf';
   //Are we getting the modules?
   $form_data = unserialize($data);
   if ($form_data['values']['tripal_reg_site_modules']) {
