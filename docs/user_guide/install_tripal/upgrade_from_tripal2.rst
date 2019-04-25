@@ -184,8 +184,25 @@ You have now completed the migration process and can safely disable the Tripal v
 
 Troubleshooting
 ---------------
+1. Dealing with ``stack depth limit exceeded`` on Step 4 of the Migration.
 
-1. For sites that have upgrading from Drupal 6:
+When there is a large number of nodes, Drupal's search module fails to update the search_total table and gives the following error:
+
+.. code-block:: bash
+
+    Uncaught exception thrown in shutdown function. PDOException: SQLSTATE[54001]: Statement too complex: 7 ERROR:  stack depth limit exceeded
+    HINT:  Increase the configuration parameter &amp;quot;max_stack_depth
+
+
+You can avoid this problem by clearing out the Drupal search tables byu executing the following SQL commands:
+
+.. code-block:: sql
+
+    db_query('TRUNCATE {search_total}')
+    db_query('TRUNCATE {search_index}')
+
+
+2. For sites that have upgrading from Drupal 6:
 
   If your site was upgraded from Drupal 6, you'll need to add a new text format with a machine name called 'full_html' as this is the default formatter that Tripal v3 uses. As in Drupal 6, the 'Full HTML' text format has a numeric machine name (usually '2') that was later changed to 'full_html' in Drupal 7.
 
