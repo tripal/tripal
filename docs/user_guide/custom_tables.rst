@@ -17,7 +17,7 @@ If you need to create a new table you should follow the following procedure.
 2.  Reach out to the Chado community on the `Chado mailing list <https://sourceforge.net/projects/gmod/lists/gmod-schema>`_ and ask for advice on your design.
 3.  If you think your new table would benefit others, consider requesting it be added to a future version of Chado by adding an issue in the `Chado GitHub issue queue <https://github.com/gmod/chado/issues>`_.
 4.  Write your table in the `Drupal Schema API <https://www.drupal.org/docs/7/api/schema-api/introduction-to-schema-api>`_ array format.
-5.  Navigate to the  **Tripal → Data Storage → Chado -> Custom Tables** page on your site click the `Add Custom Table` link at the top and cut-and-paste the schema array and click the `Add` button.
+5.  Navigate to the  **Tripal → Data Storage → Chado -> Custom Tables** page on your site. Click the `Add Custom Table` link at the top and cut-and-paste the schema array and click the `Add` button.
 
 .. image:: ./custom_tables.2.png
 
