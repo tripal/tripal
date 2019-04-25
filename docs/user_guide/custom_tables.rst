@@ -5,7 +5,7 @@ Chado has a large number of tables that can be used for storing a variety of bio
 
 .. image:: ./custom_tables.1.png
 
-This page contains a link to add a new custom table (at the top), a search interface to find tables by name, and a listing of existing tables.  You can use this interface to add, edit and remove custom tables.  By defaault, several custom tables have been created automatically by Tripal modules.  These tables hold data managed by the modules.  Also, tables used as materialized views appear in this list as well. They are identified with thee `Is Mview` column.
+This page contains a link to add a new custom table (at the top), a search interface to find tables by name, and a listing of existing tables.  You can use this interface to add, edit and remove custom tables.  By default, several custom tables have been created automatically by Tripal modules.  These tables hold data managed by the modules.  Also, tables used as materialized views appear in this list as well. They are identified with the `Is Mview` column.
 
 .. warning::
 
