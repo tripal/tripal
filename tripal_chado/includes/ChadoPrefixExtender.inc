@@ -204,15 +204,18 @@ class ChadoPrefixExtender extends SelectQueryExtender {
    *
    */
   public static function getTable($table) {
+    $chado_schema_name = chado_get_schema_name('chado');
+    $drupal_schema_name = chado_get_schema_name('drupal');
+
     // No schema was provided.
     if (strpos($table, '.') === FALSE) {
       // If this is a chado table, add the chado prefix. Otherwise, add the
       // public prefix.
       if (static::isChadoTable($table)) {
-        $table = "chado.{$table}";
+        $table = $chado_schema_name . ".{$table}";
       }
       else {
-        $table = "public.{$table}";
+        $table = $drupal_schema_name . ".{$table}";
       }
     }
 
@@ -234,6 +237,7 @@ class ChadoPrefixExtender extends SelectQueryExtender {
    *    The table name with the correct prefix.
    */
   public static function getRealSchema($table) {
+
     if (strpos($table, 'public.') === 0) {
       $replace = chado_get_schema_name('drupal') . '.';
       return str_replace('public.', $replace, $table);
