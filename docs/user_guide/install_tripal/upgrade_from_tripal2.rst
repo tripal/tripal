@@ -198,7 +198,7 @@ You can avoid this problem by clearing out the Drupal search tables byu executin
 
 .. code-block:: sql
 
-    db_query('TRUNCATE {search_total}')
+    TRUNCATE search_total;
     db_query('TRUNCATE {search_index}')
 
 
