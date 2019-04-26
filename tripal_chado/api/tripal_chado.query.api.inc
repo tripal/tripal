@@ -640,7 +640,7 @@ function chado_insert_record($table, $values, $options = []) {
   if ($options['return_record'] == TRUE and $result) {
     if (array_key_exists('primary key', $table_desc) and is_array($table_desc['primary key'])) {
       foreach ($table_desc['primary key'] as $field) {
-        $sql = "SELECT CURRVAL('{" . $table . "_" . $field . "_seq}')";
+        $sql = "SELECT CURRVAL('{" . $table . "}_" . $field . "_seq')";
         $results = chado_query($sql);
         $value = $results->fetchField();
         if (!$value) {
