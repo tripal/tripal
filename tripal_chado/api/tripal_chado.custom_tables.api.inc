@@ -357,6 +357,7 @@ function chado_get_base_custom_tables() {
   $num_tables = 0;
   $sql = "SELECT table_name FROM {tripal_custom_tables} WHERE is_base = 1";
   $resource = db_query($sql);
+  $tables = [];
 
   foreach ($resource as $r) {
     $tables[$r->table_name] = $r->table_name;
