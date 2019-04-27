@@ -26,10 +26,14 @@
  *   Set as TRUE to skip dropping and re-creation of the table.  This is
  *   useful if the table was already created through another means and you
  *   simply want to make Tripal aware of the table schema.
- *
+ * @param $is_base
+ *   Set as TRUE if the table should be considered a base table. Base tables
+ *   are those which can be used to create content types and publish records.
+ *   Default is FALSE.
  * @ingroup tripal_custom_tables_api
  */
-function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exists = 1) {
+function chado_edit_custom_table($table_id, $table_name, $schema,
+    $skip_if_exists = 1, $is_base = FALSE) {
 
   $transaction = db_transaction();
   try {
@@ -38,6 +42,7 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
     $record->table_id = $table_id;
     $record->table_name = $table_name;
     $record->schema = serialize($schema);
+    $record->is_base = $is_base;
 
     // Get the current custom table record.
     $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id";
@@ -68,12 +73,13 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
 
     // Update the custom table record and run the create custom table function.
     drupal_write_record('tripal_custom_tables', $record, 'table_id');
-    $success = chado_create_custom_table($table_name, $schema, $skip_if_exists);
+    $success = chado_create_custom_table($table_name, $schema, $skip_if_exists, NULL, FALSE, $is_base);
 
     // Re-add the custom table to the semantic web interface to pick up any
     // changes in fields.
     chado_add_semweb_table($table_name);
-  } catch (Exception $e) {
+  }
+  catch (Exception $e) {
     $transaction->rollback();
     watchdog_exception('tripal_chado', $e);
     $error = _drupal_decode_exception($e);
@@ -122,6 +128,9 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
  *   Optional (default: TRUE). By default this function redirects back to
  *   admin pages. However, when called by Drush we don't want to redirect. This
  *   parameter allows this to be used as a true API function.
+ * @param $is_base
+ *   Optional (default: 0).  Indicates if this custom view is a base table.
+ *   Base tables can be used to create content types and publish records.
  *
  * @return
  *   TRUE on success, FALSE on failure.
@@ -129,7 +138,7 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
  * @ingroup tripal_custom_tables_api
  */
 function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE,
-                                   $mview_id = NULL, $redirect = TRUE) {
+    $mview_id = NULL, $redirect = TRUE, $is_base = 0) {
 
   if (!$table) {
     tripal_report_error('trp_ctables', TRIPAL_ERROR,
@@ -178,7 +187,7 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE,
 
       // Drop the table we'll recreate it with the new schema.
       chado_query('DROP TABLE {' . $table . '}');
-      // Remove any 'referring_tables' from the array as the 
+      // Remove any 'referring_tables' from the array as the
       // db_create_table doesn't use that.
       $new_schema = $schema;
       if (array_key_exists('referring_tables', $new_schema)) {
@@ -188,13 +197,14 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE,
       $recreated = 1;
     }
 
-    // Add an entry in the tripal_custom_table.
+    // Add an entry in the tripal_custom_tables.
     $record = new stdClass();
     $record->table_name = $table;
     $record->schema = serialize($schema);
     if ($mview_id) {
       $record->mview_id = $mview_id;
     }
+    $record->is_base = $is_base;
 
     // If an entry already exists then remove it.
     if ($centry) {
@@ -224,7 +234,8 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE,
 
     // Add the custom table to the semantic web interface.
     chado_add_semweb_table($table);
-  } catch (Exception $e) {
+  }
+  catch (Exception $e) {
     $transaction->rollback();
     $error = $e->getMessage();
     watchdog_exception('tripal_chado', $e);
@@ -331,6 +342,27 @@ function chado_get_custom_table_id($table_name) {
   }
 
   return FALSE;
+}
+
+/**
+ * Retrieves the list of custom tables that are base tables.
+ *
+ * @return
+ *   An associative array where the key and value pairs are the table names.
+ *
+ * @ingroup tripal_custom_tables_api
+ */
+function chado_get_base_custom_tables() {
+
+  $sql = "SELECT table_name FROM {tripal_custom_tables} WHERE is_base = 1";
+  $resource = db_query($sql);
+
+  foreach ($resource as $r) {
+    $tables[$r->table_name] = $r->table_name;
+  }
+
+  asort($tables);
+  return $tables;
 }
 
 /**

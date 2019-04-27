@@ -131,6 +131,7 @@ function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL)
   // get this requested table
   $default_schema = '';
   $default_force_drop = 0;
+  $default_is_base = 0;
   if (strcmp($action, 'Edit') == 0) {
     $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id ";
     $results = db_query($sql, [':table_id' => $table_id]);
@@ -149,6 +150,10 @@ function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL)
     if (array_key_exists('values', $form_state)) {
       $default_schema = $form_state['values']['schema'];
       $default_force_drop = $form_state['values']['force_drop'];
+      $default_is_base = $form_state['values']['is_base'];
+    }
+    else {
+      $default_is_base = $custom_table->is_base;
     }
 
     if (!$default_schema) {
@@ -243,6 +248,17 @@ array (
     '#title' => t('Re-create table'),
     '#description' => t('Check this box if your table already exists and you would like to drop it and recreate it.'),
     '#default_value' => $default_force_drop,
+  ];
+  $form['is_base'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Is this a base table?'),
+      '#description' => t('Check this box if this custom table will contain records '.
+          'that can be published. For example, tables such as "feature", ' .
+          '"stock", "analysis" are all tables in Chado that contain "base" ' .
+          'records that can be published and anciallary data attached via '.
+          'fields.  If selected, site admins can create new content types ' .
+          'that resolve to this table.'),
+      '#default_value' => $default_is_base,
   ];
   $form['schema'] = [
     '#type' => 'textarea',
@@ -341,6 +357,7 @@ function tripal_custom_tables_form_submit($form, &$form_state) {
   $table_id = $form_state['values']['table_id'];
   $schema = $form_state['values']['schema'];
   $force_drop = $form_state['values']['force_drop'];
+  $is_base = $form_state['values']['is_base'];
 
   $skip_creation = 1;
   if ($force_drop) {
@@ -353,13 +370,24 @@ function tripal_custom_tables_form_submit($form, &$form_state) {
 
 
   if (strcmp($action, 'Edit') == 0) {
-    chado_edit_custom_table($table_id, $schema_arr['table'], $schema_arr, $skip_creation);
+    chado_edit_custom_table($table_id, $schema_arr['table'], $schema_arr, $skip_creation, $is_base);
   }
   elseif (strcmp($action, 'Add') == 0) {
-    chado_create_custom_table($schema_arr['table'], $schema_arr, $skip_creation);
+    chado_create_custom_table($schema_arr['table'], $schema_arr, $skip_creation,
+        NULL, FALSE, $is_base);
   }
   else {
     drupal_set_message(t("No action performed."));
+  }
+
+  if ($is_base == 1) {
+    drupal_set_message(t("The custom table is a base table. Before you can use this
+      table for content publication you must 1) be sure to map
+      the controlled vocabulary terms for the columns of this table prior
+      to creating a new content type for this table. You can set the
+      terms at !link",
+        ['!link' => l('Admin > Tripal > Data Storage > Chado > Semantic Web', 'admin/tripal/storage/chado/semweb/' . $schema_arr['table'])]
+     ));
   }
 
   drupal_goto("admin/tripal/storage/chado/custom_tables");

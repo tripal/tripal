@@ -633,7 +633,7 @@ function chado_get_base_tables() {
   // whose foreign key constraints link to two or more base table.
   $final_list = [];
   foreach ($base_tables as $i => $tablename) {
-    // A few tables break our rule and seems to look 
+    // A few tables break our rule and seems to look
     // like a linking table, but we want to keep it as a base table.
     if ($tablename == 'biomaterial' or $tablename == 'assay' or $tablename == 'arraydesign') {
       $final_list[] = $tablename;
@@ -657,6 +657,12 @@ function chado_get_base_tables() {
     if ($num_links < 2) {
       $final_list[] = $tablename;
     }
+  }
+
+  // Check for custom tables that are listed as base tables.
+  $custom_tables = array_keys(chado_get_base_custom_tables());
+  foreach ($custom_tables as $custom_table) {
+    $final_list[] = $custom_table;
   }
 
   // Now add in the cvterm table to the list.

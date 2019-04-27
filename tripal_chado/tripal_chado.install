@@ -471,7 +471,13 @@ function tripal_chado_tripal_custom_tables_schema() {
       'mview_id' => array(
         'type' => 'int',
         'not NULL' => FALSE
-      )
+      ),
+      'is_base' => array(
+        'type' => 'int',
+        'not NULL' => FALSE,
+        'size' => 'tiny',
+        'default' => 0,
+      ),
     ),
     'indexes' => array(
       'table_id' => array('table_id'),
@@ -1867,4 +1873,25 @@ function tripal_chado_update_7337(){
     'url' => 'http://www.berkeleybop.org/ontologies/ncbitaxon/',
     'urlprefix' => 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={accession}',
   ));
+}
+
+/**
+ * Adds a "is_base" column to the "tripal_custom_tables" table.
+ */
+function tripal_chado_update_7339(){
+  try {
+    $spec = [
+      'type' => 'int',
+      'not NULL' => FALSE,
+      'size' => 'tiny',
+      'default' => 0,
+    ];
+    if (!db_field_exists('tripal_custom_tables', 'is_base')) {
+      db_add_field('tripal_custom_tables', 'is_base', $spec);
+    }
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
 }

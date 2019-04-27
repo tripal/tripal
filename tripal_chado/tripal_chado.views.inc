@@ -96,7 +96,7 @@ function tripal_chado_views_data_custom_tables($data) {
     ],
   ];
 
-  // Table ID
+  // MView ID
   $data['tripal_custom_tables']['mview_id'] = [
     'title' => t('Materialized View ID'),
     'help' => t('Foreign key to tripal_mviews table for the materialized view.'),
@@ -112,6 +112,21 @@ function tripal_chado_views_data_custom_tables($data) {
     ],
   ];
 
+  // Is Base
+  $data['tripal_custom_tables']['is_base'] = [
+    'title' => t('Is Base?'),
+    'help' => t('Indicates if this custom table can be used as a base table for content creation.'),
+    'field' => [
+      'handler' => 'views_handler_field_numeric',
+      'click sortable' => TRUE,
+    ],
+    'filter' => [
+      'handler' => 'views_handler_filter_numeric',
+    ],
+    'sort' => [
+      'handler' => 'views_handler_sort',
+    ],
+  ];
 
   return $data;
 }

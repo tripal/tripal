@@ -30,7 +30,7 @@ function tripal_chado_bundle_fields_info($entity_type, $bundle) {
   // Create the fields for each column in the table.
   tripal_chado_bundle_fields_info_base($info, $details, $entity_type, $bundle);
 
-  // Create custom fields.
+  // Create custom fields for all tables except custom tables.
   tripal_chado_bundle_fields_info_custom($info, $details, $entity_type, $bundle);
 
   // Create fields for linking tables.
@@ -107,7 +107,17 @@ function tripal_chado_bundle_fields_info_base(&$info, $details, $entity_type, $b
         ]), 'error');
       continue;
     }
+
     $field_name = strtolower($cvterm->dbxref_id->db_id->name . '__' . preg_replace('/[^\w]/', '_', $cvterm->name));
+
+    // For custom tables we need to prefix with a 'c_' for custom, because we
+    // our fields built for Chado may not work for custom tables.
+    $custom_tables = chado_get_base_custom_tables();
+    if (in_array($table_name, $custom_tables)) {
+      $field_name = 'c_' . $field_name;
+    }
+
+    // Stip the name down to 32 characaters because that's all Drupal allows.
     $field_name = substr($field_name, 0, 32);
 
     // Skip the primary key field.
@@ -873,8 +883,14 @@ function tripal_chado_bundle_instances_info($entity_type, $bundle) {
   ];
 
   $info = [];
+
+  // Create the field instances for each column in the table.
   tripal_chado_bundle_instances_info_base($info, $entity_type, $bundle, $details);
+
+  // Create custom field instances for all tables except custom tables.
   tripal_chado_bundle_instances_info_custom($info, $entity_type, $bundle, $details);
+
+  // Create field instances for linking tables.
   tripal_chado_bundle_instances_info_linker($info, $entity_type, $bundle, $details);
 
   return $info;
@@ -950,6 +966,15 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
       continue;
     }
     $field_name = strtolower($cvterm->dbxref_id->db_id->name . '__' . preg_replace('/[^\w]/', '_', $cvterm->name));
+
+    // For custom tables we need to prefix with a 'c_' for custom, because we
+    // our fields built for Chado may not work for custom tables.
+    $custom_tables = chado_get_base_custom_tables();
+    if (in_array($table_name, $custom_tables)) {
+      $field_name = 'c_' . $field_name;
+    }
+
+    // Stip the name down to 32 characaters because that's all Drupal allows.
     $field_name = substr($field_name, 0, 32);
 
     // Skip the primary key field.

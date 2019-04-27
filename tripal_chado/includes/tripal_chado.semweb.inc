@@ -2214,8 +2214,8 @@ function tripal_chado_semweb_form($form, &$form_state, $chado_table = NULL) {
     ];
     $rows = [];
     foreach ($columns AS $column => $detail) {
-      // Do not show column if it's the primary key or default cv
-      if ($column != $pk && $column != $cv_default) {
+      // Do not show column if it's the primary key
+      if ($column != $pk) {
         $cvterm_id =
           db_select('chado_semweb', 'cs')
             ->fields('cs', ['cvterm_id'])
