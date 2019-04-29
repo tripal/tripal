@@ -393,7 +393,7 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
   }
   else {
     // We need to hardcode the schema here rather than rely on the db_query
-    // function to settle it cecause the db_query function needs to know the
+    // function to settle it because the db_query function needs to know the
     // Chado version to make the table prefixes set properly (chicken and
     // egg problem).
     $chado_schema = chado_get_schema_name('chado');
