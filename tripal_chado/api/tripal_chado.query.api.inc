@@ -1747,7 +1747,7 @@ function chado_query($sql, $args = []) {
       }
     }
 
-    // Now set the Drupal prefix if the table is surrounded by square brakets.
+    // Now set the Drupal prefix if the table is surrounded by square brackets.
     if (preg_match_all('/\[(.*?)\]/', $sql, $matches)) {
       $matches = $matches[1];
       $drupal_tables = array_unique(array_keys(drupal_get_schema()));
