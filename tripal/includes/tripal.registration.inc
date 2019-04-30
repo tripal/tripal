@@ -54,7 +54,7 @@ function tripal_registration_form($form, &$form_state) {
 
   $form['details']['tripal_reg_site_modules'] = array(
       '#type' => 'checkbox',
-      '#default_value' => isset($form_data['values']['tripal_reg_site_modules']) ? $form_data['values']['tripal_reg_site_modules'] : NULL,
+      '#default_value' => isset($form_data['values']['tripal_reg_site_modules']) ? $form_data['values']['tripal_reg_site_modules'] : 1,
       '#title' => t('Report your installed Tripal Extensions.'),
       '#description' => t('When checked, any Tripal extension modules that you have installed will be reported with your site\'s registration information.')
   );
@@ -98,7 +98,7 @@ function tripal_registration_form($form, &$form_state) {
     '#type' => 'fieldset',
     '#title' => t('Site Manager (if different from the principal investigator)'),
     '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
+    '#collapsed' => TRUE,
     '#description' => t('Please provide the name and email of this site\'s manager if 
      different from the PI. Sometimes, site managers desire involvement in community
      activites as well as the PI.  If the name and email are provided then the site manager agrees to
@@ -137,7 +137,7 @@ function tripal_registration_form($form, &$form_state) {
       '#tree' => TRUE,
       '#description' => t('When requesting funds for additional Tripal development, 
        it is important to report the breadth of of funding sources for Tripal sites.  
-       P0lease condiser sharing this information by providing the granting 
+       Please consider sharing this information by providing the granting 
        agency, and funding periods.')
     );
 
@@ -231,11 +231,13 @@ function _tripal_form_disable_reg_callback($form, &$form_state) {
 function tripal_registration_form_validate($form, &$form_state){
   $mail_pi = $form_state['values']['principal_investigator_email'];
   $mail_sa = $form_state['values']['tripal_reg_site_admin_email'];
-  if (!valid_email_address($mail_pi)) {
-    form_set_error('[details][principal_investigator][principal_investigator_email]', t('The email address for the principal investigator appears to be invalid.'));
-  }
-  if (!valid_email_address($mail_sa) && !empty($mail_sa)) {
-    form_set_error('[details][site_admin][tripal_reg_site_admin_email]', t("The email address for the site administrator appears to be invalid."));
+  if ($form_state['values']['disable_tripal_reporting'] != TRUE) {
+    if (!empty($mail_pi) && !valid_email_address($mail_pi)) {
+      form_set_error('[details][principal_investigator][principal_investigator_email]', t('The email address for the principal investigator appears to be invalid.'));
+    }
+    if(!empty($mail_sa) && !valid_email_address($mail_sa)) {
+      form_set_error('[details][site_admin][tripal_reg_site_admin_email]', t("The email address for the site administrator appears to be invalid."));
+    }
   }
 }
 
@@ -259,7 +261,7 @@ function tripal_registration_form_submit($form, &$form_state) {
       $j++;
     }
   }
-  $form_state['values']['funding'] = $form_state['values']['fundings'];
+  $form_state['values']['funding'] = $form_state['values']['fundings'] ?? [];
   $registration = serialize($form_state);
   variable_set('tripal_site_registration', $registration);
     
