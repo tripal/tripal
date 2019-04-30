@@ -733,9 +733,15 @@ function tripal_chado_fix_legacy_SOFP_7338() {
   }
 
   // Repopulate the mview.
-  print("Repopulating the db2cv mview...");
   $mview_id = chado_get_mview_id('db2cv_mview');
-  chado_populate_mview($mview_id);
+  global $user;
+  tripal_add_job(
+    'Repopulating db2cv to fix legacy SOFP',
+    'tripal_chado',
+    'chado_populate_mview',
+    [$mview_id],
+    $user->uid
+  );
 }
 
 /**
