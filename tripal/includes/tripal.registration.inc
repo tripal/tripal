@@ -129,18 +129,40 @@ function tripal_registration_form($form, &$form_state) {
   );
 
   $count = count($form_data['values']['funding']);
-  $form_state['details']['funding'] = $form_state['details']['funding'] + $count;
+  if ($form_state['details']['funding'] < $count) {
+    $form_state['details']['funding'] = $form_state['details']['funding'] + $count;
+  }
+  else {
+    $form_state['details']['funding'] = $form_state['details']['funding'] + 1;
+  }
+
   for ($i = 1; $i <= $form_state['details']['funding']; $i++) {
-    $form['details']['funding'][$i] = array(
-      '#type' => 'fieldset',
-      '#title' => t("Funding Source $i"),
-      '#tree' => TRUE,
-      '#description' => t('When requesting funds for additional Tripal development, 
+    if ($i === $form_state['details']['funding']) {
+      $form['details']['funding'][$i] = array(
+        '#type' => 'fieldset',
+        '#title' => t("Funding Source $i"),
+        '#tree' => TRUE,
+        '#collapsible' => TRUE,
+        '#collapsed' => FALSE,
+        '#description' => t('When requesting funds for additional Tripal development, 
        it is important to report the breadth of of funding sources for Tripal sites.  
        Please consider sharing this information by providing the granting 
        agency, and funding periods.')
-    );
-
+      );
+    }
+    else {
+      $form['details']['funding'][$i] = array(
+        '#type' => 'fieldset',
+        '#title' => t("Funding Source $i"),
+        '#tree' => TRUE,
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+        '#description' => t('When requesting funds for additional Tripal development, 
+       it is important to report the breadth of of funding sources for Tripal sites.  
+       Please consider sharing this information by providing the granting 
+       agency, and funding periods.')
+      );
+    }
     $form['details']['funding'][$i]['tripal_reg_site_agency'] = array(
       '#type' => 'textfield',
       '#default_value' => isset($form_data['values']['funding'][$i]['tripal_reg_site_agency']) ? $form_data['values']['funding'][$i]['tripal_reg_site_agency'] : NULL,
@@ -154,7 +176,7 @@ function tripal_registration_form($form, &$form_state) {
     );
     $form['details']['funding'][$i]['tripal_reg_site_amount'] = array(
       '#type' => 'textfield',
-      '#default_value' => isset($form_data['values']['funding'][$i]['tripal_reg_site_amount']) ? $form_data['values']['funding'][$i]['tripal_reg_site_amount'] : null,
+      '#default_value' => isset($form_data['values']['funding'][$i]['tripal_reg_site_amount']) ? $form_data['values']['funding'][$i]['tripal_reg_site_amount'] : NULL,
       '#title' => t('Funding Amount'),
     );
 
@@ -180,8 +202,8 @@ function tripal_registration_form($form, &$form_state) {
       '#date_format' => 'Y',
     );
   }
-  
-  $form['details']['funding']['add_funding'] = array(
+
+  $form['details']['funding']['add_funding'] = array( 
     '#type' => 'button',
     '#value' => t('Add additional funding sources'),
     '#href' => '',
@@ -190,7 +212,6 @@ function tripal_registration_form($form, &$form_state) {
       'wrapper' => 'funding',
     ),
   );
-  $form_state['details']['funding']++;
 
   // Provide a submit button.
   if (!empty($form_data)) {
