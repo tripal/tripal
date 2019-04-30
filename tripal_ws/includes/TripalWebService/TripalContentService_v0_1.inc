@@ -161,18 +161,27 @@ class TripalContentService_v0_1 extends TripalWebService {
       $field_name = $instance['field_name'];
       $field = field_info_field($field_name);
       $field_type = $field['type'];
+
       // Skip fields of remote data.
       if ($field_type == 'remote__data') {
         continue;
       }
+
       $vocabulary = $instance['settings']['term_vocabulary'];
       $accession = $instance['settings']['term_accession'];
       $temp_term = tripal_get_term_details($vocabulary, $accession);
+
+      // See if the name matches perfectly.
+      if (strtolower($temp_term['name']) == strtolower($expfield)) {
+        return [$field, $instance, $temp_term];
+      }
+
       // See if the name provided matches the field name after a bit of
       // cleanup.
       if (strtolower(preg_replace('/[^\w]/', '_', $temp_term['name'])) == strtolower($expfield)) {
         return [$field, $instance, $temp_term];
       }
+
       // Alternatively if the CV term accession matches then we're good too.
       if ($vocabulary . ':' . $accession == $expfield) {
         return [$field, $instance, $temp_term];

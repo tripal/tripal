@@ -17,6 +17,14 @@ Not all Tripal Fields are created equal.  You may have some fields that you don'
 
 Simply disabling the display of the formatter won't prevent the widget from showing up on the submission page, and besides, you might want site admins to still have access to those fields!  Deleting the field will cause them to re-appear when you press the "Check for New Fields" button!  Field Permissions allows you to configure field-specific permissions so that users contributing content via Chado only see the fields they need to see.
 
+
+
+.. warning::
+
+	Because all Tripal Entities are the same base entity type (``TripalEntity``), configuring field permissions on one bundle will configure it for **all** bundles.  This means, for example, hiding a field on Organism will also hide it on Analysis.
+   
+
+
 Installing the Drupal Field Permissions module
 -----------------------------------------------
 
