@@ -16,16 +16,27 @@ function tripal_registration_form($form, &$form_state) {
   $form_state['details']['funding'] =
     isset($form_state['details']['funding']) ? $form_state['details']['funding'] : 1;
 
-    $form['description'] = [
-      '#title' => 'Why Register your Site?',
+  $form['description'] = [
+    '#title' => 'Why Register your Site?',
+    '#type' => 'item',
+    '#markup' => t('Registering your site is important for continued improvements to the software.  You may opt-in by providing answers to the
+        following questions or opt-out by checking the box below. If you opt-in, your site will periodically
+        connect to the http://tripal.info website and provide updated registration details. If you opt-out, no
+        registration information is communictated. You can opt-out at any time.  If you want previously submitted information
+        deleted from the tripal.info database please email !admin.', ['!admin' => l('admin@tripal.info', 'mailto:admin@tripal.info')])
+  ];
+
+  $form['usage_details'] = [
+      '#title' => 'How will this data be used?',
       '#type' => 'item',
-      '#markup' => t('Registering your site is important for continued improvements to the software. Tripal is open-source
-          and dependent on external funding. When you register your site, it provides important details that can
-          be used to justify continued support from funding agencies. You may opt-in by providing answers to the 
-          following questions or opt-out by checking the box below. If you opt-in, your site will periodically
-          connect to the http://tripal.info website and provide updated registration details. If you opt-out, no
-          registration information is communictated.'),
-    ];
+      '#markup' => t('Tripal is open-source, freely-available, but
+        dependent on external funding. When you register your site, it provides important details that can
+        be used to justify continued support from funding agencies. The information provided will not be shared publically.
+        Information about the Tripal modules installed on your site will be used to help justify continued development to
+        funding agencies.  Registration details may be shared with members of Tripal\'s Project Management Committee (PMC) and
+        Tripal\'s Steering Committee (TSC) and Tripal extension module usage may be shared with developers
+        of the the extension modules to aid in their funding requests.'),
+  ];
 
   $form['disable_tripal_reporting'] = array(
     '#type' => 'checkbox',
@@ -38,7 +49,7 @@ function tripal_registration_form($form, &$form_state) {
       'event' => 'click',
     ),
   );
- 
+
   $purpose = array(0 => t('Production'), 1 => t('Development'), 2 => t('Experimental'));
   $form['details']['tripal_reg_site_purpose'] = array(
       '#type' => 'radios',
@@ -46,9 +57,9 @@ function tripal_registration_form($form, &$form_state) {
       '#default_value' => isset($form_data['values']['tripal_reg_site_purpose']) ? $form_data['values']['tripal_reg_site_purpose'] : NULL,
       '#options' => $purpose,
       '#required' => TRUE,
-      '#description' => t('Please register your site regardless if it is experimental (to explore tripal), 
-       for development of a future site (or updates to an existing site), or a site currently 
-       in production. For funding, it is important to know how many sites are active for each category.  If your site changes 
+      '#description' => t('Please register your site regardless if it is experimental (to explore tripal),
+       for development of a future site (or updates to an existing site), or a site currently
+       in production. For funding, it is important to know how many sites are active for each category.  If your site changes
        status, such as from development to production, please remember to return and update the purpose.')
   );
 
@@ -58,7 +69,7 @@ function tripal_registration_form($form, &$form_state) {
       '#title' => t('Report your installed Tripal Extensions.'),
       '#description' => t('When checked, any Tripal extension modules that you have installed will be reported with your site\'s registration information.')
   );
-  
+
   $form['details']['tripal_reg_site_description']= array(
       '#type' => 'textarea',
       '#title' => t('Description of the site'),
@@ -68,16 +79,16 @@ function tripal_registration_form($form, &$form_state) {
      details such as its purpose, the primary data types your site provides, and the
      research community your site serves.')
   );
-  
+
   $form['details']['principal_investigator'] = array(
     '#type' => 'fieldset',
     '#title' => t('Principal Investigator Contact Information'),
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
-    '#description' => t('Please provide the name and email of this site\'s principal 
-     investigator (PI). If the name and email are provided then the PI agrees to 
-     receive periodic communication from either the Tripal Advisory Committee (TAC) or 
-     Project Management Committee (PMC) for the purposes of engaging with the larger 
+    '#description' => t('Please provide the name and email of this site\'s principal
+     investigator (PI). If the name and email are provided then the PI agrees to
+     receive periodic communication from either the Tripal Advisory Committee (TAC) or
+     Project Management Committee (PMC) for the purposes of engaging with the larger
      Tripal user community. The PI will NOT be automatically subscribed to mailing lists.')
   );
 
@@ -99,7 +110,7 @@ function tripal_registration_form($form, &$form_state) {
     '#title' => t('Site Manager (if different from the principal investigator)'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
-    '#description' => t('Please provide the name and email of this site\'s manager if 
+    '#description' => t('Please provide the name and email of this site\'s manager if
      different from the PI. Sometimes, site managers desire involvement in community
      activites as well as the PI.  If the name and email are provided then the site manager agrees to
      receive periodic communication from either the Tripal Advisory Committee (TAC) or
@@ -144,9 +155,9 @@ function tripal_registration_form($form, &$form_state) {
         '#tree' => TRUE,
         '#collapsible' => TRUE,
         '#collapsed' => FALSE,
-        '#description' => t('When requesting funds for additional Tripal development, 
-       it is important to report the breadth of of funding sources for Tripal sites.  
-       Please consider sharing this information by providing the granting 
+        '#description' => t('When requesting funds for additional Tripal development,
+       it is important to report the breadth of of funding sources for Tripal sites.
+       Please consider sharing this information by providing the granting
        agency, and funding periods.')
       );
     }
@@ -157,9 +168,9 @@ function tripal_registration_form($form, &$form_state) {
         '#tree' => TRUE,
         '#collapsible' => TRUE,
         '#collapsed' => TRUE,
-        '#description' => t('When requesting funds for additional Tripal development, 
-       it is important to report the breadth of of funding sources for Tripal sites.  
-       Please consider sharing this information by providing the granting 
+        '#description' => t('When requesting funds for additional Tripal development,
+       it is important to report the breadth of of funding sources for Tripal sites.
+       Please consider sharing this information by providing the granting
        agency, and funding periods.')
       );
     }
@@ -203,7 +214,7 @@ function tripal_registration_form($form, &$form_state) {
     );
   }
 
-  $form['details']['funding']['add_funding'] = array( 
+  $form['details']['funding']['add_funding'] = array(
     '#type' => 'button',
     '#value' => t('Add additional funding sources'),
     '#href' => '',
@@ -242,11 +253,11 @@ function _tripal_form_disable_reg_callback($form, &$form_state) {
 
 /**
  * Implements validation from the Form API.
- * 
+ *
  * @param $form
  *   A structured array containing the elements and properties of the form.
  * @param $form_state
- *   An array that stores information about the form's current state 
+ *   An array that stores information about the form's current state
  *   during processing.
  */
 function tripal_registration_form_validate($form, &$form_state){
@@ -264,16 +275,16 @@ function tripal_registration_form_validate($form, &$form_state){
 
 /**
  * Implements submit from the Form API.
- * 
+ *
  * @param $form
  *   A structured array containing the elements and properties of the form.
  * @param $form_state
- *   An array that stores information about the form's current state 
+ *   An array that stores information about the form's current state
  *   during processing.
  */
 function tripal_registration_form_submit($form, &$form_state) {
   variable_set('disable_tripal_reporting', TRUE);
-    
+
   //Check for empty funding periods and remove them.
   $j = 1;
   foreach ($form_state['values']['funding'] as $funding_source) {
@@ -285,7 +296,7 @@ function tripal_registration_form_submit($form, &$form_state) {
   $form_state['values']['funding'] = $form_state['values']['fundings'] ?? [];
   $registration = serialize($form_state);
   variable_set('tripal_site_registration', $registration);
-    
+
   //Now send the updated info to the Tripal Site.
   tripal_registration_remote_submit($registration);
 
@@ -354,6 +365,6 @@ function tripal_registration_remote_submit($data) {
   ));
 
   variable_set('tripal_site_registration_last_update', time());
-  
+
   return $result;
 }
