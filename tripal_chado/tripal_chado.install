@@ -29,6 +29,10 @@ function tripal_chado_install() {
       )
     ";
     chado_query($sql);
+
+    // Fix the SOFP feature_property issue from the legacy feature_property.
+    tripal_chado_fix_legacy_SOFP_7338();
+
   }
 
   tripal_insert_variable('bundle_category', 'Bundles can be categorized to allow for grouping');
@@ -681,6 +685,63 @@ function tripal_chado_chado_cvterm_mapping_schema() {
     ),
   );
   return $schema;
+}
+
+
+
+/**
+ * Fixes a problem with the legacy feature_property/SOFP
+ * ontology loaded with previous verions of Chado and all terms are
+ * relationships.
+ *
+ * This function is called by the tripal_chado_install() for a
+ * new Tripal setup, and the tripal_chado_update_7338 for an existing
+ * site.
+ */
+
+function tripal_chado_fix_legacy_SOFP_7338() {
+
+  $sofp =  chado_get_db(['name' => 'SOFP']);
+  $fp = chado_get_cv(['name' => 'feature_property']);
+
+  // No need to update unless the SOFP db exists
+  if (!$sofp || !$fp) {
+    return;
+  }
+  $terms = chado_select_record('cvterm', ['cvterm_id', 'name'], [
+    'dbxref_id' => [
+      'db_id' => [
+        'name' => 'SOFP',
+      ],
+    ],
+    'cv_id' => ['name' => 'feature_property'],
+  ]);
+
+  if (empty($terms)) {
+    return;
+  }
+
+  foreach ($terms as $term) {
+
+    $id = $term->cvterm_id;
+    $name = $term->name;
+
+    if ($name == 'linked_to') {
+      continue;
+    }
+    chado_update_record('cvterm', ['cvterm_id' => $id], ['is_relationshiptype' => 0]);
+  }
+
+  // Repopulate the mview.
+  $mview_id = chado_get_mview_id('db2cv_mview');
+  global $user;
+  tripal_add_job(
+    'Repopulating db2cv to fix legacy SOFP',
+    'tripal_chado',
+    'chado_populate_mview',
+    [$mview_id],
+    $user->uid
+  );
 }
 
 /**

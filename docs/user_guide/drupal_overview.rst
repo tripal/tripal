@@ -27,6 +27,8 @@ You'll notice at the top a **Title** field and a **Body** text box. All pages re
 
 For practice, try to create two new pages. A **Home** page and an **About** page for our site. First, create the home page and second create the about page. Add whatever text you like for the body.
 
+In the screenshots above, you may have noticed the link **Add Tripal Content**.  Tripal content is different from the typical Drupal content types: **Basic Page** or **Article**.  Instead the content that Tripal provides is the biological and ancillary data that your site will provide to users.  Later this tutorial will describe how to add new biological data.
+
 Finding Content
 ---------------
 
@@ -35,6 +37,8 @@ To find any content that has been created on the site, click the **Find Content*
 .. image:: drupal_overview.find_content.png
 
 You'll also notice a set of drop down boxes for filtering the content. For sites with many different content types and pages this helps to find content. You can use this list to click to view each page or to edit.
+
+Later in this guide, instructions will be provided for finding Tripal Content. Tripal content is different from the typical Drupal content types: **Basic Page** or **Article**.  Instead the content that Tripal provides is the biological and ancillary data that your site will provide to users.  It is also accessible via a link named **Find Tripal Content** found on the same menu bar as **Find Content**
 
 Site Administration
 -------------------
