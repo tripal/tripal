@@ -1,0 +1,23 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "spficklin",
+      "name": "Stephen Ficklin",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/1719352?v=4",
+      "profile": "https://github.com/spficklin",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "tripal",
+  "projectOwner": "tripal",
+  "repoType": "github",
+  "repoHost": "https://github.com"
+}
