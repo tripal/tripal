@@ -1,4 +1,5 @@
 [![7.x-3.x Build Status](https://travis-ci.org/tripal/tripal.svg?branch=7.x-3.x)](https://travis-ci.org/tripal/tripal)
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors)
 [![Documentation Status](https://readthedocs.org/projects/tripal/badge/?version=latest)](https://tripal.readthedocs.io/en/latest/?badge=latest)
 
 [![DOI](https://zenodo.org/badge/42666405.svg)](https://zenodo.org/badge/latestdoi/42666405)
@@ -85,3 +86,15 @@ Then run PHPUnit from your root Tripal directory.
 PHPUnit tests will also be run in the Travis CI build.
 
 Read our [testing guidelines](tests/README.md)
+
+## Contributors
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore -->
+<table><tr><td align="center"><a href="https://github.com/spficklin"><img src="https://avatars0.githubusercontent.com/u/1719352?v=4" width="100px;" alt="Stephen Ficklin"/><br /><sub><b>Stephen Ficklin</b></sub></a><br /><a href="https://github.com/tripal/tripal/commits?author=spficklin" title="Code">💻</a></td></tr></table>
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
