@@ -13,7 +13,8 @@
       "contributions": [
         "code",
         "doc",
-        "projectManagement"
+        "projectManagement",
+        "fundingFinding"
       ]
     },
     {
@@ -72,6 +73,24 @@
       "profile": "https://github.com/guignonv",
       "contributions": [
         "bug"
+      ]
+    },
+    {
+      "login": "mestato",
+      "name": "Meg Staton",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/508122?v=4",
+      "profile": "https://github.com/mestato",
+      "contributions": [
+        "fundingFinding"
+      ]
+    },
+    {
+      "login": "abretaud",
+      "name": "Anthony Bretaudeau",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/238755?v=4",
+      "profile": "https://github.com/abretaud",
+      "contributions": [
+        "code"
       ]
     }
   ],
