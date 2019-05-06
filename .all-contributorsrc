@@ -11,6 +11,85 @@
       "avatar_url": "https://avatars0.githubusercontent.com/u/1719352?v=4",
       "profile": "https://github.com/spficklin",
       "contributions": [
+        "code",
+        "doc",
+        "projectManagement",
+        "fundingFinding"
+      ]
+    },
+    {
+      "login": "bradfordcondon",
+      "name": "Bradford Condon",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/7063154?v=4",
+      "profile": "http://www.bradfordcondon.com/",
+      "contributions": [
+        "code",
+        "doc",
+        "projectManagement"
+      ]
+    },
+    {
+      "login": "laceysanderson",
+      "name": "Lacey-Anne Sanderson",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/1566301?v=4",
+      "profile": "https://laceysanderson.github.io/",
+      "contributions": [
+        "code",
+        "doc",
+        "projectManagement"
+      ]
+    },
+    {
+      "login": "chunhuaicheng",
+      "name": "chunhuaicheng",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/14333886?v=4",
+      "profile": "https://github.com/chunhuaicheng",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "shawnawsu",
+      "name": "Shawna",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/24374002?v=4",
+      "profile": "https://github.com/shawnawsu",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "mboudet",
+      "name": "mboudet",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/17642511?v=4",
+      "profile": "https://github.com/mboudet",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "guignonv",
+      "name": "Valentin Guignon",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/7290244?v=4",
+      "profile": "https://github.com/guignonv",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "mestato",
+      "name": "Meg Staton",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/508122?v=4",
+      "profile": "https://github.com/mestato",
+      "contributions": [
+        "fundingFinding"
+      ]
+    },
+    {
+      "login": "abretaud",
+      "name": "Anthony Bretaudeau",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/238755?v=4",
+      "profile": "https://github.com/abretaud",
+      "contributions": [
         "code"
       ]
     }
@@ -19,5 +98,6 @@
   "projectName": "tripal",
   "projectOwner": "tripal",
   "repoType": "github",
-  "repoHost": "https://github.com"
+  "repoHost": "https://github.com",
+  "commitConvention": "none"
 }
