@@ -239,34 +239,29 @@ class sbo__relationship extends ChadoField {
     $this->base_type_column = 'table_name';
     switch ($instance['settings']['chado_table']) {
 
+      // TODO: note that Chado 1.4 will add types to, at least,
+      // project and analysis, at which point you should use the default instead.
       case 'acquisition_relationship':
       case 'analysis_relationship':
       case 'biomaterial_relationship':
       case 'cell_line_relationship':
       case 'quantification_relationship':
-        $this->base_type_column = 'table_name';
-        break;
       case 'element_relationship':
-        // RELATIONSHIP->subject_id_key->feature_id->name;
-        $this->base_name_columns = ['name'];
+      case 'project_relationship':
+      case 'pub_relationship':
         $this->base_type_column = 'table_name';
-        break;
+        $this->base_name_columns = ['name'];
+      break;
+
       case 'organism_relationship':
         $this->base_name_columns = ['genus', 'species'];
-        $this->base_type_column = 'table_name';
-        break;
-      case 'project_relationship':
-        $this->base_name_columns = ['name'];
         $this->base_type_column = 'table_name';
         break;
       case 'phylonode_relationship':
         $this->base_name_columns = ['label'];
         $this->base_type_column = 'table_name';
         break;
-      case 'pub_relationship':
-        $this->base_name_columns = ['name'];
-        $this->base_type_column = 'table_name';
-        break;
+
       case 'contact':
         $this->base_name_columns = ['name'];
         $this->base_type_column = 'type_id';
