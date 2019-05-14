@@ -860,57 +860,60 @@ class GFF3Importer extends TripalImporter {
               throw new Exception(t("Cound not save record in temporary table, Cannot continue.", []));
             }
           }
-          // add/update the featureloc if the landmark and the ID are not the same
-          // if they are the same then this entry in the GFF is probably a landmark identifier
+          // Add/update the featureloc if the landmark and the ID are not the
+          // same if they are the same then this entry in the GFF is probably
+          // a landmark identifier.
           if (strcmp($landmark, $attr_uniquename) != 0) {
             $this->loadFeatureLoc($feature, $organism,
               $landmark, $fmin, $fmax, $strand, $phase, $attr_fmin_partial,
               $attr_fmax_partial, $attr_residue_info, $attr_locgroup);
           }
 
-          // add any aliases for this feature
+          // Add any aliases for this feature.
           if (array_key_exists('Alias', $tags)) {
             $this->loadAlias($feature, $tags['Alias']);
           }
-          // add any dbxrefs for this feature
+          // Add any dbxrefs for this feature.
           if (array_key_exists('Dbxref', $tags)) {
             $this->loadDbxref($feature, $tags['Dbxref']);
           }
-          // add any ontology terms for this feature
+          // Add any ontology terms for this feature.
           if (array_key_exists('Ontology_term', $tags)) {
             $this->loadOntology($feature, $tags['Ontology_term']);
           }
-          // add parent relationships
+          // Add parent relationships.
           if (array_key_exists('Parent', $tags)) {
             $this->loadParents($feature, $cvterm, $tags['Parent'],
               $feature_organism->organism_id, $strand, $phase, $fmin, $fmax);
           }
 
-          // add target relationships
+          // Add target relationships.
           if (array_key_exists('Target', $tags)) {
             $this->loadTarget($feature, $tags, $target_organism_id, $target_type, $create_target, $attr_locgroup);
           }
-          // add gap information.  This goes in simply as a property
+          // Add gap information.  This goes in simply as a property.
           if (array_key_exists('Gap', $tags)) {
             foreach ($tags['Gap'] as $value) {
               $this->loadProperty($feature, 'Gap', $value);
             }
           }
-          // add notes. This goes in simply as a property
+          // Add notes. This goes in simply as a property.
           if (array_key_exists('Note', $tags)) {
             foreach ($tags['Note'] as $value) {
               $this->loadProperty($feature, 'Note', $value);
             }
           }
-          // add the Derives_from relationship (e.g. polycistronic genes).
+          // Add the Derives_from relationship (e.g. polycistronic genes).
           if (array_key_exists('Derives_from', $tags)) {
             $this->loadDerivesFrom($feature, $cvterm, $tags['Derives_from'][0],
               $feature_organism, $fmin, $fmax);
           }
-          // add in the GFF3_source dbxref so that GBrowse can find the feature using the source column
+          // Add in the GFF3_source dbxref so that GBrowse can find the feature
+          // using the source column.
           $source_ref = ['GFF_source:' . $source];
           $this->loadDbxref($feature, $source_ref);
-          // add any additional attributes
+
+          // Add any additional attributes.
           if ($attr_others) {
             foreach ($attr_others as $tag_name => $values) {
               foreach ($values as $value) {
@@ -1430,7 +1433,7 @@ class GFF3Importer extends TripalImporter {
         $db = chado_select_record('db', ['db_id'], ['name' => "$dbname"]);
         if (sizeof($db) == 0) {
           $this->logMessage("Database, $dbname, is not present. Cannot associate term: $dbname:$accession.", [], TRIPAL_WARNING);
-          return 0;
+          continue;
         }
       }
       $db = $db[0];
@@ -1440,7 +1443,7 @@ class GFF3Importer extends TripalImporter {
         ['accession' => $accession, 'db_id' => $db->db_id]);
       if (sizeof($dbxref) == 0) {
         $this->logMessage("Accession, $accession is missing for reference: $dbname:$accession.", [], TRIPAL_WARNING);
-        return 0;
+        continue;
       }
       $dbxref = $dbxref[0];
 
@@ -1455,7 +1458,7 @@ class GFF3Importer extends TripalImporter {
         ]);
         if (sizeof($cvterm) == 0) {
           $this->logMessage("CV Term is missing for reference: $dbname:$accession.", [], TRIPAL_WARNING);
-          return 0;
+          continue;
         }
       }
       $cvterm = $cvterm[0];
@@ -1481,11 +1484,10 @@ class GFF3Importer extends TripalImporter {
 
         if (!$success) {
           $this->logMessage("Failed to insert ontology term: $dbname:$accession.", [], TRIPAL_WARNING);
-          return 0;
+          continue;
         }
       }
     }
-    return 1;
   }
 
   /**
@@ -1971,7 +1973,7 @@ class GFF3Importer extends TripalImporter {
    */
   private function loadProperty($feature, $property, $value) {
 
-    // first make sure the cvterm exists.  if not, then add it
+    // First make sure the cvterm exists.  if not, then add it.
     $select = [
       'name' => $property,
       'cv_id' => [
@@ -1980,14 +1982,15 @@ class GFF3Importer extends TripalImporter {
     ];
     $result = chado_select_record('cvterm', ['*'], $select);
 
-    // if we don't have a property like this already, then add it otherwise, just return
+    // If we don't have a property like this already, then add it otherwise,
+    // just return.
     if (count($result) == 0) {
       $term = [
-        'id' => "null:$property",
+        'id' => "local:$property",
         'name' => $property,
-        'namespace' => 'feature_property',
         'is_obsolete' => 0,
         'cv_name' => 'feature_property',
+        'db_name' => 'local',
         'is_relationship' => FALSE,
       ];
       $cvterm = (object) chado_insert_cvterm($term, ['update_existing' => FALSE]);
@@ -2001,7 +2004,7 @@ class GFF3Importer extends TripalImporter {
     }
 
 
-    // check to see if the property already exists for this feature
+    // Check to see if the property already exists for this feature
     // if it does but the value is unique then increment the rank and add it.
     // if the value is not unique then don't add it.
     $add = 1;
