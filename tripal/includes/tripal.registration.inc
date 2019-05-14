@@ -26,6 +26,11 @@ function tripal_registration_form($form, &$form_state) {
           connect to the http://tripal.info website and provide updated registration details. If you opt-out, no
           registration information is communictated.'),
     ];
+  $form['description'] = [
+    '#title' => 'How will this information be used?',
+    '#type' => 'item',
+    '#markup' => t(''),
+  ];
 
   $form['disable_tripal_reporting'] = array(
     '#type' => 'checkbox',
@@ -45,7 +50,7 @@ function tripal_registration_form($form, &$form_state) {
       '#title' => t('Site Status'),
       '#default_value' => isset($form_data['values']['tripal_reg_site_purpose']) ? $form_data['values']['tripal_reg_site_purpose'] : NULL,
       '#options' => $purpose,
-      '#required' => TRUE,
+      '#required' => FALSE,
       '#description' => t('Please register your site regardless if it is experimental (to explore tripal), 
        for development of a future site (or updates to an existing site), or a site currently 
        in production. For funding, it is important to know how many sites are active for each category.  If your site changes 
