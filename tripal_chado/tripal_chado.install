@@ -1940,3 +1940,50 @@ function tripal_chado_update_7337(){
     throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }
+
+
+/**
+ * Modify the term name for Sequence Variant, Genetic Marker, and Heritable Phenotypic Marker to match the corresponding SO term.
+ */
+function tripal_chado_update_7338() {
+
+  $terms = [
+    ['label' => 'Sequence Variant', 'term' => 'sequence_variant', 'accession' => '0001060'],
+    ['label' => 'Genetic Marker', 'term' => 'genetic_marker', 'accession' => '0001645'],
+    ['label' => 'Heritable Phenotypic Marker', 'term' => 'heritable_phenotypic_marker', 'accession' => '0001500']
+  ];
+
+  try {
+    foreach ($terms as $term) {
+
+      $label = $term['label'];
+      $termName = $term['term'];
+      $accession = $term['accession'];
+
+      $term = tripal_load_term_entity([
+        'vocabulary' => 'SO',
+        'accession' => $accession
+      ]);
+
+      if (!$term) {
+        continue;
+      }
+      $term->name = $termName;
+      $term->save();
+
+      $bundle = tripal_load_bundle_entity(['term_id' => $term->id]);
+
+      if (!$bundle) {
+        continue;
+      }
+      $bundle->label = $label;
+      $bundle->save();
+
+
+    }
+  } catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+
+}

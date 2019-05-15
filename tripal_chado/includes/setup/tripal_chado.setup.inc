@@ -728,7 +728,8 @@ function tripal_chado_prepare_genetic_types($job) {
   $args = [
     'vocabulary' => 'SO',
     'accession' => '0001060',
-    'term_name' => 'Sequence Variant',
+    'label' => "Sequence Variant",
+    'term_name' => 'sequence_variant',
     'storage_args' => [
       'data_table' => 'feature',
       'type_column' => 'type_id',
@@ -743,7 +744,8 @@ function tripal_chado_prepare_genetic_types($job) {
   $args = [
     'vocabulary' => 'SO',
     'accession' => '0001645',
-    'term_name' => 'Genetic Marker',
+    'term_name' => 'genetic_marker',
+    'label' => "Genetic Marker",
     'storage_args' => [
       'data_table' => 'feature',
       'type_column' => 'type_id',
@@ -759,7 +761,9 @@ function tripal_chado_prepare_genetic_types($job) {
   $args = [
     'vocabulary' => 'SO',
     'accession' => '0001500',
-    'term_name' => 'Heritable Phenotypic Marker',
+    'term_name' => 'heritable_phenotypic_marker',
+    'label' => "Heritable Phenotypic Marker",
+
     'storage_args' => [
       'data_table' => 'feature',
       'type_column' => 'type_id',
