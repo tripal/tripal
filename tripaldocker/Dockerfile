@@ -54,21 +54,19 @@ RUN { \
 		echo 'opcache.enable_cli=1'; \
 	} > /usr/local/etc/php/conf.d/opcache-recommended.ini
 
-# Install services
-# (Apache2, php7.1, posgtes, curl, git, zip, unzip, supervisor ... etc)
-RUN set -x \
- 	&& yum install -y wget curl git zip unzip httpd crontabs \
+# Install additional software
+RUN set -x && apt-get update && apt-get -y install wget curl git zip unzip 
 
-# Database and other services
-RUN set -x \
-	&& yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm \
-	&& yum install -y postgresql96-server postgresql96-contrib \
-    && yum install -y yum-utils \
-    && yum-config-manager --enable remi-php71 \
-    && yum update -y \
-    && yum install -y mod_php php-mcrypt php-mbstring php-json php-posix php-pgsql \
-      				  php-pdo php-xml php-curl php-gd supervisor sudo \
-      				  patch which sendmail
+## Database and other services
+#RUN set -x \
+#	&& yum install -y https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm \
+#	&& yum install -y postgresql96-server postgresql96-contrib \
+#    && yum install -y yum-utils \
+#    && yum-config-manager --enable remi-php71 \
+#    && yum update -y \
+#    && yum install -y mod_php php-mcrypt php-mbstring php-json php-posix php-pgsql \
+#      				  php-pdo php-xml php-curl php-gd supervisor sudo \
+#      				  patch which sendmail
 
 WORKDIR /var/www/html
 
@@ -97,7 +95,7 @@ RUN set -x \
 	# Centos postgres needs to accept UTF8 encoding
 	&& sudo -u postgres /usr/pgsql-9.6/bin/psql -c "update pg_database set datistemplate=false where datname='template1';" \
 	&& sudo -u postgres /usr/pgsql-9.6/bin/psql -c "drop database Template1;" \
-  &&  sudo -u postgres /usr/pgsql-9.6/bin/psql -c "create database template1 with owner=postgres encoding='UTF-8' \
+  	&&  sudo -u postgres /usr/pgsql-9.6/bin/psql -c "create database template1 with owner=postgres encoding='UTF-8' \
 									 lc_collate='en_US.utf8' lc_ctype='en_US.utf8' template template0;" \
  	&& sudo -u postgres /usr/pgsql-9.6/bin/psql -c "update pg_database set datistemplate=true where datname='template1';" \
 	&& sudo -u postgres /usr/pgsql-9.6/bin/createuser drupal \
@@ -112,9 +110,7 @@ RUN set -x \
 	# Install Drupal and enable tripal dependencies
 	&& cd /var/www/html \
 	&& drush si --db-url=pgsql://drupal:secret@127.0.0.1/drupal --account-pass=secret -y \
-
-  # Finally update drupal to the latest version
-  && drush pm-update drupal -y
+  	&& drush pm-update drupal -y
 
 # Add contrib and custom modules dicrectory
 RUN ln -s /var/www/html/modules/contrib /modules
