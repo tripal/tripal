@@ -1,0 +1,15 @@
+{
+  "name": "tripal",
+  "description": "Tripal is an toolkit to facilitate construction of online genomic, genetic (and other biological) websites.",
+  "require-dev": {
+    "doctrine/instantiator": "1.0.*",
+    "statonlab/tripal-test-suite": "1.*"
+  },
+  "autoload": {
+    "files": [
+      "tests/TripalFieldTestHelper.php"
+    ]
+  },
+  "require": {
+  }
+}
