@@ -1948,9 +1948,97 @@ function tripal_chado_update_7337(){
 function tripal_chado_update_7338() {
 
   $terms = [
-    ['label' => 'Sequence Variant', 'term' => 'sequence_variant', 'accession' => '0001060'],
-    ['label' => 'Genetic Marker', 'term' => 'genetic_marker', 'accession' => '0001645'],
-    ['label' => 'Heritable Phenotypic Marker', 'term' => 'heritable_phenotypic_marker', 'accession' => '0001500']
+    [
+      'vocabulary' => 'SO',
+      'label' => 'Sequence Variant',
+      'term' => 'sequence_variant',
+      'accession' => '0001060',
+    ],
+    [
+      'vocabulary' => 'SO',
+      'label' => 'Genetic Marker',
+      'term' => 'genetic_marker',
+      'accession' => '0001645',
+    ],
+    [
+      'vocabulary' => 'SO',
+      'label' => 'Heritable Phenotypic Marker',
+      'term' => 'heritable_phenotypic_marker',
+      'accession' => '0001500',
+    ],
+    [
+      'vocabulary' => 'SIO',
+      'label' => 'Study',
+      'term' => 'study',
+      'accession' => '001066',
+    ],
+    [
+      'vocabulary' => 'sep',
+      'label' => 'Biological Sample',
+      'term' => '	biological sample',
+      'accession' => '00195',
+    ],
+    [
+      'vocabulary' => 'OBI',
+      'label' => 'Assay',
+      'term' => 'assay',
+      'accession' => '0000070',
+    ],
+    [
+      'vocabulary' => 'data',
+      'label' => 'Genetic Map',
+      'term' => 'Genetic map',
+      'accession' => '1278',
+    ],
+    [
+      'vocabulary' => 'operation',
+      'label' => 'Genome Annotation',
+      'term' => 'Genome annotation',
+      'accession' => '0362',
+    ],
+    [
+      'vocabulary' => 'operation',
+      'label' => 'Genome Assembly',
+      'term' => 'Genome assembly',
+      'accession' => '0525',
+    ],
+    [
+      'vocabulary' => 'CO_010',
+      'label' => 'Generated Germplasm (Breeding Cross)',
+      'term' => 'generated germplasm',
+      'accession' => '0000255',
+    ],
+    [
+      'vocabulary' => 'CO_010',
+      'label' => 'Cultivar (Germplasm Variety)',
+      'term' => 'cultivar',
+      'accession' => '0000029',
+    ],
+
+    [
+      'vocabulary' => 'CO_010',
+      'label' => 'Germplasm Accession',
+      'term' => 'accession',
+      'accession' => '0000044',
+    ],
+    [
+      'vocabulary' => 'data',
+      'label' => 'Physical Map',
+      'term' => 'Physical map',
+      'accession' => '1280',
+    ],
+    [
+      'vocabulary' => 'sep',
+      'label' => 'Protocol',
+      'term' => '	protocol',
+      'accession' => '00101',
+    ],
+    [
+      'vocabulary' => 'CO_010',
+      'label' => 'Recombinant Inbred Line',
+      'term' => '414 inbred line',
+      'accession' => '0000162',
+    ],
   ];
 
   try {
@@ -1959,9 +2047,9 @@ function tripal_chado_update_7338() {
       $label = $term['label'];
       $termName = $term['term'];
       $accession = $term['accession'];
-
+      $vocabulary = $term['vocabulary']; #shortname, ie, chado.db
       $term = tripal_load_term_entity([
-        'vocabulary' => 'SO',
+        'vocabulary' => $vocabulary,
         'accession' => $accession
       ]);
 
