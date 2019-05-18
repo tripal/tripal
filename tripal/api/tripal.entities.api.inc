@@ -433,6 +433,9 @@ function tripal_add_notification($title, $details, $type, $actions, $submitter_i
  *     - term_name: A human-readable name for this term.  This will became
  *       the name that appears for the content type.  In practice, this
  *       should be the name of the term. (E.g. the name for SO:0000704 is gene).
+ *     - label: An alternative bundle label.  This will be used instead of the
+ *       term name, for cases where the vocabulary term is not human readable.
+ *
  * @param $job
  *  The job ID if this is launched via a job.
  *
@@ -446,6 +449,7 @@ function tripal_create_bundle($args, $job = NULL) {
   $accession = $args['accession'];
   $term_name = $args['term_name'];
   $storage_args = $args['storage_args'];
+  $label = $args['label'];
 
   $message_args = [
     'job' => $job,
@@ -505,9 +509,11 @@ function tripal_create_bundle($args, $job = NULL) {
     if (!in_array($bundle_name, array_keys($einfo['bundles']))) {
       // Make the label for the content type have capitalized words.  The
       // exception is 'mRNA' which we know should not be uppercased.
-      $label = ucwords(preg_replace('/_/', ' ', $term_name));
-      if ($term_name == 'mRNA') {
-        $label = $term_name;
+      if (!$label) {
+        $label = ucwords(preg_replace('/_/', ' ', $term_name));
+        if ($term_name == 'mRNA') {
+          $label = $term_name;
+        }
       }
       // Insert the bundle.
       db_insert('tripal_bundle')
