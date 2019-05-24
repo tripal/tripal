@@ -1,5 +1,9 @@
-User's Guide
-============
+Tripal v3 User's Guide
+======================
+
+.. note:: 
+
+  Looking for the `Tripal v2 User's Guide <http://tripal.info/tutorials/v2.x>`_? 
 
 
 .. toctree::
