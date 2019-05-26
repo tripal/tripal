@@ -2126,7 +2126,7 @@ function hook_chado_get_schema_name_alter($schema_name, $context) {
 }
 
 /**
- * A replacment for db_select when querying Chado.
+ * A replacement for db_select when querying Chado.
  *
  * Use this function instead of db_select when querying Chado tables.
  *
@@ -2142,24 +2142,8 @@ function hook_chado_get_schema_name_alter($schema_name, $context) {
  *   A new SelectQuery object for this connection.
  *
  * @ingroup tripal_chado_query_api
+ * @see \ChadoPrefixExtender::select()
  */
 function chado_db_select($table, $alias = NULL, array $options = []) {
-  if (empty($options['target'])) {
-    $options['target'] = 'default';
-  }
-
-  // We only want one connection for chado_db_select, so the first time we
-  // create it, we'll save it in the $GLOBALS array for use next time this
-  // function is called. If we don't do this, then the function will
-  // open too many connections and cause the database server to block.
-  $conn = NULL;
-  if (!array_key_exists('chado_db_select_connnection', $GLOBALS)) {
-    $conninfo = Database::getConnectionInfo();
-    $conn = new ChadoDatabaseConnection($conninfo['default']);
-    $GLOBALS['chado_db_select_connnection'] = $conn;
-  }
-  else {
-    $conn = $GLOBALS['chado_db_select_connnection'];
-  }
-  return $conn->select($table, $alias, $options);
+  return ChadoPrefixExtender::select($table, $alias, $options);
 }
