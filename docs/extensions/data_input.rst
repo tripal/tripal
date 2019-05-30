@@ -50,3 +50,12 @@ This module is a collection of destination plugins to import biological data to 
 
 `Documentation <https://www.drupal.org/docs/7/modules/migrate-chado>`__
 `Repository <https://www.drupal.org/project/migrate_chado>`__
+
+Tripal Contact Profile
+-----------------------
+[![Tripal Rating Silver Status](https://tripal.readthedocs.io/en/7.x-3.x/_images/Tripal-Silver.png)](https://tripal.readthedocs.io/en/7.x-3.x/extensions/module_rating.html#Silver)
+
+The Tripal Contact Profile (TCP) Module allows Tripal users to create their own extended profiles which can optionally be displayed using our auxillary Colleagues Directory module. It does this by creating a Tripal Contact Profile content type which can also be administered directly from the standard Tripal Content Type administration interface. The module also provides a well organized administration user interface with many value added options including additional form validation, conversion of standard text input fields into more user friendly fields for better contact recording. There is even an option to override the standard registration form into a multistep registration form allowing users to sign up and created both their standard user account as well as a TCP profile in a single process. Check out the documentation for more!
+
+`Documentation <https://tripal-contact-profile.readthedocs.io/en/latest/>`__
+`Repository <https://gitlab.com/TreeGenes/tripal_contact_profile>`__
