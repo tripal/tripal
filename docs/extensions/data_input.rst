@@ -50,3 +50,24 @@ This module is a collection of destination plugins to import biological data to 
 
 `Documentation <https://www.drupal.org/docs/7/modules/migrate-chado>`__
 `Repository <https://www.drupal.org/project/migrate_chado>`__
+
+
+Tripal Contact Profile
+----------------------
+
+[![Tripal Rating Bronze Status](https://tripal.readthedocs.io/en/7.x-3.x/_images/Tripal-Silver.png)](https://tripal.readthedocs.io/en/7.x-3.x/extensions/module_rating.html#Silver)
+
+The Tripal Contact Profile (TCP) module integrates directly into Tripal and allows users to create an extended profile that can be managed or displayed with the Colleagues Directory module (also available). It has many useful features including validation, orcid integration, better field widgets for inputting user data as well as a multi step registration feature that allows users to create both their user account as well as a TCP profile in a single registration procedure.
+
+`Documentation <https://tripal-contact-profile.readthedocs.io/en/latest/>`__
+`Repository <https://gitlab.com/TreeGenes/tripal_contact_profile>`__
+
+Colleagues Directory
+----------------------
+
+[![Tripal Rating Bronze Status](https://tripal.readthedocs.io/en/7.x-3.x/_images/Tripal-Silver.png)](https://tripal.readthedocs.io/en/7.x-3.x/extensions/module_rating.html#Silver)
+
+The Colleagues Directory (CD) module is a helper module that utilizes the data submitted to the Tripal Contact Profile (TCP) module in a user friendly fashion. The module offers colleague search with map UI capabilities, meetings, jobs and welcome page to create a community like section.
+
+`Documentation <https://gitlab.com/TreeGenes/colleagues_directory/>`__
+`Repository <https://gitlab.com/TreeGenes/colleagues_directory>`__
