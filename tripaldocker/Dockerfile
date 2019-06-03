@@ -4,7 +4,7 @@
 FROM ubuntu:18.04
 
 ENV DEBIAN_FRONTEND=noninteractive
-		
+
 # dependencies required for running "phpize"
 # (see persistent deps below)
 ENV PHPIZE_DEPS \
@@ -106,9 +106,9 @@ ENV PHP_LDFLAGS="-Wl,-O1 -Wl,--hash-style=both -pie"
 ENV GPG_KEYS CBAF69F173A0FEA4B537F470D66C9593118BCCB6 F38252826ACD957EF380D39F2F7956BC5DA04B5D
 
 ENV PHP_VERSION 7.3.5
-ENV PHP_URL="https://www.php.net/get/php-7.3.5.tar.xz/from/this/mirror" 
+ENV PHP_URL="https://www.php.net/get/php-7.3.5.tar.xz/from/this/mirror"
 ENV PHP_ASC_URL="https://www.php.net/get/php-7.3.5.tar.xz.asc/from/this/mirror"
-ENV PHP_SHA256="e1011838a46fd4a195c8453b333916622d7ff5bce4aca2d9d99afac142db2472" 
+ENV PHP_SHA256="e1011838a46fd4a195c8453b333916622d7ff5bce4aca2d9d99afac142db2472"
 ENV PHP_MD5=""
 
 RUN set -xe; \
@@ -167,7 +167,7 @@ RUN set -eux; \
 		zlib1g-dev \
 		libpcre3-dev \
 		${PHP_EXTRA_BUILD_DEPS:-} \
-	; 
+	;
 
 # https://github.com/docker-library/php/issues/443
 	# pecl update-channels; \
@@ -182,7 +182,7 @@ RUN apt-get update && apt-get install -yq --no-install-recommends \
     curl \
 		git \
 		zip \
-		wget \ 
+		wget \
 		unzip \
 		apt-utils \
 		gnupg2 \
@@ -213,10 +213,10 @@ RUN apt-get update && apt-get install -yq --no-install-recommends \
     # Install tools
     openssl \
     nano \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* 
-RUN	service apache2 restart; 
-RUN	 \ 
-		php -v 
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN	service apache2 restart;
+RUN	 \
+		php -v
 
 COPY docker-php-ext-* docker-php-entrypoint /usr/local/bin/
 
@@ -249,7 +249,7 @@ RUN set -ex; \
 		libzip-dev \
 	; \
 	\
-	docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr; 
+	docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr;
 
 # set recommended PHP.ini settings
 # see https://secure.php.net/manual/en/opcache.installation.php
@@ -293,13 +293,9 @@ RUN echo "listen_addresses='*'" >> /etc/postgresql/$POSTGRES_VERSION/main/postgr
 
 USER postgres
 
-RUN /etc/init.d/postgresql start &&\
+RUN /etc/init.d/postgresql start && \
     psql --command "CREATE USER drupal WITH SUPERUSER PASSWORD 'drupal';" && \
-    createdb -O drupal drupal 
-		# && \
-	  # psql --command "ALTER TABLE template1 OWNER TO drupal;" 
-		# && \
-		# psql --command "ALTER DATABASE template1 OWNER TO drupal;"
+    createdb -O drupal drupal
 
 # # Scripts
 # ADD supervisord-apache2.conf /etc/supervisor/conf.d/supervisord-apache2.conf
@@ -316,42 +312,45 @@ ENV DRUPAL_MD5 2cf2a1c93ea785c6ff91d29aebef2697
 
 USER root
 
+# Add a testuser user and group for the installation
+RUN groupadd testuser \
+  && useradd -g testuser --no-log-init --create-home --shell /bin/bash testuser \
+	&& usermod -a -G www-data testuser
+
+#USER testuser
+
 # Download console.
 RUN curl https://drupalconsole.com/installer -L -o drupal.phar
 
 # Install console.
-RUN mv drupal.phar /usr/local/bin/drupal && \
-    chmod +x /usr/local/bin/drupal && \
-    drupal init --override
+RUN chmod +x drupal.phar && ./drupal.phar init --override
 
 WORKDIR /var/www/html
 
-RUN drupal settings:set checked "true"
-
+RUN ./drupal.phar settings:set checked "true"
 
 RUN  curl -fSL "https://ftp.drupal.org/files/projects/drupal-${DRUPAL_VERSION}.tar.gz" -o drupal.tar.gz \
 	&& echo "${DRUPAL_MD5} *drupal.tar.gz" | md5sum -c - \
 	&& tar -xz --strip-components=1 -f drupal.tar.gz \
-	&& rm drupal.tar.gz \
-	&& sudo chown -R www-data:www-data sites modules themes
-# Add contrib and custom modules dicrectory
-# RUN sudo ln -s /var/www/html/modules/contrib /modules
-# RUN sudo ln -s /var/www/html/modules/custom /modules
+	&& rm drupal.tar.gz
+
+RUN cd /var/www/html/sites/default && cp default.settings.php settings.php
+
 RUN cd /var/www/html \
-		&& composer require drupal/console:~1.0 --prefer-dist --optimize-autoloader \
-		&& drupal site:install standard --langcode="en" --db-type="pgsql" --db-host="127.0.0.1" \
+		&& composer require drupal/console:~1.0 --prefer-dist --optimize-autoloader
+
+RUN /etc/init.d/postgresql start && \
+    ./drupal.phar site:install standard --langcode="en" --db-type="pgsql" --db-host="127.0.0.1" \
        --db-name="drupal" --db-user="drupal" --db-pass="drupal" --db-port="5432" \
        --site-name="Drupal 8 Site Install" --site-mail="admin@example.com" \
        --account-name="admin" --account-mail="admin@example.com" --account-pass="admin" \
-       --no-interaction \
-		&& drush cr all	 
-		
-		
+       --no-interaction && drush cr
+
 		# --db-url=pgsql://drupal:drupal@127.0.0.1/drupal --account-name=drupal --account-pass=drupal -vvv -y \
 		# && drush pm-update drupal -y
 
 # Set files directory permissions
-RUN sudo chown -R www-data:www-data /var/www/html/sites/default/files
+RUN chown -R testuser:www-data /var/www/html/sites/default/files
 
 # Expose http and psql port
 # EXPOSE 80 5432
@@ -364,15 +363,23 @@ COPY apache.conf /etc/httpd/conf.d/apache.conf
 # COPY init.sh /usr/bin/init.sh
 # RUN chmod +x /usr/bin/init.sh
 
-RUN composer update \
-  && git clone https://github.com/tripal/t4d8.git sites/all/modules/contrib/tripal \
-	# Make sure the servers are up
-	&& sleep 5 \
-	# Enable tripal 4 module
-	&& drush en -y tripal \
+RUN git clone https://github.com/tripal/t4d8.git sites/all/modules/contrib/tripal
+
+# Enable tripal 4 module
+RUN /etc/init.d/postgresql start \
+  && /etc/init.d/apache2 start \
+  && drush en -y tripal \
 	# Populate the cache
 	&& curl localhost > /dev/null
 
 EXPOSE 80 5432
 
-ENTRYPOINT ["init.sh"]
+# Tini for signal processing and zombie killing.
+ENV TINI_VERSION v0.18.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
+RUN chmod +x /tini
+
+
+# Define the command and parameters that will be executed when this
+# container is first run.
+ENTRYPOINT ["/tini", "--"]
