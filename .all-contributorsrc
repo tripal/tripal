@@ -101,6 +101,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "almasaeed2010",
+      "name": "Abdullah Almsaeed",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/1512664?v=4",
+      "profile": "http://almsaeedstudio.com",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
