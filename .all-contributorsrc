@@ -92,6 +92,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "colthom",
+      "name": "colthom",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/17720870?v=4",
+      "profile": "https://github.com/colthom",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
