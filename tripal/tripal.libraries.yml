@@ -1,0 +1,9 @@
+tripal:
+  version: 1.x
+  js:
+    js/tripal.js: {}
+    js/d3.min.js: {}
+  dependencies:
+    - core/drupal
+    - core/jquery
+    - core/drupalSettings

@@ -1,3 +1,9 @@
+tripal.tripal_entity.collection:
+  title: 'Tripal Content list'
+  route_name: entity.tripal_entity.collection
+  description: 'List Tripal Content entities'
+  base_route: system.admin_content
+
 # Tripal Content routing definition
 entity.tripal_entity.canonical:
   route_name: entity.tripal_entity.canonical
