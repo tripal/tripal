@@ -41,3 +41,10 @@ Tripal CV-Xray maps content annotations onto controlled vocabulary trees.  The e
 
 `Documentation <https://github.com/statonlab/tripal_cv_xray/blob/master/README.md>`__
 `Repository <https://github.com/statonlab/tripal_cv_xray>`__
+
+Tripal OrthoQuery
+-----------------
+
+The OrthoQuery module identifies orthologous genes via a Tripal database, standardizes the data for comparative analysis, performs the OrthoFinder analysis through the Tripal Galaxy API, sends the data to the user’s database profile, and provides interactive visualizations. Visualization features focus on facilitating the interrogation of large gene families, examining relationships among families, and allowing direct query of the stored orthogroups and their function. Orthoquery is currently in development.
+
+`Repository <https://gitlab.com/TreeGenes/orthoquery>`__
