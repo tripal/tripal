@@ -74,7 +74,7 @@ class TripalImporter {
    * Set this to FALSE to exclude the default button. This is useful for
    * multi-page forms which need to change the button text.
    */
-  public static $use_button;
+  public static $use_button = TRUE;
 
   /**
    * Indicates the methods that the file uploader will support.
