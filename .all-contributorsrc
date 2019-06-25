@@ -119,6 +119,15 @@
       "contributions": [
         "question"
       ]
+    },
+    {
+      "login": "jlwegrzyn",
+      "name": "jlwegrzyn",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/50996590?v=4",
+      "profile": "https://github.com/jlwegrzyn",
+      "contributions": [
+        "fundingFinding"
+      ]
     }
   ],
   "contributorsPerLine": 7,
