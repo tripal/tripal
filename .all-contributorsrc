@@ -12,9 +12,7 @@
       "profile": "https://github.com/spficklin",
       "contributions": [
         "code",
-        "doc",
-        "projectManagement",
-        "fundingFinding"
+        "eventOrganizing"
       ]
     },
     {
@@ -56,7 +54,10 @@
       "avatar_url": "https://avatars1.githubusercontent.com/u/24374002?v=4",
       "profile": "https://github.com/shawnawsu",
       "contributions": [
-        "code"
+        "code",
+        "content",
+        "doc",
+        "review"
       ]
     },
     {
@@ -83,7 +84,8 @@
       "avatar_url": "https://avatars1.githubusercontent.com/u/508122?v=4",
       "profile": "https://github.com/mestato",
       "contributions": [
-        "fundingFinding"
+        "fundingFinding",
+        "eventOrganizing"
       ]
     },
     {
@@ -120,6 +122,35 @@
       "profile": "https://github.com/btski",
       "contributions": [
         "question"
+      ]
+    },
+    {
+      "login": "ekcannon",
+      "name": "ekcannon",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/3409057?v=4",
+      "profile": "https://github.com/ekcannon",
+      "contributions": [
+        "ideas",
+        "eventOrganizing"
+      ]
+    },
+    {
+      "login": "jlwegrzyn",
+      "name": "jlwegrzyn",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/50996590?v=4",
+      "profile": "https://github.com/jlwegrzyn",
+      "contributions": [
+        "fundingFinding"
+      ]
+    },
+    {
+      "login": "bcondon",
+      "name": "Bubba",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/16371389?v=4",
+      "profile": "https://github.com/bcondon",
+      "contributions": [
+        "review",
+        "eventOrganizing"
       ]
     }
   ],
