@@ -12,7 +12,8 @@
       "profile": "https://github.com/spficklin",
       "contributions": [
         "code",
-        "eventOrganizing"
+        "eventOrganizing",
+        "doc"
       ]
     },
     {
@@ -141,16 +142,6 @@
       "profile": "https://github.com/jlwegrzyn",
       "contributions": [
         "fundingFinding"
-      ]
-    },
-    {
-      "login": "bcondon",
-      "name": "Bubba",
-      "avatar_url": "https://avatars1.githubusercontent.com/u/16371389?v=4",
-      "profile": "https://github.com/bcondon",
-      "contributions": [
-        "review",
-        "eventOrganizing"
       ]
     }
   ],

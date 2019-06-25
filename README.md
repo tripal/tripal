@@ -1,5 +1,5 @@
 [![7.x-3.x Build Status](https://travis-ci.org/tripal/tripal.svg?branch=7.x-3.x)](https://travis-ci.org/tripal/tripal)
-[![All Contributors](https://img.shields.io/badge/all_contributors-15-orange.svg?style=flat-square)](#contributors)
+[![All Contributors](https://img.shields.io/badge/all_contributors-14-orange.svg?style=flat-square)](#contributors)
 [![Documentation Status](https://readthedocs.org/projects/tripal/badge/?version=latest)](https://tripal.readthedocs.io/en/latest/?badge=latest)
 
 [![DOI](https://zenodo.org/badge/42666405.svg)](https://zenodo.org/badge/latestdoi/42666405)
@@ -95,7 +95,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- prettier-ignore -->
 <table>
   <tr>
-    <td align="center"><a href="https://github.com/spficklin"><img src="https://avatars0.githubusercontent.com/u/1719352?v=4" width="100px;" alt="Stephen Ficklin"/><br /><sub><b>Stephen Ficklin</b></sub></a><br /><a href="https://github.com/tripal/tripal/commits?author=spficklin" title="Code">💻</a> <a href="#eventOrganizing-spficklin" title="Event Organizing">📋</a></td>
+    <td align="center"><a href="https://github.com/spficklin"><img src="https://avatars0.githubusercontent.com/u/1719352?v=4" width="100px;" alt="Stephen Ficklin"/><br /><sub><b>Stephen Ficklin</b></sub></a><br /><a href="https://github.com/tripal/tripal/commits?author=spficklin" title="Code">💻</a> <a href="#eventOrganizing-spficklin" title="Event Organizing">📋</a> <a href="https://github.com/tripal/tripal/commits?author=spficklin" title="Documentation">📖</a></td>
     <td align="center"><a href="http://www.bradfordcondon.com/"><img src="https://avatars2.githubusercontent.com/u/7063154?v=4" width="100px;" alt="Bradford Condon"/><br /><sub><b>Bradford Condon</b></sub></a><br /><a href="https://github.com/tripal/tripal/commits?author=bradfordcondon" title="Code">💻</a> <a href="https://github.com/tripal/tripal/commits?author=bradfordcondon" title="Documentation">📖</a> <a href="#projectManagement-bradfordcondon" title="Project Management">📆</a> <a href="#eventOrganizing-bradfordcondon" title="Event Organizing">📋</a></td>
     <td align="center"><a href="https://laceysanderson.github.io/"><img src="https://avatars3.githubusercontent.com/u/1566301?v=4" width="100px;" alt="Lacey-Anne Sanderson"/><br /><sub><b>Lacey-Anne Sanderson</b></sub></a><br /><a href="https://github.com/tripal/tripal/commits?author=laceysanderson" title="Code">💻</a> <a href="https://github.com/tripal/tripal/commits?author=laceysanderson" title="Documentation">📖</a> <a href="#projectManagement-laceysanderson" title="Project Management">📆</a> <a href="#eventOrganizing-laceysanderson" title="Event Organizing">📋</a></td>
     <td align="center"><a href="https://github.com/chunhuaicheng"><img src="https://avatars2.githubusercontent.com/u/14333886?v=4" width="100px;" alt="chunhuaicheng"/><br /><sub><b>chunhuaicheng</b></sub></a><br /><a href="https://github.com/tripal/tripal/commits?author=chunhuaicheng" title="Code">💻</a></td>
@@ -111,9 +111,6 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/btski"><img src="https://avatars1.githubusercontent.com/u/32686196?v=4" width="100px;" alt="btski"/><br /><sub><b>btski</b></sub></a><br /><a href="#question-btski" title="Answering Questions">💬</a></td>
     <td align="center"><a href="https://github.com/ekcannon"><img src="https://avatars0.githubusercontent.com/u/3409057?v=4" width="100px;" alt="ekcannon"/><br /><sub><b>ekcannon</b></sub></a><br /><a href="#ideas-ekcannon" title="Ideas, Planning, & Feedback">🤔</a> <a href="#eventOrganizing-ekcannon" title="Event Organizing">📋</a></td>
     <td align="center"><a href="https://github.com/jlwegrzyn"><img src="https://avatars1.githubusercontent.com/u/50996590?v=4" width="100px;" alt="jlwegrzyn"/><br /><sub><b>jlwegrzyn</b></sub></a><br /><a href="#fundingFinding-jlwegrzyn" title="Funding Finding">🔍</a></td>
-  </tr>
-  <tr>
-    <td align="center"><a href="https://github.com/bcondon"><img src="https://avatars1.githubusercontent.com/u/16371389?v=4" width="100px;" alt="Bubba"/><br /><sub><b>Bubba</b></sub></a><br /><a href="#review-bcondon" title="Reviewed Pull Requests">👀</a> <a href="#eventOrganizing-bcondon" title="Event Organizing">📋</a></td>
   </tr>
 </table>
 
