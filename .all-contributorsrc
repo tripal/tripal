@@ -14,7 +14,8 @@
         "code",
         "eventOrganizing",
         "doc",
-        "projectManagement"
+        "projectManagement",
+        "review"
       ]
     },
     {
@@ -26,7 +27,8 @@
         "code",
         "doc",
         "projectManagement",
-        "eventOrganizing"
+        "eventOrganizing",
+        "review"
       ]
     },
     {
@@ -38,7 +40,8 @@
         "code",
         "doc",
         "projectManagement",
-        "eventOrganizing"
+        "eventOrganizing",
+        "review"
       ]
     },
     {
