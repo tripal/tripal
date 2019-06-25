@@ -119,6 +119,16 @@
       "contributions": [
         "question"
       ]
+    },
+    {
+      "login": "ekcannon",
+      "name": "ekcannon",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/3409057?v=4",
+      "profile": "https://github.com/ekcannon",
+      "contributions": [
+        "ideas",
+        "eventOrganizing"
+      ]
     }
   ],
   "contributorsPerLine": 7,
