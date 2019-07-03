@@ -5,7 +5,12 @@ $stock = $variables['node']->stock;
 $options = array('return_array' => 1);
 $stock = chado_expand_var($stock, 'table', 'stock_pub', $options);
 $stock_pubs = $stock->stock_pub; 
-
+if (!$stock_pubs) {
+  $stock_pubs = array();
+}
+elseif (!is_array($stock_pubs)) {
+  $stock_pubs = array($stock_pubs);
+}
 
 if (count($stock_pubs) > 0) { ?>
   <div class="tripal_stock_pub-data-block-desc tripal-data-block-desc"></div> <?php 

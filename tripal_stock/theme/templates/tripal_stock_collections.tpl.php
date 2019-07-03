@@ -6,6 +6,13 @@ $options = array('return_array' => 1);
 $stock = chado_expand_var($stock, 'table', 'stockcollection_stock', $options);
 $collections = $stock->stockcollection_stock;
 
+if (!$collections) {
+  $collections = array();
+}
+elseif (!is_array($collections)) {
+  $collections = array($collections);
+}
+
 if (count($collections) > 0) {?>
   <div class="tripal_stock-data-block-desc tripal-data-block-desc">This stock is found in the following collections.</div> <?php 
   
