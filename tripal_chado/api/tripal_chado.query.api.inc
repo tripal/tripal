@@ -1740,7 +1740,7 @@ function chado_query($sql, $args = []) {
     if (preg_match_all('/\{(.*?)\}/', $sql, $matches)) {
       $matches = $matches[1];
       $chado_tables = array_unique(array_keys(chado_get_table_names(TRUE)));
-      foreach ($matches as $match) {
+      foreach ($matches as strtolower($match)) {
         if (in_array($match, $chado_tables)) {
           $sql = preg_replace("/\{$match\}/", $chado_schema_name . '.' . $match, $sql);
         }
@@ -1751,7 +1751,7 @@ function chado_query($sql, $args = []) {
     if (preg_match_all('/\[(.*?)\]/', $sql, $matches)) {
       $matches = $matches[1];
       $drupal_tables = array_unique(array_keys(drupal_get_schema()));
-      foreach ($matches as $match) {
+      foreach ($matches as strtolower($match)) {
         if (in_array($match, $drupal_tables)) {
           $sql = preg_replace("/\[$match\]/", $drupal_schema_name . '.' . $match, $sql);
         }
