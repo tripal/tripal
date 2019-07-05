@@ -189,7 +189,7 @@ class ChadoPrefixExtender extends SelectQueryExtender {
       static::$chado_tables = chado_get_table_names(TRUE);
     }
 
-    return in_array($table, static::$chado_tables);
+    return in_array(strtolower($table), static::$chado_tables);
   }
 
   /**
