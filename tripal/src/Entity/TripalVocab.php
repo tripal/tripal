@@ -2,12 +2,11 @@
 
 namespace Drupal\tripal\Entity;
 
-use Drupal\Core\Entity\EntityStorageInterface;
-use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\ContentEntityBase;
-use Drupal\Core\Entity\EntityChangedTrait;
+use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\user\UserInterface;
+use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\EntityStorageInterface;
 
 /**
  * Defines the Controlled Vocabulary entity.
@@ -35,11 +34,11 @@ use Drupal\user\UserInterface;
  *     },
  *   },
  *   base_table = "tripal_vocab",
- *   data_table = "tripal_vocab_field_data",
  *   translatable = FALSE,
  *   admin_permission = "administer controlled vocabulary entities",
  *   entity_keys = {
  *     "id" = "id",
+ *     "vocabulary" = "vocabulary",
  *   },
  *   links = {
  *     "canonical" = "/admin/structure/tripal_vocab/{tripal_vocab}",
@@ -48,34 +47,30 @@ use Drupal\user\UserInterface;
  *     "delete-form" = "/admin/structure/tripal_vocab/{tripal_vocab}/delete",
  *     "collection" = "/admin/structure/tripal_vocab",
  *   },
- *   field_ui_base_route = "tripal_vocab.settings"
  * )
  */
-class TripalVocab extends ContentEntityBase implements TripalVocabInterface {
-
-  use EntityChangedTrait;
+class TripalVocab extends ContentEntityBase implements ContentEntityInterface {
 
   /**
    * {@inheritdoc}
    */
-  public static function preCreate(EntityStorageInterface $storage_controller, array &$values) {
-    parent::preCreate($storage_controller, $values);
-    $values += array(
-      'user_id' => \Drupal::currentUser()->id(),
-    );
+  public static function preCreate(EntityStorageInterface $storage, array &$values) {
+    parent::preCreate($storage, $values);
   }
 
   /**
-   * @see \Drupal\tripal\Entity\TripalVocabInterface::getVocabulary()
+   * @see \Drupal\core\Entity\ContentEntityInterface::getLabel()
    */
-  public function getVocabulary() {
-
+  public function getLabel() {
+    return $this->get('vocabulary')->value;
   }
-  /**
-   * @see \Drupal\tripal\Entity\TripalVocabInterface::setVocabulary()
-   */
-  public function setVocabulary($vocabulary) {
 
+  /**
+   * @see \Drupal\core\Entity\ContentEntityInterface::setLabel()
+   */
+  public function setLabel($vocabulary) {
+    $this->set('vocabulary', $vocabulary);
+    return $this;
   }
 
   /**
@@ -98,56 +93,6 @@ class TripalVocab extends ContentEntityBase implements TripalVocabInterface {
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = parent::baseFieldDefinitions($entity_type);
-
-//     $fields['user_id'] = BaseFieldDefinition::create('entity_reference')
-//       ->setLabel(t('Authored by'))
-//       ->setDescription(t('The user ID of author of the Controlled Vocabulary entity.'))
-//       ->setRevisionable(TRUE)
-//       ->setSetting('target_type', 'user')
-//       ->setSetting('handler', 'default')
-//       ->setTranslatable(TRUE)
-//       ->setDisplayOptions('view', array(
-//         'label' => 'hidden',
-//         'type' => 'author',
-//         'weight' => 0,
-//       ))
-//       ->setDisplayOptions('form', array(
-//         'type' => 'entity_reference_autocomplete',
-//         'weight' => 5,
-//         'settings' => array(
-//           'match_operator' => 'CONTAINS',
-//           'size' => '60',
-//           'autocomplete_type' => 'tags',
-//           'placeholder' => '',
-//         ),
-//       ))
-//       ->setDisplayConfigurable('form', TRUE)
-//       ->setDisplayConfigurable('view', TRUE);
-
-//     $fields['name'] = BaseFieldDefinition::create('string')
-//       ->setLabel(t('Name'))
-//       ->setDescription(t('The name of the Controlled Vocabulary entity.'))
-//       ->setSettings(array(
-//         'max_length' => 50,
-//         'text_processing' => 0,
-//       ))
-//       ->setDefaultValue('')
-//       ->setDisplayOptions('view', array(
-//         'label' => 'above',
-//         'type' => 'string',
-//         'weight' => -4,
-//       ))
-//       ->setDisplayOptions('form', array(
-//         'type' => 'string_textfield',
-//         'weight' => -4,
-//       ))
-//       ->setDisplayConfigurable('form', TRUE)
-//       ->setDisplayConfigurable('view', TRUE);
-
-//     $fields['status'] = BaseFieldDefinition::create('boolean')
-//       ->setLabel(t('Publishing status'))
-//       ->setDescription(t('A boolean indicating whether the Controlled Vocabulary is published.'))
-//       ->setDefaultValue(TRUE);
 
     $fields['vocabulary'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Vocabulary Name'))
