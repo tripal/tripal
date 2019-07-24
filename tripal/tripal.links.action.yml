@@ -1,11 +1,28 @@
+##
+# Tripal Content Entity.
+##
+
+# Add Content link on the Content Listing page.
 entity.tripal_entity.add_form:
   route_name: 'entity.tripal_entity.add_page'
   title: 'Add Tripal Content'
   appears_on:
     - entity.tripal_entity.collection
+
+# Add Content Type link on the Type Listing page.
 entity.tripal_entity_type.add_form:
   route_name: 'entity.tripal_entity_type.add_form'
   title: 'Add Tripal Content type'
   appears_on:
     - entity.tripal_entity_type.collection
 
+##
+# Tripal Vocab Entity.
+##
+
+## Add Vocabulary link on the Listing Page.
+entity.tripal_vocab.add_form:
+  route_name: 'entity.tripal_vocab.add_form'
+  title: 'Add Vocabulary'
+  appears_on:
+    - entity.tripal_vocab.collection
