@@ -18,10 +18,10 @@ TBD
 
 
 # Required Dependencies
-* Drupal: 
+* Drupal:
   * Drupal 8.x
   * Drupal core modules: Search, Path, View, Entity, and PHP modules.
-  * Drupal contributed modules: 
+  * Drupal contributed modules:
 * PostgreSQL
 * PHP 7.1+
 * UNIX/Linux
@@ -39,13 +39,8 @@ TBD
 
 # Development Testing
 
-To run PHP unit tests on your local system, run `composer install` to install developer-specific requirements.  Next, create a `.env` file in your `/Tests/` directory that defines the `DRUPAL_ROOT` variable, for example 
+See the [Drupal "Running PHPUnit tests" guide](https://www.drupal.org/node/2116263) for instructions on running tests on your local environment. In order to ensure our Tripal functional testing is fully bootstrapped, tests should be run from Drupal core. Specifically, in your Drupal root run the following command from your drupal root to run all Tripal tests.
 
 ```
-DRUPAL_ROOT=/var/www/html
+./vendor/bin/phpunit modules/t4d8/tripal/tests/
 ```
-Then run PHPUnit from your root Tripal directory.
-
-PHPUnit tests will also be run in the Travis CI build.
-
-Read our [testing guidelines](tests/README.md)
