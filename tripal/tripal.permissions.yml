@@ -68,34 +68,3 @@ view published tripal content entities:
 
 view unpublished tripal content entities:
   title: 'View unpublished Tripal Content entities'
-
-add controlled vocabulary term entities:
-  title: 'Create new Controlled Vocabulary Term entities'
-
-administer controlled vocabulary term entities:
-  title: 'Administer Controlled Vocabulary Term entities'
-  description: 'Allow to access the administration form to configure Controlled Vocabulary Term entities.'
-  restrict access: true
-
-delete controlled vocabulary term entities:
-  title: 'Delete Controlled Vocabulary Term entities'
-
-edit controlled vocabulary term entities:
-  title: 'Edit Controlled Vocabulary Term entities'
-
-access controlled vocabulary term overview:
-  title: 'Access the Controlled Vocabulary Term overview page'
-
-view published controlled vocabulary term entities:
-  title: 'View published Controlled Vocabulary Term entities'
-
-view unpublished controlled vocabulary term entities:
-  title: 'View unpublished Controlled Vocabulary Term entities'
-
-add tripal content entities:
-  title: 'Create new Tripal Content entities'
-
-administer tripal content entities:
-  title: 'Administer Tripal Content entities'
-  description: 'Allow to access the administration form to configure Tripal Content entities.'
-  restrict access: true

@@ -105,14 +105,6 @@ tripal.jobs_execute:
   requirements:
     _permission: 'administer tripal'
 
-tripal.jobs_execute:
-  path: 'admin/tripal/tripal_jobs/execute/{id}'
-  defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalJobsExecute'
-    _title: 'Execute an existing job'
-  requirements:
-    _permission: 'administer tripal'
-
 ##
 # Tripal Content
 ##
@@ -249,14 +241,6 @@ route_callbacks:
   - '\Drupal\tripal\Routing\TripalRoutes::dataLoaders'
 
 # Data Collections
-# tripal_admin_data_collection_form
-tripal.data_collections:
-  path: 'admin/tripal/data-collections'
-  defaults:
-    _controller: '\Drupal\tripal\Form\TripalDataCollections'
-    _title: 'Data Collections'
-  requirements:
-    _permission: 'administer tripal'
 
 # tripal_user_collections_delete_form
 tripal.data_collections_delete:
