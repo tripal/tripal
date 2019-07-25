@@ -15,7 +15,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
  *
  * @ContentEntityType(
  *   id = "tripal_vocab",
- *   label = @Translation("Controlled Vocabulary"),
+ *   label = @Translation("Tripal Controlled Vocabulary"),
  *   handlers = {
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\tripal\TripalVocabListBuilder",

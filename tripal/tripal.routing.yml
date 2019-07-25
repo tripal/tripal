@@ -167,16 +167,11 @@ tripal.dashboard_admin_notification_field:
 
 # entity.tripal_vocab.canonical:
 #   path: /admin/structure/tripal_vocab/{tripal_vocab}
-entity.tripal_vocab.add_form:
-  path: '/admin/structure/tripal_vocab/add'
-  defaults:
-    _entity_list: 'tripal_vocab'
-    _title: 'Add Tripal Controlled Vocabulary'
-  requirements:
-    _permission: 'add controlled vocabulary entities'
-# entity.tripal_vocab.edit_form:
+# entity.tripal_vocab.add-form:
+#   path: '/admin/structure/tripal_vocab/add'
+# entity.tripal_vocab.edit-form:
 #   path: '/admin/structure/tripal_vocab/{tripal_vocab}/edit'
-# entity.tripal_vocab.delete_form:
+# entity.tripal_vocab.delete-form:
 #   path: '/admin/structure/tripal_vocab/{tripal_vocab}/delete'
 entity.tripal_vocab.collection:
   path: '/admin/structure/tripal_vocab'
