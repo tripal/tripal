@@ -40,11 +40,8 @@ edit controlled vocabulary term entities:
 access controlled vocabulary term overview:
   title: 'Access the Controlled Vocabulary Term overview page'
 
-view published controlled vocabulary term entities:
+view controlled vocabulary term entities:
   title: 'View published Controlled Vocabulary Term entities'
-
-view unpublished controlled vocabulary term entities:
-  title: 'View unpublished Controlled Vocabulary Term entities'
 
 add tripal content entities:
   title: 'Create new Tripal Content entities'

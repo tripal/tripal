@@ -38,7 +38,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
  *   admin_permission = "administer controlled vocabulary entities",
  *   entity_keys = {
  *     "id" = "id",
- *     "vocabulary" = "vocabulary",
+ *     "label" = "vocabulary",
  *   },
  *   links = {
  *     "canonical" = "/admin/structure/tripal_vocab/{tripal_vocab}",

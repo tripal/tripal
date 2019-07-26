@@ -20,6 +20,28 @@ class TripalTermForm extends ContentEntityForm {
     $form = parent::buildForm($form, $form_state);
     $entity = $this->entity;
 
+    $form['vocab_id'] = [
+      '#type' => 'entity_autocomplete',
+      '#title' => 'Tripal Controlled Vocabulary',
+      '#description' => 'The short name (e.g. SO, PATO) of the vocabulary this term belongs to.',
+      '#target_type' => 'tripal_vocab',
+      '#default_value' => $entity->getVocab(),
+    ];
+
+    $form['accession'] = [
+      '#type' => 'textfield',
+      '#title' => 'Accession',
+      '#description' => 'The unique ID (or accession) of this term in the vocabulary.',
+      '#default_value' => $entity->getAccession(),
+    ];
+
+    $form['name'] = [
+      '#type' => 'textfield',
+      '#title' => 'Term Name',
+      '#description' => 'The human readable name for this term.',
+      '#default_value' => $entity->getName(),
+    ];
+
     return $form;
   }
 

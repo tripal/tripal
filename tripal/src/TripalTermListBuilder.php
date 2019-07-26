@@ -20,8 +20,9 @@ class TripalTermListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   public function buildHeader() {
-    $header['id'] = $this->t('Controlled Vocabulary Term ID');
-    $header['name'] = $this->t('Name');
+    $header['cv'] = $this->t('Vocabulary');
+    $header['name'] = $this->t('Term Name');
+    $header['accession'] = $this->t('Accession');
     return $header + parent::buildHeader();
   }
 
@@ -30,11 +31,27 @@ class TripalTermListBuilder extends EntityListBuilder {
    */
   public function buildRow(EntityInterface $entity) {
     /* @var $entity \Drupal\tripal\Entity\TripalTerm */
-    $row['id'] = $entity->id();
-    $row['name'] = $this->l(
-      $entity->label(),
+    $vocab = $entity->getVocab();
+    $row['vocabulary'] = $this->l(
+      $vocab->getLabel(),
       new Url(
-        'entity.tripal_term.edit_form', array(
+        'entity.tripal_vocab.canonical', array(
+          'tripal_vocab' => $entity->getVocabID(),
+        )
+      )
+    );
+    $row['name'] = $this->l(
+      $entity->getName(),
+      new Url(
+        'entity.tripal_term.canonical', array(
+          'tripal_term' => $entity->id(),
+        )
+      )
+    );
+    $row['accession'] = $this->l(
+      $vocab->getLabel() . ':' . $entity->getAccession(),
+      new Url(
+        'entity.tripal_term.canonical', array(
           'tripal_term' => $entity->id(),
         )
       )

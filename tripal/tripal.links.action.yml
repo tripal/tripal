@@ -26,3 +26,14 @@ entity.tripal_vocab.add_form:
   title: 'Add Vocabulary'
   appears_on:
     - entity.tripal_vocab.collection
+
+##
+# Tripal Term Entity.
+##
+
+## Add Term link on the Listing Page.
+entity.tripal_term.add_form:
+  route_name: 'entity.tripal_term.add_form'
+  title: 'Add Term'
+  appears_on:
+    - entity.tripal_term.collection
