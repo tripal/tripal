@@ -319,6 +319,21 @@ class FASTAImporter extends TripalImporter {
       form_set_error('db_id', t("Please select a database"));
     }
 
+    //check to make sure the regexps are valid
+
+    if ($re_accession && @preg_match("/$re_accession/", null) === false) {
+
+      form_set_error('re_accession', t("please provide a valid regular expression."));
+    }
+    if ($re_name && @preg_match("/$re_name/", null) === false) {
+
+      form_set_error('re_name', t("please provide a valid regular expression."));
+    }
+    if ($re_name && @preg_match("/$re_uname/", null) === false) {
+
+      form_set_error('re_uname', t("please provide a valid regular expression."));
+    }
+
     // check to make sure the types exists
     $cvtermsql = "
       SELECT CVT.cvterm_id
@@ -498,7 +513,10 @@ class FASTAImporter extends TripalImporter {
     $num_seqs = 0;
     $prev_pos = 0;
     $set_start = FALSE;
+    $i = 0;
+
     while ($line = fgets($fh)) {
+      $i++;
       $num_read += strlen($line);
 
       // If we encounter a definition line then get the name, uniquename,
@@ -651,7 +669,7 @@ class FASTAImporter extends TripalImporter {
       ], $values);
       if (count($results) > 1) {
         $this->logMessage("Multiple features exist with the name '!name' of type '!type' for the organism.  skipping",
-          ['!name' => $name, '!type' => $type], TRIPAL_ERROR);
+          ['!name' => $name, '!type' => $cvterm->name], TRIPAL_ERROR);
         return 0;
       }
       if (count($results) == 1) {
@@ -670,7 +688,7 @@ class FASTAImporter extends TripalImporter {
       $results = chado_select_record('feature', ['feature_id'], $values);
       if (count($results) > 1) {
         $this->logMessage("Multiple features exist with the name '!name' of type '!type' for the organism.  skipping",
-          ['!name' => $name, '!type' => $type], TRIPAL_WARNING);
+          ['!name' => $name, '!type' => $cvterm->name], TRIPAL_WARNING);
         return 0;
       }
       if (count($results) == 1) {
@@ -711,7 +729,7 @@ class FASTAImporter extends TripalImporter {
       if (!$success) {
         $this->logMessage("Failed to insert feature '!name (!uname)'", [
           '!name' => $name,
-          '!uname' => $numane,
+          '!uname' => $uname,
         ], TRIPAL_ERROR);
         return 0;
       }
@@ -730,7 +748,7 @@ class FASTAImporter extends TripalImporter {
       else {
         $this->logMessage("Failed to retreive newly inserted feature '!name (!uname)'", [
           '!name' => $name,
-          '!uname' => $numane,
+          '!uname' => $uname,
         ], TRIPAL_ERRORR);
         return 0;
       }
@@ -772,7 +790,7 @@ class FASTAImporter extends TripalImporter {
               [
                 '!name' => $name,
                 '!uname' => $uname,
-                '!type' => $type,
+                '!type' => $cvterm->name,
               ], TRIPAL_ERROR);
             return 0;
           }
@@ -861,7 +879,7 @@ class FASTAImporter extends TripalImporter {
         }
         else {
           $this->logMessage("Failed to retreive newly inserted dbxref '!name (!uname)'",
-            ['!name' => $name, '!uname' => $numane], TRIPAL_ERROR);
+            ['!name' => $name, '!uname' => $uname], TRIPAL_ERROR);
           return 0;
         }
       }
