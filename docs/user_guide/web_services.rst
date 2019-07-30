@@ -53,7 +53,7 @@ Structure of a Web Service Response
 
 The initial response in JSON is in the `JSON-LD format <https://json-ld.org/>`_ where the LD means Linked Data.   For example:
 
-.. code-block:: JSON
+.. code-block:: json
 
     {
     "@context": {,
@@ -80,7 +80,7 @@ A notable component of JSON-LD is the **@context** sub array.  It is within this
 
 There are two other special keys used in the JSON-LD response.  These are the **@id** and **@type** keys.  The **@id** indicates the unique URL for this resource and becomes a unique name for the resource.  In the example screenshot above, the **@id** of the initial page of web services is ``http://localhost/web-services``.  This URL will always refer to the initial page for Tripal web services on the given site.  The **@type** identifier specifies what type of resource this URL provides.  In this example, the type is **EntryPoint**.  If a client program is unsure as to what an **EntryPoint** is, then that information is provided in the @context section.  The following line indicates that the term **EntryPoint** expands to the vocabulary term:  vocab:EntryPoint
 
-.. code-block:: JSON
+.. code-block:: json
 
   "EntryPoint": "vocab:EntryPoint",
 
@@ -93,7 +93,7 @@ Primary Services
 
 By default, the only resource that Tripal provides at the initial response level is the content resource.  Any resource at this level is hereafter referred to as primary service.  Tripal is design to allow new web-services to be added to it.  These will be more formally described in the Tripal v3 Developer's Handbook.  In short, a primary service provides a variety of data and services for related content and function.   Each primary resource has a version number to help ensure backwards compatibility as new web services are developed and updated.  For example, the default content service currently has a version of v0.1:
 
-.. code-block:: JSON
+.. code-block:: json
 
   "content": "http://localhost/web-services/content/v0.1"
 
@@ -152,7 +152,7 @@ Currently, Tripal provides the ability to search for content via web services by
 
 Where {name} is the label assigned to the content type (See the Content Type Members section above).   Using this path, clients filter content to a specific content type.  But further refinement is possible.  As a reminder, each member (or entity) on the content type members collection appears similar to the following:
 
-.. code-block:: JSON
+.. code-block:: json
 
   {
     "@id": "http://localhost/web-services/content/v0.1/mRNA/691468",
@@ -164,7 +164,7 @@ Where {name} is the label assigned to the content type (See the Content Type Mem
 
 When retrieving the data for a specific entity something similar to the following (for our mRNA example) may be seen:
 
-.. code-block:: JSON
+.. code-block:: json
 
   "label": "LOC_Os01g01010.1",
   "ItemPage": "http://localhost/bio_data/691468",
@@ -187,7 +187,7 @@ When retrieving the data for a specific entity something similar to the followin
 
 As another reminder, when any of these attributes have a URL then further information about that attribute is obtained by following the URL. In the example below, the relationship term yields results similar to the following:
 
-.. code-block:: JSON
+.. code-block:: json
 
   {
       "@id": "http://localhost/web-services/content/v0.1/mRNA/691468/relationship/0",
