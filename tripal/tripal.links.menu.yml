@@ -27,6 +27,18 @@ entity.tripal_vocab.collection:
   weight: 98
 
 ##
+# Tripal Term.
+##
+
+# Listing.
+entity.tripal_term.collection:
+  title: 'Tripal Controlled Vocabulary Terms'
+  route_name: entity.tripal_term.collection
+  description: 'List Tripal Controlled Vocabulary Terms used for categorization of biological content (e.g. SO:0000704; gene).'
+  parent: system.admin_structure
+  weight: 98
+
+##
 # Tripal Admin menu
 ##
 tripal.admin:

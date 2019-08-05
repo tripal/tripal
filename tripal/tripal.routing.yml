@@ -181,6 +181,24 @@ entity.tripal_vocab.collection:
   requirements:
     _permission: 'view controlled vocabulary entities'
 
+# TripalTerm:
+
+# entity.tripal_term.canonical:
+#   path: /admin/structure/tripal_term/{tripal_term}
+# entity.tripal_term.add-form:
+#   path: '/admin/structure/tripal_term/add'
+# entity.tripal_term.edit-form:
+#   path: '/admin/structure/tripal_term/{tripal_term}/edit'
+# entity.tripal_term.delete-form:
+#   path: '/admin/structure/tripal_term/{tripal_term}/delete'
+entity.tripal_term.collection:
+  path: '/admin/structure/tripal_term'
+  defaults:
+    _entity_list: 'tripal_term'
+    _title: 'Tripal Controlled Vocabulary Terms'
+  requirements:
+    _permission: 'view controlled vocabulary term entities'
+
 # Term Lookup
 tripal.cv_lookup:
   path: 'cv/lookup'

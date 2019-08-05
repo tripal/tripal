@@ -32,30 +32,15 @@ class TripalTermListBuilder extends EntityListBuilder {
   public function buildRow(EntityInterface $entity) {
     /* @var $entity \Drupal\tripal\Entity\TripalTerm */
     $vocab = $entity->getVocab();
-    $row['vocabulary'] = $this->l(
-      $vocab->getLabel(),
-      new Url(
-        'entity.tripal_vocab.canonical', array(
-          'tripal_vocab' => $entity->getVocabID(),
-        )
-      )
-    );
-    $row['name'] = $this->l(
-      $entity->getName(),
-      new Url(
-        'entity.tripal_term.canonical', array(
-          'tripal_term' => $entity->id(),
-        )
-      )
-    );
-    $row['accession'] = $this->l(
-      $vocab->getLabel() . ':' . $entity->getAccession(),
-      new Url(
-        'entity.tripal_term.canonical', array(
-          'tripal_term' => $entity->id(),
-        )
-      )
-    );
+    $vocab_label = '';
+    if ($vocab) {
+      $vocab_label = $vocab->getLabel();
+    }
+
+    $row['vocabulary'] = $vocab_label;
+    $row['name'] = $entity->getName();
+    $row['accession'] = $vocab_label . ':' . $entity->getAccession();
+
     return $row + parent::buildRow($entity);
   }
 
