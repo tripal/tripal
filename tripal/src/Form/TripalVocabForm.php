@@ -3,6 +3,7 @@
 namespace Drupal\tripal\Form;
 
 use Drupal\Core\Entity\ContentEntityForm;
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
@@ -20,6 +21,16 @@ class TripalVocabForm extends ContentEntityForm {
     $form = parent::buildForm($form, $form_state);
     $entity = $this->entity;
 
+    // ID field: handled internally.
+
+    // Vocabulary Field.
+    $form['vocabulary'] = [
+      '#title' => $this->t('Controlled Vocabulary Name'),
+      '#description' => 'The short name for the vocabulary (e.g. SO, PATO).',
+      '#type' => 'textfield',
+      '#default_value' => $entity->getLabel(),
+    ];
+
     return $form;
   }
 
@@ -32,16 +43,17 @@ class TripalVocabForm extends ContentEntityForm {
 
     switch ($status) {
       case SAVED_NEW:
-        drupal_set_message($this->t('Created the %label Controlled Vocabulary.', [
-          '%label' => $entity->label(),
+        $this->messenger()->addMessage($this->t('Created the %label Controlled Vocabulary.', [
+          '%label' => $entity->getLabel(),
         ]));
         break;
 
       default:
-        drupal_set_message($this->t('Saved the %label Controlled Vocabulary.', [
-          '%label' => $entity->label(),
+        $this->messenger()->addMessage($this->t('Saved the %label Controlled Vocabulary.', [
+          '%label' => $entity->getLabel(),
         ]));
     }
+
     $form_state->setRedirect('entity.tripal_vocab.canonical', ['tripal_vocab' => $entity->id()]);
   }
 

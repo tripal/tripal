@@ -21,10 +21,7 @@ class TripalTermAccessControlHandler extends EntityAccessControlHandler {
     /** @var \Drupal\tripal\Entity\TripalTermInterface $entity */
     switch ($operation) {
       case 'view':
-        if (!$entity->isPublished()) {
-          return AccessResult::allowedIfHasPermission($account, 'view unpublished controlled vocabulary term entities');
-        }
-        return AccessResult::allowedIfHasPermission($account, 'view published controlled vocabulary term entities');
+        return AccessResult::allowedIfHasPermission($account, 'view controlled vocabulary term entities');
 
       case 'update':
         return AccessResult::allowedIfHasPermission($account, 'edit controlled vocabulary term entities');
