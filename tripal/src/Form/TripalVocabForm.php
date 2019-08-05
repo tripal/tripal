@@ -3,6 +3,7 @@
 namespace Drupal\tripal\Form;
 
 use Drupal\Core\Entity\ContentEntityForm;
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
@@ -30,8 +31,6 @@ class TripalVocabForm extends ContentEntityForm {
       '#default_value' => $entity->getLabel(),
     ];
 
-
-
     return $form;
   }
 
@@ -44,13 +43,13 @@ class TripalVocabForm extends ContentEntityForm {
 
     switch ($status) {
       case SAVED_NEW:
-        drupal_set_message($this->t('Created the %label Controlled Vocabulary.', [
+        $this->messenger()->addMessage($this->t('Created the %label Controlled Vocabulary.', [
           '%label' => $entity->getLabel(),
         ]));
         break;
 
       default:
-        drupal_set_message($this->t('Saved the %label Controlled Vocabulary.', [
+        $this->messenger()->addMessage($this->t('Saved the %label Controlled Vocabulary.', [
           '%label' => $entity->getLabel(),
         ]));
     }
