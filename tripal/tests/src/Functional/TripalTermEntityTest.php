@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\tripal\Functional;
 
+use Drupal\tripal\Entity\TripalVocab;
 use Drupal\tripal\Entity\TripalTerm;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\Core\Url;
@@ -81,8 +82,8 @@ class TripalTermEntityTest extends BrowserTestBase {
 
     // Now fill out the form and submit.
     // Post content, save an instance. Go to the new page after saving.
-    $vocab = TripalTerm::create();
-    print_r($vocab);
+    $vocab = TripalVocab::create();
+    $vocab_label = $vocab->getLabel();
     $name = 'test ' . date('Ymd');
     $accession = uniqid();
     $add = [
@@ -102,6 +103,8 @@ class TripalTermEntityTest extends BrowserTestBase {
 
     // We should also see our new record listed with edit/delete links.
     $assert->pageTextContains($name);
+    $assert->pageTextContains($accession);
+    $assert->pageTextContains($vocab_label);
     $assert->linkExists('Edit');
     $assert->linkExists('Delete');
 
@@ -112,22 +115,24 @@ class TripalTermEntityTest extends BrowserTestBase {
     $this->clickLink('Edit');
     // We should now be on admin/structure/tripal_term/{tripal_term}/edit.
     $assert->pageTextContains('Edit');
-    $assert->fieldExists('controlled vocabulary term Name');
-    $assert->fieldValueEquals('controlled vocabulary term Name', $name);
+    $assert->fieldExists('Term Name');
+    $assert->fieldValueEquals('Term Name', $name);
 
     // Now fill out the form and submit.
     // Post content, save the instance.
-    $new_vocab_name = $name . ' CHANGED';
+    $new_term_name = $name . ' CHANGED';
     $edit = [
-      'vocabulary' => $new_vocab_name,
+      'name' => $new_term_name,
     ];
     $this->drupalPostForm(NULL, $edit, 'Save');
-    $assert->pageTextContains('Saved the ' . $new_vocab_name . ' controlled vocabulary term.');
+    $assert->pageTextContains('Saved the ' . $new_term_name . ' controlled vocabulary term.');
 
     // Then go back to the listing.
     $this->drupalGet('admin/structure/tripal_term');
     // We should also see our new record listed with edit/delete links.
-    $assert->pageTextContains($new_vocab_name);
+    $assert->pageTextContains($new_term_name);
+    $assert->pageTextContains($accession);
+    $assert->pageTextContains($vocab_label);
     $assert->linkExists('Edit');
     $assert->linkExists('Delete');
 
@@ -146,15 +151,21 @@ class TripalTermEntityTest extends BrowserTestBase {
     // First we cancel and check the record is not deleted.
     // @todo fails $this->drupalPostForm(NULL, [], 'edit_cancel');
     $this->drupalGet('admin/structure/tripal_term');
-    $assert->pageTextContains($new_vocab_name);
+    $assert->pageTextContains($new_term_name);
+    $assert->pageTextContains($accession);
+    $assert->pageTextContains($vocab_label);
     $assert->linkExists('Edit');
     $assert->linkExists('Delete');
 
     // Now we delete the record.
     $this->clickLink('Delete');
     $this->drupalPostForm(NULL, [], 'Delete');
-    $msg = 'The tripal controlled vocabulary term has been deleted.';
+    $msg = "The tripal controlled vocabulary term $new_term_name has been deleted.";
     $assert->pageTextContains($msg);
+
+    $this->drupalGet('admin/structure/tripal_term');
+    $assert->pageTextNotContains($new_term_name);
+    $assert->pageTextNotContains($accession);
   }
 
   /**

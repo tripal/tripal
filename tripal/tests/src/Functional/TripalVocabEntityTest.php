@@ -108,7 +108,7 @@ class TripalVocabEntityTest extends BrowserTestBase {
 
     // Now fill out the form and submit.
     // Post content, save the instance.
-    $new_vocab_name = $vocab_name . ' CHANGED';
+    $new_vocab_name = 'CHANGED' . uniqid();
     $edit = [
       'vocabulary' => $new_vocab_name,
     ];
@@ -118,6 +118,7 @@ class TripalVocabEntityTest extends BrowserTestBase {
     // Then go back to the listing.
     $this->drupalGet('admin/structure/tripal_vocab');
     // We should also see our new record listed with edit/delete links.
+    $assert->pageTextNotContains($vocab_name);
     $assert->pageTextContains($new_vocab_name);
     $assert->linkExists('Edit');
     $assert->linkExists('Delete');

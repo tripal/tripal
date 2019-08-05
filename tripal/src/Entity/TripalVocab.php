@@ -59,6 +59,13 @@ class TripalVocab extends ContentEntityBase implements ContentEntityInterface {
   }
 
   /**
+   * @see \Drupal\core\Entity\ContentEntityInterface::getID()
+   */
+  public function getID() {
+    return $this->get('id')->value;
+  }
+
+  /**
    * @see \Drupal\core\Entity\ContentEntityInterface::getLabel()
    */
   public function getLabel() {
