@@ -111,13 +111,11 @@ function tripal_get_importer_form($form, &$form_state, $class) {
   // to change the order of their elements in reference to the default ones.
   $form = array_merge($form, $element_form);
 
-  if ($class::$use_button == TRUE) {
-    $form['button'] = [
-      '#type' => 'submit',
-      '#value' => t($class::$button_text),
-      '#weight' => 10,
-    ];
-  }
+  $form['button'] = [
+    '#type' => 'submit',
+    '#value' => t($class::$button_text),
+    '#weight' => 10,
+  ];
   return $form;
 }
 
