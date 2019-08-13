@@ -70,13 +70,6 @@ class TripalImporter {
   public static $button_text = 'Import File';
 
   /**
-   * If the loader should provide a submit button using $button_text above.
-   * Set this to FALSE to exclude the default button. This is useful for
-   * multi-page forms which need to change the button text.
-   */
-  public static $use_button = TRUE;
-
-  /**
    * Indicates the methods that the file uploader will support.
    */
   public static $methods = [
