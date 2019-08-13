@@ -144,7 +144,7 @@ class so__genotype extends ChadoField {
       ],
     ];
     $record = chado_expand_var($record, 'table', $linker_table, $options);
-    $genotype_linkers = isset($record->$linker_table->$fkey_rcolumn) ? $record->$linker_table->$fkey_rcolumn : '';
+    $genotype_linkers = $record->$linker_table;
     if ($genotype_linkers) {
       foreach ($genotype_linkers as $i => $genotype_linker) {
         $genotype = $genotype_linker->genotype_id;
