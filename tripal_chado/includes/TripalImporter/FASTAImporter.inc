@@ -243,7 +243,7 @@ class FASTAImporter extends TripalImporter {
       '#description' => t('Enter the regular expression that will extract the unique
                          name needed to identify the existing sequence for which the
                          relationship type selected above will apply.  If no regular
-                         expression is provided, the parent unique name must be the 
+                         expression is provided, the parent unique name must be the
                          same as the loaded feature name.'),
       '#weight' => 6,
     ];
@@ -319,19 +319,18 @@ class FASTAImporter extends TripalImporter {
       form_set_error('db_id', t("Please select a database"));
     }
 
-    //check to make sure the regexps are valid
-
-    if ($re_accession && @preg_match("/$re_accession/", null) === false) {
-
-      form_set_error('re_accession', t("please provide a valid regular expression."));
-    }
+    // Check to make sure the regexps are valid.
     if ($re_name && @preg_match("/$re_name/", null) === false) {
-
-      form_set_error('re_name', t("please provide a valid regular expression."));
+      form_set_error('re_name', t("please provide a valid regular expression for the feature name."));
     }
-    if ($re_name && @preg_match("/$re_uname/", null) === false) {
-
-      form_set_error('re_uname', t("please provide a valid regular expression."));
+    if ($re_uname && @preg_match("/$re_uname/", null) === false) {
+      form_set_error('re_uname', t("please provide a valid regular expression for the feature unique name."));
+    }
+    if ($re_accession && @preg_match("/$re_accession/", null) === false) {
+      form_set_error('re_accession', t("please provide a valid regular expression for the external database accession."));
+    }
+    if ($re_subject && @preg_match("/$re_subject/", null) === false) {
+      form_set_error('re_subject', t("please provide a valid regular expression for the relationship parent."));
     }
 
     // check to make sure the types exists
