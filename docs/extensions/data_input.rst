@@ -38,9 +38,9 @@ A BibTEX importer for Tripal Publications. Currently this module only provides a
 Tripal Plant PopGen Submission
 -------------------------------
 
-.. image:: https://tripal.readthedocs.io/en/7.x-3.x/_images/Tripal-Bronze.png
-  :target: https://tripal.readthedocs.io/en/7.x-3.x/extensions/module_rating.html#Bronze
-  :alt: Tripal Rating: Bronze
+.. image:: https://tripal.readthedocs.io/en/7.x-3.x/_images/Tripal-Silver.png
+  :target: https://tripal.readthedocs.io/en/7.x-3.x/extensions/module_rating.html#Silver
+  :alt: Tripal Rating: Silver
 
 The Tripal Plant PopGen Submit (TPPS) Module supports a flexible submission interface for genotype, phenotype, environmental, and metadata for population, association, or landscape genetics studies. The portal walks the user through specific questions and collects georeferenced coordinates on plant accessions and also supports ontology standards, including the Minimal Information About a Plant Phenotyping Experiment (MIAPPE) (http://www.miappe.org/) and standard genotyping file formats, such as VCF.
 
