@@ -6,7 +6,7 @@ CartograTree
 
 CartograTree is a web-based application that allows researchers to identify, filter, compare, and visualize geo-referenced biotic and abiotic data. Its goal is to support numerous multi-disciplinary research endeavors including: phylogenetics, population structure, and association studies.
 
-`Documentation <https://gitlab.com/TreeGenes/CartograTree/blob/master/README.md>`__
+`Documentation <https://cartogratree.readthedocs.io/en/latest/index.html>`__
 `Repository <https://gitlab.com/TreeGenes/CartograTree>`__
 
 Mainlab Chado Search
