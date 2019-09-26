@@ -46,12 +46,30 @@ class PermissionsTest extends TripalTestCase {
   public function testPermissionsForUser() {
     $faker = Factory::create();
 
-    // All bundle names are bio_data_##. Content types are created on install
-    // of tripal_chado and thus all sites should have them available.
-    // @todo create an entity.
-    $entity_results = db_query('SELECT id, bundle FROM tripal_entity limit 1')->fetchObject();
-    $entity_id = $entity_results->id;
-    $bundle_name = $entity_results->bundle;
+    // Create organism entity for testing.
+    $bundle_name = 'bio_data_2';
+    $bundle = tripal_load_bundle_entity(['name' => $bundle_name]);
+
+    $genus = $faker->word(1, TRUE);
+    $species = $faker->word(2, TRUE);
+    $values = [
+      'bundle' => $bundle_name,
+      'term_id' => $bundle->term_id,
+      'chado_table' => 'organism',
+      'chado_column' => 'organism_id',
+    ];
+    $values['taxrank__genus']['und'][0] = [
+      'value' => $genus,
+      'chado-organism__genus' => $genus,
+    ];
+    $values['taxrank__species']['und'][0] = [
+      'value' => $species,
+      'chado-organism__species' => $species,
+    ];
+    $ec = entity_get_controller('TripalEntity');
+    $entity = $ec->create($values);
+    $entity = $entity->save();
+    $entity_id = $entity->id;
 
     // For this test we are only testing entity permissions. Here we are
     // we are testing a single bundle.
@@ -115,6 +133,7 @@ class PermissionsTest extends TripalTestCase {
     unset($user_can, $user_canNOT);
     $user_can = user_load($user_can_uid, TRUE);
     $user_canNOT = user_load($user_canNOT_uid, TRUE);
+    cache_clear_all();
 
     // Finally, for each Tripal permission...
     foreach ($tripal_permissions as $op => $permission_name) {
