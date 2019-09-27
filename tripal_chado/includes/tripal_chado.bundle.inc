@@ -118,6 +118,11 @@ function tripal_chado_create_bundle_table($bundle) {
     throw new Exception('Cannot create entity linker table for chado.');
   }
   db_create_table($chado_entity_table, $schema);
+
+  // Ensure we clear the drupal schema cache after creating this table.
+  // This is needed so we can publish records directly after creating a new
+  // content type.
+  drupal_get_complete_schema(TRUE);
 }
 
 /**
@@ -155,9 +160,9 @@ function tripal_chado_bundle_find_orphans($bundle, $count = FALSE, $offset = 0, 
   if (!$count and $limit) {
     $qlimit = "LIMIT $limit OFFSET $offset ";
   }
-  // Get the count 
+  // Get the count
   $query = "
-    SELECT $select  
+    SELECT $select
     FROM [$chado_bundle_table] CT
       LEFT JOIN {" . $bundle->data_table . "} BT ON CT.record_id = BT.$primary_key
     WHERE BT.$primary_key IS NULL
