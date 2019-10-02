@@ -47,7 +47,8 @@ class PermissionsTest extends TripalTestCase {
     $faker = Factory::create();
 
     // Create organism entity for testing.
-    $bundle_name = 'bio_data_2';
+    $bundle_id = db_query("SELECT bundle_id from {chado_bundle} where data_table='organism'")->fetchField();
+    $bundle_name = 'bio_data_' . $bundle_id;
     $bundle = tripal_load_bundle_entity(['name' => $bundle_name]);
 
     $genus = $faker->word(1, TRUE);
