@@ -193,7 +193,7 @@ class TripalContentService_v0_1 extends TripalWebService {
    * Creates a resource for a single entity.
    */
   private function doEntity($ctype, $entity_id) {
-    $service_path = $this->getServicePath() . '/' . urlencode($ctype);
+    $service_path = $this->getServicePath() . '/' . preg_replace('/[^\w]/', '_', $ctype);
     $this->resource = new TripalWebServiceResource($service_path);
 
     // Get the TripalBundle, TripalTerm and TripalVocab type for this type.
