@@ -110,7 +110,7 @@ class TripalContentService_v0_1 extends TripalWebService {
    * Creates a resource for an expanded field of an entity.
    */
   private function doExpandedField($ctype, $entity_id, $expfield) {
-    $service_path = $this->getServicePath() . '/' . urlencode($ctype) . '/' . $entity_id;
+    $service_path = $this->getServicePath() . '/' . preg_replace('/[^\w]/', '_', $ctype) . '/' . $entity_id;
     $this->resource = new TripalWebServiceResource($service_path);
 
     // Get the TripalBundle, TripalTerm and TripalVocab for this type.
