@@ -27,9 +27,10 @@ class sio__vocabulary_widget extends ChadoFieldWidget {
     // content managers to change it. Thus we need to look up the value for the
     // entity type and use it here.
     if (empty($items)) {
+
       // Use the bundle to get the cv_id choosen for this cvterm-based entity.
       // ASSUMPTION: the cv_id is saved as the "type_value" of the bundle.
-      $bundle = tripal_load_bundle_entity(['name' => $widget['#bundle']]);
+      $bundle = tripal_load_bundle_entity(['name' => $widget['#instance']['bundle']]);
       $cv = chado_get_cv(['cv_id' => $bundle->type_value]);
 
       // Now populate the items array with defaults based on the cv.
