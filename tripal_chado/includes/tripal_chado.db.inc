@@ -94,7 +94,6 @@ function tripal_chado_db_edit_form($form, &$form_state) {
       '#value' => t('Update'),
     ];
 
-    // Assert we have some configuration in our database.
     $dbxref_count = chado_query('select count(dbxref_id) from {dbxref} WHERE db_id = :db_id', [':db_id' => $dbid])->fetchField();
 
     if ($dbxref_count == 0) {
