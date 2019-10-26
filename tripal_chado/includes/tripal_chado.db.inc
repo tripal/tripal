@@ -84,8 +84,8 @@ function tripal_chado_db_edit_form($form, &$form_state) {
   ];
 
 
-  // if we don't have a db_id then we can  return the form, otherwise
-  // add in the other fields
+  // If we don't have a db_id then we can  return the form, otherwise
+  // add in the other fields.
   if ($dbid) {
     tripal_chado_add_db_form_fields($form, $form_state, $dbid);
 
@@ -93,11 +93,19 @@ function tripal_chado_db_edit_form($form, &$form_state) {
       '#type' => 'submit',
       '#value' => t('Update'),
     ];
-    $form['delete'] = [
-      '#type' => 'submit',
-      '#value' => t('Delete'),
-      '#attributes' => ['onclick' => 'if(!confirm("Really Delete?")){return false;}'],
-    ];
+
+    $dbxref_count = chado_query('select count(dbxref_id) from {dbxref} WHERE db_id = :db_id', [':db_id' => $dbid])->fetchField();
+
+    if ($dbxref_count == 0) {
+      $form['delete'] = [
+        '#type' => 'submit',
+        '#value' => t('Delete'),
+        '#attributes' => ['onclick' => 'if(!confirm("Really Delete?")){return false;}'],
+      ];
+    }
+    else {
+      tripal_set_message("You cannot delete this db without first deleting the ${dbxref_count} dbxrefs associated with it.", TRIPAL_NOTICE);
+    }
   }
   else {
     // if we don't have a dbid then this is the first time the form has
