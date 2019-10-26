@@ -2,7 +2,7 @@ language: php
 
 services:
   - docker
-  - postgres
+  - postgresql
 
 sudo: required
 
