@@ -765,8 +765,8 @@ function tripal_field_widget_form_validate($element, &$form_state, $form) {
   $field = $element['#field'];
   $instance = $element['#instance'];
 
-  $langcode = $element['#language'];
-  $delta = $element['#delta'];
+  $langcode = (isset($element['#language'])) ? $element['#language'] : LANGUAGE_NONE;
+  $delta = (isset($element['#delta'])) ? $element['#delta'] : 0;
 
   $widget_class = $instance['widget']['type'];
   tripal_load_include_field_class($widget_class);
