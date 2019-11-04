@@ -181,6 +181,9 @@ class TripalBundleController extends EntityAPIControllerExportable {
           $response += $value;
         }
       }
+      else {
+        $response += $bundle_response;
+      }
     }
     return $response;
   }
@@ -279,7 +282,7 @@ class TripalBundleController extends EntityAPIControllerExportable {
         $num_bundle_del = $this->deleteOrphans($bundle_record->id);
         if ($job) {
           $job->addItemsHandled($num_bundle_del);
-          $job->logMessage("Removed !num orphaned !label entities.", ['!num' => $num_deleted, '!label' => $bundle_record->label]);
+          $job->logMessage("Removed !num orphaned !label entities.", ['!num' => $num_bundle_del, '!label' => $bundle_record->label]);
         }
         $num_deleted += $num_bundle_del;
       }
