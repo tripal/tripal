@@ -162,6 +162,29 @@ class TripalBundleController extends EntityAPIControllerExportable {
     }
   }
 
+  public function findAllOrphans($count = FALSE, $offset = 0, $limit = 0) {
+    $results = db_select('tripal_bundle', 'tb')
+      ->fields('tb')
+      ->orderBy('label')
+      ->execute();
+    if ($count) {
+      $response = 0;
+    }
+    else {
+      $response = "";
+    }
+    while (($bundle_record = $results->fetchObject())) {
+      $bid = $bundle_record->id;
+      $bundle_response = $this->findOrphans($bid, $count, $offset, $limit);
+      if (is_array($bundle_response)) {
+        foreach ($bundle_response as $key => $value) {
+          $response += $value;
+        }
+      }
+    }
+    return $response;
+  }
+
 
   /**
    * Deletes orphaned entities.
@@ -187,6 +210,9 @@ class TripalBundleController extends EntityAPIControllerExportable {
     $num_deleted = 0;
     $transaction = db_transaction();
     try {
+      if ($id === 0) {
+        return $this->deleteAllOrphans($job);
+      }
 
       // Get the list of entities that need cleanup.
       $eids = $this->findOrphans($id, FALSE, 0, 0);
@@ -226,5 +252,49 @@ class TripalBundleController extends EntityAPIControllerExportable {
 
     return $num_deleted;
 
+  }
+
+  public function deleteAllOrphans(TripalJob $job = NULL) {
+    $num_deleted = 0;
+    $transaction = db_transaction();
+
+    try {
+      $results = db_select('tripal_bundle', 'tb')
+        ->fields('tb')
+        ->orderBy('label')
+        ->execute();
+      $eids = $this->findAllOrphans(FALSE, 0, 0);
+      $num_entities = count($eids);
+      if ($job) {
+        $job->logMessage('Found !num orphaned entities.', ['!num' => $num_entities]);
+        $job->setInterval(1);
+        $job->setTotalItems($num_entities);
+      }
+
+      if ($num_entities == 0) {
+        return 0;
+      }
+
+      while (($bundle_record = $results->fetchObject())) {
+        $num_bundle_del = $this->deleteOrphans($bundle_record->id);
+        if ($job) {
+          $job->addItemsHandled($num_bundle_del);
+          $job->logMessage("Removed !num orphaned !label entities.", ['!num' => $num_deleted, '!label' => $bundle_record->label]);
+        }
+        $num_deleted += $num_bundle_del;
+      }
+    }
+    catch (Exception $e) {
+      $transaction->rollback();
+      $err_msg = "Failed to remove orphans: " . $e->getMessage();
+      if ($job) {
+        $job->logMessage($err_msg, [], 'error');
+      }
+      else {
+        drupal_set_message($err_msg, 'error');
+      }
+      return 0;
+    }
+    return $num_deleted;
   }
 }
