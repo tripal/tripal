@@ -162,6 +162,26 @@ class TripalBundleController extends EntityAPIControllerExportable {
     }
   }
 
+  /**
+   * Finds any orphaned entities associated with all bundles.
+   *
+   * An orphaned entity can occur if the module that created the entity
+   * unknowingly lost its underlying record in its data store.  Such a case
+   * could happen if someone directly removed the record from the data store
+   * outside of the module's control. This function allows each module
+   * to report if any orphans are missing for a given bundle type.
+   *
+   * @param bool $count
+   *   Set to TRUE to return only a count of orphans.
+   * @param integer $offset
+   *   For paging of entities set this to the offset within the total count.
+   * @param integer $limit
+   *   For paging of entities set this to the total number to return.
+   *
+   * @return array|integer
+   *  If $count == FALSE then an array of all entity IDs that are orphaned. If
+   *  $count == TRUE then a single integer count value is returned.
+   */
   public function findAllOrphans($count = FALSE, $offset = 0, $limit = 0) {
     $results = db_select('tripal_bundle', 'tb')
       ->fields('tb')
@@ -257,6 +277,22 @@ class TripalBundleController extends EntityAPIControllerExportable {
 
   }
 
+  /**
+   * Deletes orphaned entities from all bundles.
+   *
+   * An orphaned entity can occur if the module that created the entity
+   * unknowingly lost its underlying record in its data store.  Such a case
+   * could happen if someone directly removed the record from the data store
+   * outside of the module's control. This function allows each module
+   * to report if any orphans are missing for a given bundle type.
+   *
+   * @param TripalJob $job
+   *   An optional Tripal Job object. This is provided when this function is
+   *   called using the Tripal Jobs system.
+   *
+   * @return integer
+   *   The number of entitites that were cleaned up.
+   */
   public function deleteAllOrphans(TripalJob $job = NULL) {
     $num_deleted = 0;
     $transaction = db_transaction();
