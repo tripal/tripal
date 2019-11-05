@@ -514,7 +514,11 @@ class TripalContentService_v0_1 extends TripalWebService {
             $temp[$key] = $v;
           }
           $term['name'] = $key;
-
+        }
+        elseif (is_numeric($k)) {
+          // Key is non-vocabulary term:
+          // Index number (0, 1, 2...) of a hydra:member array.
+          $temp[$k] = $this->sanitizeFieldKeys($resource, $v, $bundle, $service_path);
         }
         else {
           // TODO: this is an error, if we get here then we have
