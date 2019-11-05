@@ -2495,6 +2495,9 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
   $prop_table = $table_name . 'prop';
   if (chado_table_exists($prop_table)) {
 
+    $schema = chado_get_schema($prop_table);
+    $pkey = $schema['primary key'][0];
+
     $props = tripal_chado_bundle_get_properties($table_name, $prop_table, $type_table, $type_column, $cvterm_id, $type_value);
     foreach ($props as $term) {
 
