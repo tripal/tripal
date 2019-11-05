@@ -57,6 +57,12 @@ function tripal_chado_publish_form($form, &$form_state) {
         $field = field_info_field($field_name);
         $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
 
+        // Exclude data fields from the publish form.
+        // We do this because the lack of default causes errors.
+        if ($field['type'] == 'datetime'){
+          continue;
+        }
+
         // Get the Chado mapping information.
         $base_table = array_key_exists('base_table', $instance['settings']) ? $instance['settings']['base_table'] : '';
         $chado_table = array_key_exists('chado_table', $instance['settings']) ? $instance['settings']['chado_table'] : '';
@@ -193,4 +199,3 @@ function tripal_chado_publish_form_submit($form, &$form_state) {
 function tripal_chado_publish_form_ajax_callback($form, $form_state) {
   return $form;
 }
-
