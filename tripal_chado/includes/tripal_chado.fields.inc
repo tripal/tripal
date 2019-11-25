@@ -1042,9 +1042,8 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
         $base_info['widget']['settings']['increment'] = 1;
         $base_info['widget']['settings']['tz_handling'] = 'none';
         $base_info['widget']['settings']['collapsible'] = TRUE;
+        $base_info['widget']['settings']['year_range'] = '-10:+10';
 
-        // TODO: Add settings so that the minutes increment by 1.
-        // And turn off the timezone, as the Chado field doesn't support it.
         break;
     }
 
