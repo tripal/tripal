@@ -32,6 +32,7 @@ To aid in the development of Tripal 4,
 1. Install [Drupal 8.x](https://www.drupal.org/docs/develop/using-composer/using-composer-to-install-drupal-and-manage-dependencies).
 2. Clone this repository in your `web/modules` directory.
 3. Enable Tripal in your site using the Administration Toolbar > Extend
+4. Use drush to rebuild the cache (`drush cache-rebuild`) so Tripal menu items appear correctly.
 
 
 # Development Testing
