@@ -2,6 +2,10 @@
 
 ![alt tag](https://raw.githubusercontent.com/tripal/tripal/7.x-3.x/tripal/theme/images/tripal_logo.png)
 
+# Tripal 4 Drupal 8
+
+## UNDER ACTIVE DEVELOPMENT
+
 Tripal is a toolkit for constructing online biological (genetics, genomics, breeding, etc.) community databases, and Tripal is a member of the [GMOD](http://www.gmod.org) family of tools. **Tripal v3** provides integration with the [GMOD Chado database](http://gmod.org/wiki/Chado_-_Getting_Started) by default.
 
 Genetics, genomics, breeding, and other biological data are increasingly complicated and time-consuming to publish online for others to search, browse and make discoveries with. Tripal provides a framework to reduce the complexity of creating such a site, and provides access to a community of similar groups that share community-standards. The users of Tripal are encouraged to interact to address questions and learn the best practices for sharing, storing, and visualizing complex biological data.
@@ -11,11 +15,6 @@ The primary goals of Tripal are to:
 2.	Use community-derived standards and ontologies to facilitate continuity between sites and foster collaboration and sharing;
 3.	Provide an out-of-the-box setup for a genomics site to put new genome assemblies and annotations online; and
 4.	Provide Application Programming Interfaces (APIs) to support customized displays, look-and-feel, and new functionality.
-
-
-# Features
-TBD
-
 
 # Required Dependencies
 * Drupal:
@@ -29,12 +28,9 @@ TBD
 
 # Installation
 
-
-# Upgrade from Tripal v3.x to v4.x
-
-
-
-# Customization
+1. Install [Drupal 8.x](https://www.drupal.org/docs/develop/using-composer/using-composer-to-install-drupal-and-manage-dependencies).
+2. Clone this repository in your `web/modules` directory.
+3. Enable Tripal in your site using the Administration Toolbar > Extend
 
 
 # Development Testing
