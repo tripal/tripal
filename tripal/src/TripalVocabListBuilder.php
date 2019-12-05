@@ -20,8 +20,7 @@ class TripalVocabListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   public function buildHeader() {
-    $header['id'] = $this->t('Controlled Vocabulary ID');
-    $header['name'] = $this->t('Name');
+    $header['name'] = $this->t('Controlled Vocabulary Name');
     return $header + parent::buildHeader();
   }
 
@@ -30,15 +29,7 @@ class TripalVocabListBuilder extends EntityListBuilder {
    */
   public function buildRow(EntityInterface $entity) {
     /* @var $entity \Drupal\tripal\Entity\TripalVocab */
-    $row['id'] = $entity->id();
-    $row['name'] = $this->l(
-      $entity->label(),
-      new Url(
-        'entity.tripal_vocab.edit_form', array(
-          'tripal_vocab' => $entity->id(),
-        )
-      )
-    );
+    $row['name'] = $entity->getLabel();
     return $row + parent::buildRow($entity);
   }
 

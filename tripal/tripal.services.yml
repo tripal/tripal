@@ -1,0 +1,6 @@
+services:
+  tripal.access_checker:
+    class: Drupal\tripal\Access\CustomAccessCheck
+    arguments: ['@current_user']
+    tags:
+      - { name: access_check, applies_to: _tripal_access_check } 

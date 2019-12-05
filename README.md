@@ -2,6 +2,10 @@
 
 ![alt tag](https://raw.githubusercontent.com/tripal/tripal/7.x-3.x/tripal/theme/images/tripal_logo.png)
 
+# Tripal 4 Drupal 8
+
+## UNDER ACTIVE DEVELOPMENT
+
 Tripal is a toolkit for constructing online biological (genetics, genomics, breeding, etc.) community databases, and Tripal is a member of the [GMOD](http://www.gmod.org) family of tools. **Tripal v3** provides integration with the [GMOD Chado database](http://gmod.org/wiki/Chado_-_Getting_Started) by default.
 
 Genetics, genomics, breeding, and other biological data are increasingly complicated and time-consuming to publish online for others to search, browse and make discoveries with. Tripal provides a framework to reduce the complexity of creating such a site, and provides access to a community of similar groups that share community-standards. The users of Tripal are encouraged to interact to address questions and learn the best practices for sharing, storing, and visualizing complex biological data.
@@ -12,16 +16,11 @@ The primary goals of Tripal are to:
 3.	Provide an out-of-the-box setup for a genomics site to put new genome assemblies and annotations online; and
 4.	Provide Application Programming Interfaces (APIs) to support customized displays, look-and-feel, and new functionality.
 
-
-# Features
-TBD
-
-
 # Required Dependencies
-* Drupal: 
+* Drupal:
   * Drupal 8.x
   * Drupal core modules: Search, Path, View, Entity, and PHP modules.
-  * Drupal contributed modules: 
+  * Drupal contributed modules:
 * PostgreSQL
 * PHP 7.1+
 * UNIX/Linux
@@ -29,23 +28,15 @@ TBD
 
 # Installation
 
-
-# Upgrade from Tripal v3.x to v4.x
-
-
-
-# Customization
+1. Install [Drupal 8.x](https://www.drupal.org/docs/develop/using-composer/using-composer-to-install-drupal-and-manage-dependencies).
+2. Clone this repository in your `web/modules` directory.
+3. Enable Tripal in your site using the Administration Toolbar > Extend
 
 
 # Development Testing
 
-To run PHP unit tests on your local system, run `composer install` to install developer-specific requirements.  Next, create a `.env` file in your `/Tests/` directory that defines the `DRUPAL_ROOT` variable, for example 
+See the [Drupal "Running PHPUnit tests" guide](https://www.drupal.org/node/2116263) for instructions on running tests on your local environment. In order to ensure our Tripal functional testing is fully bootstrapped, tests should be run from Drupal core. Specifically, in your Drupal root run the following command from your drupal root to run all Tripal tests.
 
 ```
-DRUPAL_ROOT=/var/www/html
+./vendor/bin/phpunit modules/t4d8/tripal/tests/
 ```
-Then run PHPUnit from your root Tripal directory.
-
-PHPUnit tests will also be run in the Travis CI build.
-
-Read our [testing guidelines](tests/README.md)

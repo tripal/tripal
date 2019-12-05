@@ -1,0 +1,446 @@
+tripal.admin:
+  path: 'admin/tripal'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'Tripal'
+  requirements:
+    _permission: 'administer tripal'
+
+# Tripal registration form
+# tripal_registration_form
+tripal.admin_register:
+  path: 'admin/tripal/register'
+  defaults:
+    _controller: '\Drupal\tripal\Form\Register'
+    _title: 'Registration'
+  requirements:
+    _permission: 'administer tripal'
+
+##
+# Tripal Extensions
+##
+
+tripal.storage:
+  path: 'admin/tripal/storage'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalStorage'
+    _title: 'Data Storage'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal.extension:
+  path: 'admin/tripal/extension'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalExtensions'
+    _title: 'Extensions'
+  requirements:
+    _permission: 'administer tripal'
+
+##
+# Jobs Management
+##
+
+tripal.jobs:
+  path: 'admin/tripal/tripal_jobs'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalJobs'
+    _title: 'Jobs'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal.jobs_help:
+  path: 'admin/tripal/tripal_jobs/help'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalJobsHelp'
+    _title: 'Help'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal.jobs_enable:
+  path: 'admin/tripal/tripal_jobs/views/jobs/enable'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalJobsEnable'
+    _title: 'Enable Jobs Administrative View'
+  requirements:
+    _permission: 'administer tripal'
+
+# Jobs Management Ajax callbacks
+tripal.jobs_cancel:
+  path: 'admin/tripal/tripal_jobs/cancel/{id}'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalJobsCancel'
+    _title: 'Cancel a pending job'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal.jobs_status:
+  path: 'admin/tripal/tripal_jobs/status/{id}'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalJobsStatus'
+    _title: 'Status of a job'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal.jobs_rerun:
+  path: 'admin/tripal/tripal_jobs/rerun/{id}'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalJobsRerun'
+    _title: 'Re-run an existing job'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal.jobs_view:
+  path: 'admin/tripal/tripal_jobs/view/{id}'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalJobsView'
+    _title: 'View job details.'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal.jobs_execute:
+  path: 'admin/tripal/tripal_jobs/execute/{id}'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalJobsExecute'
+    _title: 'Execute an existing job'
+  requirements:
+    _permission: 'administer tripal'
+
+##
+# Tripal Content
+##
+
+# Bio Data
+tripal.content_bio_data_add:
+  path: 'admin/content/bio_data/add'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalAddPage'
+    _title: 'Add Tripal Content'
+    _title_context: 'Create new Tripal Content.'
+  requirements:
+    _permission: 'administer tripal'
+
+# tripal_unpublish_orphans_form
+tripal.content_bio_data_unpublish:
+  path: 'admin/content/bio_data/unpublish'
+  defaults:
+    _controller: '\Drupal\tripal\Form\TripalContentUnpublishOrphans'
+    _title: 'Add Tripal Content'
+    _description: 'Unpublish content that has no associated records in the data store.'
+  requirements:
+    _permission: 'administer tripal'
+
+# Bio Data Ajax Callbacks
+tripal.content_bio_data_field_attach:
+  path: 'bio_data/ajax/field_attach/{id}'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalAttachField'
+    _title: 'Attach a Field to a Content Type'
+  requirements:
+    _permission: 'administer tripal'
+
+##
+# Dashboard
+##
+
+# Dashboard Action Item callbacks
+tripal.dashboard_disable_notification:
+  path: 'admin/disable/notification/{id}'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalDisableNotification'
+    _title: 'Disable Notifications'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal.dashboard_admin_notification_field:
+  path: 'admin/import/field/{field_name_note}/{bundle_id}/{module}/{field_or_instance}'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalFieldNotification'
+    _title: 'Fields available for import notification'
+  requirements:
+    _permission: 'administer tripal'
+
+##
+# Controlled Vocabularies.
+##
+
+# TripalVocab:
+
+# entity.tripal_vocab.canonical:
+#   path: /admin/structure/tripal_vocab/{tripal_vocab}
+# entity.tripal_vocab.add-form:
+#   path: '/admin/structure/tripal_vocab/add'
+# entity.tripal_vocab.edit-form:
+#   path: '/admin/structure/tripal_vocab/{tripal_vocab}/edit'
+# entity.tripal_vocab.delete-form:
+#   path: '/admin/structure/tripal_vocab/{tripal_vocab}/delete'
+entity.tripal_vocab.collection:
+  path: '/admin/structure/tripal_vocab'
+  defaults:
+    _entity_list: 'tripal_vocab'
+    _title: 'Tripal Controlled Vocabularies'
+  requirements:
+    _permission: 'view controlled vocabulary entities'
+
+# TripalTerm:
+
+# entity.tripal_term.canonical:
+#   path: /admin/structure/tripal_term/{tripal_term}
+# entity.tripal_term.add-form:
+#   path: '/admin/structure/tripal_term/add'
+# entity.tripal_term.edit-form:
+#   path: '/admin/structure/tripal_term/{tripal_term}/edit'
+# entity.tripal_term.delete-form:
+#   path: '/admin/structure/tripal_term/{tripal_term}/delete'
+entity.tripal_term.collection:
+  path: '/admin/structure/tripal_term'
+  defaults:
+    _entity_list: 'tripal_term'
+    _title: 'Tripal Controlled Vocabulary Terms'
+  requirements:
+    _permission: 'view controlled vocabulary term entities'
+
+# Term Lookup
+tripal.cv_lookup:
+  path: 'cv/lookup'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalCvLookup'
+    _title: 'Controlled Vocabularies'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal.cv_lookup_term:
+  path: 'cv/lookup/{vocabulary}/{accession}'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalCVTerm'
+    _title: 'Vocabulary Term Lookup'
+  requirements:
+    _permission: 'access content'
+
+tripal.cv_lookup_term_children:
+  path: 'cv/lookup/{vocabulary}/{accession}/children'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalCVTermChildren'
+    _title: 'Vocabulary Term Lookup Children'
+  requirements:
+    _permission: 'access content'
+
+# Adds a +Check for new fields link on the 'Tripal Content Types' page.
+tripal.content_bio_data_field_check:
+  path: 'admin/structure/bio_data/manage/{bundle_name}/fields/check'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalCheckForFields'
+    _title: 'Check for new fields'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal.upload:
+  path: 'tripal/upload'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalFileUpload'
+    _title: 'Upload Files'
+  requirements:
+    _permission: 'upload files'
+
+# Data Loaders
+tripal.data_loaders:
+  path: 'admin/tripal/loaders'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalDataLoaders'
+    _title: 'Data Loaders'
+  requirements:
+    _permission: 'administer tripal'
+
+route_callbacks:
+  - '\Drupal\tripal\Routing\TripalRoutes::dataLoaders'
+
+# Data Collections
+
+# tripal_user_collections_delete_form
+tripal.data_collections_delete:
+  path: 'user/{uid}/data-collections/{collection_id}/delete'
+  defaults:
+    _controller: '\Drupal\tripal\Form\TripalDataCollectionsDelete'
+    _title: 'Delete a Collections'
+  requirements:
+    _tripal_access_check: 'TRUE'
+
+tripal.data_collections_view:
+  path: 'user/{uid}/data-collections/{collection_id}/delete'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalDataCollectionsView'
+    _title: 'View a Collections'
+  requirements:
+    _tripal_access_check: 'TRUE'
+
+# tripal_user_collections_generate_file_form
+tripal.data_collections_generate:
+  path: 'user/{uid}/data-collections/generate/{collection_id}'
+  defaults:
+    _controller: '\Drupal\tripal\Form\TripalDataCollectionsGenerate'
+    _title: 'Generate a file for download of a Collections'
+  requirements:
+    _tripal_access_check: 'TRUE'
+
+# User File Management
+tripal.data_collections:
+  path: 'admin/tripal/data-collections'
+  defaults:
+    _controller: '\Drupal\tripal\Form\TripalDataCollections'
+    _title: 'Data Collections'
+  requirements:
+    _permission: 'administer tripal'
+
+# tripal_admin_manage_files_form
+tripal.files:
+  path: 'admin/tripal/files'
+  defaults:
+    _controller: '\Drupal\tripal\Form\TripalFiles'
+    _title: 'File Usage'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal.files_usage:
+  path: 'admin/tripal/files/usage'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalFilesUsage'
+    _title: 'File Usage'
+  requirements:
+    _permission: 'administer tripal'
+
+# tripal_admin_manage_quota_form
+tripal.files_quota:
+  path: 'admin/tripal/files/quota'
+  defaults:
+    _controller: '\Drupal\tripal\Form\TripalFileQuota'
+    _title: 'User Quotas'
+  requirements:
+    _permission: 'administer tripal'
+
+# tripal_admin_remove_quota_form
+tripal.files_quota_remove:
+  path: 'admin/tripal/files/quota/remove/{uid}'
+  defaults:
+    _controller: '\Drupal\tripal\Form\TripalFileQuotaRemove'
+    _title: 'Remove custom user quota'
+  requirements:
+    _permission: 'administer tripal'
+
+# tripal_admin_add_custom_form
+tripal.files_quota_add:
+  path: 'admin/tripal/files/quota/add'
+  defaults:
+    _controller: '\Drupal\tripal\Form\TripalFileQuotaCustomAdd'
+    _title: 'Add Custom Quota'
+  requirements:
+    _permission: 'administer tripal'
+
+# tripal_users_autocomplete
+tripal.files_quota_user_autocomplete:
+  path: 'admin/tripal/files/quota/user/autocomplete'
+  defaults:
+    _controller: '\Drupal\tripal\Form\TripalFileQuotaUserAutocomplete'
+    _title: 'Autocomplete for existing users'
+  requirements:
+    _permission: 'administer tripal'
+
+# tripal_admin_edit_quota_form
+tripal.files_quota_user_edit:
+  path: 'admin/tripal/files/quota/edit/{uid}'
+  defaults:
+    _controller: '\Drupal\tripal\Form\TripalFileQuotaCustomEdit'
+    _title: 'Edit Custom Quota'
+  requirements:
+    _permission: 'administer tripal'
+
+# User Files
+tripal.user_files:
+  path: 'user/{uid}/files'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalUserFiles'
+    _title: 'Files'
+  requirements:
+    _tripal_access_check: 'TRUE'
+
+tripal.user_files_details:
+  path: 'user/{uid}/files/{file_id}'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalUserFileDetails'
+    _title: 'File Details'
+  requirements:
+    _tripal_access_check: 'TRUE'
+
+tripal.user_files_renew:
+  path: 'user/{uid}/files/{file_id}/renew'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalUserFileRenew'
+    _title: 'File Renew'
+  requirements:
+    _tripal_access_check: 'TRUE'
+
+tripal.user_files_download:
+  path: 'user/{uid}/files/{file_id}/download'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalUserFileDownload'
+    _title: 'File Download'
+  requirements:
+    _tripal_access_check: 'TRUE'
+
+#tripal_delete_file_form
+tripal.user_files_delete:
+  path: 'user/{uid}/files/{file_id}/delete'
+  defaults:
+    _controller: '\Drupal\tripal\Form\TripalUserFileDelete'
+    _title: 'Delete File'
+  requirements:
+    _tripal_access_check: 'TRUE'
+
+# Admin Paths
+tripal.admin_bio_data_edit:
+  path: 'bio_data/{id}/edit'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalAdminBioDataEdit'
+    _title: 'Edit Tripal Content'
+  options:
+    _admin_route: 'TRUE'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal.admin_bio_data_delete:
+  path: 'bio_data/{id}/delete'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalAdminBioDataDelete'
+    _title: 'Delete Tripal Content'
+  options:
+    _admin_route: 'TRUE'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal.admin_bio_data_add:
+  path: 'bio_data/add'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalAdminBioDataAdd'
+    _title: 'Add Tripal Content'
+  options:
+    _admin_route: 'TRUE'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal.admin_bio_data_add_specific:
+  path: 'bio_data/{id}/edit'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalAdminBioDataAddSpecific'
+    _title: 'Add Specific Tripal Content'
+  options:
+    _admin_route: 'TRUE'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal.admin_cv_lookup:
+  path: 'cv/lookup/{cv}/{term}'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalAdminCVLookup'
+    _title: 'CV Lookup'
+  options:
+    _admin_route: 'TRUE'
+  requirements:
+    _permission: 'administer tripal'

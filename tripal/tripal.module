@@ -6,6 +6,11 @@
  */
 
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\user\Entity\User;
+use Drupal\Core\Entity\EntityBase;
+use Symfony\Component\HttpFoundation\JsonResponse;
+// use Drupal\shortcut\Entity\ShortcutSet;
+use Drupal\Core\Render\Element;
 
 /**
  * Implements hook_help().
@@ -57,3 +62,410 @@ function tripal_theme_suggestions_tripal_entity(array $variables) {
   return $suggestions;
 }
 
+/**
+ * Replacement for tripal_init.
+ * Implements hook_preprocess_html()
+ * @param $$variables
+ *   An associative array containing: 
+ *    page: A render element representing the page.
+ */
+function tripal_preprocess_html(&$variables) {
+  global $base_url;
+  //@todo Need to look into service injection in the module file.
+  $config = \Drupal::config('tripal_admin.settings');
+  // add some variables for all javasript to use for building URLs
+  $clean_urls = $config->get('clean_url', 0);
+  $tripal_path = drupal_get_path('module', 'tripal');
+  //Add a JS library
+  $variables['#attached']['library'][] = 'tripal/tripal-js';
+  $variables['#attached']['drupalSettings']['tripal']['tripalJS']['baseurl'] = $base_url;
+  $variables['#attached']['drupalSettings']['tripal']['tripalJS']['isClean'] = $clean_urls;
+  $variables['#attached']['drupalSettings']['tripal']['tripalJS']['tripal_path'] = $tripal_path;
+  // make sure the date time settings are the way Tripal will insert them
+  // otherwise PostgreSQL version that may have a different datestyle setting
+  // will fail when inserting or updating a date column in a table.
+  db_query("SET DATESTYLE TO :style", array(':style' => 'MDY'));
+  
+  //Ask users to do the registration form
+  if (\Drupal::currentUser()->hasPermission('administer tripal')) {
+    if (empty($config->get('tripal_site_registration') ?: FALSE) || !($config->get('disable_tripal_reporting') ?: FALSE)) {
+      \Drupal::messenger()->addWarning(t('Please register your Tripal Site. 
+      Registering provides important information that will help secure funding
+      for continued improvements to Tripal. <a href="admin/tripal/register">Click to register 
+      now or opt out</a>.'));
+    }
+  } 
+}
+
+/**
+ * Checks if the current user has permissions to perform an action on a file.
+ *
+ * @param $op
+ *   The operation to perform.  These include 'view', 'download', 'renew' and
+ *   'delete'
+ * @param $uid
+ *   The user ID of the user's account that owns the file.
+ * @param $fid
+ *   The file ID.
+ */
+function tripal_access_user_files($op, $uid, $fid = NULL) {
+  // global $user is deprecated in D8 use the currentUser service.
+  // this only returns an AccountProxyInterface object and not a full 
+  // UserInterface object.  To get access to the full UserInterface object, load
+  // the user using the uid of the currentUser
+  // https://api.drupal.org/api/drupal/core!lib!Drupal.php/function/Drupal%3A%3AcurrentUser/8.2.x
+  $user = User::load(\Drupal::currentUser()->id());
+
+  // The site admin can do anything.
+  if (in_array('administrator', $user->roles)) {
+    return TRUE;
+  }
+
+  // Only the user that owns the files can see them.
+  if ($uid != $user->uid) {
+    return FALSE;
+  }
+
+  // If no file ID is provided and the user wants to view then
+  // this is the case where the user wants to see all the files.
+  if (!$fid and $op == 'view') {
+    return TRUE;
+  }
+
+  // file_load will be deprecated in D9 $file = file_load($fid);
+  // https://api.drupal.org/api/drupal/core%21modules%21file%21file.module/function/file_load/8.2.x
+  $file = EntityBase::load($fid);
+  switch ($op) {
+    case 'view':
+    case 'download':
+    case 'renew':
+    case 'delete':
+      if ($user->uid == $file->uid) {
+        return TRUE;
+      }
+      break;
+  }
+  return FALSE;
+}
+
+/**
+ * An access function for data collections.
+ *
+ * @return boolean
+ */
+function tripal_accesss_user_collections($uid) {
+  $config = \Drupal::config('tripal_admin.settings');
+  if (!tripal_access_user_data($uid)) {
+    return FALSE;
+  }
+  $collections_enabled = $config->get('tripal_data_collections_enabled', 1);
+  if (!$collections_enabled) {
+    return FALSE;
+  }
+  return TRUE;
+}
+
+
+/**
+ * Autocomplete function for listing existing users on the site.
+ *
+ * @return json array of users that match the query in the textfield
+ **/
+function tripal_users_autocomplete($string) {
+  $matches = [];
+  $result = db_select('users', 'u')
+    ->fields('u', ['name'])
+    ->condition('name', '%' . db_like($string) . '%', 'LIKE')
+    ->execute();
+
+  foreach ($result as $row) {
+    $matches[$row->name] = check_plain($row->name);
+  }
+  //https://www.drupal.org/node/1665684 drupal_json_output is deprecated
+  //drupal_json_output($matches);
+  return new JsonResponse($matches);
+}
+
+/**
+ * Access callback for accessing a user's Tripal-added private data.
+ *
+ * The User account being accessed must match the ID of the current user. This
+ * function can be used to check access for any type of user-specfic data
+ * added by any Tripal module.
+ *
+ * @param  $uid
+ *   The UID of the user's account to access.
+ * @return boolean
+ */
+function tripal_access_user_data($uid) {
+  if ($uid == \Drupal::currentUser()->id()) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * @todo need to confirm what this is in reference to? I don't know this hook.
+ * Implements hook_coder_ignore().
+ * Defines the path to the file (tripal.coder_ignores.txt) where ignore rules for coder are stored
+ */
+function tripal_coder_ignore() {
+  return array(
+    'path' => drupal_get_path('module', 'tripal'),
+    'line prefix' => drupal_get_path('module', 'tripal'),
+  );
+}
+
+/**
+ * Implements hook_menu_local_tasks_alter().
+ * https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Core%21Menu%21menu.api.php/function/hook_menu_local_tasks_alter/8.8.x
+ * Used to add action links to pages.
+ */
+function tripal_menu_local_tasks_alter(&$data, $router_item, $root_path) {
+  // Add an "Add Tripal Content" action link to the Admin >> Content >>
+  // Biological Content page.
+  if ($root_path == 'admin/content/bio_data') {
+    $item = menu_get_item('bio_data/add');
+    if ($item['access']) {
+      $data['actions']['output'][] = array(
+        '#theme' => 'menu_local_task',
+        '#link' => $item,
+      );
+    }
+  }
+}
+
+/**
+ * Implements hook_shortcut_default_set().
+ * Modify the shortcut menu to include Biological content links.
+ *
+ * @param object $account
+ *   The user account whose default shortcut set will be returned. If not provided, the
+ *   function will return the currently logged-in user's default shortcut set.
+ *
+ * @return
+ *   An object representing the default shortcut set.
+ */
+function tripal_shortcut_default_set($account) {
+  //@todo This will set another dependency as this is a contrib module.
+  // $sets = ShortcutSet::getShortcuts();
+  // $found = FALSE;
+  // foreach ($sets as $set) {
+  //   if ($set->title == 'TripalDefault') {
+  //     $found = TRUE;
+  //   }
+  // }
+  // if (!$found) {
+  //   $t = get_t();
+  //   // Create an initial default shortcut set.
+  //   $shortcut_set = new stdClass();
+  //   $shortcut_set->title = $t('TripalDefault');
+  //   $shortcut_set->links = array(
+  //     array(
+  //       'link_path' => 'node/add',
+  //       'link_title' => $t('Add content'),
+  //       'weight' => -35,
+  //     ),
+  //     array(
+  //       'link_path' => 'bio_data/add',
+  //       'link_title' => 'Add Tripal Content',
+  //       'weight' => -30,
+  //     ),
+  //     array(
+  //       'link_path' => 'admin/content',
+  //       'link_title' => $t('Find content'),
+  //       'weight' => -25,
+  //     ),
+  //     array(
+  //       'link_path' => 'admin/content/bio_data',
+  //       'link_title' => 'Find Tripal Content',
+  //       'weight' => -20,
+  //     ),
+  //   );
+  //   shortcut_set_save($shortcut_set);
+  // }
+
+  // $sets = shortcut_sets();
+  // foreach ($sets as $set) {
+  //   if ($set->title == 'TripalDefault') {
+  //     return $set->set_name;
+  //   }
+  // }
+}
+
+/**
+ * Menu argument loader; Load a tripal data type by string.
+ *
+ * This function is not meant to be used as an API function. It is only meant
+ * for use in the menu to resolve the %tripal_bundle wildcard.
+ *
+ * @param $type
+ *   The machine-readable name of a tripal data type to load.
+ * @return
+ *   A tripal data type array or FALSE if $type does not exist.
+ */
+
+function TripalBundle_load($bundle_type, $reset = FALSE) {
+  // Get the type of entity by the ID.
+  $bundle = db_select('tripal_bundle', 'tdt')
+    ->fields('tdt')
+    ->condition('name', $bundle_type)
+    ->execute()
+    ->fetchObject();
+  if ($bundle) {
+    $entity = \Drupal::entityTypeManager()->getStorage('TripalBundle')->load($bundle->id);
+    return reset($entity);
+  }
+  return FALSE;
+}
+
+/**
+ * Allows the menu system to use a wildcard to fetch the entity.
+ *
+ * Make sure that the wildcard you choose in the tripal_entity entity
+ * definition fits the function name here.
+ *
+ * This function is not meant to be used as an API function. It is only meant
+ * for use in the menu to resolve the %tripal_entity wildcard.
+ *
+ * @param $id
+ *   Integer specifying the tripal_entity id.
+ * @param $reset
+ *   A boolean indicating that the internal cache should be reset.
+ * @return
+ *   A fully-loaded $tripal_entity object or FALSE if it cannot be loaded.
+ *
+ * @see tripal_entity_load_multiple()
+ */
+function TripalEntity_load($id, $reset = FALSE) {
+  // $entity = entity_load('TripalEntity', array($id), array(), $reset);
+  $entity = tripal_load_entity('TripalEntity', array($id), $reset);
+  return reset($entity);
+}
+
+/**
+ * Imports all of the Tripal API into scope.
+ *
+ * Typically this function call is not necessary as all of the API is
+ * automaticaly included by the tripal module.  However this function can
+ * be useful in the .install files during a site upgrade when the tripal
+ * module is not enabld.
+ *
+ * Example usage:
+ * @code
+ *   module_load_include('module', 'tripal', 'tripal');
+ *   tripal_import_api();
+ * @endcode
+ *
+ */
+function tripal_import_api() {
+  module_load_include('inc', 'tripal', 'api/tripal.d3js.api');
+  module_load_include('inc', 'tripal', 'api/tripal.fields.api');
+  module_load_include('inc', 'tripal', 'api/tripal.importer.api');
+  module_load_include('inc', 'tripal', 'api/tripal.terms.api');
+  module_load_include('inc', 'tripal', 'api/tripal.entities.api');
+  module_load_include('inc', 'tripal', 'api/tripal.files.api');
+  module_load_include('inc', 'tripal', 'api/tripal.jobs.api');
+  module_load_include('inc', 'tripal', 'api/tripal.notice.api');
+  module_load_include('inc', 'tripal', 'api/tripal.variables.api');
+  module_load_include('inc', 'tripal', 'api/tripal.upload.api');
+  module_load_include('inc', 'tripal', 'api/tripal.collections.api');
+  module_load_include('inc', 'tripal', 'api/tripal.quotas.api');
+  module_load_include('inc', 'tripal', 'api/tripal.DEPRECATED.api');
+}
+
+/**
+ *
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * The field_ui_field_edit_form is used for customizing the settings of
+ * a field attached to an entity.
+ *
+ * This alter function disables some of the form widgets when the storage
+ * backend indicates they are not appropriate.
+ */
+function tripal_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {
+  // If this is the field_ui_field_edit_form (i.e. the form that appears
+  // when editing a field that is attached to an entity). Then we want
+  // to add term settings for any field attached to a TripalEntity
+  // content type.
+  if ($form['#instance']['entity_type'] == 'TripalEntity') {
+
+    // Add the form elements for setting the vocabulary terms.
+    tripal_field_instance_settings_form_alter($form, $form_state);
+
+    // Make sure we preserve the auto_attach settings.
+    $auto_attach = TRUE;
+    if (array_key_exists('auto_attach', $form['#instance']['settings'])) {
+      $auto_attach = $form['#instance']['settings']['auto_attach'];
+    }
+    $form['instance']['settings']['auto_attach'] = array(
+      '#type' => 'value',
+      '#value' => $auto_attach,
+    );
+  }
+}
+
+
+/**
+ * Implements hook_form_alter().
+ */
+function tripal_form_alter(&$form, $form_state, $form_id) {
+
+  // Remove fields that have no form. It's just a bit too confusing to have
+  // widgets appear in the form but without any form elements inside them.
+  if ($form_id == 'tripal_entity_form') {
+    $children = Element::children($form);
+    foreach ($children as $child) {
+      // Count the number of form elements.
+      if (array_key_exists('und', $form[$child])) {
+        $total_widgets = 0;
+        // Some fields with cardinality of one that aren't TripalFields
+        // may not have an array, so we need to catch those.
+        if (array_key_exists('#type', $form[$child]['und'])) {
+          $total_widgets++;
+        }
+        foreach ($form[$child]['und'] as $delta => $element) {
+          if (is_numeric($delta)) {
+            $total_widgets += count(Element::children($element));
+            // Ignore the weight column
+            if (array_key_exists('_weight', $element)) {
+              $total_widgets--;
+            }
+            // Ignore a hidden value column
+            if (array_key_exists('value', $element) and $element['value']['#type'] == 'value') {
+              $total_widgets--;
+            }
+            // Some form elements don't have a 'value' and they don't have any
+            // widgets (i.e image field and description field. We don't
+            // want to loose those, so add one to the widget count.
+            if (!array_key_exists('value', $element)) {
+              $total_widgets++;
+            }
+          }
+        }
+        // If we have no widgets then here's not a form for this field so just
+        // remove it.
+        if ($total_widgets == 0) {
+          unset($form[$child]);
+        }
+      }
+    }
+  }
+}
+
+function tripal_check_new_fields($bundle_name) {
+  $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+  $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
+
+  $added = tripal_create_bundle_fields($bundle, $term);
+  if (count($added) == 0) {
+    \Drupal::messenger()->addStatus(t('No new fields were added'));
+  }
+  foreach ($added as $field_name) {
+    \Drupal::messenger()->addStatus(t('Added field: ' . $field_name));
+  }
+
+  $response = new RedirectResponse("admin/structure/bio_data/manage/$bundle_name/fields");
+  $response->send();
+}
