@@ -1,20 +1,22 @@
-[![7.x-3.x Build Status](https://travis-ci.org/tripal/tripal.svg?branch=7.x-3.x)](https://travis-ci.org/tripal/tripal)
-
 ![alt tag](https://raw.githubusercontent.com/tripal/tripal/7.x-3.x/tripal/theme/images/tripal_logo.png)
 
 # Tripal 4 Drupal 8
 
 ## UNDER ACTIVE DEVELOPMENT
 
-Tripal is a toolkit for constructing online biological (genetics, genomics, breeding, etc.) community databases, and Tripal is a member of the [GMOD](http://www.gmod.org) family of tools. **Tripal v3** provides integration with the [GMOD Chado database](http://gmod.org/wiki/Chado_-_Getting_Started) by default.
+This project acts as the home of Tripal 4 development. Once Tripal 4 is stable, it will be merged back into the [Core Tripal Repository](https://github.com/tripal/tripal). 
 
-Genetics, genomics, breeding, and other biological data are increasingly complicated and time-consuming to publish online for others to search, browse and make discoveries with. Tripal provides a framework to reduce the complexity of creating such a site, and provides access to a community of similar groups that share community-standards. The users of Tripal are encouraged to interact to address questions and learn the best practices for sharing, storing, and visualizing complex biological data.
+## Current working on [Group 1](https://github.com/tripal/t4d8/issues/1)
 
-The primary goals of Tripal are to:
-1.	Provide a framework for creating sites that allow display, search, and visualization of biological data, including genetics, genomics, and breeding data;
-2.	Use community-derived standards and ontologies to facilitate continuity between sites and foster collaboration and sharing;
-3.	Provide an out-of-the-box setup for a genomics site to put new genome assemblies and annotations online; and
-4.	Provide Application Programming Interfaces (APIs) to support customized displays, look-and-feel, and new functionality.
+Tripal 4 development has been planned in the issue queue of this repository with the entire code-based of Tripal 3 being catagorized into groups which should be completed in order. For a summary of the tasks assigned to a given group, go to the issue labelled with the `roadmap` and group tag for a specific group. For example, for Group 1, the task list is in #1 which has both the `Roadmap` and `Group 1` tags.
+
+To aid in the development of Tripal 4, 
+1. Choose a task from the current group
+2. Create an issue stating your intention
+3. Tag this issue with the `Task` and `Group 1` tags.
+4. Keep track of your progress and design in this issue
+5. Once the task is complete, create a PR referencing this issue.
+6. Once the PR is merged, check the task checkbox in the original `Roadmap` issue.
 
 # Required Dependencies
 * Drupal:
@@ -24,7 +26,6 @@ The primary goals of Tripal are to:
 * PostgreSQL
 * PHP 7.1+
 * UNIX/Linux
-
 
 # Installation
 
