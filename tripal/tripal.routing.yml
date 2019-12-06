@@ -1,3 +1,7 @@
+##
+# Base Tripal Admin Menu.
+##
+
 tripal.admin:
   path: 'admin/tripal'
   defaults:
@@ -6,8 +10,7 @@ tripal.admin:
   requirements:
     _permission: 'administer tripal'
 
-# Tripal registration form
-# tripal_registration_form
+# Tripal registration form.
 tripal.admin_register:
   path: 'admin/tripal/register'
   defaults:
@@ -17,7 +20,7 @@ tripal.admin_register:
     _permission: 'administer tripal'
 
 ##
-# Tripal Extensions
+# Tripal Extensions.
 ##
 
 tripal.storage:
@@ -106,6 +109,27 @@ tripal.jobs_execute:
     _permission: 'administer tripal'
 
 ##
+# Dashboard.
+##
+
+# Dashboard Action Item callbacks
+tripal.dashboard_disable_notification:
+  path: 'admin/disable/notification/{id}'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalDisableNotification'
+    _title: 'Disable Notifications'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal.dashboard_admin_notification_field:
+  path: 'admin/import/field/{field_name_note}/{bundle_id}/{module}/{field_or_instance}'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalFieldNotification'
+    _title: 'Fields available for import notification'
+  requirements:
+    _permission: 'administer tripal'
+
+##
 # Tripal Content
 ##
 
@@ -116,6 +140,46 @@ tripal.content_bio_data_add:
     _controller: '\Drupal\tripal\Controller\TripalController::tripalAddPage'
     _title: 'Add Tripal Content'
     _title_context: 'Create new Tripal Content.'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal.admin_bio_data_edit:
+  path: 'bio_data/{id}/edit'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalAdminBioDataEdit'
+    _title: 'Edit Tripal Content'
+  options:
+    _admin_route: 'TRUE'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal.admin_bio_data_delete:
+  path: 'bio_data/{id}/delete'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalAdminBioDataDelete'
+    _title: 'Delete Tripal Content'
+  options:
+    _admin_route: 'TRUE'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal.admin_bio_data_add:
+  path: 'bio_data/add'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalAdminBioDataAdd'
+    _title: 'Add Tripal Content'
+  options:
+    _admin_route: 'TRUE'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal.admin_bio_data_add_specific:
+  path: 'bio_data/{id}/edit'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalAdminBioDataAddSpecific'
+    _title: 'Add Specific Tripal Content'
+  options:
+    _admin_route: 'TRUE'
   requirements:
     _permission: 'administer tripal'
 
@@ -138,24 +202,12 @@ tripal.content_bio_data_field_attach:
   requirements:
     _permission: 'administer tripal'
 
-##
-# Dashboard
-##
-
-# Dashboard Action Item callbacks
-tripal.dashboard_disable_notification:
-  path: 'admin/disable/notification/{id}'
+# Adds a +Check for new fields link on the 'Tripal Content Types' page.
+tripal.content_bio_data_field_check:
+  path: 'admin/structure/bio_data/manage/{bundle_name}/fields/check'
   defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalDisableNotification'
-    _title: 'Disable Notifications'
-  requirements:
-    _permission: 'administer tripal'
-
-tripal.dashboard_admin_notification_field:
-  path: 'admin/import/field/{field_name_note}/{bundle_id}/{module}/{field_or_instance}'
-  defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalFieldNotification'
-    _title: 'Fields available for import notification'
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalCheckForFields'
+    _title: 'Check for new fields'
   requirements:
     _permission: 'administer tripal'
 
@@ -216,6 +268,17 @@ tripal.cv_lookup_term:
   requirements:
     _permission: 'access content'
 
+# Potential duplicate.
+tripal.admin_cv_lookup:
+  path: 'cv/lookup/{cv}/{term}'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalAdminCVLookup'
+    _title: 'CV Lookup'
+  options:
+    _admin_route: 'TRUE'
+  requirements:
+    _permission: 'administer tripal'
+
 tripal.cv_lookup_term_children:
   path: 'cv/lookup/{vocabulary}/{accession}/children'
   defaults:
@@ -224,24 +287,11 @@ tripal.cv_lookup_term_children:
   requirements:
     _permission: 'access content'
 
-# Adds a +Check for new fields link on the 'Tripal Content Types' page.
-tripal.content_bio_data_field_check:
-  path: 'admin/structure/bio_data/manage/{bundle_name}/fields/check'
-  defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalCheckForFields'
-    _title: 'Check for new fields'
-  requirements:
-    _permission: 'administer tripal'
 
-tripal.upload:
-  path: 'tripal/upload'
-  defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalFileUpload'
-    _title: 'Upload Files'
-  requirements:
-    _permission: 'upload files'
+##
+# Data Loaders.
+##
 
-# Data Loaders
 tripal.data_loaders:
   path: 'admin/tripal/loaders'
   defaults:
@@ -253,7 +303,18 @@ tripal.data_loaders:
 route_callbacks:
   - '\Drupal\tripal\Routing\TripalRoutes::dataLoaders'
 
-# Data Collections
+# AJAX callback to upload files.
+tripal.upload:
+  path: 'tripal/upload'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalFileUpload'
+    _title: 'Upload Files'
+  requirements:
+    _permission: 'upload files'
+
+##
+# Data Collections.
+##
 
 # tripal_user_collections_delete_form
 tripal.data_collections_delete:
@@ -281,7 +342,10 @@ tripal.data_collections_generate:
   requirements:
     _tripal_access_check: 'TRUE'
 
-# User File Management
+##
+# User File Management.
+##
+
 tripal.data_collections:
   path: 'admin/tripal/data-collections'
   defaults:
@@ -393,54 +457,3 @@ tripal.user_files_delete:
     _title: 'Delete File'
   requirements:
     _tripal_access_check: 'TRUE'
-
-# Admin Paths
-tripal.admin_bio_data_edit:
-  path: 'bio_data/{id}/edit'
-  defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalAdminBioDataEdit'
-    _title: 'Edit Tripal Content'
-  options:
-    _admin_route: 'TRUE'
-  requirements:
-    _permission: 'administer tripal'
-
-tripal.admin_bio_data_delete:
-  path: 'bio_data/{id}/delete'
-  defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalAdminBioDataDelete'
-    _title: 'Delete Tripal Content'
-  options:
-    _admin_route: 'TRUE'
-  requirements:
-    _permission: 'administer tripal'
-
-tripal.admin_bio_data_add:
-  path: 'bio_data/add'
-  defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalAdminBioDataAdd'
-    _title: 'Add Tripal Content'
-  options:
-    _admin_route: 'TRUE'
-  requirements:
-    _permission: 'administer tripal'
-
-tripal.admin_bio_data_add_specific:
-  path: 'bio_data/{id}/edit'
-  defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalAdminBioDataAddSpecific'
-    _title: 'Add Specific Tripal Content'
-  options:
-    _admin_route: 'TRUE'
-  requirements:
-    _permission: 'administer tripal'
-
-tripal.admin_cv_lookup:
-  path: 'cv/lookup/{cv}/{term}'
-  defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalAdminCVLookup'
-    _title: 'CV Lookup'
-  options:
-    _admin_route: 'TRUE'
-  requirements:
-    _permission: 'administer tripal'
