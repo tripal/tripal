@@ -47,6 +47,7 @@ class TripalEntityTypeForm extends EntityForm {
    */
   public function save(array $form, FormStateInterface $form_state) {
     $tripal_entity_type = $this->entity;
+    // @debug dpm($tripal_entity_type, 'type');
     $status = $tripal_entity_type->save();
 
     switch ($status) {

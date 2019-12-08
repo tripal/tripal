@@ -14,7 +14,7 @@ class TripalEntityTypeListBuilder extends ConfigEntityListBuilder {
    * {@inheritdoc}
    */
   public function buildHeader() {
-    $header['label'] = $this->t('Tripal Content type');
+    $header['label'] = $this->t('Label');
     $header['id'] = $this->t('Machine name');
     return $header + parent::buildHeader();
   }

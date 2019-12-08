@@ -9,7 +9,14 @@ use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
  *
  * @ConfigEntityType(
  *   id = "tripal_entity_type",
- *   label = @Translation("Tripal Content type"),
+ *   label = @Translation("Tripal Content Type"),
+ *   label_collection = @Translation("Tripal Content Types"),
+ *   label_singular = @Translation("Tripal content type"),
+ *   label_plural = @Translation("Tripal content types"),
+ *   label_count = @PluralTranslation(
+ *     singular = "@count Tripal content type",
+ *     plural = "@count Tripal content types",
+ *   ),
  *   handlers = {
  *     "list_builder" = "Drupal\tripal\TripalEntityTypeListBuilder",
  *     "form" = {
@@ -21,19 +28,23 @@ use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
  *       "html" = "Drupal\tripal\TripalEntityTypeHtmlRouteProvider",
  *     },
  *   },
- *   config_prefix = "tripal_entity_type",
- *   admin_permission = "administer site configuration",
+ *   config_prefix = "bio_data",
+ *   admin_permission = "administer tripal content types",
  *   bundle_of = "tripal_entity",
  *   entity_keys = {
- *     "id" = "id",
+ *     "id" = "name",
  *     "label" = "label",
  *   },
  *   links = {
- *     "canonical" = "/admin/structure/tripal_entity_type/{tripal_entity_type}",
- *     "add-form" = "/admin/structure/tripal_entity_type/add",
- *     "edit-form" = "/admin/structure/tripal_entity_type/{tripal_entity_type}/edit",
- *     "delete-form" = "/admin/structure/tripal_entity_type/{tripal_entity_type}/delete",
- *     "collection" = "/admin/structure/tripal_entity_type"
+ *     "canonical" = "/admin/structure/bio_data/{tripal_entity_type}",
+ *     "add-form" = "/admin/structure/bio_data/add",
+ *     "edit-form" = "/admin/structure/bio_data/manage/{tripal_entity_type}",
+ *     "delete-form" = "/admin/structure/bio_data/manage/{tripal_entity_type}/delete",
+ *     "collection" = "/admin/structure/bio_data"
+ *   },
+ *   config_export = {
+ *     "name",
+ *     "label",
  *   }
  * )
  */
@@ -44,7 +55,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    *
    * @var string
    */
-  protected $id;
+  protected $name;
 
   /**
    * The Tripal Content type label.
@@ -52,5 +63,12 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    * @var string
    */
   protected $label;
+
+  /**
+   * {@inheritdoc}
+   */
+  public function id() {
+    return $this->name;
+  }
 
 }
