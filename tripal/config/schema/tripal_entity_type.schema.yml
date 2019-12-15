@@ -8,3 +8,9 @@ tripal.bio_data.*:
     label:
       type: label
       label: 'Label'
+    term_id:
+      type: integer
+      label: 'Term ID'
+    help_text:
+      type: text
+      label: 'Help Text'

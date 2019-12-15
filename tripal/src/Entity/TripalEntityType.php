@@ -45,6 +45,8 @@ use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
  *   config_export = {
  *     "name",
  *     "label",
+ *     "term_id",
+ *     "help_text"
  *   }
  * )
  */
@@ -65,10 +67,117 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
   protected $label;
 
   /**
+   * The Tripal Term which describes this content type.
+   *
+   * @var integer
+   */
+  protected $term_id;
+
+  /**
+   * Help text to describe to the administrator what this content type is.
+   *
+   * @var string
+   */
+  protected $help_text;
+
+  /**
    * {@inheritdoc}
    */
   public function id() {
     return $this->name;
+  }
+
+  /**
+   * Gets the machine name of the Tripal Entity Type (e.g. bio_data_1).
+   *
+   * @return string
+   *   Machine name of the Tripal Entity Type.
+   */
+  public function getName() {
+    return $this->name;
+  }
+
+  /**
+   * Sets the machine name of the Tripal Entity Type.
+   *
+   * @param string $name
+   *   The machine name of the Tripal Entity Type.
+   *
+   * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
+   *   The called Tripal Entity Type entity.
+   */
+  public function setName($name) {
+    $this->name = $name;
+  }
+
+  /**
+   * Gets the Tripal Entity Type label (e.g. gene).
+   *
+   * @return string
+   *   Label of the Tripal Entity Type.
+   */
+  public function getLabel() {
+    return $label;
+  }
+
+  /**
+   * Sets the Tripal Entity Type label (e.g. gene).
+   *
+   * @param string $label
+   *   The Tripal Entity Type label.
+   *
+   * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
+   *   The called Tripal Entity Type entity.
+   */
+  public function setLabel($label) {
+    $this->label = $label;
+  }
+
+  /**
+   * Gets the Tripal Entity Type CVTerm.
+   *
+   * @return object
+   *   The Tripal Controlled Vocabulary Term describing this Tripal Entity Type.
+   */
+  public function getTerm() {
+    $term = \Drupal\tripal\Entity\TripalTerm::load($this->term_id);
+    return $term;
+  }
+
+  /**
+   * Sets the Tripal Entity Type CV Term.
+   *
+   * @param object $term
+   *   The Tripal Controlled Vocabulary Term
+   *
+   * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
+   *   The called Tripal Entity Type entity.
+   */
+  public function setTerm($term_id) {
+    $this->term_id = $term_id;
+  }
+
+  /**
+   * Gets help text for admin for this Tripal Entity Type.
+   *
+   * @return string
+   *   Help text for the Tripal Entity Type.
+   */
+  public function getHelpText() {
+    return $this->help_text;
+  }
+
+  /**
+   * Sets the Tripal Entity Type help text.
+   *
+   * @param string $help_text
+   *   The Tripal Entity Type help text.
+   *
+   * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
+   *   The called Tripal Entity Type entity.
+   */
+  public function setHelpText($help_text) {
+    $this->help_text = $help_text;
   }
 
 }
