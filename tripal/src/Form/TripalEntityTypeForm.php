@@ -58,6 +58,7 @@ class TripalEntityTypeForm extends EntityForm {
     $form['name'] = [
       '#type' => 'machine_name',
       '#default_value' => $default_id,
+      '#required' => TRUE,
       '#machine_name' => [
         'exists' => '\Drupal\tripal\Entity\TripalEntityType::load',
       ],
@@ -74,6 +75,7 @@ class TripalEntityTypeForm extends EntityForm {
         '#title' => 'Tripal Controlled Vocabulary (CV) Term',
         '#description' => $description,
         '#target_type' => 'tripal_term',
+        '#required' => TRUE,
       ];
     }
     else {
@@ -112,9 +114,41 @@ class TripalEntityTypeForm extends EntityForm {
       '#title' => 'Help Text',
       '#description' => 'This is shown to administrators to further explain this Tripal content type. For example, this can be used to provide an example or site-specific instructions.',
       '#default_value' => $tripal_entity_type->getHelpText(),
+      '#required' => TRUE,
     ];
 
     return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    parent::validateForm($form, $form_state);
+
+    $values = $form_state->getValues();
+    $tripal_entity_type = $this->entity;
+
+    // Ensure the label is not already taken.
+    $entities = \Drupal::entityTypeManager()
+      ->getStorage('tripal_entity_type')
+      ->loadByProperties(['label' => $values['label']]);
+    unset($entities[ $values['name'] ]);
+    if (!empty($entities)) {
+      $form_state->setErrorByName('label',
+        $this->t('A Tripal Content type with the label :label already exists. Please choose a unique label.', [':label' => $values['label']]));
+    }
+
+    // Ensure the cvterm has not already been used for another Content Type.
+    if ($tripal_entity_type->isNew()) {
+      $entities = \Drupal::entityTypeManager()
+        ->getStorage('tripal_entity_type')
+        ->loadByProperties(['term_id' => $values['term_id']]);
+      if (!empty($entities)) {
+        $form_state->setErrorByName('term_id',
+        $this->t('A Tripal Content type with choosen Tripal Controlled Vocabulay Term already exists. Please choose a unique term.'));
+      }
+    }
   }
 
   /**
