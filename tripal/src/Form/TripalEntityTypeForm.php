@@ -32,8 +32,25 @@ class TripalEntityTypeForm extends EntityForm {
 
     // Determine the machine name for the content type.
     if ($tripal_entity_type->isNew()) {
-      // @todo set this dynamically.
-      $default_id = 'bio_data_' . 1;
+
+      $db = \Drupal::database();
+      $highest_name = $db->select('config', 'c')
+        ->fields('c', ['name'])
+        ->condition('c.name', 'tripal.bio_data.', '~')
+        ->orderBy('c.name', 'DESC')
+        ->execute()
+        ->fetchField();
+      if ($highest_name) {
+        $max_index = str_replace(
+          'tripal.bio_data.bio_data_',
+          '',
+          $highest_name
+        );
+        $default_id = 'bio_data_' . ($max_index + 1);
+      }
+      else {
+        $default_id = 'bio_data_1';
+      }
     }
     else {
       $default_id = $tripal_entity_type->id();
