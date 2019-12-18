@@ -2,6 +2,9 @@ tripal.bio_data.*:
   type: config_entity
   label: 'Tripal Content Type'
   mapping:
+    id:
+      type: integer
+      label: 'ID'
     name:
       type: string
       label: 'Name'

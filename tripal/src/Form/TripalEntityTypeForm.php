@@ -46,23 +46,27 @@ class TripalEntityTypeForm extends EntityForm {
           '',
           $highest_name
         );
-        $default_id = 'bio_data_' . ($max_index + 1);
+        $default_id = $max_index + 1;
       }
       else {
-        $default_id = 'bio_data_1';
+        $default_id = 1;
       }
     }
     else {
-      $default_id = $tripal_entity_type->id();
+      $default_id = $tripal_entity_type->getID();
     }
     $form['name'] = [
       '#type' => 'machine_name',
-      '#default_value' => $default_id,
+      '#default_value' => 'bio_data_' . $default_id,
       '#required' => TRUE,
       '#machine_name' => [
         'exists' => '\Drupal\tripal\Entity\TripalEntityType::load',
       ],
       '#disabled' => !$tripal_entity_type->isNew(),
+    ];
+    $form['id'] = [
+      '#type' => 'hidden',
+      '#value' => $default_id,
     ];
 
     // We need to choose a term if this is a new content type.
@@ -159,6 +163,7 @@ class TripalEntityTypeForm extends EntityForm {
     $tripal_entity_type = $this->entity;
 
     // Set the basic values of a Tripal Entity Type.
+    $tripal_entity_type->setID($values['id']);
     $tripal_entity_type->setName($values['name']);
     $tripal_entity_type->setLabel($values['label']);
     $tripal_entity_type->setHelpText($values['help']);

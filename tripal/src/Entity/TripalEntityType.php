@@ -43,6 +43,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
  *     "collection" = "/admin/structure/bio_data"
  *   },
  *   config_export = {
+ *     "id",
  *     "name",
  *     "label",
  *     "term_id",
@@ -54,6 +55,13 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
 
   /**
    * The Tripal Content type ID.
+   *
+   * @var integer
+   */
+  protected $id;
+
+  /**
+   * The Tripal Content machine name.
    *
    * @var string
    */
@@ -85,6 +93,29 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    */
   public function id() {
     return $this->name;
+  }
+
+  /**
+   * Gets the index of the machine name (e.g. 1).
+   *
+   * @return string
+   *   Index of the machine name of the Tripal Entity Type.
+   */
+  public function getID() {
+    return $this->id;
+  }
+
+  /**
+   * Sets the index of the machine name.
+   *
+   * @param integer $id
+   *   The index of the machine name of the Tripal Entity Type.
+   *
+   * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
+   *   The called Tripal Entity Type entity.
+   */
+  public function setID($id) {
+    $this->id = $id;
   }
 
   /**

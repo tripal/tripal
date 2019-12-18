@@ -10,6 +10,25 @@ use Drupal\Core\Config\Entity\ConfigEntityInterface;
 interface TripalEntityTypeInterface extends ConfigEntityInterface {
 
   /**
+   * Gets the index of the machine name (e.g. 1).
+   *
+   * @return string
+   *   Index of the machine name of the Tripal Entity Type.
+   */
+  public function getID();
+
+  /**
+   * Sets the index of the machine name.
+   *
+   * @param integer $id
+   *   The index of the machine name of the Tripal Entity Type.
+   *
+   * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
+   *   The called Tripal Entity Type entity.
+   */
+  public function setID($id);
+
+  /**
    * Gets the machine name of the Tripal Entity Type (e.g. bio_data_1).
    *
    * @return string
