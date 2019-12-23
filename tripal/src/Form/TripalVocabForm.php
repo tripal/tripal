@@ -54,7 +54,7 @@ class TripalVocabForm extends ContentEntityForm {
         ]));
     }
 
-    $form_state->setRedirect('entity.tripal_vocab.canonical', ['tripal_vocab' => $entity->id()]);
+    $form_state->setRedirect('entity.tripal_vocab.collection');
   }
 
 }
