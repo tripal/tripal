@@ -1,9 +1,11 @@
 <?php
 
-namespace Drupal\tripal;
+namespace Drupal\tripal\ListBuilders;
 
 use Drupal\Core\Config\Entity\ConfigEntityListBuilder;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Routing\LinkGeneratorTrait;
+use Drupal\Core\Url;
 
 /**
  * Provides a listing of Tripal Content type entities.
@@ -24,7 +26,10 @@ class TripalEntityTypeListBuilder extends ConfigEntityListBuilder {
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity) {
-    $row['label'] = $entity->label();
+    $row['label'] = \Drupal::l(
+      $entity->label(),
+      $entity->urlInfo('edit-form', ['tripal_entity_type' => $entity->id()])
+    );
     $row['id'] = $entity->id();
 
     //dpm($entity, 'entity');

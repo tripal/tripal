@@ -20,7 +20,7 @@ use Drupal\user\UserInterface;
  *   bundle_label = @Translation("Tripal Content type"),
  *   handlers = {
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
- *     "list_builder" = "Drupal\tripal\TripalEntityListBuilder",
+ *     "list_builder" = "Drupal\tripal\ListBuilders\TripalEntityListBuilder",
  *     "views_data" = "Drupal\tripal\Entity\TripalEntityViewsData",
  *
  *     "form" = {

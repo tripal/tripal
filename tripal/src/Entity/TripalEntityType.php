@@ -18,7 +18,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
  *     plural = "@count Tripal content types",
  *   ),
  *   handlers = {
- *     "list_builder" = "Drupal\tripal\TripalEntityTypeListBuilder",
+ *     "list_builder" = "Drupal\tripal\ListBuilders\TripalEntityTypeListBuilder",
  *     "form" = {
  *       "add" = "Drupal\tripal\Form\TripalEntityTypeForm",
  *       "edit" = "Drupal\tripal\Form\TripalEntityTypeForm",

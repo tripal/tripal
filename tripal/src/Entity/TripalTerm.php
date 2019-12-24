@@ -19,7 +19,7 @@ use Drupal\user\UserInterface;
  *   label = @Translation("Tripal Controlled Vocabulary Term"),
  *   handlers = {
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
- *     "list_builder" = "Drupal\tripal\TripalTermListBuilder",
+ *     "list_builder" = "Drupal\tripal\ListBuilders\TripalTermListBuilder",
  *     "views_data" = "Drupal\tripal\Entity\TripalTermViewsData",
  *     "translation" = "Drupal\tripal\TripalTermTranslationHandler",
  *

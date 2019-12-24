@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\tripal;
+namespace Drupal\tripal\ListBuilders;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;

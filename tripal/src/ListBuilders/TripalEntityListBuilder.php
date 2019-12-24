@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\tripal;
+namespace Drupal\tripal\ListBuilders;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
@@ -38,13 +38,9 @@ class TripalEntityListBuilder extends EntityListBuilder {
     $bundle = \Drupal\tripal\Entity\TripalEntityType::load($type_name);
     $term = $bundle->getTerm();
 
-    $row['title'] = $this->l(
+    $row['title'] = \Drupal::l(
       $entity->getTitle(),
-      new Url(
-        'entity.tripal_entity.canonical', array(
-          'tripal_entity' => $entity->id(),
-        )
-      )
+      $entity->urlInfo('canonical', ['tripal_entity' => $entity->id()])
     );
 
     $row['type'] = $bundle->getLabel();
