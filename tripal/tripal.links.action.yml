@@ -3,7 +3,7 @@
 ##
 
 # Add Content link on the Content Listing page.
-entity.tripal_entity.add_form:
+entity.tripal_entity.add_page:
   route_name: 'entity.tripal_entity.add_page'
   title: 'Add Tripal Content'
   appears_on:

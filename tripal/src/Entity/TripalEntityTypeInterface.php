@@ -103,4 +103,23 @@ interface TripalEntityTypeInterface extends ConfigEntityInterface {
    *   The called Tripal Entity Type entity.
    */
   public function setHelpText($help_text);
+
+  /**
+   * Gets the category for this Tripal Entity Type.
+   *
+   * @return string
+   *   Category for the Tripal Entity Type.
+   */
+  public function getCategory();
+
+  /**
+   * Sets the Tripal Entity Type category.
+   *
+   * @param string $category
+   *   The Tripal Entity Type category.
+   *
+   * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
+   *   The called Tripal Entity Type entity.
+   */
+  public function setCategory($category);
 }

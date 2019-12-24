@@ -133,51 +133,23 @@ tripal.dashboard_admin_notification_field:
 # Tripal Content
 ##
 
-# Bio Data
-tripal.content_bio_data_add:
-  path: 'admin/content/bio_data/add'
-  defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalAddPage'
-    _title: 'Add Tripal Content'
-    _title_context: 'Create new Tripal Content.'
-  requirements:
-    _permission: 'administer tripal'
+# Tripal Content Types:
 
-tripal.admin_bio_data_edit:
-  path: 'bio_data/{id}/edit'
-  defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalAdminBioDataEdit'
-    _title: 'Edit Tripal Content'
-  options:
-    _admin_route: 'TRUE'
-  requirements:
-    _permission: 'administer tripal'
+# entity.tripal_entity_type.canonical:
+#   path: '/admin/structure/bio_data/{tripal_entity_type}'
+# entity.tripal_entity_type.add-form:
+#   path: '/admin/structure/bio_data/add'
+# entity.tripal_entity_type.edit-form:
+#   path: '/admin/structure/bio_data/manage/{tripal_entity_type}'
+# entity.tripal_entity_type.delete-form:
+#   path: '/admin/structure/bio_data/manage/{tripal_entity_type}/delete'
 
-tripal.admin_bio_data_delete:
-  path: 'bio_data/{id}/delete'
+entity.tripal_entity.add_page:
+  path: bio_data/add
   defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalAdminBioDataDelete'
-    _title: 'Delete Tripal Content'
-  options:
-    _admin_route: 'TRUE'
-  requirements:
-    _permission: 'administer tripal'
-
-tripal.admin_bio_data_add:
-  path: 'bio_data/add'
-  defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalAdminBioDataAdd'
-    _title: 'Add Tripal Content'
-  options:
-    _admin_route: 'TRUE'
-  requirements:
-    _permission: 'administer tripal'
-
-tripal.admin_bio_data_add_specific:
-  path: 'bio_data/{id}/edit'
-  defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalAdminBioDataAddSpecific'
-    _title: 'Add Specific Tripal Content'
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalContentTypeAddPage'
+    _title: 'Add Biological Data'
+    _description: 'Add biological data provided by Tripal.'
   options:
     _admin_route: 'TRUE'
   requirements:

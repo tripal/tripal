@@ -3,6 +3,7 @@
 namespace Drupal\tripal\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Url;
 
 /**
  * Controller routines for the Tripal Module
@@ -19,10 +20,10 @@ class TripalController extends ControllerBase {
     // TripalEntityUIController::tripal_add_page
   }
   public function tripalStorage() {
-    // 
+    //
   }
   public function tripalExtensions() {
-    // 
+    //
   }
   public function tripalJobs() {
     //tripal_jobs_admin_view in tripal.jobs.inc
@@ -35,31 +36,31 @@ class TripalController extends ControllerBase {
   }
   public function tripalJobsStatus($id) {
     //tripal_jobs_status_view in tripal.jobs.inc
-  }  
+  }
   public function tripalJobsRerun($id) {
     //tripal_rerun_job in tripal.jobs.inc
   }
   public function tripalJobsView($id) {
     //tripal_jobs_view in tripal.jobs.inc
-  } 
+  }
   public function tripalJobsEnable() {
     // tripal_enable_view in tripal.jobs.inc
   }
   public function tripalJobsExecute($id) {
     //tripal_jobs_view in tripal.jobs.inc
-  }  
+  }
   public function tripalAttachField($id) {
     //tripal_jobs_view in tripal.jobs.inc
-  }  
+  }
   public function tripalDisableNotification($id) {
     //tripal_disable_admin_notification in tripal.admin_blocks.inc
-  } 
+  }
   public function tripalFieldNotification($field_name_note, $bundle_id, $module, $field_or_instance) {
     //tripal_admin_notification_import_field in tripal.admin_blocks.inc
-  } 
+  }
   public function tripalCvLookup() {
     //tripal_vocabulary_lookup_vocab_page in tripal.term_lookup.inc
-  }        
+  }
   public function tripalCVTerm($vocabulary, $accession) {
     //tripal_vocabulary_lookup_term_page in tripal.term_lookup.inc
   }
@@ -79,16 +80,16 @@ class TripalController extends ControllerBase {
       drupal_set_message('Added field: ' . $field_name);
     }
     drupal_goto("admin/structure/bio_data/manage/$bundle_name/fields");
-  }   
+  }
   public function tripalFileUpload() {
     //tripal_file_upload in tripal.upload.inc
-  } 
+  }
   public function tripalDataLoaders() {
     //tripal_file_upload in tripal.upload.inc
-  } 
+  }
 
   //@TODO A controller to process the TripalRouters for dataLoaders.
-  
+
   public function tripalDataCollections() {
     //tripal_user_collections_view_page in tripal.collections.inc
   }
@@ -109,15 +110,34 @@ class TripalController extends ControllerBase {
   }
   public function tripalUserFileDownload($uid, $file_id) {
     //tripal_download_file in tripal.user.inc
-  }   
-  public function tripalAdminBioDataEdit($id) {
-  } 
-  public function tripalAdminBioDataDelete($id) {
-  } 
-  public function tripalAdminBioDataAdd() {
-  } 
+  }
+  public function tripalContentTypeAddPage() {
+
+    // Get a list of all types.
+    $type_entities = \Drupal::entityTypeManager()
+      ->getStorage('tripal_entity_type')
+      ->loadByProperties([]);
+
+    // Now compile them into variables to be used in twig.
+    $types = [];
+    foreach ($type_entities as $entity) {
+      $category = $entity->getCategory();
+      $types[$category]['title'] = $category;
+      $types[$category]['members'][] = [
+        'title' => $entity->getLabel(),
+        'help' => $entity->getHelpText(),
+        'url' => Url::fromRoute('entity.tripal_entity.add_form', ['tripal_entity_type' => $entity->getName()]),
+      ];
+    }
+
+    // Finally, let tripal-entity-content-add-list.html.twig add the markup.
+    return [
+      '#theme' => 'tripal_entity_content_add_list',
+      '#types' => $types,
+    ];
+  }
   public function tripalAdminBioDataAddSpecific($id) {
-  }      
+  }
   public function tripalAdminCVLookup($cv, $term) {
-  }        
+  }
 }

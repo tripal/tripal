@@ -53,13 +53,6 @@ tripal.admin_register:
   parent: tripal.admin
   weight: 1
 
-tripal.content_bio_data_add:
-  route_name: tripal.content_bio_data_add
-  title: 'Add Tripal Content'
-  description: 'Create new Tripal Content.'
-  parent: tripal.admin
-  weight: 10
-
 tripal.content_bio_data_unpublish:
   route_name: tripal.content_bio_data_unpublish
   description: 'Unpublish content that has no associated records in the data store.'

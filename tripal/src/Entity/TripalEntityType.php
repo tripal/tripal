@@ -47,7 +47,8 @@ use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
  *     "name",
  *     "label",
  *     "term_id",
- *     "help_text"
+ *     "help_text",
+ *     "category",
  *   }
  * )
  */
@@ -87,6 +88,13 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    * @var string
    */
   protected $help_text;
+
+  /**
+   * The category the given content type belongs to.
+   *
+   * @var string
+   */
+  protected $category;
 
   /**
    * {@inheritdoc}
@@ -148,7 +156,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    *   Label of the Tripal Entity Type.
    */
   public function getLabel() {
-    return $label;
+    return $this->label;
   }
 
   /**
@@ -209,6 +217,34 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    */
   public function setHelpText($help_text) {
     $this->help_text = $help_text;
+  }
+
+  /**
+   * Gets the category for this Tripal Entity Type.
+   *
+   * @return string
+   *   Category for the Tripal Entity Type.
+   */
+  public function getCategory() {
+    if ($this->category) {
+      return $this->category;
+    }
+    else {
+      return 'General';
+    }
+  }
+
+  /**
+   * Sets the Tripal Entity Type category.
+   *
+   * @param string $category
+   *   The Tripal Entity Type category.
+   *
+   * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
+   *   The called Tripal Entity Type entity.
+   */
+  public function setCategory($category) {
+    $this->category = $category;
   }
 
 }

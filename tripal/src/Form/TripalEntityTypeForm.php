@@ -112,6 +112,15 @@ class TripalEntityTypeForm extends EntityForm {
       ];
     }
 
+    $description = "A grouping category for this Tripal Content type. It should be the same as other Tripal Content types and can be used to group similar biological data types to make them easier to find.";
+    $form['category'] = [
+      '#type' => 'textfield',
+      '#title' => 'Category',
+      '#description' => $description,
+      '#default_value' => $tripal_entity_type->getCategory(),
+      '#required' => TRUE,
+    ];
+
     // Allow the administrator to set help text for users.
     $form['help'] = [
       '#type' => 'textarea',
