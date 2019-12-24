@@ -6,7 +6,11 @@
 
 This project acts as the home of Tripal 4 development. Once Tripal 4 is stable, it will be merged back into the [Core Tripal Repository](https://github.com/tripal/tripal). 
 
-## Current working on [Group 1](https://github.com/tripal/t4d8/issues/1)
+## Currently working on [Group 1](https://github.com/tripal/t4d8/issues/1)
+
+We currently have working entities for the following: Tripal vocabularies, Tripal Terms, Tripal Content Types, Tripal Content! However, nothing is connected to Chado at this point.
+
+### How to Contribute
 
 Tripal 4 development has been planned in the issue queue of this repository with the entire code-based of Tripal 3 being catagorized into groups which should be completed in order. For a summary of the tasks assigned to a given group, go to the issue labelled with the `roadmap` and group tag for a specific group. For example, for Group 1, the task list is in #1 which has both the `Roadmap` and `Group 1` tags.
 
