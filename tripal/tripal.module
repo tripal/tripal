@@ -87,14 +87,14 @@ function tripal_preprocess_html(&$variables) {
   db_query("SET DATESTYLE TO :style", array(':style' => 'MDY'));
 
   //Ask users to do the registration form
-  if (\Drupal::currentUser()->hasPermission('administer tripal')) {
-    if (empty($config->get('tripal_site_registration') ?: FALSE) || !($config->get('disable_tripal_reporting') ?: FALSE)) {
-      \Drupal::messenger()->addWarning(t('Please register your Tripal Site.
-      Registering provides important information that will help secure funding
-      for continued improvements to Tripal. <a href="admin/tripal/register">Click to register
-      now or opt out</a>.'));
-    }
-  }
+  //if (\Drupal::currentUser()->hasPermission('administer tripal')) {
+    //if (empty($config->get('tripal_site_registration') ?: FALSE) || !($config->get('disable_tripal_reporting') ?: FALSE)) {
+      //\Drupal::messenger()->addWarning(t('Please register your Tripal Site.
+      //Registering provides important information that will help secure funding
+      //for continued improvements to Tripal. <a href="admin/tripal/register">Click to register
+      //now or opt out</a>.'));
+    //}
+  //}
 }
 
 /**

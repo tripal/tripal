@@ -15,10 +15,6 @@ class TripalController extends ControllerBase {
    */
   public function __construct() {
   }
-
-  public function tripalAddPage() {
-    // TripalEntityUIController::tripal_add_page
-  }
   public function tripalStorage() {
     //
   }
@@ -67,20 +63,7 @@ class TripalController extends ControllerBase {
   public function tripalCVTermChildren($vocabulary, $accession) {
     //tripal_vocabulary_lookup_term_children_ajax in tripal.term_lookup.inc
   }
-  public function tripalCheckForFields($bundle_name) {
-    //@TODO This was in the module file probably needs to go elsewhere
-    $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
-    $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
 
-    $added = tripal_create_bundle_fields($bundle, $term);
-    if (count($added) == 0) {
-      drupal_set_message('No new fields were added');
-    }
-    foreach ($added as $field_name) {
-      drupal_set_message('Added field: ' . $field_name);
-    }
-    drupal_goto("admin/structure/bio_data/manage/$bundle_name/fields");
-  }
   public function tripalFileUpload() {
     //tripal_file_upload in tripal.upload.inc
   }
@@ -110,33 +93,6 @@ class TripalController extends ControllerBase {
   }
   public function tripalUserFileDownload($uid, $file_id) {
     //tripal_download_file in tripal.user.inc
-  }
-  public function tripalContentTypeAddPage() {
-
-    // Get a list of all types.
-    $type_entities = \Drupal::entityTypeManager()
-      ->getStorage('tripal_entity_type')
-      ->loadByProperties([]);
-
-    // Now compile them into variables to be used in twig.
-    $types = [];
-    foreach ($type_entities as $entity) {
-      $category = $entity->getCategory();
-      $types[$category]['title'] = $category;
-      $types[$category]['members'][] = [
-        'title' => $entity->getLabel(),
-        'help' => $entity->getHelpText(),
-        'url' => Url::fromRoute('entity.tripal_entity.add_form', ['tripal_entity_type' => $entity->getName()]),
-      ];
-    }
-
-    // Finally, let tripal-entity-content-add-list.html.twig add the markup.
-    return [
-      '#theme' => 'tripal_entity_content_add_list',
-      '#types' => $types,
-    ];
-  }
-  public function tripalAdminBioDataAddSpecific($id) {
   }
   public function tripalAdminCVLookup($cv, $term) {
   }

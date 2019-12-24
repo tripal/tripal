@@ -20,8 +20,12 @@ class TripalEntityListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   public function buildHeader() {
-    $header['id'] = $this->t('Tripal Content ID');
-    $header['name'] = $this->t('Name');
+    $header['title'] = $this->t('Title');
+    $header['type'] = $this->t('Type');
+    $header['term'] = $this->t('Term');
+    $header['author'] = $this->t('Author');
+    $header['created'] = $this->t('Created');
+
     return $header + parent::buildHeader();
   }
 
@@ -29,16 +33,25 @@ class TripalEntityListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity) {
-    /* @var $entity \Drupal\tripal\Entity\TripalEntity */
-    $row['id'] = $entity->id();
-    $row['name'] = $this->l(
-      $entity->label(),
+
+    $type_name = $entity->getType();
+    $type = $term = \Drupal\tripal\Entity\TripalEntityType::load($type_name);
+    $term = $type->getTerm();
+
+    $row['title'] = $this->l(
+      $entity->getTitle(),
       new Url(
-        'entity.tripal_entity.edit_form', array(
+        'entity.tripal_entity.canonical', array(
           'tripal_entity' => $entity->id(),
         )
       )
     );
+
+    $row['type'] = $type->getLabel();
+    $row['term'] = $term->getVocab()->getLabel() . ':' . $term->getAccession();
+    $row['author'] = $entity->getOwner()->getDisplayName();
+    $row['created'] = \Drupal::service('date.formatter')->format($entity->getCreatedTime());
+    
     return $row + parent::buildRow($entity);
   }
 

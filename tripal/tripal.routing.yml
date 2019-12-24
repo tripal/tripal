@@ -147,7 +147,7 @@ tripal.dashboard_admin_notification_field:
 entity.tripal_entity.add_page:
   path: bio_data/add
   defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalContentTypeAddPage'
+    _controller: '\Drupal\tripal\Controller\TripalEntityUIController::tripalContentAddPage'
     _title: 'Add Biological Data'
     _description: 'Add biological data provided by Tripal.'
   options:
@@ -176,10 +176,14 @@ tripal.content_bio_data_field_attach:
 
 # Adds a +Check for new fields link on the 'Tripal Content Types' page.
 tripal.content_bio_data_field_check:
-  path: 'admin/structure/bio_data/manage/{bundle_name}/fields/check'
+  path: 'admin/structure/bio_data/manage/{tripal_entity_type}/fields/check'
   defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalCheckForFields'
+    _controller: '\Drupal\tripal\Controller\TripalEntityUIController::tripalCheckForFields'
     _title: 'Check for new fields'
+  options:
+    parameters:
+      tripal_entity_type:
+        type: entity:tripal_entity_type
   requirements:
     _permission: 'administer tripal'
 
