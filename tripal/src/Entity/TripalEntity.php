@@ -43,12 +43,12 @@ use Drupal\user\UserInterface;
  *     "status" = "status",
  *   },
  *   links = {
- *     "canonical" = "/admin/structure/tripal_entity/{tripal_entity}",
- *     "add-page" = "/admin/structure/tripal_entity/add",
- *     "add-form" = "/admin/structure/tripal_entity/add/{tripal_entity_type}",
- *     "edit-form" = "/admin/structure/tripal_entity/{tripal_entity}/edit",
- *     "delete-form" = "/admin/structure/tripal_entity/{tripal_entity}/delete",
- *     "collection" = "/admin/structure/tripal_entity",
+ *     "canonical" = "/bio_data/{tripal_entity}",
+ *     "add-page" = "/bio_data/add",
+ *     "add-form" = "/bio_data/add/{tripal_entity_type}",
+ *     "edit-form" = "/bio_data/{tripal_entity}/edit",
+ *     "delete-form" = "/bio_data/{tripal_entity}/delete",
+ *     "collection" = "/admin/content/bio_data",
  *   },
  *   bundle_entity_type = "tripal_entity_type",
  *   field_ui_base_route = "entity.tripal_entity_type.edit_form"
@@ -66,6 +66,13 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     $values += array(
       'user_id' => \Drupal::currentUser()->id(),
     );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTitle() {
+    return $this->title->getString();
   }
 
   /**

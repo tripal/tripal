@@ -3,7 +3,7 @@
 ##
 
 # Add Content link on the Content Listing page.
-entity.tripal_entity.add_form:
+entity.tripal_entity.add_page:
   route_name: 'entity.tripal_entity.add_page'
   title: 'Add Tripal Content'
   appears_on:
@@ -16,6 +16,12 @@ entity.tripal_entity_type.add_form:
   appears_on:
     - entity.tripal_entity_type.collection
 
+# Check for new fields link on the Manage Fields page.
+tripal.content_bio_data_field_check:
+  route_name: 'tripal.content_bio_data_field_check'
+  title: 'Check for new fields'
+  appears_on:
+    - entity.tripal_entity.field_ui_fields
 ##
 # Tripal Vocab Entity.
 ##

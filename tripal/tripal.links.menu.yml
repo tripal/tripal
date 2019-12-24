@@ -1,8 +1,8 @@
 # Tripal Content menu items definition
 entity.tripal_entity.collection:
-  title: 'Tripal Content list'
+  title: 'Tripal Content'
   route_name: entity.tripal_entity.collection
-  description: 'List Tripal Content entities'
+  description: 'List biological content created via Tripal.'
   parent: system.admin_content
   weight: 100
 
@@ -10,7 +10,7 @@ entity.tripal_entity.collection:
 entity.tripal_entity_type.collection:
   title: 'Tripal Content Types'
   route_name: entity.tripal_entity_type.collection
-  description: 'List Tripal Content type (bundles)'
+  description: 'Manage ontology-driven biological content types that are added using Tripal.'
   parent: system.admin_structure
   weight: 99
 
@@ -22,7 +22,7 @@ entity.tripal_entity_type.collection:
 entity.tripal_vocab.collection:
   title: 'Tripal Controlled Vocabularies'
   route_name: entity.tripal_vocab.collection
-  description: 'List Tripal Controlled Vocabularies used for categorization of biological content (e.g. SO; sequence).'
+  description: 'Manage Tripal Controlled Vocabularies (e.g. SO; sequence).'
   parent: system.admin_structure
   weight: 98
 
@@ -34,7 +34,7 @@ entity.tripal_vocab.collection:
 entity.tripal_term.collection:
   title: 'Tripal Controlled Vocabulary Terms'
   route_name: entity.tripal_term.collection
-  description: 'List Tripal Controlled Vocabulary Terms used for categorization of biological content (e.g. SO:0000704; gene).'
+  description: 'Manage Tripal Controlled Vocabulary Terms used for categorization of biological content (e.g. SO:0000704; gene).'
   parent: system.admin_structure
   weight: 98
 
@@ -52,13 +52,6 @@ tripal.admin_register:
   description: 'Register your Tripal website. Registration of Tripal websites gives the developers important information that allow us to continue to secure funding for maintenance and expansion.'
   parent: tripal.admin
   weight: 1
-
-tripal.content_bio_data_add:
-  route_name: tripal.content_bio_data_add
-  title: 'Add Tripal Content'
-  description: 'Create new Tripal Content.'
-  parent: tripal.admin
-  weight: 10
 
 tripal.content_bio_data_unpublish:
   route_name: tripal.content_bio_data_unpublish

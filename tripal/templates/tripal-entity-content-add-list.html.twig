@@ -6,8 +6,9 @@
  * Available variables:
  * - types: A collection of all the available custom entity types/bundles.
  *   Each type/bundle contains the following:
- *   - link: A link to add a content entity of this type.
+ *   - title: The human-readable label of this content entity of this type.
  *   - description: A description of this content entity types/bundle.
+ *   - url: The URL to add content of this type.
  *
  * @see template_preprocess_tripal_entity_content_add_list()
  *
@@ -15,9 +16,17 @@
  */
 #}
 {% spaceless %}
-  <dl>
-    {% for type in types %}
-      <dt>{{ type.link }}</dt>
+  {% for category in types  %}
+  <h3>{{category.title}}</h3>
+  <ul class="admin-list">
+    {% for type in category.members  %}
+      <li class="clearfix">
+        <a href="{{type.url}}">
+          <span class="label">{{ type.title }}</span>
+          <div class="description">{{ type.help }}</div>
+        </a>
+      </li>
     {% endfor %}
-  </dl>
+  </ul>
+  {% endfor %}
 {% endspaceless %}

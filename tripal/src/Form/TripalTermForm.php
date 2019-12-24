@@ -65,7 +65,7 @@ class TripalTermForm extends ContentEntityForm {
           '%label' => $entity->label(),
         ]));
     }
-    $form_state->setRedirect('entity.tripal_term.canonical', ['tripal_term' => $entity->id()]);
+    $form_state->setRedirect('entity.tripal_term.collection');
   }
 
 }

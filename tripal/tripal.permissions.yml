@@ -3,6 +3,9 @@ administer tripal:
   description: 'Bypass Tripal access control'
   restrict access: true
 
+##
+# Controlled Vocab Entities
+##
 add controlled vocabulary entities:
   title: 'Create new Controlled Vocabularies'
 
@@ -18,11 +21,14 @@ edit controlled vocabulary entities:
   title: 'Edit Controlled Vocabularies'
 
 access controlled vocabulary overview:
-  title: 'Access the Controlled Vocabulary overview page'
+  title: 'Access the Controlled Vocabulary Overview Page'
 
 view controlled vocabulary entities:
   title: 'View Controlled Vocabularies'
 
+##
+# CV Terms
+##
 add controlled vocabulary term entities:
   title: 'Create new Controlled Vocabulary Term entities'
 
@@ -43,25 +49,28 @@ access controlled vocabulary term overview:
 view controlled vocabulary term entities:
   title: 'View published Controlled Vocabulary Term entities'
 
-add tripal content entities:
-  title: 'Create new Tripal Content entities'
-
-administer tripal content entities:
-  title: 'Administer Tripal Content entities'
-  description: 'Allow to access the administration form to configure Tripal Content entities.'
+##
+# Tripal Content Entities.
+##
+administer tripal content types:
+  title: 'Administer Tripal Content Types'
+  description: 'Create, edit, delete tripal content types and perform additional administrative tasks across all tripal content types.'
   restrict access: true
 
-delete tripal content entities:
-  title: 'Delete Tripal Content entities'
+add tripal content entities:
+  title: 'Create new Tripal Content'
 
 edit tripal content entities:
-  title: 'Edit Tripal Content entities'
+  title: 'Edit Tripal Content'
+
+delete tripal content entities:
+  title: 'Delete Tripal Content'
 
 access tripal content overview:
   title: 'Access the Tripal Content overview page'
 
 view published tripal content entities:
-  title: 'View published Tripal Content entities'
+  title: 'View published Tripal Content'
 
 view unpublished tripal content entities:
-  title: 'View unpublished Tripal Content entities'
+  title: 'View unpublished Tripal Content'
