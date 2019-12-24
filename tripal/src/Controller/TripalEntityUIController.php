@@ -29,16 +29,16 @@ class TripalEntityUIController extends ControllerBase {
   public function tripalContentAddPage() {
 
     // Get a list of all types.
-    $type_entities = \Drupal::entityTypeManager()
+    $bundle_entities = \Drupal::entityTypeManager()
       ->getStorage('tripal_entity_type')
       ->loadByProperties([]);
 
     // Now compile them into variables to be used in twig.
-    $types = [];
-    foreach ($type_entities as $entity) {
+    $bundles = [];
+    foreach ($bundle_entities as $entity) {
       $category = $entity->getCategory();
-      $types[$category]['title'] = $category;
-      $types[$category]['members'][] = [
+      $bundles[$category]['title'] = $category;
+      $bundles[$category]['members'][] = [
         'title' => $entity->getLabel(),
         'help' => $entity->getHelpText(),
         'url' => Url::fromRoute('entity.tripal_entity.add_form', ['tripal_entity_type' => $entity->getName()]),
@@ -48,7 +48,7 @@ class TripalEntityUIController extends ControllerBase {
     // Finally, let tripal-entity-content-add-list.html.twig add the markup.
     return [
       '#theme' => 'tripal_entity_content_add_list',
-      '#types' => $types,
+      '#types' => $bundles,
     ];
   }
 
@@ -60,7 +60,7 @@ class TripalEntityUIController extends ControllerBase {
    */
   public function tripalCheckForFields($tripal_entity_type) {
 
-    $type_name = $tripal_entity_type->getName();
+    $bundle_name = $tripal_entity_type->getName();
     $term = $tripal_entity_type->getTerm();
 
     //$added = tripal_create_bundle_fields($bundle, $term);
@@ -73,6 +73,7 @@ class TripalEntityUIController extends ControllerBase {
 
     \Drupal::messenger()->addWarning(t('This functionality is not implemented yet.'));
 
-    return $this->redirect('entity.tripal_entity.field_ui_fields', ['tripal_entity_type' => $type_name]);
+    return $this->redirect('entity.tripal_entity.field_ui_fields',
+      ['tripal_entity_type' => $bundle_name]);
   }
 }

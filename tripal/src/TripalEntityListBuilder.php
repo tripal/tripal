@@ -35,8 +35,8 @@ class TripalEntityListBuilder extends EntityListBuilder {
   public function buildRow(EntityInterface $entity) {
 
     $type_name = $entity->getType();
-    $type = $term = \Drupal\tripal\Entity\TripalEntityType::load($type_name);
-    $term = $type->getTerm();
+    $bundle = \Drupal\tripal\Entity\TripalEntityType::load($type_name);
+    $term = $bundle->getTerm();
 
     $row['title'] = $this->l(
       $entity->getTitle(),
@@ -47,11 +47,11 @@ class TripalEntityListBuilder extends EntityListBuilder {
       )
     );
 
-    $row['type'] = $type->getLabel();
+    $row['type'] = $bundle->getLabel();
     $row['term'] = $term->getVocab()->getLabel() . ':' . $term->getAccession();
     $row['author'] = $entity->getOwner()->getDisplayName();
     $row['created'] = \Drupal::service('date.formatter')->format($entity->getCreatedTime());
-    
+
     return $row + parent::buildRow($entity);
   }
 
