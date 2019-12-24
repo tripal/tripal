@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\tripal;
+namespace Drupal\tripal\Access;
 
 use Drupal\Core\Entity\EntityAccessControlHandler;
 use Drupal\Core\Entity\EntityInterface;

@@ -28,7 +28,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
  *       "edit" = "Drupal\tripal\Form\TripalVocabForm",
  *       "delete" = "Drupal\tripal\Form\TripalVocabDeleteForm",
  *     },
- *     "access" = "Drupal\tripal\TripalVocabAccessControlHandler",
+ *     "access" = "Drupal\tripal\Access\TripalVocabAccessControlHandler",
  *     "route_provider" = {
  *       "html" = "Drupal\tripal\TripalVocabHtmlRouteProvider",
  *     },

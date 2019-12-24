@@ -29,7 +29,7 @@ use Drupal\user\UserInterface;
  *       "edit" = "Drupal\tripal\Form\TripalTermForm",
  *       "delete" = "Drupal\tripal\Form\TripalTermDeleteForm",
  *     },
- *     "access" = "Drupal\tripal\TripalTermAccessControlHandler",
+ *     "access" = "Drupal\tripal\Access\TripalTermAccessControlHandler",
  *     "route_provider" = {
  *       "html" = "Drupal\tripal\TripalTermHtmlRouteProvider",
  *     },

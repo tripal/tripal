@@ -29,7 +29,7 @@ use Drupal\user\UserInterface;
  *       "edit" = "Drupal\tripal\Form\TripalEntityForm",
  *       "delete" = "Drupal\tripal\Form\TripalEntityDeleteForm",
  *     },
- *     "access" = "Drupal\tripal\TripalEntityAccessControlHandler",
+ *     "access" = "Drupal\tripal\Access\TripalEntityAccessControlHandler",
  *     "route_provider" = {
  *       "html" = "Drupal\tripal\TripalEntityHtmlRouteProvider",
  *     },
