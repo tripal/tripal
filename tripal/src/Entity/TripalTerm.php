@@ -74,6 +74,13 @@ class TripalTerm extends ContentEntityBase implements TripalTermInterface {
   }
 
   /**
+   * @see \Drupal\tripal\Entity\TripalTermInterface::getID()
+   */
+  public function getLabel() {
+    return $this->getName();
+  }
+
+  /**
    * @see \Drupal\tripal\Entity\TripalTermInterface::getVocabID()
    */
   public function getVocabID(){

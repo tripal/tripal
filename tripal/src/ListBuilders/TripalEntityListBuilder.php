@@ -45,11 +45,11 @@ class TripalEntityListBuilder extends EntityListBuilder {
 
     $row['type'] = $bundle->getLabel();
     $row['term'] = $term->getVocab()->getLabel() . ':' . $term->getAccession();
-    
+
     $row['author'] = '';
     $owner = $entity->getOwner();
     if ($owner) {
-      $row['author'] = $owner()->getDisplayName();
+      $row['author'] = $owner->getDisplayName();
     }
 
     $row['created'] = \Drupal::service('date.formatter')->format($entity->getCreatedTime());
