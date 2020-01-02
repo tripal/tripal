@@ -1,6 +1,6 @@
-name: t4d8
+name: Tripal
 type: module
-description: t4d8 is a toolkit to facilitate construction of online genomic, genetic (and other biological) websites.
+description: Tripal is a toolkit to facilitate construction of online genomic, genetic (and other biological) websites.
 core: 8.x
 package: Tripal
 dependencies:

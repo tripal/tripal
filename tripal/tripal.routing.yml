@@ -133,6 +133,21 @@ tripal.dashboard_admin_notification_field:
 # Tripal Content
 ##
 
+# Tripal Content:
+
+# entity.tripal_entity_type.canonical:
+#   path: "/bio_data/{tripal_entity}",
+# entity.tripal_entity_type.add-page:
+#   path: "/bio_data/add",
+# entity.tripal_entity_type.add-form:
+#   path: "/bio_data/add/{tripal_entity_type}",
+# entity.tripal_entity_type.edit-form:
+#   path: "/bio_data/{tripal_entity}/edit",
+# entity.tripal_entity_type.delete-form:
+#   path: "/bio_data/{tripal_entity}/delete",
+# entity.tripal_entity_type.collection:
+#   path: "/admin/content/bio_data",
+
 # Tripal Content Types:
 
 # entity.tripal_entity_type.canonical:

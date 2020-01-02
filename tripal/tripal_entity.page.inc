@@ -22,6 +22,7 @@ use Drupal\Core\Url;
  *   - attributes: HTML attributes for the containing element.
  */
 function template_preprocess_tripal_entity(array &$variables) {
+
   // Fetch TripalEntity Entity Object.
   $tripal_entity = $variables['elements']['#tripal_entity'];
 

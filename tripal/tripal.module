@@ -12,6 +12,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 // use Drupal\shortcut\Entity\ShortcutSet;
 use Drupal\Core\Render\Element;
 
+require_once 'api/tripal.entities.api.php';
+
 /**
  * Implements hook_help().
  */

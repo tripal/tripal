@@ -2,7 +2,7 @@
 # Tripal Content Entity.
 ##
 tripal.tripal_entity.collection:
-  title: 'Tripal Content list'
+  title: 'Tripal Content'
   route_name: entity.tripal_entity.collection
   description: 'List Tripal Content entities'
   base_route: system.admin_content
