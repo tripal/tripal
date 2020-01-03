@@ -81,6 +81,20 @@ class TripalVocab extends ContentEntityBase implements ContentEntityInterface {
   }
 
   /**
+   *
+   */
+  public function getName() {
+    return $this->get('name')->value;
+  }
+
+  /**
+   *
+   */
+  public function getDescription() {
+    return $this->get('description')->value;
+  }
+
+  /**
    * @see \Drupal\tripal\Entity\TripalVocabInterface::getCreatedTime()
    */
   public function getCreatedTime() {
@@ -106,6 +120,21 @@ class TripalVocab extends ContentEntityBase implements ContentEntityInterface {
       ->setDescription(t('The short name for the vocabulary (e.g. SO, PATO, etc.).'))
       ->setSettings(array(
         'max_length' => 1024,
+        'text_processing' => 0,
+      ));
+
+    $fields['name'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('Vocabulary Name'))
+      ->setDescription(t('The full name for the vocabulary (e.g. sequence).'))
+      ->setSettings(array(
+        'max_length' => 1024,
+        'text_processing' => 0,
+      ));
+
+    $fields['description'] = BaseFieldDefinition::create('string_long')
+      ->setLabel(t('Vocabulary Description'))
+      ->setDescription(t('A description for the vocabulary.'))
+      ->setSettings(array(
         'text_processing' => 0,
       ));
 

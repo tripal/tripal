@@ -12,6 +12,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 // use Drupal\shortcut\Entity\ShortcutSet;
 use Drupal\Core\Render\Element;
 
+require_once 'api/tripal.entities.api.php';
+
 /**
  * Implements hook_help().
  */
@@ -33,16 +35,31 @@ function tripal_help($route_name, RouteMatchInterface $route_match) {
  */
 function tripal_theme() {
   $theme = [];
+
+  $theme['tripal_vocab'] = array(
+    'render element' => 'elements',
+    'file' => 'templates/tripal_vocab.page.inc',
+    'template' => 'tripal_vocab',
+  );
+
+  $theme['tripal_term'] = array(
+    'render element' => 'elements',
+    'file' => 'templates/tripal_term.page.inc',
+    'template' => 'tripal_term',
+  );
+
   $theme['tripal_entity'] = array(
     'render element' => 'elements',
-    'file' => 'tripal_entity.page.inc',
+    'file' => 'templates/tripal_entity.page.inc',
     'template' => 'tripal_entity',
   );
+
   $theme['tripal_entity_content_add_list'] = [
     'render element' => 'types',
     'variables' => ['types' => NULL],
-    'file' => 'tripal_entity.page.inc',
+    'file' => 'templates/tripal_entity.page.inc',
   ];
+
   return $theme;
 }
 

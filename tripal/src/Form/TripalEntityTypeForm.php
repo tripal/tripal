@@ -130,6 +130,87 @@ class TripalEntityTypeForm extends EntityForm {
       '#required' => TRUE,
     ];
 
+    // ADVANCED SETTINGS:
+    $form['advanced'] = array(
+      '#type' => 'vertical_tabs',
+      '#title' => t('Advanced Settings'),
+    );
+
+    $tokens = $tripal_entity_type->getTokens();
+    $title_tokens = $tokens;
+    unset($title_tokens['[title]']);
+    unset($title_tokens['[TripalBundle__bundle_id]']);
+    unset($title_tokens['[TripalEntity__entity_id]']);
+
+    // Page title options:
+    $form['title_settings'] = [
+      '#type' => 'details',
+      '#title' => 'Page title options',
+      '#group' => 'advanced',
+    ];
+
+    $form['title_settings']['msg'] = [
+      '#type' => 'item',
+      '#markup' => t('
+<p>The format below is used to determine the title displayed on content pages of the current type. This ensures all content of this type is consistent while still allowing you to indicate which data you want represented in the title (ie: which data would most identify your content).</p>
+
+<p>Keep in mind that it might be confusing to users if more than one page has the same title. <strong>We recommend you choose a combination of tokens that will uniquely identify your content</strong>.</p>'),
+    ];
+
+    $form['title_settings']['title_format'] = [
+      '#type' => 'textfield',
+      '#title' => 'Page Title Format',
+      '#description' => 'You may rearrange elements in this text box to customize the page titles. The available tokens are listed below. You can separate or include any text between the tokens.',
+      '#default_value' => $tripal_entity_type->getTitleFormat(),
+    ];
+
+    $form['title_settings']['tokens'] = [
+      '#type' => 'fieldset',
+      '#title' => 'Available Tokens',
+    ];
+
+    $form['title_settings']['tokens']['msg'] = [
+      '#type' => 'markup',
+      '#markup' => 'Copy the token and paste it into the "Page Title Format" text field above.'
+    ];
+
+    $form['title_settings']['tokens']['content'] =
+      theme_token_list($title_tokens);
+
+    // URL Alias options:
+    $form['url_settings'] = [
+      '#type' => 'details',
+      '#title' => 'URL alias options',
+      '#group' => 'advanced',
+    ];
+
+    $form['url_settings']['msg'] = [
+      '#type' => 'item',
+      '#markup' => t('
+<p>hTe pattern below is used to specify the URL of content pages of this type. This allows you to present more friendly, informative URLs to your user.</p>
+
+<p><strong>You must choose a combination of tokens that results in a unique path for each page!</strong></p>'),
+    ];
+
+    $form['url_settings']['url_format'] = [
+      '#type' => 'textfield',
+      '#title' => 'URL Alias Pattern',
+      '#description' => 'You may rearrange elements in this text box to customize the url alias. The available tokens are listed below. <strong>Make sure the pattern forms a valid, unique URL.</strong> Leave this field blank to use the original path.',
+      '#default_value' => $tripal_entity_type->getURLFormat(),
+    ];
+
+    $form['url_settings']['tokens'] = [
+      '#type' => 'fieldset',
+      '#title' => 'Available Tokens',
+    ];
+
+    $form['url_settings']['tokens']['msg'] = [
+      '#type' => 'markup',
+      '#markup' => 'Copy the token and paste it into the "URL Alias Pattern" text field above.'
+    ];
+
+    $form['url_settings']['tokens']['content'] = theme_token_list($tokens);
+
     return $form;
   }
 
@@ -177,6 +258,8 @@ class TripalEntityTypeForm extends EntityForm {
     $tripal_entity_type->setLabel($values['label']);
     $tripal_entity_type->setHelpText($values['help']);
     $tripal_entity_type->setTerm($values['term_id']);
+    $tripal_entity_type->setTitleFormat($values['title_format']);
+    $tripal_entity_type->setURLFormat($values['url_format']);
 
     // Finally, save the entity we've compiled.
     $status = $tripal_entity_type->save();

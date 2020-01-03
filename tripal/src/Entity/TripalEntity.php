@@ -59,6 +59,32 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   use EntityChangedTrait;
 
   /**
+   * Constructs a new Tripal entity object, without permanently saving it.
+   *
+   * @code
+      $values = [
+        'title' => 'laceytest'.time(),
+        'type' => 'bio_data_1',
+        'uid' => 1,
+      ];
+      $entity = \Drupal\tripal\Entity\TripalEntity::create($values);
+      $entity->save();
+   * @endcode
+   *
+   * @param array $values
+   *   - *title: the title of the entity.
+   *   - *uid: the user_id of the user who authored the content.
+   *   - *type: the type of tripal entity this is (e.g. bio_data_1)
+   *   - status: whether the entity is published or not (boolean)
+   *   - created: the unix timestamp for when this content was created.
+   * @return
+   *  The newly created entity.
+   */
+  public static function create(array $values = []) {
+    return parent::create($values);
+  }
+
+  /**
    * {@inheritdoc}
    */
   public static function preCreate(EntityStorageInterface $storage_controller, array &$values) {
@@ -71,8 +97,104 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   /**
    * {@inheritdoc}
    */
+  public function getID() {
+    $entity_id = $this->id->getValue();
+    if (is_array($entity_id)) {
+      return $entity_id[0]['value'];
+    }
+    return $entity_id;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function label() {
+    $title = $this->title->getValue();
+    if ($title) {
+      return $title[0]['value'];
+    }
+    else {
+      return '';
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setTitle($title = NULL, $cache = []) {
+
+    if (isset($cache['bundle'])) {
+      $bundle = $cache['bundle'];
+    }
+    else {
+      $bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
+    }
+
+    // If no title was supplied then we should try to generate one using the
+    // default format set by admins.
+    // @todo figure out how to override the title while still allowing
+    //   tokenized titles to be updated on edit.
+    $title = $bundle->getTitleFormat();
+    $title = $this->replaceTokens($title, ['tripal_entity_type' => $bundle]);
+
+    $this->title = $title;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getTitle() {
     return $this->title->getString();
+  }
+
+  /**
+   * Sets the URL alias for the current entity.
+   *
+   * @param $alias
+   *   The alias to use. It can contain tokens the correspond to field values.
+   *   Token should be be compatible with those returned by
+   *   tripal_get_entity_tokens().
+   * @param $cache
+   *   This array is used to store objects you want to cache for performance
+   *   reasons, as well as, cache related options. The following are supported:
+   *   - TripalEntityType $bundle
+   *       The bundle for the current entity.
+   */
+  public function setAlias($path_alias = NULL, $cache = []) {
+
+    $system_path = "/bio_data/" . $this->getID();
+    $langcode = \Drupal::languageManager()->getCurrentLanguage()->getId();
+
+    // If no alias was supplied then we should try to generate one using the
+    // default format set by admins.
+    if (!$path_alias) {
+
+      // Load the TripalEntityType entity for this TripalEntity (if it's not
+      // cached). First get the format for the url alias based on the bundle
+      // of the entity. Then replace all the tokens with values from the entity fields.
+      if (isset($cache['bundle'])) {
+        $bundle = $cache['bundle'];
+      }
+      else {
+        $bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
+      }
+
+      $path_alias = $bundle->getURLFormat();
+      $path_alias = $this->replaceTokens($path_alias,
+        ['tripal_entity_type' => $bundle]);
+
+    }
+
+    // Ensure there is a leading slash.
+    if ($path_alias[0] != '/') {
+      $path_alias = '/' . $path_alias;
+    }
+
+    // Make sure the path alias is URL friendly.
+    $path_alias = str_replace(['%2F', '+'], ['/', '-'], urlencode($path_alias));
+
+    // Now finally, set the alias.
+    $path = \Drupal::service('path.alias_storage')->save($system_path, $path_alias, $langcode);
   }
 
   /**
@@ -140,6 +262,128 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   public function setPublished($published) {
     $this->set('status', $published ? NODE_PUBLISHED : NODE_NOT_PUBLISHED);
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function replaceTokens($string, $cache = []) {
+
+    // Pull any items out of the cache.
+    if (isset($cache['bundle'])) {
+      $bundle_entity = $cache['bundle'];
+    }
+    else {
+      $bundle_entity = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
+    }
+
+    $term_entity = $bundle_entity->getTerm();
+
+    // Determine which tokens were used in the format string
+    $used_tokens = [];
+    if (preg_match_all('/\[.*?\]/', $string, $matches)) {
+      $used_tokens = $matches[0];
+    }
+
+    // If there are no tokens then just return the string.
+    if (count($used_tokens) == 0) {
+      return $string;
+    }
+
+    // @todo UPGRADE THIS CODE ONCE TRIPAL FIELDS HAVE BEEN ADDED
+    //
+    // If the fields are not loaded for the entity then we want to load them
+    // but we won't do a field_attach_load() as that will load all of the
+    // fields. For syncing (publishing) of content loading all fields for
+    // all synced entities causes extreme slowness, so we'll only attach
+    // the necessary fields for replacing tokens.
+    // $attach_fields = [];
+    //
+    // foreach ($used_tokens as $token) {
+    //   $token = preg_replace('/[\[\]]/', '', $token);
+    //   $elements = explode(',', $token);
+    //   $field_name = array_shift($elements);
+    //
+    //   if (!property_exists($entity, $field_name) or empty($entity->{$field_name})) {
+    //     $field = field_info_field($field_name);
+    //     $storage = $field['storage'];
+    //     $attach_fields[$storage['type']]['storage'] = $storage;
+    //     $attach_fields[$storage['type']]['fields'][] = $field;
+    //   }
+    // }
+    //
+    // // If we have any fields that need attaching, then do so now.
+    // if (count(array_keys($attach_fields)) > 0) {
+    //   foreach ($attach_fields as $storage_type => $details) {
+    //     $field_ids = [];
+    //     $storage = $details['storage'];
+    //     $fields = $details['fields'];
+    //     foreach ($fields as $field) {
+    //       $field_ids[$field['id']] = [$entity->id];
+    //     }
+    //     $entities = [$entity->id => $entity];
+    //     module_invoke($storage['module'], 'field_storage_load', 'TripalEntity',
+    //       $entities, FIELD_LOAD_CURRENT, $field_ids, []);
+    //   }
+    // }
+
+    // Now that all necessary fields are attached process the tokens.
+    foreach ($used_tokens as $token) {
+      $token = preg_replace('/[\[\]]/', '', $token);
+      $elements = explode(',', $token);
+      $field_name = array_shift($elements);
+      $value = '';
+
+      // The TripalBundle__bundle_id is a special token for substituting the
+      // bundle id.
+      if ($token === 'TripalBundle__bundle_id') {
+        // This token should be the id of the TripalBundle.
+        $value = $bundle_entity->getID();
+      }
+      // The TripalBundle__bundle_id is a special token for substituting the
+      // entity id.
+      elseif ($token === 'TripalEntity__entity_id') {
+        // This token should be the id of the TripalEntity.
+        $value = $this->getID();
+      }
+      elseif ($token == 'TripalEntityType__label') {
+        $value = $bundle_entity->getLabel();
+      }
+      elseif ($token == 'TripalTerm__vocab') {
+        $value = $term_entity->getVocab()->getLabel();
+      }
+      elseif ($token == 'TripalTerm__accession') {
+        $value = $term_entity->getAccession();
+      }
+      elseif ($token == 'TripalTerm__name') {
+        $value = $term_entity->getName();
+      }
+      else {
+        $value_obj = $this->get($field_name);
+        if ($value_obj) {
+          $value_raw = $value_obj->getValue();
+          $value = $value_raw[0]['value'];
+
+          // If the value is an array it means we have sub elements and we can
+          // descend through the array to look for matching value.
+          if (is_array($value) and count($elements) > 0) {
+            // @todo we still need to handle this case.
+            $value = '';
+            //$value = _tripal_replace_entity_tokens_for_elements($elements, $value);
+          }
+        }
+      }
+
+      // We can't support tokens that have multiple elements (i.e. in an array).
+      if (is_array($value)) {
+        $string = str_replace('[' . $token . ']', '', $string);
+      }
+      else {
+        $string = str_replace('[' . $token . ']', $value, $string);
+      }
+    }
+
+    return $string;
   }
 
   /**

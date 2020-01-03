@@ -43,6 +43,13 @@ class TripalTermForm extends ContentEntityForm {
       '#default_value' => $entity->getName(),
     ];
 
+    $form['definition'] = [
+      '#type' => 'textarea',
+      '#title' => 'Definition',
+      '#description' => 'The definition of this term.',
+      '#default_value' => $entity->getDefinition(),
+    ];
+
     return $form;
   }
 
@@ -51,6 +58,7 @@ class TripalTermForm extends ContentEntityForm {
    */
   public function save(array $form, FormStateInterface $form_state) {
     $entity = $this->entity;
+
     $status = parent::save($form, $form_state);
 
     switch ($status) {

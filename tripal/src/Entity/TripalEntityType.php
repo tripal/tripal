@@ -49,6 +49,10 @@ use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
  *     "term_id",
  *     "help_text",
  *     "category",
+ *     "title_format",
+ *     "url_format",
+ *     "hide_empty_field",
+ *     "ajax_field"
  *   }
  * )
  */
@@ -97,6 +101,42 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
   protected $category;
 
   /**
+   * The format for titles including tokens.
+   *
+   * @var string
+   */
+  protected $title_format;
+
+  /**
+   * The format for the url alias including tokens.
+   *
+   * @var string
+   */
+  protected $url_format;
+
+  /**
+   * Indicates that empty fields should be hidden.
+   *
+   * @var boolean
+   */
+  protected $hide_empty_field;
+
+  /**
+   * Indicates that AJAX should be used to load fields.
+   *
+   * @var boolean
+   */
+  protected $ajax_field;
+
+  // --------------------------------------------------------------------------
+  //                          MAIN SETTER / GETTERS
+  //
+  // The following methods allow the main properties of the Tripal Entity Type
+  // to be set or retrieved. These properties include ID, macine name, term
+  // help text and category.
+  // --------------------------------------------------------------------------
+
+  /**
    * {@inheritdoc}
    */
   public function id() {
@@ -104,79 +144,49 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
   }
 
   /**
-   * Gets the index of the machine name (e.g. 1).
-   *
-   * @return string
-   *   Index of the machine name of the Tripal Entity Type.
+   * {@inheritdoc}
    */
   public function getID() {
     return $this->id;
   }
 
   /**
-   * Sets the index of the machine name.
-   *
-   * @param integer $id
-   *   The index of the machine name of the Tripal Entity Type.
-   *
-   * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
-   *   The called Tripal Entity Type entity.
+   * {@inheritdoc}
    */
   public function setID($id) {
     $this->id = $id;
   }
 
   /**
-   * Gets the machine name of the Tripal Entity Type (e.g. bio_data_1).
-   *
-   * @return string
-   *   Machine name of the Tripal Entity Type.
+   * {@inheritdoc}
    */
   public function getName() {
     return $this->name;
   }
 
   /**
-   * Sets the machine name of the Tripal Entity Type.
-   *
-   * @param string $name
-   *   The machine name of the Tripal Entity Type.
-   *
-   * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
-   *   The called Tripal Entity Type entity.
+   * {@inheritdoc}
    */
   public function setName($name) {
     $this->name = $name;
   }
 
   /**
-   * Gets the Tripal Entity Type label (e.g. gene).
-   *
-   * @return string
-   *   Label of the Tripal Entity Type.
+   * {@inheritdoc}
    */
   public function getLabel() {
     return $this->label;
   }
 
   /**
-   * Sets the Tripal Entity Type label (e.g. gene).
-   *
-   * @param string $label
-   *   The Tripal Entity Type label.
-   *
-   * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
-   *   The called Tripal Entity Type entity.
+   * {@inheritdoc}
    */
   public function setLabel($label) {
     $this->label = $label;
   }
 
   /**
-   * Gets the Tripal Entity Type CVTerm.
-   *
-   * @return object
-   *   The Tripal Controlled Vocabulary Term describing this Tripal Entity Type.
+   * {@inheritdoc}
    */
   public function getTerm() {
     $term = \Drupal\tripal\Entity\TripalTerm::load($this->term_id);
@@ -184,46 +194,28 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
   }
 
   /**
-   * Sets the Tripal Entity Type CV Term.
-   *
-   * @param object $term
-   *   The Tripal Controlled Vocabulary Term
-   *
-   * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
-   *   The called Tripal Entity Type entity.
+   * {@inheritdoc}
    */
   public function setTerm($term_id) {
     $this->term_id = $term_id;
   }
 
   /**
-   * Gets help text for admin for this Tripal Entity Type.
-   *
-   * @return string
-   *   Help text for the Tripal Entity Type.
+   * {@inheritdoc}
    */
   public function getHelpText() {
     return $this->help_text;
   }
 
   /**
-   * Sets the Tripal Entity Type help text.
-   *
-   * @param string $help_text
-   *   The Tripal Entity Type help text.
-   *
-   * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
-   *   The called Tripal Entity Type entity.
+   * {@inheritdoc}
    */
   public function setHelpText($help_text) {
     $this->help_text = $help_text;
   }
 
   /**
-   * Gets the category for this Tripal Entity Type.
-   *
-   * @return string
-   *   Category for the Tripal Entity Type.
+   * {@inheritdoc}
    */
   public function getCategory() {
     if ($this->category) {
@@ -235,16 +227,295 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
   }
 
   /**
-   * Sets the Tripal Entity Type category.
-   *
-   * @param string $category
-   *   The Tripal Entity Type category.
-   *
-   * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
-   *   The called Tripal Entity Type entity.
+   * {@inheritdoc}
    */
   public function setCategory($category) {
     $this->category = $category;
   }
 
+  // --------------------------------------------------------------------------
+  //                              TITLE FORMATS
+  //
+  // The following methods all pertain to setting titles for Tripal Content
+  // Pages. Specifically, curators can set the title of a specific page or
+  // allow the default pattern to generate the title. The pattern is specified
+  // for all pages of a given Tripal Entity Type and is known as a
+  // "Title Format" and can be set when the type is created or edited.
+  // --------------------------------------------------------------------------
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTitleFormat() {
+    if ($this->title_format) {
+      return $this->title_format;
+    }
+    else {
+      return $this->getDefaultTitleFormat();
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setTitleFormat($title_format) {
+    $this->title_format = $title_format;
+  }
+
+  /**
+   * {@inheritdoc}
+   * @todo add to docs
+   */
+  public function getDefaultTitleFormat() {
+
+    // Retrieve all available tokens.
+    $tokens = $this->getTokens([
+      'include id' => FALSE,
+      'include title' => FALSE,
+    ]);
+
+    // A) Check to see if more informed modules have suggested a title for this
+    //    type. Invoke hook_tripal_default_title_format() to get all suggestions
+    //    from other modules.
+    $suggestions = \Drupal::moduleHandler()->invokeAll(
+      'tripal_default_title_format',
+      [$this, $tokens]
+    );
+    if ($suggestions) {
+      // Use the suggestion with the lightest weight.
+      $lightest_key = NULL;
+      foreach ($suggestions as $k => $s) {
+        if ($lightest_key === NULL) {
+          $lightest_key = $k;
+        }
+        if ($s['weight'] < $lightest_key) {
+          $lightest_key = $k;
+        }
+      }
+      $format = $suggestions[$lightest_key]['format'];
+      return $format;
+    }
+
+    // B) Generate our own ugly title by simply comma-separating all the
+    //    required fields.
+    if (!$format) {
+      $tmp = [];
+
+      // Check which tokens are required fields and join them into a default
+      // format.
+      foreach ($tokens as $token) {
+
+        // Exclude the type & term since it is not unique.
+        if ($token['token'] == '[type]') {
+          continue;
+        }
+
+        // If it is required then add it to the default title
+        // since we know it has a value.
+        if ($token['required']) {
+          $tmp[] = $token['token'];
+        }
+      }
+      $format = implode(', ', $tmp);
+      return $format;
+    }
+
+    return $format;
+  }
+
+  // --------------------------------------------------------------------------
+  //                             URL ALIAS FORMATS
+  //
+  // The following methods all pertain to setting alias' for Tripal Content
+  // Pages. This allows administrators to set readable, more friendly URLs
+  // for their biological content in bulk through the use of tokens and
+  // patterns.
+  // --------------------------------------------------------------------------
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getURLFormat() {
+    if ($this->url_format) {
+      return $this->url_format;
+    }
+    else {
+      return '[type]/[TripalEntity__entity_id]';
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setURLFormat($url_format) {
+    $this->url_format = $url_format;
+  }
+
+  // --------------------------------------------------------------------------
+  //                                  TOKENS
+  //
+  // The following methods relate to Tripal Entity Type tokens. These tokens
+  // are based on the fields for a given Tripal Entity Type and can be used
+  // to indicate general patterns to allow bulk assignment of titles and URLs.
+  // --------------------------------------------------------------------------
+
+  /**
+   * {@inheritdoc}
+   * @todo add to docs.
+   */
+  public function getTokens($options = []) {
+
+    $tokens = [];
+
+    // Set default options.
+    $options['required only'] = (isset($options['required only'])) ? $options['required only'] : FALSE;
+    $options['include id'] = (isset($options['include id'])) ? $options['include id'] : TRUE;
+    $options['include title'] = (isset($options['include title'])) ? $options['include title'] : TRUE;
+
+    // ID Tokens:
+    if ($options['include id'] == TRUE) {
+      $token = '[TripalBundle__bundle_id]';
+      $tokens[$token] = [
+        'label' => 'Bundle ID',
+        'description' => 'The unique identifier for this Tripal Content Type.',
+        'token' => $token,
+        'field_name' => NULL,
+        'required' => TRUE,
+      ];
+
+      $token = '[TripalEntity__entity_id]';
+      $tokens[$token] = [
+        'label' => 'Content/Entity ID',
+        'description' => 'The unique identifier for an individual piece of Tripal Content.',
+        'token' => $token,
+        'field_name' => NULL,
+        'required' => TRUE,
+      ];
+    }
+
+    // Term/Type Tokens:
+    $token = '[TripalEntityType__label]';
+    $tokens[$token] = [
+      'label' => 'Tripal Entity Type',
+      'description' => 'The human-readable label for this Tripal Content Type.',
+      'token' => $token,
+      'field_name' => NULL,
+      'required' => TRUE,
+    ];
+
+    $token = '[TripalTerm__vocab]';
+    $tokens[$token] = [
+      'label' => 'Tripal Vocab Short Name',
+      'description' => 'The short vocabulary name for the Tripal Term desribing this Tripal Content Type.',
+      'token' => $token,
+      'field_name' => NULL,
+      'required' => TRUE,
+    ];
+
+    $token = '[TripalTerm__name]';
+    $tokens[$token] = [
+      'label' => 'Tripal Term Label',
+      'description' => 'The human-readable name for the Tripal Term desribing this Tripal Content Type.',
+      'token' => $token,
+      'field_name' => NULL,
+      'required' => TRUE,
+    ];
+
+    $token = '[TripalTerm__accession]';
+    $tokens[$token] = [
+      'label' => 'Tripal Term Accession',
+      'description' => 'The unique accession for the Tripal Term desribing this Tripal Content Type.',
+      'token' => $token,
+      'field_name' => NULL,
+      'required' => TRUE,
+    ];
+
+    $instances = \Drupal::service('entity_field.manager')
+      ->getFieldDefinitions('tripal_entity', $this->name);
+    foreach ($instances as $instance_name => $instance) {
+
+      $use_field = TRUE;
+      $field_name = $instance->getName();
+
+      // Remove base fields.
+      if (in_array($field_name, ['id', 'type', 'uid', 'term_id', 'title', 'status', 'created', 'changed'])) {
+        continue;
+      }
+
+      // If only required fields should be returned,
+      // skip this field if it's not required.
+      if (!$instance->isRequired() and $options['required only']) {
+        continue;
+      }
+
+      // Iterate through the TripalEntity fields and see if they have
+      // sub-elements, if so, add those as tokens too.
+      // @todo handle sub-elements once TripalField's are implemented.
+
+      // If we have no elements to add then just add the field as is.
+      if ($use_field) {
+        // Build the token from the field information.
+        $token = '[' . $field_name . ']';
+        $tokens[$token] = [
+          'label' => $instance->getLabel(),
+          'description' => $instance->getDescription(),
+          'token' => $token,
+          'field_name' => $field_name,
+          'required' => $instance->isRequired(),
+        ];
+      }
+    }
+
+    return $tokens;
+  }
+
+  // --------------------------------------------------------------------------
+  //                             FIELD DISPLAY
+  //
+  // The following methods pertain to what fields are displayed and how they
+  // are loaded. For example, administrators can choose to hide empty fields
+  // or have all fields loaded by AJAX to speed up page loading times.
+  // --------------------------------------------------------------------------
+
+  /**
+   * {@inheritdoc}
+   */
+  public function hideEmptyFields() {
+    $this->hide_empty_field = TRUE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function showEmptyFields() {
+    $this->hide_empty_field = FALSE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getEmptyFieldDisplay() {
+    return $this->hide_empty_field;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function enableAJAXLoading() {
+    $this->ajax_field = TRUE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function disableAJAXLoading() {
+    $this->ajax_field = FALSE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getAJAXLoadingStatus() {
+    return $this->hide_empty_field;
+  }
 }

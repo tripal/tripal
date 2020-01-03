@@ -1,0 +1,29 @@
+{#
+/**
+ * @file tripal_vocab.html.twig
+ * Default theme implementation to present Tripal Controlled Vocabularies.
+ *
+ * This template is used when viewing Tripal Controlled Vocabulary pages.
+ *
+ *
+ * Available variables:
+ * - content: A list of content items. Use 'content' to print all content, or
+ * - attributes: HTML attributes for the container element.
+ *
+ * @see template_preprocess_tripal_vocab()
+ *
+ * @ingroup themeable
+ */
+#}
+<div{{ attributes.addClass('tripal_vocab') }}>
+  {% if content %}
+    <table>
+    <tbody>
+      <tr><th>Vocabulary</th><td>{{ content.vocab.name }}</td></tr>
+      <tr><th>Name</th><td>{{ content.name }}</td></tr>
+      <tr><th>Accession</th><td>{{ content.vocab.short }}:{{ content.accession }}</td></tr>
+    </tbody>
+    </table>
+    <p>{{ content.definition }}</p>
+  {% endif %}
+</div>

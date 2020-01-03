@@ -21,14 +21,25 @@ class TripalVocabForm extends ContentEntityForm {
     $form = parent::buildForm($form, $form_state);
     $entity = $this->entity;
 
-    // ID field: handled internally.
-
-    // Vocabulary Field.
     $form['vocabulary'] = [
-      '#title' => $this->t('Controlled Vocabulary Name'),
+      '#title' => $this->t('Short Name'),
       '#description' => 'The short name for the vocabulary (e.g. SO, PATO).',
       '#type' => 'textfield',
       '#default_value' => $entity->getLabel(),
+    ];
+
+    $form['name'] = [
+      '#title' => $this->t('Full Name'),
+      '#description' => 'The full name for the vocabulary (e.g. sequence).',
+      '#type' => 'textfield',
+      '#default_value' => $entity->getName(),
+    ];
+
+    $form['description'] = [
+      '#title' => $this->t('Description'),
+      '#description' => 'The definition for the current vocabulary.',
+      '#type' => 'textarea',
+      '#default_value' => $entity->getDescription(),
     ];
 
     return $form;

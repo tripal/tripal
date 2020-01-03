@@ -45,7 +45,13 @@ class TripalEntityListBuilder extends EntityListBuilder {
 
     $row['type'] = $bundle->getLabel();
     $row['term'] = $term->getVocab()->getLabel() . ':' . $term->getAccession();
-    $row['author'] = $entity->getOwner()->getDisplayName();
+
+    $row['author'] = '';
+    $owner = $entity->getOwner();
+    if ($owner) {
+      $row['author'] = $owner->getDisplayName();
+    }
+
     $row['created'] = \Drupal::service('date.formatter')->format($entity->getCreatedTime());
 
     return $row + parent::buildRow($entity);

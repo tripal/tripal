@@ -20,6 +20,9 @@ class TripalEntityForm extends ContentEntityForm {
     $form = parent::buildForm($form, $form_state);
     $entity = $this->entity;
 
+    $form['title']['#disabled'] = TRUE;
+    $form['title']['widget'][0]['value']['#description'] .= ' The title will be automatically updated based on the title format defined by administrators.';
+
     return $form;
   }
 
@@ -27,19 +30,26 @@ class TripalEntityForm extends ContentEntityForm {
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
+    $values = $form_state->getValues();
     $entity = $this->entity;
+    $bundle = $entity->getType();
+    $bundle_entity = \Drupal\tripal\Entity\TripalEntityType::load($bundle);
+
+    $entity->setTitle($values['title'][0]['value']);
+    $entity->setOwnerId($values['uid'][0]['target_id']);
+    $entity->setAlias();
     $status = parent::save($form, $form_state);
 
     switch ($status) {
       case SAVED_NEW:
-        drupal_set_message($this->t('Created the %label Tripal Content.', [
-          '%label' => $entity->label(),
+        drupal_set_message($this->t('Created the %label.', [
+          '%label' => $bundle_entity->label(),
         ]));
         break;
 
       default:
-        drupal_set_message($this->t('Saved the %label Tripal Content.', [
-          '%label' => $entity->label(),
+        drupal_set_message($this->t('Saved the %label.', [
+          '%label' => $bundle_entity->label(),
         ]));
     }
     $form_state->setRedirect('entity.tripal_entity.canonical', ['tripal_entity' => $entity->id()]);

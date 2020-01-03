@@ -122,4 +122,78 @@ interface TripalEntityTypeInterface extends ConfigEntityInterface {
    *   The called Tripal Entity Type entity.
    */
   public function setCategory($category);
+
+  /**
+   * Gets the title format for this Tripal Entity Type.
+   *
+   * @return string
+   *   Title format for the Tripal Entity Type.
+   */
+  public function getTitleFormat();
+
+  /**
+   * Sets the Tripal Entity Type title format.
+   *
+   * @param string $title_format
+   *   The Tripal Entity Type title format.
+   *
+   * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
+   *   The called Tripal Entity Type entity.
+   */
+  public function setTitleFormat($title_format);
+
+  /**
+   * Gets the URL format for this Tripal Entity Type.
+   *
+   * @return string
+   *   URL format for the Tripal Entity Type.
+   */
+  public function getURLFormat();
+
+  /**
+   * Sets the Tripal Entity Type URL format.
+   *
+   * @param string $url_format
+   *   The Tripal Entity Type URL format.
+   *
+   * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
+   *   The called Tripal Entity Type entity.
+   */
+  public function setURLFormat($url_format);
+
+  /**
+   * Configures the entity such that empty fields will be hidden.
+   */
+  public function hideEmptyFields();
+
+  /**
+   * Configures the entity such that empty fields will be shown.
+   */
+  public function showEmptyFields();
+
+  /**
+   * Retrieves the indicator for whether to hide empty fields or not.
+   *
+   * @return
+   *   true if empty fields should be hidden and false otherwise.
+   */
+  public function getEmptyFieldDisplay();
+
+  /**
+   * Configures the entity such that fields will be loaded via AJAX after page load.
+   */
+  public function enableAJAXLoading();
+
+  /**
+   * Configures the entity such that fields will be loaded on page load.
+   */
+  public function disableAJAXLoading();
+
+  /**
+   * Retrieves the indicator for whether to load fields using AJAX or not.
+   *
+   * @return
+   *   true if AJAX should be used to load fields and false otherwise.
+   */
+  public function getAJAXLoadingStatus();
 }

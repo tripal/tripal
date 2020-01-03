@@ -74,6 +74,13 @@ class TripalTerm extends ContentEntityBase implements TripalTermInterface {
   }
 
   /**
+   * @see \Drupal\tripal\Entity\TripalTermInterface::getID()
+   */
+  public function getLabel() {
+    return $this->getName();
+  }
+
+  /**
    * @see \Drupal\tripal\Entity\TripalTermInterface::getVocabID()
    */
   public function getVocabID(){
@@ -124,6 +131,21 @@ class TripalTerm extends ContentEntityBase implements TripalTermInterface {
   }
 
   /**
+   * @see \Drupal\tripal\Entity\TripalTermInterface::getDefinition()
+   */
+  public function getDefinition() {
+    return $this->get('definition')->value;
+  }
+
+  /**
+   * @see \Drupal\tripal\Entity\TripalTermInterface::setDefinition()
+   */
+  public function setDefinition($definition) {
+    $this->set('definition', $definition);
+    return $this;
+  }
+
+  /**
    * @see \Drupal\tripal\Entity\TripalTermInterface::getCreatedTime()
    */
   public function getCreatedTime() {
@@ -162,6 +184,13 @@ class TripalTerm extends ContentEntityBase implements TripalTermInterface {
       ->setDescription(t('The human readable name for this term.'))
       ->setSettings(array(
         'max_length' => 1024,
+        'text_processing' => 0,
+      ));
+
+    $fields['definition'] = BaseFieldDefinition::create('string_long')
+      ->setLabel(t('Definition'))
+      ->setDescription(t('The definition of this term.'))
+      ->setSettings(array(
         'text_processing' => 0,
       ));
 
