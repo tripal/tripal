@@ -30,8 +30,14 @@ class TripalVocabListBuilder extends EntityListBuilder {
    */
   public function buildRow(EntityInterface $entity) {
     /* @var $entity \Drupal\tripal\Entity\TripalVocab */
-    $row['name'] = $entity->getName();
+
+    $row['name'] = \Drupal::l(
+      $entity->getName(),
+      $entity->urlInfo('canonical', ['tripal_entity_type' => $entity->id()])
+    );
+
     $row['short_name'] = $entity->getLabel();
+
     return $row + parent::buildRow($entity);
   }
 

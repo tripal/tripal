@@ -35,16 +35,25 @@ function tripal_help($route_name, RouteMatchInterface $route_match) {
  */
 function tripal_theme() {
   $theme = [];
+
+  $theme['tripal_vocab'] = array(
+    'render element' => 'elements',
+    'file' => 'tripal_vocab.page.inc',
+    'template' => 'tripal_vocab',
+  );
+
   $theme['tripal_entity'] = array(
     'render element' => 'elements',
     'file' => 'tripal_entity.page.inc',
     'template' => 'tripal_entity',
   );
+
   $theme['tripal_entity_content_add_list'] = [
     'render element' => 'types',
     'variables' => ['types' => NULL],
     'file' => 'tripal_entity.page.inc',
   ];
+
   return $theme;
 }
 
