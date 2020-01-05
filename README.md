@@ -41,8 +41,33 @@ To aid in the development of Tripal 4,
 
 # Development Testing
 
-See the [Drupal "Running PHPUnit tests" guide](https://www.drupal.org/node/2116263) for instructions on running tests on your local environment. In order to ensure our Tripal functional testing is fully bootstrapped, tests should be run from Drupal core. Specifically, in your Drupal root run the following command from your drupal root to run all Tripal tests.
+See the [Drupal "Running PHPUnit tests" guide](https://www.drupal.org/node/2116263) for instructions on running tests on your local environment. In order to ensure our Tripal functional testing is fully bootstrapped, tests should be run from Drupal core.
+
+If you do not yet have a Drupal 8 Tripal 4 development site, these are my steps to set one up.
 
 ```
-./vendor/bin/phpunit modules/t4d8/tripal/tests/
+composer create-project drupal-composer/drupal-project:8.x-dev tripal4 --stability dev --no-interaction
+psql --command="CREATE USER tripaladmin WITH PASSWORD 'tripal4developmentonlylocal'"
+psql --command="CREATE DATABASE tripal4_dev WITH OWNER tripaladmin"
+cd tripal4
+../vendor/bin/drush site-install standard \
+  --db-url=pgsql://tripaladmin:tripal4developmentonlylocal@localhost/tripal4_dev \
+  --account-mail="tripaladmin@localhost" \
+  --account-name=tripaladmin \
+  --account-pass=some_admin_password \
+  --site-mail="tripaladmin@localhost" \
+  --site-name="Tripal 4 Development"
+cd modules
+git clone https://github.com/tripal/t4d8.git
+drush en tripal
+```
+You now have a fully installed Tripal 4 site!
+
+Now to run Tripal 4 tests:
+```
+cd ~/Sites/tripal4/web
+export SIMPLETEST_BASE_URL=http://localhost/tripal4/web
+export SIMPLETEST_DB=pgsql://tripaladmin:tripal4developmentonlylocal@localhost/tripal4_dev
+export BROWSER_OUTPUT_DIRECTORY=~/Sites/tripal4/web/sites/default/simpletest
+../vendor/bin/phpunit --configuration core modules/t4d8/tripal/tests/
 ```
