@@ -90,6 +90,14 @@ class TripalVocab extends ContentEntityBase implements ContentEntityInterface {
   /**
    *
    */
+  public function setName($name) {
+    $this->set('name', $name);
+    return $this;
+  }
+
+  /**
+   *
+   */
   public function getDescription() {
     return $this->get('description')->value;
   }

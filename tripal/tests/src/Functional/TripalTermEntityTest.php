@@ -22,11 +22,14 @@ class TripalTermEntityTest extends BrowserTestBase {
   public static $modules = ['tripal', 'block', 'field_ui'];
 
   /**
-   * Basic tests for Content Entity Example.
+   * Basic tests for TripalTerm Entity.
+   *
+   * @group tripal_term
    */
   public function testTripalTermEntity() {
     $assert = $this->assertSession();
 
+    // Ensure we have a priviledged user.
     $web_user = $this->drupalCreateUser([
       'view controlled vocabulary term entities',
       'add controlled vocabulary term entities',
@@ -42,6 +45,7 @@ class TripalTermEntityTest extends BrowserTestBase {
     $this->drupalGet('admin/structure/tripal_term');
     $assert->pageTextContains('Access denied');
 
+    // Now login our priviledged user.
     $this->drupalLogin($web_user);
 
     // TripalTerm Listing.
@@ -65,11 +69,11 @@ class TripalTermEntityTest extends BrowserTestBase {
     // TripalTerm Add Form.
     //-------------------------------------------
 
-    // Check that there is an "Add Vocabulary" link on the listing page.
-    // @todo fails $assert->linkExists('Add Vocabulary');
+    // Check that there is an "Add Term" link on the listing page.
+    // As far as I can tell, maybe action links are not available in tests?
+    // @fails $this->assertSession()->responseContains('Add Term');
 
-    // Go to the Add Vocabulary page.
-    // @todo fails $this->clickLink('Add Vocabulary');
+    // Go to the Add Term page.
     $this->drupalGet('admin/structure/tripal_term/add');
     // We should now be on admin/structure/tripal_term/add.
     $assert->pageTextContains('Add tripal controlled vocabulary term');
@@ -82,17 +86,28 @@ class TripalTermEntityTest extends BrowserTestBase {
 
     // Now fill out the form and submit.
     // Post content, save an instance. Go to the new page after saving.
-    $vocab = TripalVocab::create();
+    // -- Create a vocab for use in the form.
+    $vocab_name = 'tripalvocab-'.time();
+    $vocab = \Drupal\tripal\Entity\TripalVocab::create();
+    $vocab->setLabel($vocab_name);
+    $vocab->setName($vocab_name);
+    $vocab->save();
     $vocab_label = $vocab->getLabel();
-    $name = 'test ' . date('Ymd');
+    $this->assertEquals($vocab_name, $vocab_label);
+    // -- Create the other values.
+    $name = 'TripalTerm ' . uniqid();
     $accession = uniqid();
     $add = [
-      'vocab_id' => $vocab->getID(),
+      'vocab_id' => $vocab_label . ' (' . $vocab->getID() . ')',
       'accession' => $accession,
       'name' => $name,
     ];
-    $this->drupalPostForm(NULL, $add, 'Save');
-    $assert->pageTextContains('Created the ' . $name . ' controlled vocabulary term.');
+    // Submit the form.
+    $this->drupalPostForm(null, $add, 'Save');
+
+    // Now there should be a term.
+    $assert->responseContains('Created');
+    $assert->responseContains($name);
 
     // Then go back to the listing.
     $this->drupalGet('admin/structure/tripal_term');
@@ -166,10 +181,13 @@ class TripalTermEntityTest extends BrowserTestBase {
     $this->drupalGet('admin/structure/tripal_term');
     $assert->pageTextNotContains($new_term_name);
     $assert->pageTextNotContains($accession);
+
   }
 
   /**
    * Test all paths exposed by the module, by permission.
+   *
+   * @group tripal_term
    */
   public function testPaths() {
     $assert = $this->assertSession();

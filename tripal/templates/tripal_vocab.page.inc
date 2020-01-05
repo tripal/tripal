@@ -28,13 +28,13 @@ function template_preprocess_tripal_vocab(array &$variables) {
 
   // Add the main properties into the content variable.
   $variables['content']['vocabulary'] = [
-    '#markup' => $tripal_vocab->getLabel()
+    '#markup' => ($tripal_vocab) ? $tripal_vocab->getLabel() : '',
   ];
   $variables['content']['name'] = [
-    '#markup' => $tripal_vocab->getName()
+    '#markup' => ($tripal_vocab) ? $tripal_vocab->getName() : '',
   ];
   $variables['content']['description'] = [
-    '#markup' => $tripal_vocab->getDescription()
+    '#markup' => ($tripal_vocab) ? $tripal_vocab->getDescription(): '',
   ];
 
   // Helpful $content variable for templates.

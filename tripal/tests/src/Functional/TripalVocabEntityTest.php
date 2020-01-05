@@ -21,7 +21,9 @@ class TripalVocabEntityTest extends BrowserTestBase {
   public static $modules = ['tripal', 'block', 'field_ui'];
 
   /**
-   * Basic tests for Content Entity Example.
+   * Basic tests for Tripal Vocab Entity.
+   *
+   * @group tripal_vocab
    */
   public function testTripalVocabEntity() {
     $assert = $this->assertSession();
@@ -72,8 +74,12 @@ class TripalVocabEntityTest extends BrowserTestBase {
     $this->drupalGet('admin/structure/tripal_vocab/add');
     // We should now be on admin/structure/tripal_vocab/add.
     $assert->pageTextContains('Add tripal controlled vocabulary');
-    $assert->fieldExists('Controlled Vocabulary Name');
-    $assert->fieldValueEquals('Controlled Vocabulary Name', '');
+    $assert->fieldExists('Short Name');
+    $assert->fieldValueEquals('Short Name', '');
+    $assert->fieldExists('Full Name');
+    $assert->fieldValueEquals('Full Name', '');
+    $assert->fieldExists('Description');
+    $assert->fieldValueEquals('Description', '');
 
     // Now fill out the form and submit.
     // Post content, save an instance. Go to the new page after saving.
@@ -103,8 +109,8 @@ class TripalVocabEntityTest extends BrowserTestBase {
     $this->clickLink('Edit');
     // We should now be on admin/structure/tripal_vocab/{tripal_vocab}/edit.
     $assert->pageTextContains('Edit');
-    $assert->fieldExists('Controlled Vocabulary Name');
-    $assert->fieldValueEquals('Controlled Vocabulary Name', $vocab_name);
+    $assert->fieldExists('Short Name');
+    $assert->fieldValueEquals('Short Name', $vocab_name);
 
     // Now fill out the form and submit.
     // Post content, save the instance.
@@ -155,6 +161,8 @@ class TripalVocabEntityTest extends BrowserTestBase {
 
   /**
    * Test all paths exposed by the module, by permission.
+   *
+   * @group tripal_vocab
    */
   public function testPaths() {
     $assert = $this->assertSession();

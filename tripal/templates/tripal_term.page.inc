@@ -29,19 +29,19 @@ function template_preprocess_tripal_term(array &$variables) {
 
   // Add the main properties into the content variable.
   $variables['content']['name'] = [
-    '#markup' => $tripal_term->getName()
+    '#markup' => ($tripal_term) ? $tripal_term->getName() : '',
   ];
   $variables['content']['accession'] = [
-    '#markup' => $tripal_term->getAccession()
+    '#markup' => ($tripal_term) ? $tripal_term->getAccession() : '',
   ];
   $variables['content']['definition'] = [
-    '#markup' => $tripal_term->getDefinition()
+    '#markup' => ($tripal_term) ? $tripal_term->getDefinition() : '',
   ];
   $variables['content']['vocab']['name'] = [
-    '#markup' => $tripal_vocab->getName()
+    '#markup' => ($tripal_vocab) ? $tripal_vocab->getName() : '',
   ];
   $variables['content']['vocab']['short'] = [
-    '#markup' => $tripal_vocab->getLabel()
+    '#markup' => ($tripal_vocab) ? $tripal_vocab->getLabel() : '',
   ];
 
   // Helpful $content variable for templates.
