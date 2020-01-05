@@ -8,9 +8,13 @@ This project acts as the home of Tripal 4 development. Once Tripal 4 is stable, 
 
 ## Currently working on [Group 1](https://github.com/tripal/t4d8/issues/1)
 
-We currently have working entities for the following: Tripal vocabularies, Tripal Terms, Tripal Content Types, Tripal Content! However, nothing is connected to Chado at this point.
+We currently have working entities for the following: Tripal vocabularies, Tripal Terms, Tripal Content Types, Tripal Content! However, nothing is connected to Chado at this point (to ensure it is chado-agnostic).
 
-### How to Contribute
+### How to get involved!
+
+This upgrade to Drupal 8 is a community effort. As such, we NEED YOUR HELP! In order to make it less overwhelming for you to jump in and help, the PMC (project-management-committee) has created issues tagged `good first issue`. To take one on, just comment with your intent! We're also in the process of adding documentation through RTD to help orient new developers. Please comment on the issue [How can we help you?](https://github.com/tripal/t4d8/issues/16) with any ideas for documentation you would find useful and any tips which helped you get started!
+
+### Our upgrade Process (in detail)
 
 Tripal 4 development has been planned in the issue queue of this repository with the entire code-based of Tripal 3 being catagorized into groups which should be completed in order. For a summary of the tasks assigned to a given group, go to the issue labelled with the `roadmap` and group tag for a specific group. For example, for Group 1, the task list is in #1 which has both the `Roadmap` and `Group 1` tags.
 
@@ -26,7 +30,6 @@ To aid in the development of Tripal 4,
 * Drupal:
   * Drupal 8.x
   * Drupal core modules: Search, Path, View, Entity, and PHP modules.
-  * Drupal contributed modules:
 * PostgreSQL
 * PHP 7.1+
 * UNIX/Linux
@@ -38,12 +41,9 @@ To aid in the development of Tripal 4,
 3. Enable Tripal in your site using the Administration Toolbar > Extend
 4. Use drush to rebuild the cache (`drush cache-rebuild`) so Tripal menu items appear correctly.
 
+## Quick Start (development only)
 
-# Development Testing
-
-See the [Drupal "Running PHPUnit tests" guide](https://www.drupal.org/node/2116263) for instructions on running tests on your local environment. In order to ensure our Tripal functional testing is fully bootstrapped, tests should be run from Drupal core.
-
-If you do not yet have a Drupal 8 Tripal 4 development site, these are my steps to set one up.
+If you do not yet have a Drupal 8 Tripal 4 development site, these are my steps to set one up. This assumes you already have a local Apache-PostgreSQL-PHP server set-up with `~/Sites` being your web-accessible directory.
 
 ```
 composer create-project drupal-composer/drupal-project:8.x-dev tripal4 --stability dev --no-interaction
@@ -63,7 +63,16 @@ drush en tripal
 ```
 You now have a fully installed Tripal 4 site!
 
-Now to run Tripal 4 tests:
+## Docker
+
+The Tripal docker included in this repository is still a work in progress and we would greatly welcome help completing it! If you want to get started fast, I recommend the [official Drupal 8 Docker from DockerHub](https://hub.docker.com/_/drupal). To install Tripal on it, simply clone this repository into the `web/modules` directory and enable.
+
+# Development Testing
+
+See the [Drupal "Running PHPUnit tests" guide](https://www.drupal.org/node/2116263) for instructions on running tests on your local environment. In order to ensure our Tripal functional testing is fully bootstrapped, tests should be run from Drupal core.
+
+The following are the exact steps to run tests assuming you set things up as specified in the quick start above.
+
 ```
 cd ~/Sites/tripal4/web
 export SIMPLETEST_BASE_URL=http://localhost/tripal4/web
