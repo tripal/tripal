@@ -50,14 +50,14 @@ composer create-project drupal-composer/drupal-project:8.x-dev tripal4 --stabili
 psql --command="CREATE USER tripaladmin WITH PASSWORD 'tripal4developmentonlylocal'"
 psql --command="CREATE DATABASE tripal4_dev WITH OWNER tripaladmin"
 cd tripal4
-../vendor/bin/drush site-install standard \
+drush site-install standard \
   --db-url=pgsql://tripaladmin:tripal4developmentonlylocal@localhost/tripal4_dev \
   --account-mail="tripaladmin@localhost" \
   --account-name=tripaladmin \
   --account-pass=some_admin_password \
   --site-mail="tripaladmin@localhost" \
   --site-name="Tripal 4 Development"
-cd modules
+cd web/modules
 git clone https://github.com/tripal/t4d8.git
 drush en tripal
 ```
