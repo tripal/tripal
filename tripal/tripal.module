@@ -84,15 +84,17 @@ function tripal_init() {
   // otherwise PostgreSQL version that may have a different datestyle setting
   // will fail when inserting or updating a date column in a table.
   db_query("SET DATESTYLE TO :style", array(':style' => 'MDY'));
-  
+
   //Ask users to do the registration form
   if (user_access('administer tripal')) {
     if (empty(variable_get('tripal_site_registration', FALSE)) || !(variable_get('disable_tripal_reporting', FALSE))) {
-      drupal_set_message('Please register your Tripal Site. Registering provides important
-      information that will help secure funding for continued improvements to Tripal. ' .
-        l('Click to register now or opt out.', 'admin/tripal/register'), 'warning');
+      if (current_path() != 'admin/tripal/register' and current_path() != 'system/ajax') {
+        drupal_set_message('Please register your Tripal Site. Registering provides important
+        information that will help secure funding for continued improvements to Tripal. ' .
+          l('Click to register now or opt out.', 'admin/tripal/register'), 'warning');
+      }
     }
-  } 
+  }
 }
 
 function tripal_menu_alter(&$items) {
@@ -1382,7 +1384,7 @@ function tripal_cron() {
   tripal_add_job('Cron: Checking expired files', 'tripal',
     'tripal_expire_files', $args, 1, 1, $includes, TRUE);
 
-  // Update the registration information every month.  
+  // Update the registration information every month.
   if (variable_get('tripal_site_registration', FALSE)) {
     $last_submit = variable_get('tripal_site_registration_last_update');
     if ($last_submit) {
