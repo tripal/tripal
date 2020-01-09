@@ -97,52 +97,52 @@ function tripal_uninstall() {
    */
 }
 
-/**
- *
- */
-function tripal_enable() {
-  // If Tripal v2 is already installed, the installation of this module
-  // will try and recreate some of the tables created with tripal_core and the
-  // installation will fail.  Therefore, in the install we renamed it. Now
-  // we want to move it back.
-  if (db_table_exists('tripal_jobs2')) {
-    $sql = "DROP TABLE tripal_jobs";
-    db_query($sql);
-    db_rename_table('tripal_jobs2', 'tripal_jobs');
-  }
-
-  if (db_table_exists('tripal_token_formats2')) {
-    $sql = "DROP TABLE tripal_token_formats";
-    db_query($sql);
-    db_rename_table('tripal_token_formats2', 'tripal_token_formats');
-  }
-
-  if (db_table_exists('tripal_variables2')) {
-    $sql = "DROP TABLE tripal_variables";
-    db_query($sql);
-    db_rename_table('tripal_variables2', 'tripal_variables');
-  }
-
-  if (db_table_exists('tripal_custom_quota2')) {
-    $sql = "DROP TABLE tripal_custom_quota";
-    db_query($sql);
-    db_rename_table('tripal_custom_quota2', 'tripal_custom_quota');
-  }
-
-  if (db_table_exists('tripal_expiration_files2')) {
-    $sql = "DROP TABLE tripal_expiration_files";
-    db_query($sql);
-    db_rename_table('tripal_expiration_files2', 'tripal_expiration_files');
-  }
-
-  // schema change
-  if (!db_field_exists('tripal_jobs', 'includes')) {
-    $sql = "ALTER TABLE tripal_jobs ADD COLUMN includes text";
-    db_query($sql);
-  }
-
-  tripal_add_variables();
-}
+///**
+// *
+// */
+//function tripal_enable() {
+//  // If Tripal v2 is already installed, the installation of this module
+//  // will try and recreate some of the tables created with tripal_core and the
+//  // installation will fail.  Therefore, in the install we renamed it. Now
+//  // we want to move it back.
+//  if (db_table_exists('tripal_jobs2')) {
+//    $sql = "DROP TABLE tripal_jobs";
+//    db_query($sql);
+//    db_rename_table('tripal_jobs2', 'tripal_jobs');
+//  }
+//
+//  if (db_table_exists('tripal_token_formats2')) {
+//    $sql = "DROP TABLE tripal_token_formats";
+//    db_query($sql);
+//    db_rename_table('tripal_token_formats2', 'tripal_token_formats');
+//  }
+//
+//  if (db_table_exists('tripal_variables2')) {
+//    $sql = "DROP TABLE tripal_variables";
+//    db_query($sql);
+//    db_rename_table('tripal_variables2', 'tripal_variables');
+//  }
+//
+//  if (db_table_exists('tripal_custom_quota2')) {
+//    $sql = "DROP TABLE tripal_custom_quota";
+//    db_query($sql);
+//    db_rename_table('tripal_custom_quota2', 'tripal_custom_quota');
+//  }
+//
+//  if (db_table_exists('tripal_expiration_files2')) {
+//    $sql = "DROP TABLE tripal_expiration_files";
+//    db_query($sql);
+//    db_rename_table('tripal_expiration_files2', 'tripal_expiration_files');
+//  }
+//
+//  // schema change
+//  if (!db_field_exists('tripal_jobs', 'includes')) {
+//    $sql = "ALTER TABLE tripal_jobs ADD COLUMN includes text";
+//    db_query($sql);
+//  }
+//
+//  tripal_add_variables();
+//}
 
 /**
  * Implementation of hook_schema().
