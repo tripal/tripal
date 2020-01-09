@@ -349,8 +349,17 @@ tripal.data_collections:
 tripal.files:
   path: 'admin/tripal/files'
   defaults:
-    _controller: '\Drupal\tripal\Form\TripalFiles'
+    _form: '\Drupal\tripal\Form\TripalAdminManageFilesForm'
     _title: 'File Usage'
+  requirements:
+    _permission: 'administer tripal'
+
+# tripal_admin_add_custom_form
+tripal.quota_add:
+  path: 'admin/tripal/files/quota/add'
+  defaults:
+    _form: '\Drupal\tripal\Form\TripalAdminManageQuotaForm'
+    _title: 'Add Custom Quota'
   requirements:
     _permission: 'administer tripal'
 
@@ -380,20 +389,12 @@ tripal.files_quota_remove:
   requirements:
     _permission: 'administer tripal'
 
-# tripal_admin_add_custom_form
-tripal.files_quota_add:
-  path: 'admin/tripal/files/quota/add'
-  defaults:
-    _controller: '\Drupal\tripal\Form\TripalFileQuotaCustomAdd'
-    _title: 'Add Custom Quota'
-  requirements:
-    _permission: 'administer tripal'
 
 # tripal_users_autocomplete
 tripal.files_quota_user_autocomplete:
   path: 'admin/tripal/files/quota/user/autocomplete'
   defaults:
-    _controller: '\Drupal\tripal\Form\TripalFileQuotaUserAutocomplete'
+    _controller: '\Drupal\tripal\Controller\TripalFileQuotaUserAutocomplete::index'
     _title: 'Autocomplete for existing users'
   requirements:
     _permission: 'administer tripal'

@@ -1,0 +1,7 @@
+langcode: 'en'
+
+files:
+  upload_max_size: 10000000000
+
+test: 900
+
