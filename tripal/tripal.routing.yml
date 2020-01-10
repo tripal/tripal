@@ -350,7 +350,7 @@ tripal.files:
   path: 'admin/tripal/files'
   defaults:
     _controller: '\Drupal\tripal\Form\TripalFiles'
-    _title: 'File Usage'
+    _title: 'User File Management'
   requirements:
     _permission: 'administer tripal'
 
