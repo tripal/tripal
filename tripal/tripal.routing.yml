@@ -175,7 +175,7 @@ tripal.content_bio_data_unpublish:
   path: 'admin/content/bio_data/unpublish'
   defaults:
     _controller: '\Drupal\tripal\Form\TripalContentUnpublishOrphans'
-    _title: 'Add Tripal Content'
+    _title: 'Unpublish Orphaned Content'
     _description: 'Unpublish content that has no associated records in the data store.'
   requirements:
     _permission: 'administer tripal'
