@@ -317,7 +317,7 @@ tripal.data_collections_delete:
     _tripal_access_check: 'TRUE'
 
 tripal.data_collections_view:
-  path: 'user/{uid}/data-collections/{collection_id}/delete'
+  path: 'user/{uid}/data-collections/{collection_id}/view'
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalController::tripalDataCollectionsView'
     _title: 'View a Collections'
