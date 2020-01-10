@@ -15,7 +15,7 @@ tripal.admin_register:
   path: 'admin/tripal/register'
   defaults:
     _controller: '\Drupal\tripal\Form\Register'
-    _title: 'Registration'
+    _title: 'Tripal Registration'
   requirements:
     _permission: 'administer tripal'
 
