@@ -200,7 +200,7 @@ class TripalFileQuota implements FormInterface{
     // Grab the quota value and exp_date to write to the drupal variables
     Drupal::state()->set('tripal_default_file_quota', $size);
     Drupal::state()->set('tripal_default_file_expiration', $expiration);
-    $this->messenger->addStatus('Default quota settings have been set.');
+    $this->messenger()->addStatus('Default quota settings have been set.');
   }
 
 }
