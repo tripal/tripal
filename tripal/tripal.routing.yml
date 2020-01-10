@@ -349,13 +349,21 @@ tripal.data_collections:
 tripal.files:
   path: 'admin/tripal/files'
   defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'Tripal'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal.files_file_usage:
+  path: 'admin/tripal/files/manage'
+  defaults:
     _form: '\Drupal\tripal\Form\TripalAdminManageFilesForm'
-    _title: 'File Usage'
+    _title: 'Manage Usage'
   requirements:
     _permission: 'administer tripal'
 
 # tripal_admin_add_custom_form
-tripal.quota_add:
+tripal.files_quota_add:
   path: 'admin/tripal/files/quota/add'
   defaults:
     _form: '\Drupal\tripal\Form\TripalAdminManageQuotaForm'
@@ -375,7 +383,7 @@ tripal.files_usage:
 tripal.files_quota:
   path: 'admin/tripal/files/quota'
   defaults:
-    _controller: '\Drupal\tripal\Form\TripalFileQuota'
+    _form: '\Drupal\tripal\Form\TripalFileQuota'
     _title: 'User Quotas'
   requirements:
     _permission: 'administer tripal'
@@ -384,11 +392,20 @@ tripal.files_quota:
 tripal.files_quota_remove:
   path: 'admin/tripal/files/quota/remove/{uid}'
   defaults:
-    _controller: '\Drupal\tripal\Form\TripalFileQuotaRemove'
+    _form: '\Drupal\tripal\Form\TripalAdminRemoveQuota'
     _title: 'Remove custom user quota'
   requirements:
     _permission: 'administer tripal'
 
+
+# tripal_admin_edit_quota_form
+tripal.files_quota_user_edit:
+  path: 'admin/tripal/files/quota/edit/{uid}'
+  defaults:
+    _form: '\Drupal\tripal\Form\TripalFileQuotaCustomEdit'
+    _title: 'Edit Custom Quota'
+  requirements:
+    _permission: 'administer tripal'
 
 # tripal_users_autocomplete
 tripal.files_quota_user_autocomplete:
@@ -396,15 +413,6 @@ tripal.files_quota_user_autocomplete:
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalFileQuotaUserAutocomplete::index'
     _title: 'Autocomplete for existing users'
-  requirements:
-    _permission: 'administer tripal'
-
-# tripal_admin_edit_quota_form
-tripal.files_quota_user_edit:
-  path: 'admin/tripal/files/quota/edit/{uid}'
-  defaults:
-    _controller: '\Drupal\tripal\Form\TripalFileQuotaCustomEdit'
-    _title: 'Edit Custom Quota'
   requirements:
     _permission: 'administer tripal'
 
