@@ -6,7 +6,6 @@ Controlled vocabularies are simply a collection of agreed upon names (knowns as 
 
 Tripal and Chado both use controlled vocabularies extensively to categorize data and metadata. The use of controlled vocabulary terms also allows both Tripal and Chado to be extremely flexible while also remaining very descriptive with rich metadata.
 
-
 In Tripal, controlled vocabularies and their terms are Drupal content entities. This means they are managed similar to tripal content (i.e. biological data) and will not be sync'd between production and development instances.
 
 In Tripal 4 specifically, Tripal Controlled Vocabularies and their terms are completely independent of Chado. However, for sites which choose to use Chado for controlled vocabularies (recommended) there is tight cross-linking available. This ensures we remain database agnostic while also encouraging close interaction between Tripal and Chado.
@@ -30,4 +29,9 @@ The `EBI's Ontology Lookup Service <http://www.ebi.ac.uk/ols/index>`_ is a great
 Chado CV module
 -----------------
 
-In Chado, controlled vocabularies and ontologies are stored in the `CV Module <http://gmod.org/wiki/Chado_CV_Module>`_. This module provides flexible storage of the individual terms as well as the relationships between them.
+In Chado, controlled vocabularies and ontologies are stored in the `CV Module <http://gmod.org/wiki/Chado_CV_Module>`_. This module provides flexible storage of the individual terms, as well as, the relationships between them.
+
+Hands-on Training
+------------------
+
+ - :doc:`/dev_guide/lessons/create_cvterms`
