@@ -80,3 +80,7 @@ export SIMPLETEST_DB=pgsql://tripaladmin:tripal4developmentonlylocal@localhost/t
 export BROWSER_OUTPUT_DIRECTORY=~/Sites/tripal4/web/sites/default/simpletest
 ../vendor/bin/phpunit --configuration core modules/t4d8/tripal/tests/
 ```
+
+# Documentation
+
+[Documentation for Tripal 4 has begun on ReadtheDocs](https://tripal4.readthedocs.io/en/latest/dev_guide.html). **Please keep in mind the URL for this documentation will change once Tripal 4 is released.**
