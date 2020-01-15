@@ -17,7 +17,7 @@ Controlled Vocabularies (CVs)
 
 .. note::
 
-  **Background:** What are controlled vocabularies (CVs) and their terms (CVterms)?
+  **Background:** :doc:`/dev_guide/cvterms`
 
   Questions:
     - How do I programatically create a controlled vocabulary?
@@ -82,7 +82,7 @@ Controlled Vocabulary Terms (CVterms)
 
 .. note::
 
-  **Background:** What are controlled vocabularies (CVs) and their terms (CVterms)?
+  **Background:** :doc:`/dev_guide/cvterms`
 
   Questions:
     - How do I programatically add a term to an existing vocabulary.
