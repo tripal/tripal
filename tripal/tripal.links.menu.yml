@@ -44,6 +44,7 @@ entity.tripal_term.collection:
 tripal.admin:
   route_name: tripal.admin
   title: 'Tripal'
+  description: 'Manage the behavior or Tripal and its various modules.'
   parent: system.admin_structure
 
 tripal.admin_register:
