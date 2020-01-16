@@ -46,15 +46,17 @@ class Register implements FormInterface {
 		$form_data = unserialize(variable_get('tripal_site_registration', NULL));
 		$form_state['details']['funding'] = isset($form_state['details']['funding']) ? $form_state['details']['funding'] : 1;
 		*/
-		
-		$form['description'] = [
+
+	   $form['description'] = [
 		'#title' => 'Why Register your Site?',
 		'#type' => 'item',
-		'#markup' => t('Registering your site is important for continued improvements to the software.  You may opt-in by providing answers to the
-			following questions or opt-out by checking the box below. If you opt-in, your site will periodically
-			connect to the http://tripal.info website and provide updated registration details. If you opt-out, no
-			registration information is communictated. You can opt-out at any time.  If you want previously submitted information
-			deleted from the tripal.info database please email !admin.', ['!admin' => Link::fromTextAndUrl('admin@tripal.info', Url::fromUri('mailto:admin@tripal.info'))])
+	    '#markup' => t('Registering your site is important for continued improvements to the software.  You may opt-in by providing answers to the
+		  following questions or opt-out by checking the box below. If you opt-in, your site will periodically
+		  connect to the http://tripal.info website and provide updated registration details. If you opt-out, no
+		  registration information is communictated. You can opt-out at any time.  If you want previously submitted information
+		  deleted from the tripal.info database please email <a href = "@admin_url">@admin_text</a>.', ['@admin_url' => 'mailto:admin@tripal.info', '@admin_text' => 'admin@tripal.info']),
+        '#allowed_tags' => ['a',],
+
 		];
 		
 		$form['usage_details'] = [
@@ -66,7 +68,7 @@ class Register implements FormInterface {
 			Information about the Tripal modules installed on your site will be used to help justify continued development to
 			funding agencies.  Registration details may be shared with members of Tripal\'s Project Management Committee (PMC) and
 			Tripal\'s Steering Committee (TSC) and Tripal extension module usage may be shared with developers
-			of the the extension modules to aid in their funding requests.'),
+			of the extension modules to aid in their funding requests.'),
 		];
 		
 		$form['disable_tripal_reporting'] = array(
