@@ -2,3 +2,4 @@
 composer.phar
 */vendor/
 tripaldocker/dev/.env
+*/_build

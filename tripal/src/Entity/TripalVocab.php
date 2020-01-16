@@ -103,6 +103,14 @@ class TripalVocab extends ContentEntityBase implements ContentEntityInterface {
   }
 
   /**
+   *
+   */
+  public function setDescription($description) {
+    $this->set('description', $description);
+    return $this;
+  }
+
+  /**
    * @see \Drupal\tripal\Entity\TripalVocabInterface::getCreatedTime()
    */
   public function getCreatedTime() {
