@@ -12,8 +12,11 @@ In Drupal terminology, each Tripal content page is an content entity (e.g. MyFav
 
 This architecture allows you to categorize your data by type (e.g. gene versus germplasm variety) and provide specialized displays specific to each type.
 
+Both Tripal content and Tripal content types can be created through the administrative user interface or programatically. Tripal content entities and entity types have been extended to provide functionality specific to biological data. As such we recommend you create custom Tripal Content types rather then using the Drupal API directly.
+
 Additional Resources:
  - `Official Drupal Docs: What are Content Entities and Fields <https://www.drupal.org/docs/user_guide/en/planning-data-types.html>`_
  - `Official Drupal Docs: Introduction to Entity API in Drupal 8 <https://www.drupal.org/docs/8/api/entity-api/introduction-to-entity-api-in-drupal-8>`_
  - `Official Drupal Docs: Entity Types <https://www.drupal.org/docs/8/api/entity-api/entity-types>`_
  - `Unleashed Technologies: Drupal Entities - Part 1: What are they? <https://www.unleashed-technologies.com/blog/2017/04/10/drupal-entities-part-1-what-are-they>`_
+ - `Drupalize Me: Entity API Overview <https://drupalize.me/tutorial/entity-api-overview?p=2792>`_
