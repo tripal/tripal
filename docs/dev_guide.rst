@@ -7,5 +7,7 @@ Developers' Handbook
    :caption: Contents:
 
    dev_guide/oop
+   dev_guide/cvterms
    dev_guide/module_dev
    dev_guide/caching
+   dev_guide/lessons
