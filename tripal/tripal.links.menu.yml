@@ -38,6 +38,13 @@ entity.tripal_term.collection:
   parent: system.admin_structure
   weight: 98
 
+## CVterm lookup.
+tripal.cv_lookup:
+  title: 'Controlled Vocabularies'
+  route_name: tripal.cv_lookup
+  description: 'A tool to explore the controlled vocabularies that are used on this site.'
+  menu_name: tools
+
 ##
 # Tripal Admin menu
 ##
