@@ -1,0 +1,22 @@
+language: php
+
+services:
+  - docker
+  - postgres
+
+sudo: required
+
+php:
+  - 7.1
+  - 7.2
+  - 7.3
+
+env:
+  - BASE_URL="http://127.0.0.1:9000"
+
+install:
+  - composer create-project drupal-composer/drupal-project:8.x-dev tripal4 --stability dev --no-interaction
+
+before_script:
+  - psql -c "create database tripal4_dev encoding 'utf-8';" -U postgres
+  - psql -c "alter role postgres with password 'dbpass';" -U postgres

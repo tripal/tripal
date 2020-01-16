@@ -1,0 +1,23 @@
+{
+  "name": "drupal/tripal",
+  "description": "Tripal is an toolkit to facilitate construction of online genomic, genetic (and other biological) websites.",
+  "type": "drupal-module",
+  "homepage": "https://tripal.info",
+  "support": {
+    "issues": "https://github.com/tripal/t4d8/issues"
+  },
+  "license": "GPL-2.0-or-later",
+  "minimum-stability": "dev",
+  "require-dev": {
+    "doctrine/instantiator": "1.0.*"
+  },
+  "require": {
+    "php": "^7.1"
+  },
+  "repositories": {
+    "drupal": {
+      "type": "composer",
+      "url": "https://packages.drupal.org/8"
+    }
+  }
+}
