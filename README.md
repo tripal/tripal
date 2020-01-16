@@ -65,8 +65,32 @@ You now have a fully installed Tripal 4 site!
 
 ## Docker
 
-The Tripal docker included in this repository is still a work in progress and we would greatly welcome help completing it! If you want to get started fast, I recommend the [official Drupal 8 Docker from DockerHub](https://hub.docker.com/_/drupal). To install Tripal on it, simply clone this repository into the `web/modules` directory and enable.
+Docker is the fastest way to get started with Tripal 4 development. Production containers are not available yet.  
 
+### Docker Setup
+- Copy tripaldocker/dev/.env.example to tripaldocker/dev/.env
+- Run docker-compose up -d
+- Visit localhost:9000
+- When prompted for database information, use the following:
+  - Database type: PostgreSQL
+  - Database name: tripal
+  - Database username: tripal
+  - Database password: secret
+  - ADVANCED OPTIONS; Database host: postgres
+- Enable Tripal by visiting `Extend` and enabling the Tripal module.
+
+Since volumes are automatically setup for you, the installation step will only be required the first time you run `docker-compose up`. The data will be persisted thereafter (even when running docker-compose down).
+To remove data permanently, run `docker-compose rm`. 
+
+### Docker CLI
+- To access the drupal container run:
+  - `docker-compose exec drupal bash`
+- To access the database using psql run:
+  - `docker-compose exec postgres psql -U tripal -d tripal`
+- To run drush commands:
+  - `docker-compose run drush [YOUR OPTIONS]`
+  - Example: `docker-compose run drush en views`
+  
 # Development Testing
 
 See the [Drupal "Running PHPUnit tests" guide](https://www.drupal.org/node/2116263) for instructions on running tests on your local environment. In order to ensure our Tripal functional testing is fully bootstrapped, tests should be run from Drupal core.
