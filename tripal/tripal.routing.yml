@@ -15,7 +15,7 @@ tripal.admin_register:
   path: 'admin/tripal/register'
   defaults:
     _controller: '\Drupal\tripal\Form\Register'
-    _title: 'Registration'
+    _title: 'Tripal Registration'
   requirements:
     _permission: 'administer tripal'
 
@@ -175,7 +175,7 @@ tripal.content_bio_data_unpublish:
   path: 'admin/content/bio_data/unpublish'
   defaults:
     _controller: '\Drupal\tripal\Form\TripalContentUnpublishOrphans'
-    _title: 'Add Tripal Content'
+    _title: 'Unpublish Orphaned Content'
     _description: 'Unpublish content that has no associated records in the data store.'
   requirements:
     _permission: 'administer tripal'
@@ -259,17 +259,6 @@ tripal.cv_lookup_term:
   requirements:
     _permission: 'access content'
 
-# Potential duplicate.
-tripal.admin_cv_lookup:
-  path: 'cv/lookup/{cv}/{term}'
-  defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalAdminCVLookup'
-    _title: 'CV Lookup'
-  options:
-    _admin_route: 'TRUE'
-  requirements:
-    _permission: 'administer tripal'
-
 tripal.cv_lookup_term_children:
   path: 'cv/lookup/{vocabulary}/{accession}/children'
   defaults:
@@ -317,7 +306,7 @@ tripal.data_collections_delete:
     _tripal_access_check: 'TRUE'
 
 tripal.data_collections_view:
-  path: 'user/{uid}/data-collections/{collection_id}/delete'
+  path: 'user/{uid}/data-collections/{collection_id}/view'
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalController::tripalDataCollectionsView'
     _title: 'View a Collections'
@@ -418,7 +407,7 @@ tripal.files_quota_user_autocomplete:
 
 # User Files
 tripal.user_files:
-  path: 'user/{uid}/files'
+  path: 'user/{user}/files'
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalController::tripalUserFiles'
     _title: 'Files'

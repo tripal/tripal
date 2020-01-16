@@ -1,0 +1,54 @@
+# Access via "http://localhost:9000"
+#   (or "http://$(docker-machine ip):9000" if using docker-machine)
+#
+# During initial Drupal setup,
+# Database type: PostgreSQL
+# Database name: tripal
+# Database username: tripal
+# Database password: secret
+# ADVANCED OPTIONS; Database host: postgres
+
+version: '3.1'
+
+services:
+  drupal:
+    image: drupal:8-apache
+    ports:
+      - 9000:80
+    depends_on:
+      - postgres
+    volumes:
+      - .:/var/www/html/modules/tripal
+      - modules:/var/www/html/modules
+      - themes:/var/www/html/themes
+      - sites:/var/www/html/sites
+      # This anonymous volume allows drush to access drupal's root directory
+      - code:/var/www/html
+    restart: always
+
+  postgres:
+    image: postgres:10
+    env_file:
+      - tripaldocker/dev/.env
+    volumes:
+      - db:/var/lib/postgresql/data
+
+  drush:
+    image: drush/drush:8
+    restart: "no"
+    depends_on:
+      - drupal
+      - postgres
+    volumes:
+      - code:/app
+      - sites:/app/sites
+      - modules:/app/modules
+      - themes:/app/themes
+      - .:/app/modules/tripal
+
+volumes:
+  code:
+  db:
+  modules:
+  themes:
+  sites:
