@@ -31,11 +31,12 @@ class TripalFileQuota implements FormInterface{
    * @return array
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    $settings = Drupal::config('tripal.settings');
     // Provide overall server consumption (and space remaining)
     $default_quota = $form_state->getValue('default_quota',
-      Drupal::state()->get('tripal_default_file_quota', pow(20, 6)));
+      $settings->get('files.quota'));
     $default_expiration = $form_state->getValue('default_expiration_date',
-      Drupal::state()->get('tripal_default_file_expiration', '60'));
+      $settings->get('files.expiration'));
 
     // Optimized query to compute total size of storage used
     // by tripal users
@@ -197,9 +198,14 @@ class TripalFileQuota implements FormInterface{
         $size = (int) ($size * pow(10, 6));
         break;
     }
-    // Grab the quota value and exp_date to write to the drupal variables
-    Drupal::state()->set('tripal_default_file_quota', $size);
-    Drupal::state()->set('tripal_default_file_expiration', $expiration);
+
+    // Update configuration
+    Drupal::configFactory()
+      ->getEditable('tripal.settings')
+      ->set('files.quota', $size)
+      ->set('files.expiration', $expiration)
+      ->save();
+
     $this->messenger()->addStatus('Default quota settings have been set.');
   }
 

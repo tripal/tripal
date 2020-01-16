@@ -5,6 +5,7 @@ namespace Drupal\tripal\Form;
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerTrait;
+use Drupal;
 
 class TripalAdminManageFilesForm implements FormInterface{
 
@@ -28,8 +29,8 @@ class TripalAdminManageFilesForm implements FormInterface{
    * @return array
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $default_max_size = \Drupal::state()
-      ->get('tripal_files_upload_max_size', 10000000000);
+    $settings = Drupal::config('tripal.settings');
+    $default_max_size = $settings->get('files.max_size');
 
     $form['php_defaults'] = [
       '#type' => 'item',
@@ -101,7 +102,11 @@ class TripalAdminManageFilesForm implements FormInterface{
         break;
     }
 
-    \Drupal::state()->set('tripal_files_upload_max_size', $size);
+    // Update configuration
+    Drupal::configFactory()
+      ->getEditable('tripal.settings')
+      ->set('files.max_size', $size)
+      ->save();
 
     $this->messenger()->addStatus('Default settings have been set.');
   }

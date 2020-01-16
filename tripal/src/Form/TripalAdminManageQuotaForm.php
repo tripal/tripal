@@ -32,11 +32,13 @@ class TripalAdminManageQuotaForm implements FormInterface{
    * @return array
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+    $settings = Drupal::config('tripal.settings');
+
     $username = $form_state->getValue('username', '');
     $default_quota = $form_state->getValue('default_quota',
-      Drupal::state()->get('tripal_default_file_quota', pow(20, 6)));
+      $settings->get('files.quota'));
     $default_expiration = $form_state->getValue('default_expiration_date',
-      Drupal::state()->get('tripal_default_file_expiration', '60'));
+      $settings->get('files.expiration'));
 
     // Textfield (ajax call based off of existing users) for users on the site
     $form['username'] = [
@@ -158,7 +160,6 @@ class TripalAdminManageQuotaForm implements FormInterface{
 
     $this->messenger()->addStatus(t('Custom quota set for the user: @username',
       ['@username' => $username]));
-
 
     $form_state->setRedirect('tripal.files_quota');
   }
