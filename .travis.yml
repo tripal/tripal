@@ -28,7 +28,7 @@ before_install:
 install:
   - composer create-project drupal-composer/drupal-project:8.x-dev tripal4 --stability dev --no-interaction
   - tripal4/vendor/bin/drush site-install standard --db-url=pgsql://tripaladmin:tripal4developmentonlylocal@localhost/tripal4_dev --account-mail="tripaladmin@localhost" --account-name=tripaladmin --account-pass=some_admin_password --site-mail="tripaladmin@localhost" --site-name="Tripal 4 Development" -y
-  - mv t4d8 tripal4/modules/
+  - ls && mv tripal/t4d8 tripal4/web/modules/
 
 script:
   - tripal4/vendor/bin/drush en tripal
