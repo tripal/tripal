@@ -14,7 +14,7 @@ addons:
     - postgresql-client-10
 
 php:
-  - 7.1
+  - 7.2
 
 env:
   BASE_URL="http://localhost/tripal4/web" && SIMPLETEST_BASE_URL="http://localhost/tripal4/web" &&
@@ -28,3 +28,8 @@ before_install:
 install:
   - composer create-project drupal-composer/drupal-project:8.x-dev tripal4 --stability dev --no-interaction
   - tripal4/vendor/bin/drush site-install standard --db-url=pgsql://tripaladmin:tripal4developmentonlylocal@localhost/tripal4_dev --account-mail="tripaladmin@localhost" --account-name=tripaladmin --account-pass=some_admin_password --site-mail="tripaladmin@localhost" --site-name="Tripal 4 Development" -y
+  - mv t4d8 tripal4/modules/
+
+script:
+  - tripal4/vendor/bin/drush en tripal
+  - cd tripal4/web && ../vendor/bin/phpunit --configuration core modules/t4d8/tripal/tests/
