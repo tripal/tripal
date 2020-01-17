@@ -11,11 +11,16 @@ php:
   - 7.2
   - 7.3
 
+env:
+  BASE_URL="http://127.0.0.1/tripal4/web" && SIMPLETEST_BASE_URL="http://localhost/tripal4/web" &&
+  SIMPLETEST_DB=pgsql://tripaladmin:tripal4developmentonlylocal@localhost/tripal4_dev &&
+  BROWSER_OUTPUT_DIRECTORY=tripal4/web/sites/default/simpletest
+
 install:
   - composer create-project drupal-composer/drupal-project:8.x-dev tripal4 --stability dev --no-interaction
   - sleep 30
-  - psql -c "create database tripal4_dev encoding 'utf-8';" -U postgres
-  - psql -c "alter role postgres with password 'dbpass';" -U postgres
+  - psql -c "create database tripal4_dev encoding 'utf-8';"
+  - psql -c "alter role postgres with password 'dbpass';"
   - cd tripal4
   - drush site-install standard \
     --db-url=pgsql://tripaladmin:tripal4developmentonlylocal@localhost/tripal4_dev \
