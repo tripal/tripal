@@ -40,9 +40,9 @@ class TripalFileQuota implements FormInterface{
 
     // Optimized query to compute total size of storage used
     // by tripal users
-    $sql = "SELECT SUM(filesize) FROM {file_managed} 
+    $sql = "SELECT SUM(filesize) FROM {file_managed}
                 WHERE fid IN (
-                    SELECT DISTINCT fid FROM {file_usage} 
+                    SELECT DISTINCT fid FROM {file_usage}
                         WHERE module = 'tripal'
                 )";
     $total_size = (float) Drupal::database()->query($sql)->fetchField();
@@ -87,19 +87,25 @@ class TripalFileQuota implements FormInterface{
 
       $uid = $user->id();
 
-      $edit = Link::fromTextAndUrl('Edit',
+      // Use render arrays for action links.
+      // This was done since concatenating the links showed the markup.
+      $actions_renderable = [];
+      $actions_renderable['edit'] = Link::fromTextAndUrl('Edit',
         Drupal\Core\Url::fromRoute('tripal.files_quota_user_edit',
-          ['uid' => $uid]))->toString();
-      $remove = Link::fromTextAndUrl('Remove',
+          ['uid' => $uid]))->toRenderable();
+      $actions_renderable['divider'] = [
+        '#markup' => ' | ',
+      ];
+      $actions_renderable['remove'] = Link::fromTextAndUrl('Remove',
         Drupal\Core\Url::fromRoute('tripal.files_quota_remove',
-          ['uid' => $uid]))->toString();
+          ['uid' => $uid]))->toRenderable();
 
       $rows[] = [
         'uid' => $uid,
         'user' => $user->getAccountName(),
         'custom_quota' => tripal_format_bytes($entry->custom_quota),
         'exp_date' => $entry->custom_expiration,
-        'actions' => $edit . ' | ' . $remove,
+        'actions' => render($actions_renderable),
       ];
     }
 
@@ -118,7 +124,9 @@ class TripalFileQuota implements FormInterface{
           ->toString(),
     ];
 
-    $table = [
+
+    $form['custom']['custom_quotas'] = [
+      '#title' => t('Custom User Quotas'),
       '#type' => 'table',
       '#header' => $header,
       '#rows' => $rows,
@@ -127,12 +135,6 @@ class TripalFileQuota implements FormInterface{
       '#sticky' => TRUE,
       '#empty' => 'There are no custom user quotas.',
       '#colgroups' => [],
-    ];
-
-    $form['custom']['custom_quotas'] = [
-      '#type' => 'item',
-      '#title' => t('Custom User Quotas'),
-      '#markup' => render($table),
     ];
 
     $form['update_defaults'] = [
