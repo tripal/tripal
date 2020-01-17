@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Drupal\Core\Render\Element;
 
 require_once 'api/tripal.entities.api.php';
+require_once 'api/tripal.quotas.api.php';
 
 /**
  * Implements hook_help().
@@ -180,27 +181,6 @@ function tripal_accesss_user_collections($uid) {
     return FALSE;
   }
   return TRUE;
-}
-
-
-/**
- * Autocomplete function for listing existing users on the site.
- *
- * @return json array of users that match the query in the textfield
- **/
-function tripal_users_autocomplete($string) {
-  $matches = [];
-  $result = db_select('users', 'u')
-    ->fields('u', ['name'])
-    ->condition('name', '%' . db_like($string) . '%', 'LIKE')
-    ->execute();
-
-  foreach ($result as $row) {
-    $matches[$row->name] = check_plain($row->name);
-  }
-  //https://www.drupal.org/node/1665684 drupal_json_output is deprecated
-  //drupal_json_output($matches);
-  return new JsonResponse($matches);
 }
 
 /**

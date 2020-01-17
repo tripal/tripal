@@ -123,6 +123,13 @@ tripal.files:
   parent: tripal.admin
   weight: 80
 
+tripal.files_file_usage:
+  route_name: tripal.files_file_usage
+  description: 'Set maximum upload size.'
+  title: 'Manage Usage'
+  parent: tripal.files
+  weight: 80
+
 tripal.files_quota:
   route_name: tripal.files_quota
   description: 'Set default quota, expiration date, and custom quotas'

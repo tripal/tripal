@@ -31,11 +31,15 @@ function tripal_install() {
   //];
   //menu_save($menu);
 
-  Drupal::entityTypeManager()->getStorage('menu')->create([
-    'id' => 'data_search',
-    'label' => t('Data Search'),
-    'description' => t('The Data Search menu contains links to search tools for finding biological data.'),
-  ])->save();
+  $storage = Drupal::entityTypeManager()->getStorage('menu');
+  $menu = $storage->load('data_search');
+  if (is_null($menu)) {
+    $storage->create([
+      'id' => 'data_search',
+      'label' => t('Data Search'),
+      'description' => t('The Data Search menu contains links to search tools for finding biological data.'),
+    ])->save();
+  }
 }
 
 /**

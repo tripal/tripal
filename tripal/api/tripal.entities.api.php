@@ -150,3 +150,33 @@ function theme_token_list($tokens) {
     '#rows' => $rows
   ];
 }
+
+/**
+ * Formats a size (in bytes) in human readable format.
+ *
+ * Function taken from php.net
+ *
+ * @param $bytes
+ *   The size of the file in bytes
+ * @param $precision
+ *   The number of decimal places to use in the final number if needed
+ *
+ * @return string
+ *   A formatted string indicating the size of the file
+ *
+ *
+ * @ingroup tripal_files_api
+ */
+function tripal_format_bytes($bytes, $precision = 2) {
+  $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+
+  $bytes = max($bytes, 0);
+  $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+  $pow = min($pow, count($units) - 1);
+
+  // Uncomment one of the following alternatives
+  $bytes /= pow(1000, $pow);
+  // $bytes /= (1 << (10 * $pow));
+
+  return round($bytes, $precision) . '' . $units[$pow];
+}

@@ -44,6 +44,38 @@ entity.tripal_vocab.delete_form:
   base_route:  entity.tripal_vocab.canonical
   title: Delete
   weight: 10
+  
+##
+# Tripal Files
+##
+
+tripal.files_file_usage:
+  route_name: tripal.files_file_usage
+  description: 'Set system'
+  title: 'Manage Usage'
+  base_route: tripal.files
+  weight: 80
+
+tripal.files_quota:
+  route_name: tripal.files_quota
+  description: 'Set default quota, expiration date, and custom quotas'
+  title: 'User Quotas'
+  base_route: tripal.files
+  weight: 90
+
+tripal.files_usage:
+  route_name: tripal.files_usage
+  description: 'Set default quota, expiration date, and custom quotas'
+  title: 'File Usage'
+  base_route: tripal.files
+  weight: 100
+
+tripal.files_quota_add:
+  route_name: tripal.files_quota_add
+  description: 'Gives the user a new quota and expiration date'
+  title: 'Add Custom Quota'
+  base_route: tripal.files
+  weight: 110
 
 # Tripal files tab on user page.
 tripal.user_files:
@@ -51,3 +83,4 @@ tripal.user_files:
   base_route: entity.user.canonical
   title: Files
   weight: 8
+
