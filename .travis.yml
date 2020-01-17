@@ -27,7 +27,8 @@ before_install:
 
 install:
   - composer create-project drupal-composer/drupal-project:8.x-dev tripal4 --stability dev --no-interaction
-  - drush site-install standard \
+  - chmod -R +w web/sites/default && composer require drush/drush
+  - vendor/bin/drush site-install standard \
     --db-url=pgsql://tripaladmin:tripal4developmentonlylocal@localhost/tripal4_dev \
     --account-mail="tripaladmin@localhost" \
     --account-name=tripaladmin \
