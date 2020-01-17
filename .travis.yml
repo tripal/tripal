@@ -24,7 +24,7 @@ env:
 before_install:
   # Get apache up and running.
   - sudo apt-get update
-  - sudo apt-get install apache2 libapache2-mod-fastcgi
+  - sudo apt-get install apache2 libapache2-mod-php apache2-utils
   - sudo service apache2 restart
   # Create the user/database for the drupal site.
   - psql --command="CREATE USER tripaladmin WITH PASSWORD 'tripal4developmentonlylocal'" -U postgres
