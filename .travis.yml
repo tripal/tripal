@@ -17,20 +17,27 @@ php:
   - 7.2
 
 env:
-  BASE_URL="http://localhost/tripal4/web" && SIMPLETEST_BASE_URL="http://127.0.0.1:8080/tripal4/web" &&
+  BASE_URL="http://localhost:9000/tripal4/web" && SIMPLETEST_BASE_URL="http://localhost:9000/tripal4/web" &&
   SIMPLETEST_DB=pgsql://tripaladmin:tripal4developmentonlylocal@localhost/tripal4_dev &&
   BROWSER_OUTPUT_DIRECTORY=tripal4/web/sites/default/simpletest
 
 before_install:
+  # Create the user/database for the drupal site.
   - psql --command="CREATE USER tripaladmin WITH PASSWORD 'tripal4developmentonlylocal'" -U postgres
   - psql --command="CREATE DATABASE tripal4_dev WITH OWNER tripaladmin" -U postgres
 
 install:
+  # pull down the drupal files.
   - composer create-project drupal-composer/drupal-project:8.x-dev tripal4 --stability dev --no-interaction
+  # Install the drupal site.
   - tripal4/vendor/bin/drush site-install standard --db-url=pgsql://tripaladmin:tripal4developmentonlylocal@localhost/tripal4_dev --account-mail="tripaladmin@localhost" --account-name=tripaladmin --account-pass=some_admin_password --site-mail="tripaladmin@localhost" --site-name="Tripal 4 Development" -y
+  # Move the cloned module into the drupal modules directory.
   - ln -s "$(pwd)" tripal4/web/modules/t4d8
-  - ls -lh tripal4/web/modules/t4d8
 
 script:
+  # Start PHP's built in webserver, quietly and in the background.
+  - tripal4/vendor/bin/drush serve localhost:9000 --quiet &
+  # Enable the module.
   - tripal4/vendor/bin/drush en tripal
+  # Navigate to the Drupal webroot and then run the module tests.
   - cd tripal4/web && ../vendor/bin/phpunit --configuration core modules/t4d8/tripal/tests/
