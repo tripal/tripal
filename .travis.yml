@@ -11,12 +11,16 @@ php:
   - 7.2
   - 7.3
 
-env:
-  - BASE_URL="http://127.0.0.1:9000"
-
 install:
   - composer create-project drupal-composer/drupal-project:8.x-dev tripal4 --stability dev --no-interaction
-
-before_script:
+  - sleep 30
   - psql -c "create database tripal4_dev encoding 'utf-8';" -U postgres
   - psql -c "alter role postgres with password 'dbpass';" -U postgres
+  - cd tripal4
+  - drush site-install standard \
+    --db-url=pgsql://tripaladmin:tripal4developmentonlylocal@localhost/tripal4_dev \
+    --account-mail="tripaladmin@localhost" \
+    --account-name=tripaladmin \
+    --account-pass=some_admin_password \
+    --site-mail="tripaladmin@localhost" \
+    --site-name="Tripal 4 Development"
