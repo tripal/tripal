@@ -17,16 +17,16 @@ php:
   - 7.1
 
 env:
-  BASE_URL="http://127.0.0.1/web" && SIMPLETEST_BASE_URL="http://localhost/web" &&
+  BASE_URL="http://localhost/tripal4/web" && SIMPLETEST_BASE_URL="http://localhost/tripal4/web" &&
   SIMPLETEST_DB=pgsql://tripaladmin:tripal4developmentonlylocal@localhost/tripal4_dev &&
-  BROWSER_OUTPUT_DIRECTORY=web/sites/default/simpletest
+  BROWSER_OUTPUT_DIRECTORY=tripal4/web/sites/default/simpletest
 
 before_install:
   - psql --command="CREATE USER tripaladmin WITH PASSWORD 'tripal4developmentonlylocal'" -U postgres
   - psql --command="CREATE DATABASE tripal4_dev WITH OWNER tripaladmin" -U postgres
 
 install:
-  - composer create-project drupal-composer/drupal-project:8.x-dev ./ --stability dev --no-interaction
+  - composer create-project drupal-composer/drupal-project:8.x-dev tripal4 --stability dev --no-interaction
   - drush site-install standard \
     --db-url=pgsql://tripaladmin:tripal4developmentonlylocal@localhost/tripal4_dev \
     --account-mail="tripaladmin@localhost" \
