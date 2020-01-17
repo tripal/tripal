@@ -39,8 +39,6 @@ install:
   - ln -s "$(pwd)" tripal4/web/modules/t4d8
 
 script:
-  # Start PHP's built in webserver, quietly and in the background.
-  - tripal4/vendor/bin/drush serve localhost:9000 --quiet &
   # Enable the module.
   - tripal4/vendor/bin/drush en tripal
   # Navigate to the Drupal webroot and then run the module tests.
