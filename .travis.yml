@@ -17,11 +17,15 @@ php:
   - 7.2
 
 env:
-  BASE_URL="http://localhost:9000/tripal4/web" && SIMPLETEST_BASE_URL="http://localhost:9000/tripal4/web" &&
+  BASE_URL="http://localhost/tripal4/web" && SIMPLETEST_BASE_URL="http://localhost/tripal4/web" &&
   SIMPLETEST_DB=pgsql://tripaladmin:tripal4developmentonlylocal@localhost/tripal4_dev &&
   BROWSER_OUTPUT_DIRECTORY=tripal4/web/sites/default/simpletest
 
 before_install:
+  # Get apache up and running.
+  - sudo apt-get update
+  - sudo apt-get install apache2 libapache2-mod-fastcgi
+  - sudo service apache2 restart
   # Create the user/database for the drupal site.
   - psql --command="CREATE USER tripaladmin WITH PASSWORD 'tripal4developmentonlylocal'" -U postgres
   - psql --command="CREATE DATABASE tripal4_dev WITH OWNER tripaladmin" -U postgres
