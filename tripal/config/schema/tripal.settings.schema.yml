@@ -1,0 +1,13 @@
+tripal.settings:
+  type: config_object
+  label: Tripal Settings
+  mapping:
+    files:
+      type: config_object
+      mapping:
+        max_size:
+          type: integer
+        quota:
+          type: integer
+        expiration:
+          type: integer
