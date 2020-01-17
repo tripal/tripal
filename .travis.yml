@@ -6,6 +6,13 @@ services:
 
 sudo: required
 
+addons:
+  postgresql: "10"
+  apt:
+    packages:
+    - postgresql-10
+    - postgresql-client-10
+
 php:
   - 7.1
 
