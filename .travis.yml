@@ -19,8 +19,6 @@ env:
 before_script:
   - psql --command="CREATE USER tripaladmin WITH PASSWORD 'tripal4developmentonlylocal'" -U postgres
   - psql --command="CREATE DATABASE tripal4_dev WITH OWNER tripaladmin" -U postgres
-
-install:
   - composer create-project drupal-composer/drupal-project:8.x-dev tripal4 --stability dev --no-interaction
   - cd tripal4
   - drush site-install standard \
