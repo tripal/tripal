@@ -16,7 +16,7 @@ before_install:
 script:
   # run drupal container in background mapping apache to port 9000
   # and map the current drupal-dev site into the webroot of the container.
-  - docker run --publish=9000:80 --name=drupal8dev_ci -t -i -d drupal8dev_ci  -v "$(pwd):/var/www/html/drupal8/web/modules/t4d8
+  - docker run --publish=9000:80 --name=drupal8dev_ci -t -i -d drupal8dev_ci  -v "$(pwd):/var/www/html/drupal8/web/modules/t4d8"
   # Start the database
   - docker exec drupal8dev_ci service postgresql start
   - sleep 30 #wait for the database to start
