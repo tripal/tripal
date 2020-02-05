@@ -21,7 +21,11 @@ script:
   - docker exec drupal8dev_ci service postgresql start
   - sleep 30 #wait for the database to start
 
+  - ls
+  - pwd
+  - docker exec --workdir=/var/www/html/drupal8 drupal8dev_ci ls web/modules
+
   # Enable the module.
   - docker exec --workdir=/var/www/html/drupal8 drupal8dev_ci vendor/drush/drush/drush en tripal
   # Navigate to the Drupal webroot and then run the module tests.
-  - docker exec --workdir=/var/www/html/drupal8/web drupal8dev_ci ../vendor/phpunit/phpunit/phpunit --configuration core core/modules/simpletest/tests
+  - docker exec --workdir=/var/www/html/drupal8/web drupal8dev_ci ../vendor/phpunit/phpunit/phpunit --configuration core modules/t4d8/tripal/tests
