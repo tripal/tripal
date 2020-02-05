@@ -102,7 +102,7 @@ function tripal_preprocess_html(&$variables) {
   // make sure the date time settings are the way Tripal will insert them
   // otherwise PostgreSQL version that may have a different datestyle setting
   // will fail when inserting or updating a date column in a table.
-  db_query("SET DATESTYLE TO :style", array(':style' => 'MDY'));
+  Drupal::database()->query("SET DATESTYLE TO :style", array(':style' => 'MDY'));
 
   //Ask users to do the registration form
   //if (\Drupal::currentUser()->hasPermission('administer tripal')) {
@@ -304,7 +304,7 @@ function tripal_shortcut_default_set($account) {
 
 function TripalBundle_load($bundle_type, $reset = FALSE) {
   // Get the type of entity by the ID.
-  $bundle = db_select('tripal_bundle', 'tdt')
+  $bundle = Drupal::database()->select('tripal_bundle', 'tdt')
     ->fields('tdt')
     ->condition('name', $bundle_type)
     ->execute()

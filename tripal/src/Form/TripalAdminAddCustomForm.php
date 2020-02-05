@@ -35,7 +35,7 @@ class TripalAdminAddCustomForm extends ConfigFormBase {
     $config = $this->config('tripal_admin.settings');
     $username = '';
     $default_quota =  $config->get('tripal_default_file_quota') ?: pow(20, 6);
-    $default_expiration = $config->get('tripal_default_file_expiration') ?: '60'; 
+    $default_expiration = $config->get('tripal_default_file_expiration') ?: '60';
 
     if (array_key_exists('values', $form_state)) {
       $username = $form_state['values']['username'];
@@ -91,13 +91,13 @@ class TripalAdminAddCustomForm extends ConfigFormBase {
 
     // Make sure the username is a valid user.
     $sql = "SELECT uid FROM {users} WHERE name = :name";
-    $uid = db_query($sql, [':name' => $username])->fetchField();
+    $uid = Drupal::database()->query($sql, [':name' => $username])->fetchField();
     if (!$uid) {
       $form_state->setErrorByName('username', $this->t('Cannot find this username'));
     }
 
     // Does a quota already exist for this user? If so, then don't add it again
-    $check = db_select('tripal_custom_quota', 'tgcq')
+    $check = Drupal::database()->select('tripal_custom_quota', 'tgcq')
       ->fields('tgcq', ['uid'])
       ->condition('uid', $uid)
       ->execute()
@@ -150,7 +150,7 @@ class TripalAdminAddCustomForm extends ConfigFormBase {
 
     // Get the UID of the given user.
     $sql = "SELECT uid FROM {users} WHERE name = :name";
-    $uid = db_query($sql, [':name' => $username])->fetchField();
+    $uid = Drupal::database()->query($sql, [':name' => $username])->fetchField();
 
     // Stripaluota.
     tripal_set_user_quota($uid, $size, $expiration);

@@ -5,6 +5,7 @@ namespace Drupal\tripal\ListBuilders;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Routing\LinkGeneratorTrait;
+use Drupal\Core\Link;
 use Drupal\Core\Url;
 
 /**
@@ -37,17 +38,17 @@ class TripalTermListBuilder extends EntityListBuilder {
     $vocab_label = '';
     $vocab_name = '';
     if ($vocab) {
-      $vocab_name = \Drupal::l(
+      $vocab_name = Link::fromTextAndUrl(
         $vocab->getName(),
         $vocab->toUrl('canonical', ['tripal_vocab' => $vocab->id()])
-      );
+      )->toString();
       $vocab_label = $vocab->getLabel();
     }
 
-    $row['name'] = \Drupal::l(
+    $row['name'] = Link::fromTextAndUrl(
       $entity->getName(),
       $entity->toUrl('canonical', ['tripal_term' => $entity->id()])
-    );
+    )->toString();
     $row['cv'] = $vocab_name;
     $row['accession'] = $vocab_label . ':' . $entity->getAccession();
 
