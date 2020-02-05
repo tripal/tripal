@@ -28,7 +28,7 @@ class TripalEntityTypeListBuilder extends ConfigEntityListBuilder {
   public function buildRow(EntityInterface $entity) {
     $row['label'] = \Drupal::l(
       $entity->label(),
-      $entity->urlInfo('edit-form', ['tripal_entity_type' => $entity->id()])
+      $entity->toUrl('edit-form', ['tripal_entity_type' => $entity->id()])
     );
     $row['id'] = $entity->id();
 

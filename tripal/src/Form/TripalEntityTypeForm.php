@@ -276,7 +276,7 @@ class TripalEntityTypeForm extends EntityForm {
           '%label' => $tripal_entity_type->label(),
         ]));
     }
-    $form_state->setRedirectUrl($tripal_entity_type->urlInfo('collection'));
+    $form_state->setRedirectUrl($tripal_entity_type->toUrl('collection'));
   }
 
 }

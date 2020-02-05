@@ -40,7 +40,7 @@ class TripalEntityListBuilder extends EntityListBuilder {
 
     $row['title'] = \Drupal::l(
       $entity->getTitle(),
-      $entity->urlInfo('canonical', ['tripal_entity' => $entity->id()])
+      $entity->toUrl('canonical', ['tripal_entity' => $entity->id()])
     );
 
     $row['type'] = $bundle->getLabel();

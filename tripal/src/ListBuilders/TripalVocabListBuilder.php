@@ -33,7 +33,7 @@ class TripalVocabListBuilder extends EntityListBuilder {
 
     $row['name'] = \Drupal::l(
       $entity->getName(),
-      $entity->urlInfo('canonical', ['tripal_entity_type' => $entity->id()])
+      $entity->toUrl('canonical', ['tripal_entity_type' => $entity->id()])
     );
 
     $row['short_name'] = $entity->getLabel();

@@ -39,14 +39,14 @@ class TripalTermListBuilder extends EntityListBuilder {
     if ($vocab) {
       $vocab_name = \Drupal::l(
         $vocab->getName(),
-        $vocab->urlInfo('canonical', ['tripal_vocab' => $vocab->id()])
+        $vocab->toUrl('canonical', ['tripal_vocab' => $vocab->id()])
       );
       $vocab_label = $vocab->getLabel();
     }
 
     $row['name'] = \Drupal::l(
       $entity->getName(),
-      $entity->urlInfo('canonical', ['tripal_term' => $entity->id()])
+      $entity->toUrl('canonical', ['tripal_term' => $entity->id()])
     );
     $row['cv'] = $vocab_name;
     $row['accession'] = $vocab_label . ':' . $entity->getAccession();
