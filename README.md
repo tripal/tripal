@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/tripal/t4d8.svg?branch=8.x-4.x)](https://travis-ci.org/tripal/t4d8)
+
+
 ![alt tag](https://raw.githubusercontent.com/tripal/tripal/7.x-3.x/tripal/theme/images/tripal_logo.png)
 
 # Tripal 4 Drupal 8
