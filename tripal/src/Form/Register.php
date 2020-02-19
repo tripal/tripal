@@ -13,21 +13,21 @@ use Drupal\Core\Form\FormStateInterface;
  */
 class Register implements FormInterface {
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function getFormID() {
-		return 'tripal_admin_form_register';
-	}
+  /**
+   * {@inheritdoc}
+   */
+  public function getFormID() {
+    return 'tripal_admin_form_register';
+  }
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function buildForm(array $form, FormStateInterface $form_state) {
+  /**
+   * {@inheritdoc}
+   */
+  public function buildForm(array $form, FormStateInterface $form_state) {
 
     $form_data = \Drupal::state()->get('tripal_site_registration', new \Drupal\Core\Form\FormState());
 
-	  $form['description'] = [
+    $form['description'] = [
       '#title' => 'Why Register your Site?',
       '#type' => 'item',
       '#markup' => t('Registering your site is important for continued improvements to the software.  You may opt-in by providing answers to the
@@ -36,21 +36,21 @@ class Register implements FormInterface {
         registration information is communictated. You can opt-out at any time.  If you want previously submitted information
         deleted from the tripal.info database please email <a href = "@admin_url">@admin_text</a>.', ['@admin_url' => 'mailto:admin@tripal.info', '@admin_text' => 'admin@tripal.info']),
       '#allowed_tags' => ['a',],
-		];
+    ];
 
-		$form['usage_details'] = [
-		  '#title' => 'How will this data be used?',
-		  '#type' => 'item',
-		  '#markup' => t('Tripal is open-source, freely-available, but
+    $form['usage_details'] = [
+      '#title' => 'How will this data be used?',
+      '#type' => 'item',
+      '#markup' => t('Tripal is open-source, freely-available, but
         dependent on external funding. When you register your site, it provides important details that can
         be used to justify continued support from funding agencies. The information provided will not be shared publically.
         Information about the Tripal modules installed on your site will be used to help justify continued development to
         funding agencies.  Registration details may be shared with members of Tripal\'s Project Management Committee (PMC) and
         Tripal\'s Steering Committee (TSC) and Tripal extension module usage may be shared with developers
         of the extension modules to aid in their funding requests.'),
-		];
+    ];
 
-		$form['disable_tripal_reporting'] = [
+    $form['disable_tripal_reporting'] = [
       '#type' => 'checkbox',
       '#title' => t('Do not register this site (opt-out).'),
       '#default_value' => $form_data->getValue('disable_tripal_reporting'),
@@ -63,29 +63,29 @@ class Register implements FormInterface {
       ],
       '#prefix' => '<div id="reporting">',
       '#suffix' => '</div>',
-		];
+    ];
 
-		$purpose = [0 => t('Production'), 1 => t('Development'), 2 => t('Experimental')];
-		$form['details']['tripal_reg_site_purpose'] = [
-			'#type' => 'radios',
-			'#title' => t('Site Status'),
-			'#default_value' => $form_data->getValue('tripal_reg_site_purpose'),
-			'#options' => $purpose,
-			'#required' => FALSE,
-			'#description' => t('Please register your site regardless if it is experimental (to explore tripal), 
+    $purpose = [0 => t('Production'), 1 => t('Development'), 2 => t('Experimental')];
+    $form['details']['tripal_reg_site_purpose'] = [
+      '#type' => 'radios',
+      '#title' => t('Site Status'),
+      '#default_value' => $form_data->getValue('tripal_reg_site_purpose'),
+      '#options' => $purpose,
+      '#required' => FALSE,
+      '#description' => t('Please register your site regardless if it is experimental (to explore tripal), 
         for development of a future site (or updates to an existing site), or a site currently 
         in production. For funding, it is important to know how many sites are active for each category.  If your site changes 
         status, such as from development to production, please remember to return and update the purpose.')
-		];
+    ];
 
-		$form['details']['tripal_reg_site_modules'] = [
+    $form['details']['tripal_reg_site_modules'] = [
       '#type' => 'checkbox',
       '#default_value' => $form_data->getValue('tripal_reg_site_modules', 1),
       '#title' => t('Report your installed Tripal Extensions.'),
       '#description' => t('When checked, any Tripal extension modules that you have installed will be reported with your site\'s registration information.')
-		];
+    ];
 
-		$form['details']['tripal_reg_site_description'] = [
+    $form['details']['tripal_reg_site_description'] = [
       '#type' => 'textarea',
       '#title' => t('Description of the site'),
       '#default_value' => $form_data->getValue('tripal_reg_site_description'),
@@ -93,66 +93,66 @@ class Register implements FormInterface {
       '#description' => t('Please provide a brief description of this site.  Consider including
         details such as its purpose, the primary data types your site provides, and the
         research community your site serves.')
-		];
+    ];
 
-		$form['details']['principal_investigator'] = [
-			'#type' => 'fieldset',
-			'#title' => t('Principal Investigator Contact Information'),
-			'#collapsible' => TRUE,
-			'#collapsed' => FALSE,
-			'#description' => t('Please provide the name and email of this site\'s principal
-			 investigator (PI). If the name and email are provided then the PI agrees to
-			 receive periodic communication from either the Tripal Advisory Committee (TAC) or
-			 Project Management Committee (PMC) for the purposes of engaging with the larger
-			 Tripal user community. The PI will NOT be automatically subscribed to mailing lists.')
-		];
+    $form['details']['principal_investigator'] = [
+      '#type' => 'fieldset',
+      '#title' => t('Principal Investigator Contact Information'),
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+      '#description' => t('Please provide the name and email of this site\'s principal
+       investigator (PI). If the name and email are provided then the PI agrees to
+       receive periodic communication from either the Tripal Advisory Committee (TAC) or
+       Project Management Committee (PMC) for the purposes of engaging with the larger
+       Tripal user community. The PI will NOT be automatically subscribed to mailing lists.')
+    ];
 
-		$form['details']['principal_investigator']['principal_investigator_name'] = [
-			'#type' => 'textfield',
-			'#title' => t('Name'),
-			'#default_value' => $form_data->getValue('principal_investigator_name'),
-			'#required' => FALSE,
-		];
+    $form['details']['principal_investigator']['principal_investigator_name'] = [
+      '#type' => 'textfield',
+      '#title' => t('Name'),
+      '#default_value' => $form_data->getValue('principal_investigator_name'),
+      '#required' => FALSE,
+    ];
 
-		$form['details']['principal_investigator']['principal_investigator_email'] = [
-			'#type' => 'textfield',
-			'#title' => t('Email'),
-			'#default_value' => $form_data->getValue('principal_investigator_email'),
-			'#required' => FALSE,
-		];
+    $form['details']['principal_investigator']['principal_investigator_email'] = [
+      '#type' => 'textfield',
+      '#title' => t('Email'),
+      '#default_value' => $form_data->getValue('principal_investigator_email'),
+      '#required' => FALSE,
+    ];
 
-		$form['details']['tripal_reg_site_admin'] = [
-			'#type' => 'fieldset',
-			'#title' => t('Site Manager (if different from the principal investigator)'),
-			'#collapsible' => TRUE,
-			'#collapsed' => TRUE,
-			'#description' => t('Please provide the name and email of this site\'s manager if
+    $form['details']['tripal_reg_site_admin'] = [
+      '#type' => 'fieldset',
+      '#title' => t('Site Manager (if different from the principal investigator)'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#description' => t('Please provide the name and email of this site\'s manager if
         different from the PI. Sometimes, site managers desire involvement in community
         activites as well as the PI.  If the name and email are provided then the site manager agrees to
         receive periodic communication from either the Tripal Advisory Committee (TAC) or
         Project Management Committee (PMC) for the purposes of engaging with the larger
         Tripal user community. The site manager will NOT be automatically subscribed to mailing lists.')
-		];
-
-		$form['details']['tripal_reg_site_admin']['tripal_reg_site_admin_name'] = [
-			'#type' => 'textfield',
-			'#title' => t('Name'),
-			'#default_value' => $form_data->getValue('tripal_reg_site_admin_name'),
-			'#required' => FALSE,
-		];
-
-		$form['details']['tripal_reg_site_admin']['tripal_reg_site_admin_email'] = [
-			'#type' => 'textfield',
-			'#title' => t('Email'),
-			'#default_value' => $form_data->getValue('tripal_reg_site_admin_email'),
-			'#required' => FALSE,
     ];
 
-		$form['details']['funding'] = [
-			'#type' => 'container',
-			'#tree' => TRUE,
-			'#prefix' => '<div id="funding">',
-			'#suffix' => '</div>',
+    $form['details']['tripal_reg_site_admin']['tripal_reg_site_admin_name'] = [
+      '#type' => 'textfield',
+      '#title' => t('Name'),
+      '#default_value' => $form_data->getValue('tripal_reg_site_admin_name'),
+      '#required' => FALSE,
+    ];
+
+    $form['details']['tripal_reg_site_admin']['tripal_reg_site_admin_email'] = [
+      '#type' => 'textfield',
+      '#title' => t('Email'),
+      '#default_value' => $form_data->getValue('tripal_reg_site_admin_email'),
+      '#required' => FALSE,
+    ];
+
+    $form['details']['funding'] = [
+      '#type' => 'container',
+      '#tree' => TRUE,
+      '#prefix' => '<div id="funding">',
+      '#suffix' => '</div>',
     ];
 
     $default_num_funding = max(count($form_data->getValue('funding')), 1);
@@ -169,39 +169,39 @@ class Register implements FormInterface {
 
     for ($i = 1; $i <= $num_funding; $i++) {
       $form['details']['funding'][$i] = [
-				'#type' => 'fieldset',
-				'#title' => t("Funding Source $i"),
-				'#tree' => TRUE,
-				'#collapsible' => TRUE,
-				'#collapsed' => $i !== $num_funding,
-				'#description' => t('When requesting funds for additional Tripal development,
+        '#type' => 'fieldset',
+        '#title' => t("Funding Source $i"),
+        '#tree' => TRUE,
+        '#collapsible' => TRUE,
+        '#collapsed' => $i !== $num_funding,
+        '#description' => t('When requesting funds for additional Tripal development,
           it is important to report the breadth of of funding sources for Tripal sites.
           Please consider sharing this information by providing the granting
           agency, and funding periods.')
       ];
 
       $form['details']['funding'][$i]['tripal_reg_site_agency'] = [
-			  '#type' => 'textfield',
-			  '#default_value' => $form_data->getValue(['funding', $i, 'tripal_reg_site_agency']),
-			  '#title' => t('Funding Agency'),
+        '#type' => 'textfield',
+        '#default_value' => $form_data->getValue(['funding', $i, 'tripal_reg_site_agency']),
+        '#title' => t('Funding Agency'),
       ];
 
-			$form['details']['funding'][$i]['tripal_reg_site_grant'] = [
-			  '#type' => 'textfield',
-			  '#default_value' => $form_data->getValue(['funding', $i, 'tripal_reg_site_grant']),
-			  '#title' => t('Grant Number'),
+      $form['details']['funding'][$i]['tripal_reg_site_grant'] = [
+        '#type' => 'textfield',
+        '#default_value' => $form_data->getValue(['funding', $i, 'tripal_reg_site_grant']),
+        '#title' => t('Grant Number'),
       ];
 
-			$form['details']['funding'][$i]['tripal_reg_site_amount'] = [
-			  '#type' => 'textfield',
-			  '#default_value' => $form_data->getValue(['funding', $i, 'tripal_reg_site_amount']),
-			  '#title' => t('Funding Amount'),
+      $form['details']['funding'][$i]['tripal_reg_site_amount'] = [
+        '#type' => 'textfield',
+        '#default_value' => $form_data->getValue(['funding', $i, 'tripal_reg_site_amount']),
+        '#title' => t('Funding Amount'),
       ];
 
-			$form['details']['funding'][$i]['funding_period'] = [
-			  '#type' => 'fieldset',
-			  '#title' => t('Funding Period'),
-			  '#tree' => TRUE,
+      $form['details']['funding'][$i]['funding_period'] = [
+        '#type' => 'fieldset',
+        '#title' => t('Funding Period'),
+        '#tree' => TRUE,
       ];
 
       $year = (int) date('Y');
@@ -209,30 +209,30 @@ class Register implements FormInterface {
       $years = range( $year - $diff, $year + $diff);
       $years = array_combine($years, $years);
 
-			$form['details']['funding'][$i]['funding_period']['tripal_reg_site_start'] = [
-			  '#type' => 'select',
-			  '#title' => t('Start Year'),
+      $form['details']['funding'][$i]['funding_period']['tripal_reg_site_start'] = [
+        '#type' => 'select',
+        '#title' => t('Start Year'),
         '#default_value' => $form_data->getValue(['funding', $i, 'funding_period', 'tripal_reg_site_start'], $year),
         '#options' => $years,
       ];
 
-			$form['details']['funding'][$i]['funding_period']['tripal_reg_site_end'] = [
-			  '#type' => 'select',
-			  '#title' => t('End Year'),
-			  '#default_value' => $form_data->getValue(['funding', $i, 'funding_period', 'tripal_reg_site_end'], $year),
+      $form['details']['funding'][$i]['funding_period']['tripal_reg_site_end'] = [
+        '#type' => 'select',
+        '#title' => t('End Year'),
+        '#default_value' => $form_data->getValue(['funding', $i, 'funding_period', 'tripal_reg_site_end'], $year),
         '#options' => $years,
-			];
+      ];
     }
 
-		$form['details']['funding']['add_funding'] = [
+    $form['details']['funding']['add_funding'] = [
       '#type' => 'button',
       '#button_type' => 'button',
-			'#value' => t('Add additional funding sources'),
+      '#value' => t('Add additional funding sources'),
       '#href' => '',
       '#name' => 'add_funding',
-			'#ajax' => [
-			  'callback' => '::registerAjaxCallback',
-			  'wrapper' => 'funding',
+      '#ajax' => [
+        'callback' => '::registerAjaxCallback',
+        'wrapper' => 'funding',
       ],
     ];
 
@@ -241,7 +241,7 @@ class Register implements FormInterface {
       '#type' => 'submit',
       '#value' => !empty($form_data) ? 'Update registration information' : 'Register Site',
     ];
-		return $form;		
+    return $form;    
   }
 
   /**
@@ -272,10 +272,10 @@ class Register implements FormInterface {
     return $form['disable_tripal_reporting'];
   }
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function validateForm(array &$form, FormStateInterface $form_state) {
+  /**
+   * {@inheritdoc}
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
     if ($form_state->isSubmitted()) {
       $mail_pi = $form_state->getValue('principal_investigator_email');
       $mail_sa = $form_state->getValue('tripal_reg_site_admin_email');
@@ -297,12 +297,12 @@ class Register implements FormInterface {
         }
       }
     }
-	}
+  }
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function submitForm(array &$form, FormStateInterface $form_state) {
+  /**
+   * {@inheritdoc}
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state) {
     \Drupal::state()->set('disable_tripal_reporting', TRUE);
 
     //Check for empty funding periods and remove them.
