@@ -1,11 +1,12 @@
 <?php
 
 class data__sequence_coordinates_formatter extends ChadoFieldFormatter {
+
   // The default lable for this field.
-  public static $default_label = 'Sequence Coordinates';
+  public static $default_label = 'Sequence Coordinate List';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = array('data__sequence_coordinates');
+  public static $field_types = ['data__sequence_coordinates'];
 
 
   /**
@@ -15,12 +16,12 @@ class data__sequence_coordinates_formatter extends ChadoFieldFormatter {
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
     $reference_term = 'data:3002';
-    $fmin_term = tripal_get_chado_semweb_term('featureloc', 'fmin');
-    $fmax_term = tripal_get_chado_semweb_term('featureloc', 'fmax');
-    $strand_term = tripal_get_chado_semweb_term('featureloc', 'strand');
-    $phase_term = tripal_get_chado_semweb_term('featureloc', 'phase');
+    $fmin_term = chado_get_semweb_term('featureloc', 'fmin');
+    $fmax_term = chado_get_semweb_term('featureloc', 'fmax');
+    $strand_term = chado_get_semweb_term('featureloc', 'strand');
+    $phase_term = chado_get_semweb_term('featureloc', 'phase');
 
-    $content = '';
+    $locations = [];
     foreach ($items as $item) {
       if (!empty($item['value'])) {
         $srcfeature = $item['value'][$reference_term];
@@ -28,15 +29,18 @@ class data__sequence_coordinates_formatter extends ChadoFieldFormatter {
         $fmax = $item['value'][$fmax_term];
         $phase = $item['value'][$phase_term];
         $strand = $item['value'][$strand_term];
-        $content .= $srcfeature . ':' . $fmin . '..' . $fmax . $strand;
+        $locations[] = $srcfeature . ':' . $fmin . '..' . $fmax . $strand;
       }
     }
-    if (!$content) {
+    if (!$locations) {
       $content = 'This feature is not located on any sequence.';
     }
-    $element[0] = array(
+    else {
+      $content = implode('<br />', $locations);
+    }
+    $element[0] = [
       '#type' => 'markup',
       '#markup' => $content,
-    );
+    ];
   }
 }

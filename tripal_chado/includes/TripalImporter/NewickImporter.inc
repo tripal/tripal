@@ -29,7 +29,7 @@ class NewickImporter extends TripalImporter {
    * Provides information to the user about the file upload.  Typically this
    * may include a description of the file types allowed.
    */
-  public static $upload_description = 'Please provide the Newick formatted tree file.  The file must have a .txt or .tree extension.';
+  public static $upload_description = 'Please provide the Newick formatted tree file (one tree per file only).  The file must have a .txt or .tree extension.';
 
   /**
    * The title that should appear above the file upload section.
@@ -108,8 +108,7 @@ class NewickImporter extends TripalImporter {
       '#maxlength' => 255,
     ];
 
-    $type_cv = tripal_get_default_cv('phylotree', 'type_id');
-    $so_cv = tripal_get_cv(['name' => 'sequence']);
+    $so_cv = chado_get_cv(['name' => 'sequence']);
     $cv_id = $so_cv->cv_id;
     if (!$so_cv) {
       drupal_set_message('The Sequence Ontolgoy does not appear to be imported.
@@ -126,7 +125,7 @@ class NewickImporter extends TripalImporter {
         tree. In this case, the word 'taxonomy' should be used."),
       '#required' => TRUE,
       '#default_value' => $leaf_type,
-      '#autocomplete_path' => "admin/tripal/legacy/tripal_cv/cvterm/auto_name/$cv_id",
+      '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/$cv_id",
     ];
 
     $form['dbxref'] = [
@@ -174,13 +173,11 @@ class NewickImporter extends TripalImporter {
   public function formValidate($form, &$form_state) {
 
     $values = $form_state['values'];
-
     $options = [
       'name' => trim($values["tree_name"]),
       'description' => trim($values["description"]),
       'analysis_id' => $values["analysis_id"],
       'leaf_type' => $values["leaf_type"],
-      'tree_file'    => $this->arguments['files'][0]['file_path'],
       'format' => 'newick',
       'dbxref' => trim($values["dbxref"]),
       'match' => $values["match"],
@@ -190,7 +187,7 @@ class NewickImporter extends TripalImporter {
     $errors = [];
     $warnings = [];
 
-    tripal_validate_phylotree('insert', $options, $errors, $warnings);
+    chado_validate_phylotree('insert', $options, $errors, $warnings);
 
     // Now set form errors if any errors were detected.
     if (count($errors) > 0) {
@@ -216,19 +213,19 @@ class NewickImporter extends TripalImporter {
 
     $arguments = $this->arguments['run_args'];
 
-    $options = array(
-      'name'         => $this->arguments["tree_name"],
-      'description'  => $this->arguments["description"],
-      'analysis_id'  => $this->arguments["analysis_id"],
-      'leaf_type'    => $this->arguments["leaf_type"],
-      'tree_file'    => $this->arguments['files'][0]['file_path'],
-      'format'       => 'newick',
-      'dbxref'       => $this->arguments["dbxref"],
-      'match'        => $this->arguments["match"],
-      'name_re'      => $this->arguments["name_re"],
-    );
-    $errors = array();
-    $warnings = array();
-    tripal_insert_phylotree($options, $errors, $warnings);
+    $options = [
+      'name' => $arguments["tree_name"],
+      'description' => $arguments["description"],
+      'analysis_id' => $arguments["analysis_id"],
+      'leaf_type' => $arguments["leaf_type"],
+      'tree_file' => $this->arguments['files'][0]['file_path'],
+      'format' => 'newick',
+      'dbxref' => $arguments["dbxref"],
+      'match' => $arguments["match"],
+      'name_re' => $arguments["name_re"],
+    ];
+    $errors = [];
+    $warnings = [];
+    chado_insert_phylotree($options, $errors, $warnings);
   }
 }

@@ -4,6 +4,10 @@ require_once "includes/tripal_ds.inc";
 require_once "includes/tripal_ds.ds.inc";
 require_once "includes/tripal_ds.field_group.inc";
 require_once "includes/tripal_ds.field_formatter.inc";
+require_once "includes/tripal_ds.field_formatter.inc";
+
+// Import the full Tripal_DS API into scope.
+tripal_ds_import_api();
 
 /**
  * Implements hook_init().
@@ -163,14 +167,14 @@ function tripal_ds_ds_field_settings_alter(&$field_settings, $form, $form_state)
 function tripal_ds_bundle_menu_item($bundle_name, $field_label, $field_name, $entity_type){
   //Check the record does not already exist
   $tripal_ds_rows = db_select('tripal_ds', 'ds')
-    ->fields('ds', array('tripal_ds_field_name', 'tripal_ds_field_label'))
+    ->fields('ds', array('tripal_ds_field_name', 'tripal_ds_field_label', 'bundle'))
     ->condition('bundle', $bundle_name, '=')
     ->condition('tripal_ds_field_label', $field_label, '=')
     ->condition('tripal_ds_field_name', $field_name, '=')
     ->execute()->fetchAll();
   if(!empty($tripal_ds_rows)){
     foreach ($tripal_ds_rows as $tripal_ds_row){
-      if(($field_label == $tripal_ds_row->tripal_ds_field_label) && ($field_name == $tripal_ds_row->tripal_ds_field_name) && ($bundle_name == $tripal_ds_rows->bundle)) {
+      if(($field_label == $tripal_ds_row->tripal_ds_field_label) && ($field_name == $tripal_ds_row->tripal_ds_field_name) && ($bundle_name == $tripal_ds_row->bundle)) {
         // Do not write the field to the table
         drupal_set_message("Could not update the bundle menu because that field already exists.", 'error');
       }
@@ -376,12 +380,9 @@ function tripal_ds_pane_addition_button_form_submit($form, &$form_state) {
   $bundle_name = $form_state['build_info']['args'][0];
   //Build the rest of the passed variables.
   $field_name = $form_state['input']['field_name'];
-  $group_field_name = 'gp_'.$form_state['input']['field_name'];
-  //Create the field groups, last passed parameter is NULL because there are no
-  //children.
-  _additional_fields_field_group_info($bundle_name, $field_name, $group_field_name, NULL);
-  //Place the field groups in the layout.
-  tripal_ds_update_ds_layout($bundle_name, NULL, $group_field_name);
+  $field_label = $form_state['input']['field_name'];
+
+  tripal_ds_create_field($field_label, $field_name, $bundle_name);
   drupal_goto("admin/structure/bio_data/manage/$bundle_name/display");
 }
 
@@ -431,7 +432,12 @@ function tripal_ds_update_ds_layout($bundle_name, $field_name, $tripal_pane_name
       }
     }
     //Update the ds_layout_settings table with the new layout info.
-    drupal_write_record('ds_layout_settings', $layout_info);
+    db_update('ds_layout_settings')
+        ->fields(array(
+            'settings' => serialize($layout_info),
+        ))
+        ->condition('ds_layout_settings.id', $ds_identifier, '=')
+        ->execute();
   }
 }
 /*
@@ -466,20 +472,25 @@ function tripal_ds_field_display_alter(&$display, $context){
     $field_name = $context['field']['field_name'];
     $bundle = $context['entity']->bundle;
     $bundle_info = tripal_load_bundle_entity(array('name' => $bundle));
-    $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id, 'hide');
+    $hide_variable = tripal_get_bundle_variable('hide_empty_field', $bundle_info->id);
+    $processed = isset($context['entity']->{$field_name}) ? $context['entity']->{$field_name}['#processed'] : false;
 
-    if ($field_name && ($hide_variable == 'hide')) {
+    if ($field_name && $hide_variable == TRUE && $processed) {
       $item = field_get_items('TripalEntity', $context['entity'], $field_name);
       $field = field_info_field($field_name);
       if ($item) {
-        if (tripal_field_is_empty($item[0], $field)) {
+        if (tripal_field_is_empty($field, $item)) {
           $parent_field_info = tripal_ds_find_field_group_parent($field_name, 'TripalEntity', $bundle, $context);
           if (!empty($parent_field_info)) {
-            foreach ($parent_field_info as $parent_key => $parent_field){
-               // We want to use JavaScript to remove the fields rather than
-               // CSS to hide them so that when users theme the table of
-               // contents using CSS they aren't theming empty rows.
-               drupal_add_js('jQuery(document).ready(function () { jQuery("#' . $parent_field_info[$parent_key] . '").parents(".views-row").remove() });', 'inline');
+            foreach ($parent_field_info as $parent_key => $parent_field) {
+              if (strpos($parent_field, 'single_field') !== false) {
+                $field_name = str_replace("_single_field", "", $parent_field);
+                drupal_add_js('jQuery(document).ready(function () { jQuery("#tripal-entity-' . $context['entity']->id . '--' . $field_name . '").addClass("ds-hide"); });', 'inline');
+              }
+              // We want to use JavaScript to remove the fields rather than
+              // CSS to hide them so that when users theme the table of
+              // contents using CSS they aren't theming empty rows.
+              drupal_add_js('jQuery(document).ready(function () { jQuery("#' . $parent_field_info[$parent_key] . '").parents(".views-row").remove() });', 'inline');
             }
           }
         }
@@ -504,6 +515,7 @@ function tripal_ds_find_field_group_parent($field_name, $entity_type, $bundle, $
   $field_groups_to_hide = array();
   $increment = 0;
 
+
   // Get the field groups associated with this bundle.
   $fg_for_bundle = db_select('field_group', 'fg')
     ->fields('fg')
@@ -519,24 +531,30 @@ function tripal_ds_find_field_group_parent($field_name, $entity_type, $bundle, $
       // Do nothing
     }
     elseif (!empty($field_group_data['children'][0])) {
+      $children_added = 0;
       $children = $field_group_data['children'];
       //If there is more than one child all need to be checked.
       if (count($children) > 1) {
-        foreach ($children as $kids => $child) {
-          // Now check if each child if empty.
+        foreach ($children as $order => $child) {
+          // Now check if each child is empty.
           $item = field_get_items('TripalEntity', $context['entity'], $child);
           $field = field_info_field($child);
-          if(!tripal_field_is_empty($item[0], $field)){
-            //If any of the fields are not empty do not add the parent.
-            break 2;
-          }
-          else {
+          if(tripal_field_is_empty($field, $item)){
+            //If any of the fields are not empty do not add the parent, add the specific field.
+            // break 2;
+            if (!empty($field)) {
+              $field_groups_to_hide[$increment] = $field['field_name'] . '_single_field';
+              $increment++;
+              $children_added++;
+            }
+          } else {
             continue;
           }
         }
-        $field_groups_to_hide[$increment] = $field_group->group_name;
-      }
-      elseif($children[0] == $field_name) {
+        if ($children_added === count($children)) {
+          $field_groups_to_hide[$increment] = $field_group->group_name;
+        }
+      } elseif ($children[0] == $field_name) {
         $field_groups_to_hide[$increment] = $field_group->group_name;
       }
     }
@@ -556,7 +574,8 @@ function tripal_ds_find_field_group_parent($field_name, $entity_type, $bundle, $
  * @param $bundle
  * @param array $fields
  */
-function tripal_ds_toc_order($bundle, $fields = array()){
+function tripal_ds_toc_order($bundle, $fields = array())
+{
   // Find all menu items associated with the bundle id.
   $menu_items = db_select('tripal_ds', 'ds')
     ->fields('ds')
@@ -570,7 +589,7 @@ function tripal_ds_toc_order($bundle, $fields = array()){
     if (array_key_exists($toc_field_name, $fields)) {
       $weight = $fields[$toc_field_name]['weight'];
       //If a weight is returned update the tripal_ds table.
-      if(!empty($weight)){
+      if (!empty($weight)) {
         db_update('tripal_ds')
           ->fields(array(
             'weight' => $weight,
@@ -583,3 +602,12 @@ function tripal_ds_toc_order($bundle, $fields = array()){
   }
 }
 
+/**
+ * Imports all of the Tripal_DS API into scope.
+ *
+ *
+ */
+function tripal_ds_import_api()
+{
+  module_load_include('inc', 'tripal_ds', 'api/tripal_ds.pane.api');
+}

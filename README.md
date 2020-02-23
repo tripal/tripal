@@ -1,22 +1,21 @@
+[![7.x-3.x Build Status](https://travis-ci.org/tripal/tripal.svg?branch=7.x-3.x)](https://travis-ci.org/tripal/tripal)
+[![All Contributors](https://img.shields.io/badge/all_contributors-14-orange.svg?style=flat-square)](#contributors)
+[![Documentation Status](https://readthedocs.org/projects/tripal/badge/?version=latest)](https://tripal.readthedocs.io/en/latest/?badge=latest)
+
+[![DOI](https://zenodo.org/badge/42666405.svg)](https://zenodo.org/badge/latestdoi/42666405)
+
+
 ![alt tag](https://raw.githubusercontent.com/tripal/tripal/7.x-3.x/tripal/theme/images/tripal_logo.png)
 
-Tripal is a toolkit for construction of online biological (genetics, genomics,
-breeding, etc), community database, and is a member of the 
-[GMOD](http://www.gmod.org) family of tools. Tripal v3 provides by default
-integration with the [GMOD Chado database](http://gmod.org/wiki/Chado_-_Getting_Started).
-Tripal's primary goals are: 
+Tripal is a toolkit for constructing online biological (genetics, genomics, breeding, etc.) community databases, and Tripal is a member of the [GMOD](http://www.gmod.org) family of tools. **Tripal v3** provides integration with the [GMOD Chado database](http://gmod.org/wiki/Chado_-_Getting_Started) by default.
 
-Genomics, genetics, breeding and other biological data are increasingly complicated and time consuming to publish online for other researchers to search, browse and make discoveries.   Tripal provides a framework to reduce the complexity of creating such a site, and provides access to a community of similar groups that share community-standards, and interact to address questions and learn best practices for sharing, storing and visualizing complex biological data.
+Genetics, genomics, breeding, and other biological data are increasingly complicated and time-consuming to publish online for others to search, browse and make discoveries with. Tripal provides a framework to reduce the complexity of creating such a site, and provides access to a community of similar groups that share community-standards. The users of Tripal are encouraged to interact to address questions and learn the best practices for sharing, storing, and visualizing complex biological data.
 
-1. Provide a framework for those with genomic, genetic and breeding data that
-can facility creation of an online site for display, search and visualization.
-2. To use community-derived standards and ontologies to facility continuity
-between sites which in turn fosters collaboration and sharing 
-3. Provide an out-of-the-box setup for a genomics site for those who simply 
-want to put new genome assemblies and annotations online.
-4. Provide Application Programming Interfaces (APIs) for complete customization 
-such that more advanced displays, look-and-feel, and new functionality
-can be supported. 
+The primary goals of Tripal are to:
+1.	Provide a framework for creating sites that allow display, search, and visualization of biological data, including genetics, genomics, and breeding data;
+2.	Use community-derived standards and ontologies to facilitate continuity between sites and foster collaboration and sharing;
+3.	Provide an out-of-the-box setup for a genomics site to put new genome assemblies and annotations online; and
+4.	Provide Application Programming Interfaces (APIs) to support customized displays, look-and-feel, and new functionality.
 
 
 # Features
@@ -59,49 +58,11 @@ are available in Tripal v3.
 
 
 # Installation
-Please follow the instructions in the online Tripal User's Guide:
-http://tripal.info/tutorials/v2.0/installation
+Please follow the instructions in the online Tripal User's Guide for [Tripal v2](https://tripal.info/tutorials/v2.x/installation) or [Tripal v3](https://tripal.readthedocs.io/en/latest/user_guide.html).
 
 
 # Upgrade from Tripal v2.x to v3.x
-Note:  Upgrade can only be performed using 'drush' command.
-
-Note: Deprecated API functions from Tripal v1.x have been removed from Tripal
-v3.  Therefore, use of deprecated API functions in templates or custom 
-modules may cause a white screen of death (WSOD).  Check teh server logs if this
-occurs to find where deprecated functions may be used.
-
-Upgrade Instructions:
-
-Step 1: Put the site in maintenance mode.
-
-Step 2: Disable tripal modules. Disabling the core module will disable all
-other Tripal modules:
-
-  drush pm-disable tripal_core
-  
-Step 3: Remove old Tripal v2 package and replace with Tripal v3 package
-Step 4: Enable the tripal module
-
-  drush pm-enable tripal
- 
-Step 5: Enable the tripal_chado module  
-
-  drush pm-enable tripal_chado
-  
-Step 6:  Tripal v2 modules are now called 'legacy modules'. these are the
-modules that were disabled in step #2.  For backwards compatibility, you 
-should re-enable these modules:
-
-  drush pm-enable tripal_core, tripal_views, tripal_db, tripal_cv, \
-    tripal_analysis, tripal_organism, tripal_feature, tripal_pub, \
-    tripal_stock
-
-Be sure to enable any additional modules not included in the example
-drush command above.
-
-Step 7:  Return to your Tripal site, and click the link that appears for
-preparing Chado and launch the job.
+Please follow the [Upgrade Instructions](https://tripal.readthedocs.io/en/latest/user_guide/install_tripal/upgrade_from_tripal2.html) in the Tripal v3 User's Guide
 
 
 # Customization
@@ -111,3 +72,48 @@ precise customizations as required by the community. A well-developed
 Tripal API provides a uniform set of variables and functions for 
 accessing any and all data within the Chado database. See the Tripal 3.x
 Developer's Handbook for additional details.
+
+
+# Development Testing
+
+To run PHP unit tests on your local system, run `composer install` to install developer-specific requirements.  Next, create a `.env` file in your `/Tests/` directory that defines the `DRUPAL_ROOT` variable, for example 
+
+```
+DRUPAL_ROOT=/var/www/html
+```
+Then run PHPUnit from your root Tripal directory.
+
+PHPUnit tests will also be run in the Travis CI build.
+
+Read our [testing guidelines](tests/README.md)
+
+## Contributors
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore -->
+<table>
+  <tr>
+    <td align="center"><a href="https://github.com/spficklin"><img src="https://avatars0.githubusercontent.com/u/1719352?v=4" width="100px;" alt="Stephen Ficklin"/><br /><sub><b>Stephen Ficklin</b></sub></a><br /><a href="https://github.com/tripal/tripal/commits?author=spficklin" title="Code">💻</a> <a href="#eventOrganizing-spficklin" title="Event Organizing">📋</a> <a href="https://github.com/tripal/tripal/commits?author=spficklin" title="Documentation">📖</a> <a href="#projectManagement-spficklin" title="Project Management">📆</a> <a href="#review-spficklin" title="Reviewed Pull Requests">👀</a></td>
+    <td align="center"><a href="http://www.bradfordcondon.com/"><img src="https://avatars2.githubusercontent.com/u/7063154?v=4" width="100px;" alt="Bradford Condon"/><br /><sub><b>Bradford Condon</b></sub></a><br /><a href="https://github.com/tripal/tripal/commits?author=bradfordcondon" title="Code">💻</a> <a href="https://github.com/tripal/tripal/commits?author=bradfordcondon" title="Documentation">📖</a> <a href="#projectManagement-bradfordcondon" title="Project Management">📆</a> <a href="#eventOrganizing-bradfordcondon" title="Event Organizing">📋</a> <a href="#review-bradfordcondon" title="Reviewed Pull Requests">👀</a></td>
+    <td align="center"><a href="https://laceysanderson.github.io/"><img src="https://avatars3.githubusercontent.com/u/1566301?v=4" width="100px;" alt="Lacey-Anne Sanderson"/><br /><sub><b>Lacey-Anne Sanderson</b></sub></a><br /><a href="https://github.com/tripal/tripal/commits?author=laceysanderson" title="Code">💻</a> <a href="https://github.com/tripal/tripal/commits?author=laceysanderson" title="Documentation">📖</a> <a href="#projectManagement-laceysanderson" title="Project Management">📆</a> <a href="#eventOrganizing-laceysanderson" title="Event Organizing">📋</a> <a href="#review-laceysanderson" title="Reviewed Pull Requests">👀</a></td>
+    <td align="center"><a href="https://github.com/chunhuaicheng"><img src="https://avatars2.githubusercontent.com/u/14333886?v=4" width="100px;" alt="chunhuaicheng"/><br /><sub><b>chunhuaicheng</b></sub></a><br /><a href="https://github.com/tripal/tripal/commits?author=chunhuaicheng" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/shawnawsu"><img src="https://avatars1.githubusercontent.com/u/24374002?v=4" width="100px;" alt="Shawna"/><br /><sub><b>Shawna</b></sub></a><br /><a href="https://github.com/tripal/tripal/commits?author=shawnawsu" title="Code">💻</a> <a href="#content-shawnawsu" title="Content">🖋</a> <a href="https://github.com/tripal/tripal/commits?author=shawnawsu" title="Documentation">📖</a> <a href="#review-shawnawsu" title="Reviewed Pull Requests">👀</a></td>
+    <td align="center"><a href="https://github.com/mboudet"><img src="https://avatars0.githubusercontent.com/u/17642511?v=4" width="100px;" alt="mboudet"/><br /><sub><b>mboudet</b></sub></a><br /><a href="https://github.com/tripal/tripal/issues?q=author%3Amboudet" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://github.com/guignonv"><img src="https://avatars1.githubusercontent.com/u/7290244?v=4" width="100px;" alt="Valentin Guignon"/><br /><sub><b>Valentin Guignon</b></sub></a><br /><a href="https://github.com/tripal/tripal/issues?q=author%3Aguignonv" title="Bug reports">🐛</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/mestato"><img src="https://avatars1.githubusercontent.com/u/508122?v=4" width="100px;" alt="Meg Staton"/><br /><sub><b>Meg Staton</b></sub></a><br /><a href="#fundingFinding-mestato" title="Funding Finding">🔍</a> <a href="#eventOrganizing-mestato" title="Event Organizing">📋</a></td>
+    <td align="center"><a href="https://github.com/abretaud"><img src="https://avatars3.githubusercontent.com/u/238755?v=4" width="100px;" alt="Anthony Bretaudeau"/><br /><sub><b>Anthony Bretaudeau</b></sub></a><br /><a href="https://github.com/tripal/tripal/commits?author=abretaud" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/colthom"><img src="https://avatars0.githubusercontent.com/u/17720870?v=4" width="100px;" alt="colthom"/><br /><sub><b>colthom</b></sub></a><br /><a href="https://github.com/tripal/tripal/commits?author=colthom" title="Documentation">📖</a></td>
+    <td align="center"><a href="http://almsaeedstudio.com"><img src="https://avatars2.githubusercontent.com/u/1512664?v=4" width="100px;" alt="Abdullah Almsaeed"/><br /><sub><b>Abdullah Almsaeed</b></sub></a><br /><a href="https://github.com/tripal/tripal/commits?author=almasaeed2010" title="Code">💻</a> <a href="#review-almasaeed2010" title="Reviewed Pull Requests">👀</a></td>
+    <td align="center"><a href="https://github.com/btski"><img src="https://avatars1.githubusercontent.com/u/32686196?v=4" width="100px;" alt="btski"/><br /><sub><b>btski</b></sub></a><br /><a href="#question-btski" title="Answering Questions">💬</a></td>
+    <td align="center"><a href="https://github.com/ekcannon"><img src="https://avatars0.githubusercontent.com/u/3409057?v=4" width="100px;" alt="ekcannon"/><br /><sub><b>ekcannon</b></sub></a><br /><a href="#ideas-ekcannon" title="Ideas, Planning, & Feedback">🤔</a> <a href="#eventOrganizing-ekcannon" title="Event Organizing">📋</a></td>
+    <td align="center"><a href="https://github.com/jlwegrzyn"><img src="https://avatars1.githubusercontent.com/u/50996590?v=4" width="100px;" alt="jlwegrzyn"/><br /><sub><b>jlwegrzyn</b></sub></a><br /><a href="#fundingFinding-jlwegrzyn" title="Funding Finding">🔍</a></td>
+  </tr>
+</table>
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!

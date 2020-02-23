@@ -1,8 +1,8 @@
 <?php
 /**
  * @file
- * This module provides a set of functions to simplify working with
- * controlled vocabularies.
+ * Provides API functions specificially for managing controlled vocabulary
+ * records in Chado.
  *
  * @ingroup tripal_chado
  */
@@ -11,6 +11,12 @@
  * @defgroup tripal_chado_cv_api Chado CV
  * @ingroup tripal_chado_api
  * @{
+ * Provides API functions specificially for managing controlled vocabulary
+ * records in Chado. Please note that Tripal v3 provides a generic set of
+ * API functions for working with controlled vocabularies (CVs). This allows for
+ * CVs to be stored using any back-end.  By default CV's continue to be housed
+ * in Chado.  Therefore, if you are working directly with controlled vocabulary
+ * records inside of a Chado-aware module then these functions can be used.
  * @}
  */
 
@@ -18,88 +24,89 @@
  * Retrieves a chado controlled vocabulary variable
  *
  * @param $identifier
- *   An array with the key stating what the identifier is. Supported keys (only on of the
- *   following unique keys is required):
- *    - cv_id: the chado cv.cv_id primary key
- *    - name: the chado cv.name field (assume unique)
+ *   An array with the key stating what the identifier is. Supported keys (only
+ *   on of the following unique keys is required):
+ *    - cv_id: the chado cv.cv_id primary key.
+ *    - name: the chado cv.name field (assume unique).
  * @param $options
  *   An array of options. Supported keys include:
- *     - Any keys supported by chado_generate_var(). See that function definition for
- *       additional details.
+ *     - Any keys supported by chado_generate_var(). See that function
+ *       definition fot additional details.
  *
- * NOTE: the $identifier parameter can really be any array similar to $values passed into
- *   chado_select_record(). It should fully specify the cv record to be returned.
+ * NOTE: the $identifier parameter can really be any array similar to $values
+ * passed into chado_select_record(). It should fully specify the cv record to
+ * be returned.
  *
  * @return
- *   If unique values were passed in as an identifier then an object describing the cv
- *   will be returned (will be a chado variable from chado_generate_var()). Otherwise,
- *   FALSE will be returned.
+ *   If unique values were passed in as an identifier then an object describing
+ *   the cv will be returned (will be a chado variable from
+ *   chado_generate_var()). Otherwise, FALSE will be returned.
  *
  * @ingroup tripal_chado_cv_api
  */
-function tripal_get_cv($identifiers, $options = array()) {
+function chado_get_cv($identifiers, $options = []) {
 
-  // Set Defaults
+  // Set Defaults.
   if (!isset($options['include_fk'])) {
-    // Tells chado_generate_var not to follow any foreign keys
-    $options['include_fk'] = array();
+    // Tells chado_generate_var not to follow any foreign keys.
+    $options['include_fk'] = [];
   }
 
-  // Error Checking of parameters
+  // Error Checking of parameters.
   if (!is_array($identifiers)) {
     tripal_report_error(
       'tripal_chado_api',
       TRIPAL_ERROR,
-      "tripal_get_cv: The identifier passed in is expected to be an array with the key
+      "chado_get_cv: The identifier passed in is expected to be an array with the key
         matching a column name in the cv table (ie: cv_id or name). You passed in %identifier.",
-      array(
-        '%identifier'=> print_r($identifiers, TRUE)
-      )
+      [
+        '%identifier' => print_r($identifiers, TRUE),
+      ]
     );
   }
   elseif (empty($identifiers)) {
     tripal_report_error(
       'tripal_chado_api',
       TRIPAL_ERROR,
-      "tripal_get_cv: You did not pass in anything to identify the cv you want. The identifier
+      "chado_get_cv: You did not pass in anything to identify the cv you want. The identifier
         is expected to be an array with the key matching a column name in the cv table
         (ie: cv_id or name). You passed in %identifier.",
-      array(
-        '%identifier'=> print_r($identifiers, TRUE)
-      )
+      [
+        '%identifier' => print_r($identifiers, TRUE),
+      ]
     );
   }
 
-  // Try to get the cv
+  // Try to get the cv.
   $cv = chado_generate_var(
     'cv',
     $identifiers,
     $options
   );
 
-  // Ensure the cv is singular. If it's an array then it is not singular
+  // Ensure the cv is singular. If it's an array then it is not singular.
   if (is_array($cv)) {
     tripal_report_error(
       'tripal_chado_api',
       TRIPAL_ERROR,
-      "tripal_get_cv: The identifiers you passed in were not unique. You passed in %identifier.",
-      array(
-        '%identifier'=> print_r($identifiers, TRUE)
-      )
+      "chado_get_cv: The identifiers you passed in were not unique. You passed in %identifier.",
+      [
+        '%identifier' => print_r($identifiers, TRUE),
+      ]
     );
   }
 
-  // Report an error if $cv is FALSE since then chado_generate_var has failed
+  // Report an error if $cv is FALSE since then chado_generate_var has failed.
   elseif ($cv === FALSE) {
     tripal_report_error(
       'tripal_chado_api',
       TRIPAL_ERROR,
-      "tripal_get_cv: chado_generate_var() failed to return a cv based on the identifiers
+      "chado_get_cv: chado_generate_var() failed to return a cv based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look
         for a chado_generate_var error for additional clues. You passed in %identifier.",
-      array(
-        '%identifier'=> print_r($identifiers, TRUE)
-      )
+      [
+        '%identifier' => print_r($identifiers, TRUE),
+      ]
     );
   }
 
@@ -111,18 +118,21 @@ function tripal_get_cv($identifiers, $options = array()) {
 
 /**
  * Create an options array to be used in a form element which provides a
- * list of all chado cvs
+ * list of all chado cvs.
  *
  * @return
- *   An array(cv_id => name) for each cv in the chado cv table
+ *   An array(cv_id => name) for each cv in the chado cv table.
  *
  * @ingroup tripal_chado_cv_api
  */
-function tripal_get_cv_select_options() {
+function chado_get_cv_select_options() {
 
-  $results = chado_select_record('cv', array('cv_id', 'name'), array(), array('order_by' => array('name' => 'ASC')));
+  $results = chado_select_record('cv', [
+    'cv_id',
+    'name',
+  ], [], ['order_by' => ['name' => 'ASC']]);
 
-  $options = array();
+  $options = [];
   $options[] = 'Select a Vocabulary';
 
   foreach ($results as $r) {
@@ -134,7 +144,7 @@ function tripal_get_cv_select_options() {
 }
 
 /**
- * Retrieves a chado controlled vocabulary term variable
+ * Retrieves a chado controlled vocabulary term variable.
  *
  * @param $identifier
  *   An array apropriate for use with the chado_generate_var for uniquely
@@ -146,11 +156,11 @@ function tripal_get_cv_select_options() {
  *      name of the cv.
  *    - synonym: an array with 'name' => the name of the synonym of the cvterm
  *      you want returned; 'cv_id' => the cv_id of the synonym; 'cv_name' =>
- *      the name of the cv of the synonym
+ *      the name of the cv of the synonym.
  *    - property: An array/object describing the property to select records
  *      for. It should at least have either a type_name (if unique across cvs)
  *      or type_id. Other supported keys include: cv_id/cv_name (of the type),
- *      value and rank
+ *      value and rank.
  * @param $options
  *   An array of options. Supported keys include:
  *     - Any keys supported by chado_generate_var(). See that function
@@ -167,48 +177,50 @@ function tripal_get_cv_select_options() {
  *
  * @ingroup tripal_chado_cv_api
  */
-function tripal_get_cvterm($identifiers, $options = array()) {
+function chado_get_cvterm($identifiers, $options = []) {
 
-  // Set Defaults
+  // Set Defaults.
   if (!isset($options['include_fk'])) {
-    // Tells chado_generate_var to only get the cv
-    $options['include_fk'] = array('cv_id' => TRUE);
+    // Tells chado_generate_var to only get the cv.
+    $options['include_fk'] = ['cv_id' => TRUE];
   }
 
-  // Error Checking of parameters
+  // Error Checking of parameters.
   if (!is_array($identifiers)) {
     tripal_report_error('tripal_cv_api', TRIPAL_ERROR,
-      "tripal_get_cvterm: The identifier passed in is expected to be an array with the key
+      "chado_get_cvterm: The identifier passed in is expected to be an array with the key
         matching a column name in the cvterm table (ie: cvterm_id or name). You passed in %identifier.",
-      array('%identifier'=> print_r($identifiers, TRUE))
+      ['%identifier' => print_r($identifiers, TRUE)]
     );
   }
   elseif (empty($identifiers)) {
     tripal_report_error('tripal_cv_api', TRIPAL_ERROR,
-      "tripal_get_cvterm: You did not pass in anything to identify the cvterm you want. The identifier
+      "chado_get_cvterm: You did not pass in anything to identify the cvterm you want. The identifier
         is expected to be an array with the key matching a column name in the cvterm table
         (ie: cvterm_id or name). You passed in %identifier.",
-      array('%identifier'=> print_r($identifiers, TRUE))
+      ['%identifier' => print_r($identifiers, TRUE)]
     );
   }
 
-  // If synonym was passed in, then process this first before calling chado_generate_var()
+  // If synonym was passed in, then process this first before calling
+  // chado_generate_var().
   if (isset($identifiers['synonym'])) {
     $synonym = $identifiers['synonym']['name'];
 
-    $values = array('synonym' => $synonym);
+    $values = ['synonym' => $synonym];
     if (isset($identifiers['synonym']['cv_id'])) {
-      $values['cvterm_id'] = array('cv_id' => $identifiers['synonym']['cv_id']);
+      $values['cvterm_id'] = ['cv_id' => $identifiers['synonym']['cv_id']];
     }
     if (isset($identifiers['synonym']['cv_name'])) {
-      $values['cvterm_id'] = array('cv_id' => array('name' => $identifiers['synonym']['cv_name']));
+      $values['cvterm_id'] = ['cv_id' => ['name' => $identifiers['synonym']['cv_name']]];
     }
-    $options = array(
-      'case_insensitive_columns' => array('name')
-    );
-    $result = chado_select_record('cvtermsynonym', array('cvterm_id'), $values, $options);
+    $options = [
+      'case_insensitive_columns' => ['name'],
+    ];
+    $result = chado_select_record('cvtermsynonym', ['cvterm_id'], $values, $options);
 
-    // if the synonym doens't exist or more than one record is returned then return false
+    // if the synonym doens't exist or more than one record is returned then
+    // return false.
     if (count($result) == 0) {
       return FALSE;
     }
@@ -216,60 +228,62 @@ function tripal_get_cvterm($identifiers, $options = array()) {
       return FALSE;
     }
 
-    $identifiers = array('cvterm_id' => $result[0]->cvterm_id);
+    $identifiers = ['cvterm_id' => $result[0]->cvterm_id];
   }
 
-  // If one of the identifiers is property then use chado_get_record_with_property()
+  // If one of the identifiers is property then use chado_get_record_with_property().
   if (isset($identifiers['property'])) {
     $property = $identifiers['property'];
     unset($identifiers['property']);
     $cvterm = chado_get_record_with_property(
-      array('table' => 'cvterm', 'base_records' => $identifiers),
-      array('type_name' => $property),
+      ['table' => 'cvterm', 'base_records' => $identifiers],
+      ['type_name' => $property],
       $options
     );
   }
   if (isset($identifiers['id'])) {
     list($db_name, $accession) = preg_split('/:/', $identifiers['id']);
-    $cvterm = chado_generate_var('cvterm',array(
-      'dbxref_id' => array(
-        'db_id' => array(
+    $cvterm = chado_generate_var('cvterm', [
+      'dbxref_id' => [
+        'db_id' => [
           'name' => $db_name,
-        ),
+        ],
         'accession' => $accession,
-      )
-    ));
+      ],
+    ]);
   }
 
-  // Else we have a simple case and we can just use chado_generate_var to get the cvterm
+  // Else we have a simple case and we can just use chado_generate_var to get
+  // the cvterm.
   else {
-    // Try to get the cvterm
+    // Try to get the cvterm.
     $cvterm = chado_generate_var('cvterm', $identifiers, $options);
   }
 
-  // Ensure the cvterm is singular. If it's an array then it is not singular
+  // Ensure the cvterm is singular. If it's an array then it is not singular.
   if (is_array($cvterm)) {
     tripal_report_error(
       'tripal_cv_api',
       TRIPAL_ERROR,
-      "tripal_get_cvterm: The identifiers you passed in were not unique. You passed in %identifier.",
-      array(
-        '%identifier'=> print_r($identifiers, TRUE)
-      )
+      "chado_get_cvterm: The identifiers you passed in were not unique. You passed in %identifier.",
+      [
+        '%identifier' => print_r($identifiers, TRUE),
+      ]
     );
   }
 
-  // Report an error if $cvterm is FALSE since then chado_generate_var has failed
+  // Report an error if $cvterm is FALSE since then chado_generate_var has
+  // failed.
   elseif ($cvterm === FALSE) {
     tripal_report_error(
       'tripal_cv_api',
       TRIPAL_ERROR,
-      "tripal_get_cvterm: chado_generate_var() failed to return a cvterm based on the identifiers
+      "chado_get_cvterm: chado_generate_var() failed to return a cvterm based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look
         for a chado_generate_var error for additional clues. You passed in %identifier.",
-      array(
-        '%identifier'=> print_r($identifiers, TRUE)
-      )
+      [
+        '%identifier' => print_r($identifiers, TRUE),
+      ]
     );
   }
 
@@ -282,10 +296,10 @@ function tripal_get_cvterm($identifiers, $options = array()) {
 
 /**
  * Create an options array to be used in a form element
- *   which provides a list of all chado cvterms
+ *   which provides a list of all chado cvterms.
  *
  * @param $cv_id
- *   The chado cv_id; only cvterms with the supplied cv_id will be returned
+ *   The chado cv_id; only cvterms with the supplied cv_id will be returnedl.
  * @param $rel_type
  *   Set to TRUE if the terms returned should only be relationship types in
  *   the vocabulary.  This is useful for creating drop-downs of terms
@@ -293,21 +307,21 @@ function tripal_get_cvterm($identifiers, $options = array()) {
  *
  * @return
  *   An associative array with the cvterm_id's as keys. The first
- *   element in the array has a key of '0' and a value of 'Select a Type'
+ *   element in the array has a key of '0' and a value of 'Select a Type'.
  *
  * @ingroup tripal_chado_cv_api
  */
-function tripal_get_cvterm_select_options($cv_id, $rel_type = FALSE) {
-  $columns = array('cvterm_id', 'name');
-  $values = array('cv_id' => $cv_id);
+function chado_get_cvterm_select_options($cv_id, $rel_type = FALSE) {
+  $columns = ['cvterm_id', 'name'];
+  $values = ['cv_id' => $cv_id];
   if ($rel_type) {
     $values['is_relationshiptype'] = 1;
   }
-  $s_options = array('order_by' => array('name' => 'ASC'));
+  $s_options = ['order_by' => ['name' => 'ASC']];
 
   $cvterms = chado_select_record('cvterm', $columns, $values, $s_options);
 
-  $options = array();
+  $options = [];
   $options[0] = 'Select a Type';
   foreach ($cvterms as $cvterm) {
     $options[$cvterm->cvterm_id] = $cvterm->name;
@@ -321,22 +335,23 @@ function tripal_get_cvterm_select_options($cv_id, $rel_type = FALSE) {
  * Updates the cvtermpath table of Chado for the specified CV.
  *
  * @param $cv_id
- *   The chado cv_id;
+ *   The chado cv_id.
  * @param $job_id
  *   This function is intended to be used with the Tripal Jobs API.
  *   When this function is called as a job the $job_id is automatically
  *   passed to this function.
+ *
  * @return
- *   TRUE on success FALSE on failure
+ *   TRUE on success FALSE on failure.
  *
  * @ingroup tripal_chado_cv_api
  */
 function tripal_update_cvtermpath_old($cv_id, $job_id = NULL) {
   // TODO: need better error checking in this function
 
-  // first get the controlled vocabulary name:
+  // First get the controlled vocabulary name:
   $sql = "SELECT * FROM {cv} WHERE cv_id = :cv_id";
-  $cv = chado_query($sql, array(':cv_id' => $cv_id))->fetchObject();
+  $cv = chado_query($sql, [':cv_id' => $cv_id])->fetchObject();
 
   print "\nUpdating cvtermpath for $cv->name...\n";
 
@@ -346,449 +361,323 @@ function tripal_update_cvtermpath_old($cv_id, $job_id = NULL) {
   try {
     $sql = "SELECT * FROM fill_cvtermpath(:name)";
 
-    db_query($sql, array(':name' => $cv->name));
+    db_query($sql, [':name' => $cv->name]);
     chado_set_active($previous);
-  }
-  catch (Exception $e) {
+  } catch (Exception $e) {
     chado_set_active($previous);
     $error = $e->getMessage();
-    tripal_report_error('tripal_chado', TRIPAL_ERROR, "Could not fill cvtermpath table: @error", array('@error' => $error));
+    tripal_report_error('tripal_chado', TRIPAL_ERROR, "Could not fill cvtermpath table: @error", ['@error' => $error]);
     return FALSE;
   }
   return TRUE;
 }
 
 /**
- * Duplicate of fill_cvtermpath() stored procedure in Chado.
  *
- * Identifies all of the root terms of the controlled vocabulary. These
- * root terms are then processed by calling the
- * tripal_update_cvtermpath_root_loop() function on each one.
+ * @param unknown $cv_id
+ */
+function chado_clear_cvtermpath($cv_id) {
+  $sql = "DELETE FROM {cvtermpath} WHERE cv_id = :cv_id";
+  chado_query($sql, [':cv_id' => $cv_id]);
+}
+
+/**
+ * Replacement for the fill_cvtermpath() stored procedure in Chado.
  *
- * @param $cvid
+ * Fills the cvtermpath table of Chado with relationships between every
+ * node in the ontology graph and all of it's descendents.  This was
+ * previously performed using the fill_cvtermpath() stored procedure of Chado
+ * but that function cannot handle loops in the ontology graphs and results
+ * in stack depth errors in PostgreSQL.
+ *
+ * @param $cv_id
  *   The controlled vocabulary ID from the cv table of Chado (i.e. cv.cv_id).
- * @param $job_id
+ * @param $job
+ *   An instance of a TripalJob.
  *
  * @ingroup tripal_chado_cv_api
  */
-function tripal_update_cvtermpath($cv_id, $job_id = NULL){
+function chado_update_cvtermpath($cv_id, $job = NULL) {
+
+  $cv = new ChadoRecord('cv', $cv_id);
+  print "Building cvterm paths for vocabulary: " . $cv->getValue('name') . "\n";
+  print "Clearing the cvtermpath table for this vocabulary...\n";
+  chado_clear_cvtermpath($cv_id);
+  print "Clearing completed.\n";
+
+  // The cache is used to limit repetitive queries by storing known data.
+  $cache = [
+    // Stores all relationships in the cvtermpath table.
+    'rels' => [],
+    // Stores all nodes that were visited when processing all nodes as roots.
+    'roots_processed' => [],
+    // Stores all nodes that were visited when prociessing all children of
+    // a single root. It gets emptied at each root.
+    'nodes_processed' => [],
+    // For easy lookup stores the is_a relationship.
+    'is_a' => NULL,
+  ];
+
   // TODO: there's a function to determine the current Chado instance.
   // we should use that.
-  $prev_db = chado_set_active('chado');
+  $transaction = db_transaction();
+
   try {
-    $result = db_query('
-      SELECT DISTINCT t.*
-      FROM cvterm t
-        LEFT JOIN cvterm_relationship r ON (t.cvterm_id = r.subject_id)
-        INNER JOIN cvterm_relationship r2 ON (t.cvterm_id = r2.object_id)
-      WHERE t.cv_id = :cvid AND r.subject_id is null',
-      array(':cvid' => $cv_id)
-    );
 
-    // Iterate through each root level term.
-    $record = $result->fetchAll();
-    $roots = array();
-    foreach ($record as $item){
-      tripal_update_cvtermpath_root_loop($item->cvterm_id, $item->cv_id, $roots);
-    }
-  }
-  catch (Exception $e) {
-    // If there's an exception we have to set the database back. So, do that
-    // and then rethrow the error.
-    chado_set_active($prev_db);
-    throw $e;
-  }
-  chado_set_active($prev_db);
-}
+    // Get the is_a term. The OBO importer adds this for every vocabulary.
+    $sql = "SELECT * FROM {cvterm} WHERE (name = :is_a or name = :is_a_alt) and cv_id = :cv_id";
+    $args = [':is_a' => 'is_a', ':is_a_alt' => 'is a', ':cv_id' => $cv_id];
+    $cache['is_a'] = chado_query($sql, $args)->fetchObject();
 
-/**
- *  Duplicate of _fill_cvtermpath4root() stored procedure in Chado.
- *
- *  This function process a "branch" of the ontology.  Initially, the
- *  "root" starts at the top of the tree. But, as the cvtermpath is populated
- *  the "root" becomes terms deeper in the tree.
- *
- * @param $rootid
- *   The term ID from the cvterm table of Chado (i.e. cvterm.cvterm_id).
- * @param $cvid
- *   The controlled vocabulary ID from the cv table of Chado (i.e. cv.cv_id).
- *
- * @ingroup tripal_chado_cv_api
- */
-function tripal_update_cvtermpath_root_loop($rootid, $cvid, &$roots) {
-
-  // Get's the cvterm record for this "root".
-  $ttype = db_select('cvterm', 'cv')
-          ->fields('cv', array('cvterm_id'));
-  $db_or = db_or();
-  $db_or->condition('cv.name', "isa", '=');
-  $db_or->condition('cv.name', "is_a", '=');
-  $ttype->condition($db_or);
-  $result = $ttype->execute()->fetchObject();
-
-  $term_id = $rootid . '|' . $rootid . '|' . $cvid . '|' . $result->cvterm_id;
-  // If the child_id matches any other id in the array then we've hit a loop.
-  foreach ($roots as $element_id) {
-    if ($element_id == $term_id) {
-      return;
-    }
-  }
-  // Then add that new entry to the $tree_path.
-  $roots[] = $term_id;
-
-  // Descends through the branch starting at this "root" term.
-  $tree_path = array();
-  $matched_rows = array();
-  $possible_start_of_loop = array();
-  $depth = 0;
-  tripal_update_cvtermpath_loop($rootid, $rootid, $cvid, $result->cvterm_id, $depth,
-                                0, $tree_path, FALSE, $matched_rows, $possible_start_of_loop, FALSE);
-
-  // Get's the children terms of this "root" term and then recursively calls
-  // this function making each child root.
-  $cterm = db_query(
-    'SELECT *
-      FROM cvterm_relationship
-      WHERE object_id = :rootid
-    ',
-    array(':rootid' => $rootid)
-  );
-  while ($cterm_result = $cterm->fetchAssoc()) {
-    tripal_update_cvtermpath_root_loop($cterm_result['subject_id'], $cvid, $roots);
-  }
-}
-
-/**
- *
- * @param $origin
- *   The root terms cvterm_id.
- * @param $child_id
- *   The cvterm_id of the current child term.  The child term is a descendent
- *   of the origin.
- * @param $cv_id
- *   The controlled vocabulary ID from the cv table of Chado (i.e. cv.cv_id).
- * @param $type_id
- *   The relationship type between the origin term and the child.
- * @param $depth
- *   The depth of the recursion.
- * @param $increment_of_depth.
- *   An integer ??
- * @param $tree_path.
- *   The array of every term between the current child and the origin. Each
- *   element in the array is an associative array with the keys:
- *     -build_id: an string identifier for the child that combines the origin,
- *      child cvterm_id,cv_id, and the type_id.
- *     -depth: the depth that a child was inserted into the cvtermpath table.
- * @param $possible_loop
- *    A boolean flag.
- * @param $matched_row
- *    An array of rows that are currently in the cvtermpath table that match the
- *    build_id of the current term trying to be written to the table
- * @param $possible_start_of_ loop
- *    The array of the possible loop item between the current child and the origin.
- *    Each element in the array is an associative array with the keys:
- *     - cvid : $cv_id
- *     - subject_id:
- *     - child_id : $child_id,
- *     - type_id : $type_id,
- *     - depth : $depth,
- * @param $no_loop_skip_test
- *     A boolean used when the possible loop has been ruled out as a loop.
- * @return multitype:
- */
-function tripal_update_cvtermpath_loop(
-  $origin,
-  $child_id,
-  $cv_id,
-  $type_id,
-  $depth,
-  $increment_of_depth,
-  $tree_path,
-  $possible_loop,
-  $matched_rows,
-  $possible_start_of_loop,
-  $no_loop_skip_test) {
-
-  // We have not detected a loop, so it's safe to insert the term.
-  $new_match_rows = array();
-  if (!empty($possible_start_of_loop)) {
-    // Go through each matched_row.
-    if (count($matched_rows) === 1) {
-      // Get the cvtermpath_id and then increment down one row.
-      $cvtermpath_id = (int) $matched_rows[0]->cvtermpath_id;
-      $cvtermpath_id = $cvtermpath_id + 1;
-      chado_set_active('chado');
-      $next_row = db_query(
-        'SELECT *
-          FROM cvtermpath
-          WHERE cvtermpath_id = :cvtermpath_id
-        ',
-        array(':cvtermpath_id' => $cvtermpath_id)
-      );
-      $next_row = $next_row->fetchObject();
-
-      // If the next row matches the values passed we can't rule out a loop.
-      if (($next_row->type_id === $type_id) &&
-          ($next_row->subject_id === $child_id) &&
-          ($next_row->object_id === $origin) &&
-          ($next_row->cv_id === $cv_id)) {
-        $new_match_rows[] = $next_row;
-      }
-      elseif (($next_row->type_id === $possible_start_of_loop['type_id']) &&
-              ($next_row->subject_id === $possible_start_of_loop['subject_id']) &&
-              ($next_row->object_id === $possible_start_of_loop['object_id']) &&
-              ($next_row->cv_id === $possible_start_of_loop['cv_id'])) {
-        // The next_row is equal to start of loop, so we've reached the end
-        // and confirmed that this is a loop.
-        $possible_loop == FALSE;
-        $matched_rows = array();
-        tripal_update_cvtermpath_loop_increment($origin, $child_id, $cv_id,
-        $type_id, $depth + 1, $increment_of_depth, $tree_path, $possible_loop,
-        $new_match_rows, $possible_start_of_loop, $no_loop_skip_test);
-
-      }
-    }
-    else {
-      foreach ($matched_rows as $matched_row) {
-        // Get the cvtermpath_id and then increment down one row.
-        $cvtermpath_id = (int) $match_row->cvtermpath_id;
-        // Get the cvtermpath_id and then increment down one row.
-        $cvtermpath_id = $cvtermpath_id + 1;
-        chado_set_active('chado');
-        $next_row = db_query(
-          'SELECT *
-            FROM cvtermpath
-            WHERE cvtermpath_id = :cvtermpath_id
-          ',
-          array(':cvtermpath_id' => $cvtermpath_id)
-        );
-        $next_row = $next_row->fetchObject();
-
-        // If the next row matches the values passed we can't rule out a loop.
-        if (($next_row->type_id === $type_id) &&
-            ($next_row->subject_id === $child_id) &&
-            ($next_row->object_id === $origin) &&
-            ($next_row->cv_id === $cv_id)) {
-          $new_match_rows[] = $next_row;
-        }
-        elseif (($next_row->type_id === $possible_start_of_loop['type_id']) &&
-                ($next_row->subject_id === $possible_start_of_loop['subject_id']) &&
-                ($next_row->object_id === $possible_start_of_loop['object_id']) &&
-                ($next_row->cv_id === $possible_start_of_loop['cv_id'])) {
-          // The next_row is equal to start of loop, so we've reached the end
-          // and confirmed that this is a loop.
-          $possible_loop == FALSE;
-          $matched_rows = array();
-          tripal_update_cvtermpath_loop_increment($origin, $child_id, $cv_id,
-          $type_id, $depth + 1, $increment_of_depth, $tree_path, $possible_loop,
-          $new_match_rows, $possible_start_of_loop, $no_loop_skip_test);
-
-        }
-      }
-    }
-    // If $match_rows is empty there is no loop.
-    if (empty($new_match_rows)) {
-      $possible_loop == FALSE;
-      $matched_rows = array();
-      unset($new_match_rows);
-      $no_loop_skip_test = TRUE;
-      // There is not loop so pass it back the possible_start_of_loop info
-      // and a flag telling it to skip the loop check.
-      tripal_update_cvtermpath_loop_increment($possible_start_of_loop->subject_id,
-      $possible_start_of_loop->child_id, $possible_start_of_loop->cvid,
-      $possible_start_of_loop->type_id, $possible_start_of_loop->depth,
-      $increment_of_depth, $tree_path, $possible_loop, $matched_rows,
-      $possible_start_of_loop, $no_loop_skip_test);
-    }
-    // If $match_rows is not empty we need to keep trying rows.
-    else {
-      tripal_update_cvtermpath_loop_increment($origin, $child_id, $cv_id,
-      $type_id, $depth + 1, $increment_of_depth, $tree_path, $possible_loop,
-      $match_rows, $possible_start_of_loop, $no_loop_skip_test);
-    }
-  }
-  elseif ($possible_loop === FALSE) {
-    tripal_update_cvtermpath_loop_increment($origin, $child_id, $cv_id,
-    $type_id, $depth + 1, $increment_of_depth, $tree_path, $possible_loop,
-    $matched_rows, $possible_start_of_loop, $no_loop_skip_test);
-  }
-}
-
-/**
- *
- * @param $origin
- *   The root terms cvterm_id.
- * @param $child_id
- *   The cvterm_id of the current child term.  The child term is a descendent
- *   of the origin.
- * @param $cv_id
- *   The controlled vocabulary ID from the cv table of Chado (i.e. cv.cv_id).
- * @param $type_id
- *   The relationship type between the origin term and the child.
- * @param $depth
- *   The depth of the recursion.
- * @param $increment_of_depth.
- *   An integer ??
- * @param $tree_path.
- *   The array of every term between the current child and the origin. Each
- *   element in the array is an associative array with the keys:
- *     -build_id: an string identifier for the child that combines the origin,
- *      child cvterm_id,cv_id, and the type_id.
- *     -depth: the depth that a child was inserted into the cvtermpath table.
- * @param $possible_loop
- *    A boolean flag.
- * @param $matched_row
- *    An array of rows that are currently in the cvtermpath table that match the
- *    build_id of the current term trying to be written to the table
- * @param $possible_start_of_ loop
- *    The array of the possible loop item between the current child and the origin.
- *    Each element in the array is an associative array with the keys:
- *     - cvid : $cv_id
- *     - subject_id:
- *     - child_id : $child_id,
- *     - type_id : $type_id,
- *     - depth : $depth,
- * @param $no_loop_skip_test
- *     A boolean used when the possible loop has been ruled out as a loop.
- * @return multitype:
- */
-function tripal_update_cvtermpath_loop_increment(
-  $origin,
-  $child_id,
-  $cv_id,
-  $type_id,
-  $depth,
-  $increment_of_depth,
-  $tree_path,
-  $possible_loop,
-  $matched_rows,
-  &$possible_start_of_loop,
-  $no_loop_skip_test) {
-
-  // Check to see if a row with these values already exists.
-  if ($possible_loop === FALSE && empty($possible_start_of_loop)) {
-    chado_set_active('chado');
-    $count = db_query(
-      'SELECT *
-        FROM cvtermpath
-        WHERE cv_id = :cvid
-        AND object_id = :origin
-        AND subject_id = :child_id
-        AND pathdistance = :depth
-      ',
-      array(
-        ':cvid' => $cv_id,
-        ':origin' => $origin,
-        ':child_id' => $child_id,
-        ':depth' => $depth
-      )
-    );
-    $count_total = $count->rowCount();
-    if ($count_total > 0) {
-      return $count;
-    }
-    // Build the ID.
-    $term_id = $origin . '|' . $child_id . '|' . $cv_id . '|' . $type_id;
-
-    if ($no_loop_skip_test === FALSE) {
-      // Now check if the most recent entry already exists in the array.
-      if ($increment_of_depth != 0) {
-        // Search the $tree_path for the new $child_id in the build_id column.
-        foreach ($tree_path as $parent) {
-          // If this child is the same as a parent term that has already been
-          // processed then we have a potential loop.
-          if ($parent['build_id'] == $term_id) {
-            // Tell the function this is a possible loop and to stop writing to the table.
-            $possible_loop = TRUE;
-            // Find all the results in the table that might be the start of the loop.
-            $matching_rows = db_query(
-              'SELECT *
-              FROM cvtermpath
-              WHERE cv_id = :cvid
-              AND object_id = :origin
-              AND subject_id = :child_id
-              AND type_id = :type_id
-              ',
-              array(
-                ':cvid' => $cv_id,
-                ':origin' => $origin,
-                ':child_id' => $child_id,
-                ':type_id' => $type_id
-              )
-            );
-            $matched_rows = $matching_rows->fetchAll();
-            $possible_start_of_loop = array(
-              'cvid' => $cv_id,
-              'subject_id' => $origin,
-              'child_id' => $child_id,
-              'type_id' => $type_id,
-              'depth' => $depth,
-            );
-          }
-        }
-      }
-
-      $query = db_insert('cvtermpath')
-        ->fields([
-          'object_id' => $origin,
-          'subject_id' => $child_id,
-          'cv_id' => $cv_id,
-          'type_id' => $type_id,
-          'pathdistance' => $depth,
-        ]);
-      $rows = $query->execute();
-
-      // Then add that new entry to the $tree_path.
-      $tree_path[$increment_of_depth] = [
-        'build_id' => $term_id,
-        'depth' => $depth
+    // First cache all the relationships for this vocaublary so that we
+    // don't have to do repetitive queries to Chado.
+    print "Retrieving relationships...\n";
+    $sql = "
+      SELECT CVTR.subject_id, CVTR.type_id, CVTR.object_id, CVTS.name
+      FROM {cvterm_relationship} CVTR
+        INNER JOIN {cvterm} CVTO on CVTO.cvterm_id = CVTR.object_id
+        INNER JOIN {cvterm} CVTS on CVTS.cvterm_id = CVTR.subject_id
+      WHERE CVTO.cv_id = :cv_id
+      ORDER BY CVTO.name, CVTS.name
+    ";
+    $rels = chado_query($sql, [':cv_id' => $cv_id]);
+    $total_items;
+    while ($rel = $rels->fetchObject()) {
+      $cache['rels'][$rel->object_id][] = [
+        $rel->subject_id,
+        $rel->type_id,
+        $rel->name,
       ];
     }
-    // Reset to FALSE  and empty variable if passed in as TRUE.
-    $no_loop_skip_test == FALSE;
-    $possible_start_of_loop = array();
-
-    // Get all of the relationships of this child term, and recursively
-    // call the tripal_update_cvtermpath_loop() function to continue
-    // descending down the tree.
-    $query = db_select('cvterm_relationship', 'cvtr')
-      ->fields('cvtr')
-      ->condition('cvtr.object_id', $child_id, '=')
-      ->execute();
-    $cterm_relationships = $query->fetchAll();
-
-    foreach ($cterm_relationships as $item) {
-      $increment_of_depth++;
-      tripal_update_cvtermpath_loop_increment($origin, $item->subject_id, $cv_id,
-        $item->type_id, $depth + 1, $increment_of_depth, $tree_path, $possible_loop,
-        $matched_rows, $possible_start_of_loop, $no_loop_skip_test);
+    $total_items = count(array_keys($cache['rels']));
+    if ($job) {
+      $job->logMessage('Found !total relationships in this vocabulary.', ['!total' => $total_items]);
+      $job->setTotalItems($total_items);
+      $job->logMessage('Note: Progress updates occur as each term is processed and ' .
+        'some terms take longer than others.');
+      $job->setProgress(0);
+      $job->setInterval(1);
     }
-  }
-  elseif ($possible_loop === FALSE && !empty($possible_start_of_loop)) {
-    // This means a loop has been identified and the recursive call can move
-    // on to the next item and skip the rest of this run.
-    return $possible_start_of_loop;
-  }
-  elseif ($possible_loop === TRUE) {
-    // Get all of the relationships of this child term, and recursively
-    // call the tripal_update_cvtermpath_loop() function to continue
-    // descending down the tree.
-    $query = db_select('cvterm_relationship', 'cvtr')
-      ->fields('cvtr')
-      ->condition('cvtr.object_id', $child_id, '=')
-      ->execute();
-    $cterm_relationships = $query->fetchAll();
-    foreach ($cterm_relationships as $item) {
-      $increment_of_depth++;
-      tripal_update_cvtermpath_loop($origin, $item->subject_id, $cv_id,
-        $item->type_id, $depth + 1, $increment_of_depth, $tree_path, $possible_loop,
-        $matched_rows, $possible_start_of_loop, $no_loop_skip_test);
+
+    // Next get the tree roots. These are terms that are in relationships as
+    // an object but never as a subject.
+    $sql = "
+      SELECT DISTINCT CVT.cvterm_id, CVT.name
+      FROM {cvterm} CVT
+        LEFT JOIN {cvterm_relationship} CVTR ON CVT.cvterm_id = CVTR.subject_id
+        INNER JOIN {cvterm_relationship} CVTR2 ON CVT.cvterm_id = CVTR2.object_id
+      WHERE CVT.cv_id = :cvid AND CVTR.subject_id is NULL and
+        CVT.is_relationshiptype = 0 and CVT.is_obsolete = 0
+    ";
+    $roots = chado_query($sql, [':cvid' => $cv_id]);
+
+    // Iterate through the tree roots.
+    print "Processing terms...\n";
+    while ($root = $roots->fetchObject()) {
+      $root_id = $root->cvterm_id;
+      $root_name = $root->name;
+
+      if ($job) {
+        $job->logMessage('Processing tree root: ' . $root_name . '...');
+      }
+
+      // Now start descending through the tree and add the relationships
+      // to the cvtermpath table.
+      $num_handled = 0;
+      $depth = 0;
+      _chado_update_cvtermpath_root($cv_id, $root_id, $root_name, $cache, $job,
+        $num_handled, $depth);
     }
+  } catch (Exception $e) {
+    $transaction->rollback();
+    throw $e;
   }
 }
 
 /**
- * Adds a controlled vocabular to the CV table of Chado.
+ * Treats a term within the ontology as a root.
+ *
+ * In order to add all relationships between a term and it's descendents each
+ * term gets it's turn as a "root".  The first time this function is called
+ * it should be called with the actual root's of the ontology.  This function
+ * will then recursively treat each child term within the tree as a root in
+ * order to find all relationships.
+ *
+ * @param $cv_id
+ *   The vocaulary Id
+ * @param $root_id
+ *   This root term's cvterm Id.
+ * @param $root_name
+ *   The name of this root term.
+ * @param $cache
+ *   The cache used for lookups.
+ * @param $job
+ *   The TripalJob instance.
+ * @param $num_handled
+ *   Used to keep track of the number of nodes that have been handled for
+ *   progress reporting.
+ * @param $root_depth
+ *   The current depth in the tree of this term.
+ */
+function _chado_update_cvtermpath_root($cv_id, $root_id, $root_name, &$cache,
+                                       $job, &$num_handled, $root_depth = 0) {
+
+
+  // Don't use a node as a root if we've already used it once before.
+  if (in_array($root_id, $cache['roots_processed'])) {
+    return;
+  }
+
+  // Mark this node as having been processed as a root node.
+  $cache['roots_processed'][] = $root_id;
+
+  // For the actual tree roots we need to add a relationship to themselves.
+  if ($root_depth == 0) {
+    $is_a = $cache['is_a'];
+    $type_id = $is_a->cvterm_id;
+    $depth = 1;
+    _chado_update_cvtermpath_add_relationship($type_id, $root_id, $root_id, $cv_id, $depth);
+  }
+
+  // If there are no children do nothing.
+  if (!array_key_exists($root_id, $cache['rels'])) {
+    return;
+  }
+
+  // Get this term's children and recurse.
+  $children = $cache['rels'][$root_id];
+
+  // If there are no children do nothing.
+  if (!$children) {
+    return;
+  }
+
+  // Set the job progress.
+  if ($job) {
+    $job->setItemsHandled($num_handled);
+  }
+  $num_handled++;
+
+  // The $path variable contains only the current path on the descent. This
+  // is used for detecting loops in the graph. If we encounter a node a
+  // second time while traversing a single path of the tree then we've hit
+  // a loop.
+  $path = [];
+
+  // Process the children of this term.
+  $cache['nodes_processed'] = [];
+  $next_depth = 0;
+  _chado_update_cvtermpath_process_children($cv_id, $root_id, $root_id, $path, $cache, $next_depth);
+
+  // Next make each child of this node a root and recurse again.
+  foreach ($children as $child) {
+    $child_id = $child[0];
+    $child_type_id = $child[1];
+    $child_name = $child[2];
+
+    // Process this child as a root.
+    $next_depth = $root_depth + 1;
+    _chado_update_cvtermpath_root($cv_id, $child_id, $child_name, $cache,
+      $job, $num_handled, $next_depth);
+  }
+}
+
+/**
+ * Handles a single node in the tree.
+ *
+ * This is a recursive function which calls itself as the tree is descended. It
+ * performs a depth-first search of the tree.
+ *
+ * @param $cv_id
+ *   The vocaulary Id
+ * @param $root_id
+ *   This root term's cvterm Id.
+ * @param $cvterm_id
+ *   This term's cvterm Id.
+ * @param $path
+ *   An array used for storing the current path down the tree. This is the
+ *   sequence of nodes visited to this point down a single branch.
+ * @param $cache
+ *   The cache used for lookups.
+ * @param $depth
+ *   The current depth in the tree.
+ */
+function _chado_update_cvtermpath_process_children($cv_id, $root_id, $cvterm_id,
+                                                   $path, &$cache, $depth = 1) {
+
+  $cache['nodes_processed'][$cvterm_id] = TRUE;
+
+  // Have we visited this node before while on this path then we won't
+  // descend further as this means we've hit a loop.
+  if (in_array($cvterm_id, $path)) {
+    return;
+  }
+
+  // Add this term to the path.
+  $path[] = $cvterm_id;
+  //print implode('-', $path) . "\n";
+
+  // If this term does not have children then return.
+  if (!array_key_exists($cvterm_id, $cache['rels'])) {
+    return;
+  }
+
+  // Get this term's children and recurse.
+  $children = $cache['rels'][$cvterm_id];
+
+  // If this term does not have children then return.
+  if (!$children) {
+    return;
+  }
+
+  // If the term has children then recurse on those.
+  $next_depth = $depth + 1;
+  foreach ($children as $child) {
+    $child_id = $child[0];
+    $child_type_id = $child[1];
+
+    // Don't descend for children we've already seen.
+    if (array_key_exists($child_id, $cache['nodes_processed'])) {
+      continue;
+    }
+
+    _chado_update_cvtermpath_add_relationship($child_type_id, $child_id, $root_id,
+      $cv_id, $next_depth);
+
+    _chado_update_cvtermpath_process_children($cv_id, $root_id, $child_id, $path, $cache, $next_depth);
+  }
+}
+
+/**
+ * Inserts values into the cvtermpath table.
+ *
+ * After the entire tree below the current root term is traversed, this
+ * function is called and inserts all of the relationships that were found
+ * into the cvtermpath table.
+ *
+ * @param $visited
+ *   The array contaiing relationships for all visited nodes in the tree. These
+ *   elements will become the entries in the cvtermpath table.
+ * @param $job
+ *   The TripalJob instance.
+ */
+function _chado_update_cvtermpath_add_relationship($type_id, $cvterm_id,
+                                                   $root_id, $cv_id, $depth) {
+
+  $cvtermpath = new ChadoRecord('cvtermpath');
+  $cvtermpath->setValues([
+    'type_id' => $type_id,
+    'subject_id' => $cvterm_id,
+    'object_id' => $root_id,
+    'cv_id' => $cv_id,
+    'pathdistance' => $depth,
+  ]);
+  $cvtermpath->insert();
+}
+
+
+/**
+ * Adds a controlled vocabulary to the CV table of Chado.
  *
  * @param $name
  *   The name of the controlled vocabulary. These are typically all lower case
@@ -799,40 +688,40 @@ function tripal_update_cvtermpath_loop_increment(
  * @return
  *   An object populated with fields from the newly added database.
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_cv_api
  */
-function tripal_insert_cv($name, $definition) {
+function chado_insert_cv($name, $definition) {
 
-  // insert/update values
-  $ins_values = array(
-    'name'       => $name,
-    'definition' => $definition
-  );
+  // Insert/update values.
+  $ins_values = [
+    'name' => $name,
+    'definition' => $definition,
+  ];
 
-  // see if the CV default exists already in the database
-  $sel_values = array('name' => $name);
-  $results = chado_select_record('cv', array('*'), $sel_values);
+  // See if the CV default exists already in the database.
+  $sel_values = ['name' => $name];
+  $results = chado_select_record('cv', ['*'], $sel_values);
 
-  // if it does not exists then add it
+  // If it does not exists then add it.
   if (count($results) == 0) {
     $success = chado_insert_record('cv', $ins_values);
     if (!$success) {
       tripal_report_error('tripal_chado', TRIPAL_WARNING, "Failed to create the CV record", NULL);
       return FALSE;
     }
-    $results = chado_select_record('cv', array('*'), $sel_values);
+    $results = chado_select_record('cv', ['*'], $sel_values);
   }
-  // if it already exists then do an update
+  // If it already exists then do an update.
   else {
     $success = chado_update_record('cv', $sel_values, $ins_values);
     if (!$success) {
       tripal_report_error('tripal_chado', TRIPAL_WARNING, "Failed to update the CV record", NULL);
       return FALSE;
     }
-    $results = chado_select_record('cv', array('*'), $sel_values);
+    $results = chado_select_record('cv', ['*'], $sel_values);
   }
 
-  // return the cv object
+  // Return the cv object.
   return $results[0];
 }
 
@@ -857,13 +746,13 @@ function tripal_insert_cv($name, $definition) {
  *      <DB> is the name of the database to which the cvterm belongs and the
  *      <ACCESSION> is the term's accession number in the database.
  *    - name: the name of the term. usually meant to be human-readable.
- *    - is_obsolete: is present and set to 1 if the term is defunct
- *    - definition: the definition of the term
+ *    - is_obsolete: is present and set to 1 if the term is defunct.
+ *    - definition: the definition of the term.
  *    - cv_name: The CV name to which the term belongs.  If this arugment is
  *        null or not provided then the function tries to find a record in the
  *        CV table with the same name provided in the $term[namespace].  If
  *        this field is provided then it overrides what the value in
- *        $term[namespace]
+ *        $term[namespace].
  *    - is_relationship: If this term is a relationship term then this value
  *        should be 1.
  *    - db_name: In some cases the database name will not be part of the
@@ -878,19 +767,17 @@ function tripal_insert_cv($name, $definition) {
  * @return
  *   A cvterm object
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_cv_api
  */
-function tripal_insert_cvterm($term, $options = array()) {
-
-  // get the term properties
+function chado_insert_cvterm($term, $options = []) {
+  // Get the term properties.
   $id = (isset($term['id'])) ? $term['id'] : '';
   $name = '';
   $cvname = '';
   $definition = '';
   $is_obsolete = 0;
   $accession = '';
-
-  // Set Defaults
+  // Set Defaults.
   if (isset($term['cv_name'])) {
     $cvname = $term['cv_name'];
   }
@@ -898,40 +785,34 @@ function tripal_insert_cvterm($term, $options = array()) {
     $cvname = 'local';
   }
   // Namespace is deprecated but must be supported for backwards
-  // compatability
+  // compatability.
   if (array_key_exists('namespace', $term)) {
     $cvname = $term['namespace'];
   }
-
   if (isset($term['is_relationship'])) {
     $is_relationship = $term['is_relationship'];
   }
   else {
     $is_relationship = 0;
   }
-
   if (isset($term['db_name'])) {
     $dbname = $term['db_name'];
   }
   else {
     $dbname = 'internal';
   }
-
   if (isset($options['update_existing'])) {
     $update = $options['update_existing'];
   }
   else {
     $update = 1;
   }
-
   if (array_key_exists('name', $term)) {
     $name = $term['name'];
   }
   else {
     $name = $id;
   }
-
-
   if (array_key_exists('definition', $term)) {
     $definition = preg_replace('/^\"(.*)\"/', '\1', $term['definition']);
   }
@@ -951,17 +832,14 @@ function tripal_insert_cvterm($term, $options = array()) {
   if (!$id) {
     $id = $name;
   }
-
   // Get the accession and the database from the cvterm id.
   if ($dbname) {
     $accession = $id;
   }
-
   if (preg_match('/^.+?:.*$/', $id)) {
     $accession = preg_replace('/^.+?:(.*)$/', '\1', $id);
     $dbname = preg_replace('/^(.+?):.*$/', '\1', $id);
   }
-
   // Check that we have a database name, give a different message if it's a
   // relationship.
   if ($is_relationship and !$dbname) {
@@ -972,17 +850,15 @@ function tripal_insert_cvterm($term, $options = array()) {
     tripal_report_error('tripal_cv', TRIPAL_WARNING, "A database identifier is missing from the term: $id", NULL);
     return 0;
   }
-
-  // Make sure the CV name exists
-  $cv = tripal_get_cv(array('name' => $cvname));
+  // Make sure the CV name exists.
+  $cv = chado_get_cv(['name' => $cvname]);
   if (!$cv) {
-    $cv = tripal_insert_cv($cvname, '');
+    $cv = chado_insert_cv($cvname, '');
   }
   if (!$cv) {
     tripal_report_error('tripal_cv', TRIPAL_WARNING, "Cannot find namespace '$cvname' when adding/updating $id", NULL);
     return 0;
   }
-
   // This SQL statement will be used a lot to find a cvterm so just set it
   // here for easy reference below.  Because CV terms can change their names
   // but accessions don't change, the following SQL finds cvterms based on
@@ -996,54 +872,48 @@ function tripal_insert_cvterm($term, $options = array()) {
       INNER JOIN {cv} CV on CV.cv_id = CVT.cv_id
     WHERE DBX.accession = :accession and DB.name = :name
   ";
-
   // Add the database. The function will just return the DB object if the
   // database already exists.
-  $db = tripal_get_db(array('name' => $dbname));
+  $db = chado_get_db(['name' => $dbname]);
   if (!$db) {
-    $db = tripal_insert_db(array('name' => $dbname));
+    $db = chado_insert_db(['name' => $dbname]);
   }
   if (!$db) {
     tripal_report_error('tripal_cv', TRIPAL_WARNING, "Cannot find database '$dbname' in Chado.", NULL);
     return 0;
   }
-
   // The cvterm table has two unique dependencies. We need to check both.
   // first check the (name, cv_id, is_obsolete) constraint.
-  $values = array(
+  $values = [
     'name' => $name,
     'is_obsolete' => $is_obsolete,
-    'cv_id' => array(
+    'cv_id' => [
       'name' => $cvname,
-    ),
-  );
-  $result = chado_select_record('cvterm', array('*'), $values);
+    ],
+  ];
+  $result = chado_select_record('cvterm', ['*'], $values);
   if (count($result) == 1) {
     $cvterm = $result[0];
-
     // Get the dbxref record.
-    $values = array('dbxref_id' => $cvterm->dbxref_id);
-    $result = chado_select_record('dbxref', array('*'), $values);
+    $values = ['dbxref_id' => $cvterm->dbxref_id];
+    $result = chado_select_record('dbxref', ['*'], $values);
     $dbxref = $result[0];
     if (!$dbxref) {
       tripal_report_error('tripal_cv', TRIPAL_ERROR,
-          'Unable to access the dbxref record for the :term cvterm. Term Record: !record',
-          array(':term' => $name, '!record' => print_r($cvterm, TRUE))
+        'Unable to access the dbxref record for the :term cvterm. Term Record: !record',
+        [':term' => $name, '!record' => print_r($cvterm, TRUE)]
       );
       return FALSE;
     }
-
     // Get the db.
-    $values = array('db_id' => $dbxref->db_id);
-    $result = chado_select_record('db', array('*'), $values);
+    $values = ['db_id' => $dbxref->db_id];
+    $result = chado_select_record('db', ['*'], $values);
     $db_check = $result[0];
-
     //     // The database name for this existing term does not match that of the
     //     // one provided to this function.  The CV name matches otherwise we
     //     // wouldn't have made it this far. So, let's swap the database for
     //     // this term.
     //     if ($db_check->name != $db->name) {
-
     //       // Look to see if the correct dbxref record already exists for this
     //       // database.
     //       $values = array(
@@ -1051,7 +921,6 @@ function tripal_insert_cvterm($term, $options = array()) {
     //         'accession' => $accession,
     //       );
     //       $result = chado_select_record('dbxref', array('*'), $values);
-
     //       // If we already have a good dbxref then we want to update our cvterm
     //       // to use this dbxref.
     //       if (count($result) > 0) {
@@ -1072,82 +941,81 @@ function tripal_insert_cvterm($term, $options = array()) {
     //         chado_delete_record('cvterm', $match);
     //       }
     //     }
-
     // Check that the accession matches.  Sometimes an OBO can define a term
     // multiple times but with different accessions.  If this is the case we
     // can't do an insert or it will violate the constraint in the cvterm table.
     // So we'll need to add the record to the cvterm_dbxref table instead.
     if ($dbxref->accession != $accession) {
-
       // Get/add the dbxref for his term.
-      $dbxref_new =  tripal_insert_dbxref(array(
+      $dbxref_new = chado_insert_dbxref([
         'db_id' => $db->db_id,
-        'accession' => $accession
-      ));
+        'accession' => $accession,
+      ]);
       if (!$dbxref_new) {
         tripal_report_error('tripal_cv', TRIPAL_WARNING, "Failed to find or insert the dbxref record for cvterm, " .
-            "$name (id: $accession), for database $dbname", NULL);
+          "$name (id: $accession), for database $dbname", NULL);
         return 0;
       }
-
       // Check to see if the cvterm_dbxref record already exists.
-      $values = array(
+      $values = [
         'cvterm_id' => $cvterm->cvterm_id,
         'dbxref_id' => $dbxref_new->dbxref_id,
         'is_for_definition' => 1,
-      );
-      $result = chado_select_record('cvterm_dbxref', array('*'), $values);
-
+      ];
+      $result = chado_select_record('cvterm_dbxref', ['*'], $values);
       // if the cvterm_dbxref record does not exists then add it
-      if (count($result)==0) {
-        $options = array(
+      if (count($result) == 0) {
+        $options = [
           'return_record' => FALSE,
-        );
+        ];
         $success = chado_insert_record('cvterm_dbxref', $values, $options);
         if (!$success) {
           tripal_report_error('tripal_cv', TRIPAL_WARNING, "Failed to find or insert the cvterm_dbxref record for a " .
-              "duplicated cvterm:  $name (id: $accession), for database $dbname", NULL);
+            "duplicated cvterm:  $name (id: $accession), for database $dbname", NULL);
           return 0;
         }
       }
-      // get the original cvterm with the same name and return that.
-      $result = chado_query($cvtermsql, array(':accession' => $dbxref->accession, ':name' => $dbname));
+      // Get the original cvterm with the same name and return that.
+      $result = chado_query($cvtermsql, [
+        ':accession' => $dbxref->accession,
+        ':name' => $dbname,
+      ]);
       $cvterm = $result->fetchObject();
       return $cvterm;
     }
     // Continue on, we've fixed the record if the db_id did not match.
     // We can now perform and updated if we need to.
   }
-
-  // get the CVterm record
-  $result = chado_query($cvtermsql, array(':accession' => $accession, ':name' => $dbname));
+  // Get the CVterm record.
+  $result = chado_query($cvtermsql, [
+    ':accession' => $accession,
+    ':name' => $dbname,
+  ]);
   $cvterm = $result->fetchObject();
   if (!$cvterm) {
-
     // Check to see if the dbxref exists if not, add it.
-    $dbxref =  tripal_insert_dbxref(array(
+    $dbxref = chado_insert_dbxref([
       'db_id' => $db->db_id,
-      'accession' => $accession
-    ));
+      'accession' => $accession,
+    ]);
     if (!$dbxref) {
       tripal_report_error('tripal_cv', TRIPAL_WARNING, "Failed to find or insert the dbxref record for cvterm, " .
-          "$name (id: $accession), for database $dbname", NULL);
+        "$name (id: $accession), for database $dbname", NULL);
       return 0;
     }
-
     // Check to see if the dbxref already has an entry in the cvterm table.
-    $values = array('dbxref_id' => $dbxref->dbxref_id);
-    $check = chado_select_record('cvterm', array('cvterm_id'), $values);
+    $values = ['dbxref_id' => $dbxref->dbxref_id];
+    $check = chado_select_record('cvterm', ['cvterm_id'], $values);
     if (count($check) == 0) {
       // now add the cvterm
-      $ins_values = array(
-        'cv_id'                => $cv->cv_id,
-        'name'                 => $name,
-        'definition'           => $definition,
-        'dbxref_id'            => $dbxref->dbxref_id,
-        'is_obsolete'          => $is_obsolete,
-        'is_relationshiptype'  => $is_relationship,
-      );
+      $ins_values = [
+        'cv_id' => $cv->cv_id,
+        'name' => $name,
+        'definition' => $definition,
+        'dbxref_id' => $dbxref->dbxref_id,
+        'is_obsolete' => $is_obsolete,
+        'is_relationshiptype' => $is_relationship,
+      ];
       $success = chado_insert_record('cvterm', $ins_values);
       if (!$success) {
         if (!$is_relationship) {
@@ -1165,27 +1033,29 @@ function tripal_insert_cvterm($term, $options = array()) {
       tripal_report_error('tripal_cv', TRIPAL_WARNING, "The dbxref already exists for another cvterm record: $name (cv: " . $cvname . " db: $dbname)", NULL);
       return 0;
     }
-    $result = chado_query($cvtermsql, array(':accession' => $accession, ':name' => $dbname));
+    $result = chado_query($cvtermsql, [
+      ':accession' => $accession,
+      ':name' => $dbname,
+    ]);
     $cvterm = $result->fetchObject();
   }
   // Update the cvterm.
   elseif ($update) {
-
     // First, basic update of the term.
-    $match = array('cvterm_id' => $cvterm->cvterm_id);
-    $upd_values = array(
-      'name'                => $name,
-      'definition'          => $definition,
-      'is_obsolete'         => $is_obsolete,
+    $match = ['cvterm_id' => $cvterm->cvterm_id];
+    $upd_values = [
+      'name' => $name,
+      'definition' => $definition,
+      'is_obsolete' => $is_obsolete,
       'is_relationshiptype' => $is_relationship,
-    );
+    ];
     $success = chado_update_record('cvterm', $match, $upd_values);
     if (!$success) {
       tripal_report_error('tripal_cv', TRIPAL_WARNING, "Failed to update the term: $name", NULL);
       return 0;
     }
-
-    // Second, check that the dbxref has not changed and if it has then update it.
+    // Second, check that the dbxref has not changed and if it has then update
+    // it.
     $checksql = "
       SELECT cvterm_id
       FROM {cvterm} CVT
@@ -1194,45 +1064,52 @@ function tripal_insert_cvterm($term, $options = array()) {
         INNER JOIN {cv} CV on CV.cv_id = CVT.cv_id
       WHERE DBX.accession = :accession and DB.name = :dbname and CVT.name = :term and CV.name = :cvname
     ";
-    $check = chado_query($checksql, array(':accession' => $accession, ':dbname' => $dbname, ':term' => $name, ':cvname' => $cvname))->fetchObject();
+    $check = chado_query($checksql, [
+      ':accession' => $accession,
+      ':dbname' => $dbname,
+      ':term' => $name,
+      ':cvname' => $cvname,
+    ])->fetchObject();
     if (!$check) {
-
-      // check to see if the dbxref exists if not, add it.
-      $dbxref =  tripal_insert_dbxref(array(
+      // Check to see if the dbxref exists if not, add it.
+      $dbxref = chado_insert_dbxref([
         'db_id' => $db->db_id,
-        'accession' => $accession
-      ));
+        'accession' => $accession,
+      ]);
       if (!$dbxref) {
         tripal_report_error('tripal_chado', TRIPAL_WARNING, "Failed to find or insert the dbxref record for cvterm, " .
-            "$name (id: $accession), for database $dbname", NULL);
+          "$name (id: $accession), for database $dbname", NULL);
         return 0;
       }
-
-      $match = array('cvterm_id' => $cvterm->cvterm_id);
-      $upd_values = array(
+      $match = ['cvterm_id' => $cvterm->cvterm_id];
+      $upd_values = [
         'dbxref_id' => $dbxref->dbxref_id,
-      );
+      ];
       $success = chado_update_record('cvterm', $match, $upd_values);
       if (!$success) {
         tripal_report_error('tripal_chado', TRIPAL_WARNING, "Failed to update the term $name with new accession $db:$accession", NULL);
         return 0;
       }
     }
-
     // Finally grab the updated details.
-    $result = chado_query($cvtermsql, array(':accession' => $accession, ':name' => $dbname));
+    $result = chado_query($cvtermsql, [
+      ':accession' => $accession,
+      ':name' => $dbname,
+    ]);
     $cvterm = $result->fetchObject();
   }
   else {
-    // do nothing, we have the cvterm but we don't want to update
+    // Do nothing, we have the cvterm but we don't want to update.
   }
-  // return the cvterm
+  // Return the cvterm.
   return $cvterm;
 }
 
 
 /**
  * TODO: deprecate this function
+ *
+ * Avoid using this function as it will be deprecated in future releases.
  *
  * This function allows other modules to programatically
  * submit an ontology for loading into Chado.
@@ -1248,7 +1125,7 @@ function tripal_insert_cvterm($term, $options = array()) {
  * @param $obo_id
  *   If the ontology is already loaded into the Tripal tables then
  *   use this argument to specify the unique ID for the ontology
- *   that will be loaded
+ *   that will be loaded.
  * @param $obo_name
  *   If the OBO has not been added before then use this argument
  *   to specify the human readable name of the ontology.
@@ -1262,43 +1139,43 @@ function tripal_insert_cvterm($term, $options = array()) {
  * @return
  *   returns the job_id of the submitted job or FALSE if the job was not added
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_cv_api
  */
-function tripal_submit_obo_job($obo) {
+function chado_submit_obo_job($obo) {
   global $user;
 
   // Set Defaults
   $obo['obo_id'] = (isset($obo['obo_id'])) ? $obo['obo_id'] : NULL;
-  $obo['name']   = (isset($obo['name']))   ? $obo['name']   : NULL;
-  $obo['url']    = (isset($obo['url']))    ? $obo['url']    : NULL;
-  $obo['file']   = (isset($obo['file']))   ? $obo['file']   : NULL;
+  $obo['name'] = (isset($obo['name'])) ? $obo['name'] : NULL;
+  $obo['url'] = (isset($obo['url'])) ? $obo['url'] : NULL;
+  $obo['file'] = (isset($obo['file'])) ? $obo['file'] : NULL;
 
-  $includes = array(
+  $includes = [
     drupal_get_path('module', 'tripal_chado') . '/includes/tripal_chado.cv.inc',
-  );
+  ];
 
   if ($obo['obo_id']) {
     $sql = "SELECT * FROM {tripal_cv_obo} WHERE obo_id = :obo_id";
-    $result = db_query($sql, array(':obo_id' => $obo['obo_id']))->fetchObject();
+    $result = db_query($sql, [':obo_id' => $obo['obo_id']])->fetchObject();
 
-    $args = array($result->obo_id);
+    $args = [$result->obo_id];
     return tripal_add_job("Load OBO " . $result->name, 'tripal_chado',
-       "tripal_cv_load_obo", $args, $user->uid, 10, $includes);
+      "tripal_cv_load_obo", $args, $user->uid, 10, $includes);
   }
   else {
     if ($obo['url']) {
       $sql = "SELECT * FROM {tripal_cv_obo} WHERE path = :url";
-      $result = db_query($sql, array(':url' => $obo['url']))->fetchObject();
+      $result = db_query($sql, [':url' => $obo['url']])->fetchObject();
 
-      $args = array($result->obo_id);
+      $args = [$result->obo_id];
       return tripal_add_job("Load OBO " . $result->name, 'tripal_chado',
         "tripal_cv_load_obo", $args, $user->uid, 10, $includes);
     }
     elseif ($obo['file']) {
       $sql = "SELECT * FROM {tripal_cv_obo} WHERE path = :file";
-      $result = db_query($sql, array(':url' => $obo['file']))->fetchObject();
+      $result = db_query($sql, [':url' => $obo['file']])->fetchObject();
 
-      $args = array($result->obo_id);
+      $args = [$result->obo_id];
       return tripal_add_job("Load OBO " . $result->name, 'tripal_chado',
         "tripal_cv_load_obo", $args, $user->uid, 10, $includes);
     }
@@ -1312,38 +1189,38 @@ function tripal_submit_obo_job($obo) {
  * If the OBO name already exists in the table then the path is updated.
  *
  * @param $name
- *   The human readable name of this ontology
+ *   The human readable name of this ontology.
  * @param $path
- *   The file path or URL of the ontology
+ *   The file path or URL of the ontology.
  *
  * @return
- *   Returns the ontology ID
+ *   Returns the ontology ID.
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_cv_api
  */
-function tripal_insert_obo($name, $path) {
-  // make sure an OBO with the same name doesn't already exist
+function chado_insert_obo($name, $path) {
+  // Make sure an OBO with the same name doesn't already exist.
   $obo_id = db_select('tripal_cv_obo', 'tco')
-    ->fields('tco', array('obo_id'))
+    ->fields('tco', ['obo_id'])
     ->condition('name', $name)
     ->execute()
     ->fetchField();
 
   if ($obo_id) {
     db_update('tripal_cv_obo')
-      ->fields(array(
+      ->fields([
         'path' => $path,
-      ))
+      ])
       ->condition('name', $name)
       ->execute();
     return $obo_id;
   }
   else {
     $obo_id = db_insert('tripal_cv_obo')
-      ->fields(array(
+      ->fields([
         'name' => $name,
         'path' => $path,
-      ))
+      ])
       ->execute();
     return $obo_id;
   }
@@ -1353,12 +1230,14 @@ function tripal_insert_obo($name, $path) {
  * Retrieves an OBO record.
  *
  * @param $values
- *   An associate array with the following allowed keys: obo_id, name
+ *   An associate array with the following allowed keys: obo_id, name.
  *
  * @return
  *   An instance of an OBO record object.
+ *
+ * @ingroup tripal_chado_cv_api
  */
-function tripal_get_obo($values) {
+function chado_get_obo($values) {
   $query = db_select('tripal_cv_obo', 'tco')
     ->fields('tco');
 
@@ -1370,20 +1249,21 @@ function tripal_get_obo($values) {
   }
   return $query->execute()->fetchObject();
 }
+
 /**
  * This function is intended to be used in autocomplete forms.
  *
  * This function searches for a matching controlled vobulary name.
  *
  * @param $string
- * The string to search for
+ * The string to search for.
  *
  * @return
- * A json array of terms that begin with the provided string
+ * A json array of terms that begin with the provided string.
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_cv_api
  */
-function tripal_autocomplete_cv($string = '') {
+function chado_autocomplete_cv($string = '') {
   $sql = "
     SELECT CV.cv_id, CV.name
     FROM {cv} CV
@@ -1391,29 +1271,30 @@ function tripal_autocomplete_cv($string = '') {
     ORDER by CV.name
     LIMIT 25 OFFSET 0
   ";
-  $results = chado_query($sql, array(':name' => $string . '%'));
-  $items = array();
+  $results = chado_query($sql, [':name' => $string . '%']);
+  $items = [];
   foreach ($results as $cv) {
     $items[$cv->name] = $cv->name;
   }
 
   drupal_json_output($items);
 }
+
 /**
  * This function is intended to be used in autocomplete forms
- * for searching for CV terms that begin with the provided string
+ * for searching for CV terms that begin with the provided string.
  *
  * @param $cv_id
- * The CV ID in which to search for the term
+ * The CV ID in which to search for the term.
  * @param $string
- * The string to search for
+ * The string to search for.
  *
  * @return
- * A json array of terms that begin with the provided string
+ * A json array of terms that begin with the provided string.
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_cv_api
  */
-function tripal_autocomplete_cvterm($cv_id, $string = '') {
+function chado_autocomplete_cvterm($cv_id, $string = '') {
   if ($cv_id) {
     $sql = "
       SELECT CVT.cvterm_id, CVT.name
@@ -1427,8 +1308,11 @@ function tripal_autocomplete_cvterm($cv_id, $string = '') {
       ORDER by name
       LIMIT 25 OFFSET 0
     ";
-    $results = chado_query($sql, array(':cv_id' => $cv_id, ':name' => $string . '%'));
-    $items = array();
+    $results = chado_query($sql, [
+      ':cv_id' => $cv_id,
+      ':name' => $string . '%',
+    ]);
+    $items = [];
     foreach ($results as $term) {
       $items[$term->name] = $term->name;
     }
@@ -1450,8 +1334,8 @@ function tripal_autocomplete_cvterm($cv_id, $string = '') {
       ORDER by name
       LIMIT 25 OFFSET 0
     ";
-    $results = chado_query($sql, array(':name' => $string . '%'));
-    $items = array();
+    $results = chado_query($sql, [':name' => $string . '%']);
+    $items = [];
     foreach ($results as $term) {
       $items[$term->name] = $term->name;
     }
@@ -1461,13 +1345,15 @@ function tripal_autocomplete_cvterm($cv_id, $string = '') {
 }
 
 /**
- * Add a record to a cvterm linking table (ie: feature_cvterm)
+ * Add a record to a cvterm linking table (ie: feature_cvterm).
  *
  * @param $basetable
- *   The base table to which the cvterm should be linked/associated. Thus to associate a
- *   cvterm to a feature the basetable=feature and cvterm_id is added to the feature_cvterm table.
+ *   The base table to which the cvterm should be linked/associated. Thus to
+ *   associate a cvterm to a feature the basetable=feature and cvterm_id is
+ *   added to the feature_cvterm table.
  * @param $record_id
- *   The primary key of the basetable to associate the cvterm with. This should be in integer.
+ *   The primary key of the basetable to associate the cvterm with. This should
+ *   be in integer.
  * @param $cvterm
  *   An associative array describing the cvterm. Valid keys include:
  *     - name: the name for the cvterm,
@@ -1475,89 +1361,95 @@ function tripal_autocomplete_cvterm($cv_id, $string = '') {
  *     - cv_id: the primary key of the cv the cvterm belongs to.
  * @param $options
  *   An associative array of options. Valid keys include:
- *     - insert_cvterm: Insert the cvterm if it doesn't already exist. FALSE is the default
+ *     - insert_cvterm: Insert the cvterm if it doesn't already exist. FALSE is
+ *       the default.
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_cv_api
  */
-function tripal_associate_cvterm($basetable, $record_id, $cvterm, $options = array()) {
+function chado_associate_cvterm($basetable, $record_id, $cvterm, $options = []) {
   $linking_table = $basetable . '_cvterm';
   $foreignkey_name = $basetable . '_id';
 
   // Default Values
   $options['insert_cvterm'] = (isset($options['insert_cvterm'])) ? $options['insert_cvterm'] : FALSE;
 
-  // If the cvterm_id is not set then find the cvterm record using the name and cv_id
+  // If the cvterm_id is not set then find the cvterm record using the name and
+  // cv_id.
   if (!isset($cvterm['cvterm_id'])) {
-    $values = array(
+    $values = [
       'name' => $cvterm['name'],
-    );
+    ];
     if (isset($cvterm['cv_id'])) {
       $values['cv_id'] = $cvterm['cv_id'];
     }
     elseif (isset($cvterm['cv_name'])) {
-      $values['cv_id'] = array(
-        'name' => $cvterm['cv_name']
-      );
+      $values['cv_id'] = [
+        'name' => $cvterm['cv_name'],
+      ];
     }
     else {
       tripal_report_error('tripal_chado_api', TRIPAL_WARNING,
-        "tripal_associate_cvterm: The cvterm needs to have either the cv_name or cv_id
+        "chado_associate_cvterm: The cvterm needs to have either the cv_name or cv_id
           supplied. You were trying to associate a cvterm with the %base %record_id
           and supplied the cvterm values: %cvterm.",
-        array('%base' => $basetable, '%record_id' => $record_id, '%cvterm' => print_r($cvterm,TRUE))
+        [
+          '%base' => $basetable,
+          '%record_id' => $record_id,
+          '%cvterm' => print_r($cvterm, TRUE),
+        ]
       );
       return FALSE;
     }
 
     // Get the cvterm. If it doesn't exist then add it if the option
     // 'insert_cvterm' is set.
-    $select = chado_select_record('cvterm', array('*'), $values);
+    $select = chado_select_record('cvterm', ['*'], $values);
     if ($select) {
       $cvterm['cvterm_id'] = $select[0]->cvterm_id;
     }
     elseif ($options['insert_cvterm']) {
       // Insert the cvterm
-      $insert = tripal_insert_cvterm($values);
+      $insert = chado_insert_cvterm($values);
       if (isset($insert->cvterm_id)) {
         $cvterm['cvterm_id'] = $insert->cvterm_id;
       }
       else {
         tripal_report_error('tripal_chado_api', TRIPAL_WARNING,
-          "tripal_associate_cvterm: Unable to insert the cvterm using the cvterm values: %cvterm.",
-          array('%cvterm' => print_r($cvterm,TRUE))
+          "chado_associate_cvterm: Unable to insert the cvterm using the cvterm values: %cvterm.",
+          ['%cvterm' => print_r($cvterm, TRUE)]
         );
         return FALSE;
       }
     }
     else {
       tripal_report_error('tripal_api', TRIPAL_WARNING,
-        "tripal_associate_cvterm: The cvterm doesn't already exist. You supplied the cvterm values: %cvterm.",
-        array('%cvterm' => print_r($cvterm,TRUE))
+        "chado_associate_cvterm: The cvterm doesn't already exist. You supplied the cvterm values: %cvterm.",
+        ['%cvterm' => print_r($cvterm, TRUE)]
       );
       return FALSE;
     }
   }
 
-  // Now add the link between the record & cvterm
+  // Now add the link between the record & cvterm.
   if ($cvterm['cvterm_id'] > 0) {
-    $values = array(
+    $values = [
       'cvterm_id' => $cvterm['cvterm_id'],
       $foreignkey_name => $record_id,
       'pub_id' => 1,
-    );
+    ];
 
     // Check if the cvterm is already associated. If so, don't re-add it.
-    $result = chado_select_record($linking_table, array('*'), $values);
+    $result = chado_select_record($linking_table, ['*'], $values);
     if (!$result) {
       $success = chado_insert_record($linking_table, $values);
       if (!$success) {
         tripal_report_error('tripal_api', TRIPAL_WARNING,
           "Failed to insert the %base record %term",
-          array('%base' => $linking_table, '%term' => $cvterm['name'])
+          ['%base' => $linking_table, '%term' => $cvterm['name']]
         );
         return FALSE;
       }
-      $result = chado_select_record($linking_table, array('*'), $values);
+      $result = chado_select_record($linking_table, ['*'], $values);
     }
 
     if (isset($result[0])) {
@@ -1570,5 +1462,3 @@ function tripal_associate_cvterm($basetable, $record_id, $cvterm, $options = arr
 
   return FALSE;
 }
-
-

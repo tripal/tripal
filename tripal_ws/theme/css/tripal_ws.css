@@ -5,6 +5,7 @@
 }
 .tripal-remote--data-field-logo {
   max-height: 100px;
+  max-width: 150px;
 }
 
 .tripal-remote--data-field-dl dt {

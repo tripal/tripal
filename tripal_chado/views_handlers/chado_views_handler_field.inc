@@ -2,7 +2,7 @@
 
 // We need to include the views_handler_field_field file since it 
 // includes _field_view_formatter_options() which we need.
-require_once drupal_get_path('module','views') . '/modules/field/views_handler_field_field.inc';
+require_once drupal_get_path('module', 'views') . '/modules/field/views_handler_field_field.inc';
 
 /**
  * Views Field Handler for chado fields.
@@ -18,7 +18,7 @@ class chado_views_handler_field extends views_handler_field {
    * that a small number of cached simple queries will be more efficient than
    * the crazy joins that occur when using chado. *fingers crossed*
    */
-  function query ($use_groupby = FALSE) {
+  function query($use_groupby = FALSE) {
 
     $this->base_table = $this->definition['entity_table'];
     $this->base_table_alias = $this->base_table;
@@ -35,8 +35,8 @@ class chado_views_handler_field extends views_handler_field {
 
   /**
    * Load the entities for all fields that are about to be displayed.
-   * 
-   * Notice that, although we load the entities for each chado field, 
+   *
+   * Notice that, although we load the entities for each chado field,
    * Drupal caches entities to ensure we don't get a performance hit per field,
    * just per row.
    */
@@ -44,8 +44,8 @@ class chado_views_handler_field extends views_handler_field {
     if (!empty($values) AND isset($this->id_alias) AND isset($this->type_alias)) {
 
       // Foreach row in the view we want to grab the appropriate entity_id/type.
-      $entity_ids = array();
-      $keys = array();
+      $entity_ids = [];
+      $keys = [];
       foreach ($values as $key => $object) {
         // Only load the entity if we can access the entity_id.
         if (isset($this->id_alias) AND isset($object->{$this->id_alias})) {
@@ -55,19 +55,19 @@ class chado_views_handler_field extends views_handler_field {
       }
 
       // Now load the entities.
-      foreach($entity_ids as $type => $ids) {
+      foreach ($entity_ids as $type => $ids) {
         $entities[$type] = entity_load($type, $ids);
-      } 
-  
+      }
+
       // Finally add the loaded entities and values back into the resultset for easy access.
       foreach ($keys as $row_id => $entity_id) {
 
         // First set the entities.
-        foreach($entities as $type => $objects) {
-          $values[$row_id]->_chado_field_data[$type] = array(
+        foreach ($entities as $type => $objects) {
+          $values[$row_id]->_chado_field_data[$type] = [
             'entity_type' => $type,
             'entity' => $objects[$entity_id],
-          );
+          ];
         }
 
         // Then set the value of this field.
@@ -91,15 +91,15 @@ class chado_views_handler_field extends views_handler_field {
    */
   function render_field($entity, $field_name, $row_id) {
 
-    $display = array(
+    $display = [
       'type' => $this->options['type'],
-      'settings' => (isset($this->options['settings'])) ? $this->options['settings'] : array(),
+      'settings' => (isset($this->options['settings'])) ? $this->options['settings'] : [],
       'label' => 'hidden',
       // Pass the View object in the display so that fields can act on it.
       'views_view' => $this->view,
       'views_field' => $this,
       'views_row_id' => $row_id,
-    );
+    ];
 
     $langcode = LANGUAGE_NONE;
     $items = field_get_items($entity->type, $entity, $field_name);
@@ -114,14 +114,14 @@ class chado_views_handler_field extends views_handler_field {
 
     return $render_array;
   }
-  
+
   /**
    * @{inheritdoc}
    */
   function render($values) {
-  
+
     $value = $this->get_value($values);
-    
+
     if (is_array($value)) {
       return drupal_render($value);
     }
@@ -138,24 +138,26 @@ class chado_views_handler_field extends views_handler_field {
 
     $field = field_info_field($this->definition['field_name']);
     $formatters = _field_view_formatter_options($field['type']);
-    
-    $form['type'] = array(
+
+    $form['type'] = [
       '#type' => 'select',
       '#title' => t('Formatter'),
       '#options' => $formatters,
       '#default_value' => $this->options['type'],
-      '#ajax' => array(
+      '#ajax' => [
         'path' => views_ui_build_form_url($form_state),
-      ),
-      '#submit' => array('views_ui_config_item_form_submit_temporary'),
+      ],
+      '#submit' => ['views_ui_config_item_form_submit_temporary'],
       '#executes_submit_callback' => TRUE,
-    );
+    ];
 
     // Get the currently selected formatter.
     $format = $this->options['type'];
 
     $formatter = field_info_formatter_types($format);
-    if (!isset($this->options['settings'])) $this->options['settings'] = array();
+    if (!isset($this->options['settings'])) {
+      $this->options['settings'] = [];
+    }
     $settings = $this->options['settings'] + field_info_formatter_settings($format);
 
     // Provide an instance array for hook_field_formatter_settings_form().
@@ -163,13 +165,13 @@ class chado_views_handler_field extends views_handler_field {
     $this->instance = ctools_fields_fake_field_instance($this->definition['field_name'], '_custom', $formatter, $settings);
 
     // Store the settings in a '_custom' view mode.
-    $this->instance['display']['_custom'] = array(
+    $this->instance['display']['_custom'] = [
       'type' => $format,
       'settings' => $settings,
-    );
+    ];
 
     // Get the settings form.
-    $settings_form = array('#value' => array());
+    $settings_form = ['#value' => []];
     $function = $formatter['module'] . '_field_formatter_settings_form';
     if (function_exists($function)) {
       $settings_form = $function($field, $this->instance, '_custom', $form, $form_state);
@@ -186,12 +188,12 @@ class chado_views_handler_field extends views_handler_field {
     $field = field_info_field($this->definition['field_name']);
     $field_type = field_info_field_types($field['type']);
 
-    $options['type'] = array(
+    $options['type'] = [
       'default' => $field_type['default_formatter'],
-    );
-    $options['settings'] = array(
-      'default' => array(),
-    );
+    ];
+    $options['settings'] = [
+      'default' => [],
+    ];
 
     return $options;
   }

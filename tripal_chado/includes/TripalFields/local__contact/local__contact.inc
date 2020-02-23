@@ -24,7 +24,7 @@ class local__contact extends ChadoField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings  = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'local',
     // The name of the term.
@@ -35,7 +35,7 @@ class local__contact extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
-  );
+  ];
 
 
   // The default widget for this field.
@@ -50,6 +50,7 @@ class local__contact extends ChadoField {
   // An array containing details about the field. The format of this array
   // is the same as that returned by field_info_fields()
   protected $field;
+
   // An array containing details about an instance of the field. A field does
   // not have to have an instance.  But if dealing with an instance (such as
   // when using the widgetForm, formatterSettingsForm, etc.) it should be set.
@@ -61,55 +62,56 @@ class local__contact extends ChadoField {
    */
   public function elementInfo() {
     $field_term = $this->getFieldTermID();
-    $type_term = tripal_get_chado_semweb_term('contact', 'type_id');
-    $name_term = tripal_get_chado_semweb_term('contact', 'name');
-    $description_term = tripal_get_chado_semweb_term('contact', 'description');
+    $type_term = chado_get_semweb_term('contact', 'type_id');
+    $name_term = chado_get_semweb_term('contact', 'name');
+    $description_term = chado_get_semweb_term('contact', 'description');
 
-    return array(
-      $field_term => array(
-        'operations' => array('eq', 'contains', 'starts'),
+    return [
+      $field_term => [
+        'operations' => ['eq', 'contains', 'starts'],
         'sortable' => TRUE,
         'searchable' => TRUE,
         'type' => 'xs:complexType',
         'readonly' => TRUE,
-        'elements' => array(
-          $type_term => array(
+        'elements' => [
+          $type_term => [
             'searchable' => TRUE,
             'label' => 'Contact Type',
             'help' => 'The type of contact',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'operations' => ['eq', 'ne', 'contains', 'starts'],
             'sortable' => TRUE,
             'type' => 'xs:string',
             'readonly' => FALSE,
             'required' => TRUE,
-          ),
-          $name_term => array(
+          ],
+          $name_term => [
             'searchable' => TRUE,
             'label' => 'Contact Name',
             'help' => 'The name of the contact.',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'operations' => ['eq', 'ne', 'contains', 'starts'],
             'sortable' => TRUE,
             'type' => 'xs:string',
             'readonly' => FALSE,
             'required' => TRUE,
-          ),
-          $description_term => array(
+          ],
+          $description_term => [
             'searchable' => TRUE,
             'label' => 'Contact Description',
             'help' => 'A descriptoin of the contact.',
-            'operations' => array('contains'),
+            'operations' => ['contains'],
             'sortable' => TRUE,
             'type' => 'xs:string',
             'readonly' => FALSE,
             'required' => FALSE,
-          ),
-          'entity' => array(
+          ],
+          'entity' => [
             'searchable' => FALSE,
-          ),
-        ),
-      )
-    );
+          ],
+        ],
+      ],
+    ];
   }
+
   /**
    *
    * @see TripalField::load()
@@ -123,36 +125,37 @@ class local__contact extends ChadoField {
     $field_column = $this->instance['settings']['chado_column'];
     $base_table = $this->instance['settings']['base_table'];
 
-    $type_term = tripal_get_chado_semweb_term('contact', 'type_id');
-    $name_term = tripal_get_chado_semweb_term('contact', 'name');
-    $description_term = tripal_get_chado_semweb_term('contact', 'description');
+    $type_term = chado_get_semweb_term('contact', 'type_id');
+    $name_term = chado_get_semweb_term('contact', 'name');
+    $description_term = chado_get_semweb_term('contact', 'description');
 
 
     // Set some defaults for the empty record.
-    $entity->{$field_name}['und'][0] = array(
-      'value' => array(),
-    );
+    $entity->{$field_name}['und'][0] = [
+      'value' => [],
+    ];
 
     // Handle the biomaterial table.
-    if ($field_table == 'biomaterial') {
-      if ($record) {
-        $contact = $record->biosourceprovider_id;
-        if ($contact) {
-          $entity->{$field_name}['und'][0] = array(
-            'value' => array(
-              $type_term => $contact->type_id ? $contact->type_id->name : '',
-              $name_term => $contact->name,
-              $description_term => $contact->description,
-            ),
-            $entity->{$field_name}['und'][0]['chado-biomaterial__biosourceprovider_id'] = $contact->contact_id,
-          );
-          if (property_exists($contact, 'entity_id')) {
-            $entity->{$field_name}['und'][0]['value']['entity'] = 'TripalEntity:' . $contact->entity_id;
-          }
-        }
+    if (!$record) {
+      return;
+    }
+
+    $linker_field = 'chado-' . $field_table . '__' . $field_column;
+    $contact = $record->{$field_column};
+
+    if ($contact) {
+      $entity->{$field_name}['und'][0] = [
+        'value' => [
+          $type_term => $contact->type_id ? $contact->type_id->name : '',
+          $name_term => $contact->name,
+          $description_term => $contact->description,
+        ],
+        $entity->{$field_name}['und'][0][$linker_field] = $contact->contact_id,
+      ];
+      if (property_exists($contact, 'entity_id')) {
+        $entity->{$field_name}['und'][0]['value']['entity'] = 'TripalEntity:' . $contact->entity_id;
       }
-    };
-    // Here place other non-linker tables that have a FK to the contact table.
+    }
   }
 
   /**
@@ -163,9 +166,9 @@ class local__contact extends ChadoField {
     $operator = $condition['operator'];
 
     $field_term_id = $this->getFieldTermID();
-    $type_term = tripal_get_chado_semweb_term('contact', 'type_id');
-    $name_term = tripal_get_chado_semweb_term('contact', 'name');
-    $description_term = tripal_get_chado_semweb_term('contact', 'description');
+    $type_term = chado_get_semweb_term('contact', 'type_id');
+    $name_term = chado_get_semweb_term('contact', 'name');
+    $description_term = chado_get_semweb_term('contact', 'description');
 
     if ($field_table == 'biomaterial') {
       if ($record) {
@@ -177,7 +180,7 @@ class local__contact extends ChadoField {
 
         // Search by the contact name
         if ($condition['column'] == $field_term_id or
-            $condition['column'] == $field_term_id . ',' . $name_term) {
+          $condition['column'] == $field_term_id . ',' . $name_term) {
           $query->condition("$calias.name", $condition['value'], $operator);
         }
         // Search on the contact description.
@@ -200,9 +203,9 @@ class local__contact extends ChadoField {
   public function queryOrder($query, $order) {
     $alias = $this->field['field_name'];
     $field_term_id = $this->getFieldTermID();
-    $type_term = tripal_get_chado_semweb_term('contact', 'type_id');
-    $name_term = tripal_get_chado_semweb_term('contact', 'name');
-    $description_term = tripal_get_chado_semweb_term('contact', 'description');
+    $type_term = chado_get_semweb_term('contact', 'type_id');
+    $name_term = chado_get_semweb_term('contact', 'name');
+    $description_term = chado_get_semweb_term('contact', 'description');
 
     if ($field_table == 'biomaterial') {
       if ($record) {
@@ -214,7 +217,7 @@ class local__contact extends ChadoField {
 
         // Search by the contact name
         if ($order['column'] == $field_term_id or
-            $order['column'] == $field_term_id . ',' . $name_term) {
+          $order['column'] == $field_term_id . ',' . $name_term) {
           $query->orderBy("$calias.name", $order['direction']);
         }
         // Search on the contact description.

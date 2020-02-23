@@ -74,7 +74,7 @@ function tripal_chado_views_menu() {
   $items['admin/tripal/storage/chado/views-integration/edit/%'] = array(
     'title' => 'Edit Views Integration',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_chado_views_integration_form', 4),
+    'page arguments' => array('tripal_chado_views_integration_form', 6),
     'access arguments' => array('manage tripal_views_integration'),
     'type' => MENU_CALLBACK,
   );
@@ -82,7 +82,7 @@ function tripal_chado_views_menu() {
   $items['admin/tripal/storage/chado/views-integration/delete/%'] = array(
     'title' => 'Delete Views Integration',
     'page callback' => 'tripal_chado_views_integration_delete',
-    'page arguments' => array(4),
+    'page arguments' => array(6),
     'access arguments' => array('manage tripal_views_integration'),
     'type' => MENU_CALLBACK,
   );
@@ -105,21 +105,11 @@ function tripal_chado_views_menu() {
     'weight' => 2,
   );
 
-  $items['admin/tripal/storage/chado/views-integration/export'] = array(
-    'title' => 'Export Views Integration',
-    'description' => 'Export a Chado Views Integration for use in another Tripal site',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_chado_views_integration_export_form', 4),
-    'access arguments' => array('manage tripal_views_integration'),
-    'type' => MENU_CALLBACK,
-    'weight' => 3,
-  );
-
   $items['admin/tripal/storage/chado/views-integration/export/%'] = array(
     'title' => 'Export Views Integration',
     'description' => 'Export a Chado Views Integration for use in another Tripal site',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_chado_views_integration_export_form', 4),
+    'page arguments' => array('tripal_chado_views_integration_export_form', 6),
     'access arguments' => array('manage tripal_views_integration'),
     'type' => MENU_CALLBACK,
   );

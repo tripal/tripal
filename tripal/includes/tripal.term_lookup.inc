@@ -5,45 +5,50 @@
  */
 function tripal_vocabulary_lookup_page() {
   // set the breadcrumb
-  $breadcrumb = array();
+  $breadcrumb = [];
   $breadcrumb[] = l('Home', '<front>');
   drupal_set_breadcrumb($breadcrumb);
   $vocabs = tripal_get_vocabularies();
 
-  $rows = array();
+  $rows = [];
   foreach ($vocabs as $vocabulary) {
-    $rows[] = array(
+    $rows[] = [
       l($vocabulary['short_name'], 'cv/lookup/' . $vocabulary['short_name']),
       $vocabulary['name'],
       $vocabulary['description'],
-      array(
+      [
         'data' => number_format($vocabulary['num_terms']),
-        'style' => 'text-align: right;'
-      ),
-    );
+        'style' => 'text-align: right;',
+      ],
+    ];
   }
 
-  $headers = array('Short Name', 'Vocabulary Name(s)', 'Description', 'Loaded Terms');
-  $table = array(
+  $headers = [
+    'Short Name',
+    'Vocabulary Name(s)',
+    'Description',
+    'Loaded Terms',
+  ];
+  $table = [
     'header' => $headers,
     'rows' => $rows,
-    'attributes' => array(),
+    'attributes' => [],
     'sticky' => FALSE,
     'caption' => '',
-    'colgroups' => array(),
+    'colgroups' => [],
     'empty' => t('There are no controlled vocabularies'),
-  );
+  ];
 
-  $content = array(
-    'description' => array(
+  $content = [
+    'description' => [
       '#type' => 'markup',
       '#markup' => '<p>The following controlled vocabularies are used on this site. Click a vocabulary short name for more details.</p>',
-    ),
-    'vocab_table' => array(
+    ],
+    'vocab_table' => [
       '#type' => 'item',
       '#markup' => theme_table($table),
-    ),
-  );
+    ],
+  ];
   return $content;
 }
 
@@ -53,12 +58,14 @@ function tripal_vocabulary_lookup_page() {
 function tripal_vocabulary_lookup_vocab_page($vocabulary) {
 
   // set the breadcrumb
-  $breadcrumb = array();
+  $breadcrumb = [];
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Controlled Vocabularies', 'cv/lookup');
   drupal_set_breadcrumb($breadcrumb);
 
   $vocab = tripal_get_vocabulary_details($vocabulary);
+  $vocab_table = tripal_vocabulary_get_vocab_details($vocab);
+
   if ($vocab['description']) {
     drupal_set_title($vocabulary . ': ' . $vocab['description']);
   }
@@ -71,57 +78,6 @@ function tripal_vocabulary_lookup_vocab_page($vocabulary) {
     drupal_set_message('The vocabulary cannot be found on this site', 'error');
     return '';
   }
-
-  $headers = array();
-  $rows = array();
-  $vocab_name = $vocab['name'];
-  $short_name = $vocab['short_name'];
-  if ($vocab['url']) {
-    $short_name = l($vocab['short_name'], $vocab['url'], array('attributes' => array('target' => '_blank')));
-  }
-  $vocab_desc = $vocab['description'];
-  $rows[] = array(
-    array(
-      'data' => 'Short Name',
-      'header' => TRUE,
-      'width' => '20%',
-    ),
-    $short_name,
-  );
-  $rows[] = array(
-    array(
-      'data' => 'Vocabulary Name(s)',
-      'header' => TRUE,
-      'width' => '20%',
-    ),
-    $vocab_name,
-  );
-  $rows[] = array(
-    array(
-      'data' => 'Description',
-      'header' => TRUE,
-      'width' => '20%',
-    ),
-    $vocab_desc,
-  );
-  $rows[] = array(
-    array(
-      'data' => 'Number of Terms Loaded on This Site',
-      'header' => TRUE,
-      'width' => '20%',
-    ),
-    number_format($vocab['num_terms']),
-  );
-
-  $table = array(
-    'header' => $headers,
-    'rows' => $rows,
-    'attributes' => array(),
-    'sticky' => FALSE,
-    'caption' => '',
-    'colgroups' => array(),
-    'empty' => '',
-  );
 
   $has_root = TRUE;
   $root_terms = tripal_get_vocabulary_root_terms($vocabulary);
@@ -144,31 +100,33 @@ function tripal_vocabulary_lookup_vocab_page($vocabulary) {
       'For some vocabularies, only a subset of terms are loaded</p>' . $items;
   }
 
-  drupal_add_js(array(
-    'tripal' => array(
-      'cv_lookup' => array(
+  drupal_add_js([
+    'tripal' => [
+      'cv_lookup' => [
         'vocabulary' => $vocabulary,
-      ),
-    ),
-  ), 'setting');
+      ],
+    ],
+  ], 'setting');
 
-  $content = array(
-    'vocab_table' => array(
+  $content = [
+    'vocab_table' => [
       '#type' => 'item',
       '#title' => 'Details',
-      '#markup' => '<p>A vocabulary is always identified by its short name and sometimes it may offer multiple sub-vocabularies with different names. Both are listed below.</p>' . theme_table($table),
-    ),
-    'vocab_browser' => array(
+      '#markup' => '<p>A vocabulary is always identified by its short name ' .
+        'and sometimes it may offer multiple sub-vocabularies with different ' .
+        'names. Both are listed below.</p>' . $vocab_table,
+    ],
+    'vocab_browser' => [
       '#type' => 'item',
       '#title' => 'Term Browser',
       '#markup' => $items,
-    ),
-  );
+    ],
+  ];
   if (!$has_root) {
-    $content['pager']= array(
+    $content['pager'] = [
       '#type' => 'markup',
       '#markup' => theme('pager'),
-    );
+    ];
   }
 
   // Add support for our custom tree viewer
@@ -176,6 +134,70 @@ function tripal_vocabulary_lookup_vocab_page($vocabulary) {
   drupal_add_js(drupal_get_path('module', 'tripal') . '/theme/js/tripal.cv_lookup.js', 'file');
 
   return $content;
+}
+
+/**
+ * Generates a table view of the vocabulary.
+ *
+ * @param $vocab
+ *   The vocabulary array.
+ *
+ * @return
+ *    An HTML rendered table describing the vocabulary.
+ */
+function tripal_vocabulary_get_vocab_details($vocab) {
+  $headers = [];
+  $rows = [];
+  $vocab_name = $vocab['name'];
+  $short_name = $vocab['short_name'];
+  if ($vocab['url']) {
+    $short_name = l($vocab['short_name'], $vocab['url'], ['attributes' => ['target' => '_blank']]);
+  }
+  $vocab_desc = $vocab['description'];
+  $rows[] = [
+    [
+      'data' => 'Short Name',
+      'header' => TRUE,
+      'width' => '20%',
+    ],
+    $short_name,
+  ];
+  $rows[] = [
+    [
+      'data' => 'Vocabulary Name(s)',
+      'header' => TRUE,
+      'width' => '20%',
+    ],
+    $vocab_name,
+  ];
+  $rows[] = [
+    [
+      'data' => 'Description',
+      'header' => TRUE,
+      'width' => '20%',
+    ],
+    $vocab_desc,
+  ];
+  $rows[] = [
+    [
+      'data' => 'Number of Terms Loaded on This Site',
+      'header' => TRUE,
+      'width' => '20%',
+    ],
+    number_format($vocab['num_terms']),
+  ];
+
+  $table = [
+    'header' => $headers,
+    'rows' => $rows,
+    'attributes' => [],
+    'sticky' => FALSE,
+    'caption' => '',
+    'colgroups' => [],
+    'empty' => '',
+  ];
+
+  return theme_table($table);
 }
 
 /**
@@ -190,28 +212,25 @@ function tripal_vocabulary_lookup_term_children_format($children) {
     $grand = tripal_get_term_children($child['vocabulary']['short_name'], $child['accession']);
     $num_grand = count($grand);
     $items .= '<li vocabulary = "' . $child['vocabulary']['short_name'] . '" ' .
-        'accession = "' . $child['accession'] . '" ' .
-        'children = "' . $num_grand . '" ' .
-        'state = "closed" '.
-        'class = "cv-lookup-tree-node">';
+      'accession = "' . $child['accession'] . '" ' .
+      'children = "' . $num_grand . '" ' .
+      'state = "closed" ' .
+      'class = "cv-lookup-tree-node">';
     $class = 'tree-node-closed';
     if ($num_grand == 0) {
       $class = 'tree-node-single';
     }
     $items .= '<i class = "tree-node-icon ' . $class . '"></i>';
-    $items .= l($child['name'], 'cv/lookup/' . $child['vocabulary']['short_name'] . '/' . $child['accession'], array('attributes' => array('target' => '_blank')));
+    $items .= l($child['name'], 'cv/lookup/' . $child['vocabulary']['short_name'] . '/' . $child['accession'], ['attributes' => ['target' => '_blank']]);
     if ($child['accession'] != $child['name']) {
       $items .= ' [' . $child['vocabulary']['short_name'] . ':' . $child['accession'] . '] ';
-    }
-    if ($num_grand > 0) {
-      $items .= ' (' . $num_grand . ')';
     }
     $items .= '</li>';
   }
   $items .= '</ul>';
 
-  if (count($children)== 0) {
-    $items ='';
+  if (count($children) == 0) {
+    $items = '';
   }
 
   return $items;
@@ -233,11 +252,11 @@ function tripal_vocabulary_lookup_term_children_ajax($vocabulary, $accession) {
 
   $term = tripal_get_term_details($vocabulary, $accession);
   $children = tripal_get_term_children($vocabulary, $accession);
-  $response = array(
+  $response = [
     'vocabulary' => $vocabulary,
     'accession' => $accession,
-    'content' => tripal_vocabulary_lookup_term_children_format($children)
-  );
+    'content' => tripal_vocabulary_lookup_term_children_format($children),
+  ];
   drupal_json_output($response);
 }
 
@@ -251,15 +270,16 @@ function tripal_vocabulary_lookup_term_children_ajax($vocabulary, $accession) {
 function tripal_vocabulary_lookup_term_page($vocabulary, $accession) {
 
   // set the breadcrumb
-  $breadcrumb = array();
+  $breadcrumb = [];
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Controlled Vocabularies', 'cv/lookup');
   $breadcrumb[] = l($vocabulary, 'cv/lookup/' . $vocabulary);
   drupal_set_breadcrumb($breadcrumb);
 
-  $term = tripal_get_term_details($vocabulary, $accession);
-  drupal_set_title($term['name']);
+  $vocab = tripal_get_vocabulary_details($vocabulary);
+  $vocab_table = tripal_vocabulary_get_vocab_details($vocab);
 
+  $term = tripal_get_term_details($vocabulary, $accession);
 
   // If we can't find the term then just return a message.
   if (!$term) {
@@ -268,102 +288,127 @@ function tripal_vocabulary_lookup_term_page($vocabulary, $accession) {
   }
 
   // Build the Term table.
-  $headers = array();
-  $rows = array();
+  $headers = [];
+  $rows = [];
   $term_name = $term['name'];
   $accession = $term['vocabulary']['short_name'] . ':' . $term['accession'];
-  if ($term['url']) {
-    $term_name = l($term['name'], $term['url'], array('attributes' => array('target' => '_blank')));
+  drupal_set_title($accession);
+
+  // Create a URL to point this term to it's source page, but only if the
+  // source is not this site.
+  if ($term['url'] and !preg_match('/cv\/lookup/', $term['url'])) {
+    $accession = l($accession, $term['url'], ['attributes' => ['target' => '_blank']]);
   }
-  $rows[] = array(
-    array(
+  $rows[] = [
+    [
       'data' => 'Term',
       'header' => TRUE,
       'width' => '20%',
-    ),
+    ],
     $accession,
-  );
-  $rows[] = array(
-    array(
+  ];
+  $rows[] = [
+    [
       'data' => 'Name',
       'header' => TRUE,
       'width' => '20%',
-    ),
+    ],
     $term_name,
-  );
-  $rows[] = array(
-    array(
+  ];
+  $rows[] = [
+    [
       'data' => 'Definition',
       'header' => TRUE,
       'width' => '20%',
-    ),
+    ],
     $term['definition'],
-  );
+  ];
 
-
-  $table = array(
-    'header' => $headers,
-    'rows' => $rows,
-    'attributes' => array(),
-    'sticky' => FALSE,
-    'caption' => 'Term Details',
-    'colgroups' => array(),
-    'empty' => '',
-  );
-  $content = theme_table($table);
-
-
-  $rows = array();
-  $vocab_name = $term['vocabulary']['name'];
-  if ($term['vocabulary']['url']) {
-    $vocab_name = l($term['vocabulary']['name'], $term['vocabulary']['url'], array('attributes' => array('target' => '_blank')));
+  // Now iterate through any other columns in the term array and add those
+  // details.
+  foreach ($term as $key => $value) {
+    if (in_array($key, [
+      'name',
+      'definition',
+      'vocabulary',
+      'accession',
+      'url',
+    ])) {
+      continue;
+    }
+    // Convert thisto an array so we can alter it.
+    if (!is_array($value)) {
+      $new_values[] = $value;
+      $value = $new_values;
+    }
+    // If this is a relationship key then let's try to rewrite the GO 
+    // term in the relationship as a link.
+    if ($key == 'relationship') {
+      foreach ($value as $index => $v) {
+        $matches = [];
+        if (preg_match('/^(.+)\s(.+?):(.+?)$/', $v, $matches)) {
+          $rel = $matches[1];
+          $voc = $matches[2];
+          $acc = $matches[3];
+          $v = $rel . ' ' . l($voc . ':' . $acc, 'cv/lookup/' . $voc . '/' . $acc, ['attributes' => ['target' => '_blank']]);
+          $t = tripal_get_term_details($voc, $acc);
+          if ($t) {
+            $v .= ' (' . $t['name'] . ')';
+          }
+          $value[$index] = $v;
+        }
+      }
+    }
+    if (count($value) > 1) {
+      $value_str = theme_item_list([
+        'items' => $value,
+        'type' => 'ul',
+        'attributes' => [],
+        'title' => '',
+      ]);
+    }
+    else {
+      $value_str = $value[0];
+    }
+    $rows[] = [
+      [
+        'data' => ucfirst($key),
+        'header' => TRUE,
+        'width' => '20%',
+      ],
+      $value_str,
+    ];
   }
-  $short_name = $term['vocabulary']['short_name'];
-  $vocab_desc = $term['vocabulary']['description'];
-  $rows[] = array(
-    array(
-      'data' => 'Name',
-      'header' => TRUE,
-      'width' => '20%',
-    ),
-    $vocab_name,
-  );
-  $rows[] = array(
-    array(
-      'data' => 'Short Name',
-      'header' => TRUE,
-      'width' => '20%',
-    ),
-    $short_name,
-  );
-  $rows[] = array(
-    array(
-      'data' => 'Description',
-      'header' => TRUE,
-      'width' => '20%',
-    ),
-    $vocab_desc,
-  );
 
-  $table = array(
+  $table = [
     'header' => $headers,
     'rows' => $rows,
-    'attributes' => array(),
+    'attributes' => [],
     'sticky' => FALSE,
-    'caption' => 'Term Vocabulary details',
-    'colgroups' => array(),
+    'caption' => '',
+    'colgroups' => [],
     'empty' => '',
-  );
-  $content .=  theme_table($table);
+  ];
+  $content['cvterm'] = [
+    '#type' => 'item',
+    '#title' => 'Term Details',
+    '#markup' => theme_table($table),
+  ];
 
-  drupal_add_js(array(
-    'tripal' => array(
-      'cv_lookup' => array(
+  $content['vocabulary'] = [
+    '#type' => 'item',
+    '#title' => 'Vocabulary Details',
+    '#markup' => $vocab_table,
+  ];
+
+  drupal_add_js([
+    'tripal' => [
+      'cv_lookup' => [
         'vocabulary' => $vocabulary,
         'accession' => $accession,
-      ),
-    ),
-  ), 'setting');
+      ],
+    ],
+  ], 'setting');
 
   return $content;
 }

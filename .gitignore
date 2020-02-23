@@ -1,1 +1,13 @@
 .DS_Store
+.idea/
+vendor/
+tests/.env
+.buildpath
+.project
+.settings/
+docs/_build
+docs/docs
+docs/html
+docs/latex
+docs/xml
+

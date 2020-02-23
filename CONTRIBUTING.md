@@ -1,0 +1,1 @@
+Please see the [Tripal online documentation](https://tripal.readthedocs.io/en/latest/contributing/pull_requests.html#pull-request-pr-guideline) for more information about contributing to Tripal and Tripal governance.

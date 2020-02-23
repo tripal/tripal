@@ -10,7 +10,7 @@
  * @ingroup tripal
  */
 function tripal_chado_views_default_views() {
-  $views = array();
+  $views = [];
 
   // Default Tripal custom tables view.
   $view = tripal_chado_defaultview_admin_custom_tables();
@@ -78,22 +78,22 @@ function tripal_chado_defaultview_admin_custom_tables() {
   $handler->display->display_options['header']['action_links_area']['field'] = 'action_links_area';
   $handler->display->display_options['header']['action_links_area']['label'] = 'Action Links';
   $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
-  $handler->display->display_options['header']['action_links_area']['link-1'] = array(
+  $handler->display->display_options['header']['action_links_area']['link-1'] = [
     'label-1' => 'Add Custom Table',
     'path-1' => 'admin/tripal/storage/chado/custom_tables/new',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-2'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-2'] = [
     'label-2' => '',
     'path-2' => '',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-3'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-3'] = [
     'label-3' => '',
     'path-3' => '',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-4'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-4'] = [
     'label-4' => '',
     'path-4' => '',
-  );
+  ];
   /* Field: Tripal Custom Tables: Custom Table ID */
   $handler->display->display_options['fields']['table_id']['id'] = 'table_id';
   $handler->display->display_options['fields']['table_id']['table'] = 'tripal_custom_tables';
@@ -153,11 +153,11 @@ function tripal_chado_defaultview_admin_custom_tables() {
   $handler->display->display_options['filters']['table_name']['expose']['label'] = 'Table Name';
   $handler->display->display_options['filters']['table_name']['expose']['operator'] = 'table_name_op';
   $handler->display->display_options['filters']['table_name']['expose']['identifier'] = 'table_name';
-  $handler->display->display_options['filters']['table_name']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['table_name']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
@@ -203,59 +203,59 @@ function tripal_chado_defaultview_admin_mviews() {
   $handler->display->display_options['pager']['type'] = 'full';
   $handler->display->display_options['pager']['options']['items_per_page'] = '25';
   $handler->display->display_options['style_plugin'] = 'table';
-  $handler->display->display_options['style_options']['columns'] = array(
+  $handler->display->display_options['style_options']['columns'] = [
     'mview_id' => 'mview_id',
     'name' => 'name',
     'mv_table' => 'mv_table',
     'comment' => 'comment',
     'last_update' => 'last_update',
     'status' => 'status',
-  );
+  ];
   $handler->display->display_options['style_options']['default'] = 'mview_id';
-  $handler->display->display_options['style_options']['info'] = array(
-    'mview_id' => array(
+  $handler->display->display_options['style_options']['info'] = [
+    'mview_id' => [
       'sortable' => 1,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'name' => array(
+    ],
+    'name' => [
       'sortable' => 1,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'mv_table' => array(
+    ],
+    'mv_table' => [
       'sortable' => 1,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'comment' => array(
+    ],
+    'comment' => [
       'sortable' => 0,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'last_update' => array(
+    ],
+    'last_update' => [
       'sortable' => 1,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'status' => array(
+    ],
+    'status' => [
       'sortable' => 1,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-  );
+    ],
+  ];
   /* Header: Global: Text area */
   $handler->display->display_options['header']['area']['id'] = 'area';
   $handler->display->display_options['header']['area']['table'] = 'views';
@@ -277,22 +277,22 @@ function tripal_chado_defaultview_admin_mviews() {
   $handler->display->display_options['header']['action_links_area']['table'] = 'views';
   $handler->display->display_options['header']['action_links_area']['field'] = 'action_links_area';
   $handler->display->display_options['header']['action_links_area']['label'] = 'Action Links';
-  $handler->display->display_options['header']['action_links_area']['link-1'] = array(
+  $handler->display->display_options['header']['action_links_area']['link-1'] = [
     'label-1' => 'Add Materialized View',
     'path-1' => 'admin/tripal/storage/chado/mviews/new',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-2'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-2'] = [
     'label-2' => '',
     'path-2' => '',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-3'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-3'] = [
     'label-3' => '',
     'path-3' => '',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-4'] = array(
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-4'] = [
     'label-4' => '',
     'path-4' => '',
-  );
+  ];
   /* Field: Tripal Materialized Views: Materialized View ID */
   $handler->display->display_options['fields']['mview_id']['id'] = 'mview_id';
   $handler->display->display_options['fields']['mview_id']['table'] = 'tripal_mviews';
@@ -375,11 +375,11 @@ function tripal_chado_defaultview_admin_mviews() {
   $handler->display->display_options['filters']['name']['expose']['label'] = 'Name';
   $handler->display->display_options['filters']['name']['expose']['operator'] = 'name_op';
   $handler->display->display_options['filters']['name']['expose']['identifier'] = 'name';
-  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Tripal Materialized Views: Table */
   $handler->display->display_options['filters']['mv_table']['id'] = 'mv_table';
   $handler->display->display_options['filters']['mv_table']['table'] = 'tripal_mviews';
@@ -390,11 +390,11 @@ function tripal_chado_defaultview_admin_mviews() {
   $handler->display->display_options['filters']['mv_table']['expose']['label'] = 'Table Name';
   $handler->display->display_options['filters']['mv_table']['expose']['operator'] = 'mv_table_op';
   $handler->display->display_options['filters']['mv_table']['expose']['identifier'] = 'mv_table';
-  $handler->display->display_options['filters']['mv_table']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['mv_table']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Tripal Materialized Views: Module Name */
   $handler->display->display_options['filters']['modulename']['id'] = 'modulename';
   $handler->display->display_options['filters']['modulename']['table'] = 'tripal_mviews';
@@ -405,11 +405,11 @@ function tripal_chado_defaultview_admin_mviews() {
   $handler->display->display_options['filters']['modulename']['expose']['label'] = 'Module';
   $handler->display->display_options['filters']['modulename']['expose']['operator'] = 'modulename_op';
   $handler->display->display_options['filters']['modulename']['expose']['identifier'] = 'modulename';
-  $handler->display->display_options['filters']['modulename']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['modulename']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Tripal Materialized Views: Status */
   $handler->display->display_options['filters']['status']['id'] = 'status';
   $handler->display->display_options['filters']['status']['table'] = 'tripal_mviews';
@@ -420,11 +420,11 @@ function tripal_chado_defaultview_admin_mviews() {
   $handler->display->display_options['filters']['status']['expose']['label'] = 'Status';
   $handler->display->display_options['filters']['status']['expose']['operator'] = 'status_op';
   $handler->display->display_options['filters']['status']['expose']['identifier'] = 'status';
-  $handler->display->display_options['filters']['status']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['status']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
@@ -477,35 +477,35 @@ function tripal_chado_defaultview_admin_cvs_listing() {
   $handler->display->display_options['pager']['options']['quantity'] = '9';
   $handler->display->display_options['style_plugin'] = 'table';
   $handler->display->display_options['style_options']['grouping'] = '';
-  $handler->display->display_options['style_options']['columns'] = array(
+  $handler->display->display_options['style_options']['columns'] = [
     'name' => 'name',
     'definition' => 'definition',
     'nothing' => 'nothing',
-  );
+  ];
   $handler->display->display_options['style_options']['default'] = 'name';
-  $handler->display->display_options['style_options']['info'] = array(
-    'name' => array(
+  $handler->display->display_options['style_options']['info'] = [
+    'name' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'definition' => array(
+    ],
+    'definition' => [
       'sortable' => 0,
       'separator' => '',
-    ),
-    'nothing' => array(
+    ],
+    'nothing' => [
       'separator' => '',
-    ),
-  );
+    ],
+  ];
   /* Header: Global: Action Links */
   $handler->display->display_options['header']['action_links_area']['id'] = 'action_links_area';
   $handler->display->display_options['header']['action_links_area']['table'] = 'views';
   $handler->display->display_options['header']['action_links_area']['field'] = 'action_links_area';
   $handler->display->display_options['header']['action_links_area']['label'] = 'Action Links';
   $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
-  $handler->display->display_options['header']['action_links_area']['link-1'] = array(
+  $handler->display->display_options['header']['action_links_area']['link-1'] = [
     'label-1' => 'Add Vocabulary',
     'path-1' => 'admin/tripal/loaders/chado_vocabs/chado_cv/add',
-  );
+  ];
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['text']['id'] = 'area';
   $handler->display->display_options['empty']['text']['table'] = 'views';
@@ -579,11 +579,11 @@ function tripal_chado_defaultview_admin_cvs_listing() {
   $handler->display->display_options['filters']['name']['expose']['label'] = 'Name Contains';
   $handler->display->display_options['filters']['name']['expose']['operator'] = 'name_op';
   $handler->display->display_options['filters']['name']['expose']['identifier'] = 'name';
-  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Chado Cv: Definition */
   $handler->display->display_options['filters']['definition']['id'] = 'definition';
   $handler->display->display_options['filters']['definition']['table'] = 'cv';
@@ -595,11 +595,11 @@ function tripal_chado_defaultview_admin_cvs_listing() {
   $handler->display->display_options['filters']['definition']['expose']['label'] = 'Definition Contains';
   $handler->display->display_options['filters']['definition']['expose']['operator'] = 'definition_op';
   $handler->display->display_options['filters']['definition']['expose']['identifier'] = 'definition';
-  $handler->display->display_options['filters']['definition']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['definition']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
 
   /** MANUALLY ADD since filter handler not exporting correctly */
   $handler->display->display_options['filters']['name']['expose']['values_form_type'] = 'textfield';
@@ -621,10 +621,10 @@ function tripal_chado_defaultview_admin_cvs_listing() {
 
 
   /** MANUALLY ADD since filter handler no exporting correctly
-   $handler->display->display_options['filters']['name']['expose']['values_form_type'] = 'textfield';
-   $handler->display->display_options['filters']['name']['expose']['select_multiple'] = FALSE;
-   $handler->display->display_options['filters']['name']['expose']['select_optional'] = FALSE;
-   $handler->display->display_options['filters']['name']['expose']['max_length'] = 40;
+   * $handler->display->display_options['filters']['name']['expose']['values_form_type'] = 'textfield';
+   * $handler->display->display_options['filters']['name']['expose']['select_multiple'] = FALSE;
+   * $handler->display->display_options['filters']['name']['expose']['select_optional'] = FALSE;
+   * $handler->display->display_options['filters']['name']['expose']['max_length'] = 40;
    */
 
   return $view;
@@ -637,224 +637,225 @@ function tripal_chado_defaultview_admin_cvs_listing() {
  */
 function tripal_chado_defaultview_admin_cvterms_listing() {
 
-$view = new view();
-$view->name = 'tripal_cv_admin_cvterms';
-$view->description = 'DO NOT DISABLE';
-$view->tag = 'tripal admin';
-$view->base_table = 'cvterm';
-$view->human_name = 'CV Terms Admin';
-$view->core = 0;
-$view->api_version = '3.0';
-$view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+  $view = new view();
+  $view->name = 'tripal_cv_admin_cvterms';
+  $view->description = 'DO NOT DISABLE';
+  $view->tag = 'tripal admin';
+  $view->base_table = 'cvterm';
+  $view->human_name = 'CV Terms Admin';
+  $view->core = 0;
+  $view->api_version = '3.0';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
 
-/* Display: Defaults */
-$handler = $view->new_display('default', 'Defaults', 'default');
-$handler->display->display_options['title'] = 'Controlled Vocabulary Terms';
-$handler->display->display_options['use_more_always'] = FALSE;
-$handler->display->display_options['access']['type'] = 'perm';
-$handler->display->display_options['access']['perm'] = 'administer tripal';
-$handler->display->display_options['cache']['type'] = 'none';
-$handler->display->display_options['query']['type'] = 'views_query';
-$handler->display->display_options['exposed_form']['type'] = 'input_required';
-$handler->display->display_options['exposed_form']['options']['submit_button'] = 'Search';
-$handler->display->display_options['exposed_form']['options']['text_input_required'] = 'Click search to see a listing of controlled vocabulary terms that meet the filter requirements. Use the filters to restrict this set to a more reasonable number of terms or to find a specific term.';
-$handler->display->display_options['exposed_form']['options']['text_input_required_format'] = 'full_html';
-$handler->display->display_options['pager']['type'] = 'full';
-$handler->display->display_options['pager']['options']['items_per_page'] = '25';
-$handler->display->display_options['pager']['options']['offset'] = '0';
-$handler->display->display_options['pager']['options']['id'] = '0';
-$handler->display->display_options['pager']['options']['quantity'] = '9';
-$handler->display->display_options['style_plugin'] = 'table';
-$handler->display->display_options['style_options']['grouping'] = '';
-$handler->display->display_options['style_options']['columns'] = array(
-  'name_1' => 'name_1',
-  'name' => 'name',
-  'definition' => 'definition',
-  'is_obsolete' => 'is_obsolete',
-  'is_relationshiptype' => 'is_relationshiptype',
-);
-$handler->display->display_options['style_options']['default'] = '-1';
-$handler->display->display_options['style_options']['info'] = array(
-  'name_1' => array(
-    'sortable' => 1,
-    'separator' => '',
-  ),
-  'name' => array(
-    'sortable' => 1,
-    'separator' => '',
-  ),
-  'definition' => array(
-    'sortable' => 0,
-    'separator' => '',
-  ),
-  'is_obsolete' => array(
-    'sortable' => 1,
-    'separator' => '',
-  ),
-  'is_relationshiptype' => array(
-    'sortable' => 1,
-    'separator' => '',
-  ),
-);
-/* Header: Global: Action Links */
-$handler->display->display_options['header']['action_links_area']['id'] = 'action_links_area';
-$handler->display->display_options['header']['action_links_area']['table'] = 'views';
-$handler->display->display_options['header']['action_links_area']['field'] = 'action_links_area';
-$handler->display->display_options['header']['action_links_area']['label'] = 'Action Links';
-$handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
-$handler->display->display_options['header']['action_links_area']['link-1'] = array(
-  'label-1' => 'Add Term',
-  'path-1' => 'admin/tripal/loaders/chado_vocabs/chado_cv/cvterm/add',
-);
-/* No results behavior: Global: Text area */
-$handler->display->display_options['empty']['text']['id'] = 'area';
-$handler->display->display_options['empty']['text']['table'] = 'views';
-$handler->display->display_options['empty']['text']['field'] = 'area';
-$handler->display->display_options['empty']['text']['content'] = 'There are no terms associated with the selected controlled vocabulary. Please select a different vocabulary from the list above.';
-$handler->display->display_options['empty']['text']['format'] = '1';
-/* Field: Chado Cv: Cv Id */
-$handler->display->display_options['fields']['cv_id']['id'] = 'cv_id';
-$handler->display->display_options['fields']['cv_id']['table'] = 'cv';
-$handler->display->display_options['fields']['cv_id']['field'] = 'cv_id';
-$handler->display->display_options['fields']['cv_id']['exclude'] = TRUE;
-$handler->display->display_options['fields']['cv_id']['separator'] = '';
-/* Field: Chado Cv: Name */
-$handler->display->display_options['fields']['name_1']['id'] = 'name_1';
-$handler->display->display_options['fields']['name_1']['table'] = 'cv';
-$handler->display->display_options['fields']['name_1']['field'] = 'name';
-$handler->display->display_options['fields']['name_1']['label'] = 'Vocabulary';
-$handler->display->display_options['fields']['name_1']['alter']['make_link'] = TRUE;
-$handler->display->display_options['fields']['name_1']['alter']['path'] = 'admin/tripal/loaders/chado_vocabs/chado_cvs?name=[name_1]';
-/* Field: Chado Cvterm: Cvterm Id */
-$handler->display->display_options['fields']['cvterm_id']['id'] = 'cvterm_id';
-$handler->display->display_options['fields']['cvterm_id']['table'] = 'cvterm';
-$handler->display->display_options['fields']['cvterm_id']['field'] = 'cvterm_id';
-$handler->display->display_options['fields']['cvterm_id']['exclude'] = TRUE;
-$handler->display->display_options['fields']['cvterm_id']['separator'] = '';
-/* Field: Chado Cvterm: Name */
-$handler->display->display_options['fields']['name']['id'] = 'name';
-$handler->display->display_options['fields']['name']['table'] = 'cvterm';
-$handler->display->display_options['fields']['name']['field'] = 'name';
-/* Field: Chado Cvterm: Definition */
-$handler->display->display_options['fields']['definition']['id'] = 'definition';
-$handler->display->display_options['fields']['definition']['table'] = 'cvterm';
-$handler->display->display_options['fields']['definition']['field'] = 'definition';
-$handler->display->display_options['fields']['definition']['element_class'] = 'wide-column';
-$handler->display->display_options['fields']['definition']['element_label_class'] = 'wide-column';
-/* Field: Chado Cvterm: Is Obsolete */
-$handler->display->display_options['fields']['is_obsolete']['id'] = 'is_obsolete';
-$handler->display->display_options['fields']['is_obsolete']['table'] = 'cvterm';
-$handler->display->display_options['fields']['is_obsolete']['field'] = 'is_obsolete';
-$handler->display->display_options['fields']['is_obsolete']['label'] = 'Obsolete?';
-$handler->display->display_options['fields']['is_obsolete']['alter']['alter_text'] = TRUE;
-$handler->display->display_options['fields']['is_obsolete']['alter']['text'] = 'Yes';
-$handler->display->display_options['fields']['is_obsolete']['element_class'] = 'short-column';
-$handler->display->display_options['fields']['is_obsolete']['element_label_class'] = 'short-column';
-$handler->display->display_options['fields']['is_obsolete']['empty'] = 'No';
-$handler->display->display_options['fields']['is_obsolete']['empty_zero'] = TRUE;
-$handler->display->display_options['fields']['is_obsolete']['separator'] = '';
-/* Field: Chado Cvterm: Is Relationshiptype */
-$handler->display->display_options['fields']['is_relationshiptype']['id'] = 'is_relationshiptype';
-$handler->display->display_options['fields']['is_relationshiptype']['table'] = 'cvterm';
-$handler->display->display_options['fields']['is_relationshiptype']['field'] = 'is_relationshiptype';
-$handler->display->display_options['fields']['is_relationshiptype']['label'] = 'Relation-ship?';
-$handler->display->display_options['fields']['is_relationshiptype']['alter']['alter_text'] = TRUE;
-$handler->display->display_options['fields']['is_relationshiptype']['alter']['text'] = 'Yes';
-$handler->display->display_options['fields']['is_relationshiptype']['element_class'] = 'short-column';
-$handler->display->display_options['fields']['is_relationshiptype']['element_label_class'] = 'short-column';
-$handler->display->display_options['fields']['is_relationshiptype']['empty'] = 'No';
-$handler->display->display_options['fields']['is_relationshiptype']['empty_zero'] = TRUE;
-$handler->display->display_options['fields']['is_relationshiptype']['separator'] = '';
-/* Field: Global: Custom text */
-$handler->display->display_options['fields']['nothing']['id'] = 'nothing';
-$handler->display->display_options['fields']['nothing']['table'] = 'views';
-$handler->display->display_options['fields']['nothing']['field'] = 'nothing';
-$handler->display->display_options['fields']['nothing']['label'] = 'Edit Link';
-$handler->display->display_options['fields']['nothing']['exclude'] = TRUE;
-$handler->display->display_options['fields']['nothing']['alter']['text'] = 'edit';
-$handler->display->display_options['fields']['nothing']['alter']['make_link'] = TRUE;
-$handler->display->display_options['fields']['nothing']['alter']['path'] = 'admin/tripal/loaders/chado_vocabs/chado_cv/[cv_id]/cvterm/edit/[cvterm_id]';
-/* Field: Global: Custom text */
-$handler->display->display_options['fields']['nothing_1']['id'] = 'nothing_1';
-$handler->display->display_options['fields']['nothing_1']['table'] = 'views';
-$handler->display->display_options['fields']['nothing_1']['field'] = 'nothing';
-$handler->display->display_options['fields']['nothing_1']['label'] = '';
-$handler->display->display_options['fields']['nothing_1']['alter']['text'] = '[nothing]';
-$handler->display->display_options['fields']['nothing_1']['element_class'] = 'short-column';
-$handler->display->display_options['fields']['nothing_1']['element_label_class'] = 'short-column';
-$handler->display->display_options['fields']['nothing_1']['element_label_colon'] = FALSE;
-/* Sort criterion: Chado Cv: Name */
-$handler->display->display_options['sorts']['name']['id'] = 'name';
-$handler->display->display_options['sorts']['name']['table'] = 'cv';
-$handler->display->display_options['sorts']['name']['field'] = 'name';
-/* Sort criterion: Chado Cvterm: Name */
-$handler->display->display_options['sorts']['name_1']['id'] = 'name_1';
-$handler->display->display_options['sorts']['name_1']['table'] = 'cvterm';
-$handler->display->display_options['sorts']['name_1']['field'] = 'name';
-/* Filter criterion: Chado Cv: Name */
-$handler->display->display_options['filters']['name']['id'] = 'name';
-$handler->display->display_options['filters']['name']['table'] = 'cv';
-$handler->display->display_options['filters']['name']['field'] = 'name';
-$handler->display->display_options['filters']['name']['value'] = 'All';
-$handler->display->display_options['filters']['name']['group'] = '0';
-$handler->display->display_options['filters']['name']['exposed'] = TRUE;
-$handler->display->display_options['filters']['name']['expose']['operator_id'] = 'name_op';
-$handler->display->display_options['filters']['name']['expose']['label'] = 'Vocabulary';
-$handler->display->display_options['filters']['name']['expose']['operator'] = 'name_op';
-$handler->display->display_options['filters']['name']['expose']['identifier'] = 'cv';
-$handler->display->display_options['filters']['name']['expose']['remember_roles'] = array(
-  2 => '2',
-  1 => 0,
-  3 => 0,
-);
-$handler->display->display_options['filters']['name']['values_form_type'] = 'select';
-$handler->display->display_options['filters']['name']['select_optional'] = TRUE;
-/* Filter criterion: Chado Cvterm: Name */
-$handler->display->display_options['filters']['name_1']['id'] = 'name_1';
-$handler->display->display_options['filters']['name_1']['table'] = 'cvterm';
-$handler->display->display_options['filters']['name_1']['field'] = 'name';
-$handler->display->display_options['filters']['name_1']['operator'] = 'contains';
-$handler->display->display_options['filters']['name_1']['group'] = '0';
-$handler->display->display_options['filters']['name_1']['exposed'] = TRUE;
-$handler->display->display_options['filters']['name_1']['expose']['operator_id'] = '';
-$handler->display->display_options['filters']['name_1']['expose']['label'] = 'Name Contains';
-$handler->display->display_options['filters']['name_1']['expose']['identifier'] = 'name';
-$handler->display->display_options['filters']['name_1']['expose']['remember_roles'] = array(
-  2 => '2',
-  1 => 0,
-  3 => 0,
-);
-/* Filter criterion: Chado Cvterm: Definition */
-$handler->display->display_options['filters']['definition']['id'] = 'definition';
-$handler->display->display_options['filters']['definition']['table'] = 'cvterm';
-$handler->display->display_options['filters']['definition']['field'] = 'definition';
-$handler->display->display_options['filters']['definition']['operator'] = 'contains';
-$handler->display->display_options['filters']['definition']['group'] = '0';
-$handler->display->display_options['filters']['definition']['exposed'] = TRUE;
-$handler->display->display_options['filters']['definition']['expose']['operator_id'] = 'definition_op';
-$handler->display->display_options['filters']['definition']['expose']['label'] = 'Definition Contains';
-$handler->display->display_options['filters']['definition']['expose']['operator'] = 'definition_op';
-$handler->display->display_options['filters']['definition']['expose']['identifier'] = 'definition';
-$handler->display->display_options['filters']['definition']['expose']['remember_roles'] = array(
-  2 => '2',
-  1 => 0,
-  3 => 0,
-);
+  /* Display: Defaults */
+  $handler = $view->new_display('default', 'Defaults', 'default');
+  $handler->display->display_options['title'] = 'Controlled Vocabulary Terms';
+  $handler->display->display_options['use_more_always'] = FALSE;
+  $handler->display->display_options['access']['type'] = 'perm';
+  $handler->display->display_options['access']['perm'] = 'administer tripal';
+  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['query']['type'] = 'views_query';
+  $handler->display->display_options['exposed_form']['type'] = 'input_required';
+  $handler->display->display_options['exposed_form']['options']['submit_button'] = 'Search';
+  $handler->display->display_options['exposed_form']['options']['text_input_required'] = 'Click search to see a listing of controlled vocabulary terms that meet the filter requirements. Use the filters to restrict this set to a more reasonable number of terms or to find a specific term.';
+  $handler->display->display_options['exposed_form']['options']['text_input_required_format'] = 'full_html';
+  $handler->display->display_options['pager']['type'] = 'full';
+  $handler->display->display_options['pager']['options']['items_per_page'] = '25';
+  $handler->display->display_options['pager']['options']['offset'] = '0';
+  $handler->display->display_options['pager']['options']['id'] = '0';
+  $handler->display->display_options['pager']['options']['quantity'] = '9';
+  $handler->display->display_options['style_plugin'] = 'table';
+  $handler->display->display_options['style_options']['grouping'] = '';
+  $handler->display->display_options['style_options']['columns'] = [
+    'name_1' => 'name_1',
+    'name' => 'name',
+    'definition' => 'definition',
+    'is_obsolete' => 'is_obsolete',
+    'is_relationshiptype' => 'is_relationshiptype',
+  ];
+  $handler->display->display_options['style_options']['default'] = '-1';
+  $handler->display->display_options['style_options']['info'] = [
+    'name_1' => [
+      'sortable' => 1,
+      'separator' => '',
+    ],
+    'name' => [
+      'sortable' => 1,
+      'separator' => '',
+    ],
+    'definition' => [
+      'sortable' => 0,
+      'separator' => '',
+    ],
+    'is_obsolete' => [
+      'sortable' => 1,
+      'separator' => '',
+    ],
+    'is_relationshiptype' => [
+      'sortable' => 1,
+      'separator' => '',
+    ],
+  ];
+  /* Header: Global: Action Links */
+  $handler->display->display_options['header']['action_links_area']['id'] = 'action_links_area';
+  $handler->display->display_options['header']['action_links_area']['table'] = 'views';
+  $handler->display->display_options['header']['action_links_area']['field'] = 'action_links_area';
+  $handler->display->display_options['header']['action_links_area']['label'] = 'Action Links';
+  $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
+  $handler->display->display_options['header']['action_links_area']['link-1'] = [
+    'label-1' => 'Add Term',
+    'path-1' => 'admin/tripal/loaders/chado_vocabs/chado_cv/cvterm/add',
+  ];
+  /* No results behavior: Global: Text area */
+  $handler->display->display_options['empty']['text']['id'] = 'area';
+  $handler->display->display_options['empty']['text']['table'] = 'views';
+  $handler->display->display_options['empty']['text']['field'] = 'area';
+  $handler->display->display_options['empty']['text']['content'] = 'There are no terms associated with the selected controlled vocabulary. Please select a different vocabulary from the list above.';
+  $handler->display->display_options['empty']['text']['format'] = '1';
+  /* Field: Chado Cv: Cv Id */
+  $handler->display->display_options['fields']['cv_id']['id'] = 'cv_id';
+  $handler->display->display_options['fields']['cv_id']['table'] = 'cv';
+  $handler->display->display_options['fields']['cv_id']['field'] = 'cv_id';
+  $handler->display->display_options['fields']['cv_id']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['cv_id']['separator'] = '';
+  /* Field: Chado Cv: Name */
+  $handler->display->display_options['fields']['name_1']['id'] = 'name_1';
+  $handler->display->display_options['fields']['name_1']['table'] = 'cv';
+  $handler->display->display_options['fields']['name_1']['field'] = 'name';
+  $handler->display->display_options['fields']['name_1']['label'] = 'Vocabulary';
+  $handler->display->display_options['fields']['name_1']['alter']['make_link'] = TRUE;
+  $handler->display->display_options['fields']['name_1']['alter']['path'] = 'admin/tripal/loaders/chado_vocabs/chado_cvs?name=[name_1]';
+  /* Field: Chado Cvterm: Cvterm Id */
+  $handler->display->display_options['fields']['cvterm_id']['id'] = 'cvterm_id';
+  $handler->display->display_options['fields']['cvterm_id']['table'] = 'cvterm';
+  $handler->display->display_options['fields']['cvterm_id']['field'] = 'cvterm_id';
+  $handler->display->display_options['fields']['cvterm_id']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['cvterm_id']['separator'] = '';
+  /* Field: Chado Cvterm: Name */
+  $handler->display->display_options['fields']['name']['id'] = 'name';
+  $handler->display->display_options['fields']['name']['table'] = 'cvterm';
+  $handler->display->display_options['fields']['name']['field'] = 'name';
+  /* Field: Chado Cvterm: Definition */
+  $handler->display->display_options['fields']['definition']['id'] = 'definition';
+  $handler->display->display_options['fields']['definition']['table'] = 'cvterm';
+  $handler->display->display_options['fields']['definition']['field'] = 'definition';
+  $handler->display->display_options['fields']['definition']['element_class'] = 'wide-column';
+  $handler->display->display_options['fields']['definition']['element_label_class'] = 'wide-column';
+  /* Field: Chado Cvterm: Is Obsolete */
+  $handler->display->display_options['fields']['is_obsolete']['id'] = 'is_obsolete';
+  $handler->display->display_options['fields']['is_obsolete']['table'] = 'cvterm';
+  $handler->display->display_options['fields']['is_obsolete']['field'] = 'is_obsolete';
+  $handler->display->display_options['fields']['is_obsolete']['label'] = 'Obsolete?';
+  $handler->display->display_options['fields']['is_obsolete']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['is_obsolete']['alter']['text'] = 'Yes';
+  $handler->display->display_options['fields']['is_obsolete']['element_class'] = 'short-column';
+  $handler->display->display_options['fields']['is_obsolete']['element_label_class'] = 'short-column';
+  $handler->display->display_options['fields']['is_obsolete']['empty'] = 'No';
+  $handler->display->display_options['fields']['is_obsolete']['empty_zero'] = TRUE;
+  $handler->display->display_options['fields']['is_obsolete']['separator'] = '';
+  /* Field: Chado Cvterm: Is Relationshiptype */
+  $handler->display->display_options['fields']['is_relationshiptype']['id'] = 'is_relationshiptype';
+  $handler->display->display_options['fields']['is_relationshiptype']['table'] = 'cvterm';
+  $handler->display->display_options['fields']['is_relationshiptype']['field'] = 'is_relationshiptype';
+  $handler->display->display_options['fields']['is_relationshiptype']['label'] = 'Relation-ship?';
+  $handler->display->display_options['fields']['is_relationshiptype']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['is_relationshiptype']['alter']['text'] = 'Yes';
+  $handler->display->display_options['fields']['is_relationshiptype']['element_class'] = 'short-column';
+  $handler->display->display_options['fields']['is_relationshiptype']['element_label_class'] = 'short-column';
+  $handler->display->display_options['fields']['is_relationshiptype']['empty'] = 'No';
+  $handler->display->display_options['fields']['is_relationshiptype']['empty_zero'] = TRUE;
+  $handler->display->display_options['fields']['is_relationshiptype']['separator'] = '';
+  /* Field: Global: Custom text */
+  $handler->display->display_options['fields']['nothing']['id'] = 'nothing';
+  $handler->display->display_options['fields']['nothing']['table'] = 'views';
+  $handler->display->display_options['fields']['nothing']['field'] = 'nothing';
+  $handler->display->display_options['fields']['nothing']['label'] = 'Edit Link';
+  $handler->display->display_options['fields']['nothing']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['nothing']['alter']['text'] = 'edit';
+  $handler->display->display_options['fields']['nothing']['alter']['make_link'] = TRUE;
+  $handler->display->display_options['fields']['nothing']['alter']['path'] = 'admin/tripal/loaders/chado_vocabs/chado_cv/[cv_id]/cvterm/edit/[cvterm_id]';
+  /* Field: Global: Custom text */
+  $handler->display->display_options['fields']['nothing_1']['id'] = 'nothing_1';
+  $handler->display->display_options['fields']['nothing_1']['table'] = 'views';
+  $handler->display->display_options['fields']['nothing_1']['field'] = 'nothing';
+  $handler->display->display_options['fields']['nothing_1']['label'] = '';
+  $handler->display->display_options['fields']['nothing_1']['alter']['text'] = '[nothing]';
+  $handler->display->display_options['fields']['nothing_1']['element_class'] = 'short-column';
+  $handler->display->display_options['fields']['nothing_1']['element_label_class'] = 'short-column';
+  $handler->display->display_options['fields']['nothing_1']['element_label_colon'] = FALSE;
+  /* Sort criterion: Chado Cv: Name */
+  $handler->display->display_options['sorts']['name']['id'] = 'name';
+  $handler->display->display_options['sorts']['name']['table'] = 'cv';
+  $handler->display->display_options['sorts']['name']['field'] = 'name';
+  /* Sort criterion: Chado Cvterm: Name */
+  $handler->display->display_options['sorts']['name_1']['id'] = 'name_1';
+  $handler->display->display_options['sorts']['name_1']['table'] = 'cvterm';
+  $handler->display->display_options['sorts']['name_1']['field'] = 'name';
+  /* Filter criterion: Chado Cv: Name */
+  $handler->display->display_options['filters']['name']['id'] = 'name';
+  $handler->display->display_options['filters']['name']['table'] = 'cv';
+  $handler->display->display_options['filters']['name']['field'] = 'name';
+  $handler->display->display_options['filters']['name']['value'] = 'All';
+  $handler->display->display_options['filters']['name']['group'] = '0';
+  $handler->display->display_options['filters']['name']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['name']['expose']['operator_id'] = 'name_op';
+  $handler->display->display_options['filters']['name']['expose']['label'] = 'Vocabulary';
+  $handler->display->display_options['filters']['name']['expose']['operator'] = 'name_op';
+  $handler->display->display_options['filters']['name']['expose']['identifier'] = 'cv';
+  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = [
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  ];
+  $handler->display->display_options['filters']['name']['values_form_type'] = 'select';
+  $handler->display->display_options['filters']['name']['select_optional'] = TRUE;
+  /* Filter criterion: Chado Cvterm: Name */
+  $handler->display->display_options['filters']['name_1']['id'] = 'name_1';
+  $handler->display->display_options['filters']['name_1']['table'] = 'cvterm';
+  $handler->display->display_options['filters']['name_1']['field'] = 'name';
+  $handler->display->display_options['filters']['name_1']['operator'] = 'contains';
+  $handler->display->display_options['filters']['name_1']['group'] = '0';
+  $handler->display->display_options['filters']['name_1']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['name_1']['expose']['operator_id'] = '';
+  $handler->display->display_options['filters']['name_1']['expose']['label'] = 'Name Contains';
+  $handler->display->display_options['filters']['name_1']['expose']['identifier'] = 'name';
+  $handler->display->display_options['filters']['name_1']['expose']['remember_roles'] = [
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  ];
+  /* Filter criterion: Chado Cvterm: Definition */
+  $handler->display->display_options['filters']['definition']['id'] = 'definition';
+  $handler->display->display_options['filters']['definition']['table'] = 'cvterm';
+  $handler->display->display_options['filters']['definition']['field'] = 'definition';
+  $handler->display->display_options['filters']['definition']['operator'] = 'contains';
+  $handler->display->display_options['filters']['definition']['group'] = '0';
+  $handler->display->display_options['filters']['definition']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['definition']['expose']['operator_id'] = 'definition_op';
+  $handler->display->display_options['filters']['definition']['expose']['label'] = 'Definition Contains';
+  $handler->display->display_options['filters']['definition']['expose']['operator'] = 'definition_op';
+  $handler->display->display_options['filters']['definition']['expose']['identifier'] = 'definition';
+  $handler->display->display_options['filters']['definition']['expose']['remember_roles'] = [
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  ];
 
-/* Display: Page */
-$handler = $view->new_display('page', 'Page', 'page_1');
-$handler->display->display_options['path'] = 'admin/tripal/loaders/chado_vocabs/chado_cvterms';
-$handler->display->display_options['menu']['type'] = 'normal';
-$handler->display->display_options['menu']['title'] = 'Manage Chado CV Terms';
-$handler->display->display_options['menu']['description'] = 'View, edit and add controlled vocabulary terms.';
-$handler->display->display_options['menu']['weight'] = '-8';
-$handler->display->display_options['menu']['name'] = 'management';
-$handler->display->display_options['menu']['context'] = 0;
-$handler->display->display_options['menu']['context_only_inline'] = 0;
+  /* Display: Page */
+  $handler = $view->new_display('page', 'Page', 'page_1');
+  $handler->display->display_options['path'] = 'admin/tripal/loaders/chado_vocabs/chado_cvterms';
+  $handler->display->display_options['menu']['type'] = 'normal';
+  $handler->display->display_options['menu']['title'] = 'Manage Chado CV Terms';
+  $handler->display->display_options['menu']['description'] = 'View, edit and add controlled vocabulary terms.';
+  $handler->display->display_options['menu']['weight'] = '-8';
+  $handler->display->display_options['menu']['name'] = 'management';
+  $handler->display->display_options['menu']['context'] = 0;
+  $handler->display->display_options['menu']['context_only_inline'] = 0;
 
 
   return $view;
 }
+
 /**
  * Default Admin View for db management
  *
@@ -891,33 +892,33 @@ function tripal_chado_defaultview_admin_db_listing() {
   $handler->display->display_options['pager']['options']['quantity'] = '9';
   $handler->display->display_options['style_plugin'] = 'table';
   $handler->display->display_options['style_options']['grouping'] = '';
-  $handler->display->display_options['style_options']['columns'] = array(
+  $handler->display->display_options['style_options']['columns'] = [
     'name' => 'name',
     'url' => 'url',
     'urlprefix' => 'urlprefix',
     'description' => 'description',
-  );
+  ];
   $handler->display->display_options['style_options']['default'] = 'name';
-  $handler->display->display_options['style_options']['info'] = array(
-    'name' => array(
+  $handler->display->display_options['style_options']['info'] = [
+    'name' => [
       'sortable' => 1,
       'separator' => '',
-    ),
-    'description' => array(
+    ],
+    'description' => [
       'sortable' => 0,
       'separator' => '',
-    ),
-  );
+    ],
+  ];
   /* Header: Global: Action Links */
   $handler->display->display_options['header']['action_links_area']['id'] = 'action_links_area';
   $handler->display->display_options['header']['action_links_area']['table'] = 'views';
   $handler->display->display_options['header']['action_links_area']['field'] = 'action_links_area';
   $handler->display->display_options['header']['action_links_area']['label'] = 'Action Links';
   $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
-  $handler->display->display_options['header']['action_links_area']['link-1'] = array(
+  $handler->display->display_options['header']['action_links_area']['link-1'] = [
     'label-1' => 'Add Database',
     'path-1' => 'admin/tripal/loaders/chado_db/add',
-  );
+  ];
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['text']['id'] = 'area';
   $handler->display->display_options['empty']['text']['table'] = 'views';
@@ -974,11 +975,11 @@ function tripal_chado_defaultview_admin_db_listing() {
   $handler->display->display_options['filters']['name']['expose']['label'] = 'Name Contains';
   $handler->display->display_options['filters']['name']['expose']['operator'] = 'name_op';
   $handler->display->display_options['filters']['name']['expose']['identifier'] = 'name';
-  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Chado Db: Description */
   $handler->display->display_options['filters']['description']['id'] = 'description';
   $handler->display->display_options['filters']['description']['table'] = 'db';
@@ -990,11 +991,11 @@ function tripal_chado_defaultview_admin_db_listing() {
   $handler->display->display_options['filters']['description']['expose']['label'] = 'Description Contains';
   $handler->display->display_options['filters']['description']['expose']['operator'] = 'description_op';
   $handler->display->display_options['filters']['description']['expose']['identifier'] = 'description';
-  $handler->display->display_options['filters']['description']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['description']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
@@ -1043,51 +1044,51 @@ function tripal_chado_defaultview_admin_dbxref_listing() {
   $handler->display->display_options['pager']['type'] = 'full';
   $handler->display->display_options['pager']['options']['items_per_page'] = '50';
   $handler->display->display_options['style_plugin'] = 'table';
-  $handler->display->display_options['style_options']['columns'] = array(
+  $handler->display->display_options['style_options']['columns'] = [
     'dbxref_id' => 'dbxref_id',
     'name' => 'name',
     'accession' => 'accession',
     'description' => 'description',
     'version' => 'version',
-  );
+  ];
   $handler->display->display_options['style_options']['default'] = '-1';
-  $handler->display->display_options['style_options']['info'] = array(
-    'dbxref_id' => array(
+  $handler->display->display_options['style_options']['info'] = [
+    'dbxref_id' => [
       'sortable' => 0,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'name' => array(
+    ],
+    'name' => [
       'sortable' => 1,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'accession' => array(
+    ],
+    'accession' => [
       'sortable' => 1,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'description' => array(
+    ],
+    'description' => [
       'sortable' => 0,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-    'version' => array(
+    ],
+    'version' => [
       'sortable' => 1,
       'default_sort_order' => 'asc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
-    ),
-  );
+    ],
+  ];
   /* Field: Chado Dbxref: Dbxref Id */
   $handler->display->display_options['fields']['dbxref_id']['id'] = 'dbxref_id';
   $handler->display->display_options['fields']['dbxref_id']['table'] = 'dbxref';
@@ -1128,9 +1129,9 @@ function tripal_chado_defaultview_admin_dbxref_listing() {
   $handler->display->display_options['filters']['name']['id'] = 'name';
   $handler->display->display_options['filters']['name']['table'] = 'db';
   $handler->display->display_options['filters']['name']['field'] = 'name';
-  $handler->display->display_options['filters']['name']['value'] = array(
+  $handler->display->display_options['filters']['name']['value'] = [
     'All' => 'All',
-  );
+  ];
   $handler->display->display_options['filters']['name']['group'] = 1;
   $handler->display->display_options['filters']['name']['exposed'] = TRUE;
   $handler->display->display_options['filters']['name']['expose']['operator_id'] = '';
@@ -1140,11 +1141,11 @@ function tripal_chado_defaultview_admin_dbxref_listing() {
   $handler->display->display_options['filters']['name']['expose']['select_multiple'] = TRUE;
   $handler->display->display_options['filters']['name']['expose']['select_optional'] = TRUE;
   $handler->display->display_options['filters']['name']['expose']['max_length'] = 40;
-  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Chado Dbxref: Accession */
   $handler->display->display_options['filters']['accession']['id'] = 'accession';
   $handler->display->display_options['filters']['accession']['table'] = 'dbxref';
@@ -1156,11 +1157,11 @@ function tripal_chado_defaultview_admin_dbxref_listing() {
   $handler->display->display_options['filters']['accession']['expose']['label'] = 'Accession Contains';
   $handler->display->display_options['filters']['accession']['expose']['operator'] = 'accession_op';
   $handler->display->display_options['filters']['accession']['expose']['identifier'] = 'accession';
-  $handler->display->display_options['filters']['accession']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['accession']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Chado Dbxref: Description */
   $handler->display->display_options['filters']['description']['id'] = 'description';
   $handler->display->display_options['filters']['description']['table'] = 'dbxref';
@@ -1172,11 +1173,11 @@ function tripal_chado_defaultview_admin_dbxref_listing() {
   $handler->display->display_options['filters']['description']['expose']['label'] = 'Description Contains';
   $handler->display->display_options['filters']['description']['expose']['operator'] = 'description_op';
   $handler->display->display_options['filters']['description']['expose']['identifier'] = 'description';
-  $handler->display->display_options['filters']['description']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['description']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');

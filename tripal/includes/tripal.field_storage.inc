@@ -9,14 +9,16 @@
  * content_type field which adds a type field to every entity.
  */
 function tripal_field_storage_info() {
-  return array(
-    'tripal_no_storage' => array(
+  return [
+    'tripal_no_storage' => [
       'label' => t('Tripal'),
       'description' => t('The NULL storage is a placeholder for field values
           that are not stored in any storage backend (e.g. entity types).'),
-      'settings' => array(),
-    ),
-  );
+      'settings' => [
+        'tripal_storage_api' => TRUE,
+      ],
+    ],
+  ];
 }
 
 /**
@@ -25,7 +27,7 @@ function tripal_field_storage_info() {
  * Responsible for loading the fields and adding their values to the entity.
  */
 function tripal_field_storage_load($entity_type, $entities, $age,
-    $fields, $options) {
+                                   $fields, $options) {
 
   $load_current = $age == FIELD_LOAD_CURRENT;
   global $language;
@@ -35,7 +37,7 @@ function tripal_field_storage_load($entity_type, $entities, $age,
 
     // Iterate through the entity's fields so we can get the column names
     // that need to be selected from each of the tables represented.
-    $tables = array();
+    $tables = [];
     foreach ($fields as $field_id => $ids) {
 
       // By the time this hook runs, the relevant field definitions have been
@@ -68,18 +70,38 @@ function tripal_field_storage_load($entity_type, $entities, $age,
  */
 function tripal_field_storage_query($query) {
 
-  $filter = array();
-  $entity_ids = array();
+  $filter = [];
+  $entity_ids = [];
 
   // Create the initial query.
   $select = db_select('tripal_entity', 'TE');
   $select->join('tripal_bundle', 'TB', 'TE.bundle = TB.name');
-  $select->fields('TE', array('id'));
-  $select->fields('TB', array('name'));
+  $select->fields('TE', ['id']);
+  $select->fields('TB', ['name']);
+
+  // Apply any entity condition filters.
+  if ($query->entityConditions) {
+    if (array_key_exists('bundle', $query->entityConditions)) {
+      $select->condition('TB.name', $query->entityConditions['bundle']['value']);
+    }
+  }
+
+  if (property_exists($query, 'relationshipConditions') && $query->relationshipConditions) {
+    foreach ($query->relationshipConditions as $table_alias => $reldetails) {
+      $field = $reldetails['field'];
+      $value = $reldetails['value'];
+      $op = $reldetails['op'];
+      $relationship = $query->relationships[$table_alias];
+      $table = $relationship['table'];
+      $select->join($table, $table_alias, 'TE.id = ' . $table_alias . '.' . $relationship['field']);
+      $select->condition($table_alias . '.' . $field, $value, $op);
+    }
+  }
 
   // Add in any filters to the query.
   foreach ($query->fieldConditions as $index => $condition) {
     $field = $condition['field'];
+
     // Skip conditions that don't belong to this storage type.
     if ($field['storage']['type'] != 'tripal_no_storage') {
       continue;
@@ -108,13 +130,32 @@ function tripal_field_storage_query($query) {
     }
   }
 
+  // Add a range of records to retrieve
+  if ($query->range) {
+    $select->range($query->range['start'], $query->range['length']);
+  }
+
+  // Only include records that are deleted.  Tripal doesn't keep track of
+  // records that are deleted that need purging separately so we can do nothing
+  // with this.
+  if (property_exists($query, 'deleted') and $query->deleted) {
+    // There won't ever be field data marked as deleted so just created a
+    // condition that always evaluates to false.
+    $select->where('1=0');
+  }
+
+  //   dpm($query);
+  //   dpm($select->__toString());
+  //   dpm($select->getArguments());
+
   // Perform the query and return the results.
   $entities = $select->execute();
-  $result = array(
-    'TripalEntity' => array(),
-  );
+
+  $result = [
+    'TripalEntity' => [],
+  ];
   while ($entity = $entities->fetchObject()) {
-    $ids = array($entity->id, '0', $entity->name);
+    $ids = [$entity->id, '0', $entity->name];
     $result['TripalEntity'][$entity->id] = entity_create_stub_entity('TripalEntity', $ids);
   }
   return $result;

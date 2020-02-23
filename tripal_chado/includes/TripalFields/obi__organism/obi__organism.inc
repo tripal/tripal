@@ -15,7 +15,7 @@ class obi__organism extends ChadoField {
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
-  public static $default_instance_settings  = array(
+  public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'OBI',
     // The name of the term.
@@ -28,13 +28,13 @@ class obi__organism extends ChadoField {
     'term_fixed' => FALSE,
     // The format for display of the organism.
     'field_display_string' => '<i>[organism.genus] [organism.species]</i>',
-  );
+  ];
 
   // The default widget for this field.
-  public static $default_widget = 'OBI__organism_widget';
+  public static $default_widget = 'obi__organism_widget';
 
   // The default formatter for this field.
-  public static $default_formatter = 'OBI__organism_formatter';
+  public static $default_formatter = 'obi__organism_formatter';
 
 
   /**
@@ -69,11 +69,11 @@ class obi__organism extends ChadoField {
 
       // Get the field values.
       $organism_id = $values[$linker_field];
-      if (!$organism_id or $organism_id == 0) {
-        $errors[$field_name]['und'][0][] = array(
-          'message' =>  t("Please specify an organism."),
-          'error' => 'obi__organism_id'
-        );
+      if ((!$organism_id or $organism_id == 0) and !$field_table == 'biomaterial') {
+        $errors[$field_name]['und'][0][] = [
+          'message' => t("Please specify an organism."),
+          'error' => 'obi__organism_id',
+        ];
       }
     }
   }
@@ -93,10 +93,10 @@ class obi__organism extends ChadoField {
 
     // Get the terms for each of the keys for the 'values' property.
     $label_term = 'rdfs:label';
-    $genus_term = tripal_get_chado_semweb_term('organism', 'genus');
-    $species_term = tripal_get_chado_semweb_term('organism', 'species');
-    $infraspecific_name_term = tripal_get_chado_semweb_term('organism', 'infraspecific_name');
-    $infraspecific_type_term = tripal_get_chado_semweb_term('organism', 'type_id');
+    $genus_term = chado_get_semweb_term('organism', 'genus');
+    $species_term = chado_get_semweb_term('organism', 'species');
+    $infraspecific_name_term = chado_get_semweb_term('organism', 'infraspecific_name');
+    $infraspecific_type_term = chado_get_semweb_term('organism', 'type_id');
 
 
     // Set the linker field appropriately.
@@ -108,9 +108,9 @@ class obi__organism extends ChadoField {
     }
 
     // Set some defaults for the empty record.
-    $entity->{$field_name}['und'][0] = array(
-      'value' => array(),
-    );
+    $entity->{$field_name}['und'][0] = [
+      'value' => [],
+    ];
 
     if ($record) {
       if ($field_table == 'biomaterial') {
@@ -119,19 +119,23 @@ class obi__organism extends ChadoField {
       else {
         $organism = $record->organism_id;
       }
+
+      if (!$organism) {
+        return;
+      }
       $string = $settings['field_display_string'];
-      $label = tripal_replace_chado_tokens($string, $organism);
-      $entity->{$field_name}['und'][0]['value'] = array(
+      $label = chado_replace_tokens($string, $organism);
+      $entity->{$field_name}['und'][0]['value'] = [
         $label_term => $label,
         $genus_term => $organism->genus,
         $species_term => $organism->species,
-      );
+      ];
       // The infraspecific fields were introduced in Chado v1.3.
       if (property_exists($organism, 'infraspecific_name')) {
         $entity->{$field_name}['und'][0]['value'][$infraspecific_type_term] = NULL;
         $entity->{$field_name}['und'][0]['value'][$infraspecific_name_term] = $organism->infraspecific_name;
         if ($organism->type_id) {
-          $entity->{$field_name}['und'][0]['value'][$infraspecific_type_term] =  $organism->type_id->name;
+          $entity->{$field_name}['und'][0]['value'][$infraspecific_type_term] = $organism->type_id->name;
         }
       }
       $entity->{$field_name}['und'][0][$linker_field] = $organism->organism_id;
@@ -150,57 +154,57 @@ class obi__organism extends ChadoField {
     $element = parent::instanceSettingsForm();
 
     $settings = $this->instance['settings'];
-    $element['instructions'] = array(
+    $element['instructions'] = [
       '#type' => 'item',
       '#markup' => 'You may rewrite the way this field is presented to the end-user.
         The Rewrite Value field allows you to use tokens to indicate how the
         value should be displayed.  Tokens will be substituted with appriorate
         data from the database.  See the Available tokens list for the
-        tokens you may use.'
-    );
+        tokens you may use.',
+    ];
 
-    $element['field_display_string'] = array(
+    $element['field_display_string'] = [
       '#type' => 'textfield',
       '#title' => 'Rewrite Value',
       '#description' => t('Provide a mixture of text and/or tokens for the format.
           For example: [organism.genus] [organism.species].  When displayed,
           the tokens will be replaced with the actual value.'),
       '#default_value' => $settings['field_display_string'],
-    );
+    ];
 
-    $element['tokens'] = array(
+    $element['tokens'] = [
       '#type' => 'fieldset',
       '#collapsed' => TRUE,
       '#collapsible' => TRUE,
-      '#title' => 'Available Tokens'
-    );
-    $headers = array('Token', 'Description');
-    $rows = array();
+      '#title' => 'Available Tokens',
+    ];
+    $headers = ['Token', 'Description'];
+    $rows = [];
 
-    // Here we use the tripal_get_chado_tokens rather than the
+    // Here we use the chado_get_tokens rather than the
     // tripal_get_entity_tokens because we can't gurantee that all organisms
     // have entities.
-    $tokens = tripal_get_chado_tokens('organism');
+    $tokens = chado_get_tokens('organism');
     foreach ($tokens as $token) {
-      $rows[] = array(
+      $rows[] = [
         $token['token'],
         $token['description'],
-      );
+      ];
     }
 
-    $table_vars = array(
-      'header'     => $headers,
-      'rows'       => $rows,
-      'attributes' => array(),
-      'sticky'     => FALSE,
-      'caption'    => '',
-      'colgroups'  => array(),
-      'empty'      => 'There are no tokens',
-    );
-    $element['tokens']['list'] = array(
+    $table_vars = [
+      'header' => $headers,
+      'rows' => $rows,
+      'attributes' => [],
+      'sticky' => FALSE,
+      'caption' => '',
+      'colgroups' => [],
+      'empty' => 'There are no tokens',
+    ];
+    $element['tokens']['list'] = [
       '#type' => 'item',
       '#markup' => theme_table($table_vars),
-    );
+    ];
 
     return $element;
   }
@@ -211,70 +215,70 @@ class obi__organism extends ChadoField {
   public function elementInfo() {
     $field_term = $this->getFieldTermID();
 
-    $genus_term = tripal_get_chado_semweb_term('organism', 'genus');
-    $species_term = tripal_get_chado_semweb_term('organism', 'species');
-    $infraspecific_name_term = tripal_get_chado_semweb_term('organism', 'infraspecific_name');
-    $infraspecific_type_term = tripal_get_chado_semweb_term('organism', 'type_id');
+    $genus_term = chado_get_semweb_term('organism', 'genus');
+    $species_term = chado_get_semweb_term('organism', 'species');
+    $infraspecific_name_term = chado_get_semweb_term('organism', 'infraspecific_name');
+    $infraspecific_type_term = chado_get_semweb_term('organism', 'type_id');
 
-    return array(
-      $field_term => array(
-        'operations' => array('eq', 'contains', 'starts'),
+    return [
+      $field_term => [
+        'operations' => ['eq', 'contains', 'starts'],
         'sortable' => TRUE,
         'searchable' => TRUE,
         'readonly' => FALSE,
         'type' => 'xs:complexType',
-        'elements' => array(
-          'rdfs:label' => array(
+        'elements' => [
+          'rdfs:label' => [
             'searchable' => TRUE,
-            'name' => 'scientfic_name',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'name' => 'scientific_name',
+            'operations' => ['eq', 'ne', 'contains', 'starts'],
             'sortable' => FALSE,
             'type' => 'xs:string',
             'readonly' => TRUE,
             'required' => FALSE,
-          ),
-          $genus_term => array(
+          ],
+          $genus_term => [
             'searchable' => TRUE,
             'name' => 'genus',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'operations' => ['eq', 'ne', 'contains', 'starts'],
             'sortable' => TRUE,
             'readonly' => FALSE,
             'type' => 'xs:string',
             'required' => TRUE,
-          ),
-          $species_term => array(
+          ],
+          $species_term => [
             'searchable' => TRUE,
             'name' => 'species',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'operations' => ['eq', 'ne', 'contains', 'starts'],
             'sortable' => TRUE,
             'readonly' => FALSE,
             'type' => 'xs:string',
             'required' => TRUE,
-          ),
-          $infraspecific_name_term => array(
+          ],
+          $infraspecific_name_term => [
             'searchable' => TRUE,
             'name' => 'infraspecies',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'operations' => ['eq', 'ne', 'contains', 'starts'],
             'sortable' => TRUE,
             'readonly' => FALSE,
             'type' => 'xs:string',
             'required' => FALSE,
-          ),
-          $infraspecific_type_term => array(
+          ],
+          $infraspecific_type_term => [
             'searchable' => TRUE,
             'name' => 'infraspecific_type',
-            'operations' => array('eq', 'ne', 'contains', 'starts'),
+            'operations' => ['eq', 'ne', 'contains', 'starts'],
             'sortable' => TRUE,
             'readonly' => FALSE,
             'type' => 'xs:integer',
             'required' => FALSE,
-          ),
-          'entity' => array(
+          ],
+          'entity' => [
             'searchable' => FALSE,
-          ),
-        ),
-      ),
-    );
+          ],
+        ],
+      ],
+    ];
   }
 
   /**
@@ -285,10 +289,10 @@ class obi__organism extends ChadoField {
     $operator = $condition['operator'];
 
     $field_term_id = $this->getFieldTermID();
-    $genus_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'genus');
-    $species_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'species');
-    $infraspecific_name_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'infraspecific_name');
-    $infraspecific_type_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'type_id');
+    $genus_term = $field_term_id . ',' . chado_get_semweb_term('organism', 'genus');
+    $species_term = $field_term_id . ',' . chado_get_semweb_term('organism', 'species');
+    $infraspecific_name_term = $field_term_id . ',' . chado_get_semweb_term('organism', 'infraspecific_name');
+    $infraspecific_type_term = $field_term_id . ',' . chado_get_semweb_term('organism', 'type_id');
 
     // Join to the organism table for this field.
     $this->queryJoinOnce($query, 'organism', $alias, "base.organism_id = $alias.organism_id");
@@ -296,13 +300,13 @@ class obi__organism extends ChadoField {
     // If the column is the field name then we're during a search on the full
     // scientific name.
     if ($condition['column'] == $field_term_id or
-        $condition['column'] == $field_term_id . ',rdfs:label') {
+      $condition['column'] == $field_term_id . ',rdfs:label') {
       if (chado_get_version() <= 1.3) {
-        $query->where("CONCAT($alias.genus, ' ', $alias.species) $operator :full_name",  array(':full_name' => $condition['value']));
+        $query->where("CONCAT($alias.genus, ' ', $alias.species) $operator :full_name", [':full_name' => $condition['value']]);
       }
       else {
         $this->queryJoinOnce($query, 'cvterm', $alias . '_cvterm', 'base.infraspecific_type = ' . $alias . '_cvterm.type_id', 'LEFT OUTER');
-        $query->where("CONCAT($alias.genus, ' ', $alias.species, ' ', " . $alias . "'_cvterm.name', ' ', $alias.infraspecific_name) $operator :full_name",  array(':full_name' => $condition['value']));
+        $query->where("CONCAT($alias.genus, ' ', $alias.species, ' ', " . $alias . "'_cvterm.name', ' ', $alias.infraspecific_name) $operator :full_name", [':full_name' => $condition['value']]);
       }
     }
 
@@ -329,10 +333,10 @@ class obi__organism extends ChadoField {
     $alias = $this->field['field_name'];
 
     $field_term_id = $this->getFieldTermID();
-    $genus_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'genus');
-    $species_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'species');
-    $infraspecific_name_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'infraspecific_name');
-    $infraspecific_type_term = $field_term_id . ',' . tripal_get_chado_semweb_term('organism', 'type_id');
+    $genus_term = $field_term_id . ',' . chado_get_semweb_term('organism', 'genus');
+    $species_term = $field_term_id . ',' . chado_get_semweb_term('organism', 'species');
+    $infraspecific_name_term = $field_term_id . ',' . chado_get_semweb_term('organism', 'infraspecific_name');
+    $infraspecific_type_term = $field_term_id . ',' . chado_get_semweb_term('organism', 'type_id');
 
     // Join to the organism table for this field.
     $this->queryJoinOnce($query, 'organism', $alias, "base.organism_id = $alias.organism_id");

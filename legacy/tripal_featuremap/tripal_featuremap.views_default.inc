@@ -10,7 +10,7 @@
  * @ingroup tripal_legacy_featuremap
  */
 function tripal_featuremap_views_default_views() {
-  $views = array();
+  $views = [];
 
   // User View ("Search Biological Content")
   // Remember, if you change the name/path of this view,
@@ -46,12 +46,12 @@ function tripal_featuremap_defaultvalue_user_featuremaps() {
 
   // Change the path
   $view->display['page_1']->display_options['path'] = 'chado/featuremap';
-  $view->display['page_1']->display_options['menu'] = array(
+  $view->display['page_1']->display_options['menu'] = [
     'type' => 'normal',
     'title' => 'Maps',
     'description' => 'A map of features from the chado database (e.g. genetic map)',
-    'weight' => '-10'
-  );
+    'weight' => '-10',
+  ];
   unset($view->display['page_1']->display_options['tab_options']);
 
   // Change the permission
@@ -106,52 +106,52 @@ function tripal_featuremap_defaultview_admin_featuremaps() {
   $handler->display->display_options['pager']['options']['quantity'] = '9';
   $handler->display->display_options['style_plugin'] = 'table';
   $handler->display->display_options['style_options']['grouping'] = '';
-  $handler->display->display_options['style_options']['columns'] = array(
-  'name' => 'name',
-  'description' => 'description',
-  'name_1' => 'name_1',
-  'nid' => 'nid',
-  );
+  $handler->display->display_options['style_options']['columns'] = [
+    'name' => 'name',
+    'description' => 'description',
+    'name_1' => 'name_1',
+    'nid' => 'nid',
+  ];
   $handler->display->display_options['style_options']['default'] = '-1';
-  $handler->display->display_options['style_options']['info'] = array(
-  'name' => array(
-    'sortable' => 1,
-    'separator' => '',
-  ),
-  'description' => array(
-    'sortable' => 1,
-    'separator' => '',
-  ),
-  'name_1' => array(
-    'sortable' => 1,
-    'separator' => '',
-  ),
-  'nid' => array(
-    'separator' => '',
-  ),
-  );
+  $handler->display->display_options['style_options']['info'] = [
+    'name' => [
+      'sortable' => 1,
+      'separator' => '',
+    ],
+    'description' => [
+      'sortable' => 1,
+      'separator' => '',
+    ],
+    'name_1' => [
+      'sortable' => 1,
+      'separator' => '',
+    ],
+    'nid' => [
+      'separator' => '',
+    ],
+  ];
   /* Header: Global: Action Links */
   $handler->display->display_options['header']['action_links_area']['id'] = 'action_links_area';
   $handler->display->display_options['header']['action_links_area']['table'] = 'views';
   $handler->display->display_options['header']['action_links_area']['field'] = 'action_links_area';
   $handler->display->display_options['header']['action_links_area']['label'] = 'Action Links';
   $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
-  $handler->display->display_options['header']['action_links_area']['link-1'] = array(
-  'label-1' => 'Add Map',
-  'path-1' => 'node/add/tripal-featuremap',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-2'] = array(
-  'label-2' => '',
-  'path-2' => '',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-3'] = array(
-  'label-3' => '',
-  'path-3' => '',
-  );
-  $handler->display->display_options['header']['action_links_area']['link-4'] = array(
-  'label-4' => '',
-  'path-4' => '',
-  );
+  $handler->display->display_options['header']['action_links_area']['link-1'] = [
+    'label-1' => 'Add Map',
+    'path-1' => 'node/add/tripal-featuremap',
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-2'] = [
+    'label-2' => '',
+    'path-2' => '',
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-3'] = [
+    'label-3' => '',
+    'path-3' => '',
+  ];
+  $handler->display->display_options['header']['action_links_area']['link-4'] = [
+    'label-4' => '',
+    'path-4' => '',
+  ];
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['text']['id'] = 'area';
   $handler->display->display_options['empty']['text']['table'] = 'views';
@@ -229,11 +229,11 @@ function tripal_featuremap_defaultview_admin_featuremaps() {
   $handler->display->display_options['filters']['name_1']['expose']['label'] = 'Name Contains';
   $handler->display->display_options['filters']['name_1']['expose']['operator'] = 'name_1_op';
   $handler->display->display_options['filters']['name_1']['expose']['identifier'] = 'name_1';
-  $handler->display->display_options['filters']['name_1']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['name_1']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
   /* Filter criterion: Chado Featuremap: Description */
   $handler->display->display_options['filters']['description']['id'] = 'description';
   $handler->display->display_options['filters']['description']['table'] = 'featuremap';
@@ -245,11 +245,11 @@ function tripal_featuremap_defaultview_admin_featuremaps() {
   $handler->display->display_options['filters']['description']['expose']['label'] = 'Description Contains';
   $handler->display->display_options['filters']['description']['expose']['operator'] = 'description_op';
   $handler->display->display_options['filters']['description']['expose']['identifier'] = 'description';
-  $handler->display->display_options['filters']['description']['expose']['remember_roles'] = array(
+  $handler->display->display_options['filters']['description']['expose']['remember_roles'] = [
     2 => '2',
     1 => 0,
     3 => 0,
-  );
+  ];
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');

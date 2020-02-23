@@ -19,35 +19,35 @@ function tripal_daemon_drush_help($command) {
  * Implements hook_drush_command().
  */
 function tripal_daemon_drush_command() {
-  $items = array();
-  $items['tripal-jobs-daemon'] = array(
+  $items = [];
+  $items['tripal-jobs-daemon'] = [
     'description' => dt('Use Tripal Jobs Deamon to manage Tripal Job execution.'),
-    'arguments' => array(
-      'start'    => 'Start the daemon.',
-      'status'   => 'Display status information about the daemon.',
-      'stop'     => 'Stop the daemon.',
+    'arguments' => [
+      'start' => 'Start the daemon.',
+      'status' => 'Display status information about the daemon.',
+      'stop' => 'Stop the daemon.',
       'show-log' => 'Show the log file.',
-    ),
-    'options' => array(
+    ],
+    'options' => [
       'parallel' => dt('Normally jobs are executed one at a time. But if you are certain no conflicts will occur with other currently running jobs you may set this argument to a value of 1 to make the job run in parallel with other running jobs.'),
       'max_jobs' => dt('Indicate the maximum number of concurrent jobs. Default is 3; use -1 (unlimited). Ignore if not running parallel jobs'),
       'num_lines' => 'The number of lines of the log file to show.',
-      'child' => array(
+      'child' => [
         'hidden' => TRUE,
         'description' => 'This option should only be passed via '
-        . 'drush_invoke_process and essentially just allows my command '
-        . 'to not fork bomb',
-      ),
-    ),
-    'examples' => array(
+          . 'drush_invoke_process and essentially just allows my command '
+          . 'to not fork bomb',
+      ],
+    ],
+    'examples' => [
       'drush trpjob-daemon start' => 'Start the daemon.',
       'drush trpjob-daemon status' => 'Show the current status of the daemon.',
       'drush trpjob-daemon stop' => 'Stop the daemon.',
       'drush trpjob-daemon show-log' => 'Show the last 10 lines of the log file.',
       'drush trpjob-daemon show-log --num_lines=50' => 'Show the last 10 lines of the log file.',
-    ),
-    'aliases' => array('trpjob-daemon'),
-  );
+    ],
+    'aliases' => ['trpjob-daemon'],
+  ];
 
   return $items;
 }
@@ -93,9 +93,9 @@ function drush_tripal_daemon_tripal_jobs_daemon($action) {
         drush_invoke_process(
           '@self',
           'tripal-jobs-daemon',
-          array('start'),
-          array('child' => TRUE, 'parallel' => $parallel, 'max_jobs' => $max_jobs),
-          array('fork' => TRUE)
+          ['start'],
+          ['child' => TRUE, 'parallel' => $parallel, 'max_jobs' => $max_jobs],
+          ['fork' => TRUE]
         );
         drush_print(dt("Use 'drush tripal-jobs-daemon status' to check the "
           . "status of the daemon just started and 'drush tripal-jobs-daemon stop' to stop it.\n"));

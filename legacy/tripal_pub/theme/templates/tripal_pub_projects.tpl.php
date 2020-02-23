@@ -1,6 +1,6 @@
 <?php
 $pub = $variables['node']->pub;
-$projects = array();
+$projects = [];
 
 // get the features that are associated with this publication.  But we only
 // want 25 and we want a pager to let the user cycle between pages of features.
@@ -12,17 +12,17 @@ $element = 4;        // an index to specify the pager this must be unique amongs
 $num_per_page = 25;  // the number of projects to show per page$num_results_per_page = 25;
 
 // get the projects from the project_pub table
-$options = array(
+$options = [
   'return_array' => 1,
-  'pager' => array(
-    'limit'   => $num_per_page,
-    'element' => $element
-  ),
-);
+  'pager' => [
+    'limit' => $num_per_page,
+    'element' => $element,
+  ],
+];
 
 $pub = chado_expand_var($pub, 'table', 'project_pub', $options);
 $project_pubs = $pub->project_pub;
-if (count($project_pubs) > 0 ) {
+if (count($project_pubs) > 0) {
   foreach ($project_pubs as $project_pub) {
     $projects[] = $project_pub->project_id;
   }
@@ -31,50 +31,53 @@ if (count($project_pubs) > 0 ) {
 // get the total number of records
 $total_records = chado_pager_get_count($element);
 
-if(count($projects) > 0){ ?>
-  <div class="tripal_pub-data-block-desc tripal-data-block-desc">This publication contains information about <?php print number_format($total_records) ?> projects:</div> <?php
+if (count($projects) > 0) { ?>
+    <div class="tripal_pub-data-block-desc tripal-data-block-desc">This
+        publication contains information
+        about <?php print number_format($total_records) ?> projects:
+    </div> <?php
 
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-  $headers = array('Project Name', 'Description');
+  $headers = ['Project Name', 'Description'];
 
   // the $rows array contains an array of rows where each row is an array
   // of values for each column of the table in that row.  Additional documentation
   // can be found here:
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-  $rows = array();
+  $rows = [];
 
-  foreach ($projects as $project){
-     $project_name = $project->name;
-     if (property_exists($project, 'nid')) {
-       $project_name = l($project_name, 'node/' . $project->nid, array('attributes' => array('target' => '_blank')));
-     }
-     $description =  substr($project->description, 0, 200);
-     if (strlen($project->description) > 200) {
-       $description .= "... " . l("[more]", 'node/' . $project->nid, array('attributes' => array('target' => '_blank')));
-     }
-     $rows[] = array(
-       $project_name,
-       $description
-     );
+  foreach ($projects as $project) {
+    $project_name = $project->name;
+    if (property_exists($project, 'nid')) {
+      $project_name = l($project_name, 'node/' . $project->nid, ['attributes' => ['target' => '_blank']]);
+    }
+    $description = substr($project->description, 0, 200);
+    if (strlen($project->description) > 200) {
+      $description .= "... " . l("[more]", 'node/' . $project->nid, ['attributes' => ['target' => '_blank']]);
+    }
+    $rows[] = [
+      $project_name,
+      $description,
+    ];
   }
   // the $table array contains the headers and rows array as well as other
   // options for controlling the display of the table.  Additional
   // documentation can be found here:
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-  $table = array(
+  $table = [
     'header' => $headers,
     'rows' => $rows,
-    'attributes' => array(
+    'attributes' => [
       'id' => 'tripal_pub-table-projects',
-      'class' => 'tripal-data-table'
-    ),
+      'class' => 'tripal-data-table',
+    ],
     'sticky' => FALSE,
     'caption' => '',
-    'colgroups' => array(),
+    'colgroups' => [],
     'empty' => '',
-  );
+  ];
   // once we have our table array structure defined, we call Drupal's theme_table()
   // function to generate the table.
   print theme_table($table);
@@ -89,14 +92,14 @@ if(count($projects) > 0){ ?>
   // Drupal won't reset the parameter if it already exists.
   $get = $_GET;
   unset($_GET['pane']);
-  $pager = array(
-    'tags' => array(),
+  $pager = [
+    'tags' => [],
     'element' => $element,
-    'parameters' => array(
-      'pane' => 'projects'
-    ),
+    'parameters' => [
+      'pane' => 'projects',
+    ],
     'quantity' => $num_per_page,
-  );
+  ];
   print theme_pager($pager);
   $_GET = $get;
 }

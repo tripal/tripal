@@ -1,6 +1,7 @@
 format-version: 1.2
 default-namespace: tripal_pub
 subsetdef: MeSH_Publication_Type "MeSH Publication Types"
+ontology: tpub
 
 [Term]
 id: TPUB:0000001
@@ -742,8 +743,6 @@ def: Works consisting of or containing a substantial number of blank forms.
 is_a: TPUB:0000015 ! Publication Type
 subset: MeSH_Publication_Type
 
-subset: MeSH_Publication_Type
-
 [Term]
 id: TPUB:0000157
 name: Formularies
@@ -1266,7 +1265,7 @@ subset: MeSH_Publication_Type
 
 [Term]
 id: TPUB:0000231
-name: Video Audio Media
+name: Video-Audio Media
 def: Used with articles which include video files or clips, or for articles which are entirely video.
 is_a: TPUB:0000015 ! Publication Type
 subset: MeSH_Publication_Type

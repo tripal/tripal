@@ -90,7 +90,8 @@
  * file by querying for the file category for the current project.
  *
  * @code
- *   $seq_files = TripalFeature::getFilesByTypes($user->uid, array('sequence_file'), $project_id);
+ *   $seq_files = TripalFeature::getFilesByTypes($user->uid,
+ *                   array('sequence_file'), $project_id);
  * @endcode
  *
  * 4) If the 'target_id' was used in array for step #2 above, then the
@@ -126,7 +127,7 @@
  *
  * @ingroup tripal_upload_api
  */
-function hook_file_upload_check($action, $details, &$message){
+function hook_file_upload_check($action, $details, &$message) {
   switch ($action) {
     case 'save':
       // Place code here when chunks are being saved.

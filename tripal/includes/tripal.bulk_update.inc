@@ -8,23 +8,24 @@
  * @param $type
  */
 function tripal_update_all_urls_and_titles($bundle_id, $update, $type) {
+
   // Load all the entity_ids.
-  $entity_table = 'chado_'.$bundle_id;
+  $entity_table = 'chado_' . $bundle_id;
   $entities = db_select($entity_table, 'e')
-    ->fields('e', array('entity_id'))
+    ->fields('e', ['entity_id'])
     ->orderBy('entity_id', 'ASC')
     ->execute();
   $num_entities = $entities->rowCount();
-  // Parse the $update variable for tokens and load those tokens.
-  preg_match_all("/\[[^\]]*\]/", $update, $bundle_tokens);
 
-  $fields = array();
+  // Parse the $update variable for tokens and load those tokens.
+  preg_match_all("/\[.*?\]/", $update, $bundle_tokens);
+
+  $fields = [];
   foreach ($bundle_tokens as $bundle_token) {
-    foreach ($bundle_token as $token) {
-      $string = str_replace(array('[', ']'), '', $token);
-      $field_array = field_info_field($string);
-      $fields[] = $field_array['id'];
-    }
+    $elements = explode(',', $bundle_token[0]);
+    $field_name = array_shift($elements);
+    $field_array = field_info_field($field_name);
+    $fields[] = $field_array['id'];
   }
 
   $i = 1;
@@ -47,7 +48,6 @@ function tripal_update_all_urls_and_titles($bundle_id, $update, $type) {
         if (is_array($arg)) {
           $ent = reset($arg);
         }
-
         $ec = entity_get_controller('TripalEntity');
         $ec->setTitle($ent, $update);
         $ec->resetCache();
@@ -59,6 +59,12 @@ function tripal_update_all_urls_and_titles($bundle_id, $update, $type) {
       print $i . "/" . $num_entities . " entities have been updated. Memory usage: $mem bytes.\r";
     }
     $i++;
+  }
+
+  // To speed up bulk alias updating the following function was skipped
+  // over. We'll add it back here to complete the process.
+  if ($type == 'alias') {
+    drupal_path_alias_whitelist_rebuild();
   }
 
   print "\nDone.";

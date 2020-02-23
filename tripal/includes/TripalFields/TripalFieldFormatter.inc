@@ -1,6 +1,7 @@
 <?php
 
 class TripalFieldFormatter {
+
   /**
    * The default lable for this field.
    */
@@ -9,12 +10,12 @@ class TripalFieldFormatter {
   /**
    * The list of field types for which this formatter is appropriate.
    */
-  public static $field_types = array();
+  public static $field_types = [];
 
   /**
    *  The list of default settings for this formatter.
    */
-  public static $default_settings = array();
+  public static $default_settings = [];
 
 
   /**
@@ -49,12 +50,12 @@ class TripalFieldFormatter {
    */
   public static function info() {
     $class = get_called_class();
-    return array(
+    return [
       'label' => $class::$default_label,
       'field types' => $class::$field_types,
       'settings' => $class::$default_settings,
       'TripalFieldFormatter' => TRUE,
-    );
+    ];
   }
 
   /**
@@ -127,11 +128,11 @@ class TripalFieldFormatter {
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
-    foreach($items as $delta => $item) {
-      $element[$delta] = array(
+    foreach ($items as $delta => $item) {
+      $element[$delta] = [
         '#type' => 'markup',
         '#markup' => $item['value'],
-      );
+      ];
     }
   }
 
@@ -164,14 +165,6 @@ class TripalFieldFormatter {
    */
   public function settingsSummary($view_mode) {
 
-  }
-
-  /**
-   * When constructing a pager for use by a field, all pagers must have
-   * a unique ID
-   */
-  protected function getPagerElementID() {
-    return $this->field['id'];
   }
 
   /**

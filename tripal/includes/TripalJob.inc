@@ -12,6 +12,50 @@ class TripalJob {
    */
   protected $job = NULL;
 
+
+  /**
+   * The number of items that this importer needs to process. A progress
+   * can be calculated by dividing the number of items process by this
+   * number.
+   */
+  private $total_items;
+
+  /**
+   * The number of items that have been handled so far.  This must never
+   * be below 0 and never exceed $total_items;
+   */
+  private $num_handled;
+
+  /**
+   * The interval when the job progress should be updated. Updating the job
+   * progress incurrs a database write which takes time and if it occurs to
+   * frequently can slow down the loader.  This should be a value between
+   * 0 and 100 to indicate a percent interval (e.g. 1 means update the
+   * progress every time the num_handled increases by 1%).
+   */
+  private $interval;
+
+  /**
+   * The time stamp when the job begins.
+   *
+   * @var integer
+   */
+  private $start_time;
+
+  /**
+   * The time from when the setTotalItems is called to the present time.
+   *
+   * @var
+   */
+  private $progress_start_time;
+
+  /**
+   * Stores the last percentage that progress was reported.
+   *
+   * @var integer
+   */
+  private $reported = 0;
+
   /**
    * Instantiates a new TripalJob object.
    *
@@ -45,7 +89,7 @@ class TripalJob {
     }
 
     $sql = 'SELECT j.* FROM {tripal_jobs} j WHERE j.job_id = :job_id';
-    $args = array(':job_id' => $job_id);
+    $args = [':job_id' => $job_id];
     $this->job = db_query($sql, $args)->fetchObject();
     if (!$this->job) {
       throw new Exception("Cannot find a job with this ID provided.");
@@ -53,8 +97,8 @@ class TripalJob {
 
     // Fix the date/time fields.
     $this->job->submit_date_string = $this->job->submit_date ? format_date($this->job->submit_date) : '';
-    $this->job->start_time_string = $this->job->start_time ? format_date($this->job->start_time): '';
-    $this->job->end_time_string = $this->job->end_time ? format_date($this->job->end_time): '';
+    $this->job->start_time_string = $this->job->start_time ? format_date($this->job->start_time) : '';
+    $this->job->end_time_string = $this->job->end_time ? format_date($this->job->end_time) : '';
 
     // Unserialize the includes.
     $this->job->includes = unserialize($this->job->includes);
@@ -110,10 +154,10 @@ class TripalJob {
       $details['priority'] = 10;
     }
     if (!array_key_exists('includes', $details)) {
-      $details['includes'] = array();
+      $details['includes'] = [];
     }
     if (!array_key_exists('ignore_duplicate', $details)) {
-      $details['ignore_duplicate'] = TRUE;
+      $details['ignore_duplicate'] = FALSE;
     }
 
     // Make sure the arguments are correct.
@@ -131,17 +175,19 @@ class TripalJob {
     }
 
     $includes = $details['includes'];
-    foreach ($includes as $path) {
-      $full_path = $_SERVER['DOCUMENT_ROOT'] . base_path() . $path;
-      if (!empty($path)) {
-        if (file_exists($path)) {
-          require_once($path);
-        }
-        elseif (file_exists($full_path)) {
-          require_once($path);
-        }
-        elseif (!empty($path)) {
-          throw new Exception("Included files for Tripal Job must exist. This path ($full_path) doesn't exist.");
+    if ($includes and is_array($includes)) {
+      foreach ($includes as $path) {
+        $full_path = $_SERVER['DOCUMENT_ROOT'] . base_path() . $path;
+        if (!empty($path)) {
+          if (file_exists($path)) {
+            require_once($path);
+          }
+          elseif (file_exists($full_path)) {
+            require_once($path);
+          }
+          elseif (!empty($path)) {
+            throw new Exception("Included files for Tripal Job must exist. This path ($full_path) doesn't exist.");
+          }
         }
       }
     }
@@ -149,7 +195,7 @@ class TripalJob {
       throw new Exception("Must provide a valid callback function to the tripal_add_job() function.");
     }
     if (!is_numeric($details['uid'])) {
-     throw new Exception("Must provide a numeric \$uid argument to the tripal_add_job() function.");
+      throw new Exception("Must provide a numeric \$uid argument to the tripal_add_job() function.");
     }
     $priority = $details['priority'];
     if (!$priority or !is_numeric($priority) or $priority < 1 or $priority > 10) {
@@ -161,7 +207,7 @@ class TripalJob {
     }
 
     // convert the arguments into a string for storage in the database
-    $args = array();
+    $args = [];
     if (is_array($arguments)) {
       $args = serialize($arguments);
     }
@@ -171,7 +217,7 @@ class TripalJob {
       // check to see if the job already exists.
       if ($details['ignore_duplicate'] === TRUE) {
         $query = db_select('tripal_jobs', 'tj');
-        $query->fields('tj', array('job_id'));
+        $query->fields('tj', ['job_id']);
         $query->condition('job_name', $details['job_name']);
         $query->isNull('start_time');
         $job_id = $query->execute()->fetchField();
@@ -182,7 +228,7 @@ class TripalJob {
       }
 
       $job_id = db_insert('tripal_jobs')
-        ->fields(array(
+        ->fields([
           'job_name' => $details['job_name'],
           'modulename' => $details['modulename'],
           'callback' => $details['callback'],
@@ -192,15 +238,14 @@ class TripalJob {
           'priority' => $priority,
           'arguments' => $args,
           'includes' => serialize($includes),
-        ))
+        ])
         ->execute();
       // Now load the job into this object.
       $this->load($job_id);
 
       return TRUE;
-    }
-    catch (Exception $e) {
-      throw new Exception('Cannot create job: ' .  $e->getMessage());
+    } catch (Exception $e) {
+      throw new Exception('Cannot create job: ' . $e->getMessage());
     }
   }
 
@@ -236,9 +281,8 @@ class TripalJob {
         $record->progress = '0';
         drupal_write_record('tripal_jobs', $record, 'job_id');
       }
-    }
-    catch (Exception $e) {
-      throw new Exception('Cannot cancel job: ' .  $e->getMessage());
+    } catch (Exception $e) {
+      throw new Exception('Cannot cancel job: ' . $e->getMessage());
     }
   }
 
@@ -247,6 +291,9 @@ class TripalJob {
    */
   public function run() {
 
+    $this->start_time = time();
+    $this->progress_start_time = time();
+
     if (!$this->job) {
       throw new Exception('Cannot launch job as no job is associated with this object.');
     }
@@ -254,16 +301,18 @@ class TripalJob {
     try {
 
       // Include the necessary files needed to run the job.
-      foreach ($this->job->includes as $path) {
-        if ($path) {
-          require_once $path;
+      if (is_array($this->job->includes)) {
+        foreach ($this->job->includes as $path) {
+          if ($path) {
+            require_once $path;
+          }
         }
       }
 
       // Set the start time for this job.
       $record = new stdClass();
       $record->job_id = $this->job->job_id;
-      $record->start_time = time();
+      $record->start_time = $this->start_time;
       $record->status = 'Running';
       $record->pid = getmypid();
       drupal_write_record('tripal_jobs', $record, 'job_id');
@@ -279,7 +328,7 @@ class TripalJob {
       $ref = new ReflectionFunction($callback);
       $refparams = $ref->getParameters();
       if (count($refparams) > 0) {
-        $lastparam = $refparams[count($refparams)-1];
+        $lastparam = $refparams[count($refparams) - 1];
         if ($lastparam->getName() == 'job_id') {
           $arguments[] = $this->job->job_id;
         }
@@ -302,8 +351,7 @@ class TripalJob {
 
       drupal_write_record('tripal_jobs', $record, 'job_id');
       $this->load($this->job->job_id);
-    }
-    catch (Exception $e) {
+    } catch (Exception $e) {
       $record->end_time = time();
       $record->error_msg = $this->job->error_msg;
       $record->progress = $this->job->progress;
@@ -337,51 +385,59 @@ class TripalJob {
   /**
    * Retrieve the job object as if from a database query.
    */
-  public function getJob(){
+  public function getJob() {
     return $this->job;
   }
+
   /**
    * Retrieves the job ID.
    */
-  public function getJobID(){
+  public function getJobID() {
     return $this->job->job_id;
   }
+
   /**
    * Retrieves the user ID of the user that submitted the job.
    */
   public function getUID() {
     return $this->job->uid;
   }
+
   /**
    * Retrieves the job name.
    */
   public function getJobName() {
     return $this->job->job_name;
   }
+
   /**
    * Retrieves the name of the module that submitted the job.
    */
   public function getModuleName() {
     return $this->job->modulename;
   }
+
   /**
    * Retrieves the callback function for the job.
    */
   public function getCallback() {
     return $this->job->callback;
   }
+
   /**
    * Retrieves the array of arguments for the job.
    */
   public function getArguments() {
     return $this->job->arguments;
   }
+
   /**
    * Retrieves the current percent complete (i.e. progress) of the job.
    */
   public function getProgress() {
     return $this->job->progress;
   }
+
   /**
    * Sets the current percent complete of a job.
    *
@@ -397,36 +453,123 @@ class TripalJob {
 
     $progress = sprintf("%d", $percent_done);
     db_update('tripal_jobs')
-      ->fields(array(
+      ->fields([
         'progress' => $progress,
-      ))
+      ])
       ->condition('job_id', $this->job->job_id)
       ->execute();
   }
+
+  /**
+   * Sets the total number if items to be processed.
+   *
+   * This should typically be called near the beginning of the loading process
+   * to indicate the number of items that must be processed.
+   *
+   * @param $total_items
+   *   The total number of items to process.
+   */
+  public function setTotalItems($total_items) {
+    $this->progress_start_time = time();
+
+    $this->total_items = $total_items;
+  }
+
+  /**
+   * Adds to the count of the total number of items that have been handled.
+   *
+   * @param $num_handled
+   */
+  public function addItemsHandled($num_handled) {
+    $items_handled = $this->num_handled = $this->num_handled + $num_handled;
+    $this->setItemsHandled($items_handled);
+  }
+
+  /**
+   * Sets the number of items that have been processed.
+   *
+   * This should be called anytime the loader wants to indicate how many
+   * items have been processed.  The amount of progress will be
+   * calculated using this number.  If the amount of items handled exceeds
+   * the interval specified then the progress is reported to the user.  If
+   * this loader is associated with a job then the job progress is also updated.
+   *
+   * @param $total_handled
+   *   The total number of items that have been processed.
+   */
+  public function setItemsHandled($total_handled) {
+
+    // First set the number of items handled.
+    $this->num_handled = $total_handled;
+
+    if ($total_handled == 0) {
+      $memory = number_format(memory_get_usage());
+      print "Percent complete: 0%. Memory: " . $memory . " bytes.\r";
+      return;
+    }
+
+    // Now see if we need to report to the user the percent done.  A message
+    // will be printed on the command-line if the job is run there.
+    $percent = ($this->num_handled / $this->total_items) * 100;
+    $ipercent = (int) $percent;
+
+    // If we've reached our interval then print update info.
+    if ($ipercent > 0 and $ipercent != $this->reported and ($ipercent % $this->interval) == 0) {
+      $duration = (time() - $this->progress_start_time) / 60;
+      $duration = sprintf("%.2f", $duration);
+      $memory = memory_get_usage();
+      $fmemory = number_format($memory);
+      $spercent = sprintf("%d", $percent);
+      print "Percent complete: " . $spercent . "%. Memory: " . $fmemory . " bytes. Duration: " . $duration . " mins\r";
+      $this->setProgress($percent);
+      $this->reported = $ipercent;
+    }
+  }
+
+  /**
+   * Updates the percent interval when the job progress is updated.
+   *
+   * Updating the job
+   * progress incurrs a database write which takes time and if it occurs to
+   * frequently can slow down the loader.  This should be a value between
+   * 0 and 100 to indicate a percent interval (e.g. 1 means update the
+   * progress every time the num_handled increases by 1%).
+   *
+   * @param $interval
+   *   A number between 0 and 100.
+   */
+  public function setInterval($interval) {
+    $this->interval = $interval;
+  }
+
   /**
    * Retrieves the status of the job.
    */
   public function getStatus() {
     return $this->job->status;
   }
+
   /**
    * Retrieves the time the job was submitted.
    */
   public function getSubmitTime() {
     return $this->job->submit_date;
   }
+
   /**
    * Retieves the time the job began execution (i.e. the start time).
    */
   public function getStartTime() {
     return $this->job->start_time;
   }
+
   /**
    * Retieves the time the job completed execution (i.e. the end time).
    */
   public function getEndTime() {
     return $this->job->end_time;
   }
+
   /**
    * Retieves the log for the job.
    *
@@ -437,18 +580,21 @@ class TripalJob {
   public function getLog() {
     return $this->job->error_msg;
   }
+
   /**
    * Retrieves the process ID of the job.
    */
   public function getPID() {
     return $this->job->pid;
   }
+
   /**
    * Retreieves the priority that is currently set for the job.
    */
   public function getPriority() {
     return $this->job->priority;
   }
+
   /**
    * Get the MLock value of the job.
    *
@@ -458,6 +604,7 @@ class TripalJob {
   public function getMLock() {
     return $this->job->mlock;
   }
+
   /**
    * Get the lock value of the job.
    *
@@ -467,6 +614,7 @@ class TripalJob {
   public function getLock() {
     return $this->job->lock;
   }
+
   /**
    * Get the list of files that must be included prior to job execution.
    */
@@ -488,6 +636,15 @@ class TripalJob {
    * transaction must be rolled back to to an error the error messages will
    * persist.
    *
+   * If a function can be executed by the Tripal job system (and hence the
+   * job object is passed in) then you can directly use this function to
+   * log messages. However, if the function can be run via drush on the
+   * command-line, consider using the tripal_report_error() function which can
+   * accept a job object as an $option and will print to both the terminal
+   * and to the job object.  If you use the tripal_report_error() be sure
+   * to set the 'watchdog' option only if you need log messages also going
+   * to the watchdog.
+   *
    * @param $message
    *   The message to store in the log. Keep $message translatable by not
    *   concatenating dynamic values into it! Variables in the message should
@@ -506,7 +663,7 @@ class TripalJob {
    *     - TRIPAL_INFO: (default) Informational messages.
    *     - TRIPAL_DEBUG: Debug-level messages.
    */
-  public function logMessage($message, $variables = array(), $severity = TRIPAL_INFO) {
+  public function logMessage($message, $variables = [], $severity = TRIPAL_INFO) {
     // Generate a translated message.
     $tmessage = t($message, $variables);
 
@@ -520,7 +677,7 @@ class TripalJob {
     // Report this message to watchdog or set a message.
     if ($severity == TRIPAL_CRITICAL or $severity == TRIPAL_ERROR) {
       tripal_report_error('tripal_job', $severity, $message, $variables);
-        $this->job->status = 'Error';
+      $this->job->status = 'Error';
     }
   }
 }

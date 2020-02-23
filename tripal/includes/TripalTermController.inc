@@ -1,4 +1,5 @@
 <?php
+
 /**
  * TripalTermController extends DrupalDefaultEntityController.
  *
@@ -11,25 +12,32 @@ class TripalTermController extends EntityAPIController {
     parent::__construct($entityType);
   }
 
-  public function create(array $values = array()) {
+  public function create(array $values = []) {
     return parent::create($values);
   }
 
   /**
    * Delete a single entity.
    */
-  public function delete($entity) {
-    $transaction = db_transaction();
+  public function delete($ids, DatabaseTransaction $transaction = NULL) {
+    $entities = $ids ? $this->load($ids) : FALSE;
+    if (!$entities) {
+      // Do nothing, in case invalid or no ids have been passed.
+      return;
+    }
+    $transaction = isset($transaction) ? $transaction : db_transaction();
     try {
       // Invoke hook_entity_delete().
-      module_invoke_all('entity_delete', $entity, 'TripalTerm');
-      field_attach_delete('TripalTerm', $entity);
+      $ids = array_keys($entities);
+      foreach ($entities as $id => $entity) {
+        module_invoke_all('entity_delete', $entity, 'TripalTerm');
+        field_attach_delete('TripalTerm', $entity);
 
-      db_delete('tripal_term')
-        ->condition('accession', $entity->accession)
-        ->execute();
-    }
-    catch (Exception $e) {
+        db_delete('tripal_term')
+          ->condition('accession', $entity->accession)
+          ->execute();
+      }
+    } catch (Exception $e) {
       $transaction->rollback();
       watchdog_exception('tripal', $e);
       throw $e;
@@ -41,11 +49,11 @@ class TripalTermController extends EntityAPIController {
   /**
    * Saves the custom fields using drupal_write_record().
    */
-  public function save($entity) {
+  public function save($entity, DatabaseTransaction $transaction = NULL) {
     global $user;
-    $pkeys = array();
+    $pkeys = [];
 
-    $transaction  = db_transaction();
+    $transaction = isset($transaction) ? $transaction : db_transaction();
     try {
       // If our entity has no id, then we need to give it a
       // time of creation.
@@ -55,20 +63,20 @@ class TripalTermController extends EntityAPIController {
       }
       else {
         $invocation = 'entity_update';
-        $pkeys = array('id');
+        $pkeys = ['id'];
       }
 
       // Invoke hook_entity_presave().
       module_invoke_all('entity_presave', $entity, 'TripalTerm');
 
       // Write out the entity record.
-      $record = array(
+      $record = [
         'vocab_id' => $entity->vocab_id,
         'accession' => $entity->accession,
         'name' => $entity->name,
         'created' => $entity->created,
         'changed' => time(),
-      );
+      ];
       if ($invocation == 'entity_update') {
         $record['id'] = $entity->id;
       }
@@ -93,11 +101,10 @@ class TripalTermController extends EntityAPIController {
       module_invoke_all($invocation, $entity, 'TripalTerm');
 
       return $entity;
-    }
-    catch (Exception $e) {
+    } catch (Exception $e) {
       $transaction->rollback();
       watchdog_exception('tripal_entity', $e);
-      drupal_set_message("Could not save the entity:" . $e->getMessage(), "error");
+      drupal_set_message("Could not save the TripalTerm:" . $e->getMessage(), "error");
       return FALSE;
     }
   }

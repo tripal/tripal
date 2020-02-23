@@ -50,6 +50,10 @@ function tripal_add_variables() {
     'hide_empty_field',
     'Structure->Tripal Content Type->edit checkbox to hide empty fields for that bundle.'
   );
+  tripal_insert_variable(
+    'ajax_field',
+    'Structure->Tripal Content Type->edit checkbox for ajax fields for that bundle.'
+  );
 }
 
 /**
@@ -99,43 +103,39 @@ function tripal_enable() {
   if (db_table_exists('tripal_jobs2')) {
     $sql = "DROP TABLE tripal_jobs";
     db_query($sql);
-    $sql = "ALTER TABLE tripal_jobs2 RENAME to tripal_jobs";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_jobs_job_id_idx2 RENAME TO tripal_jobs_job_id_idx";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_jobs_job_name_idx2 RENAME TO tripal_jobs_job_name_idx";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_jobs_pkey2 RENAME TO tripal_jobs_pkey";
-    db_query($sql);
-    // schema change
-    $sql = "ALTER TABLE tripal_jobs ADD COLUMN includes text";
-    db_query($sql);
+    db_rename_table('tripal_jobs2', 'tripal_jobs');
   }
 
   if (db_table_exists('tripal_token_formats2')) {
     $sql = "DROP TABLE tripal_token_formats";
     db_query($sql);
-    $sql = "ALTER TABLE tripal_token_formats2 RENAME TO tripal_token_formats";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_token_formats_pkey2 RENAME TO tripal_token_formats_pkey";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_token_formats_type_application_key2 RENAME TO tripal_token_formats_type_application_key";
-    db_query($sql);
+    db_rename_table('tripal_token_formats2', 'tripal_token_formats');
   }
 
   if (db_table_exists('tripal_variables2')) {
     $sql = "DROP TABLE tripal_variables";
     db_query($sql);
-    $sql = "ALTER TABLE tripal_variables2 RENAME TO tripal_variables";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_variables_pkey2 RENAME TO tripal_variables_pkey";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_variables_tripal_variable_names_idx1_idx2 RENAME TO tripal_variables_tripal_variable_names_idx1_idx";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_variables_tripal_variables_c1_key2 RENAME TO tripal_variables_tripal_variables_c1_key";
-    db_query($sql);
-
+    db_rename_table('tripal_variables2', 'tripal_variables');
   }
+
+  if (db_table_exists('tripal_custom_quota2')) {
+    $sql = "DROP TABLE tripal_custom_quota";
+    db_query($sql);
+    db_rename_table('tripal_custom_quota2', 'tripal_custom_quota');
+  }
+
+  if (db_table_exists('tripal_expiration_files2')) {
+    $sql = "DROP TABLE tripal_expiration_files";
+    db_query($sql);
+    db_rename_table('tripal_expiration_files2', 'tripal_expiration_files');
+  }
+
+  // schema change
+  if (!db_field_exists('tripal_jobs', 'includes')) {
+    $sql = "ALTER TABLE tripal_jobs ADD COLUMN includes text";
+    db_query($sql);
+  }
+
   tripal_add_variables();
 }
 
@@ -153,38 +153,24 @@ function tripal_schema() {
   $migrated = variable_get ('tripal_v2_upgrade_v3_check', FALSE);
   if (!$migrated) {
     if (db_table_exists('tripal_jobs')) {
-      // Move the tripal_jobs table out of the way.
-      $sql = "ALTER TABLE tripal_jobs RENAME TO tripal_jobs2";
-      db_query($sql);
-      $sql = "ALTER INDEX tripal_jobs_job_id_idx RENAME TO tripal_jobs_job_id_idx2";
-      db_query($sql);
-      $sql = "ALTER INDEX tripal_jobs_job_name_idx RENAME TO tripal_jobs_job_name_idx2";
-      db_query($sql);
-      $sql = "ALTER INDEX tripal_jobs_pkey RENAME TO tripal_jobs_pkey2";
-      db_query($sql);
+      db_rename_table('tripal_jobs', 'tripal_jobs2');
     }
 
     if (db_table_exists('tripal_token_formats')) {
-      // Move the tripal_token_formats table out of the way.
-      $sql = "ALTER TABLE tripal_token_formats RENAME TO tripal_token_formats2";
-      db_query($sql);
-      $sql = "ALTER INDEX tripal_token_formats_pkey RENAME TO tripal_token_formats_pkey2";
-      db_query($sql);
-      $sql = "ALTER INDEX tripal_token_formats_type_application_key RENAME TO tripal_token_formats_type_application_key2";
-      db_query($sql);
+      db_rename_table('tripal_token_formats', 'tripal_token_formats2');
     }
 
     if (db_table_exists('tripal_variables')) {
-      // Move the tripal_variables table out of the way.
-      $sql = "ALTER TABLE tripal_variables RENAME TO tripal_variables2";
-      db_query($sql);
-      $sql = "ALTER INDEX tripal_variables_pkey RENAME TO tripal_variables_pkey2";
-      db_query($sql);
-      $sql = "ALTER INDEX tripal_variables_tripal_variable_names_idx1_idx RENAME TO tripal_variables_tripal_variable_names_idx1_idx2";
-      db_query($sql);
-      $sql = "ALTER INDEX tripal_variables_tripal_variables_c1_key RENAME TO tripal_variables_tripal_variables_c1_key2";
-      db_query($sql);
+      db_rename_table('tripal_variables', 'tripal_variables2');
     }
+
+    if (db_table_exists('tripal_custom_quota')) {
+      db_rename_table('tripal_custom_quota', 'tripal_custom_quota2');
+    }
+    if (db_table_exists('tripal_expiration_files')) {
+      db_rename_table('tripal_expiration_files', 'tripal_expiration_files2');
+    }
+
     variable_set ('tripal_v2_upgrade_v3_check', TRUE);
   }
   $schema = array();
@@ -192,8 +178,9 @@ function tripal_schema() {
   $schema['tripal_jobs'] = tripal_tripal_jobs_schema();
   $schema['tripal_token_formats'] = tripal_tripal_token_formats_schema();
   $schema['tripal_variables'] = tripal_tripal_variables_schema();
-
-
+  $schema['tripal_expiration_files'] = tripal_tripal_expiration_files_schema();
+  $schema['tripal_custom_quota'] = tripal_tripal_custom_quota_schema();
+  
   // Adds a table for managing TripalEntity entities.
   $schema['tripal_vocab'] = tripal_tripal_vocab_schema();
   $schema['tripal_term'] = tripal_tripal_term_schema();
@@ -201,6 +188,7 @@ function tripal_schema() {
   $schema['tripal_bundle'] = tripal_tripal_bundle_schema();
   $schema['tripal_import'] = tripal_tripal_import_schema();
   $schema['tripal_collection'] = tripal_tripal_collection_schema();
+  $schema['tripal_collection_bundle'] = tripal_tripal_collection_bundle_schema();
 
   // Adds a table for additional information related to bundles.
   $schema['tripal_bundle_variables'] = tripal_tripal_bundle_variables_schema();
@@ -336,7 +324,44 @@ function tripal_tripal_collection_schema() {
         'type' => 'text',
         'not null' => FALSE
       ),
-      'bundle_name' => array(
+      'uid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'The user Id of the person who created the collection.'
+      ),
+      'create_date' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'UNIX integer start time'
+      ),
+    ),
+    'indexes' => array(
+      'uid' => array('uid')
+    ),
+    'unique keys' => array(
+      'user_collection' => array('uid', 'collection_name'),
+    ),
+    'primary key' => array('collection_id'),
+  );
+}
+
+/**
+ * Returns the Drupal Schema API array for the tripal_jobs table.
+ */
+function tripal_tripal_collection_bundle_schema() {
+  return array(
+    'fields' => array(
+      'collection_bundle_id' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+      'collection_id' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+     'bundle_name' => array(
         'type' => 'varchar',
         'length' => 1024,
         'not null' => TRUE
@@ -353,27 +378,20 @@ function tripal_tripal_collection_schema() {
         'not null' => TRUE,
         'description' => 'An array of numeric field IDs.'
       ),
-      'uid' => array(
+      'site_id' => array(
         'type' => 'int',
-        'not null' => TRUE,
-        'description' => 'The user Id of the person who created the collection.'
-      ),
-      'create_date' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'description' => 'UNIX integer start time'
+        'size' => 'normal',
+        'not null' => FALSE,
+        'description' => 'The ID of the site from the Tripal Sites table.'
       ),
     ),
     'indexes' => array(
-      'bundle_name' => array('bundle_name'),
-      'uid' => array('uid')
+      'collection_id' => array('collection_id')
     ),
-    'unique keys' => array(
-      'user_collection' => array('uid', 'collection_name'),
-    ),
-    'primary key' => array('collection_id'),
+    'primary key' => array('collection_bundle_id'),
   );
 }
+
 /**
  * Returns the Drupal Schema API array for the tripal_jobs table.
  */
@@ -843,6 +861,71 @@ function tripal_tripal_bundle_variables_schema() {
 }
 
 /**
+ * Provides the schema for the tripal_custom_quota table.
+ */
+function tripal_tripal_custom_quota_schema() {
+  $schema = array(
+    'table' => 'tripal_custom_quota',
+    'fields' => array(
+      'uid' => array(
+        'type' => 'int',
+        'size' => 'big',
+        'not NULL' => TRUE,
+      ),
+      'custom_quota' => array(
+        'type' => 'int',
+        'size' => 'big',
+        'not NULL' => TRUE,
+      ),
+      'custom_expiration' => array(
+        'type' => 'int',
+        'size' => 'big',
+        'not NULL' => TRUE,
+      ),
+    ),
+    'primary key' => array('uid'),
+    'unique keys' => array(
+      'tripal_custom_quota_uq1' => array('uid'),
+    ),
+    'indexes' => array(
+      'tripal_custom_quota_idx1' => array('uid'),
+    ),
+  );
+  return $schema;
+}
+
+/**
+ * Provides the schema for the tripal_expiration_files table.
+ */
+function tripal_tripal_expiration_files_schema() {
+  $schema = array (
+    'table' => 'tripal_expiration_files',
+    'fields' => array (
+      'fid' => array(
+        'type' => 'int',
+        'not NULL' => TRUE
+      ),
+      'expiration_date' => array(
+        'type' => 'int',
+        'size' => 'big',
+        'not NULL' => TRUE
+      ),
+    ),
+    'primary key' => array(
+      0 => 'fid'
+    ),
+    'unique keys' => array(
+      'tripal_expiration_files_uq1' => array('fid'),
+    ),
+    'indexes' => array(
+      'tripal_expiration_files_idx1' => array('fid'),
+    ),
+  );
+  return $schema;
+}
+
+
+/**
  * Additional Tripal Admin Notification Information.
  *
  * This table is used for information describing administrative
@@ -1033,3 +1116,137 @@ function tripal_update_7307() {
   );
   menu_save($menu);
 }
+
+/**
+ * Remove the bundle_name, ids, fields from the tripal collections table.
+ * And add the new tripal_tripal_collection_bundle_schema
+ */
+function tripal_update_7308() {
+  $transaction = db_transaction();
+  try {
+    if (db_field_exists('tripal_collection', 'bundle_name')) {
+      db_drop_field('tripal_collection', 'bundle_name');
+    }
+    if (db_field_exists('tripal_collection', 'ids')) {
+      db_drop_field('tripal_collection', 'ids');
+    }
+    if (db_field_exists('tripal_collection', 'fields')) {
+      db_drop_field('tripal_collection', 'fields');
+    }
+     $schema = array();
+    $schema['tripal_collection_bundle'] = tripal_tripal_collection_bundle_schema();
+    db_create_table('tripal_collection_bundle', $schema['tripal_collection_bundle']);
+  }
+  catch (\PDOException $e) {
+    $transaction->rollback();
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not add the tripal_collection table:' . $error);
+  }
+}
+
+/**
+ * Add the site_id field to the tripal_collection_bundle table.
+ */
+function tripal_update_7309() {
+  $transaction = db_transaction();
+  try {
+    if (!db_field_exists('tripal_collection_bundle', 'site_id')) {
+       $field = array(
+        'type' => 'int',
+        'size' => 'normal',
+        'not null' => FALSE,
+        'description' => 'The ID of the site from the Tripal Sites table.',
+      );
+      db_add_field('tripal_collection_bundle', 'site_id', $field);
+    }
+  }
+  catch (\PDOException $e) {
+    $transaction->rollback();
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not add the tripal_collection table:' . $error);
+  }
+}
+
+/**
+ * Adds the missing tripal_collection_bundle table
+ * @throws DrupalUpdateException
+ */
+function tripal_update_7310() {
+  $transaction = db_transaction();
+  try {
+    if (!db_table_exists('tripal_collection_bundle')) {
+      $schema = array();
+      $schema['tripal_collection_bundle'] = tripal_tripal_collection_bundle_schema();
+      db_create_table('tripal_collection_bundle', $schema['tripal_collection_bundle']);
+    }
+  }
+  catch (\PDOException $e) {
+    $transaction->rollback();
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not add the tripal_collection_bundle table:' . $error);
+  }
+}
+
+/**
+ * Adds support for file quotas.
+ */
+function tripal_update_7311() {
+  try {
+    $schema = array();
+    $schema['tripal_custom_quota'] = tripal_tripal_custom_quota_schema();
+    $schema['tripal_expiration_files'] = tripal_tripal_expiration_files_schema();
+    db_create_table('tripal_custom_quota', $schema['tripal_custom_quota']);
+    db_create_table('tripal_expiration_files', $schema['tripal_expiration_files']);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
+/**
+ * Adds a tripal_storage_api setting to all field storage details
+ */
+function tripal_update_7312() {
+  $transaction = db_transaction();
+  try {
+    $fields = db_select('field_config', 'fc')
+      ->fields('fc', ['id', 'storage_type', 'data'])
+      ->where("fc.storage_type = 'field_chado_storage' or fc.storage_type = 'tripal_no_storage'")
+      ->execute();
+    while ($field = $fields->fetchObject()) {
+      $data = unserialize($field->data); 
+      $data['storage']['settings']['tripal_storage_api'] = TRUE;
+      db_update('field_config')
+        ->fields([
+          'data' => serialize($data)
+        ])
+        ->condition('id', $field->id)
+        ->execute();
+    }
+  }
+  catch (\PDOException $e) {
+    $transaction->rollback();
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
+
+/**
+ * Adds a tripal_storage_api setting to all field storage details
+ */
+function tripal_update_7313() {
+  $transaction = db_transaction();
+  try {
+    tripal_insert_variable(
+      'ajax_field',
+      'Structure->Tripal Content Type->edit checkbox ajax fields for that bundle.'
+    );
+  } catch (\PDOException $e) {
+    $transaction->rollback();
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: ' . $error);
+  }
+}
+
