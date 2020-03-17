@@ -337,6 +337,8 @@ function tripal_registration_form_submit($form, &$form_state) {
   // Now send the updated info to the Tripal Site.
   // Only register with tripal.info if the user has not opt'd out.
   if ($form_state['values']['disable_tripal_reporting'] == FALSE) {
+
+    $registration = variable_get('tripal_site_registration');
     tripal_registration_remote_submit($registration);
     drupal_set_message(t('Registration sent to tripal.info'), 'status');
     drupal_set_message(t('Thank you for registering. You can update your details at any time.'), 'status');
@@ -346,8 +348,6 @@ function tripal_registration_form_submit($form, &$form_state) {
             change this at any time by unchecking the opt out checkbox and
             submitting the form.'), 'status');
   }
-
-
 }
 
 function tripal_registration_remote_submit($data) {
