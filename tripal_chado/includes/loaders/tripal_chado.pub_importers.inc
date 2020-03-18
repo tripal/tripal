@@ -512,7 +512,7 @@ function tripal_pub_importer_ncbi_api_key_form($form, $form_state) {
  * @ingroup tripal_pub
  */
 function tripal_pub_importer_set_ncbi_api_key($form, $form_state) {
-  variable_set('tripal_pub_importer_ncbi_api_key', $form_state['values']['ncbi_api_key']);
+  variable_set('tripal_pub_importer_ncbi_api_key', check_plain($form_state['values']['ncbi_api_key']));
   drupal_set_message('NCBI API key has been saved successfully!');
   return $form['ncbi_api_key'];
 }
