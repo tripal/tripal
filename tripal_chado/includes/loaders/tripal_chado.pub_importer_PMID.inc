@@ -214,7 +214,14 @@ function tripal_pub_PMID_search_init($search_str, $retmax) {
     "&usehistory=y" .
     "&term=" . urlencode($search_str);
 
-  usleep(333334);  // 1/3 of a second delay, NCBI limits requests to 3 / second without API key
+  $api_key = variable_get('tripal_pub_importer_ncbi_api_key', NULL);
+  $sleep_time = 333334;
+  if (!empty($api_key)) {
+    $query_url .= "&api_key=" . $api_key;
+    $sleep_time = 100000;
+  }
+
+  usleep($sleep_time);  // 1/3 of a second delay, NCBI limits requests to 3 / second without API key
   $rfh = fopen($query_url, "r");
   if (!$rfh) {
     drupal_set_message('Could not perform Pubmed query. Cannot connect to Entrez.', 'error');
@@ -302,6 +309,13 @@ function tripal_pub_PMID_fetch($query_key, $web_env, $rettype = 'null',
     "&query_key=$query_key" .
     "&WebEnv=$web_env";
 
+  $api_key = variable_get('tripal_pub_importer_ncbi_api_key', NULL);
+  $sleep_time = 333334;
+  if (!empty($api_key)) {
+    $fetch_url .= "&api_key=" . $api_key;
+    $sleep_time = 100000;
+  }
+
   foreach ($args as $key => $value) {
     if (is_array($value)) {
       $fetch_url .= "&$key=";
@@ -314,7 +328,7 @@ function tripal_pub_PMID_fetch($query_key, $web_env, $rettype = 'null',
       $fetch_url .= "&$key=$value";
     }
   }
-  usleep(333334);  // 1/3 of a second delay, NCBI limits requests to 3 / second without API key
+  usleep($sleep_time);  // 1/3 of a second delay, NCBI limits requests to 3 / second without API key
   $rfh = fopen($fetch_url, "r");
   if (!$rfh) {
     drupal_set_message('ERROR: Could not perform PubMed query.', 'error');
