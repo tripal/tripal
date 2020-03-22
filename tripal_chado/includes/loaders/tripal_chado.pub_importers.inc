@@ -85,6 +85,8 @@ function tripal_pub_importers_list() {
           importer to run peridically by adding a cron job. </li> 
      </ol><br>");
 
+  $form = drupal_get_form('tripal_pub_importer_ncbi_api_key_form');
+  $page .= drupal_render($form);
 
   $table = [
     'header' => $headers,
@@ -449,6 +451,70 @@ function tripal_pub_importer_setup_form($form, &$form_state = NULL, $pub_import_
   $form['themed_element']['#theme'] = 'tripal_pub_importer_setup_form_elements';
 
   return $form;
+}
+
+/**
+ * The form used for setting the optional NCBI API key.
+ *
+ * @param $form
+ *   The form element to be populated.
+ * @param $form_state
+ *   The state of the form element to be populated.
+ *
+ * @return array
+ *   The populated form element.
+ *
+ * @ingroup tripal_pub
+ */
+function tripal_pub_importer_ncbi_api_key_form($form, $form_state) {
+  $description = t('Tripal imports publications using NCBI\'s ') 
+    . l('EUtils API', 'https://www.ncbi.nlm.nih.gov/books/NBK25500/')
+    . t(', which limits users and programs to a maximum of 3 requests per second without an API key. '
+        . 'However, NCBI allows users and programs to an increased maximum of 10 requests per second if '
+        . 'they provide a valid API key. This is particularly useful in speeding up large publication imports. '
+        . 'For more information on NCBI API keys, please ')
+    . l('see here', 'https://www.ncbi.nlm.nih.gov/books/NBK25497/#chapter2.Coming_in_December_2018_API_Key', array(
+      'attributes' => array(
+        'target' => 'blank',
+      ),
+    )) . '.';
+
+  $form['ncbi_api_key'] = array(
+    '#type' => 'textfield',
+    '#title' => t('(Optional) NCBI API key:'),
+    '#description' => $description,
+    '#default_value' => variable_get('tripal_pub_importer_ncbi_api_key', NULL),
+    '#ajax' => array(
+      'callback' => 'tripal_pub_importer_set_ncbi_api_key',
+      'wrapper' => 'ncbi_api_key',
+    ),
+    '#prefix' => '<div id="ncbi_api_key">',
+    '#suffix' => '</div>',
+  );
+
+  return $form;
+}
+
+/**
+ * This function saves the NCBI API key to the database.
+ *
+ * It is called when the user makes a change to the NCBI API key field and then
+ * moves their cursor out of the field.
+ *
+ * @param $form
+ *   The new form element.
+ * @param $form_state
+ *   The state of the new form element.
+ *
+ * @return array
+ *   The new api key field.
+ *
+ * @ingroup tripal_pub
+ */
+function tripal_pub_importer_set_ncbi_api_key($form, $form_state) {
+  variable_set('tripal_pub_importer_ncbi_api_key', check_plain($form_state['values']['ncbi_api_key']));
+  drupal_set_message('NCBI API key has been saved successfully!');
+  return $form['ncbi_api_key'];
 }
 
 /**
