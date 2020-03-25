@@ -215,4 +215,22 @@ class TripalController extends ControllerBase{
     ];
   }
 
+  public function tripalDashboard() {
+    $output = 'Dashboard!';
+    $block_manager = \Drupal::service('plugin.manager.block');
+    // You can hard code configuration or you load from settings.
+    $config = [];
+    $plugin_block = $block_manager->createInstance('notifications', $config);
+    $access_result = $plugin_block->access(\Drupal::currentUser());
+    if (is_object($access_result) && $access_result->isForbidden() || is_bool($access_result) && !$access_result) {
+      return [];
+    }
+
+    $output .= $plugin_block->build()['#markup'];
+
+    return [
+      '#markup' => $output,
+    ];
+  }
+
 }
