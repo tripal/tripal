@@ -216,7 +216,7 @@ class TripalController extends ControllerBase{
   }
 
   public function tripalDashboard() {
-    $output = 'Dashboard!';
+    $output = '';
     $block_manager = \Drupal::service('plugin.manager.block');
     // You can hard code configuration or you load from settings.
     $config = [];
@@ -226,7 +226,7 @@ class TripalController extends ControllerBase{
       return [];
     }
 
-    $output .= $plugin_block->build()['#markup'];
+    $output .= \Drupal::service('renderer')->render($plugin_block->build());
 
     return [
       '#markup' => $output,

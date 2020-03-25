@@ -5,13 +5,16 @@ namespace Drupal\tripal\Plugin\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Block\BlockPluginInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Link;
+use Drupal\Core\Url;
+use Drupal\Core\Pager\Pager;
 
 /**
  * Provides a 'Dashboard Notifications' Block.
  *
  * @Block(
  *   id = "notifications",
- *   admin_label = @Translation("Notifications"),
+ *   admin_label = @Translation("Tripal Administrative Notifications"),
  *   category = @Translation("Tripal"),
  * )
  */
@@ -26,90 +29,67 @@ class NotificationsBlock extends BlockBase implements BlockPluginInterface {
 
     // Prepare table header
     $header = [
-      'title' => [
+      [
         'data' => t('Title'),
+        'field' => 'tan.title',
       ],
-      'details' => [
+      [
         'data' => t('Details'),
+        'field' => 'tan.details',
       ],
-      'type' => [
+      [
         'data' => t('Type'),
         'field' => 'tan.type',
       ],
-      'actions' => [
+      [
         'data' => t('Actions'),
       ],
     ];
 
-    $query = $db->select('tripal_admin_notfications', 'tan')
-      ->extend('\Drupal\Core\Database\Query\TableSortExtender');
+    $table_name = 'tripal_admin_notfications';
+    $query = $db->select($table_name, 'tan')
+      ->extend('\Drupal\Core\Database\Query\TableSortExtender')
+      ->fields('tan')
+      ->condition('enabled', 1, '=');
 
-    $results = $query->fields('tan')
-      ->condition('enabled', 1, '=')
-      ->orderByHeader($header)
+    $results = $query->orderByHeader($header)
       ->execute();
     $rows = [];
 
-    // TODO
-
-    /*
-      foreach($results as $result){
-        $data['operation'] = ' | ';
-        $data['operation'] .= l(t('Dismiss Notification'), 'admin/disable/notification/' . $result->note_id);
-
-        $actions = unserialize($result->actions);
-        foreach($actions as $action){
-          $label = key($actions);
-          $link = $action;
-        }
-
-        $rows[] = array(
-          'Title' => $result->title,
-          'Details' => $result->details,
-          'Type' => $result->type,
-          'Actions' => l(t($label), $link) . $data['operation'],
-        );
+    while (($result = $results->fetchObject())) {
+      $action_links = [];
+      $actions = unserialize($result->actions);
+      foreach ($actions as $label => $route) {
+        $url = Url::fromRoute($route);
+        $action_links[] = Link::fromTextAndUrl(t($label), $url)->toString();
       }
-      if(!empty($rows)) {
-        //Number of records shown in per page
-        $per_page = 10;
-        $current_page = pager_default_initialize(count($rows), $per_page);
-        $chunks = array_chunk($rows, $per_page, TRUE);
+      $action_links[] = Link::fromTextAndUrl(t('Dismiss Notification'), Url::fromRoute('tripal.dashboard_disable_notification', ['id' => $result->note_id]))->toString();
 
-        // Output of table with the paging
-        $table = theme('table',
-          array(
-            "header" => $header,
-            "rows" => $chunks[ $current_page ],
-            "attributes" => array(),
-            "sticky" => TRUE,
-            "caption" => "",
-            "colgroups" => array(),
-            "empty" => t("No notifications.")
-          )
-        );
-        $table .= theme('pager', array('quantity', count($rows)));
+      $rows[] = [
+        $result->title,
+        $result->details,
+        $result->type,
+        [
+          'data' => [
+            '#markup' => implode(' | ', $action_links),
+          ],
+        ],
+      ];
+    }
 
-        $fieldset_table = array(
-          '#title' => t('Notifications'),
-          '#collapsed' => FALSE,
-          '#collapsible' => TRUE,
-          '#attributes' => array('class' => array('collapsible')),
-          '#children' => $table,
-        );
+    if (!empty($rows)) {
+      $per_page = 10;
+      $pager = new Pager(count($rows), $per_page);
+      $chunks = array_chunk($rows, $per_page, TRUE);
 
-        //return pager with limited number of records.
-        $block['content'] = theme('fieldset', array('element' => $fieldset_table));
-      }
-      else {
-        $block['content'] = 'There are no notifications at this time.';
-      }
-      $block['title'] = 'Tripal Administrative Notifications';
-      break;
-    */
-
+      return [
+        '#type' => 'table',
+        '#header' => $header,
+        '#rows' => $rows,
+      ];
+    }
     return [
-      '#markup' => $output,
+      '#markup' => t('There are no notifications at this time.'),
     ];
   }
 
