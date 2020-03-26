@@ -220,13 +220,20 @@ class TripalController extends ControllerBase{
     $block_manager = \Drupal::service('plugin.manager.block');
     // You can hard code configuration or you load from settings.
     $config = [];
-    $plugin_block = $block_manager->createInstance('notifications', $config);
-    $access_result = $plugin_block->access(\Drupal::currentUser());
+    $note_block = $block_manager->createInstance('notifications', $config);
+    $access_result = $note_block->access(\Drupal::currentUser());
     if (is_object($access_result) && $access_result->isForbidden() || is_bool($access_result) && !$access_result) {
       return [];
     }
 
-    $output .= \Drupal::service('renderer')->render($plugin_block->build());
+    $bar_chart_block = $block_manager->createInstance('content_type_bar_chart', $config);
+    $access_result = $bar_chart_block->access(\Drupal::currentUser());
+    if (is_object($access_result) && $access_result->isForbidden() || is_bool($access_result) && !$access_result) {
+      return [];
+    }
+
+    $output .= \Drupal::service('renderer')->render($note_block->build());
+    $output .= \Drupal::service('renderer')->render($bar_chart_block->build());
 
     return [
       '#markup' => $output,
