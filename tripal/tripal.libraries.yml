@@ -1,9 +1,21 @@
 tripal:
   version: 1.x
+  css:
+    theme:
+      css/tripal.css: {}
   js:
     js/tripal.js: {}
-    js/d3.min.js: {}
   dependencies:
     - core/drupal
     - core/jquery
     - core/drupalSettings
+
+tripal-dashboard:
+  version: 1.x
+  js:
+    js/tripal.dashboard.js: {}
+
+d3:
+  version: 1.x
+  js:
+    js/d3.v3.min.js: {}
