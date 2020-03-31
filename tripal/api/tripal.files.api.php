@@ -179,12 +179,11 @@ function tripal_format_bytes($bytes, $precision = 2) {
  */
 function tripal_get_user_uploads($uid, $allowed_types = [], $module = 'tripal') {
   $db = \Drupal::database();
-  $user = \Drupal\user\Entity\User::load($uid);
 
   $query = $db->select('file_managed', 'FM');
   $query->fields('FM', ['fid']);
   $query->distinct();
-  $query->condition('FM.uid', $user->uid);
+  $query->condition('FM.uid', $uid);
   $query->innerJoin('file_usage', 'FU', "FU.fid = FM.fid");
   $query->condition('FU.module', $module);
   $query->orderBy('FM.filename');
@@ -208,17 +207,17 @@ function tripal_get_user_uploads($uid, $allowed_types = [], $module = 'tripal') 
  *
  * This directory is used by the file uploader and by data collections.
  *
- * @param $user
- *   A Drupal user object.
+ * @param int $uid
+ *   A Drupal user id.
  *
  * @return
  *   The URI of the directory.
  *
  * @ingroup tripal_files_api
  */
-function tripal_get_user_files_dir($user) {
+function tripal_get_user_files_dir($uid) {
 
-  $user_dir = 'public://tripal/users/' . $user->uid;
+  $user_dir = 'public://tripal/users/' . $uid;
 
   return $user_dir;
 }
@@ -226,16 +225,16 @@ function tripal_get_user_files_dir($user) {
 /**
  * Checks if the user's dedicated directory is accessible and writeable.
  *
- * @param $user
- *   A Drupal user object.
+ * @param $uid
+ *   A Drupal user id.
  *
  * @return
  *   TRUE if the user's directory is writeable. FALSE otherwise.
  *
  * @ingroup tripal_files_api
  */
-function tripal_is_user_files_dir_writeable($user) {
-  $user_dir = tripal_get_user_files_dir($user);
+function tripal_is_user_files_dir_writeable($uid) {
+  $user_dir = tripal_get_user_files_dir($uid);
   $fs = \Drupal::service('file_system');
 
   // First, make sure the directory exists.
