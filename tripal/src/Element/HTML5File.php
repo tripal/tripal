@@ -41,10 +41,10 @@ class HTML5File extends FormElement {
     $type = $element['#usage_id'] . '-' . $element['#usage_type'] . '-' . $module;
     $type_var_name = 'uploader_' . $element['#usage_id'] . '_' . $element['#usage_type'] . '_' . $module;
     $name = $element['#name'];
-    $name = preg_replace('/[^\w]/', '_', $name);
     $allowed_types = $element['#allowed_types'] ?? [];
     $cardinality = $element['#cardinality'] ?? 1;
     $paired = $element['#paired'] ?? FALSE;
+    $element['#tree'] = TRUE;
 
     $headers = [
       ['data' => 'File'],
@@ -166,24 +166,13 @@ class HTML5File extends FormElement {
   /**
    *
    */
-  public static function validateHTML5File(&$element, FormStateInterface $form_state, $form) {
-    // TODO.
-    /*
-      $is_required = $element['#required'];
-      $name = $element['#name'];
-      $name = preg_replace('/[^\w]/', '_', $name);
-      $fid = NULL;
-      if (is_array($element['#value']) and array_key_exists($name, $element['#value'])) {
-        $fid = $element['#value'][$name];
-      }
+  public static function validateHTML5File(&$element, FormStateInterface &$form_state, $form) {
+    $is_required = $element['#required'];
+    $fid = $element['#value'] ?? NULL;
 
-      // TODO: the fid should just be the $element['#value'] why isn't this
-      // working given the tripal_html5_file_value function below.
-
-      if ($is_required and !$fid) {
-        form_error($element, t('A file must be provided.'));
-      }
-    */
+    if ($is_required and !$fid) {
+      $form_state->setError($element, t('A file must be provided'));
+    }
   }
 
   /**
@@ -193,8 +182,7 @@ class HTML5File extends FormElement {
     if ($input) {
       if (is_array($input)) {
         $name = $element['#name'];
-        $name = preg_replace('/[^\w]/', '_', $name);
-        return $input['#name'];
+        return $input[$name];
       }
       return $input;
     }
@@ -204,17 +192,7 @@ class HTML5File extends FormElement {
    *
    */
   public static function preRenderHTML5File($element) {
-    // TODO.
     $element['#attributes']['type'] = 'html5file';
-    Element::setAttributes($element, array(
-      'id',
-      'name',
-      'size',
-    ));
-    static::setAttributes($element, array(
-      'js-form-file',
-      'form-file',
-    ));
     return $element;
   }
 
