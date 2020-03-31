@@ -533,6 +533,7 @@
         // Add the file(s) to the uploader object.
         for (var i = 0; i < hfiles.length; i++) {
           var f = hfiles[i];
+          var baseurl = window.location.protocol + '//' + window.location.host + drupalSettings.path.baseUrl;
           var options = {
             // Files are managed by tables.
             'tname' : tname,
@@ -542,7 +543,7 @@
             // by their index. The file with an index of 0 is always ordered first.
             'i': index,
             // The URL at the remote server where the file will uploaded. 
-            'url' : baseurl + '/tripal/upload/' + category,
+            'url' : baseurl + 'tripal/upload/' + category,
             };
             self.addFile(f, options);
  
