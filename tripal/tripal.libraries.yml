@@ -22,3 +22,8 @@ tripal-file:
   version: 1.x
   js:
     js/tripal.file.js: {}
+
+vars:
+  version: 1.x
+  js:
+    js/tripal.vars.js: {}
