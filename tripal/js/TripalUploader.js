@@ -130,6 +130,15 @@
       return this.files[category];
     };
     /**
+     *
+     */
+    this.getCategoryFile = function(category, i) {
+      if (category in this.files && i in this.files[category]) {
+        return this.files[category][i];
+      }
+      return null;
+    }
+    /**
      * 
      */
     this.cancelFile = function(category, i) {
@@ -150,10 +159,16 @@
     /**
      * 
      */
-    this.updateProgress = function(category) {
-      if (category in this.files) {
-        for (var i in this.files[category]) {
-          this.files[category][i].updateStatus();
+    this.updateProgress = function(categories) {
+      if (typeof(categories) != "object") {
+        categories = [categories];
+      }
+
+      for (var i in categories) {
+        if (categories[i] in this.files) {
+          for (var j in this.files[categories[i]]) {
+            this.files[categories[i]][j].updateStatus();
+          }
         }
       }
     };
@@ -288,76 +303,11 @@
         for (var i = 0; i < this.tables[tname]['category'].length; i++) {
           // If the category of the table matches then update it.
           if (this.tables[tname]['category'][i] == category) {
-            // For single files:
-            if (this.tables[tname]['category'].length == 1) {
-              var cat = this.tables[tname]['category'][0];
-              this.updateSingleTable(tname, cat);
-              this.updateProgress(cat);
-              return;
-            }
-            // For paired (e.g. RNA-seq) files:
-            if (this.tables[tname]['category'].length == 2) {
-              var categories = this.tables[tname]['category'];
-              this.updatePairedTable(tname, categories);
-              this.updateProgress(categories[0]);
-              this.updateProgress(categories[1]);
-              return;
-            }
+            this.updateTableHTML(tname, this.tables[tname]['category']);
+            this.updateProgress(this.tables[tname]['category']);
+            return;
           }
         }
-      }
-    }
-
-    /**
-     * A table for non-paired single data.
-     */
-    this.updateSingleTable = function(tname, category) {
-      var i = 0;
-      var content = '';
-      var files  = this.getCategoryFiles(category);
-      var max_index = this.getMaxIndex(category);
-      var has_file = false;
-      var table_id = this.tables[tname]['table_id'];
-      var cardinality = this.tables[tname]['cardinality'];
-      var target_id = this.tables[tname]['target_id'];
-      var num_files = this.getNumFiles(category);
-      var button = null;
-
-      // Build the rows for the non paired samples.
-      has_file = false;
-      for (i = 0; i <= max_index; i++) {
-        button = this.getFileButton(tname, category, i);
-        var trclass = 'odd';
-        if (i % 2 == 0) {
-          trclass = 'even';
-        }
-        content += '<tr class="' + trclass + '">';
-        if (i in files) {
-          content += '<td>' + files[i].file.name + '</td>';
-          content += '<td>' + files[i].getFileSize(true) + '</td>';
-          content += '<td>' + files[i].getProgressBar() + '</td>';
-          content += '<td>' + files[i].getLinks() + '</td>';
-          content += '</tr>';
-          has_file = true;
-        }
-        else {
-          content += '<td colspan="4">' + button['element'] + '</td>';
-        }
-        content +=  '</tr>';
-      }
-      // Create an empty row with a file button.
-      if (has_file) {
-        // Only add a new row if we haven't reached our cardinality limit.
-        if (!cardinality || cardinality == 0 || cardinality > num_files) {
-          button = this.getFileButton(tname, category, i);
-          content += '<tr><td colspan="4">' + button['element'] + '</td></tr>';
-        }
-      }
-
-      // Add the body of the table to the table with the provided table_id.
-      $(table_id + ' > tbody').html(content);
-      if (button) {
-        this.enableFileButton(button['name']);
       }
     }
 
@@ -397,79 +347,80 @@
     }
 
     /**
-     * A table for paired data (e.g. RNA-seq).
+     *
      */
-    this.updatePairedTable = function(tname, categories) {
-      var i = 0;
+    this.updateTableHTML = function(tname, categories) {
+      if (typeof(categories) != "object") {
+        categories = [categories];
+      }
+
+      var max_rows_allowed = this.tables[tname]['cardinality'];
       var table_id = this.tables[tname]['table_id'];
-      var cardinality = this.tables[tname]['cardinality'];
+      var content = '';
+      var buttons = [];
 
-      var category1 = categories[0];
-      var category2 = categories[1];
+      var indexes = {};
+      var row_has_file, row, row_buttons;
+      var highest_index = 0;
 
-      var paired_content = '';   
-      var category1_files = this.getCategoryFiles(category1);
-      var category2_files = this.getCategoryFiles(category2);    
-      var max_paired1 = this.getMaxIndex(category1);
-      var max_paired2 = this.getMaxIndex(category2);
-      
-      var buttons = []
-      var button1 = null;
-      var button2 = null;
-
-      // Build the rows for the paired sample files table.
-      var has_file = false;
-      for (i = 0; i <= Math.max(max_paired1, max_paired2); i++) {
-        button1 = this.getFileButton(tname, category1, i);
-        button2 = this.getFileButton(tname, category2, i);
-
-        var trclass = 'odd';
-        if (i % 2 == 0) {
-          trclass = 'even';
+      for (var cat_idx in categories) {
+        for (var file_idx in this.getCategoryFiles(categories[cat_idx])) {
+          indexes[file_idx] = file_idx;
+          highest_index = ((file_idx > highest_index) ? file_idx : highest_index);
         }
-        paired_content +=  '<tr class="' + trclass + '">';
-        if (i in category1_files) {
-          paired_content += '<td>' + category1_files[i].getFileName() + '</td>';
-          paired_content += '<td>' + category1_files[i].getFileSize(true)  + '</td>';
-          paired_content += '<td>' + category1_files[i].getProgressBar() + '</td>';
-          paired_content += '<td>' + category1_files[i].getLinks() + '</td>';
-          has_file = true;
-        }
-        else {
-          paired_content += '<td colspan="4">' + button1['element'] + '</td>';
-          buttons.push(button1);
-        }
-        if (i in category2_files) {
-          paired_content += '<td>' + category2_files[i].getFileName() + '</td>';
-          paired_content += '<td>' + category2_files[i].getFileSize(true) + '</td>';
-          paired_content += '<td>' + category2_files[i].getProgressBar() + '</td>';
-          paired_content += '<td nowrap>' + category2_files[i].getLinks() + '</td>';
-          has_file = true;
-        }
-        else {
-          paired_content += '<td colspan="4">' + button2['element'] + '</td>';
-          buttons.push(button2);
-        }
-        paired_content +=  '</tr>';
       }
+      var rows_with_files = Object.keys(indexes).length;
 
-      // Create a new empty row of buttons if we have files.
-      if (has_file) {
-        // Only add a new row if we haven't reached our cardinality limit.
-        if (!cardinality || cardinality == 0 || cardinality > max_paired1) {
-          button1 = this.getFileButton(tname, category1, i);
-          button2 = this.getFileButton(tname, category2, i);
-          buttons.push(button1);
-          buttons.push(button2);
-          paired_content += '<tr class="odd"><td colspan="4">' + button1['element'] + 
-            '</td><td colspan="4">' + button2['element'] + '</td></tr>'
+      for (var idx in indexes) {
+        [row_has_file, row, row_buttons] = this.getRowHTML(idx, tname, categories)
+        if (row_has_file) {
+          content += row;
+          buttons = buttons.concat(row_buttons);
         }
       }
 
-      $(table_id + ' > tbody').html(paired_content);
-      for (i = 0; i < buttons.length; i++) {
+      if (!max_rows_allowed || max_rows_allowed == 0 || max_rows_allowed > rows_with_files) {
+        [row_has_file, row, row_buttons] = this.getRowHTML(highest_index + 1, tname, categories)
+        content += row;
+        buttons = buttons.concat(row_buttons);
+      }
+
+      $(table_id + ' > tbody').html(content);
+      for (var i in buttons) {
         this.enableFileButton(buttons[i]['name']);
       }
+    }
+
+    /**
+     *
+     */
+    this.getRowHTML = function(rownum, tname, categories) {
+      var row_buttons = [];
+      var row = '<tr class="' + ((rownum % 2) ? 'even' : 'odd') + '">';
+      var row_has_file = false;
+
+      if (typeof(categories) != "object") {
+        categories = [categories];
+      }
+
+      for (var cat of categories) {
+        var file = this.getCategoryFile(cat, rownum);
+        if (file) {
+          row += '<td>' + file.getFileName() + '</td>';
+          row += '<td>' + file.getFileSize(true)  + '</td>';
+          row += '<td>' + file.getProgressBar() + '</td>';
+          row += '<td>' + file.getLinks() + '</td>';
+          row_has_file = true;
+        }
+        else {
+          var button = this.getFileButton(tname, cat, rownum);
+          row_buttons.push(button);
+          row += '<td colspan="4">' + button['element'] + '</td>';
+        }
+      }
+      row += '</tr>';
+
+      return [row_has_file, row, row_buttons];
     }
 
     /**
