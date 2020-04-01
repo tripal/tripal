@@ -345,11 +345,10 @@
         }
         content +=  '</tr>';
       }
-
       // Create an empty row with a file button.
       if (has_file) {
         // Only add a new row if we haven't reached our cardinality limit.
-        if (!cardinality || cardinality == 0 || cardinality < num_files) {
+        if (!cardinality || cardinality == 0 || cardinality > num_files) {
           button = this.getFileButton(tname, category, i);
           content += '<tr><td colspan="4">' + button['element'] + '</td></tr>';
         }
@@ -379,45 +378,21 @@
       var target_id = this.tables[tname]['target_id'];
       
       if (target_id) {
-        var fids = '';
+        var fids = [];
         var c;
 
         // Iterate through the file categories.
         for (c = 0; c < num_categories; c++) {
           var files  = this.getCategoryFiles(categories[c]);
           var num_files = this.getNumFiles(categories[c]);
-          var i;
-          
-          // Deal with one category.
-          if (num_categories == 1) {
-            if (num_files > 0) {
-              // Always set the first file_id.
-              fids = files[0].file_id;
-            }
-          }
-          // Deal with multiple categories.
-          else {
-            // When we have more than one category then we need to 
-            // separate the categories with a comma. So, this must happen
-            // after every category except the first.
-            if (c == 0) {
-              if (num_files > 0) {
-                fids = fids + files[0].file_id;
-              }
-            }
-            else {
-              fids = fids + ',';
-              if (num_files > 0) {
-                fids = fids + files[0].file_id;
-              }
-            }
-          }
-          // Iterate through any other files and add them with a '|' delemiter.
-          for (i = 1; i < num_files; i++) {
-            fids = fids + "|" + files[i].file_id;
-          } 
-          $('#' + target_id).val(fids);
+          var cat_fids = [];
+
+          $.each(files, function(idx, file) {
+            cat_fids.push(file.file_id);
+          });
+          fids.push(cat_fids.join('|'));
         }
+        $('#' + target_id).val(fids.join(','));
       }
     }
 
@@ -481,7 +456,7 @@
       // Create a new empty row of buttons if we have files.
       if (has_file) {
         // Only add a new row if we haven't reached our cardinality limit.
-        if (!cardinality || cardinality == 0 || cardinality < max_paired1) {
+        if (!cardinality || cardinality == 0 || cardinality > max_paired1) {
           button1 = this.getFileButton(tname, category1, i);
           button2 = this.getFileButton(tname, category2, i);
           buttons.push(button1);
