@@ -296,7 +296,7 @@
       // Add a throbber if the status is uploading
       if (this.status == 'uploading' || this.status == 'checking' || this.status == 'merging') {
         $("<img>", {
-           'src': tripal_path + '/theme/images/ajax-loader.gif',
+           'src': tripal_path + '/images/ajax-loader.gif',
            'class' : 'tripal-uploader-chunked-file-progress-throbber',
          }).appendTo('#' + progress_id);
       }
@@ -398,7 +398,7 @@
       }
       if (this.status == 'uploading' || this.status == 'checking' || this.status == 'merging') {
         $("<img>", {
-           'src': tripal_path + '/theme/images/ajax-loader.gif',
+           'src': tripal_path + '/images/ajax-loader.gif',
            'class' : 'tripal-uploader-chunked-file-progress-throbber',
          }).appendTo('#' + progress_id);
       }
