@@ -34,17 +34,26 @@ class HTML5File extends FormElement {
   }
 
   /**
+   * Process a form element before rendering.
    *
+   * @param array $element
+   *   The element being processed.
+   * @param FormStateInterface $form_state
+   *   The state of the form being processed.
+   * @param array $form
+   *   The form being processed.
+   *
+   * @return array
+   *   The processed element.
    */
-  public static function processHTML5File(&$element, FormStateInterface $form_state, &$form) {
+  public static function processHTML5File(array &$element, FormStateInterface $form_state, array &$form) {
     $module = $element['#usage_module'] ?? 'tripal';
     $type = $element['#usage_id'] . '-' . $element['#usage_type'] . '-' . $module;
     $type_var_name = 'uploader_' . $element['#usage_id'] . '_' . $element['#usage_type'] . '_' . $module;
-    $name = $element['#name'];
+    $name = HTML5File::getBaseKey($element);
     $allowed_types = $element['#allowed_types'] ?? [];
     $cardinality = $element['#cardinality'] ?? 1;
     $paired = $element['#paired'] ?? FALSE;
-    $element['#tree'] = TRUE;
 
     $headers = [
       ['data' => 'File'],
@@ -94,7 +103,7 @@ class HTML5File extends FormElement {
 
     $rows = [];
 
-    $element['html5_file_table_key'] = [
+    $element[$name . '_table_key'] = [
       '#type' => 'hidden',
       '#value' => $type,
       '#attributes' => [
@@ -103,7 +112,7 @@ class HTML5File extends FormElement {
         ],
       ],
     ];
-    $element['html5_file_table'] = [
+    $element[$name . '_table'] = [
       '#type' => 'table',
       '#header' => $headers,
       '#rows' => $rows,
@@ -127,7 +136,7 @@ class HTML5File extends FormElement {
       '#default_value' => $element['#value'],
     ];
 
-    $element['html5_file_submit'] = [
+    $element[$name . '_submit'] = [
       '#type' => 'submit',
       '#value' => 'Upload File',
       '#name' => 'tripal_html5_file_upload_submit-' . $type,
@@ -164,9 +173,16 @@ class HTML5File extends FormElement {
   }
 
   /**
+   * Ensures that the input to the element is valid.
    *
+   * @param array $element
+   *   The element being validated.
+   * @param FormStateInterface $form_state
+   *   The state of the form being validated.
+   * @param array $form
+   *   The form being validated.
    */
-  public static function validateHTML5File(&$element, FormStateInterface &$form_state, $form) {
+  public static function validateHTML5File(array &$element, FormStateInterface &$form_state, array $form) {
     $is_required = $element['#required'];
     $fid = $element['#value'] ?? NULL;
 
@@ -178,10 +194,10 @@ class HTML5File extends FormElement {
   /**
    * {@inheritdoc}
    */
-  public static function valueCallback(&$element, $input = FALSE, FormStateInterface $form_state) {
+  public static function valueCallback(array &$element, $input = FALSE, FormStateInterface $form_state) {
     if ($input) {
       if (is_array($input)) {
-        $name = $element['#name'];
+        $name = HTML5File::getBaseKey($element);
         return $input[$name];
       }
       return $input;
@@ -189,11 +205,30 @@ class HTML5File extends FormElement {
   }
 
   /**
+   * Alter the element immediately before rendering.
    *
+   * @param array $element
+   *   The element being altered.
+   *
+   * @return array
+   *   The altered element.
    */
-  public static function preRenderHTML5File($element) {
+  public static function preRenderHTML5File(array $element) {
     $element['#attributes']['type'] = 'html5file';
     return $element;
+  }
+
+  /**
+   * Returns the base key to be used by process and valueCallback functions.
+   *
+   * @param array $element
+   *   The element we want the base key of.
+   *
+   * @return string
+   *   The base key.
+   */
+  protected static function getBaseKey(array $element) {
+    return end($element['#array_parents']);
   }
 
 }
