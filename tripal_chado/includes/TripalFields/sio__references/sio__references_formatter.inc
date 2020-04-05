@@ -16,6 +16,11 @@ class sio__references_formatter extends ChadoFieldFormatter {
     $field_name = $this->field['field_name'];
     $chado_table = $this->instance['settings']['chado_table'];
 
+    // Do we have an empty list? If so, just return.
+    if (!$items[0]['value']) {
+      return;
+    }
+
     // First, organize the values by their types.
     $ordered_items = [];
     foreach ($items as $delta => $item) {

@@ -28,7 +28,7 @@ class TripalJob {
 
   /**
    * The interval when the job progress should be updated. Updating the job
-   * progress incurrs a database write which takes time and if it occurs to
+   * progress incurrs a database write which takes time and if it occurs too
    * frequently can slow down the loader.  This should be a value between
    * 0 and 100 to indicate a percent interval (e.g. 1 means update the
    * progress every time the num_handled increases by 1%).
