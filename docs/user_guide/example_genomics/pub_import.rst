@@ -17,7 +17,7 @@ We will add information about the Tripal publication. Enter the following values
 .. csv-table::
   :header: "Field Name", "Value"
 
-  "Title", " Tripal v3: an ontology-based toolkit for construction of FAIR biological community databases."
+  "Title", "Tripal v3: an ontology-based toolkit for construction of FAIR biological community databases."
   "Series Name", "Database"
   "Publication Year", "2019"
   "Unique Local Identifier", "Tripal v3: an ontology-based toolkit for construction of FAIR biological community databases."
