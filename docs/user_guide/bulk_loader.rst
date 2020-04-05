@@ -9,10 +9,11 @@ The bulk loader is a tool that Tripal provides for loading of data contained in 
 
 The following commands can be executed to install the Tripal Bulk Loader using Drush:
 
-.. code-block bash
+.. code-block:: bash
 
   cd /var/www/
   drush pm-enable tripal_bulk_loader
+  
 
 Plan How to Store Data
 ----------------------
@@ -21,7 +22,7 @@ To demonstrate use of the Bulk Loader, a brief example that imports a list of or
 
 * `Fragaria.txt <http://tripal.info/sites/default/files/book_pages/Fragaria_0.txt>`_
 
-.. code-block bash
+.. code-block:: bash
 
   cd $DRUPAL_HOME/sites/default/files
   wget http://tripal.info/sites/default/files/book_pages/Fragaria_0.txt
@@ -29,7 +30,7 @@ To demonstrate use of the Bulk Loader, a brief example that imports a list of or
 
 This file has three columns: NCBI taxonomy ID, genus and species:
 
-.. .. csv-table:: Fragaria sample file
+.. csv-table:: Fragaria sample file
 
   3747    "Fragaria"        "x ananassa"
   57918   "Fragaria"        "vesca"
