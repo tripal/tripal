@@ -52,26 +52,26 @@ Substitute [user] for the name of the user that will own the web files.
 
   The apache web server runs as the user 'www-data'.  For security reasons you should chose a user other than 'www-data' to be the owner of the Drupal root directory.
 
-Tripal 3.x requires version 7.x of Drupal. Drupal can be freely downloaded from the http://www.drupal.org website. At the writing of this Tutorial the most recent version of Drupal 7 is version 7.64. The software can be downloaded manually from the Drupal website through a web browser or we can use the ``wget`` command to retrieve it:
+Tripal 3.x requires version 7.x of Drupal. Drupal can be freely downloaded from the http://www.drupal.org website. At the writing of this Tutorial the most recent version of Drupal 7 is version 7.69. The software can be downloaded manually from the Drupal website through a web browser or we can use the ``wget`` command to retrieve it:
 
 .. code-block:: bash
 
   cd $DRUPAL_HOME
-  wget http://ftp.drupal.org/files/projects/drupal-7.64.tar.gz
+  wget http://ftp.drupal.org/files/projects/drupal-7.69.tar.gz
 
 
 Next, we want to install Drupal. We will use the tar command to uncompress the software:
 
 .. code-block:: bash
 
-  tar -zxvf drupal-7.64.tar.gz
+  tar -zxvf drupal-7.69.tar.gz
 
-Notice that we now have a drupal-7.64 directory with all of the Drupal files. We want the Drupal files to be in our document root, not in a 'drupal-7.64' subdirectory. So, we'll move the contents of the directory up one level:
+Notice that we now have a drupal-7.69 directory with all of the Drupal files. We want the Drupal files to be in our document root, not in a 'drupal-7.69' subdirectory. So, we'll move the contents of the directory up one level:
 
 .. code-block:: bash
 
-  mv drupal-7.64/* ./
-  mv drupal-7.64/.htaccess ./
+  mv drupal-7.69/* ./
+  mv drupal-7.69/.htaccess ./
 
 If an index.html file is present (as is the case with Ubuntu installations) you can move it out of the way so that it does not interfere with Drupal by executing the following:
 
