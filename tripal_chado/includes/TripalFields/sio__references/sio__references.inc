@@ -98,6 +98,7 @@ class sio__references extends ChadoField {
       $matches = [];
       if (preg_match('/^(.+?)_pub$/', $chado_table, $matches)) {
         $reference_table = $matches[1];
+
         // Find the base table this links to and get the fk columns that map it.
         $schema = chado_get_schema($chado_table);
         $fkeys = $schema['foreign keys'];
@@ -106,6 +107,7 @@ class sio__references extends ChadoField {
             $fkleft = array_keys($fk_details['columns'])[0];
             $fkright = $fk_details['columns'][$fkleft];
           }
+
         }
         // Iterate through all of the records in the linker table that
         // match the given pub ID.
