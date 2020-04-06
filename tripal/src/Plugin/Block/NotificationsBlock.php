@@ -46,7 +46,7 @@ class NotificationsBlock extends BlockBase implements BlockPluginInterface {
       ],
     ];
 
-    $table_name = 'tripal_admin_notfications';
+    $table_name = 'tripal_admin_notifications';
     $query = $db->select($table_name, 'tan')
       ->extend('\Drupal\Core\Database\Query\TableSortExtender')
       ->fields('tan')
