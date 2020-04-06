@@ -5,6 +5,7 @@ namespace Drupal\tripal\ListBuilders;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Routing\LinkGeneratorTrait;
+use Drupal\Core\Link;
 use Drupal\Core\Url;
 
 /**
@@ -31,10 +32,10 @@ class TripalVocabListBuilder extends EntityListBuilder {
   public function buildRow(EntityInterface $entity) {
     /* @var $entity \Drupal\tripal\Entity\TripalVocab */
 
-    $row['name'] = \Drupal::l(
+    $row['name'] = Link::fromTextAndUrl(
       $entity->getName(),
-      $entity->urlInfo('canonical', ['tripal_entity_type' => $entity->id()])
-    );
+      $entity->toUrl('canonical', ['tripal_entity_type' => $entity->id()])
+    )->toString();
 
     $row['short_name'] = $entity->getLabel();
 

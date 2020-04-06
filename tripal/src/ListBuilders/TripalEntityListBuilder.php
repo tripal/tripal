@@ -5,6 +5,7 @@ namespace Drupal\tripal\ListBuilders;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
 use Drupal\Core\Routing\LinkGeneratorTrait;
+use Drupal\Core\Link;
 use Drupal\Core\Url;
 
 /**
@@ -38,10 +39,10 @@ class TripalEntityListBuilder extends EntityListBuilder {
     $bundle = \Drupal\tripal\Entity\TripalEntityType::load($type_name);
     $term = $bundle->getTerm();
 
-    $row['title'] = \Drupal::l(
+    $row['title'] = Link::fromTextAndUrl(
       $entity->getTitle(),
-      $entity->urlInfo('canonical', ['tripal_entity' => $entity->id()])
-    );
+      $entity->toUrl('canonical', ['tripal_entity' => $entity->id()])
+    )->toString();
 
     $row['type'] = $bundle->getLabel();
     $row['term'] = $term->getVocab()->getLabel() . ':' . $term->getAccession();

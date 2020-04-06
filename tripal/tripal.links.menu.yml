@@ -38,12 +38,20 @@ entity.tripal_term.collection:
   parent: system.admin_structure
   weight: 98
 
+## CVterm lookup.
+tripal.cv_lookup:
+  title: 'Controlled Vocabularies'
+  route_name: tripal.cv_lookup
+  description: 'A tool to explore the controlled vocabularies that are used on this site.'
+  menu_name: tools
+
 ##
 # Tripal Admin menu
 ##
 tripal.admin:
   route_name: tripal.admin
   title: 'Tripal'
+  description: 'Manage the behavior or Tripal and its various modules.'
   parent: system.admin_structure
 
 tripal.admin_register:
@@ -113,6 +121,13 @@ tripal.files:
   description: 'Set maximum upload sizes, quotas and view usage.'
   title: 'User File Management'
   parent: tripal.admin
+  weight: 80
+
+tripal.files_file_usage:
+  route_name: tripal.files_file_usage
+  description: 'Set maximum upload size.'
+  title: 'Manage Usage'
+  parent: tripal.files
   weight: 80
 
 tripal.files_quota:
