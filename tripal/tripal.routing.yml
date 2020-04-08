@@ -294,7 +294,6 @@ tripal.upload:
 
 tripal.upload.chunk:
   path: 'tripal/upload/{type}/{filename}/{action}/{chunk}'
-  methods: [PUT, GET]
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalController::tripalFileUpload'
     _title: 'Upload File Chunk'

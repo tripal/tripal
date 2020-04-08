@@ -188,12 +188,27 @@ function tripal_file_upload($type, $filename, $action = NULL, $chunk = 0) {
   }
 
   // Make sure we don't go over the max file upload size.
-  $upload_max = \Drupal\Component\Utility\Environment::getUploadMaxSize();
+  $upload_max = \Drupal\Component\Utility\Bytes::toInt(ini_get('upload_max_filesize'));
   if ($file_size > $upload_max) {
     $message = t("Unfortunately, you can not upload this file as the size exceeds the the maximum file size allowed by this site: " . tripal_format_bytes($upload_max) . '. ');
 
     if ($user->hasPermission('administer tripal')) {
-      $message .= t('You can manage the file upload by visiting: Home » Administration » Tripal » User File Management.');
+      $message .= t('You can manage the maximum file upload size by changing the upload_max_filesize in your php.ini file.');
+    }
+    $result = [
+      'status' => 'failed',
+      'message' => $message,
+      'file_id' => '',
+    ];
+    return new JsonResponse($result);
+  }
+
+  $chunk_max = \Drupal\Component\Utility\Bytes::toInt(ini_get('post_max_size'));
+  if ($chunk_size > $chunk_max) {
+    $message = t("Unfortunately, you can not upload this file as the chunk size exceeds the the maximum file chunk size allowed by this site: " . tripal_format_bytes($chunk_max) . '. ');
+
+    if ($user->hasPermission('administer tripal')) {
+      $message .= t('You can manage the maximum file chunk size by changing the post_max_size value in your php.ini file.');
     }
     $result = [
       'status' => 'failed',
@@ -227,7 +242,7 @@ function tripal_file_upload($type, $filename, $action = NULL, $chunk = 0) {
   switch ($action) {
     // If the action is 'save' then the callee is sending a chunk of the file
     case 'save':
-      return tripal_file_upload_put($filename, $chunk, $user_dir);
+      return tripal_file_upload_post($filename, $chunk, $user_dir);
 
     case 'check':
       return tripal_file_upload_verify($filename, $chunk, $user_dir);
@@ -244,9 +259,9 @@ function tripal_file_upload($type, $filename, $action = NULL, $chunk = 0) {
  * extension.  This function uses file locking to prevent two
  * jobs from writing to the same file at the same time.
  */
-function tripal_file_upload_put($filename, $chunk, $user_dir) {
-  // Get the HTTP PUT data.
-  $putdata = fopen("php://input", "r");
+function tripal_file_upload_post($filename, $chunk, $user_dir) {
+  // Get the HTTP POST data.
+  $postdata = fopen("php://input", "r");
   $size = $_SERVER['CONTENT_LENGTH'];
 
   // Store the chunked file in a temp folder.
@@ -263,14 +278,14 @@ function tripal_file_upload_put($filename, $chunk, $user_dir) {
     // Lock the file for writing. We don't want two different
     // processes trying to write to the same file at the same time.
     if (flock($fh, LOCK_EX)) {
-      while ($data = fread($putdata, 1024)) {
+      while ($data = fread($postdata, 1024)) {
         fwrite($fh, $data);
       }
       flock($fh, LOCK_UN);
       fclose($fh);
     }
   }
-  fclose($putdata);
+  fclose($postdata);
 
   // Get the current log, updated and re-write it.
   $log = tripal_file_upload_read_log($temp_dir);

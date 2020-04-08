@@ -13,7 +13,7 @@
     this.file = file;
     this.options = options;
     this.file_size = file.size;
-    this.chunk_size = (1024 * 2000); 
+    this.chunk_size = (1024 * 2000);
     this.total_chunks = ((this.file.size % this.chunk_size == 0) ? Math.floor(this.file.size / this.chunk_size) : Math.floor(this.file.size / this.chunk_size) + 1); 
     this.curr_chunk = 0;
     this.status = 'pending';
@@ -67,7 +67,7 @@
       var chunk = this.file[this.slice_method](range_start, range_end);
       var url = this.options.url + '/' + this.file.name + '/save/' + this.curr_chunk;
       
-      this.xhr.open('PUT', url, true);
+      this.xhr.open('POST', url, true);
       this.xhr.overrideMimeType('application/octet-stream');  
       this.xhr.setRequestHeader('Content-Range', 'bytes ' + range_start + '-' + range_end + '/' + this.file_size);
       
