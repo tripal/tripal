@@ -1,0 +1,24 @@
+<?php
+
+/**
+ * @file
+ * Contains tripal_chado.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function tripal_chado_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the tripal_chado module.
+    case 'help.page.tripal_chado':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Chado integration for Tripal.') . '</p>';
+      return $output;
+
+    default:
+  }
+}
