@@ -163,9 +163,50 @@ class ChadoInstallForm extends FormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    foreach ($form_state->getValues() as $key => $value) {
-      // @TODO: Validate fields.
+    $values = $form_state->getValues();
+
+    // We do not want to allow re-installation of Chado if other
+    // Tripal modules are installed.  This is because the install files
+    // of those modules may add content to Chado and reinstalling Chado
+    // removes that content which may break the modules.
+    if ($values['action_to_do'] == "Install Chado v1.3" or
+      $values['action_to_do'] == "Install Chado v1.2" or
+      $values['action_to_do'] == "Install Chado v1.11") {
+        $modules = \Drupal::service('extension.list.module')->getAllAvailableInfo();
+        $list = [];
+        foreach ($modules as $mname => $module) {
+          if (array_key_exists('dependencies', $module) and in_array('tripal:tripal_chado', $module['dependencies'])) {
+            $list[] = $module['name'] . " ($mname)";
+          }
+        }
+        if (count($list) > 0) {
+          $message = [
+            '#theme' => 'item_list',
+            '#title' => 'Chado cannot be installed while other Tripal modules
+              are enabled.  You must fully uninstall the following modules if you
+              would like to install or re-install chado.',
+            '#list_type' => 'ul',
+            '#items' => $list,
+            '#wrapper_attributes' => ['class' => 'container'],
+          ];
+          $form_state->setErrorByName("action_to_do", $message);
+        }
     }
+    if ($values['action_to_do'] == "Upgrade Chado v1.11 to v1.2") {
+      // Make sure we are already not at v1.2
+      // @upgrade $real_version = chado_get_version(TRUE);
+      if ($real_version == "1.2") {
+        $form_state->setErrorByName("action_to_do", "You are already at v1.2.  There is no need to upgrade.");
+      }
+    }
+    if ($values['action_to_do'] == "Upgrade Chado v1.2 to v1.3") {
+      // Make sure we are already not at v1.3
+      // @upgrade $real_version = chado_get_version(TRUE);
+      if ($real_version == "1.3") {
+        $form_state->setErrorByName("action_to_do", "You are already at v1.3.  There is no need to upgrade.");
+      }
+    }
+
     parent::validateForm($form, $form_state);
   }
 
@@ -173,10 +214,14 @@ class ChadoInstallForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    // Display result.
-    foreach ($form_state->getValues() as $key => $value) {
-      \Drupal::messenger()->addMessage($key . ': ' . ($key === 'text_format'?$value['value']:$value));
-    }
+    global $user;
+    $action_to_do = trim($form_state->getValues()['action_to_do']);
+    $args = [$action_to_do];
+
+    \Drupal::messenger()->addMessage('Must upgrade Tripal Jobs system first.', 'warning');
+    // @upgrade $includes = [module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.install')];
+    // @upgrade tripal_add_job($action_to_do, 'tripal_chado',
+    //  'tripal_chado_install_chado', $args, $user->uid, 10, $includes);
   }
 
   /**
