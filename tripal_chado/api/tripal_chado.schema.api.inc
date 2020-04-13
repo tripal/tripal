@@ -56,7 +56,6 @@ function chado_table_exists($table) {
   $databases = $connection->getConnectionOptions();
   $default_db = $databases['database'];
   $chado_schema = 'chado';  // @upgrade chado_get_schema_name('chado');
-  $chado_dot = $chado_schema . '.';
 
   // If we've already lookup up this table then don't do it again, as
   // we don't need to keep querying the database for the same tables.
@@ -67,12 +66,22 @@ function chado_table_exists($table) {
     return TRUE;
   }
 
-  // We try to select from the table in question.  If it fails,
-  // the most likely reason is that it does not exist.
-  try {
-    $connection
-      ->queryRange("SELECT 1 FROM " . $chado_dot . $table, 0, 1);
-  } catch (\Exception $e) {
+  $sql = "
+    SELECT 1
+    FROM information_schema.tables
+    WHERE
+      table_name = :table_name AND
+      table_schema = :chado AND
+      table_catalog = :default_db
+  ";
+  $args = [
+    ':table_name' => strtolower($table),
+    ':chado' => $chado_schema,
+    ':default_db' => $default_db,
+  ];
+  $query = Drupal::database()->query($sql, $args);
+  $results = $query->fetchAll();
+  if (empty($results)) {
     return FALSE;
   }
 
@@ -101,21 +110,46 @@ function chado_table_exists($table) {
 function chado_column_exists($table, $column) {
   $connection = Database::getConnection();
 
-  // Get the chado schema.
+  // Get the default database and chado schema.
+  $databases = $connection->getConnectionOptions();
+  $default_db = $databases['database'];
   $chado_schema = 'chado';  // @upgrade chado_get_schema_name('chado');
-  $chado_dot = $chado_schema . '.';
 
-  // @todo add back caching to make this faster.
+  // @upgrade $cached_obj = cache_get('chado_table_columns', 'cache');
+  // if ($cached_obj) {
+  //   $cached_cols = $cached_obj->data;
+  //   if (is_array($cached_cols) and
+  //     array_key_exists($table, $cached_cols) and
+  //     array_key_Exists($column, $cached_cols[$table])) {
+  //     return $cached_cols[$table][$column]['exists'];
+  //   }
+  // }
 
-  // We try to select from the table in question.  If it fails,
-  // the most likely reason is that it does not exist.
-  try {
-    $connection
-      ->queryRange("SELECT $column FROM " . $chado_dot . $table, 0, 1);
-  } catch (\Exception $e) {
+  $sql = "
+    SELECT 1
+    FROM information_schema.columns
+    WHERE
+      table_name = :table_name AND
+      column_name = :column_name AND
+      table_schema = :chado AND
+      table_catalog = :default_db
+  ";
+  $args = [
+    ':table_name' => strtolower($table),
+    ':column_name' => $column,
+    ':chado' => $chado_schema,
+    ':default_db' => $default_db,
+  ];
+  $query = Drupal::database()->query($sql, $args);
+  $results = $query->fetchAll();
+  if (empty($results)) {
+    // @upgrade $cached_cols[$table][$column]['exists'] = FALSE;
+    // cache_set('chado_table_columns', $cached_cols, 'cache', CACHE_TEMPORARY);
     return FALSE;
   }
 
+  // @upgrade $cached_cols[$table][$column]['exists'] = TRUE;
+  // cache_set('chado_table_columns', $cached_cols, 'cache', CACHE_TEMPORARY);
   return TRUE;
 }
 
@@ -132,9 +166,7 @@ function chado_column_exists($table, $column) {
  *   TRUE if the seqeuence exists in the chado schema and FALSE if it does not.
  *
  * @ingroup tripal_chado_schema_api
- *
- * @upgrade
- *
+ */
 function chado_sequence_exists($sequence) {
   $connection = Database::getConnection();
 
@@ -142,7 +174,6 @@ function chado_sequence_exists($sequence) {
   $databases = $connection->getConnectionOptions();
   $default_db = $databases['database'];
   $chado_schema = 'chado';  // @upgrade chado_get_schema_name('chado');
-  $chado_dot = $chado_schema . '.';
 
   // @upgrade $cached_obj = cache_get('chado_sequences', 'cache');
   // $cached_seqs = $cached_obj->data;
@@ -159,13 +190,13 @@ function chado_sequence_exists($sequence) {
       sequence_catalog = :sequence_catalog
   ";
   $args = [
-    ':sequence_name' => $sequence,
+    ':sequence_name' => strtolower($sequence),
     ':sequence_schema' => $chado_schema,
     ':sequence_catalog' => $default_db,
   ];
-  $results = db_query($sql, $args);
-  $exists = $results->fetchField();
-  if (!$exists) {
+  $query = Drupal::database()->query($sql, $args);
+  $results = $query->fetchAll();
+  if (empty($results)) {
     // @upgrade $cached_seqs[$sequence]['exists'] = FALSE;
     // cache_set('chado_sequences', $cached_seqs, 'cache', CACHE_TEMPORARY);
     return FALSE;
@@ -173,8 +204,8 @@ function chado_sequence_exists($sequence) {
   // @upgrade $cached_seqs[$sequence]['exists'] = FALSE;
   // cache_set('chado_sequences', $cached_seqs, 'cache', CACHE_TEMPORARY);
   return TRUE;
+
 }
-*/
 
 /**
  * A Chado-aware replacement for the db_index_exists() function.
@@ -183,26 +214,42 @@ function chado_sequence_exists($sequence) {
  *   The table to be altered.
  * @param $name
  *   The name of the index.
- * @upgrade
- *
-function chado_index_exists($table, $name) {
-  global $databases;
+ */
+function chado_index_exists($table, $name, $no_suffix = FALSE) {
+  $connection = Database::getConnection();
 
-  $indexname = $table . '_' . $name . '_idx';
+  if ($no_suffix) {
+    $indexname = strtolower($table . '_' . $name);
+  }
+  else {
+    $indexname = strtolower($table . '_' . $name . '_idx');
+  }
 
-  $default_db = $databases['default']['default']['database'];
+  // Get the default database and chado schema.
+  $databases = $connection->getConnectionOptions();
+  $default_db = $databases['database'];
+  $chado_schema = 'chado';  // @upgrade chado_get_schema_name('chado');
 
   $sql = "
     SELECT 1 as exists
     FROM pg_indexes
-    WHERE indexname = :indexname
+    WHERE
+      indexname = :indexname AND
+      tablename = :tablename AND
+      schemaname = :schemaname
   ";
-
-  $result = db_query($sql, [':indexname' => $indexname]);
-  $exists = $result->fetchObject();
-  return $exists->exists;
+  $args = [
+    ':indexname' => $indexname,
+    ':tablename' => strtolower($table),
+    ':schemaname' => $chado_schema,
+  ];
+  $query = Drupal::database()->query($sql, $args);
+  $results = $query->fetchAll();
+  if (empty($results)) {
+    return FALSE;
+  }
+  return TRUE;
 }
-*/
 
 /**
  * A Chado-aware wrapper for the db_add_index() function.
@@ -213,13 +260,20 @@ function chado_index_exists($table, $name) {
  *   The name of the index.
  * @param $fields
  *   An array of field names.
- *
- * @upgrade
- *
+ */
 function chado_add_index($table, $name, $fields) {
-  $indexname = $table . '_' . $name . '_idx';
 
-  $query = 'CREATE INDEX "' . $indexname . '" ON {' . $table . '} ';
+  // Determine the full name of the index.
+  $indexname = strtolower($table . '_' . $name . '_idx');
+
+  // Retrieve the chado schema name.
+  $chado_schema = 'chado';  // @upgrade chado_get_schema_name('chado');
+  $chado_dot = $chado_schema . '.';
+
+  // Determine the create index SQL command.
+  // Note: we dont use place holders here because we cannot
+  // have quotes around thse parameters.
+  $query = 'CREATE INDEX "' . $indexname . '" ON ' . $chado_dot . $table . ' ';
   $query .= '(';
   $temp = [];
   foreach ($fields as $field) {
@@ -232,9 +286,10 @@ function chado_add_index($table, $name, $fields) {
   }
   $query .= implode(', ', $temp);
   $query .= ')';
-  return chado_query($query);
+
+  // Now execute it!
+  Drupal::database()->query($query);
 }
-*/
 
 /**
  * Check that any given schema exists.
