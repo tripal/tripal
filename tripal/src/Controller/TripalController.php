@@ -131,11 +131,8 @@ class TripalController extends ControllerBase{
     ];
   }
 
-  public function tripalFileUpload() {
-    //tripal_file_upload in tripal.upload.inc
-    return [
-      '#markup' => 'Not yet upgraded.',
-    ];
+  public function tripalFileUpload($type, $filename, $action = NULL, $chunk = 0) {
+    return tripal_file_upload($type, $filename, $action, $chunk);
   }
 
   public function tripalDataLoaders() {

@@ -7,3 +7,23 @@ tripal:
     - core/drupal
     - core/jquery
     - core/drupalSettings
+
+uploader:
+  version: 1.x
+  js:
+    js/TripalUploader.js: {}
+
+upload-file:
+  version: 1.x
+  js:
+    js/TripalUploadFile.js: {}
+
+tripal-file:
+  version: 1.x
+  js:
+    js/tripal.file.js: {}
+
+vars:
+  version: 1.x
+  js:
+    js/tripal.vars.js: {}

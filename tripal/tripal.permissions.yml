@@ -3,6 +3,10 @@ administer tripal:
   description: 'Bypass Tripal access control'
   restrict access: true
 
+upload files:
+  title: 'Upload Files'
+  description: "Allows the user to upload files using Tripal's HTML5 loader."
+
 ##
 # Controlled Vocab Entities
 ##

@@ -90,18 +90,16 @@ function tripal_remove_user_quota($uid) {
  */
 function tripal_get_user_usage($uid) {
   // Get the user's current file usage
-  $sql = "
-    SELECT SUM(filesize) FROM (
-    SELECT DISTINCT FM.fid, FM.filename, FM.filesize
-      FROM file_usage FU
-        INNER JOIN file_managed FM ON FM.fid = FU.fid and FU.module = 'tripal'
-      WHERE FM.uid = :uid) AS foo
-  ";
-  $total_usage = Drupal::database()
-    ->select($sql, [':uid' => $uid])
-    ->fetchField();
+  $db = \Drupal::database();
 
-  return (int) $total_usage;
+  $query = $db->select('file_usage', 'fu');
+  $query->join('file_managed', 'fm', 'fm.fid = fu.fid');
+  $query->addExpression('sum(filesize)', 'total_size');
+  $query->condition('fu.module', 'tripal');
+  $query->condition('fm.uid', $uid);
+  $query = $query->execute();
+
+  return (int) $query->fetchObject()->total_size;
 }
 
 /**
