@@ -22,6 +22,9 @@ class ChadoInstallForm extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
 
+    // @testing @REMOVE
+    module_load_include('inc', 'tripal_chado', 'src/LegacyIncludes/tripal_chado.install');
+
     // we want to force the version of Chado to be set properly
     // @upgrade $real_version = chado_get_version(TRUE);
     $real_version = 'unknown';
@@ -165,6 +168,10 @@ class ChadoInstallForm extends FormBase {
   public function validateForm(array &$form, FormStateInterface $form_state) {
     $values = $form_state->getValues();
 
+    // we want to force the version of Chado to be set properly
+    // @upgrade $real_version = chado_get_version(TRUE);
+    $real_version = 'unknown';
+    
     // We do not want to allow re-installation of Chado if other
     // Tripal modules are installed.  This is because the install files
     // of those modules may add content to Chado and reinstalling Chado
@@ -218,7 +225,13 @@ class ChadoInstallForm extends FormBase {
     $action_to_do = trim($form_state->getValues()['action_to_do']);
     $args = [$action_to_do];
 
-    \Drupal::messenger()->addMessage('Must upgrade Tripal Jobs system first.', 'warning');
+    $command = "drush php-eval \"module_load_include('inc', 'tripal_chado', 'src/LegacyIncludes/tripal_chado.install');
+tripal_chado_install_chado('".$action_to_do."');\"";
+    $message = [
+      '#markup' => '<strong>Must upgrade Tripal Jobs system first. In the meantime,
+        execute the following drush command: </strong><pre>'.$command.'</pre>',
+    ];
+    \Drupal::messenger()->addMessage($message, 'warning');
     // @upgrade $includes = [module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.install')];
     // @upgrade tripal_add_job($action_to_do, 'tripal_chado',
     //  'tripal_chado_install_chado', $args, $user->uid, 10, $includes);

@@ -12,6 +12,8 @@ use Drupal\Tests\BrowserTestBase;
  */
 class LoadTest extends BrowserTestBase {
 
+  protected $defaultTheme = 'stable';
+
   /**
    * Modules to enable.
    *
