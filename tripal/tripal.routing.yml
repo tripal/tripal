@@ -26,7 +26,7 @@ tripal.admin_register:
 tripal.storage:
   path: 'admin/tripal/storage'
   defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalStorage'
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
     _title: 'Data Storage'
   requirements:
     _permission: 'administer tripal'

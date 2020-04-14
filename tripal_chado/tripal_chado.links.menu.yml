@@ -1,0 +1,15 @@
+
+# Admin Tripal storage menu.
+tripal_chado.storage:
+  route_name: tripal_chado.storage
+  title: 'Chado'
+  description: 'Integrates Chado with Tripal and includes tools to load data, and extend the chado schema through custom tables & materialized views.'
+  parent: tripal.storage
+  weight: 30
+
+tripal_chado.chado_install_form:
+  route_name: tripal_chado.chado_install_form
+  title: 'Install Chado'
+  description: 'Installs the Chado database tables, views, etc., inside the current Drupal database.'
+  parent: tripal_chado.storage
+  weight: 30

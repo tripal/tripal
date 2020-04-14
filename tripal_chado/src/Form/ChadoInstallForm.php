@@ -135,13 +135,14 @@ class ChadoInstallForm extends FormBase {
       '#title' => 'Installation/Upgrade Action',
       '#options' => [
         'Install Chado v1.3' => t('New Install of Chado v1.3 (erases all existing Chado data if Chado already exists)'),
-        'Upgrade Chado v1.2 to v1.3' => t('Upgrade existing Chado v1.2 to v1.3 (no data is lost)'),
-        'Install Chado v1.2' => t('New Install of Chado v1.2 (erases all existing Chado data if Chado already exists)'),
-        'Upgrade Chado v1.11 to v1.2' => t('Upgrade existing Chado v1.11 to v1.2 (no data is lost)'),
-        'Install Chado v1.11' => t('New Install of Chado v1.11 (erases all existing Chado data if Chado already exists)'),
+        //'Upgrade Chado v1.2 to v1.3' => t('Upgrade existing Chado v1.2 to v1.3 (no data is lost)'),
+        //'Install Chado v1.2' => t('New Install of Chado v1.2 (erases all existing Chado data if Chado already exists)'),
+        //'Upgrade Chado v1.11 to v1.2' => t('Upgrade existing Chado v1.11 to v1.2 (no data is lost)'),
+        //'Install Chado v1.11' => t('New Install of Chado v1.11 (erases all existing Chado data if Chado already exists)'),
       ],
       '#description' => t('Select an action to perform.'),
       '#required' => TRUE,
+      '#default_value' => 0,
       '#ajax' => [
         'callback' => '::ajaxFormVersionUpdate',
         'wrapper' => 'tripal_chado_load_form',
@@ -171,7 +172,7 @@ class ChadoInstallForm extends FormBase {
     // we want to force the version of Chado to be set properly
     // @upgrade $real_version = chado_get_version(TRUE);
     $real_version = 'unknown';
-    
+
     // We do not want to allow re-installation of Chado if other
     // Tripal modules are installed.  This is because the install files
     // of those modules may add content to Chado and reinstalling Chado

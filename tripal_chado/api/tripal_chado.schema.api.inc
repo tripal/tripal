@@ -301,27 +301,23 @@ function chado_add_index($table, $name, $fields) {
  *   TRUE/FALSE depending upon whether or not the schema exists
  *
  * @ingroup tripal_chado_schema_api
- *
- * @upgrade
- *
+ */
 function chado_dbschema_exists($schema) {
-  $connection = Database::getConnection();
 
   $sql = "
-    SELECT nspname
+    SELECT true
     FROM pg_namespace
     WHERE
       has_schema_privilege(nspname, 'USAGE') AND
       nspname = :nspname
-    ORDER BY nspname
   ";
-  $schema = $connection->query($sql, [':nspname' => $schema])->fetchField();
-  if ($schema) {
+  $query = Drupal::database()->query($sql, [':nspname' => $schema]);
+  $schema_exists = $query->fetchField();
+  if ($schema_exists) {
     return TRUE;
   }
   return FALSE;
 }
-*/
 
 /**
  * Check that the Chado schema exists within the local database
