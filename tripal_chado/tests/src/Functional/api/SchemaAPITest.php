@@ -44,13 +44,13 @@ class SchemaAPITest extends BrowserTestBase {
    * @group wip-lacey
    */
   public function testChadoTableColumnExists() {
+    $connection = \Drupal\Core\Database\Database::getConnection();
 
     // First create our table in the chado schema (if it exists).
-    $check_schema = "SELECT true FROM information_schema.schemata
-      WHERE schema_name = 'chado'";
-    $exists = \Drupal::database()->query($check_schema)->fetchField();
+    $check_schema = "SELECT true FROM pg_namespace WHERE nspname = 'chado'";
+    $exists = $connection->query($check_schema)->fetchField();
     if (!$exists) {
-      \Drupal::database()->query("CREATE SCHEMA chado");
+      $this->markTestSkipped('Cannot check chado schema api without chado.');
     }
 
     // Define a table name which cannot exist.
@@ -66,7 +66,7 @@ class SchemaAPITest extends BrowserTestBase {
         cte_id     SERIAL PRIMARY KEY,
         cte_name    varchar(40)
     )";
-    \Drupal::database()->query($sql);
+    $connection->query($sql);
 
     // And check that the table is there.
     $result = chado_table_exists($table_name);
