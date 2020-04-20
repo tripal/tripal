@@ -12,18 +12,18 @@ Before we create our class we must first create a proper directory structure.  T
 
 .. code-block:: bash
 
-  /sites/all/modules/[your_module]/includes/TripalField/[field_name]/[field_name].inc
-  /sites/all/modules/[your_module]/includes/TripalField/[field_name]/[field_name]_widget.inc
-  /sites/all/modules/[your_module]/includes/TripalField/[field_name]/[field_name]_formatter.inc
+  /sites/all/modules/[your_module]/includes/TripalFields/[field_name]/[field_name].inc
+  /sites/all/modules/[your_module]/includes/TripalFields/[field_name]/[field_name]_widget.inc
+  /sites/all/modules/[your_module]/includes/TripalFields/[field_name]/[field_name]_formatter.inc
 
 
 In the directories above the token [your_module] can be substituted with the name of your module and [field_name] is the name of your field.  You can name your field whatever you like, but you must use this name consistently in other locations throughout the modules.  Because all fields are defined by vocabulary terms, it is custom to name your fields with the vocabulary **short name** followed by two underscores followed by the **term name**, hence:  obi__organism.  Here the ChadoField implementation goes in the [field_name].inc file, the ChadoFieldWidget in the [field_name]_widget.inc file and the ChadoFieldFormatter in the [field_name]_formatter.inc.   All new fields must implement all three classes.   in the case of our obi__organism field the directory structure is as follows:
 
 .. code-block:: bash
 
-  /sites/all/modules/tripal/tripal_chado/includes/TripalField/obi__organism/obi__organism.inc
-  /sites/all/modules/tripal/tripal_chado/includes/TripalField/obi__organism/obi__organism_widget.inc
-  /sites/all/modules/tripal/tripal_chado/includes/TripalField/obi__organism/obi__organism_formatter.inc
+  /sites/all/modules/tripal/tripal_chado/includes/TripalFields/obi__organism/obi__organism.inc
+  /sites/all/modules/tripal/tripal_chado/includes/TripalFields/obi__organism/obi__organism_widget.inc
+  /sites/all/modules/tripal/tripal_chado/includes/TripalFields/obi__organism/obi__organism_formatter.inc
 
 Anatomy of the ChadoField Class
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -42,7 +42,7 @@ The following describes a ChadoField class from top to bottom. The code for the 
 Static Member Variables
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Next, the TripalField/ChadoField class has a section of public static variables. These are variables that you can customize to describe your field to Tripal. Here you will provide the default label that appears for the field, and a description for the field:
+Next, the TripalFields/ChadoField class has a section of public static variables. These are variables that you can customize to describe your field to Tripal. Here you will provide the default label that appears for the field, and a description for the field:
 
 .. code-block:: php
 
