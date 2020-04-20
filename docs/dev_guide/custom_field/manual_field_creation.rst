@@ -42,7 +42,7 @@ The following describes a ChadoField class from top to bottom. The code for the 
 Static Member Variables
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Next, the TripalFields/ChadoField class has a section of public static variables. These are variables that you can customize to describe your field to Tripal. Here you will provide the default label that appears for the field, and a description for the field:
+Next, the TripalField/ChadoField class has a section of public static variables. These are variables that you can customize to describe your field to Tripal. Here you will provide the default label that appears for the field, and a description for the field:
 
 .. code-block:: php
 
