@@ -355,7 +355,6 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
   // remove any preceeding 'and' or 'or'
   $ccl = preg_replace('/^\s*(and|or)/', '', $ccl);
 
-
   // yaz_connect() prepares for a connection to a Z39.50 server. This function is non-blocking
   // and does not attempt to establish a connection - it merely prepares a connect to be
   // performed later when yaz_wait() is called.
@@ -404,6 +403,7 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
 
   // get the total number of records
   $total_records = tripal_pub_AGL_count($yazc, $search_str);
+
   // get the pubs in the specified range
   $start = $page * $num_to_retrieve;
   $results = tripal_pub_AGL_range($yazc, $search_str, $start, $num_to_retrieve, $total_records, $days, $latestyear);

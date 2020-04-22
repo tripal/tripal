@@ -1114,6 +1114,7 @@ function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE, $job =
  */
 function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE, $update_if_exists = FALSE, $job = NULL) {
   $pub_id = 0;
+
   // These are options for the tripal_report_error function. We do not
   // want to log messages to the watchdog except for errors and to the job and 
   // to the terminal
