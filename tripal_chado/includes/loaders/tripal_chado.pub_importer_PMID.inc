@@ -30,7 +30,6 @@ function tripal_pub_remote_alter_form_PMID($form, $form_state, $num_criteria = 1
   for ($i = 1; $i <= $num_criteria; $i++) {
     $form['themed_element']['criteria'][$i]["scope-$i"]['#options']['abstract'] = 'Abstract/Title';
   }
-
   return $form;
 }
 
