@@ -82,7 +82,7 @@ function tripal_pub_importers_list() {
       <li>Create a new importer by clicking the 'New Importer' link above, and after saving it should appear in the list below.  Click the
           link labeled 'Import Pubs' to schedule a job to import the publications</li>
       <li>The first method only performs the import once.  However, you can schedule the
-          importer to run peridically by adding a cron job. </li> 
+          importer to run peridically by adding a cron job. </li>
      </ol><br>");
 
   $form = drupal_get_form('tripal_pub_importer_ncbi_api_key_form');
@@ -134,7 +134,7 @@ function tripal_pub_importer_setup_page($action = 'new', $pub_import_id = NULL) 
   }
 
   if(!extension_loaded ('yaz')){
-    drupal_set_message(t('<b>Note:</b> In order to create an importer using the USDA National Agricultural Library (AGL) you must install the yaz libraries. See the ') . l(t('Pub Module help page'), 'admin/tripal/legacy/tripal_pub/help') . ' for assistance.  If you do not want to use AGL you can ignore this warning.', 'warning');
+    drupal_set_message(t('<b>Note:</b> In order to create an importer using the USDA National Agricultural Library (AGL) you must install the yaz libraries. See the ') . l(t('Users Guide for Instructions'), 'https://tripal.readthedocs.io/en/latest/user_guide/example_genomics/pub_import.html#import-from-the-usda-national-agricultural-library') . ' for assistance.  If you do not want to use AGL you can ignore this warning.', 'warning');
   }
 
   // generate the search form
@@ -478,7 +478,7 @@ function tripal_pub_importer_setup_form($form, &$form_state = NULL, $pub_import_
  * @ingroup tripal_pub
  */
 function tripal_pub_importer_ncbi_api_key_form($form, $form_state) {
-  $description = t('Tripal imports publications using NCBI\'s ') 
+  $description = t('Tripal imports publications using NCBI\'s ')
     . l('EUtils API', 'https://www.ncbi.nlm.nih.gov/books/NBK25500/')
     . t(', which limits users and programs to a maximum of 3 requests per second without an API key. '
         . 'However, NCBI allows users and programs to an increased maximum of 10 requests per second if '
@@ -1116,7 +1116,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
   $pub_id = 0;
 
   // These are options for the tripal_report_error function. We do not
-  // want to log messages to the watchdog except for errors and to the job and 
+  // want to log messages to the watchdog except for errors and to the job and
   // to the terminal
   $message_type = 'pub_import';
   $message_opts = [
@@ -1134,7 +1134,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     return FALSE;
   }
 
-  // Before proceeding check to see if the publication already exists. If there 
+  // Before proceeding check to see if the publication already exists. If there
   // is only one match and the $update_if_exists is NOT set then return FALSE.
   $pub_ids = chado_publication_exists($pub_details);
 
@@ -1152,7 +1152,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     return FALSE;
   }
 
-  // If we have more than one matching pub then return an error as we don't 
+  // If we have more than one matching pub then return an error as we don't
   // know which to update even if update_if_exists is set to TRUE.
   if (count($pub_ids) > 1) {
     tripal_report_error($message_type, TRIPAL_NOTICE,
@@ -1203,7 +1203,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     return FALSE;
   }
 
-  // The series name field in the pub table is only 255 characters, so we 
+  // The series name field in the pub table is only 255 characters, so we
   // should trim just in case.
   $series_name = '';
   if (array_key_exists('Series_Name', $pub_details)) {
@@ -1257,8 +1257,8 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     }
   }
 
-  // Before we add any new properties we need to remove those that are there 
-  // if this is an update.  The only thing we don't want to remove are the 
+  // Before we add any new properties we need to remove those that are there
+  // if this is an update.  The only thing we don't want to remove are the
   // 'Publication Dbxref'.
   if ($update_if_exists) {
     $sql = "
@@ -1277,7 +1277,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
   // Iterate through the properties and add them.
   foreach ($pub_details as $key => $value) {
 
-    // The pub_details may have the raw search data (e.g. in XML from PubMed. 
+    // The pub_details may have the raw search data (e.g. in XML from PubMed.
     // We'll irgnore this for now.
     if ($key == 'raw') {
       continue;
