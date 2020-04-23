@@ -527,6 +527,7 @@ class TripalEntityCollection {
     }
     if ($job) {
       $job->setTotalItems($total_entities);
+      $job->setInterval(1);
     }
 
     // Iterate through the bundles in this collection and get the entities.

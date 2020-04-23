@@ -13,9 +13,6 @@
 function tripal_registration_form($form, &$form_state) {
   $form_data = unserialize(variable_get('tripal_site_registration', NULL));
 
-  $form_state['details']['funding'] =
-    isset($form_state['details']['funding']) ? $form_state['details']['funding'] : 1;
-
   $form['description'] = [
     '#title' => 'Why Register your Site?',
     '#type' => 'item',
@@ -43,12 +40,35 @@ function tripal_registration_form($form, &$form_state) {
     '#title' => t('Do not register this site (opt-out).'),
     '#default_value' => isset($form_data['values']['disable_tripal_reporting']) ? $form_data['values']['disable_tripal_reporting'] : NULL,
     '#description' => "If you do not want to register your site please check
-      this box as it will stop the reminder notifications.  You can return later and register at any time.",
+      this box. You will no longer be notified to register and no details will be submitted.  You can return later and register at any time.",
     '#ajax' => array(
-      'callback' => '_tripal_form_disable_reg_callback',
-      'event' => 'click',
+      'callback' => 'custom_registration_ajax_disable_reg_callback',
+      'wrapper' => 'reg-details',
     ),
   );
+  $opt_out = $form_data['values']['disable_tripal_reporting'];
+  if (array_key_exists('values', $form_state) and
+      array_key_exists('disable_tripal_reporting', $form_state['values'])){
+        $opt_out = $form_state['values']['disable_tripal_reporting'] ? TRUE : FALSE;
+  }
+
+  if ($opt_out) {
+    $form['details'] = [
+        '#type' => 'markup',
+        '#prefix' => '<div id="reg-details">',
+        '#suffix' => '</div>',
+    ];
+    return $form;
+  }
+  $form['details'] = [
+    '#type' => 'fieldset',
+    '#title' => t('Registration Details'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#disabled' => $opt_out,
+    '#prefix' => '<div id="reg-details">',
+    '#suffix' => '</div>',
+  ];
 
   $purpose = array(0 => t('Production'), 1 => t('Development'), 2 => t('Experimental'));
   $form['details']['tripal_reg_site_purpose'] = array(
@@ -56,10 +76,10 @@ function tripal_registration_form($form, &$form_state) {
       '#title' => t('Site Status'),
       '#default_value' => isset($form_data['values']['tripal_reg_site_purpose']) ? $form_data['values']['tripal_reg_site_purpose'] : NULL,
       '#options' => $purpose,
-      '#required' => FALSE,
-      '#description' => t('Please register your site regardless if it is experimental (to explore tripal), 
-       for development of a future site (or updates to an existing site), or a site currently 
-       in production. For funding, it is important to know how many sites are active for each category.  If your site changes 
+      '#required' => TRUE,
+      '#description' => t('Please register your site regardless if it is experimental (to explore tripal),
+       for development of a future site (or updates to an existing site), or a site currently
+       in production. For funding, it is important to know how many sites are active for each category.  If your site changes
        status, such as from development to production, please remember to return and update the purpose.')
   );
 
@@ -74,7 +94,7 @@ function tripal_registration_form($form, &$form_state) {
       '#type' => 'textarea',
       '#title' => t('Description of the site'),
       '#default_value' => isset($form_data['values']['tripal_reg_site_description']) ? $form_data['values']['tripal_reg_site_description'] : NULL,
-      '#required' => FALSE,
+      '#required' => TRUE,
       '#description' => t('Please provide a brief description of this site.  Consider including
      details such as its purpose, the primary data types your site provides, and the
      research community your site serves.')
@@ -139,76 +159,76 @@ function tripal_registration_form($form, &$form_state) {
     '#suffix' => '</div>',
   );
 
-  $count = count($form_data['values']['funding']);
-  if ($form_state['details']['funding'] < $count) {
-    $form_state['details']['funding'] = $form_state['details']['funding'] + $count;
+  $num_sources = 1;
+  if (isset($form_data['values']['funding'])) {
+    $num_sources = count(array_keys($form_data['values']['funding'])) + 1;
   }
-  else {
-    $form_state['details']['funding'] = $form_state['details']['funding'] + 1;
+  if (array_key_exists('triggering_element', $form_state) and
+      $form_state['triggering_element']['#name'] == 'add_funding') {
+    $num_sources++;
   }
 
-  for ($i = 1; $i <= $form_state['details']['funding']; $i++) {
-    if ($i === $form_state['details']['funding']) {
-      $form['details']['funding'][$i] = array(
-        '#type' => 'fieldset',
-        '#title' => t("Funding Source $i"),
-        '#tree' => TRUE,
-        '#collapsible' => TRUE,
-        '#collapsed' => FALSE,
-        '#description' => t('When requesting funds for additional Tripal development,
-       it is important to report the breadth of of funding sources for Tripal sites.
-       Please consider sharing this information by providing the granting
-       agency, and funding periods.')
-      );
+  for ($i = 1; $i <= $num_sources; $i++) {
+    $collapsed = TRUE;
+    $tripal_reg_site_agency = '';
+    $tripal_reg_site_grant = '';
+    $tripal_reg_site_amount = '';
+    $tripal_reg_site_start = date('Y', time());
+    $tripal_reg_site_end = date('Y', time());
+    if ($i == $num_sources) {
+      $collapsed = FALSE;
     }
-    else {
-      $form['details']['funding'][$i] = array(
-        '#type' => 'fieldset',
-        '#title' => t("Funding Source $i"),
-        '#tree' => TRUE,
-        '#collapsible' => TRUE,
-        '#collapsed' => TRUE,
-        '#description' => t('When requesting funds for additional Tripal development,
-       it is important to report the breadth of of funding sources for Tripal sites.
-       Please consider sharing this information by providing the granting
-       agency, and funding periods.')
-      );
+    if ($i < $num_sources) {
+      $source = $form_data['values']['funding'][$i-1];
+      $tripal_reg_site_agency = $source['tripal_reg_site_agency'];
+      $tripal_reg_site_grant = $source['tripal_reg_site_grant'];
+      $tripal_reg_site_amount = $source['tripal_reg_site_amount'];
+      $tripal_reg_site_start = $source['funding_period']['tripal_reg_site_start'];
+      $tripal_reg_site_end = $source['funding_period']['tripal_reg_site_end'];
     }
-    $form['details']['funding'][$i]['tripal_reg_site_agency'] = array(
-      '#type' => 'textfield',
-      '#default_value' => isset($form_data['values']['funding'][$i]['tripal_reg_site_agency']) ? $form_data['values']['funding'][$i]['tripal_reg_site_agency'] : NULL,
-      '#title' => t('Funding Agency'),
+    $form['details']['funding'][$i] = array(
+      '#type' => 'fieldset',
+      '#title' => t("Funding Source %index, %name", ['%index' => $i, '%name' => $tripal_reg_site_agency]),
+      '#tree' => TRUE,
+      '#collapsible' => TRUE,
+      '#collapsed' => $collapsed,
+      '#description' => t('When requesting funds for additional Tripal development,
+     it is important to report the breadth of of funding sources for Tripal sites.
+     Please consider sharing this information by providing the granting
+     agency, and funding periods.')
     );
 
+    $form['details']['funding'][$i]['tripal_reg_site_agency'] = array(
+      '#type' => 'textfield',
+        '#default_value' => $tripal_reg_site_agency,
+      '#title' => t('Funding Agency'),
+    );
     $form['details']['funding'][$i]['tripal_reg_site_grant'] = array(
       '#type' => 'textfield',
-      '#default_value' => isset($form_data['values']['funding'][$i]['tripal_reg_site_grant']) ? $form_data['values']['funding'][$i]['tripal_reg_site_grant'] : NULL,
-      '#title' => t('Grant Number'),
+      '#default_value' => $tripal_reg_site_grant,
+      '#title' => t('Grant/Award Number'),
     );
     $form['details']['funding'][$i]['tripal_reg_site_amount'] = array(
       '#type' => 'textfield',
-      '#default_value' => isset($form_data['values']['funding'][$i]['tripal_reg_site_amount']) ? $form_data['values']['funding'][$i]['tripal_reg_site_amount'] : NULL,
+        '#default_value' => $tripal_reg_site_amount,
       '#title' => t('Funding Amount'),
     );
-
     $form['details']['funding'][$i]['funding_period'] = array(
       '#type' => 'fieldset',
       '#title' => t('Funding Period'),
       '#tree' => TRUE,
     );
-
     $form['details']['funding'][$i]['funding_period']['tripal_reg_site_start'] = array(
       '#type' => 'date_select',
       '#title' => t("Start"),
-      '#default_value' => isset($form_data['values']['funding'][$i]['funding_period']['tripal_reg_site_start']) ? $form_data['values']['funding'][$i]['funding_period']['tripal_reg_site_start'] : date('Y', time()),
+      '#default_value' => $tripal_reg_site_start,
       '#date_year_range' => '-20:+20',
       '#date_format' => 'Y',
     );
-
     $form['details']['funding'][$i]['funding_period']['tripal_reg_site_end'] = array(
       '#type' => 'date_select',
       '#title' => t('End'),
-      '#default_value' => isset($form_data['values']['funding'][$i]['funding_period']['tripal_reg_site_end']) ? $form_data['values']['funding'][$i]['funding_period']['tripal_reg_site_end'] : date('Y', time()),
+      '#default_value' => $tripal_reg_site_end,
       '#date_year_range' => '-20:+20',
       '#date_format' => 'Y',
     );
@@ -216,39 +236,42 @@ function tripal_registration_form($form, &$form_state) {
 
   $form['details']['funding']['add_funding'] = array(
     '#type' => 'button',
+    '#name' => 'add_funding',
     '#value' => t('Add additional funding sources'),
     '#href' => '',
+    '#limit_validation_errors' => [],
     '#ajax' => array(
       'callback' => 'custom_registration_ajax_add_funding',
       'wrapper' => 'funding',
     ),
   );
 
-  // Provide a submit button.
-  if (!empty($form_data)) {
-    $form['submit'] = array(
-      '#type' => 'submit',
-      '#value' => 'Update registration information',
-    );
-  }
-  else {
-    $form['submit'] = array(
-      '#type' => 'submit',
-      '#value' => 'Register Site',
-    );
-  }
-
+  $form['details']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Submit',
+  );
 
   return $form;
 
 }
 
 function custom_registration_ajax_add_funding($form, $form_state) {
+  // Save the current state of the registration form.
+  tripal_registration_form_save_registration_info($form_state);
+
   return $form['details']['funding'];
 }
 
-function _tripal_form_disable_reg_callback($form, &$form_state) {
+function custom_registration_ajax_disable_reg_callback($form, &$form_state) {
+  // Save the current state of the registration form.
+  tripal_registration_form_save_registration_info($form_state);
+
+  // Turn off the notice to register the site.
   variable_set('disable_tripal_reporting', TRUE);
+  if ($form_state['values']['disable_tripal_reporting']) {
+    drupal_set_message('You have opted-out of registation.');
+  }
+  return $form['details'];
 }
 
 /**
@@ -261,18 +284,43 @@ function _tripal_form_disable_reg_callback($form, &$form_state) {
  *   during processing.
  */
 function tripal_registration_form_validate($form, &$form_state){
-  $mail_pi = $form_state['values']['principal_investigator_email'];
-  $mail_sa = $form_state['values']['tripal_reg_site_admin_email'];
-  if ($form_state['values']['disable_tripal_reporting'] != TRUE) {
-    if (!empty($mail_pi) && !valid_email_address($mail_pi)) {
-      form_set_error('[details][principal_investigator][principal_investigator_email]', t('The email address for the principal investigator appears to be invalid.'));
-    }
-    if(!empty($mail_sa) && !valid_email_address($mail_sa)) {
-      form_set_error('[details][site_admin][tripal_reg_site_admin_email]', t("The email address for the site administrator appears to be invalid."));
-    }
+  $mail_pi = array_key_exists('principal_investigator_email', $form_state['values']) ? $form_state['values']['principal_investigator_email'] : '';
+  $mail_sa = array_key_exists('tripal_reg_site_admin_email', $form_state['values']) ? $form_state['values']['tripal_reg_site_admin_email'] : '';
+
+  if ($form_state['values']['disable_tripal_reporting']) {
+    return;
   }
+
+  if (!$mail_pi and !$mail_sa) {
+    form_set_error('principal_investigator_email', t('Please provide an email address for the principal investigator or the site admin.'));
+  }
+
+  if (!empty($mail_pi) && !valid_email_address($mail_pi)) {
+    form_set_error('principal_investigator_email', t('The email address for the principal investigator appears to be invalid.'));
+  }
+  if(!empty($mail_sa) && !valid_email_address($mail_sa)) {
+    form_set_error('tripal_reg_site_admin_email', t("The email address for the site administrator appears to be invalid."));
+  }
+
 }
 
+/**
+ * Saves the current state of the registration form as a drupal variable.
+ */
+function tripal_registration_form_save_registration_info($form_state) {
+  // Check for empty funding periods and remove them.
+  $sources = [];
+  foreach ($form_state['values']['funding'] as $funding_source) {
+    if (!empty($funding_source['tripal_reg_site_agency'])) {
+      $sources[] = $funding_source;
+    }
+  }
+  $form_state['values']['funding'] = $sources;
+
+  // Save the registration details.
+  $registration = serialize($form_state);
+  variable_set('tripal_site_registration', $registration);
+}
 /**
  * Implements submit from the Form API.
  *
@@ -284,33 +332,22 @@ function tripal_registration_form_validate($form, &$form_state){
  */
 function tripal_registration_form_submit($form, &$form_state) {
   variable_set('disable_tripal_reporting', TRUE);
+  tripal_registration_form_save_registration_info($form_state);
 
-  //Check for empty funding periods and remove them.
-  $j = 1;
-  foreach ($form_state['values']['funding'] as $funding_source) {
-    if (!empty($funding_source['tripal_reg_site_agency']) && !empty($funding_source['tripal_reg_site_grant'])) {
-      $form_state['values']['fundings'][$j] = $funding_source;
-      $j++;
-    }
-  }
-  $form_state['values']['funding'] = $form_state['values']['fundings'] ?? [];
-  $registration = serialize($form_state);
-  variable_set('tripal_site_registration', $registration);
-
-  //Now send the updated info to the Tripal Site.
+  // Now send the updated info to the Tripal Site.
   // Only register with tripal.info if the user has not opt'd out.
   if ($form_state['values']['disable_tripal_reporting'] == FALSE) {
+
+    $registration = variable_get('tripal_site_registration');
     tripal_registration_remote_submit($registration);
     drupal_set_message(t('Registration sent to tripal.info'), 'status');
     drupal_set_message(t('Thank you for registering. You can update your details at any time.'), 'status');
   }
   else {
-    drupal_set_message(t('You are not registered with tripal.info. You can 
-            change this at any time by unchecking the opt out checkbox and 
+    drupal_set_message(t('You are not registered with tripal.info. You can
+            change this at any time by unchecking the opt out checkbox and
             submitting the form.'), 'status');
   }
-
-
 }
 
 function tripal_registration_remote_submit($data) {

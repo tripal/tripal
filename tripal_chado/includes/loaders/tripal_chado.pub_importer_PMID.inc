@@ -208,12 +208,20 @@ function tripal_pub_PMID_search_init($search_str, $retmax) {
   // do a search for a single result so that we can establish a history, and get
   // the number of records. Once we have the number of records we can retrieve
   // those requested in the range.
-  $query_url = "http://www.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?" .
+  $query_url = "https://www.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?" .
     "db=Pubmed" .
     "&retmax=$retmax" .
     "&usehistory=y" .
     "&term=" . urlencode($search_str);
 
+  $api_key = variable_get('tripal_pub_importer_ncbi_api_key', NULL);
+  $sleep_time = 333334;
+  if (!empty($api_key)) {
+    $query_url .= "&api_key=" . $api_key;
+    $sleep_time = 100000;
+  }
+
+  usleep($sleep_time);  // 1/3 of a second delay, NCBI limits requests to 3 / second without API key
   $rfh = fopen($query_url, "r");
   if (!$rfh) {
     drupal_set_message('Could not perform Pubmed query. Cannot connect to Entrez.', 'error');
@@ -292,7 +300,7 @@ function tripal_pub_PMID_fetch($query_key, $web_env, $rettype = 'null',
 
   // repeat the search performed previously (using WebEnv & QueryKey) to retrieve
   // the PMID's within the range specied.  The PMIDs will be returned as a text list
-  $fetch_url = "http://www.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?" .
+  $fetch_url = "https://www.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?" .
     "rettype=$rettype" .
     "&retmode=$retmod" .
     "&retstart=$start" .
@@ -300,6 +308,13 @@ function tripal_pub_PMID_fetch($query_key, $web_env, $rettype = 'null',
     "&db=Pubmed" .
     "&query_key=$query_key" .
     "&WebEnv=$web_env";
+
+  $api_key = variable_get('tripal_pub_importer_ncbi_api_key', NULL);
+  $sleep_time = 333334;
+  if (!empty($api_key)) {
+    $fetch_url .= "&api_key=" . $api_key;
+    $sleep_time = 100000;
+  }
 
   foreach ($args as $key => $value) {
     if (is_array($value)) {
@@ -313,6 +328,7 @@ function tripal_pub_PMID_fetch($query_key, $web_env, $rettype = 'null',
       $fetch_url .= "&$key=$value";
     }
   }
+  usleep($sleep_time);  // 1/3 of a second delay, NCBI limits requests to 3 / second without API key
   $rfh = fopen($fetch_url, "r");
   if (!$rfh) {
     drupal_set_message('ERROR: Could not perform PubMed query.', 'error');
@@ -338,10 +354,10 @@ function tripal_pub_PMID_fetch($query_key, $web_env, $rettype = 'null',
  * XML should contain only a single publication record.
  *
  * Information about the valid elements in the PubMed XML can be found here:
- * http://www.nlm.nih.gov/bsd/licensee/elements_descriptions.html
+ * https://www.nlm.nih.gov/bsd/licensee/elements_descriptions.html
  *
  * Information about PubMed's citation format can be found here
- * http://www.nlm.nih.gov/bsd/policy/cit_format.html
+ * https://www.nlm.nih.gov/bsd/policy/cit_format.html
  *
  * @param $pub_xml
  *  An XML string describing a single publication

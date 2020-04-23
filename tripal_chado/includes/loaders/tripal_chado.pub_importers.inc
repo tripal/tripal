@@ -82,9 +82,11 @@ function tripal_pub_importers_list() {
       <li>Create a new importer by clicking the 'New Importer' link above, and after saving it should appear in the list below.  Click the
           link labeled 'Import Pubs' to schedule a job to import the publications</li>
       <li>The first method only performs the import once.  However, you can schedule the
-          importer to run peridically by adding a cron job. </li> 
+          importer to run peridically by adding a cron job. </li>
      </ol><br>");
 
+  $form = drupal_get_form('tripal_pub_importer_ncbi_api_key_form');
+  $page .= drupal_render($form);
 
   $table = [
     'header' => $headers,
@@ -131,13 +133,9 @@ function tripal_pub_importer_setup_page($action = 'new', $pub_import_id = NULL) 
     drupal_set_message(t('If you want to create contact pages for authors, you must first ') . l(t('load the Tripal Contact Ontology'), 'admin/tripal/loaders/chado_vocabs/obo_loader'), 'error');
   }
 
-  /**
-   * Commenting the AGL message out until we get AGL working again.
-   * spf 6/22/2018
-   * if(!extension_loaded ('yaz')){
-   * drupal_set_message(t('<b>Note:</b> In order to create an importer using the USDA National Agricultural Library (AGL) you must install the yaz libraries. See the ') . l(t('Pub Module help page'), 'admin/tripal/legacy/tripal_pub/help') . ' for assistance.  If you do not want to use AGL you can ignore this warning.', 'warning');
-   * }
-   */
+  if(!extension_loaded ('yaz')){
+    drupal_set_message(t('<b>Note:</b> In order to create an importer using the USDA National Agricultural Library (AGL) you must install the yaz libraries. See the ') . l(t('Users Guide for Instructions'), 'https://tripal.readthedocs.io/en/latest/user_guide/example_genomics/pub_import.html#import-from-the-usda-national-agricultural-library') . ' for assistance.  If you do not want to use AGL you can ignore this warning.', 'warning');
+  }
 
   // generate the search form
   $form = drupal_get_form('tripal_pub_importer_setup_form', $pub_import_id, $action);
@@ -150,11 +148,13 @@ function tripal_pub_importer_setup_page($action = 'new', $pub_import_id = NULL) 
     $remote_db = array_key_exists('remote_db', $_SESSION['tripal_pub_import']) ? $_SESSION['tripal_pub_import']['remote_db'] : '';
     $num_criteria = array_key_exists('num_criteria', $_SESSION['tripal_pub_import']) ? $_SESSION['tripal_pub_import']['num_criteria'] : '';
     $days = array_key_exists('days', $_SESSION['tripal_pub_import']) ? $_SESSION['tripal_pub_import']['days'] : '';
+    $latestyear = array_key_exists('latestyear', $_SESSION['tripal_pub_import']) ? $_SESSION['tripal_pub_import']['latestyear'] : '';
 
     $search_array = [];
     $search_array['remote_db'] = $remote_db;
     $search_array['num_criteria'] = $num_criteria;
     $search_array['days'] = $days;
+    $search_array['latestyear'] = $latestyear;
     for ($i = 1; $i <= $num_criteria; $i++) {
       $search_array['criteria'][$i]['search_terms'] = $_SESSION['tripal_pub_import']['criteria'][$i]['search_terms'];
       $search_array['criteria'][$i]['scope'] = $_SESSION['tripal_pub_import']['criteria'][$i]['scope'];
@@ -183,6 +183,10 @@ function tripal_pub_importer_setup_page($action = 'new', $pub_import_id = NULL) 
           $raw_link = '';
           if (array_key_exists('Publication Dbxref', $pub) and $pub['Publication Dbxref']) {
             $raw_link = l('raw', 'admin/tripal/loaders/pub/raw/' . $pub['Publication Dbxref'], ['attributes' => ['target' => '_blank']]);
+          }
+          // indicate those that will be excluded by AGL year filtering parameters
+          if ((array_key_exists('passfilter', $pub)) and ($pub['passfilter'] == 0 )) {
+            $citation = '<span style="text-decoration: line-through;">' . $citation . '</span>';
           }
           $rows[] = [
             number_format($i),
@@ -277,12 +281,13 @@ function tripal_pub_importer_setup_form($form, &$form_state = NULL, $pub_import_
   $criteria = NULL;
   $remote_db = '';
   $days = '';
+  $latestyear = '';
   $disabled = '';
   $do_contact = '';
   $num_criteria = 1;
   $loader_name = '';
 
-  // if this is an edit the we are pulling an import object from the database
+  // if this is an edit then we are pulling an import object from the database
   if ($action == "edit") {
     $sql = "SELECT * FROM {tripal_pub_import} WHERE pub_import_id = :pub_import_id";
     $importer = db_query($sql, [':pub_import_id' => $pub_import_id])->fetchObject();
@@ -290,6 +295,7 @@ function tripal_pub_importer_setup_form($form, &$form_state = NULL, $pub_import_
     $criteria = unserialize($importer->criteria);
     $remote_db = $criteria['remote_db'];
     $days = $criteria['days'];
+    $latestyear = $criteria['latestyear'];
     $disabled = $criteria['disabled'];
     $do_contact = $criteria['do_contact'];
     $num_criteria = $criteria['num_criteria'];
@@ -300,6 +306,7 @@ function tripal_pub_importer_setup_form($form, &$form_state = NULL, $pub_import_
   if (array_key_exists('tripal_pub_import', $_SESSION)) {
     $remote_db = $_SESSION['tripal_pub_import']['remote_db'];
     $days = $_SESSION['tripal_pub_import']['days'];
+    $latestyear = $_SESSION['tripal_pub_import']['latestyear'];
     $disabled = $_SESSION['tripal_pub_import']['disabled'];
     $do_contact = $_SESSION['tripal_pub_import']['do_contact'];
     $num_criteria = $_SESSION['tripal_pub_import']['num_criteria'];
@@ -315,21 +322,23 @@ function tripal_pub_importer_setup_form($form, &$form_state = NULL, $pub_import_
   // if we are re constructing the form from a failed validation or ajax callback
   // then use the $form_state['values'] values
   if (array_key_exists('values', $form_state)) {
-    $remote_db = $form_state['values']['remote_db'];
-    $days = $form_state['values']['days'];
-    $disabled = $form_state['values']['disabled'];
-    $do_contact = $form_state['values']['do_contact'];
-    $num_criteria = $form_state['values']['num_criteria'];
-    $loader_name = $form_state['values']['loader_name'];
+    $remote_db = $form_state['values']['remote_db'] ?? null;
+    $days = $form_state['values']['days'] ?? null;
+    $latestyear = $form_state['values']['latestyear'] ?? null;
+    $disabled = $form_state['values']['disabled'] ?? null;
+    $do_contact = $form_state['values']['do_contact'] ?? null;
+    $num_criteria = $form_state['values']['num_criteria'] ?? null;
+    $loader_name = $form_state['values']['loader_name'] ?? null;
   }
   // if we are re building the form from after submission (from ajax call) then
   // the values are in the $form_state['input'] array
   if (array_key_exists('input', $form_state) and !empty($form_state['input'])) {
-    $remote_db = $form_state['input']['remote_db'];
-    $days = $form_state['input']['days'];
-    $disabled = $form_state['input']['disabled'];
-    $do_contact = $form_state['input']['do_contact'];
-    $loader_name = $form_state['input']['loader_name'];
+    $remote_db = $form_state['input']['remote_db'] ?? null;
+    $days = $form_state['input']['days'] ?? null;
+    $latestyear = $form_state['input']['latestyear'] ?? null;
+    $disabled = $form_state['input']['disabled'] ?? null;
+    $do_contact = $form_state['input']['do_contact'] ?? null;
+    $loader_name = $form_state['input']['loader_name'] ?? null;
 
     // because the num_criteria is a value and not a visible or hidden form
     // element it is not part of the ['input'] array, so we need to get it from the form
@@ -381,11 +390,7 @@ function tripal_pub_importer_setup_form($form, &$form_state = NULL, $pub_import_
   if (!$remote_db) {
     $remote_db = 'PMID';
   }
-  /**
-   * Removing AGL option until we get it fixed
-   * spf 6/22/2018
-   */
-  unset($remote_dbs['AGL']);
+
   $form['themed_element']['remote_db'] = [
     '#title' => t('Source'),
     '#type' => 'select',
@@ -403,6 +408,14 @@ function tripal_pub_importer_setup_form($form, &$form_state = NULL, $pub_import_
     '#title' => t('Days since record modified'),
     '#description' => t('Limit the search to include pubs that have been added no more than this many days before today.'),
     '#default_value' => $days,
+    '#size' => 5,
+  ];
+  // AGL only, this field will be removed for the pubmed loader
+  $form['themed_element']['latestyear'] = [
+    '#type' => 'textfield',
+    '#title' => t('Latest year of publication'),
+    '#description' => t('Filter returned publications for those that have been published no later than this year.'),
+    '#default_value' => $latestyear,
     '#size' => 5,
   ];
   $form['themed_element']['disabled'] = [
@@ -449,6 +462,70 @@ function tripal_pub_importer_setup_form($form, &$form_state = NULL, $pub_import_
   $form['themed_element']['#theme'] = 'tripal_pub_importer_setup_form_elements';
 
   return $form;
+}
+
+/**
+ * The form used for setting the optional NCBI API key.
+ *
+ * @param $form
+ *   The form element to be populated.
+ * @param $form_state
+ *   The state of the form element to be populated.
+ *
+ * @return array
+ *   The populated form element.
+ *
+ * @ingroup tripal_pub
+ */
+function tripal_pub_importer_ncbi_api_key_form($form, $form_state) {
+  $description = t('Tripal imports publications using NCBI\'s ')
+    . l('EUtils API', 'https://www.ncbi.nlm.nih.gov/books/NBK25500/')
+    . t(', which limits users and programs to a maximum of 3 requests per second without an API key. '
+        . 'However, NCBI allows users and programs to an increased maximum of 10 requests per second if '
+        . 'they provide a valid API key. This is particularly useful in speeding up large publication imports. '
+        . 'For more information on NCBI API keys, please ')
+    . l('see here', 'https://www.ncbi.nlm.nih.gov/books/NBK25497/#chapter2.Coming_in_December_2018_API_Key', array(
+      'attributes' => array(
+        'target' => 'blank',
+      ),
+    )) . '.';
+
+  $form['ncbi_api_key'] = array(
+    '#type' => 'textfield',
+    '#title' => t('(Optional) NCBI API key:'),
+    '#description' => $description,
+    '#default_value' => variable_get('tripal_pub_importer_ncbi_api_key', NULL),
+    '#ajax' => array(
+      'callback' => 'tripal_pub_importer_set_ncbi_api_key',
+      'wrapper' => 'ncbi_api_key',
+    ),
+    '#prefix' => '<div id="ncbi_api_key">',
+    '#suffix' => '</div>',
+  );
+
+  return $form;
+}
+
+/**
+ * This function saves the NCBI API key to the database.
+ *
+ * It is called when the user makes a change to the NCBI API key field and then
+ * moves their cursor out of the field.
+ *
+ * @param $form
+ *   The new form element.
+ * @param $form_state
+ *   The state of the new form element.
+ *
+ * @return array
+ *   The new api key field.
+ *
+ * @ingroup tripal_pub
+ */
+function tripal_pub_importer_set_ncbi_api_key($form, $form_state) {
+  variable_set('tripal_pub_importer_ncbi_api_key', check_plain($form_state['values']['ncbi_api_key']));
+  drupal_set_message('NCBI API key has been saved successfully!');
+  return $form['ncbi_api_key'];
 }
 
 /**
@@ -501,10 +578,14 @@ function tripal_pub_importer_setup_add_criteria_fields(&$form, &$form_state, $nu
 
     // if we have criteria supplied from the database then use that as the initial defaults
     if ($criteria) {
-      $search_terms = $criteria['criteria'][$i]['search_terms'];
-      $scope = $criteria['criteria'][$i]['scope'];
-      $is_phrase = $criteria['criteria'][$i]['is_phrase'];
-      $operation = $criteria['criteria'][$i]['operation'];
+      if (array_key_exists('criteria', $criteria)) {
+        if (array_key_exists($i, $criteria['criteria'])) {
+          $search_terms = $criteria['criteria'][$i]['search_terms'];
+          $scope = $criteria['criteria'][$i]['scope'];
+          $is_phrase = $criteria['criteria'][$i]['is_phrase'];
+          $operation = $criteria['criteria'][$i]['operation'];
+        }
+      }
     }
 
     // if the criteria comes the session
@@ -516,12 +597,12 @@ function tripal_pub_importer_setup_add_criteria_fields(&$form, &$form_state, $nu
     }
 
     // If the form_state has variables then use those.  This happens when an error occurs on the form or the
-    // form is resbumitted using AJAX
+    // form is resubmitted using AJAX
     if (array_key_exists('values', $form_state)) {
-      $search_terms = $form_state['values']["search_terms-$i"];
-      $scope = $form_state['values']["scope-$i"];
-      $is_phrase = $form_state['values']["is_phrase-$i"];
-      $operation = $form_state['values']["operation-$i"];
+      $search_terms = $form_state['values']["search_terms-$i"] ?? null;
+      $scope = $form_state['values']["scope-$i"] ?? null;
+      $is_phrase = $form_state['values']["is_phrase-$i"] ?? null;
+      $operation = $form_state['values']["operation-$i"] ?? null;
     }
     $form['themed_element']['criteria'][$i]["scope-$i"] = [
       '#type' => 'select',
@@ -641,6 +722,7 @@ function tripal_pub_importer_setup_form_validate($form, &$form_state) {
   $num_criteria = $form_state['values']['num_criteria'];
   $remote_db = $form_state['values']["remote_db"];
   $days = trim($form_state['values']["days"]);
+  $latestyear = trim($form_state['values']["latestyear"]);
   $disabled = $form_state['values']["disabled"];
   $do_contact = $form_state['values']["do_contact"];
   $loader_name = trim($form_state['values']["loader_name"]);
@@ -666,6 +748,10 @@ function tripal_pub_importer_setup_form_validate($form, &$form_state) {
     form_set_error("days", "Please enter a numeric, non decimal value, for the number of days.");
     $_SESSION['tripal_pub_import']['perform_search'] = 0;
   }
+  if ($latestyear and !is_numeric($latestyear) or preg_match('/\./', $latestyear)) {
+    form_set_error("latestyear", "Please enter a numeric, non decimal value, for latestyear.");
+    $_SESSION['tripal_pub_import']['perform_search'] = 0;
+  }
   // allow the selected remote database to validate any changes to the form if needed
   $callback = "tripal_pub_remote_validate_form_$remote_db";
   $form = call_user_func($callback, $form, $form_state);
@@ -682,6 +768,7 @@ function tripal_pub_importer_setup_form_submit($form, &$form_state) {
   $num_criteria = $form_state['values']['num_criteria'];
   $remote_db = $form_state['values']["remote_db"];
   $days = trim($form_state['values']["days"]);
+  $latestyear = trim($form_state['values']["latestyear"]);
   $loader_name = trim($form_state['values']["loader_name"]);
   $disabled = $form_state['values']["disabled"];
   $do_contact = $form_state['values']["do_contact"];
@@ -689,6 +776,7 @@ function tripal_pub_importer_setup_form_submit($form, &$form_state) {
   // set the session variables
   $_SESSION['tripal_pub_import']['remote_db'] = $remote_db;
   $_SESSION['tripal_pub_import']['days'] = $days;
+  $_SESSION['tripal_pub_import']['latestyear'] = $latestyear;
   $_SESSION['tripal_pub_import']['num_criteria'] = $num_criteria;
   $_SESSION['tripal_pub_import']['loader_name'] = $loader_name;
   $_SESSION['tripal_pub_import']['disabled'] = $disabled;
@@ -795,6 +883,10 @@ function theme_tripal_pub_importer_setup_form_elements($variables) {
   $markup .= '</div>';
   $markup .= '<div id="pub-search-form-row1" style="clear:both">';
   $markup .= '  <div id="pub-search-form-row1-col1">' . drupal_render($form['days']) . '</div>';
+  // latest year field is used ony for AGL importer
+  if ($variables['form']['remote_db']['#value'] == 'AGL') {
+    $markup .= '  <div id="pub-search-form-row1-col2">' . drupal_render($form['latestyear']) . '</div>';
+  }
   $markup .= '</div>';
   $markup .= '<div id="pub-search-form-row2">' . drupal_render($form['disabled']) . '</div>';
   $markup .= '<div id="pub-search-form-row3">' . drupal_render($form['do_contact']) . '</div>';
@@ -930,46 +1022,53 @@ function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE, $job =
     $memory = number_format(memory_get_usage()) . " bytes";
     print "Processing $i of $total_pubs. Memory usage: $memory.\r";
 
-    // add the publication to Chado
-    $action = '';
-    $pub_id = tripal_pub_add_publication($pub, $action, $do_contact, $update, $job);
-    if ($pub_id) {
-      // add the publication cross reference (e.g. to PubMed)
-      if ($pub_id and $pub['Publication Dbxref']) {
-        $dbxref = [];
-        if (preg_match('/^(.*?):(.*?)$/', trim($pub['Publication Dbxref']), $matches)) {
-          $dbxref['db_name'] = $matches[1];
-          $dbxref['accession'] = $matches[2];
-        }
-        else {
-          tripal_report_error($message_type, TRIPAL_ERROR,
-            'Unable to extract the dbxref to be associated with the publication (pub ID=@pub_id) from @dbxref. This reference should be [database-name]:[accession]',
-            [
-              '@pub_id' => $pub_id,
-              '@dbxref' => $pub['Publication Dbxref'],
-              $message_opts,
-            ]
-          );
-        }
-        $pub_dbxref = tripal_associate_dbxref('pub', $pub_id, $dbxref);
-      }
-      $pub['pub_id'] = $pub_id;
-    }
+    // implementation of year limits for AGL uses a 'passfilter' flag
+    if ((!array_key_exists('passfilter', $pub)) or ($pub['passfilter'] == 1 )) {
 
-    switch ($action) {
-      case 'error':
-        $report['error'][] = $pub['Citation'];
-        break;
-      case 'inserted':
-        $report['inserted'][] = $pub['Citation'];
-        break;
-      case 'updated':
-        $report['updated'][] = $pub['Citation'];
-        break;
-      case 'skipped':
-        $report['skipped'][] = $pub['Citation'];
-        break;
+      // add the publication to Chado
+      $action = '';
+      $pub_id = tripal_pub_add_publication($pub, $action, $do_contact, $update, $job);
+      // $pub_id will be null if publication already existed
+      if ($pub_id) {
+        // add the publication cross reference (e.g. to PubMed)
+        if ($pub_id and $pub['Publication Dbxref']) {
+          $dbxref = [];
+          if (preg_match('/^(.*?):(.*?)$/', trim($pub['Publication Dbxref']), $matches)) {
+            $dbxref['db_name'] = $matches[1];
+            $dbxref['accession'] = $matches[2];
+          }
+          else {
+            tripal_report_error($message_type, TRIPAL_ERROR,
+              'Unable to extract the dbxref to be associated with the publication (pub ID=@pub_id) from @dbxref. This reference should be [database-name]:[accession]',
+              [
+                '@pub_id' => $pub_id,
+                '@dbxref' => $pub['Publication Dbxref'],
+                $message_opts,
+              ]
+            );
+          }
+          $pub_dbxref = tripal_associate_dbxref('pub', $pub_id, $dbxref);
+        }
+        $pub['pub_id'] = $pub_id;
+      }
+
+      switch ($action) {
+        case 'error':
+          $report['error'][] = $pub['Citation'];
+          break;
+        case 'inserted':
+          $report['inserted'][] = $pub['Citation'];
+          break;
+        case 'updated':
+          $report['updated'][] = $pub['Citation'];
+          break;
+        case 'skipped':
+          $report['skipped'][] = $pub['Citation'];
+          break;
+      }
     }
+    // else pub failed AGL year filter
+    else { $report['skipped'][] = $pub['Citation']; }
     $i++;
   }
   return $report;
@@ -1017,7 +1116,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
   $pub_id = 0;
 
   // These are options for the tripal_report_error function. We do not
-  // want to log messages to the watchdog except for errors and to the job and 
+  // want to log messages to the watchdog except for errors and to the job and
   // to the terminal
   $message_type = 'pub_import';
   $message_opts = [
@@ -1035,7 +1134,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     return FALSE;
   }
 
-  // Before proceeding check to see if the publication already exists. If there 
+  // Before proceeding check to see if the publication already exists. If there
   // is only one match and the $update_if_exists is NOT set then return FALSE.
   $pub_ids = chado_publication_exists($pub_details);
 
@@ -1053,7 +1152,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     return FALSE;
   }
 
-  // If we have more than one matching pub then return an error as we don't 
+  // If we have more than one matching pub then return an error as we don't
   // know which to update even if update_if_exists is set to TRUE.
   if (count($pub_ids) > 1) {
     tripal_report_error($message_type, TRIPAL_NOTICE,
@@ -1104,7 +1203,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     return FALSE;
   }
 
-  // The series name field in the pub table is only 255 characters, so we 
+  // The series name field in the pub table is only 255 characters, so we
   // should trim just in case.
   $series_name = '';
   if (array_key_exists('Series_Name', $pub_details)) {
@@ -1158,8 +1257,8 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     }
   }
 
-  // Before we add any new properties we need to remove those that are there 
-  // if this is an update.  The only thing we don't want to remove are the 
+  // Before we add any new properties we need to remove those that are there
+  // if this is an update.  The only thing we don't want to remove are the
   // 'Publication Dbxref'.
   if ($update_if_exists) {
     $sql = "
@@ -1178,9 +1277,14 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
   // Iterate through the properties and add them.
   foreach ($pub_details as $key => $value) {
 
-    // The pub_details may have the raw search data (e.g. in XML from PubMed. 
+    // The pub_details may have the raw search data (e.g. in XML from PubMed.
     // We'll irgnore this for now.
     if ($key == 'raw') {
+      continue;
+    }
+
+    // Filtering flag for AGL, not a property to add here
+    if ($key == 'passfilter') {
       continue;
     }
 
