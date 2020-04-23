@@ -29,6 +29,10 @@ function tripal_chado_install() {
       )
     ";
     chado_query($sql);
+
+    // Fix the SOFP feature_property issue from the legacy feature_property.
+    tripal_chado_fix_legacy_SOFP_7338();
+
   }
 
   tripal_insert_variable('bundle_category', 'Bundles can be categorized to allow for grouping');
@@ -471,13 +475,7 @@ function tripal_chado_tripal_custom_tables_schema() {
       'mview_id' => array(
         'type' => 'int',
         'not NULL' => FALSE
-      ),
-      'is_base' => array(
-        'type' => 'int',
-        'not NULL' => FALSE,
-        'size' => 'tiny',
-        'default' => 0,
-      ),
+      )
     ),
     'indexes' => array(
       'table_id' => array('table_id'),
@@ -687,6 +685,63 @@ function tripal_chado_chado_cvterm_mapping_schema() {
     ),
   );
   return $schema;
+}
+
+
+
+/**
+ * Fixes a problem with the legacy feature_property/SOFP
+ * ontology loaded with previous verions of Chado and all terms are
+ * relationships.
+ *
+ * This function is called by the tripal_chado_install() for a
+ * new Tripal setup, and the tripal_chado_update_7338 for an existing
+ * site.
+ */
+
+function tripal_chado_fix_legacy_SOFP_7338() {
+
+  $sofp =  chado_get_db(['name' => 'SOFP']);
+  $fp = chado_get_cv(['name' => 'feature_property']);
+
+  // No need to update unless the SOFP db exists
+  if (!$sofp || !$fp) {
+    return;
+  }
+  $terms = chado_select_record('cvterm', ['cvterm_id', 'name'], [
+    'dbxref_id' => [
+      'db_id' => [
+        'name' => 'SOFP',
+      ],
+    ],
+    'cv_id' => ['name' => 'feature_property'],
+  ]);
+
+  if (empty($terms)) {
+    return;
+  }
+
+  foreach ($terms as $term) {
+
+    $id = $term->cvterm_id;
+    $name = $term->name;
+
+    if ($name == 'linked_to') {
+      continue;
+    }
+    chado_update_record('cvterm', ['cvterm_id' => $id], ['is_relationshiptype' => 0]);
+  }
+
+  // Repopulate the mview.
+  $mview_id = chado_get_mview_id('db2cv_mview');
+  global $user;
+  tripal_add_job(
+    'Repopulating db2cv to fix legacy SOFP',
+    'tripal_chado',
+    'chado_populate_mview',
+    [$mview_id],
+    $user->uid
+  );
 }
 
 /**
@@ -1839,26 +1894,32 @@ function tripal_chado_update_7335() {
  */
 function tripal_chado_update_7336() {
 
-  $bundles = field_info_instances('TripalEntity');
+  try {
+    $bundles = field_info_instances('TripalEntity');
 
-  foreach ($bundles as $bundle_name => $fields) {
+    foreach ($bundles as $bundle_name => $fields) {
 
-    $bundle = tripal_load_bundle_entity(['name' => $bundle_name]);
-    $base = $bundle->data_table;
+      $bundle = tripal_load_bundle_entity(['name' => $bundle_name]);
+      $base = $bundle->data_table;
 
-    $contact_table = $base . '_contact';
-    if (chado_table_exists($contact_table)) {
+      $contact_table = $base . '_contact';
+      if (chado_table_exists($contact_table)) {
 
-      $field_name = $base . '_contact';
-      $instance_info = field_info_instance('TripalEntity', $field_name, $bundle_name);
+        $field_name = $base . '_contact';
+        $instance_info = field_info_instance('TripalEntity', $field_name, $bundle_name);
 
-      if ($instance_info) {
-        $instance_info['type'] = 'chado_linker__contact';
-        $instance_info['widget']['type'] = 'chado_linker__contact_widget';
-        $instance_info['formatter']['type'] = 'chado_linker__contact_widget';
-        field_update_instance($instance_info);
+        if ($instance_info) {
+          $instance_info['type'] = 'chado_linker__contact';
+          $instance_info['widget']['type'] = 'chado_linker__contact_widget';
+          $instance_info['formatter']['type'] = 'chado_linker__contact_widget';
+          field_update_instance($instance_info);
+        }
       }
     }
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }
 
@@ -1866,31 +1927,148 @@ function tripal_chado_update_7336() {
  * Update the NCBITaxon DB entry.
  */
 function tripal_chado_update_7337(){
-
-  chado_insert_db(array(
-    'name' => 'NCBITaxon',
-    'description' => 'NCBI organismal classification.',
-    'url' => 'http://www.berkeleybop.org/ontologies/ncbitaxon/',
-    'urlprefix' => 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={accession}',
-  ));
+  try {
+    chado_insert_db(array(
+      'name' => 'NCBITaxon',
+      'description' => 'NCBI organismal classification.',
+      'url' => 'http://www.berkeleybop.org/ontologies/ncbitaxon/',
+      'urlprefix' => 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={accession}',
+    ));
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
 }
 
 /**
- * Adds a "is_base" column to the "tripal_custom_tables" table.
+ * Modify the term name for Sequence Variant, Genetic Marker, and Heritable Phenotypic Marker to match the corresponding SO term.
  */
-function tripal_chado_update_7339(){
+function tripal_chado_update_7338() {
+
+  $terms = [
+    [
+      'vocabulary' => 'SO',
+      'label' => 'Sequence Variant',
+      'term' => 'sequence_variant',
+      'accession' => '0001060',
+    ],
+    [
+      'vocabulary' => 'SO',
+      'label' => 'Genetic Marker',
+      'term' => 'genetic_marker',
+      'accession' => '0001645',
+    ],
+    [
+      'vocabulary' => 'SO',
+      'label' => 'Heritable Phenotypic Marker',
+      'term' => 'heritable_phenotypic_marker',
+      'accession' => '0001500',
+    ],
+    [
+      'vocabulary' => 'SIO',
+      'label' => 'Study',
+      'term' => 'study',
+      'accession' => '001066',
+    ],
+    [
+      'vocabulary' => 'sep',
+      'label' => 'Biological Sample',
+      'term' => '	biological sample',
+      'accession' => '00195',
+    ],
+    [
+      'vocabulary' => 'OBI',
+      'label' => 'Assay',
+      'term' => 'assay',
+      'accession' => '0000070',
+    ],
+    [
+      'vocabulary' => 'data',
+      'label' => 'Genetic Map',
+      'term' => 'Genetic map',
+      'accession' => '1278',
+    ],
+    [
+      'vocabulary' => 'operation',
+      'label' => 'Genome Annotation',
+      'term' => 'Genome annotation',
+      'accession' => '0362',
+    ],
+    [
+      'vocabulary' => 'operation',
+      'label' => 'Genome Assembly',
+      'term' => 'Genome assembly',
+      'accession' => '0525',
+    ],
+    [
+      'vocabulary' => 'CO_010',
+      'label' => 'Generated Germplasm (Breeding Cross)',
+      'term' => 'generated germplasm',
+      'accession' => '0000255',
+    ],
+    [
+      'vocabulary' => 'CO_010',
+      'label' => 'Cultivar (Germplasm Variety)',
+      'term' => 'cultivar',
+      'accession' => '0000029',
+    ],
+
+    [
+      'vocabulary' => 'CO_010',
+      'label' => 'Germplasm Accession',
+      'term' => 'accession',
+      'accession' => '0000044',
+    ],
+    [
+      'vocabulary' => 'data',
+      'label' => 'Physical Map',
+      'term' => 'Physical map',
+      'accession' => '1280',
+    ],
+    [
+      'vocabulary' => 'sep',
+      'label' => 'Protocol',
+      'term' => '	protocol',
+      'accession' => '00101',
+    ],
+    [
+      'vocabulary' => 'CO_010',
+      'label' => 'Recombinant Inbred Line',
+      'term' => '414 inbred line',
+      'accession' => '0000162',
+    ],
+  ];
+
   try {
-    $spec = [
-      'type' => 'int',
-      'not NULL' => FALSE,
-      'size' => 'tiny',
-      'default' => 0,
-    ];
-    if (!db_field_exists('tripal_custom_tables', 'is_base')) {
-      db_add_field('tripal_custom_tables', 'is_base', $spec);
+    foreach ($terms as $term) {
+
+      $label = $term['label'];
+      $termName = $term['term'];
+      $accession = $term['accession'];
+      $vocabulary = $term['vocabulary']; #shortname, ie, chado.db
+      $term = tripal_load_term_entity([
+        'vocabulary' => $vocabulary,
+        'accession' => $accession
+      ]);
+
+      if (!$term) {
+        continue;
+      }
+      $term->name = $termName;
+      $term->save();
+
+      $bundle = tripal_load_bundle_entity(['term_id' => $term->id]);
+
+      if (!$bundle) {
+        continue;
+      }
+      $bundle->label = $label;
+      $bundle->save();
+
+
     }
-  }
-  catch (\PDOException $e) {
+  } catch (\PDOException $e) {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Could not perform update: '. $error);
   }

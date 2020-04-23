@@ -348,7 +348,8 @@ function tripal_chado_prepare_general_types($job) {
   $args = [
     'vocabulary' => 'SIO',
     'accession' => '001066',
-    'term_name' => 'Study',
+    'term_name' => 'study',
+    'label' => 'Study',
     'storage_args' => [
       'data_table' => 'study',
     ],
@@ -501,7 +502,8 @@ function tripal_chado_prepare_genomic_types($job) {
   $args = [
     'vocabulary' => 'operation',
     'accession' => '0525',
-    'term_name' => 'Genome Assembly',
+    'term_name' => 'Genome assembly',
+    'label' => 'Genome Assembly',
     'storage_args' => [
       'data_table' => 'analysis',
       'type_linker_table' => 'analysisprop',
@@ -518,7 +520,8 @@ function tripal_chado_prepare_genomic_types($job) {
   $args = [
     'vocabulary' => 'operation',
     'accession' => '0362',
-    'term_name' => 'Genome Annotation',
+    'term_name' => 'Genome annotation',
+    'label' => 'Genome Annotation',
     'storage_args' => [
       'data_table' => 'analysis',
       'type_linker_table' => 'analysisprop',
@@ -574,7 +577,8 @@ function tripal_chado_prepare_expression_types($job) {
   $args = [
     'vocabulary' => 'OBI',
     'accession' => '0000070',
-    'term_name' => 'Assay',
+    'term_name' => 'assay',
+    'label' => 'Assay',
     'storage_args' => [
       'data_table' => 'assay',
     ],
@@ -628,7 +632,8 @@ function tripal_chado_prepare_germplasm_types($job) {
   $args = [
     'vocabulary' => 'CO_010',
     'accession' => '0000044',
-    'term_name' => 'Germplasm Accession',
+    'term_name' => 'accession',
+    'label' => 'Germplasm Accession',
     'storage_args' => [
       'data_table' => 'stock',
       'type_column' => 'type_id',
@@ -643,7 +648,8 @@ function tripal_chado_prepare_germplasm_types($job) {
   $args = [
     'vocabulary' => 'CO_010',
     'accession' => '0000255',
-    'term_name' => 'Generated germplasm (breeding cross)',
+    'label' => 'Generated Germplasm (Breeding Cross)',
+    'term_name' => 'generated germplasm',
     'storage_args' => [
       'data_table' => 'stock',
       'type_column' => 'type_id',
@@ -658,7 +664,8 @@ function tripal_chado_prepare_germplasm_types($job) {
   $args = [
     'vocabulary' => 'CO_010',
     'accession' => '0000029',
-    'term_name' => 'Cultivar (germplasm variety)',
+    'label' => 'Cultivar (Germplasm Variety)',
+    'term_name' => 'cultivar',
     'storage_args' => [
       'data_table' => 'stock',
       'type_column' => 'type_id',
@@ -673,7 +680,8 @@ function tripal_chado_prepare_germplasm_types($job) {
   $args = [
     'vocabulary' => 'CO_010',
     'accession' => '0000162',
-    'term_name' => 'Recombinant Inbred Line',
+    'label' => 'Recombinant Inbred Line',
+    'term_name' => '414 inbred line',
     'storage_args' => [
       'data_table' => 'stock',
       'type_column' => 'type_id',
@@ -695,7 +703,8 @@ function tripal_chado_prepare_genetic_types($job) {
   $args = [
     'vocabulary' => 'data',
     'accession' => '1278',
-    'term_name' => 'Genetic Map',
+    'label' => 'Genetic Map',
+    'term_name' => 'Genetic map',
     'storage_args' => [
       'data_table' => 'featuremap',
       'type_linker_table' => 'featuremapprop',
@@ -728,7 +737,8 @@ function tripal_chado_prepare_genetic_types($job) {
   $args = [
     'vocabulary' => 'SO',
     'accession' => '0001060',
-    'term_name' => 'Sequence Variant',
+    'label' => "Sequence Variant",
+    'term_name' => 'sequence_variant',
     'storage_args' => [
       'data_table' => 'feature',
       'type_column' => 'type_id',
@@ -743,7 +753,8 @@ function tripal_chado_prepare_genetic_types($job) {
   $args = [
     'vocabulary' => 'SO',
     'accession' => '0001645',
-    'term_name' => 'Genetic Marker',
+    'term_name' => 'genetic_marker',
+    'label' => "Genetic Marker",
     'storage_args' => [
       'data_table' => 'feature',
       'type_column' => 'type_id',
@@ -759,7 +770,9 @@ function tripal_chado_prepare_genetic_types($job) {
   $args = [
     'vocabulary' => 'SO',
     'accession' => '0001500',
-    'term_name' => 'Heritable Phenotypic Marker',
+    'term_name' => 'heritable_phenotypic_marker',
+    'label' => "Heritable Phenotypic Marker",
+
     'storage_args' => [
       'data_table' => 'feature',
       'type_column' => 'type_id',

@@ -39,7 +39,7 @@ require_once "includes/TripalFields/WebServicesFieldFormatter.inc";
 function tripal_ws_init() {
   global $base_url;
 
-  $api_url = $base_url . '/web-sevices/';
+  $api_url = $base_url . '/web-services/';
 
   $vocab = tripal_get_vocabulary_details('hydra');
 

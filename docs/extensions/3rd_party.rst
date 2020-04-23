@@ -14,6 +14,10 @@ This module provides a Breeding API end point on your Tripal site as well as a u
 Tripal Blast
 ------------
 
+.. image:: https://tripal.readthedocs.io/en/7.x-3.x/_images/Tripal-Gold.png
+  :target: https://tripal.readthedocs.io/en/7.x-3.x/extensions/module_rating.html#Gold
+  :alt: Tripal Rating: Gold
+  
 This module provides a basic interface to allow your users to utilize your server's NCBI BLAST+. There is a simple interface allowing users to paste or upload a query sequence and then select from available databases and a tabular results listing with alignment information and multiple download formats (HTML, TSV, GFF3, XML) available.
 
 `Documentation <https://github.com/tripal/tripal_blast/blob/7.x-1.x/README.md>`__

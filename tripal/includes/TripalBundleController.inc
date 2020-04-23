@@ -162,6 +162,52 @@ class TripalBundleController extends EntityAPIControllerExportable {
     }
   }
 
+  /**
+   * Finds any orphaned entities associated with all bundles.
+   *
+   * An orphaned entity can occur if the module that created the entity
+   * unknowingly lost its underlying record in its data store.  Such a case
+   * could happen if someone directly removed the record from the data store
+   * outside of the module's control. This function allows each module
+   * to report if any orphans are missing for a given bundle type.
+   *
+   * @param bool $count
+   *   Set to TRUE to return only a count of orphans.
+   * @param integer $offset
+   *   For paging of entities set this to the offset within the total count.
+   * @param integer $limit
+   *   For paging of entities set this to the total number to return.
+   *
+   * @return array|integer
+   *  If $count == FALSE then an array of all entity IDs that are orphaned. If
+   *  $count == TRUE then a single integer count value is returned.
+   */
+  public function findAllOrphans($count = FALSE, $offset = 0, $limit = 0) {
+    $results = db_select('tripal_bundle', 'tb')
+      ->fields('tb')
+      ->orderBy('label')
+      ->execute();
+    if ($count) {
+      $response = 0;
+    }
+    else {
+      $response = "";
+    }
+    while (($bundle_record = $results->fetchObject())) {
+      $bid = $bundle_record->id;
+      $bundle_response = $this->findOrphans($bid, $count, $offset, $limit);
+      if (is_array($bundle_response)) {
+        foreach ($bundle_response as $key => $value) {
+          $response += $value;
+        }
+      }
+      else {
+        $response += $bundle_response;
+      }
+    }
+    return $response;
+  }
+
 
   /**
    * Deletes orphaned entities.
@@ -187,6 +233,9 @@ class TripalBundleController extends EntityAPIControllerExportable {
     $num_deleted = 0;
     $transaction = db_transaction();
     try {
+      if ($id === 0) {
+        return $this->deleteAllOrphans($job);
+      }
 
       // Get the list of entities that need cleanup.
       $eids = $this->findOrphans($id, FALSE, 0, 0);
@@ -226,5 +275,65 @@ class TripalBundleController extends EntityAPIControllerExportable {
 
     return $num_deleted;
 
+  }
+
+  /**
+   * Deletes orphaned entities from all bundles.
+   *
+   * An orphaned entity can occur if the module that created the entity
+   * unknowingly lost its underlying record in its data store.  Such a case
+   * could happen if someone directly removed the record from the data store
+   * outside of the module's control. This function allows each module
+   * to report if any orphans are missing for a given bundle type.
+   *
+   * @param TripalJob $job
+   *   An optional Tripal Job object. This is provided when this function is
+   *   called using the Tripal Jobs system.
+   *
+   * @return integer
+   *   The number of entitites that were cleaned up.
+   */
+  public function deleteAllOrphans(TripalJob $job = NULL) {
+    $num_deleted = 0;
+    $transaction = db_transaction();
+
+    try {
+      $results = db_select('tripal_bundle', 'tb')
+        ->fields('tb')
+        ->orderBy('label')
+        ->execute();
+      $eids = $this->findAllOrphans(FALSE, 0, 0);
+      $num_entities = count($eids);
+      if ($job) {
+        $job->logMessage('Found !num orphaned entities.', ['!num' => $num_entities]);
+        $job->setInterval(1);
+        $job->setTotalItems($num_entities);
+      }
+
+      if ($num_entities == 0) {
+        return 0;
+      }
+
+      while (($bundle_record = $results->fetchObject())) {
+        $num_bundle_del = $this->deleteOrphans($bundle_record->id);
+        if ($job) {
+          $job->addItemsHandled($num_bundle_del);
+          $job->logMessage("Removed !num orphaned !label entities.", ['!num' => $num_bundle_del, '!label' => $bundle_record->label]);
+        }
+        $num_deleted += $num_bundle_del;
+      }
+    }
+    catch (Exception $e) {
+      $transaction->rollback();
+      $err_msg = "Failed to remove orphans: " . $e->getMessage();
+      if ($job) {
+        $job->logMessage($err_msg, [], 'error');
+      }
+      else {
+        drupal_set_message($err_msg, 'error');
+      }
+      return 0;
+    }
+    return $num_deleted;
   }
 }

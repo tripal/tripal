@@ -23,6 +23,7 @@ function tripal_unpublish_orphans_form($form, &$form_state) {
   while ($bundle = $results->fetchObject()) {
     $bundles[$bundle->id] = $bundle->label;
   }
+  $bundles[0] = "Delete all orphaned content";
   drupal_set_title('Unpublish Orphaned Content');
 
   $form['description'] = [
@@ -91,6 +92,22 @@ function tripal_unpublish_orphans_form($form, &$form_state) {
     }
   }
 
+  if ($selected_bundle_id === '0') {
+    $bundlec = entity_get_controller('TripalBundle');
+    $count = $bundlec->findAllOrphans(TRUE);
+    $form['bundle_info_fieldset']['message'] = [
+      '#type' => 'markup',
+      '#markup' => t('<p><strong>There are ' . $count . ' orphaned entities in all bundles.</strong></p>'),
+    ];
+
+    if ($count > 0) {
+      $form['bundle_info_fieldset']['submit'] = [
+        '#type' => 'submit',
+        '#value' => 'Unpublish Orphaned Entities',
+      ];
+    }
+  }
+
   return $form;
 }
 
@@ -104,7 +121,9 @@ function tripal_unpublish_orphans_form_validate($form, &$form_state) {
   $bundle_id = isset($form_state['values']['bundles']) ? $form_state['values']['bundles'] : NULL;
 
   if (empty($bundle_id) || !is_numeric($bundle_id)) {
-    form_set_error('bundles', t('Please select a valid bundle.'));
+    if (!isset($bundle_id) || $bundle_id !== '0') {
+      form_set_error('bundles', t('Please select a valid bundle.'));
+    }
   }
 }
 

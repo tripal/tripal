@@ -548,11 +548,12 @@ function chado_execute_pub_importer($import_id, $publish = TRUE,
         ['%num' => $num_pubs], $message_opts);
 
       $subset_report = tripal_pub_add_publications($pubs, $import->do_contact, $do_update, $job);
+      $countpubs = count($pubs);  // the following merge resets count($pubs) so save it
       foreach ($subset_report as $action => $pubs) {
         $report[$action] = array_merge($report[$action], $pubs);
       }
       $page++;
-    } while (count($pubs) == $num_to_retrieve);
+    } while ($countpubs == $num_to_retrieve);
 
     // Publish as requested by the caller.
     _chado_execute_pub_importer_publish($publish, $job, $message_type, $message_opts);

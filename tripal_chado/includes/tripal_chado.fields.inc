@@ -1067,9 +1067,8 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
         $base_info['widget']['settings']['increment'] = 1;
         $base_info['widget']['settings']['tz_handling'] = 'none';
         $base_info['widget']['settings']['collapsible'] = TRUE;
+        $base_info['widget']['settings']['year_range'] = '-10:+10';
 
-        // TODO: Add settings so that the minutes increment by 1.
-        // And turn off the timezone, as the Chado field doesn't support it.
         break;
     }
 
@@ -2519,6 +2518,9 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
   // PROPERTIES
   $prop_table = $table_name . 'prop';
   if (chado_table_exists($prop_table)) {
+
+    $schema = chado_get_schema($prop_table);
+    $pkey = $schema['primary key'][0];
 
     $props = tripal_chado_bundle_get_properties($table_name, $prop_table, $type_table, $type_column, $cvterm_id, $type_value);
     foreach ($props as $term) {

@@ -5,14 +5,15 @@ Bulk Loader
 
   Remember you must set the ``$DRUPAL_HOME`` environment variable if you want to cut-and-paste the commands below. See :doc:`./install_tripal/drupal_home`
 
-The bulk loader is a tool that Tripal provides for loading of data contained in tab delimited files. Tripal supports loading of files in standard formats (e.g. ``FASTA``, ``GFF``, ``OBO``), but Chado can support a variety of different biological data types and there are often no community standard file formats for loading these data. For example, there is no file format for importing genotype and phenotype data. Those data can be stored in the feature, stock and natural diversity tables of Chado. The Bulk Loader was introduced in Tripal v1.1 and provides a web interface for building custom data loader. In short, the site developer creates the bulk loader "template". This template can then be used and re-used for any tab delimited file that follows the format described by the template. Additionally, bulk loading templates can be exported allowing Tripal sites to share loaders with one another.  Loading templates that have been shared are available on the Tripal website here: http://tripal.info/extensions/bulk-loader-templates.
+The bulk loader is a tool that Tripal provides for loading of data contained in tab delimited files. Tripal supports loading of files in standard formats (e.g. ``FASTA``, ``GFF``, ``OBO``), but Chado can support a variety of different biological data types and there are often no community standard file formats for loading these data. For example, there is no file format for importing genotype and phenotype data. Those data can be stored in the feature, stock and natural diversity tables of Chado. The Bulk Loader was introduced in Tripal v1.1 and provides a web interface for building custom data loader. In short, the site developer creates the bulk loader "template". This template can then be used and re-used for any tab delimited file that follows the format described by the template. Additionally, bulk loading templates can be exported allowing Tripal sites to share loaders with one another.  
 
 The following commands can be executed to install the Tripal Bulk Loader using Drush:
 
-.. code-block bash
+.. code-block:: bash
 
   cd /var/www/
   drush pm-enable tripal_bulk_loader
+  
 
 Plan How to Store Data
 ----------------------
@@ -21,7 +22,7 @@ To demonstrate use of the Bulk Loader, a brief example that imports a list of or
 
 * `Fragaria.txt <http://tripal.info/sites/default/files/book_pages/Fragaria_0.txt>`_
 
-.. code-block bash
+.. code-block:: bash
 
   cd $DRUPAL_HOME/sites/default/files
   wget http://tripal.info/sites/default/files/book_pages/Fragaria_0.txt
@@ -29,7 +30,7 @@ To demonstrate use of the Bulk Loader, a brief example that imports a list of or
 
 This file has three columns: NCBI taxonomy ID, genus and species:
 
-.. .. csv-table:: Fragaria sample file
+.. csv-table:: Fragaria sample file
 
   3747    "Fragaria"        "x ananassa"
   57918   "Fragaria"        "vesca"

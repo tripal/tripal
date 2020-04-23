@@ -35,7 +35,7 @@ Next, we need the `PHP-Daemon Library version 2.0 <https://github.com/shaneharte
   cd $DRUPAL_HOME/sites/all/libraries
   wget https://github.com/shaneharter/PHP-Daemon/archive/v2.0.tar.gz
   tar -zxvf v2.0.tar.gz
-  mv v2.0.tar.gz PHP-Daemon
+  mv PHP-Daemon-2.0 PHP-Daemon
 
 Next, install the `Drush Daemon API <https://www.drupal.org/project/drushd>`_ module.
 

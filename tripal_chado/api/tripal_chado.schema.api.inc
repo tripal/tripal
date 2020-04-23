@@ -392,11 +392,16 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
     $version = "1.11 or older";
   }
   else {
+    // We need to hardcode the schema here rather than rely on the db_query
+    // function to settle it because the db_query function needs to know the
+    // Chado version to make the table prefixes set properly (chicken and
+    // egg problem).
+    $chado_schema = chado_get_schema_name('chado');
     $sql = "
       SELECT value
-      FROM {chadoprop} CP
-        INNER JOIN {cvterm} CVT on CVT.cvterm_id = CP.type_id
-        INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
+      FROM $chado_schema.chadoprop CP
+        INNER JOIN $chado_schema.cvterm CVT on CVT.cvterm_id = CP.type_id
+        INNER JOIN $chado_schema.cv CV on CVT.cv_id = CV.cv_id
       WHERE CV.name = 'chado_properties' and CVT.name = 'version'
     ";
     if (!$is_local) {
@@ -498,7 +503,7 @@ function chado_get_table_names($include_custom = NULL) {
     }
   }
 
-  // now add in the custom tables too if requested
+  // Now add in the custom tables too if requested
   if ($include_custom) {
     $sql = "SELECT table_name FROM {tripal_custom_tables}";
     $resource = db_query($sql);

@@ -17,17 +17,19 @@ We will add information about the Tripal publication. Enter the following values
 .. csv-table::
   :header: "Field Name", "Value"
 
-  "Title", "Tripal v1.1: a standards-based toolkit for construction of online genetic and genomic databases."
+  "Title", "Tripal v3: an ontology-based toolkit for construction of FAIR biological community databases."
+  "Volume", "baz077"
   "Series Name", "Database"
-  "Publication Year", "2013"
-  "Unique Local Identifier", "Tripal v1.1: a standards-based toolkit for construction of online genetic and genomic databases."
-  "Type	Journal", "Article"
-  "Publication Date", "2013 Oct 25"
+  "Publication Year", "2019"
+  "Unique Local Identifier", "Tripal v3: an ontology-based toolkit for construction of FAIR biological community databases."
+  "Publication Type", "Journal"
   "Cross Reference", "Database: PMID"
-  "Accession", "24163125"
-  "Authors", "Sanderson LA, Ficklin SP, Cheng CH, Jung S, Feltus FA, Bett KE, Main D"
-  "Citation", "Sanderson LA, Ficklin SP, Cheng CH, Jung S, Feltus FA, Bett KE, Main D. Tripal: a construction Toolkit for Online Genome Databases. Database, Oct 25 2013. bat075"
-  "Abstract", "Tripal is an open-source freely available toolkit for construction of online genomic and genetic databases. It aims to facilitate development of community-driven biological websites by integrating the GMOD Chado database schema with Drupal, a popular website creation and content management software. Tripal provides a suite of tools for interaction with a Chado database and display of content therein. The tools are designed to be generic to support the various ways in which data may be stored in Chado. Previous releases of Tripal have supported organisms, genomic libraries, biological stocks, stock collections and genomic features, their alignments and annotations. Also, Tripal and its extension modules provided loaders for commonly used file formats such as FASTA, GFF, OBO, GAF, BLAST XML, KEGG heir files and InterProScan XML. Default generic templates were provided for common views of biological data, which could be customized using an open Application Programming Interface to change the way data are displayed. Here, we report additional tools and functionality that are part of release v1.1 of Tripal. These include (i) a new bulk loader that allows a site curator to import data stored in a custom tab delimited format; (ii) full support of every Chado table for Drupal Views (a powerful tool allowing site developers to construct novel displays and search pages); (iii) new modules including ‘Feature Map’, ‘Genetic’, ‘Publication’, ‘Project’, ‘Contact’ and the ‘Natural Diversity’ modules. Tutorials, mailing lists, download and set-up instructions, extension modules and other documentation can be found at the Tripal website located at http://tripal.info."
+  "Accession", "31328773"
+  "Publication Date", "2019 Jul 22"
+  "Citation", "Spoor S, Cheng CH, Sanderson LA, Condon B, Almsaeed A, Chen M, Bretaudeau A, Rasche H, Jung S, Main D, Bett K, Staton M, Wegrzyn JL, Feltus FA, Ficklin SP. Tripal v3: an ontology-based toolkit for construction of FAIR biological community databases.  Database. July 2019, 2019: baz077"
+  "Authors", "Spoor S, Cheng CH, Sanderson LA, Condon B, Almsaeed A, Chen M, Bretaudeau A, Rasche H, Jung S, Main D, Bett K, Staton M, Wegrzyn JL, Feltus FA, Ficklin SP"
+  "Abstract", "Community biological databases provide an important online resource for both public and private data, analysis tools and community engagement. These sites house genomic, transcriptomic, genetic, breeding and ancillary data for specific species, families or clades. Due to the complexity and increasing quantities of these data, construction of online resources is increasingly difficult especially with limited funding and access to technical expertise. Furthermore, online repositories are expected to promote FAIR data principles (findable, accessible, interoperable and reusable) that presents additional challenges. The open-source Tripal database toolkit seeks to mitigate these challenges by creating both the software and an interactive community of developers for construction of online community databases. Additionally, through coordinated, distributed co-development, Tripal sites encourage community-wide sustainability. Here, we report the release of Tripal version 3 that improves data accessibility and data sharing through systematic use of controlled vocabularies (CVs). Tripal uses the community-developed Chado database as a default data store, but now provides tools to support other data stores, while ensuring that CVs remain the central organizational structure for the data. A new site developer can use Tripal to develop a basic site with little to no programming, with the ability to integrate other data types using extension modules and the Tripal application programming interface. A thorough online User’s Guide and Developer’s Handbook are available at http://tripal.info, providing download, installation and step-by-step setup instructions."
+
 
 To complete the page click the **Save** button at the bottom
 

@@ -25,6 +25,8 @@ Step 1: Upgrade Tripal
   .. warning::
 
     If you have made customizations to Chado you may encounter problems during the upgrade.  It is not recommended to ever change any of the existing tables of Chado. However, if you have and if you do encounter such issues, please use the Tripal Issue queue to request help: https://github.com/tripal/tripal/issues
+    
+    If you have custom Drupal fields attached to Tripal nodes then the content in those fields will not automatically be migrated to the new Tripal v3 entities. Bradford Condon has provided some instructions to help migrate these fields after the site has been upgrade. You can find those instructions `here <https://gist.github.com/bradfordcondon/0dddfd015ff6ef1f545364c2ceff1f0b>`_.
 
 2. Put the site in maintenance mode. Before completing any upgrade you should put your site into "maintenance mode". This ensures that users are isolated from any temporary error messages generated through the process. To put the site in maintenance mode, navigate to **Administration > Configuration > Maintenance Mode** . Then click the **Put site into maintenance mode** checkbox and click **Save Configuration**. Additionally, there is a text area on this page that allows you to customize the message displayed to your users while your site is in maintenance mode.
 
@@ -184,8 +186,25 @@ You have now completed the migration process and can safely disable the Tripal v
 
 Troubleshooting
 ---------------
+1. Dealing with ``stack depth limit exceeded`` on Step 4 of the Migration.
 
-1. For sites that have upgrading from Drupal 6:
+When there is a large number of nodes, Drupal's search module fails to update the search_total table and gives the following error:
+
+.. code-block:: bash
+
+    Uncaught exception thrown in shutdown function. PDOException: SQLSTATE[54001]: Statement too complex: 7 ERROR:  stack depth limit exceeded
+    HINT:  Increase the configuration parameter &amp;quot;max_stack_depth
+
+
+You can avoid this problem by clearing out the Drupal search tables byu executing the following SQL commands:
+
+.. code-block:: sql
+
+    TRUNCATE search_total;
+    TRUNCATE search_index;
+
+
+2. For sites that have upgrading from Drupal 6:
 
   If your site was upgraded from Drupal 6, you'll need to add a new text format with a machine name called 'full_html' as this is the default formatter that Tripal v3 uses. As in Drupal 6, the 'Full HTML' text format has a numeric machine name (usually '2') that was later changed to 'full_html' in Drupal 7.
 

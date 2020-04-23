@@ -208,14 +208,6 @@ class TripalField {
     return $this->instance;
   }
 
-  /**
-   * When constructing a pager for use by a field, all pagers must have
-   * a unique ID
-   */
-  protected function getPagerElementID() {
-    return $this->field['id'];
-  }
-
   public function getFieldTerm() {
     return $this->term;
   }

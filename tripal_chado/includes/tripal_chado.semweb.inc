@@ -759,7 +759,7 @@ function tripal_chado_populate_vocab_EFO() {
     'cv_name' => 'efo',
     'definition' => 'An instrument design which describes the design of the array.',
   ]);
-  chado_associate_semweb_term(NULL, 'arraydesign_id', $term);
+  chado_associate_semweb_term('assay', 'arraydesign_id', $term);
 
   $term = chado_insert_cvterm([
     'id' => 'EFO:0005522',
@@ -768,13 +768,7 @@ function tripal_chado_populate_vocab_EFO() {
     'definition' => 'Controlled terms for descriptors of types of array substrates.',
   ]);
   chado_associate_semweb_term('arraydesign', 'substratetype_id', $term);
-  $term = chado_insert_cvterm([
-    'id' => 'EFO:0001728',
-    'name' => 'array manufacturer',
-    'cv_name' => 'efo',
-    'definition' => '',
-  ]);
-  chado_associate_semweb_term('arraydesign', 'manufacturer_id', $term);
+
   $term = chado_insert_cvterm([
     'id' => 'EFO:0001728',
     'name' => 'array manufacturer',
@@ -785,10 +779,11 @@ function tripal_chado_populate_vocab_EFO() {
 
   $term = chado_insert_cvterm([
     'id' => 'EFO:0000269',
-    'name' => 'assay design',
+    'name' => 'array design',
     'cv_name' => 'efo',
     'definition' => 'An instrument design which describes the design of the array.',
   ]);
+  chado_associate_semweb_term('element', 'arraydesign_id', $term);
 }
 
 /**

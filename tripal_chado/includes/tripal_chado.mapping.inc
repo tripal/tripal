@@ -24,7 +24,7 @@ function tripal_chado_map_cvterms() {
         // Get the list of cvterm_ids from existing records in the table.
         $sql = "
           SELECT $local_id
-          FROM { " . $tablename . "}
+          FROM {" . $tablename . "}
           GROUP BY $local_id
         ";
         $results = chado_query($sql);

@@ -96,16 +96,17 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
       // Convert the object/subject to a link if an entity exists for it.
       if (array_key_exists('entity', $item['value']['local:relationship_object'])) {
         list($entity_type, $object_entity_id) = explode(':', $item['value']['local:relationship_object']['entity']);
+
         if ($object_entity_id != $entity->id) {
           $link = l($object_name, 'bio_data/' . $object_entity_id);
-          $phrase = preg_replace("/$object_name/", $link, $phrase);
+          $phrase = str_replace($object_name, $link, $phrase);
         }
       }
       if (array_key_exists('entity', $item['value']['local:relationship_subject'])) {
         list($entity_type, $subject_entity_id) = explode(':', $item['value']['local:relationship_subject']['entity']);
         if ($subject_entity_id != $entity->id) {
           $link = l($subject_name, 'bio_data/' . $subject_entity_id);
-          $phrase = preg_replace("/$subject_name/", $link, $phrase);
+          $phrase = str_replace($subject_name, $link, $phrase);
         }
       }
 
@@ -119,7 +120,7 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
     $items_per_page = array_key_exists('items_per_page', $this->instance['settings']) ? $this->instance['settings']['items_per_page'] : 10;
     $total_records = count($rows);
     $total_pages = (int) ($total_records / $items_per_page) + 1;
-    $pelement = 0; //$this->getPagerElementID();
+    $pelement = 0;
     $current_page = pager_default_initialize($total_records, $items_per_page, $pelement);
     $pager = theme('pager', [
       'tags' => [],
