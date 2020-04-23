@@ -981,7 +981,7 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
     $pub['Author List'] = $newauths;
   }
   else {
-    $pub['Author List'] = array(['Surname' => 'anonymous']);
+    $pub['Author List'] = [['Surname' => 'anonymous']];
   }
 
   // build the citation
