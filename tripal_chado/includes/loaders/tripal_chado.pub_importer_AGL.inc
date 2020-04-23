@@ -934,7 +934,7 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
   // build the full authors list
   if (!array_key_exists('Author List', $pub)) {
     // there is a constraint in chado.pubprop against value being null 
-    $pub['Author List'] = [['Surname' => 'anonymous']];
+    $pub['Author List'] = array(['Surname' => 'anonymous']);
     $pub['Authors'] = 'anonymous';
   }
   else if (is_array($pub['Author List'])) {
