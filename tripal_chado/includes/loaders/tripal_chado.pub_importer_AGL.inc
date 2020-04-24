@@ -30,8 +30,8 @@ function tripal_pub_remote_alter_form_AGL($form, $form_state, $num_criteria = 1)
   // So far we haven't been able to get AGL to filter results to only
   // include pubs by the XX number days in the past.  So, we will
   // change the 'days' element to be the year to query
-  $form['themed_element']['days']['#title'] = t('Year');
-  $form['themed_element']['days']['#description'] = t('Please enter a year to limit records by the year they were published, created or modified in the database.');
+  $form['themed_element']['days']['#title'] = t('Earliest year of publication');
+  $form['themed_element']['days']['#description'] = t('Filter returned publications for those that have been published no earlier than this year.');
 
   // The Journal Name filter doesn't seem to work, so remove it
   for ($i = 1; $i <= $num_criteria; $i++) {
@@ -55,10 +55,14 @@ function tripal_pub_remote_alter_form_AGL($form, $form_state, $num_criteria = 1)
  */
 function tripal_pub_remote_validate_form_AGL($form, $form_state) {
   $days = trim($form_state['values']["days"]);
+  $latestyear = trim($form_state['values']["latestyear"]);
   $num_criteria = $form_state['values']['num_criteria'];
 
   if ($days and !preg_match('/^\d\d\d\d$/', $days)) {
     form_set_error("days", "Please enter a four digit year.");
+  }
+  if ($latestyear and !preg_match('/^\d\d\d\d$/', $latestyear)) {
+    form_set_error("latestyear", "Please enter a four digit year.");
   }
 
   $num_ids = 0;
@@ -96,9 +100,10 @@ function tripal_pub_remote_validate_form_AGL($form, $form_state) {
  * @ingroup tripal_pub
  */
 function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
-  // get some values from the serach array
+  // get some values from the search array
   $num_criteria = $search_array['num_criteria'];
   $days = array_key_exists('days', $search_array) ? $search_array['days'] : '';
+  $latestyear = array_key_exists('latestyear', $search_array) ? $search_array['latestyear'] : '';
 
   // set some defaults
   $search_array['limit'] = $num_to_retrieve;
@@ -342,10 +347,10 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
     }
   }
 
-  // for AGL the 'days' form element was converted to represent the year
-  if ($days) {
-    $ccl .= "and year=($days)";
-  }
+  // for AGL the 'days' form element was converted to represent the earliest year
+  // ! these search terms do not work for AGL, disable here and filter the results returned
+  // if ($days) { $ccl .= "and year>=($days) "; }
+  // if ($latestyear) { $ccl .= "and year<=($latestyear) "; }
 
   // remove any preceeding 'and' or 'or'
   $ccl = preg_replace('/^\s*(and|or)/', '', $ccl);
@@ -364,12 +369,17 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
   // the search query is built using CCL, we need to first
   // configure it so it can map the attributes to defined identifiers
   // The attribute set used by AGL can be found at the bottom of this page:
-  // http://agricola.nal.usda.gov/help/z3950.html
+  // https://agricola.nal.usda.gov/help/z3950.html
+  //   Boolean searching (AND, OR, NOT) is supported on search types with
+  //   a position attribute of 3 only.
   //
   // More in depth details:  http://www.loc.gov/z3950/agency/bib1.html
   //
-  // CCL Syntax: http://www.indexdata.com/yaz/doc/tools.html#CCL
+  // CCL Syntax: https://www.indexdata.com/yaz/doc/tools.html#CCL
   //
+  // the abstract field u=62, year u=30, and journal u=1033 are not in the documented
+  // list of supported values at https://agricola.nal.usda.gov/help/z3950.html
+  // publisherdate u=31 is listed, but if used returns zero results
   $fields = [
     "title" => "u=4",
     "author" => "u=1003",
@@ -394,9 +404,9 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
   // get the total number of records
   $total_records = tripal_pub_AGL_count($yazc, $search_str);
 
-  // get the pubs in the specified rang
+  // get the pubs in the specified range
   $start = $page * $num_to_retrieve;
-  $results = tripal_pub_AGL_range($yazc, $search_str, $start, $num_to_retrieve, $total_records);
+  $results = tripal_pub_AGL_range($yazc, $search_str, $start, $num_to_retrieve, $total_records, $days, $latestyear);
 
   // close the connection
   yaz_close($yazc);
@@ -425,8 +435,18 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
  *
  * @ingroup tripal_pub
  */
-function tripal_pub_AGL_range($yazc, $search_str, $start, $num_to_retrieve, $total_records) {
-  yaz_range($yazc, 1, $total_records);
+function tripal_pub_AGL_range($yazc, $search_str, $start, $num_to_retrieve, $total_records, $startyear, $endyear) {
+  // The original code was: yaz_range($yazc, 1, $total_records);
+  // and for large queries we received an error: ERROR retrieving records from AGL: (10007) Timeout
+  // or for an intermediate size query: ERROR retrieving records from AGL: (10004) Connection lost
+  // Empirical testing shows errors started somewhere between 1550 and 1575 records
+  // If we use just the appropriate values for this range to the call to yaz_range then it works,
+  // but we can't exceed $total_records
+  $local_to_retrieve = $num_to_retrieve;
+  if (($start + $num_to_retrieve) > $total_records) {
+    $local_to_retrieve = $total_records - $start;
+  }
+  yaz_range($yazc, $start, $local_to_retrieve); // $start is 0-based
   if (!yaz_present($yazc)) {
     $error_no = yaz_errno($yazc);
     $error_msg = yaz_error($yazc);
@@ -463,8 +483,21 @@ function tripal_pub_AGL_range($yazc, $search_str, $start, $num_to_retrieve, $tot
         'pubs' => [],
       ];
     }
+
     // parse the pub XML
     $pub = tripal_pub_AGL_parse_pubxml($pub_xml);
+
+    // since year limits don't work when searching, implement them here for the
+    // returned publications. This is a very ugly solution, because the count of
+    // publications is now wrong, the xml for every pub must still be downloaded,
+    // and the Test Importer will display pubs that will be later filtered out.
+    $pass = 1;
+    if (array_key_exists('Year', $pub)) {
+      if ( ($startyear) and ($pub['Year']<$startyear) ) { $pass = 0; }
+      if ( ($endyear) and ($pub['Year']>$endyear) ) { $pass = 0; }
+    }
+    $pub['passfilter'] = $pass;
+
     $pubs[] = $pub;
   }
   return [
@@ -583,17 +616,24 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
             '11' => 'Nov',
             '12' => 'Dec',
           ];
-          $date0 = substr($value, 0, 6);  // date entered on file
-          $date1 = substr($value, 7, 4);  // year of publication
-          $date2 = substr($value, 11, 4); // month of publication
-          $place = substr($value, 15, 3);
-          $lang = substr($value, 35, 3);
+          $date0 = mb_substr($value, 0, 6);  // date entered on file
+          $typeofdate = mb_substr($value, 6, 1);  // e = detailed date
+          $date1 = mb_substr($value, 7, 4);  // year of publication
+          $date2 = mb_substr($value, 11, 2); // month of publication
+          $date3 = mb_substr($value, 13, 2); // day of publication
+          $place = mb_substr($value, 15, 3);
+          $lang = mb_substr($value, 35, 3);
           if (preg_match('/\d\d\d\d/', $date1)) {
             $pub['Year'] = $date1;
             $pub['Publication Date'] = $date1;
           }
-          if (preg_match('/\d\d/', $date2)) {
-            $pub['Publication Date'] = $date1 . " " . $month[substr($date2, 0, 2)] . " " . substr($date2, 3, 2);
+          if (($typeofdate == 'e') and (preg_match('/\d\d/', $date2))) {
+            if ( ( $date2 >= 1 ) and ( $date2 <= 12 ) ) {
+              $pub['Publication Date'] = $date1 . " " . $month[$date2] . " " . $date3;
+            }
+            else {
+              drupal_set_message("Invalid month value \"$date2\" extracted from \"$value\"", "warning");
+            }
           }
           if (!preg_match('/\s+/', $place)) {
             $pub['Published Location'] = $place;
@@ -892,7 +932,12 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
   }
 
   // build the full authors list
-  if (is_array($pub['Author List'])) {
+  if (!array_key_exists('Author List', $pub)) {
+    // there is a constraint in chado.pubprop against value being null 
+    $pub['Author List'] = [['Surname' => 'anonymous']];
+    $pub['Authors'] = 'anonymous';
+  }
+  else if (is_array($pub['Author List'])) {
     $authors = '';
     foreach ($pub['Author List'] as $author) {
       if (array_key_exists('valid', $author) and $author['valid'] == 'N') {
@@ -913,7 +958,7 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
         }
       }
     }
-    $authors = substr($authors, 0, -2);
+    $authors = mb_substr($authors, 0, -2);
     $pub['Authors'] = $authors;
   }
   else {
@@ -926,13 +971,18 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
     $pub['Abstract'] = preg_replace('/[\p{So}]/u', '', mb_convert_encoding($pub['Abstract'], 'UTF-8', 'HTML-ENTITIES'));
   }
   $newauths = [];
-  foreach ($pub['Author List'] AS $auth) {
-    foreach ($auth AS $k => $v) {
-      $auth[$k] = preg_replace('/[\p{So}]/u', '', mb_convert_encoding($v, 'UTF-8', 'HTML-ENTITIES'));
+  if (array_key_exists('Author List', $pub)) {
+    foreach ($pub['Author List'] AS $auth) {
+      foreach ($auth AS $k => $v) {
+        $auth[$k] = preg_replace('/[\p{So}]/u', '', mb_convert_encoding($v, 'UTF-8', 'HTML-ENTITIES'));
+      }
+      array_push($newauths, $auth);
     }
-    array_push($newauths, $auth);
+    $pub['Author List'] = $newauths;
   }
-  $pub['Author List'] = $newauths;
+  else {
+    $pub['Author List'] = [['Surname' => 'anonymous']];
+  }
 
   // build the citation
   $pub['Citation'] = chado_pub_create_citation($pub);
@@ -1009,11 +1059,11 @@ function tripal_pub_remote_search_AGL_get_author($xml, $ind1) {
           $first_names = explode(' ', $author['Given Name']);
           $author['First Initials'] = '';
           foreach ($first_names as $index => $name) {
-            $author['First Initials'] .= substr($name, 0, 1);
+            $author['First Initials'] .= mb_substr($name, 0, 1);
           }
         }
-        if ($ind1 == 3) { // A family name
-
+        if ($ind1 == 3) { // A family name, occurs rarely
+          $author['Surname'] = $value;
         }
         break;
     }

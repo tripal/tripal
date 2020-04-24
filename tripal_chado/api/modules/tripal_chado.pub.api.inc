@@ -368,7 +368,7 @@ function chado_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE,
 
   $message = "Importing of publications is performed using a database transaction. " .
     "If the load fails or is terminated prematurely then the entire set of " .
-    "deletions is rolled back and will not be found in the database";
+    "insertions/updates is rolled back and will not be found in the database";
   tripal_report_error($message_type, TRIPAL_INFO, $message, [], $message_opts);
 
 
@@ -505,7 +505,7 @@ function chado_execute_pub_importer($import_id, $publish = TRUE,
 
   $message = "Importing of publications for this importer is performed using a database transaction. " .
     "If the load fails or is terminated prematurely then the entire set of " .
-    "deletions is rolled back and will not be found in the database";
+    "insertions/updates is rolled back and will not be found in the database";
   tripal_report_error($message_type, TRIPAL_INFO, $message, [], $message_opts);
 
 
@@ -532,9 +532,10 @@ function chado_execute_pub_importer($import_id, $publish = TRUE,
     // Loop until we have a $pubs array that does not have
     // our requested numer of records.  This means we've hit the end
     do {
-      // retrieve the pubs for this page. We'll retreive 100 at a time
+      // retrieve the pubs for this page. We'll retrieve 100 at a time
+      $npages = isset($num_pubs)?(intval($num_pubs/$num_to_retrieve)+1):'?';  // will be 0 to 99 in last page
       tripal_report_error($message_type, TRIPAL_INFO,
-        "Querying !remote_db for up to !num pubs that match the criteria.",
+        "Page ".($page+1)." of $npages. Querying !remote_db for up to !num pubs that match the criteria.",
         [
           '!num' => $num_to_retrieve,
           '!remote_db' => $remote_db,
@@ -669,7 +670,7 @@ function chado_reimport_publications($do_contact = FALSE, $dbxref = NULL,
 
   $message = "Importing of publications for this importer is performed using a database transaction. " .
     "If the load fails or is terminated prematurely then the entire set of " .
-    "deletions is rolled back and will not be found in the database";
+    "insertions/updates is rolled back and will not be found in the database";
   tripal_report_error($message_type, TRIPAL_INFO, $message, [], $message_opts);
 
   $transaction = db_transaction();
