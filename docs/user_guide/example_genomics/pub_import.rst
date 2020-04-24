@@ -135,3 +135,48 @@ Where
 - [DRUPAL_HOME] is the directory where Drupal is installed
 
 The cron entry above will launch the importer at 8:30am on the first and fifteenth days of the month. We will run this importer twice a month in the event it fails to run (e.g. server is down) at least one time during the month.
+
+
+Import from the USDA National Agricultural Library
+--------------------------------------------------
+The instructions for the Tripal publication importer described previously use the the NCBI PubMed database. However, you can also import publications from the USDA National Agriculture Library (AGRICOLA). However, to use this repository a few software dependences are required.  These include:
+
+- The `YAZ library <https://www.indexdata.com/resources/software/yaz/>`_
+- `PHP support for YAZ <https://www.php.net/manual/en/book.yaz.php>`_  
+
+The following instructions are to install the necessary dependencies on an Ubuntu 18.04 LTS.   
+
+First install yaz, the yaz development library and the php development library:
+
+.. code-block:: bash
+ 
+  sudo apt-get install yaz libyaz5-dev php-dev
+
+
+Next update the PECL tool and install the PHP yaz library:
+
+
+.. code-block:: bash
+  
+  sudo pecl channel-update pecl.php.net
+  sudo pecl install yaz
+  
+Next, edit the `php.ini` files.  On Ubuntu 18.04 there are two PHP files:
+
+- `/etc/php/7.2/cli/php.ini`
+- `/etc/php/7.2/apache2/php.ini`
+
+Add the following line to each file:
+
+::
+
+  extension=yaz.so
+
+Finally, restart the web server so that it picks up the changes to the `php.ini` file.
+
+.. code-block:: bash
+  
+  sudo service apache2 restart
+
+You can now import publications from Agricola using the same interface as with PubMed.
+
