@@ -148,6 +148,15 @@
       "contributions": [
         "fundingFinding"
       ]
+    },
+    {
+      "login": "dsenalik",
+      "name": "Douglas Senalik",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/8419404?v=4",
+      "profile": "http://www.vcru.wisc.edu/simonlab/sdata/software/index.html",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
@@ -155,5 +164,6 @@
   "projectOwner": "tripal",
   "repoType": "github",
   "repoHost": "https://github.com",
-  "commitConvention": "none"
+  "commitConvention": "none",
+  "skipCi": true
 }
