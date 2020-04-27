@@ -331,6 +331,10 @@ class GFF3Importer extends TripalImporter {
     $re_protein = $arguments['re_protein'];
     $skip_protein = $arguments['skip_protein'];
 
+    // An array that stores CVterms that have been looked up so we don't have
+    // to do the database query every time.
+    $this->cvterm_lookup = [];
+
 
     $this->loadGFF3($file_path, $organism_id, $analysis_id,
       $add_only, $update, $refresh, $remove, $use_transaction,
@@ -430,10 +434,6 @@ class GFF3Importer extends TripalImporter {
     $ret = [];
     $date = getdate();
 
-    // An array that stores CVterms that have been looked up so we don't have
-    // to do the database query every time.
-    $cvterm_lookup = [];
-
     // An array that stores Landmarks that have been looked up so we don't have
     // to do the database query every time.
     $landmark_lookup = [];
@@ -471,10 +471,16 @@ class GFF3Importer extends TripalImporter {
     // get the controlled vocaubulary that we'll be using.  The
     // default is the 'sequence' ontology
     $sql = "SELECT * FROM {cv} WHERE name = :cvname";
+    $cv = chado_query($sql, [':cvname' => 'feature_property'])->fetchObject();
+    if (!$cv) {
+      throw new Exception(t("Cannot find the 'feature_property' ontology'", []));
+    }
+    $this->feature_property_cv_id = $cv->cv_id;
     $cv = chado_query($sql, [':cvname' => 'sequence'])->fetchObject();
     if (!$cv) {
       throw new Exception(t("Cannot find the 'sequence' ontology", []));
     }
+    $this->sequence_cv_id = $cv->cv_id;
     // get the organism for which this GFF3 file belongs
     $sql = "SELECT * FROM {organism} WHERE organism_id = :organism_id";
     $organism = chado_query($sql, [':organism_id' => $organism_id])->fetchObject();
@@ -483,26 +489,9 @@ class GFF3Importer extends TripalImporter {
     $line_num = 0;
     $num_read = 0;
 
-    // prepare the statement used to get the cvterm for each feature.
-    $sel_cvterm_sql = "
-      SELECT CVT.cvterm_id, CVT.cv_id, CVT.name, CVT.definition,
-        CVT.dbxref_id, CVT.is_obsolete, CVT.is_relationshiptype
-      FROM {cvterm} CVT
-        INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
-        LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
-      WHERE CV.cv_id = :cv_id and
-       (lower(CVT.name) = lower(:name) or lower(CVTS.synonym) = lower(:synonym))
-   ";
-
     // If a landmark type was provided then pre-retrieve that.
     if ($landmark_type) {
-      $query = [
-        ':cv_id' => $cv->cv_id,
-        ':name' => $landmark_type,
-        ':synonym' => $landmark_type,
-      ];
-      $result = chado_query($sel_cvterm_sql, $query);
-      $landmark_cvterm = $result->fetchObject();
+      $landmark_cvterm = $this->getCvterm($landmark_type);
       if (!$landmark_cvterm) {
         throw new Exception(t('Cannot find landmark feature type \'%landmark_type\'.', ['%landmark_type' => $landmark_type]));
       }
@@ -511,6 +500,7 @@ class GFF3Importer extends TripalImporter {
     // iterate through each line of the GFF file
     while ($line = fgets($fh)) {
       $line_num++;
+      $this->line_num = $line_num;
       $size = drupal_strlen($line);
       $this->addItemsHandled($size);
       $num_read += $size;
@@ -596,21 +586,11 @@ class GFF3Importer extends TripalImporter {
           $phase = '';
         }
       }
-      if (array_key_exists($type, $cvterm_lookup)) {
-        $cvterm = $cvterm_lookup[$type];
-      }
-      else {
-        $result = chado_query($sel_cvterm_sql, [
-          ':cv_id' => $cv->cv_id,
-          ':name' => $type,
-          ':synonym' => $type,
-        ]);
-        $cvterm = $result->fetchObject();
-        $cvterm_lookup[$type] = $cvterm;
-        if (!$cvterm) {
-          throw new Exception(t('Cannot find feature term \'%type\' on line %line_num of the GFF file',
-            ['%type' => $type, '%line_num' => $line_num]));
-        }
+
+      $cvterm = $this->getCvterm($type);
+      if (!$cvterm) {
+        throw new Exception(t('Cannot find feature term \'%type\' on line %line_num of the GFF file',
+          ['%type' => $type, '%line_num' => $line_num]));
       }
 
       // break apart each of the attributes
@@ -950,12 +930,7 @@ class GFF3Importer extends TripalImporter {
             TGPT.feature_id, TGPT.fmin, TGPT.fmax, TGCT.strand, FLM.uniquename
         ";
         $results = chado_query($sql);
-        $protein_cvterm = chado_get_cvterm([
-          'name' => 'polypeptide',
-          'cv_id' => [
-            'name' => 'sequence',
-          ],
-        ]);
+        $protein_cvterm = $this->getCvterm('polypeptide');
         while ($result = $results->fetchObject()) {
           // If a protein exists with this same parent then don't add a new
           // protein.
@@ -996,7 +971,7 @@ class GFF3Importer extends TripalImporter {
               $feature = $this->loadFeature($organism, $analysis_id,
                 $protein_cvterm, $uname, $name, '', 'f', 'f', 1, 0);
               // Add the derives_from relationship.
-              $cvterm = chado_get_cvterm(['cvterm_id' => $result->cvterm_id]);
+              $cvterm = $this->getCvterm($result->feature_type);
               $this->loadDerivesFrom($feature, $cvterm,
                 $result->uniquename, $organism, $pfmin, $pfmax);
               // Add the featureloc record. Set the start of the protein to
@@ -1012,26 +987,26 @@ class GFF3Importer extends TripalImporter {
 
       // Get features in a relationship that are also children of an alignment.
       $sql = "
-      SELECT DISTINCT F.feature_id, F.organism_id, F.type_id,
-        F.uniquename, FL.strand
-      FROM {tripal_gff_temp} TGT
-        INNER JOIN {feature} F                ON TGT.feature_id = F.feature_id
-        INNER JOIN {feature_relationship} FR  ON FR.object_id   = TGT.feature_id
-        INNER JOIN {cvterm} CVT               ON CVT.cvterm_id  = FR.type_id
-        INNER JOIN {featureloc} FL            ON FL.feature_id  = F.feature_id
-      WHERE CVT.name = 'part_of'
-    ";
+        SELECT DISTINCT F.feature_id, F.organism_id, F.type_id,
+          F.uniquename, FL.strand
+        FROM {tripal_gff_temp} TGT
+          INNER JOIN {feature} F                ON TGT.feature_id = F.feature_id
+          INNER JOIN {feature_relationship} FR  ON FR.object_id   = TGT.feature_id
+          INNER JOIN {cvterm} CVT               ON CVT.cvterm_id  = FR.type_id
+          INNER JOIN {featureloc} FL            ON FL.feature_id  = F.feature_id
+        WHERE CVT.name = 'part_of'
+        ";
       $parents = chado_query($sql);
 
       // Build and prepare the SQL for selecting the children relationship.
       $sel_gffchildren_sql = "
-      SELECT DISTINCT FR.feature_relationship_id, FL.fmin, FR.rank
-      FROM {feature_relationship} FR
-        INNER JOIN {featureloc} FL on FL.feature_id = FR.subject_id
-        INNER JOIN {cvterm} CVT on CVT.cvterm_id = FR.type_id
-      WHERE FR.object_id = :feature_id AND CVT.name = 'part_of'
-      ORDER BY FL.fmin ASC
-    ";
+        SELECT DISTINCT FR.feature_relationship_id, FL.fmin, FR.rank
+        FROM {feature_relationship} FR
+          INNER JOIN {featureloc} FL on FL.feature_id = FR.subject_id
+          INNER JOIN {cvterm} CVT on CVT.cvterm_id = FR.type_id
+        WHERE FR.object_id = :feature_id AND CVT.name = 'part_of'
+        ORDER BY FL.fmin ASC
+        ";
 
       // Now set the rank of any parent/child relationships.  The order is based
       // on the fmin.  The start rank is 1.  This allows features with other
@@ -1079,8 +1054,46 @@ class GFF3Importer extends TripalImporter {
       }
     }
 
-
     return 1;
+  }
+
+  /**
+   * Load a controlled vocabulary term.
+   *
+   * This method first checks if the term has already been loaded in the
+   * cvterm_lookup array, which helps a lot with performance.
+   *
+   * @param $type
+   * @param $cv_id
+   *
+   * @ingroup gff3_loader
+   */
+  private function getCvterm($type, $cv_id = NULL) {
+    if (!isset($cv_id)) {
+      $cv_id = $this->sequence_cv_id;
+    }
+    if (array_key_exists($type, $this->cvterm_lookup)) {
+      return $this->cvterm_lookup[$type];
+    }
+    else {
+      $sel_cvterm_sql = "
+        SELECT CVT.cvterm_id
+        FROM {cvterm} CVT
+          LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
+        WHERE CVT.cv_id = {$cv_id} and
+         (lower(CVT.name) = lower(:name) or lower(CVTS.synonym) = lower(:synonym))
+        ";
+      $result = chado_query($sel_cvterm_sql, [
+        ':name' => $type,
+        ':synonym' => $type,
+      ]);
+      $cvterm = $result->fetchObject() ?? NULL;
+      if ($cvterm) {
+        $cvterm = chado_get_cvterm(array('cvterm_id' => $cvterm->cvterm_id)) ?? NULL;
+      }
+      $this->cvterm_lookup[$type] = $cvterm;
+      return $cvterm;
+    }
   }
 
   /**
@@ -1096,6 +1109,7 @@ class GFF3Importer extends TripalImporter {
                                    $organism, $fmin, $fmax) {
 
     $type = $cvterm->name;
+    $derivesfrom_term = $this->getCvterm('derives_from');
 
     // First look for the object feature in the temp table to get it's type.
     $values = [
@@ -1105,15 +1119,7 @@ class GFF3Importer extends TripalImporter {
     $result = chado_select_record('tripal_gff_temp', ['type_name'], $values);
     $type_id = NULL;
     if (count($result) > 0) {
-      $otype = chado_get_cvterm([
-        'name' => $result[0]->type_name,
-        'cv_id' => [
-          'name' => 'sequence',
-        ],
-      ]);
-      if ($otype) {
-        $type_id = $otype->cvterm_id;
-      }
+      $type_id = $this->getCvterm($result[0]->type_name)->cvterm_id ?? NULL;
     }
 
     // If the object wasn't in the temp table then look for it in the
@@ -1173,12 +1179,7 @@ class GFF3Importer extends TripalImporter {
     $values = [
       'object_id' => $ofeature[0]->feature_id,
       'subject_id' => $feature->feature_id,
-      'type_id' => [
-        'cv_id' => [
-          'name' => 'sequence',
-        ],
-        'name' => 'derives_from',
-      ],
+      'type_id' => $derivesfrom_term->cvterm_id,
       'rank' => 0,
     ];
     $rel = chado_select_record('feature_relationship', ['*'], $values);
@@ -1214,15 +1215,10 @@ class GFF3Importer extends TripalImporter {
     $uname = $feature->uniquename;
     $type = $cvterm->name;
     $rel_type = 'part_of';
-
-    // Prepare these SQL statements that will be used repeatedly.
-    $cvterm_sql = "
-    SELECT CVT.cvterm_id
-    FROM {cvterm} CVT
-      INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
-      LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
-    WHERE cv.name = :cvname and (CVT.name = :name or CVTS.synonym = :synonym)
-  ";
+    $relcvterm = $this->getCvterm($rel_type);
+    if (!$relcvterm) {
+      throw new Exception(t("Cannot find the term, 'part_of', from the sequence ontology. This term is used for associating parent and children features. Please check that the ontology is fully imported."));
+    }
 
     // Iterate through the parents in the list.
     foreach ($parents as $parent) {
@@ -1239,19 +1235,7 @@ class GFF3Importer extends TripalImporter {
       $parent_type = $result[0]->type_name;
 
       // try to find the parent
-      $parentcvterm = chado_query($cvterm_sql, [
-        ':cvname' => 'sequence',
-        ':name' => $parent_type,
-        ':synonym' => $parent_type,
-      ])->fetchObject();
-      $relcvterm = chado_query($cvterm_sql, [
-        ':cvname' => 'sequence',
-        ':name' => $rel_type,
-        ':synonym' => $rel_type,
-      ])->fetchObject();
-      if (!$relcvterm) {
-        throw new Exception(t("Cannot find the term, 'part_of', from the sequence ontology. This term is used for associating parent and children features. Please check that the ontology is fully imported."));
-      }
+      $parentcvterm = $this->getCvterm($parent_type);
       $values = [
         'organism_id' => $organism_id,
         'uniquename' => $parent,
@@ -1974,17 +1958,11 @@ class GFF3Importer extends TripalImporter {
   private function loadProperty($feature, $property, $value) {
 
     // First make sure the cvterm exists.  if not, then add it.
-    $select = [
-      'name' => $property,
-      'cv_id' => [
-        'name' => 'feature_property',
-      ],
-    ];
-    $result = chado_select_record('cvterm', ['*'], $select);
+    $result = $this->getCvterm($property, $this->feature_property_cv_id);
 
     // If we don't have a property like this already, then add it otherwise,
     // just return.
-    if (count($result) == 0) {
+    if (empty($result)) {
       $term = [
         'id' => "local:$property",
         'name' => $property,
@@ -2000,7 +1978,7 @@ class GFF3Importer extends TripalImporter {
       }
     }
     else {
-      $cvterm = $result[0];
+      $cvterm = $result;
     }
 
 
