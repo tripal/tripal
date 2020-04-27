@@ -116,6 +116,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <tr>
     <td align="center"><a href="http://www.vcru.wisc.edu/simonlab/sdata/software/index.html"><img src="https://avatars3.githubusercontent.com/u/8419404?v=4" width="100px;" alt=""/><br /><sub><b>Douglas Senalik</b></sub></a><br /><a href="https://github.com/tripal/tripal/commits?author=dsenalik" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/par12005"><img src="https://avatars0.githubusercontent.com/u/38262122?v=4" width="100px;" alt=""/><br /><sub><b>par12005</b></sub></a><br /><a href="https://github.com/tripal/tripal/commits?author=par12005" title="Code">💻</a></td>
+    <td align="center"><a href="http://sofiarobb.com"><img src="https://avatars0.githubusercontent.com/u/1072991?v=4" width="100px;" alt=""/><br /><sub><b>Sofia Robb</b></sub></a><br /><a href="https://github.com/tripal/tripal/commits?author=srobb1" title="Code">💻</a></td>
   </tr>
 </table>
 
