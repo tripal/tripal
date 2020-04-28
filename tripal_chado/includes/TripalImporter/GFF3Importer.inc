@@ -145,16 +145,6 @@ class GFF3Importer extends TripalImporter {
        expression would be "$1-P$2".'),
     ];
 
-    $form['advanced']['use_transaction'] = [
-      '#type' => 'checkbox',
-      '#title' => t('Use a transaction'),
-      '#required' => FALSE,
-      '#description' => t('Use a database transaction when loading the GFF file.  If an error occurs
-      the entire datset loaded prior to the failure will be rolled back and will not be available
-      in the database.  If this option is unchecked and failure occurs all records up to the point
-      of failure will be present in the database.'),
-      '#default_value' => 1,
-    ];
     $form['advanced']['add_only'] = [
       '#type' => 'checkbox',
       '#title' => t('Import only new features'),
@@ -266,7 +256,6 @@ class GFF3Importer extends TripalImporter {
     $update = $form_state['values']['update'];
     $refresh = 0; //$form_state['values']['refresh'];
     $remove = 0; //$form_state['values']['remove'];
-    $use_transaction = $form_state['values']['use_transaction'];
     $line_number = trim($form_state['values']['line_number']);
     $landmark_type = trim($form_state['values']['landmark_type']);
     $alt_id_attr = trim($form_state['values']['alt_id_attr']);
@@ -319,7 +308,6 @@ class GFF3Importer extends TripalImporter {
     $update = $arguments['update'];
     $refresh = FALSE;
     $remove = FALSE;
-    $use_transaction = $arguments['use_transaction'];
     $target_organism_id = $arguments['target_organism_id'];
     $target_type = $arguments['target_type'];
     $create_target = $arguments['create_target'];
@@ -337,7 +325,7 @@ class GFF3Importer extends TripalImporter {
 
 
     $this->loadGFF3($file_path, $organism_id, $analysis_id,
-      $add_only, $update, $refresh, $remove, $use_transaction,
+      $add_only, $update, $refresh, $remove,
       $target_organism_id, $target_type, $create_target,
       $start_line, $landmark_type, $alt_id_attr, $create_organism,
       $re_mrna, $re_protein, $skip_protein);
@@ -367,9 +355,6 @@ class GFF3Importer extends TripalImporter {
    * @param $remove
    *   Set to 1 to remove features present in the GFF file that exist in the
    *   database. Default is 0.
-   * @param $use_transaction
-   *   Set to 1 to use a transaction when loading the GFF. Any failure during
-   *   loading will result in the rollback of any changes. Default is 1.
    * @param $target_organism_id
    *   If the GFF file contains a 'Target' attribute then the feature and the
    *   target will have an alignment created, but to find the proper target
@@ -426,7 +411,7 @@ class GFF3Importer extends TripalImporter {
    * @ingroup gff3_loader
    */
   private function loadGFF3($gff_file, $organism_id, $analysis_id,
-                            $add_only = 0, $update = 1, $refresh = 0, $remove = 0, $use_transaction = 1,
+                            $add_only = 0, $update = 1, $refresh = 0, $remove = 0,
                             $target_organism_id = NULL, $target_type = NULL, $create_target = 0,
                             $start_line = 1, $landmark_type = '', $alt_id_attr = '', $create_organism = FALSE,
                             $re_mrna = '', $re_protein = '', $skip_protein = 0) {
