@@ -554,6 +554,36 @@ function tripal_pub_AGL_count($yazc, $search_str) {
 }
 
 /**
+ * Decode the unusal text encoding returned from our
+ * call to yaz_record(..., 'xml; charset=marc-8,utf-8')
+ * Some characters are in UTF-8, some are encoded as HTML
+ * entities, and some HTML entities are double-encoded,
+ * for example &amp;#x2018;
+ * A straight call to mb_convert_encoding() will corrupt
+ * any UTF-8 characters, so only convert what appears
+ * to be an HTML entity
+ *
+ * @param $text
+ *   The string to be decoded to "pure" UTF-8
+ *
+ * @return
+ *   The decoded string
+ *
+ * @ingroup tripal_pub
+ */
+function tripal_pub_AGL_decode($text) {
+  // first handle double encoding situations by replacing &amp;
+  $text = preg_replace("/&amp;/", "&", $text);
+
+  // then only replace things that look like an HTML entity, i.e.
+  // ampersand followed by semicolon, in order to leave UTF-8 intact
+  $text = preg_replace_callback("/(&[^;\p{C}\p{M}\p{Z}]{1,31};)/",
+    function($m){return(mb_convert_encoding($m[1], 'UTF-8', 'HTML-ENTITIES'));},
+    $text);
+  return($text);
+}
+
+/**
  * Parse publication XML for a single publication
  *
  * Description of XML format:
@@ -659,7 +689,10 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
           foreach ($codes as $code => $value) {
             switch ($code) {
               case 'a': // System control number
-                $pub['Publication Accession'] = $value;
+                // rarely there will be a second control number with a "ns" prefix. Ignore them
+                if (!preg_match('/^ns/', $value)) {
+                  $pub['Publication Accession'] = $value;
+                }
                 break;
             }
           }
@@ -965,16 +998,16 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
     $pub['Authors'] = $pub['Author List'];
   }
 
-  // for Title, Abstract, Authors, convert the html entity and remove special unicode chars that are not meant for display
-  $pub['Title'] = preg_replace('/[\p{So}]/u', '', mb_convert_encoding($pub['Title'], 'UTF-8', 'HTML-ENTITIES'));
+  // for several fields that may contain them, convert html entities to unicode characters
+  $pub['Title'] = tripal_pub_AGL_decode($pub['Title']);
   if (key_exists('Abstract', $pub)) {
-    $pub['Abstract'] = preg_replace('/[\p{So}]/u', '', mb_convert_encoding($pub['Abstract'], 'UTF-8', 'HTML-ENTITIES'));
+    $pub['Abstract'] = tripal_pub_AGL_decode($pub['Abstract']);
   }
   $newauths = [];
   if (array_key_exists('Author List', $pub)) {
     foreach ($pub['Author List'] AS $auth) {
       foreach ($auth AS $k => $v) {
-        $auth[$k] = preg_replace('/[\p{So}]/u', '', mb_convert_encoding($v, 'UTF-8', 'HTML-ENTITIES'));
+        $auth[$k] = tripal_pub_AGL_decode($auth[$k]);
       }
       array_push($newauths, $auth);
     }
@@ -983,9 +1016,18 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
   else {
     $pub['Author List'] = [['Surname' => 'anonymous']];
   }
+  if (array_key_exists('Authors', $pub)) {
+    $pub['Authors'] = tripal_pub_AGL_decode($pub['Authors']);
+  }
+  if (array_key_exists('Keywords', $pub)) {
+    $pub['Keywords'] = tripal_pub_AGL_decode($pub['Keywords']);
+  }
+  if (array_key_exists('Notes', $pub)) {
+    $pub['Notes'] = tripal_pub_AGL_decode($pub['Notes']);
+  }
 
   // build the citation
-  $pub['Citation'] = chado_pub_create_citation($pub);
+  $pub['Citation'] = tripal_pub_AGL_decode(chado_pub_create_citation($pub));
 
   $pub['raw'] = $pub_xml;
 
