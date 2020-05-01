@@ -574,13 +574,8 @@ function tripal_pub_AGL_count($yazc, $search_str) {
 function tripal_pub_AGL_decode($text) {
   // first handle double encoding situations by replacing &amp;
   $text = preg_replace("/&amp;/", "&", $text);
-
-  // then only replace things that look like an HTML entity, i.e.
-  // ampersand followed by semicolon, in order to leave UTF-8 intact
-  $text = preg_replace_callback("/(&[^;\p{C}\p{M}\p{Z}]{1,31};)/",
-    function($m){return(mb_convert_encoding($m[1], 'UTF-8', 'HTML-ENTITIES'));},
-    $text);
-  return($text);
+  // then replace all HTML entities
+  return(html_entity_decode($text, ENT_COMPAT|ENT_HTML401, "UTF-8"));
 }
 
 /**
@@ -1020,7 +1015,9 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
     $pub['Authors'] = tripal_pub_AGL_decode($pub['Authors']);
   }
   if (array_key_exists('Keywords', $pub)) {
-    $pub['Keywords'] = tripal_pub_AGL_decode($pub['Keywords']);
+    foreach ($pub['Keywords'] as &$keyword) {
+      $keyword = tripal_pub_AGL_decode($keyword);
+    }
   }
   if (array_key_exists('Notes', $pub)) {
     $pub['Notes'] = tripal_pub_AGL_decode($pub['Notes']);
