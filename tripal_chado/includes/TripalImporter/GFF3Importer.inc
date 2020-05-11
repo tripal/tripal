@@ -1899,13 +1899,13 @@ class GFF3Importer extends TripalImporter {
       if (strcmp($is_fmin_partial, 'f') == 0 or !$is_fmin_partial) {
         $is_fmin_partial = 'FALSE';
       }
-      elseif (strcmp($is_fmin_partial, 't') == 0 or $is_fmin_partial = 1) {
+      elseif (strcmp($is_fmin_partial, 't') == 0 or $is_fmin_partial == 1) {
         $is_fmin_partial = 'TRUE';
       }
       if (strcmp($is_fmax_partial, 'f') == 0 or !$is_fmax_partial) {
         $is_fmax_partial = 'FALSE';
       }
-      elseif (strcmp($is_fmax_partial, 't') == 0 or $is_fmax_partial = 1) {
+      elseif (strcmp($is_fmax_partial, 't') == 0 or $is_fmax_partial == 1) {
         $is_fmax_partial = 'TRUE';
       }
       $values = [
@@ -2110,7 +2110,7 @@ class GFF3Importer extends TripalImporter {
       $start = $matches[2];
       $end = $matches[3];
       // if we have an optional strand, convert it to a numeric value.
-      if ($matches[4]) {
+      if (!empty($matches[4])) {
         if (preg_match('/^\+$/', trim($matches[4]))) {
           $target_strand = 1;
         }
@@ -2196,12 +2196,12 @@ class GFF3Importer extends TripalImporter {
         else {
           // check to see if this is a synonym
           $sql = "
-          SELECT CVTS.cvterm_id
-          FROM {cvtermsynonym} CVTS
-            INNER JOIN {cvterm} CVT ON CVT.cvterm_id = CVTS.cvterm_id
-            INNER JOIN {cv} CV      ON CV.cv_id = CVT.cv_id
-          WHERE CV.name = 'sequence' and CVTS.synonym = :synonym
-        ";
+            SELECT CVTS.cvterm_id
+            FROM {cvtermsynonym} CVTS
+              INNER JOIN {cvterm} CVT ON CVT.cvterm_id = CVTS.cvterm_id
+              INNER JOIN {cv} CV      ON CV.cv_id = CVT.cv_id
+            WHERE CV.name = 'sequence' and CVTS.synonym = :synonym
+            ";
           $synonym = chado_query($sql, [':synonym' => $gff_target_type])->fetchObject();
           if ($synonym) {
             $t_type_id = $synonym->cvterm_id;
@@ -2216,8 +2216,8 @@ class GFF3Importer extends TripalImporter {
 
       // we want to add a featureloc record that uses the target feature as the srcfeature (landmark)
       // and the landmark as the feature.
-      $this->loadFeatureLoc($feature, $organism, $target_feature, $target_fmin,
-        $target_fmax, $target_strand, $phase, $attr_fmin_partial, $attr_fmax_partial, $attr_residue_info,
+      $this->loadFeatureLoc($feature, NULL, $target_feature, $target_fmin,
+        $target_fmax, $target_strand, NULL, NULL, NULL, NULL,
         $attr_locgroup, $t_type_id, $t_organism_id, $create_target, TRUE);
     }
     // the target attribute is not correctly formatted
