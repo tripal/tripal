@@ -1916,6 +1916,30 @@ SET search_path=frange,public,pg_catalog;
 -- Name: featuregroup; Type: TABLE; Schema: frange; Owner: chado; Tablespace: 
 --
 
+CREATE TABLE IF NOT EXISTS featuregroup (
+    featuregroup_id bigserial not null,
+    primary key (featuregroup_id),
+
+    subject_id bigint not null,
+    foreign key (subject_id) references feature (feature_id) on delete cascade INITIALLY DEFERRED,
+
+    object_id bigint not null,
+    foreign key (object_id) references feature (feature_id) on delete cascade INITIALLY DEFERRED,
+
+    group_id bigint not null,
+    foreign key (group_id) references feature (feature_id) on delete cascade INITIALLY DEFERRED,
+
+    srcfeature_id bigint null,
+    foreign key (srcfeature_id) references feature (feature_id) on delete cascade INITIALLY DEFERRED,
+
+    fmin bigint null,
+    fmax bigint null,
+    strand int null,
+    is_root int not null default 0,
+
+    constraint featuregroup_c1 unique (subject_id,object_id,group_id,srcfeature_id,fmin,fmax,strand)
+);
+
 ALTER TABLE featuregroup 
     ALTER featuregroup_id TYPE bigint,
     ALTER subject_id TYPE bigint,
