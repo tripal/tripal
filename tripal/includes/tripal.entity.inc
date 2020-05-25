@@ -428,7 +428,7 @@ function tripal_field_property_get($entity, array $options, $field_name, $entity
  * tripal_entity_info() under the 'access callback' element.
  *
  * @param $op
- *   The operation. One of: create, view, edit, delete.
+ *   The operation. One of: create, view, edit, unpublish, delete.
  * @param $entity
  *   The entity to check access for.
  * @param $account
@@ -495,6 +495,8 @@ function tripal_entity_access($op, $entity = NULL, $account = NULL, $entity_type
       return user_access('view ' . $bundle_name, $account);
     case 'edit':
       return user_access('edit ' . $bundle_name, $account);
+    case 'unpublish':
+      return user_access('unpublish ' . $bundle_name, $account);
     case 'delete':
       return user_access('delete ' . $bundle_name, $account);
   }

@@ -58,7 +58,7 @@ class TripalEntityController extends EntityAPIController {
   }
 
   /**
-   * Overrides EntityAPIController::delete().
+   * Provides an unpublish function.
    *
    * @param array $ids
    *    An array of the ids denoting which entities to delete.
@@ -66,7 +66,7 @@ class TripalEntityController extends EntityAPIController {
    *    Optionally a DatabaseTransaction object to use. Allows overrides to
    *   pass in their transaction object.
    */
-  public function delete($ids, $transaction = NULL) {
+  public function unpublish($ids, $transaction = NULL) {
 
     if (!$transaction) {
       $transaction = db_transaction();
@@ -80,7 +80,7 @@ class TripalEntityController extends EntityAPIController {
       foreach ($entities as $entity) {
 
         // Invoke hook_entity_delete().
-        module_invoke_all('entity_delete', $entity, $entity->type);
+        module_invoke_all('entity_unpublish', $entity, $entity->type);
 
         // Delete any field data for this entity.
         field_attach_delete('TripalEntity', $entity);
@@ -98,6 +98,50 @@ class TripalEntityController extends EntityAPIController {
       throw $e;
       return FALSE;
     }
+
+    return TRUE;
+  }
+
+  /**
+   * Overrides EntityAPIController::delete().
+   *
+   * @param array $ids
+   *    An array of the ids denoting which entities to delete.
+   * @param DatabaseTransaction $transaction
+   *    Optionally a DatabaseTransaction object to use. Allows overrides to
+   *   pass in their transaction object.
+   */
+  public function delete($ids, $transaction = NULL) {
+    global $user;
+
+    // Next delete the entities
+    if (!$transaction) {
+      $transaction = db_transaction();
+    }
+
+    try {
+
+      // First load the entity.
+      $entities = entity_load('TripalEntity', $ids);
+      $this->unpublish($ids, $transaction);
+
+      // Then properly delete each one.
+      foreach ($entities as $entity) {
+        module_invoke_all('entity_delete', $entity, $entity->type);
+      }
+
+    } catch (Exception $e) {
+      if ($transaction) {
+        $transaction->rollback();
+      }
+      watchdog_exception('tripal', $e);
+      throw $e;
+      return FALSE;
+    }
+
+    // Now remove any orphaned entities
+    tripal_add_job('Delete Orphaned Entities', 'tripal_chado',
+        'tripal_unpublish_orphans', [0], $user->uid, 10, [], TRUE);
 
     return TRUE;
   }
