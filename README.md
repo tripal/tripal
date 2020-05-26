@@ -119,6 +119,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="http://sofiarobb.com"><img src="https://avatars0.githubusercontent.com/u/1072991?v=4" width="100px;" alt=""/><br /><sub><b>Sofia Robb</b></sub></a><br /><a href="https://github.com/tripal/tripal/commits?author=srobb1" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/katherynbuble"><img src="https://avatars3.githubusercontent.com/u/59714566?v=4" width="100px;" alt=""/><br /><sub><b>katherynbuble</b></sub></a><br /><a href="https://github.com/tripal/tripal/commits?author=katherynbuble" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/risharde"><img src="https://avatars3.githubusercontent.com/u/33866403?v=4" width="100px;" alt=""/><br /><sub><b>risharde</b></sub></a><br /><a href="https://github.com/tripal/tripal/commits?author=risharde" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/pgrimaud"><img src="https://avatars1.githubusercontent.com/u/1866496?v=4" width="100px;" alt=""/><br /><sub><b>Pierre Grimaud</b></sub></a><br /><a href="https://github.com/tripal/tripal/commits?author=pgrimaud" title="Documentation">📖</a></td>
   </tr>
 </table>
 
