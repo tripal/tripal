@@ -81,7 +81,7 @@ In summary, the following should be observed when processing the ``$items`` arra
 
 .. warning::
 
-  You should never have SQL statments or any API calls that retreive data in the foramter ``view()`` function. The formatter should strictly format data for viewing.
+  You should never have SQL statements or any API calls that retrieve data in the foramter ``view()`` function. The formatter should strictly format data for viewing.
   
 Creating Pagers
 ~~~~~~~~~~~~~~~
@@ -130,7 +130,7 @@ Now that we have a pager, it has been setup for AJAX and we know the current pag
       '#markup' => $content . $pager,
     );
     
-The settingsForm() Funtion.
+The settingsForm() Function.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Sometimes you may want to provide some control to the site developer for the formatter.  For example, the ``sbo__relationship_formater`` allows the site developer to customize the title that appears above the table that houses relationships and the text the appears if there are no relationships.  By default the title is "Relationships" and the empty text indicates there are no relationships. Both are a bit too generic.  The ``settingsForm()`` function allows you to provide a Drupal form for the field that appears on the **Administer > Strucutre > Tripal Content Types** on any content type's **manage display** page:
 

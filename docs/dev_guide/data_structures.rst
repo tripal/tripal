@@ -9,7 +9,7 @@ This page explains the relationships between Entity types, Bundles (content type
 * Entity Type:  despite the confusing name, an entity type is simply a group of bundles that are somehow related.  Drupal provides a "Node" Entity type that includes the Page and Article bundles.  All of the Tripal bundles (content types) belong to the TripalEntity Entity type.
 
 
-The following figure describes the heirarchical relationship between Drupal Entity types (e.g. Node) in comparison with TripalEntity entity types (e.g. Chromosome, Germplasm, etc.).
+The following figure describes the hierarchical relationship between Drupal Entity types (e.g. Node) in comparison with TripalEntity entity types (e.g. Chromosome, Germplasm, etc.).
 
 
 .. figure:: /_images/dev_guide/data_structures/Terminology-Diagram.png
