@@ -1,6 +1,6 @@
 Configuring Page Layout
 =======================
-This is one of the many new exciting features of Tripal v3. Integration with Drupal Fields has gone to a whole new level. Site builders have unprecendented control over the display of each piece of data through the administrative user interface. Previously, site builders were required to edit PHP template files to change the order, grouping or wording of content.
+This is one of the many new exciting features of Tripal v3. Integration with Drupal Fields has gone to a whole new level. Site builders have unprecedented control over the display of each piece of data through the administrative user interface. Previously, site builders were required to edit PHP template files to change the order, grouping or wording of content.
 
 You can configure the display of a given Tripal Content Type by navigating to **Structure → Tripal Content Types** and then selecting the **Manage Display** link beside the content type you would like to configure.
 
@@ -15,7 +15,7 @@ The Manage Display User Interface lists each Drupal Field in the order they will
 Rearranging Fields
 ------------------
 
-To rearrange the fields within a Tripal pane, simply drag them into the order you would like them. For example, the description is currently within the Summary table --it makes much more sense for it to be below the table but still within the summary. To do this, simply drag the description field to the bottom of the summary table and then move it in one level as shown in the following screenshot. Then click the **Save** button at the botton to save the changes.
+To rearrange the fields within a Tripal pane, simply drag them into the order you would like them. For example, the description is currently within the Summary table --it makes much more sense for it to be below the table but still within the summary. To do this, simply drag the description field to the bottom of the summary table and then move it in one level as shown in the following screenshot. Then click the **Save** button at the bottom to save the changes.
 
 .. image:: configuring_page_display.3.rearrange.png
 

@@ -316,7 +316,7 @@ Once complete, return to the search form, find a *Fragaria* species that has bee
 Sharing Your Templates with Others
 ----------------------------------
 
-Now that our template for loading organisms with NCBI Taxonomy IDs is completed we can share our template loader with anyone else that has a Tripal-based site.  To do this we simply export the template in text format, place it in a text file or directly in an email and send to a collaborator for import into their site.  To do this, navigate to **Tripal → Chado Data Loaders → Buik Loader** and click the **Tempalate** tab at the top.  Here we find a table of all the tempaltes we have created.  We should see our template named **NCBI Taxonomy Importer** (taxid, genus, species).  In the far right colum is a link to export that template.  Licking that link will redirect you to a page where the template is provided in a serialized PHP array.
+Now that our template for loading organisms with NCBI Taxonomy IDs is completed we can share our template loader with anyone else that has a Tripal-based site.  To do this we simply export the template in text format, place it in a text file or directly in an email and send to a collaborator for import into their site.  To do this, navigate to **Tripal → Chado Data Loaders → Buik Loader** and click the **Tempalate** tab at the top.  Here we find a table of all the templates we have created.  We should see our template named **NCBI Taxonomy Importer** (taxid, genus, species).  In the far right colum is a link to export that template.  Licking that link will redirect you to a page where the template is provided in a serialized PHP array.
 
 .. image:: ./bulk_loader.13.png
 

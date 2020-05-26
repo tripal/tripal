@@ -24,7 +24,7 @@ To use Chado for data storage:
 * Knowledge of Chado and relationships between tables (at least tables where data of interest is stored).
 * An idea how data is stored in Chado (or a willingness to ask questions)
 
-Things that will make your Tripal development experience postive, fun and rewarding:
+Things that will make your Tripal development experience positive, fun and rewarding:
 
 * A desire to write code that can be re-used and shared by other groups
 * A desire to share your work with others to support other the Tripal community members.
