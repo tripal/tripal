@@ -3,6 +3,18 @@ Administrative
 
 The following modules provide support to Tripal site administrators.
 
+Private BioData
+-----------------
+
+.. image:: https://tripal.readthedocs.io/en/7.x-3.x/_images/Tripal-Gold.png
+  :target: https://tripal.readthedocs.io/en/7.x-3.x/extensions/module_rating.html#Gold
+  :alt: Tripal Rating: Gold
+  
+Make individual pages private while others of the same Tripal Content Type remain public! This module provides an additional permission, [Content type]: View Private Content for each Tripal Content Type and a TripalField to indicate which exact pages should be private.
+
+`Documentation <https://github.com/tripal/private_biodata/blob/master/README.md>`__
+`Repository <https://github.com/tripal/private_biodata>`__
+
 Tripal Alchemist
 -----------------
 

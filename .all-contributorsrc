@@ -164,7 +164,8 @@
       "avatar_url": "https://avatars0.githubusercontent.com/u/38262122?v=4",
       "profile": "https://github.com/par12005",
       "contributions": [
-        "code"
+        "code",
+        "question"
       ]
     },
     {
@@ -192,6 +193,15 @@
       "profile": "https://github.com/risharde",
       "contributions": [
         "code"
+      ]
+    },
+    {
+      "login": "pgrimaud",
+      "name": "Pierre Grimaud",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/1866496?v=4",
+      "profile": "https://github.com/pgrimaud",
+      "contributions": [
+        "doc"
       ]
     }
   ],

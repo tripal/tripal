@@ -23,4 +23,4 @@ Depending on the number of fields for your content type and the amount of data t
 
 .. note::
  
-  You can control AJAX loading and hiding of empty fields differently for each conent type.
+  You can control AJAX loading and hiding of empty fields differently for each content type.

@@ -32,7 +32,7 @@ This tutorial covers using a basic Drupal database storage backend for your sear
 .. figure:: ./search_api.2.png
 
 
-Before proceeding, consider deleting the "Default node index". We don't need it.  Next, click the **Add Server link**.  We are configuring a basic drupal database seach server we do not need to install any third-part software or set-up an external server. Instead, fill out the configuration form to tell the Search API to use its own database to store the search index.  Give this server the name "Drupal Database" and select "Database service" from the **Service Class** drop down.  In the **Database Service** section, select  "Search on parts of a word." If the search is slow due to this feature, then it is an indicator that your site should use a different service class (ie: Elastic Search or Apache Solr). Click "Create Server" to finish configuring the Search backend.
+Before proceeding, consider deleting the "Default node index". We don't need it.  Next, click the **Add Server link**.  We are configuring a basic drupal database search server we do not need to install any third-part software or set-up an external server. Instead, fill out the configuration form to tell the Search API to use its own database to store the search index.  Give this server the name "Drupal Database" and select "Database service" from the **Service Class** drop down.  In the **Database Service** section, select  "Search on parts of a word." If the search is slow due to this feature, then it is an indicator that your site should use a different service class (ie: Elastic Search or Apache Solr). Click "Create Server" to finish configuring the Search backend.
 
 
 .. figure:: ./search_api.3.png
