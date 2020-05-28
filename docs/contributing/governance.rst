@@ -39,7 +39,7 @@ Responsibilities include:
  - Monitor Tripal core issue queue.
  - Review and merge pull requests.
 
-See the `guidelines for contributors <https://tripal.readthedocs.io/en/latest/dev_guide/contributing/pull_requests.html>`_ for more details.
+See the `guidelines for contributors <https://tripal.readthedocs.io/en/latest/contributing/pull_requests.html>`_ for more details.
 
 The Tripal Project Management Committee (PMC)
 ------------------------------------------------
@@ -55,7 +55,7 @@ Responsibilities include:
      - designing a module-specific REST API,
      - new technologies or libraries used by the core code.
  - Avoid feature bloat; judge what contributions benefit many versus those that are specific to the needs of the contributor.
- - Final approval of submitting guidelines (see `guidelines for contribution <https://tripal.readthedocs.io/en/latest/dev_guide/contributing.html>`_).
+ - Final approval of submitting guidelines (see `guidelines for contribution <https://tripal.readthedocs.io/en/latest/contributing/pull_requests.html>`_).
  - Set coding standards.
  - Ensure Tripal remains generic and useful to a wide range of groups.
 
