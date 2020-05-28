@@ -24,7 +24,7 @@ These are developers who are extending Tripal. Extension contributors are encour
 
 Core Code Contributors
 ------------------------
-Core Code Contributors are active members of the Tripal community who make suggestions to improve and/or contribute code to Tripal Core. Core Code Contributors are encouraged to submit pull requests to the Tripal core and attend monthly user calls. For more information, see the `Guidelines for Contributing to Tripal core <https://tripal.readthedocs.io/en/latest/dev_guide/contributing/pull_requests.html>`_.
+Core Code Contributors are active members of the Tripal community who make suggestions to improve and/or contribute code to Tripal Core. Core Code Contributors are encouraged to submit pull requests to the Tripal core and attend monthly user calls. For more information, see the `Guidelines for Contributing to Tripal core <https://tripal.readthedocs.io/en/latest/contributing/pull_requests.html>`_.
 
 Responsibilities include:
  - Monitor Tripal core issue queue.
