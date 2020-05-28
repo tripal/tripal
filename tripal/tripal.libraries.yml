@@ -19,3 +19,23 @@ d3:
   version: 1.x
   js:
     js/d3.v3.min.js: {}
+
+uploader:
+  version: 1.x
+  js:
+    js/TripalUploader.js: {}
+
+upload-file:
+  version: 1.x
+  js:
+    js/TripalUploadFile.js: {}
+
+tripal-file:
+  version: 1.x
+  js:
+    js/tripal.file.js: {}
+
+vars:
+  version: 1.x
+  js:
+    js/tripal.vars.js: {}

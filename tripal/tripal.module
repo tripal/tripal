@@ -14,6 +14,9 @@ use Drupal\Core\Render\Element;
 
 require_once 'api/tripal.entities.api.php';
 require_once 'api/tripal.quotas.api.php';
+require_once 'api/tripal.files.api.php';
+require_once 'api/tripal.notice.api.php';
+require_once 'api/tripal.upload.api.php';
 
 /**
  * Implements hook_help().
@@ -62,6 +65,17 @@ function tripal_theme() {
   ];
 
   return $theme;
+}
+
+/**
+ * Implements hook_page_attachments().
+ */
+function tripal_page_attachments(array &$attachments) {
+  $attachments['#attached']['drupalSettings']['tripal']['vars'] = [
+    'baseurl' => \Drupal::request()->getSchemeAndHttpHost(),
+    'tripal_path' => drupal_get_path('module', 'tripal'),
+  ];
+  $attachments['#attached']['library'][] = 'tripal/vars';
 }
 
 /**

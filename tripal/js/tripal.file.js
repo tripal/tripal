@@ -20,11 +20,10 @@
         // together parts of the table ID.
         var id                = $(this).val();
         var details           = id.split('-');
-        var settings_var_name = 'Drupal.settings.uploader_' + details[0] + '_' + details[1] + '_' + details[2];
-        var settings          = eval(settings_var_name);
+        var settings_var_name = 'uploader_' + details[0] + '_' + details[1] + '_' + details[2];
 
         // Initialize the table for uploads.
-        tripal_files.addUploadTable(details[0] + '-' + details[1], settings);
+        tripal_files.addUploadTable(details[0] + '-' + details[1], settings.tripal[settings_var_name]);
       });
     }
   };
