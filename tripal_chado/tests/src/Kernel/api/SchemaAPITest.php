@@ -1,9 +1,9 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Functional;
+namespace Drupal\Tests\tripal_chado\Kernel;
 
 use Drupal\Core\Url;
-use Drupal\Tests\BrowserTestBase;
+use Drupal\KernelTests\KernelTestBase;
 use Drupal\Core\Database\Database;
 
 /**
@@ -11,7 +11,7 @@ use Drupal\Core\Database\Database;
  *
  * @group tripal_chado
  */
-class SchemaAPITest extends BrowserTestBase {
+class SchemaAPITest extends KernelTestBase {
 
   protected $defaultTheme = 'stable';
 
@@ -21,22 +21,6 @@ class SchemaAPITest extends BrowserTestBase {
    * @var array
    */
   public static $modules = ['tripal', 'tripal_chado'];
-
-  /**
-   * A user with permission to administer site configuration.
-   *
-   * @var \Drupal\user\UserInterface
-   */
-  protected $user;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp() {
-    parent::setUp();
-    $this->user = $this->drupalCreateUser(['administer site configuration']);
-    $this->drupalLogin($this->user);
-  }
 
   /**
    * Tests chado_table_exists() and chado_column_exists().
