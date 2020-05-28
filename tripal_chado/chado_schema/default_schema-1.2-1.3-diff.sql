@@ -3034,12 +3034,12 @@ NOT have the specified term.';
 -- Name: analysis_cvterm_analysis_cvterm_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE analysis_cvterm_analysis_cvterm_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS analysis_cvterm_analysis_cvterm_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 
 --
@@ -3081,12 +3081,12 @@ accessions should set this field to false';
 -- Name: analysis_dbxref_analysis_dbxref_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE analysis_dbxref_analysis_dbxref_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS analysis_dbxref_analysis_dbxref_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 
 --
@@ -3119,12 +3119,12 @@ COMMENT ON TABLE analysis_pub IS 'Provenance. Linking table between analyses and
 -- Name: analysis_pub_analysis_pub_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE analysis_pub_analysis_pub_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS analysis_pub_analysis_pub_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 
 
@@ -3195,12 +3195,12 @@ important where rank is used to order these; starts from zero.';
 -- Name: analysis_relationship_analysis_relationship_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE analysis_relationship_analysis_relationship_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS analysis_relationship_analysis_relationship_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 
 --
@@ -3516,12 +3516,12 @@ relational schema, and is completely extensible.';
 -- Name: contactprop_contactprop_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE contactprop_contactprop_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS contactprop_contactprop_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 
 --
@@ -3613,12 +3613,12 @@ the combination of db_id, rank, and type_id. Multivalued property-value pairs mu
 -- Name: dbprop_dbprop_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE dbprop_dbprop_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS dbprop_dbprop_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 --
 -- Name: dbprop_dbprop_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -3771,12 +3771,12 @@ person or organization responsible for discovery or that can provide more inform
 -- Name: feature_contact_feature_contact_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE feature_contact_feature_contact_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS feature_contact_feature_contact_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 --
 -- Name: feature_contact_feature_contact_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -3944,12 +3944,12 @@ that can provide more information on a particular featuremap.';
 -- Name: featuremap_contact_featuremap_contact_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE featuremap_contact_featuremap_contact_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS featuremap_contact_featuremap_contact_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 --
 -- Name: featuremap_contact_featuremap_contact_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -3973,12 +3973,12 @@ CREATE TABLE IF NOT EXISTS featuremap_dbxref (
 -- Name: featuremap_dbxref_featuremap_dbxref_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE featuremap_dbxref_featuremap_dbxref_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS featuremap_dbxref_featuremap_dbxref_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 --
 -- Name: featuremap_dbxref_featuremap_dbxref_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -4008,12 +4008,12 @@ COMMENT ON TABLE featuremap_organism IS 'Links a featuremap to the organism(s) w
 -- Name: featuremap_organism_featuremap_organism_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE featuremap_organism_featuremap_organism_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS featuremap_organism_featuremap_organism_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 --
 -- Name: featuremap_organism_featuremap_organism_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -4055,12 +4055,12 @@ relational schema, and is completely extensible.';
 -- Name: featuremapprop_featuremapprop_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE featuremapprop_featuremapprop_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS featuremapprop_featuremapprop_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 
 --
@@ -4105,12 +4105,12 @@ COMMENT ON TABLE featureposprop IS 'Property or attribute of a featurepos record
 -- Name: featureposprop_featureposprop_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE featureposprop_featureposprop_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS featureposprop_featureposprop_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 --
 -- Name: featureposprop_featureposprop_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -4195,12 +4195,12 @@ COMMENT ON TABLE library_contact IS 'Links contact(s) with a library.  Used to i
 -- Name: library_contact_library_contact_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE library_contact_library_contact_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS library_contact_library_contact_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 --
 -- Name: library_contact_library_contact_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -4255,12 +4255,12 @@ COMMENT ON TABLE library_expression IS 'Links a library to expression statements
 -- Name: library_expression_library_expression_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE library_expression_library_expression_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS library_expression_library_expression_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 --
 -- Name: library_expression_library_expression_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -4292,12 +4292,12 @@ COMMENT ON TABLE library_expressionprop IS 'Attributes of a library_expression r
 -- Name: library_expressionprop_library_expressionprop_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE library_expressionprop_library_expressionprop_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS library_expressionprop_library_expressionprop_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 --
 -- Name: library_expressionprop_library_expressionprop_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -4337,12 +4337,12 @@ COMMENT ON TABLE library_featureprop IS 'Attributes of a library_feature relatio
 -- Name: library_featureprop_library_featureprop_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE library_featureprop_library_featureprop_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS library_featureprop_library_featureprop_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 --
 -- Name: library_featureprop_library_featureprop_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -4388,12 +4388,12 @@ COMMENT ON TABLE library_relationship IS 'Relationships between libraries.';
 -- Name: library_relationship_library_relationship_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE library_relationship_library_relationship_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS library_relationship_library_relationship_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 
 --
@@ -4424,12 +4424,12 @@ COMMENT ON TABLE library_relationship_pub IS 'Provenance of library_relationship
 -- Name: library_relationship_pub_library_relationship_pub_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE library_relationship_pub_library_relationship_pub_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS library_relationship_pub_library_relationship_pub_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 --
 -- Name: library_relationship_pub_library_relationship_pub_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -4542,12 +4542,12 @@ COMMENT ON TABLE nd_experiment_analysis IS 'An analysis that is used in an exper
 -- Name: nd_experiment_analysis_nd_experiment_analysis_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE nd_experiment_analysis_nd_experiment_analysis_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS nd_experiment_analysis_nd_experiment_analysis_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 --
 -- Name: nd_experiment_analysis_nd_experiment_analysis_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -4798,12 +4798,12 @@ the default 0 value should be used';
 -- Name: organism_cvterm_organism_cvterm_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE organism_cvterm_organism_cvterm_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS organism_cvterm_organism_cvterm_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 --
 -- Name: organism_cvterm_organism_cvterm_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -4867,12 +4867,12 @@ the default 0 value should be used';
 -- Name: organism_cvtermprop_organism_cvtermprop_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE organism_cvtermprop_organism_cvtermprop_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS organism_cvtermprop_organism_cvtermprop_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 --
 -- Name: organism_cvtermprop_organism_cvtermprop_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -4917,12 +4917,12 @@ COMMENT ON TABLE organism_pub IS 'Attribution for organism.';
 -- Name: organism_pub_organism_pub_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE organism_pub_organism_pub_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS organism_pub_organism_pub_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 --
 -- Name: organism_pub_organism_pub_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -4957,12 +4957,12 @@ relatinoships should be housed in the phylogeny tables.';
 -- Name: organism_relationship_organism_relationship_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE organism_relationship_organism_relationship_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS organism_relationship_organism_relationship_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 --
 -- Name: organism_relationship_organism_relationship_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -5002,12 +5002,12 @@ COMMENT ON TABLE organismprop_pub IS 'Attribution for organismprop.';
 -- Name: organismprop_pub_organismprop_pub_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE organismprop_pub_organismprop_pub_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS organismprop_pub_organismprop_pub_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 --
 -- Name: organismprop_pub_organismprop_pub_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -5101,12 +5101,12 @@ COMMENT ON TABLE phenotypeprop IS 'A phenotype can have any number of slot-value
 -- Name: phenotypeprop_phenotypeprop_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE phenotypeprop_phenotypeprop_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS phenotypeprop_phenotypeprop_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 --
 -- Name: phenotypeprop_phenotypeprop_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -5257,12 +5257,12 @@ default 0 value should be used';
 -- Name: phylotreeprop_phylotreeprop_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE phylotreeprop_phylotreeprop_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS phylotreeprop_phylotreeprop_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 
 --
@@ -5311,12 +5311,12 @@ The rank column can be used to specify a simple ordering in which analyses were 
 -- Name: project_analysis_project_analysis_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE project_analysis_project_analysis_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS project_analysis_project_analysis_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 
 --
@@ -5371,12 +5371,12 @@ COMMENT ON COLUMN project_dbxref.is_current IS 'The is_current boolean indicates
 -- Name: project_dbxref_project_dbxref_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE project_dbxref_project_dbxref_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS project_dbxref_project_dbxref_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 --
 -- Name: project_dbxref_project_dbxref_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -5407,12 +5407,12 @@ COMMENT ON TABLE project_feature IS 'This table is intended associate records in
 -- Name: project_feature_project_feature_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE project_feature_project_feature_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS project_feature_project_feature_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 --
 -- Name: project_feature_project_feature_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -5477,12 +5477,12 @@ COMMENT ON TABLE project_stock IS 'This table is intended associate records in t
 -- Name: project_stock_project_stock_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE project_stock_project_stock_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS project_stock_project_stock_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 --
 -- Name: projectprop; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
@@ -5561,12 +5561,12 @@ COMMENT ON TABLE pubauthor_contact IS 'An author on a publication may have a cor
 -- Name: pubauthor_contact_pubauthor_contact_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE pubauthor_contact_pubauthor_contact_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS pubauthor_contact_pubauthor_contact_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 --
 -- Name: pubauthor_contact_pubauthor_contact_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -5684,12 +5684,12 @@ COMMENT ON TABLE stock_feature IS 'Links a stock to a feature.';
 -- Name: stock_feature_stock_feature_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE stock_feature_stock_feature_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS stock_feature_stock_feature_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 --
 -- Name: stock_feature_stock_feature_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -5721,12 +5721,12 @@ COMMENT ON TABLE stock_featuremap IS 'Links a featuremap to a stock.';
 -- Name: stock_featuremap_stock_featuremap_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE stock_featuremap_stock_featuremap_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS stock_featuremap_stock_featuremap_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 --
 -- Name: stock_genotype; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
@@ -5759,12 +5759,12 @@ COMMENT ON TABLE stock_library IS 'Links a stock with a library.';
 -- Name: stock_library_stock_library_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE stock_library_stock_library_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS stock_library_stock_library_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 --
 -- Name: stock_pub; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
@@ -5839,12 +5839,12 @@ db_id record';
 -- Name: stockcollection_db_stockcollection_db_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
----CREATE SEQUENCE stockcollection_db_stockcollection_db_id_seq
----    START WITH 1
----    INCREMENT BY 1
----    NO MINVALUE
----    NO MAXVALUE
----    CACHE 1;
+CREATE SEQUENCE IF NOT EXISTS stockcollection_db_stockcollection_db_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 --
 -- Name: stockcollection_stock; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
