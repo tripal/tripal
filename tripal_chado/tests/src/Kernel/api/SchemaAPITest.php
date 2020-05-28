@@ -25,7 +25,8 @@ class SchemaAPITest extends KernelTestBase {
   /**
    * Tests chado_table_exists() and chado_column_exists().
    *
-   * @group wip-lacey
+   * @group tripal-chado
+   * @group chado-schema
    */
   public function testChadoTableColumnExists() {
     $connection = \Drupal\Core\Database\Database::getConnection();
@@ -107,4 +108,34 @@ class SchemaAPITest extends KernelTestBase {
     \Drupal::database()->query("DROP TABLE chado." . $table_name);
   }
 
+  /**
+   * Tests chado_get_schema_name().
+   *
+   * @group tripal-chado
+   * @group chado-schema
+   */
+  public function testChadoSchemaMetdata() {
+
+    // First check the default schema.
+    $schema_name = chado_get_schema_name('fred');
+    $this->assertEquals('public', $schema_name,
+      "The default schema is not what we expected. We expected the 'public' schema.");
+
+    // Next check if chado is local.
+    $is_local = chado_is_local();
+    $this->assertIsBool($is_local, "Unable to check that chado is local.");
+    $is_local_2X = chado_is_local();
+    $this->assertIsBool($is_local_2X, "Unable to check that chado is local 2X.");
+    $this->assertEquals($is_local, $is_local_2X,
+      "When checking if chado is local we didn't get the same answer twice.");
+
+    // Check if chado is installed.
+    $installed = chado_is_installed();
+    $this->assertTrue($installed, "Chado is not installed?");
+
+    // Check the chado version.
+    $version = chado_get_version();
+    $this->assertGreaterThanOrEqual(1.3, $version,
+      "We were unable to detect the version assuming it's 1.3");
+  }
 }

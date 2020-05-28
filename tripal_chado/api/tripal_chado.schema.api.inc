@@ -55,7 +55,7 @@ function chado_table_exists($table) {
   // Get the default database and chado schema.
   $databases = $connection->getConnectionOptions();
   $default_db = $databases['database'];
-  $chado_schema = 'chado';  // @upgrade chado_get_schema_name('chado');
+  $chado_schema = chado_get_schema_name('chado');
 
   // If we've already lookup up this table then don't do it again, as
   // we don't need to keep querying the database for the same tables.
@@ -113,7 +113,7 @@ function chado_column_exists($table, $column) {
   // Get the default database and chado schema.
   $databases = $connection->getConnectionOptions();
   $default_db = $databases['database'];
-  $chado_schema = 'chado';  // @upgrade chado_get_schema_name('chado');
+  $chado_schema = chado_get_schema_name('chado');
 
   // @upgrade $cached_obj = cache_get('chado_table_columns', 'cache');
   // if ($cached_obj) {
@@ -173,7 +173,7 @@ function chado_sequence_exists($sequence) {
   // Get the default database and chado schema.
   $databases = $connection->getConnectionOptions();
   $default_db = $databases['database'];
-  $chado_schema = 'chado';  // @upgrade chado_get_schema_name('chado');
+  $chado_schema = chado_get_schema_name('chado');
 
   // @upgrade $cached_obj = cache_get('chado_sequences', 'cache');
   // $cached_seqs = $cached_obj->data;
@@ -228,7 +228,7 @@ function chado_index_exists($table, $name, $no_suffix = FALSE) {
   // Get the default database and chado schema.
   $databases = $connection->getConnectionOptions();
   $default_db = $databases['database'];
-  $chado_schema = 'chado';  // @upgrade chado_get_schema_name('chado');
+  $chado_schema = chado_get_schema_name('chado');
 
   $sql = "
     SELECT 1 as exists
@@ -267,7 +267,7 @@ function chado_add_index($table, $name, $fields) {
   $indexname = strtolower($table . '_' . $name . '_idx');
 
   // Retrieve the chado schema name.
-  $chado_schema = 'chado';  // @upgrade chado_get_schema_name('chado');
+  $chado_schema = chado_get_schema_name('chado');
   $chado_dot = $chado_schema . '.';
 
   // Determine the create index SQL command.
@@ -320,6 +320,38 @@ function chado_dbschema_exists($schema) {
 }
 
 /**
+ * Retrieve the name of the PostgreSQL schema housing Chado or Drupal.
+ *
+ * @param $schema
+ *   Wehter you want the schema name for 'chado' or 'drupal'. Chado is the
+ *   default.
+ *
+ * @return
+ *   The name of the PostgreSQL schema housing the $schema specified.
+ *
+ * @ingroup tripal_chado_query_api
+ */
+function chado_get_schema_name($schema = 'chado') {
+
+  // First we will set our default. This is what will be returned in most cases.
+  if ($schema == 'chado') {
+    $schema_name = 'chado';
+  }
+  else {
+    $schema_name = 'public';
+  }
+
+  // There are cases where modules or admin might need to change the default
+  // names for the schema. Thus we provide an alter hook here to allow
+  // the names to be changed and ensure that schema names are never hardcoded
+  // directly into queries.
+  $context = ['schema' => $schema];
+  \Drupal::moduleHandler()->alter('chado_get_schema_name', $schema_name, $context);
+
+  return $schema_name;
+}
+
+/**
  * Check that the Chado schema exists within the local database
  *
  * @return
@@ -328,13 +360,15 @@ function chado_dbschema_exists($schema) {
  * @ingroup tripal_chado_schema_api
  *
  * @upgrade
- *
-function chado_is_local() {
+ */
+function chado_is_local($force_recheck = FALSE) {
 
-  // If the is_local variable has been set then we've already checked if
-  // Chado is local and we don't need to repeat it again.
-  if (isset($GLOBALS["chado_is_local"])) {
-    return $GLOBALS["chado_is_local"];
+
+  if ($force_recheck !== TRUE) {
+    $exists = \Drupal::state()->get('chado_schema_exists', NULL);
+    if ($exists !== NULL AND is_bool($exists)) {
+      return !$exists;
+    }
   }
 
   // This is postgresql-specific code to check the existence of the chado schema
@@ -347,18 +381,17 @@ function chado_is_local() {
       has_schema_privilege(nspname, 'USAGE') AND
       nspname = :chado
   ";
-  $results = db_query($sql, [':chado' => chado_get_schema_name('chado')]);
+  $results = \Drupal::database()->query($sql, [':chado' => chado_get_schema_name('chado')]);
   $name = $results->fetchObject();
   if ($name) {
-    variable_set('chado_schema_exists', FALSE);
+    \Drupal::state()->set('chado_schema_exists', FALSE);
     return TRUE;
   }
   else {
-    variable_set('chado_schema_exists', TRUE);
+    \Drupal::state()->set('chado_schema_exists', TRUE);
     return FALSE;
   }
 }
-*/
 
 /**
  * Check whether chado is installed (either in the same or a different database)
@@ -367,21 +400,14 @@ function chado_is_local() {
  *   TRUE/FALSE depending upon whether chado is installed.
  *
  * @ingroup tripal_chado_schema_api
- *
- * @upgrade
- *
+ */
 function chado_is_installed() {
-  global $databases;
 
-  // first check if chado is in the $databases variable of the settings.php file
-  if (array_key_exists(chado_get_schema_name('chado'), $databases)) {
-    return TRUE;
-  }
+  // @todo currently not supporting external chado instances.
 
   // check to make sure the chado schema exists
   return chado_is_local();
 }
-*/
 
 /**
  * Returns the version number of the currently installed Chado instance.
@@ -407,33 +433,22 @@ function chado_is_installed() {
  * @ingroup tripal_chado_schema_api
  *
  * @upgrade
- *
+ */
 function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
 
-  global $databases;
   $version = '';
   $is_local = FALSE;
   $chado_exists = FALSE;
 
   // Check that Chado is installed if not return 'uninstalled as the version'
-  $is_local = isset($GLOBALS["chado_is_local"]) && $GLOBALS["chado_is_local"];
+  $is_local = chado_is_local();
   if (!$is_local) {
-    // If it's not in the drupal database check to see if it's specified in
-    // the $db_url in the settings.php
-    if (!array_key_exists(chado_get_schema_name('chado'), $databases)) {
-      // if it's not in the drupal database or specified in the $db_url then
-      // return uninstalled as the version
-      return 'not installed';
-    }
-    $is_local = 0;
-    $previous_db = chado_set_active('chado');
-    $prop_exists = chado_table_exists('chadoprop');
-    chado_set_active($previous_db);
+    // @todo currently do not support external chado.
+    return 'not installed';
   }
   else {
     $chado_exists = TRUE;
-    // @todo we need a chado aware db_table_exists.
-    $prop_exists = db_table_exists(chado_get_schema_name('chado') . '.chadoprop');
+    $prop_exists = chado_table_exists('chadoprop');
   }
 
   // if the table doesn't exist then we don't know what version but we know
@@ -454,14 +469,7 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
         INNER JOIN $chado_schema.cv CV on CVT.cv_id = CV.cv_id
       WHERE CV.name = 'chado_properties' and CVT.name = 'version'
     ";
-    if (!$is_local) {
-      $previous_db = chado_set_active('chado');
-      $results = db_query($sql);
-      chado_set_active($previous_db);
-    }
-    else {
-      $results = chado_query($sql);
-    }
+    $results = \Drupal::database()->query($sql);
     $v = $results->fetchObject();
 
     // if we don't have a version in the chadoprop table then it must be
@@ -483,7 +491,7 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
   if (strcmp($exact_version, '1.11 or older') == 0) {
     $exact_version = "1.11";
     if ($warn_if_unsupported) {
-      drupal_set_message(t("WARNING: Tripal does not fully support Chado version less than v1.11.  If you are certain this is v1.11
+      \Drupal::messenger()->addMessage(t("WARNING: Tripal does not fully support Chado version less than v1.11.  If you are certain this is v1.11
          or if Chado was installed using an earlier version of Tripal then all is well. If not please upgrade to v1.11 or later"),
         'warning');
     }
@@ -501,7 +509,7 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
     }
   }
   if ($warn_if_unsupported and ($effective_version < 1.11 and $effective_version != 'not installed')) {
-    drupal_set_message(t("WARNING: The currently installed version of Chado, v$exact_version, is not fully compatible with Tripal."), 'warning');
+    \Drupal::messenger()->addMessage(t("WARNING: The currently installed version of Chado, v$exact_version, is not fully compatible with Tripal."), 'warning');
   }
   // if the callee has requested the exact version then return it
   if ($exact) {
@@ -510,7 +518,6 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
 
   return $effective_version;
 }
-*/
 
 /**
  * Retrieves the list of tables in the Chado schema.  By default it only

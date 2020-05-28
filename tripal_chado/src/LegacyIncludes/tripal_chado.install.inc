@@ -29,43 +29,28 @@ function tripal_chado_load_drush_submit($version) {
 function tripal_chado_install_chado($action, TripalJob $job = NULL) {
 
   $vsql = "
-    INSERT INTO {chadoprop} (type_id, value)
+    INSERT INTO chado.chadoprop (type_id, value)
       VALUES (
        (SELECT cvterm_id
-        FROM {cvterm} CVT
-          INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
+        FROM chado.cvterm CVT
+          INNER JOIN chado.cv CV on CVT.cv_id = CV.cv_id
          WHERE CV.name = 'chado_properties' AND CVT.name = 'version'),
        :version)
   ";
 
   $vusql = "
-    UPDATE {chadoprop}
+    UPDATE chado.chadoprop
     SET value = :version
     WHERE type_id = (SELECT cvterm_id
-        FROM {cvterm} CVT
-          INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
+        FROM chado.cvterm CVT
+          INNER JOIN chado.cv CV on CVT.cv_id = CV.cv_id
          WHERE CV.name = 'chado_properties' AND CVT.name = 'version')
   ";
 
   try {
     if ($action == 'Install Chado v1.3') {
       tripal_chado_install_chado_1_3();
-      // @upgrade chado_query($vsql, [':version' => '1.3']);
-    }
-    elseif ($action == 'Upgrade Chado v1.2 to v1.3') {
-      tripal_chado_upgrade_chado_1_2_to_1_3();
-      // @upgrade chado_query($vusql, [':version' => '1.3']);
-    }
-    elseif ($action == 'Install Chado v1.2') {
-      tripal_chado_install_chado_1_2();
-      // @upgrade chado_query($vsql, [':version' => '1.2']);
-    }
-    elseif ($action == 'Upgrade Chado v1.11 to v1.2') {
-      tripal_chado_upgrade_chado_1_11_to_1_2();
-      // @upgrade chado_query($vsql, [':version' => '1.2']);
-    }
-    elseif ($action == 'Install Chado v1.11') {
-      tripal_chado_install_chado_1_11();
+      \Drupal::database()->query($vsql, [':version' => '1.3']);
     }
   } catch (Exception $e) {
     tripal_chado_install_done();
