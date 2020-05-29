@@ -5,6 +5,7 @@ namespace Drupal\Tests\tripal_chado\Kernel;
 use Drupal\Core\Url;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\Core\Database\Database;
+use Drupal\tripal_chado\api\ChadoSchema;
 
 /**
  * Testing the tripal_chado/api/tripal_chado.schema.api.inc functions.
@@ -137,5 +138,107 @@ class SchemaAPITest extends KernelTestBase {
     $version = chado_get_version();
     $this->assertGreaterThanOrEqual(1.3, $version,
       "We were unable to detect the version assuming it's 1.3");
+  }
+
+  /**
+   * Tests that the class can be initiated with or without a record specified
+   *
+   * @group api
+   * @group chado
+   * @group chado-schema
+   */
+  public function testInitClass() {
+
+    // Test with no parameters.
+    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema();
+    $this->assertNotNull($chado_schema);
+
+    // Test with version.
+    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema('1.3');
+    $this->assertNotNull($chado_schema);
+  }
+
+  /**
+   * Tests the ChadoSchema->getVersion() method.
+   *
+   * @group api
+   * @group chado
+   * @group chado-schema
+   */
+  public function testGetVersion() {
+
+    // Generate a fake version.
+    $version = rand(100,199) / 100;
+
+    // Check version can be retrieved when we set it.
+    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema($version);
+    $retrieved_version = $chado_schema->getVersion();
+    $this->assertEquals(
+      $version,
+      $retrieved_version,
+      t('The version retrieved via ChadoSchema->getVersion, ":ret", should equal that set, ":set"',
+        [':ret' => $retrieved_version, ':set' => $version])
+    );
+
+    // @todo Check version can be retrieved when it's looked up?
+  }
+
+  /**
+   * Tests the ChadoSchema->getSchemaName() method.
+   *
+   * @group api
+   * @group chado
+   * @group chado-schema
+   */
+  public function testGetSchemaName() {
+
+    // Generate a fake version.
+    $version = rand(100,199) / 100;
+    $schema_name = uniqid();
+
+    // Check the schema name can be retrieved when we set it.
+    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema($version, $schema_name);
+    $retrieved_schema = $chado_schema->getSchemaName();
+    $this->assertEquals(
+      $schema_name,
+      $retrieved_schema,
+      t('The schema name retrieved via ChadoSchema->getSchemaName, ":ret", should equal that set, ":set"',
+        [':ret' => $retrieved_schema, ':set' => $schema_name])
+    );
+
+    // @todo Check schema name can be retrieved when it's looked up?
+  }
+
+  /**
+   * Tests the ChadoSchema->getSchemaDetails() method.
+   *
+   * @group api
+   * @group chado
+   * @group chado-schema
+   */
+  public function testGetSchemaDetails() {
+
+    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema(1.3, 'chado');
+    $schema_details = $chado_schema->getSchemaDetails();
+    $this->assertIsArray($schema_details,
+      "We were unable to pull out the schema details from the YAML file.");
+    $this->assertArrayHasKey('chado.cvterm', $schema_details,
+      "The schema details array does not contain details about the cvterm table.");
+    $this->assertArrayHasKey('chado.organism', $schema_details,
+      "The schema details array does not contain details about the organism table.");
+    $this->assertArrayHasKey('chado.feature', $schema_details,
+      "The schema details array does not contain details about the feature table.");
+    $this->assertArrayHasKey('chado.stock', $schema_details,
+      "The schema details array does not contain details about the stock table.");
+
+    foreach ($schema_details as $table => $table_details) {
+      $this->assertArrayHasKey('description', $table_details,
+        "The $table does not have a description in the YAML.");
+      $this->assertArrayHasKey('fields', $table_details,
+        "The $table does not have a fields array in the YAML.");
+      $this->assertArrayHasKey('primary key', $table_details,
+        "The $table does not have a primary key in the YAML.");
+    }
+
   }
 }

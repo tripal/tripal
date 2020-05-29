@@ -1,5 +1,9 @@
 <?php
 
+namespace Drupal\tripal_chado\api;
+
+use Symfony\Component\Yaml\Yaml;
+
 /**
  * Provides an application programming interface (API) for describing Chado
  * tables.
@@ -54,6 +58,12 @@ class ChadoSchema {
    *   The name of the schema chado was installed in.
    */
   protected $schema_name = 'chado';
+
+  /**
+   * @var array
+   *   A description of all tables which should be in the current schema.
+   */
+  protected $schema = [];
 
   /**
    * The ChadoSchema constructor.
@@ -133,7 +143,7 @@ class ChadoSchema {
    * @returns
    *   An associative array where the key and value pairs are the Chado table
    *   names.
-   */
+   *
   public function getTableNames($include_custom = FALSE) {
 
     $tables = [];
@@ -169,7 +179,7 @@ class ChadoSchema {
     asort($tables);
     return $tables;
 
-  }
+  }*/
 
   /**
    * Retrieves the chado tables Schema API array.
@@ -180,7 +190,7 @@ class ChadoSchema {
    *
    * @returns
    *   A Drupal Schema API array defining the table.
-   */
+   *
   public function getTableSchema($table) {
 
     // first get the chado version.
@@ -209,7 +219,7 @@ class ChadoSchema {
 
     return $table_arr;
 
-  }
+  }*/
 
   /**
    * Retrieves the schema array for the specified custom table.
@@ -220,7 +230,7 @@ class ChadoSchema {
    * @return
    *   A Drupal-style Schema API array definition of the table. Returns
    *   FALSE on failure.
-   */
+   *
   public function getCustomTableSchema($table) {
 
     $sql = "SELECT schema FROM {tripal_custom_tables} WHERE table_name = :table_name";
@@ -232,7 +242,7 @@ class ChadoSchema {
     else {
       return unserialize($custom->schema);
     }
-  }
+  }*/
 
   /**
    *  Returns all chado base tables.
@@ -250,7 +260,7 @@ class ChadoSchema {
    *    An array of base table names.
    *
    * @ingroup tripal_chado_schema_api
-   */
+   *
   function getBaseTables() {
 
     // Initialize the base tables with those tables that are missing a type.
@@ -324,7 +334,7 @@ class ChadoSchema {
     sort($final_list);
     return $final_list;
 
-  }
+  }*/
 
   /**
    * Get information about which Chado base table a cvterm is mapped to.
@@ -350,10 +360,10 @@ class ChadoSchema {
    * @return
    *   An object containing the chado_table and chado_field properties or NULL
    *   if if no mapping was found for the term.
-   */
+   *
   public function getCvtermMapping($params) {
     return chado_get_cvterm_mapping($params);
-  }
+  }*/
 
   /**
    * Check that any given Chado table exists.
@@ -366,10 +376,10 @@ class ChadoSchema {
    *
    * @return
    *   TRUE if the table exists in the chado schema and FALSE if it does not.
-   */
+   *
   public function checkTableExists($table) {
     return chado_table_exists($table);
-  }
+  }*/
 
   /**
    * Check that any given column in a Chado table exists.
@@ -387,10 +397,10 @@ class ChadoSchema {
    *   FALSE if it does not.
    *
    * @ingroup tripal_chado_schema_api
-   */
+   *
   public function checkColumnExists($table, $column) {
     return chado_column_exists($table, $column);
-  }
+  }*/
 
   /**
    * Check that any given column in a Chado table exists.
@@ -411,7 +421,7 @@ class ChadoSchema {
    *   FALSE if it does not.
    *
    * @ingroup tripal_chado_schema_api
-   */
+   *
   public function checkColumnType($table, $column, $expected_type = NULL) {
 
     // Ensure this column exists before moving forward.
@@ -496,6 +506,7 @@ class ChadoSchema {
       return FALSE;
     }
   }
+  */
 
   /**
    * Check that any given sequence in a Chado table exists.
@@ -510,7 +521,7 @@ class ChadoSchema {
    *   not.
    *
    * @ingroup tripal_chado_schema_api
-   */
+   *
   public function checkSequenceExists($table, $column) {
 
     $prefixed_table = $this->schema_name . '.' . $table;
@@ -523,6 +534,7 @@ class ChadoSchema {
 
     return chado_sequence_exists($sequence_name);
   }
+  */
 
   /**
    * Check that the primary key exists, has a sequence and a constraint.
@@ -534,7 +546,7 @@ class ChadoSchema {
    *
    * @return
    *   TRUE if the primary key meets all the requirements and false otherwise.
-   */
+   *
   public function checkPrimaryKey($table, $column = NULL) {
 
     // If they didn't supply the column, then we can look it up.
@@ -579,6 +591,7 @@ class ChadoSchema {
 
     return TRUE;
   }
+  */
 
   /**
    * Check that the constraint exists.
@@ -593,7 +606,7 @@ class ChadoSchema {
    *
    * @return
    *   TRUE if the constraint exists and false otherwise.
-   */
+   *
   function checkConstraintExists($table, $constraint_name, $type) {
 
     // Next check the constraint is there.
@@ -611,7 +624,7 @@ class ChadoSchema {
     }
 
     return TRUE;
-  }
+  }*/
 
   /**
    * Check the foreign key constrain specified exists.
@@ -625,7 +638,7 @@ class ChadoSchema {
    *
    * @return
    *   TRUE if the constraint exists and false otherwise.
-   */
+   *
   function checkFKConstraintExists($base_table, $base_column) {
 
 
@@ -636,7 +649,7 @@ class ChadoSchema {
     $constraint_name = $base_table . '_' . $base_column . '_fkey';
 
     return $this->checkConstraintExists($base_table, $constraint_name, 'FOREIGN KEY');
-  }
+  }*/
 
   /**
    * A Chado-aware replacement for the db_index_exists() function.
@@ -645,8 +658,24 @@ class ChadoSchema {
    *   The table to be altered.
    * @param $name
    *   The name of the index.
-   */
+   *
   function checkIndexExists($table, $name) {
     return chado_index_exists($table, $name);
+  }*/
+
+  /**
+   * Retrieve schema details from YAML file.
+   *
+   * @return
+   *   An array with details for the current schema version.
+   */
+  public function getSchemaDetails() {
+
+    if (empty($this->schema)) {
+      $filename = drupal_get_path('module', 'tripal_chado') . '/chado_schema/chado_schema-1.3.yml';
+      $this->schema = Yaml::parse(file_get_contents($filename));
+    }
+
+    return $this->schema;
   }
 }
