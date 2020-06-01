@@ -420,7 +420,7 @@ class SchemaAPITest extends BrowserTestBase {
    */
   public function testGetBaseTables($version, $known_tables) {
 
-    $this->markTestSkipped('Base table functionality not complete. Requires referring tables key to YAML.');
+    //$this->markTestSkipped('Base table functionality not complete. Requires referring tables key to YAML.');
 
     // Check: Known base tables for a given version are returned.
     $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema($version);

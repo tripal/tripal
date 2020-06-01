@@ -39,6 +39,7 @@ acquisition:
       table: channel
       columns:
         channel_id: channel_id
+  referring_tables: acquisitionprop, acquisition_relationship, quantification
 acquisition_relationship:
   description: "Multiple monochrome images may be merged to form a multi-color image. Red-green images of 2-channel hybridizations are an example of this."
   fields:
@@ -73,6 +74,7 @@ acquisition_relationship:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 acquisitionprop:
   description: "Parameters associated with image acquisition."
   fields:
@@ -103,6 +105,7 @@ acquisitionprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 analysis:
   description: "An analysis is a particular type of a     computational analysis; it may be a blast of one sequence against     another, or an all by all blast, or a different kind of analysis     altogether. It is a single unit of computation."
   fields:
@@ -146,6 +149,7 @@ analysis:
   unique keys:
     analysis_c1: program, programversion, sourcename
   primary key: analysis_id
+  referring_tables: analysisprop, analysisfeature, analysis_dbxref, analysis_cvterm, analysis_relationship, analysis_pub, phylotree, project_analysis, quantification, nd_experiment_analysis
 analysis_cvterm:
   description: "Associate a term from a cv with an analysis."
   fields:
@@ -177,6 +181,7 @@ analysis_cvterm:
       table: cvterm
       columns:
         cvterm_id: cvterm_id
+  referring_tables: 
 analysis_dbxref:
   description: "Links an analysis to dbxrefs."
   fields:
@@ -205,6 +210,7 @@ analysis_dbxref:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+  referring_tables: 
 analysis_pub:
   description: "Provenance. Linking table between analyses and the publications that mention them."
   fields:
@@ -229,6 +235,7 @@ analysis_pub:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 analysis_relationship:
   description: ""
   fields:
@@ -263,6 +270,7 @@ analysis_relationship:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 analysisfeature:
   description: "Computational analyses generate features (e.g. Genscan generates transcripts and exons; sim4 alignments generate similarity/match features). analysisfeatures are stored using the feature table from the sequence module. The analysisfeature table is used to decorate these features, with analysis specific attributes. A feature is an analysisfeature if and only if there is a corresponding entry in the analysisfeature table. analysisfeatures will have two or more featureloc entries,  with rank indicating query/subject"
   fields:
@@ -299,6 +307,7 @@ analysisfeature:
       table: analysis
       columns:
         analysis_id: analysis_id
+  referring_tables: analysisfeatureprop
 analysisfeatureprop:
   description: ""
   fields:
@@ -329,6 +338,7 @@ analysisfeatureprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 analysisprop:
   description: ""
   fields:
@@ -359,6 +369,7 @@ analysisprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 arraydesign:
   description: "General properties about an array. An array is a template used to generate physical slides, etc.  It contains layout information, as well as global array properties, such as material (glass, nylon) and spot dimensions (in rows/columns)."
   fields:
@@ -437,6 +448,7 @@ arraydesign:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+  referring_tables: arraydesignprop, assay, element
 arraydesignprop:
   description: "Extra array design properties that are not accounted for in arraydesign."
   fields:
@@ -467,6 +479,7 @@ arraydesignprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 assay:
   description: "An assay consists of a physical instance of an array, combined with the conditions used to create the array (protocols, technician information). The assay can be thought of as a hybridization."
   fields:
@@ -521,6 +534,7 @@ assay:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+  referring_tables: assayprop, assay_project, assay_biomaterial, acquisition, control, study_assay, studyfactorvalue
 assay_biomaterial:
   description: "A biomaterial can be hybridized many times (technical replicates), or combined with other biomaterials in a single hybridization (for two-channel arrays)."
   fields:
@@ -555,6 +569,7 @@ assay_biomaterial:
       table: channel
       columns:
         channel_id: channel_id
+  referring_tables: 
 assay_project:
   description: "Link assays to projects."
   fields:
@@ -579,6 +594,7 @@ assay_project:
       table: project
       columns:
         project_id: project_id
+  referring_tables: 
 assayprop:
   description: "Extra assay properties that are not accounted for in assay."
   fields:
@@ -609,6 +625,7 @@ assayprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 biomaterial:
   description: "A biomaterial represents the MAGE concept of BioSource, BioSample, and LabeledExtract. It is essentially some biological material (tissue, cells, serum) that may have been processed. Processed biomaterials should be traceable back to raw biomaterials via the biomaterialrelationship table."
   fields:
@@ -646,6 +663,7 @@ biomaterial:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+  referring_tables: biomaterial_relationship, biomaterialprop, biomaterial_dbxref, treatment, biomaterial_treatment, assay_biomaterial
 biomaterial_dbxref:
   description: ""
   fields:
@@ -670,6 +688,7 @@ biomaterial_dbxref:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+  referring_tables: 
 biomaterial_relationship:
   description: "Relate biomaterials to one another. This is a way to track a series of treatments or material splits/merges, for instance."
   fields:
@@ -698,6 +717,7 @@ biomaterial_relationship:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 biomaterial_treatment:
   description: "Link biomaterials to treatments. Treatments have an order of operations (rank), and associated measurements (unittype_id, value)."
   fields:
@@ -735,6 +755,7 @@ biomaterial_treatment:
       table: cvterm
       columns:
         unittype_id: cvterm_id
+  referring_tables: 
 biomaterialprop:
   description: "Extra biomaterial properties that are not accounted for in biomaterial."
   fields:
@@ -765,6 +786,7 @@ biomaterialprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 cell_line:
   description: ""
   fields:
@@ -798,6 +820,7 @@ cell_line:
       table: organism
       columns:
         organism_id: organism_id
+  referring_tables: cell_line_relationship, cell_line_synonym, cell_line_cvterm, cell_line_dbxref, cell_lineprop, cell_line_feature, cell_line_pub, cell_line_library
 cell_line_cvterm:
   description: ""
   fields:
@@ -832,6 +855,7 @@ cell_line_cvterm:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: cell_line_cvtermprop
 cell_line_cvtermprop:
   description: ""
   fields:
@@ -862,6 +886,7 @@ cell_line_cvtermprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 cell_line_dbxref:
   description: ""
   fields:
@@ -890,6 +915,7 @@ cell_line_dbxref:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+  referring_tables: 
 cell_line_feature:
   description: ""
   fields:
@@ -921,6 +947,7 @@ cell_line_feature:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 cell_line_library:
   description: ""
   fields:
@@ -952,6 +979,7 @@ cell_line_library:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 cell_line_pub:
   description: ""
   fields:
@@ -976,6 +1004,7 @@ cell_line_pub:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 cell_line_relationship:
   description: ""
   fields:
@@ -1004,6 +1033,7 @@ cell_line_relationship:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 cell_line_synonym:
   description: ""
   fields:
@@ -1043,6 +1073,7 @@ cell_line_synonym:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 cell_lineprop:
   description: ""
   fields:
@@ -1073,6 +1104,7 @@ cell_lineprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: cell_lineprop_pub
 cell_lineprop_pub:
   description: ""
   fields:
@@ -1097,6 +1129,7 @@ cell_lineprop_pub:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 chadoprop:
   description: "This table is different from other prop tables in the database, as it is for storing information about the database itself, like schema version"
   fields:
@@ -1120,6 +1153,7 @@ chadoprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 channel:
   description: "Different array platforms can record signals from one or more channels (cDNA arrays typically use two CCD, but Affymetrix uses only one)."
   fields:
@@ -1135,6 +1169,7 @@ channel:
   unique keys:
     channel_c1: name
   primary key: channel_id
+  referring_tables: assay_biomaterial, acquisition
 contact:
   description: "Model persons, institutes, groups, organizations, etc."
   fields:
@@ -1160,6 +1195,7 @@ contact:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: contactprop, contact_relationship, pubauthor_contact, feature_contact, featuremap_contact, library_contact, stockcollection, project_contact, arraydesign, assay, biomaterial, quantification, study, nd_experiment_contact
 contact_relationship:
   description: "Model relationships between contacts"
   fields:
@@ -1188,6 +1224,7 @@ contact_relationship:
       columns:
         subject_id: contact_id
         object_id: contact_id
+  referring_tables: 
 contactprop:
   description: "A contact can have any number of slot-value property  tags attached to it. This is an alternative to hardcoding a list of columns in the  relational schema, and is completely extensible."
   fields:
@@ -1218,6 +1255,7 @@ contactprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 control:
   description: ""
   fields:
@@ -1259,6 +1297,7 @@ control:
       table: tableinfo
       columns:
         tableinfo_id: tableinfo_id
+  referring_tables: 
 cv:
   description: "A controlled vocabulary or ontology. A cv is composed of cvterms (AKA terms, classes, types, universals - relations and properties are also stored in cvterm) and the relationships between them."
   fields:
@@ -1275,6 +1314,7 @@ cv:
   unique keys:
     cv_c1: name
   primary key: cv_id
+  referring_tables: cvterm, cvtermpath, cvprop
 cvprop:
   description: "Additional extensible properties can be attached to a cv using this table.  A notable example would be the cv version"
   fields:
@@ -1305,6 +1345,7 @@ cvprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 cvterm:
   description: "A term, class, universal or type within an ontology or controlled vocabulary.  This table is also used for relations and properties. cvterms constitute nodes in the graph defined by the collection of cvterms and cvterm_relationships."
   fields:
@@ -1343,6 +1384,7 @@ cvterm:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+  referring_tables: cvterm_relationship, cvtermpath, cvtermsynonym, cvterm_dbxref, cvtermprop, dbxrefprop, cvprop, chadoprop, dbprop, contact, contactprop, contact_relationship, pub, pub_relationship, pubprop, organism, organismprop, organism_cvterm, organism_cvtermprop, organism_relationship, feature, feature_pubprop, featureprop, feature_relationship, feature_relationshipprop, feature_cvterm, feature_cvtermprop, synonym, analysisprop, analysisfeatureprop, analysis_cvterm, analysis_relationship, phenotype, phenotype_cvterm, phenotypeprop, genotype, feature_genotype, environment_cvterm, phenstatement, phendesc, phenotype_comparison_cvterm, genotypeprop, featuremap, featureposprop, featuremapprop, phylotree, phylotreeprop, phylonode, phylonodeprop, phylonode_relationship, expression_cvterm, expression_cvtermprop, expressionprop, feature_expressionprop, library, libraryprop, library_cvterm, library_expressionprop, library_featureprop, library_relationship, stock, stockprop, stock_relationship, stock_relationship_cvterm, stock_cvterm, stock_cvtermprop, stockcollection, stockcollectionprop, stock_dbxrefprop, stock_feature, stock_featuremap, projectprop, project_relationship, protocol, protocolparam, arraydesign, arraydesignprop, assayprop, biomaterial_relationship, biomaterialprop, treatment, biomaterial_treatment, acquisitionprop, acquisition_relationship, quantificationprop, quantification_relationship, control, element, element_relationship, elementresult_relationship, studydesignprop, studyfactor, studyprop, studyprop_feature, cell_line_relationship, cell_line_cvterm, cell_lineprop, cell_line_cvtermprop, nd_experiment, nd_experimentprop, nd_geolocationprop, nd_protocol, nd_reagent, nd_protocol_reagent, nd_protocolprop, nd_experiment_stock, nd_reagent_relationship, nd_reagentprop, nd_experiment_stockprop, nd_experiment_analysis
 cvterm_dbxref:
   description: "In addition to the primary identifier (cvterm.dbxref_id) a cvterm can have zero or more secondary identifiers/dbxrefs, which may refer to records in external databases. The exact semantics of cvterm_dbxref are not fixed. For example: the dbxref could be a pubmed ID that is pertinent to the cvterm, or it could be an equivalent or similar term in another ontology. For example, GO cvterms are typically linked to InterPro IDs, even though the nature of the relationship between them is largely one of statistical association. The dbxref may be have data records attached in the same database instance, or it could be a \"hanging\" dbxref pointing to some external database. NOTE: If the desired objective is to link two cvterms together, and the nature of the relation is known and holds for all instances of the subject cvterm then consider instead using cvterm_relationship together with a well-defined relation."
   fields:
@@ -1370,6 +1412,7 @@ cvterm_dbxref:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+  referring_tables: 
 cvterm_relationship:
   description: "A relationship linking two cvterms. Each cvterm_relationship constitutes an edge in the graph defined by the collection of cvterms and cvterm_relationships. The meaning of the cvterm_relationship depends on the definition of the cvterm R refered to by type_id. However, in general the definitions are such that the statement \"all SUBJs REL some OBJ\" is true. The cvterm_relationship statement is about the subject, not the object. For example \"insect wing part_of thorax\"."
   fields:
@@ -1395,6 +1438,7 @@ cvterm_relationship:
         type_id: cvterm_id
         subject_id: cvterm_id
         object_id: cvterm_id
+  referring_tables: 
 cvtermpath:
   description: "The reflexive transitive closure of the cvterm_relationship relation."
   fields:
@@ -1430,6 +1474,7 @@ cvtermpath:
       table: cv
       columns:
         cv_id: cv_id
+  referring_tables: 
 cvtermprop:
   description: "Additional extensible properties can be attached to a cvterm using this table. Corresponds to -AnnotationProperty- in W3C OWL format."
   fields:
@@ -1457,6 +1502,7 @@ cvtermprop:
       columns:
         cvterm_id: cvterm_id
         type_id: cvterm_id
+  referring_tables: 
 cvtermsynonym:
   description: "A cvterm actually represents a distinct class or concept. A concept can be refered to by different phrases or names. In addition to the primary name (cvterm.name) there can be a number of alternative aliases or synonyms. For example, \"T cell\" as a synonym for \"T lymphocyte\"."
   fields:
@@ -1482,6 +1528,7 @@ cvtermsynonym:
       columns:
         cvterm_id: cvterm_id
         type_id: cvterm_id
+  referring_tables: 
 db:
   description: "A database authority. Typical databases in bioinformatics are FlyBase, GO, UniProt, NCBI, MGI, etc. The authority is generally known by this shortened form, which is unique within the bioinformatics and biomedical realm.  To Do - add support for URIs, URNs (e.g. LSIDs). We can do this by treating the URL as a URI - however, some applications may expect this to be resolvable - to be decided."
   fields:
@@ -1507,6 +1554,7 @@ db:
   unique keys:
     db_c1: name
   primary key: db_id
+  referring_tables: dbxref, dbprop, stockcollection_db
 dbprop:
   description: "An external database can have any number of slot-value property tags attached to it. This is an alternative to hardcoding a list of columns in the relational schema, and is completely extensible. There is a unique constraint, dbprop_c1, for the combination of db_id, rank, and type_id. Multivalued property-value pairs must be differentiated by rank."
   fields:
@@ -1537,6 +1585,7 @@ dbprop:
       table: db
       columns:
         db_id: db_id
+  referring_tables: 
 dbxref:
   description: "A unique, global, public, stable identifier. Not necessarily an external reference - can reference data items inside the particular chado instance being used. Typically a row in a table can be uniquely identified with a primary identifier (called dbxref_id); a table may also have secondary identifiers (in a linking table <T>_dbxref). A dbxref is generally written as <DB>:<ACCESSION> or as <DB>:<ACCESSION>:<VERSION>."
   fields:
@@ -1565,6 +1614,7 @@ dbxref:
       table: db
       columns:
         db_id: db_id
+  referring_tables: cvterm, cvterm_dbxref, dbxrefprop, pub_dbxref, organism_dbxref, feature, feature_dbxref, feature_cvterm_dbxref, analysis_dbxref, featuremap_dbxref, phylotree, phylonode_dbxref, library_dbxref, stock, stock_dbxref, project_dbxref, protocol, arraydesign, assay, biomaterial, biomaterial_dbxref, element, study, cell_line_dbxref, nd_experiment_stock_dbxref, nd_experiment_dbxref
 dbxrefprop:
   description: "Metadata about a dbxref. Note that this is not defined in the dbxref module, as it depends on the cvterm table. This table has a structure analagous to cvtermprop."
   fields:
@@ -1595,6 +1645,7 @@ dbxrefprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 eimage:
   description: ""
   fields:
@@ -1613,6 +1664,7 @@ eimage:
       not null: TRUE
       size: 255
   primary key: eimage_id
+  referring_tables: expression_image
 element:
   description: "Represents a feature of the array. This is typically a region of the array coated or bound to DNA."
   fields:
@@ -1651,6 +1703,7 @@ element:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+  referring_tables: elementresult, element_relationship
 element_relationship:
   description: "Sometimes we want to combine measurements from multiple elements to get a composite value. Affymetrix combines many probes to form a probeset measurement, for instance."
   fields:
@@ -1685,6 +1738,7 @@ element_relationship:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 elementresult:
   description: "An element on an array produces a measurement when hybridized to a biomaterial (traceable through quantification_id). This is the base data from which tables that actually contain data inherit."
   fields:
@@ -1712,6 +1766,7 @@ elementresult:
       table: quantification
       columns:
         quantification_id: quantification_id
+  referring_tables: elementresult_relationship
 elementresult_relationship:
   description: "Sometimes we want to combine measurements from multiple elements to get a composite value. Affymetrix combines many probes to form a probeset measurement, for instance."
   fields:
@@ -1746,6 +1801,7 @@ elementresult_relationship:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 environment:
   description: "The environmental component of a phenotype description."
   fields:
@@ -1761,6 +1817,7 @@ environment:
   unique keys:
     environment_c1: uniquename
   primary key: environment_id
+  referring_tables: environment_cvterm, phenstatement, phendesc, phenotype_comparison
 environment_cvterm:
   description: ""
   fields:
@@ -1785,6 +1842,7 @@ environment_cvterm:
       table: cvterm
       columns:
         cvterm_id: cvterm_id
+  referring_tables: 
 expression:
   description: "The expression table is essentially a bridge table."
   fields:
@@ -1804,6 +1862,7 @@ expression:
   unique keys:
     expression_c1: uniquename
   primary key: expression_id
+  referring_tables: expression_cvterm, expressionprop, expression_pub, feature_expression, expression_image, library_expression
 expression_cvterm:
   description: ""
   fields:
@@ -1835,6 +1894,7 @@ expression_cvterm:
       columns:
         cvterm_id: cvterm_id
         cvterm_type_id: cvterm_id
+  referring_tables: expression_cvtermprop
 expression_cvtermprop:
   description: "Extensible properties for expression to cvterm associations. Examples: qualifiers."
   fields:
@@ -1865,6 +1925,7 @@ expression_cvtermprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 expression_image:
   description: ""
   fields:
@@ -1889,6 +1950,7 @@ expression_image:
       table: eimage
       columns:
         eimage_id: eimage_id
+  referring_tables: 
 expression_pub:
   description: ""
   fields:
@@ -1913,6 +1975,7 @@ expression_pub:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 expressionprop:
   description: ""
   fields:
@@ -1943,6 +2006,7 @@ expressionprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 feature:
   description: "A feature is a biological sequence or a section of a biological sequence, or a collection of such sections. Examples include genes, exons, transcripts, regulatory regions, polypeptides, protein domains, chromosome sequences, sequence variations, cross-genome match regions such as hits and HSPs and so on; see the Sequence Ontology for more. The combination of organism_id, uniquename and type_id should be unique."
   fields:
@@ -2007,6 +2071,7 @@ feature:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: featureloc, feature_pub, featureprop, feature_dbxref, feature_relationship, feature_cvterm, feature_synonym, feature_contact, featuregroup, analysisfeature, feature_phenotype, feature_genotype, featurerange, featurepos, phylonode, feature_expression, library_feature, stock_feature, project_feature, element, studyprop_feature, cell_line_feature, nd_reagent
 feature_contact:
   description: "Links contact(s) with a feature.  Used to indicate a particular  person or organization responsible for discovery or that can provide more information on a particular feature."
   fields:
@@ -2031,6 +2096,7 @@ feature_contact:
       table: feature
       columns:
         feature_id: feature_id
+  referring_tables: 
 feature_cvterm:
   description: "Associate a term from a cv with a feature, for example, GO annotation."
   fields:
@@ -2069,6 +2135,7 @@ feature_cvterm:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: feature_cvtermprop, feature_cvterm_dbxref, feature_cvterm_pub
 feature_cvterm_dbxref:
   description: "Additional dbxrefs for an association. Rows in the feature_cvterm table may be backed up by dbxrefs. For example, a feature_cvterm association that was inferred via a protein-protein interaction may be backed by by refering to the dbxref for the alternate protein. Corresponds to the WITH column in a GO gene association file (but can also be used for other analagous associations). See http://www.geneontology.org/doc/GO.annotation.shtml#file for more details."
   fields:
@@ -2093,6 +2160,7 @@ feature_cvterm_dbxref:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+  referring_tables: 
 feature_cvterm_pub:
   description: "Secondary pubs for an association. Each feature_cvterm association is supported by a single primary publication. Additional secondary pubs can be added using this linking table (in a GO gene association file, these corresponding to any IDs after the pipe symbol in the publications column."
   fields:
@@ -2117,6 +2185,7 @@ feature_cvterm_pub:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 feature_cvtermprop:
   description: "Extensible properties for feature to cvterm associations. Examples: GO evidence codes; qualifiers; metadata such as the date on which the entry was curated and the source of the association. See the featureprop table for meanings of type_id, value and rank."
   fields:
@@ -2147,6 +2216,7 @@ feature_cvtermprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 feature_dbxref:
   description: "Links a feature to dbxrefs."
   fields:
@@ -2175,6 +2245,7 @@ feature_dbxref:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+  referring_tables: 
 feature_expression:
   description: ""
   fields:
@@ -2206,6 +2277,7 @@ feature_expression:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: feature_expressionprop
 feature_expressionprop:
   description: "Extensible properties for feature_expression (comments, for example). Modeled on feature_cvtermprop."
   fields:
@@ -2236,6 +2308,7 @@ feature_expressionprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 feature_genotype:
   description: ""
   fields:
@@ -2277,6 +2350,7 @@ feature_genotype:
       table: cvterm
       columns:
         cvterm_id: cvterm_id
+  referring_tables: 
 feature_phenotype:
   description: "Linking table between features and phenotypes."
   fields:
@@ -2301,6 +2375,7 @@ feature_phenotype:
       table: phenotype
       columns:
         phenotype_id: phenotype_id
+  referring_tables: 
 feature_pub:
   description: "Provenance. Linking table between features and publications that mention them."
   fields:
@@ -2325,6 +2400,7 @@ feature_pub:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: feature_pubprop
 feature_pubprop:
   description: "Property or attribute of a feature_pub link."
   fields:
@@ -2355,6 +2431,7 @@ feature_pubprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 feature_relationship:
   description: "Features can be arranged in graphs, e.g. \"exon part_of transcript part_of gene\"; If type is thought of as a verb, the each arc or edge makes a statement [Subject Verb Object]. The object can also be thought of as parent (containing feature), and subject as child (contained feature or subfeature). We include the relationship rank/order, because even though most of the time we can order things implicitly by sequence coordinates, we can not always do this - e.g. transpliced genes. It is also useful for quickly getting implicit introns."
   fields:
@@ -2389,6 +2466,7 @@ feature_relationship:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: feature_relationship_pub, feature_relationshipprop
 feature_relationship_pub:
   description: "Provenance. Attach optional evidence to a feature_relationship in the form of a publication."
   fields:
@@ -2413,6 +2491,7 @@ feature_relationship_pub:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 feature_relationshipprop:
   description: "Extensible properties for feature_relationships. Analagous structure to featureprop. This table is largely optional and not used with a high frequency. Typical scenarios may be if one wishes to attach additional data to a feature_relationship - for example to say that the feature_relationship is only true in certain contexts."
   fields:
@@ -2443,6 +2522,7 @@ feature_relationshipprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: feature_relationshipprop_pub
 feature_relationshipprop_pub:
   description: "Provenance for feature_relationshipprop."
   fields:
@@ -2467,6 +2547,7 @@ feature_relationshipprop_pub:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 feature_synonym:
   description: "Linking table between feature and synonym."
   fields:
@@ -2506,6 +2587,7 @@ feature_synonym:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 featureloc:
   description: "The location of a feature relative to another feature. Important: interbase coordinates are used. This is vital as it allows us to represent zero-length features e.g. splice sites, insertion points without an awkward fuzzy system. Features typically have exactly ONE location, but this need not be the case. Some features may not be localized (e.g. a gene that has been characterized genetically but no sequence or molecular information is available). Note on multiple locations: Each feature can have 0 or more locations. Multiple locations do NOT indicate non-contiguous locations (if a feature such as a transcript has a non-contiguous location, then the subfeatures such as exons should always be manifested). Instead, multiple featurelocs for a feature designate alternate locations or grouped locations; for instance, a feature designating a blast hit or hsp will have two locations, one on the query feature, one on the subject feature. Features representing sequence variation could have alternate locations instantiated on a feature on the mutant strain. The column:rank is used to differentiate these different locations. Reflexive locations should never be stored - this is for -proper- (i.e. non-self) locations only; nothing should be located relative to itself."
   fields:
@@ -2556,6 +2638,7 @@ featureloc:
       columns:
         feature_id: feature_id
         srcfeature_id: feature_id
+  referring_tables: featureloc_pub
 featureloc_pub:
   description: "Provenance of featureloc. Linking table between featurelocs and publications that mention them."
   fields:
@@ -2580,6 +2663,7 @@ featureloc_pub:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 featuremap:
   description: ""
   fields:
@@ -2604,6 +2688,7 @@ featuremap:
       table: cvterm
       columns:
         unittype_id: cvterm_id
+  referring_tables: featurerange, featurepos, featuremap_pub, featuremapprop, featuremap_contact, featuremap_dbxref, featuremap_organism, stock_featuremap
 featuremap_contact:
   description: "Links contact(s) with a featuremap.  Used to  indicate a particular person or organization responsible for constrution of or  that can provide more information on a particular featuremap."
   fields:
@@ -2628,6 +2713,7 @@ featuremap_contact:
       table: featuremap
       columns:
         featuremap_id: featuremap_id
+  referring_tables: 
 featuremap_dbxref:
   description: ""
   fields:
@@ -2654,6 +2740,7 @@ featuremap_dbxref:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+  referring_tables: 
 featuremap_organism:
   description: "Links a featuremap to the organism(s) with which it is associated."
   fields:
@@ -2678,6 +2765,7 @@ featuremap_organism:
       table: organism
       columns:
         organism_id: organism_id
+  referring_tables: 
 featuremap_pub:
   description: ""
   fields:
@@ -2700,6 +2788,7 @@ featuremap_pub:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 featuremapprop:
   description: "A featuremap can have any number of slot-value property  tags attached to it. This is an alternative to hardcoding a list of columns in the  relational schema, and is completely extensible."
   fields:
@@ -2730,6 +2819,7 @@ featuremapprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 featurepos:
   description: ""
   fields:
@@ -2759,6 +2849,7 @@ featurepos:
       columns:
         feature_id: feature_id
         map_feature_id: feature_id
+  referring_tables: featureposprop
 featureposprop:
   description: "Property or attribute of a featurepos record."
   fields:
@@ -2789,6 +2880,7 @@ featureposprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 featureprop:
   description: "A feature can have any number of slot-value property tags attached to it. This is an alternative to hardcoding a list of columns in the relational schema, and is completely extensible."
   fields:
@@ -2819,6 +2911,7 @@ featureprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: featureprop_pub
 featureprop_pub:
   description: "Provenance. Any featureprop assignment can optionally be supported by a publication."
   fields:
@@ -2843,6 +2936,7 @@ featureprop_pub:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 featurerange:
   description: "In cases where the start and end of a mapped feature is a range, leftendf and rightstartf are populated. leftstartf_id, leftendf_id, rightstartf_id, rightendf_id are the ids of features with respect to which the feature is being mapped. These may be cytological bands."
   fields:
@@ -2885,6 +2979,7 @@ featurerange:
         leftendf_id: feature_id
         rightstartf_id: feature_id
         rightendf_id: feature_id
+  referring_tables: 
 genotype:
   description: "Genetic context. A genotype is defined by a collection of features, mutations, balancers, deficiencies, haplotype blocks, or engineered constructs."
   fields:
@@ -2911,6 +3006,7 @@ genotype:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: feature_genotype, phenstatement, phendesc, phenotype_comparison, genotypeprop, stock_genotype, nd_experiment_genotype
 genotypeprop:
   description: ""
   fields:
@@ -2941,6 +3037,7 @@ genotypeprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 library:
   description: ""
   fields:
@@ -2983,6 +3080,7 @@ library:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: library_synonym, library_pub, libraryprop, library_cvterm, library_feature, library_dbxref, library_expression, library_relationship, library_contact, stock_library, cell_line_library
 library_contact:
   description: "Links contact(s) with a library.  Used to indicate a particular person or organization responsible for creation of or that can provide more information on a particular library."
   fields:
@@ -3007,6 +3105,7 @@ library_contact:
       table: contact
       columns:
         contact_id: contact_id
+  referring_tables: 
 library_cvterm:
   description: "The table library_cvterm links a library to controlled vocabularies which describe the library.  For instance, there might be a link to the anatomy cv for \"head\" or \"testes\" for a head or testes library."
   fields:
@@ -3038,6 +3137,7 @@ library_cvterm:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 library_dbxref:
   description: "Links a library to dbxrefs."
   fields:
@@ -3066,6 +3166,7 @@ library_dbxref:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+  referring_tables: 
 library_expression:
   description: "Links a library to expression statements."
   fields:
@@ -3097,6 +3198,7 @@ library_expression:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: library_expressionprop
 library_expressionprop:
   description: "Attributes of a library_expression relationship."
   fields:
@@ -3127,6 +3229,7 @@ library_expressionprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 library_feature:
   description: "library_feature links a library to the clones which are contained in the library.  Examples of such linked features might be \"cDNA_clone\" or  \"genomic_clone\"."
   fields:
@@ -3151,6 +3254,7 @@ library_feature:
       table: feature
       columns:
         feature_id: feature_id
+  referring_tables: library_featureprop
 library_featureprop:
   description: "Attributes of a library_feature relationship."
   fields:
@@ -3181,6 +3285,7 @@ library_featureprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 library_pub:
   description: "Attribution for a library."
   fields:
@@ -3205,6 +3310,7 @@ library_pub:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 library_relationship:
   description: "Relationships between libraries."
   fields:
@@ -3233,6 +3339,7 @@ library_relationship:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: library_relationship_pub
 library_relationship_pub:
   description: "Provenance of library_relationship."
   fields:
@@ -3257,6 +3364,7 @@ library_relationship_pub:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 library_synonym:
   description: "Linking table between library and synonym."
   fields:
@@ -3296,6 +3404,7 @@ library_synonym:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 libraryprop:
   description: "Tag-value properties - follows standard chado model."
   fields:
@@ -3326,6 +3435,7 @@ libraryprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: libraryprop_pub
 libraryprop_pub:
   description: "Attribution for libraryprop."
   fields:
@@ -3350,6 +3460,7 @@ libraryprop_pub:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 magedocumentation:
   description: ""
   fields:
@@ -3378,6 +3489,7 @@ magedocumentation:
       table: tableinfo
       columns:
         tableinfo_id: tableinfo_id
+  referring_tables: 
 mageml:
   description: "This table is for storing extra bits of MAGEml in a denormalized form. More normalization would require many more tables."
   fields:
@@ -3391,6 +3503,7 @@ mageml:
       type: text
       not null: FALSE
   primary key: mageml_id
+  referring_tables: magedocumentation
 nd_experiment:
   description: "This is the core table for the natural diversity module,  representing each individual assay that is undertaken (this is usually *not* an  entire experiment). Each nd_experiment should give rise to a single genotype or  phenotype and be described via 1 (or more) protocols. Collections of assays that  relate to each other should be linked to the same record in the project table."
   fields:
@@ -3413,6 +3526,7 @@ nd_experiment:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: nd_experiment_project, nd_experimentprop, nd_experiment_pub, nd_experiment_stock, nd_experiment_protocol, nd_experiment_phenotype, nd_experiment_genotype, nd_experiment_dbxref, nd_experiment_contact, nd_experiment_analysis
 nd_experiment_analysis:
   description: "An analysis that is used in an experiment"
   fields:
@@ -3442,6 +3556,7 @@ nd_experiment_analysis:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 nd_experiment_contact:
   description: ""
   fields:
@@ -3464,6 +3579,7 @@ nd_experiment_contact:
       table: contact
       columns:
         contact_id: contact_id
+  referring_tables: 
 nd_experiment_dbxref:
   description: "Cross-reference experiment to accessions, images, etc"
   fields:
@@ -3486,6 +3602,7 @@ nd_experiment_dbxref:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+  referring_tables: 
 nd_experiment_genotype:
   description: "Linking table: experiments to the genotypes they produce. There is a one-to-one relationship between an experiment and a genotype since each genotype record should point to one experiment. Add a new experiment_id for each genotype record."
   fields:
@@ -3510,6 +3627,7 @@ nd_experiment_genotype:
       table: genotype
       columns:
         genotype_id: genotype_id
+  referring_tables: 
 nd_experiment_phenotype:
   description: "Linking table: experiments to the phenotypes they produce. There is a one-to-one relationship between an experiment and a phenotype since each phenotype record should point to one experiment. Add a new experiment_id for each phenotype record."
   fields:
@@ -3534,6 +3652,7 @@ nd_experiment_phenotype:
       table: phenotype
       columns:
         phenotype_id: phenotype_id
+  referring_tables: 
 nd_experiment_project:
   description: "Used to group together related nd_experiment records. All nd_experiments  should be linked to at least one project."
   fields:
@@ -3558,6 +3677,7 @@ nd_experiment_project:
       table: nd_experiment
       columns:
         nd_experiment_id: nd_experiment_id
+  referring_tables: 
 nd_experiment_protocol:
   description: "Linking table: experiments to the protocols they involve."
   fields:
@@ -3580,6 +3700,7 @@ nd_experiment_protocol:
       table: nd_protocol
       columns:
         nd_protocol_id: nd_protocol_id
+  referring_tables: 
 nd_experiment_pub:
   description: "Linking nd_experiment(s) to publication(s)"
   fields:
@@ -3604,6 +3725,7 @@ nd_experiment_pub:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 nd_experiment_stock:
   description: "Part of a stock or a clone of a stock that is used in an experiment"
   fields:
@@ -3633,6 +3755,7 @@ nd_experiment_stock:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: nd_experiment_stockprop, nd_experiment_stock_dbxref
 nd_experiment_stock_dbxref:
   description: "Cross-reference experiment_stock to accessions, images, etc"
   fields:
@@ -3655,6 +3778,7 @@ nd_experiment_stock_dbxref:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+  referring_tables: 
 nd_experiment_stockprop:
   description: "Property/value associations for experiment_stocks. This table can store the properties such as treatment"
   fields:
@@ -3685,6 +3809,7 @@ nd_experiment_stockprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 nd_experimentprop:
   description: "An nd_experiment can have any number of slot-value property tags attached to it. This is an alternative to hardcoding a list of columns in the relational schema, and is completely extensible. There is a unique constraint, stockprop_c1, for the combination of stock_id, rank, and type_id. Multivalued property-value pairs must be differentiated by rank."
   fields:
@@ -3715,6 +3840,7 @@ nd_experimentprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 nd_geolocation:
   description: "The geo-referencable location of the stock. NOTE: This entity is subject to change as a more general and possibly more OpenGIS-compliant geolocation module may be introduced into Chado."
   fields:
@@ -3738,6 +3864,7 @@ nd_geolocation:
       type: real
       not null: TRUE
   primary key: nd_geolocation_id
+  referring_tables: nd_experiment, nd_geolocationprop
 nd_geolocationprop:
   description: "Property/value associations for geolocations. This table can store the properties such as location and environment"
   fields:
@@ -3768,6 +3895,7 @@ nd_geolocationprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 nd_protocol:
   description: "A protocol can be anything that is done as part of the experiment."
   fields:
@@ -3789,6 +3917,7 @@ nd_protocol:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: nd_protocol_reagent, nd_protocolprop, nd_experiment_protocol
 nd_protocol_reagent:
   description: ""
   fields:
@@ -3818,6 +3947,7 @@ nd_protocol_reagent:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 nd_protocolprop:
   description: "Property/value associations for protocol."
   fields:
@@ -3848,6 +3978,7 @@ nd_protocolprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 nd_reagent:
   description: "A reagent such as a primer, an enzyme, an adapter oligo, a linker oligo. Reagents are used in genotyping experiments, or in any other kind of experiment."
   fields:
@@ -3874,6 +4005,7 @@ nd_reagent:
       table: feature
       columns:
         feature_id: feature_id
+  referring_tables: nd_protocol_reagent, nd_reagent_relationship, nd_reagentprop
 nd_reagent_relationship:
   description: "Relationships between reagents. Some reagents form a group. i.e., they are used all together or not at all. Examples are adapter/linker/enzyme experiment reagents."
   fields:
@@ -3900,6 +4032,7 @@ nd_reagent_relationship:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 nd_reagentprop:
   description: ""
   fields:
@@ -3930,6 +4063,7 @@ nd_reagentprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 organism:
   description: "The organismal taxonomic classification. Note that phylogenies are represented using the phylogeny module, and taxonomies can be represented using the cvterm module or the phylogeny module."
   fields:
@@ -3970,6 +4104,7 @@ organism:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: organism_dbxref, organismprop, organism_pub, organism_cvterm, organism_relationship, feature, phenotype_comparison, featuremap_organism, phylonode_organism, library, stock, biomaterial, cell_line
 organism_cvterm:
   description: "organism to cvterm associations. Examples: taxonomic name"
   fields:
@@ -4004,6 +4139,7 @@ organism_cvterm:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: organism_cvtermprop
 organism_cvtermprop:
   description: "Extensible properties for organism to cvterm associations. Examples: qualifiers"
   fields:
@@ -4034,6 +4170,7 @@ organism_cvtermprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 organism_dbxref:
   description: "Links an organism to a dbxref."
   fields:
@@ -4058,6 +4195,7 @@ organism_dbxref:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+  referring_tables: 
 organism_pub:
   description: "Attribution for organism."
   fields:
@@ -4082,6 +4220,7 @@ organism_pub:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 organism_relationship:
   description: "Specifies relationships between organisms  that are not taxonomic. For example, in breeding, relationships such as  \"sterile_with\", \"incompatible_with\", or \"fertile_with\" would be appropriate. Taxonomic relatinoships should be housed in the phylogeny tables."
   fields:
@@ -4113,6 +4252,7 @@ organism_relationship:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 organismprop:
   description: "Tag-value properties - follows standard chado model."
   fields:
@@ -4143,6 +4283,7 @@ organismprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: organismprop_pub
 organismprop_pub:
   description: "Attribution for organismprop."
   fields:
@@ -4173,6 +4314,7 @@ organismprop_pub:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 phendesc:
   description: "A summary of a _set_ of phenotypic statements for any one gcontext made in any one publication."
   fields:
@@ -4214,6 +4356,7 @@ phendesc:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 phenotype:
   description: "A phenotypic statement, or a single atomic phenotypic observation, is a controlled sentence describing observable effects of non-wild type function. E.g. Obs=eye, attribute=color, cvalue=red."
   fields:
@@ -4252,6 +4395,7 @@ phenotype:
         attr_id: cvterm_id
         cvalue_id: cvterm_id
         assay_id: cvterm_id
+  referring_tables: phenotype_cvterm, feature_phenotype, phenotypeprop, phenstatement, phenotype_comparison, nd_experiment_phenotype
 phenotype_comparison:
   description: "Comparison of phenotypes e.g., genotype1/environment1/phenotype1 \"non-suppressible\" with respect to genotype2/environment2/phenotype2."
   fields:
@@ -4309,6 +4453,7 @@ phenotype_comparison:
       table: organism
       columns:
         organism_id: organism_id
+  referring_tables: phenotype_comparison_cvterm
 phenotype_comparison_cvterm:
   description: ""
   fields:
@@ -4343,6 +4488,7 @@ phenotype_comparison_cvterm:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 phenotype_cvterm:
   description: "phenotype to cvterm associations."
   fields:
@@ -4370,6 +4516,7 @@ phenotype_cvterm:
       table: cvterm
       columns:
         cvterm_id: cvterm_id
+  referring_tables: 
 phenotypeprop:
   description: "A phenotype can have any number of slot-value property tags attached to it. This is an alternative to hardcoding a list of columns in the relational schema, and is completely extensible. There is a unique constraint, phenotypeprop_c1, for the combination of phenotype_id, rank, and type_id. Multivalued property-value pairs must be differentiated by rank."
   fields:
@@ -4400,6 +4547,7 @@ phenotypeprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 phenstatement:
   description: "Phenotypes are things like \"larval lethal\".  Phenstatements are things like \"dpp-1 is recessive larval lethal\". So essentially phenstatement is a linking table expressing the relationship between genotype, environment, and phenotype."
   fields:
@@ -4445,6 +4593,7 @@ phenstatement:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 phylonode:
   description: "This is the most pervasive        element in the phylogeny module, cataloging the \"phylonodes\" of        tree graphs. Edges are implied by the parent_phylonode_id        reflexive closure. For all nodes in a nested set implementation the left and right index will be *between* the parents left and right indexes."
   fields:
@@ -4497,6 +4646,7 @@ phylonode:
       table: feature
       columns:
         feature_id: feature_id
+  referring_tables: phylonode_dbxref, phylonode_pub, phylonode_organism, phylonodeprop, phylonode_relationship
 phylonode_dbxref:
   description: "For example, for orthology, paralogy group identifiers; could also be used for NCBI taxonomy; for sequences, refer to phylonode_feature, feature associated dbxrefs."
   fields:
@@ -4521,6 +4671,7 @@ phylonode_dbxref:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+  referring_tables: 
 phylonode_organism:
   description: "This linking table should only be used for nodes in taxonomy trees; it provides a mapping between the node and an organism. One node can have zero or one organisms, one organism can have zero or more nodes (although typically it should only have one in the standard NCBI taxonomy tree)."
   fields:
@@ -4545,6 +4696,7 @@ phylonode_organism:
       table: organism
       columns:
         organism_id: organism_id
+  referring_tables: 
 phylonode_pub:
   description: ""
   fields:
@@ -4569,6 +4721,7 @@ phylonode_pub:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 phylonode_relationship:
   description: "This is for  relationships that are not strictly hierarchical; for example, horizontal gene transfer. Most phylogenetic trees are strictly hierarchical, nevertheless it is here for completeness."
   fields:
@@ -4607,6 +4760,7 @@ phylonode_relationship:
       table: phylotree
       columns:
         phylotree_id: phylotree_id
+  referring_tables: 
 phylonodeprop:
   description: ""
   fields:
@@ -4637,6 +4791,7 @@ phylonodeprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 phylotree:
   description: "Global anchor for phylogenetic tree."
   fields:
@@ -4673,6 +4828,7 @@ phylotree:
       table: analysis
       columns:
         analysis_id: analysis_id
+  referring_tables: phylotree_pub, phylotreeprop, phylonode, phylonode_relationship
 phylotree_pub:
   description: "Tracks citations global to the tree e.g. multiple sequence alignment supporting tree construction."
   fields:
@@ -4697,6 +4853,7 @@ phylotree_pub:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 phylotreeprop:
   description: "A phylotree can have any number of slot-value property  tags attached to it. This is an alternative to hardcoding a list of columns in the  relational schema, and is completely extensible."
   fields:
@@ -4727,6 +4884,7 @@ phylotreeprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 project:
   description: "Standard Chado flexible property table for projects."
   fields:
@@ -4743,6 +4901,7 @@ project:
   unique keys:
     project_c1: name
   primary key: project_id
+  referring_tables: projectprop, project_relationship, project_pub, project_contact, project_dbxref, project_analysis, project_feature, project_stock, assay_project, nd_experiment_project
 project_analysis:
   description: "Links an analysis to a project that may contain multiple analyses.  The rank column can be used to specify a simple ordering in which analyses were executed."
   fields:
@@ -4770,6 +4929,7 @@ project_analysis:
       table: analysis
       columns:
         analysis_id: analysis_id
+  referring_tables: 
 project_contact:
   description: "Linking table for associating projects and contacts."
   fields:
@@ -4794,6 +4954,7 @@ project_contact:
       table: contact
       columns:
         contact_id: contact_id
+  referring_tables: 
 project_dbxref:
   description: "project_dbxref links a project to dbxrefs."
   fields:
@@ -4822,6 +4983,7 @@ project_dbxref:
       table: project
       columns:
         project_id: project_id
+  referring_tables: 
 project_feature:
   description: "This table is intended associate records in the feature table with a project."
   fields:
@@ -4846,6 +5008,7 @@ project_feature:
       table: project
       columns:
         project_id: project_id
+  referring_tables: 
 project_pub:
   description: "Linking table for associating projects and publications."
   fields:
@@ -4870,6 +5033,7 @@ project_pub:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 project_relationship:
   description: "Linking table for relating projects to each other.  For example, a given project could be composed of several smaller subprojects"
   fields:
@@ -4898,6 +5062,7 @@ project_relationship:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 project_stock:
   description: "This table is intended associate records in the stock table with a project."
   fields:
@@ -4922,6 +5087,7 @@ project_stock:
       table: project
       columns:
         project_id: project_id
+  referring_tables: 
 projectprop:
   description: ""
   fields:
@@ -4952,6 +5118,7 @@ projectprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 protocol:
   description: "Procedural notes on how data was prepared and processed."
   fields:
@@ -4998,6 +5165,7 @@ protocol:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+  referring_tables: protocolparam, arraydesign, assay, treatment, acquisition, quantification
 protocolparam:
   description: "Parameters related to a protocol. For example, if the protocol is a soak, this might include attributes of bath temperature and duration."
   fields:
@@ -5033,6 +5201,7 @@ protocolparam:
       columns:
         datatype_id: cvterm_id
         unittype_id: cvterm_id
+  referring_tables: 
 pub:
   description: "A documented provenance artefact - publications, documents, personal communication."
   fields:
@@ -5095,6 +5264,7 @@ pub:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: pub_relationship, pub_dbxref, pubauthor, pubprop, organismprop_pub, organism_pub, organism_cvterm, featureloc_pub, feature_pub, featureprop_pub, feature_relationship_pub, feature_relationshipprop_pub, feature_cvterm, feature_cvterm_pub, feature_synonym, analysis_pub, phenstatement, phendesc, phenotype_comparison, phenotype_comparison_cvterm, featuremap_pub, phylotree_pub, phylonode_pub, expression_pub, feature_expression, library_synonym, library_pub, libraryprop_pub, library_cvterm, library_expression, library_relationship_pub, stock_pub, stockprop_pub, stock_relationship_cvterm, stock_relationship_pub, stock_cvterm, project_pub, protocol, study, cell_line_synonym, cell_line_cvterm, cell_lineprop_pub, cell_line_feature, cell_line_pub, cell_line_library, nd_experiment_pub
 pub_dbxref:
   description: "Handle links to repositories, e.g. Pubmed, Biosis, zoorec, OCLC, Medline, ISSN, coden..."
   fields:
@@ -5123,6 +5293,7 @@ pub_dbxref:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+  referring_tables: 
 pub_relationship:
   description: "Handle relationships between publications, e.g. when one publication makes others obsolete, when one publication contains errata with respect to other publication(s), or when one publication also appears in another pub."
   fields:
@@ -5151,6 +5322,7 @@ pub_relationship:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 pubauthor:
   description: "An author for a publication. Note the denormalisation (hence lack of _ in table name) - this is deliberate as it is in general too hard to assign IDs to authors."
   fields:
@@ -5187,6 +5359,7 @@ pubauthor:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: pubauthor_contact
 pubauthor_contact:
   description: "An author on a publication may have a corresponding entry in the contact table and this table can link the two."
   fields:
@@ -5211,6 +5384,7 @@ pubauthor_contact:
       table: contact
       columns:
         contact_id: contact_id
+  referring_tables: 
 pubprop:
   description: "Property-value pairs for a pub. Follows standard chado pattern."
   fields:
@@ -5241,6 +5415,7 @@ pubprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 quantification:
   description: "Quantification is the transformation of an image acquisition to numeric data. This typically involves statistical procedures."
   fields:
@@ -5289,6 +5464,7 @@ quantification:
       table: analysis
       columns:
         analysis_id: analysis_id
+  referring_tables: quantificationprop, quantification_relationship, elementresult
 quantification_relationship:
   description: "There may be multiple rounds of quantification, this allows us to keep an audit trail of what values went where."
   fields:
@@ -5317,6 +5493,7 @@ quantification_relationship:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 quantificationprop:
   description: "Extra quantification properties that are not accounted for in quantification."
   fields:
@@ -5347,6 +5524,7 @@ quantificationprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 stock:
   description: "Any stock can be globally identified by the combination of organism, uniquename and stock type. A stock is the physical entities, either living or preserved, held by collections. Stocks belong to a collection; they have IDs, type, organism, description and may have a genotype."
   fields:
@@ -5392,6 +5570,7 @@ stock:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: stock_pub, stockprop, stock_relationship, stock_dbxref, stock_cvterm, stock_genotype, stockcollection_stock, stock_feature, stock_featuremap, stock_library, project_stock, nd_experiment_stock
 stock_cvterm:
   description: "stock_cvterm links a stock to cvterms. This is for secondary cvterms; primary cvterms should use stock.type_id."
   fields:
@@ -5430,6 +5609,7 @@ stock_cvterm:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: stock_cvtermprop
 stock_cvtermprop:
   description: "Extensible properties for stock to cvterm associations. Examples: GO evidence codes; qualifiers; metadata such as the date on which the entry was curated and the source of the association. See the stockprop table for meanings of type_id, value and rank."
   fields:
@@ -5460,6 +5640,7 @@ stock_cvtermprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 stock_dbxref:
   description: "stock_dbxref links a stock to dbxrefs. This is for secondary identifiers; primary identifiers should use stock.dbxref_id."
   fields:
@@ -5488,6 +5669,7 @@ stock_dbxref:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+  referring_tables: stock_dbxrefprop
 stock_dbxrefprop:
   description: "A stock_dbxref can have any number of slot-value property tags attached to it. This is useful for storing properties related to dbxref annotations of stocks, such as evidence codes, and references, and metadata, such as create/modify dates. This is an alternative to hardcoding a list of columns in the relational schema, and is completely extensible. There is a unique constraint, stock_dbxrefprop_c1, for the combination of stock_dbxref_id, rank, and type_id. Multivalued property-value pairs must be differentiated by rank."
   fields:
@@ -5518,6 +5700,7 @@ stock_dbxrefprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 stock_feature:
   description: "Links a stock to a feature."
   fields:
@@ -5552,6 +5735,7 @@ stock_feature:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 stock_featuremap:
   description: "Links a featuremap to a stock."
   fields:
@@ -5583,6 +5767,7 @@ stock_featuremap:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 stock_genotype:
   description: "Simple table linking a stock to a genotype. Features with genotypes can be linked to stocks thru feature_genotype -> genotype -> stock_genotype -> stock."
   fields:
@@ -5607,6 +5792,7 @@ stock_genotype:
       table: genotype
       columns:
         genotype_id: genotype_id
+  referring_tables: 
 stock_library:
   description: "Links a stock with a library."
   fields:
@@ -5631,6 +5817,7 @@ stock_library:
       table: stock
       columns:
         stock_id: stock_id
+  referring_tables: 
 stock_pub:
   description: "Provenance. Linking table between stocks and, for example, a stocklist computer file."
   fields:
@@ -5655,6 +5842,7 @@ stock_pub:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 stock_relationship:
   description: ""
   fields:
@@ -5689,6 +5877,7 @@ stock_relationship:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: stock_relationship_cvterm, stock_relationship_pub
 stock_relationship_cvterm:
   description: "For germplasm maintenance and pedigree data, stock_relationship. type_id will record cvterms such as \"is a female parent of\", \"a parent for mutation\", \"is a group_id of\", \"is a source_id of\", etc The cvterms for higher categories such as \"generative\", \"derivative\" or \"maintenance\" can be stored in table stock_relationship_cvterm"
   fields:
@@ -5718,6 +5907,7 @@ stock_relationship_cvterm:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 stock_relationship_pub:
   description: "Provenance. Attach optional evidence to a stock_relationship in the form of a publication."
   fields:
@@ -5742,6 +5932,7 @@ stock_relationship_pub:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 stockcollection:
   description: "The lab or stock center distributing the stocks in their collection."
   fields:
@@ -5773,6 +5964,7 @@ stockcollection:
       table: contact
       columns:
         contact_id: contact_id
+  referring_tables: stockcollectionprop, stockcollection_stock, stockcollection_db
 stockcollection_db:
   description: "Stock collections may be respresented  by an external online database. This table associates a stock collection with  a database where its member stocks can be found. Individual stock that are part  of this collction should have entries in the stock_dbxref table with the same  db_id record"
   fields:
@@ -5797,6 +5989,7 @@ stockcollection_db:
       table: stockcollection
       columns:
         stockcollection_id: stockcollection_id
+  referring_tables: 
 stockcollection_stock:
   description: "stockcollection_stock links a stock collection to the stocks which are contained in the collection."
   fields:
@@ -5821,6 +6014,7 @@ stockcollection_stock:
       table: stock
       columns:
         stock_id: stock_id
+  referring_tables: 
 stockcollectionprop:
   description: "The table stockcollectionprop contains the value of the stock collection such as website/email URLs; the value of the stock collection order URLs."
   fields:
@@ -5851,6 +6045,7 @@ stockcollectionprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 stockprop:
   description: "A stock can have any number of slot-value property tags attached to it. This is an alternative to hardcoding a list of columns in the relational schema, and is completely extensible. There is a unique constraint, stockprop_c1, for the combination of stock_id, rank, and type_id. Multivalued property-value pairs must be differentiated by rank."
   fields:
@@ -5881,6 +6076,7 @@ stockprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: stockprop_pub
 stockprop_pub:
   description: "Provenance. Any stockprop assignment can optionally be supported by a publication."
   fields:
@@ -5905,6 +6101,7 @@ stockprop_pub:
       table: pub
       columns:
         pub_id: pub_id
+  referring_tables: 
 study:
   description: ""
   fields:
@@ -5942,6 +6139,7 @@ study:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+  referring_tables: study_assay, studydesign, studyprop
 study_assay:
   description: ""
   fields:
@@ -5966,6 +6164,7 @@ study_assay:
       table: assay
       columns:
         assay_id: assay_id
+  referring_tables: 
 studydesign:
   description: ""
   fields:
@@ -5984,6 +6183,7 @@ studydesign:
       table: study
       columns:
         study_id: study_id
+  referring_tables: studydesignprop, studyfactor
 studydesignprop:
   description: ""
   fields:
@@ -6014,6 +6214,7 @@ studydesignprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 studyfactor:
   description: ""
   fields:
@@ -6042,6 +6243,7 @@ studyfactor:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: studyfactorvalue
 studyfactorvalue:
   description: ""
   fields:
@@ -6073,6 +6275,7 @@ studyfactorvalue:
       table: assay
       columns:
         assay_id: assay_id
+  referring_tables: 
 studyprop:
   description: ""
   fields:
@@ -6103,6 +6306,7 @@ studyprop:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: studyprop_feature
 studyprop_feature:
   description: ""
   fields:
@@ -6134,6 +6338,7 @@ studyprop_feature:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: 
 synonym:
   description: "A synonym for a feature. One feature can have multiple synonyms, and the same synonym can apply to multiple features."
   fields:
@@ -6159,6 +6364,7 @@ synonym:
       table: cvterm
       columns:
         type_id: cvterm_id
+  referring_tables: feature_synonym, library_synonym, cell_line_synonym
 tableinfo:
   description: ""
   fields:
@@ -6193,6 +6399,7 @@ tableinfo:
   unique keys:
     tableinfo_c1: name
   primary key: tableinfo_id
+  referring_tables: magedocumentation, control
 treatment:
   description: "A biomaterial may undergo multiple treatments. Examples of treatments: apoxia, fluorophore and biotin labeling."
   fields:
@@ -6228,3 +6435,4 @@ treatment:
       table: protocol
       columns:
         protocol_id: protocol_id
+  referring_tables: biomaterial_treatment

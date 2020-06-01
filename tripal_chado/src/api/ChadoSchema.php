@@ -186,8 +186,20 @@ class ChadoSchema {
       $table_arr =  FALSE;
     }
 
+    // Ensure all the parts are set.
+    if (!isset($table_arr['primary key'])) { $table_arr['primary key'] = []; }
+    if (!isset($table_arr['unique keys'])) { $table_arr['unique keys'] = []; }
+    if (!isset($table_arr['foreign keys'])) { $table_arr['foreign keys'] = []; }
+    if (!isset($table_arr['referring_tables'])) { $table_arr['referring_tables'] = []; }
+
+
     // Ensures consistency regardless of the number of columns of the pkey.
     $table_arr['primary key'] = (array) $table_arr['primary key'];
+
+    // Ensure this is parsed as an array.
+    if (is_string($table_arr['referring_tables'])) {
+      $table_arr['referring_tables'] = explode(', ', $table_arr['referring_tables']);
+    }
 
     // Ensure foreign key array is present for consistency.
     if (!isset($table_arr['foreign keys'])) {
@@ -197,6 +209,7 @@ class ChadoSchema {
     // if the table_arr is empty then maybe this is a custom table
     if (!is_array($table_arr) or count($table_arr) == 0) {
       //$table_arr = $this->getCustomTableSchema($table);
+      return FALSE;
     }
 
     return $table_arr;
@@ -260,22 +273,23 @@ class ChadoSchema {
     // base tables (with a few exceptions) all have a type.  Iterate through the
     // referring tables.
     $schema = $this->getTableSchema('cvterm');
-    $referring = $schema['referring_tables'];
-    foreach ($referring as $tablename) {
+    if (isset($schema['referring_tables'])) {
+      foreach ($schema['referring_tables'] as $tablename) {
 
-      // Ignore the cvterm tables, relationships, chadoprop tables.
-      if ($tablename == 'cvterm_dbxref' || $tablename == 'cvterm_relationship' ||
-        $tablename == 'cvtermpath' || $tablename == 'cvtermprop' || $tablename == 'chadoprop' ||
-        $tablename == 'cvtermsynonym' || preg_match('/_relationship$/', $tablename) ||
-        preg_match('/_cvterm$/', $tablename) ||
-        // Ignore prop tables
-        preg_match('/prop$/', $tablename) || preg_match('/prop_.+$/', $tablename) ||
-        // Ignore nd_tables
-        preg_match('/^nd_/', $tablename)) {
-        continue;
-      }
-      else {
-        array_push($base_tables, $tablename);
+        // Ignore the cvterm tables, relationships, chadoprop tables.
+        if ($tablename == 'cvterm_dbxref' || $tablename == 'cvterm_relationship' ||
+          $tablename == 'cvtermpath' || $tablename == 'cvtermprop' || $tablename == 'chadoprop' ||
+          $tablename == 'cvtermsynonym' || preg_match('/_relationship$/', $tablename) ||
+          preg_match('/_cvterm$/', $tablename) ||
+          // Ignore prop tables
+          preg_match('/prop$/', $tablename) || preg_match('/prop_.+$/', $tablename) ||
+          // Ignore nd_tables
+          preg_match('/^nd_/', $tablename)) {
+          continue;
+        }
+        else {
+          array_push($base_tables, $tablename);
+        }
       }
     }
 
