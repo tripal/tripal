@@ -45,7 +45,7 @@ $referring = [];
 while ($table = $result->fetchField()) {
 
   // Start with the name of the table.
-  print 'chado.' . $table . ":\n";
+  print '' . $table . ":\n";
 
   // -- Description:
   // Find the comments to add the description.

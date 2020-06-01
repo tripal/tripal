@@ -3,6 +3,7 @@
 namespace Drupal\tripal_chado\api;
 
 use Symfony\Component\Yaml\Yaml;
+require_once 'tripal_chado.schema.api.inc';
 
 /**
  * Provides an application programming interface (API) for describing Chado
@@ -143,28 +144,11 @@ class ChadoSchema {
    * @returns
    *   An associative array where the key and value pairs are the Chado table
    *   names.
-   *
+   */
   public function getTableNames($include_custom = FALSE) {
 
-    $tables = [];
-    if ($this->version == '1.3') {
-      $tables_v1_3 = tripal_chado_chado_get_v1_3_tables();
-      foreach ($tables_v1_3 as $table) {
-        $tables[$table] = $table;
-      }
-    }
-    if ($this->version == '1.2') {
-      $tables_v1_2 = tripal_chado_chado_get_v1_2_tables();
-      foreach ($tables_v1_2 as $table) {
-        $tables[$table] = $table;
-      }
-    }
-    if ($this->version == '1.11' or $this->version == '1.11 or older') {
-      $tables_v1_11 = tripal_chado_chado_get_v1_11_tables();
-      foreach ($tables_v1_11 as $table) {
-        $tables[$table] = $table;
-      }
-    }
+    $schema = $this->getSchemaDetails();
+    $tables = array_keys($schema);
 
     // now add in the custom tables too if requested
     if ($include_custom) {
@@ -179,7 +163,7 @@ class ChadoSchema {
     asort($tables);
     return $tables;
 
-  }*/
+  }
 
   /**
    * Retrieves the chado tables Schema API array.
@@ -190,36 +174,34 @@ class ChadoSchema {
    *
    * @returns
    *   A Drupal Schema API array defining the table.
-   *
+   */
   public function getTableSchema($table) {
 
-    // first get the chado version.
-    $v = $this->version;
+    $schema = $this->getSchemaDetails();
 
-    // get the table array from the proper chado schema
-    $v = preg_replace("/\./", "_", $v); // reformat version for hook name
+    if (isset($schema[$table])) {
+      $table_arr = $schema[$table];
+    }
+    else {
+      $table_arr =  FALSE;
+    }
 
-    // Call the module_invoke_all.
-    $hook_name = "chado_schema_v" . $v . "_" . $table;
-    $table_arr = module_invoke_all($hook_name);
+    // Ensures consistency regardless of the number of columns of the pkey.
+    $table_arr['primary key'] = (array) $table_arr['primary key'];
 
-    // If the module_invoke_all returned nothing then let's make sure there isn't
-    // An API call we can call directly.  The only time this occurs is
-    // during an upgrade of a major Drupal version and tripal_core is disabled.
-    if ((!$table_arr or !is_array($table_arr)) and
-      function_exists('tripal_chado_' . $hook_name)) {
-      $api_hook = "tripal_chado_" . $hook_name;
-      $table_arr = $api_hook();
+    // Ensure foreign key array is present for consistency.
+    if (!isset($table_arr['foreign keys'])) {
+      $table_arr['foreign keys'] = [];
     }
 
     // if the table_arr is empty then maybe this is a custom table
     if (!is_array($table_arr) or count($table_arr) == 0) {
-      $table_arr = $this->getCustomTableSchema($table);
+      //$table_arr = $this->getCustomTableSchema($table);
     }
 
     return $table_arr;
 
-  }*/
+  }
 
   /**
    * Retrieves the schema array for the specified custom table.
@@ -260,7 +242,7 @@ class ChadoSchema {
    *    An array of base table names.
    *
    * @ingroup tripal_chado_schema_api
-   *
+   */
   function getBaseTables() {
 
     // Initialize the base tables with those tables that are missing a type.
@@ -334,7 +316,7 @@ class ChadoSchema {
     sort($final_list);
     return $final_list;
 
-  }*/
+  }
 
   /**
    * Get information about which Chado base table a cvterm is mapped to.
@@ -376,10 +358,10 @@ class ChadoSchema {
    *
    * @return
    *   TRUE if the table exists in the chado schema and FALSE if it does not.
-   *
+   */
   public function checkTableExists($table) {
     return chado_table_exists($table);
-  }*/
+  }
 
   /**
    * Check that any given column in a Chado table exists.
@@ -397,10 +379,10 @@ class ChadoSchema {
    *   FALSE if it does not.
    *
    * @ingroup tripal_chado_schema_api
-   *
+   */
   public function checkColumnExists($table, $column) {
     return chado_column_exists($table, $column);
-  }*/
+  }
 
   /**
    * Check that any given column in a Chado table exists.

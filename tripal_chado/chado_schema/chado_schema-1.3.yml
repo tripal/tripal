@@ -1,4 +1,4 @@
-chado.acquisition:
+acquisition:
   description: "This represents the scanning of hybridized material. The output of this process is typically a digital image of an array."
   fields:
     acquisition_id:
@@ -30,7 +30,7 @@ chado.acquisition:
     acquisition_assay_id_fkey: assay_id
     acquisition_channel_id_fkey: channel_id
     acquisition_protocol_id_fkey: protocol_id
-chado.acquisition_relationship:
+acquisition_relationship:
   description: "Multiple monochrome images may be merged to form a multi-color image. Red-green images of 2-channel hybridizations are an example of this."
   fields:
     acquisition_relationship_id:
@@ -58,7 +58,7 @@ chado.acquisition_relationship:
     acquisition_relationship_object_id_fkey: object_id
     acquisition_relationship_subject_id_fkey: subject_id
     acquisition_relationship_type_id_fkey: type_id
-chado.acquisitionprop:
+acquisitionprop:
   description: "Parameters associated with image acquisition."
   fields:
     acquisitionprop_id:
@@ -82,7 +82,7 @@ chado.acquisitionprop:
   foreign keys:
     acquisitionprop_acquisition_id_fkey: acquisition_id
     acquisitionprop_type_id_fkey: type_id
-chado.analysis:
+analysis:
   description: "An analysis is a particular type of a     computational analysis; it may be a blast of one sequence against     another, or an all by all blast, or a different kind of analysis     altogether. It is a single unit of computation."
   fields:
     analysis_id:
@@ -125,7 +125,7 @@ chado.analysis:
   unique keys:
     analysis_c1: program, programversion, sourcename
   primary key: analysis_id
-chado.analysis_cvterm:
+analysis_cvterm:
   description: "Associate a term from a cv with an analysis."
   fields:
     analysis_cvterm_id:
@@ -150,7 +150,7 @@ chado.analysis_cvterm:
   foreign keys:
     analysis_cvterm_analysis_id_fkey: analysis_id
     analysis_cvterm_cvterm_id_fkey: cvterm_id
-chado.analysis_dbxref:
+analysis_dbxref:
   description: "Links an analysis to dbxrefs."
   fields:
     analysis_dbxref_id:
@@ -172,7 +172,7 @@ chado.analysis_dbxref:
   foreign keys:
     analysis_dbxref_analysis_id_fkey: analysis_id
     analysis_dbxref_dbxref_id_fkey: dbxref_id
-chado.analysis_pub:
+analysis_pub:
   description: "Provenance. Linking table between analyses and the publications that mention them."
   fields:
     analysis_pub_id:
@@ -190,7 +190,7 @@ chado.analysis_pub:
   foreign keys:
     analysis_pub_analysis_id_fkey: analysis_id
     analysis_pub_pub_id_fkey: pub_id
-chado.analysis_relationship:
+analysis_relationship:
   description: ""
   fields:
     analysis_relationship_id:
@@ -218,7 +218,7 @@ chado.analysis_relationship:
     analysis_relationship_object_id_fkey: object_id
     analysis_relationship_subject_id_fkey: subject_id
     analysis_relationship_type_id_fkey: type_id
-chado.analysisfeature:
+analysisfeature:
   description: "Computational analyses generate features (e.g. Genscan generates transcripts and exons; sim4 alignments generate similarity/match features). analysisfeatures are stored using the feature table from the sequence module. The analysisfeature table is used to decorate these features, with analysis specific attributes. A feature is an analysisfeature if and only if there is a corresponding entry in the analysisfeature table. analysisfeatures will have two or more featureloc entries,  with rank indicating query/subject"
   fields:
     analysisfeature_id:
@@ -248,7 +248,7 @@ chado.analysisfeature:
   foreign keys:
     analysisfeature_analysis_id_fkey: analysis_id
     analysisfeature_feature_id_fkey: feature_id
-chado.analysisfeatureprop:
+analysisfeatureprop:
   description: ""
   fields:
     analysisfeatureprop_id:
@@ -272,7 +272,7 @@ chado.analysisfeatureprop:
   foreign keys:
     analysisfeatureprop_analysisfeature_id_fkey: analysisfeature_id
     analysisfeatureprop_type_id_fkey: type_id
-chado.analysisprop:
+analysisprop:
   description: ""
   fields:
     analysisprop_id:
@@ -296,7 +296,7 @@ chado.analysisprop:
   foreign keys:
     analysisprop_analysis_id_fkey: analysis_id
     analysisprop_type_id_fkey: type_id
-chado.arraydesign:
+arraydesign:
   description: "General properties about an array. An array is a template used to generate physical slides, etc.  It contains layout information, as well as global array properties, such as material (glass, nylon) and spot dimensions (in rows/columns)."
   fields:
     arraydesign_id:
@@ -362,7 +362,7 @@ chado.arraydesign:
     arraydesign_platformtype_id_fkey: platformtype_id
     arraydesign_protocol_id_fkey: protocol_id
     arraydesign_substratetype_id_fkey: substratetype_id
-chado.arraydesignprop:
+arraydesignprop:
   description: "Extra array design properties that are not accounted for in arraydesign."
   fields:
     arraydesignprop_id:
@@ -386,7 +386,7 @@ chado.arraydesignprop:
   foreign keys:
     arraydesignprop_arraydesign_id_fkey: arraydesign_id
     arraydesignprop_type_id_fkey: type_id
-chado.assay:
+assay:
   description: "An assay consists of a physical instance of an array, combined with the conditions used to create the array (protocols, technician information). The assay can be thought of as a hybridization."
   fields:
     assay_id:
@@ -428,7 +428,7 @@ chado.assay:
     assay_dbxref_id_fkey: dbxref_id
     assay_operator_id_fkey: operator_id
     assay_protocol_id_fkey: protocol_id
-chado.assay_biomaterial:
+assay_biomaterial:
   description: "A biomaterial can be hybridized many times (technical replicates), or combined with other biomaterials in a single hybridization (for two-channel arrays)."
   fields:
     assay_biomaterial_id:
@@ -453,7 +453,7 @@ chado.assay_biomaterial:
     assay_biomaterial_assay_id_fkey: assay_id
     assay_biomaterial_biomaterial_id_fkey: biomaterial_id
     assay_biomaterial_channel_id_fkey: channel_id
-chado.assay_project:
+assay_project:
   description: "Link assays to projects."
   fields:
     assay_project_id:
@@ -471,7 +471,7 @@ chado.assay_project:
   foreign keys:
     assay_project_assay_id_fkey: assay_id
     assay_project_project_id_fkey: project_id
-chado.assayprop:
+assayprop:
   description: "Extra assay properties that are not accounted for in assay."
   fields:
     assayprop_id:
@@ -495,7 +495,7 @@ chado.assayprop:
   foreign keys:
     assayprop_assay_id_fkey: assay_id
     assayprop_type_id_fkey: type_id
-chado.biomaterial:
+biomaterial:
   description: "A biomaterial represents the MAGE concept of BioSource, BioSample, and LabeledExtract. It is essentially some biological material (tissue, cells, serum) that may have been processed. Processed biomaterials should be traceable back to raw biomaterials via the biomaterialrelationship table."
   fields:
     biomaterial_id:
@@ -523,7 +523,7 @@ chado.biomaterial:
     biomaterial_biosourceprovider_id_fkey: biosourceprovider_id
     biomaterial_dbxref_id_fkey: dbxref_id
     biomaterial_taxon_id_fkey: taxon_id
-chado.biomaterial_dbxref:
+biomaterial_dbxref:
   description: ""
   fields:
     biomaterial_dbxref_id:
@@ -541,7 +541,7 @@ chado.biomaterial_dbxref:
   foreign keys:
     biomaterial_dbxref_biomaterial_id_fkey: biomaterial_id
     biomaterial_dbxref_dbxref_id_fkey: dbxref_id
-chado.biomaterial_relationship:
+biomaterial_relationship:
   description: "Relate biomaterials to one another. This is a way to track a series of treatments or material splits/merges, for instance."
   fields:
     biomaterial_relationship_id:
@@ -563,7 +563,7 @@ chado.biomaterial_relationship:
     biomaterial_relationship_object_id_fkey: object_id
     biomaterial_relationship_subject_id_fkey: subject_id
     biomaterial_relationship_type_id_fkey: type_id
-chado.biomaterial_treatment:
+biomaterial_treatment:
   description: "Link biomaterials to treatments. Treatments have an order of operations (rank), and associated measurements (unittype_id, value)."
   fields:
     biomaterial_treatment_id:
@@ -591,7 +591,7 @@ chado.biomaterial_treatment:
     biomaterial_treatment_biomaterial_id_fkey: biomaterial_id
     biomaterial_treatment_treatment_id_fkey: treatment_id
     biomaterial_treatment_unittype_id_fkey: unittype_id
-chado.biomaterialprop:
+biomaterialprop:
   description: "Extra biomaterial properties that are not accounted for in biomaterial."
   fields:
     biomaterialprop_id:
@@ -615,7 +615,7 @@ chado.biomaterialprop:
   foreign keys:
     biomaterialprop_biomaterial_id_fkey: biomaterial_id
     biomaterialprop_type_id_fkey: type_id
-chado.cell_line:
+cell_line:
   description: ""
   fields:
     cell_line_id:
@@ -645,7 +645,7 @@ chado.cell_line:
   primary key: cell_line_id
   foreign keys:
     cell_line_organism_id_fkey: organism_id
-chado.cell_line_cvterm:
+cell_line_cvterm:
   description: ""
   fields:
     cell_line_cvterm_id:
@@ -670,7 +670,7 @@ chado.cell_line_cvterm:
     cell_line_cvterm_cell_line_id_fkey: cell_line_id
     cell_line_cvterm_cvterm_id_fkey: cvterm_id
     cell_line_cvterm_pub_id_fkey: pub_id
-chado.cell_line_cvtermprop:
+cell_line_cvtermprop:
   description: ""
   fields:
     cell_line_cvtermprop_id:
@@ -694,7 +694,7 @@ chado.cell_line_cvtermprop:
   foreign keys:
     cell_line_cvtermprop_cell_line_cvterm_id_fkey: cell_line_cvterm_id
     cell_line_cvtermprop_type_id_fkey: type_id
-chado.cell_line_dbxref:
+cell_line_dbxref:
   description: ""
   fields:
     cell_line_dbxref_id:
@@ -716,7 +716,7 @@ chado.cell_line_dbxref:
   foreign keys:
     cell_line_dbxref_cell_line_id_fkey: cell_line_id
     cell_line_dbxref_dbxref_id_fkey: dbxref_id
-chado.cell_line_feature:
+cell_line_feature:
   description: ""
   fields:
     cell_line_feature_id:
@@ -738,7 +738,7 @@ chado.cell_line_feature:
     cell_line_feature_cell_line_id_fkey: cell_line_id
     cell_line_feature_feature_id_fkey: feature_id
     cell_line_feature_pub_id_fkey: pub_id
-chado.cell_line_library:
+cell_line_library:
   description: ""
   fields:
     cell_line_library_id:
@@ -760,7 +760,7 @@ chado.cell_line_library:
     cell_line_library_cell_line_id_fkey: cell_line_id
     cell_line_library_library_id_fkey: library_id
     cell_line_library_pub_id_fkey: pub_id
-chado.cell_line_pub:
+cell_line_pub:
   description: ""
   fields:
     cell_line_pub_id:
@@ -778,7 +778,7 @@ chado.cell_line_pub:
   foreign keys:
     cell_line_pub_cell_line_id_fkey: cell_line_id
     cell_line_pub_pub_id_fkey: pub_id
-chado.cell_line_relationship:
+cell_line_relationship:
   description: ""
   fields:
     cell_line_relationship_id:
@@ -800,7 +800,7 @@ chado.cell_line_relationship:
     cell_line_relationship_object_id_fkey: object_id
     cell_line_relationship_subject_id_fkey: subject_id
     cell_line_relationship_type_id_fkey: type_id
-chado.cell_line_synonym:
+cell_line_synonym:
   description: ""
   fields:
     cell_line_synonym_id:
@@ -830,7 +830,7 @@ chado.cell_line_synonym:
     cell_line_synonym_cell_line_id_fkey: cell_line_id
     cell_line_synonym_pub_id_fkey: pub_id
     cell_line_synonym_synonym_id_fkey: synonym_id
-chado.cell_lineprop:
+cell_lineprop:
   description: ""
   fields:
     cell_lineprop_id:
@@ -854,7 +854,7 @@ chado.cell_lineprop:
   foreign keys:
     cell_lineprop_cell_line_id_fkey: cell_line_id
     cell_lineprop_type_id_fkey: type_id
-chado.cell_lineprop_pub:
+cell_lineprop_pub:
   description: ""
   fields:
     cell_lineprop_pub_id:
@@ -872,7 +872,7 @@ chado.cell_lineprop_pub:
   foreign keys:
     cell_lineprop_pub_cell_lineprop_id_fkey: cell_lineprop_id
     cell_lineprop_pub_pub_id_fkey: pub_id
-chado.chadoprop:
+chadoprop:
   description: "This table is different from other prop tables in the database, as it is for storing information about the database itself, like schema version"
   fields:
     chadoprop_id:
@@ -892,7 +892,7 @@ chado.chadoprop:
   primary key: chadoprop_id
   foreign keys:
     chadoprop_type_id_fkey: type_id
-chado.channel:
+channel:
   description: "Different array platforms can record signals from one or more channels (cDNA arrays typically use two CCD, but Affymetrix uses only one)."
   fields:
     channel_id:
@@ -907,7 +907,7 @@ chado.channel:
   unique keys:
     channel_c1: name
   primary key: channel_id
-chado.contact:
+contact:
   description: "Model persons, institutes, groups, organizations, etc."
   fields:
     contact_id:
@@ -929,7 +929,7 @@ chado.contact:
   primary key: contact_id
   foreign keys:
     contact_type_id_fkey: type_id
-chado.contact_relationship:
+contact_relationship:
   description: "Model relationships between contacts"
   fields:
     contact_relationship_id:
@@ -951,7 +951,7 @@ chado.contact_relationship:
     contact_relationship_object_id_fkey: object_id
     contact_relationship_subject_id_fkey: subject_id
     contact_relationship_type_id_fkey: type_id
-chado.contactprop:
+contactprop:
   description: "A contact can have any number of slot-value property  tags attached to it. This is an alternative to hardcoding a list of columns in the  relational schema, and is completely extensible."
   fields:
     contactprop_id:
@@ -975,7 +975,7 @@ chado.contactprop:
   foreign keys:
     contactprop_contact_id_fkey: contact_id
     contactprop_type_id_fkey: type_id
-chado.control:
+control:
   description: ""
   fields:
     control_id:
@@ -1007,7 +1007,7 @@ chado.control:
     control_assay_id_fkey: assay_id
     control_tableinfo_id_fkey: tableinfo_id
     control_type_id_fkey: type_id
-chado.cv:
+cv:
   description: "A controlled vocabulary or ontology. A cv is composed of cvterms (AKA terms, classes, types, universals - relations and properties are also stored in cvterm) and the relationships between them."
   fields:
     cv_id:
@@ -1023,7 +1023,7 @@ chado.cv:
   unique keys:
     cv_c1: name
   primary key: cv_id
-chado.cvprop:
+cvprop:
   description: "Additional extensible properties can be attached to a cv using this table.  A notable example would be the cv version"
   fields:
     cvprop_id:
@@ -1047,7 +1047,7 @@ chado.cvprop:
   foreign keys:
     cvprop_cv_id_fkey: cv_id
     cvprop_type_id_fkey: type_id
-chado.cvterm:
+cvterm:
   description: "A term, class, universal or type within an ontology or controlled vocabulary.  This table is also used for relations and properties. cvterms constitute nodes in the graph defined by the collection of cvterms and cvterm_relationships."
   fields:
     cvterm_id:
@@ -1079,7 +1079,7 @@ chado.cvterm:
   foreign keys:
     cvterm_cv_id_fkey: cv_id
     cvterm_dbxref_id_fkey: dbxref_id
-chado.cvterm_dbxref:
+cvterm_dbxref:
   description: "In addition to the primary identifier (cvterm.dbxref_id) a cvterm can have zero or more secondary identifiers/dbxrefs, which may refer to records in external databases. The exact semantics of cvterm_dbxref are not fixed. For example: the dbxref could be a pubmed ID that is pertinent to the cvterm, or it could be an equivalent or similar term in another ontology. For example, GO cvterms are typically linked to InterPro IDs, even though the nature of the relationship between them is largely one of statistical association. The dbxref may be have data records attached in the same database instance, or it could be a \"hanging\" dbxref pointing to some external database. NOTE: If the desired objective is to link two cvterms together, and the nature of the relation is known and holds for all instances of the subject cvterm then consider instead using cvterm_relationship together with a well-defined relation."
   fields:
     cvterm_dbxref_id:
@@ -1100,7 +1100,7 @@ chado.cvterm_dbxref:
   foreign keys:
     cvterm_dbxref_cvterm_id_fkey: cvterm_id
     cvterm_dbxref_dbxref_id_fkey: dbxref_id
-chado.cvterm_relationship:
+cvterm_relationship:
   description: "A relationship linking two cvterms. Each cvterm_relationship constitutes an edge in the graph defined by the collection of cvterms and cvterm_relationships. The meaning of the cvterm_relationship depends on the definition of the cvterm R refered to by type_id. However, in general the definitions are such that the statement \"all SUBJs REL some OBJ\" is true. The cvterm_relationship statement is about the subject, not the object. For example \"insect wing part_of thorax\"."
   fields:
     cvterm_relationship_id:
@@ -1122,7 +1122,7 @@ chado.cvterm_relationship:
     cvterm_relationship_object_id_fkey: object_id
     cvterm_relationship_subject_id_fkey: subject_id
     cvterm_relationship_type_id_fkey: type_id
-chado.cvtermpath:
+cvtermpath:
   description: "The reflexive transitive closure of the cvterm_relationship relation."
   fields:
     cvtermpath_id:
@@ -1151,7 +1151,7 @@ chado.cvtermpath:
     cvtermpath_object_id_fkey: object_id
     cvtermpath_subject_id_fkey: subject_id
     cvtermpath_type_id_fkey: type_id
-chado.cvtermprop:
+cvtermprop:
   description: "Additional extensible properties can be attached to a cvterm using this table. Corresponds to -AnnotationProperty- in W3C OWL format."
   fields:
     cvtermprop_id:
@@ -1175,7 +1175,7 @@ chado.cvtermprop:
   foreign keys:
     cvtermprop_cvterm_id_fkey: cvterm_id
     cvtermprop_type_id_fkey: type_id
-chado.cvtermsynonym:
+cvtermsynonym:
   description: "A cvterm actually represents a distinct class or concept. A concept can be refered to by different phrases or names. In addition to the primary name (cvterm.name) there can be a number of alternative aliases or synonyms. For example, \"T cell\" as a synonym for \"T lymphocyte\"."
   fields:
     cvtermsynonym_id:
@@ -1197,7 +1197,7 @@ chado.cvtermsynonym:
   foreign keys:
     cvtermsynonym_cvterm_id_fkey: cvterm_id
     cvtermsynonym_type_id_fkey: type_id
-chado.db:
+db:
   description: "A database authority. Typical databases in bioinformatics are FlyBase, GO, UniProt, NCBI, MGI, etc. The authority is generally known by this shortened form, which is unique within the bioinformatics and biomedical realm.  To Do - add support for URIs, URNs (e.g. LSIDs). We can do this by treating the URL as a URI - however, some applications may expect this to be resolvable - to be decided."
   fields:
     db_id:
@@ -1222,7 +1222,7 @@ chado.db:
   unique keys:
     db_c1: name
   primary key: db_id
-chado.dbprop:
+dbprop:
   description: "An external database can have any number of slot-value property tags attached to it. This is an alternative to hardcoding a list of columns in the relational schema, and is completely extensible. There is a unique constraint, dbprop_c1, for the combination of db_id, rank, and type_id. Multivalued property-value pairs must be differentiated by rank."
   fields:
     dbprop_id:
@@ -1246,7 +1246,7 @@ chado.dbprop:
   foreign keys:
     dbprop_db_id_fkey: db_id
     dbprop_type_id_fkey: type_id
-chado.dbxref:
+dbxref:
   description: "A unique, global, public, stable identifier. Not necessarily an external reference - can reference data items inside the particular chado instance being used. Typically a row in a table can be uniquely identified with a primary identifier (called dbxref_id); a table may also have secondary identifiers (in a linking table <T>_dbxref). A dbxref is generally written as <DB>:<ACCESSION> or as <DB>:<ACCESSION>:<VERSION>."
   fields:
     dbxref_id:
@@ -1271,7 +1271,7 @@ chado.dbxref:
   primary key: dbxref_id
   foreign keys:
     dbxref_db_id_fkey: db_id
-chado.dbxrefprop:
+dbxrefprop:
   description: "Metadata about a dbxref. Note that this is not defined in the dbxref module, as it depends on the cvterm table. This table has a structure analagous to cvtermprop."
   fields:
     dbxrefprop_id:
@@ -1295,7 +1295,7 @@ chado.dbxrefprop:
   foreign keys:
     dbxrefprop_dbxref_id_fkey: dbxref_id
     dbxrefprop_type_id_fkey: type_id
-chado.eimage:
+eimage:
   description: ""
   fields:
     eimage_id:
@@ -1313,7 +1313,7 @@ chado.eimage:
       not null: TRUE
       size: 255
   primary key: eimage_id
-chado.element:
+element:
   description: "Represents a feature of the array. This is typically a region of the array coated or bound to DNA."
   fields:
     element_id:
@@ -1339,7 +1339,7 @@ chado.element:
     element_dbxref_id_fkey: dbxref_id
     element_feature_id_fkey: feature_id
     element_type_id_fkey: type_id
-chado.element_relationship:
+element_relationship:
   description: "Sometimes we want to combine measurements from multiple elements to get a composite value. Affymetrix combines many probes to form a probeset measurement, for instance."
   fields:
     element_relationship_id:
@@ -1367,7 +1367,7 @@ chado.element_relationship:
     element_relationship_object_id_fkey: object_id
     element_relationship_subject_id_fkey: subject_id
     element_relationship_type_id_fkey: type_id
-chado.elementresult:
+elementresult:
   description: "An element on an array produces a measurement when hybridized to a biomaterial (traceable through quantification_id). This is the base data from which tables that actually contain data inherit."
   fields:
     elementresult_id:
@@ -1388,7 +1388,7 @@ chado.elementresult:
   foreign keys:
     elementresult_element_id_fkey: element_id
     elementresult_quantification_id_fkey: quantification_id
-chado.elementresult_relationship:
+elementresult_relationship:
   description: "Sometimes we want to combine measurements from multiple elements to get a composite value. Affymetrix combines many probes to form a probeset measurement, for instance."
   fields:
     elementresult_relationship_id:
@@ -1416,7 +1416,7 @@ chado.elementresult_relationship:
     elementresult_relationship_object_id_fkey: object_id
     elementresult_relationship_subject_id_fkey: subject_id
     elementresult_relationship_type_id_fkey: type_id
-chado.environment:
+environment:
   description: "The environmental component of a phenotype description."
   fields:
     environment_id:
@@ -1431,7 +1431,7 @@ chado.environment:
   unique keys:
     environment_c1: uniquename
   primary key: environment_id
-chado.environment_cvterm:
+environment_cvterm:
   description: ""
   fields:
     environment_cvterm_id:
@@ -1449,7 +1449,7 @@ chado.environment_cvterm:
   foreign keys:
     environment_cvterm_cvterm_id_fkey: cvterm_id
     environment_cvterm_environment_id_fkey: environment_id
-chado.expression:
+expression:
   description: "The expression table is essentially a bridge table."
   fields:
     expression_id:
@@ -1468,7 +1468,7 @@ chado.expression:
   unique keys:
     expression_c1: uniquename
   primary key: expression_id
-chado.expression_cvterm:
+expression_cvterm:
   description: ""
   fields:
     expression_cvterm_id:
@@ -1493,7 +1493,7 @@ chado.expression_cvterm:
     expression_cvterm_cvterm_id_fkey: cvterm_id
     expression_cvterm_cvterm_type_id_fkey: cvterm_type_id
     expression_cvterm_expression_id_fkey: expression_id
-chado.expression_cvtermprop:
+expression_cvtermprop:
   description: "Extensible properties for expression to cvterm associations. Examples: qualifiers."
   fields:
     expression_cvtermprop_id:
@@ -1517,7 +1517,7 @@ chado.expression_cvtermprop:
   foreign keys:
     expression_cvtermprop_expression_cvterm_id_fkey: expression_cvterm_id
     expression_cvtermprop_type_id_fkey: type_id
-chado.expression_image:
+expression_image:
   description: ""
   fields:
     expression_image_id:
@@ -1535,7 +1535,7 @@ chado.expression_image:
   foreign keys:
     expression_image_eimage_id_fkey: eimage_id
     expression_image_expression_id_fkey: expression_id
-chado.expression_pub:
+expression_pub:
   description: ""
   fields:
     expression_pub_id:
@@ -1553,7 +1553,7 @@ chado.expression_pub:
   foreign keys:
     expression_pub_expression_id_fkey: expression_id
     expression_pub_pub_id_fkey: pub_id
-chado.expressionprop:
+expressionprop:
   description: ""
   fields:
     expressionprop_id:
@@ -1577,7 +1577,7 @@ chado.expressionprop:
   foreign keys:
     expressionprop_expression_id_fkey: expression_id
     expressionprop_type_id_fkey: type_id
-chado.feature:
+feature:
   description: "A feature is a biological sequence or a section of a biological sequence, or a collection of such sections. Examples include genes, exons, transcripts, regulatory regions, polypeptides, protein domains, chromosome sequences, sequence variations, cross-genome match regions such as hits and HSPs and so on; see the Sequence Ontology for more. The combination of organism_id, uniquename and type_id should be unique."
   fields:
     feature_id:
@@ -1632,7 +1632,7 @@ chado.feature:
     feature_dbxref_id_fkey: dbxref_id
     feature_organism_id_fkey: organism_id
     feature_type_id_fkey: type_id
-chado.feature_contact:
+feature_contact:
   description: "Links contact(s) with a feature.  Used to indicate a particular  person or organization responsible for discovery or that can provide more information on a particular feature."
   fields:
     feature_contact_id:
@@ -1650,7 +1650,7 @@ chado.feature_contact:
   foreign keys:
     feature_contact_contact_id_fkey: contact_id
     feature_contact_feature_id_fkey: feature_id
-chado.feature_cvterm:
+feature_cvterm:
   description: "Associate a term from a cv with a feature, for example, GO annotation."
   fields:
     feature_cvterm_id:
@@ -1679,7 +1679,7 @@ chado.feature_cvterm:
     feature_cvterm_cvterm_id_fkey: cvterm_id
     feature_cvterm_feature_id_fkey: feature_id
     feature_cvterm_pub_id_fkey: pub_id
-chado.feature_cvterm_dbxref:
+feature_cvterm_dbxref:
   description: "Additional dbxrefs for an association. Rows in the feature_cvterm table may be backed up by dbxrefs. For example, a feature_cvterm association that was inferred via a protein-protein interaction may be backed by by refering to the dbxref for the alternate protein. Corresponds to the WITH column in a GO gene association file (but can also be used for other analagous associations). See http://www.geneontology.org/doc/GO.annotation.shtml#file for more details."
   fields:
     feature_cvterm_dbxref_id:
@@ -1697,7 +1697,7 @@ chado.feature_cvterm_dbxref:
   foreign keys:
     feature_cvterm_dbxref_dbxref_id_fkey: dbxref_id
     feature_cvterm_dbxref_feature_cvterm_id_fkey: feature_cvterm_id
-chado.feature_cvterm_pub:
+feature_cvterm_pub:
   description: "Secondary pubs for an association. Each feature_cvterm association is supported by a single primary publication. Additional secondary pubs can be added using this linking table (in a GO gene association file, these corresponding to any IDs after the pipe symbol in the publications column."
   fields:
     feature_cvterm_pub_id:
@@ -1715,7 +1715,7 @@ chado.feature_cvterm_pub:
   foreign keys:
     feature_cvterm_pub_feature_cvterm_id_fkey: feature_cvterm_id
     feature_cvterm_pub_pub_id_fkey: pub_id
-chado.feature_cvtermprop:
+feature_cvtermprop:
   description: "Extensible properties for feature to cvterm associations. Examples: GO evidence codes; qualifiers; metadata such as the date on which the entry was curated and the source of the association. See the featureprop table for meanings of type_id, value and rank."
   fields:
     feature_cvtermprop_id:
@@ -1739,7 +1739,7 @@ chado.feature_cvtermprop:
   foreign keys:
     feature_cvtermprop_feature_cvterm_id_fkey: feature_cvterm_id
     feature_cvtermprop_type_id_fkey: type_id
-chado.feature_dbxref:
+feature_dbxref:
   description: "Links a feature to dbxrefs."
   fields:
     feature_dbxref_id:
@@ -1761,7 +1761,7 @@ chado.feature_dbxref:
   foreign keys:
     feature_dbxref_dbxref_id_fkey: dbxref_id
     feature_dbxref_feature_id_fkey: feature_id
-chado.feature_expression:
+feature_expression:
   description: ""
   fields:
     feature_expression_id:
@@ -1783,7 +1783,7 @@ chado.feature_expression:
     feature_expression_expression_id_fkey: expression_id
     feature_expression_feature_id_fkey: feature_id
     feature_expression_pub_id_fkey: pub_id
-chado.feature_expressionprop:
+feature_expressionprop:
   description: "Extensible properties for feature_expression (comments, for example). Modeled on feature_cvtermprop."
   fields:
     feature_expressionprop_id:
@@ -1807,7 +1807,7 @@ chado.feature_expressionprop:
   foreign keys:
     feature_expressionprop_feature_expression_id_fkey: feature_expression_id
     feature_expressionprop_type_id_fkey: type_id
-chado.feature_genotype:
+feature_genotype:
   description: ""
   fields:
     feature_genotype_id:
@@ -1839,7 +1839,7 @@ chado.feature_genotype:
     feature_genotype_cvterm_id_fkey: cvterm_id
     feature_genotype_feature_id_fkey: feature_id
     feature_genotype_genotype_id_fkey: genotype_id
-chado.feature_phenotype:
+feature_phenotype:
   description: "Linking table between features and phenotypes."
   fields:
     feature_phenotype_id:
@@ -1857,7 +1857,7 @@ chado.feature_phenotype:
   foreign keys:
     feature_phenotype_feature_id_fkey: feature_id
     feature_phenotype_phenotype_id_fkey: phenotype_id
-chado.feature_pub:
+feature_pub:
   description: "Provenance. Linking table between features and publications that mention them."
   fields:
     feature_pub_id:
@@ -1875,7 +1875,7 @@ chado.feature_pub:
   foreign keys:
     feature_pub_feature_id_fkey: feature_id
     feature_pub_pub_id_fkey: pub_id
-chado.feature_pubprop:
+feature_pubprop:
   description: "Property or attribute of a feature_pub link."
   fields:
     feature_pubprop_id:
@@ -1899,7 +1899,7 @@ chado.feature_pubprop:
   foreign keys:
     feature_pubprop_feature_pub_id_fkey: feature_pub_id
     feature_pubprop_type_id_fkey: type_id
-chado.feature_relationship:
+feature_relationship:
   description: "Features can be arranged in graphs, e.g. \"exon part_of transcript part_of gene\"; If type is thought of as a verb, the each arc or edge makes a statement [Subject Verb Object]. The object can also be thought of as parent (containing feature), and subject as child (contained feature or subfeature). We include the relationship rank/order, because even though most of the time we can order things implicitly by sequence coordinates, we can not always do this - e.g. transpliced genes. It is also useful for quickly getting implicit introns."
   fields:
     feature_relationship_id:
@@ -1927,7 +1927,7 @@ chado.feature_relationship:
     feature_relationship_object_id_fkey: object_id
     feature_relationship_subject_id_fkey: subject_id
     feature_relationship_type_id_fkey: type_id
-chado.feature_relationship_pub:
+feature_relationship_pub:
   description: "Provenance. Attach optional evidence to a feature_relationship in the form of a publication."
   fields:
     feature_relationship_pub_id:
@@ -1945,7 +1945,7 @@ chado.feature_relationship_pub:
   foreign keys:
     feature_relationship_pub_feature_relationship_id_fkey: feature_relationship_id
     feature_relationship_pub_pub_id_fkey: pub_id
-chado.feature_relationshipprop:
+feature_relationshipprop:
   description: "Extensible properties for feature_relationships. Analagous structure to featureprop. This table is largely optional and not used with a high frequency. Typical scenarios may be if one wishes to attach additional data to a feature_relationship - for example to say that the feature_relationship is only true in certain contexts."
   fields:
     feature_relationshipprop_id:
@@ -1969,7 +1969,7 @@ chado.feature_relationshipprop:
   foreign keys:
     feature_relationshipprop_feature_relationship_id_fkey: feature_relationship_id
     feature_relationshipprop_type_id_fkey: type_id
-chado.feature_relationshipprop_pub:
+feature_relationshipprop_pub:
   description: "Provenance for feature_relationshipprop."
   fields:
     feature_relationshipprop_pub_id:
@@ -1987,7 +1987,7 @@ chado.feature_relationshipprop_pub:
   foreign keys:
     feature_relationshipprop_pub_feature_relationshipprop_id_fkey: feature_relationshipprop_id
     feature_relationshipprop_pub_pub_id_fkey: pub_id
-chado.feature_synonym:
+feature_synonym:
   description: "Linking table between feature and synonym."
   fields:
     feature_synonym_id:
@@ -2017,7 +2017,7 @@ chado.feature_synonym:
     feature_synonym_feature_id_fkey: feature_id
     feature_synonym_pub_id_fkey: pub_id
     feature_synonym_synonym_id_fkey: synonym_id
-chado.featureloc:
+featureloc:
   description: "The location of a feature relative to another feature. Important: interbase coordinates are used. This is vital as it allows us to represent zero-length features e.g. splice sites, insertion points without an awkward fuzzy system. Features typically have exactly ONE location, but this need not be the case. Some features may not be localized (e.g. a gene that has been characterized genetically but no sequence or molecular information is available). Note on multiple locations: Each feature can have 0 or more locations. Multiple locations do NOT indicate non-contiguous locations (if a feature such as a transcript has a non-contiguous location, then the subfeatures such as exons should always be manifested). Instead, multiple featurelocs for a feature designate alternate locations or grouped locations; for instance, a feature designating a blast hit or hsp will have two locations, one on the query feature, one on the subject feature. Features representing sequence variation could have alternate locations instantiated on a feature on the mutant strain. The column:rank is used to differentiate these different locations. Reflexive locations should never be stored - this is for -proper- (i.e. non-self) locations only; nothing should be located relative to itself."
   fields:
     featureloc_id:
@@ -2064,7 +2064,7 @@ chado.featureloc:
   foreign keys:
     featureloc_feature_id_fkey: feature_id
     featureloc_srcfeature_id_fkey: srcfeature_id
-chado.featureloc_pub:
+featureloc_pub:
   description: "Provenance of featureloc. Linking table between featurelocs and publications that mention them."
   fields:
     featureloc_pub_id:
@@ -2082,7 +2082,7 @@ chado.featureloc_pub:
   foreign keys:
     featureloc_pub_featureloc_id_fkey: featureloc_id
     featureloc_pub_pub_id_fkey: pub_id
-chado.featuremap:
+featuremap:
   description: ""
   fields:
     featuremap_id:
@@ -2103,7 +2103,7 @@ chado.featuremap:
   primary key: featuremap_id
   foreign keys:
     featuremap_unittype_id_fkey: unittype_id
-chado.featuremap_contact:
+featuremap_contact:
   description: "Links contact(s) with a featuremap.  Used to  indicate a particular person or organization responsible for constrution of or  that can provide more information on a particular featuremap."
   fields:
     featuremap_contact_id:
@@ -2121,7 +2121,7 @@ chado.featuremap_contact:
   foreign keys:
     featuremap_contact_contact_id_fkey: contact_id
     featuremap_contact_featuremap_id_fkey: featuremap_id
-chado.featuremap_dbxref:
+featuremap_dbxref:
   description: ""
   fields:
     featuremap_dbxref_id:
@@ -2141,7 +2141,7 @@ chado.featuremap_dbxref:
   foreign keys:
     featuremap_dbxref_dbxref_id_fkey: dbxref_id
     featuremap_dbxref_featuremap_id_fkey: featuremap_id
-chado.featuremap_organism:
+featuremap_organism:
   description: "Links a featuremap to the organism(s) with which it is associated."
   fields:
     featuremap_organism_id:
@@ -2159,7 +2159,7 @@ chado.featuremap_organism:
   foreign keys:
     featuremap_organism_featuremap_id_fkey: featuremap_id
     featuremap_organism_organism_id_fkey: organism_id
-chado.featuremap_pub:
+featuremap_pub:
   description: ""
   fields:
     featuremap_pub_id:
@@ -2175,7 +2175,7 @@ chado.featuremap_pub:
   foreign keys:
     featuremap_pub_featuremap_id_fkey: featuremap_id
     featuremap_pub_pub_id_fkey: pub_id
-chado.featuremapprop:
+featuremapprop:
   description: "A featuremap can have any number of slot-value property  tags attached to it. This is an alternative to hardcoding a list of columns in the  relational schema, and is completely extensible."
   fields:
     featuremapprop_id:
@@ -2199,7 +2199,7 @@ chado.featuremapprop:
   foreign keys:
     featuremapprop_featuremap_id_fkey: featuremap_id
     featuremapprop_type_id_fkey: type_id
-chado.featurepos:
+featurepos:
   description: ""
   fields:
     featurepos_id:
@@ -2222,7 +2222,7 @@ chado.featurepos:
     featurepos_feature_id_fkey: feature_id
     featurepos_featuremap_id_fkey: featuremap_id
     featurepos_map_feature_id_fkey: map_feature_id
-chado.featureposprop:
+featureposprop:
   description: "Property or attribute of a featurepos record."
   fields:
     featureposprop_id:
@@ -2246,7 +2246,7 @@ chado.featureposprop:
   foreign keys:
     featureposprop_featurepos_id_fkey: featurepos_id
     featureposprop_type_id_fkey: type_id
-chado.featureprop:
+featureprop:
   description: "A feature can have any number of slot-value property tags attached to it. This is an alternative to hardcoding a list of columns in the relational schema, and is completely extensible."
   fields:
     featureprop_id:
@@ -2270,7 +2270,7 @@ chado.featureprop:
   foreign keys:
     featureprop_feature_id_fkey: feature_id
     featureprop_type_id_fkey: type_id
-chado.featureprop_pub:
+featureprop_pub:
   description: "Provenance. Any featureprop assignment can optionally be supported by a publication."
   fields:
     featureprop_pub_id:
@@ -2288,7 +2288,7 @@ chado.featureprop_pub:
   foreign keys:
     featureprop_pub_featureprop_id_fkey: featureprop_id
     featureprop_pub_pub_id_fkey: pub_id
-chado.featurerange:
+featurerange:
   description: "In cases where the start and end of a mapped feature is a range, leftendf and rightstartf are populated. leftstartf_id, leftendf_id, rightstartf_id, rightendf_id are the ids of features with respect to which the feature is being mapped. These may be cytological bands."
   fields:
     featurerange_id:
@@ -2324,7 +2324,7 @@ chado.featurerange:
     featurerange_leftstartf_id_fkey: leftstartf_id
     featurerange_rightendf_id_fkey: rightendf_id
     featurerange_rightstartf_id_fkey: rightstartf_id
-chado.genotype:
+genotype:
   description: "Genetic context. A genotype is defined by a collection of features, mutations, balancers, deficiencies, haplotype blocks, or engineered constructs."
   fields:
     genotype_id:
@@ -2347,7 +2347,7 @@ chado.genotype:
   primary key: genotype_id
   foreign keys:
     genotype_type_id_fkey: type_id
-chado.genotypeprop:
+genotypeprop:
   description: ""
   fields:
     genotypeprop_id:
@@ -2371,7 +2371,7 @@ chado.genotypeprop:
   foreign keys:
     genotypeprop_genotype_id_fkey: genotype_id
     genotypeprop_type_id_fkey: type_id
-chado.library:
+library:
   description: ""
   fields:
     library_id:
@@ -2407,7 +2407,7 @@ chado.library:
   foreign keys:
     library_organism_id_fkey: organism_id
     library_type_id_fkey: type_id
-chado.library_contact:
+library_contact:
   description: "Links contact(s) with a library.  Used to indicate a particular person or organization responsible for creation of or that can provide more information on a particular library."
   fields:
     library_contact_id:
@@ -2425,7 +2425,7 @@ chado.library_contact:
   foreign keys:
     library_contact_contact_id_fkey: contact_id
     library_contact_library_id_fkey: library_id
-chado.library_cvterm:
+library_cvterm:
   description: "The table library_cvterm links a library to controlled vocabularies which describe the library.  For instance, there might be a link to the anatomy cv for \"head\" or \"testes\" for a head or testes library."
   fields:
     library_cvterm_id:
@@ -2447,7 +2447,7 @@ chado.library_cvterm:
     library_cvterm_cvterm_id_fkey: cvterm_id
     library_cvterm_library_id_fkey: library_id
     library_cvterm_pub_id_fkey: pub_id
-chado.library_dbxref:
+library_dbxref:
   description: "Links a library to dbxrefs."
   fields:
     library_dbxref_id:
@@ -2469,7 +2469,7 @@ chado.library_dbxref:
   foreign keys:
     library_dbxref_dbxref_id_fkey: dbxref_id
     library_dbxref_library_id_fkey: library_id
-chado.library_expression:
+library_expression:
   description: "Links a library to expression statements."
   fields:
     library_expression_id:
@@ -2491,7 +2491,7 @@ chado.library_expression:
     library_expression_expression_id_fkey: expression_id
     library_expression_library_id_fkey: library_id
     library_expression_pub_id_fkey: pub_id
-chado.library_expressionprop:
+library_expressionprop:
   description: "Attributes of a library_expression relationship."
   fields:
     library_expressionprop_id:
@@ -2515,7 +2515,7 @@ chado.library_expressionprop:
   foreign keys:
     library_expressionprop_library_expression_id_fkey: library_expression_id
     library_expressionprop_type_id_fkey: type_id
-chado.library_feature:
+library_feature:
   description: "library_feature links a library to the clones which are contained in the library.  Examples of such linked features might be \"cDNA_clone\" or  \"genomic_clone\"."
   fields:
     library_feature_id:
@@ -2533,7 +2533,7 @@ chado.library_feature:
   foreign keys:
     library_feature_feature_id_fkey: feature_id
     library_feature_library_id_fkey: library_id
-chado.library_featureprop:
+library_featureprop:
   description: "Attributes of a library_feature relationship."
   fields:
     library_featureprop_id:
@@ -2557,7 +2557,7 @@ chado.library_featureprop:
   foreign keys:
     library_featureprop_library_feature_id_fkey: library_feature_id
     library_featureprop_type_id_fkey: type_id
-chado.library_pub:
+library_pub:
   description: "Attribution for a library."
   fields:
     library_pub_id:
@@ -2575,7 +2575,7 @@ chado.library_pub:
   foreign keys:
     library_pub_library_id_fkey: library_id
     library_pub_pub_id_fkey: pub_id
-chado.library_relationship:
+library_relationship:
   description: "Relationships between libraries."
   fields:
     library_relationship_id:
@@ -2597,7 +2597,7 @@ chado.library_relationship:
     library_relationship_object_id_fkey: object_id
     library_relationship_subject_id_fkey: subject_id
     library_relationship_type_id_fkey: type_id
-chado.library_relationship_pub:
+library_relationship_pub:
   description: "Provenance of library_relationship."
   fields:
     library_relationship_pub_id:
@@ -2615,7 +2615,7 @@ chado.library_relationship_pub:
   foreign keys:
     library_relationship_pub_library_relationship_id_fkey: library_relationship_id
     library_relationship_pub_pub_id_fkey: pub_id
-chado.library_synonym:
+library_synonym:
   description: "Linking table between library and synonym."
   fields:
     library_synonym_id:
@@ -2645,7 +2645,7 @@ chado.library_synonym:
     library_synonym_library_id_fkey: library_id
     library_synonym_pub_id_fkey: pub_id
     library_synonym_synonym_id_fkey: synonym_id
-chado.libraryprop:
+libraryprop:
   description: "Tag-value properties - follows standard chado model."
   fields:
     libraryprop_id:
@@ -2669,7 +2669,7 @@ chado.libraryprop:
   foreign keys:
     libraryprop_library_id_fkey: library_id
     libraryprop_type_id_fkey: type_id
-chado.libraryprop_pub:
+libraryprop_pub:
   description: "Attribution for libraryprop."
   fields:
     libraryprop_pub_id:
@@ -2687,7 +2687,7 @@ chado.libraryprop_pub:
   foreign keys:
     libraryprop_pub_libraryprop_id_fkey: libraryprop_id
     libraryprop_pub_pub_id_fkey: pub_id
-chado.magedocumentation:
+magedocumentation:
   description: ""
   fields:
     magedocumentation_id:
@@ -2709,7 +2709,7 @@ chado.magedocumentation:
   foreign keys:
     magedocumentation_mageml_id_fkey: mageml_id
     magedocumentation_tableinfo_id_fkey: tableinfo_id
-chado.mageml:
+mageml:
   description: "This table is for storing extra bits of MAGEml in a denormalized form. More normalization would require many more tables."
   fields:
     mageml_id:
@@ -2722,7 +2722,7 @@ chado.mageml:
       type: text
       not null: FALSE
   primary key: mageml_id
-chado.materialized_view:
+materialized_view:
   description: ""
   fields:
     materialized_view_id:
@@ -2761,7 +2761,7 @@ chado.materialized_view:
   unique keys:
     materialized_view_name_key: name
   primary key:
-chado.nd_experiment:
+nd_experiment:
   description: "This is the core table for the natural diversity module,  representing each individual assay that is undertaken (this is usually *not* an  entire experiment). Each nd_experiment should give rise to a single genotype or  phenotype and be described via 1 (or more) protocols. Collections of assays that  relate to each other should be linked to the same record in the project table."
   fields:
     nd_experiment_id:
@@ -2777,7 +2777,7 @@ chado.nd_experiment:
   foreign keys:
     nd_experiment_nd_geolocation_id_fkey: nd_geolocation_id
     nd_experiment_type_id_fkey: type_id
-chado.nd_experiment_analysis:
+nd_experiment_analysis:
   description: "An analysis that is used in an experiment"
   fields:
     nd_experiment_analysis_id:
@@ -2797,7 +2797,7 @@ chado.nd_experiment_analysis:
     nd_experiment_analysis_analysis_id_fkey: analysis_id
     nd_experiment_analysis_nd_experiment_id_fkey: nd_experiment_id
     nd_experiment_analysis_type_id_fkey: type_id
-chado.nd_experiment_contact:
+nd_experiment_contact:
   description: ""
   fields:
     nd_experiment_contact_id:
@@ -2813,7 +2813,7 @@ chado.nd_experiment_contact:
   foreign keys:
     nd_experiment_contact_contact_id_fkey: contact_id
     nd_experiment_contact_nd_experiment_id_fkey: nd_experiment_id
-chado.nd_experiment_dbxref:
+nd_experiment_dbxref:
   description: "Cross-reference experiment to accessions, images, etc"
   fields:
     nd_experiment_dbxref_id:
@@ -2829,7 +2829,7 @@ chado.nd_experiment_dbxref:
   foreign keys:
     nd_experiment_dbxref_dbxref_id_fkey: dbxref_id
     nd_experiment_dbxref_nd_experiment_id_fkey: nd_experiment_id
-chado.nd_experiment_genotype:
+nd_experiment_genotype:
   description: "Linking table: experiments to the genotypes they produce. There is a one-to-one relationship between an experiment and a genotype since each genotype record should point to one experiment. Add a new experiment_id for each genotype record."
   fields:
     nd_experiment_genotype_id:
@@ -2847,7 +2847,7 @@ chado.nd_experiment_genotype:
   foreign keys:
     nd_experiment_genotype_genotype_id_fkey: genotype_id
     nd_experiment_genotype_nd_experiment_id_fkey: nd_experiment_id
-chado.nd_experiment_phenotype:
+nd_experiment_phenotype:
   description: "Linking table: experiments to the phenotypes they produce. There is a one-to-one relationship between an experiment and a phenotype since each phenotype record should point to one experiment. Add a new experiment_id for each phenotype record."
   fields:
     nd_experiment_phenotype_id:
@@ -2865,7 +2865,7 @@ chado.nd_experiment_phenotype:
   foreign keys:
     nd_experiment_phenotype_nd_experiment_id_fkey: nd_experiment_id
     nd_experiment_phenotype_phenotype_id_fkey: phenotype_id
-chado.nd_experiment_project:
+nd_experiment_project:
   description: "Used to group together related nd_experiment records. All nd_experiments  should be linked to at least one project."
   fields:
     nd_experiment_project_id:
@@ -2883,7 +2883,7 @@ chado.nd_experiment_project:
   foreign keys:
     nd_experiment_project_nd_experiment_id_fkey: nd_experiment_id
     nd_experiment_project_project_id_fkey: project_id
-chado.nd_experiment_protocol:
+nd_experiment_protocol:
   description: "Linking table: experiments to the protocols they involve."
   fields:
     nd_experiment_protocol_id:
@@ -2899,7 +2899,7 @@ chado.nd_experiment_protocol:
   foreign keys:
     nd_experiment_protocol_nd_experiment_id_fkey: nd_experiment_id
     nd_experiment_protocol_nd_protocol_id_fkey: nd_protocol_id
-chado.nd_experiment_pub:
+nd_experiment_pub:
   description: "Linking nd_experiment(s) to publication(s)"
   fields:
     nd_experiment_pub_id:
@@ -2917,7 +2917,7 @@ chado.nd_experiment_pub:
   foreign keys:
     nd_experiment_pub_nd_experiment_id_fkey: nd_experiment_id
     nd_experiment_pub_pub_id_fkey: pub_id
-chado.nd_experiment_stock:
+nd_experiment_stock:
   description: "Part of a stock or a clone of a stock that is used in an experiment"
   fields:
     nd_experiment_stock_id:
@@ -2937,7 +2937,7 @@ chado.nd_experiment_stock:
     nd_experiment_stock_nd_experiment_id_fkey: nd_experiment_id
     nd_experiment_stock_stock_id_fkey: stock_id
     nd_experiment_stock_type_id_fkey: type_id
-chado.nd_experiment_stock_dbxref:
+nd_experiment_stock_dbxref:
   description: "Cross-reference experiment_stock to accessions, images, etc"
   fields:
     nd_experiment_stock_dbxref_id:
@@ -2953,7 +2953,7 @@ chado.nd_experiment_stock_dbxref:
   foreign keys:
     nd_experiment_stock_dbxref_dbxref_id_fkey: dbxref_id
     nd_experiment_stock_dbxref_nd_experiment_stock_id_fkey: nd_experiment_stock_id
-chado.nd_experiment_stockprop:
+nd_experiment_stockprop:
   description: "Property/value associations for experiment_stocks. This table can store the properties such as treatment"
   fields:
     nd_experiment_stockprop_id:
@@ -2977,7 +2977,7 @@ chado.nd_experiment_stockprop:
   foreign keys:
     nd_experiment_stockprop_nd_experiment_stock_id_fkey: nd_experiment_stock_id
     nd_experiment_stockprop_type_id_fkey: type_id
-chado.nd_experimentprop:
+nd_experimentprop:
   description: "An nd_experiment can have any number of slot-value property tags attached to it. This is an alternative to hardcoding a list of columns in the relational schema, and is completely extensible. There is a unique constraint, stockprop_c1, for the combination of stock_id, rank, and type_id. Multivalued property-value pairs must be differentiated by rank."
   fields:
     nd_experimentprop_id:
@@ -3001,7 +3001,7 @@ chado.nd_experimentprop:
   foreign keys:
     nd_experimentprop_nd_experiment_id_fkey: nd_experiment_id
     nd_experimentprop_type_id_fkey: type_id
-chado.nd_geolocation:
+nd_geolocation:
   description: "The geo-referencable location of the stock. NOTE: This entity is subject to change as a more general and possibly more OpenGIS-compliant geolocation module may be introduced into Chado."
   fields:
     nd_geolocation_id:
@@ -3024,7 +3024,7 @@ chado.nd_geolocation:
       type: real
       not null: TRUE
   primary key: nd_geolocation_id
-chado.nd_geolocationprop:
+nd_geolocationprop:
   description: "Property/value associations for geolocations. This table can store the properties such as location and environment"
   fields:
     nd_geolocationprop_id:
@@ -3048,7 +3048,7 @@ chado.nd_geolocationprop:
   foreign keys:
     nd_geolocationprop_nd_geolocation_id_fkey: nd_geolocation_id
     nd_geolocationprop_type_id_fkey: type_id
-chado.nd_protocol:
+nd_protocol:
   description: "A protocol can be anything that is done as part of the experiment."
   fields:
     nd_protocol_id:
@@ -3066,7 +3066,7 @@ chado.nd_protocol:
   primary key: nd_protocol_id
   foreign keys:
     nd_protocol_type_id_fkey: type_id
-chado.nd_protocol_reagent:
+nd_protocol_reagent:
   description: ""
   fields:
     nd_protocol_reagent_id:
@@ -3086,7 +3086,7 @@ chado.nd_protocol_reagent:
     nd_protocol_reagent_nd_protocol_id_fkey: nd_protocol_id
     nd_protocol_reagent_reagent_id_fkey: reagent_id
     nd_protocol_reagent_type_id_fkey: type_id
-chado.nd_protocolprop:
+nd_protocolprop:
   description: "Property/value associations for protocol."
   fields:
     nd_protocolprop_id:
@@ -3110,7 +3110,7 @@ chado.nd_protocolprop:
   foreign keys:
     nd_protocolprop_nd_protocol_id_fkey: nd_protocol_id
     nd_protocolprop_type_id_fkey: type_id
-chado.nd_reagent:
+nd_reagent:
   description: "A reagent such as a primer, an enzyme, an adapter oligo, a linker oligo. Reagents are used in genotyping experiments, or in any other kind of experiment."
   fields:
     nd_reagent_id:
@@ -3130,7 +3130,7 @@ chado.nd_reagent:
   foreign keys:
     nd_reagent_feature_id_fkey: feature_id
     nd_reagent_type_id_fkey: type_id
-chado.nd_reagent_relationship:
+nd_reagent_relationship:
   description: "Relationships between reagents. Some reagents form a group. i.e., they are used all together or not at all. Examples are adapter/linker/enzyme experiment reagents."
   fields:
     nd_reagent_relationship_id:
@@ -3150,7 +3150,7 @@ chado.nd_reagent_relationship:
     nd_reagent_relationship_object_reagent_id_fkey: object_reagent_id
     nd_reagent_relationship_subject_reagent_id_fkey: subject_reagent_id
     nd_reagent_relationship_type_id_fkey: type_id
-chado.nd_reagentprop:
+nd_reagentprop:
   description: ""
   fields:
     nd_reagentprop_id:
@@ -3174,7 +3174,7 @@ chado.nd_reagentprop:
   foreign keys:
     nd_reagentprop_nd_reagent_id_fkey: nd_reagent_id
     nd_reagentprop_type_id_fkey: type_id
-chado.organism:
+organism:
   description: "The organismal taxonomic classification. Note that phylogenies are represented using the phylogeny module, and taxonomies can be represented using the cvterm module or the phylogeny module."
   fields:
     organism_id:
@@ -3211,7 +3211,7 @@ chado.organism:
   primary key: organism_id
   foreign keys:
     organism_type_id_fkey: type_id
-chado.organism_cvterm:
+organism_cvterm:
   description: "organism to cvterm associations. Examples: taxonomic name"
   fields:
     organism_cvterm_id:
@@ -3236,7 +3236,7 @@ chado.organism_cvterm:
     organism_cvterm_cvterm_id_fkey: cvterm_id
     organism_cvterm_organism_id_fkey: organism_id
     organism_cvterm_pub_id_fkey: pub_id
-chado.organism_cvtermprop:
+organism_cvtermprop:
   description: "Extensible properties for organism to cvterm associations. Examples: qualifiers"
   fields:
     organism_cvtermprop_id:
@@ -3260,7 +3260,7 @@ chado.organism_cvtermprop:
   foreign keys:
     organism_cvtermprop_organism_cvterm_id_fkey: organism_cvterm_id
     organism_cvtermprop_type_id_fkey: type_id
-chado.organism_dbxref:
+organism_dbxref:
   description: "Links an organism to a dbxref."
   fields:
     organism_dbxref_id:
@@ -3278,7 +3278,7 @@ chado.organism_dbxref:
   foreign keys:
     organism_dbxref_dbxref_id_fkey: dbxref_id
     organism_dbxref_organism_id_fkey: organism_id
-chado.organism_pub:
+organism_pub:
   description: "Attribution for organism."
   fields:
     organism_pub_id:
@@ -3296,7 +3296,7 @@ chado.organism_pub:
   foreign keys:
     organism_pub_organism_id_fkey: organism_id
     organism_pub_pub_id_fkey: pub_id
-chado.organism_relationship:
+organism_relationship:
   description: "Specifies relationships between organisms  that are not taxonomic. For example, in breeding, relationships such as  \"sterile_with\", \"incompatible_with\", or \"fertile_with\" would be appropriate. Taxonomic relatinoships should be housed in the phylogeny tables."
   fields:
     organism_relationship_id:
@@ -3321,7 +3321,7 @@ chado.organism_relationship:
     organism_relationship_object_id_fkey: object_id
     organism_relationship_subject_id_fkey: subject_id
     organism_relationship_type_id_fkey: type_id
-chado.organismprop:
+organismprop:
   description: "Tag-value properties - follows standard chado model."
   fields:
     organismprop_id:
@@ -3345,7 +3345,7 @@ chado.organismprop:
   foreign keys:
     organismprop_organism_id_fkey: organism_id
     organismprop_type_id_fkey: type_id
-chado.organismprop_pub:
+organismprop_pub:
   description: "Attribution for organismprop."
   fields:
     organismprop_pub_id:
@@ -3369,7 +3369,7 @@ chado.organismprop_pub:
   foreign keys:
     organismprop_pub_organismprop_id_fkey: organismprop_id
     organismprop_pub_pub_id_fkey: pub_id
-chado.phendesc:
+phendesc:
   description: "A summary of a _set_ of phenotypic statements for any one gcontext made in any one publication."
   fields:
     phendesc_id:
@@ -3398,7 +3398,7 @@ chado.phendesc:
     phendesc_genotype_id_fkey: genotype_id
     phendesc_pub_id_fkey: pub_id
     phendesc_type_id_fkey: type_id
-chado.phenotype:
+phenotype:
   description: "A phenotypic statement, or a single atomic phenotypic observation, is a controlled sentence describing observable effects of non-wild type function. E.g. Obs=eye, attribute=color, cvalue=red."
   fields:
     phenotype_id:
@@ -3433,7 +3433,7 @@ chado.phenotype:
     phenotype_attr_id_fkey: attr_id
     phenotype_cvalue_id_fkey: cvalue_id
     phenotype_observable_id_fkey: observable_id
-chado.phenotype_comparison:
+phenotype_comparison:
   description: "Comparison of phenotypes e.g., genotype1/environment1/phenotype1 \"non-suppressible\" with respect to genotype2/environment2/phenotype2."
   fields:
     phenotype_comparison_id:
@@ -3475,7 +3475,7 @@ chado.phenotype_comparison:
     phenotype_comparison_phenotype1_id_fkey: phenotype1_id
     phenotype_comparison_phenotype2_id_fkey: phenotype2_id
     phenotype_comparison_pub_id_fkey: pub_id
-chado.phenotype_comparison_cvterm:
+phenotype_comparison_cvterm:
   description: ""
   fields:
     phenotype_comparison_cvterm_id:
@@ -3500,7 +3500,7 @@ chado.phenotype_comparison_cvterm:
     phenotype_comparison_cvterm_cvterm_id_fkey: cvterm_id
     phenotype_comparison_cvterm_phenotype_comparison_id_fkey: phenotype_comparison_id
     phenotype_comparison_cvterm_pub_id_fkey: pub_id
-chado.phenotype_cvterm:
+phenotype_cvterm:
   description: "phenotype to cvterm associations."
   fields:
     phenotype_cvterm_id:
@@ -3521,7 +3521,7 @@ chado.phenotype_cvterm:
   foreign keys:
     phenotype_cvterm_cvterm_id_fkey: cvterm_id
     phenotype_cvterm_phenotype_id_fkey: phenotype_id
-chado.phenotypeprop:
+phenotypeprop:
   description: "A phenotype can have any number of slot-value property tags attached to it. This is an alternative to hardcoding a list of columns in the relational schema, and is completely extensible. There is a unique constraint, phenotypeprop_c1, for the combination of phenotype_id, rank, and type_id. Multivalued property-value pairs must be differentiated by rank."
   fields:
     phenotypeprop_id:
@@ -3545,7 +3545,7 @@ chado.phenotypeprop:
   foreign keys:
     phenotypeprop_phenotype_id_fkey: phenotype_id
     phenotypeprop_type_id_fkey: type_id
-chado.phenstatement:
+phenstatement:
   description: "Phenotypes are things like \"larval lethal\".  Phenstatements are things like \"dpp-1 is recessive larval lethal\". So essentially phenstatement is a linking table expressing the relationship between genotype, environment, and phenotype."
   fields:
     phenstatement_id:
@@ -3575,7 +3575,7 @@ chado.phenstatement:
     phenstatement_phenotype_id_fkey: phenotype_id
     phenstatement_pub_id_fkey: pub_id
     phenstatement_type_id_fkey: type_id
-chado.phylonode:
+phylonode:
   description: "This is the most pervasive        element in the phylogeny module, cataloging the \"phylonodes\" of        tree graphs. Edges are implied by the parent_phylonode_id        reflexive closure. For all nodes in a nested set implementation the left and right index will be *between* the parents left and right indexes."
   fields:
     phylonode_id:
@@ -3615,7 +3615,7 @@ chado.phylonode:
     phylonode_parent_phylonode_id_fkey: parent_phylonode_id
     phylonode_phylotree_id_fkey: phylotree_id
     phylonode_type_id_fkey: type_id
-chado.phylonode_dbxref:
+phylonode_dbxref:
   description: "For example, for orthology, paralogy group identifiers; could also be used for NCBI taxonomy; for sequences, refer to phylonode_feature, feature associated dbxrefs."
   fields:
     phylonode_dbxref_id:
@@ -3633,7 +3633,7 @@ chado.phylonode_dbxref:
   foreign keys:
     phylonode_dbxref_dbxref_id_fkey: dbxref_id
     phylonode_dbxref_phylonode_id_fkey: phylonode_id
-chado.phylonode_organism:
+phylonode_organism:
   description: "This linking table should only be used for nodes in taxonomy trees; it provides a mapping between the node and an organism. One node can have zero or one organisms, one organism can have zero or more nodes (although typically it should only have one in the standard NCBI taxonomy tree)."
   fields:
     phylonode_organism_id:
@@ -3651,7 +3651,7 @@ chado.phylonode_organism:
   foreign keys:
     phylonode_organism_organism_id_fkey: organism_id
     phylonode_organism_phylonode_id_fkey: phylonode_id
-chado.phylonode_pub:
+phylonode_pub:
   description: ""
   fields:
     phylonode_pub_id:
@@ -3669,7 +3669,7 @@ chado.phylonode_pub:
   foreign keys:
     phylonode_pub_phylonode_id_fkey: phylonode_id
     phylonode_pub_pub_id_fkey: pub_id
-chado.phylonode_relationship:
+phylonode_relationship:
   description: "This is for  relationships that are not strictly hierarchical; for example, horizontal gene transfer. Most phylogenetic trees are strictly hierarchical, nevertheless it is here for completeness."
   fields:
     phylonode_relationship_id:
@@ -3698,7 +3698,7 @@ chado.phylonode_relationship:
     phylonode_relationship_phylotree_id_fkey: phylotree_id
     phylonode_relationship_subject_id_fkey: subject_id
     phylonode_relationship_type_id_fkey: type_id
-chado.phylonodeprop:
+phylonodeprop:
   description: ""
   fields:
     phylonodeprop_id:
@@ -3722,7 +3722,7 @@ chado.phylonodeprop:
   foreign keys:
     phylonodeprop_phylonode_id_fkey: phylonode_id
     phylonodeprop_type_id_fkey: type_id
-chado.phylotree:
+phylotree:
   description: "Global anchor for phylogenetic tree."
   fields:
     phylotree_id:
@@ -3749,7 +3749,7 @@ chado.phylotree:
     phylotree_analysis_id_fkey: analysis_id
     phylotree_dbxref_id_fkey: dbxref_id
     phylotree_type_id_fkey: type_id
-chado.phylotree_pub:
+phylotree_pub:
   description: "Tracks citations global to the tree e.g. multiple sequence alignment supporting tree construction."
   fields:
     phylotree_pub_id:
@@ -3767,7 +3767,7 @@ chado.phylotree_pub:
   foreign keys:
     phylotree_pub_phylotree_id_fkey: phylotree_id
     phylotree_pub_pub_id_fkey: pub_id
-chado.phylotreeprop:
+phylotreeprop:
   description: "A phylotree can have any number of slot-value property  tags attached to it. This is an alternative to hardcoding a list of columns in the  relational schema, and is completely extensible."
   fields:
     phylotreeprop_id:
@@ -3791,7 +3791,7 @@ chado.phylotreeprop:
   foreign keys:
     phylotreeprop_phylotree_id_fkey: phylotree_id
     phylotreeprop_type_id_fkey: type_id
-chado.project:
+project:
   description: "Standard Chado flexible property table for projects."
   fields:
     project_id:
@@ -3807,7 +3807,7 @@ chado.project:
   unique keys:
     project_c1: name
   primary key: project_id
-chado.project_analysis:
+project_analysis:
   description: "Links an analysis to a project that may contain multiple analyses.  The rank column can be used to specify a simple ordering in which analyses were executed."
   fields:
     project_analysis_id:
@@ -3828,7 +3828,7 @@ chado.project_analysis:
   foreign keys:
     project_analysis_analysis_id_fkey: analysis_id
     project_analysis_project_id_fkey: project_id
-chado.project_contact:
+project_contact:
   description: "Linking table for associating projects and contacts."
   fields:
     project_contact_id:
@@ -3846,7 +3846,7 @@ chado.project_contact:
   foreign keys:
     project_contact_contact_id_fkey: contact_id
     project_contact_project_id_fkey: project_id
-chado.project_dbxref:
+project_dbxref:
   description: "project_dbxref links a project to dbxrefs."
   fields:
     project_dbxref_id:
@@ -3868,7 +3868,7 @@ chado.project_dbxref:
   foreign keys:
     project_dbxref_dbxref_id_fkey: dbxref_id
     project_dbxref_project_id_fkey: project_id
-chado.project_feature:
+project_feature:
   description: "This table is intended associate records in the feature table with a project."
   fields:
     project_feature_id:
@@ -3886,7 +3886,7 @@ chado.project_feature:
   foreign keys:
     project_feature_feature_id_fkey: feature_id
     project_feature_project_id_fkey: project_id
-chado.project_pub:
+project_pub:
   description: "Linking table for associating projects and publications."
   fields:
     project_pub_id:
@@ -3904,7 +3904,7 @@ chado.project_pub:
   foreign keys:
     project_pub_project_id_fkey: project_id
     project_pub_pub_id_fkey: pub_id
-chado.project_relationship:
+project_relationship:
   description: "Linking table for relating projects to each other.  For example, a given project could be composed of several smaller subprojects"
   fields:
     project_relationship_id:
@@ -3926,7 +3926,7 @@ chado.project_relationship:
     project_relationship_object_project_id_fkey: object_project_id
     project_relationship_subject_project_id_fkey: subject_project_id
     project_relationship_type_id_fkey: type_id
-chado.project_stock:
+project_stock:
   description: "This table is intended associate records in the stock table with a project."
   fields:
     project_stock_id:
@@ -3944,7 +3944,7 @@ chado.project_stock:
   foreign keys:
     project_stock_project_id_fkey: project_id
     project_stock_stock_id_fkey: stock_id
-chado.projectprop:
+projectprop:
   description: ""
   fields:
     projectprop_id:
@@ -3968,7 +3968,7 @@ chado.projectprop:
   foreign keys:
     projectprop_project_id_fkey: project_id
     projectprop_type_id_fkey: type_id
-chado.protocol:
+protocol:
   description: "Procedural notes on how data was prepared and processed."
   fields:
     protocol_id:
@@ -4005,7 +4005,7 @@ chado.protocol:
     protocol_dbxref_id_fkey: dbxref_id
     protocol_pub_id_fkey: pub_id
     protocol_type_id_fkey: type_id
-chado.protocolparam:
+protocolparam:
   description: "Parameters related to a protocol. For example, if the protocol is a soak, this might include attributes of bath temperature and duration."
   fields:
     protocolparam_id:
@@ -4034,7 +4034,7 @@ chado.protocolparam:
     protocolparam_datatype_id_fkey: datatype_id
     protocolparam_protocol_id_fkey: protocol_id
     protocolparam_unittype_id_fkey: unittype_id
-chado.pub:
+pub:
   description: "A documented provenance artefact - publications, documents, personal communication."
   fields:
     pub_id:
@@ -4093,7 +4093,7 @@ chado.pub:
   primary key: pub_id
   foreign keys:
     pub_type_id_fkey: type_id
-chado.pub_dbxref:
+pub_dbxref:
   description: "Handle links to repositories, e.g. Pubmed, Biosis, zoorec, OCLC, Medline, ISSN, coden..."
   fields:
     pub_dbxref_id:
@@ -4115,7 +4115,7 @@ chado.pub_dbxref:
   foreign keys:
     pub_dbxref_dbxref_id_fkey: dbxref_id
     pub_dbxref_pub_id_fkey: pub_id
-chado.pub_relationship:
+pub_relationship:
   description: "Handle relationships between publications, e.g. when one publication makes others obsolete, when one publication contains errata with respect to other publication(s), or when one publication also appears in another pub."
   fields:
     pub_relationship_id:
@@ -4137,7 +4137,7 @@ chado.pub_relationship:
     pub_relationship_object_id_fkey: object_id
     pub_relationship_subject_id_fkey: subject_id
     pub_relationship_type_id_fkey: type_id
-chado.pubauthor:
+pubauthor:
   description: "An author for a publication. Note the denormalisation (hence lack of _ in table name) - this is deliberate as it is in general too hard to assign IDs to authors."
   fields:
     pubauthor_id:
@@ -4170,7 +4170,7 @@ chado.pubauthor:
   primary key: pubauthor_id
   foreign keys:
     pubauthor_pub_id_fkey: pub_id
-chado.pubauthor_contact:
+pubauthor_contact:
   description: "An author on a publication may have a corresponding entry in the contact table and this table can link the two."
   fields:
     pubauthor_contact_id:
@@ -4188,7 +4188,7 @@ chado.pubauthor_contact:
   foreign keys:
     pubauthor_contact_contact_id_fkey: contact_id
     pubauthor_contact_pubauthor_id_fkey: pubauthor_id
-chado.pubprop:
+pubprop:
   description: "Property-value pairs for a pub. Follows standard chado pattern."
   fields:
     pubprop_id:
@@ -4212,7 +4212,7 @@ chado.pubprop:
   foreign keys:
     pubprop_pub_id_fkey: pub_id
     pubprop_type_id_fkey: type_id
-chado.quantification:
+quantification:
   description: "Quantification is the transformation of an image acquisition to numeric data. This typically involves statistical procedures."
   fields:
     quantification_id:
@@ -4248,7 +4248,7 @@ chado.quantification:
     quantification_analysis_id_fkey: analysis_id
     quantification_operator_id_fkey: operator_id
     quantification_protocol_id_fkey: protocol_id
-chado.quantification_relationship:
+quantification_relationship:
   description: "There may be multiple rounds of quantification, this allows us to keep an audit trail of what values went where."
   fields:
     quantification_relationship_id:
@@ -4270,7 +4270,7 @@ chado.quantification_relationship:
     quantification_relationship_object_id_fkey: object_id
     quantification_relationship_subject_id_fkey: subject_id
     quantification_relationship_type_id_fkey: type_id
-chado.quantificationprop:
+quantificationprop:
   description: "Extra quantification properties that are not accounted for in quantification."
   fields:
     quantificationprop_id:
@@ -4294,7 +4294,7 @@ chado.quantificationprop:
   foreign keys:
     quantificationprop_quantification_id_fkey: quantification_id
     quantificationprop_type_id_fkey: type_id
-chado.stock:
+stock:
   description: "Any stock can be globally identified by the combination of organism, uniquename and stock type. A stock is the physical entities, either living or preserved, held by collections. Stocks belong to a collection; they have IDs, type, organism, description and may have a genotype."
   fields:
     stock_id:
@@ -4330,7 +4330,7 @@ chado.stock:
     stock_dbxref_id_fkey: dbxref_id
     stock_organism_id_fkey: organism_id
     stock_type_id_fkey: type_id
-chado.stock_cvterm:
+stock_cvterm:
   description: "stock_cvterm links a stock to cvterms. This is for secondary cvterms; primary cvterms should use stock.type_id."
   fields:
     stock_cvterm_id:
@@ -4359,7 +4359,7 @@ chado.stock_cvterm:
     stock_cvterm_cvterm_id_fkey: cvterm_id
     stock_cvterm_pub_id_fkey: pub_id
     stock_cvterm_stock_id_fkey: stock_id
-chado.stock_cvtermprop:
+stock_cvtermprop:
   description: "Extensible properties for stock to cvterm associations. Examples: GO evidence codes; qualifiers; metadata such as the date on which the entry was curated and the source of the association. See the stockprop table for meanings of type_id, value and rank."
   fields:
     stock_cvtermprop_id:
@@ -4383,7 +4383,7 @@ chado.stock_cvtermprop:
   foreign keys:
     stock_cvtermprop_stock_cvterm_id_fkey: stock_cvterm_id
     stock_cvtermprop_type_id_fkey: type_id
-chado.stock_dbxref:
+stock_dbxref:
   description: "stock_dbxref links a stock to dbxrefs. This is for secondary identifiers; primary identifiers should use stock.dbxref_id."
   fields:
     stock_dbxref_id:
@@ -4405,7 +4405,7 @@ chado.stock_dbxref:
   foreign keys:
     stock_dbxref_dbxref_id_fkey: dbxref_id
     stock_dbxref_stock_id_fkey: stock_id
-chado.stock_dbxrefprop:
+stock_dbxrefprop:
   description: "A stock_dbxref can have any number of slot-value property tags attached to it. This is useful for storing properties related to dbxref annotations of stocks, such as evidence codes, and references, and metadata, such as create/modify dates. This is an alternative to hardcoding a list of columns in the relational schema, and is completely extensible. There is a unique constraint, stock_dbxrefprop_c1, for the combination of stock_dbxref_id, rank, and type_id. Multivalued property-value pairs must be differentiated by rank."
   fields:
     stock_dbxrefprop_id:
@@ -4429,7 +4429,7 @@ chado.stock_dbxrefprop:
   foreign keys:
     stock_dbxrefprop_stock_dbxref_id_fkey: stock_dbxref_id
     stock_dbxrefprop_type_id_fkey: type_id
-chado.stock_feature:
+stock_feature:
   description: "Links a stock to a feature."
   fields:
     stock_feature_id:
@@ -4454,7 +4454,7 @@ chado.stock_feature:
     stock_feature_feature_id_fkey: feature_id
     stock_feature_stock_id_fkey: stock_id
     stock_feature_type_id_fkey: type_id
-chado.stock_featuremap:
+stock_featuremap:
   description: "Links a featuremap to a stock."
   fields:
     stock_featuremap_id:
@@ -4476,7 +4476,7 @@ chado.stock_featuremap:
     stock_featuremap_featuremap_id_fkey: featuremap_id
     stock_featuremap_stock_id_fkey: stock_id
     stock_featuremap_type_id_fkey: type_id
-chado.stock_genotype:
+stock_genotype:
   description: "Simple table linking a stock to a genotype. Features with genotypes can be linked to stocks thru feature_genotype -> genotype -> stock_genotype -> stock."
   fields:
     stock_genotype_id:
@@ -4494,7 +4494,7 @@ chado.stock_genotype:
   foreign keys:
     stock_genotype_genotype_id_fkey: genotype_id
     stock_genotype_stock_id_fkey: stock_id
-chado.stock_library:
+stock_library:
   description: "Links a stock with a library."
   fields:
     stock_library_id:
@@ -4512,7 +4512,7 @@ chado.stock_library:
   foreign keys:
     stock_library_library_id_fkey: library_id
     stock_library_stock_id_fkey: stock_id
-chado.stock_pub:
+stock_pub:
   description: "Provenance. Linking table between stocks and, for example, a stocklist computer file."
   fields:
     stock_pub_id:
@@ -4530,7 +4530,7 @@ chado.stock_pub:
   foreign keys:
     stock_pub_pub_id_fkey: pub_id
     stock_pub_stock_id_fkey: stock_id
-chado.stock_relationship:
+stock_relationship:
   description: ""
   fields:
     stock_relationship_id:
@@ -4558,7 +4558,7 @@ chado.stock_relationship:
     stock_relationship_object_id_fkey: object_id
     stock_relationship_subject_id_fkey: subject_id
     stock_relationship_type_id_fkey: type_id
-chado.stock_relationship_cvterm:
+stock_relationship_cvterm:
   description: "For germplasm maintenance and pedigree data, stock_relationship. type_id will record cvterms such as \"is a female parent of\", \"a parent for mutation\", \"is a group_id of\", \"is a source_id of\", etc The cvterms for higher categories such as \"generative\", \"derivative\" or \"maintenance\" can be stored in table stock_relationship_cvterm"
   fields:
     stock_relationship_cvterm_id:
@@ -4578,7 +4578,7 @@ chado.stock_relationship_cvterm:
     stock_relationship_cvterm_cvterm_id_fkey: cvterm_id
     stock_relationship_cvterm_pub_id_fkey: pub_id
     stock_relationship_cvterm_stock_relationship_id_fkey: stock_relationship_id
-chado.stock_relationship_pub:
+stock_relationship_pub:
   description: "Provenance. Attach optional evidence to a stock_relationship in the form of a publication."
   fields:
     stock_relationship_pub_id:
@@ -4596,7 +4596,7 @@ chado.stock_relationship_pub:
   foreign keys:
     stock_relationship_pub_pub_id_fkey: pub_id
     stock_relationship_pub_stock_relationship_id_fkey: stock_relationship_id
-chado.stockcollection:
+stockcollection:
   description: "The lab or stock center distributing the stocks in their collection."
   fields:
     stockcollection_id:
@@ -4621,7 +4621,7 @@ chado.stockcollection:
   foreign keys:
     stockcollection_contact_id_fkey: contact_id
     stockcollection_type_id_fkey: type_id
-chado.stockcollection_db:
+stockcollection_db:
   description: "Stock collections may be respresented  by an external online database. This table associates a stock collection with  a database where its member stocks can be found. Individual stock that are part  of this collction should have entries in the stock_dbxref table with the same  db_id record"
   fields:
     stockcollection_db_id:
@@ -4639,7 +4639,7 @@ chado.stockcollection_db:
   foreign keys:
     stockcollection_db_db_id_fkey: db_id
     stockcollection_db_stockcollection_id_fkey: stockcollection_id
-chado.stockcollection_stock:
+stockcollection_stock:
   description: "stockcollection_stock links a stock collection to the stocks which are contained in the collection."
   fields:
     stockcollection_stock_id:
@@ -4657,7 +4657,7 @@ chado.stockcollection_stock:
   foreign keys:
     stockcollection_stock_stock_id_fkey: stock_id
     stockcollection_stock_stockcollection_id_fkey: stockcollection_id
-chado.stockcollectionprop:
+stockcollectionprop:
   description: "The table stockcollectionprop contains the value of the stock collection such as website/email URLs; the value of the stock collection order URLs."
   fields:
     stockcollectionprop_id:
@@ -4681,7 +4681,7 @@ chado.stockcollectionprop:
   foreign keys:
     stockcollectionprop_stockcollection_id_fkey: stockcollection_id
     stockcollectionprop_type_id_fkey: type_id
-chado.stockprop:
+stockprop:
   description: "A stock can have any number of slot-value property tags attached to it. This is an alternative to hardcoding a list of columns in the relational schema, and is completely extensible. There is a unique constraint, stockprop_c1, for the combination of stock_id, rank, and type_id. Multivalued property-value pairs must be differentiated by rank."
   fields:
     stockprop_id:
@@ -4705,7 +4705,7 @@ chado.stockprop:
   foreign keys:
     stockprop_stock_id_fkey: stock_id
     stockprop_type_id_fkey: type_id
-chado.stockprop_pub:
+stockprop_pub:
   description: "Provenance. Any stockprop assignment can optionally be supported by a publication."
   fields:
     stockprop_pub_id:
@@ -4723,7 +4723,7 @@ chado.stockprop_pub:
   foreign keys:
     stockprop_pub_pub_id_fkey: pub_id
     stockprop_pub_stockprop_id_fkey: stockprop_id
-chado.study:
+study:
   description: ""
   fields:
     study_id:
@@ -4751,7 +4751,7 @@ chado.study:
     study_contact_id_fkey: contact_id
     study_dbxref_id_fkey: dbxref_id
     study_pub_id_fkey: pub_id
-chado.study_assay:
+study_assay:
   description: ""
   fields:
     study_assay_id:
@@ -4769,7 +4769,7 @@ chado.study_assay:
   foreign keys:
     study_assay_assay_id_fkey: assay_id
     study_assay_study_id_fkey: study_id
-chado.studydesign:
+studydesign:
   description: ""
   fields:
     studydesign_id:
@@ -4784,7 +4784,7 @@ chado.studydesign:
   primary key: studydesign_id
   foreign keys:
     studydesign_study_id_fkey: study_id
-chado.studydesignprop:
+studydesignprop:
   description: ""
   fields:
     studydesignprop_id:
@@ -4808,7 +4808,7 @@ chado.studydesignprop:
   foreign keys:
     studydesignprop_studydesign_id_fkey: studydesign_id
     studydesignprop_type_id_fkey: type_id
-chado.studyfactor:
+studyfactor:
   description: ""
   fields:
     studyfactor_id:
@@ -4830,7 +4830,7 @@ chado.studyfactor:
   foreign keys:
     studyfactor_studydesign_id_fkey: studydesign_id
     studyfactor_type_id_fkey: type_id
-chado.studyfactorvalue:
+studyfactorvalue:
   description: ""
   fields:
     studyfactorvalue_id:
@@ -4855,7 +4855,7 @@ chado.studyfactorvalue:
   foreign keys:
     studyfactorvalue_assay_id_fkey: assay_id
     studyfactorvalue_studyfactor_id_fkey: studyfactor_id
-chado.studyprop:
+studyprop:
   description: ""
   fields:
     studyprop_id:
@@ -4879,7 +4879,7 @@ chado.studyprop:
   foreign keys:
     studyprop_study_id_fkey: study_id
     studyprop_type_id_fkey: type_id
-chado.studyprop_feature:
+studyprop_feature:
   description: ""
   fields:
     studyprop_feature_id:
@@ -4901,7 +4901,7 @@ chado.studyprop_feature:
     studyprop_feature_feature_id_fkey: feature_id
     studyprop_feature_studyprop_id_fkey: studyprop_id
     studyprop_feature_type_id_fkey: type_id
-chado.synonym:
+synonym:
   description: "A synonym for a feature. One feature can have multiple synonyms, and the same synonym can apply to multiple features."
   fields:
     synonym_id:
@@ -4923,7 +4923,7 @@ chado.synonym:
   primary key: synonym_id
   foreign keys:
     synonym_type_id_fkey: type_id
-chado.tableinfo:
+tableinfo:
   description: ""
   fields:
     tableinfo_id:
@@ -4957,7 +4957,7 @@ chado.tableinfo:
   unique keys:
     tableinfo_c1: name
   primary key: tableinfo_id
-chado.treatment:
+treatment:
   description: "A biomaterial may undergo multiple treatments. Examples of treatments: apoxia, fluorophore and biotin labeling."
   fields:
     treatment_id:
