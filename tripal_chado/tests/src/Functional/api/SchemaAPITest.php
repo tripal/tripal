@@ -371,6 +371,76 @@ class SchemaAPITest extends BrowserTestBase {
     }
   }
 
+  /**
+   * Tests ChadoSchema->getCustomTableSchema() method.
+   *
+   * @dataProvider knownCustomTableProvider
+   *
+   * @group api
+   * @group chado
+   * @group chado-schema
+   *
+   * NOTE: Currently being skipped because the custom tables functionality is
+   *  not available yet.
+   */
+  public function testGetCustomTableSchema($table_name) {
+
+    $this->markTestSkipped('Custom Table functionality has not been upgraded yet.');
+
+    // Check: a schema is returned that matches what we expect.
+    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema();
+    $table_schema = $chado_schema->getCustomTableSchema($table_name);
+
+    $this->assertNotEmpty(
+      $table_schema,
+      t('Returned schema for ":table" in chado v:version should not be empty.',
+        [':table' => $table_name, '!version' => $version])
+    );
+
+    $this->assertArrayHasKey(
+      'fields',
+      $table_schema,
+      t('The schema array for ":table" should have columns listed in an "fields" array',
+        ['!table' => $table_name])
+    );
+
+    // NOTE: Other then ensuring fields are set, we can't test further since all other
+    // keys are technically optional and these arrays are set by admins.
+
+  }
+
+  /**
+   * Tests ChadoSchema->getBaseTables() method.
+   *
+   * @dataProvider knownBaseTableProvider
+   *
+   * @group api
+   * @group chado
+   * @group chado-schema
+   */
+  public function testGetBaseTables($version, $known_tables) {
+
+    $this->markTestSkipped('Base table functionality not complete. Requires referring tables key to YAML.');
+
+    // Check: Known base tables for a given version are returned.
+    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema($version);
+    $returned_tables = $chado_schema->getBaseTables();
+
+    foreach ($known_tables as $table_name) {
+
+      $found = FALSE;
+
+      foreach ($returned_tables as $check_table) {
+
+        if ($check_table == $table_name) {
+          $found = TRUE;
+        }
+      }
+      $this->assertTrue($found, "{$table_name} was not returned by getBaseTables for Chado v {$version}");
+    }
+
+  }
+
   /**********************************************
    * Data Providers:
    */

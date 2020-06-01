@@ -153,7 +153,7 @@ class ChadoSchema {
     // now add in the custom tables too if requested
     if ($include_custom) {
       $sql = "SELECT table FROM {tripal_custom_tables}";
-      $resource = db_query($sql);
+      $resource = \Drupal::database()->query($sql);
 
       foreach ($resource as $r) {
         $tables[$r->table] = $r->table;
@@ -212,11 +212,11 @@ class ChadoSchema {
    * @return
    *   A Drupal-style Schema API array definition of the table. Returns
    *   FALSE on failure.
-   *
+   */
   public function getCustomTableSchema($table) {
 
     $sql = "SELECT schema FROM {tripal_custom_tables} WHERE table_name = :table_name";
-    $results = db_query($sql, [':table_name' => $table]);
+    $results = \Drupal::database()->query($sql, [':table_name' => $table]);
     $custom = $results->fetchObject();
     if (!$custom) {
       return FALSE;
@@ -224,7 +224,7 @@ class ChadoSchema {
     else {
       return unserialize($custom->schema);
     }
-  }*/
+  }
 
   /**
    *  Returns all chado base tables.
@@ -464,7 +464,7 @@ class ChadoSchema {
                 table_schema = :schema
               ORDER  BY ordinal_position
               LIMIT 1';
-    $type = db_query($query,
+    $type = \Drupal::database()->query($query,
       [
         ':table' => $table,
         ':column' => $column,
@@ -507,7 +507,7 @@ class ChadoSchema {
   public function checkSequenceExists($table, $column) {
 
     $prefixed_table = $this->schema_name . '.' . $table;
-    $sequence_name = db_query('SELECT pg_get_serial_sequence(:table, :column);',
+    $sequence_name = \Drupal::database()->query('SELECT pg_get_serial_sequence(:table, :column);',
       [':table' => $prefixed_table, ':column' => $column])->fetchField();
 
 
