@@ -9,7 +9,8 @@
   "license": "GPL-2.0-or-later",
   "minimum-stability": "dev",
   "require-dev": {
-    "doctrine/instantiator": "1.0.*"
+    "doctrine/instantiator": "1.0.*",
+    "fzaninotto/faker": "^1.7"
   },
   "require": {
     "php": "^7.1"

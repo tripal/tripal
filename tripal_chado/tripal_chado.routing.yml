@@ -1,0 +1,17 @@
+
+
+tripal_chado.storage:
+  path: 'admin/tripal/storage/chado'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'Chado'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal_chado.chado_install_form:
+  path: 'admin/tripal/storage/chado/install'
+  defaults:
+    _form: '\Drupal\tripal_chado\Form\ChadoInstallForm'
+    _title: 'Chado Installation'
+  requirements:
+    _permission: 'administer tripal'
