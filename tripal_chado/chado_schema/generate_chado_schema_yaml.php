@@ -31,6 +31,10 @@ $table_schemas = [];
 $referring = [];
 while ($table = $result->fetchField()) {
 
+  if ($table == 'materialized_view') {
+    continue;
+  }
+
   // Start with the name of the table.
   print '' . $table . ":\n";
 
@@ -45,10 +49,7 @@ while ($table = $result->fetchField()) {
   $results = \Drupal::database()->query("SELECT column_name, data_type, is_nullable, character_maximum_length, ordinal_position, column_default
     FROM information_schema.columns
     WHERE table_name = :table", [':table' => $table])->fetchAll();
-  $columns = [];
   foreach ($results as $c) {
-    $columns [ $c->ordinal_position ] = $c->column_name;
-
     print "    " . $c->column_name . ":\n";
 
     // Data type:
@@ -79,34 +80,32 @@ while ($table = $result->fetchField()) {
   }
 
   // -- Retrieve information for unique, primary and foreign keys.
-  $sql = "SELECT con.conname as name, con.contype as type, con.conkey as key_columns
-    FROM pg_catalog.pg_constraint con
-    INNER JOIN pg_catalog.pg_class rel ON rel.oid = con.conrelid
-    INNER JOIN pg_catalog.pg_namespace nsp ON nsp.oid = connamespace
-    WHERE nsp.nspname = 'chado' AND rel.relname = '$table'";
-  $results = \Drupal::database()->query($sql)->fetchAll();
+  $sql = "
+    SELECT
+        tc.constraint_name, tc.constraint_type, tc.table_name, kcu.column_name,
+        ccu.table_name AS foreign_table_name,
+        ccu.column_name AS foreign_column_name
+    FROM
+        information_schema.table_constraints AS tc
+        JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name
+        JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name
+    WHERE
+        tc.table_name = :name";
+  $results = \Drupal::database()->query($sql, [':name' => $table])->fetchAll();
   $ukeys = [];
   $fkeys = [];
   $pkey = [];
   foreach ($results as $r) {
-    switch ($r->type) {
-      case 'u':
-        $tmp = trim($r->key_columns, "{} \t\n\r\0\x0B");
-        foreach (explode(',', $tmp) as $t) {
-          $ukeys[ $r->name ][] = $columns[$t];
-        }
+    switch ($r->constraint_type) {
+      case 'UNIQUE':
+        $ukeys[ $r->constraint_name ][$r->column_name] = $r->column_name;
         break;
-      case 'p':
-        $tmp = trim($r->key_columns, "{} \t\n\r\0\x0B");
-        foreach (explode(',', $tmp) as $t) {
-          $pkey[] = $columns[$t];
-        }
+      case 'PRIMARY KEY':
+        $pkey[$r->column_name] = $r->column_name;
         break;
-      case 'f':
-        $tmp = trim($r->key_columns, "{} \t\n\r\0\x0B");
-        foreach (explode(',', $tmp) as $t) {
-          $fkeys[ $r->name ][] = $columns[$t];
-        }
+      case 'FOREIGN KEY':
+        $fkeys[$r->foreign_table_name]['table'] = $r->foreign_table_name;
+        $fkeys[$r->foreign_table_name]['columns'][$r->column_name] = $r->foreign_column_name;
         break;
     }
   }
@@ -127,8 +126,13 @@ while ($table = $result->fetchField()) {
   // -- Foreign Keys:
   if ($fkeys) {
     print "  foreign keys:\n";
-    foreach ($fkeys as $fname => $fcolumns) {
-      print "    " . $fname . ": " . implode(', ', $fcolumns) . "\n";
+    foreach ($fkeys as $fk) {
+      print "    " . $fk['table'] . ":\n";
+      print "      table: " . $fk['table'] . "\n";
+      print "      columns:\n";
+      foreach ($fk['columns'] as $r => $l) {
+        print "        " . $r . ": " . $l . "\n";
+      }
     }
   }
 }

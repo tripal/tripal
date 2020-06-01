@@ -27,9 +27,18 @@ acquisition:
     acquisition_c1: name
   primary key: acquisition_id
   foreign keys:
-    acquisition_assay_id_fkey: assay_id
-    acquisition_channel_id_fkey: channel_id
-    acquisition_protocol_id_fkey: protocol_id
+    assay:
+      table: assay
+      columns:
+        assay_id: assay_id
+    protocol:
+      table: protocol
+      columns:
+        protocol_id: protocol_id
+    channel:
+      table: channel
+      columns:
+        channel_id: channel_id
 acquisition_relationship:
   description: "Multiple monochrome images may be merged to form a multi-color image. Red-green images of 2-channel hybridizations are an example of this."
   fields:
@@ -55,9 +64,15 @@ acquisition_relationship:
     acquisition_relationship_c1: subject_id, object_id, type_id, rank
   primary key: acquisition_relationship_id
   foreign keys:
-    acquisition_relationship_object_id_fkey: object_id
-    acquisition_relationship_subject_id_fkey: subject_id
-    acquisition_relationship_type_id_fkey: type_id
+    acquisition:
+      table: acquisition
+      columns:
+        subject_id: acquisition_id
+        object_id: acquisition_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 acquisitionprop:
   description: "Parameters associated with image acquisition."
   fields:
@@ -80,8 +95,14 @@ acquisitionprop:
     acquisitionprop_c1: acquisition_id, type_id, rank
   primary key: acquisitionprop_id
   foreign keys:
-    acquisitionprop_acquisition_id_fkey: acquisition_id
-    acquisitionprop_type_id_fkey: type_id
+    acquisition:
+      table: acquisition
+      columns:
+        acquisition_id: acquisition_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 analysis:
   description: "An analysis is a particular type of a     computational analysis; it may be a blast of one sequence against     another, or an all by all blast, or a different kind of analysis     altogether. It is a single unit of computation."
   fields:
@@ -148,8 +169,14 @@ analysis_cvterm:
     analysis_cvterm_c1: analysis_id, cvterm_id, rank
   primary key: analysis_cvterm_id
   foreign keys:
-    analysis_cvterm_analysis_id_fkey: analysis_id
-    analysis_cvterm_cvterm_id_fkey: cvterm_id
+    analysis:
+      table: analysis
+      columns:
+        analysis_id: analysis_id
+    cvterm:
+      table: cvterm
+      columns:
+        cvterm_id: cvterm_id
 analysis_dbxref:
   description: "Links an analysis to dbxrefs."
   fields:
@@ -170,8 +197,14 @@ analysis_dbxref:
     analysis_dbxref_c1: analysis_id, dbxref_id
   primary key: analysis_dbxref_id
   foreign keys:
-    analysis_dbxref_analysis_id_fkey: analysis_id
-    analysis_dbxref_dbxref_id_fkey: dbxref_id
+    analysis:
+      table: analysis
+      columns:
+        analysis_id: analysis_id
+    dbxref:
+      table: dbxref
+      columns:
+        dbxref_id: dbxref_id
 analysis_pub:
   description: "Provenance. Linking table between analyses and the publications that mention them."
   fields:
@@ -188,8 +221,14 @@ analysis_pub:
     analysis_pub_c1: analysis_id, pub_id
   primary key: analysis_pub_id
   foreign keys:
-    analysis_pub_analysis_id_fkey: analysis_id
-    analysis_pub_pub_id_fkey: pub_id
+    analysis:
+      table: analysis
+      columns:
+        analysis_id: analysis_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 analysis_relationship:
   description: ""
   fields:
@@ -215,9 +254,15 @@ analysis_relationship:
     analysis_relationship_c1: subject_id, object_id, type_id, rank
   primary key: analysis_relationship_id
   foreign keys:
-    analysis_relationship_object_id_fkey: object_id
-    analysis_relationship_subject_id_fkey: subject_id
-    analysis_relationship_type_id_fkey: type_id
+    analysis:
+      table: analysis
+      columns:
+        subject_id: analysis_id
+        object_id: analysis_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 analysisfeature:
   description: "Computational analyses generate features (e.g. Genscan generates transcripts and exons; sim4 alignments generate similarity/match features). analysisfeatures are stored using the feature table from the sequence module. The analysisfeature table is used to decorate these features, with analysis specific attributes. A feature is an analysisfeature if and only if there is a corresponding entry in the analysisfeature table. analysisfeatures will have two or more featureloc entries,  with rank indicating query/subject"
   fields:
@@ -246,8 +291,14 @@ analysisfeature:
     analysisfeature_c1: feature_id, analysis_id
   primary key: analysisfeature_id
   foreign keys:
-    analysisfeature_analysis_id_fkey: analysis_id
-    analysisfeature_feature_id_fkey: feature_id
+    feature:
+      table: feature
+      columns:
+        feature_id: feature_id
+    analysis:
+      table: analysis
+      columns:
+        analysis_id: analysis_id
 analysisfeatureprop:
   description: ""
   fields:
@@ -270,8 +321,14 @@ analysisfeatureprop:
     analysisfeature_id_type_id_rank: analysisfeature_id, type_id, rank
   primary key: analysisfeatureprop_id
   foreign keys:
-    analysisfeatureprop_analysisfeature_id_fkey: analysisfeature_id
-    analysisfeatureprop_type_id_fkey: type_id
+    analysisfeature:
+      table: analysisfeature
+      columns:
+        analysisfeature_id: analysisfeature_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 analysisprop:
   description: ""
   fields:
@@ -294,8 +351,14 @@ analysisprop:
     analysisprop_c1: analysis_id, type_id, rank
   primary key: analysisprop_id
   foreign keys:
-    analysisprop_analysis_id_fkey: analysis_id
-    analysisprop_type_id_fkey: type_id
+    analysis:
+      table: analysis
+      columns:
+        analysis_id: analysis_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 arraydesign:
   description: "General properties about an array. An array is a template used to generate physical slides, etc.  It contains layout information, as well as global array properties, such as material (glass, nylon) and spot dimensions (in rows/columns)."
   fields:
@@ -357,11 +420,23 @@ arraydesign:
     arraydesign_c1: name
   primary key: arraydesign_id
   foreign keys:
-    arraydesign_dbxref_id_fkey: dbxref_id
-    arraydesign_manufacturer_id_fkey: manufacturer_id
-    arraydesign_platformtype_id_fkey: platformtype_id
-    arraydesign_protocol_id_fkey: protocol_id
-    arraydesign_substratetype_id_fkey: substratetype_id
+    contact:
+      table: contact
+      columns:
+        manufacturer_id: contact_id
+    cvterm:
+      table: cvterm
+      columns:
+        platformtype_id: cvterm_id
+        substratetype_id: cvterm_id
+    protocol:
+      table: protocol
+      columns:
+        protocol_id: protocol_id
+    dbxref:
+      table: dbxref
+      columns:
+        dbxref_id: dbxref_id
 arraydesignprop:
   description: "Extra array design properties that are not accounted for in arraydesign."
   fields:
@@ -384,8 +459,14 @@ arraydesignprop:
     arraydesignprop_c1: arraydesign_id, type_id, rank
   primary key: arraydesignprop_id
   foreign keys:
-    arraydesignprop_arraydesign_id_fkey: arraydesign_id
-    arraydesignprop_type_id_fkey: type_id
+    arraydesign:
+      table: arraydesign
+      columns:
+        arraydesign_id: arraydesign_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 assay:
   description: "An assay consists of a physical instance of an array, combined with the conditions used to create the array (protocols, technician information). The assay can be thought of as a hybridization."
   fields:
@@ -424,10 +505,22 @@ assay:
     assay_c1: name
   primary key: assay_id
   foreign keys:
-    assay_arraydesign_id_fkey: arraydesign_id
-    assay_dbxref_id_fkey: dbxref_id
-    assay_operator_id_fkey: operator_id
-    assay_protocol_id_fkey: protocol_id
+    arraydesign:
+      table: arraydesign
+      columns:
+        arraydesign_id: arraydesign_id
+    protocol:
+      table: protocol
+      columns:
+        protocol_id: protocol_id
+    contact:
+      table: contact
+      columns:
+        operator_id: contact_id
+    dbxref:
+      table: dbxref
+      columns:
+        dbxref_id: dbxref_id
 assay_biomaterial:
   description: "A biomaterial can be hybridized many times (technical replicates), or combined with other biomaterials in a single hybridization (for two-channel arrays)."
   fields:
@@ -450,9 +543,18 @@ assay_biomaterial:
     assay_biomaterial_c1: assay_id, biomaterial_id, channel_id, rank
   primary key: assay_biomaterial_id
   foreign keys:
-    assay_biomaterial_assay_id_fkey: assay_id
-    assay_biomaterial_biomaterial_id_fkey: biomaterial_id
-    assay_biomaterial_channel_id_fkey: channel_id
+    assay:
+      table: assay
+      columns:
+        assay_id: assay_id
+    biomaterial:
+      table: biomaterial
+      columns:
+        biomaterial_id: biomaterial_id
+    channel:
+      table: channel
+      columns:
+        channel_id: channel_id
 assay_project:
   description: "Link assays to projects."
   fields:
@@ -469,8 +571,14 @@ assay_project:
     assay_project_c1: assay_id, project_id
   primary key: assay_project_id
   foreign keys:
-    assay_project_assay_id_fkey: assay_id
-    assay_project_project_id_fkey: project_id
+    assay:
+      table: assay
+      columns:
+        assay_id: assay_id
+    project:
+      table: project
+      columns:
+        project_id: project_id
 assayprop:
   description: "Extra assay properties that are not accounted for in assay."
   fields:
@@ -493,8 +601,14 @@ assayprop:
     assayprop_c1: assay_id, type_id, rank
   primary key: assayprop_id
   foreign keys:
-    assayprop_assay_id_fkey: assay_id
-    assayprop_type_id_fkey: type_id
+    assay:
+      table: assay
+      columns:
+        assay_id: assay_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 biomaterial:
   description: "A biomaterial represents the MAGE concept of BioSource, BioSample, and LabeledExtract. It is essentially some biological material (tissue, cells, serum) that may have been processed. Processed biomaterials should be traceable back to raw biomaterials via the biomaterialrelationship table."
   fields:
@@ -520,9 +634,18 @@ biomaterial:
     biomaterial_c1: name
   primary key: biomaterial_id
   foreign keys:
-    biomaterial_biosourceprovider_id_fkey: biosourceprovider_id
-    biomaterial_dbxref_id_fkey: dbxref_id
-    biomaterial_taxon_id_fkey: taxon_id
+    organism:
+      table: organism
+      columns:
+        taxon_id: organism_id
+    contact:
+      table: contact
+      columns:
+        biosourceprovider_id: contact_id
+    dbxref:
+      table: dbxref
+      columns:
+        dbxref_id: dbxref_id
 biomaterial_dbxref:
   description: ""
   fields:
@@ -539,8 +662,14 @@ biomaterial_dbxref:
     biomaterial_dbxref_c1: biomaterial_id, dbxref_id
   primary key: biomaterial_dbxref_id
   foreign keys:
-    biomaterial_dbxref_biomaterial_id_fkey: biomaterial_id
-    biomaterial_dbxref_dbxref_id_fkey: dbxref_id
+    biomaterial:
+      table: biomaterial
+      columns:
+        biomaterial_id: biomaterial_id
+    dbxref:
+      table: dbxref
+      columns:
+        dbxref_id: dbxref_id
 biomaterial_relationship:
   description: "Relate biomaterials to one another. This is a way to track a series of treatments or material splits/merges, for instance."
   fields:
@@ -560,9 +689,15 @@ biomaterial_relationship:
     biomaterial_relationship_c1: subject_id, object_id, type_id
   primary key: biomaterial_relationship_id
   foreign keys:
-    biomaterial_relationship_object_id_fkey: object_id
-    biomaterial_relationship_subject_id_fkey: subject_id
-    biomaterial_relationship_type_id_fkey: type_id
+    biomaterial:
+      table: biomaterial
+      columns:
+        subject_id: biomaterial_id
+        object_id: biomaterial_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 biomaterial_treatment:
   description: "Link biomaterials to treatments. Treatments have an order of operations (rank), and associated measurements (unittype_id, value)."
   fields:
@@ -588,9 +723,18 @@ biomaterial_treatment:
     biomaterial_treatment_c1: biomaterial_id, treatment_id
   primary key: biomaterial_treatment_id
   foreign keys:
-    biomaterial_treatment_biomaterial_id_fkey: biomaterial_id
-    biomaterial_treatment_treatment_id_fkey: treatment_id
-    biomaterial_treatment_unittype_id_fkey: unittype_id
+    biomaterial:
+      table: biomaterial
+      columns:
+        biomaterial_id: biomaterial_id
+    treatment:
+      table: treatment
+      columns:
+        treatment_id: treatment_id
+    cvterm:
+      table: cvterm
+      columns:
+        unittype_id: cvterm_id
 biomaterialprop:
   description: "Extra biomaterial properties that are not accounted for in biomaterial."
   fields:
@@ -613,8 +757,14 @@ biomaterialprop:
     biomaterialprop_c1: biomaterial_id, type_id, rank
   primary key: biomaterialprop_id
   foreign keys:
-    biomaterialprop_biomaterial_id_fkey: biomaterial_id
-    biomaterialprop_type_id_fkey: type_id
+    biomaterial:
+      table: biomaterial
+      columns:
+        biomaterial_id: biomaterial_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 cell_line:
   description: ""
   fields:
@@ -644,7 +794,10 @@ cell_line:
     cell_line_c1: uniquename, organism_id
   primary key: cell_line_id
   foreign keys:
-    cell_line_organism_id_fkey: organism_id
+    organism:
+      table: organism
+      columns:
+        organism_id: organism_id
 cell_line_cvterm:
   description: ""
   fields:
@@ -667,9 +820,18 @@ cell_line_cvterm:
     cell_line_cvterm_c1: cell_line_id, cvterm_id, pub_id, rank
   primary key: cell_line_cvterm_id
   foreign keys:
-    cell_line_cvterm_cell_line_id_fkey: cell_line_id
-    cell_line_cvterm_cvterm_id_fkey: cvterm_id
-    cell_line_cvterm_pub_id_fkey: pub_id
+    cell_line:
+      table: cell_line
+      columns:
+        cell_line_id: cell_line_id
+    cvterm:
+      table: cvterm
+      columns:
+        cvterm_id: cvterm_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 cell_line_cvtermprop:
   description: ""
   fields:
@@ -692,8 +854,14 @@ cell_line_cvtermprop:
     cell_line_cvtermprop_c1: cell_line_cvterm_id, type_id, rank
   primary key: cell_line_cvtermprop_id
   foreign keys:
-    cell_line_cvtermprop_cell_line_cvterm_id_fkey: cell_line_cvterm_id
-    cell_line_cvtermprop_type_id_fkey: type_id
+    cell_line_cvterm:
+      table: cell_line_cvterm
+      columns:
+        cell_line_cvterm_id: cell_line_cvterm_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 cell_line_dbxref:
   description: ""
   fields:
@@ -714,8 +882,14 @@ cell_line_dbxref:
     cell_line_dbxref_c1: cell_line_id, dbxref_id
   primary key: cell_line_dbxref_id
   foreign keys:
-    cell_line_dbxref_cell_line_id_fkey: cell_line_id
-    cell_line_dbxref_dbxref_id_fkey: dbxref_id
+    cell_line:
+      table: cell_line
+      columns:
+        cell_line_id: cell_line_id
+    dbxref:
+      table: dbxref
+      columns:
+        dbxref_id: dbxref_id
 cell_line_feature:
   description: ""
   fields:
@@ -735,9 +909,18 @@ cell_line_feature:
     cell_line_feature_c1: cell_line_id, feature_id, pub_id
   primary key: cell_line_feature_id
   foreign keys:
-    cell_line_feature_cell_line_id_fkey: cell_line_id
-    cell_line_feature_feature_id_fkey: feature_id
-    cell_line_feature_pub_id_fkey: pub_id
+    cell_line:
+      table: cell_line
+      columns:
+        cell_line_id: cell_line_id
+    feature:
+      table: feature
+      columns:
+        feature_id: feature_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 cell_line_library:
   description: ""
   fields:
@@ -757,9 +940,18 @@ cell_line_library:
     cell_line_library_c1: cell_line_id, library_id, pub_id
   primary key: cell_line_library_id
   foreign keys:
-    cell_line_library_cell_line_id_fkey: cell_line_id
-    cell_line_library_library_id_fkey: library_id
-    cell_line_library_pub_id_fkey: pub_id
+    cell_line:
+      table: cell_line
+      columns:
+        cell_line_id: cell_line_id
+    library:
+      table: library
+      columns:
+        library_id: library_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 cell_line_pub:
   description: ""
   fields:
@@ -776,8 +968,14 @@ cell_line_pub:
     cell_line_pub_c1: cell_line_id, pub_id
   primary key: cell_line_pub_id
   foreign keys:
-    cell_line_pub_cell_line_id_fkey: cell_line_id
-    cell_line_pub_pub_id_fkey: pub_id
+    cell_line:
+      table: cell_line
+      columns:
+        cell_line_id: cell_line_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 cell_line_relationship:
   description: ""
   fields:
@@ -797,9 +995,15 @@ cell_line_relationship:
     cell_line_relationship_c1: subject_id, object_id, type_id
   primary key: cell_line_relationship_id
   foreign keys:
-    cell_line_relationship_object_id_fkey: object_id
-    cell_line_relationship_subject_id_fkey: subject_id
-    cell_line_relationship_type_id_fkey: type_id
+    cell_line:
+      table: cell_line
+      columns:
+        subject_id: cell_line_id
+        object_id: cell_line_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 cell_line_synonym:
   description: ""
   fields:
@@ -827,9 +1031,18 @@ cell_line_synonym:
     cell_line_synonym_c1: synonym_id, cell_line_id, pub_id
   primary key: cell_line_synonym_id
   foreign keys:
-    cell_line_synonym_cell_line_id_fkey: cell_line_id
-    cell_line_synonym_pub_id_fkey: pub_id
-    cell_line_synonym_synonym_id_fkey: synonym_id
+    cell_line:
+      table: cell_line
+      columns:
+        cell_line_id: cell_line_id
+    synonym:
+      table: synonym
+      columns:
+        synonym_id: synonym_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 cell_lineprop:
   description: ""
   fields:
@@ -852,8 +1065,14 @@ cell_lineprop:
     cell_lineprop_c1: cell_line_id, type_id, rank
   primary key: cell_lineprop_id
   foreign keys:
-    cell_lineprop_cell_line_id_fkey: cell_line_id
-    cell_lineprop_type_id_fkey: type_id
+    cell_line:
+      table: cell_line
+      columns:
+        cell_line_id: cell_line_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 cell_lineprop_pub:
   description: ""
   fields:
@@ -870,8 +1089,14 @@ cell_lineprop_pub:
     cell_lineprop_pub_c1: cell_lineprop_id, pub_id
   primary key: cell_lineprop_pub_id
   foreign keys:
-    cell_lineprop_pub_cell_lineprop_id_fkey: cell_lineprop_id
-    cell_lineprop_pub_pub_id_fkey: pub_id
+    cell_lineprop:
+      table: cell_lineprop
+      columns:
+        cell_lineprop_id: cell_lineprop_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 chadoprop:
   description: "This table is different from other prop tables in the database, as it is for storing information about the database itself, like schema version"
   fields:
@@ -891,7 +1116,10 @@ chadoprop:
     chadoprop_c1: type_id, rank
   primary key: chadoprop_id
   foreign keys:
-    chadoprop_type_id_fkey: type_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 channel:
   description: "Different array platforms can record signals from one or more channels (cDNA arrays typically use two CCD, but Affymetrix uses only one)."
   fields:
@@ -928,7 +1156,10 @@ contact:
     contact_c1: name
   primary key: contact_id
   foreign keys:
-    contact_type_id_fkey: type_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 contact_relationship:
   description: "Model relationships between contacts"
   fields:
@@ -948,9 +1179,15 @@ contact_relationship:
     contact_relationship_c1: subject_id, object_id, type_id
   primary key: contact_relationship_id
   foreign keys:
-    contact_relationship_object_id_fkey: object_id
-    contact_relationship_subject_id_fkey: subject_id
-    contact_relationship_type_id_fkey: type_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
+    contact:
+      table: contact
+      columns:
+        subject_id: contact_id
+        object_id: contact_id
 contactprop:
   description: "A contact can have any number of slot-value property  tags attached to it. This is an alternative to hardcoding a list of columns in the  relational schema, and is completely extensible."
   fields:
@@ -973,8 +1210,14 @@ contactprop:
     contactprop_c1: contact_id, type_id, rank
   primary key: contactprop_id
   foreign keys:
-    contactprop_contact_id_fkey: contact_id
-    contactprop_type_id_fkey: type_id
+    contact:
+      table: contact
+      columns:
+        contact_id: contact_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 control:
   description: ""
   fields:
@@ -1004,9 +1247,18 @@ control:
       not null: FALSE
   primary key: control_id
   foreign keys:
-    control_assay_id_fkey: assay_id
-    control_tableinfo_id_fkey: tableinfo_id
-    control_type_id_fkey: type_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
+    assay:
+      table: assay
+      columns:
+        assay_id: assay_id
+    tableinfo:
+      table: tableinfo
+      columns:
+        tableinfo_id: tableinfo_id
 cv:
   description: "A controlled vocabulary or ontology. A cv is composed of cvterms (AKA terms, classes, types, universals - relations and properties are also stored in cvterm) and the relationships between them."
   fields:
@@ -1045,8 +1297,14 @@ cvprop:
     cvprop_c1: cv_id, type_id, rank
   primary key: cvprop_id
   foreign keys:
-    cvprop_cv_id_fkey: cv_id
-    cvprop_type_id_fkey: type_id
+    cv:
+      table: cv
+      columns:
+        cv_id: cv_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 cvterm:
   description: "A term, class, universal or type within an ontology or controlled vocabulary.  This table is also used for relations and properties. cvterms constitute nodes in the graph defined by the collection of cvterms and cvterm_relationships."
   fields:
@@ -1077,8 +1335,14 @@ cvterm:
     cvterm_c2: dbxref_id
   primary key: cvterm_id
   foreign keys:
-    cvterm_cv_id_fkey: cv_id
-    cvterm_dbxref_id_fkey: dbxref_id
+    cv:
+      table: cv
+      columns:
+        cv_id: cv_id
+    dbxref:
+      table: dbxref
+      columns:
+        dbxref_id: dbxref_id
 cvterm_dbxref:
   description: "In addition to the primary identifier (cvterm.dbxref_id) a cvterm can have zero or more secondary identifiers/dbxrefs, which may refer to records in external databases. The exact semantics of cvterm_dbxref are not fixed. For example: the dbxref could be a pubmed ID that is pertinent to the cvterm, or it could be an equivalent or similar term in another ontology. For example, GO cvterms are typically linked to InterPro IDs, even though the nature of the relationship between them is largely one of statistical association. The dbxref may be have data records attached in the same database instance, or it could be a \"hanging\" dbxref pointing to some external database. NOTE: If the desired objective is to link two cvterms together, and the nature of the relation is known and holds for all instances of the subject cvterm then consider instead using cvterm_relationship together with a well-defined relation."
   fields:
@@ -1098,8 +1362,14 @@ cvterm_dbxref:
     cvterm_dbxref_c1: cvterm_id, dbxref_id
   primary key: cvterm_dbxref_id
   foreign keys:
-    cvterm_dbxref_cvterm_id_fkey: cvterm_id
-    cvterm_dbxref_dbxref_id_fkey: dbxref_id
+    cvterm:
+      table: cvterm
+      columns:
+        cvterm_id: cvterm_id
+    dbxref:
+      table: dbxref
+      columns:
+        dbxref_id: dbxref_id
 cvterm_relationship:
   description: "A relationship linking two cvterms. Each cvterm_relationship constitutes an edge in the graph defined by the collection of cvterms and cvterm_relationships. The meaning of the cvterm_relationship depends on the definition of the cvterm R refered to by type_id. However, in general the definitions are such that the statement \"all SUBJs REL some OBJ\" is true. The cvterm_relationship statement is about the subject, not the object. For example \"insect wing part_of thorax\"."
   fields:
@@ -1119,9 +1389,12 @@ cvterm_relationship:
     cvterm_relationship_c1: subject_id, object_id, type_id
   primary key: cvterm_relationship_id
   foreign keys:
-    cvterm_relationship_object_id_fkey: object_id
-    cvterm_relationship_subject_id_fkey: subject_id
-    cvterm_relationship_type_id_fkey: type_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
+        subject_id: cvterm_id
+        object_id: cvterm_id
 cvtermpath:
   description: "The reflexive transitive closure of the cvterm_relationship relation."
   fields:
@@ -1147,10 +1420,16 @@ cvtermpath:
     cvtermpath_c1: subject_id, object_id, type_id, pathdistance
   primary key: cvtermpath_id
   foreign keys:
-    cvtermpath_cv_id_fkey: cv_id
-    cvtermpath_object_id_fkey: object_id
-    cvtermpath_subject_id_fkey: subject_id
-    cvtermpath_type_id_fkey: type_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
+        subject_id: cvterm_id
+        object_id: cvterm_id
+    cv:
+      table: cv
+      columns:
+        cv_id: cv_id
 cvtermprop:
   description: "Additional extensible properties can be attached to a cvterm using this table. Corresponds to -AnnotationProperty- in W3C OWL format."
   fields:
@@ -1173,8 +1452,11 @@ cvtermprop:
     cvtermprop_cvterm_id_type_id_value_rank_key: cvterm_id, type_id, value, rank
   primary key: cvtermprop_id
   foreign keys:
-    cvtermprop_cvterm_id_fkey: cvterm_id
-    cvtermprop_type_id_fkey: type_id
+    cvterm:
+      table: cvterm
+      columns:
+        cvterm_id: cvterm_id
+        type_id: cvterm_id
 cvtermsynonym:
   description: "A cvterm actually represents a distinct class or concept. A concept can be refered to by different phrases or names. In addition to the primary name (cvterm.name) there can be a number of alternative aliases or synonyms. For example, \"T cell\" as a synonym for \"T lymphocyte\"."
   fields:
@@ -1195,8 +1477,11 @@ cvtermsynonym:
     cvtermsynonym_c1: cvterm_id, synonym
   primary key: cvtermsynonym_id
   foreign keys:
-    cvtermsynonym_cvterm_id_fkey: cvterm_id
-    cvtermsynonym_type_id_fkey: type_id
+    cvterm:
+      table: cvterm
+      columns:
+        cvterm_id: cvterm_id
+        type_id: cvterm_id
 db:
   description: "A database authority. Typical databases in bioinformatics are FlyBase, GO, UniProt, NCBI, MGI, etc. The authority is generally known by this shortened form, which is unique within the bioinformatics and biomedical realm.  To Do - add support for URIs, URNs (e.g. LSIDs). We can do this by treating the URL as a URI - however, some applications may expect this to be resolvable - to be decided."
   fields:
@@ -1244,8 +1529,14 @@ dbprop:
     dbprop_c1: db_id, type_id, rank
   primary key: dbprop_id
   foreign keys:
-    dbprop_db_id_fkey: db_id
-    dbprop_type_id_fkey: type_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
+    db:
+      table: db
+      columns:
+        db_id: db_id
 dbxref:
   description: "A unique, global, public, stable identifier. Not necessarily an external reference - can reference data items inside the particular chado instance being used. Typically a row in a table can be uniquely identified with a primary identifier (called dbxref_id); a table may also have secondary identifiers (in a linking table <T>_dbxref). A dbxref is generally written as <DB>:<ACCESSION> or as <DB>:<ACCESSION>:<VERSION>."
   fields:
@@ -1270,7 +1561,10 @@ dbxref:
     dbxref_c1: db_id, accession, version
   primary key: dbxref_id
   foreign keys:
-    dbxref_db_id_fkey: db_id
+    db:
+      table: db
+      columns:
+        db_id: db_id
 dbxrefprop:
   description: "Metadata about a dbxref. Note that this is not defined in the dbxref module, as it depends on the cvterm table. This table has a structure analagous to cvtermprop."
   fields:
@@ -1293,8 +1587,14 @@ dbxrefprop:
     dbxrefprop_c1: dbxref_id, type_id, rank
   primary key: dbxrefprop_id
   foreign keys:
-    dbxrefprop_dbxref_id_fkey: dbxref_id
-    dbxrefprop_type_id_fkey: type_id
+    dbxref:
+      table: dbxref
+      columns:
+        dbxref_id: dbxref_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 eimage:
   description: ""
   fields:
@@ -1335,10 +1635,22 @@ element:
     element_c1: feature_id, arraydesign_id
   primary key: element_id
   foreign keys:
-    element_arraydesign_id_fkey: arraydesign_id
-    element_dbxref_id_fkey: dbxref_id
-    element_feature_id_fkey: feature_id
-    element_type_id_fkey: type_id
+    feature:
+      table: feature
+      columns:
+        feature_id: feature_id
+    arraydesign:
+      table: arraydesign
+      columns:
+        arraydesign_id: arraydesign_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
+    dbxref:
+      table: dbxref
+      columns:
+        dbxref_id: dbxref_id
 element_relationship:
   description: "Sometimes we want to combine measurements from multiple elements to get a composite value. Affymetrix combines many probes to form a probeset measurement, for instance."
   fields:
@@ -1364,9 +1676,15 @@ element_relationship:
     element_relationship_c1: subject_id, object_id, type_id, rank
   primary key: element_relationship_id
   foreign keys:
-    element_relationship_object_id_fkey: object_id
-    element_relationship_subject_id_fkey: subject_id
-    element_relationship_type_id_fkey: type_id
+    element:
+      table: element
+      columns:
+        subject_id: element_id
+        object_id: element_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 elementresult:
   description: "An element on an array produces a measurement when hybridized to a biomaterial (traceable through quantification_id). This is the base data from which tables that actually contain data inherit."
   fields:
@@ -1386,8 +1704,14 @@ elementresult:
     elementresult_c1: element_id, quantification_id
   primary key: elementresult_id
   foreign keys:
-    elementresult_element_id_fkey: element_id
-    elementresult_quantification_id_fkey: quantification_id
+    element:
+      table: element
+      columns:
+        element_id: element_id
+    quantification:
+      table: quantification
+      columns:
+        quantification_id: quantification_id
 elementresult_relationship:
   description: "Sometimes we want to combine measurements from multiple elements to get a composite value. Affymetrix combines many probes to form a probeset measurement, for instance."
   fields:
@@ -1413,9 +1737,15 @@ elementresult_relationship:
     elementresult_relationship_c1: subject_id, object_id, type_id, rank
   primary key: elementresult_relationship_id
   foreign keys:
-    elementresult_relationship_object_id_fkey: object_id
-    elementresult_relationship_subject_id_fkey: subject_id
-    elementresult_relationship_type_id_fkey: type_id
+    elementresult:
+      table: elementresult
+      columns:
+        subject_id: elementresult_id
+        object_id: elementresult_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 environment:
   description: "The environmental component of a phenotype description."
   fields:
@@ -1447,8 +1777,14 @@ environment_cvterm:
     environment_cvterm_c1: environment_id, cvterm_id
   primary key: environment_cvterm_id
   foreign keys:
-    environment_cvterm_cvterm_id_fkey: cvterm_id
-    environment_cvterm_environment_id_fkey: environment_id
+    environment:
+      table: environment
+      columns:
+        environment_id: environment_id
+    cvterm:
+      table: cvterm
+      columns:
+        cvterm_id: cvterm_id
 expression:
   description: "The expression table is essentially a bridge table."
   fields:
@@ -1490,9 +1826,15 @@ expression_cvterm:
     expression_cvterm_c1: expression_id, cvterm_id, rank, cvterm_type_id
   primary key: expression_cvterm_id
   foreign keys:
-    expression_cvterm_cvterm_id_fkey: cvterm_id
-    expression_cvterm_cvterm_type_id_fkey: cvterm_type_id
-    expression_cvterm_expression_id_fkey: expression_id
+    expression:
+      table: expression
+      columns:
+        expression_id: expression_id
+    cvterm:
+      table: cvterm
+      columns:
+        cvterm_id: cvterm_id
+        cvterm_type_id: cvterm_id
 expression_cvtermprop:
   description: "Extensible properties for expression to cvterm associations. Examples: qualifiers."
   fields:
@@ -1515,8 +1857,14 @@ expression_cvtermprop:
     expression_cvtermprop_c1: expression_cvterm_id, type_id, rank
   primary key: expression_cvtermprop_id
   foreign keys:
-    expression_cvtermprop_expression_cvterm_id_fkey: expression_cvterm_id
-    expression_cvtermprop_type_id_fkey: type_id
+    expression_cvterm:
+      table: expression_cvterm
+      columns:
+        expression_cvterm_id: expression_cvterm_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 expression_image:
   description: ""
   fields:
@@ -1533,8 +1881,14 @@ expression_image:
     expression_image_c1: expression_id, eimage_id
   primary key: expression_image_id
   foreign keys:
-    expression_image_eimage_id_fkey: eimage_id
-    expression_image_expression_id_fkey: expression_id
+    expression:
+      table: expression
+      columns:
+        expression_id: expression_id
+    eimage:
+      table: eimage
+      columns:
+        eimage_id: eimage_id
 expression_pub:
   description: ""
   fields:
@@ -1551,8 +1905,14 @@ expression_pub:
     expression_pub_c1: expression_id, pub_id
   primary key: expression_pub_id
   foreign keys:
-    expression_pub_expression_id_fkey: expression_id
-    expression_pub_pub_id_fkey: pub_id
+    expression:
+      table: expression
+      columns:
+        expression_id: expression_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 expressionprop:
   description: ""
   fields:
@@ -1575,8 +1935,14 @@ expressionprop:
     expressionprop_c1: expression_id, type_id, rank
   primary key: expressionprop_id
   foreign keys:
-    expressionprop_expression_id_fkey: expression_id
-    expressionprop_type_id_fkey: type_id
+    expression:
+      table: expression
+      columns:
+        expression_id: expression_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 feature:
   description: "A feature is a biological sequence or a section of a biological sequence, or a collection of such sections. Examples include genes, exons, transcripts, regulatory regions, polypeptides, protein domains, chromosome sequences, sequence variations, cross-genome match regions such as hits and HSPs and so on; see the Sequence Ontology for more. The combination of organism_id, uniquename and type_id should be unique."
   fields:
@@ -1629,9 +1995,18 @@ feature:
     feature_c1: organism_id, uniquename, type_id
   primary key: feature_id
   foreign keys:
-    feature_dbxref_id_fkey: dbxref_id
-    feature_organism_id_fkey: organism_id
-    feature_type_id_fkey: type_id
+    dbxref:
+      table: dbxref
+      columns:
+        dbxref_id: dbxref_id
+    organism:
+      table: organism
+      columns:
+        organism_id: organism_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 feature_contact:
   description: "Links contact(s) with a feature.  Used to indicate a particular  person or organization responsible for discovery or that can provide more information on a particular feature."
   fields:
@@ -1648,8 +2023,14 @@ feature_contact:
     feature_contact_c1: feature_id, contact_id
   primary key: feature_contact_id
   foreign keys:
-    feature_contact_contact_id_fkey: contact_id
-    feature_contact_feature_id_fkey: feature_id
+    contact:
+      table: contact
+      columns:
+        contact_id: contact_id
+    feature:
+      table: feature
+      columns:
+        feature_id: feature_id
 feature_cvterm:
   description: "Associate a term from a cv with a feature, for example, GO annotation."
   fields:
@@ -1676,9 +2057,18 @@ feature_cvterm:
     feature_cvterm_c1: feature_id, cvterm_id, pub_id, rank
   primary key: feature_cvterm_id
   foreign keys:
-    feature_cvterm_cvterm_id_fkey: cvterm_id
-    feature_cvterm_feature_id_fkey: feature_id
-    feature_cvterm_pub_id_fkey: pub_id
+    feature:
+      table: feature
+      columns:
+        feature_id: feature_id
+    cvterm:
+      table: cvterm
+      columns:
+        cvterm_id: cvterm_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 feature_cvterm_dbxref:
   description: "Additional dbxrefs for an association. Rows in the feature_cvterm table may be backed up by dbxrefs. For example, a feature_cvterm association that was inferred via a protein-protein interaction may be backed by by refering to the dbxref for the alternate protein. Corresponds to the WITH column in a GO gene association file (but can also be used for other analagous associations). See http://www.geneontology.org/doc/GO.annotation.shtml#file for more details."
   fields:
@@ -1695,8 +2085,14 @@ feature_cvterm_dbxref:
     feature_cvterm_dbxref_c1: feature_cvterm_id, dbxref_id
   primary key: feature_cvterm_dbxref_id
   foreign keys:
-    feature_cvterm_dbxref_dbxref_id_fkey: dbxref_id
-    feature_cvterm_dbxref_feature_cvterm_id_fkey: feature_cvterm_id
+    feature_cvterm:
+      table: feature_cvterm
+      columns:
+        feature_cvterm_id: feature_cvterm_id
+    dbxref:
+      table: dbxref
+      columns:
+        dbxref_id: dbxref_id
 feature_cvterm_pub:
   description: "Secondary pubs for an association. Each feature_cvterm association is supported by a single primary publication. Additional secondary pubs can be added using this linking table (in a GO gene association file, these corresponding to any IDs after the pipe symbol in the publications column."
   fields:
@@ -1713,8 +2109,14 @@ feature_cvterm_pub:
     feature_cvterm_pub_c1: feature_cvterm_id, pub_id
   primary key: feature_cvterm_pub_id
   foreign keys:
-    feature_cvterm_pub_feature_cvterm_id_fkey: feature_cvterm_id
-    feature_cvterm_pub_pub_id_fkey: pub_id
+    feature_cvterm:
+      table: feature_cvterm
+      columns:
+        feature_cvterm_id: feature_cvterm_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 feature_cvtermprop:
   description: "Extensible properties for feature to cvterm associations. Examples: GO evidence codes; qualifiers; metadata such as the date on which the entry was curated and the source of the association. See the featureprop table for meanings of type_id, value and rank."
   fields:
@@ -1737,8 +2139,14 @@ feature_cvtermprop:
     feature_cvtermprop_c1: feature_cvterm_id, type_id, rank
   primary key: feature_cvtermprop_id
   foreign keys:
-    feature_cvtermprop_feature_cvterm_id_fkey: feature_cvterm_id
-    feature_cvtermprop_type_id_fkey: type_id
+    feature_cvterm:
+      table: feature_cvterm
+      columns:
+        feature_cvterm_id: feature_cvterm_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 feature_dbxref:
   description: "Links a feature to dbxrefs."
   fields:
@@ -1759,8 +2167,14 @@ feature_dbxref:
     feature_dbxref_c1: feature_id, dbxref_id
   primary key: feature_dbxref_id
   foreign keys:
-    feature_dbxref_dbxref_id_fkey: dbxref_id
-    feature_dbxref_feature_id_fkey: feature_id
+    feature:
+      table: feature
+      columns:
+        feature_id: feature_id
+    dbxref:
+      table: dbxref
+      columns:
+        dbxref_id: dbxref_id
 feature_expression:
   description: ""
   fields:
@@ -1780,9 +2194,18 @@ feature_expression:
     feature_expression_c1: expression_id, feature_id, pub_id
   primary key: feature_expression_id
   foreign keys:
-    feature_expression_expression_id_fkey: expression_id
-    feature_expression_feature_id_fkey: feature_id
-    feature_expression_pub_id_fkey: pub_id
+    expression:
+      table: expression
+      columns:
+        expression_id: expression_id
+    feature:
+      table: feature
+      columns:
+        feature_id: feature_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 feature_expressionprop:
   description: "Extensible properties for feature_expression (comments, for example). Modeled on feature_cvtermprop."
   fields:
@@ -1805,8 +2228,14 @@ feature_expressionprop:
     feature_expressionprop_c1: feature_expression_id, type_id, rank
   primary key: feature_expressionprop_id
   foreign keys:
-    feature_expressionprop_feature_expression_id_fkey: feature_expression_id
-    feature_expressionprop_type_id_fkey: type_id
+    feature_expression:
+      table: feature_expression
+      columns:
+        feature_expression_id: feature_expression_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 feature_genotype:
   description: ""
   fields:
@@ -1835,10 +2264,19 @@ feature_genotype:
     feature_genotype_c1: feature_id, genotype_id, cvterm_id, chromosome_id, rank, cgroup
   primary key: feature_genotype_id
   foreign keys:
-    feature_genotype_chromosome_id_fkey: chromosome_id
-    feature_genotype_cvterm_id_fkey: cvterm_id
-    feature_genotype_feature_id_fkey: feature_id
-    feature_genotype_genotype_id_fkey: genotype_id
+    feature:
+      table: feature
+      columns:
+        feature_id: feature_id
+        chromosome_id: feature_id
+    genotype:
+      table: genotype
+      columns:
+        genotype_id: genotype_id
+    cvterm:
+      table: cvterm
+      columns:
+        cvterm_id: cvterm_id
 feature_phenotype:
   description: "Linking table between features and phenotypes."
   fields:
@@ -1855,8 +2293,14 @@ feature_phenotype:
     feature_phenotype_c1: feature_id, phenotype_id
   primary key: feature_phenotype_id
   foreign keys:
-    feature_phenotype_feature_id_fkey: feature_id
-    feature_phenotype_phenotype_id_fkey: phenotype_id
+    feature:
+      table: feature
+      columns:
+        feature_id: feature_id
+    phenotype:
+      table: phenotype
+      columns:
+        phenotype_id: phenotype_id
 feature_pub:
   description: "Provenance. Linking table between features and publications that mention them."
   fields:
@@ -1873,8 +2317,14 @@ feature_pub:
     feature_pub_c1: feature_id, pub_id
   primary key: feature_pub_id
   foreign keys:
-    feature_pub_feature_id_fkey: feature_id
-    feature_pub_pub_id_fkey: pub_id
+    feature:
+      table: feature
+      columns:
+        feature_id: feature_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 feature_pubprop:
   description: "Property or attribute of a feature_pub link."
   fields:
@@ -1897,8 +2347,14 @@ feature_pubprop:
     feature_pubprop_c1: feature_pub_id, type_id, rank
   primary key: feature_pubprop_id
   foreign keys:
-    feature_pubprop_feature_pub_id_fkey: feature_pub_id
-    feature_pubprop_type_id_fkey: type_id
+    feature_pub:
+      table: feature_pub
+      columns:
+        feature_pub_id: feature_pub_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 feature_relationship:
   description: "Features can be arranged in graphs, e.g. \"exon part_of transcript part_of gene\"; If type is thought of as a verb, the each arc or edge makes a statement [Subject Verb Object]. The object can also be thought of as parent (containing feature), and subject as child (contained feature or subfeature). We include the relationship rank/order, because even though most of the time we can order things implicitly by sequence coordinates, we can not always do this - e.g. transpliced genes. It is also useful for quickly getting implicit introns."
   fields:
@@ -1924,9 +2380,15 @@ feature_relationship:
     feature_relationship_c1: subject_id, object_id, type_id, rank
   primary key: feature_relationship_id
   foreign keys:
-    feature_relationship_object_id_fkey: object_id
-    feature_relationship_subject_id_fkey: subject_id
-    feature_relationship_type_id_fkey: type_id
+    feature:
+      table: feature
+      columns:
+        subject_id: feature_id
+        object_id: feature_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 feature_relationship_pub:
   description: "Provenance. Attach optional evidence to a feature_relationship in the form of a publication."
   fields:
@@ -1943,8 +2405,14 @@ feature_relationship_pub:
     feature_relationship_pub_c1: feature_relationship_id, pub_id
   primary key: feature_relationship_pub_id
   foreign keys:
-    feature_relationship_pub_feature_relationship_id_fkey: feature_relationship_id
-    feature_relationship_pub_pub_id_fkey: pub_id
+    feature_relationship:
+      table: feature_relationship
+      columns:
+        feature_relationship_id: feature_relationship_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 feature_relationshipprop:
   description: "Extensible properties for feature_relationships. Analagous structure to featureprop. This table is largely optional and not used with a high frequency. Typical scenarios may be if one wishes to attach additional data to a feature_relationship - for example to say that the feature_relationship is only true in certain contexts."
   fields:
@@ -1967,8 +2435,14 @@ feature_relationshipprop:
     feature_relationshipprop_c1: feature_relationship_id, type_id, rank
   primary key: feature_relationshipprop_id
   foreign keys:
-    feature_relationshipprop_feature_relationship_id_fkey: feature_relationship_id
-    feature_relationshipprop_type_id_fkey: type_id
+    feature_relationship:
+      table: feature_relationship
+      columns:
+        feature_relationship_id: feature_relationship_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 feature_relationshipprop_pub:
   description: "Provenance for feature_relationshipprop."
   fields:
@@ -1985,8 +2459,14 @@ feature_relationshipprop_pub:
     feature_relationshipprop_pub_c1: feature_relationshipprop_id, pub_id
   primary key: feature_relationshipprop_pub_id
   foreign keys:
-    feature_relationshipprop_pub_feature_relationshipprop_id_fkey: feature_relationshipprop_id
-    feature_relationshipprop_pub_pub_id_fkey: pub_id
+    feature_relationshipprop:
+      table: feature_relationshipprop
+      columns:
+        feature_relationshipprop_id: feature_relationshipprop_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 feature_synonym:
   description: "Linking table between feature and synonym."
   fields:
@@ -2014,9 +2494,18 @@ feature_synonym:
     feature_synonym_c1: synonym_id, feature_id, pub_id
   primary key: feature_synonym_id
   foreign keys:
-    feature_synonym_feature_id_fkey: feature_id
-    feature_synonym_pub_id_fkey: pub_id
-    feature_synonym_synonym_id_fkey: synonym_id
+    synonym:
+      table: synonym
+      columns:
+        synonym_id: synonym_id
+    feature:
+      table: feature
+      columns:
+        feature_id: feature_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 featureloc:
   description: "The location of a feature relative to another feature. Important: interbase coordinates are used. This is vital as it allows us to represent zero-length features e.g. splice sites, insertion points without an awkward fuzzy system. Features typically have exactly ONE location, but this need not be the case. Some features may not be localized (e.g. a gene that has been characterized genetically but no sequence or molecular information is available). Note on multiple locations: Each feature can have 0 or more locations. Multiple locations do NOT indicate non-contiguous locations (if a feature such as a transcript has a non-contiguous location, then the subfeatures such as exons should always be manifested). Instead, multiple featurelocs for a feature designate alternate locations or grouped locations; for instance, a feature designating a blast hit or hsp will have two locations, one on the query feature, one on the subject feature. Features representing sequence variation could have alternate locations instantiated on a feature on the mutant strain. The column:rank is used to differentiate these different locations. Reflexive locations should never be stored - this is for -proper- (i.e. non-self) locations only; nothing should be located relative to itself."
   fields:
@@ -2062,8 +2551,11 @@ featureloc:
     featureloc_c1: feature_id, locgroup, rank
   primary key: featureloc_id
   foreign keys:
-    featureloc_feature_id_fkey: feature_id
-    featureloc_srcfeature_id_fkey: srcfeature_id
+    feature:
+      table: feature
+      columns:
+        feature_id: feature_id
+        srcfeature_id: feature_id
 featureloc_pub:
   description: "Provenance of featureloc. Linking table between featurelocs and publications that mention them."
   fields:
@@ -2080,8 +2572,14 @@ featureloc_pub:
     featureloc_pub_c1: featureloc_id, pub_id
   primary key: featureloc_pub_id
   foreign keys:
-    featureloc_pub_featureloc_id_fkey: featureloc_id
-    featureloc_pub_pub_id_fkey: pub_id
+    featureloc:
+      table: featureloc
+      columns:
+        featureloc_id: featureloc_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 featuremap:
   description: ""
   fields:
@@ -2102,7 +2600,10 @@ featuremap:
     featuremap_c1: name
   primary key: featuremap_id
   foreign keys:
-    featuremap_unittype_id_fkey: unittype_id
+    cvterm:
+      table: cvterm
+      columns:
+        unittype_id: cvterm_id
 featuremap_contact:
   description: "Links contact(s) with a featuremap.  Used to  indicate a particular person or organization responsible for constrution of or  that can provide more information on a particular featuremap."
   fields:
@@ -2119,8 +2620,14 @@ featuremap_contact:
     featuremap_contact_c1: featuremap_id, contact_id
   primary key: featuremap_contact_id
   foreign keys:
-    featuremap_contact_contact_id_fkey: contact_id
-    featuremap_contact_featuremap_id_fkey: featuremap_id
+    contact:
+      table: contact
+      columns:
+        contact_id: contact_id
+    featuremap:
+      table: featuremap
+      columns:
+        featuremap_id: featuremap_id
 featuremap_dbxref:
   description: ""
   fields:
@@ -2139,8 +2646,14 @@ featuremap_dbxref:
       default: true
   primary key: featuremap_dbxref_id
   foreign keys:
-    featuremap_dbxref_dbxref_id_fkey: dbxref_id
-    featuremap_dbxref_featuremap_id_fkey: featuremap_id
+    featuremap:
+      table: featuremap
+      columns:
+        featuremap_id: featuremap_id
+    dbxref:
+      table: dbxref
+      columns:
+        dbxref_id: dbxref_id
 featuremap_organism:
   description: "Links a featuremap to the organism(s) with which it is associated."
   fields:
@@ -2157,8 +2670,14 @@ featuremap_organism:
     featuremap_organism_c1: featuremap_id, organism_id
   primary key: featuremap_organism_id
   foreign keys:
-    featuremap_organism_featuremap_id_fkey: featuremap_id
-    featuremap_organism_organism_id_fkey: organism_id
+    featuremap:
+      table: featuremap
+      columns:
+        featuremap_id: featuremap_id
+    organism:
+      table: organism
+      columns:
+        organism_id: organism_id
 featuremap_pub:
   description: ""
   fields:
@@ -2173,8 +2692,14 @@ featuremap_pub:
       not null: FALSE
   primary key: featuremap_pub_id
   foreign keys:
-    featuremap_pub_featuremap_id_fkey: featuremap_id
-    featuremap_pub_pub_id_fkey: pub_id
+    featuremap:
+      table: featuremap
+      columns:
+        featuremap_id: featuremap_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 featuremapprop:
   description: "A featuremap can have any number of slot-value property  tags attached to it. This is an alternative to hardcoding a list of columns in the  relational schema, and is completely extensible."
   fields:
@@ -2197,8 +2722,14 @@ featuremapprop:
     featuremapprop_c1: featuremap_id, type_id, rank
   primary key: featuremapprop_id
   foreign keys:
-    featuremapprop_featuremap_id_fkey: featuremap_id
-    featuremapprop_type_id_fkey: type_id
+    featuremap:
+      table: featuremap
+      columns:
+        featuremap_id: featuremap_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 featurepos:
   description: ""
   fields:
@@ -2219,9 +2750,15 @@ featurepos:
       not null: FALSE
   primary key: featurepos_id
   foreign keys:
-    featurepos_feature_id_fkey: feature_id
-    featurepos_featuremap_id_fkey: featuremap_id
-    featurepos_map_feature_id_fkey: map_feature_id
+    featuremap:
+      table: featuremap
+      columns:
+        featuremap_id: featuremap_id
+    feature:
+      table: feature
+      columns:
+        feature_id: feature_id
+        map_feature_id: feature_id
 featureposprop:
   description: "Property or attribute of a featurepos record."
   fields:
@@ -2244,8 +2781,14 @@ featureposprop:
     featureposprop_c1: featurepos_id, type_id, rank
   primary key: featureposprop_id
   foreign keys:
-    featureposprop_featurepos_id_fkey: featurepos_id
-    featureposprop_type_id_fkey: type_id
+    featurepos:
+      table: featurepos
+      columns:
+        featurepos_id: featurepos_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 featureprop:
   description: "A feature can have any number of slot-value property tags attached to it. This is an alternative to hardcoding a list of columns in the relational schema, and is completely extensible."
   fields:
@@ -2268,8 +2811,14 @@ featureprop:
     featureprop_c1: feature_id, type_id, rank
   primary key: featureprop_id
   foreign keys:
-    featureprop_feature_id_fkey: feature_id
-    featureprop_type_id_fkey: type_id
+    feature:
+      table: feature
+      columns:
+        feature_id: feature_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 featureprop_pub:
   description: "Provenance. Any featureprop assignment can optionally be supported by a publication."
   fields:
@@ -2286,8 +2835,14 @@ featureprop_pub:
     featureprop_pub_c1: featureprop_id, pub_id
   primary key: featureprop_pub_id
   foreign keys:
-    featureprop_pub_featureprop_id_fkey: featureprop_id
-    featureprop_pub_pub_id_fkey: pub_id
+    featureprop:
+      table: featureprop
+      columns:
+        featureprop_id: featureprop_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 featurerange:
   description: "In cases where the start and end of a mapped feature is a range, leftendf and rightstartf are populated. leftstartf_id, leftendf_id, rightstartf_id, rightendf_id are the ids of features with respect to which the feature is being mapped. These may be cytological bands."
   fields:
@@ -2318,12 +2873,18 @@ featurerange:
       size: 255
   primary key: featurerange_id
   foreign keys:
-    featurerange_feature_id_fkey: feature_id
-    featurerange_featuremap_id_fkey: featuremap_id
-    featurerange_leftendf_id_fkey: leftendf_id
-    featurerange_leftstartf_id_fkey: leftstartf_id
-    featurerange_rightendf_id_fkey: rightendf_id
-    featurerange_rightstartf_id_fkey: rightstartf_id
+    featuremap:
+      table: featuremap
+      columns:
+        featuremap_id: featuremap_id
+    feature:
+      table: feature
+      columns:
+        feature_id: feature_id
+        leftstartf_id: feature_id
+        leftendf_id: feature_id
+        rightstartf_id: feature_id
+        rightendf_id: feature_id
 genotype:
   description: "Genetic context. A genotype is defined by a collection of features, mutations, balancers, deficiencies, haplotype blocks, or engineered constructs."
   fields:
@@ -2346,7 +2907,10 @@ genotype:
     genotype_c1: uniquename
   primary key: genotype_id
   foreign keys:
-    genotype_type_id_fkey: type_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 genotypeprop:
   description: ""
   fields:
@@ -2369,8 +2933,14 @@ genotypeprop:
     genotypeprop_c1: genotype_id, type_id, rank
   primary key: genotypeprop_id
   foreign keys:
-    genotypeprop_genotype_id_fkey: genotype_id
-    genotypeprop_type_id_fkey: type_id
+    genotype:
+      table: genotype
+      columns:
+        genotype_id: genotype_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 library:
   description: ""
   fields:
@@ -2405,8 +2975,14 @@ library:
     library_c1: organism_id, uniquename, type_id
   primary key: library_id
   foreign keys:
-    library_organism_id_fkey: organism_id
-    library_type_id_fkey: type_id
+    organism:
+      table: organism
+      columns:
+        organism_id: organism_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 library_contact:
   description: "Links contact(s) with a library.  Used to indicate a particular person or organization responsible for creation of or that can provide more information on a particular library."
   fields:
@@ -2423,8 +2999,14 @@ library_contact:
     library_contact_c1: library_id, contact_id
   primary key: library_contact_id
   foreign keys:
-    library_contact_contact_id_fkey: contact_id
-    library_contact_library_id_fkey: library_id
+    library:
+      table: library
+      columns:
+        library_id: library_id
+    contact:
+      table: contact
+      columns:
+        contact_id: contact_id
 library_cvterm:
   description: "The table library_cvterm links a library to controlled vocabularies which describe the library.  For instance, there might be a link to the anatomy cv for \"head\" or \"testes\" for a head or testes library."
   fields:
@@ -2444,9 +3026,18 @@ library_cvterm:
     library_cvterm_c1: library_id, cvterm_id, pub_id
   primary key: library_cvterm_id
   foreign keys:
-    library_cvterm_cvterm_id_fkey: cvterm_id
-    library_cvterm_library_id_fkey: library_id
-    library_cvterm_pub_id_fkey: pub_id
+    library:
+      table: library
+      columns:
+        library_id: library_id
+    cvterm:
+      table: cvterm
+      columns:
+        cvterm_id: cvterm_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 library_dbxref:
   description: "Links a library to dbxrefs."
   fields:
@@ -2467,8 +3058,14 @@ library_dbxref:
     library_dbxref_c1: library_id, dbxref_id
   primary key: library_dbxref_id
   foreign keys:
-    library_dbxref_dbxref_id_fkey: dbxref_id
-    library_dbxref_library_id_fkey: library_id
+    library:
+      table: library
+      columns:
+        library_id: library_id
+    dbxref:
+      table: dbxref
+      columns:
+        dbxref_id: dbxref_id
 library_expression:
   description: "Links a library to expression statements."
   fields:
@@ -2488,9 +3085,18 @@ library_expression:
     library_expression_c1: library_id, expression_id
   primary key: library_expression_id
   foreign keys:
-    library_expression_expression_id_fkey: expression_id
-    library_expression_library_id_fkey: library_id
-    library_expression_pub_id_fkey: pub_id
+    library:
+      table: library
+      columns:
+        library_id: library_id
+    expression:
+      table: expression
+      columns:
+        expression_id: expression_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 library_expressionprop:
   description: "Attributes of a library_expression relationship."
   fields:
@@ -2513,8 +3119,14 @@ library_expressionprop:
     library_expressionprop_c1: library_expression_id, type_id, rank
   primary key: library_expressionprop_id
   foreign keys:
-    library_expressionprop_library_expression_id_fkey: library_expression_id
-    library_expressionprop_type_id_fkey: type_id
+    library_expression:
+      table: library_expression
+      columns:
+        library_expression_id: library_expression_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 library_feature:
   description: "library_feature links a library to the clones which are contained in the library.  Examples of such linked features might be \"cDNA_clone\" or  \"genomic_clone\"."
   fields:
@@ -2531,8 +3143,14 @@ library_feature:
     library_feature_c1: library_id, feature_id
   primary key: library_feature_id
   foreign keys:
-    library_feature_feature_id_fkey: feature_id
-    library_feature_library_id_fkey: library_id
+    library:
+      table: library
+      columns:
+        library_id: library_id
+    feature:
+      table: feature
+      columns:
+        feature_id: feature_id
 library_featureprop:
   description: "Attributes of a library_feature relationship."
   fields:
@@ -2555,8 +3173,14 @@ library_featureprop:
     library_featureprop_c1: library_feature_id, type_id, rank
   primary key: library_featureprop_id
   foreign keys:
-    library_featureprop_library_feature_id_fkey: library_feature_id
-    library_featureprop_type_id_fkey: type_id
+    library_feature:
+      table: library_feature
+      columns:
+        library_feature_id: library_feature_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 library_pub:
   description: "Attribution for a library."
   fields:
@@ -2573,8 +3197,14 @@ library_pub:
     library_pub_c1: library_id, pub_id
   primary key: library_pub_id
   foreign keys:
-    library_pub_library_id_fkey: library_id
-    library_pub_pub_id_fkey: pub_id
+    library:
+      table: library
+      columns:
+        library_id: library_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 library_relationship:
   description: "Relationships between libraries."
   fields:
@@ -2594,9 +3224,15 @@ library_relationship:
     library_relationship_c1: subject_id, object_id, type_id
   primary key: library_relationship_id
   foreign keys:
-    library_relationship_object_id_fkey: object_id
-    library_relationship_subject_id_fkey: subject_id
-    library_relationship_type_id_fkey: type_id
+    library:
+      table: library
+      columns:
+        subject_id: library_id
+        object_id: library_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 library_relationship_pub:
   description: "Provenance of library_relationship."
   fields:
@@ -2613,8 +3249,14 @@ library_relationship_pub:
     library_relationship_pub_c1: library_relationship_id, pub_id
   primary key: library_relationship_pub_id
   foreign keys:
-    library_relationship_pub_library_relationship_id_fkey: library_relationship_id
-    library_relationship_pub_pub_id_fkey: pub_id
+    library_relationship:
+      table: library_relationship
+      columns:
+        library_relationship_id: library_relationship_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 library_synonym:
   description: "Linking table between library and synonym."
   fields:
@@ -2642,9 +3284,18 @@ library_synonym:
     library_synonym_c1: synonym_id, library_id, pub_id
   primary key: library_synonym_id
   foreign keys:
-    library_synonym_library_id_fkey: library_id
-    library_synonym_pub_id_fkey: pub_id
-    library_synonym_synonym_id_fkey: synonym_id
+    synonym:
+      table: synonym
+      columns:
+        synonym_id: synonym_id
+    library:
+      table: library
+      columns:
+        library_id: library_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 libraryprop:
   description: "Tag-value properties - follows standard chado model."
   fields:
@@ -2667,8 +3318,14 @@ libraryprop:
     libraryprop_c1: library_id, type_id, rank
   primary key: libraryprop_id
   foreign keys:
-    libraryprop_library_id_fkey: library_id
-    libraryprop_type_id_fkey: type_id
+    library:
+      table: library
+      columns:
+        library_id: library_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 libraryprop_pub:
   description: "Attribution for libraryprop."
   fields:
@@ -2685,8 +3342,14 @@ libraryprop_pub:
     libraryprop_pub_c1: libraryprop_id, pub_id
   primary key: libraryprop_pub_id
   foreign keys:
-    libraryprop_pub_libraryprop_id_fkey: libraryprop_id
-    libraryprop_pub_pub_id_fkey: pub_id
+    libraryprop:
+      table: libraryprop
+      columns:
+        libraryprop_id: libraryprop_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 magedocumentation:
   description: ""
   fields:
@@ -2707,8 +3370,14 @@ magedocumentation:
       not null: FALSE
   primary key: magedocumentation_id
   foreign keys:
-    magedocumentation_mageml_id_fkey: mageml_id
-    magedocumentation_tableinfo_id_fkey: tableinfo_id
+    mageml:
+      table: mageml
+      columns:
+        mageml_id: mageml_id
+    tableinfo:
+      table: tableinfo
+      columns:
+        tableinfo_id: tableinfo_id
 mageml:
   description: "This table is for storing extra bits of MAGEml in a denormalized form. More normalization would require many more tables."
   fields:
@@ -2722,45 +3391,6 @@ mageml:
       type: text
       not null: FALSE
   primary key: mageml_id
-materialized_view:
-  description: ""
-  fields:
-    materialized_view_id:
-      type: serial
-      not null: FALSE
-    last_update:
-      type: timestamp without time zone
-      not null: TRUE
-    refresh_time:
-      type: integer
-      not null: TRUE
-    name:
-      type: character varying
-      not null: TRUE
-      size: 64
-    mv_schema:
-      type: character varying
-      not null: TRUE
-      size: 64
-    mv_table:
-      type: character varying
-      not null: TRUE
-      size: 128
-    mv_specs:
-      type: text
-      not null: TRUE
-    indexed:
-      type: text
-      not null: TRUE
-    query:
-      type: text
-      not null: TRUE
-    special_index:
-      type: text
-      not null: TRUE
-  unique keys:
-    materialized_view_name_key: name
-  primary key:
 nd_experiment:
   description: "This is the core table for the natural diversity module,  representing each individual assay that is undertaken (this is usually *not* an  entire experiment). Each nd_experiment should give rise to a single genotype or  phenotype and be described via 1 (or more) protocols. Collections of assays that  relate to each other should be linked to the same record in the project table."
   fields:
@@ -2775,8 +3405,14 @@ nd_experiment:
       not null: FALSE
   primary key: nd_experiment_id
   foreign keys:
-    nd_experiment_nd_geolocation_id_fkey: nd_geolocation_id
-    nd_experiment_type_id_fkey: type_id
+    nd_geolocation:
+      table: nd_geolocation
+      columns:
+        nd_geolocation_id: nd_geolocation_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 nd_experiment_analysis:
   description: "An analysis that is used in an experiment"
   fields:
@@ -2794,9 +3430,18 @@ nd_experiment_analysis:
       not null: TRUE
   primary key: nd_experiment_analysis_id
   foreign keys:
-    nd_experiment_analysis_analysis_id_fkey: analysis_id
-    nd_experiment_analysis_nd_experiment_id_fkey: nd_experiment_id
-    nd_experiment_analysis_type_id_fkey: type_id
+    nd_experiment:
+      table: nd_experiment
+      columns:
+        nd_experiment_id: nd_experiment_id
+    analysis:
+      table: analysis
+      columns:
+        analysis_id: analysis_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 nd_experiment_contact:
   description: ""
   fields:
@@ -2811,8 +3456,14 @@ nd_experiment_contact:
       not null: FALSE
   primary key: nd_experiment_contact_id
   foreign keys:
-    nd_experiment_contact_contact_id_fkey: contact_id
-    nd_experiment_contact_nd_experiment_id_fkey: nd_experiment_id
+    nd_experiment:
+      table: nd_experiment
+      columns:
+        nd_experiment_id: nd_experiment_id
+    contact:
+      table: contact
+      columns:
+        contact_id: contact_id
 nd_experiment_dbxref:
   description: "Cross-reference experiment to accessions, images, etc"
   fields:
@@ -2827,8 +3478,14 @@ nd_experiment_dbxref:
       not null: FALSE
   primary key: nd_experiment_dbxref_id
   foreign keys:
-    nd_experiment_dbxref_dbxref_id_fkey: dbxref_id
-    nd_experiment_dbxref_nd_experiment_id_fkey: nd_experiment_id
+    nd_experiment:
+      table: nd_experiment
+      columns:
+        nd_experiment_id: nd_experiment_id
+    dbxref:
+      table: dbxref
+      columns:
+        dbxref_id: dbxref_id
 nd_experiment_genotype:
   description: "Linking table: experiments to the genotypes they produce. There is a one-to-one relationship between an experiment and a genotype since each genotype record should point to one experiment. Add a new experiment_id for each genotype record."
   fields:
@@ -2845,8 +3502,14 @@ nd_experiment_genotype:
     nd_experiment_genotype_c1: nd_experiment_id, genotype_id
   primary key: nd_experiment_genotype_id
   foreign keys:
-    nd_experiment_genotype_genotype_id_fkey: genotype_id
-    nd_experiment_genotype_nd_experiment_id_fkey: nd_experiment_id
+    nd_experiment:
+      table: nd_experiment
+      columns:
+        nd_experiment_id: nd_experiment_id
+    genotype:
+      table: genotype
+      columns:
+        genotype_id: genotype_id
 nd_experiment_phenotype:
   description: "Linking table: experiments to the phenotypes they produce. There is a one-to-one relationship between an experiment and a phenotype since each phenotype record should point to one experiment. Add a new experiment_id for each phenotype record."
   fields:
@@ -2863,8 +3526,14 @@ nd_experiment_phenotype:
     nd_experiment_phenotype_c1: nd_experiment_id, phenotype_id
   primary key: nd_experiment_phenotype_id
   foreign keys:
-    nd_experiment_phenotype_nd_experiment_id_fkey: nd_experiment_id
-    nd_experiment_phenotype_phenotype_id_fkey: phenotype_id
+    nd_experiment:
+      table: nd_experiment
+      columns:
+        nd_experiment_id: nd_experiment_id
+    phenotype:
+      table: phenotype
+      columns:
+        phenotype_id: phenotype_id
 nd_experiment_project:
   description: "Used to group together related nd_experiment records. All nd_experiments  should be linked to at least one project."
   fields:
@@ -2881,8 +3550,14 @@ nd_experiment_project:
     nd_experiment_project_c1: project_id, nd_experiment_id
   primary key: nd_experiment_project_id
   foreign keys:
-    nd_experiment_project_nd_experiment_id_fkey: nd_experiment_id
-    nd_experiment_project_project_id_fkey: project_id
+    project:
+      table: project
+      columns:
+        project_id: project_id
+    nd_experiment:
+      table: nd_experiment
+      columns:
+        nd_experiment_id: nd_experiment_id
 nd_experiment_protocol:
   description: "Linking table: experiments to the protocols they involve."
   fields:
@@ -2897,8 +3572,14 @@ nd_experiment_protocol:
       not null: FALSE
   primary key: nd_experiment_protocol_id
   foreign keys:
-    nd_experiment_protocol_nd_experiment_id_fkey: nd_experiment_id
-    nd_experiment_protocol_nd_protocol_id_fkey: nd_protocol_id
+    nd_experiment:
+      table: nd_experiment
+      columns:
+        nd_experiment_id: nd_experiment_id
+    nd_protocol:
+      table: nd_protocol
+      columns:
+        nd_protocol_id: nd_protocol_id
 nd_experiment_pub:
   description: "Linking nd_experiment(s) to publication(s)"
   fields:
@@ -2915,8 +3596,14 @@ nd_experiment_pub:
     nd_experiment_pub_c1: nd_experiment_id, pub_id
   primary key: nd_experiment_pub_id
   foreign keys:
-    nd_experiment_pub_nd_experiment_id_fkey: nd_experiment_id
-    nd_experiment_pub_pub_id_fkey: pub_id
+    nd_experiment:
+      table: nd_experiment
+      columns:
+        nd_experiment_id: nd_experiment_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 nd_experiment_stock:
   description: "Part of a stock or a clone of a stock that is used in an experiment"
   fields:
@@ -2934,9 +3621,18 @@ nd_experiment_stock:
       not null: FALSE
   primary key: nd_experiment_stock_id
   foreign keys:
-    nd_experiment_stock_nd_experiment_id_fkey: nd_experiment_id
-    nd_experiment_stock_stock_id_fkey: stock_id
-    nd_experiment_stock_type_id_fkey: type_id
+    nd_experiment:
+      table: nd_experiment
+      columns:
+        nd_experiment_id: nd_experiment_id
+    stock:
+      table: stock
+      columns:
+        stock_id: stock_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 nd_experiment_stock_dbxref:
   description: "Cross-reference experiment_stock to accessions, images, etc"
   fields:
@@ -2951,8 +3647,14 @@ nd_experiment_stock_dbxref:
       not null: FALSE
   primary key: nd_experiment_stock_dbxref_id
   foreign keys:
-    nd_experiment_stock_dbxref_dbxref_id_fkey: dbxref_id
-    nd_experiment_stock_dbxref_nd_experiment_stock_id_fkey: nd_experiment_stock_id
+    nd_experiment_stock:
+      table: nd_experiment_stock
+      columns:
+        nd_experiment_stock_id: nd_experiment_stock_id
+    dbxref:
+      table: dbxref
+      columns:
+        dbxref_id: dbxref_id
 nd_experiment_stockprop:
   description: "Property/value associations for experiment_stocks. This table can store the properties such as treatment"
   fields:
@@ -2975,8 +3677,14 @@ nd_experiment_stockprop:
     nd_experiment_stockprop_c1: nd_experiment_stock_id, type_id, rank
   primary key: nd_experiment_stockprop_id
   foreign keys:
-    nd_experiment_stockprop_nd_experiment_stock_id_fkey: nd_experiment_stock_id
-    nd_experiment_stockprop_type_id_fkey: type_id
+    nd_experiment_stock:
+      table: nd_experiment_stock
+      columns:
+        nd_experiment_stock_id: nd_experiment_stock_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 nd_experimentprop:
   description: "An nd_experiment can have any number of slot-value property tags attached to it. This is an alternative to hardcoding a list of columns in the relational schema, and is completely extensible. There is a unique constraint, stockprop_c1, for the combination of stock_id, rank, and type_id. Multivalued property-value pairs must be differentiated by rank."
   fields:
@@ -2999,8 +3707,14 @@ nd_experimentprop:
     nd_experimentprop_c1: nd_experiment_id, type_id, rank
   primary key: nd_experimentprop_id
   foreign keys:
-    nd_experimentprop_nd_experiment_id_fkey: nd_experiment_id
-    nd_experimentprop_type_id_fkey: type_id
+    nd_experiment:
+      table: nd_experiment
+      columns:
+        nd_experiment_id: nd_experiment_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 nd_geolocation:
   description: "The geo-referencable location of the stock. NOTE: This entity is subject to change as a more general and possibly more OpenGIS-compliant geolocation module may be introduced into Chado."
   fields:
@@ -3046,8 +3760,14 @@ nd_geolocationprop:
     nd_geolocationprop_c1: nd_geolocation_id, type_id, rank
   primary key: nd_geolocationprop_id
   foreign keys:
-    nd_geolocationprop_nd_geolocation_id_fkey: nd_geolocation_id
-    nd_geolocationprop_type_id_fkey: type_id
+    nd_geolocation:
+      table: nd_geolocation
+      columns:
+        nd_geolocation_id: nd_geolocation_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 nd_protocol:
   description: "A protocol can be anything that is done as part of the experiment."
   fields:
@@ -3065,7 +3785,10 @@ nd_protocol:
     nd_protocol_name_key: name
   primary key: nd_protocol_id
   foreign keys:
-    nd_protocol_type_id_fkey: type_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 nd_protocol_reagent:
   description: ""
   fields:
@@ -3083,9 +3806,18 @@ nd_protocol_reagent:
       not null: FALSE
   primary key: nd_protocol_reagent_id
   foreign keys:
-    nd_protocol_reagent_nd_protocol_id_fkey: nd_protocol_id
-    nd_protocol_reagent_reagent_id_fkey: reagent_id
-    nd_protocol_reagent_type_id_fkey: type_id
+    nd_protocol:
+      table: nd_protocol
+      columns:
+        nd_protocol_id: nd_protocol_id
+    nd_reagent:
+      table: nd_reagent
+      columns:
+        reagent_id: nd_reagent_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 nd_protocolprop:
   description: "Property/value associations for protocol."
   fields:
@@ -3108,8 +3840,14 @@ nd_protocolprop:
     nd_protocolprop_c1: nd_protocol_id, type_id, rank
   primary key: nd_protocolprop_id
   foreign keys:
-    nd_protocolprop_nd_protocol_id_fkey: nd_protocol_id
-    nd_protocolprop_type_id_fkey: type_id
+    nd_protocol:
+      table: nd_protocol
+      columns:
+        nd_protocol_id: nd_protocol_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 nd_reagent:
   description: "A reagent such as a primer, an enzyme, an adapter oligo, a linker oligo. Reagents are used in genotyping experiments, or in any other kind of experiment."
   fields:
@@ -3128,8 +3866,14 @@ nd_reagent:
       not null: TRUE
   primary key: nd_reagent_id
   foreign keys:
-    nd_reagent_feature_id_fkey: feature_id
-    nd_reagent_type_id_fkey: type_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
+    feature:
+      table: feature
+      columns:
+        feature_id: feature_id
 nd_reagent_relationship:
   description: "Relationships between reagents. Some reagents form a group. i.e., they are used all together or not at all. Examples are adapter/linker/enzyme experiment reagents."
   fields:
@@ -3147,9 +3891,15 @@ nd_reagent_relationship:
       not null: FALSE
   primary key: nd_reagent_relationship_id
   foreign keys:
-    nd_reagent_relationship_object_reagent_id_fkey: object_reagent_id
-    nd_reagent_relationship_subject_reagent_id_fkey: subject_reagent_id
-    nd_reagent_relationship_type_id_fkey: type_id
+    nd_reagent:
+      table: nd_reagent
+      columns:
+        subject_reagent_id: nd_reagent_id
+        object_reagent_id: nd_reagent_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 nd_reagentprop:
   description: ""
   fields:
@@ -3172,8 +3922,14 @@ nd_reagentprop:
     nd_reagentprop_c1: nd_reagent_id, type_id, rank
   primary key: nd_reagentprop_id
   foreign keys:
-    nd_reagentprop_nd_reagent_id_fkey: nd_reagent_id
-    nd_reagentprop_type_id_fkey: type_id
+    nd_reagent:
+      table: nd_reagent
+      columns:
+        nd_reagent_id: nd_reagent_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 organism:
   description: "The organismal taxonomic classification. Note that phylogenies are represented using the phylogeny module, and taxonomies can be represented using the cvterm module or the phylogeny module."
   fields:
@@ -3210,7 +3966,10 @@ organism:
     organism_c1: genus, species, type_id, infraspecific_name
   primary key: organism_id
   foreign keys:
-    organism_type_id_fkey: type_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 organism_cvterm:
   description: "organism to cvterm associations. Examples: taxonomic name"
   fields:
@@ -3233,9 +3992,18 @@ organism_cvterm:
     organism_cvterm_c1: organism_id, cvterm_id, pub_id
   primary key: organism_cvterm_id
   foreign keys:
-    organism_cvterm_cvterm_id_fkey: cvterm_id
-    organism_cvterm_organism_id_fkey: organism_id
-    organism_cvterm_pub_id_fkey: pub_id
+    organism:
+      table: organism
+      columns:
+        organism_id: organism_id
+    cvterm:
+      table: cvterm
+      columns:
+        cvterm_id: cvterm_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 organism_cvtermprop:
   description: "Extensible properties for organism to cvterm associations. Examples: qualifiers"
   fields:
@@ -3258,8 +4026,14 @@ organism_cvtermprop:
     organism_cvtermprop_c1: organism_cvterm_id, type_id, rank
   primary key: organism_cvtermprop_id
   foreign keys:
-    organism_cvtermprop_organism_cvterm_id_fkey: organism_cvterm_id
-    organism_cvtermprop_type_id_fkey: type_id
+    organism_cvterm:
+      table: organism_cvterm
+      columns:
+        organism_cvterm_id: organism_cvterm_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 organism_dbxref:
   description: "Links an organism to a dbxref."
   fields:
@@ -3276,8 +4050,14 @@ organism_dbxref:
     organism_dbxref_c1: organism_id, dbxref_id
   primary key: organism_dbxref_id
   foreign keys:
-    organism_dbxref_dbxref_id_fkey: dbxref_id
-    organism_dbxref_organism_id_fkey: organism_id
+    organism:
+      table: organism
+      columns:
+        organism_id: organism_id
+    dbxref:
+      table: dbxref
+      columns:
+        dbxref_id: dbxref_id
 organism_pub:
   description: "Attribution for organism."
   fields:
@@ -3294,8 +4074,14 @@ organism_pub:
     organism_pub_c1: organism_id, pub_id
   primary key: organism_pub_id
   foreign keys:
-    organism_pub_organism_id_fkey: organism_id
-    organism_pub_pub_id_fkey: pub_id
+    organism:
+      table: organism
+      columns:
+        organism_id: organism_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 organism_relationship:
   description: "Specifies relationships between organisms  that are not taxonomic. For example, in breeding, relationships such as  \"sterile_with\", \"incompatible_with\", or \"fertile_with\" would be appropriate. Taxonomic relatinoships should be housed in the phylogeny tables."
   fields:
@@ -3318,9 +4104,15 @@ organism_relationship:
     organism_relationship_c1: subject_id, object_id, type_id, rank
   primary key: organism_relationship_id
   foreign keys:
-    organism_relationship_object_id_fkey: object_id
-    organism_relationship_subject_id_fkey: subject_id
-    organism_relationship_type_id_fkey: type_id
+    organism:
+      table: organism
+      columns:
+        object_id: organism_id
+        subject_id: organism_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 organismprop:
   description: "Tag-value properties - follows standard chado model."
   fields:
@@ -3343,8 +4135,14 @@ organismprop:
     organismprop_c1: organism_id, type_id, rank
   primary key: organismprop_id
   foreign keys:
-    organismprop_organism_id_fkey: organism_id
-    organismprop_type_id_fkey: type_id
+    organism:
+      table: organism
+      columns:
+        organism_id: organism_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 organismprop_pub:
   description: "Attribution for organismprop."
   fields:
@@ -3367,8 +4165,14 @@ organismprop_pub:
     organismprop_pub_c1: organismprop_id, pub_id
   primary key: organismprop_pub_id
   foreign keys:
-    organismprop_pub_organismprop_id_fkey: organismprop_id
-    organismprop_pub_pub_id_fkey: pub_id
+    organismprop:
+      table: organismprop
+      columns:
+        organismprop_id: organismprop_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 phendesc:
   description: "A summary of a _set_ of phenotypic statements for any one gcontext made in any one publication."
   fields:
@@ -3394,10 +4198,22 @@ phendesc:
     phendesc_c1: genotype_id, environment_id, type_id, pub_id
   primary key: phendesc_id
   foreign keys:
-    phendesc_environment_id_fkey: environment_id
-    phendesc_genotype_id_fkey: genotype_id
-    phendesc_pub_id_fkey: pub_id
-    phendesc_type_id_fkey: type_id
+    genotype:
+      table: genotype
+      columns:
+        genotype_id: genotype_id
+    environment:
+      table: environment
+      columns:
+        environment_id: environment_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 phenotype:
   description: "A phenotypic statement, or a single atomic phenotypic observation, is a controlled sentence describing observable effects of non-wild type function. E.g. Obs=eye, attribute=color, cvalue=red."
   fields:
@@ -3429,10 +4245,13 @@ phenotype:
     phenotype_c1: uniquename
   primary key: phenotype_id
   foreign keys:
-    phenotype_assay_id_fkey: assay_id
-    phenotype_attr_id_fkey: attr_id
-    phenotype_cvalue_id_fkey: cvalue_id
-    phenotype_observable_id_fkey: observable_id
+    cvterm:
+      table: cvterm
+      columns:
+        observable_id: cvterm_id
+        attr_id: cvterm_id
+        cvalue_id: cvterm_id
+        assay_id: cvterm_id
 phenotype_comparison:
   description: "Comparison of phenotypes e.g., genotype1/environment1/phenotype1 \"non-suppressible\" with respect to genotype2/environment2/phenotype2."
   fields:
@@ -3467,14 +4286,29 @@ phenotype_comparison:
     phenotype_comparison_c1: genotype1_id, environment1_id, genotype2_id, environment2_id, phenotype1_id, pub_id
   primary key: phenotype_comparison_id
   foreign keys:
-    phenotype_comparison_environment1_id_fkey: environment1_id
-    phenotype_comparison_environment2_id_fkey: environment2_id
-    phenotype_comparison_genotype1_id_fkey: genotype1_id
-    phenotype_comparison_genotype2_id_fkey: genotype2_id
-    phenotype_comparison_organism_id_fkey: organism_id
-    phenotype_comparison_phenotype1_id_fkey: phenotype1_id
-    phenotype_comparison_phenotype2_id_fkey: phenotype2_id
-    phenotype_comparison_pub_id_fkey: pub_id
+    genotype:
+      table: genotype
+      columns:
+        genotype1_id: genotype_id
+        genotype2_id: genotype_id
+    environment:
+      table: environment
+      columns:
+        environment1_id: environment_id
+        environment2_id: environment_id
+    phenotype:
+      table: phenotype
+      columns:
+        phenotype1_id: phenotype_id
+        phenotype2_id: phenotype_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
+    organism:
+      table: organism
+      columns:
+        organism_id: organism_id
 phenotype_comparison_cvterm:
   description: ""
   fields:
@@ -3497,9 +4331,18 @@ phenotype_comparison_cvterm:
     phenotype_comparison_cvterm_c1: phenotype_comparison_id, cvterm_id
   primary key: phenotype_comparison_cvterm_id
   foreign keys:
-    phenotype_comparison_cvterm_cvterm_id_fkey: cvterm_id
-    phenotype_comparison_cvterm_phenotype_comparison_id_fkey: phenotype_comparison_id
-    phenotype_comparison_cvterm_pub_id_fkey: pub_id
+    phenotype_comparison:
+      table: phenotype_comparison
+      columns:
+        phenotype_comparison_id: phenotype_comparison_id
+    cvterm:
+      table: cvterm
+      columns:
+        cvterm_id: cvterm_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 phenotype_cvterm:
   description: "phenotype to cvterm associations."
   fields:
@@ -3519,8 +4362,14 @@ phenotype_cvterm:
     phenotype_cvterm_c1: phenotype_id, cvterm_id, rank
   primary key: phenotype_cvterm_id
   foreign keys:
-    phenotype_cvterm_cvterm_id_fkey: cvterm_id
-    phenotype_cvterm_phenotype_id_fkey: phenotype_id
+    phenotype:
+      table: phenotype
+      columns:
+        phenotype_id: phenotype_id
+    cvterm:
+      table: cvterm
+      columns:
+        cvterm_id: cvterm_id
 phenotypeprop:
   description: "A phenotype can have any number of slot-value property tags attached to it. This is an alternative to hardcoding a list of columns in the relational schema, and is completely extensible. There is a unique constraint, phenotypeprop_c1, for the combination of phenotype_id, rank, and type_id. Multivalued property-value pairs must be differentiated by rank."
   fields:
@@ -3543,8 +4392,14 @@ phenotypeprop:
     phenotypeprop_c1: phenotype_id, type_id, rank
   primary key: phenotypeprop_id
   foreign keys:
-    phenotypeprop_phenotype_id_fkey: phenotype_id
-    phenotypeprop_type_id_fkey: type_id
+    phenotype:
+      table: phenotype
+      columns:
+        phenotype_id: phenotype_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 phenstatement:
   description: "Phenotypes are things like \"larval lethal\".  Phenstatements are things like \"dpp-1 is recessive larval lethal\". So essentially phenstatement is a linking table expressing the relationship between genotype, environment, and phenotype."
   fields:
@@ -3570,11 +4425,26 @@ phenstatement:
     phenstatement_c1: genotype_id, phenotype_id, environment_id, type_id, pub_id
   primary key: phenstatement_id
   foreign keys:
-    phenstatement_environment_id_fkey: environment_id
-    phenstatement_genotype_id_fkey: genotype_id
-    phenstatement_phenotype_id_fkey: phenotype_id
-    phenstatement_pub_id_fkey: pub_id
-    phenstatement_type_id_fkey: type_id
+    genotype:
+      table: genotype
+      columns:
+        genotype_id: genotype_id
+    environment:
+      table: environment
+      columns:
+        environment_id: environment_id
+    phenotype:
+      table: phenotype
+      columns:
+        phenotype_id: phenotype_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 phylonode:
   description: "This is the most pervasive        element in the phylogeny module, cataloging the \"phylonodes\" of        tree graphs. Edges are implied by the parent_phylonode_id        reflexive closure. For all nodes in a nested set implementation the left and right index will be *between* the parents left and right indexes."
   fields:
@@ -3611,10 +4481,22 @@ phylonode:
     phylonode_phylotree_id_right_idx_key: phylotree_id, right_idx
   primary key: phylonode_id
   foreign keys:
-    phylonode_feature_id_fkey: feature_id
-    phylonode_parent_phylonode_id_fkey: parent_phylonode_id
-    phylonode_phylotree_id_fkey: phylotree_id
-    phylonode_type_id_fkey: type_id
+    phylotree:
+      table: phylotree
+      columns:
+        phylotree_id: phylotree_id
+    phylonode:
+      table: phylonode
+      columns:
+        parent_phylonode_id: phylonode_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
+    feature:
+      table: feature
+      columns:
+        feature_id: feature_id
 phylonode_dbxref:
   description: "For example, for orthology, paralogy group identifiers; could also be used for NCBI taxonomy; for sequences, refer to phylonode_feature, feature associated dbxrefs."
   fields:
@@ -3631,8 +4513,14 @@ phylonode_dbxref:
     phylonode_dbxref_phylonode_id_dbxref_id_key: phylonode_id, dbxref_id
   primary key: phylonode_dbxref_id
   foreign keys:
-    phylonode_dbxref_dbxref_id_fkey: dbxref_id
-    phylonode_dbxref_phylonode_id_fkey: phylonode_id
+    phylonode:
+      table: phylonode
+      columns:
+        phylonode_id: phylonode_id
+    dbxref:
+      table: dbxref
+      columns:
+        dbxref_id: dbxref_id
 phylonode_organism:
   description: "This linking table should only be used for nodes in taxonomy trees; it provides a mapping between the node and an organism. One node can have zero or one organisms, one organism can have zero or more nodes (although typically it should only have one in the standard NCBI taxonomy tree)."
   fields:
@@ -3649,8 +4537,14 @@ phylonode_organism:
     phylonode_organism_phylonode_id_key: phylonode_id
   primary key: phylonode_organism_id
   foreign keys:
-    phylonode_organism_organism_id_fkey: organism_id
-    phylonode_organism_phylonode_id_fkey: phylonode_id
+    phylonode:
+      table: phylonode
+      columns:
+        phylonode_id: phylonode_id
+    organism:
+      table: organism
+      columns:
+        organism_id: organism_id
 phylonode_pub:
   description: ""
   fields:
@@ -3667,8 +4561,14 @@ phylonode_pub:
     phylonode_pub_phylonode_id_pub_id_key: phylonode_id, pub_id
   primary key: phylonode_pub_id
   foreign keys:
-    phylonode_pub_phylonode_id_fkey: phylonode_id
-    phylonode_pub_pub_id_fkey: pub_id
+    phylonode:
+      table: phylonode
+      columns:
+        phylonode_id: phylonode_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 phylonode_relationship:
   description: "This is for  relationships that are not strictly hierarchical; for example, horizontal gene transfer. Most phylogenetic trees are strictly hierarchical, nevertheless it is here for completeness."
   fields:
@@ -3694,10 +4594,19 @@ phylonode_relationship:
     phylonode_relationship_subject_id_object_id_type_id_key: subject_id, object_id, type_id
   primary key: phylonode_relationship_id
   foreign keys:
-    phylonode_relationship_object_id_fkey: object_id
-    phylonode_relationship_phylotree_id_fkey: phylotree_id
-    phylonode_relationship_subject_id_fkey: subject_id
-    phylonode_relationship_type_id_fkey: type_id
+    phylonode:
+      table: phylonode
+      columns:
+        subject_id: phylonode_id
+        object_id: phylonode_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
+    phylotree:
+      table: phylotree
+      columns:
+        phylotree_id: phylotree_id
 phylonodeprop:
   description: ""
   fields:
@@ -3720,8 +4629,14 @@ phylonodeprop:
     phylonodeprop_phylonode_id_type_id_value_rank_key: phylonode_id, type_id, value, rank
   primary key: phylonodeprop_id
   foreign keys:
-    phylonodeprop_phylonode_id_fkey: phylonode_id
-    phylonodeprop_type_id_fkey: type_id
+    phylonode:
+      table: phylonode
+      columns:
+        phylonode_id: phylonode_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 phylotree:
   description: "Global anchor for phylogenetic tree."
   fields:
@@ -3746,9 +4661,18 @@ phylotree:
       not null: TRUE
   primary key: phylotree_id
   foreign keys:
-    phylotree_analysis_id_fkey: analysis_id
-    phylotree_dbxref_id_fkey: dbxref_id
-    phylotree_type_id_fkey: type_id
+    dbxref:
+      table: dbxref
+      columns:
+        dbxref_id: dbxref_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
+    analysis:
+      table: analysis
+      columns:
+        analysis_id: analysis_id
 phylotree_pub:
   description: "Tracks citations global to the tree e.g. multiple sequence alignment supporting tree construction."
   fields:
@@ -3765,8 +4689,14 @@ phylotree_pub:
     phylotree_pub_phylotree_id_pub_id_key: phylotree_id, pub_id
   primary key: phylotree_pub_id
   foreign keys:
-    phylotree_pub_phylotree_id_fkey: phylotree_id
-    phylotree_pub_pub_id_fkey: pub_id
+    phylotree:
+      table: phylotree
+      columns:
+        phylotree_id: phylotree_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 phylotreeprop:
   description: "A phylotree can have any number of slot-value property  tags attached to it. This is an alternative to hardcoding a list of columns in the  relational schema, and is completely extensible."
   fields:
@@ -3789,8 +4719,14 @@ phylotreeprop:
     phylotreeprop_c1: phylotree_id, type_id, rank
   primary key: phylotreeprop_id
   foreign keys:
-    phylotreeprop_phylotree_id_fkey: phylotree_id
-    phylotreeprop_type_id_fkey: type_id
+    phylotree:
+      table: phylotree
+      columns:
+        phylotree_id: phylotree_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 project:
   description: "Standard Chado flexible property table for projects."
   fields:
@@ -3826,8 +4762,14 @@ project_analysis:
     project_analysis_c1: project_id, analysis_id
   primary key: project_analysis_id
   foreign keys:
-    project_analysis_analysis_id_fkey: analysis_id
-    project_analysis_project_id_fkey: project_id
+    project:
+      table: project
+      columns:
+        project_id: project_id
+    analysis:
+      table: analysis
+      columns:
+        analysis_id: analysis_id
 project_contact:
   description: "Linking table for associating projects and contacts."
   fields:
@@ -3844,8 +4786,14 @@ project_contact:
     project_contact_c1: project_id, contact_id
   primary key: project_contact_id
   foreign keys:
-    project_contact_contact_id_fkey: contact_id
-    project_contact_project_id_fkey: project_id
+    project:
+      table: project
+      columns:
+        project_id: project_id
+    contact:
+      table: contact
+      columns:
+        contact_id: contact_id
 project_dbxref:
   description: "project_dbxref links a project to dbxrefs."
   fields:
@@ -3866,8 +4814,14 @@ project_dbxref:
     project_dbxref_c1: project_id, dbxref_id
   primary key: project_dbxref_id
   foreign keys:
-    project_dbxref_dbxref_id_fkey: dbxref_id
-    project_dbxref_project_id_fkey: project_id
+    dbxref:
+      table: dbxref
+      columns:
+        dbxref_id: dbxref_id
+    project:
+      table: project
+      columns:
+        project_id: project_id
 project_feature:
   description: "This table is intended associate records in the feature table with a project."
   fields:
@@ -3884,8 +4838,14 @@ project_feature:
     project_feature_c1: feature_id, project_id
   primary key: project_feature_id
   foreign keys:
-    project_feature_feature_id_fkey: feature_id
-    project_feature_project_id_fkey: project_id
+    feature:
+      table: feature
+      columns:
+        feature_id: feature_id
+    project:
+      table: project
+      columns:
+        project_id: project_id
 project_pub:
   description: "Linking table for associating projects and publications."
   fields:
@@ -3902,8 +4862,14 @@ project_pub:
     project_pub_c1: project_id, pub_id
   primary key: project_pub_id
   foreign keys:
-    project_pub_project_id_fkey: project_id
-    project_pub_pub_id_fkey: pub_id
+    project:
+      table: project
+      columns:
+        project_id: project_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 project_relationship:
   description: "Linking table for relating projects to each other.  For example, a given project could be composed of several smaller subprojects"
   fields:
@@ -3923,9 +4889,15 @@ project_relationship:
     project_relationship_c1: subject_project_id, object_project_id, type_id
   primary key: project_relationship_id
   foreign keys:
-    project_relationship_object_project_id_fkey: object_project_id
-    project_relationship_subject_project_id_fkey: subject_project_id
-    project_relationship_type_id_fkey: type_id
+    project:
+      table: project
+      columns:
+        subject_project_id: project_id
+        object_project_id: project_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 project_stock:
   description: "This table is intended associate records in the stock table with a project."
   fields:
@@ -3942,8 +4914,14 @@ project_stock:
     project_stock_c1: stock_id, project_id
   primary key: project_stock_id
   foreign keys:
-    project_stock_project_id_fkey: project_id
-    project_stock_stock_id_fkey: stock_id
+    stock:
+      table: stock
+      columns:
+        stock_id: stock_id
+    project:
+      table: project
+      columns:
+        project_id: project_id
 projectprop:
   description: ""
   fields:
@@ -3966,8 +4944,14 @@ projectprop:
     projectprop_c1: project_id, type_id, rank
   primary key: projectprop_id
   foreign keys:
-    projectprop_project_id_fkey: project_id
-    projectprop_type_id_fkey: type_id
+    project:
+      table: project
+      columns:
+        project_id: project_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 protocol:
   description: "Procedural notes on how data was prepared and processed."
   fields:
@@ -4002,9 +4986,18 @@ protocol:
     protocol_c1: name
   primary key: protocol_id
   foreign keys:
-    protocol_dbxref_id_fkey: dbxref_id
-    protocol_pub_id_fkey: pub_id
-    protocol_type_id_fkey: type_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
+    dbxref:
+      table: dbxref
+      columns:
+        dbxref_id: dbxref_id
 protocolparam:
   description: "Parameters related to a protocol. For example, if the protocol is a soak, this might include attributes of bath temperature and duration."
   fields:
@@ -4031,9 +5024,15 @@ protocolparam:
       not null: FALSE
   primary key: protocolparam_id
   foreign keys:
-    protocolparam_datatype_id_fkey: datatype_id
-    protocolparam_protocol_id_fkey: protocol_id
-    protocolparam_unittype_id_fkey: unittype_id
+    protocol:
+      table: protocol
+      columns:
+        protocol_id: protocol_id
+    cvterm:
+      table: cvterm
+      columns:
+        datatype_id: cvterm_id
+        unittype_id: cvterm_id
 pub:
   description: "A documented provenance artefact - publications, documents, personal communication."
   fields:
@@ -4092,7 +5091,10 @@ pub:
     pub_c1: uniquename
   primary key: pub_id
   foreign keys:
-    pub_type_id_fkey: type_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 pub_dbxref:
   description: "Handle links to repositories, e.g. Pubmed, Biosis, zoorec, OCLC, Medline, ISSN, coden..."
   fields:
@@ -4113,8 +5115,14 @@ pub_dbxref:
     pub_dbxref_c1: pub_id, dbxref_id
   primary key: pub_dbxref_id
   foreign keys:
-    pub_dbxref_dbxref_id_fkey: dbxref_id
-    pub_dbxref_pub_id_fkey: pub_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
+    dbxref:
+      table: dbxref
+      columns:
+        dbxref_id: dbxref_id
 pub_relationship:
   description: "Handle relationships between publications, e.g. when one publication makes others obsolete, when one publication contains errata with respect to other publication(s), or when one publication also appears in another pub."
   fields:
@@ -4134,9 +5142,15 @@ pub_relationship:
     pub_relationship_c1: subject_id, object_id, type_id
   primary key: pub_relationship_id
   foreign keys:
-    pub_relationship_object_id_fkey: object_id
-    pub_relationship_subject_id_fkey: subject_id
-    pub_relationship_type_id_fkey: type_id
+    pub:
+      table: pub
+      columns:
+        subject_id: pub_id
+        object_id: pub_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 pubauthor:
   description: "An author for a publication. Note the denormalisation (hence lack of _ in table name) - this is deliberate as it is in general too hard to assign IDs to authors."
   fields:
@@ -4169,7 +5183,10 @@ pubauthor:
     pubauthor_c1: pub_id, rank
   primary key: pubauthor_id
   foreign keys:
-    pubauthor_pub_id_fkey: pub_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 pubauthor_contact:
   description: "An author on a publication may have a corresponding entry in the contact table and this table can link the two."
   fields:
@@ -4186,8 +5203,14 @@ pubauthor_contact:
     pubauthor_contact_c1: contact_id, pubauthor_id
   primary key: pubauthor_contact_id
   foreign keys:
-    pubauthor_contact_contact_id_fkey: contact_id
-    pubauthor_contact_pubauthor_id_fkey: pubauthor_id
+    pubauthor:
+      table: pubauthor
+      columns:
+        pubauthor_id: pubauthor_id
+    contact:
+      table: contact
+      columns:
+        contact_id: contact_id
 pubprop:
   description: "Property-value pairs for a pub. Follows standard chado pattern."
   fields:
@@ -4210,8 +5233,14 @@ pubprop:
     pubprop_c1: pub_id, type_id, rank
   primary key: pubprop_id
   foreign keys:
-    pubprop_pub_id_fkey: pub_id
-    pubprop_type_id_fkey: type_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 quantification:
   description: "Quantification is the transformation of an image acquisition to numeric data. This typically involves statistical procedures."
   fields:
@@ -4244,10 +5273,22 @@ quantification:
     quantification_c1: name, analysis_id
   primary key: quantification_id
   foreign keys:
-    quantification_acquisition_id_fkey: acquisition_id
-    quantification_analysis_id_fkey: analysis_id
-    quantification_operator_id_fkey: operator_id
-    quantification_protocol_id_fkey: protocol_id
+    acquisition:
+      table: acquisition
+      columns:
+        acquisition_id: acquisition_id
+    contact:
+      table: contact
+      columns:
+        operator_id: contact_id
+    protocol:
+      table: protocol
+      columns:
+        protocol_id: protocol_id
+    analysis:
+      table: analysis
+      columns:
+        analysis_id: analysis_id
 quantification_relationship:
   description: "There may be multiple rounds of quantification, this allows us to keep an audit trail of what values went where."
   fields:
@@ -4267,9 +5308,15 @@ quantification_relationship:
     quantification_relationship_c1: subject_id, object_id, type_id
   primary key: quantification_relationship_id
   foreign keys:
-    quantification_relationship_object_id_fkey: object_id
-    quantification_relationship_subject_id_fkey: subject_id
-    quantification_relationship_type_id_fkey: type_id
+    quantification:
+      table: quantification
+      columns:
+        subject_id: quantification_id
+        object_id: quantification_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 quantificationprop:
   description: "Extra quantification properties that are not accounted for in quantification."
   fields:
@@ -4292,8 +5339,14 @@ quantificationprop:
     quantificationprop_c1: quantification_id, type_id, rank
   primary key: quantificationprop_id
   foreign keys:
-    quantificationprop_quantification_id_fkey: quantification_id
-    quantificationprop_type_id_fkey: type_id
+    quantification:
+      table: quantification
+      columns:
+        quantification_id: quantification_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 stock:
   description: "Any stock can be globally identified by the combination of organism, uniquename and stock type. A stock is the physical entities, either living or preserved, held by collections. Stocks belong to a collection; they have IDs, type, organism, description and may have a genotype."
   fields:
@@ -4327,9 +5380,18 @@ stock:
     stock_c1: organism_id, uniquename, type_id
   primary key: stock_id
   foreign keys:
-    stock_dbxref_id_fkey: dbxref_id
-    stock_organism_id_fkey: organism_id
-    stock_type_id_fkey: type_id
+    dbxref:
+      table: dbxref
+      columns:
+        dbxref_id: dbxref_id
+    organism:
+      table: organism
+      columns:
+        organism_id: organism_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 stock_cvterm:
   description: "stock_cvterm links a stock to cvterms. This is for secondary cvterms; primary cvterms should use stock.type_id."
   fields:
@@ -4356,9 +5418,18 @@ stock_cvterm:
     stock_cvterm_c1: stock_id, cvterm_id, pub_id, rank
   primary key: stock_cvterm_id
   foreign keys:
-    stock_cvterm_cvterm_id_fkey: cvterm_id
-    stock_cvterm_pub_id_fkey: pub_id
-    stock_cvterm_stock_id_fkey: stock_id
+    stock:
+      table: stock
+      columns:
+        stock_id: stock_id
+    cvterm:
+      table: cvterm
+      columns:
+        cvterm_id: cvterm_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 stock_cvtermprop:
   description: "Extensible properties for stock to cvterm associations. Examples: GO evidence codes; qualifiers; metadata such as the date on which the entry was curated and the source of the association. See the stockprop table for meanings of type_id, value and rank."
   fields:
@@ -4381,8 +5452,14 @@ stock_cvtermprop:
     stock_cvtermprop_c1: stock_cvterm_id, type_id, rank
   primary key: stock_cvtermprop_id
   foreign keys:
-    stock_cvtermprop_stock_cvterm_id_fkey: stock_cvterm_id
-    stock_cvtermprop_type_id_fkey: type_id
+    stock_cvterm:
+      table: stock_cvterm
+      columns:
+        stock_cvterm_id: stock_cvterm_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 stock_dbxref:
   description: "stock_dbxref links a stock to dbxrefs. This is for secondary identifiers; primary identifiers should use stock.dbxref_id."
   fields:
@@ -4403,8 +5480,14 @@ stock_dbxref:
     stock_dbxref_c1: stock_id, dbxref_id
   primary key: stock_dbxref_id
   foreign keys:
-    stock_dbxref_dbxref_id_fkey: dbxref_id
-    stock_dbxref_stock_id_fkey: stock_id
+    stock:
+      table: stock
+      columns:
+        stock_id: stock_id
+    dbxref:
+      table: dbxref
+      columns:
+        dbxref_id: dbxref_id
 stock_dbxrefprop:
   description: "A stock_dbxref can have any number of slot-value property tags attached to it. This is useful for storing properties related to dbxref annotations of stocks, such as evidence codes, and references, and metadata, such as create/modify dates. This is an alternative to hardcoding a list of columns in the relational schema, and is completely extensible. There is a unique constraint, stock_dbxrefprop_c1, for the combination of stock_dbxref_id, rank, and type_id. Multivalued property-value pairs must be differentiated by rank."
   fields:
@@ -4427,8 +5510,14 @@ stock_dbxrefprop:
     stock_dbxrefprop_c1: stock_dbxref_id, type_id, rank
   primary key: stock_dbxrefprop_id
   foreign keys:
-    stock_dbxrefprop_stock_dbxref_id_fkey: stock_dbxref_id
-    stock_dbxrefprop_type_id_fkey: type_id
+    stock_dbxref:
+      table: stock_dbxref
+      columns:
+        stock_dbxref_id: stock_dbxref_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 stock_feature:
   description: "Links a stock to a feature."
   fields:
@@ -4451,9 +5540,18 @@ stock_feature:
     stock_feature_c1: feature_id, stock_id, type_id, rank
   primary key: stock_feature_id
   foreign keys:
-    stock_feature_feature_id_fkey: feature_id
-    stock_feature_stock_id_fkey: stock_id
-    stock_feature_type_id_fkey: type_id
+    feature:
+      table: feature
+      columns:
+        feature_id: feature_id
+    stock:
+      table: stock
+      columns:
+        stock_id: stock_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 stock_featuremap:
   description: "Links a featuremap to a stock."
   fields:
@@ -4473,9 +5571,18 @@ stock_featuremap:
     stock_featuremap_c1: featuremap_id, stock_id, type_id
   primary key: stock_featuremap_id
   foreign keys:
-    stock_featuremap_featuremap_id_fkey: featuremap_id
-    stock_featuremap_stock_id_fkey: stock_id
-    stock_featuremap_type_id_fkey: type_id
+    featuremap:
+      table: featuremap
+      columns:
+        featuremap_id: featuremap_id
+    stock:
+      table: stock
+      columns:
+        stock_id: stock_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 stock_genotype:
   description: "Simple table linking a stock to a genotype. Features with genotypes can be linked to stocks thru feature_genotype -> genotype -> stock_genotype -> stock."
   fields:
@@ -4492,8 +5599,14 @@ stock_genotype:
     stock_genotype_c1: stock_id, genotype_id
   primary key: stock_genotype_id
   foreign keys:
-    stock_genotype_genotype_id_fkey: genotype_id
-    stock_genotype_stock_id_fkey: stock_id
+    stock:
+      table: stock
+      columns:
+        stock_id: stock_id
+    genotype:
+      table: genotype
+      columns:
+        genotype_id: genotype_id
 stock_library:
   description: "Links a stock with a library."
   fields:
@@ -4510,8 +5623,14 @@ stock_library:
     stock_library_c1: library_id, stock_id
   primary key: stock_library_id
   foreign keys:
-    stock_library_library_id_fkey: library_id
-    stock_library_stock_id_fkey: stock_id
+    library:
+      table: library
+      columns:
+        library_id: library_id
+    stock:
+      table: stock
+      columns:
+        stock_id: stock_id
 stock_pub:
   description: "Provenance. Linking table between stocks and, for example, a stocklist computer file."
   fields:
@@ -4528,8 +5647,14 @@ stock_pub:
     stock_pub_c1: stock_id, pub_id
   primary key: stock_pub_id
   foreign keys:
-    stock_pub_pub_id_fkey: pub_id
-    stock_pub_stock_id_fkey: stock_id
+    stock:
+      table: stock
+      columns:
+        stock_id: stock_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 stock_relationship:
   description: ""
   fields:
@@ -4555,9 +5680,15 @@ stock_relationship:
     stock_relationship_c1: subject_id, object_id, type_id, rank
   primary key: stock_relationship_id
   foreign keys:
-    stock_relationship_object_id_fkey: object_id
-    stock_relationship_subject_id_fkey: subject_id
-    stock_relationship_type_id_fkey: type_id
+    stock:
+      table: stock
+      columns:
+        subject_id: stock_id
+        object_id: stock_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 stock_relationship_cvterm:
   description: "For germplasm maintenance and pedigree data, stock_relationship. type_id will record cvterms such as \"is a female parent of\", \"a parent for mutation\", \"is a group_id of\", \"is a source_id of\", etc The cvterms for higher categories such as \"generative\", \"derivative\" or \"maintenance\" can be stored in table stock_relationship_cvterm"
   fields:
@@ -4575,9 +5706,18 @@ stock_relationship_cvterm:
       not null: TRUE
   primary key: stock_relationship_cvterm_id
   foreign keys:
-    stock_relationship_cvterm_cvterm_id_fkey: cvterm_id
-    stock_relationship_cvterm_pub_id_fkey: pub_id
-    stock_relationship_cvterm_stock_relationship_id_fkey: stock_relationship_id
+    stock_relationship:
+      table: stock_relationship
+      columns:
+        stock_relationship_id: stock_relationship_id
+    cvterm:
+      table: cvterm
+      columns:
+        cvterm_id: cvterm_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 stock_relationship_pub:
   description: "Provenance. Attach optional evidence to a stock_relationship in the form of a publication."
   fields:
@@ -4594,8 +5734,14 @@ stock_relationship_pub:
     stock_relationship_pub_c1: stock_relationship_id, pub_id
   primary key: stock_relationship_pub_id
   foreign keys:
-    stock_relationship_pub_pub_id_fkey: pub_id
-    stock_relationship_pub_stock_relationship_id_fkey: stock_relationship_id
+    stock_relationship:
+      table: stock_relationship
+      columns:
+        stock_relationship_id: stock_relationship_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 stockcollection:
   description: "The lab or stock center distributing the stocks in their collection."
   fields:
@@ -4619,8 +5765,14 @@ stockcollection:
     stockcollection_c1: uniquename, type_id
   primary key: stockcollection_id
   foreign keys:
-    stockcollection_contact_id_fkey: contact_id
-    stockcollection_type_id_fkey: type_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
+    contact:
+      table: contact
+      columns:
+        contact_id: contact_id
 stockcollection_db:
   description: "Stock collections may be respresented  by an external online database. This table associates a stock collection with  a database where its member stocks can be found. Individual stock that are part  of this collction should have entries in the stock_dbxref table with the same  db_id record"
   fields:
@@ -4637,8 +5789,14 @@ stockcollection_db:
     stockcollection_db_c1: stockcollection_id, db_id
   primary key: stockcollection_db_id
   foreign keys:
-    stockcollection_db_db_id_fkey: db_id
-    stockcollection_db_stockcollection_id_fkey: stockcollection_id
+    db:
+      table: db
+      columns:
+        db_id: db_id
+    stockcollection:
+      table: stockcollection
+      columns:
+        stockcollection_id: stockcollection_id
 stockcollection_stock:
   description: "stockcollection_stock links a stock collection to the stocks which are contained in the collection."
   fields:
@@ -4655,8 +5813,14 @@ stockcollection_stock:
     stockcollection_stock_c1: stockcollection_id, stock_id
   primary key: stockcollection_stock_id
   foreign keys:
-    stockcollection_stock_stock_id_fkey: stock_id
-    stockcollection_stock_stockcollection_id_fkey: stockcollection_id
+    stockcollection:
+      table: stockcollection
+      columns:
+        stockcollection_id: stockcollection_id
+    stock:
+      table: stock
+      columns:
+        stock_id: stock_id
 stockcollectionprop:
   description: "The table stockcollectionprop contains the value of the stock collection such as website/email URLs; the value of the stock collection order URLs."
   fields:
@@ -4679,8 +5843,14 @@ stockcollectionprop:
     stockcollectionprop_c1: stockcollection_id, type_id, rank
   primary key: stockcollectionprop_id
   foreign keys:
-    stockcollectionprop_stockcollection_id_fkey: stockcollection_id
-    stockcollectionprop_type_id_fkey: type_id
+    stockcollection:
+      table: stockcollection
+      columns:
+        stockcollection_id: stockcollection_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 stockprop:
   description: "A stock can have any number of slot-value property tags attached to it. This is an alternative to hardcoding a list of columns in the relational schema, and is completely extensible. There is a unique constraint, stockprop_c1, for the combination of stock_id, rank, and type_id. Multivalued property-value pairs must be differentiated by rank."
   fields:
@@ -4703,8 +5873,14 @@ stockprop:
     stockprop_c1: stock_id, type_id, rank
   primary key: stockprop_id
   foreign keys:
-    stockprop_stock_id_fkey: stock_id
-    stockprop_type_id_fkey: type_id
+    stock:
+      table: stock
+      columns:
+        stock_id: stock_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 stockprop_pub:
   description: "Provenance. Any stockprop assignment can optionally be supported by a publication."
   fields:
@@ -4721,8 +5897,14 @@ stockprop_pub:
     stockprop_pub_c1: stockprop_id, pub_id
   primary key: stockprop_pub_id
   foreign keys:
-    stockprop_pub_pub_id_fkey: pub_id
-    stockprop_pub_stockprop_id_fkey: stockprop_id
+    stockprop:
+      table: stockprop
+      columns:
+        stockprop_id: stockprop_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
 study:
   description: ""
   fields:
@@ -4748,9 +5930,18 @@ study:
     study_c1: name
   primary key: study_id
   foreign keys:
-    study_contact_id_fkey: contact_id
-    study_dbxref_id_fkey: dbxref_id
-    study_pub_id_fkey: pub_id
+    contact:
+      table: contact
+      columns:
+        contact_id: contact_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
+    dbxref:
+      table: dbxref
+      columns:
+        dbxref_id: dbxref_id
 study_assay:
   description: ""
   fields:
@@ -4767,8 +5958,14 @@ study_assay:
     study_assay_c1: study_id, assay_id
   primary key: study_assay_id
   foreign keys:
-    study_assay_assay_id_fkey: assay_id
-    study_assay_study_id_fkey: study_id
+    study:
+      table: study
+      columns:
+        study_id: study_id
+    assay:
+      table: assay
+      columns:
+        assay_id: assay_id
 studydesign:
   description: ""
   fields:
@@ -4783,7 +5980,10 @@ studydesign:
       not null: TRUE
   primary key: studydesign_id
   foreign keys:
-    studydesign_study_id_fkey: study_id
+    study:
+      table: study
+      columns:
+        study_id: study_id
 studydesignprop:
   description: ""
   fields:
@@ -4806,8 +6006,14 @@ studydesignprop:
     studydesignprop_c1: studydesign_id, type_id, rank
   primary key: studydesignprop_id
   foreign keys:
-    studydesignprop_studydesign_id_fkey: studydesign_id
-    studydesignprop_type_id_fkey: type_id
+    studydesign:
+      table: studydesign
+      columns:
+        studydesign_id: studydesign_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 studyfactor:
   description: ""
   fields:
@@ -4828,8 +6034,14 @@ studyfactor:
       not null: TRUE
   primary key: studyfactor_id
   foreign keys:
-    studyfactor_studydesign_id_fkey: studydesign_id
-    studyfactor_type_id_fkey: type_id
+    studydesign:
+      table: studydesign
+      columns:
+        studydesign_id: studydesign_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 studyfactorvalue:
   description: ""
   fields:
@@ -4853,8 +6065,14 @@ studyfactorvalue:
       not null: FALSE
   primary key: studyfactorvalue_id
   foreign keys:
-    studyfactorvalue_assay_id_fkey: assay_id
-    studyfactorvalue_studyfactor_id_fkey: studyfactor_id
+    studyfactor:
+      table: studyfactor
+      columns:
+        studyfactor_id: studyfactor_id
+    assay:
+      table: assay
+      columns:
+        assay_id: assay_id
 studyprop:
   description: ""
   fields:
@@ -4877,8 +6095,14 @@ studyprop:
     studyprop_study_id_type_id_rank_key: study_id, type_id, rank
   primary key: studyprop_id
   foreign keys:
-    studyprop_study_id_fkey: study_id
-    studyprop_type_id_fkey: type_id
+    study:
+      table: study
+      columns:
+        study_id: study_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 studyprop_feature:
   description: ""
   fields:
@@ -4898,9 +6122,18 @@ studyprop_feature:
     studyprop_feature_studyprop_id_feature_id_key: studyprop_id, feature_id
   primary key: studyprop_feature_id
   foreign keys:
-    studyprop_feature_feature_id_fkey: feature_id
-    studyprop_feature_studyprop_id_fkey: studyprop_id
-    studyprop_feature_type_id_fkey: type_id
+    studyprop:
+      table: studyprop
+      columns:
+        studyprop_id: studyprop_id
+    feature:
+      table: feature
+      columns:
+        feature_id: feature_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 synonym:
   description: "A synonym for a feature. One feature can have multiple synonyms, and the same synonym can apply to multiple features."
   fields:
@@ -4922,7 +6155,10 @@ synonym:
     synonym_c1: name, type_id
   primary key: synonym_id
   foreign keys:
-    synonym_type_id_fkey: type_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
 tableinfo:
   description: ""
   fields:
@@ -4980,6 +6216,15 @@ treatment:
       not null: TRUE
   primary key: treatment_id
   foreign keys:
-    treatment_biomaterial_id_fkey: biomaterial_id
-    treatment_protocol_id_fkey: protocol_id
-    treatment_type_id_fkey: type_id
+    biomaterial:
+      table: biomaterial
+      columns:
+        biomaterial_id: biomaterial_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
+    protocol:
+      table: protocol
+      columns:
+        protocol_id: protocol_id

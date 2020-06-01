@@ -50,44 +50,8 @@ use Drupal\Core\Database\Database;
  * @ingroup tripal_chado_schema_api
  */
 function chado_table_exists($table) {
-  $connection = Database::getConnection();
-
-  // Get the default database and chado schema.
-  $databases = $connection->getConnectionOptions();
-  $default_db = $databases['database'];
-  $chado_schema = chado_get_schema_name('chado');
-
-  // If we've already lookup up this table then don't do it again, as
-  // we don't need to keep querying the database for the same tables.
-  if (array_key_exists("chado_tables", $GLOBALS) and
-    array_key_exists($default_db, $GLOBALS["chado_tables"]) and
-    array_key_exists($chado_schema, $GLOBALS["chado_tables"][$default_db]) and
-    array_key_exists($table, $GLOBALS["chado_tables"][$default_db][$chado_schema])) {
-    return TRUE;
-  }
-
-  $sql = "
-    SELECT 1
-    FROM information_schema.tables
-    WHERE
-      table_name = :table_name AND
-      table_schema = :chado AND
-      table_catalog = :default_db
-  ";
-  $args = [
-    ':table_name' => strtolower($table),
-    ':chado' => $chado_schema,
-    ':default_db' => $default_db,
-  ];
-  $query = Drupal::database()->query($sql, $args);
-  $results = $query->fetchAll();
-  if (empty($results)) {
-    return FALSE;
-  }
-
-  // Set this table in the GLOBALS so we don't query for it again the next time.
-  $GLOBALS["chado_tables"][$default_db][$chado_schema][$table] = TRUE;
-  return TRUE;
+  $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema();
+  return $chado_schema->checkTableExists($table);
 }
 
 /**
@@ -107,50 +71,9 @@ function chado_table_exists($table) {
  *
  * @ingroup tripal_chado_schema_api
  */
-function chado_column_exists($table, $column) {
-  $connection = Database::getConnection();
-
-  // Get the default database and chado schema.
-  $databases = $connection->getConnectionOptions();
-  $default_db = $databases['database'];
-  $chado_schema = chado_get_schema_name('chado');
-
-  // @upgrade $cached_obj = cache_get('chado_table_columns', 'cache');
-  // if ($cached_obj) {
-  //   $cached_cols = $cached_obj->data;
-  //   if (is_array($cached_cols) and
-  //     array_key_exists($table, $cached_cols) and
-  //     array_key_Exists($column, $cached_cols[$table])) {
-  //     return $cached_cols[$table][$column]['exists'];
-  //   }
-  // }
-
-  $sql = "
-    SELECT 1
-    FROM information_schema.columns
-    WHERE
-      table_name = :table_name AND
-      column_name = :column_name AND
-      table_schema = :chado AND
-      table_catalog = :default_db
-  ";
-  $args = [
-    ':table_name' => strtolower($table),
-    ':column_name' => $column,
-    ':chado' => $chado_schema,
-    ':default_db' => $default_db,
-  ];
-  $query = Drupal::database()->query($sql, $args);
-  $results = $query->fetchAll();
-  if (empty($results)) {
-    // @upgrade $cached_cols[$table][$column]['exists'] = FALSE;
-    // cache_set('chado_table_columns', $cached_cols, 'cache', CACHE_TEMPORARY);
-    return FALSE;
-  }
-
-  // @upgrade $cached_cols[$table][$column]['exists'] = TRUE;
-  // cache_set('chado_table_columns', $cached_cols, 'cache', CACHE_TEMPORARY);
-  return TRUE;
+function checkColumnExists($table, $column) {
+  $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema();
+  return $chado_schema->checkTableExists($table, $column);
 }
 
 /**
@@ -204,7 +127,6 @@ function chado_sequence_exists($sequence) {
   // @upgrade $cached_seqs[$sequence]['exists'] = FALSE;
   // cache_set('chado_sequences', $cached_seqs, 'cache', CACHE_TEMPORARY);
   return TRUE;
-
 }
 
 /**
@@ -216,39 +138,8 @@ function chado_sequence_exists($sequence) {
  *   The name of the index.
  */
 function chado_index_exists($table, $name, $no_suffix = FALSE) {
-  $connection = Database::getConnection();
-
-  if ($no_suffix) {
-    $indexname = strtolower($table . '_' . $name);
-  }
-  else {
-    $indexname = strtolower($table . '_' . $name . '_idx');
-  }
-
-  // Get the default database and chado schema.
-  $databases = $connection->getConnectionOptions();
-  $default_db = $databases['database'];
-  $chado_schema = chado_get_schema_name('chado');
-
-  $sql = "
-    SELECT 1 as exists
-    FROM pg_indexes
-    WHERE
-      indexname = :indexname AND
-      tablename = :tablename AND
-      schemaname = :schemaname
-  ";
-  $args = [
-    ':indexname' => $indexname,
-    ':tablename' => strtolower($table),
-    ':schemaname' => $chado_schema,
-  ];
-  $query = Drupal::database()->query($sql, $args);
-  $results = $query->fetchAll();
-  if (empty($results)) {
-    return FALSE;
-  }
-  return TRUE;
+  $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema();
+  return $chado_schema->checkIndexExists($table, $name, $no_suffix);
 }
 
 /**
@@ -448,7 +339,8 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
   }
   else {
     $chado_exists = TRUE;
-    $prop_exists = chado_table_exists('chadoprop');
+    // we cannot use chado_table_exists here because it causes a loop.
+    $prop_exists = \Drupal::database()->schema()->tableExists('chado.chadoprop');
   }
 
   // if the table doesn't exist then we don't know what version but we know
@@ -457,8 +349,8 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
     $version = "1.11 or older";
   }
   else {
-    // We need to hardcode the schema here rather than rely on the db_query
-    // function to settle it because the db_query function needs to know the
+    // We need to hardcode the schema here rather than rely on the \Drupal::database()->query
+    // function to settle it because the \Drupal::database()->query function needs to know the
     // Chado version to make the table prefixes set properly (chicken and
     // egg problem).
     $chado_schema = chado_get_schema_name('chado');
@@ -535,48 +427,11 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
  *   names.
  *
  * @ingroup tripal_chado_schema_api
- *
- * @upgrade
- *
+ */
 function chado_get_table_names($include_custom = NULL) {
-
-  // first get the chado version that is installed
-  $v = array_key_exists('chado_version', $GLOBALS) ? $GLOBALS["chado_version"] : '';
-
-  $tables = [];
-  if ($v == '1.3') {
-    $tables_v1_3 = tripal_chado_chado_get_v1_3_tables();
-    foreach ($tables_v1_3 as $table) {
-      $tables[$table] = $table;
-    }
-  }
-  if ($v == '1.2') {
-    $tables_v1_2 = tripal_chado_chado_get_v1_2_tables();
-    foreach ($tables_v1_2 as $table) {
-      $tables[$table] = $table;
-    }
-  }
-  if ($v == '1.11' or $v == '1.11 or older') {
-    $tables_v1_11 = tripal_chado_chado_get_v1_11_tables();
-    foreach ($tables_v1_11 as $table) {
-      $tables[$table] = $table;
-    }
-  }
-
-  // Now add in the custom tables too if requested
-  if ($include_custom) {
-    $sql = "SELECT table_name FROM {tripal_custom_tables}";
-    $resource = db_query($sql);
-
-    foreach ($resource as $r) {
-      $tables[$r->table_name] = $r->table_name;
-    }
-  }
-
-  asort($tables);
-  return $tables;
+  $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema();
+  return $chado_schema->getTableNames($include_custom);
 }
-*/
 
 /**
  * Retrieves the chado tables Schema API array.
@@ -589,38 +444,12 @@ function chado_get_table_names($include_custom = NULL) {
  *   A Drupal Schema API array defining the table.
  *
  * @ingroup tripal_chado_schema_api
- *
- * @upgrade
- *
+ */
 function chado_get_schema($table) {
-
-  // first get the chado version that is installed
-  $v = array_key_exists("chado_version", $GLOBALS) ? $GLOBALS["chado_version"] : '';
-
-  // get the table array from the proper chado schema
-  $v = preg_replace("/\./", "_", $v); // reformat version for hook name
-
-  // Call the module_invoke_all.
-  $hook_name = "chado_schema_v" . $v . "_" . $table;
-  $table_arr = module_invoke_all($hook_name);
-
-  // If the module_invoke_all returned nothing then let's make sure there isn't
-  // An API call we can call directly.  The only time this occurs is
-  // during an upgrade of a major Drupal version and tripal_core is disabled.
-  if ((!$table_arr or !is_array($table_arr)) and
-    function_exists('tripal_chado_' . $hook_name)) {
-    $api_hook = "tripal_chado_" . $hook_name;
-    $table_arr = $api_hook();
-  }
-
-  // if the table_arr is empty then maybe this is a custom table
-  if (!is_array($table_arr) or count($table_arr) == 0) {
-    $table_arr = chado_get_custom_table_schema($table);
-  }
-
-  return $table_arr;
+  $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema();
+  return $chado_schema->getTableSchema($table);
 }
-*/
+
 
 /**
  * Retrieves the schema in an array for the specified custom table.
@@ -633,22 +462,11 @@ function chado_get_schema($table) {
  *   FALSE on failure.
  *
  * @ingroup tripal_chado_schema_api
- *
- * @upgrade
- *
+ */
 function chado_get_custom_table_schema($table) {
-
-  $sql = "SELECT schema FROM {tripal_custom_tables} WHERE table_name = :table_name";
-  $results = db_query($sql, [':table_name' => $table]);
-  $custom = $results->fetchObject();
-  if (!$custom) {
-    return FALSE;
-  }
-  else {
-    return unserialize($custom->schema);
-  }
+  $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema();
+  return $chado_schema->getCustomTableSchema($table);
 }
-*/
 
 /**
  *  Returns all chado base tables.
@@ -664,83 +482,12 @@ function chado_get_custom_table_schema($table) {
  *    An array of base table names.
  *
  * @ingroup tripal_chado_schema_api
- *
- * @upgrade
- *
+ */
 function chado_get_base_tables() {
-
-  // Initialize the base tables with those tables that are missing a type.
-  // Ideally they should have a type, but that's for a future version of Chado.
-  $base_tables = [
-    'organism',
-    'project',
-    'analysis',
-    'biomaterial',
-    'eimage',
-    'assay',
-  ];
-
-  // We'll use the cvterm table to guide which tables are base tables. Typically
-  // base tables (with a few exceptions) all have a type.  Iterate through the
-  // referring tables.
-  $schema = chado_get_schema('cvterm');
-  $referring = $schema['referring_tables'];
-  foreach ($referring as $tablename) {
-
-    // Ignore the cvterm tables, relationships, chadoprop tables.
-    if ($tablename == 'cvterm_dbxref' || $tablename == 'cvterm_relationship' ||
-      $tablename == 'cvtermpath' || $tablename == 'cvtermprop' || $tablename == 'chadoprop' ||
-      $tablename == 'cvtermsynonym' || preg_match('/_relationship$/', $tablename) ||
-      preg_match('/_cvterm$/', $tablename) ||
-      // Ignore prop tables
-      preg_match('/prop$/', $tablename) || preg_match('/prop_.+$/', $tablename) ||
-      // Ignore nd_tables
-      preg_match('/^nd_/', $tablename)) {
-      continue;
-    }
-    else {
-      array_push($base_tables, $tablename);
-    }
-  }
-
-  // Remove any linker tables that have snuck in.  Linker tables are those
-  // whose foreign key constraints link to two or more base table.
-  $final_list = [];
-  foreach ($base_tables as $i => $tablename) {
-    // A few tables break our rule and seems to look
-    // like a linking table, but we want to keep it as a base table.
-    if ($tablename == 'biomaterial' or $tablename == 'assay' or $tablename == 'arraydesign') {
-      $final_list[] = $tablename;
-      continue;
-    }
-
-    // Remove the phenotype table. It really shouldn't be a base table as
-    // it is meant to store individual phenotype measurements.
-    if ($tablename == 'phenotype') {
-      continue;
-    }
-    $num_links = 0;
-    $schema = chado_get_schema($tablename);
-    $fkeys = $schema['foreign keys'];
-    foreach ($fkeys as $fkid => $details) {
-      $fktable = $details['table'];
-      if (in_array($fktable, $base_tables)) {
-        $num_links++;
-      }
-    }
-    if ($num_links < 2) {
-      $final_list[] = $tablename;
-    }
-  }
-
-  // Now add in the cvterm table to the list.
-  $final_list[] = 'cvterm';
-
-  // Sort the tables and return the list.
-  sort($final_list);
-  return $final_list;
+  $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema();
+  return $chado_schema->getBaseTables();
 }
-*/
+
 
 /**
  * Get information about which Chado base table a cvterm is mapped to.
