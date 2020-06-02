@@ -9,9 +9,11 @@
 
 This project acts as the home of Tripal 4 development. Once Tripal 4 is stable, it will be merged back into the [Core Tripal Repository](https://github.com/tripal/tripal). 
 
-## Currently working on [Group 1](https://github.com/tripal/t4d8/issues/1)
+## Currently working on [Group 1](https://github.com/tripal/t4d8/issues/1) and [Group 2](https://github.com/tripal/t4d8/issues/2)
 
 We currently have working entities for the following: Tripal vocabularies, Tripal Terms, Tripal Content Types, Tripal Content! However, nothing is connected to Chado at this point (to ensure it is chado-agnostic).
+
+**We are currently focused on updating the Tripal and Tripal Chado API to help extension module developers begin their module upgrades.**
 
 ### How to get involved!
 
@@ -23,11 +25,10 @@ Tripal 4 development has been planned in the issue queue of this repository with
 
 To aid in the development of Tripal 4, 
 1. Choose a task from the current group
-2. Create an issue stating your intention
-3. Tag this issue with the `Task` and `Group 1` tags.
-4. Keep track of your progress and design in this issue
-5. Once the task is complete, create a PR referencing this issue.
-6. Once the PR is merged, check the task checkbox in the original `Roadmap` issue.
+2. Comment on an issue stating your intention
+3. Keep track of your progress and design in this issue
+4. Once the task is complete, create a PR referencing this issue.
+5. Once the PR is merged, check the task checkbox in the original `Roadmap` issue.
 
 # Required Dependencies
 * Drupal:
