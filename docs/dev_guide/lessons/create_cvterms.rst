@@ -52,7 +52,7 @@ The last but critical step is to call ``$vocab->save();`` which saves your new C
 
 You can check that the CV saves properly by navigating to Home > Administration > Structure > Tripal Controlled Vocabularies (``admin/structure/tripal_vocab``) and ensuring your new CV is in the list of existing CVs.
 
-.. image:: create_cvterms.1.png
+.. image:: images/create_cvterms.1.png
 
 Load CV
 ^^^^^^^^^
@@ -108,7 +108,7 @@ This follows the same format as for creating the sequence ontology CV. First we 
 
 To check if your CVterm was created properly you can look on the listing at Home > Administration > Structure > Tripal Controlled Vocabulary Terms (``admin/structure/tripal_term``) and ensuring your new CVterm is in the list of existing CVterms.
 
-.. image:: create_cvterms.2.png
+.. image:: images/create_cvterms.2.png
 
 Load CVterm
 ^^^^^^^^^^^^^
