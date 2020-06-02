@@ -16,3 +16,4 @@ Custom Module Development
    module_dev/views
    module_dev/config
    module_dev/theme
+   module_dev/caching
