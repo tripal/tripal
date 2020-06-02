@@ -23,6 +23,6 @@ script:
   # Copy the current module files into the module directory.
   - docker cp ./ drupal8dev_ci:/var/www/html/drupal8/web/modules/t4d8
   # Enable the module.
-  - docker exec --workdir=/var/www/html/drupal8 drupal8dev_ci vendor/drush/drush/drush en tripal
+  - docker exec --workdir=/var/www/html/drupal8 drupal8dev_ci vendor/drush/drush/drush en tripal tripal_chado
   # Navigate to the Drupal webroot and then run the module tests.
-  - docker exec --workdir=/var/www/html/drupal8/web drupal8dev_ci ../vendor/phpunit/phpunit/phpunit --configuration core modules/t4d8/tripal/tests
+  - docker exec --workdir=/var/www/html/drupal8/web drupal8dev_ci ../vendor/phpunit/phpunit/phpunit --configuration core modules/t4d8
