@@ -13,3 +13,4 @@ This documentation is meant to guide users, admin and developers in the usage an
    :caption: Contents:
 
    dev_guide
+   contributing
