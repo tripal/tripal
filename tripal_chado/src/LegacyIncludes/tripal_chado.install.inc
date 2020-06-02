@@ -213,7 +213,7 @@ function tripal_chado_install_sql($sql_file) {
 
   // Open a PHP connection to the database
   // since Drupal restricts us to a single statement per exec.
-  $pgconnection = pg_pconnect($dsn);
+  $pgconnection = pg_connect($dsn);
   if (!$pgconnection) {
     \Drupal::logger('tripal_chado')->error(
       "Unable to connect to database using '$dsn' connection string.\n");
