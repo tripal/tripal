@@ -24,21 +24,17 @@ class ContentBarChartBlock extends BlockBase implements BlockPluginInterface {
     $db = \Drupal::database();
     $output = "";
 
-    $entity_types = $db->select('tripal_bundle', 'tb')
-      ->fields('tb')
-      ->execute();
+    $query = $db->select('tripal_entity', 'te');
+    $query->addField('te', 'type');
+    $query->addExpression('COUNT(te.type)', 'count');
+    $query->groupBy('te.type');
+    $entity_types = $query->execute();
 
     $entity_count_listing = [];
     while (($entity_type = $entity_types->fetchObject())) {
-      $result = $db->select('chado_' . $entity_type->name, 'et')
-        ->fields('et')
-        ->countQuery()
-        ->execute()
-        ->fetchField();
-
       $entity_count_listing[] = [
-        'name' => $entity_type->label,
-        'count' => $result,
+        'name' => \Drupal::config('tripal.bio_data.' . $entity_type->type)->get('label'),
+        'count' => $entity_type->count,
       ];
     }
 
