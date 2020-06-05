@@ -71,9 +71,9 @@ function chado_table_exists($table) {
  *
  * @ingroup tripal_chado_schema_api
  */
-function checkColumnExists($table, $column) {
+function chado_column_exists($table, $column) {
   $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema();
-  return $chado_schema->checkTableExists($table, $column);
+  return $chado_schema->checkColumnExists($table, $column);
 }
 
 /**
@@ -340,7 +340,8 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
   else {
     $chado_exists = TRUE;
     // we cannot use chado_table_exists here because it causes a loop.
-    $prop_exists = \Drupal::database()->schema()->tableExists('chado.chadoprop');
+    // @todo this needs further thought.
+    $prop_exists = TRUE; //\Drupal::database()->schema()->tableExists('chado.chadoprop');
   }
 
   // if the table doesn't exist then we don't know what version but we know

@@ -57,33 +57,33 @@ class SchemaAPITest extends BrowserTestBase {
     // And check that the table is there.
     $result = chado_table_exists($table_name);
     $this->assertTrue($result,
-      "The table should exists because we just created it.");
+      "The table, $table_name, should exists because we just created it.");
 
     // -- COLUMNS.
     // Now check that a column NOT in the table is properly detected.
     $column = 'columndoesnotexist';
     $result = chado_column_exists($table_name, $column);
     $this->assertFalse($result,
-      "The column does not exist in the table.");
+      "The column, $table_name.$column, should not exist in the table.");
 
     // Now check that a column in the table is properly detected.
     $column = 'cte_name';
     $result = chado_column_exists($table_name, $column);
     $this->assertTRUE($result,
-      "The column does exist in the table but we were not able to detect it.");
+      "The column, $table_name.$column, does exist in the table but we were not able to detect it.");
 
     // -- SEQUENCE.
     // Now check for the sequence which allows the primary key to autoincrement.
     $sequence_name = strtolower($table_name . '_cte_id_seq');
     $result = chado_sequence_exists($sequence_name);
     $this->assertTRUE($result,
-      "The sequence should exist for the primary key.");
+      "The sequence, $sequence_name, should exist for the primary key.");
 
     // There is no sequence on the name so lets confirm that.
     $sequence_name = strtolower($table_name . '_cte_name_seq');
     $result = chado_sequence_exists($sequence_name);
     $this->assertFALSE($result,
-      "The sequence should NOT exist for the name.");
+      "The sequence, $sequence_name, should NOT exist for the name.");
 
     // -- INDEX.
     // Now check for the index on the primary key.
@@ -308,7 +308,7 @@ class SchemaAPITest extends BrowserTestBase {
     'library_expression', 'library_expressionprop', 'library_feature',
     'library_featureprop', 'library_pub', 'library_relationship',
     'library_relationship_pub', 'library_synonym', 'libraryprop', 'libraryprop_pub',
-    'magedocumentation', 'mageml', 'materialized_view', 'nd_experiment',
+    'magedocumentation', 'mageml', 'nd_experiment',
     'nd_experiment_analysis', 'nd_experiment_contact', 'nd_experiment_dbxref',
     'nd_experiment_genotype', 'nd_experiment_phenotype', 'nd_experiment_project',
     'nd_experiment_protocol', 'nd_experiment_pub', 'nd_experiment_stock',
