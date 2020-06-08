@@ -25,7 +25,6 @@ class NotificationsBlock extends BlockBase implements BlockPluginInterface {
    */
   public function build() {
     $db = \Drupal::database();
-    $output = "hello";
 
     // Prepare table header
     $header = [
@@ -110,4 +109,3 @@ class NotificationsBlock extends BlockBase implements BlockPluginInterface {
   }
 
 }
-
