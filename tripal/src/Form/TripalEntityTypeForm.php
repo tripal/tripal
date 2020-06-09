@@ -62,7 +62,7 @@ class TripalEntityTypeForm extends EntityForm {
       '#machine_name' => [
         'exists' => '\Drupal\tripal\Entity\TripalEntityType::load',
       ],
-      '#disabled' => !$tripal_entity_type->isNew(),
+      '#disabled' => TRUE,
     ];
     $form['id'] = [
       '#type' => 'hidden',
