@@ -75,7 +75,10 @@
       }
 
       // Now insert the bar chart.
-      barchart2('#tripal-entity-type-chart', '#block-tripal-content-type-barchart', entityCountListing);
+      if (!settings.tripal.dashboard.barChartBuilt) {
+        barchart2('#tripal-entity-type-chart', '#block-tripal-content-type-barchart', settings.tripal.dashboard.entityCountListing);
+        settings.tripal.dashboard.barChartBuilt = true;
+      }
     }
   };
 }) (jQuery);

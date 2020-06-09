@@ -112,6 +112,15 @@ tripal.jobs_execute:
 # Dashboard.
 ##
 
+# Legacy Tripal Dashboard
+tripal.dashboard:
+  path: 'admin/dashboard'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalDashboard'
+    _title: 'Dashboard'
+  requirements:
+    _permission: 'administer tripal'
+
 # Dashboard Action Item callbacks
 tripal.dashboard_disable_notification:
   path: 'admin/disable/notification/{id}'

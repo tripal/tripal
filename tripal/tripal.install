@@ -516,11 +516,6 @@ function tripal_tripal_variables_schema() {
 }
 
 /**
- * @section
- * Schema Definitions.
- */
-
-/**
  * Provides the schema for the tripal_custom_quota table.
  */
 function tripal_tripal_custom_quota_schema() {
