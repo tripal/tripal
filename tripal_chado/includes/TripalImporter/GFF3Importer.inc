@@ -643,7 +643,9 @@ class GFF3Importer extends TripalImporter {
             $org = chado_select_record('organism', ["*"], $values);
             if (count($org) == 0) {
               if ($create_organism) {
-                $feature_organism = (object) chado_insert_record('organism', $values);
+                $feature_organism = (object) chado_insert_record('organism', $values, array(
+                  'skip_validation' => TRUE,
+                ));
                 if (!$feature_organism) {
                   $this->logMessage("Could not add the organism, '%org', from line %line. Skipping this line.",
                     [
@@ -1173,7 +1175,9 @@ class GFF3Importer extends TripalImporter {
     }
 
     // finally insert the relationship if it doesn't exist
-    $ret = chado_insert_record('feature_relationship', $values);
+    $ret = chado_insert_record('feature_relationship', $values, array(
+      'skip_validation' => TRUE,
+    ));
     if (!$ret) {
       $this->logMessage("Could not add 'Derives_from' relationship for :uniquename and :subject.",
         [
@@ -1249,7 +1253,9 @@ class GFF3Importer extends TripalImporter {
             'object_id' => $parent_feature->feature_id,
             'type_id' => $relcvterm->cvterm_id,
           ];
-          $result = chado_insert_record('feature_relationship', $values);
+          $result = chado_insert_record('feature_relationship', $values, array(
+            'skip_validation' => TRUE,
+          ));
           if (!$result) {
             $this->logMessage("Failed to insert feature relationship '$uname' ($type) $rel_type '$parent' ($parent_type).",
               [], TRIPAL_WARNING);
@@ -1269,7 +1275,9 @@ class GFF3Importer extends TripalImporter {
           if (isset($phase)) {
             $values['phase'] = $phase;
           }
-          $result = chado_insert_record('tripal_gffcds_temp', $values);
+          $result = chado_insert_record('tripal_gffcds_temp', $values, array(
+            'skip_validation' => TRUE,
+          ));
           if (!$result) {
             throw new Exception(t("Cound not save record in temporary CDS table, Cannot continue.", []));
             exit;
@@ -1316,7 +1324,9 @@ class GFF3Importer extends TripalImporter {
           'name' => $dbname,
           'description' => 'Added automatically by the GFF loader',
         ];
-        $success = chado_insert_record('db', $values);
+        $success = chado_insert_record('db', $values, array(
+          'skip_validation' => TRUE,
+        ));
         if ($success) {
           $values = ['name' => "$dbname"];
           $db = chado_select_record('db', ['db_id'], $values);
@@ -1342,7 +1352,9 @@ class GFF3Importer extends TripalImporter {
           'accession' => $accession,
           'version' => '',
         ];
-        $ret = chado_insert_record('dbxref', $values);
+        $ret = chado_insert_record('dbxref', $values, array(
+          'skip_validation' => TRUE,
+        ));
         $values = [
           'accession' => $accession,
           'db_id' => $db->db_id,
@@ -1365,7 +1377,9 @@ class GFF3Importer extends TripalImporter {
           'dbxref_id' => $dbxref->dbxref_id,
           'feature_id' => $feature->feature_id,
         ];
-        $success = chado_insert_record('feature_dbxref', $values);
+        $success = chado_insert_record('feature_dbxref', $values, array(
+          'skip_validation' => TRUE,
+        ));
         if (!$success) {
           $this->logMessage("Failed to insert Dbxref: $dbname:$accession.", [], TRIPAL_WARNING);
           return 0;
@@ -1449,7 +1463,9 @@ class GFF3Importer extends TripalImporter {
             'uniquename' => 'null',
           ],
         ];
-        $success = chado_insert_record('feature_cvterm', $values);
+        $success = chado_insert_record('feature_cvterm', $values, array(
+          'skip_validation' => TRUE,
+        ));
 
         if (!$success) {
           $this->logMessage("Failed to insert ontology term: $dbname:$accession.", [], TRIPAL_WARNING);
@@ -1479,7 +1495,9 @@ class GFF3Importer extends TripalImporter {
         'name' => 'synonym_type',
         'definition' => 'vocabulary for synonym types',
       ];
-      $success = chado_insert_record('cv', $values);
+      $success = chado_insert_record('cv', $values, array(
+        'skip_validation' => TRUE,
+      ));
       if (!$success) {
         $this->logMessage("Failed to add the synonyms type vocabulary.", [], TRIPAL_WARNING);
         return 0;
@@ -1537,7 +1555,9 @@ class GFF3Importer extends TripalImporter {
           'type_id' => $syntype->cvterm_id,
           'synonym_sgml' => '',
         ];
-        $success = chado_insert_record('synonym', $values);
+        $success = chado_insert_record('synonym', $values, array(
+          'skip_validation' => TRUE,
+        ));
         if (!$success) {
           $this->logMessage("Cannot add alias $alias to synonym table.", [], TRIPAL_WARNING);
           return 0;
@@ -1600,7 +1620,9 @@ class GFF3Importer extends TripalImporter {
           'feature_id' => $feature->feature_id,
           'pub_id' => $pub->pub_id,
         ];
-        $success = chado_insert_record('feature_synonym', $values);
+        $success = chado_insert_record('feature_synonym', $values, array(
+          'skip_validation' => TRUE,
+        ));
 
         if (!$success) {
           $this->logMessage("Cannot add alias $alias to feature synonym table.", [], TRIPAL_WARNING);
@@ -1674,7 +1696,9 @@ class GFF3Importer extends TripalImporter {
         'is_analysis' => $is_analysis,
         'is_obsolete' => $is_obsolete,
       ];
-      $feature = (object) chado_insert_record('feature', $values);
+      $feature = (object) chado_insert_record('feature', $values, array(
+        'skip_validation' => TRUE,
+      ));
       if (!$feature) {
         $this->logMessage("Failed to insert feature '$uniquename' ($cvterm->name).", [], TRIPAL_WARNING);
         return 0;
@@ -1716,7 +1740,7 @@ class GFF3Importer extends TripalImporter {
       if (strcmp($score, '.') != 0) {
         $af_values['significance'] = $score;
       }
-      if (!chado_insert_record('analysisfeature', $af_values)) {
+      if (!chado_insert_record('analysisfeature', $af_values, array('skip_validation' => TRUE))) {
         $this->logMessage("Could not add analysisfeature record: $analysis_id, $feature->feature_id.", [], TRIPAL_WARNING);
       }
     }
@@ -1808,7 +1832,9 @@ class GFF3Importer extends TripalImporter {
               'uniquename' => $landmark,
               'type_id' => $landmark_type_id,
             ];
-            $results = chado_insert_record('feature', $values);
+            $results = chado_insert_record('feature', $values, array(
+              'skip_validation' => TRUE,
+            ));
             if (!$results) {
               $this->logMessage("Cannot find landmark feature: '%landmark', nor could it be inserted.",
                 ['%landmark' => $landmark], TRIPAL_WARNING);
@@ -1923,7 +1949,9 @@ class GFF3Importer extends TripalImporter {
       if ($phase) {
         $values['phase'] = $phase;
       }
-      $success = chado_insert_record('featureloc', $values);
+      $success = chado_insert_record('featureloc', $values, array(
+        'skip_validation' => TRUE,
+      ));
       if (!$success) {
         throw new Exception("Failed to insert featureloc.");
       }
