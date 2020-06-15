@@ -7,24 +7,28 @@ services:
 sudo: required
 
 php:
-  - 7.2
+  - 7.3
+
+env:
+  - IMAGE=laceysanderson/drupal8dev_ci:drupal8.8-pgsql DRUPAL_ROOT=/var/www/html/drupal8
+  - IMAGE=laceysanderson/drupal9dev_ci:drupal9.0.x-php7.3 DRUPAL_ROOT=/var/www/html/drupal9
 
 before_install:
   # Get the docker image.
-  - docker pull laceysanderson/drupal8dev_ci:drupal8.8-pgsql
+  - docker pull $IMAGE
 
 script:
   # run drupal container in background mapping apache to port 9000
   # and map the current drupal-dev site into the webroot of the container.
-  - docker run --publish=9000:80 --name=drupal8dev_ci -t -i -d laceysanderson/drupal8dev_ci:drupal8.8-pgsql
+  - docker run --publish=9000:80 --name=drupaldev_ci -t -i -d $IMAGE
   # Start the database
-  - docker exec drupal8dev_ci service postgresql start
+  - docker exec drupaldev_ci service postgresql start
   - sleep 30 #wait for the database to start
   # Copy the current module files into the module directory.
-  - docker cp ./ drupal8dev_ci:/var/www/html/drupal8/web/modules/t4d8
+  - docker cp ./ drupaldev_ci:$DRUPAL_ROOT/web/modules/t4d8
   # Enable the module.
-  - docker exec --workdir=/var/www/html/drupal8 drupal8dev_ci vendor/drush/drush/drush en tripal tripal_chado -y
+  - docker exec --workdir=$DRUPAL_ROOT drupaldev_ci vendor/bin/drush en tripal tripal_chado -y
   # Install Chado.
-  - docker exec --workdir=/var/www/html/drupal8 drupal8dev_ci vendor/drush/drush/drush php-eval "module_load_include('inc', 'tripal_chado', 'src/LegacyIncludes/tripal_chado.install'); tripal_chado_install_chado('Install Chado v1.3');"
+  - docker exec --workdir=$DRUPAL_ROOT drupaldev_ci vendor/bin/drush php-eval "module_load_include('inc', 'tripal_chado', 'src/LegacyIncludes/tripal_chado.install'); tripal_chado_install_chado('Install Chado v1.3');"
   # Navigate to the Drupal webroot and then run the module tests.
-  - docker exec --workdir=/var/www/html/drupal8/web drupal8dev_ci ../vendor/phpunit/phpunit/phpunit --configuration core modules/t4d8
+  - docker exec --workdir=$DRUPAL_ROOT/web drupaldev_ci ../vendor/bin/phpunit --configuration core modules/t4d8
