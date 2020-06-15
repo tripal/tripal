@@ -3,52 +3,26 @@
 #
 # During initial Drupal setup,
 # Database type: PostgreSQL
-# Database name: tripal
-# Database username: tripal
-# Database password: secret
-# ADVANCED OPTIONS; Database host: postgres
+# Database name: drupal9_dev
+# Database username: drupaladmin
+# Database password: drupal9developmentonlylocal
 
-version: '3.1'
+version: '3.2'
 
 services:
   drupal:
-    image: drupal:8-apache
+    image: laceysanderson/tripal4dev:latest
     ports:
       - 9000:80
-    depends_on:
-      - postgres
     volumes:
-      - .:/var/www/html/modules/tripal
+      - .:/var/www/html/modules/t4d8
       - modules:/var/www/html/modules
       - themes:/var/www/html/themes
       - sites:/var/www/html/sites
-      # This anonymous volume allows drush to access drupal's root directory
-      - code:/var/www/html
-    restart: always
-
-  postgres:
-    image: postgres:10
-    env_file:
-      - tripaldocker/dev/.env
-    volumes:
-      - db:/var/lib/postgresql/data
-
-  drush:
-    image: drush/drush:8
-    restart: "no"
-    depends_on:
-      - drupal
-      - postgres
-    volumes:
-      - code:/app
-      - sites:/app/sites
-      - modules:/app/modules
-      - themes:/app/themes
-      - .:/app/modules/tripal
+      - db:/var/lib/postgresql
 
 volumes:
-  code:
-  db:
   modules:
   themes:
   sites:
+  db:

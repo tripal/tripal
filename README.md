@@ -7,7 +7,61 @@
 
 ## UNDER ACTIVE DEVELOPMENT
 
-This project acts as the home of Tripal 4 development. Once Tripal 4 is stable, it will be merged back into the [Core Tripal Repository](https://github.com/tripal/tripal). 
+This project acts as the home of Tripal 4 development. Once Tripal 4 is stable, it will be merged back into the [Core Tripal Repository](https://github.com/tripal/tripal).
+
+## Required Dependencies
+* Drupal:
+  * Drupal 8.8.x or 9.0.x
+  * Drupal core modules: Search, Path, View, Entity, and PHP modules.
+* PostgreSQL
+* PHP 7.3+
+* UNIX/Linux
+
+## Traditional Installation
+
+1. Install [Drupal](https://www.drupal.org/docs/develop/using-composer/using-composer-to-install-drupal-and-manage-dependencies).
+2. Clone this repository in your `web/modules` directory.
+3. Enable Tripal in your site using the Administration Toolbar > Extend
+4. Use drush to rebuild the cache (`drush cache-rebuild`) so Tripal menu items appear correctly.
+
+## Docker (DEVELOPMENT ONLY)
+
+Docker is the fastest way to get started with Tripal 4 development. Production containers are not available yet.  
+
+### Docker Setup
+- Copy tripaldocker/dev/.env.example to tripaldocker/dev/.env
+- Run `docker-compose up -d`
+- Next start the database using `docker-compose drupal service postgresql start`
+- Visit localhost:9000/drupal9/web
+- The Drupal site will already be installed and Tripal + Tripal Chado will be enabled.
+
+Since volumes are automatically setup for you, your data will be persisted thereafter (even when running docker-compose down). To remove data permanently, run `docker-compose rm`.
+
+### Docker CLI
+- To access the drupal container run:
+  - `docker-compose exec drupal bash`
+- To access the database using psql run:
+  - `docker-compose exec drupal psql -q --dbname=drupal9_dev --host=localhost --port=5432 --username=drupaladmin`
+  - The password is `drupal9developmentonlylocal`
+- To run drush commands:
+  - `docker-compose exec drupal drupal9/vendor/bin/drush [YOUR OPTIONS]`
+- To run unit tests:
+  - `docker-compose exec drupal drupal9/vendor/bin/phpunit --config drupal9/web/core drupal9/web/modules/t4d8`
+
+## Development Testing
+
+See the [Drupal "Running PHPUnit tests" guide](https://www.drupal.org/node/2116263) for instructions on running tests on your local environment. In order to ensure our Tripal functional testing is fully bootstrapped, tests should be run from Drupal core.
+
+If you are using the docker distributed with this module, then you can run tests using:
+```
+docker-compose exec drupal drupal9/vendor/bin/phpunit --config drupal9/web/core drupal9/web/modules/t4d8
+```
+
+## Documentation
+
+[Documentation for Tripal 4 has begun on ReadtheDocs](https://tripal4.readthedocs.io/en/latest/dev_guide.html). **Please keep in mind the URL for this documentation will change once Tripal 4 is released.**
+
+# Upgrade Progress
 
 ## Currently working on [Group 1](https://github.com/tripal/t4d8/issues/1) and [Group 2](https://github.com/tripal/t4d8/issues/2)
 
@@ -23,92 +77,9 @@ This upgrade to Drupal 8 is a community effort. As such, we NEED YOUR HELP! In o
 
 Tripal 4 development has been planned in the issue queue of this repository with the entire code-based of Tripal 3 being catagorized into groups which should be completed in order. For a summary of the tasks assigned to a given group, go to the issue labelled with the `roadmap` and group tag for a specific group. For example, for Group 1, the task list is in #1 which has both the `Roadmap` and `Group 1` tags.
 
-To aid in the development of Tripal 4, 
+To aid in the development of Tripal 4,
 1. Choose a task from the current group
 2. Comment on an issue stating your intention
 3. Keep track of your progress and design in this issue
 4. Once the task is complete, create a PR referencing this issue.
 5. Once the PR is merged, check the task checkbox in the original `Roadmap` issue.
-
-# Required Dependencies
-* Drupal:
-  * Drupal 8.x
-  * Drupal core modules: Search, Path, View, Entity, and PHP modules.
-* PostgreSQL
-* PHP 7.1+
-* UNIX/Linux
-
-# Installation
-
-1. Install [Drupal 8.x](https://www.drupal.org/docs/develop/using-composer/using-composer-to-install-drupal-and-manage-dependencies).
-2. Clone this repository in your `web/modules` directory.
-3. Enable Tripal in your site using the Administration Toolbar > Extend
-4. Use drush to rebuild the cache (`drush cache-rebuild`) so Tripal menu items appear correctly.
-
-## Quick Start (development only)
-
-If you do not yet have a Drupal 8 Tripal 4 development site, these are my steps to set one up. This assumes you already have a local Apache-PostgreSQL-PHP server set-up with `~/Sites` being your web-accessible directory.
-
-```
-composer create-project drupal-composer/drupal-project:8.x-dev tripal4 --stability dev --no-interaction
-psql --command="CREATE USER tripaladmin WITH PASSWORD 'tripal4developmentonlylocal'"
-psql --command="CREATE DATABASE tripal4_dev WITH OWNER tripaladmin"
-cd tripal4
-drush site-install standard \
-  --db-url=pgsql://tripaladmin:tripal4developmentonlylocal@localhost/tripal4_dev \
-  --account-mail="tripaladmin@localhost" \
-  --account-name=tripaladmin \
-  --account-pass=some_admin_password \
-  --site-mail="tripaladmin@localhost" \
-  --site-name="Tripal 4 Development"
-cd web/modules
-git clone https://github.com/tripal/t4d8.git
-drush en tripal
-```
-You now have a fully installed Tripal 4 site!
-
-## Docker
-
-Docker is the fastest way to get started with Tripal 4 development. Production containers are not available yet.  
-
-### Docker Setup
-- Copy tripaldocker/dev/.env.example to tripaldocker/dev/.env
-- Run docker-compose up -d
-- Visit localhost:9000
-- When prompted for database information, use the following:
-  - Database type: PostgreSQL
-  - Database name: tripal
-  - Database username: tripal
-  - Database password: secret
-  - ADVANCED OPTIONS; Database host: postgres
-- Enable Tripal by visiting `Extend` and enabling the Tripal module.
-
-Since volumes are automatically setup for you, the installation step will only be required the first time you run `docker-compose up`. The data will be persisted thereafter (even when running docker-compose down).
-To remove data permanently, run `docker-compose rm`. 
-
-### Docker CLI
-- To access the drupal container run:
-  - `docker-compose exec drupal bash`
-- To access the database using psql run:
-  - `docker-compose exec postgres psql -U tripal -d tripal`
-- To run drush commands:
-  - `docker-compose run drush [YOUR OPTIONS]`
-  - Example: `docker-compose run drush en views`
-  
-# Development Testing
-
-See the [Drupal "Running PHPUnit tests" guide](https://www.drupal.org/node/2116263) for instructions on running tests on your local environment. In order to ensure our Tripal functional testing is fully bootstrapped, tests should be run from Drupal core.
-
-The following are the exact steps to run tests assuming you set things up as specified in the quick start above.
-
-```
-cd ~/Sites/tripal4/web
-export SIMPLETEST_BASE_URL=http://localhost/tripal4/web
-export SIMPLETEST_DB=pgsql://tripaladmin:tripal4developmentonlylocal@localhost/tripal4_dev
-export BROWSER_OUTPUT_DIRECTORY=~/Sites/tripal4/web/sites/default/simpletest
-../vendor/bin/phpunit --configuration core modules/t4d8/tripal/tests/
-```
-
-# Documentation
-
-[Documentation for Tripal 4 has begun on ReadtheDocs](https://tripal4.readthedocs.io/en/latest/dev_guide.html). **Please keep in mind the URL for this documentation will change once Tripal 4 is released.**
