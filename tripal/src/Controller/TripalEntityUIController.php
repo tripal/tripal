@@ -65,10 +65,10 @@ class TripalEntityUIController extends ControllerBase {
 
     //$added = tripal_create_bundle_fields($bundle, $term);
     //if (count($added) == 0) {
-      //drupal_set_message('No new fields were added');
+      //$this->messenger->addMessage('No new fields were added');
     //}
     //foreach ($added as $field_name) {
-      //drupal_set_message('Added field: ' . $field_name);
+      //$this->messenger->addMessage('Added field: ' . $field_name);
     //}
 
     \Drupal::messenger()->addWarning(t('This functionality is not implemented yet.'));

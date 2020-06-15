@@ -4,6 +4,7 @@ namespace Drupal\tripal\Form;
 
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Url;
 
 /**
@@ -264,15 +265,16 @@ class TripalEntityTypeForm extends EntityForm {
     // Finally, save the entity we've compiled.
     $status = $tripal_entity_type->save();
 
+    $messenger = $this->messenger();
     switch ($status) {
       case SAVED_NEW:
-        drupal_set_message($this->t('Created the %label Tripal Content Type.', [
+        $messenger->addMessage($this->t('Created the %label Tripal Content Type.', [
           '%label' => $tripal_entity_type->label(),
         ]));
         break;
 
       default:
-        drupal_set_message($this->t('Saved changes %label Tripal Content Type.', [
+        $messenger->addMessage($this->t('Saved changes %label Tripal Content Type.', [
           '%label' => $tripal_entity_type->label(),
         ]));
     }
