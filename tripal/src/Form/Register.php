@@ -7,6 +7,7 @@ namespace Drupal\tripal\Form;
 
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Messenger\MessengerInterface;
 
 /**
  * Provides a test form object.
@@ -72,9 +73,9 @@ class Register implements FormInterface {
       '#default_value' => $form_data->getValue('tripal_reg_site_purpose'),
       '#options' => $purpose,
       '#required' => FALSE,
-      '#description' => t('Please register your site regardless if it is experimental (to explore tripal), 
-        for development of a future site (or updates to an existing site), or a site currently 
-        in production. For funding, it is important to know how many sites are active for each category.  If your site changes 
+      '#description' => t('Please register your site regardless if it is experimental (to explore tripal),
+        for development of a future site (or updates to an existing site), or a site currently
+        in production. For funding, it is important to know how many sites are active for each category.  If your site changes
         status, such as from development to production, please remember to return and update the purpose.')
     ];
 
@@ -155,7 +156,11 @@ class Register implements FormInterface {
       '#suffix' => '</div>',
     ];
 
-    $default_num_funding = max(count($form_data->getValue('funding')), 1);
+    $funding_values = $form_data->getValue('funding');
+    $default_num_funding = 1;
+    if ($funding_values) {
+      $default_num_funding = max(count($funding_values), 1);
+    }
     $num_funding = $form_state->getValue(['funding', 'num'], $default_num_funding);
     if ($form_state->getTriggeringElement()['#name'] == 'add_funding') {
       $num_funding++;
@@ -241,7 +246,7 @@ class Register implements FormInterface {
       '#type' => 'submit',
       '#value' => !empty($form_data) ? 'Update registration information' : 'Register Site',
     ];
-    return $form;    
+    return $form;
   }
 
   /**
@@ -399,4 +404,3 @@ class Register implements FormInterface {
   }
 
 }
-
