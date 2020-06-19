@@ -1,13 +1,15 @@
-[![Build Status](https://travis-ci.org/tripal/t4d8.svg?branch=8.x-4.x)](https://travis-ci.org/tripal/t4d8)
+[![Build Status](https://travis-ci.org/tripal/t4d8.svg?branch=9.x-4.x)](https://travis-ci.org/tripal/t4d8)
 
 
 ![alt tag](https://raw.githubusercontent.com/tripal/tripal/7.x-3.x/tripal/theme/images/tripal_logo.png)
 
-# Tripal 4 Drupal 8
+# Tripal 4 Drupal 9
 
 ## UNDER ACTIVE DEVELOPMENT
 
 This project acts as the home of Tripal 4 development. Once Tripal 4 is stable, it will be merged back into the [Core Tripal Repository](https://github.com/tripal/tripal).
+
+**All PRs should be made against branch 9.x-4.x which is compatible with Drupal 8.8.x, 8.9.x and 9.0.x**
 
 ## Required Dependencies
 * Drupal:
