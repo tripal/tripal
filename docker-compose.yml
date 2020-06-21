@@ -3,22 +3,25 @@
 #
 # During initial Drupal setup,
 # Database type: PostgreSQL
-# Database name: drupal9_dev
+# Database name: drupal8_dev
 # Database username: drupaladmin
-# Database password: drupal9developmentonlylocal
+# Database password: drupal8developmentonlylocal
 
 version: '3.2'
 
 services:
   drupal:
-    image: laceysanderson/tripal4dev:latest
+    image: laceysanderson/tripal4dev:tripal4-d8.8.x
     ports:
       - 9000:80
+    working_dir: /var/www/html/drupal8
+    environment:
+      - COMPOSER_MEMORY_LIMIT=-1
     volumes:
-      - .:/var/www/html/modules/t4d8
-      - modules:/var/www/html/modules
-      - themes:/var/www/html/themes
-      - sites:/var/www/html/sites
+      - .:/var/www/html/drupal8/web/modules/t4d8
+      - modules:/var/www/html/drupal8/web/modules
+      - themes:/var/www/html/drupal8/web/themes
+      - sites:/var/www/html/drupal8/web/sites
       - db:/var/lib/postgresql
 
 volumes:
