@@ -26,13 +26,11 @@ class ChadoInstallForm extends FormBase {
     module_load_include('inc', 'tripal_chado', 'src/LegacyIncludes/tripal_chado.install');
 
     // we want to force the version of Chado to be set properly
-    // @upgrade $real_version = chado_get_version(TRUE);
-    $real_version = 'unknown';
+    $real_version = chado_get_version(TRUE);
 
     // get the effective version.  Pass true as second argument
     // to warn the user if the current version is not compatible
-    // @upgrade $version = chado_get_version(FALSE, TRUE);
-    $version = 'unknown';
+    $version = chado_get_version(FALSE, TRUE);
 
     $values = $form_state->getValues();
     if (array_key_exists('action_to_do', $values)) {
