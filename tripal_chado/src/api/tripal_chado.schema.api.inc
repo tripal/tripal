@@ -325,7 +325,7 @@ function chado_is_installed() {
  *
  * @upgrade
  */
-function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
+function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE, $chado_schema = NULL) {
 
   $version = '';
   $is_local = FALSE;
@@ -350,11 +350,16 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
     $version = "1.11 or older";
   }
   else {
-    // We need to hardcode the schema here rather than rely on the \Drupal::database()->query
-    // function to settle it because the \Drupal::database()->query function needs to know the
+    // We need to hardcode the schema here rather than rely on the
+    // \Drupal::database()->query function to settle it because the
+    // \Drupal::database()->query function needs to know the
     // Chado version to make the table prefixes set properly (chicken and
     // egg problem).
-    $chado_schema = chado_get_schema_name('chado');
+    // If the schema was not passed in, grab the name of the current chado
+    // schema. This allows us to support multiple chado instances.
+    if (!$chado_schema) {
+      $chado_schema = chado_get_schema_name('chado');
+    }
     $sql = "
       SELECT value
       FROM $chado_schema.chadoprop CP
