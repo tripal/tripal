@@ -1,5 +1,5 @@
 /* For load_gff3.pl */
-SET search_path TO chado,public;
+SET search_path = chado,public;
 
 insert into contact (name,description) values ('null','null');
 insert into cv (name) values ('null');
@@ -19,7 +19,7 @@ insert into cvterm (name,definition,cv_id,dbxref_id) values ('version','Chado sc
 
 
 --this table will probably end up in general.sql
- CREATE TABLE chado.materialized_view   (
+ CREATE TABLE materialized_view   (
                                 materialized_view_id SERIAL,
                                 last_update TIMESTAMP,
                                 refresh_time INT,

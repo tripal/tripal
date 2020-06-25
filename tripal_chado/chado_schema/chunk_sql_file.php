@@ -33,7 +33,7 @@ $orig_linenum = 0;
 $chunk_file_linenum = 0;
 $chunk_file_i = 1;
 $CHUNK = fopen($chunk_filestub . $chunk_file_i . '.sql', 'w');
-$last_search_path = "SET search_path TO chado,public;\n";
+$last_search_path = "SET search_path = chado,public;\n";
 fwrite($CHUNK, $last_search_path);
 
 // Now for each line...

@@ -157,10 +157,11 @@ class ChadoInstallForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     global $user;
     $action_to_do = trim($form_state->getValues()['action_to_do']);
+    $schema_name = trim($form_state->getValues()['schema_name']);
     $args = [$action_to_do];
 
     $command = "drush php-eval \"module_load_include('inc', 'tripal_chado', 'src/LegacyIncludes/tripal_chado.install');
-tripal_chado_install_chado('".$action_to_do."');\"";
+tripal_chado_install_chado('".$action_to_do."', '".$schema_name."');\"";
     $message = [
       '#markup' => '<strong>Must upgrade Tripal Jobs system first. In the meantime,
         execute the following drush command: </strong><pre>'.$command.'</pre>',

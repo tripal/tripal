@@ -13,7 +13,7 @@ use Drupal\Core\Database\Database;
  *
  * @ingroup tripal_chado
  */
-function tripal_chado_load_drush_submit($version) {
+function tripal_chado_load_drush_submit($action) {
   // $args = [$version];
   // $includes = [mmodule_load_include('inc', 'tripal_chado', 'src/LegacyIncludes/tripal_chado.install')];
   // @upgrade tripal_add_job($version, 'tripal_chado',
@@ -26,30 +26,30 @@ function tripal_chado_load_drush_submit($version) {
  *
  * @ingroup tripal_chado
  */
-function tripal_chado_install_chado($action, TripalJob $job = NULL) {
+function tripal_chado_install_chado($action, $chado_schema, TripalJob $job = NULL) {
 
   $vsql = "
-    INSERT INTO chado.chadoprop (type_id, value)
+    INSERT INTO $chado_schema.chadoprop (type_id, value)
       VALUES (
        (SELECT cvterm_id
-        FROM chado.cvterm CVT
-          INNER JOIN chado.cv CV on CVT.cv_id = CV.cv_id
+        FROM $chado_schema.cvterm CVT
+          INNER JOIN $chado_schema.cv CV on CVT.cv_id = CV.cv_id
          WHERE CV.name = 'chado_properties' AND CVT.name = 'version'),
        :version)
   ";
 
   $vusql = "
-    UPDATE chado.chadoprop
+    UPDATE $chado_schema.chadoprop
     SET value = :version
     WHERE type_id = (SELECT cvterm_id
-        FROM chado.cvterm CVT
-          INNER JOIN chado.cv CV on CVT.cv_id = CV.cv_id
+        FROM $chado_schema.cvterm CVT
+          INNER JOIN $chado_schema.cv CV on CVT.cv_id = CV.cv_id
          WHERE CV.name = 'chado_properties' AND CVT.name = 'version')
   ";
 
   try {
     if ($action == 'Install Chado v1.3') {
-      tripal_chado_install_chado_1_3();
+      tripal_chado_install_chado_1_3($chado_schema, $job);
       \Drupal::database()->query($vsql, [':version' => '1.3']);
     }
   } catch (Exception $e) {
@@ -66,21 +66,21 @@ function tripal_chado_install_chado($action, TripalJob $job = NULL) {
 /**
  * Installs Chado v1.3.
  */
-function tripal_chado_install_chado_1_3(TripalJob $job = NULL) {
+function tripal_chado_install_chado_1_3($chado_schema, TripalJob $job = NULL) {
   // Get the path to the schema and init SQL files.
   $module_path = drupal_get_path('module', 'tripal_chado');
   $init_file = drupal_get_path('module', 'tripal_chado') .
     '/chado_schema/initialize-1.3.sql';
 
   // Erase the Chado schema if it exists and perform the install.
-  if (tripal_chado_reset_chado_schema()) {
+  if (tripal_chado_reset_chado_schema($chado_schema)) {
 
     // Since the schema SQL file is large we have split it into multiple chunks.
     // This loop will load each chunk...
     $failed = FALSE;
     for ($i=1; $i<=41; $i++) {
       $schema_file = $module_path . '/chado_schema/parts-v1.3/default_schema-1.3.part' . $i . '.sql';
-      $success = tripal_chado_install_sql($schema_file);
+      $success = tripal_chado_install_sql($schema_file, $chado_schema);
       if ($success) {
         // @upgrade tripal_report_error().
         print "\tImport of part $i of 41 Successful!\n";
@@ -105,7 +105,7 @@ function tripal_chado_install_chado_1_3(TripalJob $job = NULL) {
     }
 
 
-    $success = tripal_chado_install_sql($init_file);
+    $success = tripal_chado_install_sql($init_file, $chado_schema);
     if ($success) {
       // @upgrade tripal_report_error().
       \Drupal::logger('tripal_chado')->notice(
@@ -130,12 +130,8 @@ function tripal_chado_install_chado_1_3(TripalJob $job = NULL) {
  *
  * @ingroup tripal_chado
  */
-function tripal_chado_reset_chado_schema() {
+function tripal_chado_reset_chado_schema($chado_schema) {
   $connection = Database::getConnection();
-
-  // determine the schema name.
-  // @upgrade $chado_schema = chado_get_schema_name('chado');
-  $chado_schema = 'chado';
   $chado_dot = $chado_schema . '.';
 
   // drop current chado and chado-related schema
@@ -166,7 +162,7 @@ function tripal_chado_reset_chado_schema() {
   \Drupal::logger('tripal_chado')->info(
     "Creating '$chado_schema' schema\n");
   $connection->query("CREATE SCHEMA $chado_schema");
-  if (chado_dbschema_exists('chado')) {
+  if (chado_dbschema_exists($chado_schema)) {
     // before creating the plpgsql language let's check to make sure
     // it doesn't already exists
     $sql = "SELECT COUNT(*) FROM pg_language WHERE lanname = 'plpgsql'";
@@ -189,15 +185,11 @@ function tripal_chado_reset_chado_schema() {
  *
  * @ingroup tripal_chado
  */
-function tripal_chado_install_sql($sql_file) {
+function tripal_chado_install_sql($sql_file, $chado_schema = 'chado') {
   $connection = Database::getConnection();
 
   // @upgrade $chado_local = chado_dbschema_exists('chado');
   $chado_local = TRUE;
-
-  // determine the schema name.
-  // @upgrade $chado_schema = chado_get_schema_name('chado');
-  $chado_schema = 'chado';
 
   // @upgrade tripal_report_error().
   print "Loading $sql_file...\n";
@@ -221,7 +213,16 @@ function tripal_chado_install_sql($sql_file) {
     pg_close($pgconnection);
     return FALSE;
   }
+
+  // Retrieve the SQL file and change any search path commands.
   $sql = file_get_contents($sql_file);
+  $sql = preg_replace(
+    '/(SET\s*search_path\s*=.*)(chado)/',
+    '$1' . $chado_schema,
+    $sql
+  );
+
+  // Apply the SQL to the database.
   $result = pg_query($pgconnection, $sql);
   if (!$result) {
     \Drupal::logger('tripal_chado')->error(
