@@ -26,7 +26,7 @@ function tripal_chado_load_drush_submit($action) {
  *
  * @ingroup tripal_chado
  */
-function tripal_chado_install_chado($action, $chado_schema, TripalJob $job = NULL) {
+function tripal_chado_install_chado($action, $chado_schema = 'chado', TripalJob $job = NULL) {
 
   $vsql = "
     INSERT INTO $chado_schema.chadoprop (type_id, value)
