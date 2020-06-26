@@ -57,9 +57,9 @@ class ChadoInstallForm extends FormBase {
     $form['current_version'] = [
       '#type' => 'table',
       '#caption' => 'Installed version(s) of Chado',
-      '#header' => ['Schema Name', 'Chado Version', ''],
+      '#header' => ['Schema Name', 'Chado Version'],
       '#rows' => [
-        [$schema_name, $real_version, 'Current'],
+        [$schema_name, $real_version],
       ],
     ];
 
@@ -160,8 +160,9 @@ class ChadoInstallForm extends FormBase {
     $schema_name = trim($form_state->getValues()['schema_name']);
     $args = [$action_to_do];
 
-    $command = "drush php-eval \"module_load_include('inc', 'tripal_chado', 'src/LegacyIncludes/tripal_chado.install');
-tripal_chado_install_chado('".$action_to_do."', '".$schema_name."');\"";
+    $command = "drush php-eval \""
+      . "\Drupal::service('tripal_chado.chadoInstaller')"
+      . "->install(1.3, '".$schema_name."');\"";
     $message = [
       '#markup' => '<strong>Must upgrade Tripal Jobs system first. In the meantime,
         execute the following drush command: </strong><pre>'.$command.'</pre>',
