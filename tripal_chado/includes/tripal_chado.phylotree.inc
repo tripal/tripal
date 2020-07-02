@@ -295,7 +295,7 @@ function tripal_phylogeny_admin_phylotrees_listing()
  * @param unknown $form
  * @param unknown $form_state
  */
-function tripal_phylogeny_default_plots_form($form, &$form_state, array $category = array())
+function tripal_phylogeny_default_plots_form($form, &$form_state)
 {
   $form = [];
 
@@ -318,14 +318,6 @@ function tripal_phylogeny_default_plots_form($form, &$form_state, array $categor
     '#size' => 5,
   ];
 
-  $category += array(
-    'category' => '',
-    'recipients' => '',
-    'reply' => '',
-    'weight' => 0,
-    'selected' => 0,
-    'cid' => NULL,
-  );
   $form['plot_settings']['phylogram_scale'] = [
     '#type' => 'select',
     '#title' => t('Phylogram Scale'),
