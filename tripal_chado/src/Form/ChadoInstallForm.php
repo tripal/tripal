@@ -23,14 +23,6 @@ class ChadoInstallForm extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
 
-    // Retrieve the name of the current schema.
-    $schema_name = chado_get_schema_name('chado');
-    // We want to force the version of Chado to be set properly.
-    $real_version = chado_get_version(TRUE, FALSE, $schema_name);
-    // get the effective version.  Pass true as second argument
-    // to warn the user if the current version is not compatible.
-    $version = chado_get_version(FALSE, TRUE, $schema_name);
-
     // Add warnings to the admin based on their choice (as needed).
     $values = $form_state->getValues();
     if (array_key_exists('action_to_do', $values)) {
@@ -66,13 +58,21 @@ class ChadoInstallForm extends FormBase {
     // Now that we support multiple chado instances, we need to list all the
     // currently installed ones here since they may be different versions.
     // @upgrade currently we have no way to pull out all chado installs.
+    $rows = [];
+    $installs = chado_get_installed_schemas();
+    foreach($installs as $i) {
+      $rows[] = [
+        $i->schema_name,
+        $i->version,
+        \Drupal::service('date.formatter')->format($i->created),
+        \Drupal::service('date.formatter')->format($i->updated)
+      ];
+    }
     $form['current_version'] = [
       '#type' => 'table',
       '#caption' => 'Installed version(s) of Chado',
-      '#header' => ['Schema Name', 'Chado Version'],
-      '#rows' => [
-        [$schema_name, $real_version],
-      ],
+      '#header' => ['Schema Name', 'Chado Version', 'Created', 'Updated'],
+      '#rows' => $rows,
     ];
 
     $form['msg-middle'] = [
@@ -131,7 +131,7 @@ class ChadoInstallForm extends FormBase {
       '#title' => 'Chado Schema Name',
       '#required' => TRUE,
       '#description' => 'The name of the schema to install chado in.',
-      '#default_value' => $schema_name,
+      '#default_value' => 'chado',
     ];
 
     $form['button'] = [

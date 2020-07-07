@@ -69,7 +69,7 @@ class chadoInstaller extends bulkPgSchemaInstaller {
         "Installation (Step 2 of 2) Problems!  Please check output above for errors.");
     }
 
-    // 5) Finally set the version.
+    // 5) Finally set the version and tell Tripal.
     $vsql = "
       INSERT INTO $chado_schema.chadoprop (type_id, value)
         VALUES (
@@ -80,6 +80,14 @@ class chadoInstaller extends bulkPgSchemaInstaller {
          :version)
     ";
     $this->connection->query($vsql, [':version' => $version]);
+    $this->connection->insert('chado_installations')
+      ->fields([
+        'schema_name' => $chado_schema,
+        'version' => $version,
+        'created' => \Drupal::time()->getRequestTime(),
+        'updated' => \Drupal::time()->getRequestTime(),
+      ])
+      ->execute();
   }
 
   /**

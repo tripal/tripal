@@ -243,6 +243,33 @@ function chado_get_schema_name($schema = 'chado') {
 }
 
 /**
+ *
+ */
+function chado_get_installed_schemas() {
+  $installs = [];
+
+  $install_select = \Drupal::database()->select('chado_installations' ,'i')
+    ->fields('i', ['install_id', 'schema_name', 'version',
+      'created', 'updated'])
+    ->execute();
+  $results = $install_select->fetchAll();
+
+  // Check that each schema is still installed.
+  foreach ($results as $k => $i) {
+    if (chado_dbschema_exists($i->schema_name)) {
+      $installs[$i->schema_name] = $i;
+    }
+    else {
+      \Drupal::database()->delete('chado_installations')
+        ->condition('install_id', $i->install_id)
+        ->execute();
+    }
+  }
+
+  return $installs;
+}
+
+/**
  * Check that the Chado schema exists within the local database
  *
  * @return
