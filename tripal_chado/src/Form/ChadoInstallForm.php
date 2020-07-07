@@ -41,6 +41,11 @@ class ChadoInstallForm extends FormBase {
             desired or if this is the first time Chado has been installed
             you can ignore this issue.', 'warning');
       }
+      elseif ($values['action_to_do'] == "Drop Chado Schema") {
+        \Drupal::messenger()->addMessage(
+            'Please note: all data will be lost in the schema you choose to
+            remove. This is not reversible.', 'warning');
+      }
     }
 
     $form['msg-top'] = [
@@ -86,9 +91,8 @@ class ChadoInstallForm extends FormBase {
         'Drop Chado Schema' => t('Remove Existing Chado (erases all existing
           chado data)'),
       ],
-      '#description' => t('Select an action to perform.'),
       '#required' => TRUE,
-      '#default_value' => 0,
+      "#empty_option" => t('- Select an action to perform -'),
       '#ajax' => [
         'callback' => '::ajaxFormVersionUpdate',
         'wrapper' => 'tripal_chado_load_form',
@@ -151,38 +155,10 @@ class ChadoInstallForm extends FormBase {
     // Tripal modules are installed.  This is because the install files
     // of those modules may add content to Chado and reinstalling Chado
     // removes that content which may break the modules.
-    if ($values['action_to_do'] == "Install Chado v1.3") {
-        $modules = \Drupal::service('extension.list.module')->getAllAvailableInfo();
-        $list = [];
-        foreach ($modules as $mname => $module) {
-          if (array_key_exists('dependencies', $module)
-            AND in_array('tripal:tripal_chado', $module['dependencies'])) {
+    //
+    // Cannot do this and still allow multiple chado installs...
+    // @todo add a hook for modules to add in to the prepare or install processes.
 
-            $list[] = $module['name'] . " ($mname)";
-          }
-        }
-        if (count($list) > 0) {
-          $message = [
-            '#theme' => 'item_list',
-            '#title' => 'Chado cannot be installed while other Tripal modules
-              are enabled.  You must fully uninstall the following modules if
-              you would like to install or re-install chado.',
-            '#list_type' => 'ul',
-            '#items' => $list,
-            '#wrapper_attributes' => ['class' => 'container'],
-          ];
-          $form_state->setErrorByName("action_to_do", $message);
-        }
-    }
-    /*
-    if ($values['action_to_do'] == "Upgrade Chado v1.2 to v1.3") {
-      // Make sure we are already not at v1.3
-      $real_version = chado_get_version(TRUE);
-      if ($real_version == "1.3") {
-        $form_state->setErrorByName("action_to_do", "You are already at v1.3.  There is no need to upgrade.");
-      }
-    }
-    */
 
     parent::validateForm($form, $form_state);
   }
