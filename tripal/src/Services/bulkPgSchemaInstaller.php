@@ -59,7 +59,37 @@ class bulkPgSchemaInstaller {
     $this->pgconnection = $pgconnection;
   }
 
-	/**
+  /**
+   * Retrieve the Drupal connection to the database.
+   *
+   * @return Drupal\database
+   *   Current Drupal connection.
+   */
+  public function getDrupalConnection() {
+  return $this->connection;
+  }
+
+  /**
+   * Retrieves the PostgreSQL-specific connection to the database.
+   *
+   * @return object
+   *   PostgreSQL connection resource on success, FALSE on failure.
+   */
+  public function getPgConnection() {
+  return $this->pgconnection;
+  }
+
+  /**
+   * Retrieves the message logger.
+   *
+   * @return object
+   *
+   */
+  public function getLogger() {
+  return $this->logger;
+  }
+
+  /**
    * Drops the specified schema.
    *
    * @param string $schema_name
@@ -67,10 +97,10 @@ class bulkPgSchemaInstaller {
    * @return bool
    *   Whether or not dropping was successful.
    */
-  protected function dropSchema($schema_name) {
+  public function dropSchema($schema_name) {
 
     // Check if the schema even exists.
-    if (chado_dbschema_exists($schema_name)) {
+    if ($this->checkSchema($schema_name)) {
 
       // Notify the admin and drop the schema.
       // @upgrade tripal_report_error().
@@ -79,7 +109,7 @@ class bulkPgSchemaInstaller {
       $this->connection->query("drop schema $schema_name cascade");
 
       // Finally, check to see if it was successful.
-      if (chado_dbschema_exists($schema_name)) {
+      if ($this->checkSchema($schema_name)) {
         return FALSE;
       }
       else {
@@ -102,7 +132,7 @@ class bulkPgSchemaInstaller {
    * @return bool
    *   Whether or not the creation was successful.
    */
-  protected function createSchema($schema_name) {
+  public function createSchema($schema_name) {
 
     // First notify the admin we are creating the schema.
     // @upgrade tripal_report_error().
@@ -113,7 +143,7 @@ class bulkPgSchemaInstaller {
     $this->connection->query("CREATE SCHEMA $schema_name");
 
     // Finally, check to see if it was successful.
-    if (chado_dbschema_exists($schema_name)) {
+    if ($this->checkSchema($schema_name)) {
       return TRUE;
     }
     else {
@@ -121,7 +151,26 @@ class bulkPgSchemaInstaller {
     }
   }
 
-	/**
+  /**
+   * Check that the schema is present.
+   *
+   * @param string $schema_name
+   *   The name of the schema you would like to check for existance of.
+   * @return bool
+   *   Whether or not the schema exists.
+   */
+  public function checkSchema($schema_name) {
+  $sql = "
+    SELECT true
+    FROM pg_namespace
+    WHERE has_schema_privilege(nspname, 'USAGE') AND nspname = :nspname
+  ";
+  $query = $this->connection->query($sql, [':nspname' => $schema_name]);
+  $schema_exists = $query->fetchField();
+  return $schema_exists;
+  }
+
+  /**
    * Applies all statements from an SQL file to the current database.
    *
    * @param string $file
@@ -129,17 +178,26 @@ class bulkPgSchemaInstaller {
    * @return bool
    *   Whether the application succeeded.
    */
-  protected function applySQL($sql_file) {
-    $schema_name = $this->schemaName;
+  public function applySQL($sql_file, $schema_name = FALSE, $append_search_path = FALSE) {
     $pgconnection = $this->pgconnection;
 
-    // Retrieve the SQL file and change any search path commands.
+    // Retrieve the SQL file.
     $sql = file_get_contents($sql_file);
-    $sql = preg_replace(
-      '/(SET\s*search_path\s*=.*)(chado)/',
-      '$1' . $schema_name,
-      $sql
-    );
+
+  // change any search path commands.
+  if ($schema_name) {
+    	$sql = preg_replace(
+        '/(SET\s*search_path\s*=.*)(chado)/',
+        '$1' . $schema_name,
+        $sql
+      );
+
+  // Append search path to the beginning.
+  if ($append_search_path) {
+  $sql = 'SET search_path = ' . $schema_name . ";\n" . $sql;
+  }
+  }
+
 
     // Apply the SQL to the database.
     $result = pg_query($pgconnection, $sql);
