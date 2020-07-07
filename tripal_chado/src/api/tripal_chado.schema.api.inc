@@ -330,9 +330,10 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE, $chado_
   $version = '';
   $is_local = FALSE;
   $chado_exists = FALSE;
+  $chado_schema = ($chado_schema === NULL) ? 'chado' : $chado_schema;
 
-  // Check that Chado is installed if not return 'uninstalled as the version'
-  $is_local = chado_is_local();
+  // Check that Chado is installed if not return uninstalled as the version.
+  $is_local = chado_is_local(TRUE);
   if (!$is_local) {
     // @todo currently do not support external chado.
     return 'not installed';
@@ -340,8 +341,10 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE, $chado_
   else {
     $chado_exists = TRUE;
     // we cannot use chado_table_exists here because it causes a loop.
-    // @todo this needs further thought.
-    $prop_exists = TRUE; //\Drupal::database()->schema()->tableExists('chado.chadoprop');
+    $sql = "SELECT true FROM pg_tables
+      WHERE schemaname=:schema AND tablename=:table";
+    $prop_exists = \Drupal::database()->query($sql,
+      [':schema' => $chado_schema, ':table' => 'chadoprop'])->fetchField();
   }
 
   // if the table doesn't exist then we don't know what version but we know
