@@ -68,12 +68,23 @@ class ChadoInstallForm extends FormBase {
         \Drupal::service('date.formatter')->format($i->updated)
       ];
     }
-    $form['current_version'] = [
-      '#type' => 'table',
-      '#caption' => 'Installed version(s) of Chado',
-      '#header' => ['Schema Name', 'Chado Version', 'Created', 'Updated'],
-      '#rows' => $rows,
-    ];
+    if (!empty($rows)) {
+      $form['current_version'] = [
+        '#type' => 'table',
+        '#caption' => 'Installed version(s) of Chado',
+        '#header' => ['Schema Name', 'Chado Version', 'Created', 'Updated'],
+        '#rows' => $rows,
+      ];
+    }
+    else {
+      $form['current_version'] = [
+        '#type' => 'item',
+        '#markup' => '<div class="messages messages--warning">
+            <h2>Chado Not Installed</h2>
+            <p>Please select an Install action below and click "Install/Upgrade Chado". We recommend you choose the most recent version of Chado.</p>
+          </div>',
+      ];
+    }
 
     $form['msg-middle'] = [
       '#type' => 'item',
