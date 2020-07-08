@@ -41,17 +41,26 @@ use Drupal\Core\Database\Database;
  * This function is necessary because Drupal's db_table_exists() function will
  * not look in any other schema but the one were Drupal is installed
  *
- * @param $table
+ * @param string $table
  *   The name of the chado table whose existence should be checked.
+ * @param string $chado_schema
+ *   The name of the chado schema you expect the table to exist in.
  *
- * @return
+ * @return bool
  *   TRUE if the table exists in the chado schema and FALSE if it does not.
  *
  * @ingroup tripal_chado_schema_api
  */
-function chado_table_exists($table) {
-  $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema();
-  return $chado_schema->checkTableExists($table);
+function chado_table_exists($table, $chado_schema = NULL) {
+
+  // Retrieve the default name of the chado schema if it's not provided.
+  if ($chado_schema === NULL) {
+    $chado_schema = chado_get_schema_name('chado');
+  }
+
+  // Create a new ChadoSchema instance and use it to check the table exists.
+  $schema = new \Drupal\tripal_chado\api\ChadoSchema(NULL, $chado_schema);
+  return $schema->checkTableExists($table);
 }
 
 /**
@@ -60,20 +69,29 @@ function chado_table_exists($table) {
  * This function is necessary because Drupal's db_field_exists() will not
  * look in any other schema but the one were Drupal is installed
  *
- * @param $table
+ * @param string $table
  *   The name of the chado table.
- * @param $column
+ * @param string $column
  *   The name of the column in the chado table.
+ * @param string $chado_schema
+ *   The name of the chado schema you want to check a column in.
  *
- * @return
+ * @return bool
  *   TRUE if the column exists for the table in the chado schema and
  *   FALSE if it does not.
  *
  * @ingroup tripal_chado_schema_api
  */
-function chado_column_exists($table, $column) {
-  $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema();
-  return $chado_schema->checkColumnExists($table, $column);
+function chado_column_exists($table, $column, $chado_schema = NULL) {
+
+  // Retrieve the default name of the chado schema if it's not provided.
+  if ($chado_schema === NULL) {
+    $chado_schema = chado_get_schema_name('chado');
+  }
+
+  // Create a new ChadoSchema instance and use it to check the column exists.
+  $schema = new \Drupal\tripal_chado\api\ChadoSchema(NULL, $chado_schema);
+  return $schema->checkColumnExists($table, $column);
 }
 
 /**
@@ -82,21 +100,27 @@ function chado_column_exists($table, $column) {
  * This function is necessary because Drupal's db_field_exists() will not
  * look in any other schema but the one were Drupal is installed
  *
- * @param sequence
- *   The name of the sequence
+ * @param string $sequence
+ *   The name of the sequence.
+ * @param string $chado_schema
+ *   The name of the chado schema to check in.
  *
- * @return
+ * @return bool
  *   TRUE if the seqeuence exists in the chado schema and FALSE if it does not.
  *
  * @ingroup tripal_chado_schema_api
  */
-function chado_sequence_exists($sequence) {
+function chado_sequence_exists($sequence, $chado_schema = NULL) {
   $connection = Database::getConnection();
 
-  // Get the default database and chado schema.
+  // Get the default database.
   $databases = $connection->getConnectionOptions();
   $default_db = $databases['database'];
-  $chado_schema = chado_get_schema_name('chado');
+
+  // Retrieve the default name of the chado schema if it's not provided.
+  if ($chado_schema === NULL) {
+    $chado_schema = chado_get_schema_name('chado');
+  }
 
   // @upgrade $cached_obj = cache_get('chado_sequences', 'cache');
   // $cached_seqs = $cached_obj->data;
@@ -132,33 +156,54 @@ function chado_sequence_exists($sequence) {
 /**
  * A Chado-aware replacement for the db_index_exists() function.
  *
- * @param $table
+ * @param string $table
  *   The table to be altered.
- * @param $name
+ * @param string $name
  *   The name of the index.
+ * @param string $chado_schema
+ *   The name of the chado schema you would like to look in.
+ * @return bool
+ *   TRUE if the index exists and FALSE otherwise.
+ *
+ * @ingroup tripal_chado_schema_api
  */
-function chado_index_exists($table, $name, $no_suffix = FALSE) {
-  $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema();
-  return $chado_schema->checkIndexExists($table, $name, $no_suffix);
+function chado_index_exists($table, $name, $no_suffix = FALSE, $chado_schema = NULL) {
+
+  // Retrieve the default name of the chado schema if it's not provided.
+  if ($chado_schema === NULL) {
+    $chado_schema = chado_get_schema_name('chado');
+  }
+
+  // Create a new ChadoSchema instance and use it to check if the index exists.
+  $schema = new \Drupal\tripal_chado\api\ChadoSchema(NULL, $chado_schema);
+  return $schema->checkIndexExists($table, $name, $no_suffix);
 }
 
 /**
  * A Chado-aware wrapper for the db_add_index() function.
  *
- * @param $table
+ * @param string $table
  *   The table to be altered.
- * @param $name
+ * @param string $name
  *   The name of the index.
- * @param $fields
+ * @param string $fields
  *   An array of field names.
+ * @param string $chado_schema
+ *   The name of the chado schema you would like to add the index to.
+ * @return bool
+ *   The return value of the create index query.
+ *
+ * @ingroup tripal_chado_schema_api
  */
-function chado_add_index($table, $name, $fields) {
+function chado_add_index($table, $name, $fields, $chado_schema = NULL) {
+
+  // Retrieve the default name of the chado schema if it's not provided.
+  if ($chado_schema === NULL) {
+    $chado_schema = chado_get_schema_name('chado');
+  }
 
   // Determine the full name of the index.
   $indexname = strtolower($table . '_' . $name . '_idx');
-
-  // Retrieve the chado schema name.
-  $chado_schema = chado_get_schema_name('chado');
   $chado_dot = $chado_schema . '.';
 
   // Determine the create index SQL command.
@@ -179,17 +224,17 @@ function chado_add_index($table, $name, $fields) {
   $query .= ')';
 
   // Now execute it!
-  Drupal::database()->query($query);
+  return Drupal::database()->query($query);
 }
 
 /**
  * Check that any given schema exists.
  *
- * @param $schema
+ * @param string $schema
  *   The name of the schema to check the existence of
  *
- * @return
- *   TRUE/FALSE depending upon whether or not the schema exists
+ * @return bool
+ *   TRUE/FALSE depending upon whether or not the schema exists.
  *
  * @ingroup tripal_chado_schema_api
  */
@@ -213,11 +258,11 @@ function chado_dbschema_exists($schema) {
 /**
  * Retrieve the name of the PostgreSQL schema housing Chado or Drupal.
  *
- * @param $schema
+ * @param string $schema
  *   Wehter you want the schema name for 'chado' or 'drupal'. Chado is the
  *   default.
  *
- * @return
+ * @return string
  *   The name of the PostgreSQL schema housing the $schema specified.
  *
  * @ingroup tripal_chado_query_api
@@ -243,7 +288,11 @@ function chado_get_schema_name($schema = 'chado') {
 }
 
 /**
+ * List all installed chado schema.
  *
+ * @return array
+ *   An array of objects where each object describes an installed schema
+ *   and includes install_id, schema_name, version, created, updated.
  */
 function chado_get_installed_schemas() {
   $installs = [];
@@ -256,9 +305,11 @@ function chado_get_installed_schemas() {
 
   // Check that each schema is still installed.
   foreach ($results as $k => $i) {
+    // If it is installed then add it to the array to be returned.
     if (chado_dbschema_exists($i->schema_name)) {
       $installs[$i->schema_name] = $i;
     }
+    // If it's not still installed then remove it.
     else {
       \Drupal::database()->delete('chado_installations')
         ->condition('install_id', $i->install_id)
@@ -272,17 +323,31 @@ function chado_get_installed_schemas() {
 /**
  * Check that the Chado schema exists within the local database
  *
- * @return
+ * @param bool $force_recheck
+ *   Indicate whether or not to use the cached value.
+ * @param string $chado_schema
+ *   The schema to check if it's local.
+ * @return bool
  *   TRUE/FALSE depending upon whether it exists
  *
  * @ingroup tripal_chado_schema_api
  *
  * @upgrade
  */
-function chado_is_local($force_recheck = FALSE) {
+function chado_is_local($force_recheck = FALSE, $chado_schema = NULL) {
 
+  // Retrieve the default name of the chado schema if it's not provided.
+  if ($chado_schema === NULL) {
+    $chado_schema = chado_get_schema_name('chado');
+    $default_chado_schema = TRUE;
+  }
+  else {
+    $default_chado_schema = FALSE;
+  }
 
-  if ($force_recheck !== TRUE) {
+  // If possible, use the cached value.
+  // Only use it for the "default" chado schema.
+  if ($force_recheck !== TRUE && $default_chado_schema) {
     $exists = \Drupal::state()->get('chado_schema_exists', NULL);
     if ($exists !== NULL AND is_bool($exists)) {
       return !$exists;
@@ -299,14 +364,18 @@ function chado_is_local($force_recheck = FALSE) {
       has_schema_privilege(nspname, 'USAGE') AND
       nspname = :chado
   ";
-  $results = \Drupal::database()->query($sql, [':chado' => chado_get_schema_name('chado')]);
+  $results = \Drupal::database()->query($sql, [':chado' => $chado_schema]);
   $name = $results->fetchObject();
   if ($name) {
-    \Drupal::state()->set('chado_schema_exists', FALSE);
+    if ($default_chado_schema) {
+      \Drupal::state()->set('chado_schema_exists', FALSE);
+    }
     return TRUE;
   }
   else {
-    \Drupal::state()->set('chado_schema_exists', TRUE);
+    if ($default_chado_schema) {
+      \Drupal::state()->set('chado_schema_exists', TRUE);
+    }
     return FALSE;
   }
 }
@@ -314,17 +383,24 @@ function chado_is_local($force_recheck = FALSE) {
 /**
  * Check whether chado is installed (either in the same or a different database)
  *
- * @return
+ * @param string $chado_schema
+ *   The name of the chado schema you want to check the existence of.
+ * @return bool
  *   TRUE/FALSE depending upon whether chado is installed.
  *
  * @ingroup tripal_chado_schema_api
  */
-function chado_is_installed() {
+function chado_is_installed($chado_schema = NULL) {
 
   // @todo currently not supporting external chado instances.
 
+  // Retrieve the default name of the chado schema if it's not provided.
+  if ($chado_schema === NULL) {
+    $chado_schema = chado_get_schema_name('chado');
+  }
+
   // check to make sure the chado schema exists
-  return chado_is_local();
+  return chado_is_local($chado_schema);
 }
 
 /**
@@ -334,18 +410,18 @@ function chado_is_installed() {
  * sets the $GLOBAL['exact_chado_version'] and $GLOBAL['chado_version']
  * variable.  You can access these variables rather than calling this function.
  *
- * @param $exact
+ * @param bool $exact
  *   Set this argument to 1 to retrieve the exact version that is installed.
  *   Otherwise, this function will set the version to the nearest 'tenth'.
  *   Chado versioning numbers in the hundreds represent changes to the
  *   software and not the schema.  Changes in the tenth's represent changes
  *   in the schema.
- *
- * @param $warn_if_unsupported
+ * @param bool $warn_if_unsupported
  *   If the currently installed version of Chado is not supported by Tripal
  *   this generates a Drupal warning.
- *
- * @returns
+ * @param string $chado_schema
+ *   The name of the schema you want to check the version of.
+ * @return string
  *   The version of Chado
  *
  * @ingroup tripal_chado_schema_api
@@ -357,7 +433,10 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE, $chado_
   $version = '';
   $is_local = FALSE;
   $chado_exists = FALSE;
-  $chado_schema = ($chado_schema === NULL) ? 'chado' : $chado_schema;
+  // Retrieve the default name of the chado schema if it's not provided.
+  if ($chado_schema === NULL) {
+    $chado_schema = chado_get_schema_name('chado');
+  }
 
   // Check that Chado is installed if not return uninstalled as the version.
   $is_local = chado_is_local(TRUE);
@@ -380,16 +459,6 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE, $chado_
     $version = "1.11 or older";
   }
   else {
-    // We need to hardcode the schema here rather than rely on the
-    // \Drupal::database()->query function to settle it because the
-    // \Drupal::database()->query function needs to know the
-    // Chado version to make the table prefixes set properly (chicken and
-    // egg problem).
-    // If the schema was not passed in, grab the name of the current chado
-    // schema. This allows us to support multiple chado instances.
-    if (!$chado_schema) {
-      $chado_schema = chado_get_schema_name('chado');
-    }
     $sql = "
       SELECT value
       FROM $chado_schema.chadoprop CP
@@ -449,40 +518,55 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE, $chado_
 
 /**
  * Retrieves the list of tables in the Chado schema.  By default it only
- * returns
- * the default Chado tables, but can return custom tables added to the
- * Chado schema if requested
+ * returns the default Chado tables, but can return custom tables added to the
+ * Chado schema if requested.
  *
- * @param $include_custom
+ * @param bool $include_custom
  *   Optional.  Set as TRUE to include any custom tables created in the
  *   Chado schema. Custom tables are added to Chado using the
  *   tripal_chado_chado_create_table() function.
- *
- * @returns
+ * @param string $chado_schema
+ *   The schema you want table names from.
+ * @return array
  *   An associative array where the key and value pairs are the Chado table
  *   names.
  *
  * @ingroup tripal_chado_schema_api
  */
-function chado_get_table_names($include_custom = NULL) {
-  $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema();
+function chado_get_table_names($include_custom = NULL, $chado_schema = NULL) {
+
+  // Retrieve the default name of the chado schema if it's not provided.
+  if ($chado_schema === NULL) {
+    $chado_schema = chado_get_schema_name('chado');
+  }
+
+  // Create a new ChadoSchema instance and use it to get the table names.
+  $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema(NULL, $chado_schema);
   return $chado_schema->getTableNames($include_custom);
 }
 
 /**
  * Retrieves the chado tables Schema API array.
  *
- * @param $table
+ * @param string $table
  *   The name of the table to retrieve.  The function will use the appopriate
  *   Tripal chado schema API hooks (e.g. v1.11 or v1.2).
- *
- * @returns
+ * @param string $chado_schema
+ *   The name of the chado schema you would like to get the table schema for.
+ * @return array
  *   A Drupal Schema API array defining the table.
  *
  * @ingroup tripal_chado_schema_api
  */
-function chado_get_schema($table) {
-  $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema();
+function chado_get_schema($table, $chado_schema = NULL) {
+
+  // Retrieve the default name of the chado schema if it's not provided.
+  if ($chado_schema === NULL) {
+    $chado_schema = chado_get_schema_name('chado');
+  }
+
+  // Create a new ChadoSchema instance and use it to get the table schema array.
+  $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema(NULL, $chado_schema);
   return $chado_schema->getTableSchema($table);
 }
 
@@ -490,16 +574,24 @@ function chado_get_schema($table) {
 /**
  * Retrieves the schema in an array for the specified custom table.
  *
- * @param $table
+ * @param string $table
  *   The name of the table to create.
- *
- * @return
+ * @param string $chado_schema
+ *   The name of the chado schema you would like to get the custom table from.
+ * @return array
  *   A Drupal-style Schema API array definition of the table. Returns
  *   FALSE on failure.
  *
  * @ingroup tripal_chado_schema_api
  */
-function chado_get_custom_table_schema($table) {
+function chado_get_custom_table_schema($table, $chado_schema = NULL) {
+
+  // Retrieve the default name of the chado schema if it's not provided.
+  if ($chado_schema === NULL) {
+    $chado_schema = chado_get_schema_name('chado');
+  }
+
+  // Create a new ChadoSchema instance and use it to get the schema array.
   $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema();
   return $chado_schema->getCustomTableSchema($table);
 }
@@ -514,13 +606,21 @@ function chado_get_custom_table_schema($table) {
  *  primary data records and are therefore not base tables.  This function
  *  retreives only the list of tables that are considered 'base' tables.
  *
- * @return
+ * @param string $chado_schema
+ *   The chado schema you are interested in.
+ * @return array
  *    An array of base table names.
  *
  * @ingroup tripal_chado_schema_api
  */
-function chado_get_base_tables() {
-  $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema();
+function chado_get_base_tables($chado_schema = NULL) {
+
+  // Retrieve the default name of the chado schema if it's not provided.
+  if ($chado_schema === NULL) {
+    $chado_schema = chado_get_schema_name('chado');
+  }
+
+  $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema(NULL, $chado_schema);
   return $chado_schema->getBaseTables();
 }
 
@@ -536,7 +636,7 @@ function chado_get_base_tables() {
  * property contains the name of the foreign key field (e.g. type_id), and the
  * 'cvterm' property contains a cvterm object.
  *
- * @params
+ * @param array $params
  *   An associative array that contains the following keys:
  *     - cvterm_id:  the cvterm ID value for the term.
  *     - vocabulary: the short name for the vocabulary (e.g. SO, GO, PATO)
@@ -544,8 +644,7 @@ function chado_get_base_tables() {
  *     - bundle_id:  the ID for the bundle to which a term is associated.
  *   The 'vocabulary' and 'accession' must be used together, the 'cvterm_id' can
  *   be used on it's own.
- *
- * @return
+ * @return object
  *   An object containing the chado_table and chado_field properties or NULL if
  *   if no mapping was found for the term.
  *
