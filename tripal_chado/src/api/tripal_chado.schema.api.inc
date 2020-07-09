@@ -58,6 +58,8 @@ function chado_table_exists($table, $chado_schema = NULL) {
     $chado_schema = chado_get_schema_name('chado');
   }
 
+  // VALIDATION: Schema name validated in ChadoSchema Contructor.
+
   // Create a new ChadoSchema instance and use it to check the table exists.
   $schema = new \Drupal\tripal_chado\api\ChadoSchema(NULL, $chado_schema);
   return $schema->checkTableExists($table);
@@ -88,6 +90,8 @@ function chado_column_exists($table, $column, $chado_schema = NULL) {
   if ($chado_schema === NULL) {
     $chado_schema = chado_get_schema_name('chado');
   }
+
+  // VALIDATION: Schema name validated in ChadoSchema Contructor.
 
   // Create a new ChadoSchema instance and use it to check the column exists.
   $schema = new \Drupal\tripal_chado\api\ChadoSchema(NULL, $chado_schema);
@@ -120,6 +124,13 @@ function chado_sequence_exists($sequence, $chado_schema = NULL) {
   // Retrieve the default name of the chado schema if it's not provided.
   if ($chado_schema === NULL) {
     $chado_schema = chado_get_schema_name('chado');
+  }
+  // Schema name must be a single word containing only lower case letters
+  // or numbers and cannot begin with a number.
+  if (preg_match('/^[a-z][a-z0-9]+$/', $chado_schema) === 0) {
+    \Drupal::logger('tripal_chado')->error(
+      "chado_sequence_exists: Schema name must be a single alphanumeric word beginning with a number and all lowercase.");
+    return FALSE;
   }
 
   // @upgrade $cached_obj = cache_get('chado_sequences', 'cache');
@@ -174,6 +185,8 @@ function chado_index_exists($table, $name, $no_suffix = FALSE, $chado_schema = N
     $chado_schema = chado_get_schema_name('chado');
   }
 
+  // VALIDATION: Schema name validated in ChadoSchema Contructor.
+
   // Create a new ChadoSchema instance and use it to check if the index exists.
   $schema = new \Drupal\tripal_chado\api\ChadoSchema(NULL, $chado_schema);
   return $schema->checkIndexExists($table, $name, $no_suffix);
@@ -200,6 +213,13 @@ function chado_add_index($table, $name, $fields, $chado_schema = NULL) {
   // Retrieve the default name of the chado schema if it's not provided.
   if ($chado_schema === NULL) {
     $chado_schema = chado_get_schema_name('chado');
+  }
+  // Schema name must be a single word containing only lower case letters
+  // or numbers and cannot begin with a number.
+  if (preg_match('/^[a-z][a-z0-9]+$/', $chado_schema) === 0) {
+    \Drupal::logger('tripal_chado')->error(
+      "chado_add_index: Schema name must be a single alphanumeric word beginning with a number and all lowercase.");
+    return FALSE;
   }
 
   // Determine the full name of the index.
@@ -239,6 +259,14 @@ function chado_add_index($table, $name, $fields, $chado_schema = NULL) {
  * @ingroup tripal_chado_schema_api
  */
 function chado_dbschema_exists($schema) {
+
+  // Schema name must be a single word containing only lower case letters
+  // or numbers and cannot begin with a number.
+  if (preg_match('/^[a-z][a-z0-9]+$/', $schema) === 0) {
+    \Drupal::logger('tripal_chado')->error(
+      "chado_dbschema_exists: Schema name must be a single alphanumeric word beginning with a number and all lowercase.");
+    return FALSE;
+  }
 
   $sql = "
     SELECT true
@@ -345,6 +373,14 @@ function chado_is_local($force_recheck = FALSE, $chado_schema = NULL) {
     $default_chado_schema = FALSE;
   }
 
+  // Schema name must be a single word containing only lower case letters
+  // or numbers and cannot begin with a number.
+  if (preg_match('/^[a-z][a-z0-9]+$/', $chado_schema) === 0) {
+    \Drupal::logger('tripal_chado')->error(
+      "chado_is_local: Schema name must be a single alphanumeric word beginning with a number and all lowercase.");
+    return FALSE;
+  }
+
   // If possible, use the cached value.
   // Only use it for the "default" chado schema.
   if ($force_recheck !== TRUE && $default_chado_schema) {
@@ -399,6 +435,14 @@ function chado_is_installed($chado_schema = NULL) {
     $chado_schema = chado_get_schema_name('chado');
   }
 
+  // Schema name must be a single word containing only lower case letters
+  // or numbers and cannot begin with a number.
+  if (preg_match('/^[a-z][a-z0-9]+$/', $chado_schema) === 0) {
+    \Drupal::logger('tripal_chado')->error(
+      "chado_is_installed: Schema name must be a single alphanumeric word beginning with a number and all lowercase.");
+    return FALSE;
+  }
+
   // check to make sure the chado schema exists
   return chado_is_local($chado_schema);
 }
@@ -436,6 +480,14 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE, $chado_
   // Retrieve the default name of the chado schema if it's not provided.
   if ($chado_schema === NULL) {
     $chado_schema = chado_get_schema_name('chado');
+  }
+
+  // Schema name must be a single word containing only lower case letters
+  // or numbers and cannot begin with a number.
+  if (preg_match('/^[a-z][a-z0-9]+$/', $chado_schema) === 0) {
+    \Drupal::logger('tripal_chado')->error(
+      "chado_get_version: Schema name must be a single alphanumeric word beginning with a number and all lowercase.");
+    return FALSE;
   }
 
   // Check that Chado is installed if not return uninstalled as the version.
@@ -540,6 +592,8 @@ function chado_get_table_names($include_custom = NULL, $chado_schema = NULL) {
     $chado_schema = chado_get_schema_name('chado');
   }
 
+  // VALIDATION: Schema name validated in ChadoSchema Contructor.
+
   // Create a new ChadoSchema instance and use it to get the table names.
   $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema(NULL, $chado_schema);
   return $chado_schema->getTableNames($include_custom);
@@ -564,6 +618,8 @@ function chado_get_schema($table, $chado_schema = NULL) {
   if ($chado_schema === NULL) {
     $chado_schema = chado_get_schema_name('chado');
   }
+
+  // VALIDATION: Schema name validated in ChadoSchema Contructor.
 
   // Create a new ChadoSchema instance and use it to get the table schema array.
   $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema(NULL, $chado_schema);
@@ -590,6 +646,8 @@ function chado_get_custom_table_schema($table, $chado_schema = NULL) {
   if ($chado_schema === NULL) {
     $chado_schema = chado_get_schema_name('chado');
   }
+
+  // VALIDATION: Schema name validated in ChadoSchema Contructor.
 
   // Create a new ChadoSchema instance and use it to get the schema array.
   $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema();
@@ -619,6 +677,8 @@ function chado_get_base_tables($chado_schema = NULL) {
   if ($chado_schema === NULL) {
     $chado_schema = chado_get_schema_name('chado');
   }
+
+  // VALIDATION: Schema name validated in ChadoSchema Contructor.
 
   $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema(NULL, $chado_schema);
   return $chado_schema->getBaseTables();

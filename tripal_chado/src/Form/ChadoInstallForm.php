@@ -170,6 +170,12 @@ class ChadoInstallForm extends FormBase {
     // Cannot do this and still allow multiple chado installs...
     // @todo add a hook for modules to add in to the prepare or install processes.
 
+    // Schema name must be all lowercase with no special characters.
+    // It should also be a single word.
+    if (preg_match('/^[a-z][a-z0-9]+$/', $values['schema_name']) === 0) {
+      $form_state->setErrorByName('schema_name',
+        t('The schema name must be a single word containing only lower case letters or numbers and cannot begin with a number.'));
+    }
 
     parent::validateForm($form, $form_state);
   }

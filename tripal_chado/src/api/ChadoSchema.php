@@ -67,6 +67,12 @@ class ChadoSchema {
   protected $schema = [];
 
   /**
+   * @var object \Drupal
+   * Saves the logger.
+   */
+  protected $logger = NULL;
+
+  /**
    * The ChadoSchema constructor.
    *
    * @param string $version
@@ -74,6 +80,9 @@ class ChadoSchema {
    *   provided, the version of the current database will be looked up.
    */
   public function __construct($version = NULL, $schema_name = NULL) {
+
+    // Setup a logger.
+    $this->logger = \Drupal::logger('tripal_chado');
 
     // Set the version of the schema.
     if ($version === NULL) {
@@ -86,6 +95,13 @@ class ChadoSchema {
     // Set the name of the schema.
     if ($schema_name === NULL) {
       $this->schema_name = 'chado'; //chado_get_schema_name('chado');
+    }
+    elseif (preg_match('/^[a-z][a-z0-9]+$/', $values['schema_name']) === 0) {
+      // Schema name must be a single word containing only lower case letters
+      // or numbers and cannot begin with a number.
+      $this->logger->error(
+        "Schema name must be a single alphanumeric word beginning with a number and all lowercase.");
+      return FALSE;
     }
     else {
       $this->schema_name = $schema_name;

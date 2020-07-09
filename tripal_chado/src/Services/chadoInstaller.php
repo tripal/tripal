@@ -40,7 +40,19 @@ class chadoInstaller extends bulkPgSchemaInstaller {
 
     // VALIDATION.
     // Check the version is valid.
-    // @todo
+    if (in_array($version), ['1.3'])) {
+      $this->logger->error(
+        "That version is not supported by the installer.");
+      return FALSE;
+    }
+    // Check the schema name is valid.
+    if (preg_match('/^[a-z][a-z0-9]+$/', $values['schema_name']) === 0) {
+      // Schema name must be a single word containing only lower case letters
+      // or numbers and cannot begin with a number.
+      $this->logger->error(
+        "Schema name must be a single alphanumeric word beginning with a number and all lowercase.");
+      return FALSE;
+    }
 
     // 1) Drop the schema if it already exists.
     $this->dropSchema('genetic_code');
