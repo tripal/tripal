@@ -18,10 +18,15 @@ class SchemaAPITest extends BrowserTestBase {
 
   /**
    * Modules to enable.
-   *
    * @var array
    */
   public static $modules = ['tripal', 'tripal_chado'];
+
+  /**
+   * Schema to do testing out of.
+   * @var string
+   */
+  public static $schemaName = 'testchado';
 
   /**
    * Tests chado_table_exists() and chado_column_exists().
@@ -32,81 +37,123 @@ class SchemaAPITest extends BrowserTestBase {
   public function testChadoTableColumnExists() {
     $connection = \Drupal\Core\Database\Database::getConnection();
 
-    // First create our table in the chado schema (if it exists).
-    $check_schema = "SELECT true FROM pg_namespace WHERE nspname = 'chado'";
-    $exists = $connection->query($check_schema)->fetchField();
-    if (!$exists) {
-      $this->markTestSkipped('Cannot check chado schema api without chado.');
-    }
+    // Check that chado exists.
+    $check_schema = "SELECT true FROM pg_namespace WHERE nspname = :schema";
+    $exists = $connection->query($check_schema, [':schema' => $this::$schemaName])
+      ->fetchField();
+    $this->assertTrue($exists, 'Cannot check chado schema api without chado.
+      Please ensure chado is installed in the schema named "testchado".');
 
-    // Define a table name which cannot exist.
+    // Initialize ChadoSchema class to test new api.
+    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema(NULL, 'testchado');
+
+    // 1. Check that the table does not exist.
     $table_name = 'testChadoTableExists_' . uniqid();
-
-    // Check that the table does not exist.
-    $result = chado_table_exists($table_name);
+    // -- Check the object-oriented ChadoSchema API.
+    $result = $chado_schema->checkTableExists($table_name);
     $this->assertFalse($result,
       "The table should NOT exists because we haven't created it yet.");
+    // -- Check the backwards-compaticle procedural schema api.
+    $result = chado_table_exists($table_name, $this::$schemaName);
+    $this->assertFalse($result,
+      "BC: The table should NOT exists because we haven't created it yet.");
 
-    // Now create the table.
-    $sql = "CREATE TABLE chado." . $table_name . " (
-        cte_id     SERIAL PRIMARY KEY,
+    // 2. Check that an existing table is correctly detected.
+    // -- Now create the table.
+    $sql = "CREATE TABLE " . $this::$schemaName . '.' . $table_name . " (
+        cte_id      SERIAL PRIMARY KEY,
         cte_name    varchar(40)
     )";
     $connection->query($sql);
-
-    // And check that the table is there.
-    $result = chado_table_exists($table_name);
+    // -- Check the object-oriented ChadoSchema API.
+    $result = $chado_schema->checkTableExists($table_name);
     $this->assertTrue($result,
       "The table, $table_name, should exists because we just created it.");
+    // -- Check the backwards-compaticle procedural schema api.
+    $result = chado_table_exists($table_name, $this::$schemaName);
+    $this->assertTrue($result,
+      "BC: The table, $table_name, should exists because we just created it.");
 
-    // -- COLUMNS.
-    // Now check that a column NOT in the table is properly detected.
+    // 3. Check that a column NOT in the table is properly detected.
     $column = 'columndoesnotexist';
-    $result = chado_column_exists($table_name, $column);
+    // -- Check the object-oriented ChadoSchema API.
+    $result = $chado_schema->checkColumnExists($table_name, $column);
     $this->assertFalse($result,
       "The column, $table_name.$column, should not exist in the table.");
+    // -- Check the backwards-compaticle procedural schema api.
+    $result = chado_column_exists($table_name, $column, $this::$schemaName);
+    $this->assertFalse($result,
+      "BC: The column, $table_name.$column, should not exist in the table.");
 
-    // Now check that a column in the table is properly detected.
+    // 4. Check that a column in the table is properly detected.
     $column = 'cte_name';
-    $result = chado_column_exists($table_name, $column);
+    // -- Check the object-oriented ChadoSchema API.
+    $result = $chado_schema->checkColumnExists($table_name, $column);
     $this->assertTRUE($result,
       "The column, $table_name.$column, does exist in the table but we were not able to detect it.");
+    // -- Check the backwards-compaticle procedural schema api.
+    $result = chado_column_exists($table_name, $column, $this::$schemaName);
+    $this->assertTRUE($result,
+      "BC: The column, $table_name.$column, does exist in the table but we were not able to detect it.");
 
-    // -- SEQUENCE.
-    // Now check for the sequence which allows the primary key to autoincrement.
+    // 5. Check for the sequence which allows the primary key to autoincrement.
     $sequence_name = strtolower($table_name . '_cte_id_seq');
-    $result = chado_sequence_exists($sequence_name);
+    // -- Check the object-oriented ChadoSchema API.
+    $result = $chado_schema->checkSequenceExists($table_name, 'cte_id');
     $this->assertTRUE($result,
       "The sequence, $sequence_name, should exist for the primary key.");
+    // -- Check the backwards-compaticle procedural schema api.
+    $result = chado_sequence_exists($sequence_name, $this::$schemaName);
+    $this->assertTRUE($result,
+      "BC: The sequence, $sequence_name, should exist for the primary key.");
 
-    // There is no sequence on the name so lets confirm that.
+    // 6. There is no sequence on the name so lets confirm that.
     $sequence_name = strtolower($table_name . '_cte_name_seq');
-    $result = chado_sequence_exists($sequence_name);
+    // -- Check the object-oriented ChadoSchema API.
+    $result = $chado_schema->checkSequenceExists($table_name, 'cte_name');
     $this->assertFALSE($result,
-      "The sequence, $sequence_name, should NOT exist for the name.");
+      "The sequence should NOT exist for the name.");
+    // -- Check the backwards-compaticle procedural schema api.
+    $result = chado_sequence_exists($sequence_name, $this::$schemaName);
+    $this->assertFALSE($result,
+      "BC: The sequence, $sequence_name, should NOT exist for the name.");
 
-    // -- INDEX.
-    // Now check for the index on the primary key.
-    $result = chado_index_exists($table_name, 'pkey', TRUE);
+    // 7. Check for the index on the primary key.
+    // -- Check the object-oriented ChadoSchema API.
+    $result = $chado_schema->checkIndexExists($table_name, 'pkey', TRUE);
     $this->assertTRUE($result,
       "The index should exist for the primary key.");
+    // -- Check the backwards-compaticle procedural schema api.
+    $result = chado_index_exists($table_name, 'pkey', TRUE, $this::$schemaName);
+    $this->assertTRUE($result,
+      "BC: The index should exist for the primary key.");
 
-    // There is no index on the name so lets confirm that.
+    // 8. There is no index on the name so lets confirm that.
     $index = strtolower($table_name . '_cte_name_idx');
-    $result = chado_index_exists($table_name, 'cte_name', $index);
+    // -- Check the object-oriented ChadoSchema API.
+    $result = $chado_schema->checkIndexExists($table_name, 'cte_name');
     $this->assertFALSE($result,
       "The index should NOT exist for the name.");
+    // -- Check the backwards-compaticle procedural schema api.
+    $result = chado_index_exists($table_name, 'cte_name', $index, $this::$schemaName);
+    $this->assertFALSE($result,
+      "BC: The index should NOT exist for the name.");
 
-    // -- ADD INDEX.
+    // 9. Check an existing index is propery detected.
     // We've already proven there is no index on the name.
     // Now we are going to add one!
-    $success = chado_add_index($table_name, '_someindexname', ['cte_name']);
-    $result = chado_index_exists($table_name, '_someindexname');
+    $success = chado_add_index($table_name, 'cte_name', ['cte_name'], $this::$schemaName);
+    // -- Check the object-oriented ChadoSchema API.
+    $result = $chado_schema->checkIndexExists($table_name, 'cte_name');
     $this->assertTrue($result,
       "The index we just created should be available.");
+    // -- Check the backwards-compaticle procedural schema api.
+    $result = chado_index_exists($table_name, 'cte_name', FALSE, $this::$schemaName);
+    $this->assertTrue($result,
+      "BC: The index we just created should be available.");
 
     // Clean up after ourselves by dropping the table.
-    \Drupal::database()->query("DROP TABLE chado." . $table_name);
+    $connection->query("DROP TABLE ".$this::$schemaName . '.' . $table_name);
   }
 
   /**
@@ -116,26 +163,34 @@ class SchemaAPITest extends BrowserTestBase {
    * @group chado-schema
    */
   public function testChadoSchemaMetdata() {
+    $connection = \Drupal\Core\Database\Database::getConnection();
+
+    // Check that chado exists.
+    $check_schema = "SELECT true FROM pg_namespace WHERE nspname = :schema";
+    $exists = $connection->query($check_schema, [':schema' => $this::$schemaName])
+      ->fetchField();
+    $this->assertTrue($exists, 'Cannot check chado schema api without chado.
+      Please ensure chado is installed in the schema named "testchado".');
 
     // First check the default schema.
-    $schema_name = chado_get_schema_name('fred');
+    $schema_name = chado_get_schema_name(uniqid());
     $this->assertEquals('public', $schema_name,
       "The default schema is not what we expected. We expected the 'public' schema.");
 
     // Next check if chado is local.
-    $is_local = chado_is_local();
+    $is_local = chado_is_local(TRUE, $this::$schemaName);
     $this->assertIsBool($is_local, "Unable to check that chado is local.");
-    $is_local_2X = chado_is_local();
+    $is_local_2X = chado_is_local(FALSE, $this::$schemaName);
     $this->assertIsBool($is_local_2X, "Unable to check that chado is local 2X.");
     $this->assertEquals($is_local, $is_local_2X,
       "When checking if chado is local we didn't get the same answer twice.");
 
     // Check if chado is installed.
-    $installed = chado_is_installed();
+    $installed = chado_is_installed($this::$schemaName);
     $this->assertTrue($installed, "Chado is not installed?");
 
     // Check the chado version.
-    $version = chado_get_version();
+    $version = chado_get_version(FALSE, FALSE, $this::$schemaName);
     $this->assertGreaterThanOrEqual(1.3, $version,
       "We were unable to detect the version assuming it's 1.3");
   }
@@ -150,11 +205,11 @@ class SchemaAPITest extends BrowserTestBase {
   public function testInitClass() {
 
     // Test with no parameters.
-    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema();
+    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema(NULL, $this::$schemaName);
     $this->assertNotNull($chado_schema);
 
     // Test with version.
-    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema('1.3');
+    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema('1.3', $this::$schemaName);
     $this->assertNotNull($chado_schema);
   }
 
@@ -171,7 +226,7 @@ class SchemaAPITest extends BrowserTestBase {
     $version = rand(100,199) / 100;
 
     // Check version can be retrieved when we set it.
-    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema($version);
+    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema($version, $this::$schemaName);
     $retrieved_version = $chado_schema->getVersion();
     $this->assertEquals(
       $version,
@@ -193,20 +248,17 @@ class SchemaAPITest extends BrowserTestBase {
   public function testGetSchemaName() {
 
     // Generate a fake version.
-    $version = rand(100,199) / 100;
-    $schema_name = uniqid();
+    $version = 1.3;
 
     // Check the schema name can be retrieved when we set it.
-    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema($version, $schema_name);
+    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema($version, $this::$schemaName);
     $retrieved_schema = $chado_schema->getSchemaName();
     $this->assertEquals(
-      $schema_name,
+      $this::$schemaName,
       $retrieved_schema,
       t('The schema name retrieved via ChadoSchema->getSchemaName, ":ret", should equal that set, ":set"',
-        [':ret' => $retrieved_schema, ':set' => $schema_name])
+        [':ret' => $retrieved_schema, ':set' => $this::$schemaName])
     );
-
-    // @todo Check schema name can be retrieved when it's looked up?
   }
 
   /**
@@ -217,8 +269,16 @@ class SchemaAPITest extends BrowserTestBase {
    * @group chado-schema
    */
   public function testGetSchemaDetails() {
+    $connection = \Drupal\Core\Database\Database::getConnection();
 
-    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema(1.3, 'chado');
+    // Check that chado exists.
+    $check_schema = "SELECT true FROM pg_namespace WHERE nspname = :schema";
+    $exists = $connection->query($check_schema, [':schema' => $this::$schemaName])
+      ->fetchField();
+    $this->assertTrue($exists, 'Cannot check chado schema api without chado.
+      Please ensure chado is installed in the schema named "testchado".');
+
+    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema(1.3, $this::$schemaName);
     $schema_details = $chado_schema->getSchemaDetails();
     $this->assertIsArray($schema_details,
       "We were unable to pull out the schema details from the YAML file.");
@@ -251,9 +311,17 @@ class SchemaAPITest extends BrowserTestBase {
    * @group chado-schema
    */
   public function testGetTableNames($version, $known_tables) {
+    $connection = \Drupal\Core\Database\Database::getConnection();
+
+    // Check that chado exists.
+    $check_schema = "SELECT true FROM pg_namespace WHERE nspname = :schema";
+    $exists = $connection->query($check_schema, [':schema' => $this::$schemaName])
+      ->fetchField();
+    $this->assertTrue($exists, 'Cannot check chado schema api without chado.
+      Please ensure chado is installed in the schema named "testchado".');
 
     // Check: Known tables for a given version are returned.
-    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema($version);
+    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema($version, $this::$schemaName);
     $returned_tables = $chado_schema->getTableNames();
     //print_r($returned_tables);
 
@@ -275,6 +343,14 @@ class SchemaAPITest extends BrowserTestBase {
    * @group chado-schema
    */
   public function testGetTableSchema() {
+    $connection = \Drupal\Core\Database\Database::getConnection();
+
+    // Check that chado exists.
+    $check_schema = "SELECT true FROM pg_namespace WHERE nspname = :schema";
+    $exists = $connection->query($check_schema, [':schema' => $this::$schemaName])
+      ->fetchField();
+    $this->assertTrue($exists, 'Cannot check chado schema api without chado.
+      Please ensure chado is installed in the schema named "testchado".');
 
     // Check all Chado 1.3 tables.
     $version = 1.3;
@@ -335,7 +411,7 @@ class SchemaAPITest extends BrowserTestBase {
     'studyprop', 'studyprop_feature', 'synonym', 'tableinfo', 'treatment'];
 
     // Check: a schema is returned that matches what we expect.
-    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema($version);
+    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema($version, $this::$schemaName);
     foreach ($dataset as $table_name) {
       $table_schema = $chado_schema->getTableSchema($table_name);
 
@@ -388,7 +464,7 @@ class SchemaAPITest extends BrowserTestBase {
     $this->markTestSkipped('Custom Table functionality has not been upgraded yet.');
 
     // Check: a schema is returned that matches what we expect.
-    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema();
+    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema(NULL, $this::$schemaName);
     $table_schema = $chado_schema->getCustomTableSchema($table_name);
 
     $this->assertNotEmpty(
@@ -419,11 +495,17 @@ class SchemaAPITest extends BrowserTestBase {
    * @group chado-schema
    */
   public function testGetBaseTables($version, $known_tables) {
+    $connection = \Drupal\Core\Database\Database::getConnection();
 
-    //$this->markTestSkipped('Base table functionality not complete. Requires referring tables key to YAML.');
+    // Check that chado exists.
+    $check_schema = "SELECT true FROM pg_namespace WHERE nspname = :schema";
+    $exists = $connection->query($check_schema, [':schema' => $this::$schemaName])
+      ->fetchField();
+    $this->assertTrue($exists, 'Cannot check chado schema api without chado.
+      Please ensure chado is installed in the schema named "testchado".');
 
     // Check: Known base tables for a given version are returned.
-    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema($version);
+    $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema($version, $this::$schemaName);
     $returned_tables = $chado_schema->getBaseTables();
 
     foreach ($known_tables as $table_name) {

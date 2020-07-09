@@ -40,13 +40,13 @@ class chadoInstaller extends bulkPgSchemaInstaller {
 
     // VALIDATION.
     // Check the version is valid.
-    if (in_array($version), ['1.3'])) {
+    if (!in_array($version, ['1.3'])) {
       $this->logger->error(
         "That version is not supported by the installer.");
       return FALSE;
     }
     // Check the schema name is valid.
-    if (preg_match('/^[a-z][a-z0-9]+$/', $values['schema_name']) === 0) {
+    if (preg_match('/^[a-z][a-z0-9]+$/', $chado_schema) === 0) {
       // Schema name must be a single word containing only lower case letters
       // or numbers and cannot begin with a number.
       $this->logger->error(

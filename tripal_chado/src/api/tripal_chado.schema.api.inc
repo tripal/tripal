@@ -444,7 +444,7 @@ function chado_is_installed($chado_schema = NULL) {
   }
 
   // check to make sure the chado schema exists
-  return chado_is_local($chado_schema);
+  return chado_is_local(FALSE, $chado_schema);
 }
 
 /**
@@ -491,7 +491,7 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE, $chado_
   }
 
   // Check that Chado is installed if not return uninstalled as the version.
-  $is_local = chado_is_local(TRUE);
+  $is_local = chado_is_local(TRUE, $chado_schema);
   if (!$is_local) {
     // @todo currently do not support external chado.
     return 'not installed';

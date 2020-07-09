@@ -73,6 +73,18 @@ class ChadoSchema {
   protected $logger = NULL;
 
   /**
+   * @var object \Drupal
+   * Saves the Drupal database connection.
+   */
+  protected $connection = NULL;
+
+  /**
+   * @var string
+   * The default database.
+   */
+  protected $default_db = NULL;
+
+  /**
    * The ChadoSchema constructor.
    *
    * @param string $version
@@ -84,9 +96,14 @@ class ChadoSchema {
     // Setup a logger.
     $this->logger = \Drupal::logger('tripal_chado');
 
+    // Cache the connection to the database.
+    $this->connection = Database::getConnection();
+    $databases = $this->connection->getConnectionOptions();
+    $this->default_db = $databases['database'];
+
     // Set the version of the schema.
     if ($version === NULL) {
-      $this->version = chado_get_version(TRUE);
+      $this->version = chado_get_version(TRUE, $schema_name);
     }
     else {
       $this->version = $version;
@@ -94,9 +111,9 @@ class ChadoSchema {
 
     // Set the name of the schema.
     if ($schema_name === NULL) {
-      $this->schema_name = 'chado'; //chado_get_schema_name('chado');
+      $this->schema_name = 'chado';
     }
-    elseif (preg_match('/^[a-z][a-z0-9]+$/', $values['schema_name']) === 0) {
+    elseif (preg_match('/^[a-z][a-z0-9]+$/', $schema_name) === 0) {
       // Schema name must be a single word containing only lower case letters
       // or numbers and cannot begin with a number.
       $this->logger->error(
@@ -169,7 +186,7 @@ class ChadoSchema {
     // now add in the custom tables too if requested
     if ($include_custom) {
       $sql = "SELECT table FROM {tripal_custom_tables}";
-      $resource = \Drupal::database()->query($sql);
+      $resource = $this->connection->query($sql);
 
       foreach ($resource as $r) {
         $tables[$r->table] = $r->table;
@@ -245,7 +262,7 @@ class ChadoSchema {
   public function getCustomTableSchema($table) {
 
     $sql = "SELECT schema FROM {tripal_custom_tables} WHERE table_name = :table_name";
-    $results = \Drupal::database()->query($sql, [':table_name' => $table]);
+    $results = $this->connection->query($sql, [':table_name' => $table]);
     $custom = $results->fetchObject();
     if (!$custom) {
       return FALSE;
@@ -390,12 +407,10 @@ class ChadoSchema {
    *   TRUE if the table exists in the chado schema and FALSE if it does not.
    */
   public function checkTableExists($table) {
-    $connection = Database::getConnection();
 
     // Get the default database and chado schema.
-    $databases = $connection->getConnectionOptions();
-    $default_db = $databases['database'];
-    $chado_schema = chado_get_schema_name('chado');
+    $default_db = $this->default_db;
+    $chado_schema = $this->schema_name;
 
     // If we've already lookup up this table then don't do it again, as
     // we don't need to keep querying the database for the same tables.
@@ -419,7 +434,7 @@ class ChadoSchema {
       ':chado' => $chado_schema,
       ':default_db' => $default_db,
     ];
-    $query = \Drupal::database()->query($sql, $args);
+    $query = $this->connection->query($sql, $args);
     $results = $query->fetchAll();
     if (empty($results)) {
       return FALSE;
@@ -448,12 +463,10 @@ class ChadoSchema {
    * @ingroup tripal_chado_schema_api
    */
   public function checkColumnExists($table, $column) {
-    $connection = Database::getConnection();
 
     // Get the default database and chado schema.
-    $databases = $connection->getConnectionOptions();
-    $default_db = $databases['database'];
-    $chado_schema = chado_get_schema_name('chado');
+    $default_db = $this->default_db;
+    $chado_schema = $this->schema_name;
 
     // @upgrade $cached_obj = cache_get('chado_table_columns', 'cache');
     // if ($cached_obj) {
@@ -480,7 +493,7 @@ class ChadoSchema {
       ':chado' => $chado_schema,
       ':default_db' => $default_db,
     ];
-    $query = \Drupal::database()->query($sql, $args);
+    $query = $this->connection->query($sql, $args);
     $results = $query->fetchAll();
     if (empty($results)) {
       // @upgrade $cached_cols[$table][$column]['exists'] = FALSE;
@@ -573,7 +586,7 @@ class ChadoSchema {
                 table_schema = :schema
               ORDER  BY ordinal_position
               LIMIT 1';
-    $type = \Drupal::database()->query($query,
+    $type = $this->connection->query($query,
       [
         ':table' => $table,
         ':column' => $column,
@@ -615,19 +628,16 @@ class ChadoSchema {
   public function checkSequenceExists($table, $column) {
 
     $prefixed_table = $this->schema_name . '.' . $table;
-    $sequence_name = \Drupal::database()->query('SELECT pg_get_serial_sequence(:table, :column);',
+    $sequence_name = $this->connection->query('SELECT pg_get_serial_sequence(:table, :column);',
       [':table' => $prefixed_table, ':column' => $column])->fetchField();
 
 
     // Remove prefixed table from sequence name
     $sequence_name = str_replace($this->schema_name . '.', '', $sequence_name);
 
-    $connection = Database::getConnection();
-
     // Get the default database and chado schema.
-    $databases = $connection->getConnectionOptions();
-    $default_db = $databases['database'];
-    $chado_schema = chado_get_schema_name('chado');
+    $default_db = $this->default_db;
+    $chado_schema = $this->schema_name;
 
     // @upgrade $cached_obj = cache_get('chado_sequences', 'cache');
     // $cached_seqs = $cached_obj->data;
@@ -648,7 +658,7 @@ class ChadoSchema {
       ':sequence_schema' => $chado_schema,
       ':sequence_catalog' => $default_db,
     ];
-    $query = \Drupal::database()->query($sql, $args);
+    $query = $this->connection->query($sql, $args);
     $results = $query->fetchAll();
     if (empty($results)) {
       // @upgrade $cached_seqs[$sequence]['exists'] = FALSE;
@@ -704,7 +714,7 @@ class ChadoSchema {
     }
 
     // Next check the constraint is there.
-    $constraint_exists = \Drupal::database()->query(
+    $constraint_exists = $this->connection->query(
       "SELECT 1
       FROM information_schema.table_constraints
       WHERE table_name=:table AND constraint_type = 'PRIMARY KEY'",
@@ -733,7 +743,7 @@ class ChadoSchema {
   function checkConstraintExists($table, $constraint_name, $type) {
 
     // Next check the constraint is there.
-    $constraint_exists = \Drupal::database()->query(
+    $constraint_exists = $this->connection->query(
       "SELECT 1
       FROM information_schema.table_constraints
       WHERE table_name=:table AND constraint_type = :type AND constraint_name = :name",
@@ -783,7 +793,6 @@ class ChadoSchema {
    *   The name of the index.
    */
   function checkIndexExists($table, $name, $no_suffix = FALSE) {
-    $connection = Database::getConnection();
 
     if ($no_suffix) {
       $indexname = strtolower($table . '_' . $name);
@@ -793,9 +802,8 @@ class ChadoSchema {
     }
 
     // Get the default database and chado schema.
-    $databases = $connection->getConnectionOptions();
-    $default_db = $databases['database'];
-    $chado_schema = chado_get_schema_name('chado');
+    $default_db = $this->default_db;
+    $chado_schema = $this->schema_name;
 
     $sql = "
       SELECT 1 as exists
@@ -810,7 +818,7 @@ class ChadoSchema {
       ':tablename' => strtolower($table),
       ':schemaname' => $chado_schema,
     ];
-    $query = \Drupal::database()->query($sql, $args);
+    $query = $this->connection->query($sql, $args);
     $results = $query->fetchAll();
     if (empty($results)) {
       return FALSE;

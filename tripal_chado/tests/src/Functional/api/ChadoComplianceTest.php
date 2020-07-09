@@ -98,7 +98,7 @@ class ChadoComplianceTest extends BrowserTestBase {
     foreach ($tables as $table_name) {
 
       // Create the ChadoSchema class to aid in testing.
-      $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema();
+      $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema($schema_version, 'testchado');
       $version = $chado_schema->getVersion();
       $schema_name = $chado_schema->getSchemaName();
 
