@@ -126,22 +126,47 @@ class ChadoSchema {
 
     // Check functions require the chado schema be local and installed...
     // So lets check that now...
-    if (!chado_is_local()) {
-      tripal_report_error(
-        'ChadoSchema',
-        TRIPAL_NOTICE,
-        'The ChadoSchema class requires chado be installed within the drupal database
-          in a separate schema for any compliance checking functionality.'
-      );
+    if (ChadoSchema::schemaExists($schema_name) !== TRUE) {
+      $this->logger->error(
+        'Schema must already exist and be in the same database as your
+        Drupal installation.');
+      return FALSE;
     }
-    if (!chado_is_installed()) {
-      tripal_report_error(
-        'ChadoSchema',
-        TRIPAL_NOTICE,
-        'The ChadoSchema class requires chado be installed
-          for any compliance checking functionality.'
-      );
+  }
+
+  /**
+   * Check that any given chado schema exists.
+   *
+   * @param string $schema
+   *   The name of the schema to check the existence of
+   *
+   * @return bool
+   *   TRUE/FALSE depending upon whether or not the schema exists.
+   */
+  static function schemaExists($schema_name) {
+
+    // First make sure we have a valid schema name.
+    if (preg_match('/^[a-z][a-z0-9]+$/', $schema_name) === 0) {
+      // Schema name must be a single word containing only lower case letters
+      // or numbers and cannot begin with a number.
+      $this->logger->error(
+        "Schema name must be a single alphanumeric word beginning with a number and all lowercase.");
+      return FALSE;
     }
+
+    $sql = "
+      SELECT true
+      FROM pg_namespace
+      WHERE
+        has_schema_privilege(nspname, 'USAGE') AND
+        nspname = :nspname
+    ";
+    $query = \Drupal::database()->query($sql, [':nspname' => $schema_name]);
+    $schema_exists = $query->fetchField();
+    if ($schema_exists) {
+      return TRUE;
+    }
+    return FALSE;
   }
 
   /**
@@ -641,15 +666,16 @@ class ChadoSchema {
    *
    * @ingroup tripal_chado_schema_api
    */
-  public function checkSequenceExists($table, $column) {
+  public function checkSequenceExists($table, $column, $sequence_name = NULL) {
 
     $prefixed_table = $this->schema_name . '.' . $table;
-    $sequence_name = $this->connection->query('SELECT pg_get_serial_sequence(:table, :column);',
-      [':table' => $prefixed_table, ':column' => $column])->fetchField();
+    if ($sequence_name === NULL) {
+      $sequence_name = $this->connection->query('SELECT pg_get_serial_sequence(:table, :column);',
+        [':table' => $prefixed_table, ':column' => $column])->fetchField();
 
-
-    // Remove prefixed table from sequence name
-    $sequence_name = str_replace($this->schema_name . '.', '', $sequence_name);
+      // Remove prefixed table from sequence name
+      $sequence_name = str_replace($this->schema_name . '.', '', $sequence_name);
+    }
 
     // Get the default database and chado schema.
     $default_db = $this->default_db;
