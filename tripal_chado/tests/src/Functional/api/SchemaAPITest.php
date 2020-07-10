@@ -142,7 +142,7 @@ class SchemaAPITest extends BrowserTestBase {
     // 9. Check an existing index is propery detected.
     // We've already proven there is no index on the name.
     // Now we are going to add one!
-    $success = chado_add_index($table_name, 'cte_name', ['cte_name'], $this::$schemaName);
+    $success = $chado_schema->addIndex($table_name, 'cte_name', ['cte_name']);
     // -- Check the object-oriented ChadoSchema API.
     $result = $chado_schema->checkIndexExists($table_name, 'cte_name');
     $this->assertTrue($result,

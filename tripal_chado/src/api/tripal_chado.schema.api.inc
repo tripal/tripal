@@ -193,7 +193,7 @@ function chado_index_exists($table, $name, $no_suffix = FALSE, $chado_schema = N
 }
 
 /**
- * A Chado-aware wrapper for the db_add_index() function.
+ * A Chado-aware replacement for the db_add_index() function.
  *
  * @param string $table
  *   The table to be altered.
@@ -214,37 +214,12 @@ function chado_add_index($table, $name, $fields, $chado_schema = NULL) {
   if ($chado_schema === NULL) {
     $chado_schema = chado_get_schema_name('chado');
   }
-  // Schema name must be a single word containing only lower case letters
-  // or numbers and cannot begin with a number.
-  if (preg_match('/^[a-z][a-z0-9]+$/', $chado_schema) === 0) {
-    \Drupal::logger('tripal_chado')->error(
-      "chado_add_index: Schema name must be a single alphanumeric word beginning with a number and all lowercase.");
-    return FALSE;
-  }
 
-  // Determine the full name of the index.
-  $indexname = strtolower($table . '_' . $name . '_idx');
-  $chado_dot = $chado_schema . '.';
+  // VALIDATION: Schema name validated in ChadoSchema Contructor.
 
-  // Determine the create index SQL command.
-  // Note: we dont use place holders here because we cannot
-  // have quotes around thse parameters.
-  $query = 'CREATE INDEX "' . $indexname . '" ON ' . $chado_dot . $table . ' ';
-  $query .= '(';
-  $temp = [];
-  foreach ($fields as $field) {
-    if (is_array($field)) {
-      $temp[] = 'substr(' . $field[0] . ', 1, ' . $field[1] . ')';
-    }
-    else {
-      $temp[] = '"' . $field . '"';
-    }
-  }
-  $query .= implode(', ', $temp);
-  $query .= ')';
-
-  // Now execute it!
-  return Drupal::database()->query($query);
+  // Create a new ChadoSchema instance and use it to check if the index exists.
+  $schema = new \Drupal\tripal_chado\api\ChadoSchema(NULL, $chado_schema);
+  return $schema->addIndex($table, $name, $fields);
 }
 
 /**

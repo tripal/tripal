@@ -366,6 +366,22 @@ class ChadoSchema {
   }
 
   /**
+   * Retrieve schema details from YAML file.
+   *
+   * @return
+   *   An array with details for the current schema version.
+   */
+  public function getSchemaDetails() {
+
+    if (empty($this->schema)) {
+      $filename = drupal_get_path('module', 'tripal_chado') . '/chado_schema/chado_schema-1.3.yml';
+      $this->schema = Yaml::parse(file_get_contents($filename));
+    }
+
+    return $this->schema;
+  }
+
+  /**
    * Get information about which Chado base table a cvterm is mapped to.
    *
    * Vocbulary terms that represent content types in Tripal must be mapped to
@@ -787,10 +803,11 @@ class ChadoSchema {
   /**
    * A Chado-aware replacement for the db_index_exists() function.
    *
-   * @param $table
+   * @param string $table
    *   The table to be altered.
-   * @param $name
+   * @param string $name
    *   The name of the index.
+   * @param bool $no_suffix
    */
   function checkIndexExists($table, $name, $no_suffix = FALSE) {
 
@@ -827,18 +844,47 @@ class ChadoSchema {
   }
 
   /**
-   * Retrieve schema details from YAML file.
+   * A Chado-aware replacement for db_add_index().
    *
-   * @return
-   *   An array with details for the current schema version.
+   * @param $table
+   *   The table to be altered.
+   * @param $name
+   *   The name of the index.
+   * @param string $fields
+   *   An array of field names.
    */
-  public function getSchemaDetails() {
+   function addIndex($table, $name, $fields, $no_suffix = FALSE) {
 
-    if (empty($this->schema)) {
-      $filename = drupal_get_path('module', 'tripal_chado') . '/chado_schema/chado_schema-1.3.yml';
-      $this->schema = Yaml::parse(file_get_contents($filename));
-    }
+     if ($no_suffix) {
+       $indexname = strtolower($table . '_' . $name);
+     }
+     else {
+       $indexname = strtolower($table . '_' . $name . '_idx');
+     }
 
-    return $this->schema;
-  }
+     // Get the default database and chado schema.
+     $default_db = $this->default_db;
+     $chado_schema = $this->schema_name;
+     $chado_dot = $chado_schema . '.';
+
+     // Determine the create index SQL command.
+     // Note: we dont use place holders here because we cannot
+     // have quotes around thse parameters.
+     $query = 'CREATE INDEX "' . $indexname . '" ON ' . $chado_dot . $table . ' ';
+     $query .= '(';
+     $temp = [];
+     foreach ($fields as $field) {
+       if (is_array($field)) {
+         $temp[] = 'substr(' . $field[0] . ', 1, ' . $field[1] . ')';
+       }
+       else {
+         $temp[] = '"' . $field . '"';
+       }
+     }
+     $query .= implode(', ', $temp);
+     $query .= ')';
+
+     // Now execute it!
+     return $this->connection->query($query);
+   }
 }
