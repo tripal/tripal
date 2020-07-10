@@ -60,7 +60,7 @@ function tripal_phylogeny_prepare_tree_viewer($phylotree)
         'interior_node_size' => variable_get('tripal_phylogeny_default_interior_node_size', 1),
         'leaf_node_size' => variable_get('tripal_phylogeny_default_leaf_node_size', 6),
         'skipTicks' => $skip_ticks,
-        'phylogram_scale' => variable_get('tripal_phylogeny_default_phylogram_scale', 6),
+        'phylogram_scale' => variable_get('tripal_phylogeny_default_phylogram_scale', 1),
       ],
       'org_colors' => $colors,
     ],
