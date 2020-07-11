@@ -115,53 +115,17 @@ function chado_column_exists($table, $column, $chado_schema = NULL) {
  * @ingroup tripal_chado_schema_api
  */
 function chado_sequence_exists($sequence, $chado_schema = NULL) {
-  $connection = Database::getConnection();
 
-  // Get the default database.
-  $databases = $connection->getConnectionOptions();
-  $default_db = $databases['database'];
+    // Retrieve the default name of the chado schema if it's not provided.
+    if ($chado_schema === NULL) {
+      $chado_schema = chado_get_schema_name('chado');
+    }
 
-  // Retrieve the default name of the chado schema if it's not provided.
-  if ($chado_schema === NULL) {
-    $chado_schema = chado_get_schema_name('chado');
-  }
-  // Schema name must be a single word containing only lower case letters
-  // or numbers and cannot begin with a number.
-  if (preg_match('/^[a-z][a-z0-9]+$/', $chado_schema) === 0) {
-    \Drupal::logger('tripal_chado')->error(
-      "chado_sequence_exists: Schema name must be a single alphanumeric word beginning with a number and all lowercase.");
-    return FALSE;
-  }
+    // VALIDATION: Schema name validated in ChadoSchema Contructor.
 
-  // @upgrade $cached_obj = cache_get('chado_sequences', 'cache');
-  // $cached_seqs = $cached_obj->data;
-  // if (is_array($cached_seqs) and array_key_exists($sequence, $cached_seqs)) {
-  //  return $cached_seqs[$sequence]['exists'];
-  // }
-
-  $sql = "
-    SELECT 1
-    FROM information_schema.sequences
-    WHERE
-      sequence_name = :sequence_name AND
-      sequence_schema = :sequence_schema AND
-      sequence_catalog = :sequence_catalog
-  ";
-  $args = [
-    ':sequence_name' => strtolower($sequence),
-    ':sequence_schema' => $chado_schema,
-    ':sequence_catalog' => $default_db,
-  ];
-  $query = Drupal::database()->query($sql, $args);
-  $results = $query->fetchAll();
-  if (empty($results)) {
-    // @upgrade $cached_seqs[$sequence]['exists'] = FALSE;
-    // cache_set('chado_sequences', $cached_seqs, 'cache', CACHE_TEMPORARY);
-    return FALSE;
-  }
-  // @upgrade $cached_seqs[$sequence]['exists'] = FALSE;
-  // cache_set('chado_sequences', $cached_seqs, 'cache', CACHE_TEMPORARY);
-  return TRUE;
+    // Create a new ChadoSchema instance and use it to check the column exists.
+    $schema = new \Drupal\tripal_chado\api\ChadoSchema(NULL, $chado_schema);
+    return $schema->checkSequenceExists(NULL, NULL, $sequence);
 }
 
 /**
@@ -235,34 +199,22 @@ function chado_add_index($table, $name, $fields, $chado_schema = NULL) {
  */
 function chado_dbschema_exists($schema) {
 
-  // Schema name must be a single word containing only lower case letters
-  // or numbers and cannot begin with a number.
-  if (preg_match('/^[a-z][a-z0-9]+$/', $schema) === 0) {
-    \Drupal::logger('tripal_chado')->error(
-      "chado_dbschema_exists: Schema name must be a single alphanumeric word beginning with a number and all lowercase.");
-    return FALSE;
+  // Retrieve the default name of the chado schema if it's not provided.
+  if ($chado_schema === NULL) {
+    $chado_schema = chado_get_schema_name('chado');
   }
 
-  $sql = "
-    SELECT true
-    FROM pg_namespace
-    WHERE
-      has_schema_privilege(nspname, 'USAGE') AND
-      nspname = :nspname
-  ";
-  $query = Drupal::database()->query($sql, [':nspname' => $schema]);
-  $schema_exists = $query->fetchField();
-  if ($schema_exists) {
-    return TRUE;
-  }
-  return FALSE;
+  // VALIDATION: Schema name validated in ChadoSchema Contructor.
+
+  // Create a new ChadoSchema instance and use it to check if the index exists.
+  return \Drupal\tripal_chado\api\ChadoSchema::schemaExists($chado_schema);
 }
 
 /**
  * Retrieve the name of the PostgreSQL schema housing Chado or Drupal.
  *
  * @param string $schema
- *   Wehter you want the schema name for 'chado' or 'drupal'. Chado is the
+ *   Whether you want the schema name for 'chado' or 'drupal'. Chado is the
  *   default.
  *
  * @return string
@@ -342,53 +294,12 @@ function chado_is_local($force_recheck = FALSE, $chado_schema = NULL) {
   // Retrieve the default name of the chado schema if it's not provided.
   if ($chado_schema === NULL) {
     $chado_schema = chado_get_schema_name('chado');
-    $default_chado_schema = TRUE;
-  }
-  else {
-    $default_chado_schema = FALSE;
   }
 
-  // Schema name must be a single word containing only lower case letters
-  // or numbers and cannot begin with a number.
-  if (preg_match('/^[a-z][a-z0-9]+$/', $chado_schema) === 0) {
-    \Drupal::logger('tripal_chado')->error(
-      "chado_is_local: Schema name must be a single alphanumeric word beginning with a number and all lowercase.");
-    return FALSE;
-  }
+  // VALIDATION: Schema name validated in ChadoSchema Contructor.
 
-  // If possible, use the cached value.
-  // Only use it for the "default" chado schema.
-  if ($force_recheck !== TRUE && $default_chado_schema) {
-    $exists = \Drupal::state()->get('chado_schema_exists', NULL);
-    if ($exists !== NULL AND is_bool($exists)) {
-      return !$exists;
-    }
-  }
-
-  // This is postgresql-specific code to check the existence of the chado schema
-  // @coder-ignore: acting on pg_catalog schema rather then drupal schema
-  // therefore, table prefixing does not apply
-  $sql = "
-    SELECT nspname
-    FROM pg_namespace
-    WHERE
-      has_schema_privilege(nspname, 'USAGE') AND
-      nspname = :chado
-  ";
-  $results = \Drupal::database()->query($sql, [':chado' => $chado_schema]);
-  $name = $results->fetchObject();
-  if ($name) {
-    if ($default_chado_schema) {
-      \Drupal::state()->set('chado_schema_exists', FALSE);
-    }
-    return TRUE;
-  }
-  else {
-    if ($default_chado_schema) {
-      \Drupal::state()->set('chado_schema_exists', TRUE);
-    }
-    return FALSE;
-  }
+  // Create a new ChadoSchema instance and use it to check if the index exists.
+  return \Drupal\tripal_chado\api\ChadoSchema::schemaExists($chado_schema);
 }
 
 /**
@@ -410,16 +321,10 @@ function chado_is_installed($chado_schema = NULL) {
     $chado_schema = chado_get_schema_name('chado');
   }
 
-  // Schema name must be a single word containing only lower case letters
-  // or numbers and cannot begin with a number.
-  if (preg_match('/^[a-z][a-z0-9]+$/', $chado_schema) === 0) {
-    \Drupal::logger('tripal_chado')->error(
-      "chado_is_installed: Schema name must be a single alphanumeric word beginning with a number and all lowercase.");
-    return FALSE;
-  }
+  // VALIDATION: Schema name validated in ChadoSchema Contructor.
 
-  // check to make sure the chado schema exists
-  return chado_is_local(FALSE, $chado_schema);
+  // Create a new ChadoSchema instance and use it to check if the index exists.
+  return \Drupal\tripal_chado\api\ChadoSchema::schemaExists($chado_schema);
 }
 
 /**
