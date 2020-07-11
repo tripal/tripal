@@ -138,7 +138,7 @@ class chadoInstaller extends bulkPgSchemaInstaller {
 
       if ($success) {
         // @upgrade tripal_report_error().
-        print "\tImport of part $i of $numChunks Successful!\n";
+        print "\tImport part $i of $numChunks Successful!\n";
       }
       else {
         $failed = TRUE;
