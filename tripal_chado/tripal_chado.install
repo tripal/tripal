@@ -1,0 +1,57 @@
+<?php
+/**
+ * @file
+ * Contains functions used to install/uninstall tripal_chado.
+ */
+
+use \Drupal\Core\Database\Database;
+
+/**
+ * Implementation of hook_schema().
+ *
+ * @ingroup tripal_chado
+ */
+function tripal_chado_schema() {
+  $schema = [];
+
+  $schema['chado_installations'] = tripal_chado_chado_installations_schema();
+
+  return $schema;
+}
+
+/**
+ * Returns the Drupal Schema API array for the chado_installations table.
+ */
+function tripal_chado_chado_installations_schema() {
+  return [
+    'fields' => [
+      'install_id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'schema_name' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'version' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'created' => [
+        'type' => 'varchar',
+        'length' => 255,
+      ],
+      'updated' => [
+        'type' => 'varchar',
+        'length' => 255,
+      ],
+    ],
+    'indexes' => [
+      'schema_name' => ['schema_name'],
+    ],
+    'primary key' => ['install_id'],
+  ];
+}

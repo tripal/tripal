@@ -67,6 +67,24 @@ class ChadoSchema {
   protected $schema = [];
 
   /**
+   * @var object \Drupal
+   * Saves the logger.
+   */
+  protected $logger = NULL;
+
+  /**
+   * @var object \Drupal
+   * Saves the Drupal database connection.
+   */
+  protected $connection = NULL;
+
+  /**
+   * @var string
+   * The default database.
+   */
+  protected $default_db = NULL;
+
+  /**
    * The ChadoSchema constructor.
    *
    * @param string $version
@@ -75,9 +93,17 @@ class ChadoSchema {
    */
   public function __construct($version = NULL, $schema_name = NULL) {
 
+    // Setup a logger.
+    $this->logger = \Drupal::logger('tripal_chado');
+
+    // Cache the connection to the database.
+    $this->connection = Database::getConnection();
+    $databases = $this->connection->getConnectionOptions();
+    $this->default_db = $databases['database'];
+
     // Set the version of the schema.
     if ($version === NULL) {
-      $this->version = chado_get_version(TRUE);
+      $this->version = chado_get_version(TRUE, $schema_name);
     }
     else {
       $this->version = $version;
@@ -85,7 +111,14 @@ class ChadoSchema {
 
     // Set the name of the schema.
     if ($schema_name === NULL) {
-      $this->schema_name = 'chado'; //chado_get_schema_name('chado');
+      $this->schema_name = 'chado';
+    }
+    elseif (preg_match('/^[a-z][a-z0-9]+$/', $schema_name) === 0) {
+      // Schema name must be a single word containing only lower case letters
+      // or numbers and cannot begin with a number.
+      $this->logger->error(
+        "Schema name must be a single alphanumeric word beginning with a number and all lowercase.");
+      return FALSE;
     }
     else {
       $this->schema_name = $schema_name;
@@ -93,22 +126,47 @@ class ChadoSchema {
 
     // Check functions require the chado schema be local and installed...
     // So lets check that now...
-    if (!chado_is_local()) {
-      tripal_report_error(
-        'ChadoSchema',
-        TRIPAL_NOTICE,
-        'The ChadoSchema class requires chado be installed within the drupal database
-          in a separate schema for any compliance checking functionality.'
-      );
+    if (ChadoSchema::schemaExists($schema_name) !== TRUE) {
+      $this->logger->error(
+        'Schema must already exist and be in the same database as your
+        Drupal installation.');
+      return FALSE;
     }
-    if (!chado_is_installed()) {
-      tripal_report_error(
-        'ChadoSchema',
-        TRIPAL_NOTICE,
-        'The ChadoSchema class requires chado be installed
-          for any compliance checking functionality.'
-      );
+  }
+
+  /**
+   * Check that any given chado schema exists.
+   *
+   * @param string $schema
+   *   The name of the schema to check the existence of
+   *
+   * @return bool
+   *   TRUE/FALSE depending upon whether or not the schema exists.
+   */
+  static function schemaExists($schema_name) {
+
+    // First make sure we have a valid schema name.
+    if (preg_match('/^[a-z][a-z0-9]+$/', $schema_name) === 0) {
+      // Schema name must be a single word containing only lower case letters
+      // or numbers and cannot begin with a number.
+      $this->logger->error(
+        "Schema name must be a single alphanumeric word beginning with a number and all lowercase.");
+      return FALSE;
     }
+
+    $sql = "
+      SELECT true
+      FROM pg_namespace
+      WHERE
+        has_schema_privilege(nspname, 'USAGE') AND
+        nspname = :nspname
+    ";
+    $query = \Drupal::database()->query($sql, [':nspname' => $schema_name]);
+    $schema_exists = $query->fetchField();
+    if ($schema_exists) {
+      return TRUE;
+    }
+    return FALSE;
   }
 
   /**
@@ -153,7 +211,7 @@ class ChadoSchema {
     // now add in the custom tables too if requested
     if ($include_custom) {
       $sql = "SELECT table FROM {tripal_custom_tables}";
-      $resource = \Drupal::database()->query($sql);
+      $resource = $this->connection->query($sql);
 
       foreach ($resource as $r) {
         $tables[$r->table] = $r->table;
@@ -229,7 +287,7 @@ class ChadoSchema {
   public function getCustomTableSchema($table) {
 
     $sql = "SELECT schema FROM {tripal_custom_tables} WHERE table_name = :table_name";
-    $results = \Drupal::database()->query($sql, [':table_name' => $table]);
+    $results = $this->connection->query($sql, [':table_name' => $table]);
     $custom = $results->fetchObject();
     if (!$custom) {
       return FALSE;
@@ -333,6 +391,22 @@ class ChadoSchema {
   }
 
   /**
+   * Retrieve schema details from YAML file.
+   *
+   * @return
+   *   An array with details for the current schema version.
+   */
+  public function getSchemaDetails() {
+
+    if (empty($this->schema)) {
+      $filename = drupal_get_path('module', 'tripal_chado') . '/chado_schema/chado_schema-1.3.yml';
+      $this->schema = Yaml::parse(file_get_contents($filename));
+    }
+
+    return $this->schema;
+  }
+
+  /**
    * Get information about which Chado base table a cvterm is mapped to.
    *
    * Vocbulary terms that represent content types in Tripal must be mapped to
@@ -374,12 +448,10 @@ class ChadoSchema {
    *   TRUE if the table exists in the chado schema and FALSE if it does not.
    */
   public function checkTableExists($table) {
-    $connection = Database::getConnection();
 
     // Get the default database and chado schema.
-    $databases = $connection->getConnectionOptions();
-    $default_db = $databases['database'];
-    $chado_schema = chado_get_schema_name('chado');
+    $default_db = $this->default_db;
+    $chado_schema = $this->schema_name;
 
     // If we've already lookup up this table then don't do it again, as
     // we don't need to keep querying the database for the same tables.
@@ -403,7 +475,7 @@ class ChadoSchema {
       ':chado' => $chado_schema,
       ':default_db' => $default_db,
     ];
-    $query = \Drupal::database()->query($sql, $args);
+    $query = $this->connection->query($sql, $args);
     $results = $query->fetchAll();
     if (empty($results)) {
       return FALSE;
@@ -432,12 +504,10 @@ class ChadoSchema {
    * @ingroup tripal_chado_schema_api
    */
   public function checkColumnExists($table, $column) {
-    $connection = Database::getConnection();
 
     // Get the default database and chado schema.
-    $databases = $connection->getConnectionOptions();
-    $default_db = $databases['database'];
-    $chado_schema = chado_get_schema_name('chado');
+    $default_db = $this->default_db;
+    $chado_schema = $this->schema_name;
 
     // @upgrade $cached_obj = cache_get('chado_table_columns', 'cache');
     // if ($cached_obj) {
@@ -464,7 +534,7 @@ class ChadoSchema {
       ':chado' => $chado_schema,
       ':default_db' => $default_db,
     ];
-    $query = \Drupal::database()->query($sql, $args);
+    $query = $this->connection->query($sql, $args);
     $results = $query->fetchAll();
     if (empty($results)) {
       // @upgrade $cached_cols[$table][$column]['exists'] = FALSE;
@@ -557,7 +627,7 @@ class ChadoSchema {
                 table_schema = :schema
               ORDER  BY ordinal_position
               LIMIT 1';
-    $type = \Drupal::database()->query($query,
+    $type = $this->connection->query($query,
       [
         ':table' => $table,
         ':column' => $column,
@@ -596,22 +666,20 @@ class ChadoSchema {
    *
    * @ingroup tripal_chado_schema_api
    */
-  public function checkSequenceExists($table, $column) {
+  public function checkSequenceExists($table, $column, $sequence_name = NULL) {
 
     $prefixed_table = $this->schema_name . '.' . $table;
-    $sequence_name = \Drupal::database()->query('SELECT pg_get_serial_sequence(:table, :column);',
-      [':table' => $prefixed_table, ':column' => $column])->fetchField();
+    if ($sequence_name === NULL) {
+      $sequence_name = $this->connection->query('SELECT pg_get_serial_sequence(:table, :column);',
+        [':table' => $prefixed_table, ':column' => $column])->fetchField();
 
-
-    // Remove prefixed table from sequence name
-    $sequence_name = str_replace($this->schema_name . '.', '', $sequence_name);
-
-    $connection = Database::getConnection();
+      // Remove prefixed table from sequence name
+      $sequence_name = str_replace($this->schema_name . '.', '', $sequence_name);
+    }
 
     // Get the default database and chado schema.
-    $databases = $connection->getConnectionOptions();
-    $default_db = $databases['database'];
-    $chado_schema = chado_get_schema_name('chado');
+    $default_db = $this->default_db;
+    $chado_schema = $this->schema_name;
 
     // @upgrade $cached_obj = cache_get('chado_sequences', 'cache');
     // $cached_seqs = $cached_obj->data;
@@ -632,7 +700,7 @@ class ChadoSchema {
       ':sequence_schema' => $chado_schema,
       ':sequence_catalog' => $default_db,
     ];
-    $query = \Drupal::database()->query($sql, $args);
+    $query = $this->connection->query($sql, $args);
     $results = $query->fetchAll();
     if (empty($results)) {
       // @upgrade $cached_seqs[$sequence]['exists'] = FALSE;
@@ -688,7 +756,7 @@ class ChadoSchema {
     }
 
     // Next check the constraint is there.
-    $constraint_exists = \Drupal::database()->query(
+    $constraint_exists = $this->connection->query(
       "SELECT 1
       FROM information_schema.table_constraints
       WHERE table_name=:table AND constraint_type = 'PRIMARY KEY'",
@@ -717,7 +785,7 @@ class ChadoSchema {
   function checkConstraintExists($table, $constraint_name, $type) {
 
     // Next check the constraint is there.
-    $constraint_exists = \Drupal::database()->query(
+    $constraint_exists = $this->connection->query(
       "SELECT 1
       FROM information_schema.table_constraints
       WHERE table_name=:table AND constraint_type = :type AND constraint_name = :name",
@@ -761,13 +829,13 @@ class ChadoSchema {
   /**
    * A Chado-aware replacement for the db_index_exists() function.
    *
-   * @param $table
+   * @param string $table
    *   The table to be altered.
-   * @param $name
+   * @param string $name
    *   The name of the index.
+   * @param bool $no_suffix
    */
   function checkIndexExists($table, $name, $no_suffix = FALSE) {
-    $connection = Database::getConnection();
 
     if ($no_suffix) {
       $indexname = strtolower($table . '_' . $name);
@@ -777,9 +845,8 @@ class ChadoSchema {
     }
 
     // Get the default database and chado schema.
-    $databases = $connection->getConnectionOptions();
-    $default_db = $databases['database'];
-    $chado_schema = chado_get_schema_name('chado');
+    $default_db = $this->default_db;
+    $chado_schema = $this->schema_name;
 
     $sql = "
       SELECT 1 as exists
@@ -794,7 +861,7 @@ class ChadoSchema {
       ':tablename' => strtolower($table),
       ':schemaname' => $chado_schema,
     ];
-    $query = \Drupal::database()->query($sql, $args);
+    $query = $this->connection->query($sql, $args);
     $results = $query->fetchAll();
     if (empty($results)) {
       return FALSE;
@@ -803,18 +870,47 @@ class ChadoSchema {
   }
 
   /**
-   * Retrieve schema details from YAML file.
+   * A Chado-aware replacement for db_add_index().
    *
-   * @return
-   *   An array with details for the current schema version.
+   * @param $table
+   *   The table to be altered.
+   * @param $name
+   *   The name of the index.
+   * @param string $fields
+   *   An array of field names.
    */
-  public function getSchemaDetails() {
+   function addIndex($table, $name, $fields, $no_suffix = FALSE) {
 
-    if (empty($this->schema)) {
-      $filename = drupal_get_path('module', 'tripal_chado') . '/chado_schema/chado_schema-1.3.yml';
-      $this->schema = Yaml::parse(file_get_contents($filename));
-    }
+     if ($no_suffix) {
+       $indexname = strtolower($table . '_' . $name);
+     }
+     else {
+       $indexname = strtolower($table . '_' . $name . '_idx');
+     }
 
-    return $this->schema;
-  }
+     // Get the default database and chado schema.
+     $default_db = $this->default_db;
+     $chado_schema = $this->schema_name;
+     $chado_dot = $chado_schema . '.';
+
+     // Determine the create index SQL command.
+     // Note: we dont use place holders here because we cannot
+     // have quotes around thse parameters.
+     $query = 'CREATE INDEX "' . $indexname . '" ON ' . $chado_dot . $table . ' ';
+     $query .= '(';
+     $temp = [];
+     foreach ($fields as $field) {
+       if (is_array($field)) {
+         $temp[] = 'substr(' . $field[0] . ', 1, ' . $field[1] . ')';
+       }
+       else {
+         $temp[] = '"' . $field . '"';
+       }
+     }
+     $query .= implode(', ', $temp);
+     $query .= ')';
+
+     // Now execute it!
+     return $this->connection->query($query);
+   }
 }

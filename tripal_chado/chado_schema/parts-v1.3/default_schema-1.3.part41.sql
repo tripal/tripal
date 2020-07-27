@@ -21,7 +21,7 @@ CREATE TABLE nd_experiment_phenotype (
     nd_experiment_id bigint NOT NULL REFERENCES nd_experiment (nd_experiment_id) on delete cascade INITIALLY DEFERRED,
     phenotype_id bigint NOT NULL references phenotype (phenotype_id) on delete cascade INITIALLY DEFERRED,
    constraint nd_experiment_phenotype_c1 unique (nd_experiment_id,phenotype_id)
-); 
+);
 CREATE INDEX nd_experiment_phenotype_idx1 ON nd_experiment_phenotype (nd_experiment_id);
 CREATE INDEX nd_experiment_phenotype_idx2 ON nd_experiment_phenotype (phenotype_id);
 

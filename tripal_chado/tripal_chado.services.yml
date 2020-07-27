@@ -1,0 +1,3 @@
+services:
+    tripal_chado.chadoInstaller:
+        class: Drupal\tripal_chado\Services\chadoInstaller
