@@ -503,9 +503,12 @@ class TaxonomyImporter extends TripalImporter {
    */
   private function updateExisting() {
 
-    $i = 0;
-
     $total = count($this->all_orgs);
+    $api_key = variable_get('tripal_taxon_importer_ncbi_api_key', NULL);
+    $sleep_time = 333334;
+    if (!empty($api_key)) {
+      $sleep_time = 100000;
+    }
 
     foreach ($this->all_orgs as $organism) {
       // If the organism record is marked as new then let's skip it because
@@ -517,12 +520,17 @@ class TaxonomyImporter extends TripalImporter {
       // TODO: we should check if the organism already has a taxonomy ID.
       // if so we should use that instead of the scientific name.
 
+      $start = microtime(TRUE);
       // Build the query string to get the information about this species.
       $sci_name = chado_get_organism_scientific_name($organism);
       $sci_name = urlencode($sci_name);
-      $search_url = "http://www.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?" .
+      $search_url = "https://www.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?" .
         "db=taxonomy" .
         "&term=$sci_name";
+
+      if (!empty($api_key)) {
+        $search_url .= "&api_key=" . $api_key;
+      }
 
       // Get the search response from NCBI.
       $rfh = fopen($search_url, "r");
@@ -538,22 +546,30 @@ class TaxonomyImporter extends TripalImporter {
       }
       fclose($rfh);
 
+      $remaining_sleep = $sleep_time - ((int) (1e6 * (microtime(TRUE) - $start)));
+      if ($remaining_sleep > 0) {
+        usleep($remaining_sleep);
+      }
+
       // Parse the XML to get the taxonomy ID
+      $result = FALSE;
+      $start = microtime(TRUE);
       $xml = new SimpleXMLElement($xml_text);
       if ($xml) {
         $taxid = (string) $xml->IdList->Id;
         if ($taxid) {
-          $this->importRecord($taxid, $organism);
+          $result = $this->importRecord($taxid, $organism);
         }
       }
-      $this->addItemsHandled(1);
 
-      // NCBI limits requests to 3/second.
-      if ($i % 3 == 0) {
-        sleep(1);
+      if ($result) {
+        $this->addItemsHandled(1);
       }
-      $i++;
 
+      $remaining_sleep = $sleep_time - ((int) (1e6 * (microtime(TRUE) - $start)));
+      if ($remaining_sleep > 0) {
+        usleep($remaining_sleep);
+      }
     }
   }
 
