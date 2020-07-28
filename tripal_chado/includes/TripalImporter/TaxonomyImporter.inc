@@ -275,8 +275,12 @@ class TaxonomyImporter extends TripalImporter {
       foreach ($tax_ids as $tax_id) {
         $start = microtime(TRUE);
         $tax_id = trim($tax_id);
-        $this->importRecord($tax_id);
-        $this->addItemsHandled(1);
+        $result = $this->importRecord($tax_id);
+
+        // Only addItemsHandled if the importRecord was a success.
+        if ($result) {
+          $this->addItemsHandled(1);
+        }
 
         $remaining_sleep = $sleep_time - ((int) (1e6 * (microtime(TRUE) - $start)));
         if ($remaining_sleep > 0) {
@@ -862,7 +866,9 @@ class TaxonomyImporter extends TripalImporter {
 
       // Set the indecies for the tree.
       chado_assign_phylogeny_tree_indices($this->tree);
+      return TRUE;
     }
+    return FALSE;
   }
 
   /**
