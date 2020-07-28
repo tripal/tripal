@@ -721,14 +721,18 @@ class TaxonomyImporter extends TripalImporter {
     }
 
     // Get the search response from NCBI.
+    $xml = FALSE;
     $rfh = fopen($fetch_url, "r");
-    $xml_text = '';
-    while (!feof($rfh)) {
-      $xml_text .= fread($rfh, 255);
-    }
-    fclose($rfh);
+    if ($rfh) {
+      $xml_text = '';
+      while (!feof($rfh)) {
+        $xml_text .= fread($rfh, 255);
+      }
+      fclose($rfh);
 
-    $xml = new SimpleXMLElement($xml_text);
+      $xml = new SimpleXMLElement($xml_text);
+    }
+
     if ($xml) {
       $taxon = $xml->Taxon;
 
