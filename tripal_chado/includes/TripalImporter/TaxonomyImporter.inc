@@ -130,6 +130,30 @@ class TaxonomyImporter extends TripalImporter {
         already exist on this site.  This loader will also construct
         the taxonomic tree for the species loaded.'),
     ];
+
+    $form['ncbi_api_key'] = [
+      '#type' => 'textfield',
+      '#title' => t('(Optional) NCBI API key:'),
+      '#description' => t('Tripal imports Taxonomy information using NCBI\'s ')
+        . l('EUtils API', 'https://www.ncbi.nlm.nih.gov/books/NBK25500/')
+        . t(', which limits users and programs to a maximum of 3 requests per second without an API key. '
+          . 'However, NCBI allows users and programs to an increased maximum of 10 requests per second if '
+          . 'they provide a valid API key. This is particularly useful in speeding up large taxonomy imports. '
+          . 'For more information on NCBI API keys, please ')
+        . l('see here', 'https://www.ncbi.nlm.nih.gov/books/NBK25497/#chapter2.Coming_in_December_2018_API_Key', array(
+        'attributes' => array(
+          'target' => 'blank',
+        ),
+      )) . '.',
+      '#default_value' => variable_get('tripal_taxon_importer_ncbi_api_key', NULL),
+      '#ajax' => array(
+        'callback' => 'tripal_taxon_importer_set_ncbi_api_key',
+        'wrapper' => 'ncbi_api_key',
+      ),
+      '#prefix' => '<div id="ncbi_api_key">',
+      '#suffix' => '</div>',
+    ];
+
     $form['taxonomy_ids'] = [
       '#type' => 'textarea',
       '#title' => 'Taxonomy ID',
@@ -147,7 +171,7 @@ class TaxonomyImporter extends TripalImporter {
         taxonomic details.  If the importer is able to match the
         genus and species with NCBI the species details will be imported,
         and a page containing the taxonomic tree will be created.'),
-      '#default value' => 1,
+      '#default_value' => 1,
     ];
     return $form;
   }
@@ -242,10 +266,22 @@ class TaxonomyImporter extends TripalImporter {
     // If the user wants to import new taxonomy IDs then do that.
     if ($taxonomy_ids) {
       $this->logMessage('Importing Taxonomy IDs...');
+      $api_key = variable_get('tripal_taxon_importer_ncbi_api_key', NULL);
+      $sleep_time = 333334;
+      if (!empty($api_key)) {
+        $sleep_time = 100000;
+      }
+
       foreach ($tax_ids as $tax_id) {
+        $start = microtime(TRUE);
         $tax_id = trim($tax_id);
         $this->importRecord($tax_id);
         $this->addItemsHandled(1);
+
+        $remaining_sleep = $sleep_time - ((int) (1e6 * (microtime(TRUE) - $start)));
+        if ($remaining_sleep > 0) {
+          usleep($remaining_sleep);
+        }
       }
     }
 
@@ -679,6 +715,11 @@ class TaxonomyImporter extends TripalImporter {
       "db=taxonomy" .
       "&id=$taxid";
 
+    $api_key = variable_get('tripal_taxon_importer_ncbi_api_key', NULL);
+    if (!empty($api_key)) {
+      $fetch_url .= "&api_key=" . $api_key;
+    }
+
     // Get the search response from NCBI.
     $rfh = fopen($fetch_url, "r");
     $xml_text = '';
@@ -940,4 +981,24 @@ class TaxonomyImporter extends TripalImporter {
       chado_insert_record('organism_dbxref', $values);
     }
   }
+}
+
+/**
+ * Ajax callback for the TaxonomyImporter::form() function.
+ *
+ * It is called when the user makes a change to the NCBI API key field and then
+ * moves their cursor out of the field.
+ *
+ * @param $form
+ *   The new form element.
+ * @param $form_state
+ *   The state of the new form element.
+ *
+ * @return array
+ *   The new api key field.
+ */
+function tripal_taxon_importer_set_ncbi_api_key($form, $form_state) {
+  variable_set('tripal_taxon_importer_ncbi_api_key', check_plain($form_state['values']['ncbi_api_key']));
+  drupal_set_message('NCBI API key has been saved successfully!');
+  return $form['ncbi_api_key'];
 }
