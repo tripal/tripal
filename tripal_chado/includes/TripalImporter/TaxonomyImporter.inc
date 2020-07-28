@@ -715,7 +715,7 @@ class TaxonomyImporter extends TripalImporter {
     ]);
 
     // Get the details for this taxonomy.
-    $fetch_url = "http://www.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?" .
+    $fetch_url = "https://www.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?" .
       "db=taxonomy" .
       "&id=$taxid";
 
