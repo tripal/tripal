@@ -506,7 +506,7 @@ class GFF3Importer extends TripalImporter {
         continue;
       }
       // if the ##sequence-region line is present then we want to add a new feature
-      if (preg_match('/^##sequence-region (.*?) (\d+) (\d+)$/i', $line, $region_matches)) {
+      if (preg_match('/^##sequence-region\s+(\w*?)\s+(\d+)\s+(\d+)$/i', $line, $region_matches)) {
         $rid = $region_matches[1];
         $rstart = $region_matches[2];
         $rend = $region_matches[3];
@@ -779,27 +779,7 @@ class GFF3Importer extends TripalImporter {
         // The landmark was found, remember it
         $landmark_lookup[] = $landmark;
       }
-      /*
-       // If the option is to remove or refresh then we want to remove
-       // the feature from the database.
-       if ($remove or $refresh) {
-       // Next remove the feature itself.
-       $sql = "DELETE FROM {feature}
-       WHERE organism_id = %d and uniquename = '%s' and type_id = %d";
-       $match = array(
-       'organism_id' => $feature_organism->organism_id,
-       'uniquename'  => $attr_uniquename,
-       'type_id'     => $cvterm->cvterm_id
-       );
-       $result = chado_delete_record('feature', $match);
-       if (!$result) {
-       $this->logMessage("Cannot delete feature %attr_uniquename",
-         array('%attr_uniquename' => $attr_uniquename), TRIPAL_ERROR);
-       }
-       $feature = 0;
-       unset($result);
-       }
-       */
+
       // Add or update the feature and all properties.
       if ($update or $refresh or $add_only) {
 
@@ -813,10 +793,10 @@ class GFF3Importer extends TripalImporter {
           // Add a record for this feature to the tripal_gff_temp table for
           // later lookup.
           $values = [
-            'feature_id' => $feature->feature_id,
-            'organism_id' => $feature->organism_id,
+            'feature_id' => $feature->getID(),
+            'organism_id' => $feature->getValue('organism_id'),
             'type_name' => $type,
-            'uniquename' => $feature->uniquename,
+            'uniquename' => $feature->getValue('uniquename'),
           ];
           // make sure this record doesn't already exist in our temp table
           $results = chado_select_record('tripal_gff_temp', ['*'], $values);
@@ -827,6 +807,7 @@ class GFF3Importer extends TripalImporter {
               throw new Exception(t("Cound not save record in temporary table, Cannot continue.", []));
             }
           }
+
           // Add/update the featureloc if the landmark and the ID are not the
           // same if they are the same then this entry in the GFF is probably
           // a landmark identifier.
@@ -1141,7 +1122,7 @@ class GFF3Importer extends TripalImporter {
       $this->logMessage("Could not add 'Derives_from' relationship " .
         "for %uniquename and %subject.  Subject feature, '%subject', " .
         "cannot be found.", [
-        '%uniquename' => $feature->uniquename,
+        '%uniquename' => $feature->getValue('uniquename'),
         '%subject' => $subject,
       ], TRIPAL_ERROR);
       return;
@@ -1150,7 +1131,7 @@ class GFF3Importer extends TripalImporter {
     // If this feature is a protein then add it to the tripal_gffprotein_temp.
     if ($type == 'protein' or $type == 'polypeptide') {
       $values = [
-        'feature_id' => $feature->feature_id,
+        'feature_id' => $feature->getID(),
         'parent_id' => $ofeature[0]->feature_id,
         'fmin' => $fmin,
         'fmax' => $fmax,
@@ -1165,7 +1146,7 @@ class GFF3Importer extends TripalImporter {
     // then just return.
     $values = [
       'object_id' => $ofeature[0]->feature_id,
-      'subject_id' => $feature->feature_id,
+      'subject_id' => $feature->getID(),
       'type_id' => $derivesfrom_term->cvterm_id,
       'rank' => 0,
     ];
@@ -1181,7 +1162,7 @@ class GFF3Importer extends TripalImporter {
     if (!$ret) {
       $this->logMessage("Could not add 'Derives_from' relationship for :uniquename and :subject.",
         [
-          ':uniquename' => $feature->uniquename,
+          ':uniquename' => $feature->getValue('uniquename'),
           ':subject' => $subject,
         ], TRIPAL_WARNING);
     }
@@ -1201,7 +1182,7 @@ class GFF3Importer extends TripalImporter {
   private function loadParents($feature, $cvterm, $parents,
                                $organism_id, $strand, $phase, $fmin, $fmax) {
 
-    $uname = $feature->uniquename;
+    $uname = $feature->getValue('uniquename');
     $type = $cvterm->name;
     $rel_type = 'part_of';
     $relcvterm = $this->getCvterm($rel_type);
@@ -1239,7 +1220,7 @@ class GFF3Importer extends TripalImporter {
         // check to see if the relationship already exists
         $values = [
           'object_id' => $parent_feature->feature_id,
-          'subject_id' => $feature->feature_id,
+          'subject_id' => $feature->getID(),
           'type_id' => $relcvterm->cvterm_id,
         ];
         $rel = chado_select_record('feature_relationship', ['*'], $values);
@@ -1249,7 +1230,7 @@ class GFF3Importer extends TripalImporter {
         else {
           // the relationship doesn't already exist, so add it.
           $values = [
-            'subject_id' => $feature->feature_id,
+            'subject_id' => $feature->getID(),
             'object_id' => $parent_feature->feature_id,
             'type_id' => $relcvterm->cvterm_id,
           ];
@@ -1266,7 +1247,7 @@ class GFF3Importer extends TripalImporter {
         // add it to the tripal_gffcds_temp table for later lookup.
         if ($type == 'CDS') {
           $values = [
-            'feature_id' => $feature->feature_id,
+            'feature_id' => $feature->getID(),
             'parent_id' => $parent_feature->feature_id,
             'fmin' => $fmin,
             'fmax' => $fmax,
@@ -1366,7 +1347,7 @@ class GFF3Importer extends TripalImporter {
       // check to see if this feature dbxref already exists
       $values = [
         'dbxref_id' => $dbxref->dbxref_id,
-        'feature_id' => $feature->feature_id,
+        'feature_id' => $feature->getID(),
       ];
       $fdbx = chado_select_record('feature_dbxref', ['feature_dbxref_id'], $values);
 
@@ -1375,7 +1356,7 @@ class GFF3Importer extends TripalImporter {
       if (sizeof($fdbx) == 0) {
         $values = [
           'dbxref_id' => $dbxref->dbxref_id,
-          'feature_id' => $feature->feature_id,
+          'feature_id' => $feature->getID(),
         ];
         $success = chado_insert_record('feature_dbxref', $values, array(
           'skip_validation' => TRUE,
@@ -1451,14 +1432,14 @@ class GFF3Importer extends TripalImporter {
       $fcvt = chado_select_record('feature_cvterm', ['feature_cvterm_id'],
         [
           'cvterm_id' => $cvterm->cvterm_id,
-          'feature_id' => $feature->feature_id,
+          'feature_id' => $feature->getID(),
         ]);
 
       // now associate this feature with the cvterm if it doesn't already exist
       if (sizeof($fcvt) == 0) {
         $values = [
           'cvterm_id' => $cvterm->cvterm_id,
-          'feature_id' => $feature->feature_id,
+          'feature_id' => $feature->getID(),
           'pub_id' => [
             'uniquename' => 'null',
           ],
@@ -1609,7 +1590,7 @@ class GFF3Importer extends TripalImporter {
       // if not, then add it.
       $values = [
         'synonym_id' => $synonym->synonym_id,
-        'feature_id' => $feature->feature_id,
+        'feature_id' => $feature->getID(),
         'pub_id' => $pub->pub_id,
       ];
       $columns = ['feature_synonym_id'];
@@ -1617,7 +1598,7 @@ class GFF3Importer extends TripalImporter {
       if (count($result) == 0) {
         $values = [
           'synonym_id' => $synonym->synonym_id,
-          'feature_id' => $feature->feature_id,
+          'feature_id' => $feature->getID(),
           'pub_id' => $pub->pub_id,
         ];
         $success = chado_insert_record('feature_synonym', $values, array(
@@ -1652,72 +1633,56 @@ class GFF3Importer extends TripalImporter {
   private function loadFeature($organism, $analysis_id, $cvterm, $uniquename,
                                $name, $residues, $is_analysis = 'f', $is_obsolete = 'f', $add_only, $score) {
 
-    // Check to see if the feature already exists.
-    $feature = NULL;
-    $fselect = [
-      'organism_id' => $organism->organism_id,
-      'uniquename' => $uniquename,
-      'type_id' => $cvterm->cvterm_id,
-    ];
-    $columns = [
-      'feature_id',
-      'name',
-      'uniquename',
-      'seqlen',
-      'organism_id',
-      'type_id',
-    ];
-    $result = chado_select_record('feature', $columns, $fselect);
-    if (count($result) > 0) {
-      $feature = $result[0];
-    }
-
     if (strcmp($is_obsolete, 'f') == 0 or $is_obsolete == 0) {
-      $is_obsolete = 'FALSE';
+       $is_obsolete = 'FALSE';
     }
     if (strcmp($is_obsolete, 't') == 0 or $is_obsolete == 1) {
-      $is_obsolete = 'TRUE';
+       $is_obsolete = 'TRUE';
     }
     if (strcmp($is_analysis, 'f') == 0 or $is_analysis == 0) {
-      $is_analysis = 'FALSE';
+       $is_analysis = 'FALSE';
     }
     if (strcmp($is_analysis, 't') == 0 or $is_analysis == 1) {
-      $is_analysis = 'TRUE';
+       $is_analysis = 'TRUE';
     }
 
+    // Check to see if the feature already exists.
+    $feature = new ChadoRecord('feature');
+    $feature->setValues([
+       'organism_id' => $organism->organism_id,
+       'uniquename' => $uniquename,
+       'type_id' => $cvterm->cvterm_id,
+    ]);
+    $num_matches = $feature->find();
+
+
     // Insert the feature if it does not exist otherwise perform an update.
-    if (!$feature) {
-      $values = [
-        'organism_id' => $organism->organism_id,
-        'name' => $name,
-        'uniquename' => $uniquename,
-        'md5checksum' => md5($residues),
-        'type_id' => $cvterm->cvterm_id,
-        'is_analysis' => $is_analysis,
-        'is_obsolete' => $is_obsolete,
-      ];
-      $feature = (object) chado_insert_record('feature', $values, array(
-        'skip_validation' => TRUE,
-      ));
-      if (!$feature) {
+    if ($num_matches == 0) {
+      $feature->setValue('name', $name);
+      $feature->setValue('md5checksum', md5($residues));
+      $feature->setValue('is_analysis', $is_analysis);
+      $feature->setValue('is_obsolete', $is_obsolete);
+      try {
+        $feature->insert();
+      }
+      catch (Exception $e) {
         $this->logMessage("Failed to insert feature '$uniquename' ($cvterm->name).", [], TRIPAL_WARNING);
         return 0;
       }
     }
     elseif (!$add_only) {
-      $values = [
-        'name' => $name,
-        'md5checksum' => md5($residues),
-        'is_analysis' => $is_analysis,
-        'is_obsolete' => $is_obsolete,
-      ];
-      $match = [
-        'organism_id' => $organism->organism_id,
-        'uniquename' => $uniquename,
-        'type_id' => $cvterm->cvterm_id,
-      ];
-      $result = chado_update_record('feature', $match, $values);
-      if (!$result) {
+      if ($num_matches > 1) {
+        $this->logMessage("Failed to update feature '$uniquename' ($cvterm->name). More than one feature exists with these criteria", [], TRIPAL_WARNING);
+        return 0;
+      }
+      $feature->setValue('name', $name);
+      $feature->setValue('md5checksum', md5($residues));
+      $feature->setValue('is_analysis', $is_analysis);
+      $feature->setValue('is_obsolete', $is_obsolete);
+      try {
+        $feature->update();
+      }
+      catch (Exception $e) {
         $this->logMessage("Failed to update feature '$uniquename' ($cvterm->name).", [], TRIPAL_WARNING);
         return 0;
       }
@@ -1730,33 +1695,39 @@ class GFF3Importer extends TripalImporter {
 
     // Add the analysisfeature entry to the analysisfeature table if
     // it doesn't already exist.
-    $af_values = [
-      'analysis_id' => $analysis_id,
-      'feature_id' => $feature->feature_id,
-    ];
-    $afeature = chado_select_record('analysisfeature', ['analysisfeature_id'], $af_values);
-    if (count($afeature) == 0) {
+    $af = new ChadoRecord('analysisfeature');
+    $af->setValues([
+        'analysis_id' => $analysis_id,
+        'feature_id' => $feature->getID(),
+    ]);
+    $num_afs = $af->find();
+    if ($num_afs == 0) {
       // if a score is available then set that to be the significance field
       if (strcmp($score, '.') != 0) {
-        $af_values['significance'] = $score;
+        $af->setValue('significance', $score);
       }
-      if (!chado_insert_record('analysisfeature', $af_values, array('skip_validation' => TRUE))) {
-        $this->logMessage("Could not add analysisfeature record: $analysis_id, $feature->feature_id.", [], TRIPAL_WARNING);
+      try {
+        $af->insert();
+      }
+      catch (Exception $e) {
+        $this->logMessage("Could not add analysisfeature record: $analysis_id, " .  $feature->getID() . ". " . $e->getMessage(), [], TRIPAL_WARNING);
       }
     }
     else {
       // if a score is available then set that to be the significance field
       $new_vals = [];
       if (strcmp($score, '.') != 0) {
-        $new_vals['significance'] = $score;
+        $af->setValue('significance', $score);
       }
       else {
-        $new_vals['significance'] = '__NULL__';
+        $af->setValue('significance', '__NULL__');
       }
       if (!$add_only) {
-        $ret = chado_update_record('analysisfeature', $af_values, $new_vals);
-        if (!$ret) {
-          $this->logMessage("Could not update analysisfeature record: $analysis_id, $feature->feature_id.", [], TRIPAL_WARNING);
+        try {
+          $af->update();
+        }
+        catch (Exception $e) {
+          $this->logMessage("Could not update analysisfeature record: $analysis_id, " . $feature->getID() . ". " . $e->getMessage(), [], TRIPAL_WARNING);
         }
       }
     }
@@ -1790,85 +1761,85 @@ class GFF3Importer extends TripalImporter {
                                   $landmark_type_id = '', $landmark_organism_id = '', $create_landmark = 0,
                                   $landmark_is_target = 0) {
 
-    $select = [
-      'organism_id' => $landmark_organism_id ? $landmark_organism_id : $organism->organism_id,
-      'uniquename' => $landmark,
-    ];
+    $srcfeature = new ChadoRecord('feature');
+    $srcfeature->setValues([
+        'organism_id' => $landmark_organism_id ? $landmark_organism_id : $organism->organism_id,
+        'uniquename' => $landmark,
+    ]);
     if ($landmark_type_id) {
-      $select['type_id'] = $landmark_type_id;
+      $srcfeature->setValue('type_id', $landmark_type_id);
     }
-    $results = chado_select_record('feature', ['feature_id'], $select);
+    $num_srcf = $srcfeature->find();
 
-    $srcfeature = '';
-    if (count($results) == 0) {
+    if ($num_srcf == 0) {
       // so we couldn't find the landmark using the uniquename. Let's try the 'name'.
       // if we return only a single result then we can proceed. Otherwise give an
-      $select = [
-        'organism_id' => $landmark_organism_id ? $landmark_organism_id : $organism->organism_id,
-        'name' => $landmark,
-      ];
+      $srcfeature = new ChadoRecord('feature');
+      $srcfeature->setValues([
+          'organism_id' => $landmark_organism_id ? $landmark_organism_id : $organism->organism_id,
+          'name' => $landmark,
+      ]);
       if ($landmark_type_id) {
-        $select['type_id'] = $landmark_type_id;
+        $srcfeature->setValue('type_id', $landmark_type_id);
       }
-      $results = chado_select_record('feature', ['feature_id'], $select);
-      if (count($results) == 0) {
-        // if the landmark is the target feature in a matched alignment then try one more time to
-        // find it by querying any feature with the same uniquename. If we find one then use it.
-        if ($landmark_is_target) {
-          $select = ['uniquename' => $landmark];
-          $results = chado_select_record('feature', ['feature_id'], $select);
-          if (count($results) == 1) {
-            $srcfeature = $results[0];
-          }
-        }
-
-        if (!$srcfeature) {
-          // we couldn't find the landmark feature, so if the user has requested we create it then do so
-          // but only if we have a type id
-          if ($create_landmark and $landmark_type_id) {
-            $values = [
-              'organism_id' => $landmark_organism_id ? $landmark_organism_id : $organism->organism_id,
-              'name' => $landmark,
-              'uniquename' => $landmark,
-              'type_id' => $landmark_type_id,
-            ];
-            $results = chado_insert_record('feature', $values, array(
-              'skip_validation' => TRUE,
-            ));
-            if (!$results) {
-              $this->logMessage("Cannot find landmark feature: '%landmark', nor could it be inserted.",
+      $num_srcf = $srcfeature->find();
+      if ($num_srcf == 0) {
+         // if the landmark is the target feature in a matched alignment then try one more time to
+         // find it by querying any feature with the same uniquename. If we find one then use it.
+         if ($landmark_is_target) {
+            $srcfeature = new ChadoRecord('feature');
+            $srcfeature->setValues([
+               'uniquename' => $landmark,
+            ]);
+            $num_srcf =  $srcfeature->find();
+            if ($num_srcf > 1) {
+              $this->logMessage("Multiple landmarks exist for a matached target with the name: '%landmark'.  Cannot " .
+                "resolve which one to use. Cannot add the feature location record.",
                 ['%landmark' => $landmark], TRIPAL_WARNING);
-              return 0;
             }
-            $srcfeature = new stdClass();
-            $srcfeature->feature_id = $results['feature_id'];
-          }
-          else {
-            $this->logMessage("Cannot find unique landmark feature: '%landmark'.",
-              ['%landmark' => $landmark], TRIPAL_WARNING);
-            return 0;
-          }
-        }
+         }
+
+         if ($num_srcf == 0) {
+            // we couldn't find the landmark feature, so if the user has requested we create it then do so
+            // but only if we have a type id
+            if ($create_landmark and $landmark_type_id) {
+               $srcfeature = new ChadoRecord('feature');
+               $srcfeature->setValues([
+                  'organism_id' => $landmark_organism_id ? $landmark_organism_id : $organism->organism_id,
+                  'name' => $landmark,
+                  'uniquename' => $landmark,
+                  'type_id' => $landmark_type_id,
+               ]);
+               try {
+                  $srcfeature->insert();
+               }
+               catch (Exception $e) {
+                  $this->logMessage("Cannot find landmark feature: '%landmark', nor could it be inserted. " . $e->getMessage() ,
+                     ['%landmark' => $landmark], TRIPAL_WARNING);
+                  return 0;
+               }
+            }
+            else {
+               $this->logMessage("Cannot find unique landmark feature: '%landmark'.",
+                  ['%landmark' => $landmark], TRIPAL_WARNING);
+               return 0;
+            }
+         }
       }
-      elseif (count($results) > 1) {
+      elseif ($num_srcf > 1) {
         $this->logMessage("multiple landmarks exist with the name: '%landmark'.  Cannot " .
           "resolve which one to use. Cannot add the feature location record.",
           ['%landmark' => $landmark], TRIPAL_WARNING);
         return 0;
       }
-      else {
-        $srcfeature = $results[0];
-      }
     }
-    elseif (count($results) > 1) {
+    elseif ($num_srcf > 1) {
       $this->logMessage("multiple landmarks exist with the name: '%landmark'.  Cannot " .
         "resolve which one to use. Cannot add the feature location record.",
         ['%landmark' => $landmark, TRIPAL_WARNING]);
       return 0;
     }
-    else {
-      $srcfeature = $results[0];
-    }
+
 
     // TODO: create an attribute that recognizes the residue_info,locgroup,
     //  is_fmin_partial and is_fmax_partial, right now these are
@@ -1878,7 +1849,7 @@ class GFF3Importer extends TripalImporter {
     // last rank value
     $rank = 0;
     $exists = 0;
-    $select = ['feature_id' => $feature->feature_id];
+    $select = ['feature_id' => $feature->getID()];
     $options = [
       'order_by' => [
         'rank' => 'ASC',
@@ -1886,38 +1857,40 @@ class GFF3Importer extends TripalImporter {
     ];
 
     $locrecs = chado_select_record('featureloc', ['*'], $select, $options);
+    foreach ($locrecs as $locrec) {
+       // it is possible for the featureloc->srcfeature_id to be NULL.
+       // This can happen if the srcfeature is not known (according to chado
+       // table field descriptions).  If it's null then just skip this entry.
+       if (!$locrec->srcfeature_id) {
+          continue;
+       }
+       $select = ['feature_id' => $locrec->srcfeature_id];
+       $columns = ['feature_id', 'name'];
+       $locsfeature = chado_select_record('feature', $columns, $select);
 
-    foreach ($locrecs as $featureloc) {
-      // it is possible for the featureloc->srcfeature_id to be NULL. This can happen if the srcfeature
-      // is not known (according to chado table field descriptions).  If it's null then just skip this entry
-      if (!$featureloc->srcfeature_id) {
-        continue;
-      }
-      $select = ['feature_id' => $featureloc->srcfeature_id];
-      $columns = ['feature_id', 'name'];
-      $locsfeature = chado_select_record('feature', $columns, $select);
+       // the source feature name and at least the fmin and fmax must be the same
+       // for an update of the featureloc, otherwise we'll insert a new record.
+       if (strcmp($locsfeature[0]->name, $landmark) == 0 and
+          ($locrec->fmin == $fmin or $locrec->fmax == $fmax)) {
 
-      // the source feature name and at least the fmin and fmax must be the same
-      // for an update of the featureloc, otherwise we'll insert a new record.
-      if (strcmp($locsfeature[0]->name, $landmark) == 0 and
-        ($featureloc->fmin == $fmin or $featureloc->fmax == $fmax)) {
-        $match = ['featureloc_id' => $featureloc->featureloc_id];
-        $values = [];
-        $exists = 1;
-        if ($featureloc->fmin != $fmin) {
-          $values['fmin'] = $fmin;
-        }
-        if ($featureloc->fmax != $fmax) {
-          $values['fmax'] = $fmax;
-        }
-        if ($featureloc->strand != $strand) {
-          $values['strand'] = $strand;
-        }
-        if (count($values) > 0) {
-          chado_update_record('featureloc', $match, $values);
-        }
-      }
-      $rank = $featureloc->rank + 1;
+          $featureloc = new ChadoRecord('featureloc');
+          $featureloc->setValue('featureloc_id', $locrec->featureloc_id);
+          $values = [];
+          $exists = 1;
+          if ($featureloc->fmin != $fmin) {
+             $featureloc->setValue('fmin', $fmin);
+          }
+          if ($featureloc->fmax != $fmax) {
+             $featureloc->setValue('fmax', $fmax);
+          }
+          if ($featureloc->strand != $strand) {
+             $featureloc->setValue('strand', $strand);
+          }
+          if (count($featureloc->getValues()) > 0) {
+            $featureloc->update();
+          }
+       }
+       $rank = $locrec->rank + 1;
     }
     if (!$exists) {
 
@@ -1934,9 +1907,10 @@ class GFF3Importer extends TripalImporter {
       elseif (strcmp($is_fmax_partial, 't') == 0 or $is_fmax_partial == 1) {
         $is_fmax_partial = 'TRUE';
       }
-      $values = [
-        'feature_id' => $feature->feature_id,
-        'srcfeature_id' => $srcfeature->feature_id,
+      $featureloc = new ChadoRecord('featureloc');
+      $featureloc->setValues([
+        'feature_id' => $feature->getID(),
+        'srcfeature_id' => $srcfeature->getID(),
         'fmin' => $fmin,
         'is_fmin_partial' => $is_fmin_partial,
         'fmax' => $fmax,
@@ -1945,16 +1919,14 @@ class GFF3Importer extends TripalImporter {
         'residue_info' => $residue_info,
         'locgroup' => $locgroup,
         'rank' => $rank,
-      ];
+      ]);
+      if (!$residue_info) {
+        $featureloc->setValue('residue_info', '__NULL__');
+      }
       if ($phase) {
-        $values['phase'] = $phase;
+        $featureloc->setValue('phase', $phase);
       }
-      $success = chado_insert_record('featureloc', $values, array(
-        'skip_validation' => TRUE,
-      ));
-      if (!$success) {
-        throw new Exception("Failed to insert featureloc.");
-      }
+      $featureloc->insert();
     }
     return 1;
   }
@@ -2001,7 +1973,7 @@ class GFF3Importer extends TripalImporter {
     $add = 1;
     $rank = 0;
     $select = [
-      'feature_id' => $feature->feature_id,
+      'feature_id' => $feature->getId(),
       'type_id' => $cvterm->cvterm_id,
     ];
     $options = [
@@ -2020,7 +1992,7 @@ class GFF3Importer extends TripalImporter {
     // add the property if we pass the check above
     if ($add) {
       $values = [
-        'feature_id' => $feature->feature_id,
+        'feature_id' => $feature->getID(),
         'type_id' => $cvterm->cvterm_id,
         'value' => $value,
         'rank' => $rank,
