@@ -914,7 +914,7 @@ function tripal_entity_unpublish_form($form, &$form_state, $entity) {
   $form['#submit'][] = 'tripal_entity_unpublish_form_submit';
 
   $form = confirm_form($form,
-    t('Unpublish the record "%title"?',
+    t('Unpublish the record "%title"?  This will delete the Drupal record, but not the underlying (eg Chado) record.',
       ['%title' => $entity->title]), 'admin/content/bio_data',
     '<p>' . t('This action cannot be undone.') . '</p>',
       t('Yes, Unpublish'), t('No, Cancel'), 'confirm');
