@@ -43,6 +43,199 @@ class GFF3Importer extends TripalImporter {
    */
   public static $button_text = 'Import GFF3 file';
 
+
+  /**
+   * The path to the GFF3 file.
+   */
+  private $gff_file = NULL;
+
+  /**
+   * The file handle for the GFF3 file.
+   */
+  private $gff_file_h = NULL;
+
+  /**
+   * The organism ID for this GFF file.
+   */
+  private $organism_id = NULL;
+
+  /**
+   * The organism ChadoRecord object that corresponds to the $organism_id value.
+   */
+  private $organism = NULL;
+
+
+  /**
+   * An array of organism records for quick lookup.
+   */
+  private $organism_lookup = NULL;
+
+  /**
+   * The analysis ID for this GFF file
+   */
+  private $analysis_id = NULL;
+
+  /**
+   * The analysis ChadoRecord object that corresponds to the $analysis_id value.
+   */
+  private $analysis = NULL;
+
+  /**
+   * A flag indicating if only new items should be added (no updates)
+   */
+  private $add_only = NULL;
+
+  /**
+   * A flag indicting if only existing items should be updated.
+   */
+  private $update = TRUE;
+
+  /**
+   * If the GFF file contains a 'Target' attribute then the feature and the
+   * target will have an alignment created, but to find the proper target
+   * feature the target organism must also be known.  If different from the
+   * organism specified for the GFF file, then use  this argument to specify
+   * the target organism.  Only use this argument if all target sequences
+   * belong to the same species. If the targets in the GFF file belong to
+   * multiple different species then the organism must be specified using the
+   * 'target_organism=genus:species' attribute in the GFF file. Default is
+   * NULL.
+   */
+  private $target_organism_id = NULL;
+
+  /**
+   * If the GFF file contains a 'Target' attribute then the feature and the
+   * target will have an alignment created, but to find the proper target
+   * feature the target organism must also be known.  This can be used to
+   * specify the target feature type to help with identification of the
+   * target feature.  Only use this argument if all target sequences types are
+   * the same. If the targets are of different types then the type must be
+   * specified using the 'target_type=type' attribute in the GFF file. This
+   * must be a valid Sequence Ontology (SO) term. Default is NULL
+   */
+  private $target_type = NULL;
+
+  /**
+   * A flag indicating if the target feature should be created. If FALSE
+   * then it should already exist.
+   */
+  private $create_target = FALSE;
+
+  /**
+   * Set this to the line in the GFF file where importing should start. This
+   * is useful for testing and debugging GFF files that may have problems and
+   * you want to start at a particular line to speed testing.  Default = 1
+   */
+  private $start_line = 1;
+
+  /**
+   * During parsing of the GFF file this keeps track of the current line
+   * number.
+   */
+  private $current_line = 0;
+
+  /**
+   * A Sequence Ontology term name for the landmark sequences in the GFF
+   * file (e.g. 'chromosome'), if the GFF file contains a '##sequence-region'
+   * line that describes the landmark sequences. Default = ''
+   */
+  private $landmark_type = '';
+
+  /**
+   * The ChadoRecord object for the landmark type cvterm.
+   */
+  private $landmark_cvterm = NULL;
+
+
+  /**
+   * Regular expression to pull out the mRNA name.
+   */
+  private $re_mrna = '';
+
+  /**
+   * Regular expression to pull out the protein name.
+   */
+  private $re_protein = '';
+
+  /**
+   * A flag that indicates if a protein record should be created.
+   * @var integer
+   */
+  private $skip_protein = 0;
+
+  /**
+   * Sometimes lines in the GFF file are missing the required ID attribute
+   * that specifies the unique name of the feature. If so, you may specify
+   * the name of an existing attribute to use for the ID.
+   */
+  private $alt_id_attr = '';
+
+  /**
+   * The Tripal GFF loader supports the "organism" attribute. This allows
+   * features of a different organism to be aligned to the landmark sequence
+   * of another species. The format of the attribute is
+   * "organism=[genus]:[species]", where [genus] is the organism's genus and
+   * [species] is the species name. Check this box to automatically add the
+   * organism to the database if it does not already exists. Otherwise lines
+   * with an oraganism attribute where the organism is not present in the
+   * database will be skipped.
+   */
+  private $create_organism = FALSE;
+
+  /**
+   * An array that stores CVterms that have been looked up so we don't have
+   * to do the database query every time.
+   */
+  private $cvterm_lookup = [];
+
+  /**
+   * An array the stores existing features in the database for the organism
+   * and feature types in the database.  This is used for quick lookups
+   * to prevent violating the unique constraints on a bulk insert.
+   */
+  private $feature_lookup = [];
+
+  /**
+   * The list of features from the GFF3 file.  Each element is an
+   * associative array of the columns from the GFF3 file, with the attribute
+   * field being an associative array of key/value pairs.
+   */
+  private $features = [];
+
+
+  /**
+   * A mapping of features to their parents.
+   */
+  private $feature_parents = [];
+
+
+  /**
+   * An associatiave array containing the pointers to the FASTA sequences
+   * in the GFF file. We don't want to load these into memory as they
+   * may be too big!
+   */
+  private $residue_index = [];
+
+  /**
+   * An array that stores Landmarks that have been looked up so we don't have
+   * to do the database query every time.
+   */
+  private $landmark_lookup = [];
+
+  /**
+   * A controlled vocabulary ChadoRecord object. This is the CV that will be
+   * used to for feature properties.
+   */
+  private $feature_prop_cv = NULL;
+
+
+  /**
+   * A controlled vocabulary ChadoRecord object. This is the CV that will be
+   * used to for feature properties.
+   */
+  private $feature_cv = NULL;
+
+
   /**
    * @see TripalImporter::form()
    */
@@ -300,128 +493,104 @@ class GFF3Importer extends TripalImporter {
   public function run() {
 
     $arguments = $this->arguments['run_args'];
-    $file_path = $this->arguments['files'][0]['file_path'];
+    $this->gff_file = $this->arguments['files'][0]['file_path'];
 
-    $organism_id = $arguments['organism_id'];
-    $analysis_id = $arguments['analysis_id'];
-    $add_only = $arguments['add_only'];
-    $update = $arguments['update'];
-    $refresh = FALSE;
-    $remove = FALSE;
-    $target_organism_id = $arguments['target_organism_id'];
-    $target_type = $arguments['target_type'];
-    $create_target = $arguments['create_target'];
-    $start_line = $arguments['line_number'];
-    $landmark_type = $arguments['landmark_type'];
-    $alt_id_attr = $arguments['alt_id_attr'];
-    $create_organism = $arguments['create_organism'];
-    $re_mrna = $arguments['re_mrna'];
-    $re_protein = $arguments['re_protein'];
-    $skip_protein = $arguments['skip_protein'];
+    // Set the private member variables of this class using the loader inputs.
+    $this->organism_id = $arguments['organism_id'];
+    $this->analysis_id = $arguments['analysis_id'];
+    $this->add_only = $arguments['add_only'];
+    $this->update = $arguments['update'];
+    $this->target_organism_id = $arguments['target_organism_id'];
+    $this->target_type = $arguments['target_type'];
+    $this->create_target = $arguments['create_target'];
+    $this->start_line = $arguments['line_number'];
+    $this->landmark_type = $arguments['landmark_type'];
+    $this->alt_id_attr = $arguments['alt_id_attr'];
+    $this->create_organism = $arguments['create_organism'];
+    $this->re_mrna = $arguments['re_mrna'];
+    $this->re_protein = $arguments['re_protein'];
+    $this->skip_protein = $arguments['skip_protein'];
 
-    // An array that stores CVterms that have been looked up so we don't have
-    // to do the database query every time.
-    $this->cvterm_lookup = [];
+    // Check to see if the file is located local to Drupal
+    $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $this->gff_file;
+    if (!file_exists($dfile)) {
+      $this->gff_file = $dfile;
+    }
+    // If the file is not local to Drupal check if it exists on the system.
+    else if (!file_exists($this->gff_file)) {
+      throw new Exception(t("Cannot find the file: !file", ['!file' => $this->gff_file]));
+    }
 
+    // Open the GFF3 file.
+    $this->logMessage("Opening !gff_file", ['!gff_file' => $this->gff_file]);
+    $this->gff_file_h = fopen($this->gff_file, 'r');
+    if (!$this->gff_file_h) {
+      throw new Exception(t("Cannot open file: !file", ['!file' => $this->gff_file]));
+    }
 
-    $this->loadGFF3($file_path, $organism_id, $analysis_id,
-      $add_only, $update, $refresh, $remove,
-      $target_organism_id, $target_type, $create_target,
-      $start_line, $landmark_type, $alt_id_attr, $create_organism,
-      $re_mrna, $re_protein, $skip_protein);
+    // Get the feature property CV object
+    $this->feature_prop_cv = new ChadoRecord('cv');
+    $this->feature_prop_cv->setValues(['name' => 'feature_property']);
+    $num_found = $this->feature_prop_cv->find();
+    if ($num_found == 0) {
+      throw new Exception(t("Cannot find the 'feature_property' ontology'", []));
+    }
+
+    // Get the sequence CV object.
+    $this->feature_cv = new ChadoRecord('cv');
+    $this->feature_cv->setValues(['name' => 'sequence']);
+    $num_found = $this->feature_cv->find();
+    if ($num_found == 0) {
+      throw new Exception(t("Cannot find the 'sequence' ontology'", []));
+    }
+
+    // Get the organism object.
+    $this->organism = new ChadoRecord('organism');
+    $this->organism->setValues(['organism_id' => $this->organism_id]);
+    $num_found = $this->organism->find();
+    if ($num_found == 0) {
+      throw new Exception(t("Cannot find the specified organism for this GFF3 file."));
+    }
+
+    // Get the analysis object.
+    $this->analysis = new ChadoRecord('analysis');
+    $this->analysis->setValues(['analysis_id' => $this->analysis_id]);
+    $num_found = $this->analysis->find();
+    if ($num_found == 0) {
+      throw new Exception(t("Cannot find the specified organism for this GFF3 file."));
+    }
+
+    // If a landmark type was provided then get that object.
+    if ($this->landmark_type) {
+      $this->landmark_cvterm = new ChadoRecord('cvterm');
+      $this->landmark_cvterm->setValues([
+          'cv_id' => $this->feature_cv->getValue('cv_id'),
+          'name' => $this->landmark_type,
+      ]);
+      $num_found = $this->landmark_cvterm->find();
+      if ($num_found == 0) {
+        throw new Exception(t('Cannot find landmark feature type \'%landmark_type\'.', ['%landmark_type' => $this->landmark_type]));
+      }
+    }
+
+    // Prepare the temporary tables.
+    $this->prepTempTables();
+
+    // Load the GFF3.
+    $this->logMessage("Step 1: Preloading GFF3 file...");
+    $this->preLoad();
+
+    $this->logMessage("Step 2: Loading features...");
+    $this->loadFeatures();
   }
 
   /**
-   * Actually load a GFF3 file. This is the function called by tripal jobs
+   * Cleans up the temporary tables.
    *
-   * @param $gff_file
-   *   The full path to the GFF file on the filesystem
-   * @param $organism_id
-   *   The organism_id of the organism to which the features in the GFF belong
-   * @param $analysis_id
-   *   The anlaysis_id of the analysis from which the features in the GFF were
-   *   generated
-   * @param $add_only
-   *   Set to 1 if feature should be added only.  In the case where a feature
-   *   already exists, it will not be updated.  Default is 0
-   * @param $update
-   *   Set to 1 to update existing features. New features will be added.
-   *   Attributes for a feature that are not present in the GFF but which are
-   *   present in the database will not be altered. Default is 1
-   * @param $refresh
-   *   Set to 1 to update existing features. New features will be added.
-   *   Attributes for a feature that are not present in the GFF but which are
-   *   present in the database will be removed. Default is 0
-   * @param $remove
-   *   Set to 1 to remove features present in the GFF file that exist in the
-   *   database. Default is 0.
-   * @param $target_organism_id
-   *   If the GFF file contains a 'Target' attribute then the feature and the
-   *   target will have an alignment created, but to find the proper target
-   *   feature the target organism must also be known.  If different from the
-   *   organism specified for the GFF file, then use  this argument to specify
-   *   the target organism.  Only use this argument if all target sequences
-   *   belong to the same species. If the targets in the GFF file belong to
-   *   multiple different species then the organism must be specified using the
-   *   'target_organism=genus:species' attribute in the GFF file. Default is
-   *   NULL.
-   * @param $target_type
-   *   If the GFF file contains a 'Target' attribute then the feature and the
-   *   target will have an alignment created, but to find the proper target
-   *   feature the target organism must also be known.  This can be used to
-   *   specify the target feature type to help with identification of the
-   *   target
-   *   feature.  Only use this argument if all target sequences types are the
-   *   same. If the targets are of different types then the type must be
-   *   specified using the 'target_type=type' attribute in the GFF file. This
-   *   must be a valid Sequence Ontology (SO) term. Default is NULL
-   * @param $create_target
-   *   Set to 1 to create the target feature if it cannot be found in the
-   *   database. Default is 0
-   * @param $start_line
-   *   Set this to the line in the GFF file where importing should start. This
-   *   is useful for testing and debugging GFF files that may have problems and
-   *   you want to start at a particular line to speed testing.  Default = 1
-   * @param $landmark_type
-   *   Use this argument to specify a Sequence Ontology term name for the
-   *   landmark sequences in the GFF fie (e.g. 'chromosome'), if the GFF file
-   *   contains a
-   *   '##sequence-region' line that describes the landmark sequences. Default
-   *   = ''
-   * @param $alt_id_attr
-   *   Sometimes lines in the GFF file are missing the required ID attribute
-   *   that specifies the unique name of the feature. If so, you may specify
-   *   the name of an existing attribute to use for the ID.
-   * @param $create_organism
-   *   The Tripal GFF loader supports the "organism" attribute. This allows
-   *   features of a different organism to be aligned to the landmark sequence
-   *   of another species. The format of the attribute is
-   *   "organism=[genus]:[species]", where [genus] is the organism's genus and
-   *   [species] is the species name. Check this box to automatically add the
-   *   organism to the database if it does not already exists. Otherwise lines
-   *   with an oraganism attribute where the organism is not present in the
-   *   database will be skipped.
-   * @param $re_mrna A
-   *          regular expression to extract portions from mRNA id
-   * @param $re_protein A
-   *          replacement string to generate the protein id
-   * @PARAM $skip_protein
-   *        BOOL: Will the loader create the proteins inferred from the CDS?
-   *
-   * @ingroup gff3_loader
+   * These tables are used to temporarily store features from the GFF file.
+   * This way the GFF entries can be out of order when loading.
    */
-  private function loadGFF3($gff_file, $organism_id, $analysis_id,
-                            $add_only = 0, $update = 1, $refresh = 0, $remove = 0,
-                            $target_organism_id = NULL, $target_type = NULL, $create_target = 0,
-                            $start_line = 1, $landmark_type = '', $alt_id_attr = '', $create_organism = FALSE,
-                            $re_mrna = '', $re_protein = '', $skip_protein = 0) {
-
-    $ret = [];
-    $date = getdate();
-
-    // An array that stores Landmarks that have been looked up so we don't have
-    // to do the database query every time.
-    $landmark_lookup = [];
+  private function prepTempTables() {
 
     // empty the temp tables
     $sql = "DELETE FROM {tripal_gff_temp}";
@@ -430,67 +599,344 @@ class GFF3Importer extends TripalImporter {
     chado_query($sql);
     $sql = "DELETE FROM {tripal_gffprotein_temp}";
     chado_query($sql);
+  }
 
+  /**
+   * Parses the current line of the GFF3 file for a feature.
+   *
+   * @return array
+   *  An associative array containing the 9 elements othe GFF3 file. The
+   *  9th element is an associative array of the attributes.
+   */
+  private function parseFeature($line) {
+    $date = getdate();
 
-    // check to see if the file is located local to Drupal
-    $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $gff_file;
-    if (!file_exists($dfile)) {
-      // if not local to Drupal, the file must be someplace else, just use
-      // the full path provided
-      $dfile = $gff_file;
+    // get the columns
+    $cols = explode("\t", $line);
+    if (sizeof($cols) != 9) {
+      throw new Exception(t('Improper number of columns on line %line_num: %line', ['%line_num' => $this->current_line, '%line' => $line]));
     }
-    if (!file_exists($dfile)) {
-      throw new Exception(t("Cannot find the file: !dfile", ['!dfile' => $dfile]));
+
+    $ret = [
+      'line' => $this->current_line,
+      'landmark' => $cols[0],
+      'source' => $cols[1],
+      'type' => $cols[2],
+      'start' => $cols[3],
+      'end' => $cols[4],
+      'score' => $cols[5],
+      'strand' => $cols[6],
+      'phase' => $cols[7],
+      'attrs' => [],
+    ];
+
+    // Ready the start and stop for chado.  Chado expects these positions
+    // to be zero-based, so we substract 1 from the fmin. Also, in case
+    // they are backwards, put them in the right order.
+    $fmin = $ret['start'] - 1;
+    $fmax = $ret['end'];
+    if ($ret['end'] < $ret['start']) {
+      $fmin = $ret['end'] - 1;
+      $fmax = $ret['start'];
+    }
+    $ret['start'] = $fmin;
+    $ret['stop'] = $fmax;
+
+
+    // Format the strand for chado
+    if (strcmp($ret['strand'], '.') == 0) {
+      $ret['strand'] = 0;
+    }
+    elseif (strcmp($ret['strand'], '+') == 0) {
+      $ret['strand'] = 1;
+    }
+    elseif (strcmp($ret['strand'], '-') == 0) {
+      $ret['strand'] = -1;
+    }
+    if (strcmp($ret['phase'], '.') == 0) {
+      if (strtolower($ret['type']) == 'cds') {
+        $ret['phase'] = '0';
+      }
+      else {
+        $ret['phase'] = '';
+      }
     }
 
-    $this->logMessage("Opening !gff_file", ['!gff_file' => $gff_file]);
+    $tags = [];
+    $attr_name = '';
+    $attr_uniquename = '';
+    $attrs = explode(";", $cols[8]);
+    $attr_organism = $this->organism;
+    $attr_parent = '';
+    foreach ($attrs as $attr) {
+      $attr = rtrim($attr);
+      $attr = ltrim($attr);
+      if (strcmp($attr, '') == 0) {
+        continue;
+      }
+      if (!preg_match('/^[^\=]+\=.+$/', $attr)) {
+        throw new Exception(t('Attribute is not correctly formatted on line %line_num: %attr',
+            ['%line_num' => $this->current_line, '%attr' => $attr]));
+      }
 
-    //$lines = file($dfile,FILE_SKIP_EMPTY_LINES);
-    $fh = fopen($dfile, 'r');
-    if (!$fh) {
-      throw new Exception(t("Cannot open file: !dfile", ['!dfile' => $dfile]));
+      // Break apart each attribute into key/value pairs.
+      $tag = preg_split("/=/", $attr, 2);
+
+      // Multiple values of an attribute are separated by commas
+      $tag_name = $tag[0];
+      if (!array_key_exists($tag_name, $tags)) {
+        $tags[$tag_name] = [];
+      }
+      $tags[$tag_name] = array_merge($tags[$tag_name], explode(",", $tag[1]));
+
+      // Replace the URL escape codes for each tag
+      for ($i = 0; $i < count($tags[$tag_name]); $i++) {
+        $tags[$tag_name][$i] = urldecode($tags[$tag_name][$i]);
+      }
+
+      if (strcmp($tag_name, 'organism') == 0) {
+        $attr_organism = $this->getOrganism(urldecode($tag[1]));
+      }
+      elseif (strcmp($tag_name, 'Parent') == 0) {
+        $attr_parent = urldecode($tag[1]);
+      }
     }
-    $filesize = filesize($dfile);
+
+    // Get the landmark feature.
+    $landmark = $this->getLandmark($ret['landmark']);
+
+    // If neither name nor uniquename are provided then generate one.
+    $names = $this->getFeatureName($tags, $ret['type'], $ret['landmark'], $fmin, $fmax);
+    $attr_uniquename = $names['uniquename'];
+    $attr_name = $names['name'];
+    $ret['name'] = $attr_name;
+    $ret['uniquename'] = $attr_uniquename;
+
+    if ($attr_parent) {
+      $this->feature_parents[$attr_uniquename] = $attr_parent;
+    }
+
+    // Now add all of the attributes into the return array.
+    foreach ($tags as $key => $value) {
+      $ret['attrs'][$key] = $value;
+    }
+
+    $ret['organism_id'] = $attr_organism->getValue('organism_id');
+
+
+    return $ret;
+  }
+
+  /**
+   * Indexes the FASTA section of the file for quick lookup.
+   */
+  private function indexFASTA() {
+
+    // Iterate through the remaining lines of the file
+    while ($line = fgets($this->gff_file_h)) {
+
+      $this->current_line++;
+      $this->addItemsHandled(drupal_strlen($line));
+
+      // Get the ID and the current file pointer and store that for later.
+      if (preg_match('/^>/', $line)) {
+        $id = preg_replace('/^>([^\s]+).*$/', '\1', $line);
+        $this->residue_index[$id] = ftell($this->gff_file_h);
+      }
+    }
+  }
+
+  /**
+   * Loads into the database any landmark sequences.
+   *
+   * @param $line
+   *   The line from the GFF file that is the ##sequence-region comment.
+   */
+  private function loadLandmark($line) {
+
+    $region_matches = [];
+    if (preg_match('/^##sequence-region\s+(\w*?)\s+(\d+)\s+(\d+)$/i', $line, $region_matches)) {
+      $rid = $region_matches[1];
+      $landmark = $this->getLandmark($rid, NULL, TRUE);
+      if (!$landmark) {
+        $rstart = $region_matches[2];
+        $rend = $region_matches[3];
+        if (!$this->landmark_type) {
+          throw new Exception(t('The landmark, !landmark, cannot be added becuase no landmark type was provided. Please redo the importer job and specify a landmark type.',
+              ['!landmark' => $rid]));
+        }
+        $this->logMessage('Adding a new landmark feature: !landmark', ['!landmark' => $rid]);
+        $landmark = $this->loadFeature($this->organism, $this->analysis, $this->landmark_cvterm, $rid,
+              $rid, '', 'f', 'f', 1, 0);
+        $this->landmark_lookup[$rid] = $landmark;
+      }
+    }
+  }
+
+  /**
+   *
+   */
+  private function preLoad() {
+
+    $filesize = filesize($this->gff_file);
     $this->setTotalItems($filesize);
 
-    // get the controlled vocaubulary that we'll be using.  The
-    // default is the 'sequence' ontology
-    $sql = "SELECT * FROM {cv} WHERE name = :cvname";
-    $cv = chado_query($sql, [':cvname' => 'feature_property'])->fetchObject();
-    if (!$cv) {
-      throw new Exception(t("Cannot find the 'feature_property' ontology'", []));
+
+    // Holds a unique list of cvterms for later lookup.
+    $cvterms = [];
+
+    while ($line = fgets($this->gff_file_h)) {
+      $this->current_line++;
+      $this->addItemsHandled(drupal_strlen($line));
+
+      $line = trim($line);
+
+      if ($this->current_line < $this->start_line) {
+        continue;
+      }
+
+      // If we're in the FASTA file we're at the end of the features so return.
+      if (preg_match('/^##FASTA/i', $line)) {
+        $this->indexFASTA();
+        continue;
+      }
+
+      // if at the ##sequence-region line handle it.
+      if (preg_match('/^##sequence-region/i', $line)) {
+        $this->loadLandmark($line);
+        continue;
+      }
+
+      // skip comments
+      if (preg_match('/^#/', $line)) {
+        continue;
+      }
+
+      // skip empty lines
+      if (preg_match('/^\s*$/', $line)) {
+        continue;
+      }
+
+      $gff_feature = $this->parseFeature($line);
+      $this->features[$gff_feature['uniquename']] = $gff_feature;
+
+      if (!array_key_exists($gff_feature['type'], $cvterms)) {
+        $cvterms[$gff_feature['type']] = 0;
+      }
+      $cvterms[$gff_feature['type']]++;
     }
-    $this->feature_property_cv_id = $cv->cv_id;
-    $cv = chado_query($sql, [':cvname' => 'sequence'])->fetchObject();
-    if (!$cv) {
-      throw new Exception(t("Cannot find the 'sequence' ontology", []));
+
+    // Iterate through the cvterms and get a chado object for each one.
+    $cvterm_ids = [];
+    foreach ($cvterms as $name => $counts) {
+      $cvterm = $this->getCvterm($name, $this->feature_cv->getValue('cv_id'));
+      $this->cvterm_lookup[$name] = $cvterm;
+      $cvterm_ids[] = $cvterm->cvterm_id;
     }
-    $this->sequence_cv_id = $cv->cv_id;
-    // get the organism for which this GFF3 file belongs
-    $sql = "SELECT * FROM {organism} WHERE organism_id = :organism_id";
-    $organism = chado_query($sql, [':organism_id' => $organism_id])->fetchObject();
+
+    // Now, get a list of features for this organism and the given types
+    // we will use this list to do an "in-memory" lookup to make sure we
+    // are not violating the unique contraint of the feature table
+    // prior to inserting the features.
+    $sql = "
+      SELECT F.uniquename, CVT.name as type
+      FROM {feature} F
+        INNER JOIN {cvterm} CVT on F.type_id = CVT.cvterm_id
+      WHERE organism_id = :organism_id and type_id IN (:types)
+    ";
+    $result = chado_query($sql, [
+        ':organism_id' => $this->organism_id,
+        ':types' => $cvterm_ids,
+    ]);
+    while ($feature = $result->fetchObject()) {
+      $this->feature_lookup[$feature->type][$feature->uniquename] = TRUE;
+    }
+
+  }
+
+  /**
+   *
+   */
+  private function loadFeatures() {
+    $batch_size = 1000;
+    $num_features = count(array_keys($this->features));
+    $num_batches = (int) ($num_features / $batch_size) + 1;
+
+    $this->setItemsHandled(0);
+    $this->setTotalItems($num_batches);
+
+    $init_sql = "
+      INSERT INTO {feature}
+        (uniquename, name, type_id, organism_id, residues, md5checksum,
+         seqlen, is_analysis, is_obsolete)
+      VALUES\n";
+    $i = 0;
+    $batch_num = 1;
+    $sql = '';
+    $args = [];
+    foreach ($this->features as $uniquename => $feature) {
+      if (!(array_key_exists($feature['type'], $this->feature_lookup) and
+            array_key_exists($feature['uniquename'], $this->feature_lookup[$feature['type']]))){
+        $i++;
+        $residues = $this->getResidues($feature, FALSE);
+        $sql .= "(:uniquename_$i, :name_$i, :type_id_$i, :organism_id_$i, :residues_$i, " .
+               " :md5checksum_$i, :seqlen_$i, FALSE, FALSE),\n";
+        $args[":uniquename_$i"] = $feature['uniquename'];
+        $args[":name_$i"] = $feature['name'];
+        $args[":type_id_$i"] = $this->cvterm_lookup[$feature['type']]->cvterm_id;
+        $args[":organism_id_$i"] = $feature['organism_id'];
+        $args[":residues_$i"] = $residues;
+        $args[":md5checksum_$i"] = md5($residues);
+        $args[":seqlen_$i"] = strlen($residues);
+
+        // If we've reached the size of the batch then let's do the insert.
+        if ($i == $batch_size) {
+
+          // Insert the batch.
+          $sql = rtrim($sql, ",\n");
+          $sql = $init_sql . $sql;
+          chado_query($sql, $args);
+          $this->setItemsHandled($batch_num);
+          $batch_num++;
+
+          // Now reset all of the varables for the next batch.
+          $sql = '';
+          $i = 0;
+          $args = [];
+        }
+      }
+    }
+    $this->setItemsHandled($batch_num);
+  }
+
+
+  /**
+   * Load a GFF3 file. This is the function called by tripal jobs
+   *
+   * @ingroup gff3_loader
+   */
+  private function loadGFF3() {
+
+    $ret = [];
+    $date = getdate();
+
+    $filesize = filesize($this->gff_file);
+    $this->setTotalItems($filesize);
+
 
     $in_fasta = 0;
     $line_num = 0;
     $num_read = 0;
 
-    // If a landmark type was provided then pre-retrieve that.
-    if ($landmark_type) {
-      $landmark_cvterm = $this->getCvterm($landmark_type);
-      if (!$landmark_cvterm) {
-        throw new Exception(t('Cannot find landmark feature type \'%landmark_type\'.', ['%landmark_type' => $landmark_type]));
-      }
-    }
-
     // iterate through each line of the GFF file
-    while ($line = fgets($fh)) {
+    while ($line = fgets($this->gff_file_h)) {
       $line_num++;
       $this->line_num = $line_num;
       $size = drupal_strlen($line);
       $this->addItemsHandled($size);
       $num_read += $size;
 
-      if ($line_num < $start_line) {
+      if ($line_num < $this->start_line) {
         continue;
       }
 
@@ -1065,6 +1511,208 @@ class GFF3Importer extends TripalImporter {
   }
 
   /**
+   * Retrieves a ChadoRecord object for the landmark feature.
+   *
+   * @param $landmark_name
+   *   The name of the landmark to get
+   * @param $landmark_type
+   *   A ChadoRecord object for the type of landmark.
+   * @param $skip_on_missing
+   *   If the landmark cannot be found and this arugment is FALSE then
+   *   an error will be thrown. If TRUE then no error is thrown.
+   *
+   * @return
+   *   A feature ChadoRecord object or NULL if the landmark is missing and
+   *   $skip_on_missing is TRUE.
+   */
+  private function getLandmark($landmark_name, $landmark_type = NULL, $skip_on_missing = FALSE) {
+
+    // Before performing a database query check to see if
+    // this landmark is already in our lookup list.
+    if (array_key_exists($landmark_name, $this->landmark_lookup)) {
+      return $this->landmark_lookup[$landmark_name];
+    }
+
+    $landmark = new ChadoRecord('feature');
+    $landmark->setValues([
+      'organism_id' => $this->organism_id,
+      'uniquename' => $landmark_name,
+    ]);
+    if ($landmark_type) {
+      $landmark->setValue('type_id', $landmark_type->getValue('cvterm_id'));
+    }
+    $num_found = $landmark->find();
+    if ($num_found == 0) {
+      if ($skip_on_missing == TRUE) {
+        return NULL;
+      }
+      throw new Exception(t("The landmark '%landmark' cannot be found for this organism (%species) " .
+        "Please add the landmark and then retry the import of this GFF3 " .
+        "file", [
+            '%landmark' => $landmark_name,
+            '%species' => $this->organism->getValues('genus') . " " . $this->organism->getValues('species'),
+        ]));
+    }
+    if ($num_found > 1) {
+      throw new Exception(t("The landmark '%landmark' has more than one entry for this organism (%species). Did you provide a landmark type? If not, try resubmitting and providing a type." .
+        "Cannot continue", [
+            '%landmark' => $landmark_name,
+            '%species' => $this->organism->getValues('genus') . " " . $this->organism->getValues('species'),
+        ]));
+    }
+
+
+    // The landmark was found, remember it
+    $this->landmark_lookup[] = $landmark;
+    return $landmark;
+
+  }
+
+  /**
+   * Retrives the organism ID that matches the provided string.
+   *
+   * The organism string is expected to be in the format genus:species
+   * or just the full name separated by spaces.
+   */
+  private function getOrganism($org_string) {
+
+    // Before performing a database query check to see if
+    // this organism is already in our lookup list.
+    if (array_key_exists($org_string, $this->organism_lookup)) {
+      return $this->organism_lookup[$org_string];
+    }
+
+    // See if the genus and species are spearated by a colon.
+    $org_matches = [];
+    if (preg_match('/^(.*?):(.*?)$/', $org_string, $org_matches)) {
+      $values = [
+        'genus' => $org_matches[1],
+        'species' => $org_matches[2],
+      ];
+    }
+    // See if the genus, species and infraspecific name are present.
+    elseif (preg_match('/^(.*?)\s+(.*?)\s+(.*)$/', $org_string, $org_matches)) {
+      $values = [
+        'genus' => $org_matches[1],
+        'species' => $org_matches[2],
+        'infraspecific_name' => $org_matches[3],
+      ];
+    }
+    // See if just the genus ans species are present.
+    elseif (preg_match('/^(.*?)\s+(.*?)$/', $org_string, $org_matches)) {
+      $values = [
+        'genus' => $org_matches[1],
+        'species' => $org_matches[2],
+      ];
+    }
+    else {
+      throw new Exception(t("The specified organism, '%organism', is not provided in a compatible format. It must be 'genus:species', 'genus species' or 'genus species infraspecific name'.", ['%organism' => $org_string]));
+    }
+
+    // Get the organism record and add it to our lookup list for next time.
+    $organism = new ChadoRecord('organism');
+    $organism->setValues($values);
+    $num_found = $organism->find();
+    if ($num_found == 0) {
+      throw new Exception(t("Cannot find the specified organism, '%organism', for this GFF3 file.", ['%organism' => $org_string]));
+    }
+    $this->organism_lookup[$org_string] = $organism;
+
+    return $organism;
+  }
+
+  /**
+   * Retrieves the residues for a given feature.
+   *
+   */
+  private function getResidues($feature, $is_landmark = FALSE) {
+    return '';
+  }
+
+  /**
+   * Determines the name for a feature using the ID and name attributes.
+   *
+   * @param $feature_attrs
+   *   The associative array of attributes for the feature.
+   *
+   * @param $type
+   *   The type of feature.
+   *
+   * @return array
+   *   An associative array with 'uniquename' and 'name' keys.
+   */
+  private function getFeatureName($attrs, $type, $landmark_name, $fmin, $fmax) {
+    // To ensure a name is unique we may need to use the date.
+    $date = getdate();
+    $uniquename = '';
+    $name = '';
+
+    // If there is no ID or name then try to create a name and ID.
+    if (!array_key_exists('ID', $attrs) and !array_key_exists('name', $attrs)) {
+
+      // Check if an alternate ID field is suggested, if so, then use
+      // that for the name.
+      if (array_key_exists($this->alt_id_attr, $attrs)) {
+        $uniquename = $attrs[$this->alt_id_attr][0];
+        $name = $uniquename;
+      }
+
+      // If the row has a parent then generate a uniquename using the parent name
+      // add the date to the name in the event there are more than one child with
+      // the same parent.
+      elseif (array_key_exists('Parent', $attrs)) {
+        $uniquename = $attrs['Parent'][0] . "-" . $type . "-" .
+          $landmark_name . "-" . $date[0] . ":" . ($fmin + 1) . ".." . $fmax;
+        $name = $uniquename;
+      }
+
+      // Generate a unique name based on the date, type and location
+      // and set the name to simply be the type.
+      else {
+        $uniquename = $date[0] . "-" . $type . "-" .
+          $landmark_name . ":" . ($fmin + 1) . ".." . $fmax;
+        $name = $type;
+      }
+    }
+    elseif (!array_key_exists('name', $attrs)) {
+      $uniquename = $attrs['ID'][0];
+      $name = $attrs['ID'][0];
+
+    }
+    elseif (!array_key_exists('ID', $attrs)) {
+      $uniquename = $attrs['name'][0];
+      $name = $attrs['name'][0];
+    }
+    else {
+      $uniquename = $attrs['ID'][0];
+      $name = $attrs['name'][0];
+    }
+
+    // Does this uniquename already exist? This can happen for subfeatures
+    // (e.g. CDS features) that have multiple components but are really
+    // all the same thing.
+    if (array_key_exists($uniquename, $this->features)) {
+      if (array_key_exists('Parent', $attrs)) {
+        // Iterate through the list of similar IDs and see how many we have
+        // then add a numeric suffix.
+        $i = 1;
+        while (array_key_exists($uniquename . "_" . $i, $this->features)) {
+          $i++;
+        }
+        $uniquename = $uniquename . "_" . $i;
+      }
+      else {
+        throw new Exception(t("A feature with the same ID exists multiple times: !uname", ['!uname' => $uniquename]));
+      }
+    }
+
+    return [
+      'name' => $name,
+      'uniquename' => $uniquename,
+    ];
+  }
+
+  /**
    * Load the derives from attribute for a gff3 feature
    *
    * @param $feature
@@ -1630,7 +2278,7 @@ class GFF3Importer extends TripalImporter {
    *
    * @ingroup gff3_loader
    */
-  private function loadFeature($organism, $analysis_id, $cvterm, $uniquename,
+  private function loadFeature($organism, $analysis, $cvterm, $uniquename,
                                $name, $residues, $is_analysis = 'f', $is_obsolete = 'f', $add_only, $score) {
 
     if (strcmp($is_obsolete, 'f') == 0 or $is_obsolete == 0) {
@@ -1649,9 +2297,9 @@ class GFF3Importer extends TripalImporter {
     // Check to see if the feature already exists.
     $feature = new ChadoRecord('feature');
     $feature->setValues([
-       'organism_id' => $organism->organism_id,
+       'organism_id' => $organism->getValue('organism_id'),
        'uniquename' => $uniquename,
-       'type_id' => $cvterm->cvterm_id,
+       'type_id' => $cvterm->getValue('cvterm_id'),
     ]);
     $num_matches = $feature->find();
 
@@ -1666,13 +2314,13 @@ class GFF3Importer extends TripalImporter {
         $feature->insert();
       }
       catch (Exception $e) {
-        $this->logMessage("Failed to insert feature '$uniquename' ($cvterm->name).", [], TRIPAL_WARNING);
+        $this->logMessage("Failed to insert feature '$uniquename' (" . $cvterm->getValue('name') . ").", [], TRIPAL_WARNING);
         return 0;
       }
     }
     elseif (!$add_only) {
       if ($num_matches > 1) {
-        $this->logMessage("Failed to update feature '$uniquename' ($cvterm->name). More than one feature exists with these criteria", [], TRIPAL_WARNING);
+        $this->logMessage("Failed to update feature '$uniquename' (" . $cvterm->getValue('name') . "). More than one feature exists with these criteria", [], TRIPAL_WARNING);
         return 0;
       }
       $feature->setValue('name', $name);
@@ -1683,7 +2331,7 @@ class GFF3Importer extends TripalImporter {
         $feature->update();
       }
       catch (Exception $e) {
-        $this->logMessage("Failed to update feature '$uniquename' ($cvterm->name).", [], TRIPAL_WARNING);
+        $this->logMessage("Failed to update feature '$uniquename' (" . $cvterm->getValue('name') . ").", [], TRIPAL_WARNING);
         return 0;
       }
     }
@@ -1697,7 +2345,7 @@ class GFF3Importer extends TripalImporter {
     // it doesn't already exist.
     $af = new ChadoRecord('analysisfeature');
     $af->setValues([
-        'analysis_id' => $analysis_id,
+        'analysis_id' => $analysis->getValue('analysis_id'),
         'feature_id' => $feature->getID(),
     ]);
     $num_afs = $af->find();
@@ -1710,7 +2358,7 @@ class GFF3Importer extends TripalImporter {
         $af->insert();
       }
       catch (Exception $e) {
-        $this->logMessage("Could not add analysisfeature record: $analysis_id, " .  $feature->getID() . ". " . $e->getMessage(), [], TRIPAL_WARNING);
+        $this->logMessage("Could not add analysisfeature record: " . $analysis->getValue('analysis_id') . ", " .  $feature->getID() . ". " . $e->getMessage(), [], TRIPAL_WARNING);
       }
     }
     else {
@@ -2147,6 +2795,7 @@ class GFF3Importer extends TripalImporter {
           if (count($torganism) == 1) {
             $t_organism_id = $torganism[0]->organism_id;
           }
+
           else {
             $this->logMessage("Cannot find organism for target %target.",
               ['%target' => $gff_target_organism], TRIPAL_WARNING);
