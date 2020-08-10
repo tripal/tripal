@@ -45,6 +45,11 @@ class GFF3Importer extends TripalImporter {
 
 
   /**
+   * The lines from the ##sequence-region at the top of the GFF
+   */
+  private $seq_region_headers = [];
+
+  /**
    * The path to the GFF3 file.
    */
   private $gff_file = NULL;
@@ -188,6 +193,13 @@ class GFF3Importer extends TripalImporter {
    */
   private $feature_cvterm_lookup = [];
 
+
+  /**
+   * Holds a mapping of cvterms to their aliases that are used in the
+   * GFF3 file.
+   */
+  private $feature_cvterm_aliases = [];
+
   /**
    * An array that stores CVterms that have been looked up so we don't have
    * to do the database query every time.
@@ -208,6 +220,9 @@ class GFF3Importer extends TripalImporter {
    * An array the stores existing features in the database for the organism
    * and feature types in the database.  This is used for quick lookups
    * to prevent violating the unique constraints on a bulk insert.
+   *
+   * The feature_lookup is indexed first by organism_id, then by type name and
+   * then by uniquename.
    */
   private $feature_lookup = [];
 
@@ -235,10 +250,11 @@ class GFF3Importer extends TripalImporter {
   private $residue_index = [];
 
   /**
-   * An array that stores Landmarks that have been looked up so we don't have
-   * to do the database query every time.
+   * An array that stores landmarks objects.  Landmarks should be inserted
+   * first if they don't already exist.
    */
-  private $landmark_lookup = [];
+  private $landmarks = [];
+
 
   /**
    * A controlled vocabulary ChadoRecord object. This is the CV that will be
@@ -596,20 +612,26 @@ class GFF3Importer extends TripalImporter {
     $this->prepNullPub();
 
     // Load the GFF3.
-    $this->logMessage("Step 1: Preloading GFF3 file...");
+    $this->logMessage("Step 1: Preloading GFF3 file...                       ");
     $this->parseGFF3();
 
-    $this->logMessage("Step 2: Loading features...");
-    $this->loadFeatures();
+    $this->logMessage("Step 2: Load landmarks sequences...                   ");
+    $this->loadLandmarks();
 
-    $this->logMessage("Step 3: Loading feature locations...");
-    //$this->loadFeatureLocs();
+    $this->logMessage("Step 3: Loading features...                           ");
+    $this->loadFeatures($this->features);
 
-    $this->logMessage("Step 4: Loading features properties...");
-    //$this->loadFeatureProps();
+    $this->logMessage("Step 4: Loading feature locations...                  ");
+    $this->loadFeatureLocs();
 
-    $this->logMessage("Step 5: Loading features synonyms (aliases)...");
+    $this->logMessage("Step 5: Loading features properties...                ");
+    $this->loadProperties();
+
+    $this->logMessage("Step 6: Loading features synonyms (aliases)...        ");
     $this->loadAliases();
+
+    $this->logMessage("Step 7: Loading features cross references...          ");
+    $this->loadDbxrefs();
 
   }
 
@@ -854,9 +876,6 @@ class GFF3Importer extends TripalImporter {
       }
     }
 
-    // Get the landmark feature.
-    $landmark = $this->getLandmark($ret['landmark']);
-
     // If neither name nor uniquename are provided then generate one.
     $names = $this->getFeatureName($tags, $ret['type'], $ret['landmark'], $fmin, $fmax);
     $attr_uniquename = $names['uniquename'];
@@ -904,7 +923,7 @@ class GFF3Importer extends TripalImporter {
    * @param $line
    *   The line from the GFF file that is the ##sequence-region comment.
    */
-  private function loadLandmark($line) {
+  private function loadHeaderLandmark($line) {
 
     $region_matches = [];
     if (preg_match('/^##sequence-region\s+(\w*?)\s+(\d+)\s+(\d+)$/i', $line, $region_matches)) {
@@ -955,8 +974,9 @@ class GFF3Importer extends TripalImporter {
       }
 
       // if at the ##sequence-region line handle it.
-      if (preg_match('/^##sequence-region/i', $line)) {
-        $this->loadLandmark($line);
+      $matches = [];
+      if (preg_match('/^##sequence-region\s+(\w*?)\s+(\d+)\s+(\d+)$/i', $line, $matches)) {
+        $this->seq_region_headers[$matches[1]] = $line;
         continue;
       }
 
@@ -970,9 +990,21 @@ class GFF3Importer extends TripalImporter {
         continue;
       }
 
-      // Store this feature in the global feature array.
+      // Parse this feature from this line of the GFF3 file.
       $gff_feature = $this->parseFeature($line);
-      $this->features[$gff_feature['uniquename']] = $gff_feature;
+
+      // Add the landmark if it doesn't exist in the landmark list.
+      if (!array_key_exists($gff_feature['landmark'], $this->landmarks)) {
+        $this->landmarks[$gff_feature['landmark']] = FALSE;
+      }
+
+      // Store this feature in the landmark list or the feature list.
+      if ($gff_feature['uniquename'] == $gff_feature['landmark']) {
+        $this->landmarks[$gff_feature['uniquename']] = $gff_feature;
+      }
+      else {
+        $this->features[$gff_feature['uniquename']] = $gff_feature;
+      }
 
       // Store any parent/child relationships
       if (array_key_exists('Parent', $gff_feature)) {
@@ -1012,6 +1044,10 @@ class GFF3Importer extends TripalImporter {
       $cvterm = $this->getCvterm($name, $this->feature_cv->getValue('cv_id'));
       $this->feature_cvterm_lookup[$name] = $cvterm;
       $feature_cvterm_ids[] = $cvterm->cvterm_id;
+      // If the cvterm name does not match the name provided then set a mapping.
+      if ($cvterm->name != $name) {
+        $this->feature_cvterm_aliases[$name] = $cvterm->name;
+      }
     }
 
     // Iterate through the featureprop type terms and get a chado object for
@@ -1054,17 +1090,58 @@ class GFF3Importer extends TripalImporter {
         ':types' => $feature_cvterm_ids,
     ]);
     while ($feature = $result->fetchObject()) {
-      $this->feature_lookup[$feature->type][$feature->uniquename] = TRUE;
+      $this->feature_lookup[$feature->organism_id][$feature->type][$feature->uniquename] = TRUE;
     }
+  }
 
+  /**
+   * Imports the landmark features into Chado.
+   */
+  private function loadLandmarks() {
+
+    $new_landmarks = [];
+    foreach ($this->landmarks as $uniquename => $feature) {
+      // If the landmark does not have an entry in the GFF lines, try to
+      // find it in the heade (i.e. ##sequence-region section). If it
+      // exists then create it.
+      if ($feature === FALSE) {
+        if (array_key_exists($uniquename, $this->seq_region_headers)) {
+          $this->loadHeaderLandmark($this->seq_region_headers[$uniquename]);
+          continue;
+        }
+        else {
+          throw new Exception(t('The landmark (reference) sequence, !landmark, is not in the database and not specified in the GFF3 file. Please pre-load the landmark sequences or edit the GFF3 file to include them.',
+              ['!landmark' => $uniquename]));
+        }
+      }
+      else {
+        $new_landmarks[$uniquename] = $feature;
+      }
+    }
+    $this->loadFeatures($new_landmarks);
+  }
+
+  /**
+   * Indicates if the feature is already loaded in the database.
+   */
+  private function isFeatureLoaded(&$feature) {
+
+    if (array_key_exists($feature['type'], $this->feature_cvterm_aliases)) {
+      $feature['type'] = $this->feature_cvterm_aliases[$feature['type']];
+    }
+    if (array_key_exists($feature['type'], $this->feature_lookup[$feature->organism_id]) and
+        array_key_exists($feature['uniquename'], $this->feature_lookup[$feature->organism_id][$feature['type']])){
+      return TRUE;
+    }
+    return FALSE;
   }
 
   /**
    * Imports the feature records into Chado.
    */
-  private function loadFeatures() {
+  private function loadFeatures($features) {
     $batch_size = 1000;
-    $num_features = count(array_keys($this->features));
+    $num_features = count(array_keys($features));
     $num_batches = (int) ($num_features / $batch_size) + 1;
 
     $this->setItemsHandled(0);
@@ -1084,11 +1161,10 @@ class GFF3Importer extends TripalImporter {
     $batch_num = 1;
     $sql = '';
     $args = [];
-    foreach ($this->features as $uniquename => $feature) {
+    foreach ($features as $uniquename => $feature) {
 
       // Only do an insert if this feature doesn't already exist in the databse.
-      if (!(array_key_exists($feature['type'], $this->feature_lookup) and
-            array_key_exists($feature['uniquename'], $this->feature_lookup[$feature['type']]))){
+      if (!$this->isFeatureLoaded($feature)) {
         $i++;
         $residues = $this->getResidues($feature, FALSE);
         $sql .= "(:uniquename_$i, :name_$i, :type_id_$i, :organism_id_$i, :residues_$i, " .
@@ -1098,7 +1174,7 @@ class GFF3Importer extends TripalImporter {
         $args[":type_id_$i"] = $this->feature_cvterm_lookup[$feature['type']]->cvterm_id;
         $args[":organism_id_$i"] = $feature['organism_id'];
         $args[":residues_$i"] = $residues;
-        $args[":md5checksum_$i"] = md5($residues);
+        $args[":md5checksum_$i"] = $residues ? md5($residues) : '';
         $args[":seqlen_$i"] = strlen($residues);
 
         // If we've reached the size of the batch then let's do the insert.
@@ -1120,7 +1196,10 @@ class GFF3Importer extends TripalImporter {
           $results = chado_query($sql);
           while ($result = $results->fetcHobject()) {
             if (array_key_exists($result->uniquename, $this->features)) {
-              $this->features[$result->uniquename]['feature_id'] = $result->feature_id;
+              $this->features[$uniquename]['feature_id'] = $result->feature_id;
+            }
+            if ($uniquename == $feature['landmark']) {
+              $this->landmarks[$uniquename]['feature_id'] = $result->feature_id;
             }
           }
 
@@ -1158,7 +1237,7 @@ class GFF3Importer extends TripalImporter {
   /**
    *
    */
-  private function loadFeatureProps(){
+  private function loadProperties(){
     $batch_size = 100;
     $num_features = count(array_keys($this->features));
     $num_batches = (int) ($num_features / $batch_size) + 1;
@@ -1178,8 +1257,78 @@ class GFF3Importer extends TripalImporter {
     foreach ($this->features as $uniquename => $feature) {
 
       // Only do an insert if this feature doesn't already exist in the databse.
-      if (!(array_key_exists($feature['type'], $this->feature_lookup) and
-            array_key_exists($feature['uniquename'], $this->feature_lookup[$feature['type']]))) {
+      if (!$this->isFeatureLoaded($feature)) {
+        $i++;
+
+        // If this feature doesn't have a feature_id then someting is wrong.
+        if (!array_key_exists('feature_id', $feature)) {
+          throw new Exception(t('The feature, !feature, is in the GFF but somehow was not added to the database.',
+              ['!feature' => $uniquename . " (" . $feature['name'] . ") at line " . $feature['line'] . '.']));
+        }
+
+        // Iterate through all of the properties of this feature.
+        foreach ($feature['properties'] as $prop_name => $values) {
+          foreach ($values as $rank => $value) {
+            $j++;
+            $sql .= "(:feature_id_$j, :type_id_$j, :value_$j, :rank_$j),\n";
+            $args[":feature_id_$j"] = $feature['feature_id'];
+            $args[":type_id_$j"] = $this->featureprop_cvterm_lookup[$prop_name]->cvterm_id;
+            $args[":value_$j"] = $value;
+            $args[":rank_$j"] = $rank;
+          }
+        }
+        // If we've reached the size of the batch then let's do the insert.
+        if ($i == $batch_size) {
+
+          // Insert the batch.
+          $sql = rtrim($sql, ",\n");
+          $sql = $init_sql . $sql;
+          $last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
+          $this->setItemsHandled($batch_num);
+          $batch_num++;
+
+          // Now reset all of the varables for the next batch.
+          $sql = '';
+          $i = 0;
+          $j = 0;
+          $args = [];
+        }
+      }
+    }
+
+    // Add any remaining batch items
+    if ($i > 0) {
+      $sql = rtrim($sql, ",\n");
+      $sql = $init_sql . $sql;
+      $last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
+      $this->setItemsHandled($batch_num);
+    }
+  }
+
+  /**
+   *
+   */
+  private function loadDbxrefs() {
+    $batch_size = 100;
+    $num_features = count(array_keys($this->features));
+    $num_batches = (int) ($num_features / $batch_size) + 1;
+
+    $this->setItemsHandled(0);
+    $this->setTotalItems($num_batches);
+
+    $init_sql = "
+      INSERT INTO {featureprop}
+        (feature_id, type_id, value, rank)
+      VALUES\n";
+    $i = 0;
+    $j = 0;
+    $batch_num = 1;
+    $sql = '';
+    $args = [];
+    foreach ($this->features as $uniquename => $feature) {
+
+      // Only do an insert if this feature doesn't already exist in the databse.
+      if (!$this->isFeatureLoaded($feature)) {
         $i++;
 
         // If this feature doesn't have a feature_id then someting is wrong.
@@ -1249,13 +1398,12 @@ class GFF3Importer extends TripalImporter {
     foreach ($this->features as $uniquename => $feature) {
 
       // Only do an insert if this feature doesn't already exist in the databse.
-      if (!(array_key_exists($feature['type'], $this->feature_lookup) and
-          array_key_exists($feature['uniquename'], $this->feature_lookup[$feature['type']]))) {
+      if (!$this->isFeatureLoaded($feature)) {
         $i++;
 
         // Skip any features that are landmarks.  They are just redefining
         // the landmark.
-        if (array_key_exists($feature['uniquename'], $this->landmark_lookup)) {
+        if (array_key_exists($feature['uniquename'], $this->landmarks)) {
           continue;
         }
 
@@ -1278,7 +1426,7 @@ class GFF3Importer extends TripalImporter {
 
         $sql .= "(:srcfeature_id_$i, :feature_id_$i, :fmin_$i, :fmax_$i," .
                 " :strand_$i, :phase_$i, :rank_$i),\n";
-        $args[":srcfeature_id_$i"] = $this->landmark_lookup[$feature['landmark']]->getValue('feature_id');
+        $args[":srcfeature_id_$i"] = $this->landmarks[$feature['landmark']]['feature_id'];
         $args[":feature_id_$i"] = $feature['feature_id'];
         $args[":fmin_$i"] = $feature['start'];
         $args[":fmax_$i"] = $feature['end'];
@@ -1338,8 +1486,7 @@ class GFF3Importer extends TripalImporter {
     foreach ($this->features as $uniquename => $feature) {
 
       // Only do an insert if this feature doesn't already exist in the databse.
-      if (!(array_key_exists($feature['type'], $this->feature_lookup) and
-            array_key_exists($feature['uniquename'], $this->feature_lookup[$feature['type']]))) {
+      if (!$this->isFeatureLoaded($feature)) {
 
         $i++;
 
