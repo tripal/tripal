@@ -195,6 +195,16 @@ class GFF3Importer extends TripalImporter {
   private $featureprop_cvterm_lookup = [];
 
   /**
+   * Holds the CV term for the "exact" synonym.
+   */
+  private $exact_syn = NULL;
+
+  /**
+   * Holds the object for the null publication record.
+   */
+  private $null_pub = NULL;
+
+  /**
    * An array the stores existing features in the database for the organism
    * and feature types in the database.  This is used for quick lookups
    * to prevent violating the unique constraints on a bulk insert.
@@ -207,7 +217,6 @@ class GFF3Importer extends TripalImporter {
    * field being an associative array of key/value pairs.
    */
   private $features = [];
-
 
   /**
    * A mapping of features to their parents.
@@ -582,21 +591,25 @@ class GFF3Importer extends TripalImporter {
       }
     }
 
-    // Prepare the temporary tables.
-    $this->prepTempTables();
+    // Make sure we have the synonym records and null publication ready to go.
+    $this->prepSynonms();
+    $this->prepNullPub();
 
     // Load the GFF3.
     $this->logMessage("Step 1: Preloading GFF3 file...");
-    $this->preLoad();
+    $this->parseGFF3();
 
     $this->logMessage("Step 2: Loading features...");
     $this->loadFeatures();
 
     $this->logMessage("Step 3: Loading feature locations...");
-    $this->loadFeatureLocs();
+    //$this->loadFeatureLocs();
 
     $this->logMessage("Step 4: Loading features properties...");
-    $this->loadFeatureProps();
+    //$this->loadFeatureProps();
+
+    $this->logMessage("Step 5: Loading features synonyms (aliases)...");
+    $this->loadAliases();
 
   }
 
@@ -615,6 +628,109 @@ class GFF3Importer extends TripalImporter {
     chado_query($sql);
     $sql = "DELETE FROM {tripal_gffprotein_temp}";
     chado_query($sql);
+  }
+
+  /**
+   * Makes sure Chado is ready with the necessary synonym type records.
+   */
+  private function prepSynonms() {
+    // make sure we have a 'synonym_type' vocabulary
+    $select = ['name' => 'synonym_type'];
+    $results = chado_select_record('cv', ['*'], $select);
+
+    if (count($results) == 0) {
+      // insert the 'synonym_type' vocabulary
+      $values = [
+          'name' => 'synonym_type',
+          'definition' => 'vocabulary for synonym types',
+      ];
+      $success = chado_insert_record('cv', $values, array(
+          'skip_validation' => TRUE,
+      ));
+      if (!$success) {
+        $this->logMessage("Failed to add the synonyms type vocabulary.", [], TRIPAL_WARNING);
+        return 0;
+      }
+      // now that we've added the cv we need to get the record
+      $results = chado_select_record('cv', ['*'], $select);
+      if (count($results) > 0) {
+        $syncv = $results[0];
+      }
+    }
+    else {
+      $syncv = $results[0];
+    }
+
+    // get the 'exact' cvterm, which is the type of synonym we're adding
+    $select = [
+        'name' => 'exact',
+        'cv_id' => [
+            'name' => 'synonym_type',
+        ],
+    ];
+    $result = chado_select_record('cvterm', ['*'], $select);
+    if (count($result) == 0) {
+      $term = [
+          'name' => 'exact',
+          'id' => "synonym_type:exact",
+          'definition' => '',
+          'is_obsolete' => 0,
+          'cv_name' => $syncv->name,
+          'is_relationship' => FALSE,
+      ];
+      $syntype = chado_insert_cvterm($term, ['update_existing' => TRUE]);
+      if (!$syntype) {
+        $this->logMessage("Cannot add synonym type: internal:$type.", [], TRIPAL_WARNING);
+        return 0;
+      }
+    }
+    else {
+      $syntype = $result[0];
+    }
+    $this->exact_syn = $syntype;
+  }
+
+  /**
+   * Makes sure there is a null publication in the database.
+   */
+  private function prepNullPub(){
+
+    // check to see if we have a NULL publication in the pub table.  If not,
+    // then add one.
+    $select = ['uniquename' => 'null'];
+    $result = chado_select_record('pub', ['*'], $select);
+    if (count($result) == 0) {
+      $pub_sql = "
+        INSERT INTO {pub} (uniquename,type_id)
+        VALUES (:uname,
+          (SELECT cvterm_id
+           FROM {cvterm} CVT
+             INNER JOIN {dbxref} DBX ON DBX.dbxref_id = CVT.dbxref_id
+             INNER JOIN {db} DB      ON DB.db_id      = DBX.db_id
+           WHERE CVT.name = :type_id))
+      ";
+      $status = chado_query($psql);
+      if (!$status) {
+        $this->logMessage("Cannot prepare statement 'ins_pub_uniquename_typeid.", [], TRIPAL_WARNING);
+        return 0;
+      }
+
+      // insert the null pub
+      $result = chado_query($pub_sql, [
+          ':uname' => 'null',
+          ':type_id' => 'null',
+      ])->fetchObject();
+      if (!$result) {
+        $this->logMessage("Cannot add null publication needed for setup of alias.", [], TRIPAL_WARNING);
+        return 0;
+      }
+      $result = chado_select_record('pub', ['*'], $select);
+      $pub = $result[0];
+    }
+    else {
+      $pub = $result[0];
+    }
+    $this->null_pub = $pub;
   }
 
   /**
@@ -685,6 +801,7 @@ class GFF3Importer extends TripalImporter {
     $attr_organism = $this->organism;
     $attr_parent = '';
     $attr_others = [];
+    $attr_aliases = [];
     foreach ($attrs as $attr) {
       $attr = rtrim($attr);
       $attr = ltrim($attr);
@@ -713,6 +830,9 @@ class GFF3Importer extends TripalImporter {
 
       if (strcmp($tag_name, 'organism') == 0) {
         $attr_organism = $this->getOrganism(urldecode($tag[1]));
+      }
+      elseif (strcmp($tag_name, 'Alias') == 0) {
+        $attr_aliases = array_merge($attr_aliases, $tags[$tag_name]);
       }
       elseif (strcmp($tag_name, 'Parent') == 0) {
         $attr_parent = urldecode($tag[1]);
@@ -743,6 +863,7 @@ class GFF3Importer extends TripalImporter {
     $attr_name = $names['name'];
     $ret['name'] = $attr_name;
     $ret['uniquename'] = $attr_uniquename;
+    $ret['synonyms'] = $attr_aliases;
 
     // Now add all of the attributes into the return array.
     foreach ($tags as $key => $value) {
@@ -807,7 +928,7 @@ class GFF3Importer extends TripalImporter {
   /**
    *
    */
-  private function preLoad() {
+  private function parseGFF3() {
 
     $filesize = filesize($this->gff_file);
     $this->setTotalItems($filesize);
@@ -1189,6 +1310,151 @@ class GFF3Importer extends TripalImporter {
       $sql = rtrim($sql, ",\n");
       $sql = $init_sql . $sql;
       $last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
+      $this->setItemsHandled($batch_num);
+    }
+  }
+
+  /**
+   *
+   */
+  private function loadAliases(){
+    $batch_size = 1000;
+    $num_features = count(array_keys($this->features));
+    $num_batches = (int) ($num_features / $batch_size) + 1;
+
+    $this->setItemsHandled(0);
+    $this->setTotalItems($num_batches);
+
+    $init_syn_sql = "INSERT INTO {synonym} (name, type_id, synonym_sgml) VALUES \n";
+    $init_fsyn_sql = "INSERT INTO {feature_synonym} (synonym_id, feature_id, pub_id) VALUES \n";
+    $i = 0;
+    $batch_num = 1;
+    $syn_sql = '';
+    $syn_args = [];
+    $fsyn_sql = '';
+    $fsyn_args = [];
+    $batch_synonyms = [];
+    $batch_featuresyn = [];
+    foreach ($this->features as $uniquename => $feature) {
+
+      // Only do an insert if this feature doesn't already exist in the databse.
+      if (!(array_key_exists($feature['type'], $this->feature_lookup) and
+            array_key_exists($feature['uniquename'], $this->feature_lookup[$feature['type']]))) {
+
+        $i++;
+
+        // If this feature doesn't have a feature_id then someting is wrong.
+        if (!array_key_exists('feature_id', $feature)) {
+          throw new Exception(t('The feature, !feature, is in the GFF but somehow was not added to the database.',
+              ['!feature' => $uniquename . " (" . $feature['name'] . ") at line " . $feature['line'] . '.']));
+        }
+
+        // Get all of the synonyms for this batch.
+        foreach ($feature['synonyms'] as $index => $synonym) {
+          $batch_synonyms[] = $synonym;
+          $batch_featuresyn[] = [$synonym, $feature['feature_id']];
+        }
+
+        // If we've reached the size of the batch then let's do the insert.
+        if ($i == $batch_size) {
+
+          if (count($batch_synonyms) > 0) {
+
+            // First get the synonym_ids for those already in the database.
+            $syns_avail_sql = "SELECT synonym_id, name FROM {synonym} WHERE type_id = :type_id and name IN (:names)";
+            $syns_avail_args = [
+              ':type_id' => $this->exact_syn->cvterm_id,
+              ':names' => $batch_synonyms
+            ];
+            $syns_avail = chado_query($syns_avail_sql, $syns_avail_args)->fetchAllAssoc('name', PDO::FETCH_OBJ);
+
+            // First, add any missing synonyms
+            $j = 0;
+            foreach ($batch_synonyms as $index => $synonym) {
+              if (!array_key_exists($synonym, $syns_avail)) {
+                $j++;
+                $syn_sql .= "(:name_$j, :type_id_$j, ''),\n";
+                $syn_args[":name_$j"] = $synonym;
+                $syn_args[":type_id_$j"] = $this->exact_syn->cvterm_id;
+              }
+            }
+            if ($syn_sql) {
+              $syn_sql = rtrim($syn_sql, ",\n");
+              $syn_sql = $init_syn_sql . $syn_sql;
+              $last_id = chado_query($syn_sql, $syn_args, ['return' => Database::RETURN_INSERT_ID]);
+              $syns_avail = chado_query($syns_avail_sql, $syns_avail_args)->fetchAllAssoc('name', PDO::FETCH_OBJ);
+            }
+
+            // Add in the feature synonym records for this batch.
+            $j = 0;
+            foreach ($batch_featuresyn as $index => $featuresyn) {
+              $j++;
+              $fsyn_sql .= "(:synonym_id_$j, :feature_id_$j, :pub_id_$j),\n";
+              $fsyn_args[":synonym_id_$j"] = $syns_avail[$featuresyn[0]]->synonym_id;
+              $fsyn_args[":feature_id_$j"] = $featuresyn[1];
+              $fsyn_args[":pub_id_$j"] = $this->null_pub->pub_id;
+            }
+            $fsyn_sql = rtrim($fsyn_sql, ",\n");
+            $fsyn_sql = $init_fsyn_sql . $fsyn_sql;
+            $last_id = chado_query($fsyn_sql, $fsyn_args, ['return' => Database::RETURN_INSERT_ID]);
+          }
+
+          $this->setItemsHandled($batch_num);
+
+          // Now reset all of the varables for the next batch.
+          $syn_sql = '';
+          $fsyn_sql = '';
+          $i = 0;
+          $syn_args = [];
+          $fsyn_args = [];
+          $batch_synonyms = [];
+          $batch_featuresyn = [];
+        }
+      }
+    }
+
+    // Add any remaining batch items
+    if ($i > 0) {
+      if (count($batch_synonyms) > 0) {
+        // First get the synonym_ids for those already in the database.
+        $syns_avail_sql = "SELECT synonym_id, name FROM {synonym} WHERE type_id = :type_id and name IN (:names)";
+        $syns_avail_args = [
+            ':type_id' => $this->exact_syn->cvterm_id,
+            ':names' => $batch_synonyms
+        ];
+        $syns_avail = chado_query($syns_avail_sql, $syns_avail_args)->fetchAllAssoc('name', PDO::FETCH_OBJ);
+
+        // First, add any missing synonyms
+        $j = 0;
+        foreach ($batch_synonyms as $index => $synonym) {
+          if (!array_key_exists($synonym, $syns_avail)) {
+            $j++;
+            $syn_sql .= "(:name_$j, :type_id_$j, ''),\n";
+            $syn_args[":name_$j"] = $synonym;
+            $syn_args[":type_id_$j"] = $this->exact_syn->cvterm_id;
+          }
+        }
+        if ($syn_sql) {
+          $syn_sql = rtrim($syn_sql, ",\n");
+          $syn_sql = $init_syn_sql . $syn_sql;
+          $last_id = chado_query($syn_sql, $syn_args, ['return' => Database::RETURN_INSERT_ID]);
+          $syns_avail = chado_query($syns_avail_sql, $syns_avail_args)->fetchAllAssoc('name', PDO::FETCH_OBJ);
+        }
+
+        // Add in the feature synonym records for this batch.
+        $j = 0;
+        foreach ($batch_featuresyn as $index => $featuresyn) {
+          $j++;
+          $fsyn_sql .= "(:synonym_id_$j, :feature_id_$j, :pub_id_$j),\n";
+          $fsyn_args[":synonym_id_$j"] = $syns_avail[$featuresyn[0]]->synonym_id;
+          $fsyn_args[":feature_id_$j"] = $featuresyn[1];
+          $fsyn_args[":pub_id_$j"] = $this->null_pub->pub_id;
+        }
+        $fsyn_sql = rtrim($fsyn_sql, ",\n");
+        $fsyn_sql = $init_fsyn_sql . $fsyn_sql;
+        $last_id = chado_query($fsyn_sql, $fsyn_args, ['return' => Database::RETURN_INSERT_ID]);
+      }
+
       $this->setItemsHandled($batch_num);
     }
   }
