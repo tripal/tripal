@@ -188,6 +188,16 @@ class GFF3Importer extends TripalImporter {
   private $create_organism = FALSE;
 
   /**
+   * Holds mapping of DB names to DB ids.
+   */
+  private $db_lookup = [];
+
+  /**
+   * Holds a mapping of Dbxref names to ids.
+   */
+  private $dbxref_lookup = [];
+
+  /**
    * An array that stores CVterms that have been looked up so we don't have
    * to do the database query every time.
    */
@@ -756,6 +766,59 @@ class GFF3Importer extends TripalImporter {
   }
 
   /**
+   * Makes sure Chado is ready with the necessary Dbxref records.
+   */
+  private function prepDbxrefs() {
+    $sql = "
+      SELECT db_id
+      FROM {db}
+      WHERE name = :dbname";
+
+    foreach ($this->db_lookup as $dbname => $value) {
+      $result = chado_query($sql, array(
+        ':dbname' => $dbname,
+      ));
+
+      $db = $result->fetchObject() ?? NULL;
+      if ($db) {
+        $db = chado_get_db(array('db_id' => $db->db_id));
+      }
+      else {
+        $db = chado_insert_db(array(
+          'name' => $dbname,
+        ));
+      }
+
+      $this->db_lookup[$dbname] = $db->db_id;
+    }
+
+    $sql = "
+      SELECT dbxref_id
+      FROM {dbxref}
+      WHERE db_id = :db_id and accession = :accession";
+
+    foreach ($this->dbxref_lookup as $index => $info) {
+      $result = chado_query($sql, array(
+        ':db_id' => $this->db_lookup[$info['db']],
+        ':accession' => $info['accession'],
+      ));
+
+      $dbx = $result->fetchObject() ?? NULL;
+      if ($dbx) {
+        $dbx = chado_get_dbxref(array('dbxref_id' => $dbx->dbxref_id));
+      }
+      else {
+        $dbx = chado_insert_dbxref(array(
+          'db_id' => $this->db_lookup[$info['db']],
+          'accession' => $info['accession'],
+        ));
+      }
+
+      $this->dbxref_lookup[$index] = $dbx->dbxref_id;
+    }
+  }
+
+  /**
    * Parses the current line of the GFF3 file for a feature.
    *
    * @return array
@@ -824,6 +887,7 @@ class GFF3Importer extends TripalImporter {
     $attr_parent = '';
     $attr_others = [];
     $attr_aliases = [];
+    $attr_dbxref = [];
     foreach ($attrs as $attr) {
       $attr = rtrim($attr);
       $attr = ltrim($attr);
@@ -859,6 +923,9 @@ class GFF3Importer extends TripalImporter {
       elseif (strcmp($tag_name, 'Parent') == 0) {
         $attr_parent = urldecode($tag[1]);
       }
+      elseif (strcmp($tag_name, 'Dbxref') == 0) {
+        $attr_dbxref = array_merge($attr_dbxref, $tags[$tag_name]);
+      }
       // Get the list of non-reserved attributes.
       elseif (strcmp($tag_name, 'Name') !=0 and strcmp($tag_name, 'ID') !=0 and
               strcmp($tag_name, 'Alias') != 0 and strcmp($tag_name, 'Parent') != 0 and
@@ -883,6 +950,22 @@ class GFF3Importer extends TripalImporter {
     $ret['name'] = $attr_name;
     $ret['uniquename'] = $attr_uniquename;
     $ret['synonyms'] = $attr_aliases;
+    $ret['dbxrefs'] = [];
+    foreach ($attr_dbxref as $key => $dbx) {
+      $parts = explode(':', $dbx);
+      if (count($parts) != 2) {
+        throw new Exception(t('Dbxrefs must be of the format: "Dbxref=<db name>:<accession>". The Dbxref %dbx on line %line_num does not satisfy this format.',
+            ['%line_num' => $this->current_line, '%dbx' => $dbx]));
+      }
+      $ret['dbxrefs']["{$parts[0]}:{$parts[1]}"] = array(
+        'db' => $parts[0],
+        'accession' => $parts[1],
+      );
+    }
+    $ret['dbxrefs']["GFF_source:{$ret['source']}"] = array(
+      'db' => 'GFF_source',
+      'accession' => $ret['source'],
+    );
 
     // Now add all of the attributes into the return array.
     foreach ($tags as $key => $value) {
@@ -1028,6 +1111,17 @@ class GFF3Importer extends TripalImporter {
         $this->relationships['Child'][$gff_feature['uniquename']] = $gff_feature['Parent'];
       }
 
+      // Organize DBs for faster acces later on.
+      foreach ($gff_feature['dbxrefs'] as $index => $info) {
+        if (!array_key_exists($info['db'], $this->db_lookup)) {
+          $this->db_lookup[$info['db']] = FALSE;
+        }
+
+        if (!array_key_exists($index, $this->dbxref_lookup)) {
+          $this->dbxref_lookup[$index] = $info;
+        }
+      }
+
       // Organize the CVterms for faster access later on.
       if (!array_key_exists($gff_feature['type'], $feature_cvterms)) {
         $feature_cvterms[$gff_feature['type']] = 0;
@@ -1043,6 +1137,8 @@ class GFF3Importer extends TripalImporter {
         $featureprop_cvterms[$prop_name]++;
       }
     }
+
+    $this->prepDbxrefs();
 
     // Iterate through the feature type terms and get a chado object for each.
     $feature_cvterm_ids = [];
@@ -1321,7 +1417,65 @@ class GFF3Importer extends TripalImporter {
    *
    */
   private function loadDbxrefs() {
+    $batch_size = 1000;
+    $num_features = count(array_keys($this->features));
+    $num_batches = (int) ($num_features / $batch_size) + 1;
 
+    $this->setItemsHandled(0);
+    $this->setTotalItems($num_batches);
+
+    // Don't need to use placeholders for this insert since we are only using
+    // integers.
+    $count = 0;
+    $batch_num = 0;
+    $batch_pairs = [];
+    $init_fdbx_sql = "INSERT INTO {feature_dbxref} (feature_id, dbxref_id) VALUES \n";
+    $check_fdbx_sql = "SELECT feature_dbxref_id FROM {feature_dbxref} WHERE feature_id = :feature_id and dbxref_id = :dbxref_id";
+    foreach ($this->features as $uniquename => $feature) {
+      $count++;
+
+      $this->ensureFeatureIsLoaded($feature);
+
+      foreach ($feature['dbxrefs'] as $index => $info) {
+        $feature_id = $feature['feature_id'];
+        $dbx_id = $this->dbxref_lookup[$index];
+
+        // Check that this feature_dbxref is not already in the database.
+        $result = chado_query($check_fdbx_sql, array(
+          ':feature_id' => $feature_id,
+          ':dbxref_id' => $dbx_id,
+        ))->fetchObject() ?? NULL;
+
+        if (!$result) {
+          $batch_pairs[] = "($feature_id, $dbx_id)";
+        }
+      }
+
+      if ($count == $batch_size) {
+        $batch_num++;
+        if (count($batch_pairs) > 0) {
+          // Perform the actual insertion.
+          $fdbx_sql = $init_fdbx_sql . implode(', ', $batch_pairs);
+          $last_id = chado_query($fdbx_sql, array(), array('return' => Database::RETURN_INSERT_ID));
+        }
+
+        $this->setItemsHandled($batch_num);
+
+        $count = 0;
+        $batch_pairs = [];
+      }
+    }
+
+    if ($count > 0) {
+      $batch_num++;
+      if (count($batch_pairs) > 0) {
+        // Perform the actual insertion.
+        $fdbx_sql = $init_fdbx_sql . implode(', ', $batch_pairs);
+        $last_id = chado_query($fdbx_sql, array(), array('return' => Database::RETURN_INSERT_ID));
+      }
+
+      $this->setItemsHandled($batch_num);
+    }
   }
 
   /**
