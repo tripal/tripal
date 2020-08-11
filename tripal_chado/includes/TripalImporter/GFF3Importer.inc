@@ -1275,7 +1275,9 @@ class GFF3Importer extends TripalImporter {
     $batch_num = 1;
     $sql = '';
     $args = [];
+    $batch_features = [];
     foreach ($features as $uniquename => $feature) {
+      $batch_features[$uniquename] = $feature;
 
       // Only do an insert if this feature doesn't already exist in the databse.
       if (!$this->doesFeatureAlreadyExist($feature)) {
@@ -1299,7 +1301,7 @@ class GFF3Importer extends TripalImporter {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
           $last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
-          $this->assignFeatureIDs($start_id, $last_id);
+          $this->assignFeatureIDs($batch_features);
           $this->setItemsHandled($batch_num);
           $batch_num++;
 
@@ -1308,6 +1310,7 @@ class GFF3Importer extends TripalImporter {
           $i = 0;
           $args = [];
           $start_id = $last_id;
+          $batch_features = [];
         }
       }
     }
@@ -1317,8 +1320,11 @@ class GFF3Importer extends TripalImporter {
       $sql = rtrim($sql, ",\n");
       $sql = $init_sql . $sql;
       $last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
-      $this->assignFeatureIDs($start_id, $last_id);
       $this->setItemsHandled($batch_num);
+    }
+
+    if (!empty($batch_features)) {
+      $this->assignFeatureIDs($batch_features);
     }
   }
 
@@ -1328,20 +1334,25 @@ class GFF3Importer extends TripalImporter {
    * The start and last IDs should corresopnd to Id's surrounding
    * a batch insert of features.
    */
-  private function assignFeatureIDs($start_id, $last_id) {
+  private function assignFeatureIDs($batch_features) {
     // Get the feature Ids for the batch sequences
     $sql = "
-      SELECT feature_id, uniquename
+      SELECT feature_id
       FROM {feature} F
-      WHERE feature_id > $start_id and feature_id <= $last_id
+      WHERE uniquename = :uniquename and organism_id = :organism_id and type_id = :type_id
     ";
-    $results = chado_query($sql);
-    while ($result = $results->fetchObject()) {
-      if (array_key_exists($result->uniquename, $this->features)) {
-        $this->features[$result->uniquename]['feature_id'] = $result->feature_id;
+
+    foreach ($batch_features as $uniquename => $feature) {
+      $result = chado_query($sql, array(
+        ':uniquename' => $feature['uniquename'],
+        ':organism_id' => $feature['organism_id'],
+        ':type_id' => $this->feature_cvterm_lookup[$feature['type']],
+      ))->fetchObject();
+      if (array_key_exists($uniquename, $this->features)) {
+        $this->features[$uniquename]['feature_id'] = $result->feature_id;
       }
-      if (array_key_exists($result->uniquename, $this->landmarks)) {
-        $this->landmarks[$result->uniquename]['feature_id'] = $result->feature_id;
+      if (array_key_exists($uniquename, $this->landmarks)) {
+        $this->landmarks[$uniquename]['feature_id'] = $result->feature_id;
       }
     }
   }
