@@ -52,7 +52,7 @@ are available in Tripal v3.
   * Drupal contributed modules: 
     * [Views](http://drupal.org/project/views)
     * [Entity API](http://drupal.org/project/entity)
-* PostgreSQL
+* PostgreSQL 9.3 or higher (9.5 required for Chado 1.2 to 1.3 upgrade)
 * PHP 5.5+
 * UNIX/Linux
 
