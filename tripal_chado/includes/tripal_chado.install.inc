@@ -58,7 +58,7 @@ function tripal_chado_load_form($form, $form_state) {
         'stockcollection_db',
       ]);
       $items = [
-        'PostgreSQL version 9.1 is required to perform this upgrade. If your Tripal
+        'PostgreSQL version 9.5 is required to perform this upgrade. If your Tripal
          site uses an older version please upgrade before proceeding.',
         'A major change between Chado v1.2 and v1.3 is that primary and foreign
          keys were upgraded from integers to big integers. If your site has custom
