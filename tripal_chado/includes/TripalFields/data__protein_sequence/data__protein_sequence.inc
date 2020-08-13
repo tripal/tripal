@@ -93,7 +93,7 @@ class data__protein_sequence extends ChadoField {
       WHERE
         FR.object_id = :feature_id and
         CVT.name = 'polypeptide' and
-        RCVT.name = 'derives_from'
+        (RCVT.name = 'derives_from' or RCVT.name = 'part_of')
       ORDER BY FR.rank ASC
     ";
     $proteins = chado_query($sql, [':feature_id' => $feature->feature_id]);
