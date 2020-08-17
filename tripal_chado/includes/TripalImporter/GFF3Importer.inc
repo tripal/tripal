@@ -634,13 +634,16 @@ class GFF3Importer extends TripalImporter {
     $this->logMessage("Step 4: Loading feature locations...                  ");
     $this->loadFeatureLocs();
 
-    $this->logMessage("Step 5: Loading features properties...                ");
+    $this->logMessage("Step 5: Loading features Derives_from (gene/CDS relationships)...");
+    $this->loadDerivesFroms();
+
+    $this->logMessage("Step 6: Loading features properties...                ");
     $this->loadProperties();
 
-    $this->logMessage("Step 6: Loading features synonyms (aliases)...        ");
+    $this->logMessage("Step 7: Loading features synonyms (aliases)...        ");
     $this->loadAliases();
 
-    $this->logMessage("Step 7: Loading features cross references...          ");
+    $this->logMessage("Step 8: Loading features cross references...          ");
     $this->loadDbxrefs();
 
   }
@@ -888,6 +891,7 @@ class GFF3Importer extends TripalImporter {
     $attr_others = [];
     $attr_aliases = [];
     $attr_dbxref = [];
+    $attr_derives = [];
     foreach ($attrs as $attr) {
       $attr = rtrim($attr);
       $attr = ltrim($attr);
@@ -925,6 +929,9 @@ class GFF3Importer extends TripalImporter {
       }
       elseif (strcmp($tag_name, 'Dbxref') == 0) {
         $attr_dbxref = array_merge($attr_dbxref, $tags[$tag_name]);
+      }
+      elseif (strcmp($tag_name, 'Derives_from') == 0) {
+        $attr_derives = array_merge($attr_derives, $tags[$tag_name]);
       }
       // Get the list of non-reserved attributes.
       elseif (strcmp($tag_name, 'Name') !=0 and strcmp($tag_name, 'ID') !=0 and
@@ -966,6 +973,15 @@ class GFF3Importer extends TripalImporter {
       'db' => 'GFF_source',
       'accession' => $ret['source'],
     );
+
+    $ret['derives_from'] = $attr_derives;
+    if (count($ret['derives_from']) > 1) {
+      throw new Exception(t('Each feature can only have one "Derives_from" attribute. The feature %uniquename has more than one: %derives',
+        [
+          '%uniquename' => $ret['uniquename'],
+          '%derives' => $ret['derives_from'],
+        ]));
+    }
 
     // Now add all of the attributes into the return array.
     foreach ($tags as $key => $value) {
@@ -1483,6 +1499,113 @@ class GFF3Importer extends TripalImporter {
         // Perform the actual insertion.
         $fdbx_sql = $init_fdbx_sql . implode(', ', $batch_pairs);
         $last_id = chado_query($fdbx_sql, array(), array('return' => Database::RETURN_INSERT_ID));
+      }
+
+      $this->setItemsHandled($batch_num);
+    }
+  }
+
+  /**
+   *
+   */
+  private function loadDerivesFroms() {
+    $batch_size = 1000;
+    $num_features = count(array_keys($this->features));
+    $num_batches = (int) ($num_features / $batch_size) + 1;
+
+    $this->setItemsHandled(0);
+    $this->setTotalItems($num_batches);
+
+    $init_sql = "
+      INSERT INTO {feature_relationship}
+        (subject_id, object_id, type_id, rank)
+      VALUES\n";
+
+    $count = 0;
+    $batch_num = 1;
+    $rows = [];
+    $args = [];
+    $derives_id = $this->getCvtermID('derives_from');
+
+    foreach ($this->features as $uniquename => $subject) {
+      if (!$this->doesFeatureAlreadyExist($subject)) {
+        $count++;
+
+        $this->ensureFeatureIsLoaded($subject);
+        if (!empty($subject['derives_from'])) {
+
+          $object = $subject['derives_from'][0];
+          if (array_key_exists($object, $this->features)) {
+            $this->ensureFeatureIsLoaded($this->features[$object]);
+            $object_id = $this->features[$object]['feature_id'];
+          }
+          elseif (array_key_exists($object, $this->landmarks)) {
+            $this->ensureFeatureIsLoaded($this->landmarks[$object]);
+            $object_id = $this->landmarks[$object]['feature_id'];
+          }
+          else {
+            // Derives_from cannot be found in either features or landmarks, so
+            // we need to get the feature id from the database if it exists.
+            $result = chado_select_record('feature', ['type_id'], [
+              'organism_id' => $subject['organism_id'],
+              'uniquename' => $object,
+            ]);
+
+            if (count($result) > 1) {
+              $this->logMessage('Cannot find feature type for "%object" in derives_from relationship. Multiple matching features exist with this uniquename.',
+                ['%object' => $object], TRIPAL_WARNING);
+              continue;
+            }
+            elseif (count($result) == 0) {
+              $this->logMessage('Cannot find feature type for "%object" in derives_from relationship.',
+                ['%object' => $object], TRIPAL_WARNING);
+              continue;
+            }
+
+            $type_id = $result->type_id;
+            $ofeature = chado_select_record('feature', ['feature_id'], [
+              'organism_id' => $subject['organism_id'],
+              'uniquename' => $object,
+              'type_id' => $type_id,
+            ]);
+            if (count($ofeature) == 0) {
+              $this->logMessage("Could not add 'Derives_from' relationship for %uniquename and %object. Object feature, '%object', cannot be found.",
+                [
+                  '%uniquename' => $uniquename,
+                  '%object' => $object,
+                ], TRIPAL_ERROR);
+              continue;
+            }
+
+            $object_id = $ofeature[0]->feature_id;
+          }
+
+          $rows[] = "(:subject_id_$count, :object_id_$count, $derives_id, 0)";
+          $args[":subject_id_$count"] = $subject['feature_id'];
+          $args[":object_id_$count"] = $object_id;
+
+          if ($count == $batch_size) {
+            $batch_num++;
+
+            if (count($rows) > 0) {
+              $sql = $init_sql . implode(",\n", $rows);
+              chado_query($sql, $args, array('return' => Database::RETURN_INSERT_ID));
+            }
+            $this->setItemsHandled($batch_num);
+
+            $rows = [];
+            $args = [];
+            $count = 0;
+          }
+        }
+      }
+    }
+
+    if ($count > 0) {
+      $batch_num++;
+      if (count($rows) > 0) {
+        $sql = $init_sql . implode(",\n", $rows);
+        chado_query($sql, $args, array('return' => Database::RETURN_INSERT_ID));
       }
 
       $this->setItemsHandled($batch_num);
