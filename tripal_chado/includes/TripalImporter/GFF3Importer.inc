@@ -1544,7 +1544,7 @@ class GFF3Importer extends TripalImporter {
           // Insert the batch.
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
-          //$last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
+          $last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
           $this->setItemsHandled($batch_num);
           $batch_num++;
 
