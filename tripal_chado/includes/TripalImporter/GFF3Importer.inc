@@ -2277,7 +2277,7 @@ class GFF3Importer extends TripalImporter {
    */
   private function getCvtermID($type, $cv_id = NULL, $is_prop_type = FALSE) {
     if (!isset($cv_id)) {
-      $cv_id = $this->sequence_cv_id;
+      $cv_id = $this->feature_cv->getValue('cv_id');
     }
     if ($is_prop_type and array_key_exists($type, $this->featureprop_cvterm_lookup)) {
       return $this->featureprop_cvterm_lookup[$type];
