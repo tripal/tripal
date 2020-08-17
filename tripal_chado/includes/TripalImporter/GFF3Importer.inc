@@ -1532,7 +1532,7 @@ class GFF3Importer extends TripalImporter {
         $args[":srcfeature_id_$i"] = $this->landmarks[$feature['landmark']]['feature_id'];
         $args[":feature_id_$i"] = $feature['feature_id'];
         $args[":fmin_$i"] = $feature['start'];
-        $args[":fmax_$i"] = $feature['end'];
+        $args[":fmax_$i"] = $feature['stop'];
         $args[":strand_$i"] = $feature['strand'];
         $args[":phase_$i"] = $feature['phase'] ? $feature['phase'] : NULL;
         $args[":rank_$i"] = $rank;
