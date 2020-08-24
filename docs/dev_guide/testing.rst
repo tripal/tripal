@@ -11,3 +11,14 @@ Additional Resources:
  - `Official Drupal 8: PHPUnit Browser test tutorial <https://www.drupal.org/docs/testing/phpunit-in-drupal/phpunit-browser-test-tutorial>`_
  - `Drupal 8: Writing Your First Unit Test With PHPUnit <https://www.axelerant.com/resources/team-blog/drupal-8-writing-your-first-unit-test-with-phpunit>`_
  - `Writing Simple (PHPUnit) Tests for Your D8 module <https://www.mediacurrent.com/blog/writing-simple-phpunit-tests-your-d8-module/>`_
+
+How run automated tests locally
+---------------------------------
+
+See the `Drupal "Running PHPUnit tests" guide <https://www.drupal.org/node/2116263>`_ for instructions on running tests on your local environment. In order to ensure our Tripal functional testing is fully bootstrapped, tests should be run from Drupal core.
+
+If you are using the docker distributed with this module, then you can run tests using:
+
+.. code:: bash
+
+  docker-compose exec drupal drupal9/vendor/bin/phpunit --config drupal9/web/core drupal9/web/modules/t4d8

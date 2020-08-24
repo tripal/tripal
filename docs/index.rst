@@ -12,5 +12,6 @@ This documentation is meant to guide users, admin and developers in the usage an
    :maxdepth: 2
    :caption: Contents:
 
+   install
    dev_guide
    contributing
