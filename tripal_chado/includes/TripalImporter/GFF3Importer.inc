@@ -646,6 +646,11 @@ class GFF3Importer extends TripalImporter {
     $this->logMessage("Step 8: Loading features cross references...          ");
     $this->loadDbxrefs();
 
+    if (!empty($this->residue_index)) {
+      $this->logMessage("Step 9: Loading residues from FASTA...                ");
+      $this->loadFastas();
+    }
+
   }
 
   /**
@@ -1011,8 +1016,72 @@ class GFF3Importer extends TripalImporter {
       // Get the ID and the current file pointer and store that for later.
       if (preg_match('/^>/', $line)) {
         $id = preg_replace('/^>([^\s]+).*$/', '\1', $line);
-        $this->residue_index[$id] = ftell($this->gff_file_h);
+        $this->residue_index[trim($id)] = ftell($this->gff_file_h);
       }
+    }
+  }
+
+  /**
+   * Loads the actual residue information from the FASTA section of the file.
+   */
+  private function loadFastas() {
+
+    $num_residues = count(array_keys($this->residue_index));
+
+    $this->setItemsHandled(0);
+    $this->setTotalItems($num_residues);
+
+    $count = 0;
+
+    foreach ($this->residue_index as $uniquename => $offset) {
+      $is_landmark = FALSE;
+      if (!(array_key_exists($uniquename, $this->features) and $this->features[$uniquename]) and !(array_key_exists($uniquename, $this->landmarks) and $this->landmarks[$uniquename])) {
+        $this->logMessage('Cannot find feature to assign FASTA sequence: %uname.',
+          ['%uname' => $uniquename], TRIPAL_WARNING);
+        $count++;
+        continue;
+      }
+
+      if (array_key_exists($uniquename, $this->features)) {
+        $feature = $this->features[$uniquename];
+      }
+      else {
+        $feature = $this->landmarks[$uniquename];
+        $is_landmark = TRUE;
+      }
+
+      $this->ensureFeatureIsLoaded($feature);
+      $id = $feature['feature_id'];
+
+      $residues = [];
+      fseek($this->gff_file_h, $offset);
+      while ($line = fgets($this->gff_file_h)) {
+        if (preg_match('/^>/', $line)) {
+          break;
+        }
+        $residues[] = trim($line);
+      }
+
+      $residues = implode('', $residues);
+      $feature['residues'] = $residues;
+
+      if (!$is_landmark) {
+        $this->features[$uniquename] = $feature;
+      }
+      else {
+        $this->landmarks[$uniquename] = $feature;
+      }
+
+      chado_update_record('feature', array(
+        'feature_id' => $id,
+      ), array(
+        'residues' => $residues,
+        'seqlen' => strlen($residues),
+        'md5checksum' => md5($residues),
+      ));
+
+      $count++;
+      $this->setItemsHandled($count);
     }
   }
 
