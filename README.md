@@ -11,79 +11,6 @@ This project acts as the home of Tripal 4 development. Once Tripal 4 is stable, 
 
 **All PRs should be made against branch 9.x-4.x which is compatible with Drupal 8.8.x, 8.9.x and 9.0.x**
 
-## Required Dependencies
-* Drupal:
-  * Drupal 8.8.x or 9.0.x
-  * Drupal core modules: Search, Path, View, Entity, and PHP modules.
-* PostgreSQL
-* PHP 7.3+
-* UNIX/Linux
-
-## Traditional Installation
-
-1. Install [Drupal](https://www.drupal.org/docs/develop/using-composer/using-composer-to-install-drupal-and-manage-dependencies).
-2. Clone this repository in your `web/modules` directory.
-3. Enable Tripal in your site using the Administration Toolbar > Extend
-4. Use drush to rebuild the cache (`drush cache-rebuild`) so Tripal menu items appear correctly.
-
-## Docker (DEVELOPMENT ONLY)
-
-Docker is the fastest way to get started with Tripal 4 development. Production containers are not available yet.  
-
-### Docker Compose
-
-Docker compose is great for quickly setting up a test environment but may not have long term storage. This option is great for exploring the current version but may no be ideal for long term development.
-
-**Setup**
-
-- Copy tripaldocker/dev/.env.example to tripaldocker/dev/.env
-- Run `docker-compose up -d`
-- Next start the database using `docker-compose drupal service postgresql start`
-- Visit localhost:9000/drupal8/web
-- The Drupal site will already be installed and Tripal + Tripal Chado will be enabled.
-
-**Usage**
-- To access the drupal container run:
-  - `docker-compose exec drupal bash`
-- To access the database using psql run:
-  - `docker-compose exec drupal psql -q --dbname=drupal8_dev --host=localhost --port=5432 --username=drupaladmin`
-  - The password is `drupal8developmentonlylocal`
-- To run drush commands:
-  - `docker-compose exec drupal drupal8/vendor/bin/drush [YOUR OPTIONS]`
-- To run unit tests:
-  - `docker-compose exec drupal drupal8/vendor/bin/phpunit --config drupal8/web/core drupal8/web/modules/t4d8`
-
-### Native Docker
-
-This is the typical way to interact with docker and involves using an image to create a container for specific work. This ensures long term storage and is ideal for long term development.
-
-**Setup**
-
- - Pull the docker image onto your computer: `docker pull laceysanderson/tripal4dev:tripal4-d8.8.x`
- - Clone a local copy of tripal 4: `https://github.com/tripal/t4d8.git`
- - Run the image mapping the local copy of tripal 4 into the container for easy updates and port 80 in the docker container to port 9001 on your local computer: 
-```
-docker run --publish=9001:80 -v `pwd`/t4d8:/var/www/html/drupal8/web/modules/t4d8 --name=tripal4dev -tid laceysanderson/tripal4dev:tripal4-d8.8.x
-```
- - Start the database server: `docker exec tripal4dev service postgresql start`
- - Visit the website at localhost:9001/drupal8/web. The admin user is `drupaladmin` and the password is `some_admin_password`
-
-**Usage**
-
-- To access the drupal container run:
-  - `docker exec -it tripal4dev bash`
-- To access the database run:
-  - `docker exec -it tripal4dev drupal8/vendor/bin/drush sql:cli`
-  - The password is `drupal8developmentonlylocal`
-- To run drush commands:
-  - `docker exec tripal4dev drupal8/vendor/bin/drush [YOUR OPTIONS]`
-- To run unit tests:
-  - `docker exec tripal4dev drupal8/vendor/bin/phpunit --config drupal8/web/core drupal8/web/modules/t4d8`
-- To update drupal run:
-  - `docker exec -w /var/www/html/drupal8 tripal4dev composer up`
-- To download a module provided by the Drupal package manager:
-  - `docker exec -w /var/www/html/drupal8 tripal4dev composer require drupal/devel`
-
 ## Development Testing
 
 See the [Drupal "Running PHPUnit tests" guide](https://www.drupal.org/node/2116263) for instructions on running tests on your local environment. In order to ensure our Tripal functional testing is fully bootstrapped, tests should be run from Drupal core.
@@ -96,6 +23,8 @@ docker-compose exec drupal drupal9/vendor/bin/phpunit --config drupal9/web/core 
 ## Documentation
 
 [Documentation for Tripal 4 has begun on ReadtheDocs](https://tripal4.readthedocs.io/en/latest/dev_guide.html). **Please keep in mind the URL for this documentation will change once Tripal 4 is released.**
+
+  - [Installation](https://tripal4.readthedocs.io/en/latest/install.rst)
 
 # Upgrade Progress
 
