@@ -34,3 +34,9 @@ This upgrade to Drupal 8 is a community effort. As such, we NEED YOUR HELP!
     - Just comment on the issue if you need help designing tests
     - If you need help implementing tests see our [documentation](https://tripal4.readthedocs.io/en/latest/dev_guide/testing.html)
   - If more documentation would be helpful, [let us know what is missing here](https://github.com/tripal/t4d8/issues/16) and we'll add it
+
+# Timeline
+
+We are currently running **approximately one month behind schedule -we need your help!** We still plan to release the Tripal 4 alpha on time although it may not include Data Importers.
+
+[![timeline](docs/Tripal4-Upgrade-Timeline.png)](https://time.graphics/line/387503)
