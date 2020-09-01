@@ -237,6 +237,7 @@ class sbo__relationship extends ChadoField {
     // Determine the name and type columns.
     $this->base_name_columns = [];
     $this->base_type_column = 'table_name';
+    //dpm($instance['settings']['chado_table']);
     switch ($instance['settings']['chado_table']) {
 
       // TODO: note that Chado 1.4 will add types to, at least,
@@ -266,6 +267,12 @@ class sbo__relationship extends ChadoField {
         $this->base_name_columns = ['name'];
         $this->base_type_column = 'type_id';
         break;
+
+      case 'feature_relationship':
+        $this->base_name_columns = ['uniquename'];
+        $this->base_type_column = 'type_id';
+      break;
+
       default:
         // @todo update this to use the schema.
         $this->base_name_columns = ['name'];

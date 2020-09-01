@@ -32,7 +32,7 @@ class so__transcript_formatter extends ChadoFieldFormatter {
       $loc = $transcript['SO:0000735'];
       $type = $transcript['rdfs:type'];
 
-      // Add a link i there is an entity.
+      // Add a link if there is an entity.
       if (array_key_exists('entity', $item['value']) and $item['value']['entity']) {
         list($entity_type, $entity_id) = explode(':', $item['value']['entity']);
         $feature_name = l($feature_name, "bio_data/" . $entity_id, ['attributes' => ['target' => "_blank"]]);
