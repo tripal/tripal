@@ -4,7 +4,7 @@ namespace Drupal\tripal\Form;
 
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Messenger\MessengerInterface;
+use Drupal\Core\Messenger\MessengerTrait;
 
 /**
  * Form controller for Tripal Content edit forms.
@@ -12,6 +12,7 @@ use Drupal\Core\Messenger\MessengerInterface;
  * @ingroup tripal
  */
 class TripalEntityForm extends ContentEntityForm {
+  use MessengerTrait;
 
   /**
    * {@inheritdoc}
@@ -43,13 +44,13 @@ class TripalEntityForm extends ContentEntityForm {
 
     switch ($status) {
       case SAVED_NEW:
-        $this->messenger->addMessage($this->t('Created the %label.', [
+        $this->messenger()->addMessage($this->t('Created the %label.', [
           '%label' => $bundle_entity->label(),
         ]));
         break;
 
       default:
-        $this->messenger->addMessage($this->t('Saved the %label.', [
+        $this->messenger()->addMessage($this->t('Saved the %label.', [
           '%label' => $bundle_entity->label(),
         ]));
     }
