@@ -19,7 +19,7 @@ use Drupal\Core\Form\FormStateInterface;
  *   }
  * )
  */
-class rdfs__type_formatter extends FormatterBase {
+class RDFSTypeDefaultFormatter extends FormatterBase {
 
   /**
    * {@inheritdoc}

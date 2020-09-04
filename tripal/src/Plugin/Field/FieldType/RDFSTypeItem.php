@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal\Plugin\Field\FieldType;
 
+use Drupal\tripal\Field\TripalFieldItemBase;
 use Drupal\Component\Utility\Random;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemBase;
@@ -23,7 +24,7 @@ use Drupal\tripal\Entity\TripalEntityType;
  *   default_formatter = "rdfs__type_formatter"
  * )
  */
-class rdfs__type extends FieldItemBase {
+class RDFSTypeItem extends TripalFieldItemBase {
 
   /**
    * {@inheritdoc}
