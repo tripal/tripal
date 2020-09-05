@@ -29,6 +29,33 @@ class RDFSTypeItem extends TripalFieldItemBase {
   /**
    * {@inheritdoc}
    */
+  public static function defaultFieldSettings() {
+    $settings = parent::defaultFieldSettings();
+
+    // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
+    $settings['term_vocabulary'] = 'rdfs';
+    // The name of the term.
+    $settings['term_name'] = 'type';
+    // The unique ID (i.e. accession) of the term.
+    $settings['term_accession'] = 'type';
+    // Set to TRUE if the site admin is not allowed to change the term
+    // type, otherwise the admin can change the term mapped to a field.
+    $settings['term_fixed'] = TRUE;
+    // Set to TRUE if the field should be automatically attached to an entity
+    // when it is loaded. Otherwise, the callee must attach the field
+    // manually.  This is useful to prevent really large fields from slowing
+    // down page loads.  However, if the content type display is set to
+    // "Hide empty fields" then this has no effect as all fields must be
+    // attached to determine which are empty.  It should always work with
+    // web services.
+    $settings['auto_attach'] = TRUE;
+
+    return $settings;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function applyDefaultValue($notify = TRUE) {
 
     // The default should be the label of the content type.
