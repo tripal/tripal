@@ -266,7 +266,6 @@ class sbo__relationship extends ChadoField {
         $this->base_name_columns = ['name'];
         $this->base_type_column = 'type_id';
         break;
-
       default:
         // @todo update this to use the schema.
         $this->base_name_columns = ['name'];
