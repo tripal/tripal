@@ -20,10 +20,13 @@ class ChadoOrganismDataDefinition extends ChadoComplexDataDefinition {
 
 
   public function getPropertyDefinitions() {
+    // TODO: Change the values in the properties to be CV terms
     if (!isset($this->propertyDefinitions)) {
       $this->propertyDefinitions['scientific_name'] = DataDefinition::create('string')
         ->setLabel('Scientific Name')
         ->setComputed(TRUE)
+        // TODO: move these from settings to ->setSearchable(), ->setSearchOperations(), ->setSortable()
+        // in a new TripalComplexDataDefinition class.
         ->setSettings([
           'searchable' => TRUE,
           'operations' => ['eq', 'ne', 'contains', 'starts'],
