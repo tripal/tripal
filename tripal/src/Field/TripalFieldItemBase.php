@@ -8,6 +8,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\TypedData\DataDefinitionInterface;
 use Drupal\Core\TypedData\Plugin\DataType\Map;
 use Drupal\Core\TypedData\TypedDataInterface;
+use Drupal\Core\Messenger\MessengerTrait;
 
 
 /**
@@ -19,6 +20,7 @@ use Drupal\Core\TypedData\TypedDataInterface;
  */
 
 abstract class TripalFieldItemBase extends FieldItemBase {
+  use MessengerTrait;
 
   /**
    * {@inheritdoc}
@@ -51,22 +53,32 @@ abstract class TripalFieldItemBase extends FieldItemBase {
    */
   public function fieldSettingsForm(array $form, FormStateInterface $form_state) {
     $element = [];
-
     $settings = $this->getSettings();
 
     // Get the term for this instance.
     $vocabulary = $settings['term_vocabulary'];
     $accession = $settings['term_accession'];
     $term_name = $settings['term_name'];
-    //$term = tripal_get_term_details($vocabulary, $accession);
-    //dpm($term);
+    $term_fixed = $settings['term_fixed'];
+    $term = tripal_get_term_details($vocabulary, $accession);
 
-    $vocab_name = 'obi'; // $term['vocabulary']['name']
-    $vocab_description = 'The Ontology for Biomedical Investigation.'; // $term['vocabulary']['description']
-    $term_fixed = FALSE; // $instance['settings']['term_fixed']
-    $term_name = 'organism'; // $term['name']
-    $term_def = 'A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.'; // $term['definition']
+    if (is_object($term)) {
+      $vocab_name = $term['vocabulary']['name'];
+      $vocab_description = $term['vocabulary']['description'];
+      $term_name = $term['name'];
+      $term_def = $term['definition'];
+    }
+    else {
+      $vocab_name = 'UKNOWN';
+      $vocab_description = 'UKNOWN';
+      $term_name = 'UKNOWN';
+      $term_def = 'UKNOWN';
 
+      $this->messenger()->addWarning($this->t(
+        'The term, %accession, does not yet exist for this field.', [
+        '%accession' => $vocabulary . ':' . $accession,
+      ]));
+    }
     // Construct a table for the vocabulary information.
     $headers = [];
     $rows = [];
