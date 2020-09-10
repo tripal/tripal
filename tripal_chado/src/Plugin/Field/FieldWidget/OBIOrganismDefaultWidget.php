@@ -28,7 +28,7 @@ class OBIOrganismDefaultWidget extends WidgetBase {
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
 
-    $settings = $this->getSettings();
+    $settings = $this->getFieldSettings();
 
     $field_table = $settings['chado_table'];
     $field_column = $settings['chado_column'];
@@ -50,10 +50,8 @@ class OBIOrganismDefaultWidget extends WidgetBase {
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     ];
-    // @TODO: the chado_get_organism_select_options isn't yet implmeented.
-    //$options = chado_get_organism_select_options(FALSE);
-    $options = [];
-    $widget[$linker_field] = [
+    $options = chado_get_organism_select_options(FALSE);
+    $widget['record_id'] = [
       '#type' => 'select',
       '#title' => $element['#title'],
       '#description' => $element['#description'],
