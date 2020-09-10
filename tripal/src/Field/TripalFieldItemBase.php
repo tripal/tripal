@@ -27,12 +27,23 @@ abstract class TripalFieldItemBase extends FieldItemBase {
    */
   public static function defaultFieldSettings() {
     $settings = [
+      // -- Define the Vocabulary.
       // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
       'term_vocabulary' => 'schema',
+      // The full name of the vocabulary.
+      'vocab_name' => 'schema',
+      // The description of the vocabulary.
+      'vocab_description' => 'A set of types, each associated with a set of properties. The types are arranged in a hierarchy.',
+
+      // -- Define the Vocabulary Term.
       // The name of the term.
       'term_name' => 'Thing',
       // The unique ID (i.e. accession) of the term.
       'term_accession' => 'Thing',
+      // The definition of the term.
+      'term_definition' => 'The most generic type of item.',
+
+      // -- Additional Settings.
       // Set to TRUE if the site admin is not allowed to change the term
       // type, otherwise the admin can change the term mapped to a field.
       'term_fixed' => FALSE,
@@ -49,36 +60,51 @@ abstract class TripalFieldItemBase extends FieldItemBase {
   }
 
   /**
+   * Save the default term associated with this field.
+   */
+  public function saveDefaultTerm() {
+    $settings = $this->getSettings();
+
+    $term = tripal_get_term_details($settings['term_vocabulary'], $settings['term_accession']);
+    if (is_array($term) AND isset($term['TripalTerm'])) {
+      return $term['TripalTerm'];
+    }
+    else {
+      $vocab = \Drupal\tripal\Entity\TripalVocab::create();
+      $vocab->setLabel($settings['term_vocabulary']);
+      $vocab->setName($settings['vocab_name']);
+      $vocab->setDescription($settings['vocab_description']);
+      $vocab->save();
+      $vocab_id = $vocab->id();
+      if (!$vocab_id) {
+        return FALSE;
+      }
+
+      $term = \Drupal\tripal\Entity\TripalTerm::create();
+      $term->setVocabID($vocab->id());
+      $term->setAccession($settings['term_accession']);
+      $term->setName($settings['term_name']);
+      $term->setDefinition($settings['term_definition']);
+      $term->save();
+      return $term;
+    }
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function fieldSettingsForm(array $form, FormStateInterface $form_state) {
     $element = [];
     $settings = $this->getSettings();
+    $term_fixed = $settings['term_fixed'];
 
     // Get the term for this instance.
-    $vocabulary = $settings['term_vocabulary'];
-    $accession = $settings['term_accession'];
-    $term_name = $settings['term_name'];
-    $term_fixed = $settings['term_fixed'];
-    $term = tripal_get_term_details($vocabulary, $accession);
-
-    if (is_object($term)) {
-      $vocab_name = $term['vocabulary']['name'];
-      $vocab_description = $term['vocabulary']['description'];
-      $term_name = $term['name'];
-      $term_def = $term['definition'];
+    $term = $this->saveDefaultTerm();
+    $vocab = $term->getVocab();
+    if (!is_object($term) OR !is_object($vocab)) {
+      // TODO: Don't do the rest of the form!!!
     }
-    else {
-      $vocab_name = 'UKNOWN';
-      $vocab_description = 'UKNOWN';
-      $term_name = 'UKNOWN';
-      $term_def = 'UKNOWN';
 
-      $this->messenger()->addWarning($this->t(
-        'The term, %accession, does not yet exist for this field.', [
-        '%accession' => $vocabulary . ':' . $accession,
-      ]));
-    }
     // Construct a table for the vocabulary information.
     $headers = [];
     $rows = [];
@@ -88,7 +114,7 @@ abstract class TripalFieldItemBase extends FieldItemBase {
         'header' => TRUE,
         'width' => '20%',
       ],
-      $vocab_name . ' (' . $vocabulary . ') ' . $vocab_description,
+      $vocab->getName() . ' (' . $vocab->getLabel() . ') ' . $vocab->getDescription(),
     ];
     $rows[] = [
       [
@@ -96,7 +122,7 @@ abstract class TripalFieldItemBase extends FieldItemBase {
         'header' => TRUE,
         'width' => '20%',
       ],
-      $vocabulary . ':' . $accession,
+      $vocab->getLabel() . ':' . $term->getAccession(),
     ];
     $rows[] = [
       [
@@ -104,7 +130,7 @@ abstract class TripalFieldItemBase extends FieldItemBase {
         'header' => TRUE,
         'width' => '20%',
       ],
-      $term_name,
+      $term->getName(),
     ];
     $rows[] = [
       [
@@ -112,20 +138,20 @@ abstract class TripalFieldItemBase extends FieldItemBase {
         'header' => TRUE,
         'width' => '20%',
       ],
-      $term_def,
+      $term->getDefinition(),
     ];
 
     $element['term_vocabulary'] = [
       '#type' => 'value',
-      '#value' => $vocabulary,
+      '#value' => $vocab->getLabel(),
     ];
     $element['term_name'] = [
       '#type' => 'value',
-      '#value' => $term_name,
+      '#value' => $term->getName(),
     ];
     $element['term_accession'] = [
       '#type' => 'value',
-      '#value' => $accession,
+      '#value' => $term->getAccession(),
     ];
     $description = t('All fields attached to a Tripal-based content type must ' .
         'be associated with a controlled vocabulary term.  Please use caution ' .

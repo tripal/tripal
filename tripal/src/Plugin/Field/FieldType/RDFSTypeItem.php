@@ -32,12 +32,23 @@ class RDFSTypeItem extends TripalFieldItemBase {
   public static function defaultFieldSettings() {
     $settings = parent::defaultFieldSettings();
 
+    // -- Define the Vocabulary.
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
     $settings['term_vocabulary'] = 'rdfs';
+    // The full name of the vocabulary.
+    $settings['vocab_name'] = 'RDF Schema 1.1';
+    // The description of the vocabulary.
+    $settings['vocab_description'] = 'RDF Schema provides a data-modelling vocabulary for RDF data. RDF Schema is an extension of the basic RDF vocabulary.';
+
+    // -- Define the Vocabulary Term.
     // The name of the term.
     $settings['term_name'] = 'type';
     // The unique ID (i.e. accession) of the term.
     $settings['term_accession'] = 'type';
+    // The definition of the term.
+    $settings['term_definition'] = 'rdf:type is an instance of rdf:Property that is used to state that a resource is an instance of a class.';
+
+    // -- Additional Settings.
     // Set to TRUE if the site admin is not allowed to change the term
     // type, otherwise the admin can change the term mapped to a field.
     $settings['term_fixed'] = TRUE;

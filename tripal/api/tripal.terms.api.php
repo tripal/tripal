@@ -43,7 +43,7 @@ function tripal_get_term_details($vocabulary, $accession) {
 	$query = \Drupal::entityQuery('tripal_vocab');
 	$query->condition('vocabulary', $vocabulary);
 	$vocab_ids = $query->execute();
-	if (!is_array($term_ids) OR empty($term_ids)) {
+	if (!is_array($vocab_ids) OR empty($vocab_ids)) {
 		return NULL;
 	}
 
