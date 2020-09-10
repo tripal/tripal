@@ -18,7 +18,7 @@ use Drupal\Core\Form\FormStateInterface;
  *   }
  * )
  */
-class rdfs__type_widget extends WidgetBase {
+class RDFSTypeDefaultWidget extends WidgetBase {
 
   /**
    * {@inheritdoc}

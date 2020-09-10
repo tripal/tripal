@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal\Plugin\Field\FieldType;
 
+use Drupal\tripal\Field\TripalFieldItemBase;
 use Drupal\Component\Utility\Random;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemBase;
@@ -23,7 +24,45 @@ use Drupal\tripal\Entity\TripalEntityType;
  *   default_formatter = "rdfs__type_formatter"
  * )
  */
-class rdfs__type extends FieldItemBase {
+class RDFSTypeItem extends TripalFieldItemBase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultFieldSettings() {
+    $settings = parent::defaultFieldSettings();
+
+    // -- Define the Vocabulary.
+    // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
+    $settings['term_vocabulary'] = 'rdfs';
+    // The full name of the vocabulary.
+    $settings['vocab_name'] = 'RDF Schema 1.1';
+    // The description of the vocabulary.
+    $settings['vocab_description'] = 'RDF Schema provides a data-modelling vocabulary for RDF data. RDF Schema is an extension of the basic RDF vocabulary.';
+
+    // -- Define the Vocabulary Term.
+    // The name of the term.
+    $settings['term_name'] = 'type';
+    // The unique ID (i.e. accession) of the term.
+    $settings['term_accession'] = 'type';
+    // The definition of the term.
+    $settings['term_definition'] = 'rdf:type is an instance of rdf:Property that is used to state that a resource is an instance of a class.';
+
+    // -- Additional Settings.
+    // Set to TRUE if the site admin is not allowed to change the term
+    // type, otherwise the admin can change the term mapped to a field.
+    $settings['term_fixed'] = TRUE;
+    // Set to TRUE if the field should be automatically attached to an entity
+    // when it is loaded. Otherwise, the callee must attach the field
+    // manually.  This is useful to prevent really large fields from slowing
+    // down page loads.  However, if the content type display is set to
+    // "Hide empty fields" then this has no effect as all fields must be
+    // attached to determine which are empty.  It should always work with
+    // web services.
+    $settings['auto_attach'] = TRUE;
+
+    return $settings;
+  }
 
   /**
    * {@inheritdoc}
