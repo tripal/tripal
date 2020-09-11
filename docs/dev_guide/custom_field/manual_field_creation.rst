@@ -113,7 +113,7 @@ Sometimes a field is meant to provide a visualization or some other functionalit
 
   
   // A boolean specifying that the field will not contain any data. This
-  // should exclude the field from web serivces or downloads.  An example
+  // should exclude the field from web services or downloads.  An example
   // could be a quick search field that appears on the page that redirects
   // the user but otherwise provides no data.
 
@@ -198,7 +198,7 @@ Next, let's initialize our field's value to be empty.  When setting a field valu
     );
 
 
-Notice that our field has some sub elements. The first is 'und'.  This element corresponds to the "language" of the text.  Drupal supports mulitple spoken languages and wants to know the language of text we provide.  For Tripal fields we always use 'und' meaning 'undefined'.   The next element is the delta index number.  Field have a cardinality, or in other words they can have multiple values.  For every value we add we increment that index, always starting at zero.  The last element is our 'value' element and it is here where we put our element. You may notice that our **delta** index is hard coded to 0.  This is because an entity can only always have one organism that it is associated with.  We will never have more than one.
+Notice that our field has some sub elements. The first is 'und'.  This element corresponds to the "language" of the text.  Drupal supports multiple spoken languages and wants to know the language of text we provide.  For Tripal fields we always use 'und' meaning 'undefined'.   The next element is the delta index number.  Field have a cardinality, or in other words they can have multiple values.  For every value we add we increment that index, always starting at zero.  The last element is our 'value' element and it is here where we put our element. You may notice that our **delta** index is hard coded to 0.  This is because an entity can only always have one organism that it is associated with.  We will never have more than one.
 
 Now that we've got some preliminary values and we've initialized our value array we can start adding values!  Before we do though, let's double check that we have a record.  If we don't have a record for this entity, we can't get a value.
 
@@ -412,7 +412,7 @@ The array keys just mentioned fully describe our field to Drupal and Tripal.  Ne
             'required' => FALSE,
           ),
 
-Notice that our field will allow searching, provides a variety of search filter options, is sortable and defines the type as 'xs:string'.  The remaing elements follow the same pattern.  As another example, here is the genus element:
+Notice that our field will allow searching, provides a variety of search filter options, is sortable and defines the type as 'xs:string'.  The remaining elements follow the same pattern.  As another example, here is the genus element:
 
 .. code-block:: php
 
@@ -494,7 +494,7 @@ As described above in the elementInfo function section, some fields and elements
       }
     }
 
-The code above is how the field tells Drupal and Tripal how to find and filter the records that this field corresponds to.  First, we retreive the field alias and operators:and as with the load and elementInfo functions we get the controlled vocabulary terms for our field and field elements:
+The code above is how the field tells Drupal and Tripal how to find and filter the records that this field corresponds to.  First, we retrieve the field alias and operators:and as with the load and elementInfo functions we get the controlled vocabulary terms for our field and field elements:
 
 
 .. code-block:: php

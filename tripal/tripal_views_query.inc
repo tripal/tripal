@@ -112,7 +112,7 @@ class tripal_views_query extends views_plugin_query {
       // For fields compatible with the Tripal storage API, the
       // incoming $field_name is a combination of the entity term ID,
       // followed by the field name and the the sub element string, with
-      // sub elements children separated by a comma.  For non Tripal 
+      // sub elements children separated by a period.  For non Tripal
       // storage API the $field_name is a combination of the table name
       // followed by the table column.  We have to handle both because
       // a TripalEntity can have both types attached.
@@ -121,8 +121,8 @@ class tripal_views_query extends views_plugin_query {
       if (count($elements) > 2) {
         $bundle_term = array_shift($elements);
         $field_name = array_shift($elements);
-        // put the sub elements back together into a string with a 
-        // comma delimeter.
+        $field = field_info_field($field_name);
+        // put the sub elements back together into a string with a comma.
         $element_name = implode(',', $elements);
       }
       if (count($elements) == 2) {
@@ -146,7 +146,7 @@ class tripal_views_query extends views_plugin_query {
         // Construct the field term.
         $field_term = $instance['settings']['term_vocabulary'] . ':' . $instance['settings']['term_accession'];
 
-        // Let's add add on the $field_term to the element_name and add the
+        // Let's add on the $field_term to the element_name and add the
         // query condition.
         if ($element_name) {
           $element_name = $field_term . ',' . $element_name;
