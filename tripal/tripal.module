@@ -763,9 +763,13 @@ function tripal_permission() {
       'description' => t('Allow the user to edit %label content', array('%label' => $bundle->label)),
       'restrict access' => TRUE,
     );
+    $permissions['unpublish ' . $bundle->name] = array(
+      'title' => t('%label: Unpublish Content', array('%label' => $bundle->label)),
+      'description' => t('Allow the user to unpublish %label content. Unpublishing of content removes it from visibility on the site but does not delete the record in the underlying database.', array('%label' => $bundle->label)),
+    );
     $permissions['delete ' . $bundle->name] = array(
       'title' => t('%label: Delete Content', array('%label' => $bundle->label)),
-      'description' => t('Allow the user to delete %label content', array('%label' => $bundle->label)),
+      'description' => t('Allow the user to delete %label content. When content is deleted it is first unpublished and then deleted from the database.', array('%label' => $bundle->label)),
       'restrict access' => TRUE,
     );
   }
@@ -868,6 +872,7 @@ function tripal_admin_paths() {
     $paths = array(
       'bio_data/*/edit' => TRUE,
       'bio_data/*/delete' => TRUE,
+      'bio_data/*/unpublish' => TRUE,
       'bio_data/add' => TRUE,
       'bio_data/add/*' => TRUE,
     );

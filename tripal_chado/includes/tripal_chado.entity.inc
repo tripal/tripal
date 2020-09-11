@@ -147,9 +147,47 @@ function tripal_chado_entity_delete($entity, $type) {
     return;
   }
 
-  // Delete the removed entity from the corresponding chado_bio_data_x table
+  // Remove the base record for this entity from the Chado tables.
   $bundle = $entity->bundle;
-  db_delete("chado_{$bundle}")->condition('entity_id', $entity->id)->execute();
+  if (db_table_exists("chado_{$bundle}")) {
+    $chado_table = $entity->chado_table;
+    $table_def = chado_get_schema($chado_table);
+    $pkey_field = $table_def['primary key'][0];
+    $match = [
+        $pkey_field => $entity->chado_record_id,
+    ];
+
+    // Here we need to set the active database to Chado
+    // because records will cascade delete. If one of the tables that
+    // gets items removed is the featureloc then there will be
+    // errors about undefined PLSQL functions.
+    $previous_db = chado_set_active('chado');
+    try {
+      chado_delete_record($entity->chado_table, $match);
+      chado_set_active($previous_db);
+    } catch (Exception $e) {
+      chado_set_active($previous_db);
+      throw $e;
+    }
+  }
+}
+
+/**
+ *
+ * Implements hook_entity_unpublish().
+ *
+ * This is not a Drupal hook, but one added by Tripal.
+ */
+function tripal_chado_entity_unpublish($entity, $type) {
+  if ($type !== 'TripalEntity') {
+    return;
+  }
+
+  // Remove the entity from the corresponding chado_bio_data_x table
+  $bundle = $entity->bundle;
+  if (db_table_exists("chado_{$bundle}")) {
+    db_delete("chado_{$bundle}")->condition('entity_id', $entity->id)->execute();
+  }
 }
 
 /**
