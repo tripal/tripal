@@ -544,6 +544,7 @@ function tripal_entity_form($form, &$form_state, $term_id = '', $entity = NULL) 
         '#value' => t('Unpublish'),
         '#name' => 'unpublish_data',
         '#weight' => 1002,
+        '#attributes' => ['style' => 'float: right'],
       ];
     }
     // Put the delete button on the far-right so that it's harder
