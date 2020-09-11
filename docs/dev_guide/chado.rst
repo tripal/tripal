@@ -222,8 +222,8 @@ To check the existence of a specific table and column, you can use the following
 
       [ do your query, etc. here ]
 
-    } else { [warn the admin using tripal_repot_error()] }
-  } else { [warn the admin using tripal_repot_error()] }
+    } else { [warn the admin using tripal_report_error()] }
+  } else { [warn the admin using tripal_report_error()] }
 
 Checking the Schema Version
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -56,7 +56,7 @@ Configuring the bundle fields
 
 To begin, let's quickly configure a bundle.  Navigate to the structure of your site and select Analysis (**Admin ->Structure -> Tripal Content -> Analysis -> Manage Fields**).  Scroll to the bottom and add a new field of type File, with a machine name of ``field_fasta_file‎``, and click **Save**. Be sure to change the **Allowed extensions** parameter to accept ``.fasta``, otherwise, it will only allow `.txt` files to be uploaded.  You may also want to increase the file size limit, as the default 2MB can be too small for many FASTA files.
 
-We now have to pick a CV term for our field.  Because we are providing a FASTA file field, we can use a term such as FASTA `(SWO:0000142 <https://www.ebi.ac.uk/ols/ontologies/ero/terms?iri=http%3A%2F%2Fwww.ebi.ac.uk%2Fefo%2Fswo%2FSWO_0000142>`_.  Please see  :ref:`adding_a_cvterm` for help loading a term.  Once the term is in our DB, we can assign it to this field.
+We now have to pick a CV term for our field.  Because we are providing a FASTA file field, we can use a term such as FASTA (`SWO:0000142 <https://www.ebi.ac.uk/ols/ontologies/ero/terms?iri=http%3A%2F%2Fwww.ebi.ac.uk%2Fefo%2Fswo%2FSWO_0000142>`_).  Please see  :ref:`adding_a_cvterm` for help loading a term.  Once the term is in our DB, we can assign it to this field.
 
 
 .. image:: ./exporting_field_settings.1.assign_term.png
