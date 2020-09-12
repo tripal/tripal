@@ -60,9 +60,9 @@ As described in the section titled Tripal Data Structures, fields that are attac
 .. code-block:: php
 
   
-  // Provide a list of instance specific settings. These can be access within
+  // Provide a list of instance specific settings. These can be accessed within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
-  // then Drupal with automatically change these settings for the instance.
+  // then Drupal will automatically change these settings for the instance.
   // It is recommended to put settings at the instance level whenever possible.
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
@@ -121,12 +121,12 @@ Sometimes a field is meant to provide a visualization or some other functionalit
   public static $no_data = FALSE;
 
 
-  .. note::
+.. note::
   Be sure to only set this to TRUE when you are absolutely certain the contents would not be needed in web services.  Tripal was designed so that what appears on the page will always appear in web services.  Aside form the formatting we see on the website, the content should be the same.
 
 Finally, the last item in our Class variables is the **download_formatters**.  Tripal provides an API that allows tools to group entities into data collections.  Data collections are like "baskets" or "shopping carts".   Entities that are in data collections can be downloaded into files.  If your field is compatible with specific file downloaders you can specify those here.  A file downloader is a special TripalFieldDownloader class that "speaks" certain file formats.  Tripal, by default, provides the TripalTabDownloader (for tab-delimited files), the TripalCSVDownloader (for CSV files), a TripalNucFASTADownloader for creating nucleotide FASTA files and a TripalProteinFASTADownloader for protein FASTA files.   If your field is compatible with any of these formatters you can specify them in the following array:
 
-.. .. code-block::
+.. code-block::
 
   // Indicates the download formats for this field.  The list must be the
   // name of a child class of the TripalFieldDownloader.
@@ -494,7 +494,7 @@ As described above in the elementInfo function section, some fields and elements
       }
     }
 
-The code above is how the field tells Drupal and Tripal how to find and filter the records that this field corresponds to.  First, we retrieve the field alias and operators:and as with the load and elementInfo functions we get the controlled vocabulary terms for our field and field elements:
+The code above is how the field tells Drupal and Tripal how to find and filter the records that this field corresponds to.  First, we retrieve the field alias and operators, and as with the load and elementInfo functions we get the controlled vocabulary terms for our field and field elements:
 
 
 .. code-block:: php

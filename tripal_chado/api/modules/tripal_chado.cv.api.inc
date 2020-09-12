@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Provides API functions specificially for managing controlled vocabulary
+ * Provides API functions specifically for managing controlled vocabulary
  * records in Chado.
  *
  * @ingroup tripal_chado
@@ -11,7 +11,7 @@
  * @defgroup tripal_chado_cv_api Chado CV
  * @ingroup tripal_chado_api
  * @{
- * Provides API functions specificially for managing controlled vocabulary
+ * Provides API functions specifically for managing controlled vocabulary
  * records in Chado. Please note that Tripal v3 provides a generic set of
  * API functions for working with controlled vocabularies (CVs). This allows for
  * CVs to be stored using any back-end.  By default CV's continue to be housed

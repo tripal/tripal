@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Provides API functions specificially for managing external database reference
+ * Provides API functions specifically for managing external database reference
  * records in Chado.
  */
 

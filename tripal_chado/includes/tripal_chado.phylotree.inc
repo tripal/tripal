@@ -113,7 +113,7 @@ function tripal_phylogeny_ajax_get_tree_json($phylotree_id)
     // features and organisms with which it is associated.  Each phylonode
     // can be associated with an organism in one of two ways: 1) via a
     // feature linked by the phylonode.feature_id field or 2) via a
-    // a record in the phylonde_organsim table.  Therefore both types of
+    // a record in the phylonde_organism table.  Therefore both types of
     // organism records are returned in the query below, but those
     // retrieved via a FK link on features are prefixed with 'fo_'.
     $sql = "
@@ -241,7 +241,7 @@ function tripal_phylogeny_ajax_get_tree_json($phylotree_id)
     foreach ($phylonodes as $key => &$node) {
       if ($node['parent_phylonode_id'] !== 0) {
         $parent_ref = &$phylonodes[$node['parent_phylonode_id']];
-        // Append node refernce to children.
+        // Append node reference to children.
         $parent_ref['children'][] = &$node;
       } else {
         $root_phylonode_ref = &$node;

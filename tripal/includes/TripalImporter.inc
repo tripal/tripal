@@ -47,7 +47,7 @@ class TripalImporter {
 
   /**
    * If the loader should require an analysis record.  To maintain provenance
-   * we should always indiate where the data we are uploading comes from.
+   * we should always indicate where the data we are uploading comes from.
    * The method that Tripal attempts to use for this by associating upload files
    * with an analysis record.  The analysis record provides the details for
    * how the file was created or obtained. Set this to FALSE if the loader
@@ -108,7 +108,7 @@ class TripalImporter {
 
   /**
    * Be default, all loaders are automaticlly added to the Admin >
-   * Tripal > Data Laders menu.  However, if this loader should be
+   * Tripal > Data Loaders menu.  However, if this loader should be
    * made available via a different menu path, then set it here.  If the
    * value is empty then the path will be the default.
    */
@@ -276,7 +276,7 @@ class TripalImporter {
    * to the job log.
    *
    * @param TripalJob $job
-   *   An instnace of a TripalJob.
+   *   An instance of a TripalJob.
    */
   public function setJob(TripalJob $job) {
     $this->job = $job;

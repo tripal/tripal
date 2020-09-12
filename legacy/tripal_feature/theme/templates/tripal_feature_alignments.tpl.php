@@ -27,7 +27,7 @@
 *
 * Alignment context #2:
 * ---------------------
-* If the feature for this node is the child in the alignment relationsips,
+* If the feature for this node is the child in the alignment relationships,
 * then those alignments are available in this variable:
 * 
 *   $feature->featureloc->feature_id;

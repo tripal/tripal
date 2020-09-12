@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Provides API functions specificially for managing feature
+ * Provides API functions specifically for managing feature
  * records in Chado.
  */
 
@@ -9,7 +9,7 @@
  * @defgroup tripal_organism_api Chado Organism
  * @ingroup tripal_chado_api
  * @{
- * Provides API functions specificially for managing organism
+ * Provides API functions specifically for managing organism
  * records in Chado.
  * @}
  */

@@ -35,7 +35,7 @@ function tripal_genetic_views_default_views() {
 function tripal_genetic_defaultvalue_user_genotypes() {
 
   // As a shortcut, currently I am copying the admin view and then tweaking it
-  // In thie future this should be replaced by a views export
+  // In the future this should be replaced by a views export
   $view = tripal_genetic_defaultviews_admin_genotypes();
 
   // change some view admin stuff

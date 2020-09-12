@@ -563,7 +563,7 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
   if (array_key_exists('pub_id', $schema['fields']) and $table_name != 'pub') {
 
     // Remove the schema__publication added by the
-    // tripal_chado_bunde_instnaces_info_base function.
+    // tripal_chado_bunde_instances_info_base function.
     unset($info['schema__publication']);
 
     $field_name = 'schema__publication_single';
@@ -2062,7 +2062,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
   if (array_key_exists('pub_id', $schema['fields']) and $table_name != 'pub') {
 
     // Remove the schema__publication added by the
-    // tripal_chado_bunde_instnaces_info_base function.
+    // tripal_chado_bunde_instances_info_base function.
     unset($info['schema__publication']);
 
     $field_name = 'schema__publication_single';
@@ -2100,7 +2100,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
 
   if ($table_name == 'assay') {
     // Remove the ncit__operator added by the
-    // tripal_chado_bunde_instnaces_info_base function.
+    // tripal_chado_bunde_instances_info_base function.
     unset($info['ncit__operator']);
 
     $field_name = 'assay__operator_id';

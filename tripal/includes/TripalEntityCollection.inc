@@ -262,7 +262,7 @@ class TripalEntityCollection {
    *
    * @return
    *   An associative array where the key is the TripalFieldDownloader class
-   *   name and the value is the human-readable lable for the formatter.
+   *   name and the value is the human-readable label for the formatter.
    */
   private function setFormatters() {
 
@@ -301,7 +301,7 @@ class TripalEntityCollection {
    *
    * @return
    *   An associative array where the key is the TripalFieldDownloader class
-   *   name and the value is the human-readable lable for the formatter.
+   *   name and the value is the human-readable label for the formatter.
    */
   public function getFormatters() {
     return $this->formatters;

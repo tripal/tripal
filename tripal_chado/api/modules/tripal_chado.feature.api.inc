@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Provides API functions specificially for managing feature
+ * Provides API functions specifically for managing feature
  * records in Chado.
  */
 
@@ -9,7 +9,7 @@
  * @defgroup tripal_feature_api Chado Feature
  * @ingroup tripal_chado_api
  * @{
- * Provides API functions specificially for managing feature
+ * Provides API functions specifically for managing feature
  * records in Chado especially retrieving relationships and sequences derived
  * from relationships and feature alignments.
  * @}
@@ -120,7 +120,7 @@ function chado_reverse_compliment_sequence($sequence) {
  *   sequence_of)
  *      then any sequences that are in relationships of this type with matched
  *      sequences are also included.
- *    - relationship_part: If a relationship is provided in the preceeding
+ *    - relationship_part: If a relationship is provided in the preceding
  *      argument then the rel_part must be either 'object' or 'subject' to
  *      indicate which side of the relationship the matched features belong.
  *
@@ -435,7 +435,7 @@ function chado_get_feature_sequences($feature, $options) {
           }
 
           // Next, if the last sub feature we need to include the downstream
-          // bases. First check if the feature is in teh forward direction or
+          // bases. First check if the feature is in the forward direction or
           // the reverse.
           elseif ($i == $num_children - 1 and $parent->strand >= 0) {  // forward direction
             // -------------------------- ref
@@ -609,7 +609,7 @@ function chado_get_feature_sequences($feature, $options) {
  *   sequence_of)
  *      then any sequences that are in relationships of this type with matched
  *      sequences are also included
- *    - relationship_part: If a relationship is provided in the preceeding
+ *    - relationship_part: If a relationship is provided in the preceding
  *      argument then the rel_part must be either 'object' or 'subject' to
  *      indicate which side of the relationship the matched features belong
  *    - width: Indicate the number of bases to use per line.  A new line will

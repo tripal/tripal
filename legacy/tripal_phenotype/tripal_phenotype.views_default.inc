@@ -35,7 +35,7 @@ function tripal_phenotype_views_default_views() {
 function tripal_phenotype_defaultvalue_user_phenotypes() {
 
   // As a shortcut, currently I am copying the admin view and then tweaking it
-  // In thie future this should be replaced by a views export
+  // In the future this should be replaced by a views export
   $view = tripal_phenotype_defaultview_admin_phenotypes();
 
   // change some view admin stuff

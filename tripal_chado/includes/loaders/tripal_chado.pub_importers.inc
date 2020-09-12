@@ -1107,7 +1107,7 @@ function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE, $job =
  *   $action variable is set to 'skipped'. If the publication already exists
  *   and $update_if_exists is TRUE and if the update was successful then
  *   $action is set to 'updated'.  Otherwise on successful insert the
- *   $action variable is set to 'inserted'.  If the function failes then the
+ *   $action variable is set to 'inserted'.  If the function fails then the
  *   $action variable is set to 'error'
  *
  * @ingroup tripal_pub

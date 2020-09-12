@@ -39,7 +39,7 @@ class TaxonomyImporter extends TripalImporter {
 
   /**
    * If the loader should require an analysis record.  To maintain provenance
-   * we should always indiate where the data we are uploading comes from.
+   * we should always indicate where the data we are uploading comes from.
    * The method that Tripal attempts to use for this by associating upload files
    * with an analysis record.  The analysis record provides the details for
    * how the file was created or obtained. Set this to FALSE if the loader
@@ -584,7 +584,7 @@ class TaxonomyImporter extends TripalImporter {
   private function findOrganism($taxid, $sci_name) {
     $organism = NULL;
 
-    // First check the taxid to see if it's present and assocaited with an
+    // First check the taxid to see if it's present and associated with an
     // organism already.
     $values = [
       'db_id' => [

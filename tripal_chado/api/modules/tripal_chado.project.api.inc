@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Provides API functions specificially for managing project
+ * Provides API functions specifically for managing project
  * records in Chado.
  */
 
@@ -9,7 +9,7 @@
  * @defgroup tripal_project_api Chado Project
  * @ingroup tripal_chado_api
  * @{
- * Provides API functions specificially for managing project
+ * Provides API functions specifically for managing project
  * records in Chado.  The project table of Chado is used for storing a variety
  * of data types besides just projects from a project collection.  Examples of
  * other records commonly stored in the project table are germplasm and
