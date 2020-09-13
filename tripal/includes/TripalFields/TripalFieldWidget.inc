@@ -2,7 +2,7 @@
 
 class TripalFieldWidget {
 
-  // The default lable for this field.
+  // The default label for this field.
   public static $default_label = 'Tripal Field.';
 
   // The list of field types for which this formatter is appropriate.
@@ -158,7 +158,7 @@ class TripalFieldWidget {
    * on other tables not directly associated with the field.
    *
    * An example is the chado.feature_synonym table.  The chado_linker__synonym
-   * field allows the user to provide a brand new synonynm and it must add it
+   * field allows the user to provide a brand new synonym and it must add it
    * to the chado.synonym table prior to the record in the
    * chado.feature_synonym table.  This insert occurs in the widgetFormSubmit
    * function.

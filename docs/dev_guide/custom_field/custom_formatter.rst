@@ -162,7 +162,7 @@ The form shown in the screenshot above is provided by the ``settingsForm()`` fun
   
 The form is typical of any form.  Note, however that the ``#default_value`` is set using the current settings values.
 
-A settings form is useful but it only works when Drupal knows what settings you want for your field.  You must provide the settings names (e.g. "title" and "empty" in this case) when you  attach your field to a given content type (i.e. bundle).  You tell Drupal to attach this field to a content type using the ``hook_bundle_instance_info`` function.  See 
+A settings form is useful but it only works when Drupal knows what settings you want for your field.  You must provide the settings names (e.g. "title" and "empty" in this case) when you  attach your field to a given content type (i.e. bundle).  You tell Drupal to attach this field to a content type using the ``hook_bundle_instances_info`` function.  See 
 the :doc:`create_instance` to learn more about this function.  Briefly, the ``display`` section of the info array for the ``sbo__relationship`` field contains the following settings for the ``display``:
 
 .. code-block:: php

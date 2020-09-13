@@ -127,7 +127,7 @@ function tripal_pub_admin() {
     '#type' => 'select',
     '#title' => t('Publication Type'),
     '#options' => $pub_types,
-    '#description' => t('Please set a default publiation type used for manual entry of a new
+    '#description' => t('Please set a default publication type used for manual entry of a new
       publication.  This is useful in the event that someone is manually adding the same
       publication type repetitively'),
     '#default_value' => $d_type_id,

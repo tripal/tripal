@@ -35,7 +35,7 @@ function tripal_project_views_default_views() {
 function tripal_project_defaultvalue_user_projects() {
 
   // As a shortcut, currently I am copying the admin view and then tweaking it
-  // In thie future this should be replaced by a views export
+  // In the future this should be replaced by a views export
   $view = tripal_project_defaultview_admin_projects();
 
   // change some view admin stuff

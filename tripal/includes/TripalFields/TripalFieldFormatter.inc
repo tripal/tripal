@@ -3,7 +3,7 @@
 class TripalFieldFormatter {
 
   /**
-   * The default lable for this field.
+   * The default label for this field.
    */
   public static $default_label = 'Tripal Field.';
 

@@ -2,7 +2,7 @@
 
 class sbo__database_cross_reference_widget extends ChadoFieldWidget {
 
-  // The default lable for this field.
+  // The default label for this field.
   public static $default_label = 'Cross reference';
 
   // The list of field types for which this formatter is appropriate.

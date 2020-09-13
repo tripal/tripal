@@ -210,7 +210,7 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
       // available to the user to edit--they're fixed.
       $filters = (is_array($this->view->filter)) ? $this->view->filter : array();
       foreach ($filters as $filter_name => $details) {
-         // we only want to inclue non-exposed filters
+         // we only want to include non-exposed filters
          if ($details->options['exposed'] == FALSE) {
             $value = $details->value;
             if (is_array($details->value) AND isset($details->value['value'])) {

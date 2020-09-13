@@ -42,11 +42,11 @@ When the site administrator navigates to **Administer > Structure > Tripal Conte
 
 Programmatically Attaching Fields
 ---------------------------------
-You probably want to programmatically attach fields to content types if your have existing data that you know should be made available. For example, an organism always has a genus and only one genus.  If we have a field that displays the genus for an organism then we will want it automatically attached on installation of our module.  We can do this programmatically using two hook functions: ``hook_bundle_fields_info()`` and ``hook_bundle_instance_info()``.  Both functions are required to attach a field to a content type. 
+You probably want to programmatically attach fields to content types if your have existing data that you know should be made available. For example, an organism always has a genus and only one genus.  If we have a field that displays the genus for an organism then we will want it automatically attached on installation of our module.  We can do this programmatically using two hook functions: ``hook_bundle_fields_info()`` and ``hook_bundle_instances_info()``.  Both functions are required to attach a field to a content type. 
 
-The hook_bundle_instance_info() function.
+The hook_bundle_instances_info() function.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The previous hook tells Drupal that our field exists and is allowed to be connected to the organism bundle.  Next we need to create an actual instance of this field for the bundle.  We do this with the ``hook_bundle_instance_info()`` function.  The format is the same as the previous hook but the info array is different.  For example:
+The previous hook tells Drupal that our field exists and is allowed to be connected to the organism bundle.  Next we need to create an actual instance of this field for the bundle.  We do this with the ``hook_bundle_instances_info()`` function.  The format is the same as the previous hook but the info array is different.  For example:
 
 .. code-block:: php
   :linenos:
@@ -130,9 +130,9 @@ The following setting will allow the field to be added:
 
  public static $no_ui = FALSE;
 
-Next, we must let Drupal know that our field exists.  We do this by adding an entry to the ``$info`` array of in the ``hook_bundle_fields_info()`` function described above.  This lets Drupal know about our field. However, because we are not programmatically creating an instance of the field on a content type, but allowing the user to create them we do not need to implement the ``hook_bundle_instance_info()`` function. Instead, we must implement ``hook_bundle_create_user_field()``.  This function is called when the user attempts to add our new field to a bundle.  One field that comes with Tripal is the ``chado_linker__prop`` field.  Most Chado base tables have an associated property table (e.g. ``organismprop``, ``featureprop``, ``stockprop``, etc). By default, the ``tripal_chado`` module automatically adds this field to all bundles that have existing properties. It adds a new instance for every property type.  However, new properties can be added to bundle, and the site admin may want to add those properties via the user interface rather. Therefore, this field has the ``$no_ui`` set to TRUE and uses the  ``hook_bundle_create_user_field()`` to create the new field instance for the user.
+Next, we must let Drupal know that our field exists.  We do this by adding an entry to the ``$info`` array in the ``hook_bundle_fields_info()`` function described above.  This lets Drupal know about our field. However, because we are not programmatically creating an instance of the field on a content type, but allowing the user to create them we do not need to implement the ``hook_bundle_instances_info()`` function. Instead, we must implement ``hook_bundle_create_user_field()``.  This function is called when the user attempts to add our new field to a bundle.  One field that comes with Tripal is the ``chado_linker__prop`` field.  Most Chado base tables have an associated property table (e.g. ``organismprop``, ``featureprop``, ``stockprop``, etc). By default, the ``tripal_chado`` module automatically adds this field to all bundles that have existing properties. It adds a new instance for every property type.  However, new properties can be added to bundle, and the site admin may want to add those properties via the user interface rather. Therefore, this field has the ``$no_ui`` set to TRUE and uses the  ``hook_bundle_create_user_field()`` to create the new field instance for the user.
 
-The following code is a snippet from the ``tripal_chado_bundle_create_user_field`` function of the ``tripal_chado`` module. Note that it uses the ``field_create_field`` function and the ``field_create_instance`` functions directly.  The arrays passed to these functions are identical to the ``$info`` arrays of both the ``hook_bundle_fields_info`` and ``hook_bundle_instance_info`` functions described above.
+The following code is a snippet from the ``tripal_chado_bundle_create_user_field`` function of the ``tripal_chado`` module. Note that it uses the ``field_create_field`` function and the ``field_create_instance`` functions directly.  The arrays passed to these functions are identical to the ``$info`` arrays of both the ``hook_bundle_fields_info`` and ``hook_bundle_instances_info`` functions described above.
 
 .. code-block:: php
   :linenos:
@@ -218,6 +218,6 @@ The following code is a snippet from the ``tripal_chado_bundle_create_user_field
 
 .. note::
   
-  It is possible to have a field that is both programmatically attached to some content types but is also allowed to be attached to another content type by the site admin using the web interface. To do this, programmatically add the field to the content types using the ``hook_bundle_instance_info`` function and also implement the ``hook_bundle_create_user_field`` function to support manual adding.
+  It is possible to have a field that is both programmatically attached to some content types but is also allowed to be attached to another content type by the site admin using the web interface. To do this, programmatically add the field to the content types using the ``hook_bundle_instances_info`` function and also implement the ``hook_bundle_create_user_field`` function to support manual adding.
   
  

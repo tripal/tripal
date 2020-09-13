@@ -20,7 +20,7 @@
 /**
  * Retrieves a chado analysis variable.
  *
- * @param $itentifier
+ * @param $identifier
  *   an array with the key stating what the identifier is. Supported keys
  *   (only on of the following unique keys is required):
  *    - analysis_id: the chado analysis.analysis_id primary key.
@@ -726,7 +726,7 @@ function tripal_reverse_compliment_sequence($sequence) {
  *   sequence_of)
  *      then any sequences that are in relationships of this type with matched
  *      sequences are also included.
- *    - relationship_part: If a relationship is provided in the preceeding
+ *    - relationship_part: If a relationship is provided in the preceding
  *      argument then the rel_part must be either 'object' or 'subject' to
  *      indicate which side of the relationship the matched features belong.
  *
@@ -782,7 +782,7 @@ function tripal_get_feature_sequences($feature, $options) {
  *   sequence_of)
  *      then any sequences that are in relationships of this type with matched
  *      sequences are also included
- *    - relationship_part: If a relationship is provided in the preceeding
+ *    - relationship_part: If a relationship is provided in the preceding
  *      argument then the rel_part must be either 'object' or 'subject' to
  *      indicate which side of the relationship the matched features belong
  *    - width: Indicate the number of bases to use per line.  A new line will
@@ -995,7 +995,7 @@ function tripal_abbreviate_infraspecific_rank($rank) {
  *   value is the error message.
  *
  * @return
- *   If validation failes then FALSE is returned.  Any options that do not pass
+ *   If validation fails then FALSE is returned.  Any options that do not pass
  *   validation checks will be added in the $errors array with the key being
  *   the option and the value being the error message.  If validation
  *   is successful then TRUE is returned.
@@ -1166,7 +1166,7 @@ function tripal_assign_phylogeny_tree_indices(&$tree, &$index = 1) {
  *   -organism_id:  The organism_id for associtating the node with an organism.
  *   -properties:   An array of key/value pairs where the key is the cvterm_id
  *                  and the value is the property value.  These properties
- *                  will be assocaited with the phylonode.
+ *                  will be associated with the phylonode.
  *
  * Prior to importing the tree the indicies can be set by using the
  * chado_assign_phylogeny_tree_indices() function.
@@ -1292,7 +1292,7 @@ function tripal_get_publication($identifiers, $options = []) {
 
 /**
  * The publication table of Chado only has a unique constraint for the
- * uniquename of the publiation, but in reality a publication can be considered
+ * uniquename of the publication, but in reality a publication can be considered
  * unique by a combination of the title, publication type, published year and
  * series name (e.g. journal name or conference name). The site administrator
  * can configure how publications are determined to be unique.  This function

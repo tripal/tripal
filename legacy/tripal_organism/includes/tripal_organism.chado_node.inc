@@ -688,7 +688,7 @@ function tripal_organism_node_presave($node) {
     case 'chado_organism':
       // when syncing the details are not present in the $node object
       // as they are when submitted via the form.  Therefore, if we do
-      // not see any field values from the form, we assume this fucntion
+      // not see any field values from the form, we assume this function
       // is being called for syncing, so we must set the title accordingly
       if (property_exists($node, 'genus')) {
         $node->title = $node->genus . " " . $node->species;

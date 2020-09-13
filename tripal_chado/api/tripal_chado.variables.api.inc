@@ -41,7 +41,7 @@
  *   $feature = chado_generate_var('feature', $values);
  * @endcode
  *
- * The $values array passed to this fucntion can be of the same format used
+ * The $values array passed to this function can be of the same format used
  * by the chado_select_record() function.
  *
  * If a field is a foreign key then its value is an object that contains
