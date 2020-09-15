@@ -38,28 +38,47 @@ class OBIOrganismItem extends ChadoFieldItemBase  {
    * {@inheritdoc}
    */
   public static function defaultFieldSettings() {
-    $settings = [
-      // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
-      'term_vocabulary' => 'OBI',
-      // The name of the term.
-      'term_name' => 'organism',
-      // The unique ID (i.e. accession) of the term.
-      'term_accession' => '0100026',
-      // Set to TRUE if the site admin is allowed to change the term
-      // type. This will create form elements when editing the field instance
-      // to allow the site admin to change the term settings above.
-      'term_fixed' => FALSE,
-      // The format for display of the organism.
-      'field_display_string' => '<i>[organism.genus] [organism.species]</i>',
+    $settings = parent::defaultFieldSettings();
 
-      // @TODO: these are not hardocded in Tripal v3
-      // The table in Chado that the instance maps to.
-      'chado_table' => 'organism',
-      // The column of the table in Chado where the value of the field comes from.
-      'chado_column' => 'organism_id',
-      // The base table.
-      'base_table' => 'organism',
-    ] + parent::defaultFieldSettings();
+    // -- Define the Vocabulary.
+    // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
+    $settings['term_vocabulary'] = 'OBI';
+    // The full name of the vocabulary.
+    $settings['vocab_name'] = 'Ontology for Biomedical Investigations';
+    // The description of the vocabulary.
+    $settings['vocab_description'] = 'The Ontology for Biomedical Investigations (OBI) is build in a collaborative, international effort and will serve as a resource for annotating biomedical investigations, including the study design, protocols and instrumentation used, the data generated and the types of analysis performed on the data.';
+
+    // -- Define the Vocabulary Term.
+    // The name of the term.
+    $settings['term_name'] = 'organism';
+    // The unique ID (i.e. accession) of the term.
+    $settings['term_accession'] = '0100026';
+    // The definition of the term.
+    $settings['term_definition'] = 'A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.';
+
+    // -- Chado Table.
+    // The table in Chado that the field maps to.
+    $settings['chado_table'] = 'organism';
+    // The column of the table in Chado where the value comes from.
+    $settings['chado_column'] = 'organism_id';
+    // The base table.
+    $settings['base_table'] = 'organism';
+
+    // -- Additional Settings.
+    // Set to TRUE if the site admin is not allowed to change the term
+    // type, otherwise the admin can change the term mapped to a field.
+    $settings['term_fixed'] = TRUE;
+    // Set to TRUE if the field should be automatically attached to an entity
+    // when it is loaded. Otherwise, the callee must attach the field
+    // manually.  This is useful to prevent really large fields from slowing
+    // down page loads.  However, if the content type display is set to
+    // "Hide empty fields" then this has no effect as all fields must be
+    // attached to determine which are empty.  It should always work with
+    // web services.
+    $settings['auto_attach'] = TRUE;
+    // The format for display of the organism.
+    $settings['field_display_string'] = '<i>[organism.genus] [organism.species]</i>';
+
     return $settings;
   }
 
