@@ -16,7 +16,7 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @FieldWidget(
  *   id = "obi__organism_default",
- *   label = @Translation("Organism default"),
+ *   label = @Translation("Organism: Select List"),
  *   field_types = {
  *     "obi__organism"
  *   }

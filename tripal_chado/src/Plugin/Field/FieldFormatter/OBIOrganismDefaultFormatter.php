@@ -16,7 +16,7 @@ use Drupal\Core\Field\FieldItemListInterface;
  * @FieldFormatter(
  *   id = "obi__organism_default",
  *   module = "tripal_chado",
- *   label = @Translation("Organism default"),
+ *   label = @Translation("Organism: Simple String"),
  *   field_types = {
  *     "obi__organism"
  *   }
