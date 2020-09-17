@@ -11,7 +11,7 @@ class TripalField {
   // the field and it's default widget and formatter.
   // --------------------------------------------------------------------------
 
-  // The default lable for this field.
+  // The default label for this field.
   public static $default_label = 'Tripal Field';
 
   // The default description for this field.
@@ -33,15 +33,15 @@ class TripalField {
     'searchable_keys' => [],
   ];
 
-  // Provide a list of instance specific settings. These can be access within
+  // Provide a list of instance specific settings. These can be accessed within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
-  // then Drupal with automatically change these settings for the instnace.
+  // then Drupal will automatically change these settings for the instance.
   // It is recommended to put settings at the instance level whenever possible.
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
   public static $default_instance_settings = [
-    // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
+    // The short name for the vocabulary (e.g. schema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'schema',
     // The name of the term.
     'term_name' => 'Thing',
@@ -518,7 +518,7 @@ class TripalField {
    * The value of this top-level key is an array with the following keys:
    *   -name: this key is not actually used but is availble to improve
    *     readability of the array.  Because the key is a vocabulary term
-   *     conaining only the accession it's not always clear what it means.
+   *     containing only the accession it's not always clear what it means.
    *     Providing a 'name' key helps other's know what the term is.
    *   -searchable:  TRUE if the element can be used for filtering the content
    *     type to which tis field is attached.  FALSE if not.

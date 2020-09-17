@@ -221,7 +221,7 @@ function tripal_cv_cv_add_form($form, &$form_state) {
 }
 
 /**
- * Validation fucntion for tripal_cv_cv_add_form
+ * Validation function for tripal_cv_cv_add_form
  *
  * @ingroup tripal_cv
  */

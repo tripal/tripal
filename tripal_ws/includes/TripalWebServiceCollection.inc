@@ -91,7 +91,7 @@ class TripalWebServiceCollection extends TripalWebServiceResource {
    *   resource
    */
   public function addMember($member) {
-    // Make sure the $servcie provides is a TripalWebServcie class.
+    // Make sure the $service provides is a TripalWebServcie class.
     if (!is_a($member, 'TripalWebServiceResource')) {
       throw new Exception("Cannot add a new member to this resource collection as it is not a TripalWebServiceResource.");
     }

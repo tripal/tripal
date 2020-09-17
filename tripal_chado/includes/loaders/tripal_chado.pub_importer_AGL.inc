@@ -352,7 +352,7 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
   // if ($days) { $ccl .= "and year>=($days) "; }
   // if ($latestyear) { $ccl .= "and year<=($latestyear) "; }
 
-  // remove any preceeding 'and' or 'or'
+  // remove any preceding 'and' or 'or'
   $ccl = preg_replace('/^\s*(and|or)/', '', $ccl);
 
   // yaz_connect() prepares for a connection to a Z39.50 server. This function is non-blocking

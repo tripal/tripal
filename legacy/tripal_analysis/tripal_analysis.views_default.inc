@@ -38,7 +38,7 @@ function tripal_analysis_views_default_views() {
 function tripal_analysis_defaultvalue_user_analysis() {
 
   // As a shortcut, currently I am copying the admin view and then tweaking it
-  // In thie future this should be replaced by a views export
+  // In the future this should be replaced by a views export
   $view = tripal_analysis_defaultvalue_admin_analysis();
 
   // change some view admin stuff

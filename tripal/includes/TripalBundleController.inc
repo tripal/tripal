@@ -191,18 +191,18 @@ class TripalBundleController extends EntityAPIControllerExportable {
       $response = 0;
     }
     else {
-      $response = "";
+      $response = [];
     }
     while (($bundle_record = $results->fetchObject())) {
       $bid = $bundle_record->id;
       $bundle_response = $this->findOrphans($bid, $count, $offset, $limit);
       if (is_array($bundle_response)) {
         foreach ($bundle_response as $key => $value) {
-          $response += $value;
+          $response[] = $value;
         }
       }
       else {
-        $response += $bundle_response;
+        $response[] = $bundle_response;
       }
     }
     return $response;
@@ -257,7 +257,7 @@ class TripalBundleController extends EntityAPIControllerExportable {
       $bundle = tripal_load_bundle_entity(['id' => $id]);
       $response = module_invoke_all('bundle_delete_orphans', $bundle, $eids, $job);
 
-      // Now remove the entities. 
+      // Now remove the entities.
       $num_deleted = db_delete('tripal_entity')
         ->condition('id', $eids, 'IN')
         ->execute();

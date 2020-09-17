@@ -37,7 +37,7 @@ function tripal_contact_views_default_views() {
 function tripal_contact_defaultvalue_user_contacts() {
 
   // As a shortcut, currently I am copying the admin view and then tweaking it
-  // In thie future this should be replaced by a views export
+  // In the future this should be replaced by a views export
   $view = tripal_contact_defaultview_admin_contacts();
 
   // change some view admin stuff

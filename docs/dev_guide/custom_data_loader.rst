@@ -331,7 +331,7 @@ To import data into Chado we will use the Tripal API. After splitting each line 
     // We want to provide a progress report to the end-user so that they:
     // 1) Recognize that the loader is not hung if running a large file, but is
     //    executing
-    // 2) Provides some indicatation for how long the file will take to load.
+    // 2) Provides some indication for how long the file will take to load.
     //
     // Here we'll get the size of the file and tell the TripalImporter how
     // many "items" we have to process (in this case bytes of the file).
@@ -369,7 +369,7 @@ To import data into Chado we will use the Tripal API. After splitting each line 
 
       // Using the name of the feature from the file, see if we can find a
       // record in the feature table of Chado that matches.  Note: in reality
-      // the feature table of Chado has a unique contraint on the uniquename,
+      // the feature table of Chado has a unique constraint on the uniquename,
       // organism_id and type_id columns of the feature table.  So, to ensure
       // we find a single record ideally we should include the organism_id and
       // type_id in our filter and that would require more widgets on our form!
@@ -450,7 +450,7 @@ In the code above we consider a byte as an item, and when all bytes from a file 
 
 Testing Importers
 ------------------
-Unit Testing is a critically important component of any software project. You should always strive to write tests for your software.  Tripal provides unit testing using the ``phpunit`` testing framework. The Tripal Test Suite provides a strategy for adding tests for your new Importer.  It will automatically set up and bootstrap Drupal and Tripal for your testing environment, as well as provide database transactions for your tests, and factories to quickly generate data.  We will use the Tripal Test Suite to provide unit testing for our ``ExampelImporter``.
+Unit Testing is a critically important component of any software project. You should always strive to write tests for your software.  Tripal provides unit testing using the ``phpunit`` testing framework. The Tripal Test Suite provides a strategy for adding tests for your new Importer.  It will automatically set up and bootstrap Drupal and Tripal for your testing environment, as well as provide database transactions for your tests, and factories to quickly generate data.  We will use the Tripal Test Suite to provide unit testing for our ``ExampleImporter``.
 
 .. note::
   Before continuing, please install and configure Tripal Test Suite.

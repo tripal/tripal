@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Provides API functions specificially for managing phylogenetic and taxonomic
+ * Provides API functions specifically for managing phylogenetic and taxonomic
  * tree records in Chado.
  */
 
@@ -10,7 +10,7 @@
  * @defgroup tripal_phylotree_api Chado Phylotree
  * @ingroup tripal_chado_api
  * @{
- * Provides API functions specificially for managing phylogenetic and taxonomic
+ * Provides API functions specifically for managing phylogenetic and taxonomic
  * tree records in Chado.  The API consists of functions for creation,
  * retrieval, update and deltion (CRUD) for phylogenetic tree records as
  * well as importing of trees in the newick file format.
@@ -44,7 +44,7 @@
  *   value is the error message.
  *
  * @return
- *   If validation failes then FALSE is returned.  Any options that do not pass
+ *   If validation fails then FALSE is returned.  Any options that do not pass
  *   validation checks will be added in the $errors array with the key being
  *   the option and the value being the error message.  If validation
  *   is successful then TRUE is returned.
@@ -619,7 +619,7 @@ function chado_assign_phylogeny_tree_indices(&$tree, &$index = 1) {
  *   -organism_id:  The organism_id for associtating the node with an organism.
  *   -properties:   An array of key/value pairs where the key is the cvterm_id
  *                  and the value is the property value.  These properties
- *                  will be assocaited with the phylonode.
+ *                  will be associated with the phylonode.
  *
  * Prior to importing the tree the indicies can be set by using the
  * chado_assign_phylogeny_tree_indices() function.
@@ -745,7 +745,7 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
     $phylonode = chado_insert_record('phylonode', $values);
     $tree['phylonode_id'] = $phylonode['phylonode_id'];
 
-    // This is a taxonomic tree, so assocaite this node with an
+    // This is a taxonomic tree, so associate this node with an
     // organism if one is provided.
     if (array_key_exists('organism_id', $tree)) {
       $values = [

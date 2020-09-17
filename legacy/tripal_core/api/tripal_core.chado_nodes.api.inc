@@ -774,7 +774,7 @@ function chado_node_sync_form_submit($form, $form_state) {
  *   sync.
  * @param $organism_id
  *   Optional: Limit the list of records to be synced to only those that
- *   are associated with this organism_id. If the record is not assocaited
+ *   are associated with this organism_id. If the record is not associated
  *   with an organism then this field is not needed.
  * @param $types
  *   Optional: Limit the list of records to be synced to only those that

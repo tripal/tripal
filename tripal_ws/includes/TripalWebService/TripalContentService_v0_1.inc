@@ -573,7 +573,7 @@ class TripalContentService_v0_1 extends TripalWebService {
    *   The bundle object.  Fields attached to this bundle will be included
    *   in the mapping array.
    * @return
-   *   An associative arrray that maps web servcies keys to fields and
+   *   An associative arrray that maps web services keys to fields and
    *   fields to web services keys (reciprocol).
    */
   private function getFieldMapping($bundle) {

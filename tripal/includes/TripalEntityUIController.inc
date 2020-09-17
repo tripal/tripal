@@ -100,7 +100,15 @@ class TripalEntityUIController extends EntityDefaultUIController {
       'type' => MENU_LOCAL_TASK,
       'weight' => 10,
     ];
-    // Menu item for deleting tripal data entities.
+    $items['bio_data/' . $wildcard . '/unpublish'] = [
+      'title' => 'Unpublish',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => ['tripal_entity_unpublish_form', 1],
+      'access callback' => 'tripal_entity_access',
+      'access arguments' => ['unpublish', 1],
+      'type' => MENU_CALLBACK,
+      'weight' => 11,
+    ];
     $items['bio_data/' . $wildcard . '/delete'] = [
       'title' => 'Delete',
       'page callback' => 'drupal_get_form',
@@ -108,7 +116,7 @@ class TripalEntityUIController extends EntityDefaultUIController {
       'access callback' => 'tripal_entity_access',
       'access arguments' => ['delete', 1],
       'type' => MENU_CALLBACK,
-      'weight' => 10,
+      'weight' => 12,
     ];
     return $items;
   }
@@ -393,8 +401,8 @@ function tripal_content_overview_form($form, &$form_state) {
     if (entity_access('edit', 'TripalEntity', $entity, $user)) {
       $links .= '&nbsp;&nbsp;' . l('edit', 'bio_data/' . $entity->id . '/edit');
     }
-    if (entity_access('delete', 'TripalEntity', $entity, $user)) {
-      $links .= '&nbsp;&nbsp;' . l('delete', 'bio_data/' . $entity->id . '/delete');
+    if (entity_access('unpublish', 'TripalEntity', $entity, $user)) {
+      $links .= '&nbsp;&nbsp;' . l('unpublish', 'bio_data/' . $entity->id . '/unpublish');
     }
 
     // Add information to the table.
@@ -530,15 +538,24 @@ function tripal_entity_form($form, &$form_state, $term_id = '', $entity = NULL) 
       '#weight' => 1000,
     ];
 
+    if (entity_access('unpublish', 'TripalEntity', $entity, $user)) {
+      $form['unpublish_button'] = [
+        '#type' => 'submit',
+        '#value' => t('Unpublish'),
+        '#name' => 'unpublish_data',
+        '#weight' => 1002,
+        '#attributes' => ['style' => 'float: right'],
+      ];
+    }
     // Put the delete button on the far-right so that it's harder
     // to accidentally click it.
     if (entity_access('delete', 'TripalEntity', $entity, $user)) {
       $form['delete_button'] = [
-        '#type' => 'submit',
-        '#value' => t('Delete'),
-        '#name' => 'delete_data',
-        '#weight' => 1002,
-        '#attributes' => ['style' => 'float: right'],
+          '#type' => 'submit',
+          '#value' => t('Delete'),
+          '#name' => 'delete_data',
+          '#weight' => 1003,
+          '#attributes' => ['style' => 'float: right'],
       ];
     }
   }
@@ -677,6 +694,7 @@ function tripal_entity_form_validate($form, &$form_state) {
  */
 function tripal_entity_form_submit($form, &$form_state) {
   $entity = $form_state['TripalEntity'];
+  global $user;
 
   if ($form_state['clicked_button']['#name'] == 'cancel_data') {
     if (property_exists($entity, 'id')) {
@@ -689,7 +707,15 @@ function tripal_entity_form_submit($form, &$form_state) {
   }
 
   if ($form_state['clicked_button']['#name'] == 'delete_data') {
-    $form_state['redirect'] = 'bio_data/' . $entity->id . '/delete';
+    if (entity_access('delete', 'TripalEntity', $entity, $user)) {
+      $form_state['redirect'] = 'bio_data/' . $entity->id . '/delete';
+    }
+    return;
+  }
+  if ($form_state['clicked_button']['#name'] == 'unpublish_data') {
+    if (entity_access('unpublish', 'TripalEntity', $entity, $user)) {
+      $form_state['redirect'] = 'bio_data/' . $entity->id . '/unpublish';
+    }
     return;
   }
 
@@ -877,10 +903,55 @@ function theme_tripal_add_list($variables) {
 }
 
 /**
+ * Form callback: confirmation form for unpublishing a tripal_entity.
+ *
+ * @param $tripal_entity
+ *   The tripal_entity to delete
+ *
+ * @see confirm_form()
+ */
+function tripal_entity_unpublish_form($form, &$form_state, $entity) {
+  $form_state['entity'] = $entity;
+  $form['#submit'][] = 'tripal_entity_unpublish_form_submit';
+
+  $form = confirm_form($form,
+    t('Unpublish the record "%title"?  This will delete the Drupal record, but not the underlying (eg Chado) record.',
+      ['%title' => $entity->title]), 'admin/content/bio_data',
+    '<p>' . t('This action cannot be undone.') . '</p>',
+      t('Yes, Unpublish'), t('No, Cancel'), 'confirm');
+
+  return $form;
+}
+
+/**
+ * Submit callback for tripal_entity_unpublish_form
+ */
+function tripal_entity_unpublish_form_submit($form, &$form_state) {
+  global $user;
+  $entity = $form_state['entity'];
+
+  if (!entity_access('unpublish', 'TripalEntity', $entity, $user)) {
+    drupal_set_message(t('You do not have permission to unpublish this content.'), "error");
+    $form_state['redirect'] = 'admin/content/bio_data';
+    return;
+  }
+
+  $entity_controller = new TripalEntityController($entity->type);
+
+  if ($entity_controller->unpublish([$entity->id])) {
+    drupal_set_message(t('The record "%name" has been unpublished. The record, however, remains in the database and you can republish it later.', ['%name' => $entity->title]));
+    $form_state['redirect'] = 'admin/content/bio_data';
+  }
+  else {
+    drupal_set_message(t('The record "%name" was not unpublished.', ['%name' => $entity->title]), "error");
+  }
+}
+
+/**
  * Form callback: confirmation form for deleting a tripal_entity.
  *
- * @param $tripal_entity The
- *          tripal_entity to delete
+ * @param $tripal_entity
+ *   The tripal_entity to delete
  *
  * @see confirm_form()
  */
@@ -889,15 +960,15 @@ function tripal_entity_delete_form($form, &$form_state, $entity) {
   $form['#submit'][] = 'tripal_entity_delete_form_submit';
 
   $form = confirm_form($form,
-    t('Click the delete button below to confirm deletion of the record titled: %title',
-      ['%title' => $entity->title]), 'admin/content/tripal_entity',
-    '<p>' . t('This action cannot be undone.') . '</p>', t('Delete'), t('Cancel'), 'confirm');
+      t('Delete the record "%title"?',
+          ['%title' => $entity->title]), 'admin/content/bio_data',
+      '<p>' . t('This action cannot be undone. It will result in this record being unpublished and completely removed from the database. Any downstream records that depend on this entry will also be unpublished and completely removed as well. Please delete with caution!') . '</p>', t('Yes, Delete'), t('No, Cancel'), 'confirm');
 
   return $form;
 }
 
 /**
- * Submit callback for tripal_entity_delete_form
+ * Submit callback for tripal_entity_unpublish_form
  */
 function tripal_entity_delete_form_submit($form, &$form_state) {
   global $user;
@@ -912,11 +983,12 @@ function tripal_entity_delete_form_submit($form, &$form_state) {
   $entity_controller = new TripalEntityController($entity->type);
 
   if ($entity_controller->delete([$entity->id])) {
-    drupal_set_message(t('The record title "%name" has been deleted.', ['%name' => $entity->title]));
+    drupal_set_message(t('The record "%name" was deleted along with any dependent, downstream records.  Deleted records are no longer in the database. However, the site may still have published records. Therefore, a job has been added to remove any published but orphaned records.', ['%name' => $entity->title]));
     $form_state['redirect'] = 'admin/content/bio_data';
   }
   else {
-    drupal_set_message(t('The tripal_entity %name was not deleted.', ['%name' => $entity->title]), "error");
+    drupal_set_message(t('The record "%name" was not deleted.', ['%name' => $entity->title]), "error");
+    $form_state['redirect'] = 'admin/content/bio_data';
   }
 }
 

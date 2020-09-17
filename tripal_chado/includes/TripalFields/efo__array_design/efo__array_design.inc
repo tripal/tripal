@@ -2,21 +2,21 @@
 
 class efo__array_design extends ChadoField {
 
-  // The default lable for this field.
+  // The default label for this field.
   public static $default_label = 'Array Design';
 
   // The default description for this field.
   public static $description = 'An instrument design which describes the design of the array.';
 
-  // Provide a list of instance specific settings. These can be access within
+  // Provide a list of instance specific settings. These can be accessed within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
-  // then Drupal with automatically change these settings for the instnace.
+  // then Drupal will automatically change these settings for the instance.
   // It is recommended to put settings at the instance level whenever possible.
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
   public static $default_instance_settings = [
-    // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
+    // The short name for the vocabulary (e.g. schema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'EFO',
     // The name of the term.
     'term_name' => 'array design',

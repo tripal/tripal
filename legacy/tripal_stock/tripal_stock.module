@@ -320,7 +320,7 @@ function tripal_stock_match_stocks_page($id) {
   if (!$url_alias) {
     $url_alias = '/stock/[genus]/[species]/[type]/[uniquename]';
   }
-  $url_alias = preg_replace('/^\//', '', $url_alias); // remove any preceeding forward slash
+  $url_alias = preg_replace('/^\//', '', $url_alias); // remove any preceding forward slash
   if (preg_match('/^stock\//', $url_alias)) {
     drupal_goto($id);
   }

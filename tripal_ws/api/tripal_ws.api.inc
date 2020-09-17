@@ -197,7 +197,7 @@ function tripal_remove_site($record_id) {
  *   A remote Tripal site object.
  * @param $path
  *   The web service path for the content (excluding
- *   'web-servcies/vX.x/content').  To retrieve the full content listing
+ *   'web-services/vX.x/content').  To retrieve the full content listing
  *   leave this paramter empty.
  * @param $query
  *   An query string to appear after the ? in a URL.
@@ -227,7 +227,7 @@ function tripal_build_remote_content_url($remote_site, $path = '', $query = '') 
  *   The numeric site ID for the remote Tripal site.
  * @param $path
  *   The web service path for the content (excluding
- *   'web-servcies/vX.x/content').  To retrieve the full content listing
+ *   'web-services/vX.x/content').  To retrieve the full content listing
  *   leave this paramter empty.
  * @param $query
  *   An query string to appear after the ? in a URL.
@@ -272,7 +272,7 @@ function tripal_get_remote_content($site_id, $path = '', $query = '') {
   }
 
   // If the data object has an error then this is some sort of
-  // connection error (not a Tripal web servcies error).
+  // connection error (not a Tripal web services error).
   if (property_exists($data, 'error')) {
     $data = [
       'error' => $data->error,
@@ -453,7 +453,7 @@ function tripal_get_remote_API_doc($site_id) {
   }
 
   // If the data object has an error then this is some sort of
-  // connection error (not a Tripal web servcies error).
+  // connection error (not a Tripal web services error).
   if (property_exists($data, 'error')) {
     tripal_report_error('tripal_ws', TRIPAL_ERROR,
       'Remote web services document reports the following error: !error. Using URL: !url',

@@ -47,9 +47,9 @@ class remote__data extends WebServicesField {
     'searchable_keys' => [],
   ];
 
-  // Provide a list of instance specific settings. These can be access within
+  // Provide a list of instance specific settings. These can be accessed within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
-  // then Drupal with automatically change these settings for the instance.
+  // then Drupal will automatically change these settings for the instance.
   // It is recommended to put settings at the instance level whenever possible.
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are

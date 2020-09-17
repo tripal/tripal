@@ -11,21 +11,21 @@ class data__protein_sequence extends ChadoField {
   // the field and it's default widget and formatter.
   // --------------------------------------------------------------------------
 
-  // The default lable for this field.
+  // The default label for this field.
   public static $default_label = 'Protein Sequence';
 
   // The default description for this field.
   public static $description = 'polypeptide sequences.';
 
-  // Provide a list of instance specific settings. These can be access within
+  // Provide a list of instance specific settings. These can be accessed within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
-  // then Drupal with automatically change these settings for the instnace.
+  // then Drupal will automatically change these settings for the instance.
   // It is recommended to put settings at the instance level whenever possible.
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
   public static $default_instance_settings = [
-    // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
+    // The short name for the vocabulary (e.g. schema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'data',
     // The name of the term.
     'term_name' => 'protein_sequence',
@@ -93,7 +93,7 @@ class data__protein_sequence extends ChadoField {
       WHERE
         FR.object_id = :feature_id and
         CVT.name = 'polypeptide' and
-        RCVT.name = 'derives_from'
+        RCVT.name  IN ('derives_from', 'part_of')
       ORDER BY FR.rank ASC
     ";
     $proteins = chado_query($sql, [':feature_id' => $feature->feature_id]);

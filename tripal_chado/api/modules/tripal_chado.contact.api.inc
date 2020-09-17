@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Provides API functions specificially for managing contact records in Chado.
+ * Provides API functions specifically for managing contact records in Chado.
  *
  * @ingroup tripal_chado
  */

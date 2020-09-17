@@ -141,7 +141,7 @@ Notice currently all this function does is call the parent getDocumentation func
 
 In the above array, notice the @id is URL that represents a unique identifier for the class.   The @type will always be 'hydra:Class' because we are documenting a resource.  Then there is information about the class defined using the 'hydra:title' and 'hydra:description'.  The 'subclassOf' is always set to 'hydra:Resource'.  Next is the list of supported operations for this resource.  Remember, in our design we only want to support the GET operation for our Jobs service, so just like in the example above, the method we will support is GET.  The key/value pairs for the GET method are described using Hydra terms.  
 
-For our services we need to provide the information to Tripal so that it can generate these Hydra JSON arrays that document our service.  Tripal provides some easy API functions to help with this.  The firt is the **addDoc** member function.  This function will take as input the class details, operations and properties necessary to generate the documentation for our class.  First, lets use this function to document our Jobs Collection resource.  Below is sample code that will do this for us.
+For our services we need to provide the information to Tripal so that it can generate these Hydra JSON arrays that document our service.  Tripal provides some easy API functions to help with this.  The first is the **addDoc** member function.  This function will take as input the class details, operations and properties necessary to generate the documentation for our class.  First, lets use this function to document our Jobs Collection resource.  Below is sample code that will do this for us.
 
 
 .. code-block:: php
@@ -290,7 +290,7 @@ Now, because we have instantiated a TripalWebServiceCollection object it can han
 
         $this->resource->initPager($num_records, $limit, $page);
 
-Lastly, we need to add our "members" of the collection.  These are the jobs from our query.  The following for loop iterates through alll of our jobs and creates new member objects that are added to our collection:
+Lastly, we need to add our "members" of the collection.  These are the jobs from our query.  The following for loop iterates through all of our jobs and creates new member objects that are added to our collection:
 
 .. code-block:: php
 

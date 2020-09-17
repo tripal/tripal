@@ -108,7 +108,7 @@ For our ``obi__organism`` example, the drop-down returns the chado organism_id o
     }
   }
 
-But what do you do if the record you want to link to via foreign key constraint doesn't yet exist? Luckily the Chado Storage API has a solution for this as well. Consider the example of the ``sbo__relationship_widget``. When this widget is on the create form for a given content type, we will first need to create the base record before we can create a relationship to it. This is done by setting the values you do know (e.g. ``chado-feature__type_id`` and ``chado-feature__object_id``) but nnot setting the column mapping to the base record. The Chado Storage API will then fill it in automatically once the base record is created.
+But what do you do if the record you want to link to via foreign key constraint doesn't yet exist? Luckily the Chado Storage API has a solution for this as well. Consider the example of the ``sbo__relationship_widget``. When this widget is on the create form for a given content type, we will first need to create the base record before we can create a relationship to it. This is done by setting the values you do know (e.g. ``chado-feature__type_id`` and ``chado-feature__object_id``) but not setting the column mapping to the base record. The Chado Storage API will then fill it in automatically once the base record is created.
 
 .. code-block:: php
 
@@ -150,4 +150,4 @@ But what do you do if the record you want to link to via foreign key constraint 
 
 Drupal typically does not provide a submit hook for fields because, as mentioned above, saving should be done by the storage backend. However, the TripalField provides a ``TripalFieldWidget::submit()`` to allow for behind-the-scenes actions to occur. This function should never be used for updates, deletes or inserts for the Chado table associated with the field as these actions should be handled by the storage backend.
 
-However, it is permissible to perform inserts, updates or deletions within Chado using this function.  Those operations can be performed if needed but on other tables not directly associated with the field. An example is the ``chado.feature_synonym`` table.  The ``chado_linker__synonym`` field allows the user to provide a brand new synonynm and it must add it to the chado.synonym table prior to the record in the chado.feature_synonym table.
+However, it is permissible to perform inserts, updates or deletions within Chado using this function.  Those operations can be performed if needed but on other tables not directly associated with the field. An example is the ``chado.feature_synonym`` table.  The ``chado_linker__synonym`` field allows the user to provide a brand new synonym and it must add it to the chado.synonym table prior to the record in the chado.feature_synonym table.

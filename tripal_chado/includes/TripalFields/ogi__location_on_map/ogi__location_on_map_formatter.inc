@@ -2,7 +2,7 @@
 
 class ogi__location_on_map_formatter extends ChadoFieldFormatter {
 
-  // The default lable for this field.
+  // The default label for this field.
   public static $default_label = 'Location on Map';
 
   // The list of field types for which this formatter is appropriate.

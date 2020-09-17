@@ -35,7 +35,7 @@ function tripal_featuremap_views_default_views() {
 function tripal_featuremap_defaultvalue_user_featuremaps() {
 
   // As a shortcut, currently I am copying the admin view and then tweaking it
-  // In thie future this should be replaced by a views export
+  // In the future this should be replaced by a views export
   $view = tripal_featuremap_defaultview_admin_featuremaps();
 
   // change some view admin stuff

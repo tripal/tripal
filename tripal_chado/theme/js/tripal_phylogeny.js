@@ -1,16 +1,16 @@
 /* phylotree d3js graphs */
 
 (function ($) {
-    
+
   "use strict";
 
   // Will be dynamically sized.
-  var height = 0; 
+  var height = 0;
 
   // Store our function as a property of Drupal.behaviors.
   Drupal.behaviors.TripalPhylotree = {
     attach: function (context, settings) {
-      
+
       // Retrieve the data for this tree.
       var data_url = Drupal.settings.tripal_chado.phylotree_url;
       $.getJSON(data_url, function(treeData) {
@@ -25,13 +25,13 @@
     var size;
     var tree_options = Drupal.settings.tripal_chado.tree_options;
     if (d.cvterm_name == "phylo_root") {
-      size = tree_options['root_node_size']; 
+      size = tree_options['root_node_size'];
     }
     if (d.cvterm_name == "phylo_interior") {
-      size = tree_options['interior_node_size']; 
+      size = tree_options['interior_node_size'];
     }
     if (d.cvterm_name == "phylo_leaf") {
-      size = tree_options['leaf_node_size']; 
+      size = tree_options['leaf_node_size'];
     }
     return size;
   }
@@ -40,14 +40,15 @@
   var phylogeny_organism_color = function(d) {
     var organism_color = Drupal.settings.tripal_chado.org_colors;
     var color = null;
-    if (d.genus) {
-      color = organism_color[d.organism_id];
+
+    if (d.fo_genus) {
+      color = organism_color[d.fo_organism_id];
     }
-    if (color) { 
-      return color; 
+    if (color) {
+      return color;
     }
-    else { 
-      return 'grey'; 
+    else {
+      return 'grey';
     }
   };
 
@@ -64,7 +65,7 @@
       txt.attr('font-weight', 'bold');
     }
   };
-  
+
   // Callback for mouseout event on graph node d.
   var phylogeny_node_mouse_out = function(d) {
     var el = $(this);
@@ -81,7 +82,7 @@
       circle.attr('fill', 'white');
     }
   };
-  
+
   // Callback for mousedown/click event on graph node d.
   var phylogeny_node_mouse_down = function(d) {
     var el = $(this);
@@ -96,7 +97,12 @@
       }
     }
     else {
-      // If this node is not associated with a feature but it has an 
+      if(d.feature_eid) {
+        window.location.href = baseurl + '/bio_data/' + d.feature_eid;
+
+        return;
+      }
+      // If this node is not associated with a feature but it has an
       // organism node then this is a taxonomic node and we want to
       // link it to the organism page.
       if (!d.feature_id && d.organism_nid) {
@@ -121,7 +127,8 @@
       'nodeMouseOver' : phylogeny_node_mouse_over,
       'nodeMouseOut' : phylogeny_node_mouse_out,
       'nodeMouseDown' : phylogeny_node_mouse_down,
-      'skipTicks' : tree_options['skipTicks']
+      'skipTicks' : tree_options['skipTicks'],
+      'phylogram_scale' : tree_options['phylogram_scale']
     });
   }
 

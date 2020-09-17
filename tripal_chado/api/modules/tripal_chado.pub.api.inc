@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Provides API functions specificially for managing publication
+ * Provides API functions specifically for managing publication
  * records in Chado.
  */
 
@@ -9,7 +9,7 @@
  * @defgroup tripal_pub_api Chado Publication
  * @ingroup tripal_chado_api
  * @{
- * Provides API functions specificially for managing publication
+ * Provides API functions specifically for managing publication
  * records in Chado.
  * @}
  */
@@ -156,7 +156,7 @@ function chado_get_publication($identifiers, $options = []) {
 
 /**
  * The publication table of Chado only has a unique constraint for the
- * uniquename of the publiation, but in reality a publication can be considered
+ * uniquename of the publication, but in reality a publication can be considered
  * unique by a combination of the title, publication type, published year and
  * series name (e.g. journal name or conference name). The site administrator
  * can configure how publications are determined to be unique.  This function

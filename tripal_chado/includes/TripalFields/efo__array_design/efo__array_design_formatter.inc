@@ -2,7 +2,7 @@
 
 class efo__array_design_formatter extends ChadoFieldFormatter {
 
-  // The default lable for this field.
+  // The default label for this field.
   public static $default_label = 'Array Design';
 
   // The list of field types for which this formatter is appropriate.

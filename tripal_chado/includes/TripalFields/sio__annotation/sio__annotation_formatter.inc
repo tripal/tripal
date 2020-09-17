@@ -2,7 +2,7 @@
 
 class sio__annotation_formatter extends ChadoFieldFormatter {
 
-  // The default lable for this field.
+  // The default label for this field.
   public static $default_label = 'Chado Annotation';
 
   // The list of field types for which this formatter is appropriate.

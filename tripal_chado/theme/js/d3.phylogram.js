@@ -41,7 +41,7 @@
       selector: selector of an element that will contain the SVG
       nodes: JS object of nodes
     Options:
-      width       
+      width
         Width of the vis, will attempt to set a default based on the width of
         the container.
       height
@@ -63,219 +63,256 @@
         Skip the tick rule.
       skipBranchLengthScaling
         Make a dendrogram instead of a phylogram.
-  
+
   d3.phylogram.buildRadial(selector, nodes, options)
     Creates a radial dendrogram.
-    Options: same as build, but without diagonal, skipTicks, and 
+    Options: same as build, but without diagonal, skipTicks, and
       skipBranchLengthScaling
-  
+
   d3.phylogram.rightAngleDiagonal()
     Similar to d3.diagonal except it create an orthogonal crook instead of a
     smooth Bezier curve.
-    
+
   d3.phylogram.radialRightAngleDiagonal()
     d3.phylogram.rightAngleDiagonal for radial layouts.
 */
 
-if (!d3) { throw "d3 wasn't included!"};
-(function() {
+if (!d3) {
+  throw "d3 wasn't included!"
+}
+;
+(function () {
   d3.phylogram = {}
-  d3.phylogram.rightAngleDiagonal = function() {
-    var projection = function(d) { return [d.y, d.x]; }
-    
-    var path = function(pathData) {
-      return "M" + pathData[0] + ' ' + pathData[1] + " " + pathData[2];
+  d3.phylogram.rightAngleDiagonal = function () {
+    var projection = function (d) {
+      return [d.y, d.x];
     }
-    
+
+    var path = function (pathData) {
+      return "M" + pathData[0] + " " + pathData[1] + " " + pathData[2];
+    }
+
     function diagonal(diagonalPath, i) {
       var source = diagonalPath.source,
-          target = diagonalPath.target,
-          midpointX = (source.x + target.x) / 2,
-          midpointY = (source.y + target.y) / 2,
-          pathData = [source, {x: target.x, y: source.y}, target];
+        target = diagonalPath.target,
+        midpointX = (source.x + target.x) / 2,
+        midpointY = (source.y + target.y) / 2,
+        pathData = [source, {x: target.x, y: source.y}, target];
       pathData = pathData.map(projection);
-      return path(pathData)
+      return path(pathData);
     }
-    
-    diagonal.projection = function(x) {
-      if (!arguments.length) return projection;
+
+    diagonal.projection = function (x) {
+      if (!arguments.length) {
+        return projection;
+      }
       projection = x;
       return diagonal;
     };
-    
-    diagonal.path = function(x) {
-      if (!arguments.length) return path;
+
+    diagonal.path = function (x) {
+      if (!arguments.length) {
+        return path;
+      }
       path = x;
       return diagonal;
     };
-    
+
     return diagonal;
   }
-  
-  d3.phylogram.radialRightAngleDiagonal = function() {
+
+  d3.phylogram.radialRightAngleDiagonal = function () {
     return d3.phylogram.rightAngleDiagonal()
-      .path(function(pathData) {
+      .path(function (pathData) {
         var src = pathData[0],
-            mid = pathData[1],
-            dst = pathData[2],
-            radius = Math.sqrt(src[0]*src[0] + src[1]*src[1]),
-            srcAngle = d3.phylogram.coordinateToAngle(src, radius),
-            midAngle = d3.phylogram.coordinateToAngle(mid, radius),
-            clockwise = Math.abs(midAngle - srcAngle) > Math.PI ? midAngle <= srcAngle : midAngle > srcAngle,
-            rotation = 0,
-            largeArc = 0,
-            sweep = clockwise ? 0 : 1;
+          mid = pathData[1],
+          dst = pathData[2],
+          radius = Math.sqrt(src[0] * src[0] + src[1] * src[1]),
+          srcAngle = d3.phylogram.coordinateToAngle(src, radius),
+          midAngle = d3.phylogram.coordinateToAngle(mid, radius),
+          clockwise = Math.abs(midAngle - srcAngle) > Math.PI ? midAngle <= srcAngle : midAngle > srcAngle,
+          rotation = 0,
+          largeArc = 0,
+          sweep = clockwise ? 0 : 1;
         return 'M' + src + ' ' +
-          "A" + [radius,radius] + ' ' + rotation + ' ' + largeArc+','+sweep + ' ' + mid +
+          "A" + [radius, radius] + ' ' + rotation + ' ' + largeArc + ',' + sweep + ' ' + mid +
           'L' + dst;
       })
-      .projection(function(d) {
+      .projection(function (d) {
         var r = d.y, a = (d.x - 90) / 180 * Math.PI;
         return [r * Math.cos(a), r * Math.sin(a)];
-      })
+      });
   }
-  
+
   // Convert XY and radius to angle of a circle centered at 0,0
-  d3.phylogram.coordinateToAngle = function(coord, radius) {
+  d3.phylogram.coordinateToAngle = function (coord, radius) {
     var wholeAngle = 2 * Math.PI,
-        quarterAngle = wholeAngle / 4
-    
+      quarterAngle = wholeAngle / 4
+
     var coordQuad = coord[0] >= 0 ? (coord[1] >= 0 ? 1 : 2) : (coord[1] >= 0 ? 4 : 3),
-        coordBaseAngle = Math.abs(Math.asin(coord[1] / radius))
-    
+      coordBaseAngle = Math.abs(Math.asin(coord[1] / radius))
+
     // Since this is just based on the angle of the right triangle formed
-    // by the coordinate and the origin, each quad will have different 
+    // by the coordinate and the origin, each quad will have different
     // offsets
     switch (coordQuad) {
       case 1:
         coordAngle = quarterAngle - coordBaseAngle
-        break
+        break;
       case 2:
         coordAngle = quarterAngle + coordBaseAngle
-        break
+        break;
       case 3:
-        coordAngle = 2*quarterAngle + quarterAngle - coordBaseAngle
-        break
+        coordAngle = 2 * quarterAngle + quarterAngle - coordBaseAngle
+        break;
       case 4:
-        coordAngle = 3*quarterAngle + coordBaseAngle
+        coordAngle = 3 * quarterAngle + coordBaseAngle
     }
-    return coordAngle
+    return coordAngle;
   }
 
-  function scaleBranchLengths(nodes, w) {
+  function scaleBranchLengths(nodes, w, options) {
     // Visit all nodes and adjust y pos width distance metric
-    var visitPreOrder = function(root, callback) {
+    var visitPreOrder = function (root, callback) {
       callback(root)
       if (root.children) {
-        for (var i = root.children.length - 1; i >= 0; i--){
+        for (var i = root.children.length - 1; i >= 0; i--) {
           visitPreOrder(root.children[i], callback);
-        };
+        }
       }
     }
-    visitPreOrder(nodes[0], function(node) {
-      node.rootDist = (node.parent ? node.parent.rootDist : 0) + (node.length || 0)
+    visitPreOrder(nodes[0], function (node) {
+      node.rootDist = (node.parent ? node.parent.rootDist : 0) + (node.length || 0);
     })
-    var rootDists = nodes.map(function(n) { return n.rootDist; });
-    var yscale = d3.scale.linear()
-      .domain([0, d3.max(rootDists)])
-      .range([0, w]);
-    visitPreOrder(nodes[0], function(node) {
-      node.y = yscale(node.rootDist)
+    var rootDists = nodes.map(function (n) {
+      return n.rootDist;
+    });
+    var yscale;
+    switch (parseInt(options.phylogram_scale)) {
+      case 1:
+        yscale = d3.scale.linear()
+          .domain([0, d3.max(rootDists)])
+          .range([0, w]);
+        break;
+      case 2:
+        yscale = d3.scale.log()
+          .domain([0.01, d3.max(rootDists)])
+          .range([0, w]);
+        break;
+      default: // shouldn't happen
+        break;
+    }
+    visitPreOrder(nodes[0], function (node) {
+      node.y = yscale(node.rootDist);
     })
-    return yscale
+    return yscale;
   }
-  
-  d3.phylogram.build = function(selector, nodes, options) {
+
+  d3.phylogram.build = function (selector, nodes, options) {
     options = options || {}
     var w = options.width || d3.select(selector).style('width') || d3.select(selector).attr('width'),
-        h = options.height || d3.select(selector).style('height') || d3.select(selector).attr('height'),
-        w = parseInt(w),
-        h = parseInt(h);
-    var fill = options.fill || function(d) {
+      h = options.height || d3.select(selector).style('height') || d3.select(selector).attr('height'),
+      w = parseInt(w),
+      h = parseInt(h);
+    var fill = options.fill || function (d) {
       return 'cyan';
     };
-    var size = options.size || function(d) {
+    var size = options.size || function (d) {
       return 6;
     }
-    var nodeMouseOver = options.nodeMouseOver || function(d) {};
-    var nodeMouseOut  = options.nodeMouseOut  || function(d) {};
-    var nodeMouseDown = options.nodeMouseDown || function(d) {};
-    
+    var nodeMouseOver = options.nodeMouseOver || function (d) {
+    };
+    var nodeMouseOut = options.nodeMouseOut || function (d) {
+    };
+    var nodeMouseDown = options.nodeMouseDown || function (d) {
+    };
+
     var tree = options.tree || d3.layout.cluster()
       .size([h, w])
-      .sort(function(node) { return node.children ? node.children.length : -1; })
-      .children(options.children || function(node) {
+      .sort(function (node) {
+        return node.children ? node.children.length : -1;
+      })
+      .children(options.children || function (node) {
         return node.children;
       });
     var diagonal = options.diagonal || d3.phylogram.rightAngleDiagonal();
     var vis = options.vis || d3.select(selector).append("svg:svg")
-        .attr("width", w + 300)
-        .attr("height", h + 30)
-        .append("svg:g")
-        .attr("transform", "translate(20, 20)");
-    var nodes = tree(nodes);
-    
+      .attr("width", w + 300)
+      .attr("height", h + 30)
+      .append("svg:g")
+      .attr("transform", "translate(20, 20)");
+    nodes = tree(nodes);
+
     if (options.skipBranchLengthScaling) {
-      var yscale = d3.scale.linear()
-        .domain([0, w])
-        .range([0, w]);
-    } 
-    else {
-      var yscale = scaleBranchLengths(nodes, w)
+      switch (options.phylogram_scale) {
+        case 1:
+          var yscale = d3.scale.linear()
+            .domain([0, d3.max(rootDists)])
+            .range([0, w]);
+        case 2:
+          var yscale = d3.scale.log()
+            .domain([0.01, d3.max(rootDists)])
+            .range([0, w]);
+      }
+
+    } else {
+      yscale = scaleBranchLengths(nodes, w, options);
     }
-    
+
     if (!options.skipTicks) {
       vis.selectAll('line')
-          .data(yscale.ticks(10))
-          .enter().append('svg:line')
-          .attr('y1', 0)
-          .attr('y2', h)
-          .attr('x1', yscale)
-          .attr('x2', yscale)
-          .attr("stroke", "#ddd");
+        .data(yscale.ticks(10))
+        .enter().append('svg:line')
+        .attr('y1', 0)
+        .attr('y2', h)
+        .attr('x1', yscale)
+        .attr('x2', yscale)
+        .attr("stroke", "#ddd");
 
       vis.selectAll("text.rule")
-          .data(yscale.ticks(10))
-          .enter().append("svg:text")
-          .attr("class", "rule")
-          .attr("x", yscale)
-          .attr("y", 0)
-          .attr("dy", -3)
-          .attr("text-anchor", "middle")
-          .attr('font-size', '9px')
-          .attr('fill', 'grey')
-          .text(function(d) { return Math.round(d*100) / 100; });
+        .data(yscale.ticks(10))
+        .enter().append("svg:text")
+        .attr("class", "rule")
+        .attr("x", yscale)
+        .attr("y", 0)
+        .attr("dy", -3)
+        .attr("text-anchor", "middle")
+        .attr('font-size', '9px')
+        .attr('fill', 'grey')
+        .text(function (d) {
+          return Math.round(d * 100) / 100;
+        });
     }
-        
-    var link = vis.selectAll("path.link")
-        .data(tree.links(nodes))
-        .enter().append("svg:path")
-        .attr("class", "link")
-        .attr("d", diagonal)
-        .attr("fill", "none")
-        .attr("stroke", "#aaa")
-        .attr("stroke-width", "4px");
-        
-    var node = vis.selectAll("g.node")
-        .data(nodes)
-        .enter().append("svg:g")
-        .attr("class", function(n) {
-          if (n.children) {
-            if (n.depth == 0) {
-              return "root node"
-            } 
-            else {
-              return "inner node"
-            }
-          } 
-          else {
-            return "leaf node"
-          }
-        })
-        .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; })
 
-     // style the root node
-     vis.selectAll('g.root.node')
+    var link = vis.selectAll("path.link")
+      .data(tree.links(nodes))
+      .enter().append("svg:path")
+      .attr("class", "link")
+      .attr("d", diagonal)
+      .attr("fill", "none")
+      .attr("stroke", "#aaa")
+      .attr("stroke-width", "4px");
+
+    var node = vis.selectAll("g.node")
+      .data(nodes)
+      .enter().append("svg:g")
+      .attr("class", function (n) {
+        if (n.children) {
+          if (n.depth == 0) {
+            return "root node"
+          } else {
+            return "inner node"
+          }
+        } else {
+          return "leaf node"
+        }
+      })
+      .attr("transform", function (d) {
+        return "translate(" + d.y + "," + d.x + ")";
+      })
+
+    // style the root node
+    vis.selectAll('g.root.node')
       .append('svg:circle')
       .on('click', nodeMouseDown)
       .on('mouseover', nodeMouseOver)
@@ -305,16 +342,16 @@ if (!d3) { throw "d3 wasn't included!"};
       .attr('stroke', 'dimgrey')
       .attr('stroke-width', '2px')
       .attr('fill', 'white');
-    
+
     if (!options.skipLabels) {
       vis.selectAll('g.inner.node')
         .append("svg:text")
-          .attr("dx", -6)
-          .attr("dy", -6)
-          .attr("text-anchor", 'end')
-          .attr('font-size', '9px')
-          .attr('fill', 'black')
-        //.text(function(d) { return d.length.toFixed(4); }); // hide length
+        .attr("dx", -6)
+        .attr("dy", -6)
+        .attr("text-anchor", 'end')
+        .attr('font-size', '9px')
+        .attr('fill', 'black')
+      //.text(function(d) { return d.length.toFixed(4); }); // hide length
 
       vis.selectAll('g.leaf.node').append("svg:text")
         .attr("dx", 8)
@@ -323,80 +360,101 @@ if (!d3) { throw "d3 wasn't included!"};
         .attr('font-family', 'Helvetica Neue, Helvetica, sans-serif')
         .attr('font-size', '10px')
         .attr('fill', 'black')
-        .text(function(d) {
+        .text(function (d) {
           // return d.name + ' (' + d.length.toFixed(4) + ')'; // hide length
           return d.name;
-         });
+        });
     }
     return {tree: tree, vis: vis}
   }
-  
-  d3.phylogram.buildRadial = function(selector, nodes, options) {
+
+  d3.phylogram.buildRadial = function (selector, nodes, options) {
     options = options || {};
-    
-    var fill = options.fill || function(d) {
+
+    var fill = options.fill || function (d) {
       return 'cyan';
     };
-    var size = options.size || function(d) {
+    var size = options.size || function (d) {
       return 6;
     }
-    var nodeMouseOver = options.nodeMouseOver || function(d) {};
-    var nodeMouseOut = options.nodeMouseOut || function(d) {};
-    var nodeMouseDown = options.nodeMouseDown || function(d) {};
-    
+    var nodeMouseOver = options.nodeMouseOver || function (d) {
+    };
+    var nodeMouseOut = options.nodeMouseOut || function (d) {
+    };
+    var nodeMouseDown = options.nodeMouseDown || function (d) {
+    };
+
     var w = options.width || d3.select(selector).style('width') || d3.select(selector).attr('width'),
-        r = w / 2,
-        labelWidth = options.skipLabels ? 10 : options.labelWidth || 120;
-    
+      r = w / 2,
+      labelWidth = options.skipLabels ? 10 : options.labelWidth || 120;
+
     var vis = d3.select(selector).append("svg:svg")
-        .attr("width", r * 2)
-        .attr("height", r * 2)
-        .append("svg:g")
-        .attr("transform", "translate(" + r + "," + r + ")");
-        
+      .attr("width", r * 2)
+      .attr("height", r * 2)
+      .append("svg:g")
+      .attr("transform", "translate(" + r + "," + r + ")");
+
     var tree = d3.layout.tree()
       .size([360, r - labelWidth])
-      .sort(function(node) { return node.children ? node.children.length : -1; })
-      .children(options.children || function(node) {
+      .sort(function (node) {
+        return node.children ? node.children.length : -1;
+      })
+      .children(options.children || function (node) {
         return node.children;
       })
-      .separation(function(a, b) { return (a.parent == b.parent ? 1 : 2) / a.depth; });
+      .separation(function (a, b) {
+        return (a.parent == b.parent ? 1 : 2) / a.depth;
+      });
 
     var phylogram = d3.phylogram.build(selector, nodes, {
       vis: vis,
       tree: tree,
-      fill : fill,
+      fill: fill,
       size: size,
-      nodeMouseOver : nodeMouseOver,
-      nodeMouseOut : nodeMouseOut,
-      nodeMouseDown : nodeMouseDown,
+      nodeMouseOver: nodeMouseOver,
+      nodeMouseOut: nodeMouseOut,
+      nodeMouseDown: nodeMouseDown,
       skipBranchLengthScaling: true,
       skipTicks: true,
       skipLabels: options.skipLabels,
       diagonal: d3.phylogram.radialRightAngleDiagonal()
     })
     vis.selectAll('g.node')
-      .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; })
-    
+      .attr("transform", function (d) {
+        return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")";
+      })
+
     if (!options.skipLabels) {
       vis.selectAll('g.leaf.node text')
-        .attr("dx", function(d) { return d.x < 180 ? 8 : -8; })
+        .attr("dx", function (d) {
+          return d.x < 180 ? 8 : -8;
+        })
         .attr("dy", ".31em")
-        .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
-        .attr("transform", function(d) { return d.x < 180 ? null : "rotate(180)"; })
+        .attr("text-anchor", function (d) {
+          return d.x < 180 ? "start" : "end";
+        })
+        .attr("transform", function (d) {
+          return d.x < 180 ? null : "rotate(180)";
+        })
         .attr('font-family', 'Helvetica Neue, Helvetica, sans-serif')
         .attr('font-size', '10px')
         .attr('fill', 'black')
-        .text(function(d) {
+        .text(function (d) {
           return d.name;
         });
 
       vis.selectAll('g.inner.node text')
-        .attr("dx", function(d) { return d.x < 180 ? -6 : 6; })
-        .attr("text-anchor", function(d) { return d.x < 180 ? "end" : "start"; })
-        .attr("transform", function(d) { return d.x < 180 ? null : "rotate(180)"; });
+        .attr("dx", function (d) {
+          return d.x < 180 ? -6 : 6;
+        })
+        .attr("text-anchor", function (d) {
+          return d.x < 180 ? "end" : "start";
+        })
+        .attr("transform", function (d) {
+          return d.x < 180 ? null : "rotate(180)";
+        });
     }
-    
+
     return {tree: tree, vis: vis}
   }
 }());

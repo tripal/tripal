@@ -4,7 +4,8 @@
  *
  * @param $phylotree
  */
-function tripal_phylogeny_prepare_tree_viewer($phylotree) {
+function tripal_phylogeny_prepare_tree_viewer($phylotree)
+{
 
   // If the phylotree is not provided then just return;
   if (!$phylotree) {
@@ -59,6 +60,7 @@ function tripal_phylogeny_prepare_tree_viewer($phylotree) {
         'interior_node_size' => variable_get('tripal_phylogeny_default_interior_node_size', 1),
         'leaf_node_size' => variable_get('tripal_phylogeny_default_leaf_node_size', 6),
         'skipTicks' => $skip_ticks,
+        'phylogram_scale' => variable_get('tripal_phylogeny_default_phylogram_scale', 1),
       ],
       'org_colors' => $colors,
     ],
@@ -99,7 +101,8 @@ function tripal_phylogeny_prepare_tree_viewer($phylotree) {
  *
  * @ingroup tripal_phylogeny
  */
-function tripal_phylogeny_ajax_get_tree_json($phylotree_id) {
+function tripal_phylogeny_ajax_get_tree_json($phylotree_id)
+{
 
   $phylotree = chado_generate_var('phylotree', ['phylotree_id' => $phylotree_id]);
 
@@ -110,7 +113,7 @@ function tripal_phylogeny_ajax_get_tree_json($phylotree_id) {
     // features and organisms with which it is associated.  Each phylonode
     // can be associated with an organism in one of two ways: 1) via a
     // feature linked by the phylonode.feature_id field or 2) via a
-    // a record in the phylonde_organsim table.  Therefore both types of
+    // a record in the phylonde_organism table.  Therefore both types of
     // organism records are returned in the query below, but those
     // retrieved via a FK link on features are prefixed with 'fo_'.
     $sql = "
@@ -135,8 +138,7 @@ function tripal_phylogeny_ajax_get_tree_json($phylotree_id) {
         LEFT OUTER JOIN [chado_organism] co       ON co.organism_id = o.organism_id
       WHERE n.phylotree_id = :phylotree_id
     ";
-  }
-  else {
+  } else {
     $sql = "
       SELECT
         n.phylonode_id, n.parent_phylonode_id, n.label AS name, n.distance AS length,
@@ -165,13 +167,13 @@ function tripal_phylogeny_ajax_get_tree_json($phylotree_id) {
 
   if ($results) {
     while ($r = $results->fetchObject()) {
-      $phylonode_id = (int) $r->phylonode_id;
+      $phylonode_id = (int)$r->phylonode_id;
 
       // expect all nodes to have these properties
       $node = [
         'phylonode_id' => $phylonode_id,
-        'parent_phylonode_id' => (int) $r->parent_phylonode_id,
-        'length' => (double) $r->length,
+        'parent_phylonode_id' => (int)$r->parent_phylonode_id,
+        'length' => (double)$r->length,
         'cvterm_name' => $r->cvterm_name,
       ];
 
@@ -186,30 +188,28 @@ function tripal_phylogeny_ajax_get_tree_json($phylotree_id) {
       }
       // If this node is associated with a feature then add in the details
       if ($r->feature_id) {
-        $node['feature_id'] = (int) $r->feature_id;
+        $node['feature_id'] = (int)$r->feature_id;
         $node['feature_name'] = $r->feature_name;
         if (module_exists('tripal_phylogeny')) {
-          $node['feature_nid'] = (int) $r->feature_nid;
-        }
-        else {
+          $node['feature_nid'] = (int)$r->feature_nid;
+        } else {
           $entity_id = chado_get_record_entity_by_table('feature', $r->feature_id);
-          $node['feature_eid'] = (int) $entity_id;
+          $node['feature_eid'] = (int)$entity_id;
         }
       }
       // Add in the organism fields when they are available via the
       // phylonode_organism table.
       if ($r->organism_id) {
-        $node['organism_id'] = (int) $r->organism_id;
+        $node['organism_id'] = (int)$r->organism_id;
         $node['common_name'] = $r->common_name;
         $node['abbreviation'] = $r->abbreviation;
         $node['genus'] = $r->genus;
         $node['species'] = $r->species;
         if (module_exists('tripal_phylogeny')) {
-          $node['organism_nid'] = (int) $r->organism_nid;
-        }
-        else {
+          $node['organism_nid'] = (int)$r->organism_nid;
+        } else {
           $entity_id = chado_get_record_entity_by_table('organism', $r->organism_id);
-          $node['organism_eid'] = (int) $entity_id;
+          $node['organism_eid'] = (int)$entity_id;
         }
         // If the node does not have a name but is linked to an organism
         // then set the name to be that of the genus and species.
@@ -220,17 +220,16 @@ function tripal_phylogeny_ajax_get_tree_json($phylotree_id) {
       // Add in the organism fields when they are available via the
       // the phylonode.feature_id FK relationship.
       if ($r->fo_organism_id) {
-        $node['fo_organism_id'] = (int) $r->fo_organism_id;
+        $node['fo_organism_id'] = (int)$r->fo_organism_id;
         $node['fo_common_name'] = $r->fo_common_name;
         $node['fo_abbreviation'] = $r->fo_abbreviation;
         $node['fo_genus'] = $r->fo_genus;
         $node['fo_species'] = $r->fo_species;
         if (module_exists('tripal_phylogeny')) {
-          $node['fo_organism_nid'] = (int) $r->fo_organism_nid;
-        }
-        else {
+          $node['fo_organism_nid'] = (int)$r->fo_organism_nid;
+        } else {
           $entity_id = chado_get_record_entity_by_table('organism', $r->fo_organism_id);
-          $node['fo_organism_eid'] = (int) $entity_id;
+          $node['fo_organism_eid'] = (int)$entity_id;
         }
       }
 
@@ -242,10 +241,9 @@ function tripal_phylogeny_ajax_get_tree_json($phylotree_id) {
     foreach ($phylonodes as $key => &$node) {
       if ($node['parent_phylonode_id'] !== 0) {
         $parent_ref = &$phylonodes[$node['parent_phylonode_id']];
-        // Append node refernce to children.
+        // Append node reference to children.
         $parent_ref['children'][] = &$node;
-      }
-      else {
+      } else {
         $root_phylonode_ref = &$node;
       }
     }
@@ -262,7 +260,8 @@ function tripal_phylogeny_ajax_get_tree_json($phylotree_id) {
  *
  */
 
-function tripal_phylogeny_admin_phylotrees_listing() {
+function tripal_phylogeny_admin_phylotrees_listing()
+{
   $output = '';
 
   // set the breadcrumb
@@ -278,8 +277,7 @@ function tripal_phylogeny_admin_phylotrees_listing() {
   $view = views_embed_view('tripal_phylogeny_admin_phylotree', 'default');
   if (isset($view)) {
     $output .= $view;
-  }
-  else {
+  } else {
     $output .= '<p>The Phylotree module uses primarily views to provide an '
       . 'administrative interface. Currently one or more views needed for this '
       . 'administrative interface are disabled. <strong>Click each of the following links to '
@@ -297,7 +295,8 @@ function tripal_phylogeny_admin_phylotrees_listing() {
  * @param unknown $form
  * @param unknown $form_state
  */
-function tripal_phylogeny_default_plots_form($form, &$form_state) {
+function tripal_phylogeny_default_plots_form($form, &$form_state)
+{
   $form = [];
 
   $form['plot_settings'] = [
@@ -318,6 +317,19 @@ function tripal_phylogeny_default_plots_form($form, &$form_state) {
     ],
     '#size' => 5,
   ];
+
+  $form['plot_settings']['phylogram_scale'] = [
+    '#type' => 'select',
+    '#title' => t('Phylogram Scale'),
+    '#description' => 'Please specify the scale to use.',
+    '#default_value' => variable_get('tripal_phylogeny_default_phylogram_scale', 1),
+    '#options' => array(
+      1 => t('Linear'),
+      2 => t('Logarithmic'),
+    ),
+    '#size' => 2,
+  ];
+
 
   $form['node_settings'] = [
     '#type' => 'fieldset',
@@ -447,7 +459,8 @@ function tripal_phylogeny_default_plots_form($form, &$form_state) {
  *
  * @ingroup tripal_phylogeny
  */
-function tripal_phylogeny_default_plots_form_validate($form, &$form_state) {
+function tripal_phylogeny_default_plots_form_validate($form, &$form_state)
+{
 
 }
 
@@ -456,7 +469,8 @@ function tripal_phylogeny_default_plots_form_validate($form, &$form_state) {
  * @param unknown $form
  * @param unknown $form_state
  */
-function tripal_phylogeny_default_plots_form_submit($form, &$form_state) {
+function tripal_phylogeny_default_plots_form_submit($form, &$form_state)
+{
   // Rebuild this form after submission so that any changes are reflected in
   // the flat tables.
   $form_state['rebuild'] = TRUE;
@@ -467,6 +481,7 @@ function tripal_phylogeny_default_plots_form_submit($form, &$form_state) {
     variable_set('tripal_phylogeny_default_root_node_size', $form_state['values']['root_node_size']);
     variable_set('tripal_phylogeny_default_interior_node_size', $form_state['values']['interior_node_size']);
     variable_set('tripal_phylogeny_default_leaf_node_size', $form_state['values']['leaf_node_size']);
+    variable_set('tripal_phylogeny_default_phylogram_scale', $form_state['values']['phylogram_scale']);
 
     $num_orgs = $form_state['values']['num_orgs'];
     variable_set("tripal_phylogeny_num_orgs", $num_orgs);
@@ -491,7 +506,8 @@ function tripal_phylogeny_default_plots_form_submit($form, &$form_state) {
  *
  * @param unknown $variables
  */
-function theme_tripal_phylogeny_admin_org_color_tables($variables) {
+function theme_tripal_phylogeny_admin_org_color_tables($variables)
+{
   $fields = $variables['element'];
   $num_orgs = $fields['num_orgs']['#value'];
   $headers = ['Organism', 'Color', ''];
@@ -524,7 +540,8 @@ function theme_tripal_phylogeny_admin_org_color_tables($variables) {
  * @param $form
  * @param $form_state
  */
-function tripal_phylogeny_default_plots_form_ajax_callback($form, $form_state) {
+function tripal_phylogeny_default_plots_form_ajax_callback($form, $form_state)
+{
 
   return $form['node_settings']['org_table'];
 }
