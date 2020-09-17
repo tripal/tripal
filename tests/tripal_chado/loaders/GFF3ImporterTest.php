@@ -93,8 +93,15 @@ class GFF3ImporterTest extends TripalTestCase {
         'name' => 'sequence',
       ),
     ))->cvterm_id;
+    $this->supercontig_cvt = chado_get_cvterm(array(
+      'name' => 'supercontig',
+      'cv_id' => array(
+        'name' => 'sequence',
+      ),
+    ))->cvterm_id;
     $this->gene_1_uname = 'test_gene_001';
     $this->gene_2_uname = 'test_gene_002';
+    $this->scaffold_1_uname = 'scaffold1';
   }
 
   /**
@@ -378,6 +385,25 @@ class GFF3ImporterTest extends TripalTestCase {
     $this->assertEquals($this->gene_1_uname, $derivesfrom_feature->uniquename);
     $this->assertEquals($this->gene_1_uname, $derivesfrom_feature->name);
     $this->assertEquals($this->gene_cvt, $derivesfrom_feature->type_id);
+  }
+
+  /**
+   * Ensure FASTA information loaded correctly into chado.
+   *
+   * @group gff
+   */
+  public function testGFFImporterAttributeFastas() {
+    $this->initGFFImporterAttributes();
+
+    $scaffold = db_select('chado.feature', 'f')
+      ->fields('f')
+      ->condition('uniquename', $this->scaffold_1_uname)
+      ->condition('type_id', $this->supercontig_cvt)
+      ->execute()->fetchObject();
+
+    $this->assertEquals(1000, $scaffold->seqlen);
+    $this->assertEquals(1000, strlen($scaffold->residues));
+    $this->assertEquals('0154424abe69dd64cd428c330d480ba0', $scaffold->md5checksum);
   }
 
   /**
