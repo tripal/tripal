@@ -198,6 +198,11 @@ class GFF3Importer extends TripalImporter {
   private $dbxref_lookup = [];
 
   /**
+   * Holds a mapping of synonymns to ids.
+   */
+  private $synonym_lookup = [];
+
+  /**
    * An array that stores CVterms that have been looked up so we don't have
    * to do the database query every time.
    */
@@ -293,12 +298,164 @@ class GFF3Importer extends TripalImporter {
     while ($organism = $org_rset->fetchObject()) {
       $organisms[$organism->organism_id] = "$organism->genus $organism->species ($organism->common_name)";
     }
+
     $form['organism_id'] = [
-      '#title' => t('Organism'),
-      '#type' => t('select'),
-      '#description' => t("Choose the organism to which these sequences are associated"),
-      '#required' => TRUE,
+      '#title' => t('Existing Organism'),
+      '#type' => 'select',
+      '#description' => t("Choose an existing organism to which these sequences are associated, or create a new one in the fieldset below."),
+      '#required' => FALSE,
       '#options' => $organisms,
+    ];
+    $form['organism'] = [
+      '#type' => 'fieldset',
+      '#title' => t('And an Organism'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    ];
+    $form['organism']['help'] = [
+      '#markup' => t('Use the fields below to create a new organism to which the
+         features in this GFF3 file will be associated.  You must provide at least
+         the genus and species names. The record will be added to the Chado database prior to importing the GFF file.
+         You can later publish the organism and return to edit or update any details provided here.
+         If the organism already exists that matches what is provided below then it will be used and no new record will be created.')
+    ];
+    $form['organism']['genus'] = [
+      '#title' => t('Genus'),
+      '#type' => 'textfield',
+      '#description' => t("Specify the genus name"),
+      '#required' => FALSE,
+    ];
+    $form['organism']['species'] = [
+      '#title' => t('Species'),
+      '#type' => 'textfield',
+      '#description' => t("Specify the species name"),
+      '#required' => FALSE,
+    ];
+    $itypes = [];
+    $form['organism']['infraspecific_type'] = [
+      '#title' => t('Infraspecific Type'),
+      '#type' => 'select',
+      '#description' => t("Choose an existing infraspecific type"),
+      '#required' => FALSE,
+      '#options' => $itypes,
+    ];
+    $form['organism']['infraspecific_name'] = [
+      '#title' => t('Infraspecific Name'),
+      '#type' => 'textfield',
+      '#description' => t("Specify the infrapsecific name"),
+      '#required' => FALSE,
+    ];
+    $form['organism']['common_name'] = [
+      '#title' => t('Common Name'),
+      '#type' => 'textfield',
+      '#description' => t("Specify the common name"),
+      '#required' => FALSE,
+    ];
+    $form['organism']['abbreviation'] = [
+      '#title' => t('Common Name'),
+      '#type' => 'textfield',
+      '#description' => t("Specify the common name"),
+      '#required' => FALSE,
+    ];
+    $form['organism']['description'] = [
+      '#title' => t('Description'),
+      '#type' => 'textarea',
+      '#description' => t("Provide a description for this organism."),
+      '#required' => FALSE,
+    ];
+
+    $form['landmark_type'] = [
+      '#title' => t('Landmark Type'),
+      '#type' => 'textfield',
+      '#description' => t("Optional. Use this field to specify a Sequence Ontology type
+       for the landmark sequences in the GFF fie (e.g. 'chromosome'). This is only needed if
+       the landmark features (first column of the GFF3 file) are not already in the database.."),
+    ];
+
+    $form['proteins'] = [
+      '#type' => 'fieldset',
+      '#title' => t('Proteins'),
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+    ];
+    $form['proteins']['skip_protein'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Skip automatic protein creation'),
+      '#required' => FALSE,
+      '#description' => t('The GFF loader will automatically create a protein feature for each transcript in the GFF file if a protein feature is missing in the GFF file. Check this box to disable this functionality. Protein features that are specifically present in the GFF will always be created.'),
+      '#default_value' => 0,
+    ];
+    $form['proteins']['re_mrna'] = [
+      '#type' => 'textfield',
+      '#title' => t('Optional. Regular expression for the mRNA name'),
+      '#required' => FALSE,
+      '#description' => t('If automatic protein creation is enabled, then by default the loader will give each protein a name based on the name of the corresponding mRNA followed by the "-protein" suffix.
+       If you want to customize the name of the created protein, you can enter a regular expression that will extract portions of
+       the mRNA unique name. For example, for a
+       mRNA with a unique name finishing by -RX (e.g. SPECIES0000001-RA),
+       the regular expression would be, "^(.*?)-R([A-Z]+)$". Elements surrounded by parentheses are captured as backreferences and can be used for replacement.' ),
+    ];
+    $form['proteins']['re_protein'] = [
+      '#type' => 'textfield',
+      '#title' => t('Optional. Replacement string for the protein name'),
+      '#required' => FALSE,
+      '#description' => t('If a regular expression is used to specify a protein name you can use the backreference tokens to extract the portion of the mRNA name that you want to use for a protein.
+       You use a dollar sign followed by a number to indicate the backreferences. For example: "$1-P$2".'),
+    ];
+
+    $form['targets'] = [
+      '#type' => 'fieldset',
+      '#title' => t('Targets'),
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+    ];
+    $form['targets']['adesc'] = [
+      '#markup' => t("When alignments are represented in the GFF file (e.g. such as
+       alignments of cDNA sequences to a whole genome, or blast matches), they are
+       represented using two feature types: 'match' (or cDNA_match, EST_match, etc.)
+       and 'match_part'.  These features may also have a 'Target' attribute to
+       specify the sequence that is being aligned.
+       However, the organism to which the aligned sequence belongs may not be present in the
+       GFF file.  Here you can specify the organism and feature type of the target sequences.
+       The options here will apply to all targets unless the organism and type are explicity
+       set in the GFF file using the 'target_organism' and 'target_type' attributes."),
+    ];
+    $form['targets']['create_organism'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Create organism'),
+      '#required' => FALSE,
+      '#description' => t('The Tripal GFF loader supports the "organism" attribute. This allows features of a
+       different organism to be aligned to the landmark sequence.  The format of the
+       attribute is "organism=[genus]:[species]", where [genus] is the organism\'s genus and [species] is the
+       species name. Check this box to automatically add the organism to the database if it does not already exists.
+       Otherwise lines with an oraganism attribute where the organism is not present in the database will be skipped.'),
+    ];
+    $form['targets']['target_organism_id'] = [
+      '#title' => t('Target Organism'),
+      '#type' => t('select'),
+      '#description' => t("Optional. Choose the organism to which target sequences belong.
+        Select this only if target sequences belong to a different organism than the
+        one specified above. And only choose an organism here if all of the target sequences
+        belong to the same species.  If the targets in the GFF file belong to multiple
+        different species then the organism must be specified using the 'target_organism=genus:species'
+        attribute in the GFF file."),
+      '#options' => $organisms,
+    ];
+    $form['targets']['target_type'] = [
+      '#title' => t('Target Type'),
+      '#type' => t('textfield'),
+      '#description' => t("Optional. If the unique name for a target sequence is not unique (e.g. a protein
+       and an mRNA have the same name) then you must specify the type for all targets in the GFF file. If
+       the targets are of different types then the type must be specified using the 'target_type=type' attribute
+       in the GFF file. This must be a valid Sequence Ontology (SO) term."),
+    ];
+    $form['targets']['create_target'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Create Target'),
+      '#required' => FALSE,
+      '#description' => t("If the target feature cannot be found, create one using the organism and type specified above, or
+       using the 'target_organism' and 'target_type' fields specified in the GFF file.  Values specified in the
+       GFF file take precedence over those specified above."),
     ];
 
     // Advanced Options
@@ -306,7 +463,7 @@ class GFF3Importer extends TripalImporter {
       '#type' => 'fieldset',
       '#title' => t('Additional Options'),
       '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
+      '#collapsed' => FALSE,
     ];
 
 
@@ -316,17 +473,6 @@ class GFF3Importer extends TripalImporter {
       '#description' => t('Enter the line number in the GFF file where you would like to begin processing.  The
       first line is line number 1.  This option is useful for examining loading problems with large GFF files.'),
       '#size' => 10,
-    ];
-
-    $form['advanced']['landmark_type'] = [
-      '#title' => t('Landmark Type'),
-      '#type' => t('textfield'),
-      '#description' => t("Optional. Use this field to specify a Sequence Ontology type
-       for the landmark sequences in the GFF fie (e.g. 'chromosome'). If the GFF file
-       contains a '##sequence-region' line that describes the landmark sequences to
-       which all others are aligned and a type is provided here then the features
-       will be created if they do not already exist.  If they do exist then this
-       field is not used."),
     ];
 
     $form['advanced']['alt_id_attr'] = [
@@ -339,142 +485,7 @@ class GFF3Importer extends TripalImporter {
     ];
 
 
-    $form['advanced']['skip_protein'] = [
-      '#type' => 'checkbox',
-      '#title' => t('Skip automatic protein creation'),
-      '#required' => FALSE,
-      '#description' => t('The GFF loader will automatically create a protein feature for each transcript in the GFF file if a protein feature is missing in the GFF file. Check this box to disable this functionality. Protein features that are specifically present in the GFF will always be created.'),
-      '#default_value' => 0,
-    ];
 
-
-    $form['advanced']['protein_names'] = [
-      '#type' => 'fieldset',
-      '#title' => t('Protein Names'),
-      '#collapsible' => TRUE,
-      '#collapsed' => FALSE,
-      '#weight' => 5,
-    ];
-
-    $form['advanced']['protein_names']['re_help'] = [
-      '#type' => 'item',
-      '#markup' => t('A regular expression is an advanced method for extracting information from a string of text.
-                   If your GFF3 file does not contain polypeptide (or protein) features, but contains CDS features, proteins will be automatically created.
-                   By default the loader will give each protein a name based on the name of the corresponding mRNA followed by the "-protein" suffix.
-                   If you want to customize the name of the created protein, you can use the following regex.'),
-    ];
-    $form['advanced']['protein_names']['re_mrna'] = [
-      '#type' => 'textfield',
-      '#title' => t('Regular expression for the mRNA name'),
-      '#required' => FALSE,
-      '#description' => t('Enter the regular expression that will extract portions of
-       the mRNA unique name. For example, for a
-       mRNA with a unique name finishing by -RX (e.g. SPECIES0000001-RA),
-       the regular expression would be, "^(.*?)-R([A-Z]+)$".'),
-    ];
-    $form['advanced']['protein_names']['re_protein'] = [
-      '#type' => 'textfield',
-      '#title' => t('Replacement string for the protein name'),
-      '#required' => FALSE,
-      '#description' => t('Enter the replacement string that will be used to create
-       the protein name based on the mRNA regular expression. For example, for a
-       mRNA regular expression "^(.*?)-R()[A-Z]+)$", the corresponding protein regular
-       expression would be "$1-P$2".'),
-    ];
-
-    $form['advanced']['add_only'] = [
-      '#type' => 'checkbox',
-      '#title' => t('Import only new features'),
-      '#required' => FALSE,
-      '#description' => t('The job will skip features in the GFF file that already
-                         exist in the database and import only new features.'),
-    ];
-    $form['advanced']['update'] = [
-      '#type' => 'checkbox',
-      '#title' => t('Import all and update'),
-      '#required' => FALSE,
-      '#default_value' => 'checked',
-      '#description' => t('Existing features will be updated and new features will be added.  Attributes
-                         for a feature that are not present in the GFF but which are present in the
-                         database will not be altered.'),
-      '#default_value' => 1,
-    ];
-    // SPF: there are bugs in refreshing and removing features.  The bugs arise
-    //      if a feature in the GFF does not have a uniquename. GenSAS will auto
-    //      generate this uniquename and it will not be the same as a previous
-    //      load because it uses the date.  This causes orphaned CDS/exons, UTRs
-    //      to be left behind during a delete or refresh.  So, the short term
-    //      fix is to remove these options.
-    //   $form['import_options']['refresh']= array(
-    //     '#type' => 'checkbox',
-    //     '#title' => t('Import all and replace'),
-    //     '#required' => FALSE,
-    //     '#description' => t('Existing features will be updated and feature properties not
-    //                          present in the GFF file will be removed.'),
-    //   );
-    //   $form['import_options']['remove']= array(
-    //     '#type' => 'checkbox',
-    //     '#title' => t('Delete features'),
-    //     '#required' => FALSE,
-    //     '#description' => t('Features present in the GFF file that exist in the database
-    //                          will be removed rather than imported'),
-    //   );
-    $form['advanced']['create_organism'] = [
-      '#type' => 'checkbox',
-      '#title' => t('Create organism'),
-      '#required' => FALSE,
-      '#description' => t('The Tripal GFF loader supports the "organism" attribute. This allows features of a
-       different organism to be aligned to the landmark sequence of another species.  The format of the
-       attribute is "organism=[genus]:[species]", where [genus] is the organism\'s genus and [species] is the
-       species name. Check this box to automatically add the organism to the database if it does not already exists.
-       Otherwise lines with an oraganism attribute where the organism is not present in the database will be skipped.'),
-    ];
-
-    $form['advanced']['targets'] = [
-      '#type' => 'fieldset',
-      '#title' => t('Targets'),
-      '#collapsible' => TRUE,
-      '#collapsed' => FALSE,
-      '#weight' => 1,
-    ];
-    $form['advanced']['targets']['adesc'] = [
-      '#markup' => t("When alignments are represented in the GFF file (e.g. such as
-       alignments of cDNA sequences to a whole genome, or blast matches), they are
-       represented using two feature types: 'match' (or cDNA_match, EST_match, etc.)
-       and 'match_part'.  These features may also have a 'Target' attribute to
-       specify the sequence that is being aligned.
-       However, the organism to which the aligned sequence belongs may not be present in the
-       GFF file.  Here you can specify the organism and feature type of the target sequences.
-       The options here will apply to all targets unless the organism and type are explicity
-       set in the GFF file using the 'target_organism' and 'target_type' attributes."),
-    ];
-    $form['advanced']['targets']['target_organism_id'] = [
-      '#title' => t('Target Organism'),
-      '#type' => t('select'),
-      '#description' => t("Optional. Choose the organism to which target sequences belong.
-      Select this only if target sequences belong to a different organism than the
-      one specified above. And only choose an organism here if all of the target sequences
-      belong to the same species.  If the targets in the GFF file belong to multiple
-      different species then the organism must be specified using the 'target_organism=genus:species'
-      attribute in the GFF file."),
-      '#options' => $organisms,
-    ];
-    $form['advanced']['targets']['target_type'] = [
-      '#title' => t('Target Type'),
-      '#type' => t('textfield'),
-      '#description' => t("Optional. If the unique name for a target sequence is not unique (e.g. a protein
-       and an mRNA have the same name) then you must specify the type for all targets in the GFF file. If
-       the targets are of different types then the type must be specified using the 'target_type=type' attribute
-       in the GFF file. This must be a valid Sequence Ontology (SO) term."),
-    ];
-    $form['advanced']['targets']['create_target'] = [
-      '#type' => 'checkbox',
-      '#title' => t('Create Target'),
-      '#required' => FALSE,
-      '#description' => t("If the target feature cannot be found, create one using the organism and type specified above, or
-       using the 'target_organism' and 'target_type' fields specified in the GFF file.  Values specified in the
-       GFF file take precedence over those specified above."),
-    ];
 
     return $form;
   }
@@ -617,57 +628,116 @@ class GFF3Importer extends TripalImporter {
       }
     }
 
-    // Make sure we have the synonym records and null publication ready to go.
-    $this->prepSynonms();
-    $this->prepNullPub();
-
     // Load the GFF3.
     $this->logMessage("Step 1: Preloading GFF3 file...                       ");
     $this->parseGFF3();
 
-    $this->logMessage("Step 2: Load landmarks sequences...                   ");
+    // Prep the database for necessary records.
+    $this->prepSynonms();
+    $this->prepNullPub();
+    $this->prepDBs();
+
+    $this->logMessage("Step 2: Load landmarks sequences...                       ");
     $this->loadLandmarks();
 
-    $this->logMessage("Step 3: Loading features...                           ");
-    $this->loadFeatures($this->features);
+    $this->logMessage("Step 3: Loading !num_features features...                               ",
+        ['!num_features' => count(array_keys($this->features))]);
+    $this->loadFeatures();
 
-    $this->logMessage("Step 4: Loading feature locations...                  ");
+    $this->logMessage("Step 4: Loading locations...                              ");
     $this->loadFeatureLocs();
 
-    $this->logMessage("Step 5: Loading features Derives_from (gene/CDS relationships)...");
-    $this->loadDerivesFroms();
+    $this->logMessage("Step 5: Loading 'derives_from' (gene/CDS) relationships...");
+    //$this->loadDerivesFroms();
 
-    $this->logMessage("Step 6: Loading features properties...                ");
-    $this->loadProperties();
+    $this->logMessage("Step 6: Loading properties...                             ");
+    $this->loadFeatureProps();
 
-    $this->logMessage("Step 7: Loading features synonyms (aliases)...        ");
-    $this->loadAliases();
+    $this->logMessage("Step 7a: Finding synonyms (aliases)...                    ");
+    $this->findSynonyms();
+    $this->logMessage("Step 7b: Loading synonsyms (aliases)...                   ");
+    $this->loadSynonyms();
+    $this->logMessage("Step 7c: Loading feature synonyms (aliases)...            ");
+    $this->loadFeatureSynonyms();
 
-    $this->logMessage("Step 8: Loading features cross references...          ");
+    $this->logMessage("Step 8a: Finding existing cross references...             ");
+    $this->findDbxrefs();
+    $this->logMessage("Step 8b: Loading cross references...                      ");
     $this->loadDbxrefs();
+    $this->logMessage("Step 8c: Loading feature cross references...              ");
+    $this->loadFeatureDbxrefs();
 
+    /*
+      strcmp($tag_name, 'Parent') != 0 and
+      strcmp($tag_name, 'Target') != 0 and
+      strcmp($tag_name, 'Gap') != 0 and
+      strcmp($tag_name, 'Derives_from') != 0 and
+      strcmp($tag_name, 'Note') != 0 and
+      strcmp($tag_name, 'Ontology_term') != 0 and
+      strcmp($tag_name, 'Is_circular') != 0 and
+      strcmp($tag_name, 'target_organism') != 0 and
+      strcmp($tag_name, 'target_type') != 0 and
+      strcmp($tag_name, 'organism' != 0)) {
+    */
     if (!empty($this->residue_index)) {
-      $this->logMessage("Step 9: Loading residues from FASTA...                ");
-      $this->loadFastas();
+      $this->logMessage("Step 9: Loading residues from FASTA...                  ");
+      //$this->loadFastas();
     }
-
   }
 
-  /**
-   * Cleans up the temporary tables.
-   *
-   * These tables are used to temporarily store features from the GFF file.
-   * This way the GFF entries can be out of order when loading.
-   */
-  private function prepTempTables() {
 
-    // empty the temp tables
-    $sql = "DELETE FROM {tripal_gff_temp}";
-    chado_query($sql);
-    $sql = "DELETE FROM {tripal_gffcds_temp}";
-    chado_query($sql);
-    $sql = "DELETE FROM {tripal_gffprotein_temp}";
-    chado_query($sql);
+  /**
+   * Load a controlled vocabulary term.
+   *
+   * This method first checks if the term has already been loaded in the
+   * feature_cvterm_lookup array, which helps a lot with performance.
+   *
+   * @param $type
+   * @param $cv_id
+   *
+   * @ingroup gff3_loader
+   */
+  private function getCvtermID($type, $cv_id = NULL, $is_prop_type = FALSE) {
+    if (!isset($cv_id)) {
+      $cv_id = $this->feature_cv->getValue('cv_id');
+    }
+    if ($is_prop_type and array_key_exists(strtolower($type), $this->featureprop_cvterm_lookup)) {
+      return $this->featureprop_cvterm_lookup[strtolower($type)];
+    }
+    elseif (array_key_exists(strtolower($type), $this->feature_cvterm_lookup)) {
+      return $this->feature_cvterm_lookup[strtolower($type)];
+    }
+
+    $sel_cvterm_sql = "
+      SELECT CVT.cvterm_id
+      FROM {cvterm} CVT
+        LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
+      WHERE CVT.cv_id = {$cv_id} and
+       (lower(CVT.name) = lower(:name) or lower(CVTS.synonym) = lower(:synonym))
+    ";
+    $result = chado_query($sel_cvterm_sql, [
+      ':name' => $type,
+      ':synonym' => $type,
+    ]);
+    $cvterm = $result->fetchObject() ?? NULL;
+    if ($cvterm) {
+      $cvterm = chado_get_cvterm(array('cvterm_id' => $cvterm->cvterm_id)) ?? NULL;
+    }
+
+    if ($is_prop_type) {
+      $this->featureprop_cvterm_lookup[strtolower($cvterm->name)] = $cvterm->cvterm_id;
+      $this->featureprop_cvterm_lookup[strtolower($type)] = $cvterm->cvterm_id;
+    }
+    else {
+      $this->feature_cvterm_lookup[strtolower($cvterm->name)] = $cvterm->cvterm_id;
+      $this->feature_cvterm_lookup[strtolower($type)] = $cvterm->cvterm_id;
+
+      // If the cvterm name does not match the name provided then set a mapping.
+      if ($cvterm->name != $type) {
+        $this->feature_cvterm_aliases[$type] = $cvterm->name;
+      }
+    }
+    return $cvterm->cvterm_id;
   }
 
   /**
@@ -735,7 +805,7 @@ class GFF3Importer extends TripalImporter {
    */
   private function prepNullPub(){
 
-    // check to see if we have a NULL publication in the pub table.  If not,
+    // Check to see if we have a NULL publication in the pub table.  If not,
     // then add one.
     $select = ['uniquename' => 'null'];
     $result = chado_select_record('pub', ['*'], $select);
@@ -755,7 +825,7 @@ class GFF3Importer extends TripalImporter {
         return 0;
       }
 
-      // insert the null pub
+      // Insert the null pub.
       $result = chado_query($pub_sql, [
           ':uname' => 'null',
           ':type_id' => 'null',
@@ -774,55 +844,47 @@ class GFF3Importer extends TripalImporter {
   }
 
   /**
-   * Makes sure Chado is ready with the necessary Dbxref records.
+   * Makes sure Chado is ready with the necessary DB records.
    */
-  private function prepDbxrefs() {
+  private function prepDBs() {
+
+    // Get the list of database records that are needed by this GFF file. If
+    // they do not exist then add them.
     $sql = "
       SELECT db_id
       FROM {db}
       WHERE name = :dbname";
 
-    foreach ($this->db_lookup as $dbname => $value) {
-      $result = chado_query($sql, array(
-        ':dbname' => $dbname,
-      ));
-
-      $db = $result->fetchObject() ?? NULL;
-      if ($db) {
-        $db = chado_get_db(array('db_id' => $db->db_id));
+    foreach (array_keys($this->db_lookup) as $dbname) {
+      // First look for the database name if it doesn't exist then create one.
+      // first check for the fully qualified URI (e.g. DB:<dbname>. If that
+      // can't be found then look for the name as is.  If it still can't be found
+      // the create the database
+      $values = ['name' => "DB:$dbname"];
+      $db = chado_select_record('db', ['db_id'], $values);
+      if (count($db) == 0) {
+        $values = ['name' => "$dbname"];
+        $db = chado_select_record('db', ['db_id'], $values);
       }
-      else {
-        $db = chado_insert_db(array(
+      if (count($db) == 0) {
+        $values = [
           'name' => $dbname,
+          'description' => 'Added automatically by the Triapl GFF loader.',
+        ];
+        $success = chado_insert_record('db', $values, array(
+          'skip_validation' => TRUE,
         ));
+        if ($success) {
+          $values = ['name' => "$dbname"];
+          $db = chado_select_record('db', ['db_id'], $values);
+        }
+        else {
+          $this->logMessage("Cannot find or add the database $dbname.", [], TRIPAL_WARNING);
+          return 0;
+        }
       }
 
-      $this->db_lookup[$dbname] = $db->db_id;
-    }
-
-    $sql = "
-      SELECT dbxref_id
-      FROM {dbxref}
-      WHERE db_id = :db_id and accession = :accession";
-
-    foreach ($this->dbxref_lookup as $index => $info) {
-      $result = chado_query($sql, array(
-        ':db_id' => $this->db_lookup[$info['db']],
-        ':accession' => $info['accession'],
-      ));
-
-      $dbx = $result->fetchObject() ?? NULL;
-      if ($dbx) {
-        $dbx = chado_get_dbxref(array('dbxref_id' => $dbx->dbxref_id));
-      }
-      else {
-        $dbx = chado_insert_dbxref(array(
-          'db_id' => $this->db_lookup[$info['db']],
-          'accession' => $info['accession'],
-        ));
-      }
-
-      $this->dbxref_lookup[$index] = $dbx->dbxref_id;
+      $this->db_lookup[$dbname] = $db[0]->db_id;
     }
   }
 
@@ -938,7 +1000,8 @@ class GFF3Importer extends TripalImporter {
       elseif (strcmp($tag_name, 'Derives_from') == 0) {
         $attr_derives = array_merge($attr_derives, $tags[$tag_name]);
       }
-      // Get the list of non-reserved attributes.
+      // Get the list of non-reserved attributes these will get added
+      // as properties to the featureprop table.
       elseif (strcmp($tag_name, 'Name') !=0 and strcmp($tag_name, 'ID') !=0 and
               strcmp($tag_name, 'Alias') != 0 and strcmp($tag_name, 'Parent') != 0 and
               strcmp($tag_name, 'Target') != 0 and strcmp($tag_name, 'Gap') != 0 and
@@ -962,6 +1025,8 @@ class GFF3Importer extends TripalImporter {
     $ret['name'] = $attr_name;
     $ret['uniquename'] = $attr_uniquename;
     $ret['synonyms'] = $attr_aliases;
+
+    // Add in the dbxref record.
     $ret['dbxrefs'] = [];
     foreach ($attr_dbxref as $key => $dbx) {
       $parts = explode(':', $dbx);
@@ -1086,6 +1151,48 @@ class GFF3Importer extends TripalImporter {
   }
 
   /**
+   * Retrieves a ChadoRecord object for the landmark feature.
+   *
+   * @param $landmark_name
+   *   The name of the landmark to get
+   *
+   * @return
+   *   A feature ChadoRecord object or NULL if the landmark is missing and
+   *   $skip_on_missing is TRUE.
+   */
+  private function findLandmark($landmark_name) {
+
+    // Before performing a database query check to see if
+    // this landmark is already in our lookup list.
+    if (array_key_exists($landmark_name, $this->landmarks)) {
+      return $this->landmarks[$landmark_name];
+    }
+
+    $landmark = new ChadoRecord('feature');
+    $landmark->setValues([
+      'organism_id' => $this->organism_id,
+      'uniquename' => $landmark_name,
+    ]);
+    if ($landmark_type) {
+      $landmark->setValue('type_id', $landmark_type->getValue('cvterm_id'));
+    }
+    $num_found = $landmark->find();
+    if ($num_found == 0) {
+      return NULL;
+    }
+    if ($num_found > 1) {
+      throw new Exception(t("The landmark '%landmark' has more than one entry for this organism (%species). Did you provide a landmark type? If not, try resubmitting and providing a type." .
+          "Cannot continue", [
+            '%landmark' => $landmark_name,
+            '%species' => $this->organism->getValues('genus') . " " . $this->organism->getValues('species'),
+          ]));
+    }
+
+    // The landmark was found, remember it
+    $this->landmarks[$landmark_name] = $landmark;
+    return $landmark;
+  }
+  /**
    * Loads into the database any landmark sequences.
    *
    * @param $line
@@ -1096,7 +1203,7 @@ class GFF3Importer extends TripalImporter {
     $region_matches = [];
     if (preg_match('/^##sequence-region\s+(\w*?)\s+(\d+)\s+(\d+)$/i', $line, $region_matches)) {
       $rid = $region_matches[1];
-      $landmark = $this->getLandmark($rid, NULL, TRUE);
+      $landmark = $this->findLandmark($rid);
       if (!$landmark) {
         $rstart = $region_matches[2];
         $rend = $region_matches[3];
@@ -1104,18 +1211,25 @@ class GFF3Importer extends TripalImporter {
           throw new Exception(t('The landmark, !landmark, cannot be added becuase no landmark type was provided. Please redo the importer job and specify a landmark type.',
               ['!landmark' => $rid]));
         }
-        $this->logMessage('Adding a new landmark feature: !landmark', ['!landmark' => $rid]);
-        $landmark = $this->loadFeature($this->organism, $this->analysis, $this->landmark_cvterm, $rid,
-              $rid, '', 'f', 'f', 1, 0);
-        $this->landmark[$rid] = [
-          'uniquename' => $landmark->getValue('uniquename'),
-          'name' => $landmark->getValue('name'),
-          'type' => $this->landmark_cvterm->getValue('name'),
-          'feature_id' => $landmark->getValue('feature_id'),
-          'organism_id' => $landmark->getValue('organism_id'),
-        ];
+        $this->loadLandmark($rid);
       }
     }
+  }
+
+  /**
+   * Loads a single landmark by name.
+   */
+  private function loadLandmark($name) {
+    //$this->logMessage('Adding a new landmark feature: !landmark', ['!landmark' => $name]);
+    $landmark = $this->loadFeature($this->organism, $this->analysis, $this->landmark_cvterm, $name,
+        $name, '', 'f', 'f', 1, 0);
+    $this->landmarks[$name] = [
+      'uniquename' => $landmark->getValue('uniquename'),
+      'name' => $landmark->getValue('name'),
+      'type' => $this->landmark_cvterm->getValue('name'),
+      'feature_id' => $landmark->getValue('feature_id'),
+      'organism_id' => $landmark->getValue('organism_id'),
+    ];
   }
 
   /**
@@ -1172,11 +1286,8 @@ class GFF3Importer extends TripalImporter {
         $this->landmarks[$gff_feature['landmark']] = FALSE;
       }
 
-      // Store this feature in the landmark list or the feature list.
-      if ($gff_feature['uniquename'] == $gff_feature['landmark']) {
-        $this->landmarks[$gff_feature['uniquename']] = $gff_feature;
-      }
-      else {
+      // Store the GFF feature details.
+      if ($gff_feature['uniquename'] != $gff_feature['landmark']) {
         $this->features[$gff_feature['uniquename']] = $gff_feature;
       }
 
@@ -1223,8 +1334,6 @@ class GFF3Importer extends TripalImporter {
       }
     }
 
-    $this->prepDbxrefs();
-
     // Iterate through the feature type terms and get a chado object for each.
     $feature_cvterm_ids = [];
     foreach ($feature_cvterms as $name => $counts) {
@@ -1250,7 +1359,7 @@ class GFF3Importer extends TripalImporter {
           $this->logMessage("Cannot add cvterm, $name.", [], TRIPAL_WARNING);
           return 0;
         }
-        $this->featureprop_cvterm_lookup[$cvterm->name] = $cvterm->cvterm_id;
+        $this->featureprop_cvterm_lookup[strtolower($cvterm->name)] = $cvterm->cvterm_id;
       }
     }
 
@@ -1277,27 +1386,28 @@ class GFF3Importer extends TripalImporter {
    * Imports the landmark features into Chado.
    */
   private function loadLandmarks() {
-
-    $new_landmarks = [];
     foreach ($this->landmarks as $uniquename => $feature) {
       // If the landmark does not have an entry in the GFF lines, try to
-      // find it in the heade (i.e. ##sequence-region section). If it
-      // exists then create it.
+      // find or add it.
       if ($feature === FALSE) {
+        // First see if there is a definition in the headers region.
         if (array_key_exists($uniquename, $this->seq_region_headers)) {
           $this->loadHeaderLandmark($this->seq_region_headers[$uniquename]);
           continue;
         }
+        // Second, if a landmark_type is provided then just add the landmark feature.
+        else if ($this->landmark_type) {
+          $landmark = $this->findLandmark($uniquename);
+          if (!$landmark) {
+            $this->loadLandmark($uniquename);
+          }
+        }
         else {
-          throw new Exception(t('The landmark (reference) sequence, !landmark, is not in the database and not specified in the GFF3 file. Please pre-load the landmark sequences or edit the GFF3 file to include them.',
+          throw new Exception(t('The landmark (reference) sequence, !landmark, is not in the database and not specified in the GFF3 file. Please either pre-load the landmark sequences or set a "Landmark Type" in the GFF importer.',
               ['!landmark' => $uniquename]));
         }
       }
-      else {
-        $new_landmarks[$uniquename] = $feature;
-      }
     }
-    $this->loadFeatures($new_landmarks);
   }
 
   /**
@@ -1333,9 +1443,9 @@ class GFF3Importer extends TripalImporter {
   /**
    * Imports the feature records into Chado.
    */
-  private function loadFeatures($features) {
+  private function loadFeatures() {
     $batch_size = 1000;
-    $num_features = count(array_keys($features));
+    $num_features = count(array_keys($this->features));
     $num_batches = (int) ($num_features / $batch_size) + 1;
 
     $this->setItemsHandled(0);
@@ -1357,59 +1467,51 @@ class GFF3Importer extends TripalImporter {
          seqlen, is_analysis, is_obsolete)
       VALUES\n";
     $i = 0;
+    $total = 0;
     $batch_num = 1;
     $sql = '';
     $args = [];
     $batch_features = [];
-    foreach ($features as $uniquename => $feature) {
+    foreach ($this->features as $uniquename => $feature) {
+      $total++;
+      $i++;
       $batch_features[$uniquename] = $feature;
 
       // Only do an insert if this feature doesn't already exist in the databse.
       if (!$this->doesFeatureAlreadyExist($feature)) {
-
-        $i++;
-        $residues = $this->getResidues($feature, FALSE);
+        $residues = '';//$this->getResidues($feature, FALSE);
+        $type_id = $this->feature_cvterm_lookup[strtolower($feature['type'])];
         $sql .= "(:uniquename_$i, :name_$i, :type_id_$i, :organism_id_$i, :residues_$i, " .
                " :md5checksum_$i, :seqlen_$i, FALSE, FALSE),\n";
         $args[":uniquename_$i"] = $feature['uniquename'];
         $args[":name_$i"] = $feature['name'];
-        $args[":type_id_$i"] = $this->feature_cvterm_lookup[$feature['type']];
+        $args[":type_id_$i"] = $type_id;
         $args[":organism_id_$i"] = $feature['organism_id'];
         $args[":residues_$i"] = $residues;
         $args[":md5checksum_$i"] = $residues ? md5($residues) : '';
         $args[":seqlen_$i"] = strlen($residues);
+      }
 
-        // If we've reached the size of the batch then let's do the insert.
-        if ($i == $batch_size) {
+      // If we've reached the size of the batch then let's do the insert.
+      if ($i == $batch_size or $total == $num_features) {
 
-          // Insert the batch.
-          $sql = rtrim($sql, ",\n");
-          $sql = $init_sql . $sql;
+        // Insert the batch.
+        $sql = rtrim($sql, ",\n");
+        $sql = $init_sql . $sql;
+        if (count($args) > 0) {
           $last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
           $this->assignFeatureIDs($batch_features);
-          $this->setItemsHandled($batch_num);
-          $batch_num++;
-
-          // Now reset all of the varables for the next batch.
-          $sql = '';
-          $i = 0;
-          $args = [];
-          $start_id = $last_id;
-          $batch_features = [];
         }
+        $this->setItemsHandled($batch_num);
+        $batch_num++;
+
+        // Now reset all of the varables for the next batch.
+        $sql = '';
+        $i = 0;
+        $args = [];
+        $start_id = $last_id;
+        $batch_features = [];
       }
-    }
-
-    // Insert any remaining batch items
-    if ($i > 0) {
-      $sql = rtrim($sql, ",\n");
-      $sql = $init_sql . $sql;
-      $last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
-      $this->setItemsHandled($batch_num);
-    }
-
-    if (!empty($batch_features)) {
-      $this->assignFeatureIDs($batch_features);
     }
   }
 
@@ -1431,7 +1533,7 @@ class GFF3Importer extends TripalImporter {
       $result = chado_query($sql, array(
         ':uniquename' => $feature['uniquename'],
         ':organism_id' => $feature['organism_id'],
-        ':type_id' => $this->feature_cvterm_lookup[$feature['type']],
+        ':type_id' => $this->feature_cvterm_lookup[strtolower($feature['type'])],
       ))->fetchObject();
       if (array_key_exists($uniquename, $this->features)) {
         $this->features[$uniquename]['feature_id'] = $result->feature_id;
@@ -1445,7 +1547,7 @@ class GFF3Importer extends TripalImporter {
   /**
    *
    */
-  private function loadProperties(){
+  private function loadFeatureProps(){
     $batch_size = 100;
     $num_features = count(array_keys($this->features));
     $num_batches = (int) ($num_features / $batch_size) + 1;
@@ -1453,11 +1555,9 @@ class GFF3Importer extends TripalImporter {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    $init_sql = "
-      INSERT INTO {featureprop}
-        (feature_id, type_id, value, rank)
-      VALUES\n";
+    $init_sql = "INSERT INTO {featureprop} (feature_id, type_id, value, rank) VALUES\n";
     $i = 0;
+    $total = 0;
     $j = 0;
     $batch_num = 1;
     $sql = '';
@@ -1467,6 +1567,7 @@ class GFF3Importer extends TripalImporter {
       // Only do an insert if this feature doesn't already exist in the databse.
       if (!$this->doesFeatureAlreadyExist($feature)) {
         $i++;
+        $total++;
 
         $this->ensureFeatureIsLoaded($feature);
 
@@ -1474,15 +1575,184 @@ class GFF3Importer extends TripalImporter {
         foreach ($feature['properties'] as $prop_name => $values) {
           foreach ($values as $rank => $value) {
             $j++;
+            $type_id = $this->featureprop_cvterm_lookup[strtolower($prop_name)];
             $sql .= "(:feature_id_$j, :type_id_$j, :value_$j, :rank_$j),\n";
             $args[":feature_id_$j"] = $feature['feature_id'];
-            $args[":type_id_$j"] = $this->featureprop_cvterm_lookup[$prop_name];
+            $args[":type_id_$j"] = $type_id;
             $args[":value_$j"] = $value;
             $args[":rank_$j"] = $rank;
           }
         }
         // If we've reached the size of the batch then let's do the insert.
-        if ($i == $batch_size) {
+        if ($i == $batch_size or $total == $num_features) {
+
+          // Insert the batch.
+          $sql = rtrim($sql, ",\n");
+          $sql = $init_sql . $sql;
+          if (count($args) > 0) {
+            $last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
+          }
+          $this->setItemsHandled($batch_num);
+          $batch_num++;
+
+          // Now reset all of the varables for the next batch.
+          $sql = '';
+          $i = 0;
+          $j = 0;
+          $args = [];
+        }
+      }
+    }
+  }
+
+  /**
+   *
+   */
+  private function findDbxrefs() {
+    $batch_size = 1000;
+    $num_features = count(array_keys($this->dbxref_lookup));
+    $num_batches = (int) ($num_features / $batch_size) + 1;
+
+    $this->setItemsHandled(0);
+    $this->setTotalItems($num_batches);
+
+    // DBXrefs may be already present so we'll do an initial round of
+    // looking for them and then insert those that don't exist.
+    $init_sql = "
+      SELECT DB.name, DBX.db_id, DBX.accession, DBX.dbxref_id
+      FROM {dbxref} DBX
+        INNER JOIN {db} DB on DB.db_id = DBX.db_id
+      WHERE
+    ";
+    $i = 0;
+    $batch_num = 1;
+    $sql = '';
+    $args = [];
+    foreach ($this->dbxref_lookup as $xref => $info) {
+      $i++;
+      $sql .= "(DBX.accession = :accession_$i and DBX.db_id = :db_id_$i) OR\n";
+      $args[":accession_$i"] = $info['accession'];
+      $args[":db_id_$i"] = $this->db_lookup[$info['db']];
+
+      // If we've reached the size of the batch then let's do the select.
+      if ($i == $batch_size) {
+        $sql = rtrim($sql, " OR\n");
+        $sql = $init_sql . $sql;
+        $results = chado_query($sql, $args);
+        while ($dbxref = $results->fetchObject()) {
+          $index = $dbxref->name . ':' . $dbxref->accession;
+          $this->dbxref_lookup[$index]['dbxref_id'] = $dbxref->dbxref_id;
+        }
+        $this->setItemsHandled($batch_num);
+        $batch_num++;
+
+        // Now reset all of the varables for the next batch.
+        $sql = '';
+        $i = 0;
+        $j = 0;
+        $args = [];
+      }
+    }
+    // Select any remaining batch items
+    if ($i > 0) {
+      $sql = rtrim($sql, " OR\n");
+      $sql = $init_sql . $sql;
+      $results = chado_query($sql, $args);
+      while ($dbxref = $results->fetchObject()) {
+        $index = $dbxref->name . ':' . $dbxref->accession;
+        $this->dbxref_lookup[$index]['dbxref_id'] = $dbxref->dbxref_id;
+      }
+      $this->setItemsHandled($batch_num);
+    }
+  }
+
+  /**
+   *
+   */
+  private function loadDbxrefs() {
+    $batch_size = 1000;
+    $num_features = count(array_keys($this->dbxref_lookup));
+    $num_batches = (int) ($num_features / $batch_size) + 1;
+
+    $this->setItemsHandled(0);
+    $this->setTotalItems($num_batches);
+
+    $init_sql = "INSERT INTO {dbxref} (db_id, accession) VALUES\n";
+    $i = 0;
+    $total = 0;
+    $batch_num = 1;
+    $sql = '';
+    $args = [];
+    foreach ($this->dbxref_lookup as $xref => $info) {
+      $i++;
+      $total++;
+
+      // Only do an insert if this dbxref doesn't already exist in the databse.
+      if (!array_key_exists('dbxref_id', $info)) {
+        $sql .= "(:db_id_$i, :accession_$i),\n";
+        $args[":db_id_$i"] = $this->db_lookup[$info['db']];
+        $args[":accession_$i"] = $info['accession'];
+      }
+
+      // If we've reached the size of the batch then let's do the insert.
+      if ($i == $batch_size or $total == $num_features) {
+
+        // Insert the batch.
+        $sql = rtrim($sql, ",\n");
+        $sql = $init_sql . $sql;
+        if (count($args) > 0) {
+          $last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
+        }
+        $this->setItemsHandled($batch_num);
+        $batch_num++;
+
+        // Now reset all of the varables for the next batch.
+        $sql = '';
+        $i = 0;
+        $j = 0;
+        $args = [];
+      }
+    }
+  }
+
+  /**
+   *
+   */
+  private function loadFeatureDbxrefs() {
+    $batch_size = 100;
+    $num_features = count(array_keys($this->features));
+    $num_batches = (int) ($num_features / $batch_size) + 1;
+
+    $this->setItemsHandled(0);
+    $this->setTotalItems($num_batches);
+
+    // Don't need to use placeholders for this insert since we are only using integers.
+
+    $init_sql = "INSERT INTO {feature_dbxref} (feature_id, dbxref_id) VALUES \n";
+    $i = 0;
+    $total = 0;
+    $j = 0;
+    $batch_num = 1;
+    $sql = '';
+    $args = [];
+    foreach ($this->features as $uniquename => $feature) {
+
+      // Only do an insert if this feature doesn't already exist in the databse.
+      if (!$this->doesFeatureAlreadyExist($feature)) {
+        $i++;
+        $total++;
+
+        $this->ensureFeatureIsLoaded($feature);
+
+        // Iterate through all of the dbxrefs of this feature.
+        foreach ($feature['dbxrefs'] as $index => $info) {
+          $j++;
+          $sql .= "(:feature_id_$j, :dbxref_id_$j),\n";
+          $args[":feature_id_$j"] = $feature['feature_id'];
+          $args[":dbxref_id_$j"] = $this->dbxref_lookup[$index]['dbxref_id'];
+        }
+        // If we've reached the size of the batch then let's do the insert.
+        if ($i == $batch_size or $total == $num_features) {
 
           // Insert the batch.
           $sql = rtrim($sql, ",\n");
@@ -1498,79 +1768,6 @@ class GFF3Importer extends TripalImporter {
           $args = [];
         }
       }
-    }
-
-    // Add any remaining batch items
-    if ($i > 0) {
-      $sql = rtrim($sql, ",\n");
-      $sql = $init_sql . $sql;
-      $last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
-      $this->setItemsHandled($batch_num);
-    }
-  }
-
-  /**
-   *
-   */
-  private function loadDbxrefs() {
-    $batch_size = 1000;
-    $num_features = count(array_keys($this->features));
-    $num_batches = (int) ($num_features / $batch_size) + 1;
-
-    $this->setItemsHandled(0);
-    $this->setTotalItems($num_batches);
-
-    // Don't need to use placeholders for this insert since we are only using
-    // integers.
-    $count = 0;
-    $batch_num = 0;
-    $batch_pairs = [];
-    $init_fdbx_sql = "INSERT INTO {feature_dbxref} (feature_id, dbxref_id) VALUES \n";
-    $check_fdbx_sql = "SELECT feature_dbxref_id FROM {feature_dbxref} WHERE feature_id = :feature_id and dbxref_id = :dbxref_id";
-    foreach ($this->features as $uniquename => $feature) {
-      $count++;
-
-      $this->ensureFeatureIsLoaded($feature);
-
-      foreach ($feature['dbxrefs'] as $index => $info) {
-        $feature_id = $feature['feature_id'];
-        $dbx_id = $this->dbxref_lookup[$index];
-
-        // Check that this feature_dbxref is not already in the database.
-        $result = chado_query($check_fdbx_sql, array(
-          ':feature_id' => $feature_id,
-          ':dbxref_id' => $dbx_id,
-        ))->fetchObject() ?? NULL;
-
-        if (!$result) {
-          $batch_pairs[] = "($feature_id, $dbx_id)";
-        }
-      }
-
-      if ($count == $batch_size) {
-        $batch_num++;
-        if (count($batch_pairs) > 0) {
-          // Perform the actual insertion.
-          $fdbx_sql = $init_fdbx_sql . implode(', ', $batch_pairs);
-          $last_id = chado_query($fdbx_sql, array(), array('return' => Database::RETURN_INSERT_ID));
-        }
-
-        $this->setItemsHandled($batch_num);
-
-        $count = 0;
-        $batch_pairs = [];
-      }
-    }
-
-    if ($count > 0) {
-      $batch_num++;
-      if (count($batch_pairs) > 0) {
-        // Perform the actual insertion.
-        $fdbx_sql = $init_fdbx_sql . implode(', ', $batch_pairs);
-        $last_id = chado_query($fdbx_sql, array(), array('return' => Database::RETURN_INSERT_ID));
-      }
-
-      $this->setItemsHandled($batch_num);
     }
   }
 
@@ -1697,6 +1894,7 @@ class GFF3Importer extends TripalImporter {
         (srcfeature_id, feature_id, fmin, fmax, strand, phase, rank)
       VALUES\n";
     $i = 0;
+    $total = 0;
     $batch_num = 1;
     $sql = '';
     $args = [];
@@ -1731,7 +1929,7 @@ class GFF3Importer extends TripalImporter {
 
 
         // If we've reached the size of the batch then let's do the insert.
-        if ($i == $batch_size) {
+        if ($i == $batch_size or $total == $num_features) {
 
           // Insert the batch.
           $sql = rtrim($sql, ",\n");
@@ -1747,20 +1945,12 @@ class GFF3Importer extends TripalImporter {
         }
       }
     }
-
-    // Add any remaining batch items
-    if ($i > 0) {
-      $sql = rtrim($sql, ",\n");
-      $sql = $init_sql . $sql;
-      $last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
-      $this->setItemsHandled($batch_num);
-    }
   }
 
   /**
    *
    */
-  private function loadAliases(){
+  private function findSynonyms() {
     $batch_size = 1000;
     $num_features = count(array_keys($this->features));
     $num_batches = (int) ($num_features / $batch_size) + 1;
@@ -1768,132 +1958,163 @@ class GFF3Importer extends TripalImporter {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    $init_syn_sql = "INSERT INTO {synonym} (name, type_id, synonym_sgml) VALUES \n";
-    $init_fsyn_sql = "INSERT INTO {feature_synonym} (synonym_id, feature_id, pub_id) VALUES \n";
+    $init_sql = "SELECT synonym_id, name FROM {synonym} WHERE \n";
     $i = 0;
+    $j = 0;
+    $total = 0;
     $batch_num = 1;
-    $syn_sql = '';
-    $syn_args = [];
-    $fsyn_sql = '';
-    $fsyn_args = [];
+    $sql = '';
+    $args = [];
     $batch_synonyms = [];
-    $batch_featuresyn = [];
+    foreach ($this->features as $uniquename => $feature) {
+      $i++;
+      $total++;
+
+      // Get all of the synonyms for this batch.
+      foreach ($feature['synonyms'] as $index => $synonym) {
+        $batch_synonyms[] = $synonym;
+      }
+
+      // If we've reached the size of the batch then let's do the select
+      if ($i == $batch_size or $total == $num_features) {
+
+        $batch_synonyms = array_unique($batch_synonyms);
+        foreach ($batch_synonyms as $synonym) {
+          $j++;
+          if (!array_key_exists($synonym, $this->synonym_lookup)) {
+            $this->synonym_lookup[$synonym] = NULL;
+          }
+          if (!$this->synonym_lookup[$synonym]) {
+            $sql .= "(type_id = :type_id_$j AND name = :name_$j) OR\n";
+            $args[":type_id_$j"] = $this->exact_syn->cvterm_id;
+            $args[":name_$j"] = $synonym;
+          }
+        }
+        if (count($args) > 0) {
+          $sql = rtrim($sql, " OR\n");
+          $sql = $init_sql . $sql;
+          $results = chado_query($sql, $args);
+          while ($synonym = $results->fetchObject()) {
+            $this->synonym_lookup[$synonym->name] = $synonym->synonym_id;
+          }
+        }
+        $this->setItemsHandled($batch_num);
+        $batch_num++;
+
+        // Now reset all of the varables for the next batch.
+        $sql = '';
+        $i = 0;
+        $j = 0;
+        $args = [];
+        $batch_synonyms = [];
+      }
+    }
+  }
+
+  /**
+   *
+   */
+  private function loadSynonyms() {
+    $batch_size = 1000;
+    $num_synonyms = count(array_keys($this->synonym_lookup));
+    $num_batches = (int) ($num_synonyms / $batch_size) + 1;
+
+    $this->setItemsHandled(0);
+    $this->setTotalItems($num_batches);
+
+    $init_sql = "INSERT INTO {synonym} (type_id, name, synonym_sgml) VALUES\n";
+    $i = 0;
+    $total = 0;
+    $batch_num = 1;
+    $sql = '';
+    $args = [];
+    foreach ($this->synonym_lookup as $synonym => $synonym_id) {
+      $i++;
+      $total++;
+
+      // Only do an insert if this dbxref doesn't already exist in the databse.
+      if (!$synonym_id) {
+        $sql .= "(:type_id_$i,:name_$i, ''),\n";
+        $args[":type_id_$i"] = $this->exact_syn->cvterm_id;
+        $args[":name_$i"] = $synonym;
+      }
+
+      // If we've reached the size of the batch then let's do the insert.
+      if ($i == $batch_size or $total == $num_synonyms) {
+
+        // Insert the batch.
+        $sql = rtrim($sql, ",\n");
+        $sql = $init_sql . $sql;
+        if (count($args) > 0) {
+          chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
+        }
+        $this->setItemsHandled($batch_num);
+        $batch_num++;
+
+        // Now reset all of the varables for the next batch.
+        $sql = '';
+        $i = 0;
+        $args = [];
+      }
+    }
+
+    // Now we need to retrieve the synonyms IDs.
+    $this->findSynonyms();
+  }
+
+  /**
+   *
+   */
+  private function loadFeatureSynonyms(){
+    $batch_size = 1000;
+    $num_features = count(array_keys($this->features));
+    $num_batches = (int) ($num_features / $batch_size) + 1;
+
+    $this->setItemsHandled(0);
+    $this->setTotalItems($num_batches);
+
+    $init_sql = "INSERT INTO {feature_synonym} (synonym_id, feature_id, pub_id) VALUES \n";
+    $i = 0;
+    $j = 0;
+    $total = 0;
+    $batch_num = 1;
+    $args = [];
     foreach ($this->features as $uniquename => $feature) {
 
       // Only do an insert if this feature doesn't already exist in the databse.
       if (!$this->doesFeatureAlreadyExist($feature)) {
-
         $i++;
+        $total++;
 
         $this->ensureFeatureIsLoaded($feature);
 
-        // Get all of the synonyms for this batch.
-        foreach ($feature['synonyms'] as $index => $synonym) {
-          $batch_synonyms[] = $synonym;
-          $batch_featuresyn[] = [$synonym, $feature['feature_id']];
+        // Handle all of the synonyms for this feature.
+        foreach (array_unique($feature['synonyms']) as $synonym) {
+          $j++;
+          $sql .= "(:synonym_id_$j, :feature_id_$j, :pub_id_$j),\n";
+          $synonym_id = $this->synonym_lookup[$synonym];
+          $args[":synonym_id_$j"] = $this->synonym_lookup[$synonym];
+          $args[":feature_id_$j"] = $feature['feature_id'];
+          $args[":pub_id_$j"] = $this->null_pub->pub_id;
         }
 
         // If we've reached the size of the batch then let's do the insert.
-        if ($i == $batch_size) {
-
-          if (count($batch_synonyms) > 0) {
-
-            // First get the synonym_ids for those already in the database.
-            $syns_avail_sql = "SELECT synonym_id, name FROM {synonym} WHERE type_id = :type_id and name IN (:names)";
-            $syns_avail_args = [
-              ':type_id' => $this->exact_syn->cvterm_id,
-              ':names' => $batch_synonyms
-            ];
-            $syns_avail = chado_query($syns_avail_sql, $syns_avail_args)->fetchAllAssoc('name', PDO::FETCH_OBJ);
-
-            // First, add any missing synonyms
-            $j = 0;
-            foreach ($batch_synonyms as $index => $synonym) {
-              if (!array_key_exists($synonym, $syns_avail)) {
-                $j++;
-                $syn_sql .= "(:name_$j, :type_id_$j, ''),\n";
-                $syn_args[":name_$j"] = $synonym;
-                $syn_args[":type_id_$j"] = $this->exact_syn->cvterm_id;
-              }
-            }
-            if ($syn_sql) {
-              $syn_sql = rtrim($syn_sql, ",\n");
-              $syn_sql = $init_syn_sql . $syn_sql;
-              $last_id = chado_query($syn_sql, $syn_args, ['return' => Database::RETURN_INSERT_ID]);
-              $syns_avail = chado_query($syns_avail_sql, $syns_avail_args)->fetchAllAssoc('name', PDO::FETCH_OBJ);
-            }
-
-            // Add in the feature synonym records for this batch.
-            $j = 0;
-            foreach ($batch_featuresyn as $index => $featuresyn) {
-              $j++;
-              $fsyn_sql .= "(:synonym_id_$j, :feature_id_$j, :pub_id_$j),\n";
-              $fsyn_args[":synonym_id_$j"] = $syns_avail[$featuresyn[0]]->synonym_id;
-              $fsyn_args[":feature_id_$j"] = $featuresyn[1];
-              $fsyn_args[":pub_id_$j"] = $this->null_pub->pub_id;
-            }
-            $fsyn_sql = rtrim($fsyn_sql, ",\n");
-            $fsyn_sql = $init_fsyn_sql . $fsyn_sql;
-            $last_id = chado_query($fsyn_sql, $fsyn_args, ['return' => Database::RETURN_INSERT_ID]);
+        if ($i == $batch_size or $total == $num_features) {
+          if (count($args) > 0) {
+            $sql = rtrim($sql, ",\n");
+            $sql = $init_sql . $sql;
+            $last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
           }
-
           $this->setItemsHandled($batch_num);
+          $batch_num++;
 
           // Now reset all of the varables for the next batch.
-          $syn_sql = '';
-          $fsyn_sql = '';
+          $sql = '';
           $i = 0;
-          $syn_args = [];
-          $fsyn_args = [];
-          $batch_synonyms = [];
-          $batch_featuresyn = [];
+          $j = 0;
+          $args = [];
         }
       }
-    }
-
-    // Add any remaining batch items
-    if ($i > 0) {
-      if (count($batch_synonyms) > 0) {
-        // First get the synonym_ids for those already in the database.
-        $syns_avail_sql = "SELECT synonym_id, name FROM {synonym} WHERE type_id = :type_id and name IN (:names)";
-        $syns_avail_args = [
-            ':type_id' => $this->exact_syn->cvterm_id,
-            ':names' => $batch_synonyms
-        ];
-        $syns_avail = chado_query($syns_avail_sql, $syns_avail_args)->fetchAllAssoc('name', PDO::FETCH_OBJ);
-
-        // First, add any missing synonyms
-        $j = 0;
-        foreach ($batch_synonyms as $index => $synonym) {
-          if (!array_key_exists($synonym, $syns_avail)) {
-            $j++;
-            $syn_sql .= "(:name_$j, :type_id_$j, ''),\n";
-            $syn_args[":name_$j"] = $synonym;
-            $syn_args[":type_id_$j"] = $this->exact_syn->cvterm_id;
-          }
-        }
-        if ($syn_sql) {
-          $syn_sql = rtrim($syn_sql, ",\n");
-          $syn_sql = $init_syn_sql . $syn_sql;
-          $last_id = chado_query($syn_sql, $syn_args, ['return' => Database::RETURN_INSERT_ID]);
-          $syns_avail = chado_query($syns_avail_sql, $syns_avail_args)->fetchAllAssoc('name', PDO::FETCH_OBJ);
-        }
-
-        // Add in the feature synonym records for this batch.
-        $j = 0;
-        foreach ($batch_featuresyn as $index => $featuresyn) {
-          $j++;
-          $fsyn_sql .= "(:synonym_id_$j, :feature_id_$j, :pub_id_$j),\n";
-          $fsyn_args[":synonym_id_$j"] = $syns_avail[$featuresyn[0]]->synonym_id;
-          $fsyn_args[":feature_id_$j"] = $featuresyn[1];
-          $fsyn_args[":pub_id_$j"] = $this->null_pub->pub_id;
-        }
-        $fsyn_sql = rtrim($fsyn_sql, ",\n");
-        $fsyn_sql = $init_fsyn_sql . $fsyn_sql;
-        $last_id = chado_query($fsyn_sql, $fsyn_args, ['return' => Database::RETURN_INSERT_ID]);
-      }
-
-      $this->setItemsHandled($batch_num);
     }
   }
 
@@ -2456,117 +2677,6 @@ class GFF3Importer extends TripalImporter {
     return 1;
   }
 
-  /**
-   * Load a controlled vocabulary term.
-   *
-   * This method first checks if the term has already been loaded in the
-   * feature_cvterm_lookup array, which helps a lot with performance.
-   *
-   * @param $type
-   * @param $cv_id
-   *
-   * @ingroup gff3_loader
-   */
-  private function getCvtermID($type, $cv_id = NULL, $is_prop_type = FALSE) {
-    if (!isset($cv_id)) {
-      $cv_id = $this->feature_cv->getValue('cv_id');
-    }
-    if ($is_prop_type and array_key_exists($type, $this->featureprop_cvterm_lookup)) {
-      return $this->featureprop_cvterm_lookup[$type];
-    }
-    elseif (array_key_exists($type, $this->feature_cvterm_lookup)) {
-      return $this->feature_cvterm_lookup[$type];
-    }
-
-    $sel_cvterm_sql = "
-      SELECT CVT.cvterm_id
-      FROM {cvterm} CVT
-        LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
-      WHERE CVT.cv_id = {$cv_id} and
-       (lower(CVT.name) = lower(:name) or lower(CVTS.synonym) = lower(:synonym))
-    ";
-    $result = chado_query($sel_cvterm_sql, [
-      ':name' => $type,
-      ':synonym' => $type,
-    ]);
-    $cvterm = $result->fetchObject() ?? NULL;
-    if ($cvterm) {
-      $cvterm = chado_get_cvterm(array('cvterm_id' => $cvterm->cvterm_id)) ?? NULL;
-    }
-
-    if ($is_prop_type) {
-      $this->featureprop_cvterm_lookup[$cvterm->name] = $cvterm->cvterm_id;
-      $this->featureprop_cvterm_lookup[$type] = $cvterm->cvterm_id;
-    }
-    else {
-      $this->feature_cvterm_lookup[$cvterm->name] = $cvterm->cvterm_id;
-      $this->feature_cvterm_lookup[$type] = $cvterm->cvterm_id;
-
-      // If the cvterm name does not match the name provided then set a mapping.
-      if ($cvterm->name != $type) {
-        $this->feature_cvterm_aliases[$type] = $cvterm->name;
-      }
-    }
-    return $cvterm->cvterm_id;
-  }
-
-  /**
-   * Retrieves a ChadoRecord object for the landmark feature.
-   *
-   * @param $landmark_name
-   *   The name of the landmark to get
-   * @param $landmark_type
-   *   A ChadoRecord object for the type of landmark.
-   * @param $skip_on_missing
-   *   If the landmark cannot be found and this arugment is FALSE then
-   *   an error will be thrown. If TRUE then no error is thrown.
-   *
-   * @return
-   *   A feature ChadoRecord object or NULL if the landmark is missing and
-   *   $skip_on_missing is TRUE.
-   */
-  private function getLandmark($landmark_name, $landmark_type = NULL, $skip_on_missing = FALSE) {
-
-    // Before performing a database query check to see if
-    // this landmark is already in our lookup list.
-    if (array_key_exists($landmark_name, $this->landmarks)) {
-      return $this->landmarks[$landmark_name];
-    }
-
-    $landmark = new ChadoRecord('feature');
-    $landmark->setValues([
-      'organism_id' => $this->organism_id,
-      'uniquename' => $landmark_name,
-    ]);
-    if ($landmark_type) {
-      $landmark->setValue('type_id', $landmark_type->getValue('cvterm_id'));
-    }
-    $num_found = $landmark->find();
-    if ($num_found == 0) {
-      if ($skip_on_missing == TRUE) {
-        return NULL;
-      }
-      throw new Exception(t("The landmark '%landmark' cannot be found for this organism (%species) " .
-        "Please add the landmark and then retry the import of this GFF3 " .
-        "file", [
-            '%landmark' => $landmark_name,
-            '%species' => $this->organism->getValues('genus') . " " . $this->organism->getValues('species'),
-        ]));
-    }
-    if ($num_found > 1) {
-      throw new Exception(t("The landmark '%landmark' has more than one entry for this organism (%species). Did you provide a landmark type? If not, try resubmitting and providing a type." .
-        "Cannot continue", [
-            '%landmark' => $landmark_name,
-            '%species' => $this->organism->getValues('genus') . " " . $this->organism->getValues('species'),
-        ]));
-    }
-
-
-    // The landmark was found, remember it
-    $this->landmarks[$landmark_name] = $landmark;
-    return $landmark;
-
-  }
 
   /**
    * Retrives the organism ID that matches the provided string.
@@ -2916,103 +3026,6 @@ class GFF3Importer extends TripalImporter {
     }
   }
 
-  /**
-   * Load the dbxref attribute for a feature
-   *
-   * @param $feature
-   * @param $dbxrefs
-   *
-   * @ingroup gff3_loader
-   */
-  private function loadDbxref($feature, $dbxrefs) {
-
-    // iterate through each of the dbxrefs
-    foreach ($dbxrefs as $dbxref) {
-
-      // get the database name from the reference.  If it doesn't exist then create one.
-      $ref = explode(":", $dbxref);
-      $dbname = trim($ref[0]);
-      $accession = trim($ref[1]);
-
-      // first look for the database name if it doesn't exist then create one.
-      // first check for the fully qualified URI (e.g. DB:<dbname>. If that
-      // can't be found then look for the name as is.  If it still can't be found
-      // the create the database
-      $values = ['name' => "DB:$dbname"];
-      $db = chado_select_record('db', ['db_id'], $values);
-      if (count($db) == 0) {
-        $values = ['name' => "$dbname"];
-        $db = chado_select_record('db', ['db_id'], $values);
-      }
-      if (count($db) == 0) {
-        $values = [
-          'name' => $dbname,
-          'description' => 'Added automatically by the GFF loader',
-        ];
-        $success = chado_insert_record('db', $values, array(
-          'skip_validation' => TRUE,
-        ));
-        if ($success) {
-          $values = ['name' => "$dbname"];
-          $db = chado_select_record('db', ['db_id'], $values);
-        }
-        else {
-          $this->logMessage("Cannot find or add the database $dbname.", [], TRIPAL_WARNING);
-          return 0;
-        }
-      }
-      $db = $db[0];
-
-      // now check to see if the accession exists
-      $values = [
-        'accession' => $accession,
-        'db_id' => $db->db_id,
-      ];
-      $dbxref = chado_select_record('dbxref', ['dbxref_id'], $values);
-
-      // if the accession doesn't exist then we want to add it
-      if (sizeof($dbxref) == 0) {
-        $values = [
-          'db_id' => $db->db_id,
-          'accession' => $accession,
-          'version' => '',
-        ];
-        $ret = chado_insert_record('dbxref', $values, array(
-          'skip_validation' => TRUE,
-        ));
-        $values = [
-          'accession' => $accession,
-          'db_id' => $db->db_id,
-        ];
-        $dbxref = chado_select_record('dbxref', ['dbxref_id'], $values);
-      }
-      $dbxref = $dbxref[0];
-
-      // check to see if this feature dbxref already exists
-      $values = [
-        'dbxref_id' => $dbxref->dbxref_id,
-        'feature_id' => $feature->getID(),
-      ];
-      $fdbx = chado_select_record('feature_dbxref', ['feature_dbxref_id'], $values);
-
-      // now associate this feature with the database reference if it doesn't
-      // already exist
-      if (sizeof($fdbx) == 0) {
-        $values = [
-          'dbxref_id' => $dbxref->dbxref_id,
-          'feature_id' => $feature->getID(),
-        ];
-        $success = chado_insert_record('feature_dbxref', $values, array(
-          'skip_validation' => TRUE,
-        ));
-        if (!$success) {
-          $this->logMessage("Failed to insert Dbxref: $dbname:$accession.", [], TRIPAL_WARNING);
-          return 0;
-        }
-      }
-    }
-    return 1;
-  }
 
   /**
    * Load the cvterms for a feature.
@@ -3098,164 +3111,6 @@ class GFF3Importer extends TripalImporter {
         }
       }
     }
-  }
-
-  /**
-   * Load any aliases for a feature
-   *
-   * @param $feature
-   * @param $aliases
-   *
-   * @ingroup gff3_loader
-   */
-  private function loadAlias($feature, $aliases) {
-
-    // make sure we have a 'synonym_type' vocabulary
-    $select = ['name' => 'synonym_type'];
-    $results = chado_select_record('cv', ['*'], $select);
-
-    if (count($results) == 0) {
-      // insert the 'synonym_type' vocabulary
-      $values = [
-        'name' => 'synonym_type',
-        'definition' => 'vocabulary for synonym types',
-      ];
-      $success = chado_insert_record('cv', $values, array(
-        'skip_validation' => TRUE,
-      ));
-      if (!$success) {
-        $this->logMessage("Failed to add the synonyms type vocabulary.", [], TRIPAL_WARNING);
-        return 0;
-      }
-      // now that we've added the cv we need to get the record
-      $results = chado_select_record('cv', ['*'], $select);
-      if (count($results) > 0) {
-        $syncv = $results[0];
-      }
-    }
-    else {
-      $syncv = $results[0];
-    }
-
-    // get the 'exact' cvterm, which is the type of synonym we're adding
-    $select = [
-      'name' => 'exact',
-      'cv_id' => [
-        'name' => 'synonym_type',
-      ],
-    ];
-    $result = chado_select_record('cvterm', ['*'], $select);
-    if (count($result) == 0) {
-      $term = [
-        'name' => 'exact',
-        'id' => "synonym_type:exact",
-        'definition' => '',
-        'is_obsolete' => 0,
-        'cv_name' => $syncv->name,
-        'is_relationship' => FALSE,
-      ];
-      $syntype = chado_insert_cvterm($term, ['update_existing' => TRUE]);
-      if (!$syntype) {
-        $this->logMessage("Cannot add synonym type: internal:$type.", [], TRIPAL_WARNING);
-        return 0;
-      }
-    }
-    else {
-      $syntype = $result[0];
-    }
-
-    // iterate through all of the aliases and add each one
-    foreach ($aliases as $alias) {
-
-      // check to see if the alias already exists in the synonym table
-      // if not, then add it
-      $select = [
-        'name' => $alias,
-        'type_id' => $syntype->cvterm_id,
-      ];
-      $result = chado_select_record('synonym', ['*'], $select);
-      if (count($result) == 0) {
-        $values = [
-          'name' => $alias,
-          'type_id' => $syntype->cvterm_id,
-          'synonym_sgml' => '',
-        ];
-        $success = chado_insert_record('synonym', $values, array(
-          'skip_validation' => TRUE,
-        ));
-        if (!$success) {
-          $this->logMessage("Cannot add alias $alias to synonym table.", [], TRIPAL_WARNING);
-          return 0;
-        }
-        $result = chado_select_record('synonym', ['*'], $select);
-        $synonym = $result[0];
-      }
-      else {
-        $synonym = $result[0];
-      }
-
-      // check to see if we have a NULL publication in the pub table.  If not,
-      // then add one.
-      $select = ['uniquename' => 'null'];
-      $result = chado_select_record('pub', ['*'], $select);
-      if (count($result) == 0) {
-        $pub_sql = "
-        INSERT INTO {pub} (uniquename,type_id)
-        VALUES (:uname,
-          (SELECT cvterm_id
-           FROM {cvterm} CVT
-             INNER JOIN {dbxref} DBX ON DBX.dbxref_id = CVT.dbxref_id
-             INNER JOIN {db} DB      ON DB.db_id      = DBX.db_id
-           WHERE CVT.name = :type_id))
-      ";
-        $status = chado_query($psql);
-        if (!$status) {
-          $this->logMessage("Cannot prepare statement 'ins_pub_uniquename_typeid.", [], TRIPAL_WARNING);
-          return 0;
-        }
-
-        // insert the null pub
-        $result = chado_query($pub_sql, [
-          ':uname' => 'null',
-          ':type_id' => 'null',
-        ])->fetchObject();
-        if (!$result) {
-          $this->logMessage("Cannot add null publication needed for setup of alias.", [], TRIPAL_WARNING);
-          return 0;
-        }
-        $result = chado_select_record('pub', ['*'], $select);
-        $pub = $result[0];
-      }
-      else {
-        $pub = $result[0];
-      }
-
-      // check to see if the synonym exists in the feature_synonym table
-      // if not, then add it.
-      $values = [
-        'synonym_id' => $synonym->synonym_id,
-        'feature_id' => $feature->getID(),
-        'pub_id' => $pub->pub_id,
-      ];
-      $columns = ['feature_synonym_id'];
-      $result = chado_select_record('feature_synonym', $columns, $values);
-      if (count($result) == 0) {
-        $values = [
-          'synonym_id' => $synonym->synonym_id,
-          'feature_id' => $feature->getID(),
-          'pub_id' => $pub->pub_id,
-        ];
-        $success = chado_insert_record('feature_synonym', $values, array(
-          'skip_validation' => TRUE,
-        ));
-
-        if (!$success) {
-          $this->logMessage("Cannot add alias $alias to feature synonym table.", [], TRIPAL_WARNING);
-          return 0;
-        }
-      }
-    }
-    return 1;
   }
 
   /**
@@ -3377,275 +3232,6 @@ class GFF3Importer extends TripalImporter {
     }
 
     return $feature;
-  }
-
-  /**
-   * Insert the location of the feature
-   *
-   * @param $feature
-   * @param $organism
-   * @param $landmark
-   * @param $fmin
-   * @param $fmax
-   * @param $strand
-   * @param $phase
-   * @param $is_fmin_partial
-   * @param $is_fmax_partial
-   * @param $residue_info
-   * @param $locgroup
-   * @param $landmark_type_id
-   * @param $landmark_organism_id
-   * @param $create_landmark
-   * @param $landmark_is_target
-   *
-   * @ingroup gff3_loader
-   */
-  private function loadFeatureLoc($feature, $organism, $landmark, $fmin,
-                                  $fmax, $strand, $phase, $is_fmin_partial, $is_fmax_partial, $residue_info, $locgroup,
-                                  $landmark_type_id = '', $landmark_organism_id = '', $create_landmark = 0,
-                                  $landmark_is_target = 0) {
-
-    $srcfeature = new ChadoRecord('feature');
-    $srcfeature->setValues([
-        'organism_id' => $landmark_organism_id ? $landmark_organism_id : $organism->organism_id,
-        'uniquename' => $landmark,
-    ]);
-    if ($landmark_type_id) {
-      $srcfeature->setValue('type_id', $landmark_type_id);
-    }
-    $num_srcf = $srcfeature->find();
-
-    if ($num_srcf == 0) {
-      // so we couldn't find the landmark using the uniquename. Let's try the 'name'.
-      // if we return only a single result then we can proceed. Otherwise give an
-      $srcfeature = new ChadoRecord('feature');
-      $srcfeature->setValues([
-          'organism_id' => $landmark_organism_id ? $landmark_organism_id : $organism->organism_id,
-          'name' => $landmark,
-      ]);
-      if ($landmark_type_id) {
-        $srcfeature->setValue('type_id', $landmark_type_id);
-      }
-      $num_srcf = $srcfeature->find();
-      if ($num_srcf == 0) {
-         // if the landmark is the target feature in a matched alignment then try one more time to
-         // find it by querying any feature with the same uniquename. If we find one then use it.
-         if ($landmark_is_target) {
-            $srcfeature = new ChadoRecord('feature');
-            $srcfeature->setValues([
-               'uniquename' => $landmark,
-            ]);
-            $num_srcf =  $srcfeature->find();
-            if ($num_srcf > 1) {
-              $this->logMessage("Multiple landmarks exist for a matached target with the name: '%landmark'.  Cannot " .
-                "resolve which one to use. Cannot add the feature location record.",
-                ['%landmark' => $landmark], TRIPAL_WARNING);
-            }
-         }
-
-         if ($num_srcf == 0) {
-            // we couldn't find the landmark feature, so if the user has requested we create it then do so
-            // but only if we have a type id
-            if ($create_landmark and $landmark_type_id) {
-               $srcfeature = new ChadoRecord('feature');
-               $srcfeature->setValues([
-                  'organism_id' => $landmark_organism_id ? $landmark_organism_id : $organism->organism_id,
-                  'name' => $landmark,
-                  'uniquename' => $landmark,
-                  'type_id' => $landmark_type_id,
-               ]);
-               try {
-                  $srcfeature->insert();
-               }
-               catch (Exception $e) {
-                  $this->logMessage("Cannot find landmark feature: '%landmark', nor could it be inserted. " . $e->getMessage() ,
-                     ['%landmark' => $landmark], TRIPAL_WARNING);
-                  return 0;
-               }
-            }
-            else {
-               $this->logMessage("Cannot find unique landmark feature: '%landmark'.",
-                  ['%landmark' => $landmark], TRIPAL_WARNING);
-               return 0;
-            }
-         }
-      }
-      elseif ($num_srcf > 1) {
-        $this->logMessage("multiple landmarks exist with the name: '%landmark'.  Cannot " .
-          "resolve which one to use. Cannot add the feature location record.",
-          ['%landmark' => $landmark], TRIPAL_WARNING);
-        return 0;
-      }
-    }
-    elseif ($num_srcf > 1) {
-      $this->logMessage("multiple landmarks exist with the name: '%landmark'.  Cannot " .
-        "resolve which one to use. Cannot add the feature location record.",
-        ['%landmark' => $landmark, TRIPAL_WARNING]);
-      return 0;
-    }
-
-
-    // TODO: create an attribute that recognizes the residue_info,locgroup,
-    //  is_fmin_partial and is_fmax_partial, right now these are
-    //  hardcoded to be false and 0 below.
-
-    // check to see if this featureloc already exists, but also keep track of the
-    // last rank value
-    $rank = 0;
-    $exists = 0;
-    $select = ['feature_id' => $feature->getID()];
-    $options = [
-      'order_by' => [
-        'rank' => 'ASC',
-      ],
-    ];
-
-    $locrecs = chado_select_record('featureloc', ['*'], $select, $options);
-    foreach ($locrecs as $locrec) {
-       // it is possible for the featureloc->srcfeature_id to be NULL.
-       // This can happen if the srcfeature is not known (according to chado
-       // table field descriptions).  If it's null then just skip this entry.
-       if (!$locrec->srcfeature_id) {
-          continue;
-       }
-       $select = ['feature_id' => $locrec->srcfeature_id];
-       $columns = ['feature_id', 'name'];
-       $locsfeature = chado_select_record('feature', $columns, $select);
-
-       // the source feature name and at least the fmin and fmax must be the same
-       // for an update of the featureloc, otherwise we'll insert a new record.
-       if (strcmp($locsfeature[0]->name, $landmark) == 0 and
-          ($locrec->fmin == $fmin or $locrec->fmax == $fmax)) {
-
-          $featureloc = new ChadoRecord('featureloc');
-          $featureloc->setValue('featureloc_id', $locrec->featureloc_id);
-          $values = [];
-          $exists = 1;
-          if ($featureloc->fmin != $fmin) {
-             $featureloc->setValue('fmin', $fmin);
-          }
-          if ($featureloc->fmax != $fmax) {
-             $featureloc->setValue('fmax', $fmax);
-          }
-          if ($featureloc->strand != $strand) {
-             $featureloc->setValue('strand', $strand);
-          }
-          if (count($featureloc->getValues()) > 0) {
-            $featureloc->update();
-          }
-       }
-       $rank = $locrec->rank + 1;
-    }
-    if (!$exists) {
-
-      // this feature location is new so add it
-      if (strcmp($is_fmin_partial, 'f') == 0 or !$is_fmin_partial) {
-        $is_fmin_partial = 'FALSE';
-      }
-      elseif (strcmp($is_fmin_partial, 't') == 0 or $is_fmin_partial == 1) {
-        $is_fmin_partial = 'TRUE';
-      }
-      if (strcmp($is_fmax_partial, 'f') == 0 or !$is_fmax_partial) {
-        $is_fmax_partial = 'FALSE';
-      }
-      elseif (strcmp($is_fmax_partial, 't') == 0 or $is_fmax_partial == 1) {
-        $is_fmax_partial = 'TRUE';
-      }
-      $featureloc = new ChadoRecord('featureloc');
-      $featureloc->setValues([
-        'feature_id' => $feature->getID(),
-        'srcfeature_id' => $srcfeature->getID(),
-        'fmin' => $fmin,
-        'is_fmin_partial' => $is_fmin_partial,
-        'fmax' => $fmax,
-        'is_fmax_partial' => $is_fmax_partial,
-        'strand' => $strand,
-        'residue_info' => $residue_info,
-        'locgroup' => $locgroup,
-        'rank' => $rank,
-      ]);
-      if (!$residue_info) {
-        $featureloc->setValue('residue_info', '__NULL__');
-      }
-      if ($phase) {
-        $featureloc->setValue('phase', $phase);
-      }
-      $featureloc->insert();
-    }
-    return 1;
-  }
-
-  /**
-   * Load a preoprty (featurepop) for the feature
-   *
-   * @param $feature
-   * @param $property
-   * @param $value
-   *
-   * @ingroup gff3_loader
-   */
-  private function loadProperty($feature, $property, $value) {
-
-    // First make sure the cvterm exists.  if not, then add it.
-    $result = $this->getCvterm($property, $this->feature_property_cv_id);
-
-    // If we don't have a property like this already, then add it otherwise,
-    // just return.
-    if (empty($result)) {
-      $term = [
-        'id' => "local:$property",
-        'name' => $property,
-        'is_obsolete' => 0,
-        'cv_name' => 'feature_property',
-        'db_name' => 'local',
-        'is_relationship' => FALSE,
-      ];
-      $cvterm = (object) chado_insert_cvterm($term, ['update_existing' => FALSE]);
-      if (!$cvterm) {
-        $this->logMessage("Cannot add cvterm, $property.", [], TRIPAL_WARNING);
-        return 0;
-      }
-    }
-    else {
-      $cvterm = $result;
-    }
-
-
-    // Check to see if the property already exists for this feature
-    // if it does but the value is unique then increment the rank and add it.
-    // if the value is not unique then don't add it.
-    $add = 1;
-    $rank = 0;
-    $select = [
-      'feature_id' => $feature->getId(),
-      'type_id' => $cvterm->cvterm_id,
-    ];
-    $options = [
-      'order_by' => [
-        'rank' => 'ASC',
-      ],
-    ];
-    $results = chado_select_record('featureprop', ['*'], $select, $options);
-    foreach ($results as $prop) {
-      if (strcmp($prop->value, $value) == 0) {
-        $add = NULL; // don't add it, it already exists
-      }
-      $rank = $prop->rank + 1;
-    }
-
-    // add the property if we pass the check above
-    if ($add) {
-      $values = [
-        'feature_id' => $feature->getID(),
-        'type_id' => $cvterm->cvterm_id,
-        'value' => $value,
-        'rank' => $rank,
-      ];
-      $result = chado_insert_record('featureprop', $values);
-      if (!$result) {
-        $this->logMessage("cannot add featureprop, $property.", [], TRIPAL_WARNING);
-      }
-    }
   }
 
   /**
