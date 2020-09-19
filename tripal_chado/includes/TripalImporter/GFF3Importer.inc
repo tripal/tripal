@@ -198,6 +198,11 @@ class GFF3Importer extends TripalImporter {
   private $dbxref_lookup = [];
 
   /**
+   * Holds a mapping of Dbxref names to cvterm ids.
+   */
+  private $cvterm_lookup = [];
+
+  /**
    * Holds a mapping of synonymns to ids.
    */
   private $synonym_lookup = [];
@@ -667,6 +672,10 @@ class GFF3Importer extends TripalImporter {
     $this->logMessage("Step 8c: Loading feature cross references...              ");
     $this->loadFeatureDbxrefs();
 
+
+    $this->logMessage("Step 9: Loading feature ontology terms...                 ");
+    $this->loadFeatureCVterms();
+
     /*
       strcmp($tag_name, 'Parent') != 0 and
       strcmp($tag_name, 'Target') != 0 and
@@ -959,6 +968,7 @@ class GFF3Importer extends TripalImporter {
     $attr_aliases = [];
     $attr_dbxref = [];
     $attr_derives = [];
+    $attr_terms = [];
     foreach ($attrs as $attr) {
       $attr = rtrim($attr);
       $attr = ltrim($attr);
@@ -1000,6 +1010,9 @@ class GFF3Importer extends TripalImporter {
       elseif (strcmp($tag_name, 'Derives_from') == 0) {
         $attr_derives = array_merge($attr_derives, $tags[$tag_name]);
       }
+      elseif (strcmp($tag_name, 'Ontology_term') == 0) {
+        $attr_terms = array_merge($attr_terms, $tags[$tag_name]);
+      }
       // Get the list of non-reserved attributes these will get added
       // as properties to the featureprop table.
       elseif (strcmp($tag_name, 'Name') !=0 and strcmp($tag_name, 'ID') !=0 and
@@ -1031,7 +1044,7 @@ class GFF3Importer extends TripalImporter {
     foreach ($attr_dbxref as $key => $dbx) {
       $parts = explode(':', $dbx);
       if (count($parts) != 2) {
-        throw new Exception(t('Dbxrefs must be of the format: "Dbxref=<db name>:<accession>". The Dbxref %dbx on line %line_num does not satisfy this format.',
+        throw new Exception(t('Dbxrefs must be of the format: "<db name>:<accession>". The Dbxref %dbx on line %line_num does not satisfy this format.',
             ['%line_num' => $this->current_line, '%dbx' => $dbx]));
       }
       $ret['dbxrefs']["{$parts[0]}:{$parts[1]}"] = array(
@@ -1039,10 +1052,26 @@ class GFF3Importer extends TripalImporter {
         'accession' => $parts[1],
       );
     }
+
+    // Add in the GFF source dbxref. This is needed for GBrowse.
     $ret['dbxrefs']["GFF_source:{$ret['source']}"] = array(
       'db' => 'GFF_source',
       'accession' => $ret['source'],
     );
+
+    // Add in the ontology terms
+    $ret['terms'] = [];
+    foreach ($attr_terms as $key => $dbx) {
+      $parts = explode(':', $dbx);
+      if (count($parts) != 2) {
+        throw new Exception(t('Ontology_terms must be of the format: "<db name>:<accession>". The term %dbx on line %line_num does not satisfy this format.',
+            ['%line_num' => $this->current_line, '%dbx' => $dbx]));
+      }
+      $ret['terms']["{$parts[0]}:{$parts[1]}"] = array(
+        'db' => $parts[0],
+        'accession' => $parts[1],
+      );
+    }
 
     $ret['derives_from'] = $attr_derives;
     if (count($ret['derives_from']) > 1) {
@@ -1307,16 +1336,30 @@ class GFF3Importer extends TripalImporter {
         $this->relationships['Child'][$gff_feature['uniquename']] = $gff_feature['Parent'];
       }
 
-      // Organize DBs for faster acces later on.
+      // Organize DBs and DBXrefs for faster access later on.
       foreach ($gff_feature['dbxrefs'] as $index => $info) {
+        if (!array_key_exists($info['db'], $this->db_lookup)) {
+          $this->db_lookup[$info['db']] = FALSE;
+        }
+        if (!array_key_exists($index, $this->dbxref_lookup)) {
+          $this->dbxref_lookup[$index] = $info;
+        }
+      }
+      // We want to make sure the Ontology_term attribute dbxrefs are
+      // also easily looked up... but we do not want to create them
+      // if they do not exist the precense of the 'cvterm' key will
+      // tell the loadDbxrefs() function to not create the term.
+      foreach ($gff_feature['terms'] as $index => $info) {
         if (!array_key_exists($info['db'], $this->db_lookup)) {
           $this->db_lookup[$info['db']] = FALSE;
         }
 
         if (!array_key_exists($index, $this->dbxref_lookup)) {
           $this->dbxref_lookup[$index] = $info;
+          $this->dbxref_lookup[$index]['cvterm_id'] = NULL;
         }
       }
+
 
       // Organize the CVterms for faster access later on.
       if (!array_key_exists($gff_feature['type'], $feature_cvterms)) {
@@ -1610,8 +1653,8 @@ class GFF3Importer extends TripalImporter {
    */
   private function findDbxrefs() {
     $batch_size = 1000;
-    $num_features = count(array_keys($this->dbxref_lookup));
-    $num_batches = (int) ($num_features / $batch_size) + 1;
+    $num_dbxrefs = count(array_keys($this->dbxref_lookup));
+    $num_batches = (int) ($num_dbxrefs / $batch_size) + 1;
 
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
@@ -1619,29 +1662,36 @@ class GFF3Importer extends TripalImporter {
     // DBXrefs may be already present so we'll do an initial round of
     // looking for them and then insert those that don't exist.
     $init_sql = "
-      SELECT DB.name, DBX.db_id, DBX.accession, DBX.dbxref_id
+      SELECT DB.name, DBX.db_id, DBX.accession, DBX.dbxref_id, CVT.cvterm_id
       FROM {dbxref} DBX
         INNER JOIN {db} DB on DB.db_id = DBX.db_id
+        LEFT JOIN {cvterm} CVT on DBX.dbxref_id = CVT.dbxref_id
       WHERE
     ";
     $i = 0;
+    $total = 0;
     $batch_num = 1;
     $sql = '';
     $args = [];
     foreach ($this->dbxref_lookup as $xref => $info) {
       $i++;
+      $total++;
       $sql .= "(DBX.accession = :accession_$i and DBX.db_id = :db_id_$i) OR\n";
       $args[":accession_$i"] = $info['accession'];
       $args[":db_id_$i"] = $this->db_lookup[$info['db']];
 
       // If we've reached the size of the batch then let's do the select.
-      if ($i == $batch_size) {
+      if ($i == $batch_size or $total == $num_dbxrefs) {
         $sql = rtrim($sql, " OR\n");
         $sql = $init_sql . $sql;
         $results = chado_query($sql, $args);
         while ($dbxref = $results->fetchObject()) {
           $index = $dbxref->name . ':' . $dbxref->accession;
           $this->dbxref_lookup[$index]['dbxref_id'] = $dbxref->dbxref_id;
+          if ($dbxref->cvterm_id) {
+            $this->cvterm_lookup[$index] = $dbxref->cvterm_id;
+            $this->dbxref_lookup[$index]['cvterm_id'] = $dbxref->cvterm_id;
+          }
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -1652,17 +1702,6 @@ class GFF3Importer extends TripalImporter {
         $j = 0;
         $args = [];
       }
-    }
-    // Select any remaining batch items
-    if ($i > 0) {
-      $sql = rtrim($sql, " OR\n");
-      $sql = $init_sql . $sql;
-      $results = chado_query($sql, $args);
-      while ($dbxref = $results->fetchObject()) {
-        $index = $dbxref->name . ':' . $dbxref->accession;
-        $this->dbxref_lookup[$index]['dbxref_id'] = $dbxref->dbxref_id;
-      }
-      $this->setItemsHandled($batch_num);
     }
   }
 
@@ -1688,7 +1727,9 @@ class GFF3Importer extends TripalImporter {
       $total++;
 
       // Only do an insert if this dbxref doesn't already exist in the databse.
-      if (!array_key_exists('dbxref_id', $info)) {
+      // and this dbxref is from a Dbxref attribute not an Ontology_term attr.
+      if (!array_key_exists('dbxref_id', $info) and
+          !array_key_exists('cvterm_id', $info)) {
         $sql .= "(:db_id_$i, :accession_$i),\n";
         $args[":db_id_$i"] = $this->db_lookup[$info['db']];
         $args[":accession_$i"] = $info['accession'];
@@ -1758,6 +1799,63 @@ class GFF3Importer extends TripalImporter {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
           $last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
+          $this->setItemsHandled($batch_num);
+          $batch_num++;
+
+          // Now reset all of the varables for the next batch.
+          $sql = '';
+          $i = 0;
+          $j = 0;
+          $args = [];
+        }
+      }
+    }
+  }
+
+  /**
+   *
+   */
+  private function loadFeatureCVterms() {
+    $batch_size = 100;
+    $num_features = count(array_keys($this->features));
+    $num_batches = (int) ($num_features / $batch_size) + 1;
+
+    $this->setItemsHandled(0);
+    $this->setTotalItems($num_batches);
+
+    // Don't need to use placeholders for this insert since we are only using integers.
+
+    $init_sql = "INSERT INTO {feature_cvterm} (feature_id, cvterm_id, pub_id) VALUES \n";
+    $i = 0;
+    $j = 0;
+    $total = 0;
+    $batch_num = 1;
+    $sql = '';
+    $args = [];
+    foreach ($this->features as $uniquename => $feature) {
+
+      // Only do an insert if this feature doesn't already exist in the databse.
+      if (!$this->doesFeatureAlreadyExist($feature)) {
+        $i++;
+        $total++;
+
+        $this->ensureFeatureIsLoaded($feature);
+
+        // Iterate through all of the dbxrefs of this feature.
+        foreach ($feature['terms'] as $index => $info) {
+          $j++;
+          $sql .= "(:feature_id_$j, :cvterm_id_$j, :pub_id_$j),\n";
+          $args[":feature_id_$j"] = $feature['feature_id'];
+          $args[":cvterm_id_$j"] = $this->cvterm_lookup[$index];
+          $args[":pub_id_$j"] = $this->null_pub->pub_id;
+        }
+        // If we've reached the size of the batch then let's do the insert.
+        if ($i == $batch_size or $total == $num_features) {
+          if (count($args) > 0) {
+            $sql = rtrim($sql, ",\n");
+            $sql = $init_sql . $sql;
+            $last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
+          }
           $this->setItemsHandled($batch_num);
           $batch_num++;
 
@@ -2131,7 +2229,6 @@ class GFF3Importer extends TripalImporter {
 
     $filesize = filesize($this->gff_file);
     $this->setTotalItems($filesize);
-
 
     $in_fasta = 0;
     $line_num = 0;
