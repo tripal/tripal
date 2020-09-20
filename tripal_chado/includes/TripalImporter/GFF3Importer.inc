@@ -629,6 +629,8 @@ class GFF3Importer extends TripalImporter {
     $this->logMessage("Step 20: Adding any missing proteins...                   ");
     // TODO: protein records.
 
+    // TODO: handle is_circular (it may just need to be a property).
+
     if (!empty($this->residue_index)) {
       $this->logMessage("Step 21: Adding sequences if available...                 ");
       $this->insertFeatureSeqs();
@@ -985,11 +987,7 @@ class GFF3Importer extends TripalImporter {
     // Add in the dbxref record.
     $ret['dbxrefs'] = [];
     foreach ($attr_dbxref as $key => $dbx) {
-      $parts = explode(':', $dbx);
-      if (count($parts) != 2) {
-        throw new Exception(t('Dbxrefs must be of the format: "<db name>:<accession>". The Dbxref %dbx on line %line_num does not satisfy this format.',
-            ['%line_num' => $this->current_line, '%dbx' => $dbx]));
-      }
+      $parts = explode(':', $dbx, 2);
       $ret['dbxrefs']["{$parts[0]}:{$parts[1]}"] = array(
         'db' => $parts[0],
         'accession' => $parts[1],
@@ -1005,11 +1003,7 @@ class GFF3Importer extends TripalImporter {
     // Add in the ontology terms
     $ret['terms'] = [];
     foreach ($attr_terms as $key => $dbx) {
-      $parts = explode(':', $dbx);
-      if (count($parts) != 2) {
-        throw new Exception(t('Ontology_terms must be of the format: "<db name>:<accession>". The term %dbx on line %line_num does not satisfy this format.',
-            ['%line_num' => $this->current_line, '%dbx' => $dbx]));
-      }
+      $parts = explode(':', $dbx, 2);
       $ret['terms']["{$parts[0]}:{$parts[1]}"] = array(
         'db' => $parts[0],
         'accession' => $parts[1],
