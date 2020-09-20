@@ -73,7 +73,7 @@ class GFF3Importer extends TripalImporter {
   /**
    * An array of organism records for quick lookup.
    */
-  private $organism_lookup = NULL;
+  private $organism_lookup = [];
 
   /**
    * The analysis ID for this GFF file
@@ -311,66 +311,19 @@ class GFF3Importer extends TripalImporter {
     $form['organism_id'] = [
       '#title' => t('Existing Organism'),
       '#type' => 'select',
-      '#description' => t("Choose an existing organism to which these sequences are associated, or create a new one in the fieldset below."),
-      '#required' => FALSE,
+      '#description' => t("Choose an existing organism to which the entries in the GFF file will be associated."),
+      '#required' => TRUE,
       '#options' => $organisms,
     ];
-    $form['organism'] = [
-      '#type' => 'fieldset',
-      '#title' => t('And an Organism'),
-      '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
-    ];
-    $form['organism']['help'] = [
-      '#markup' => t('Use the fields below to create a new organism to which the
-         features in this GFF3 file will be associated.  You must provide at least
-         the genus and species names. The record will be added to the Chado database prior to importing the GFF file.
-         You can later publish the organism and return to edit or update any details provided here.
-         If the organism already exists that matches what is provided below then it will be used and no new record will be created.')
-    ];
-    $form['organism']['genus'] = [
-      '#title' => t('Genus'),
-      '#type' => 'textfield',
-      '#description' => t("Specify the genus name"),
+    $form['create_organism'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Create organism'),
       '#required' => FALSE,
-    ];
-    $form['organism']['species'] = [
-      '#title' => t('Species'),
-      '#type' => 'textfield',
-      '#description' => t("Specify the species name"),
-      '#required' => FALSE,
-    ];
-    $itypes = [];
-    $form['organism']['infraspecific_type'] = [
-      '#title' => t('Infraspecific Type'),
-      '#type' => 'select',
-      '#description' => t("Choose an existing infraspecific type"),
-      '#required' => FALSE,
-      '#options' => $itypes,
-    ];
-    $form['organism']['infraspecific_name'] = [
-      '#title' => t('Infraspecific Name'),
-      '#type' => 'textfield',
-      '#description' => t("Specify the infrapsecific name"),
-      '#required' => FALSE,
-    ];
-    $form['organism']['common_name'] = [
-      '#title' => t('Common Name'),
-      '#type' => 'textfield',
-      '#description' => t("Specify the common name"),
-      '#required' => FALSE,
-    ];
-    $form['organism']['abbreviation'] = [
-      '#title' => t('Common Name'),
-      '#type' => 'textfield',
-      '#description' => t("Specify the common name"),
-      '#required' => FALSE,
-    ];
-    $form['organism']['description'] = [
-      '#title' => t('Description'),
-      '#type' => 'textarea',
-      '#description' => t("Provide a description for this organism."),
-      '#required' => FALSE,
+      '#description' => t('The Tripal GFF loader supports the "organism" attribute. This allows features of a
+       different organism to be aligned to the landmark sequence.  The format of the
+       attribute is "organism=[genus]:[species]", where [genus] is the organism\'s genus and [species] is the
+       species name. Check this box to automatically add the organism to the database if it does not already exists.
+       Otherwise lines with an organism attribute where the organism is not present in the database will be skipped.'),
     ];
 
     $form['landmark_type'] = [
@@ -428,16 +381,6 @@ class GFF3Importer extends TripalImporter {
        GFF file.  Here you can specify the organism and feature type of the target sequences.
        The options here will apply to all targets unless the organism and type are explicity
        set in the GFF file using the 'target_organism' and 'target_type' attributes."),
-    ];
-    $form['targets']['create_organism'] = [
-      '#type' => 'checkbox',
-      '#title' => t('Create organism'),
-      '#required' => FALSE,
-      '#description' => t('The Tripal GFF loader supports the "organism" attribute. This allows features of a
-       different organism to be aligned to the landmark sequence.  The format of the
-       attribute is "organism=[genus]:[species]", where [genus] is the organism\'s genus and [species] is the
-       species name. Check this box to automatically add the organism to the database if it does not already exists.
-       Otherwise lines with an oraganism attribute where the organism is not present in the database will be skipped.'),
     ];
     $form['targets']['target_organism_id'] = [
       '#title' => t('Target Organism'),
@@ -656,8 +599,8 @@ class GFF3Importer extends TripalImporter {
     $this->logMessage("Step 4: Loading locations...                              ");
     $this->loadFeatureLocs();
 
-    $this->logMessage("Step 5: Loading 'derives_from' (gene/CDS) relationships...");
-    $this->loadDerivesFrom();
+    $this->logMessage("Step 5: Loading 'derives_from' relationships...           ");
+    $this->loadFeatureDerivesFrom();
 
     $this->logMessage("Step 6: Loading properties...                             ");
     $this->loadFeatureProps();
@@ -685,13 +628,11 @@ class GFF3Importer extends TripalImporter {
     $this->findChildRanks();
     $this->loadParents();
 
+    // The Is_circular tag is not handled.
+
     /*
       strcmp($tag_name, 'Target') != 0 and
       strcmp($tag_name, 'Gap') != 0 and
-      strcmp($tag_name, 'Derives_from') != 0 and
-      strcmp($tag_name, 'Note') != 0 and
-      strcmp($tag_name, 'Ontology_term') != 0 and
-      strcmp($tag_name, 'Is_circular') != 0 and
       strcmp($tag_name, 'target_organism') != 0 and
       strcmp($tag_name, 'target_type') != 0 and
       strcmp($tag_name, 'organism' != 0)) {
@@ -970,7 +911,7 @@ class GFF3Importer extends TripalImporter {
     $attr_name = '';
     $attr_uniquename = '';
     $attrs = explode(";", $cols[8]);
-    $attr_organism = $this->organism;
+    $attr_organism = [];
     $attr_parent = '';
     $attr_others = [];
     $attr_aliases = [];
@@ -1003,10 +944,7 @@ class GFF3Importer extends TripalImporter {
         $tags[$tag_name][$i] = urldecode($tags[$tag_name][$i]);
       }
 
-      if (strcmp($tag_name, 'organism') == 0) {
-        $attr_organism = $this->getOrganism(urldecode($tag[1]));
-      }
-      elseif (strcmp($tag_name, 'Alias') == 0) {
+      if (strcmp($tag_name, 'Alias') == 0) {
         $attr_aliases = array_merge($attr_aliases, $tags[$tag_name]);
       }
       elseif (strcmp($tag_name, 'Parent') == 0) {
@@ -1021,12 +959,16 @@ class GFF3Importer extends TripalImporter {
       elseif (strcmp($tag_name, 'Ontology_term') == 0) {
         $attr_terms = array_merge($attr_terms, $tags[$tag_name]);
       }
+      elseif (strcmp($tag_name, 'organism') == 0) {
+        $attr_organism = array_merge($attr_organism, $tags[$tag_name]);
+      }
       // Get the list of non-reserved attributes these will get added
-      // as properties to the featureprop table.
+      // as properties to the featureprop table.  The 'Note' attribute
+      // will be allowed to go in as a property.
       elseif (strcmp($tag_name, 'Name') !=0 and strcmp($tag_name, 'ID') !=0 and
               strcmp($tag_name, 'Alias') != 0 and strcmp($tag_name, 'Parent') != 0 and
               strcmp($tag_name, 'Target') != 0 and strcmp($tag_name, 'Gap') != 0 and
-              strcmp($tag_name, 'Derives_from') != 0 and strcmp($tag_name, 'Note') != 0 and
+              strcmp($tag_name, 'Derives_from') != 0 and
               strcmp($tag_name, 'Dbxref') != 0 and strcmp($tag_name, 'Ontology_term') != 0 and
               strcmp($tag_name, 'Is_circular') != 0 and strcmp($tag_name, 'target_organism') != 0 and
               strcmp($tag_name, 'target_type') != 0 and strcmp($tag_name, 'organism' != 0)) {
@@ -1099,7 +1041,21 @@ class GFF3Importer extends TripalImporter {
       $ret['attrs'][$key] = $value;
     }
 
-    $ret['organism_id'] = $attr_organism->getValue('organism_id');
+
+    // Add the organism  entry.
+    $ret['organism'] = '';
+    if (count($attr_organism) == 1) {
+      $ret['organism'] = $attr_organism[0];
+    }
+    if (count($attr_organism) > 1) {
+      throw new Exception(t('Each feature can only have one "organism" attribute. The feature %uniquename has more than one: %organism',
+        [
+          '%uniquename' => $ret['uniquename'],
+          '%organism' => $ret['organism'],
+        ]));
+    }
+
+
     $ret['properties'] = $attr_others;
     $ret['parent'] = $attr_parent;
 
@@ -1320,14 +1276,24 @@ class GFF3Importer extends TripalImporter {
       // Parse this feature from this line of the GFF3 file.
       $gff_feature = $this->parseFeature($line);
 
+      // A feature may get ignored. But let's default this to FALSE.
+      $gff_feature['skipped'] = FALSE;
+
+      // Lookup the organism ID if one is requested.
+      if ($gff_feature['organism']) {
+        $organism_id = $this->findOrganism($gff_feature['organism'], $line_num);
+        if ($organism_id) {
+          $gff_feature['organism'] = $organism_id;
+        }
+        elsE {
+          $gff_feature['skipped'] = TRUE;
+        }
+
+      }
+
       // Add the landmark if it doesn't exist in the landmark list.
       if (!array_key_exists($gff_feature['landmark'], $this->landmarks)) {
         $this->landmarks[$gff_feature['landmark']] = FALSE;
-      }
-
-      // Store the GFF feature details.
-      if ($gff_feature['uniquename'] != $gff_feature['landmark']) {
-        $this->features[$gff_feature['uniquename']] = $gff_feature;
       }
 
       // Store any parent/child relationships
@@ -1385,6 +1351,12 @@ class GFF3Importer extends TripalImporter {
         }
         $featureprop_cvterms[$prop_name]++;
       }
+
+      // Store the GFF feature details.
+      if ($gff_feature['uniquename'] != $gff_feature['landmark']) {
+        $this->features[$gff_feature['uniquename']] = $gff_feature;
+      }
+
     }
 
     // Iterate through the feature type terms and get a chado object for each.
@@ -1527,11 +1499,11 @@ class GFF3Importer extends TripalImporter {
     $batch_features = [];
     foreach ($this->features as $uniquename => $feature) {
       $total++;
-      $i++;
-      $batch_features[$uniquename] = $feature;
 
       // Only do an insert if this feature doesn't already exist in the databse.
-      if (!$this->doesFeatureAlreadyExist($feature)) {
+      if (!$this->doesFeatureAlreadyExist($feature) and $feature['skipped'] == FALSE) {
+        $i++;
+        $batch_features[$uniquename] = $feature;
         $residues = '';//$this->getResidues($feature, FALSE);
         $type_id = $this->feature_cvterm_lookup[strtolower($feature['type'])];
         $sql .= "(:uniquename_$i, :name_$i, :type_id_$i, :organism_id_$i, :residues_$i, " .
@@ -1539,7 +1511,7 @@ class GFF3Importer extends TripalImporter {
         $args[":uniquename_$i"] = $feature['uniquename'];
         $args[":name_$i"] = $feature['name'];
         $args[":type_id_$i"] = $type_id;
-        $args[":organism_id_$i"] = $feature['organism_id'];
+        $args[":organism_id_$i"] = $feature['organism'] ? $feature['organism'] : $this->organism->getID();
         $args[":residues_$i"] = $residues;
         $args[":md5checksum_$i"] = $residues ? md5($residues) : '';
         $args[":seqlen_$i"] = strlen($residues);
@@ -1581,11 +1553,12 @@ class GFF3Importer extends TripalImporter {
     ";
 
     foreach ($batch_features as $uniquename => $feature) {
-      $result = chado_query($sql, array(
+      $args = [
         ':uniquename' => $feature['uniquename'],
-        ':organism_id' => $feature['organism_id'],
+        ':organism_id' => $feature['organism'] ? $feature['organism'] : $this->organism->getID(),
         ':type_id' => $this->feature_cvterm_lookup[strtolower($feature['type'])],
-      ))->fetchObject();
+      ];
+      $result = chado_query($sql, $args)->fetchObject();
       if (array_key_exists($uniquename, $this->features)) {
         $this->features[$uniquename]['feature_id'] = $result->feature_id;
       }
@@ -1617,7 +1590,7 @@ class GFF3Importer extends TripalImporter {
       $total++;
 
       // Only do an insert if this feature doesn't already exist in the databse.
-      if (!$this->doesFeatureAlreadyExist($feature)) {
+      if (!$this->doesFeatureAlreadyExist($feature) and $feature['skipped'] == FALSE) {
         $i++;
         $this->ensureFeatureIsLoaded($feature);
 
@@ -1679,7 +1652,7 @@ class GFF3Importer extends TripalImporter {
       // If the feature already exists in the database don't update its
       // children.
       $parent_feature = $this->features[$parent];
-      if (!$this->doesFeatureAlreadyExist($parent_feature)) {
+      if (!$this->doesFeatureAlreadyExist($parent_feature) and $parent_feature['skipped'] == FALSE) {
         $i++;
         $this->ensureFeatureIsLoaded($parent_feature);
 
@@ -1861,7 +1834,7 @@ class GFF3Importer extends TripalImporter {
       $total++;
 
       // Only do an insert if this feature doesn't already exist in the databse.
-      if (!$this->doesFeatureAlreadyExist($feature)) {
+      if (!$this->doesFeatureAlreadyExist($feature) and $feature['skipped'] == FALSE) {
         $i++;
         $this->ensureFeatureIsLoaded($feature);
 
@@ -1917,7 +1890,7 @@ class GFF3Importer extends TripalImporter {
       $total++;
 
       // Only do an insert if this feature doesn't already exist in the databse.
-      if (!$this->doesFeatureAlreadyExist($feature)) {
+      if (!$this->doesFeatureAlreadyExist($feature) and $feature['skipped'] == FALSE) {
         $i++;
         $this->ensureFeatureIsLoaded($feature);
 
@@ -1936,7 +1909,7 @@ class GFF3Importer extends TripalImporter {
         if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
-          $last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
+          chado_query($sql, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -1953,7 +1926,7 @@ class GFF3Importer extends TripalImporter {
   /**
    *
    */
-  private function loadDerivesFrom() {
+  private function loadFeatureDerivesFrom() {
     $batch_size = 100;
     $num_features = count(array_keys($this->features));
     $num_batches = (int) ($num_features / $batch_size) + 1;
@@ -1975,7 +1948,7 @@ class GFF3Importer extends TripalImporter {
       $total++;
 
       // Only do an insert if this feature doesn't already exist in the databse.
-      if (!$this->doesFeatureAlreadyExist($feature)) {
+      if (!$this->doesFeatureAlreadyExist($feature) and $feature['skipped'] == FALSE) {
         $i++;
         $this->ensureFeatureIsLoaded($feature);
 
@@ -2028,10 +2001,11 @@ class GFF3Importer extends TripalImporter {
     $sql = '';
     $args = [];
     foreach ($this->features as $uniquename => $feature) {
+
       $total++;
 
       // Only do an insert if this feature doesn't already exist in the databse.
-      if (!$this->doesFeatureAlreadyExist($feature)) {
+      if (!$this->doesFeatureAlreadyExist($feature) and $feature['skipped'] == FALSE) {
         $i++;
         $this->ensureFeatureIsLoaded($feature);
 
@@ -2073,6 +2047,43 @@ class GFF3Importer extends TripalImporter {
         $args = [];
       }
     }
+  }
+
+  /**
+   * Finds an organism from an organism attribute value.
+   */
+  private function findOrganism($organism_attr, $line_num) {
+
+    if (array_key_exists($organism_attr, $this->organism_lookup)) {
+      return $this->organism_lookup[$organism_attr];
+    }
+
+    // Get the organism object.
+    [$genus, $species] = explode(':', $organism_attr, 2);
+    $record = new ChadoRecord('organism');
+    $record->setValues([
+      'genus' => $genus,
+      'species' => $species
+    ]);
+    $num_found = $this->organism->find();
+
+    if ($num_found == 1){
+      $this->organism_lookup[$organism_attr] = $record->getID();
+      return $record->getID();
+    }
+
+    if ($num_found > 1) {
+      throw new Exception(t('Multiple organisms were found for the "organism" attribute, %organism, on line %line_num',
+          ['%organism' => $organism_attr, '%line_num' => $line_num]));
+    }
+
+    if ($this->create_organism) {
+      $record->insert();
+      $this->organism_lookup[$organism_attr] = $record->getID();
+      $gff_feature['organism'] = $record->getID();
+      return $record->getID();
+    }
+    return NULL;
   }
 
   /**
@@ -2209,7 +2220,7 @@ class GFF3Importer extends TripalImporter {
       $total++;
 
       // Only do an insert if this feature doesn't already exist in the databse.
-      if (!$this->doesFeatureAlreadyExist($feature)) {
+      if (!$this->doesFeatureAlreadyExist($feature) and $feature['skipped'] == FALSE) {
         $i++;
         $this->ensureFeatureIsLoaded($feature);
 
@@ -2799,60 +2810,6 @@ class GFF3Importer extends TripalImporter {
     }
 
     return 1;
-  }
-
-
-  /**
-   * Retrives the organism ID that matches the provided string.
-   *
-   * The organism string is expected to be in the format genus:species
-   * or just the full name separated by spaces.
-   */
-  private function getOrganism($org_string) {
-
-    // Before performing a database query check to see if
-    // this organism is already in our lookup list.
-    if (array_key_exists($org_string, $this->organism_lookup)) {
-      return $this->organism_lookup[$org_string];
-    }
-
-    // See if the genus and species are spearated by a colon.
-    $org_matches = [];
-    if (preg_match('/^(.*?):(.*?)$/', $org_string, $org_matches)) {
-      $values = [
-        'genus' => $org_matches[1],
-        'species' => $org_matches[2],
-      ];
-    }
-    // See if the genus, species and infraspecific name are present.
-    elseif (preg_match('/^(.*?)\s+(.*?)\s+(.*)$/', $org_string, $org_matches)) {
-      $values = [
-        'genus' => $org_matches[1],
-        'species' => $org_matches[2],
-        'infraspecific_name' => $org_matches[3],
-      ];
-    }
-    // See if just the genus ans species are present.
-    elseif (preg_match('/^(.*?)\s+(.*?)$/', $org_string, $org_matches)) {
-      $values = [
-        'genus' => $org_matches[1],
-        'species' => $org_matches[2],
-      ];
-    }
-    else {
-      throw new Exception(t("The specified organism, '%organism', is not provided in a compatible format. It must be 'genus:species', 'genus species' or 'genus species infraspecific name'.", ['%organism' => $org_string]));
-    }
-
-    // Get the organism record and add it to our lookup list for next time.
-    $organism = new ChadoRecord('organism');
-    $organism->setValues($values);
-    $num_found = $organism->find();
-    if ($num_found == 0) {
-      throw new Exception(t("Cannot find the specified organism, '%organism', for this GFF3 file.", ['%organism' => $org_string]));
-    }
-    $this->organism_lookup[$org_string] = $organism;
-
-    return $organism;
   }
 
   /**
