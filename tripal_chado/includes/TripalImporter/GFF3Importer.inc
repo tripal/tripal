@@ -613,25 +613,25 @@ class GFF3Importer extends TripalImporter {
     $this->logMessage("Step 15: Loading feature cross references...              ");
     $this->insertFeatureDbxrefs();
 
-    $this->logMessage("Step 16: Loading feature ontology terms...                 ");
+    $this->logMessage("Step 16: Loading feature ontology terms...                ");
     $this->insertFeatureCVterms();
 
     $this->logMessage("Step 17: Associate child-parent relationships...          ");
     $this->findChildRanks();
     $this->insertFeatureParents();
 
-    $this->logMessage("Step 18: Loading 'derives_from' relationships...           ");
+    $this->logMessage("Step 18: Loading 'derives_from' relationships...          ");
     $this->insertFeatureDerivesFrom();
 
+    $this->logMessage("Step 19: Loading Targets...                               ");
     // TODO: Target (target_organism & target_type)
 
+    $this->logMessage("Step 20: Adding any missing proteins...                   ");
     // TODO: protein records.
 
-    // TODO: Don't import FASTA into memory, use indexes in files.
-
     if (!empty($this->residue_index)) {
-      $this->logMessage("Step 9: Loading residues from FASTA...                  ");
-      //$this->loadFastas();
+      $this->logMessage("Step 21: Adding sequences if available...                 ");
+      $this->insertFeatureSeqs();
     }
   }
 
@@ -1077,7 +1077,7 @@ class GFF3Importer extends TripalImporter {
   /**
    * Loads the actual residue information from the FASTA section of the file.
    */
-  private function loadFastas() {
+  private function insertFeatureSeqs() {
 
     $num_residues = count(array_keys($this->residue_index));
 
@@ -1125,13 +1125,11 @@ class GFF3Importer extends TripalImporter {
         $this->landmarks[$uniquename] = $feature;
       }
 
-      chado_update_record('feature', array(
-        'feature_id' => $id,
-      ), array(
+      chado_update_record('feature', ['feature_id' => $id], [
         'residues' => $residues,
         'seqlen' => strlen($residues),
         'md5checksum' => md5($residues),
-      ));
+      ]);
 
       $count++;
       $this->setItemsHandled($count);
@@ -1421,7 +1419,7 @@ class GFF3Importer extends TripalImporter {
       // Only do an insert if this feature doesn't already exist in the databse.
       if (!$feature['feature_id'] and !$feature['skipped']) {
         $i++;
-        $residues = '';//$this->getResidues($feature, FALSE);
+        $residues = $this->getResidues($feature, FALSE);
         $type_id = $this->feature_cvterm_lookup[strtolower($feature['type'])];
         $sql .= "(:uniquename_$i, :name_$i, :type_id_$i, :organism_id_$i, :residues_$i, " .
                " :md5checksum_$i, :seqlen_$i, FALSE, FALSE),\n";
@@ -2536,85 +2534,6 @@ class GFF3Importer extends TripalImporter {
     }
 
     return $feature;
-  }
-
-  /**
-   * Load the FASTA sequences at the bottom of a GFF3 file
-   *
-   * @param $fh
-   * @param $interval
-   * @param $num_read
-   * @param $line_num
-   * @param $filesize
-   *
-   * @ingroup gff3_loader
-   */
-  private function loadFasta($fh, $interval, &$num_read, &$line_num, $filesize) {
-    $this->logMessage("Loading FASTA sequences...");
-    $residues = '';
-    $id = NULL;
-
-    // iterate through the remaining lines of the file
-    while ($line = fgets($fh)) {
-
-      $line_num++;
-      $size = drupal_strlen($line);
-      $this->addItemsHandled($size);
-      $num_read += $size;
-      $line = trim($line);
-
-      // if we encounter a definition line then get the name, uniquename,
-      // accession and relationship subject from the definition line
-      if (preg_match('/^>/', $line)) {
-
-        // if we are beginning a new sequence then save to the database the last one we just finished.
-        if ($id) {
-          $values = ['uniquename' => $id];
-          $result = chado_select_record('tripal_gff_temp', ['*'], $values);
-          if (count($result) == 0) {
-            $this->logMessage('Cannot find feature to assign FASTA sequence: %uname.',
-              ['%uname' => $id], TRIPAL_WARNING);
-          }
-          else {
-            // if we have a feature then add the residues
-            $feature = $result[0];
-            $values = [
-              'residues' => $residues,
-              'seqlen' => strlen($residues),
-            ];
-            $match = ['feature_id' => $feature->feature_id];
-            chado_update_record('feature', $match, $values);
-          }
-        }
-
-        // get the feature ID for this ID from the tripal_gff_temp table. It
-        // should be the name up to the first space
-        $id = preg_replace('/^>([^\s]+).*$/', '\1', $line);
-        $residues = '';
-      }
-      else {
-        $residues .= trim($line);
-      }
-    }
-
-    // add in the last sequence
-    $values = ['uniquename' => $id];
-    $result = chado_select_record('tripal_gff_temp', ['*'], $values);
-    if (count($result) == 0) {
-      $this->logMessage('Cannot find feature to assign FASTA sequence: %uname.',
-        ['%uname' => $id], TRIPAL_WARNING);
-    }
-    else {
-      // if we have a feature then add the residues
-      $feature = $result[0];
-      $values = [
-        'residues' => $residues,
-        'seqlen' => strlen($residues),
-      ];
-      $match = ['feature_id' => $feature->feature_id];
-      chado_update_record('feature', $match, $values);
-    }
-
   }
 
   /**
