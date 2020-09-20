@@ -208,6 +208,10 @@ class GFF3Importer extends TripalImporter {
   private $synonym_lookup = [];
 
   /**
+   * Maps parents to their children and contains the ranks of the children.
+   */
+  private $parent_lookup = [];
+  /**
    * An array that stores CVterms that have been looked up so we don't have
    * to do the database query every time.
    */
@@ -653,7 +657,7 @@ class GFF3Importer extends TripalImporter {
     $this->loadFeatureLocs();
 
     $this->logMessage("Step 5: Loading 'derives_from' (gene/CDS) relationships...");
-    //$this->loadDerivesFroms();
+    $this->loadDerivesFrom();
 
     $this->logMessage("Step 6: Loading properties...                             ");
     $this->loadFeatureProps();
@@ -669,15 +673,19 @@ class GFF3Importer extends TripalImporter {
     $this->findDbxrefs();
     $this->logMessage("Step 8b: Loading cross references...                      ");
     $this->loadDbxrefs();
-    $this->logMessage("Step 8c: Loading feature cross references...              ");
+    $this->logMessage("Step 8c: Retrieving loaded cross references...            ");
+    $this->findDbxrefs();
+    $this->logMessage("Step 8d: Loading feature cross references...              ");
     $this->loadFeatureDbxrefs();
-
 
     $this->logMessage("Step 9: Loading feature ontology terms...                 ");
     $this->loadFeatureCVterms();
 
+    $this->logMessage("Step 10: Associate child-parent relationships...          ");
+    $this->findChildRanks();
+    $this->loadParents();
+
     /*
-      strcmp($tag_name, 'Parent') != 0 and
       strcmp($tag_name, 'Target') != 0 and
       strcmp($tag_name, 'Gap') != 0 and
       strcmp($tag_name, 'Derives_from') != 0 and
@@ -1073,8 +1081,12 @@ class GFF3Importer extends TripalImporter {
       );
     }
 
-    $ret['derives_from'] = $attr_derives;
-    if (count($ret['derives_from']) > 1) {
+    // Add the derives from entry.
+    $ret['derives_from'] = '';
+    if (count($attr_derives) == 1) {
+      $ret['derives_from'] = $attr_derives[0];
+    }
+    if (count($attr_derives) > 1) {
       throw new Exception(t('Each feature can only have one "Derives_from" attribute. The feature %uniquename has more than one: %derives',
         [
           '%uniquename' => $ret['uniquename'],
@@ -1089,9 +1101,7 @@ class GFF3Importer extends TripalImporter {
 
     $ret['organism_id'] = $attr_organism->getValue('organism_id');
     $ret['properties'] = $attr_others;
-    if ($attr_parent) {
-      $ret['Parent'] = $attr_parent;
-    }
+    $ret['parent'] = $attr_parent;
 
     return $ret;
   }
@@ -1537,11 +1547,9 @@ class GFF3Importer extends TripalImporter {
 
       // If we've reached the size of the batch then let's do the insert.
       if ($i == $batch_size or $total == $num_features) {
-
-        // Insert the batch.
-        $sql = rtrim($sql, ",\n");
-        $sql = $init_sql . $sql;
         if (count($args) > 0) {
+          $sql = rtrim($sql, ",\n");
+          $sql = $init_sql . $sql;
           $last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
           $this->assignFeatureIDs($batch_features);
         }
@@ -1600,18 +1608,17 @@ class GFF3Importer extends TripalImporter {
 
     $init_sql = "INSERT INTO {featureprop} (feature_id, type_id, value, rank) VALUES\n";
     $i = 0;
-    $total = 0;
     $j = 0;
+    $total = 0;
     $batch_num = 1;
     $sql = '';
     $args = [];
     foreach ($this->features as $uniquename => $feature) {
+      $total++;
 
       // Only do an insert if this feature doesn't already exist in the databse.
       if (!$this->doesFeatureAlreadyExist($feature)) {
         $i++;
-        $total++;
-
         $this->ensureFeatureIsLoaded($feature);
 
         // Iterate through all of the properties of this feature.
@@ -1626,24 +1633,83 @@ class GFF3Importer extends TripalImporter {
             $args[":rank_$j"] = $rank;
           }
         }
-        // If we've reached the size of the batch then let's do the insert.
-        if ($i == $batch_size or $total == $num_features) {
-
-          // Insert the batch.
+      }
+      // If we've reached the size of the batch then let's do the insert.
+      if ($i == $batch_size or $total == $num_features) {
+        if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
-          if (count($args) > 0) {
-            $last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
-          }
-          $this->setItemsHandled($batch_num);
-          $batch_num++;
-
-          // Now reset all of the varables for the next batch.
-          $sql = '';
-          $i = 0;
-          $j = 0;
-          $args = [];
+          $last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
         }
+        $this->setItemsHandled($batch_num);
+        $batch_num++;
+
+        // Now reset all of the varables for the next batch.
+        $sql = '';
+        $i = 0;
+        $j = 0;
+        $args = [];
+      }
+    }
+  }
+  /**
+   *
+   */
+  private function loadParents(){
+    $batch_size = 100;
+    $num_parents = count(array_keys($this->parent_lookup));
+    $num_batches = (int) ($num_parents / $batch_size) + 1;
+
+    $this->setItemsHandled(0);
+    $this->setTotalItems($num_batches);
+
+    // Get the 'part_of' cvterm
+    $type_id = $this->getCvtermID('part_of');
+
+    $init_sql = "INSERT INTO {feature_relationship} (subject_id, object_id, type_id, rank) VALUES\n";
+    $i = 0;
+    $j = 0;
+    $total = 0;
+    $batch_num = 1;
+    $sql = '';
+    $args = [];
+    foreach ($this->parent_lookup as $parent => $children) {
+      $total++;
+
+      // If the feature already exists in the database don't update its
+      // children.
+      $parent_feature = $this->features[$parent];
+      if (!$this->doesFeatureAlreadyExist($parent_feature)) {
+        $i++;
+        $this->ensureFeatureIsLoaded($parent_feature);
+
+        $rank = 0;
+        foreach ($children as $start => $feature_id) {
+          $j++;
+          $sql .= "(:subject_id_$j, :object_id_$j, :type_id_$j, :rank_$j),\n";
+          $args[":subject_id_$j"] = $feature_id;
+          $args[":object_id_$j"] = $this->features[$parent]['feature_id'];
+          $args[":type_id_$j"] = $type_id;
+          $args[":rank_$j"] = $rank;
+          $rank++;
+        }
+      }
+
+      // If we've reached the size of the batch then let's do the insert.
+      if ($i == $batch_size or $total == $num_parents) {
+        if (count($args) > 0) {
+          $sql = rtrim($sql, ",\n");
+          $sql = $init_sql . $sql;
+          $last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
+        }
+        $this->setItemsHandled($batch_num);
+        $batch_num++;
+
+        // Now reset all of the varables for the next batch.
+        $sql = '';
+        $i = 0;
+        $j = 0;
+        $args = [];
       }
     }
   }
@@ -1706,12 +1772,30 @@ class GFF3Importer extends TripalImporter {
   }
 
   /**
+   * Calculates ranks for all of the children of each feature.
+   *
+   * This function should not be executed until after features are loaded
+   * into the database and we have feature_ids for all of them.
+   */
+  private function findChildRanks() {
+    // Iterate through parent-child relationships and set the ranks.
+    foreach ($this->features as $uniquename => $feature) {
+      if ($feature['parent']) {
+        // place features in order that they appear by their start coordinates.
+        $parent = $feature['parent'];
+        $start = $feature['start'];
+        $this->parent_lookup[$parent][$start] = $feature['feature_id'];
+      }
+    }
+  }
+
+  /**
    *
    */
   private function loadDbxrefs() {
     $batch_size = 1000;
-    $num_features = count(array_keys($this->dbxref_lookup));
-    $num_batches = (int) ($num_features / $batch_size) + 1;
+    $num_dbxrefs = count(array_keys($this->dbxref_lookup));
+    $num_batches = (int) ($num_dbxrefs / $batch_size) + 1;
 
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
@@ -1736,12 +1820,10 @@ class GFF3Importer extends TripalImporter {
       }
 
       // If we've reached the size of the batch then let's do the insert.
-      if ($i == $batch_size or $total == $num_features) {
-
-        // Insert the batch.
-        $sql = rtrim($sql, ",\n");
-        $sql = $init_sql . $sql;
+      if ($i == $batch_size or $total == $num_dbxrefs) {
         if (count($args) > 0) {
+          $sql = rtrim($sql, ",\n");
+          $sql = $init_sql . $sql;
           $last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
         }
         $this->setItemsHandled($batch_num);
@@ -1768,21 +1850,19 @@ class GFF3Importer extends TripalImporter {
     $this->setTotalItems($num_batches);
 
     // Don't need to use placeholders for this insert since we are only using integers.
-
     $init_sql = "INSERT INTO {feature_dbxref} (feature_id, dbxref_id) VALUES \n";
     $i = 0;
-    $total = 0;
     $j = 0;
+    $total = 0;
     $batch_num = 1;
     $sql = '';
     $args = [];
     foreach ($this->features as $uniquename => $feature) {
+      $total++;
 
       // Only do an insert if this feature doesn't already exist in the databse.
       if (!$this->doesFeatureAlreadyExist($feature)) {
         $i++;
-        $total++;
-
         $this->ensureFeatureIsLoaded($feature);
 
         // Iterate through all of the dbxrefs of this feature.
@@ -1792,22 +1872,23 @@ class GFF3Importer extends TripalImporter {
           $args[":feature_id_$j"] = $feature['feature_id'];
           $args[":dbxref_id_$j"] = $this->dbxref_lookup[$index]['dbxref_id'];
         }
-        // If we've reached the size of the batch then let's do the insert.
-        if ($i == $batch_size or $total == $num_features) {
+      }
 
-          // Insert the batch.
+      // If we've reached the size of the batch then let's do the insert.
+      if ($i == $batch_size or $total == $num_features) {
+        if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
           $last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
-          $this->setItemsHandled($batch_num);
-          $batch_num++;
-
-          // Now reset all of the varables for the next batch.
-          $sql = '';
-          $i = 0;
-          $j = 0;
-          $args = [];
         }
+        $this->setItemsHandled($batch_num);
+        $batch_num++;
+
+        // Now reset all of the varables for the next batch.
+        $sql = '';
+        $i = 0;
+        $j = 0;
+        $args = [];
       }
     }
   }
@@ -1833,12 +1914,11 @@ class GFF3Importer extends TripalImporter {
     $sql = '';
     $args = [];
     foreach ($this->features as $uniquename => $feature) {
+      $total++;
 
       // Only do an insert if this feature doesn't already exist in the databse.
       if (!$this->doesFeatureAlreadyExist($feature)) {
         $i++;
-        $total++;
-
         $this->ensureFeatureIsLoaded($feature);
 
         // Iterate through all of the dbxrefs of this feature.
@@ -1849,22 +1929,23 @@ class GFF3Importer extends TripalImporter {
           $args[":cvterm_id_$j"] = $this->cvterm_lookup[$index];
           $args[":pub_id_$j"] = $this->null_pub->pub_id;
         }
-        // If we've reached the size of the batch then let's do the insert.
-        if ($i == $batch_size or $total == $num_features) {
-          if (count($args) > 0) {
-            $sql = rtrim($sql, ",\n");
-            $sql = $init_sql . $sql;
-            $last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
-          }
-          $this->setItemsHandled($batch_num);
-          $batch_num++;
+      }
 
-          // Now reset all of the varables for the next batch.
-          $sql = '';
-          $i = 0;
-          $j = 0;
-          $args = [];
+      // If we've reached the size of the batch then let's do the insert.
+      if ($i == $batch_size or $total == $num_features) {
+        if (count($args) > 0) {
+          $sql = rtrim($sql, ",\n");
+          $sql = $init_sql . $sql;
+          $last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
         }
+        $this->setItemsHandled($batch_num);
+        $batch_num++;
+
+        // Now reset all of the varables for the next batch.
+        $sql = '';
+        $i = 0;
+        $j = 0;
+        $args = [];
       }
     }
   }
@@ -1872,107 +1953,57 @@ class GFF3Importer extends TripalImporter {
   /**
    *
    */
-  private function loadDerivesFroms() {
-    $batch_size = 1000;
+  private function loadDerivesFrom() {
+    $batch_size = 100;
     $num_features = count(array_keys($this->features));
     $num_batches = (int) ($num_features / $batch_size) + 1;
 
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    $init_sql = "
-      INSERT INTO {feature_relationship}
-        (subject_id, object_id, type_id, rank)
-      VALUES\n";
+    // Get the 'derives_from' cvterm
+    $type_id = $this->getCvtermID('derives_from');
 
-    $count = 0;
+    $init_sql = "INSERT INTO {feature_relationship} (subject_id, object_id, type_id, rank) VALUES\n";
+    $i = 0;
+    $j = 0;
+    $total = 0;
     $batch_num = 1;
-    $rows = [];
+    $sql = '';
     $args = [];
-    $derives_id = $this->getCvtermID('derives_from');
+    foreach ($this->features as $uniquename => $feature) {
+      $total++;
 
-    foreach ($this->features as $uniquename => $subject) {
-      if (!$this->doesFeatureAlreadyExist($subject)) {
-        $count++;
+      // Only do an insert if this feature doesn't already exist in the databse.
+      if (!$this->doesFeatureAlreadyExist($feature)) {
+        $i++;
+        $this->ensureFeatureIsLoaded($feature);
 
-        $this->ensureFeatureIsLoaded($subject);
-        if (!empty($subject['derives_from'])) {
-
-          $object = $subject['derives_from'][0];
-          if (array_key_exists($object, $this->features)) {
-            $this->ensureFeatureIsLoaded($this->features[$object]);
-            $object_id = $this->features[$object]['feature_id'];
-          }
-          elseif (array_key_exists($object, $this->landmarks)) {
-            $this->ensureFeatureIsLoaded($this->landmarks[$object]);
-            $object_id = $this->landmarks[$object]['feature_id'];
-          }
-          else {
-            // Derives_from cannot be found in either features or landmarks, so
-            // we need to get the feature id from the database if it exists.
-            $result = chado_select_record('feature', ['type_id'], [
-              'organism_id' => $subject['organism_id'],
-              'uniquename' => $object,
-            ]);
-
-            if (count($result) > 1) {
-              $this->logMessage('Cannot find feature type for "%object" in derives_from relationship. Multiple matching features exist with this uniquename.',
-                ['%object' => $object], TRIPAL_WARNING);
-              continue;
-            }
-            elseif (count($result) == 0) {
-              $this->logMessage('Cannot find feature type for "%object" in derives_from relationship.',
-                ['%object' => $object], TRIPAL_WARNING);
-              continue;
-            }
-
-            $type_id = $result->type_id;
-            $ofeature = chado_select_record('feature', ['feature_id'], [
-              'organism_id' => $subject['organism_id'],
-              'uniquename' => $object,
-              'type_id' => $type_id,
-            ]);
-            if (count($ofeature) == 0) {
-              $this->logMessage("Could not add 'Derives_from' relationship for %uniquename and %object. Object feature, '%object', cannot be found.",
-                [
-                  '%uniquename' => $uniquename,
-                  '%object' => $object,
-                ], TRIPAL_ERROR);
-              continue;
-            }
-
-            $object_id = $ofeature[0]->feature_id;
-          }
-
-          $rows[] = "(:subject_id_$count, :object_id_$count, $derives_id, 0)";
-          $args[":subject_id_$count"] = $subject['feature_id'];
-          $args[":object_id_$count"] = $object_id;
-
-          if ($count == $batch_size) {
-            $batch_num++;
-
-            if (count($rows) > 0) {
-              $sql = $init_sql . implode(",\n", $rows);
-              chado_query($sql, $args, array('return' => Database::RETURN_INSERT_ID));
-            }
-            $this->setItemsHandled($batch_num);
-
-            $rows = [];
-            $args = [];
-            $count = 0;
-          }
+        if ($feature['derives_from']) {
+          $object_id = $this->features[$feature['derives_from']]['feature_id'];
+          $sql .= "(:subject_id_$i, :object_id_$i, :type_id_$i, 0),\n";
+          $args[":subject_id_$i"] = $feature['feature_id'];
+          $args[":object_id_$i"] = $object_id;
+          $args[":type_id_$i"] = $type_id;
         }
       }
-    }
 
-    if ($count > 0) {
-      $batch_num++;
-      if (count($rows) > 0) {
-        $sql = $init_sql . implode(",\n", $rows);
-        chado_query($sql, $args, array('return' => Database::RETURN_INSERT_ID));
+      // If we've reached the size of the batch then let's do the insert.
+      if ($i == $batch_size or $total == $num_features) {
+        if (count($args) > 0) {
+          $sql = rtrim($sql, ",\n");
+          $sql = $init_sql . $sql;
+          $last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
+        }
+        $this->setItemsHandled($batch_num);
+        $batch_num++;
+
+        // Now reset all of the varables for the next batch.
+        $sql = '';
+        $i = 0;
+        $j = 0;
+        $args = [];
       }
-
-      $this->setItemsHandled($batch_num);
     }
   }
 
@@ -1997,11 +2028,11 @@ class GFF3Importer extends TripalImporter {
     $sql = '';
     $args = [];
     foreach ($this->features as $uniquename => $feature) {
+      $total++;
 
       // Only do an insert if this feature doesn't already exist in the databse.
       if (!$this->doesFeatureAlreadyExist($feature)) {
         $i++;
-
         $this->ensureFeatureIsLoaded($feature);
 
         // Get the rank of this feature by ordering all of the other
@@ -2024,23 +2055,22 @@ class GFF3Importer extends TripalImporter {
         $args[":strand_$i"] = $feature['strand'];
         $args[":phase_$i"] = $feature['phase'] ? $feature['phase'] : NULL;
         $args[":rank_$i"] = $rank;
+      }
 
-
-        // If we've reached the size of the batch then let's do the insert.
-        if ($i == $batch_size or $total == $num_features) {
-
-          // Insert the batch.
+      // If we've reached the size of the batch then let's do the insert.
+      if ($i == $batch_size or $total == $num_features) {
+        if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
           $last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
-          $this->setItemsHandled($batch_num);
-          $batch_num++;
-
-          // Now reset all of the varables for the next batch.
-          $sql = '';
-          $i = 0;
-          $args = [];
         }
+        $this->setItemsHandled($batch_num);
+        $batch_num++;
+
+        // Now reset all of the varables for the next batch.
+        $sql = '';
+        $i = 0;
+        $args = [];
       }
     }
   }
@@ -2139,11 +2169,9 @@ class GFF3Importer extends TripalImporter {
 
       // If we've reached the size of the batch then let's do the insert.
       if ($i == $batch_size or $total == $num_synonyms) {
-
-        // Insert the batch.
-        $sql = rtrim($sql, ",\n");
-        $sql = $init_sql . $sql;
         if (count($args) > 0) {
+          $sql = rtrim($sql, ",\n");
+          $sql = $init_sql . $sql;
           chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
         }
         $this->setItemsHandled($batch_num);
@@ -2178,12 +2206,11 @@ class GFF3Importer extends TripalImporter {
     $batch_num = 1;
     $args = [];
     foreach ($this->features as $uniquename => $feature) {
+      $total++;
 
       // Only do an insert if this feature doesn't already exist in the databse.
       if (!$this->doesFeatureAlreadyExist($feature)) {
         $i++;
-        $total++;
-
         $this->ensureFeatureIsLoaded($feature);
 
         // Handle all of the synonyms for this feature.
@@ -2195,23 +2222,23 @@ class GFF3Importer extends TripalImporter {
           $args[":feature_id_$j"] = $feature['feature_id'];
           $args[":pub_id_$j"] = $this->null_pub->pub_id;
         }
+      }
 
-        // If we've reached the size of the batch then let's do the insert.
-        if ($i == $batch_size or $total == $num_features) {
-          if (count($args) > 0) {
-            $sql = rtrim($sql, ",\n");
-            $sql = $init_sql . $sql;
-            $last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
-          }
-          $this->setItemsHandled($batch_num);
-          $batch_num++;
-
-          // Now reset all of the varables for the next batch.
-          $sql = '';
-          $i = 0;
-          $j = 0;
-          $args = [];
+      // If we've reached the size of the batch then let's do the insert.
+      if ($i == $batch_size or $total == $num_features) {
+        if (count($args) > 0) {
+          $sql = rtrim($sql, ",\n");
+          $sql = $init_sql . $sql;
+          $last_id = chado_query($sql, $args, ['return' => Database::RETURN_INSERT_ID]);
         }
+        $this->setItemsHandled($batch_num);
+        $batch_num++;
+
+        // Now reset all of the varables for the next batch.
+        $sql = '';
+        $i = 0;
+        $j = 0;
+        $args = [];
       }
     }
   }
@@ -2924,7 +2951,7 @@ class GFF3Importer extends TripalImporter {
    *
    * @ingroup gff3_loader
    */
-  private function loadDerivesFrom($feature, $cvterm, $object,
+  private function loadDerivesFromOld($feature, $cvterm, $object,
                                    $organism, $fmin, $fmax) {
 
     $type = $cvterm->name;
@@ -3016,197 +3043,6 @@ class GFF3Importer extends TripalImporter {
           ':uniquename' => $feature->getValue('uniquename'),
           ':subject' => $subject,
         ], TRIPAL_WARNING);
-    }
-  }
-
-  /**
-   * Load the parents for a gff3 feature
-   *
-   * @param $feature
-   * @param $cvterm
-   * @param $parents
-   * @param $organism_id
-   * @param $fmin
-   *
-   * @ingroup gff3_loader
-   */
-  private function loadParents($feature, $cvterm, $parents,
-                               $organism_id, $strand, $phase, $fmin, $fmax) {
-
-    $uname = $feature->getValue('uniquename');
-    $type = $cvterm->name;
-    $rel_type = 'part_of';
-    $relcvterm = $this->getCvterm($rel_type);
-    if (!$relcvterm) {
-      throw new Exception(t("Cannot find the term, 'part_of', from the sequence ontology. This term is used for associating parent and children features. Please check that the ontology is fully imported."));
-    }
-
-    // Iterate through the parents in the list.
-    foreach ($parents as $parent) {
-      // Get the parent cvterm.
-      $values = [
-        'organism_id' => $organism_id,
-        'uniquename' => $parent,
-      ];
-      $result = chado_select_record('tripal_gff_temp', ['type_name'], $values);
-      if (count($result) == 0) {
-        $this->logMessage("Cannot find parent: %parent.", ['%parent' => $parent], TRIPAL_WARNING);
-        return '';
-      }
-      $parent_type = $result[0]->type_name;
-
-      // try to find the parent
-      $parentcvterm = $this->getCvterm($parent_type);
-      $values = [
-        'organism_id' => $organism_id,
-        'uniquename' => $parent,
-        'type_id' => $parentcvterm->cvterm_id,
-      ];
-      $result = chado_select_record('feature', ['feature_id'], $values);
-      $parent_feature = $result[0];
-
-      // if the parent exists then add the relationship otherwise print error and skip
-      if ($parent_feature) {
-
-        // check to see if the relationship already exists
-        $values = [
-          'object_id' => $parent_feature->feature_id,
-          'subject_id' => $feature->getID(),
-          'type_id' => $relcvterm->cvterm_id,
-        ];
-        $rel = chado_select_record('feature_relationship', ['*'], $values);
-
-        if (count($rel) > 0) {
-        }
-        else {
-          // the relationship doesn't already exist, so add it.
-          $values = [
-            'subject_id' => $feature->getID(),
-            'object_id' => $parent_feature->feature_id,
-            'type_id' => $relcvterm->cvterm_id,
-          ];
-          $result = chado_insert_record('feature_relationship', $values, array(
-            'skip_validation' => TRUE,
-          ));
-          if (!$result) {
-            $this->logMessage("Failed to insert feature relationship '$uname' ($type) $rel_type '$parent' ($parent_type).",
-              [], TRIPAL_WARNING);
-          }
-        }
-
-        // If this feature is a CDS and now that we know the parent we can
-        // add it to the tripal_gffcds_temp table for later lookup.
-        if ($type == 'CDS') {
-          $values = [
-            'feature_id' => $feature->getID(),
-            'parent_id' => $parent_feature->feature_id,
-            'fmin' => $fmin,
-            'fmax' => $fmax,
-            'strand' => $strand,
-          ];
-          if (isset($phase)) {
-            $values['phase'] = $phase;
-          }
-          $result = chado_insert_record('tripal_gffcds_temp', $values, array(
-            'skip_validation' => TRUE,
-          ));
-          if (!$result) {
-            throw new Exception(t("Cound not save record in temporary CDS table, Cannot continue.", []));
-            exit;
-          }
-        }
-      }
-      else {
-        $this->logMessage("Cannot establish relationship '$uname' ($type) $rel_type '$parent' ($parent_type): Cannot find the parent.",
-          [], TRIPAL_WARNING);
-      }
-    }
-  }
-
-
-  /**
-   * Load the cvterms for a feature.
-   *
-   * Assumes there is a dbxref.accession matching a cvterm.name
-   *
-   * @param $feature
-   * @param $dbxrefs
-   *
-   * @ingroup gff3_loader
-   */
-  private function loadOntology($feature, $dbxrefs) {
-
-    // iterate through each of the dbxrefs
-    foreach ($dbxrefs as $dbxref) {
-
-      // get the database name from the reference.  If it doesn't exist then create one.
-      $ref = explode(":", $dbxref);
-      $dbname = trim($ref[0]);
-      $accession = trim($ref[1]);
-
-      // first look for the database name
-      $db = chado_select_record('db', ['db_id'], ['name' => "DB:$dbname"]);
-      if (sizeof($db) == 0) {
-        // now look for the name without the 'DB:' prefix.
-        $db = chado_select_record('db', ['db_id'], ['name' => "$dbname"]);
-        if (sizeof($db) == 0) {
-          $this->logMessage("Database, $dbname, is not present. Cannot associate term: $dbname:$accession.", [], TRIPAL_WARNING);
-          continue;
-        }
-      }
-      $db = $db[0];
-
-      // now check to see if the accession exists
-      $dbxref = chado_select_record('dbxref', ['dbxref_id'],
-        ['accession' => $accession, 'db_id' => $db->db_id]);
-      if (sizeof($dbxref) == 0) {
-        $this->logMessage("Accession, $accession is missing for reference: $dbname:$accession.", [], TRIPAL_WARNING);
-        continue;
-      }
-      $dbxref = $dbxref[0];
-
-      // now check to see if the cvterm exists
-      $cvterm = chado_select_record('cvterm', ['cvterm_id'], [
-        'dbxref_id' => $dbxref->dbxref_id,
-      ]);
-      // if it doesn't exist in the cvterm table, look for an alternate id
-      if (sizeof($cvterm) == 0) {
-        $cvterm = chado_select_record('cvterm_dbxref', ['cvterm_id'], [
-          'dbxref_id' => $dbxref->dbxref_id,
-        ]);
-        if (sizeof($cvterm) == 0) {
-          $this->logMessage("CV Term is missing for reference: $dbname:$accession.", [], TRIPAL_WARNING);
-          continue;
-        }
-      }
-      $cvterm = $cvterm[0];
-
-
-      // check to see if this feature cvterm already exists
-      $fcvt = chado_select_record('feature_cvterm', ['feature_cvterm_id'],
-        [
-          'cvterm_id' => $cvterm->cvterm_id,
-          'feature_id' => $feature->getID(),
-        ]);
-
-      // now associate this feature with the cvterm if it doesn't already exist
-      if (sizeof($fcvt) == 0) {
-        $values = [
-          'cvterm_id' => $cvterm->cvterm_id,
-          'feature_id' => $feature->getID(),
-          'pub_id' => [
-            'uniquename' => 'null',
-          ],
-        ];
-        $success = chado_insert_record('feature_cvterm', $values, array(
-          'skip_validation' => TRUE,
-        ));
-
-        if (!$success) {
-          $this->logMessage("Failed to insert ontology term: $dbname:$accession.", [], TRIPAL_WARNING);
-          continue;
-        }
-      }
     }
   }
 
