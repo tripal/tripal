@@ -219,12 +219,6 @@ class GFF3Importer extends TripalImporter {
 
 
   /**
-   * Holds a mapping of cvterms to their aliases that are used in the
-   * GFF3 file.
-   */
-  private $feature_cvterm_aliases = [];
-
-  /**
    * An array that stores CVterms that have been looked up so we don't have
    * to do the database query every time.
    */
@@ -571,6 +565,7 @@ class GFF3Importer extends TripalImporter {
     $this->prepDBs();
 
     $this->logMessage("Step 2: Load landmarks sequences...                       ");
+    $this->findLandmarks();
     $this->insertLandmarks();
 
     $this->logMessage("Step 3: Find existing features...                         ");
@@ -649,12 +644,17 @@ class GFF3Importer extends TripalImporter {
    *
    * @ingroup gff3_loader
    */
-  private function getCvtermID($type, $cv_id = NULL, $is_prop_type = FALSE) {
-    if (!isset($cv_id)) {
-      $cv_id = $this->feature_cv->getValue('cv_id');
+  private function getTypeID($type, $is_prop_type) {
+
+    $cv = $this->feature_cv;
+    if ($is_prop_type) {
+      $cv = $this->feature_prop_cv;
     }
-    if ($is_prop_type and array_key_exists(strtolower($type), $this->featureprop_cvterm_lookup)) {
-      return $this->featureprop_cvterm_lookup[strtolower($type)];
+
+    if ($is_prop_type) {
+      if(array_key_exists(strtolower($type), $this->featureprop_cvterm_lookup)) {
+        return $this->featureprop_cvterm_lookup[strtolower($type)];
+      }
     }
     elseif (array_key_exists(strtolower($type), $this->feature_cvterm_lookup)) {
       return $this->feature_cvterm_lookup[strtolower($type)];
@@ -664,32 +664,45 @@ class GFF3Importer extends TripalImporter {
       SELECT CVT.cvterm_id
       FROM {cvterm} CVT
         LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
-      WHERE CVT.cv_id = {$cv_id} and
+      WHERE CVT.cv_id = :cv_id and
        (lower(CVT.name) = lower(:name) or lower(CVTS.synonym) = lower(:synonym))
     ";
     $result = chado_query($sel_cvterm_sql, [
+      ':cv_id' => $cv->getValue('cv_id'),
       ':name' => $type,
       ':synonym' => $type,
     ]);
-    $cvterm = $result->fetchObject() ?? NULL;
-    if ($cvterm) {
-      $cvterm = chado_get_cvterm(array('cvterm_id' => $cvterm->cvterm_id)) ?? NULL;
+    $cvterm_id = $result->fetchField();
+
+    // If the term couldn't be found and it's a property term then insert it.
+    if (!$cvterm_id) {
+      if($is_prop_type) {
+        $term = [
+          'id' => "local:$type",
+          'name' => $type,
+          'is_obsolete' => 0,
+          'cv_name' => $cv->getValue('name'),
+          'db_name' => 'local',
+          'is_relationship' => FALSE,
+        ];
+        $cvterm = (object) chado_insert_cvterm($term, ['update_existing' => FALSE]);
+        $cvterm_id = $cvterm->cvterm_id;
+      }
+      else {
+        throw new Exception(t('The CVterm, "!term", cannot be found in the vocabulary: "!cv_name".',
+            ['!term' => $type, '!cv_name' => $cv->getValue('name')]));
+      }
     }
 
     if ($is_prop_type) {
-      $this->featureprop_cvterm_lookup[strtolower($cvterm->name)] = $cvterm->cvterm_id;
-      $this->featureprop_cvterm_lookup[strtolower($type)] = $cvterm->cvterm_id;
+      $this->featureprop_cvterm_lookup[strtolower($cvterm->name)] = $cvterm_id;
+      $this->featureprop_cvterm_lookup[strtolower($type)] = $cvterm_id;
     }
     else {
-      $this->feature_cvterm_lookup[strtolower($cvterm->name)] = $cvterm->cvterm_id;
-      $this->feature_cvterm_lookup[strtolower($type)] = $cvterm->cvterm_id;
-
-      // If the cvterm name does not match the name provided then set a mapping.
-      if ($cvterm->name != $type) {
-        $this->feature_cvterm_aliases[$type] = $cvterm->name;
-      }
+      $this->feature_cvterm_lookup[strtolower($cvterm->name)] = $cvterm_id;
+      $this->feature_cvterm_lookup[strtolower($type)] = $cvterm_id;
     }
-    return $cvterm->cvterm_id;
+    return $cvterm_id;
   }
 
   /**
@@ -1041,8 +1054,6 @@ class GFF3Importer extends TripalImporter {
           '%organism' => $ret['organism'],
         ]));
     }
-
-
     $ret['properties'] = $attr_others;
     $ret['parent'] = $attr_parent;
 
@@ -1082,7 +1093,10 @@ class GFF3Importer extends TripalImporter {
 
     foreach ($this->residue_index as $uniquename => $offset) {
       $is_landmark = FALSE;
-      if (!(array_key_exists($uniquename, $this->features) and $this->features[$uniquename]) and !(array_key_exists($uniquename, $this->landmarks) and $this->landmarks[$uniquename])) {
+      if (!(array_key_exists($uniquename, $this->features) and
+            $this->features[$uniquename]) and
+            !(array_key_exists($uniquename, $this->landmarks) and
+            $this->landmarks[$uniquename])) {
         $this->logMessage('Cannot find feature to assign FASTA sequence: %uname.',
           ['%uname' => $uniquename], TRIPAL_WARNING);
         $count++;
@@ -1113,10 +1127,10 @@ class GFF3Importer extends TripalImporter {
       $feature['residues'] = $residues;
 
       if (!$is_landmark) {
-        $this->features[$uniquename] = $feature;
+        $this->features[$uniquename] = $feature['feature_id'];;
       }
       else {
-        $this->landmarks[$uniquename] = $feature;
+        $this->landmarks[$uniquename] = $feature['feature_id'];;
       }
 
       chado_update_record('feature', ['feature_id' => $id], [
@@ -1200,16 +1214,10 @@ class GFF3Importer extends TripalImporter {
    * Loads a single landmark by name.
    */
   private function insertLandmark($name) {
-    //$this->logMessage('Adding a new landmark feature: !landmark', ['!landmark' => $name]);
+
     $landmark = $this->insertFeature($this->organism, $this->analysis, $this->landmark_cvterm, $name,
         $name, '', 'f', 'f', 1, 0);
-    $this->landmarks[$name] = [
-      'uniquename' => $landmark->getValue('uniquename'),
-      'name' => $landmark->getValue('name'),
-      'type' => $this->landmark_cvterm->getValue('name'),
-      'feature_id' => $landmark->getValue('feature_id'),
-      'organism_id' => $landmark->getValue('organism_id'),
-    ];
+    $this->landmarks[$name] = $landmark->getValue('feature_id');
   }
 
   /**
@@ -1316,7 +1324,7 @@ class GFF3Importer extends TripalImporter {
       // Organize the feature property types for faster access later on.
       foreach ($gff_feature['properties'] as $prop_name => $value) {
         if (!array_key_exists($prop_name, $featureprop_cvterms)) {
-          $featureprop_cvterms[$prop_name] = 0;
+          $featureprop_cvterms[$prop_name] = NULL;
         }
         $featureprop_cvterms[$prop_name]++;
       }
@@ -1329,32 +1337,14 @@ class GFF3Importer extends TripalImporter {
     }
 
     // Iterate through the feature type terms and get a chado object for each.
-    $feature_cvterm_ids = [];
-    foreach ($feature_cvterms as $name => $counts) {
-      $cvterm_id = $this->getCvtermID($name, $this->feature_cv->getValue('cv_id'), FALSE);
-      $feature_cvterm_ids[] = $cvterm_id;
+    foreach (array_keys($feature_cvterms) as $name) {
+      $this->getTypeID($name, FALSE);
     }
 
     // Iterate through the featureprop type terms and get a cvterm_id for
     // each. If it doesn't exist then add a new record.
-    foreach ($featureprop_cvterms as $name => $counts) {
-      $cvterm_id = $this->getCvtermID($name, $this->feature_prop_cv->getValue('cv_id'), TRUE);
-      if (!$cvterm_id) {
-        $term = [
-          'id' => "local:$name",
-          'name' => $name,
-          'is_obsolete' => 0,
-          'cv_name' => $this->feature_prop_cv->getValue('name'),
-          'db_name' => 'local',
-          'is_relationship' => FALSE,
-        ];
-        $cvterm = (object) chado_insert_cvterm($term, ['update_existing' => FALSE]);
-        if (!$cvterm) {
-          $this->logMessage("Cannot add cvterm, $name.", [], TRIPAL_WARNING);
-          return 0;
-        }
-        $this->featureprop_cvterm_lookup[strtolower($cvterm->name)] = $cvterm->cvterm_id;
-      }
+    foreach (array_keys($featureprop_cvterms) as $name) {
+      $this->getTypeID($name, TRUE);
     }
   }
 
@@ -1362,21 +1352,17 @@ class GFF3Importer extends TripalImporter {
    * Imports the landmark features into Chado.
    */
   private function insertLandmarks() {
-    foreach ($this->landmarks as $uniquename => $feature) {
+    foreach ($this->landmarks as $uniquename => $feature_id) {
       // If the landmark does not have an entry in the GFF lines, try to
       // find or add it.
-      if ($feature === FALSE) {
+      if ($feature_id === FALSE) {
         // First see if there is a definition in the headers region.
         if (array_key_exists($uniquename, $this->seq_region_headers)) {
           $this->insertHeaderLandmark($this->seq_region_headers[$uniquename]);
-          continue;
         }
         // Second, if a landmark_type is provided then just add the landmark feature.
         else if ($this->landmark_type) {
-          $landmark = $this->findLandmark($uniquename);
-          if (!$landmark) {
-            $this->insertLandmark($uniquename);
-          }
+          $this->insertLandmark($uniquename);
         }
         else {
           throw new Exception(t('The landmark (reference) sequence, !landmark, is not in the database and not specified in the GFF3 file. Please either pre-load the landmark sequences or set a "Landmark Type" in the GFF importer.',
@@ -1573,6 +1559,12 @@ class GFF3Importer extends TripalImporter {
           foreach ($values as $rank => $value) {
             $j++;
             $type_id = $this->featureprop_cvterm_lookup[strtolower($prop_name)];
+            if (!$type_id) {
+              print $prop_name . "!!!!!!!!!!!!!!!!!!!!\n";
+              print_r($this->featureprop_cvterm_lookup);
+              print_r($feature['properties']);
+              exit;
+            }
             $sql .= "(:feature_id_$j, :type_id_$j, :value_$j, :rank_$j),\n";
             $args[":feature_id_$j"] = $feature['feature_id'];
             $args[":type_id_$j"] = $type_id;
@@ -1611,7 +1603,7 @@ class GFF3Importer extends TripalImporter {
     $this->setTotalItems($num_batches);
 
     // Get the 'part_of' cvterm
-    $type_id = $this->getCvtermID('part_of');
+    $type_id = $this->getTypeID('part_of', FALSE);
 
     $init_sql = "INSERT INTO {feature_relationship} (subject_id, object_id, type_id, rank) VALUES\n";
     $i = 0;
@@ -1729,6 +1721,51 @@ class GFF3Importer extends TripalImporter {
         $parent = $feature['parent'];
         $start = $feature['start'];
         $this->parent_lookup[$parent][$start] = $feature['feature_id'];
+      }
+    }
+  }
+  /**
+   *
+   */
+  private function findLandmarks() {
+    $batch_size = 1000;
+    $num_landmarks = count(array_keys($this->landmarks));
+    $num_batches = (int) ($num_landmarks / $batch_size) + 1;
+
+    $this->setItemsHandled(0);
+    $this->setTotalItems($num_batches);
+
+    $sql = "SELECT name, uniquename, feature_id FROM {feature} WHERE uniquename in (:landmarks)";
+    $i = 0;
+    $total = 0;
+    $batch_num = 1;
+    $names = [];
+    foreach ($this->landmarks as $landmark_name => $feature_id) {
+      $i++;
+      $total++;
+
+      // Only do an insert if this dbxref doesn't already exist in the databse.
+      // and this dbxref is from a Dbxref attribute not an Ontology_term attr.
+      if (!$feature_id) {
+        $names[] = $landmark_name;
+      }
+
+      // If we've reached the size of the batch then let's do the select.
+      if ($i == $batch_size or $total == $num_landmarks) {
+        if (count($names) > 0) {
+          $args = [':landmarks' => $names];
+          $results = chado_query($sql, $args);
+          while ($f = $results->fetchObject()) {
+            $this->landmarks[$f->uniquename] = $f->feature_id;
+          }
+        }
+        $this->setItemsHandled($batch_num);
+        $batch_num++;
+
+        // Now reset all of the varables for the next batch.
+        $i = 0;
+        $j = 0;
+        $names = [];
       }
     }
   }
@@ -1904,7 +1941,7 @@ class GFF3Importer extends TripalImporter {
     $this->setTotalItems($num_batches);
 
     // Get the 'derives_from' cvterm
-    $type_id = $this->getCvtermID('derives_from');
+    $type_id = $this->getTypeID('derives_from', FALSE);
 
     $init_sql = "INSERT INTO {feature_relationship} (subject_id, object_id, type_id, rank) VALUES\n";
     $i = 0;
@@ -1988,7 +2025,7 @@ class GFF3Importer extends TripalImporter {
 
         $sql .= "(:srcfeature_id_$i, :feature_id_$i, :fmin_$i, :fmax_$i," .
                 " :strand_$i, :phase_$i, :rank_$i),\n";
-        $args[":srcfeature_id_$i"] = $this->landmarks[$feature['landmark']]['feature_id'];
+        $args[":srcfeature_id_$i"] = $this->landmarks[$feature['landmark']];
         $args[":feature_id_$i"] = $feature['feature_id'];
         $args[":fmin_$i"] = $feature['start'];
         $args[":fmax_$i"] = $feature['stop'];
