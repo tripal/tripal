@@ -108,6 +108,8 @@ class OBIOrganismItem extends ChadoFieldItemBase {
       ])
       ->setReadOnly(FALSE)
       ->setRequired(TRUE)
+      ->setSetting('record_id', 'record_id')
+      ->setSetting('chado_schema', 'chado_schema')
       ->setClass('Drupal\tripal_chado\TypedData\ChadoFieldValueLookup');
 
     $properties['chado_schema'] = DataDefinition::create('string')

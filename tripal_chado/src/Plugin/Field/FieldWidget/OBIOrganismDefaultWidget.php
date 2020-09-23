@@ -102,43 +102,42 @@ class OBIOrganismDefaultWidget extends WidgetBase {
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
 
-    // @debug dpm($this->getChadoValue($items, $delta, 'record_id'), 'OBIOrganismDefaultFormatter -record_id');
-    // @debug dpm($this->getChadoValue($items, $delta, 'chado_schema'), 'OBIOrganismDefaultFormatter -chado_schema');
-    // @debug dpm($this->getChadoValue($items, $delta, 'genus'), 'OBIOrganismDefaultFormatter -genus');
-
+    // Use the value to store the previous values for this field.
     $element['value'] = $element + [
       '#tree' => TRUE,
     ];
 
     $element['value']['genus'] = [
-      '#type' => 'textfield',
-      '#title' => 'Genus',
+      '#type' => 'hidden',
       '#default_value' => $this->getChadoValue($items, $delta, 'genus'),
     ];
 
     $element['value']['species'] = [
-      '#type' => 'textfield',
-      '#title' => 'Species',
+      '#type' => 'hidden',
       '#default_value' => $this->getChadoValue($items, $delta, 'species'),
     ];
 
     $element['value']['common_name'] = [
-      '#type' => 'textfield',
-      '#title' => 'Common Name',
+      '#type' => 'hidden',
       '#default_value' => $this->getChadoValue($items, $delta, 'common_name'),
     ];
 
     $element['value']['abbreviation'] = [
-      '#type' => 'textfield',
-      '#title' => 'Abbreviation',
+      '#type' => 'hidden',
       '#default_value' => $this->getChadoValue($items, $delta, 'abbreviation'),
     ];
 
+    // Now store the new organism in the record_id.
+    $options = chado_get_organism_select_options(FALSE);
     $element['record_id'] = [
-      '#type' => 'textfield',
-      '#title' => 'Record ID',
-      '#description' => 'The primary key of the chado record this field refers to.',
+      '#type' => 'select',
+      '#title' => $element['#title'],
+      '#description' => $element['#description'],
+      '#options' => $options,
       '#default_value' => $this->getChadoValue($items, $delta, 'record_id'),
+      '#required' => $element['#required'],
+      '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
+      '#delta' => $delta,
     ];
 
     $element['chado_schema'] = [
