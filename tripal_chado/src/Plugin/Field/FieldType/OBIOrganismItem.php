@@ -100,7 +100,7 @@ class OBIOrganismItem extends ChadoFieldItemBase {
     // This will contain the nested value structure as in Tripal v3.
     // At the Drupal database level it will cache the chado values.
     // We will use the setClass() method to explain this is a complex datatype.
-    $properties['value'] = ChadoDataDefinition::create('chado_organism')
+    $properties['value'] = ChadoDataDefinition::create('chado_record')
       ->setSearchable(TRUE)
       ->setSearchOperations(['eq', 'ne', 'contains', 'starts'])
       ->setSortable(TRUE)

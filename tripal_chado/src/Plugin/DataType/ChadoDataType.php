@@ -10,12 +10,13 @@ use Drupal\tripal_chado\TypedData\OrganismLinkerDataDefinition;
  * Plugin implementation of the ChadoLinker data type
  *
  * @DataType(
- *   id = "chado_organism",
- *   label = @Translation("Chado Organism"),
+ *   id = "chado_record",
+ *   label = @Translation("Chado"),
  *   definition_class = "\Drupal\tripal_chado\TypedData\ChadoDataDefinition"
  * )
  */
-class ChadoOrganism extends TypedData implements \IteratorAggregate, ComplexDataInterface {
+class ChadoDataType extends TypedData implements \IteratorAggregate, ComplexDataInterface {
+
   /**
    * The data definition.
    *
