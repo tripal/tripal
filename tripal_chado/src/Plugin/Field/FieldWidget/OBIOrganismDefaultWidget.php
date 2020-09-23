@@ -74,7 +74,14 @@ class OBIOrganismDefaultWidget extends WidgetBase {
   public function getChadoValue($items, $delta, $property_name) {
 
     if ($property_name == 'record_id') {
-      return $items[$delta]->get('record_id')->getValue();
+      $record_id = $items[$delta]->get('record_id')->getValue();
+
+      // Get a default value if it's not set?
+      if (!$record_id) {
+        $record_id = $this->getDefaultRecordID();
+      }
+
+      return $record_id;
     }
     elseif ($property_name == 'chado_schema') {
       return $items[$delta]->get('chado_schema')->getValue();
@@ -146,4 +153,27 @@ class OBIOrganismDefaultWidget extends WidgetBase {
     return $element;
   }
 
+  /**
+   * Extract the default record_id for the field.
+   *
+   * @return integer
+   *   The record ID represented by the default value set in the field settings.
+   */
+  public function getDefaultRecordID() {
+
+    // We can access the values array stored in the field definition.
+    // This is a serialized value so we need to unserialize it and
+    // extract the unique keys in order to lookup the record ID.
+    $default_serialized = $this->fieldDefinition->getDefaultValueLiteral();
+    if ($default_serialized) {
+      $defaultvals = unserialize($default_serialized[0]);
+      if (isset($defaultvals['genus']) && isset($defaultvals['species'])) {
+        $record_id = chado_query(
+          'SELECT organism_id FROM {organism} WHERE genus=:g AND species=:sp',
+          [':g' => $defaultvals['genus'], ':sp' => $defaultvals['species']])
+          ->fetchField();
+        return $record_id;
+      }
+    }
+  }
 }

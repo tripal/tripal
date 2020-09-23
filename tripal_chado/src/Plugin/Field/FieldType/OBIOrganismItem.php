@@ -23,7 +23,8 @@ use Drupal\tripal_chado\TypedData\ChadoLinkerDataDefinition;
  *   category = @Translation("Tripal: Chado"),
  *   description = @Translation("The organism to which this resource is associated."),
  *   default_widget = "obi__organism_default_widget",
- *   default_formatter = "obi__organism_default_formatter"
+ *   default_formatter = "obi__organism_default_formatter",
+ *   cardinality = 1,
  * )
  */
 class OBIOrganismItem extends ChadoFieldItemBase {
