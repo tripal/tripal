@@ -144,10 +144,8 @@ class OBIOrganismDefaultWidget extends WidgetBase {
     ];
 
     $element['chado_schema'] = [
-      '#type' => 'textfield',
-      '#title' => 'Chado Schema',
-      '#description' => 'The name of the chado schema this record is stored in.',
-      '#default_value' => $this->getChadoValue($items, $delta, 'chado_schema'),
+      '#type' => 'hidden',
+      '#value' => chado_get_schema_name('chado'),
     ];
 
     return $element;
