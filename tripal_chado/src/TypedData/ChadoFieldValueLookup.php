@@ -22,18 +22,20 @@ class ChadoFieldValueLookup extends TypedData implements TypedDataInterface {
     $record_id = (string) $item->get($property_name)->getValue();
 
     // Use the record_id to look up the new organism.
-    $orgs = chado_query('SELECT * FROM {organism} WHERE organism_id=:id',
-      [':id' => $record_id]);
-    // @todo make sure we use the chado_schema
+    if ($record_id) {
+      $orgs = chado_query('SELECT * FROM {organism} WHERE organism_id=:id',
+        [':id' => $record_id]);
+      // @todo make sure we use the chado_schema
 
-    // Now overwrite the old values (i.e. cache the new organism).
-    foreach ($orgs as $organism) {
-      $value = [
-        'genus' => $organism->genus,
-        'species' => $organism->species,
-        'common_name' => $organism->common_name,
-        'abbreviation' => $organism->abbreviation,
-      ];
+      // Now overwrite the old values (i.e. cache the new organism).
+      foreach ($orgs as $organism) {
+        $value = [
+          'genus' => $organism->genus,
+          'species' => $organism->species,
+          'common_name' => $organism->common_name,
+          'abbreviation' => $organism->abbreviation,
+        ];
+      }
     }
 
     // This is where we cache the data from chado in the Drupal Database.
