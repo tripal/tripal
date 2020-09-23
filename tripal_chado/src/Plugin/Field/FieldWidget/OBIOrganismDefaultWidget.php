@@ -25,8 +25,7 @@ class OBIOrganismDefaultWidget extends WidgetBase {
    */
   public static function defaultSettings() {
     return [
-      'size' => 60,
-      'placeholder' => '',
+      'placeholder' => '- Select -',
     ] + parent::defaultSettings();
   }
 
@@ -36,13 +35,6 @@ class OBIOrganismDefaultWidget extends WidgetBase {
   public function settingsForm(array $form, FormStateInterface $form_state) {
     $elements = [];
 
-    $elements['size'] = [
-      '#type' => 'number',
-      '#title' => t('Size of textfield'),
-      '#default_value' => $this->getSetting('size'),
-      '#required' => TRUE,
-      '#min' => 1,
-    ];
     $elements['placeholder'] = [
       '#type' => 'textfield',
       '#title' => t('Placeholder'),
@@ -59,7 +51,6 @@ class OBIOrganismDefaultWidget extends WidgetBase {
   public function settingsSummary() {
     $summary = [];
 
-    $summary[] = t('Textfield size: @size', ['@size' => $this->getSetting('size')]);
     if (!empty($this->getSetting('placeholder'))) {
       $summary[] = t('Placeholder: @placeholder', ['@placeholder' => $this->getSetting('placeholder')]);
     }
@@ -128,13 +119,18 @@ class OBIOrganismDefaultWidget extends WidgetBase {
     ];
 
     // Now store the new organism in the record_id.
+    // -- Retrieve the organism options fro, the database (all not just published).
     $options = chado_get_organism_select_options(FALSE);
+    // -- Remove the old "Select an organism" so that admin can configure it as the placeholder.
+    unset($options[0]);
+    // -- Finally, the form element that makes the magic happen!
     $element['record_id'] = [
       '#type' => 'select',
       '#title' => $element['#title'],
       '#description' => $element['#description'],
       '#options' => $options,
       '#default_value' => $this->getChadoValue($items, $delta, 'record_id'),
+      '#empty_option' => $this->getSetting('placeholder'),
       '#required' => $element['#required'],
       '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
       '#delta' => $delta,
