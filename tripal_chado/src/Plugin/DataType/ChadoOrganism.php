@@ -12,7 +12,7 @@ use Drupal\tripal_chado\TypedData\OrganismLinkerDataDefinition;
  * @DataType(
  *   id = "chado_organism",
  *   label = @Translation("Chado Organism"),
- *   definition_class = "\Drupal\tripal_chado\TypedData\ChadoOrganismDataDefinition"
+ *   definition_class = "\Drupal\tripal_chado\TypedData\ChadoDataDefinition"
  * )
  */
 class ChadoOrganism extends TypedData implements \IteratorAggregate, ComplexDataInterface {

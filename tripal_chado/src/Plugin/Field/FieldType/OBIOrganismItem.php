@@ -10,7 +10,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\TypedData\DataDefinition;
 use Drupal\Component\Utility\Random;
 use Drupal\tripal_chado\Field\ChadoFieldItemBase;
-use Drupal\tripal_chado\TypedData\ChadoOrganismDataDefinition;
+use Drupal\tripal_chado\TypedData\ChadoDataDefinition;
 use Drupal\tripal_chado\TypedData\ChadoLinkerDataDefinition;
 
 /**
@@ -100,17 +100,73 @@ class OBIOrganismItem extends ChadoFieldItemBase {
     // This will contain the nested value structure as in Tripal v3.
     // At the Drupal database level it will cache the chado values.
     // We will use the setClass() method to explain this is a complex datatype.
-    $properties['value'] = ChadoOrganismDataDefinition::create('chado_organism')
-      ->setSettings([
-        'searchable' => TRUE,
-        'operations' => ['eq', 'ne', 'contains', 'starts'],
-        'sortable' => TRUE
-      ])
+    $properties['value'] = ChadoDataDefinition::create('chado_organism')
+      ->setSearchable(TRUE)
+      ->setSearchOperations(['eq', 'ne', 'contains', 'starts'])
+      ->setSortable(TRUE)
       ->setReadOnly(FALSE)
       ->setRequired(TRUE)
       ->setSetting('record_id', 'record_id')
       ->setSetting('chado_schema', 'chado_schema')
       ->setClass('Drupal\tripal_chado\TypedData\ChadoFieldValueLookup');
+
+    // The following nested data definitions describe the keys for the
+    // value array and their contents. These are very important for web services.
+    // TODO: Change the values in the properties to be CV terms.
+    $properties['value']->addPropertyDefinition('scientific_name',
+      ChadoDataDefinition::create('string')
+        ->setLabel(new TranslatableMarkup('Scientific Name'))
+        ->setComputed(TRUE)
+        ->setSearchable(TRUE)
+        ->setSearchOperations(['eq', 'ne', 'contains', 'starts'])
+        ->setSortable(TRUE)
+        ->setReadOnly(TRUE)
+        ->setRequired(TRUE)
+    );
+
+    $properties['value']->addPropertyDefinition('genus',
+      ChadoDataDefinition::create('string')
+        ->setLabel(new TranslatableMarkup('Genus'))
+        ->setComputed(TRUE)
+        ->setSearchable(TRUE)
+        ->setSearchOperations(['eq', 'ne', 'contains', 'starts'])
+        ->setSortable(TRUE)
+        ->setReadOnly(FALSE)
+        ->setRequired(TRUE)
+    );
+
+    $properties['value']->addPropertyDefinition('species',
+      ChadoDataDefinition::create('string')
+        ->setLabel(new TranslatableMarkup('Species'))
+        ->setComputed(TRUE)
+        ->setSearchable(TRUE)
+        ->setSearchOperations(['eq', 'ne', 'contains', 'starts'])
+        ->setSortable(TRUE)
+        ->setReadOnly(FALSE)
+        ->setRequired(TRUE)
+    );
+
+    $properties['value']->addPropertyDefinition('infraspecies',
+      ChadoDataDefinition::create('string')
+        ->setLabel(new TranslatableMarkup('Infraspecies'))
+        ->setComputed(TRUE)
+        ->setSearchable(TRUE)
+        ->setSearchOperations(['eq', 'ne', 'contains', 'starts'])
+        ->setSortable(TRUE)
+        ->setReadOnly(FALSE)
+        ->setRequired(FALSE)
+    );
+
+    $properties['value']->addPropertyDefinition('infraspecific_type',
+      ChadoDataDefinition::create('string')
+        ->setLabel(new TranslatableMarkup('Infraspecies Type'))
+        ->setComputed(TRUE)
+        ->setSearchable(TRUE)
+        ->setSearchOperations(['eq', 'ne', 'contains', 'starts'])
+        ->setSortable(TRUE)
+        ->setReadOnly(FALSE)
+        ->setRequired(FALSE)
+    );
 
     $properties['chado_schema'] = DataDefinition::create('string')
       ->setLabel(new TranslatableMarkup('Chado Schema Name'))
