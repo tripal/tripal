@@ -9,7 +9,7 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\TypedData\DataDefinition;
 use Drupal\Component\Utility\Random;
-use Drupal\tripal_chado\Field\ChadoFieldItemBase;
+use Drupal\tripal_chado\Plugin\Field\ChadoFieldItemBase;
 use Drupal\tripal_chado\TypedData\ChadoDataDefinition;
 use Drupal\tripal_chado\TypedData\ChadoLinkerDataDefinition;
 

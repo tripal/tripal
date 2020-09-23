@@ -2,7 +2,7 @@
 
 namespace Drupal\tripal\Plugin\Field\FieldType;
 
-use Drupal\tripal\Field\TripalFieldItemBase;
+use Drupal\tripal\Plugin\Field\TripalFieldItemBase;
 use Drupal\Component\Utility\Random;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemBase;

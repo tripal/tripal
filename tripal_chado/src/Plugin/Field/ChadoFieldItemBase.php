@@ -1,8 +1,8 @@
 <?php
 
-namespace Drupal\tripal_chado\Field;
+namespace Drupal\tripal_chado\Plugin\Field;
 
-use Drupal\tripal\Field\TripalFieldItemBase;
+use Drupal\tripal\Plugin\Field\TripalFieldItemBase;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\TypedData\DataDefinitionInterface;

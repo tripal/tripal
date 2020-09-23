@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\tripal\Field;
+namespace Drupal\tripal\Plugin\Field;
 
 use Drupal\Core\Field\FieldItemBase;
 use Drupal\Core\Entity\EntityInterface;
