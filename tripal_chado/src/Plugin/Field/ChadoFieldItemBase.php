@@ -6,12 +6,13 @@ use Drupal\tripal\Plugin\Field\TripalFieldItemBase;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\TypedData\DataDefinitionInterface;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\TypedData\Plugin\DataType\Map;
 use Drupal\Core\TypedData\TypedDataInterface;
 
 
 /**
- * A Tripal-based entity field item.
+ * A Chado-based entity field item.
  *
  * Entity field items making use of this base class have to implement
  * the static method propertyDefinitions().
@@ -19,18 +20,113 @@ use Drupal\Core\TypedData\TypedDataInterface;
  */
 
 abstract class ChadoFieldItemBase extends TripalFieldItemBase {
+
   /**
    * {@inheritdoc}
    */
-  public static function defaultFieldSettings() {
-    $settings = [
-      // The table in Chado that the field maps to.
-      'chado_table' => '',
-      // The column of the table in Chado where the value comes from.
-      'chado_column' => '',
-      // The base table
-      'base_table' => '',
-    ] + parent::defaultFieldSettings();
-    return $settings;
+   public static function defaultStorageSettings() {
+     $settings = parent::defaultStorageSettings();
+     $settings['max_length'] = 255;
+     $settings['tripal_custom_storage'] = 'chado';
+
+     // -- Chado Table.
+     // The table in Chado that the field maps to.
+     $settings['chado_table'] = '';
+     // The column of the table in Chado where the value comes from.
+     $settings['chado_column'] = '';
+     // The base table.
+     $settings['base_table'] = '';
+
+     return $settings;
+   }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function schema(FieldStorageDefinitionInterface $field_definition) {
+    $settings = ChadoFieldItemBase::defaultStorageSettings();
+
+    $schema = [
+      'columns' => [
+        'value' => [
+          'type' => 'text',
+        ],
+        'chado_schema' => [
+          'type' => 'varchar',
+          'description' => 'The name of the chado schema this record resides in.',
+          'length' => $settings['max_length'],
+        ],
+        'record_id' => [
+          'type' => 'int',
+          'description' => 'The primary key of this record in the chado.',
+          'size' => 'big',
+        ],
+      ],
+    ];
+
+    return $schema;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
+    $elements = [];
+
+    $elements['max_length'] = [
+      '#type' => 'number',
+      '#title' => t('Maximum length for the chado schema name'),
+      '#default_value' => $this->getSetting('max_length'),
+      '#required' => TRUE,
+      '#description' => t('The maximum length of the field in characters.'),
+      '#min' => 1,
+      '#disabled' => TRUE,
+    ];
+
+    return $elements;
+  }
+
+  /**
+   * @{inheritdoc}
+   */
+  public function getValue() {
+    return $this->value;
+  }
+
+  /**
+   * @{inheritdoc}
+   */
+  public function setValue($values, $notify = TRUE) {
+    parent::setValue($values, $notify);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isEmpty() {
+    $value = $this->get('value')->getValue();
+    return is_int($value) && $value > 0;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getConstraints() {
+    $constraints = parent::getConstraints();
+
+    $constraint_manager = \Drupal::typedDataManager()->getValidationConstraintManager();
+    $constraints[] = $constraint_manager->create('ComplexData', [
+      'chado_schema' => [
+        'Length' => [
+          'max' => 255,
+          'maxMessage' => t('%name: The name of the chado schema this record is associated with may not be longer than @max characters.', [
+            '%name' => $this->getFieldDefinition()->getLabel(),
+            '@max' => 255
+          ]),
+        ],
+      ],
+    ]);
+
+    return $constraints;
   }
 }
