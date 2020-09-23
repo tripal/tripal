@@ -102,6 +102,10 @@ class OBIOrganismDefaultWidget extends WidgetBase {
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
 
+    // @debug dpm($this->getChadoValue($items, $delta, 'record_id'), 'OBIOrganismDefaultFormatter -record_id');
+    // @debug dpm($this->getChadoValue($items, $delta, 'chado_schema'), 'OBIOrganismDefaultFormatter -chado_schema');
+    // @debug dpm($this->getChadoValue($items, $delta, 'genus'), 'OBIOrganismDefaultFormatter -genus');
+
     $element['value'] = $element + [
       '#tree' => TRUE,
     ];

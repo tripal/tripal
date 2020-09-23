@@ -215,18 +215,7 @@ class OBIOrganismItem extends ChadoFieldItemBase {
    * @{inheritdoc}
    */
   public function setValue($values, $notify = TRUE) {
-
     parent::setValue($values, $notify);
-    /*
-    // First, make sure we have a string!
-    // @serialize happening here?
-    if (is_array($value)) {
-      $this->value = serialize($value);
-    }
-    else {
-      $this->value = $value;
-    }
-    */
   }
 
   /**

@@ -15,11 +15,9 @@ class ChadoFieldValueLookup extends TypedData implements TypedDataInterface {
    */
   public function setValue($value, $notify = TRUE) {
 
-    // This is where we will save/update chado.
-    // But it's too late to change the record_id and value in the Drupal db.
-
-    // First, make sure we have a string!
-    // @serialize happening here?
+    // This is where we cache the data from chado in the Drupal Database.
+    // We need to ensure we are storing a single string. Thus we serialize
+    // the data at this point so that it's saved that way in the database.
     if (is_array($value)) {
       $this->value = serialize($value);
     }

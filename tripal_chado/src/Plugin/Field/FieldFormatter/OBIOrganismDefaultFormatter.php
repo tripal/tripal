@@ -101,6 +101,10 @@ class OBIOrganismDefaultFormatter extends FormatterBase {
    */
   protected function viewValue(FieldItemInterface $item) {
 
+    // @debug dpm($this->getChadoValue($item, 'record_id'), 'OBIOrganismDefaultFormatter -record_id');
+    // @debug dpm($this->getChadoValue($item, 'chado_schema'), 'OBIOrganismDefaultFormatter -chado_schema');
+    // @debug dpm($this->getChadoValue($item, 'genus'), 'OBIOrganismDefaultFormatter -genus');
+
     $genus = $this->getChadoValue($item, 'genus');
     $species = $this->getChadoValue($item, 'species');
     $common_name = $this->getChadoValue($item, 'common_name');
