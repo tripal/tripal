@@ -4,7 +4,11 @@ namespace Drupal\tripal_chado\TypedData;
 
 use Drupal\Core\TypedData\ComplexDataDefinitionBase;
 
+/**
+ * @{inheritdoc}
+ */
 class ChadoComplexDataDefinition extends ComplexDataDefinitionBase {
+
   /**
    * Creates a new chado data definition.
    *

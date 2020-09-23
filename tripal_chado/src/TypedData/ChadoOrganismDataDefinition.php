@@ -4,7 +4,11 @@ namespace Drupal\tripal_chado\TypedData;
 use Drupal\Core\TypedData\DataDefinition;
 use Drupal\Core\TypedData;
 
+/**
+ * @{inheritdoc}
+ */
 class ChadoOrganismDataDefinition extends ChadoComplexDataDefinition {
+
   /**
    * Creates a new chado data definition.
    *
@@ -84,5 +88,26 @@ class ChadoOrganismDataDefinition extends ChadoComplexDataDefinition {
         ->setRequired(FALSE);
     }
     return $this->propertyDefinitions;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setValue($value, $notify = TRUE) {
+
+    // First, make sure we have a string!
+    // @serialize happening here?
+    if (is_array($value)) {
+      $this->value = serialize($value);
+    }
+    else {
+      $this->value = $value;
+    }
+
+    // Notify the parent of any changes.
+    if ($notify && isset($this->parent)) {
+      $this->parent
+        ->onChange($this->name);
+    }
   }
 }
