@@ -18,7 +18,6 @@ use Drupal\Core\TypedData\TypedDataInterface;
  * the static method propertyDefinitions().
  *
  */
-
 abstract class ChadoFieldItemBase extends TripalFieldItemBase {
 
   /**
