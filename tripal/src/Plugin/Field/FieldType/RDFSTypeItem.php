@@ -21,7 +21,8 @@ use Drupal\tripal\Entity\TripalEntityType;
  *   description = @Translation("The type of Tripal content."),
  *   category = @Translation("Tripal: General"),
  *   default_widget = "rdfs__type_widget",
- *   default_formatter = "rdfs__type_formatter"
+ *   default_formatter = "rdfs__type_formatter",
+ *   cardinality = 1
  * )
  */
 class RDFSTypeItem extends TripalFieldItemBase {
@@ -62,25 +63,6 @@ class RDFSTypeItem extends TripalFieldItemBase {
     $settings['auto_attach'] = TRUE;
 
     return $settings;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function applyDefaultValue($notify = TRUE) {
-
-    // The default should be the label of the content type.
-    // To do that we need to get the TripalEntity object,
-    // then the TripalEntityType object... then finally we can grab the label.
-    // This is why this value is cached...
-    $entity = $this->getEntity();
-    $entityType_id = $entity->getType();
-    $entityType = TripalEntityType::load($entityType_id);
-
-    $this->setValue([
-      'value' => $entityType->getLabel(),
-    ], $notify);
-    return $this;
   }
 
   /**

@@ -7,6 +7,7 @@ use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\tripal\Plugin\Field\TripalFormatterBase;
 
 /**
  * Plugin implementation of the 'rdfs__type_formatter' formatter.

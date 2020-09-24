@@ -3,8 +3,9 @@
 namespace Drupal\tripal\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Field\FieldItemListInterface;
-use Drupal\Core\Field\WidgetBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\tripal\Plugin\Field\TripalWidgetBase;
+use Drupal\tripal\Entity\TripalEntityType;
 
 /**
  * Plugin implementation of the 'rdfs__type_widget' widget.
@@ -18,7 +19,7 @@ use Drupal\Core\Form\FormStateInterface;
  *   }
  * )
  */
-class RDFSTypeDefaultWidget extends WidgetBase {
+class RDFSTypeDefaultWidget extends TripalWidgetBase {
 
   /**
    * {@inheritdoc}
@@ -72,9 +73,14 @@ class RDFSTypeDefaultWidget extends WidgetBase {
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
 
+    // Get the value.
+    $entity = $items[0]->getEntity();
+    $entityType_id = $entity->getType();
+    $entityType = TripalEntityType::load($entityType_id);
+
     $element['value'] = $element + [
       '#type' => 'textfield',
-      '#default_value' => isset($items[$delta]->value) ? $items[$delta]->value : $this->getDefaultValue(),
+      '#default_value' => $entityType->getLabel(),
       '#size' => $this->getSetting('size'),
       '#placeholder' => $this->getSetting('placeholder'),
       '#maxlength' => $this->getFieldSetting('max_length'),
