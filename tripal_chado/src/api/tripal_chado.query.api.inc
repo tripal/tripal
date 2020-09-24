@@ -1671,7 +1671,7 @@ function chado_select_record_check_value_type(&$op, &$value, $type) {
 }
 
 /**
- * A substitute for db_query() when querying from Chado.
+ * A substitute for \Drupal::database()->query() when querying from Chado.
  *
  * This function is needed to avoid switching databases when making query to
  * the chado database.
@@ -1689,7 +1689,7 @@ function chado_select_record_check_value_type(&$op, &$value, $type) {
  *
  * @param $args
  *   The array of arguments, with the same structure as passed to
- *   the db_query() function of Drupal.
+ *   the \Drupal::database()->query() function of Drupal.
  *
  * @param $options
  *   An array of options to control how the query operates.
@@ -1715,17 +1715,48 @@ function chado_select_record_check_value_type(&$op, &$value, $type) {
  *
  * @ingroup tripal_chado_query_api
  */
-function chado_query($sql, $args = [], $options = []) {
+function chado_query($sql, $args = [], $options = [], $chado_schema_name = NULL) {
   $results = NULL;
 
-  $is_local = isset($GLOBALS["chado_is_local"]) && $GLOBALS["chado_is_local"];
+  // Check if Chado is within the same database as Drupal (i.e. local).
+  $is_local = chado_is_local();
 
-  // Args should be an array
+  // Validation:
+  // -- SQL should be a string.
+  if (!is_string($sql)) {
+    $msg = t('chado_query; SQL should be a string. SQL: @query',
+      ['@query' => print_r($sql, TRUE)]);
+    \Drupal::logger('tripal_chado')->error($msg);
+    return FALSE;
+  }
+  // -- Args should be an array.
   if (!is_array($args)) {
-    tripal_report_error('tripal_chado', TRIPAL_ERROR,
-      'chado_query; Need to pass an array to chado_query, "%value" passed instead. Query: %query',
-      ['%value' => $args, '%query' => $sql]
-    );
+    $msg = t('chado_query; Arguements should be an array. Query: @query; Arguements: @values',
+      ['@values' => print_r($args, TRUE), '@query' => $sql]);
+    \Drupal::logger('tripal_chado')->error($msg);
+    return FALSE;
+  }
+  // -- Args should be in SQL.
+  preg_match('/(:\w+)/', $sql, $matches);
+  array_shift($matches);
+  $tokens_in_sql = $matches;
+  $tokens_in_args = array_keys($args);
+  if (count($tokens_in_sql) !== count($tokens_in_args)) {
+    $msg = t('chado_query; There should be the same number of tokens in the arguements as in the SQL. Tokens provided: @args, Tokens in SQL: @sql',
+      ['@args' => print_r($tokens_in_args,TRUE), '@sql' => print_r($tokens_in_sql,TRUE)]);
+    \Drupal::logger('tripal_chado')->error($msg);
+    return FALSE;
+  }
+  if (count(array_diff($tokens_in_sql, $tokens_in_args)) !== 0) {
+    $msg = t('chado_query; All tokens in the SQL should be provided in the arguments. Tokens provided: @args, Tokens in SQL: @sql',
+      ['@args' => print_r($tokens_in_args,TRUE), '@sql' => print_r($tokens_in_sql,TRUE)]);
+    \Drupal::logger('tripal_chado')->error($msg);
+    return FALSE;
+  }
+  if (count(array_diff($tokens_in_args, $tokens_in_sql)) !== 0) {
+    $msg = t('chado_query; All arguments should be provided as tokens in the SQL. Tokens provided: @args, Tokens in SQL: @sql',
+      ['@args' => print_r($tokens_in_args,TRUE), '@sql' => print_r($tokens_in_sql,TRUE)]);
+    \Drupal::logger('tripal_chado')->error($msg);
     return FALSE;
   }
 
@@ -1736,7 +1767,9 @@ function chado_query($sql, $args = [], $options = []) {
     $sql = preg_replace('/\n/', ' ', $sql);
 
     // Get the current default Chado and Drupal schema prefixes.
-    $chado_schema_name = chado_get_schema_name('chado');
+    if (!$chado_schema_name) {
+      $chado_schema_name = chado_get_schema_name('chado');
+    }
     $drupal_schema_name = chado_get_schema_name('drupal');
 
     // Prefix the tables with their correct schema.
@@ -1775,7 +1808,7 @@ function chado_query($sql, $args = [], $options = []) {
     // mymodule_chado_query_alter($sql, $args) and using a regular expression
     // to remove table prefixing from the query.
     // @see hook_chado_query_alter().
-    drupal_alter('chado_query', $sql, $args);
+    \Drupal::moduleHandler()->alter('chado_query', $sql, $args);
 
     // The featureloc table has some indexes that use function that call other
     // functions and those calls do not reference a schema, therefore, any
@@ -1784,7 +1817,7 @@ function chado_query($sql, $args = [], $options = []) {
     if (preg_match('/' . $chado_schema_name . '.featureloc/i', $sql) or preg_match('/' . $chado_schema_name . '.feature/i', $sql)) {
       $previous_db = chado_set_active('chado');
       try {
-        $results = db_query($sql, $args, $options);
+        $results = \Drupal::database()->query($sql, $args, $options);
         chado_set_active($previous_db);
       } catch (Exception $e) {
         chado_set_active($previous_db);
@@ -1794,7 +1827,7 @@ function chado_query($sql, $args = [], $options = []) {
     // For all other tables we should have everything in scope so just run the
     // query.
     else {
-      $results = db_query($sql, $args, $options);
+      $results = \Drupal::database()->query($sql, $args, $options);
     }
   }
   // Check for any cross schema joins (ie: both drupal and chado tables
@@ -1802,17 +1835,16 @@ function chado_query($sql, $args = [], $options = []) {
   // administrator.
   else {
     if (preg_match('/\[(\w*?)\]/', $sql)) {
-      tripal_report_error('chado_query', TRIPAL_ERROR,
-        'The following query does not support external chado databases. Please file an issue with the Drupal.org Tripal Project. Query: @query',
-        ['@query' => $sql]
-      );
+      $msg = t('chado_query: The following query does not support external chado databases. Please file an issue with the Drupal.org Tripal Project. Query: @query',
+        ['@query' => $sql]);
+      \Drupal::logger('tripal_chado')->error($msg);
       return FALSE;
     }
     // If Chado is not local to the Drupal database then we have to
     // switch to another database.
     else {
       $previous_db = chado_set_active('chado');
-      $results = db_query($sql, $args, $options);
+      $results = \Drupal::database()->query($sql, $args, $options);
       chado_set_active($previous_db);
     }
   }
