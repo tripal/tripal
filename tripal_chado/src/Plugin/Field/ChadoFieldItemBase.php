@@ -23,33 +23,33 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   /**
    * {@inheritdoc}
    */
-   public static function defaultStorageSettings() {
-     $settings = parent::defaultStorageSettings();
-     $settings['max_length'] = 255;
-     $settings['tripal_custom_storage'] = 'chado';
+  public static function defaultStorageSettings() {
+    $settings = parent::defaultStorageSettings();
+    $settings['max_length'] = 255;
+    $settings['tripal_custom_storage'] = 'chado';
 
-     // -- Chado Table.
-     // The table in Chado that the field maps to.
-     $settings['chado_table'] = '';
-     // The column of the table in Chado where the value comes from.
-     $settings['chado_column'] = '';
-     // The base table.
-     $settings['base_table'] = '';
+    // -- Chado Table.
+    // The table in Chado that the field maps to.
+    $settings['chado_table'] = '';
+    // The column of the table in Chado where the value comes from.
+    $settings['chado_column'] = '';
+    // The base table.
+    $settings['base_table'] = '';
 
-     return $settings;
-   }
+    return $settings;
+  }
 
-   /**
-    * Selects the record from chado and formats it for the field.
-    *
-    * @param int $record_id
-    *   The chado record_id of the record to lookup.
-    * @return array
-    *   Returns an array with values matching the field definition.
-    */
-   public function selectChadoValue($record_id) {
-     return NULL;
-   }
+  /**
+  * Selects the record from chado and formats it for the field.
+  *
+  * @param int $record_id
+  *   The chado record_id of the record to lookup.
+  * @return array
+  *   Returns an array with values matching the field definition.
+  */
+  public function selectChadoValue($record_id) {
+    return NULL;
+  }
 
   /**
    * {@inheritdoc}

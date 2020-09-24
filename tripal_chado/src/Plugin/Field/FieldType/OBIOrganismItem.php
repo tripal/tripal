@@ -68,8 +68,6 @@ class OBIOrganismItem extends ChadoFieldItemBase {
     // attached to determine which are empty.  It should always work with
     // web services.
     $settings['auto_attach'] = TRUE;
-    // The format for display of the organism.
-    $settings['field_display_string'] = '<i>[organism.genus] [organism.species]</i>';
 
     return $settings;
   }
@@ -207,7 +205,14 @@ class OBIOrganismItem extends ChadoFieldItemBase {
   }
 
   /**
+   * Compiles the values array for this field. Analogous to the load function.
    *
+   * @param int $record_id
+   *   The chado record ID for the values to load.
+   * @return array
+   *   An array of data matching the data definition laid out in
+   *   propertyDefinitions(). All data to be used in display of the field must
+   *   be included here.
    */
   public function selectChadoValue($record_id) {
 
@@ -221,7 +226,6 @@ class OBIOrganismItem extends ChadoFieldItemBase {
     // Now overwrite the old values (i.e. cache the new organism).
     foreach ($orgs as $organism) {
       $value = [
-        // @todo include infraspecific stuff.
         'scientific_name' => $organism->genus . ' ' . $organism->species,
         'genus' => $organism->genus,
         'species' => $organism->species,
@@ -230,6 +234,12 @@ class OBIOrganismItem extends ChadoFieldItemBase {
         'common_name' => $organism->common_name,
         'abbreviation' => $organism->abbreviation,
       ];
+      if ($organism->infraspecific_type) {
+        $value['scientific_name'] .= ' ' . $organism->infraspecific_type;
+      }
+      if ($organism->infraspecific_name) {
+        $value['scientific_name'] .= ' ' . $organism->infraspecific_name;
+      }
     }
 
     return $value;
@@ -240,9 +250,24 @@ class OBIOrganismItem extends ChadoFieldItemBase {
    */
   public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
 
-    // @todo make this specific to this field.
     $random = new Random();
     $values['value'] = $random->word(mt_rand(1, 255));
+    $values['value'] = [
+      'genus' => $random->word(mt_rand(1, 255)),
+      'species' => $random->word(mt_rand(1, 255)),
+      'infraspecific' => $random->word(mt_rand(1, 255)),
+      'infraspecific_type' => $random->word(mt_rand(1, 255)),
+      'common_name' => $random->word(mt_rand(1, 255)),
+      'abbreviation' => $random->word(mt_rand(1, 255)),
+    ];
+    $values['value']['scientific_name'] = $values['value']['genus']
+      . ' ' . $values['value']['species']
+      . ' ' . $values['value']['infraspecific_type']
+      . ' ' . $values['value']['infraspecific_name'];
+
+    $values['record_id'] = mt_rand(1, 25555);
+    $values['chado_schema'] = 'chado';
+
     return $values;
   }
 }
