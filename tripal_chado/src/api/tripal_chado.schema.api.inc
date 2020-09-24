@@ -229,9 +229,14 @@ function chado_get_schema_name($schema = 'chado') {
 
     // Currently we just return a random version of chado.
     $installed = chado_get_installed_schemas();
-    if (is_array($installed)) {
-      $chadodefn = array_pop($installed);
-      $schema_name = $chadodefn->schema_name;
+    if (is_array($installed) && !empty($installed)) {
+      $chadodefn = array_shift($installed);
+      if (is_object($chadodefn) && isset($chadodefn->schema_name)) {
+        $schema_name = $chadodefn->schema_name;
+      }
+      else {
+        $schema_name = 'chado';
+      }
     }
     else {
       $schema_name = 'chado';
