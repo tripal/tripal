@@ -47,7 +47,7 @@ class ChadoQueryAPITest extends BrowserTestBase {
 		// Insert some test data.
 		$connection->query(
 			"INSERT INTO testchado.organism (genus, species, common_name, type_id, infraspecific_name)
-			VALUES ('Tripalus', 'ferox','Wild Tripal', 2, 'Quad')")->execute();
+			VALUES ('Tripalus', 'tantum','Far Tripal', 2, 'Quad')");
 
 		// --------------
 		// Check that errors are thrown if the correct parameters are not supplied.
@@ -63,7 +63,7 @@ class ChadoQueryAPITest extends BrowserTestBase {
 
 		// -- Arguements should be in the SQL string.
 		$sql = 'SELECT * FROM {organism} WHERE genus=:genus';
-		$args = [':genus' => 'Tripalus', ':species' => 'ferox'];
+		$args = [':genus' => 'Tripalus', ':species' => 'tantum'];
 		$dbq = chado_query($sql, $args);
 		$this->assertEquals(FALSE, $dbq);
 		array_shift($args);
@@ -73,7 +73,7 @@ class ChadoQueryAPITest extends BrowserTestBase {
 		// --------------
 		// Now check that a correnctly formatted query actually works.
 		$sql = 'SELECT * FROM {organism} WHERE genus=:genus and species=:species';
-		$args = [':genus' => 'Tripalus', ':species' => 'ferox'];
+		$args = [':genus' => 'Tripalus', ':species' => 'tantum'];
 		$dbq = chado_query($sql, $args, [], $this::$schemaName);
 		$results = [];
 		if ($dbq) {
