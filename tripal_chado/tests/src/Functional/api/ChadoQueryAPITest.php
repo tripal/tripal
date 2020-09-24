@@ -36,6 +36,21 @@ class ChadoQueryAPITest extends BrowserTestBase {
    */
   public function testChadoQuery() {
 
+		// Check that chado exists.
+    $check_schema = "SELECT true FROM pg_namespace WHERE nspname = :schema";
+    $exists = $connection->query($check_schema, [':schema' => $this::$schemaName])
+      ->fetchField();
+    $this->assertTrue($exists, 'Cannot check chado schema api without chado.
+      Please ensure chado is installed in the schema named "testchado".');
+
+		// Insert some test data.
+		\Drupal::database()->query(
+			"INSERT INTO testchado.organism (genus, species, common_name, type_id, infraspecific_name)
+			VALUES ('Tripalus', 'databasica','Cultivated Tripal', 2, 'Quad')")->execute();
+		\Drupal::database()->query(
+			"INSERT INTO testchado.organism (genus, species, common_name, type_id, infraspecific_name)
+			VALUES ('Tripalus', 'ferox','Wild Tripal', 2, 'Quad')")->execute();
+
 		// --------------
 		// Check that errors are thrown if the correct parameters are not supplied.
 		// -- SQL must be a string.
@@ -50,7 +65,7 @@ class ChadoQueryAPITest extends BrowserTestBase {
 
 		// -- Arguements should be in the SQL string.
 		$sql = 'SELECT * FROM {organism} WHERE genus=:genus';
-		$args = [':genus' => 'Tripalus', ':species' => 'databasica'];
+		$args = [':genus' => 'Tripalus', ':species' => 'ferox'];
 		$dbq = chado_query($sql, $args);
 		$this->assertEquals(FALSE, $dbq);
 		array_shift($args);
@@ -59,9 +74,9 @@ class ChadoQueryAPITest extends BrowserTestBase {
 
 		// --------------
 		// Now check that a correnctly formatted query actually works.
-		$sql = 'SELECT * FROM {organism} WHERE genus=:genus';
-		$args = [':genus' => 'Tripalus'];
-		$dbq = chado_query($sql, $args, []);
+		$sql = 'SELECT * FROM {organism} WHERE genus=:genus and species=:species';
+		$args = [':genus' => 'Tripalus', ':species' => 'ferox'];
+		$dbq = chado_query($sql, $args, [], $this::$schemaName);
 		$results = [];
 		if ($dbq) {
 			$results = $dbq->fetchObject();
