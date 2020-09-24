@@ -47,9 +47,6 @@ class ChadoQueryAPITest extends BrowserTestBase {
 		// Insert some test data.
 		$connection->query(
 			"INSERT INTO testchado.organism (genus, species, common_name, type_id, infraspecific_name)
-			VALUES ('Tripalus', 'databasica','Cultivated Tripal', 2, 'Quad')")->execute();
-		$connection->query(
-			"INSERT INTO testchado.organism (genus, species, common_name, type_id, infraspecific_name)
 			VALUES ('Tripalus', 'ferox','Wild Tripal', 2, 'Quad')")->execute();
 
 		// --------------
