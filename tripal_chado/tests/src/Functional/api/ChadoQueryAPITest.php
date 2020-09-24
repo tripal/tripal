@@ -35,6 +35,7 @@ class ChadoQueryAPITest extends BrowserTestBase {
    * @group chado-query
    */
   public function testChadoQuery() {
+		$connection = \Drupal\Core\Database\Database::getConnection();
 
 		// Check that chado exists.
     $check_schema = "SELECT true FROM pg_namespace WHERE nspname = :schema";
@@ -44,10 +45,10 @@ class ChadoQueryAPITest extends BrowserTestBase {
       Please ensure chado is installed in the schema named "testchado".');
 
 		// Insert some test data.
-		\Drupal::database()->query(
+		$connection->query(
 			"INSERT INTO testchado.organism (genus, species, common_name, type_id, infraspecific_name)
 			VALUES ('Tripalus', 'databasica','Cultivated Tripal', 2, 'Quad')")->execute();
-		\Drupal::database()->query(
+		$connection->query(
 			"INSERT INTO testchado.organism (genus, species, common_name, type_id, infraspecific_name)
 			VALUES ('Tripalus', 'ferox','Wild Tripal', 2, 'Quad')")->execute();
 
