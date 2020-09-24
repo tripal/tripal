@@ -167,6 +167,28 @@ class OBIOrganismItem extends ChadoFieldItemBase {
         ->setRequired(FALSE)
     );
 
+    $properties['value']->addPropertyDefinition('common_name',
+      ChadoDataDefinition::create('string')
+        ->setLabel(new TranslatableMarkup('Common Name'))
+        ->setComputed(TRUE)
+        ->setSearchable(TRUE)
+        ->setSearchOperations(['eq', 'ne', 'contains', 'starts'])
+        ->setSortable(TRUE)
+        ->setReadOnly(FALSE)
+        ->setRequired(FALSE)
+    );
+
+    $properties['value']->addPropertyDefinition('abbreviation',
+      ChadoDataDefinition::create('string')
+        ->setLabel(new TranslatableMarkup('Abbreviation'))
+        ->setComputed(TRUE)
+        ->setSearchable(TRUE)
+        ->setSearchOperations(['eq', 'ne', 'contains', 'starts'])
+        ->setSortable(TRUE)
+        ->setReadOnly(FALSE)
+        ->setRequired(FALSE)
+    );
+
     $properties['chado_schema'] = DataDefinition::create('string')
       ->setLabel(new TranslatableMarkup('Chado Schema Name'))
       ->setDescription(new TranslatableMarkup('The name of the chado schema this record resides in.'));
@@ -182,6 +204,35 @@ class OBIOrganismItem extends ChadoFieldItemBase {
     //  ->setRequired(TRUE);
 
     return $properties;
+  }
+
+  /**
+   *
+   */
+  public function selectChadoValue($record_id) {
+
+    $orgs = chado_query('SELECT o.*, cvt.name as infraspecific_type
+      FROM {organism} o
+      LEFT JOIN {cvterm} cvt ON cvt.cvterm_id=o.type_id
+      WHERE organism_id=:id',
+      [':id' => $record_id]);
+    // @todo make sure we use the chado_schema
+
+    // Now overwrite the old values (i.e. cache the new organism).
+    foreach ($orgs as $organism) {
+      $value = [
+        // @todo include infraspecific stuff.
+        'scientific_name' => $organism->genus . ' ' . $organism->species,
+        'genus' => $organism->genus,
+        'species' => $organism->species,
+        'infraspecific' => $organism->infraspecific_name,
+        'infraspecific_type' => $organism->infraspecific_type,
+        'common_name' => $organism->common_name,
+        'abbreviation' => $organism->abbreviation,
+      ];
+    }
+
+    return $value;
   }
 
   /**

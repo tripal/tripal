@@ -39,6 +39,18 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
      return $settings;
    }
 
+   /**
+    * Selects the record from chado and formats it for the field.
+    *
+    * @param int $record_id
+    *   The chado record_id of the record to lookup.
+    * @return array
+    *   Returns an array with values matching the field definition.
+    */
+   public function selectChadoValue($record_id) {
+     return NULL;
+   }
+
   /**
    * {@inheritdoc}
    */
