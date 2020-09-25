@@ -97,9 +97,9 @@ class ChadoQueryAPITest extends BrowserTestBase {
     $connection = \Drupal\Core\Database\Database::getConnection();
 
     // Build the queries.
-    $iquery = $connection->insert('testchado. ' . $table)
+    $iquery = $connection->insert('testchado.' . $table)
       ->fields($values);
-    $squery = $connection->select('testchado. ' . $table, 't')
+    $squery = $connection->select('testchado.' . $table, 't')
       ->fields('t', array_keys($values));
     foreach ($values as $column => $value) {
       $squery->condition('t.'.$column, $value, '=');
