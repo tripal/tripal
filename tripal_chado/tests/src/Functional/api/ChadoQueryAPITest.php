@@ -45,9 +45,14 @@ class ChadoQueryAPITest extends BrowserTestBase {
       Please ensure chado is installed in the schema named "testchado".');
 
 		// Insert some test data.
-		$connection->query(
-			"INSERT INTO testchado.organism (genus, species, common_name, type_id, infraspecific_name)
-			VALUES ('Tripalus', 'tantum','Far Tripal', 2, 'Quad')");
+		$this->insertTestData(
+      'organism',
+      ['genus' => 'Tripalus',
+       'species' => 'databasica',
+       'common_name' => 'Cultivated Lentil',
+       'type_id' => 2,
+       'infraspecific_name' => 'Quad']
+    );
 
 		// --------------
 		// Check that errors are thrown if the correct parameters are not supplied.
@@ -63,7 +68,7 @@ class ChadoQueryAPITest extends BrowserTestBase {
 
 		// -- Arguements should be in the SQL string.
 		$sql = 'SELECT * FROM {organism} WHERE genus=:genus';
-		$args = [':genus' => 'Tripalus', ':species' => 'tantum'];
+		$args = [':genus' => 'Tripalus', ':species' => 'databasica'];
 		$dbq = chado_query($sql, $args);
 		$this->assertEquals(FALSE, $dbq);
 		array_shift($args);
@@ -72,8 +77,9 @@ class ChadoQueryAPITest extends BrowserTestBase {
 
 		// --------------
 		// Now check that a correnctly formatted query actually works.
-		$sql = 'SELECT * FROM {organism} WHERE genus=:genus and species=:species';
-		$args = [':genus' => 'Tripalus', ':species' => 'tantum'];
+		$sql = 'SELECT * FROM {organism}
+      WHERE genus = :genus and species = :species';
+		$args = [':genus' => 'Tripalus', ':species' => 'databasica'];
 		$dbq = chado_query($sql, $args, [], $this::$schemaName);
 		$results = [];
 		if ($dbq) {
@@ -82,4 +88,26 @@ class ChadoQueryAPITest extends BrowserTestBase {
 		$this->assertTrue(is_object($results));
 		$this->assertNotEmpty($results);
 	}
+
+  /**
+   * HELPER: Insert Test Data.
+   */
+  public function insertTestData($table, $values) {
+    $connection = \Drupal\Core\Database\Database::getConnection();
+
+    // Build the queries.
+    $iquery = $connection->insert('testchado. ' . $table)
+      ->fields($values);
+    $squery = $connection->select('testchado. ' . $table, 't')
+      ->fields('t', array_keys($values));
+    foreach ($values as $column => $value) {
+      $squery->condition('t.'.$column, $value, '=');
+    }
+    // Check if the record is already there.
+    $exists = $squery->execute()->fetchObject();
+    // Otherwise insert it.
+    if (!is_object($exists)) {
+      $iquery->execute();
+    }
+  }
 }

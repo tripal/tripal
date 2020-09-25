@@ -1736,10 +1736,10 @@ function chado_query($sql, $args = [], $options = [], $chado_schema_name = NULL)
     \Drupal::logger('tripal_chado')->error($msg);
     return FALSE;
   }
+
   // -- Args should be in SQL.
-  preg_match('/(:\w+)/', $sql, $matches);
-  array_shift($matches);
-  $tokens_in_sql = $matches;
+  preg_match_all('/(:\w+)/', $sql, $matches);
+  $tokens_in_sql = $matches[0];
   $tokens_in_args = array_keys($args);
   if (count($tokens_in_sql) !== count($tokens_in_args)) {
     $msg = t('chado_query; There should be the same number of tokens in the arguements as in the SQL. Tokens provided: @args, Tokens in SQL: @sql',
