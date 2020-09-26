@@ -60,7 +60,7 @@ class ChadoQueryAPITest extends BrowserTestBase {
 		$sql = $args =  ['Fred', 'Sarah', 'Jane'];
 		$dbq = chado_query($sql, $args);
 		$this->assertEquals(FALSE, $dbq);
-/*
+
 		// -- Arguements must be an array.
 		$sql = $args = 'SELECT * FROM {organism}';
 		$dbq = chado_query($sql, $args);
@@ -87,7 +87,6 @@ class ChadoQueryAPITest extends BrowserTestBase {
 		}
 		$this->assertTrue(is_object($results));
 		$this->assertNotEmpty($results);
-  */
 	}
 
   /**
@@ -96,19 +95,25 @@ class ChadoQueryAPITest extends BrowserTestBase {
   public function insertTestData($table, $values) {
     $connection = \Drupal\Core\Database\Database::getConnection();
 
-    // Build the queries.
-    $iquery = $connection->insert('testchado.' . $table)
-      ->fields($values);
-    $squery = $connection->select('testchado.' . $table, 't')
-      ->fields('t', array_keys($values));
+    // Prepping the where clause for the select.
+    $columns = array_keys($values);
+    $where = [];
+    $args = [];
     foreach ($values as $column => $value) {
-      $squery->condition('t.'.$column, $value, '=');
+      $where[] = $column . ' = :' . $column;
+      $args[':'.$column] = $value;
     }
-    // Check if the record is already there.
-    $exists = $squery->execute()->fetchObject();
-    // Otherwise insert it.
+
+    // Determining the queries.
+    $iquery = "INSERT INTO testchado." . $table
+      . " (" . implode(', ', $columns) . ")"
+      . " VALUES (:" . implode(', :', array_keys($values)). ")";
+    $squery = "SELECT " . implode(',', $columns) . " FROM testchado." . $table
+      . " WHERE " . implode(' AND ', $where);
+
+    $exists = $connection->query($squery, $args)->fetchObject();
     if (!is_object($exists)) {
-      $iquery->execute();
+      $connection->query($iquery, $args)->execute();
     }
   }
 }
