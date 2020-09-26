@@ -110,12 +110,11 @@ class ChadoQueryAPITest extends BrowserTestBase {
       . " VALUES (:" . implode(', :', array_keys($values)). ")";
     $squery = "SELECT " . implode(',', $columns) . " FROM testchado." . $table
       . " WHERE " . implode(' AND ', $where);
-    print $iquery . print_r($args, TRUE) . "\n";
 
     $exists = $connection->query($squery, $args)->fetchObject();
     if (!is_object($exists)) {
-      print "\nYESSSSSSSSS!!!!\n\n";
-      $connection->query($iquery, $args)->execute();
+      $q = $connection->query($iquery, $args);
+      $q->execute();
     }
   }
 }
