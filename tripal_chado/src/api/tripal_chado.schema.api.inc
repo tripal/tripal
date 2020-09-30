@@ -197,7 +197,7 @@ function chado_add_index($table, $name, $fields, $chado_schema = NULL) {
  *
  * @ingroup tripal_chado_schema_api
  */
-function chado_dbschema_exists($schema) {
+function chado_dbschema_exists($chado_schema) {
 
   // Retrieve the default name of the chado schema if it's not provided.
   if ($chado_schema === NULL) {
