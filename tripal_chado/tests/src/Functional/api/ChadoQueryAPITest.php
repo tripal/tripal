@@ -44,18 +44,6 @@ class ChadoQueryAPITest extends BrowserTestBase {
     $this->assertTrue($exists, 'Cannot check chado schema api without chado.
       Please ensure chado is installed in the schema named "testchado".');
 
-		// Insert some test data.
-    /* This works locally but not on Travis.
-		$this->insertTestData(
-      'organism',
-      ['genus' => 'Tripalus',
-       'species' => 'databasica',
-       'common_name' => 'Cultivated Lentil',
-       'type_id' => 2,
-       'infraspecific_name' => 'Quad']
-    );
-    */
-
 		// --------------
 		// Check that errors are thrown if the correct parameters are not supplied.
 		// -- SQL must be a string.
@@ -78,47 +66,59 @@ class ChadoQueryAPITest extends BrowserTestBase {
 		$this->assertEquals(FALSE, $dbq);
 
 		// --------------
-		// Now check that a correctly formatted query actually works.
-    /* This needs test data to work... and we're struggling to insert it.
-		$sql = 'SELECT * FROM {organism}
-      WHERE genus = :genus and species = :species';
-		$args = [':genus' => 'Tripalus', ':species' => 'databasica'];
-		$dbq = chado_query($sql, $args, [], $this::$schemaName);
-		$results = [];
-		if ($dbq) {
-			$results = $dbq->fetchObject();
-		}
-		$this->assertTrue(is_object($results));
-		$this->assertNotEmpty($results);
-    */
+		// Now check that a correctly formatted insert query works.
+		$sql = 'INSERT INTO {organism}
+			(genus, species, type_id, infraspecific_name, common_name, abbreviation)
+			VALUES (:genus, :species, :type_id, :infra, :common, :abbrev)';
+		$args = [
+			':genus' => 'Tripalus',
+			':species' => 'databasica' . uniqid(),
+			':type_id' => 2, //version
+			':infra' => 'Quad',
+			':common' => 'Cultivated Tripal',
+			':abbrev' => 'T. databasica',
+		];
+		$dbq = chado_query($sql, $args, [], 'testchado');
+		$this->assertNotEquals(FALSE, $dbq, 'chado_query() unable to insert.');
+		// Now select to ensure it was actually inserted.
+		$result = $connection->query('SELECT * FROM testchado.organism
+			WHERE genus=:g AND species=:s',
+			[':g' => $args[':genus'], ':s' => $args[':species']])->fetchObject();
+		$this->assertIsObject($result);
+		$this->assertEquals($args[':species'], $result->species);
+
+		// Now check we can select it using chado_query().
+		$resource = chado_query('SELECT * FROM {organism}
+			WHERE genus=:g AND species=:s',
+			[':g' => $args[':genus'], ':s' => $args[':species']], [], 'testchado');
+		$this->assertIsObject($resource, 'chado_query() unable to select.');
+		$result_cq = $resource->fetchObject();
+		$this->assertIsObject($result_cq, 'Should be able to fetch result.');
+		$this->assertEquals($args[':species'], $result_cq->species);
+		$this->assertEquals($result, $result_cq);
+
+		// Update it using chado_query().
+		$sql = 'UPDATE {organism} SET abbreviation = :new WHERE species = :s';
+		$resource = chado_query($sql,
+			[':new' => 'CHANGED', ':s' => $args[':species']], [], 'testchado');
+		$this->assertIsObject($resource, 'chado_query() unable to update.');
+		// Now select to ensure it was actually inserted.
+		$result = $connection->query('SELECT * FROM testchado.organism
+			WHERE genus=:g AND species=:s',
+			[':g' => $args[':genus'], ':s' => $args[':species']])->fetchObject();
+		$this->assertIsObject($result);
+		$this->assertEquals($args[':species'], $result->species);
+		$this->assertEquals('CHANGED', $result->abbreviation);
+
+		// Then delete it using chado_query().
+		$sql = 'DELETE FROM {organism} WHERE species = :s';
+		$resource = chado_query($sql,
+			[':s' => $args[':species']], [], 'testchado');
+		$this->assertNotFalse($resource, 'chado_query() unable to delete.');
+		// Now select to ensure it was actually deleted.
+		$result = $connection->query('SELECT * FROM testchado.organism
+			WHERE genus=:g AND species=:s',
+			[':g' => $args[':genus'], ':s' => $args[':species']])->fetchObject();
+		$this->assertIsNotObject($result);
 	}
-
-  /**
-   * HELPER: Insert Test Data.
-   */
-  public function insertTestData($table, $values) {
-    $connection = \Drupal\Core\Database\Database::getConnection();
-
-    // Prepping the where clause for the select.
-    $columns = array_keys($values);
-    $where = [];
-    $args = [];
-    foreach ($values as $column => $value) {
-      $where[] = $column . ' = :' . $column;
-      $args[':'.$column] = $value;
-    }
-
-    // Determining the queries.
-    $iquery = "INSERT INTO testchado." . $table
-      . " (" . implode(', ', $columns) . ")"
-      . " VALUES (:" . implode(', :', array_keys($values)). ")";
-    $squery = "SELECT " . implode(',', $columns) . " FROM testchado." . $table
-      . " WHERE " . implode(' AND ', $where);
-
-    $exists = $connection->query($squery, $args)->fetchObject();
-    if (!is_object($exists)) {
-      $q = $connection->query($iquery, $args);
-      $q->execute();
-    }
-  }
 }
