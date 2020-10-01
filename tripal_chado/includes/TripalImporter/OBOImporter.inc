@@ -169,7 +169,7 @@ class OBOImporter extends TripalImporter {
 
 
   /**
-   * An array of used cvterm objects so that we don't have to lookup them
+   * An array of used cvterm objects so that we don't have to look them
    * up repeatedly.
    */
   private $used_terms = [];
@@ -248,8 +248,8 @@ class OBOImporter extends TripalImporter {
     $form['obo_existing']['existing_instructions'] = [
       '#type' => 'item',
       '#markup' => t('The vocabularies listed in the select box below have been pre-populated
-        upon installation of Tripal or have been previously loaded.  Select one to edit
-        its settings or submit for loading.  You may reload any vocabulary that has
+        upon installation of Tripal or have been previously loaded. Select one to edit
+        its settings or submit for loading. You may reload any vocabulary that has
         already been loaded to retrieve any new updates.'),
     ];
 
@@ -298,7 +298,7 @@ class OBOImporter extends TripalImporter {
       $form['obo_existing']['uobo_name'] = [
         '#type' => 'textfield',
         '#title' => t('Vocabulary Name'),
-        '#description' => t('Please provide a name for this vocabulary.  After upload, this name will appear in the drop down
+        '#description' => t('Please provide a name for this vocabulary. After upload, this name will appear in the drop down
                              list above for use again later.'),
         '#default_value' => $uobo_name,
       ];
@@ -306,8 +306,8 @@ class OBOImporter extends TripalImporter {
       $form['obo_existing']['uobo_url'] = [
         '#type' => 'textfield',
         '#title' => t('Remote URL'),
-        '#description' => t('Please enter a URL for the online OBO file.  The file will be downloaded and parsed.
-                             (e.g. http://www.obofoundry.org/ro/ro.obo)'),
+        '#description' => t('Please enter a URL for the online OBO file. The file will be downloaded and parsed.
+                             (e.g. https://raw.githubusercontent.com/oborel/obo-relations/master/ro.obo)'),
         '#default_value' => $uobo_url,
       ];
 
@@ -318,8 +318,8 @@ class OBOImporter extends TripalImporter {
           definition file. If entering a path relative to
           the Drupal installation you may use a relative path that excludes the
           Drupal installation directory (e.g. sites/default/files/xyz.obo). Note
-          that Drupal relative paths have no preceding slash.
-          Otherwise, please provide the full path on the filesystem.  The path
+          that Drupal relative paths have no preceeding slash.
+          Otherwise, please provide the full path on the filesystem. The path
           must be accessible to the web server on which this Drupal instance is running.'),
         '#default_value' => $uobo_file,
       ];
@@ -338,24 +338,24 @@ class OBOImporter extends TripalImporter {
     ];
 
     $form['obo_new']['path_instructions'] = [
-      '#value' => t('Provide the name and path for the OBO file.  If the vocabulary OBO file
+      '#value' => t('Provide the name and path for the OBO file. If the vocabulary OBO file
                      is stored local to the server provide a file name. If the vocabulary is stored remotely,
-                     provide a URL.  Only provide a URL or a local file, not both.'),
+                     provide a URL. Only provide a URL or a local file, not both.'),
     ];
 
     $form['obo_new']['obo_name'] = [
       '#type' => 'textfield',
       '#title' => t('New Vocabulary Name'),
-      '#description' => t('Please provide a name for this vocabulary.  After upload, this name will appear in the drop down
-                             list above for use again later. Additionally, if a default namespace is not provided in the OBO
-                             header this name will be used as the default_namespace.'),
+      '#description' => t('Please provide a name for this vocabulary. After upload, this name will appear in the drop down
+                           list above for use again later. Additionally, if a default namespace is not provided in the OBO
+                           header this name will be used as the default_namespace.'),
     ];
 
     $form['obo_new']['obo_url'] = [
       '#type' => 'textfield',
       '#title' => t('Remote URL'),
       '#description' => t('Please enter a URL for the online OBO file.  The file will be downloaded and parsed.
-                             (e.g. http://www.obofoundry.org/ro/ro.obo)'),
+                           (e.g. https://raw.githubusercontent.com/oborel/obo-relations/master/ro.obo)'),
     ];
 
     $form['obo_new']['obo_file'] = [
@@ -365,7 +365,7 @@ class OBOImporter extends TripalImporter {
           definition file. If entering a path relative to
           the Drupal installation you may use a relative path that excludes the
           Drupal installation directory (e.g. sites/default/files/xyz.obo). Note
-          that Drupal relative paths have no preceding slash.
+          that Drupal relative paths have no preceeding slash.
           Otherwise, please provide the full path on the filesystem.  The path
           must be accessible to the web server on which this Drupal instance is running.'),
     ];
@@ -595,7 +595,7 @@ class OBOImporter extends TripalImporter {
     tripal_populate_mview($mview_id);
 
     // Update the cvtermpath table for each newly added CV.
-    $this->logMessage("Updating cvtermpath table.  This may take a while...");
+    $this->logMessage("Updating cvtermpath table. This may take a while...");
     foreach ($this->obo_namespaces as $namespace => $cv_id) {
       $this->logMessage("- Loading paths for vocabulary: @vocab", ['@vocab' => $namespace]);
       chado_update_cvtermpath($cv_id, $this->job);
@@ -605,7 +605,7 @@ class OBOImporter extends TripalImporter {
   /**
    * A wrapper function for importing the user specified OBO file into Chado by
    * specifying the obo_id of the OBO. It requires that the file be in OBO v1.2
-   * compatible format.  This function is typically executed via the Tripal
+   * compatible format. This function is typically executed via the Tripal
    * jobs
    * management after a user submits a job via the Load Ontologies form.
    *
@@ -653,7 +653,7 @@ class OBOImporter extends TripalImporter {
   /**
    * A wrapper function for importing the user specified OBO file into Chado by
    * specifying the filename and path of the OBO. It requires that the file be
-   * in OBO v1.2 compatible format.  This function is typically executed via
+   * in OBO v1.2 compatible format. This function is typically executed via
    * the Tripal jobs management after a user submits a job via the Load
    * Ontologies form.
    *
@@ -664,7 +664,7 @@ class OBOImporter extends TripalImporter {
    *   The path on the file system where the ontology can be found
    * @param $is_new
    *   Set to TRUE if this is a new ontology that does not yet exist in the
-   *   tripal_cv_obo table.  If TRUE the OBO will be added to the table.
+   *   tripal_cv_obo table. If TRUE the OBO will be added to the table.
    *
    * @ingroup tripal_obo_loader
    */
@@ -888,6 +888,13 @@ class OBOImporter extends TripalImporter {
       }
     }
 
+    // If we still don't have a namespace defined, use the one from the form
+    // in the "New Vocabulary Name" field
+    if (!$namespace and array_key_exists('run_args', $this->arguments)
+        and array_key_exists('obo_name', $this->arguments['run_args'])) {
+      $namespace = $this->arguments['run_args']['obo_name'];
+    }
+
     // If we can't find the namespace or the short_name then bust.
     if (!$namespace and !$short_name) {
       throw new ErrorException('Cannot determine the namespace or ontology prefix from this OBO file. It is missing both the "default-namespace" and "ontology" headers.');
@@ -899,7 +906,6 @@ class OBOImporter extends TripalImporter {
     $this->addDB($this->default_db);
     $cv = $this->addCV($this->default_namespace);
     $this->obo_namespaces[$namespace] = $cv->cv_id;
-
 
   }
 
@@ -916,13 +922,13 @@ class OBOImporter extends TripalImporter {
     // Check if the EBI ontology search has this ontology:
     try {
       $results = $this->oboEbiLookup($ontology, 'ontology');
-      if (array_key_exists('default-namespace', $results['config']['annotations'])) {
+      if ($results and array_key_exists('config', $results) and array_key_exists('default-namespace', $results['config']['annotations'])) {
         $namespace = $results['config']['annotations']['default-namespace'];
         if (is_array($namespace)) {
           $namespace = $namespace[0];
         }
       }
-      elseif (array_key_exists('namespace', $results['config'])) {
+      elseif ($results and array_key_exists('config', $results) and array_key_exists('namespace', $results['config'])) {
         $namespace = $results['config']['namespace'];
       }
       // If we can't find the namespace at EBI, then just default to using the
@@ -983,7 +989,7 @@ class OBOImporter extends TripalImporter {
         "Lookup Service to retrieve the information for this term. " .
         "Please note, that vocabularies with many non-local terms " .
         "require remote lookups and these lookups can dramatically " .
-        "decrease loading time. ",
+        "increase loading time. ",
         ['!vocab' => $this->default_namespace], TRIPAL_WARNING);
       $this->ebi_warned = TRUE;
 
@@ -1016,7 +1022,7 @@ class OBOImporter extends TripalImporter {
       $ontology_results = drupal_json_decode($response->data);
       if ($ontology_results['error']) {
 
-        $this->logMessage(t('Cannot find the ontology via an EBI OLS lookup: !short_name. \n' .
+        $this->logMessage('Cannot find the ontology via an EBI OLS lookup: !short_name. \n' .
           'We tried to access: !url' .
           'EBI Reported: !message. ' .
           'Consider finding the OBO file for this ontology and manually loading it first.',
@@ -1024,7 +1030,7 @@ class OBOImporter extends TripalImporter {
             '!message' => $ontology_results['message'],
             '!short_name' => $short_name,
             '!url' => $full_url,
-          ]), TRIPAL_WARNING);
+          ], TRIPAL_WARNING);
       }
       //What should happen with this stuff?
       $base_iri = $ontology_results['config']['baseUris'][0];
@@ -1053,7 +1059,7 @@ class OBOImporter extends TripalImporter {
     // If EBI sent an error message then throw an error.
     if ($results['error']) {
       $this->logMessage('Cannot find the term via an EBI OLS lookup: !term. ' .
-        'We tried to access: !url' .
+        'We tried to access: "!url" ' .
         'EBI Reported: !message. Consider finding the OBO file for this ontology and manually loading it first.',
         [
           '!message' => $results['message'],
@@ -2079,7 +2085,7 @@ class OBOImporter extends TripalImporter {
           // add the ID to the name to ensure it doesn't.
           if (array_key_exists($stanza['name'][0], $this->term_names)) {
             $new_name = $stanza['name'][0] . '(' . $stanza['id'][0] . ')';
-            $stanza['name'][0] = $stanza['name'][0];
+            $stanza['name'][0] = $new_name;
           }
 
           $this->cacheTermStanza($stanza, $type);
