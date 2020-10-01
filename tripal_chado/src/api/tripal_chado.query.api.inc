@@ -338,7 +338,7 @@ function hook_chado_connection_alter(&$settings) {
  *
  * @ingroup tripal_chado_query_api
  */
-function chado_set_active($dbname = 'default') {
+function chado_set_active($dbname = 'default', $chado_schema_name = NULL) {
 
   $chado_active_db = \Drupal::service('tempstore.private')->get('chado_active_db');
 
@@ -357,7 +357,10 @@ function chado_set_active($dbname = 'default') {
   // to alter the schema name used.
   if ($dbname == 'chado') {
     $active_db = 'chado';
-    $search_path = chado_get_schema_name('chado') . ',' . chado_get_schema_name('drupal');
+    if ($chado_schema_name === NULL) {
+      $chado_schema_name = chado_get_schema_name('chado');
+    }
+    $search_path = $chado_schema_name . ',' . chado_get_schema_name('drupal');
   }
   else {
     $active_db = $dbname;
@@ -365,6 +368,7 @@ function chado_set_active($dbname = 'default') {
 
   $settings = [
     'dbname' => $dbname,
+    'chado_schema_name' => $chado_schema_name,
     'new_active_db' => &$active_db,
     'new_search_path' => &$search_path,
   ];
@@ -1843,9 +1847,9 @@ function chado_query($sql, $args = [], $options = [], $chado_schema_name = NULL)
     // If Chado is not local to the Drupal database then we have to
     // switch to another database.
     else {
-      $previous_db = chado_set_active('chado');
+      $previous_db = chado_set_active('chado', $chado_schema_name);
       $results = \Drupal::database()->query($sql, $args, $options);
-      chado_set_active($previous_db);
+      chado_set_active($previous_db, $chado_schema_name);
     }
   }
 
