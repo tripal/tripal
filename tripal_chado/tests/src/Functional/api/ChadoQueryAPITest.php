@@ -121,4 +121,118 @@ class ChadoQueryAPITest extends BrowserTestBase {
 			[':g' => $args[':genus'], ':s' => $args[':species']])->fetchObject();
 		$this->assertIsNotObject($result);
 	}
+
+  /**
+   * Tests chado_insert(), chado_select(), chado_update(), and chado_delete().
+   *
+   * @group tripal-chado
+   * @group chado-query
+   */
+  public function testChadoQueryHelpers() {
+		$connection = \Drupal\Core\Database\Database::getConnection();
+
+		// Check that chado exists.
+    $check_schema = "SELECT true FROM pg_namespace WHERE nspname = :schema";
+    $exists = $connection->query($check_schema, [':schema' => $this::$schemaName])
+      ->fetchField();
+    $this->assertTrue($exists, 'Cannot check chado schema api without chado.
+      Please ensure chado is installed in the schema named "testchado".');
+
+    // INSERT.
+		$values = [
+			'genus' => 'Tripalus',
+			'species' => 'ferox' . uniqid(),
+			'type_id' => 2, //version
+			'infraspecific_name' => 'Quad',
+			'common_name' => 'Wild Tripal',
+			'abbreviation' => 'T. ferox',
+		];
+		$dbq = chado_insert_record('organism', $values, [], 'testchado');
+		$this->assertNotEquals(FALSE, $dbq, 'chado_insert_record() unable to insert.');
+		// Now select to ensure it was actually inserted.
+		$result = $connection->query('SELECT * FROM testchado.organism
+			WHERE genus=:g AND species=:s',
+			[':g' => $values['genus'], ':s' => $values['species']])->fetchObject();
+		$this->assertIsObject($result);
+		$this->assertEquals($values['species'], $result->species);
+
+
+		// SELECT.
+		$resource = chado_select_record(
+      'organism', ['*'], $values, [], 'testchado');
+		$this->assertIsArray($resource, 'chado_select_record() unable to select.');
+    $this->assertNotEmpty($resource, 'No results were returned.');
+		$result_cq = $resource[0];
+		$this->assertIsObject($result_cq, 'Should be able to fetch result.');
+		$this->assertEquals($values['species'], $result_cq->species);
+		$this->assertEquals($result, $result_cq);
+
+		// UPDATE.
+		$sql = 'UPDATE {organism} SET abbreviation = :new WHERE species = :s';
+		$resource = chado_update_record(
+      'organism', $values, ['abbreviation' => 'CHANGED'], [], 'testchado');
+		$this->assertTrue($resource, 'chado_update_record() unable to update.');
+		// Now select to ensure it was actually inserted.
+		$result = $connection->query('SELECT * FROM testchado.organism
+			WHERE genus=:g AND species=:s',
+			[':g' => $values['genus'], ':s' => $values['species']])->fetchObject();
+		$this->assertIsObject($result);
+		$this->assertEquals($values['species'], $result->species);
+		$this->assertEquals('CHANGED', $result->abbreviation);
+
+		// DELETE.
+    unset($values['abbreviation']);
+		$resource = chado_delete_record('organism', $values, [], 'testchado');
+		$this->assertNotFalse($resource, 'chado_delete_record() unable to delete.');
+		// Now select to ensure it was actually deleted.
+		$result = $connection->query('SELECT * FROM testchado.organism
+			WHERE genus=:g AND species=:s',
+			[':g' => $values['genus'], ':s' => $values['species']])->fetchObject();
+		$this->assertIsNotObject($result);
+	}
+
+  /**
+   * Tests chado_get_table_max_rank().
+   *
+   * @group tripal-chado
+   * @group chado-query
+   */
+  public function testChadoTableMaxRank() {
+		$connection = \Drupal\Core\Database\Database::getConnection();
+    $this->markTestIncomplete('This test has not been implemented yet.');
+  }
+
+  /**
+   * Tests chado_set_active().
+   *
+   * @group tripal-chado
+   * @group chado-query
+   */
+  public function testChadoSetActive() {
+		$connection = \Drupal\Core\Database\Database::getConnection();
+    $this->markTestIncomplete('This test has not been implemented yet.');
+  }
+
+  /**
+   * Tests chado_pager_query() and chado_pager_get_count().
+   *
+   * @group tripal-chado
+   * @group chado-query
+   */
+  public function testChadoPagerQuery() {
+		$connection = \Drupal\Core\Database\Database::getConnection();
+    $this->markTestIncomplete('This test has not been implemented yet.');
+  }
+
+  /**
+   * Tests chado_schema_get_foreign_key().
+   *
+   * @group tripal-chado
+   * @group chado-query
+   */
+  public function testChadoSchemaGetFK() {
+		$connection = \Drupal\Core\Database\Database::getConnection();
+    $this->markTestIncomplete('This test has not been implemented yet.');
+  }
+
 }

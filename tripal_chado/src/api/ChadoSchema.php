@@ -260,6 +260,13 @@ class ChadoSchema {
       $table_arr['referring_tables'] = explode(', ', $table_arr['referring_tables']);
     }
 
+    // Ensure the unique keys are arrays.
+    foreach ($table_arr['unique keys'] as $ukname => $ukcolumns) {
+      if (is_string($ukcolumns)) {
+        $table_arr['unique keys'][$ukname] = explode(', ', $ukcolumns);
+      }
+    }
+
     // Ensure foreign key array is present for consistency.
     if (!isset($table_arr['foreign keys'])) {
       $table_arr['foreign keys'] = [];
