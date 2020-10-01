@@ -209,7 +209,8 @@ class ChadoSchema {
     $tables = array_keys($schema);
 
     // now add in the custom tables too if requested
-    if ($include_custom) {
+    // @todo change this to the variable once custom tables are supported.
+    if (FALSE) {
       $sql = "SELECT table FROM {tripal_custom_tables}";
       $resource = $this->connection->query($sql);
 
@@ -257,6 +258,13 @@ class ChadoSchema {
     // Ensure this is parsed as an array.
     if (is_string($table_arr['referring_tables'])) {
       $table_arr['referring_tables'] = explode(', ', $table_arr['referring_tables']);
+    }
+
+    // Ensure the unique keys are arrays.
+    foreach ($table_arr['unique keys'] as $ukname => $ukcolumns) {
+      if (is_string($ukcolumns)) {
+        $table_arr['unique keys'][$ukname] = explode(', ', $ukcolumns);
+      }
     }
 
     // Ensure foreign key array is present for consistency.
