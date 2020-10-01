@@ -593,21 +593,21 @@ class GFF3Importer extends TripalImporter {
       $this->prepNullPub();
       $this->prepDBs();
 
-      $this->logMessage("Step 2: Insert new landmarks sequences...                 ");
+      $this->logMessage("Step 2: Insert new landmarks sequences...                  ");
       $this->findLandmarks();
       $this->insertLandmarks();
 
-      $this->logMessage("Step 3: Find existing features...                         ");
+      $this->logMessage("Step 3: Find existing features...                          ");
       $this->findFeatures();
 
-      $this->logMessage("Step 4: Prepare for any updates ...                       ");
+      $this->logMessage("Step 4: Prepare for any updates ...                        ");
       $this->deleteFeatureData();
 
-      $this->logMessage("Step 5: Processing !num_features features...             ",
+      $this->logMessage("Step 5: Processing !num_features features...               ",
           ['!num_features' => count(array_keys($this->features))]);
       $this->insertFeatures();
 
-      $this->logMessage("Step 6: Get new feature IDs...                           ");
+      $this->logMessage("Step 6: Get new feature IDs...                             ");
       $this->findFeatures();
 
       $this->logMessage("Step 7: Insert locations...                                ");
@@ -616,7 +616,7 @@ class GFF3Importer extends TripalImporter {
       $this->logMessage("Step 8: Insert properties...                               ");
       $this->insertFeatureProps();
 
-      $this->logMessage("Step 9: Find synonyms (aliases)...                       ");
+      $this->logMessage("Step 9: Find synonyms (aliases)...                         ");
       $this->findSynonyms();
 
       $this->logMessage("Step 10: Insert new synonyms (aliases)...                  ");
@@ -625,13 +625,13 @@ class GFF3Importer extends TripalImporter {
       $this->logMessage("Step 11: Insert feature synonyms (aliases)...              ");
       $this->insertFeatureSynonyms();
 
-      $this->logMessage("Step 12: Find cross references...                        ");
+      $this->logMessage("Step 12: Find cross references...                          ");
       $this->findDbxrefs();
 
       $this->logMessage("Step 13: Insert new cross references...                    ");
       $this->insertDbxrefs();
 
-      $this->logMessage("Step 14: Get new cross references IDs...                 ");
+      $this->logMessage("Step 14: Get new cross references IDs...                   ");
       $this->findDbxrefs();
 
       $this->logMessage("Step 15: Insert feature cross references...                ");
@@ -640,22 +640,22 @@ class GFF3Importer extends TripalImporter {
       $this->logMessage("Step 16: Insert feature ontology terms...                  ");
       $this->insertFeatureCVterms();
 
-      $this->logMessage("Step 17: Add child-parent relationships...               ");
+      $this->logMessage("Step 17: Add child-parent relationships...                 ");
       $this->findChildRanks();
       $this->insertFeatureParents();
 
       $this->logMessage("Step 18: Insert 'derives_from' relationships...            ");
       $this->insertFeatureDerivesFrom();
 
-      $this->logMessage("Step 19: Insert Targets...                               ");
+      $this->logMessage("Step 19: Insert Targets...                                 ");
       $this->insertFeatureTargets();
 
-      $this->logMessage("Step 20: Associate features with analysis....             ");
+      $this->logMessage("Step 20: Associate features with analysis....              ");
       $this->insertFeatureAnalysis();
 
       if (!empty($this->residue_index)) {
-        $this->logMessage("Step 22: Adding sequences if available...              ");
-        //$this->insertFeatureSeqs();
+        $this->logMessage("Step 21: Adding sequences data...                ");
+        $this->insertFeatureSeqs();
       }
     }
     // On exception, catch the error, clean up the cache file and rethrow
@@ -1169,28 +1169,31 @@ class GFF3Importer extends TripalImporter {
     $count = 0;
 
     foreach ($this->residue_index as $uniquename => $offset) {
-      $is_landmark = FALSE;
-      if (!(array_key_exists($uniquename, $this->features) and
-            $this->features[$uniquename]) and
-            !(array_key_exists($uniquename, $this->landmarks) and
-            $this->landmarks[$uniquename])) {
-        $this->logMessage('Cannot find feature to assign FASTA sequence: %uname.',
-          ['%uname' => $uniquename], TRIPAL_WARNING);
+
+      // Skip this sequence if we can't match the name with a known feature
+      // or landmark name.
+      if (!(array_key_exists($uniquename, $this->features) and $this->features[$uniquename]) and
+          !(array_key_exists($uniquename, $this->landmarks) and $this->landmarks[$uniquename])) {
+        $this->logMessage('Assigning Sequence: cannot find a feature with a unique name of: "!uname". Please ensure the sequence names in the ##FASTA section use the same name as the ID in the feature in the GFF file. ',
+          ['!uname' => $uniquename], TRIPAL_WARNING);
         $count++;
         continue;
       }
 
+      // Get the feature that this sequence belongs.
+      $feature_id = NULL;
       if (array_key_exists($uniquename, $this->features)) {
-        $feature = $this->features[$uniquename];
+        $findex = $this->features[$uniquename]['findex'];
+        $feature = $this->getCachedFeature($findex);
+        $feature_id = $feature['feature_id'];
       }
       else {
-        $feature = $this->landmarks[$uniquename];
-        $is_landmark = TRUE;
+        $feature_id = $this->landmarks[$uniquename];
       }
 
-      $this->ensureFeatureIsLoaded($feature);
-      $id = $feature['feature_id'];
 
+      // Seek to the position in the GFF file where this sequence is housed.
+      // iterate through the lines and get store the value.
       $residues = [];
       fseek($this->gff_file_h, $offset);
       while ($line = fgets($this->gff_file_h)) {
@@ -1199,23 +1202,14 @@ class GFF3Importer extends TripalImporter {
         }
         $residues[] = trim($line);
       }
-
       $residues = implode('', $residues);
-      $feature['residues'] = $residues;
 
-      if (!$is_landmark) {
-        $this->features[$uniquename] = $feature['feature_id'];;
-      }
-      else {
-        $this->landmarks[$uniquename] = $feature['feature_id'];;
-      }
-
-      chado_update_record('feature', ['feature_id' => $id], [
+      $values = [
         'residues' => $residues,
         'seqlen' => strlen($residues),
         'md5checksum' => md5($residues),
-      ]);
-
+      ];
+      chado_update_record('feature', ['feature_id' => $feature_id], $values);
       $count++;
       $this->setItemsHandled($count);
     }
@@ -1253,14 +1247,14 @@ class GFF3Importer extends TripalImporter {
     }
     if ($num_found > 1) {
       throw new Exception(t("The landmark '%landmark' has more than one entry for this organism (%species). Did you provide a landmark type? If not, try resubmitting and providing a type." .
-          "Cannot continue", [
-            '%landmark' => $landmark_name,
-            '%species' => $this->organism->getValues('genus') . " " . $this->organism->getValues('species'),
-          ]));
+        "Cannot continue", [
+          '%landmark' => $landmark_name,
+          '%species' => $this->organism->getValues('genus') . " " . $this->organism->getValues('species'),
+        ]));
     }
 
     // The landmark was found, remember it
-    $this->landmarks[$landmark_name] = $landmark;
+    $this->landmarks[$landmark_name] = $landmark->getID();
     return $landmark;
   }
   /**
@@ -1686,7 +1680,7 @@ class GFF3Importer extends TripalImporter {
 
       // Only do an insert if this feature doesn't already exist in the databse.
       if (!$feature_id and !$feature['skipped']) {
-        $residues = $this->getResidues($feature, FALSE);
+        $residues = '';
         $type_id = $this->feature_cvterm_lookup[$feature['type']];
         $sql .= "(:uniquename_$i, :name_$i, :type_id_$i, :organism_id_$i, :residues_$i, " .
                " :md5checksum_$i, :seqlen_$i, FALSE, FALSE),\n";
@@ -2653,14 +2647,6 @@ class GFF3Importer extends TripalImporter {
   }
 
   /**
-   * Retrieves the residues for a given feature.
-   *
-   */
-  private function getResidues($feature, $is_landmark = FALSE) {
-    return '';
-  }
-
-  /**
    * Determines the name for a feature using the ID and name attributes.
    *
    * @param $feature_attrs
@@ -2744,110 +2730,6 @@ class GFF3Importer extends TripalImporter {
       'name' => $name,
       'uniquename' => $uniquename,
     ];
-  }
-
-  /**
-   * Load the derives from attribute for a gff3 feature
-   *
-   * @param $feature
-   * @param $subject
-   * @param $organism
-   *
-   * @ingroup gff3_loader
-   */
-  private function loadDerivesFromOld($feature, $cvterm, $object,
-                                   $organism, $fmin, $fmax) {
-
-    $type = $cvterm->name;
-    $derivesfrom_term = $this->getCvterm('derives_from');
-
-    // First look for the object feature in the temp table to get it's type.
-    $values = [
-      'organism_id' => $organism->organism_id,
-      'uniquename' => $object,
-    ];
-    $result = chado_select_record('tripal_gff_temp', ['type_name'], $values);
-    $type_id = NULL;
-    if (count($result) > 0) {
-      $type_id = $this->getCvterm($result[0]->type_name)->cvterm_id ?? NULL;
-    }
-
-    // If the object wasn't in the temp table then look for it in the
-    // feature table and get it's type.
-    if (!$type_id) {
-      $result = chado_select_record('feature', ['type_id'], $values);
-      if (count($result) > 1) {
-        $this->logMessage("Cannot find feature type for, '!subject' , in 'derives_from' relationship. Multiple matching features exist with this uniquename.",
-          ['!subject' => $object], TRIPAL_WARNING);
-        return;
-      }
-      else {
-        if (count($result) == 0) {
-          $this->logMessage("Cannot find feature type for, '!subject' , in 'derives_from' relationship.",
-            ['!subject' => $object], TRIPAL_WARNING);
-          return '';
-        }
-        else {
-          $type_id = $result->type_id;
-        }
-      }
-    }
-
-    // Get the object feature.
-    $match = [
-      'organism_id' => $organism->organism_id,
-      'uniquename' => $object,
-      'type_id' => $type_id,
-    ];
-    $ofeature = chado_select_record('feature', ['feature_id'], $match);
-    if (count($ofeature) == 0) {
-      $this->logMessage("Could not add 'Derives_from' relationship " .
-        "for %uniquename and %subject.  Subject feature, '%subject', " .
-        "cannot be found.", [
-        '%uniquename' => $feature->getValue('uniquename'),
-        '%subject' => $subject,
-      ], TRIPAL_ERROR);
-      return;
-    }
-
-    // If this feature is a protein then add it to the tripal_gffprotein_temp.
-    if ($type == 'protein' or $type == 'polypeptide') {
-      $values = [
-        'feature_id' => $feature->getID(),
-        'parent_id' => $ofeature[0]->feature_id,
-        'fmin' => $fmin,
-        'fmax' => $fmax,
-      ];
-      $result = chado_insert_record('tripal_gffprotein_temp', $values);
-      if (!$result) {
-        throw new Exception(t("Cound not save record in temporary protein table, Cannot continue.", []));
-      }
-    }
-
-    // Now check to see if the relationship already exists. If it does
-    // then just return.
-    $values = [
-      'object_id' => $ofeature[0]->feature_id,
-      'subject_id' => $feature->getID(),
-      'type_id' => $derivesfrom_term->cvterm_id,
-      'rank' => 0,
-    ];
-    $rel = chado_select_record('feature_relationship', ['*'], $values);
-    if (count($rel) > 0) {
-      return;
-    }
-
-    // finally insert the relationship if it doesn't exist
-    $ret = chado_insert_record('feature_relationship', $values, array(
-      'skip_validation' => TRUE,
-    ));
-    if (!$ret) {
-      $this->logMessage("Could not add 'Derives_from' relationship for :uniquename and :subject.",
-        [
-          ':uniquename' => $feature->getValue('uniquename'),
-          ':subject' => $subject,
-        ], TRIPAL_WARNING);
-    }
   }
 
   /**
