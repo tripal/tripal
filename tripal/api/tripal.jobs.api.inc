@@ -576,3 +576,50 @@ function tripal_execute_job($job_id, $redirect = TRUE) {
     drupal_goto("admin/tripal/tripal_jobs/view/$job_id");
   }
 }
+
+/**
+ * Provides human readable associative array of job arguments.
+ *
+ * Overrides the descriptions provided in the job view page for the list
+ * of arguments.  This hook allows the module to list arguments in human
+ * readable format.
+ *
+ * @param $callback
+ *   The callback of the current tripal job (this is the function that will be
+ *   executed when tripal_launch_jobs.php is run.
+ *
+ * @param $args
+ *   An array of arguments passed in when the job was registered.
+ *
+ * @return
+ *   An associative array mapping a human readable name to the argument value.
+ *
+ * @ingroup tripal_jobs_api
+ */
+function hook_job_describe_args($callback, $args) {
+
+  if ($callback == 'tripal_run_importer') {
+
+    // Get the importer arguments.
+    $importer = TripalImporter::byID($args[0]);
+    $args = $importer->getArguments();
+    $ret = $args['run_args'];
+    $ret['file'] = $args['file']['file_path'];
+
+    // Remove form elements from the TripalImporter form.
+    unset($ret['form_id']);
+    unset($ret['form_token']);
+    unset($ret['form_build_id']);
+    unset($ret['button']);
+    unset($ret['op']);
+    unset($ret['html5_file_submit']);
+    unset($ret['html5_file_table_key']);
+    unset($ret['importer_class']);
+    unset($ret['file_upload_existing']);
+    unset($ret['file_upload']);
+    unset($ret['file_local']);
+    unset($ret['file_remote']);
+    return $ret;
+  }
+  return $args;
+}

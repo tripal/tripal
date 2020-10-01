@@ -455,15 +455,6 @@ function tripal_bulk_loader_progess_file_get_progress($job_id, $update_progress 
 
 /**
  * Implements hook_job_describe_args()
- * Specifically to make viewing past tripal jobs more readable for jobs registered by this module
- *
- * @params $callback
- *   The callback passed into tripal_add_job()
- * @param $args
- *   The arguments passed into tripal_add_job()
- * @return
- *   An array where keys are the human readable headers describing each arguement
- *   and the value is the aguement passed in after formatting
  *
  * @ingroup tripal_bulk_loader
  */

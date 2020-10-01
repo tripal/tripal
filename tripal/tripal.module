@@ -1621,3 +1621,36 @@ function tripal_field_group_table_rows_alter(&$element, &$children) {
     }
   }
 }
+
+/**
+ * Implements hook_job_describe_args().
+ *
+ * @ingroup tripal
+ */
+function tripal_job_describe_args($callback, $args) {
+
+  if ($callback == 'tripal_run_importer') {
+
+    // Get the importer arguments.
+    $importer = TripalImporter::byID($args[0]);
+    $args = $importer->getArguments();
+    $ret = $args['run_args'];
+    $ret['file'] = $args['file']['file_path'];
+
+    // Remove form elements from the TripalImporter form.
+    unset($ret['form_id']);
+    unset($ret['form_token']);
+    unset($ret['form_build_id']);
+    unset($ret['button']);
+    unset($ret['op']);
+    unset($ret['html5_file_submit']);
+    unset($ret['html5_file_table_key']);
+    unset($ret['importer_class']);
+    unset($ret['file_upload_existing']);
+    unset($ret['file_upload']);
+    unset($ret['file_local']);
+    unset($ret['file_remote']);
+    return $ret;
+  }
+  return $args;
+}

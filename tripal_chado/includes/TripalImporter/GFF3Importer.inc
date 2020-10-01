@@ -129,6 +129,7 @@ class GFF3Importer extends TripalImporter {
    * must be a valid Sequence Ontology (SO) term. Default is NULL
    */
   private $target_type = NULL;
+  private $target_type_id = NULL;
 
   /**
    * A flag indicating if the target feature should be created. If FALSE
@@ -221,12 +222,12 @@ class GFF3Importer extends TripalImporter {
    * Maps parents to their children and contains the ranks of the children.
    */
   private $parent_lookup = [];
+
   /**
    * An array that stores CVterms that have been looked up so we don't have
    * to do the database query every time.
    */
   private $feature_cvterm_lookup = [];
-
 
   /**
    * An array that stores CVterms that have been looked up so we don't have
@@ -565,6 +566,20 @@ class GFF3Importer extends TripalImporter {
       }
     }
 
+    // If a target type is provided then get the ID.
+    if ($this->target_type) {
+      $target_type = new ChadoRecord('cvterm');
+      $target_type->setValues([
+        'name' => $this->target_type,
+        'cv_id' => $this->feature_cv->getID()
+      ]);
+      $num_found = $target_type->find();
+      if ($num_found == 0) {
+        throw new Exception(t("Cannot find the specified target type, !type.", ['!type' => $this->target_type]));
+      }
+      $this->target_type_id = $target_type->getID();
+    }
+
     // Create the cache file for storing parsed GFF entries.
     $this->openCacheFile();
 
@@ -632,15 +647,10 @@ class GFF3Importer extends TripalImporter {
       $this->logMessage("Step 18: Insert 'derives_from' relationships...            ");
       $this->insertFeatureDerivesFrom();
 
-      $this->logMessage("Step 19: Insert Targets...                                 ");
-      // TODO: Target (target_organism & target_type)
+      $this->logMessage("Step 19: Insert Targets...                               ");
+      $this->insertFeatureTargets();
 
-      $this->logMessage("Step 20: Add any missing proteins...                     ");
-      // TODO: protein records.
-
-      // TODO: handle is_circular (it may just need to be a property).
-
-      $this->logMessage("Step 21: Associate features with analysis....             ");
+      $this->logMessage("Step 20: Associate features with analysis....             ");
       $this->insertFeatureAnalysis();
 
       if (!empty($this->residue_index)) {
@@ -892,9 +902,9 @@ class GFF3Importer extends TripalImporter {
       'line' => $this->current_line,
       'landmark' => $cols[0],
       'source' => $cols[1],
-      'type' => $cols[2],
+      'type' => strtolower($cols[2]),
       'start' => $cols[3],
-      'end' => $cols[4],
+      'stop' => $cols[4],
       'score' => $cols[5],
       'strand' => $cols[6],
       'phase' => $cols[7],
@@ -905,9 +915,9 @@ class GFF3Importer extends TripalImporter {
     // to be zero-based, so we substract 1 from the fmin. Also, in case
     // they are backwards, put them in the right order.
     $fmin = $ret['start'] - 1;
-    $fmax = $ret['end'];
-    if ($ret['end'] < $ret['start']) {
-      $fmin = $ret['end'] - 1;
+    $fmax = $ret['stop'];
+    if ($ret['stop'] < $ret['start']) {
+      $fmin = $ret['stop'] - 1;
       $fmax = $ret['start'];
     }
     $ret['start'] = $fmin;
@@ -925,7 +935,7 @@ class GFF3Importer extends TripalImporter {
       $ret['strand'] = -1;
     }
     if (strcmp($ret['phase'], '.') == 0) {
-      if (strtolower($ret['type']) == 'cds') {
+      if ($ret['type'] == 'cds') {
         $ret['phase'] = '0';
       }
       else {
@@ -937,13 +947,14 @@ class GFF3Importer extends TripalImporter {
     $attr_name = '';
     $attr_uniquename = '';
     $attrs = explode(";", $cols[8]);
-    $attr_organism = [];
+    $attr_organism = $this->organism_id;
     $attr_parent = '';
     $attr_others = [];
     $attr_aliases = [];
     $attr_dbxref = [];
     $attr_derives = [];
     $attr_terms = [];
+    $attr_target = [];
     foreach ($attrs as $attr) {
       $attr = rtrim($attr);
       $attr = ltrim($attr);
@@ -986,18 +997,61 @@ class GFF3Importer extends TripalImporter {
         $attr_terms = array_merge($attr_terms, $tags[$tag_name]);
       }
       elseif (strcmp($tag_name, 'organism') == 0) {
-        $attr_organism = array_merge($attr_organism, $tags[$tag_name]);
+        if (count($tags[$tag_name]) > 1) {
+          throw new Exception(t('Each feature can only have one "organism" attribute. The feature %uniquename has more than one: %organism',
+            ['%uniquename' => $ret['uniquename'], '%organism' => $ret['organism']]));
+        }
+        $attr_organism = $this->findOrganism($tags[$tag_name][0], $this->current_line);
+      }
+      elseif (strcmp($tag_name, 'Target') == 0) {
+        $matches = [];
+        if (count($tags[$tag_name]) > 1) {
+          throw new Exception(t('Each feature can only have one "Target" attribute. The feature %uniquename has more than one.',
+              ['%uniquename' => $ret['uniquename']]));
+        }
+        if (preg_match('/^(.*?)\s+(\d+)\s+(\d+)(\s+[\+|\-])*$/', trim($tags[$tag_name][0]), $matches)) {
+          $attr_target['name'] = $matches[1];
+          $attr_target['start'] = $matches[2];
+          $attr_target['stop'] = $matches[3];
+          $tfmin = $attr_target['start'] - 1;
+          $tfmax = $attr_target['stop'];
+          if ($attr_target['stop'] < $attr_target['start']) {
+            $tfmin = $attr_target['stop'] - 1;
+            $tfmax = $attr_target['start'];
+          }
+          $attr_target['start'] = $tfmin;
+          $attr_target['stop'] = $tfmax;
+
+          $attr_target['phase'] = '';
+          $attr_target['strand'] = 0;
+          if (!empty($matches[4])) {
+            if (preg_match('/^\+$/', trim($matches[4]))) {
+              $attr_target['strand'] = 1;
+            }
+            elseif (preg_match('/^\-$/', trim($matches[4]))) {
+              $attr_target['strand'] = -1;
+            }
+          }
+          $attr_target['organism_id'] = $this->target_organism_id ? $this->target_organism_id : $this->organism_id;
+          $attr_target['type_id'] = $this->target_type_id ? $this->target_type_id : NULL;
+        }
+      }
+      elseif (strcmp($tag_name, 'target_organism') == 0) {
+        $attr_target['organism_id'] = $this->findOrganism($tags[$tag_name][0], $this->current_line);
+      }
+      elseif (strcmp($tag_name, 'target_type') == 0) {
+        $attr_target['type'] = $tags[$tag_name][0];
       }
       // Get the list of non-reserved attributes these will get added
-      // as properties to the featureprop table.  The 'Note' and 'Gap'
+      // as properties to the featureprop table.  The 'Note', 'Gap', 'Is_Circular',
       // attributes will go in as a property so those are not in the list
       // checked below.
       elseif (strcmp($tag_name, 'Name') !=0 and strcmp($tag_name, 'ID') !=0 and
               strcmp($tag_name, 'Alias') != 0 and strcmp($tag_name, 'Parent') != 0 and
               strcmp($tag_name, 'Target') != 0 and strcmp($tag_name, 'Derives_from') != 0 and
               strcmp($tag_name, 'Dbxref') != 0 and strcmp($tag_name, 'Ontology_term') != 0 and
-              strcmp($tag_name, 'Is_circular') != 0 and strcmp($tag_name, 'target_organism') != 0 and
-              strcmp($tag_name, 'target_type') != 0 and strcmp($tag_name, 'organism' != 0)) {
+              strcmp($tag_name, 'target_organism') != 0 and strcmp($tag_name, 'target_type') != 0 and
+              strcmp($tag_name, 'organism' != 0)) {
         foreach ($tags[$tag_name] as $value) {
           if (!array_key_exists($tag_name, $attr_others)) {
             $attr_others[$tag_name] = [];
@@ -1006,6 +1060,9 @@ class GFF3Importer extends TripalImporter {
         }
       }
     }
+
+    // A feature may get ignored. But let's default this to FALSE.
+    $ret['skipped'] = FALSE;
 
     // If neither name nor uniquename are provided then generate one.
     $names = $this->getFeatureName($tags, $ret['type'], $ret['landmark'], $fmin, $fmax);
@@ -1060,19 +1117,20 @@ class GFF3Importer extends TripalImporter {
       $ret['attrs'][$key] = $value;
     }
 
-
     // Add the organism  entry.
-    $ret['organism'] = '';
-    if (count($attr_organism) == 1) {
-      $ret['organism'] = $attr_organism[0];
+    $ret['organism'] = $attr_organism;
+    if (!$ret['organism']) {
+      $ret['skipped'] = TRUE;
     }
-    if (count($attr_organism) > 1) {
-      throw new Exception(t('Each feature can only have one "organism" attribute. The feature %uniquename has more than one: %organism',
-        [
-          '%uniquename' => $ret['uniquename'],
-          '%organism' => $ret['organism'],
-        ]));
+
+    // Add the target. If the type_id is missing then remove it and we'll
+    // skip it.
+    $ret['target'] = $attr_target;
+    if (!$ret['target']['type']) {
+      $ret['target'] = [];
     }
+
+    // Add the properties and parent.
     $ret['properties'] = $attr_others;
     $ret['parent'] = $attr_parent;
 
@@ -1297,19 +1355,6 @@ class GFF3Importer extends TripalImporter {
       // Parse this feature from this line of the GFF3 file.
       $gff_feature = $this->parseFeature($line);
 
-      // A feature may get ignored. But let's default this to FALSE.
-      $gff_feature['skipped'] = FALSE;
-
-      // Lookup the organism ID if one is requested.
-      if ($gff_feature['organism']) {
-        $organism_id = $this->findOrganism($gff_feature['organism'], $line_num);
-        if ($organism_id) {
-          $gff_feature['organism'] = $organism_id;
-        }
-        elsE {
-          $gff_feature['skipped'] = TRUE;
-        }
-      }
 
       // Add the landmark if it doesn't exist in the landmark list.
       if (!array_key_exists($gff_feature['landmark'], $this->landmarks)) {
@@ -1347,6 +1392,13 @@ class GFF3Importer extends TripalImporter {
       }
       $feature_cvterms[$gff_feature['type']]++;
 
+      // Add any target feature types to the list as well.
+      if (array_key_exists('name', $gff_feature['target'])) {
+        if (!array_key_exists($gff_feature['target']['type'], $feature_cvterms)) {
+          $feature_cvterms[$gff_feature['target']['type']] = 0;
+        }
+        $feature_cvterms[$gff_feature['target']['type']]++;
+      }
 
       // Organize the feature property types for faster access later on.
       foreach ($gff_feature['properties'] as $prop_name => $value) {
@@ -1360,6 +1412,18 @@ class GFF3Importer extends TripalImporter {
       if ($gff_feature['uniquename'] != $gff_feature['landmark']) {
         $this->cacheFeature($gff_feature);
       }
+
+      // If this feature has a target then we need to add the target as
+      // new feature for insertion.
+      if (array_key_exists('name', $gff_feature['target'])) {
+        $this->addTargetFeature($gff_feature);
+      }
+    }
+
+    // Make sure we have the protein term in our list.
+    if (!array_key_exists('protein', $feature_cvterms) and
+        !array_key_exists('polypeptide', $feature_cvterms)) {
+      $feature_cvterms['polypeptide'] = 0;
     }
 
     // Iterate through the feature type terms and get a chado object for each.
@@ -1371,6 +1435,158 @@ class GFF3Importer extends TripalImporter {
     // each. If it doesn't exist then add a new record.
     foreach (array_keys($featureprop_cvterms) as $name) {
       $this->getTypeID($name, TRUE);
+    }
+
+    // Finally, add any protein features that need to be created.
+    $this->addProteinFeatures();
+
+  }
+
+  /**
+   * Checks the features and finds those that need proteins added.
+   */
+  private function addProteinFeatures() {
+
+    // Don't do anything if the user wants to skip creation of non listed
+    // proteins. Proteins that have actual lines in the GFF will still be
+    // created.
+    if ($this->skip_protein) {
+      $this->logMessage('  Skipping creation of non-specified proteins...');
+      return;
+    }
+
+    $proteins = [];
+
+    // First, store records for which proteins need to exist. These
+    // will be for any parent that has a 'CDS' or 'protein' child.
+    foreach ($this->features as $info) {
+      $findex = $info['findex'];
+      $feature = $this->getCachedFeature($findex);
+      $type = $feature['type'];
+      if ($type == 'cds' or $type == 'protein' or $type == 'polypeptide') {
+        $parent_name = $feature['parent'];
+        if ($parent_name) {
+          if (!array_key_exists($parent_name, $proteins)) {
+            $proteins[$parent_name] = [];
+          }
+          if ($type == 'cds') {
+            $proteins[$parent_name]['cds'][] = $findex;
+          }
+          if ($type == 'protein' or $type == 'polypeptide') {
+            $proteins[$parent_name]['protein'] = $findex;
+          }
+        }
+      }
+    }
+
+    // Second, iterate through the protein list and for any parents that
+    // don't already have a protein we need to create one.
+    foreach ($proteins as $parent_name => $info) {
+
+      // Skip addition of any proteins that are already in the GFF file.
+      if (array_key_exists('protein', $info)) {
+        continue;
+      }
+
+      // If we don't have a protein
+      if (array_key_exists('cds', $info)) {
+        $start = INF;
+        $stop = -INF;
+        $start_phase = 0;
+        $stop_phase = 0;
+        // Find the starting and end CDS.
+        foreach ($info['cds'] as $findex) {
+          $cds = $this->getCachedFeature($findex);
+          if ($cds['start'] < $start) {
+            $start = $cds['start'];
+            $start_phase = $cds['phase'];
+          }
+          if ($cds['stop'] > $stop) {
+            $stop = $cds['stop'];
+            $stop_phase =  $cds['phase'];
+          }
+        }
+
+        // Set the start of the protein to be the start of the coding
+        // sequence minus the phase.
+        if ($cds['strand'] == '-1') {
+          $stop -= $stop_phase;
+        }
+        else {
+          $start += $start_phase;
+        }
+
+        // Get the name for the protein
+        $name = $parent_name;
+        if ($this->re_mrna and $this->re_protein) {
+          // We use a regex to generate protein name from parent name
+          $uname = preg_replace("/$this->re_mrna/", $this->re_protein, $parent_name);
+        }
+        else {
+          // No regex, use the default '-protein' suffix
+          $uname = $parent_name . '-protein';
+        }
+
+        // Now create the protein feature.
+        $feature = [
+          'line' => $cds['line'],
+          'landmark' => $cds['landmark'],
+          'source' => $cds['source'],
+          'type' => 'polypeptide',
+          'start' => $start,
+          'stop' => $stop,
+          'strand' => $cds['strand'],
+          'phase' => '',
+          'attr' => [],
+          'skipped' => FALSE,
+          'name' => $name,
+          'uniquename' => $uname,
+          'synonyms' => [],
+          'dbxrefs' => [],
+          'terms' => [],
+          'derives_from' => NULL,
+          'organism' => $cds['organism_id'],
+          'target' => [],
+          'properties' => [],
+          'parent' => $cds['parent'],
+        ];
+        $this->cacheFeature($feature);
+      }
+    }
+  }
+
+  /**
+   * Adds a new target feature to the feature list.
+   *
+   * @param $gff_feature
+   *   The feature array created by the parseFeature function.
+   */
+  private function addTargetFeature($gff_feature) {
+    if (!array_key_exists($gff_feature['target']['name'], $this->features)) {
+      $feature = [
+        'is_target' => TRUE,
+        'line' => $this->current_line,
+        'landmark' => $gff_feature['landmark'],
+        'source' => $gff_feature['source'],
+        'type' => $gff_feature['target']['type'],
+        'start' => $gff_feature['target']['start'],
+        'stop' => $gff_feature['target']['stop'],
+        'strand' => $gff_feature['target']['strand'],
+        'phase' => $gff_feature['target']['phase'],
+        'attr' => [],
+        'skipped' => FALSE,
+        'name' => $gff_feature['target']['name'],
+        'uniquename' => $gff_feature['target']['name'],
+        'synonyms' => [],
+        'dbxrefs' => [],
+        'terms' => [],
+        'derives_from' => NULL,
+        'organism' => $gff_feature['target']['organism_id'],
+        'target' => [],
+        'properties' => [],
+        'parent' => '',
+      ];
+      $this->cacheFeature($feature);
     }
   }
 
@@ -1471,7 +1687,7 @@ class GFF3Importer extends TripalImporter {
       // Only do an insert if this feature doesn't already exist in the databse.
       if (!$feature_id and !$feature['skipped']) {
         $residues = $this->getResidues($feature, FALSE);
-        $type_id = $this->feature_cvterm_lookup[strtolower($feature['type'])];
+        $type_id = $this->feature_cvterm_lookup[$feature['type']];
         $sql .= "(:uniquename_$i, :name_$i, :type_id_$i, :organism_id_$i, :residues_$i, " .
                " :md5checksum_$i, :seqlen_$i, FALSE, FALSE),\n";
         $args[":uniquename_$i"] = $uniquename;
@@ -1534,7 +1750,7 @@ class GFF3Importer extends TripalImporter {
           while ($f = $results->fetchObject()) {
             $matched_findex = $this->features[$f->uniquename]['findex'];
             $matched_feature = $this->getCachedFeature($matched_findex);
-            $matched_type_id = $this->feature_cvterm_lookup[strtolower($matched_feature['type'])];
+            $matched_type_id = $this->feature_cvterm_lookup[$matched_feature['type']];
             $matched_organism_id = $matched_feature['organism'] ? $matched_feature['organism'] : $this->organism->getID();
             if ($matched_type_id == $f->type_id and $matched_organism_id == $f->organism_id) {
               $this->features[$f->uniquename]['feature_id'] = $f->feature_id;
@@ -1677,8 +1893,9 @@ class GFF3Importer extends TripalImporter {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    // Get the 'part_of' cvterm
-    $type_id = $this->getTypeID('part_of', FALSE);
+    // Get the 'part_of' and 'derives_from cvterm.
+    $part_of = $this->getTypeID('part_of', FALSE);
+    $derives_from = $this->getTypeID('derives_from', FALSE);
 
     $init_sql = "INSERT INTO {feature_relationship} (subject_id, object_id, type_id, rank) VALUES\n";
     $i = 0;
@@ -1702,6 +1919,10 @@ class GFF3Importer extends TripalImporter {
           $child_feature = $this->getCachedFeature($child_findex);
           $child_uniquename = $child_feature['uniquename'];
           $child_feature_id = $this->features[$child_uniquename]['feature_id'];
+          $type_id = $part_of;
+          if ($child_feature['type'] == 'polypeptide' or $child_feature['type'] == 'protein') {
+            $type_id = $derives_from;
+          }
           $sql .= "(:subject_id_$j, :object_id_$j, :type_id_$j, :rank_$j),\n";
           $args[":subject_id_$j"] = $child_feature_id;
           $args[":object_id_$j"] = $parent_feature_id;
@@ -2020,6 +2241,76 @@ class GFF3Importer extends TripalImporter {
   /**
    *
    */
+  private function insertFeatureTargets() {
+    $batch_size = 1000;
+    $num_features = count(array_keys($this->features));
+    $num_batches = (int) ($num_features / $batch_size) + 1;
+
+    $this->setItemsHandled(0);
+    $this->setTotalItems($num_batches);
+
+    $init_sql = "
+      INSERT INTO {featureloc}
+        (srcfeature_id, feature_id, fmin, fmax, strand, phase, rank)
+      VALUES\n";
+    $i = 0;
+    $total = 0;
+    $batch_num = 1;
+    $sql = '';
+    $args = [];
+    foreach ($this->features as $info) {
+      $findex = $info['findex'];
+      $feature_id = $info['feature_id'];
+      $feature = $this->getCachedFeature($findex);
+
+      $total++;
+      $i++;
+
+      // If the feature is not skipped and has a target then insert the
+      // target alignment.
+      if (!$feature['skipped'] and array_key_exists('name', $feature['target'])) {
+        $tname = $feature['target']['name'];
+        $tfindex = $this->features[$tname]['findex'];
+        $tfeature_id = $this->features[$tname]['feature_id'];
+        $target = $this->getCachedFeature($tfindex);
+
+        // According to the Chado instructions for rank, the feature aligned
+        // to the landmark will have a rank of 0.  The feature aligned to the
+        // target match will have a rank of 1.
+        $rank = 1;
+
+        $sql .= "(:srcfeature_id_$i, :feature_id_$i, :fmin_$i, :fmax_$i," .
+          " :strand_$i, :phase_$i, :rank_$i),\n";
+        $args[":srcfeature_id_$i"] = $tfeature_id;
+        $args[":feature_id_$i"] = $feature_id;
+        $args[":fmin_$i"] = $target['start'];
+        $args[":fmax_$i"] = $target['stop'];
+        $args[":strand_$i"] = $target['strand'];
+        $args[":phase_$i"] = $target['phase'] ? $target['phase'] : NULL;
+        $args[":rank_$i"] = $rank;
+      }
+
+      // If we've reached the size of the batch then let's do the insert.
+      if ($i == $batch_size or $total == $num_features) {
+        if (count($args) > 0) {
+          $sql = rtrim($sql, ",\n");
+          $sql = $init_sql . $sql;
+          chado_query($sql, $args);
+        }
+        $this->setItemsHandled($batch_num);
+        $batch_num++;
+
+        // Now reset all of the varables for the next batch.
+        $sql = '';
+        $i = 0;
+        $args = [];
+      }
+    }
+  }
+
+  /**
+   *
+   */
   private function insertFeatureDerivesFrom() {
     $batch_size = 100;
     $num_features = count(array_keys($this->features));
@@ -2100,10 +2391,10 @@ class GFF3Importer extends TripalImporter {
       $feature = $this->getCachedFeature($findex);
 
       $total++;
+      $i++;
 
-      // If the feature is not skipped
-      if (!$feature['skipped']) {
-        $i++;
+      // If the feature is not skipped and is not a match "target".
+      if (!$feature['skipped'] and $feature['is_target'] == FALSE) {
 
         // Get the rank of this feature by iterating through all siblings of the
         // parent and finding where this feature is in terms of start position.
@@ -2423,10 +2714,11 @@ class GFF3Importer extends TripalImporter {
       $name = $attrs['Name'][0];
     }
 
-    // Does this uniquename already exist? This can happen for subfeatures
-    // (e.g. CDS features) that have multiple components but are really
-    // all the same thing.
+    // Does this uniquename already exist?
     if (array_key_exists($uniquename, $this->features)) {
+      $prev_feature = $this->getCachedFeature($this->features[$uniquename]['findex']);
+      // A name can be duplicated for subfeatures (e.g. CDS features)
+      // that have the same parent but are really all the same thing.
       if (array_key_exists('Parent', $attrs)) {
         // Iterate through the list of similar IDs and see how many we have
         // then add a numeric suffix.
@@ -2435,6 +2727,13 @@ class GFF3Importer extends TripalImporter {
           $i++;
         }
         $uniquename = $uniquename . "_" . $i;
+      }
+      // A name can be duplicated if there is a target match alignment and
+      // the feature appears first in the GFF as a target before it appears
+      // on it's own independent line of the gff file.
+      elseif ($prev_feature['is_target'] == TRUE) {
+        // Do nothing, the previous feature is a target so we'll overwrite
+        // it with this record.
       }
       else {
         throw new Exception(t("A feature with the same ID exists multiple times: !uname", ['!uname' => $uniquename]));
@@ -2603,151 +2902,6 @@ class GFF3Importer extends TripalImporter {
         $i = 0;
         $args = [];
       }
-    }
-  }
-
-  /**
-   * Load the target attribute of a gff3 record
-   *
-   * @param $feature
-   * @param $tags
-   * @param $target_organism_id
-   * @param $target_type
-   * @param $create_target
-   * @param $attr_locgroup
-   *
-   * @ingroup gff3_loader
-   */
-  private function loadTarget($feature, $tags, $target_organism_id, $target_type, $create_target, $attr_locgroup) {
-    // format is: "target_id start end [strand]", where strand is optional and may be "+" or "-"
-    $matched = preg_match('/^(.*?)\s+(\d+)\s+(\d+)(\s+[\+|\-])*$/', trim($tags['Target'][0]), $matches);
-
-    // the organism and type of the target may also be specified as an attribute. If so, then get that
-    // information
-    $gff_target_organism = array_key_exists('target_organism', $tags) ? $tags['target_organism'][0] : '';
-    $gff_target_type = array_key_exists('target_type', $tags) ? $tags['target_type'][0] : '';
-
-    // if we have matches and the Target is in the correct format then load the alignment
-    if ($matched) {
-      $target_feature = $matches[1];
-      $start = $matches[2];
-      $end = $matches[3];
-      // if we have an optional strand, convert it to a numeric value.
-      if (!empty($matches[4])) {
-        if (preg_match('/^\+$/', trim($matches[4]))) {
-          $target_strand = 1;
-        }
-        elseif (preg_match('/^\-$/', trim($matches[4]))) {
-          $target_strand = -1;
-        }
-        else {
-          $target_strand = 0;
-        }
-      }
-      else {
-        $target_strand = 0;
-      }
-
-      $target_fmin = $start - 1;
-      $target_fmax = $end;
-      if ($end < $start) {
-        $target_fmin = $end - 1;
-        $target_fmax = $start;
-      }
-
-      // default the target organism to be the value passed into the function, but if the GFF
-      // file species the target organism then use that instead.
-      $t_organism_id = $target_organism_id;
-      if ($gff_target_organism) {
-        // get the genus and species
-        $success = preg_match('/^(.*?):(.*?)$/', $gff_target_organism, $matches);
-        if ($success) {
-          $values = [
-            'genus' => $matches[1],
-            'species' => $matches[2],
-          ];
-          $torganism = chado_select_record('organism', ['organism_id'], $values);
-          if (count($torganism) == 1) {
-            $t_organism_id = $torganism[0]->organism_id;
-          }
-
-          else {
-            $this->logMessage("Cannot find organism for target %target.",
-              ['%target' => $gff_target_organism], TRIPAL_WARNING);
-            $t_organism_id = '';
-          }
-        }
-        else {
-          $this->logMessage("The target_organism attribute is improperly formatted: %target. " .
-            "It should be target_organism=genus:species.",
-            ['%target' => $gff_target_organism], TRIPAL_WARNING);
-          $t_organism_id = '';
-        }
-      }
-
-      // default the target type to be the value passed into the function, but if the GFF file
-      // species the target type then use that instead
-      $t_type_id = '';
-      if ($target_type) {
-        $values = [
-          'name' => $target_type,
-          'cv_id' => [
-            'name' => 'sequence',
-          ],
-        ];
-        $type = chado_select_record('cvterm', ['cvterm_id'], $values);
-        if (count($type) == 1) {
-          $t_type_id = $type[0]->cvterm_id;
-        }
-        else {
-          throw new Exception(t("The target type does not exist in the sequence ontology: %type. ",
-            ['%type' => $target_type]));
-        }
-      }
-      if ($gff_target_type) {
-        $values = [
-          'name' => $gff_target_type,
-          'cv_id' => [
-            'name' => 'sequence',
-          ],
-        ];
-
-        // get the cvterm_id for the target type
-        $type = chado_select_record('cvterm', ['cvterm_id'], $values);
-        if (count($type) == 1) {
-          $t_type_id = $type[0]->cvterm_id;
-        }
-        else {
-          // check to see if this is a synonym
-          $sql = "
-            SELECT CVTS.cvterm_id
-            FROM {cvtermsynonym} CVTS
-              INNER JOIN {cvterm} CVT ON CVT.cvterm_id = CVTS.cvterm_id
-              INNER JOIN {cv} CV      ON CV.cv_id = CVT.cv_id
-            WHERE CV.name = 'sequence' and CVTS.synonym = :synonym
-            ";
-          $synonym = chado_query($sql, [':synonym' => $gff_target_type])->fetchObject();
-          if ($synonym) {
-            $t_type_id = $synonym->cvterm_id;
-          }
-          else {
-            $this->logMessage("The target_type attribute does not exist in the sequence ontology: %type.",
-              ['%type' => $gff_target_type], TRIPAL_WARNING);
-            $t_type_id = '';
-          }
-        }
-      }
-
-      // we want to add a featureloc record that uses the target feature as the srcfeature (landmark)
-      // and the landmark as the feature.
-      $this->loadFeatureLoc($feature, NULL, $target_feature, $target_fmin,
-        $target_fmax, $target_strand, NULL, NULL, NULL, NULL,
-        $attr_locgroup, $t_type_id, $t_organism_id, $create_target, TRUE);
-    }
-    // the target attribute is not correctly formatted
-    else {
-      $this->logMessage("Could not add 'Target' alignment as it is improperly formatted:  '%target'",
-        ['%target' => $tags['Target'][0]], TRIPAL_ERROR);
     }
   }
 }
