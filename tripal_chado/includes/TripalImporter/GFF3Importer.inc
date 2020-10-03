@@ -279,6 +279,11 @@ class GFF3Importer extends TripalImporter {
    */
   private $feature_cv = NULL;
 
+  /**
+   * Stores proteins
+   */
+  private $proteins = [];
+
 
   /**
    * @see TripalImporter::form()
@@ -585,7 +590,7 @@ class GFF3Importer extends TripalImporter {
 
     // Load the GFF3.
     try {
-      $this->logMessage("Step 1: Caching GFF3 file...                             ");
+      $this->logMessage("Step  1 of 26: Caching GFF3 file...                             ");
       $this->parseGFF3();
 
       // Prep the database for necessary records.
@@ -593,70 +598,90 @@ class GFF3Importer extends TripalImporter {
       $this->prepNullPub();
       $this->prepDBs();
 
-      $this->logMessage("Step 2: Insert new landmarks sequences...                  ");
+      $this->logMessage("Step  2 of 26: Find existing landmarks...                         ");
       $this->findLandmarks();
+
+      $this->logMessage("Step  3 of 26: Insert new landmarks (if needed)...                ");
       $this->insertLandmarks();
 
-      $this->logMessage("Step 3: Find existing features...                          ");
+      if (!$this->skip_protein) {
+        $this->logMessage("Step  4 of 26: Find missing proteins...                           ");
+        $this->findMissingProteins();
+
+        $this->logMessage("Step  5 of 26: Add missing proteins to list of features...        ");
+        $this->addMissingProteins();
+      }
+      else {
+        $this->logMessage("Step  4 of 26: Find missing proteins (Skipped)...                ");
+        $this->logMessage("Step  5 of 26: Add missing proteins to list of features (Skipped)...");
+      }
+
+      $this->logMessage("Step  6 of 26: Find existing features...                          ");
       $this->findFeatures();
 
-      $this->logMessage("Step 4: Prepare for any updates ...                        ");
+      $this->logMessage("Step  7 of 26: Clear attributes of existing features...            ");
       $this->deleteFeatureData();
 
-      $this->logMessage("Step 5: Processing !num_features features...               ",
-          ['!num_features' => count(array_keys($this->features))]);
+      $this->logMessage("Step  8 of 26: Processing !num_features features...               ",
+          ['!num_features' => number_format(count(array_keys($this->features)))]);
       $this->insertFeatures();
 
-      $this->logMessage("Step 6: Get new feature IDs...                             ");
+      $this->logMessage("Step  9 of 26: Get new feature IDs...                             ");
       $this->findFeatures();
 
-      $this->logMessage("Step 7: Insert locations...                                ");
+      $this->logMessage("Step 10 of 26: Insert locations...                               ");
       $this->insertFeatureLocs();
 
-      $this->logMessage("Step 8: Insert properties...                               ");
-      $this->insertFeatureProps();
+      $this->logMessage("Step 11 of 26: Associate parents and children...                 ");
+      $this->associateChildren();
 
-      $this->logMessage("Step 9: Find synonyms (aliases)...                         ");
-      $this->findSynonyms();
+      $this->logMessage("Step 12 of 26: Calculate child ranks...                          ");
+      $this->calculateChildRanks();
 
-      $this->logMessage("Step 10: Insert new synonyms (aliases)...                  ");
-      $this->insertSynonyms();
-
-      $this->logMessage("Step 11: Insert feature synonyms (aliases)...              ");
-      $this->insertFeatureSynonyms();
-
-      $this->logMessage("Step 12: Find cross references...                          ");
-      $this->findDbxrefs();
-
-      $this->logMessage("Step 13: Insert new cross references...                    ");
-      $this->insertDbxrefs();
-
-      $this->logMessage("Step 14: Get new cross references IDs...                   ");
-      $this->findDbxrefs();
-
-      $this->logMessage("Step 15: Insert feature cross references...                ");
-      $this->insertFeatureDbxrefs();
-
-      $this->logMessage("Step 16: Insert feature ontology terms...                  ");
-      $this->insertFeatureCVterms();
-
-      $this->logMessage("Step 17: Add child-parent relationships...                 ");
-      $this->findChildRanks();
+      $this->logMessage("Step 13 of 26: Add child-parent relationships...                 ");
       $this->insertFeatureParents();
 
-      $this->logMessage("Step 18: Insert 'derives_from' relationships...            ");
+      $this->logMessage("Step 14 of 26: Insert properties...                               ");
+      $this->insertFeatureProps();
+
+      $this->logMessage("Step 15 of 26: Find synonyms (aliases)...                         ");
+      $this->findSynonyms();
+
+      $this->logMessage("Step 16 of 26: Insert new synonyms (aliases)...                  ");
+      $this->insertSynonyms();
+
+      $this->logMessage("Step 17 of 26: Insert feature synonyms (aliases)...              ");
+      $this->insertFeatureSynonyms();
+
+      $this->logMessage("Step 18 of 26: Find cross references...                          ");
+      $this->findDbxrefs();
+
+      $this->logMessage("Step 19 of 26: Insert new cross references...                    ");
+      $this->insertDbxrefs();
+
+      $this->logMessage("Step 20 of 26: Get new cross references IDs...                   ");
+      $this->findDbxrefs();
+
+      $this->logMessage("Step 21 of 26: Insert feature cross references...                ");
+      $this->insertFeatureDbxrefs();
+
+      $this->logMessage("Step 22 of 26: Insert feature ontology terms...                  ");
+      $this->insertFeatureCVterms();
+
+      $this->logMessage("Step 23 of 26: Insert 'derives_from' relationships...            ");
       $this->insertFeatureDerivesFrom();
 
-      $this->logMessage("Step 19: Insert Targets...                                 ");
+      $this->logMessage("Step 24 of 26: Insert Targets...                                 ");
       $this->insertFeatureTargets();
 
-      $this->logMessage("Step 20: Associate features with analysis....              ");
+      $this->logMessage("Step 25 of 26: Associate features with analysis....              ");
       $this->insertFeatureAnalysis();
 
       if (!empty($this->residue_index)) {
-        $this->logMessage("Step 21: Adding sequences data...                ");
+        $this->logMessage("Step 26 of 26: Adding sequences data...                        ");
         $this->insertFeatureSeqs();
       }
+      $this->logMessage("Step 26 of 26: Adding sequences data (Skipped: none available)...");
     }
     // On exception, catch the error, clean up the cache file and rethrow
     catch (Exception $e) {
@@ -923,7 +948,6 @@ class GFF3Importer extends TripalImporter {
     $ret['start'] = $fmin;
     $ret['stop'] = $fmax;
 
-
     // Format the strand for chado
     if (strcmp($ret['strand'], '.') == 0) {
       $ret['strand'] = 0;
@@ -1065,7 +1089,7 @@ class GFF3Importer extends TripalImporter {
     $ret['skipped'] = FALSE;
 
     // If neither name nor uniquename are provided then generate one.
-    $names = $this->getFeatureName($tags, $ret['type'], $ret['landmark'], $fmin, $fmax);
+    $names = $this->getFeatureNames($tags, $ret['type'], $ret['landmark'], $ret['start'], $ret['stop']);
     $attr_uniquename = $names['uniquename'];
     $attr_name = $names['name'];
 
@@ -1126,7 +1150,7 @@ class GFF3Importer extends TripalImporter {
     // Add the target. If the type_id is missing then remove it and we'll
     // skip it.
     $ret['target'] = $attr_target;
-    if (!$ret['target']['type']) {
+    if (!array_key_exists('type', $ret['target']) or empty($ret['target'])) {
       $ret['target'] = [];
     }
 
@@ -1349,7 +1373,6 @@ class GFF3Importer extends TripalImporter {
       // Parse this feature from this line of the GFF3 file.
       $gff_feature = $this->parseFeature($line);
 
-
       // Add the landmark if it doesn't exist in the landmark list.
       if (!array_key_exists($gff_feature['landmark'], $this->landmarks)) {
         $this->landmarks[$gff_feature['landmark']] = FALSE;
@@ -1403,7 +1426,7 @@ class GFF3Importer extends TripalImporter {
       }
 
       // Cache the GFF feature details for later lookup.
-      if ($gff_feature['uniquename'] != $gff_feature['landmark']) {
+      if (strcmp($gff_feature['uniquename'], $gff_feature['landmark']) != 0) {
         $this->cacheFeature($gff_feature);
       }
 
@@ -1431,29 +1454,29 @@ class GFF3Importer extends TripalImporter {
       $this->getTypeID($name, TRUE);
     }
 
-    // Finally, add any protein features that need to be created.
-    $this->addProteinFeatures();
-
   }
 
   /**
-   * Checks the features and finds those that need proteins added.
+   *
    */
-  private function addProteinFeatures() {
+  private function findMissingProteins() {
+    $this->setItemsHandled(0);
+    $this->setTotalItems(count(array_keys($this->features)));
 
     // Don't do anything if the user wants to skip creation of non listed
     // proteins. Proteins that have actual lines in the GFF will still be
     // created.
     if ($this->skip_protein) {
-      $this->logMessage('  Skipping creation of non-specified proteins...');
+      $this->logMessage('  Skipping creation of non-specified proteins...            ');
       return;
     }
 
-    $proteins = [];
-
     // First, store records for which proteins need to exist. These
     // will be for any parent that has a 'CDS' or 'protein' child.
+    $i = 0;
     foreach ($this->features as $info) {
+      $i++;
+      $this->setItemsHandled($i);
       $findex = $info['findex'];
       $feature = $this->getCachedFeature($findex);
       $type = $feature['type'];
@@ -1461,21 +1484,33 @@ class GFF3Importer extends TripalImporter {
         $parent_name = $feature['parent'];
         if ($parent_name) {
           if (!array_key_exists($parent_name, $proteins)) {
-            $proteins[$parent_name] = [];
+            $this->proteins[$parent_name] = [];
           }
           if ($type == 'cds') {
-            $proteins[$parent_name]['cds'][] = $findex;
+            $this->proteins[$parent_name]['cds'][] = $findex;
           }
           if ($type == 'protein' or $type == 'polypeptide') {
-            $proteins[$parent_name]['protein'] = $findex;
+            $this->proteins[$parent_name]['protein'] = $findex;
           }
         }
       }
     }
+  }
+
+  /**
+   * Checks the features and finds those that need proteins added.
+   */
+  private function addMissingProteins() {
+    $this->setItemsHandled(0);
+    $this->setTotalItems(count(array_keys($this->proteins)));
+
 
     // Second, iterate through the protein list and for any parents that
     // don't already have a protein we need to create one.
-    foreach ($proteins as $parent_name => $info) {
+    $i = 0;
+    foreach ($this->proteins as $parent_name => $info) {
+      $i++;
+      $this->setItemsHandled($i);
 
       // Skip addition of any proteins that are already in the GFF file.
       if (array_key_exists('protein', $info)) {
@@ -1497,7 +1532,7 @@ class GFF3Importer extends TripalImporter {
           }
           if ($cds['stop'] > $stop) {
             $stop = $cds['stop'];
-            $stop_phase =  $cds['phase'];
+            $stop_phase = $cds['phase'];
           }
         }
 
@@ -1512,13 +1547,10 @@ class GFF3Importer extends TripalImporter {
 
         // Get the name for the protein
         $name = $parent_name;
+        $uname = $parent_name . '-protein';
+        // If regexes are provdied then use those to create the protein name.
         if ($this->re_mrna and $this->re_protein) {
-          // We use a regex to generate protein name from parent name
-          $uname = preg_replace("/$this->re_mrna/", $this->re_protein, $parent_name);
-        }
-        else {
-          // No regex, use the default '-protein' suffix
-          $uname = $parent_name . '-protein';
+          $uname = preg_replace("/" . $this->re_mrna . "/", $this->re_protein, $parent_name);
         }
 
         // Now create the protein feature.
@@ -1609,7 +1641,14 @@ class GFF3Importer extends TripalImporter {
    * Caches the processed feature from a GFF3 file
    */
   private function cacheFeature($gff_feature) {
+    // Make sure we're at the end of the file.
+    fseek($this->gff_cache_file, SEEK_END);
+
+    // Get the index of this location
     $findex = ftell($this->gff_cache_file);
+
+    // Write the serialied array for this feature to the cache file
+    // and save the index into the member variable.
     fwrite($this->gff_cache_file, serialize($gff_feature) . "\n");
     $this->features[$gff_feature['uniquename']]['findex'] = $findex;
     $this->features[$gff_feature['uniquename']]['feature_id'] = NULL;
@@ -1619,7 +1658,11 @@ class GFF3Importer extends TripalImporter {
    * Retrieves a feature using its index from the cache file.
    */
   private function getCachedFeature($findex) {
-    fseek($this->gff_cache_file, $findex);
+    $retval = fseek($this->gff_cache_file, $findex);
+    if ($retval == -1) {
+      throw new Exception(t('Cannot seek to file location, !findex, in cache file !file.',
+          ['!findex' => $findex, '!file' -> $this->gff_cache_file]));
+    }
     $feature = fgets($this->gff_cache_file);
     $feature = unserialize($feature);
     return $feature;
@@ -1742,12 +1785,17 @@ class GFF3Importer extends TripalImporter {
           $args = [':uniquenames' => $names];
           $results = chado_query($sql, $args);
           while ($f = $results->fetchObject()) {
-            $matched_findex = $this->features[$f->uniquename]['findex'];
-            $matched_feature = $this->getCachedFeature($matched_findex);
-            $matched_type_id = $this->feature_cvterm_lookup[$matched_feature['type']];
-            $matched_organism_id = $matched_feature['organism'] ? $matched_feature['organism'] : $this->organism->getID();
-            if ($matched_type_id == $f->type_id and $matched_organism_id == $f->organism_id) {
-              $this->features[$f->uniquename]['feature_id'] = $f->feature_id;
+            if (array_key_exists($f->uniquename, $this->features)) {
+              $matched_findex = $this->features[$f->uniquename]['findex'];
+              $matched_feature = $this->getCachedFeature($matched_findex);
+              $matched_type_id = $this->feature_cvterm_lookup[$matched_feature['type']];
+              $matched_organism_id = $this->organism->getID();
+              if ($matched_feature['organism']) {
+                $matched_organism_id = $matched_feature['organism'];
+              }
+              if ($matched_type_id == $f->type_id and $matched_organism_id == $f->organism_id) {
+                $this->features[$f->uniquename]['feature_id'] = $f->feature_id;
+              }
             }
           }
         }
@@ -1782,7 +1830,7 @@ class GFF3Importer extends TripalImporter {
     $total = 0;
     $batch_num = 1;
     $feature_ids = [];
-    foreach ($this->features as $uniquename => $info) {
+    foreach ($this->features as $info) {
       $findex = $info['findex'];
       $feature_id = $info['feature_id'];
       $feature = $this->getCachedFeature($findex);
@@ -1797,7 +1845,7 @@ class GFF3Importer extends TripalImporter {
       // If we've reached the size of the batch then let's do the insert.
       if ($i == $batch_size or $total == $num_features) {
         if (count($feature_ids) > 0) {
-          $args[':feature_ids'] = $feature_ids;
+          $args = [':feature_ids' => $feature_ids];
           chado_query($sql1, $args);
           chado_query($sql2, $args);
           chado_query($sql3, $args);
@@ -1907,7 +1955,6 @@ class GFF3Importer extends TripalImporter {
       $parent_feature_id = $this->features[$parent_uniquename]['feature_id'];
       if (!$parent_feature['skipped']) {
 
-        $rank = 0;
         foreach ($children as $child_findex) {
           $j++;
           $child_feature = $this->getCachedFeature($child_findex);
@@ -1921,8 +1968,7 @@ class GFF3Importer extends TripalImporter {
           $args[":subject_id_$j"] = $child_feature_id;
           $args[":object_id_$j"] = $parent_feature_id;
           $args[":type_id_$j"] = $type_id;
-          $args[":rank_$j"] = $rank;
-          $rank++;
+          $args[":rank_$j"] = $this->features[$child_uniquename]['rank'];
         }
       }
 
@@ -2003,21 +2049,49 @@ class GFF3Importer extends TripalImporter {
   }
 
   /**
+   *
+   */
+  private function associateChildren() {
+    $this->setItemsHandled(0);
+    $this->setTotalItems(count(array_keys($this->features)));
+
+    // Iterate through parent-child relationships and set the ranks.
+    $i = 0;
+    foreach ($this->features as $info) {
+      $i++;
+      $feature = $this->getCachedFeature($info['findex']);
+      if ($feature['parent']) {
+        // Place features in order that they appear by their start coordinates.
+        $parent = $feature['parent'];
+        $start = $feature['start'];
+        $this->parent_lookup[$parent][$start] = $info['findex'];
+      }
+      $this->setItemsHandled($i);
+    }
+  }
+
+  /**
    * Calculates ranks for all of the children of each feature.
    *
    * This function should not be executed until after features are loaded
    * into the database and we have feature_ids for all of them.
    */
-  private function findChildRanks() {
-    // Iterate through parent-child relationships and set the ranks.
-    foreach ($this->features as $uniquename => $info) {
-      $feature = $this->getCachedFeature($info['findex']);
-      if ($feature['parent']) {
-        // place features in order that they appear by their start coordinates.
-        $parent = $feature['parent'];
-        $start = $feature['start'];
-        $this->parent_lookup[$parent][$start] = $info['findex'];
+  private function calculateChildRanks() {
+
+    $this->setItemsHandled(0);
+    $this->setTotalItems(count(array_keys($this->parent_lookup)));
+    $i = 0;
+    foreach ($this->parent_lookup as $parent => $children) {
+      $starts = array_keys($children);
+      sort($starts);
+      $j = 0;
+      foreach ($starts as $start) {
+        $child_findex = $children[$start];
+        $child = $this->getCachedFeature($child_findex);
+        $this->features[$child['uniquename']]['rank'] = $j;
+        $j++;
       }
+      $this->setItemsHandled($j);
     }
   }
   /**
@@ -2388,22 +2462,7 @@ class GFF3Importer extends TripalImporter {
       $i++;
 
       // If the feature is not skipped and is not a match "target".
-      if (!$feature['skipped'] and $feature['is_target'] == FALSE) {
-
-        // Get the rank of this feature by iterating through all siblings of the
-        // parent and finding where this feature is in terms of start position.
-        $rank = 0;
-        if (array_key_exists('parent', $feature)) {
-          $children_start = $this->parent_lookup[$feature['parent']];
-          if (is_array($children_start)) {
-            foreach (array_keys($children_start) as $sib_start) {
-              if ($sib_start == $feature['start']) {
-                break;
-              }
-              $rank++;
-            }
-          }
-        }
+      if (!$feature['skipped'] and !array_key_exists('is_target', $feature)) {
 
         $sql .= "(:srcfeature_id_$i, :feature_id_$i, :fmin_$i, :fmax_$i," .
                 " :strand_$i, :phase_$i, :rank_$i),\n";
@@ -2413,7 +2472,7 @@ class GFF3Importer extends TripalImporter {
         $args[":fmax_$i"] = $feature['stop'];
         $args[":strand_$i"] = $feature['strand'];
         $args[":phase_$i"] = $feature['phase'] ? $feature['phase'] : NULL;
-        $args[":rank_$i"] = $rank;
+        $args[":rank_$i"] = 0;
       }
 
       // If we've reached the size of the batch then let's do the insert.
@@ -2647,7 +2706,7 @@ class GFF3Importer extends TripalImporter {
   }
 
   /**
-   * Determines the name for a feature using the ID and name attributes.
+   * Determines the names for a feature using the ID and name attributes.
    *
    * @param $feature_attrs
    *   The associative array of attributes for the feature.
@@ -2658,7 +2717,7 @@ class GFF3Importer extends TripalImporter {
    * @return array
    *   An associative array with 'uniquename' and 'name' keys.
    */
-  private function getFeatureName($attrs, $type, $landmark_name, $fmin, $fmax) {
+  private function getFeatureNames($attrs, $type, $landmark_name, $fmin, $fmax) {
     $uniquename = '';
     $name = '';
 

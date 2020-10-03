@@ -217,7 +217,7 @@ function tripal_run_importer_run($loader, $job) {
     $loader->run();
 
     if ($job) {
-      $job->logMessage("\nDone.\n");
+      $job->logMessage("\nDone.");
     }
 
     // Remove the temp file
@@ -225,11 +225,13 @@ function tripal_run_importer_run($loader, $job) {
       $loader->logMessage('Removing downloaded file...');
       unlink($temp);
     }
-  } catch (Exception $e) {
+  }
+  catch (Exception $e) {
     // Rollback and re-throw the error.
     $transaction->rollback();
     throw $e;
   }
+  $job->logMessage("Committing Transaction...\n");
 }
 
 /**
