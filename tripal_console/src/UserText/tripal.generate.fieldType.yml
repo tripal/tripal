@@ -1,0 +1,11 @@
+description: 'Generate Tripal 4 Field Type file following coding standards'
+option-help:
+    type-class: 'The class name for the field type (e.g. OBIOrganismItem)'
+    type-label: 'The label for the field type (e.g. Organism)'
+    type-plugin-id: 'The machine name for the field type (e.g. obi__organism)'
+    type-description: 'A short description of the type for administrators (e.g. the term description)'
+    default-widget: 'The machine name of the default widget for this field type. (e.g. obi__organism_default_widget)'
+    default-formatter: 'The machine name of the default formatter for this field type. (e.g. obi__organism_default_formatter)'
+arguments: {}
+messages:
+    success: 'Not Yet Implemented.'
