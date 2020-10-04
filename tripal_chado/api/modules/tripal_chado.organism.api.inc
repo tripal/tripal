@@ -212,7 +212,7 @@ function chado_get_organism_select_options($syncd_only = TRUE) {
 
     // Iterate through the organisms and build an array of those that are synced.
     foreach ($orgs as $org) {
-      $org_list[$org->organism_id] = chado_get_organism_scientific_name(chado_get_organism(['organism_id' => $org->organism_id], []));
+      $org_list[$org->organism_id] = chado_get_organism_scientific_name($org);
     }
   }
   else {
