@@ -85,6 +85,10 @@ PHPUnit tests will also be run in the Travis CI build.
 
 Read our [testing guidelines](https://tripal.readthedocs.io/en/latest/contributing/tests.html).
 
+# License
+
+This project lies under [GNU GENERAL PUBLIC LICENSE](https://github.com/tripal/tripal/blob/7.x-3.x/LICENSE.txt)
+
 ## Contributors
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
