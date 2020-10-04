@@ -26,8 +26,9 @@ function tripal_admin_notification_import_field($field_name_note, $bundle_id, $m
 
   if ($field_or_instance == 'field') {
     $function = $module . '_bundle_fields_info';
-    $info = $function('TripalEntity', $bundle);
-    drupal_alter('bundle_fields_info', $info, 'TripalEntity', $bundle);
+    $entity_type = 'TripalEntity';
+    $info = $function($entity_type, $bundle);
+    drupal_alter('bundle_fields_info', $info, $entity_type, $bundle);
     foreach ($info as $field_name => $details) {
       $field = field_info_field($field_name);
       if ($details['field_name'] == $field_name_note) {
@@ -45,8 +46,9 @@ function tripal_admin_notification_import_field($field_name_note, $bundle_id, $m
   else {
     if ($field_or_instance == 'instance') {
       $function = $module . '_bundle_instances_info';
-      $info = $function('TripalEntity', $bundle);
-      drupal_alter('_bundle_instances_info', $info, 'TripalEntity', $bundle);
+      $entity_type = 'TripalEntity';
+      $info = $function($entity_type, $bundle);
+      drupal_alter('_bundle_instances_info', $info, $entity_type, $bundle);
       foreach ($info as $field_name => $details) {
         if ($details['field_name'] == $field_name_note) {
           // Create the field instance.
