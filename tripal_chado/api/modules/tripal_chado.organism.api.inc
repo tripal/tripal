@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Provides API functions specifically for managing feature
+ * Provides API functions specificially for managing feature
  * records in Chado.
  */
 
@@ -9,7 +9,7 @@
  * @defgroup tripal_organism_api Chado Organism
  * @ingroup tripal_chado_api
  * @{
- * Provides API functions specifically for managing organism
+ * Provides API functions specificially for managing organism
  * records in Chado.
  * @}
  */
@@ -19,7 +19,7 @@
  *
  * @param $identifier
  *   An array with the key stating what the identifier is. Supported keys (only
- *   on of the following unique keys is required):
+ *   one of the following unique keys is required):
  *    - organism_id: the chado organism.organism_id primary key.
  *    - genus & species: the chado organism.genus field & organism.species
  *   field. There are also some specially handled keys. They are:
@@ -48,7 +48,7 @@ function chado_get_organism($identifiers, $options = []) {
 
   // Set Defaults.
   if (!isset($options['include_fk'])) {
-    // Tells chado_generate_var not to follow any foreign keys.
+    // Tells chado_generate_var to not follow any foreign keys.
     $options['include_fk'] = [];
   }
 
@@ -89,7 +89,7 @@ function chado_get_organism($identifiers, $options = []) {
   }
 
   // Else we have a simple case and we can just use chado_generate_var to get 
-  // the analysis.
+  // the organism.
   else {
 
     // Try to get the organism
@@ -118,7 +118,7 @@ function chado_get_organism($identifiers, $options = []) {
     tripal_report_error(
       'tripal_organism_api',
       TRIPAL_ERROR,
-      "chado_get_organism: chado_generate_var() failed to return a organism based on the identifiers
+      "chado_get_organism: chado_generate_var() failed to return an organism based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look
         for a chado_generate_var error for additional clues. You passed in %identifier.",
       [
@@ -150,7 +150,7 @@ function chado_get_organism_scientific_name($organism) {
   // For Chado v1.3 we have a type_id and infraspecific name.
   if (property_exists($organism, 'type_id')) {
     $rank = '';
-    // For organism objects crated using chado_generate_var.
+    // For organism objects created using chado_generate_var.
     if (is_object($organism->type_id)) {
       if ($organism->type_id) {
         $rank = $organism->type_id->name;
@@ -165,12 +165,13 @@ function chado_get_organism_scientific_name($organism) {
 
     if ($rank) {
       $rank = chado_abbreviate_infraspecific_rank($rank);
-      $name .= ' ' . $rank . ' ' . $organism->infraspecific_name;
-    }
-    else {
-      if ($organism->infraspecific_name) {
-        $name .= ' ' . $organism->infraspecific_name;
+      // rank will now be an empty string if it had been the "no_rank" cv term
+      if ($rank) {
+        $name .= ' ' . $rank;
       }
+    }
+    if ($organism->infraspecific_name) {
+      $name .= ' ' . $organism->infraspecific_name;
     }
   }
   return $name;
@@ -201,21 +202,33 @@ function chado_get_organism_select_options($syncd_only = TRUE) {
         INNER JOIN {organism} O ON O.organism_id = CO.organism_id
       ORDER BY O.genus, O.species
     ";
+    // if present in this site's version of chado, include infraspecific nomenclature in sorting
+    if (chado_column_exists('organism', 'infraspecific_name')) {
+      $sql .= ", REPLACE ((SELECT name FROM {cvterm} CVT WHERE CVT.cvterm_id = O.type_id
+                AND CVT.cv_id = (SELECT cv_id FROM {cv} WHERE name='taxonomic_rank')), 'no_rank', ''),
+                O.infraspecific_name";
+    }
     $orgs = chado_query($sql);
 
     // Iterate through the organisms and build an array of those that are synced.
     foreach ($orgs as $org) {
-      $org_list[$org->organism_id] = $org->genus . ' ' . $org->species;
+      $org_list[$org->organism_id] = chado_get_organism_scientific_name(chado_get_organism(['organism_id' => $org->organism_id], []));
     }
   }
   else {
     // use this SQL statement for getting the organisms
     $csql = "SELECT * FROM {organism} ORDER BY genus, species";
+    // if present in this site's version of chado, include infraspecific nomenclature in sorting
+    if (chado_column_exists('organism', 'infraspecific_name')) {
+      $csql .= ", REPLACE ((SELECT name FROM {cvterm} CVT WHERE CVT.cvterm_id = type_id" .
+               " AND CVT.cv_id = (SELECT cv_id FROM {cv} WHERE name='taxonomic_rank')), 'no_rank', '')," .
+               " infraspecific_name";
+    }
     $orgs = chado_query($csql);
 
     // Iterate through the organisms and build an array of those that are synced.
     foreach ($orgs as $org) {
-      $org_list[$org->organism_id] = $org->genus . ' ' . $org->species;
+      $org_list[$org->organism_id] = chado_get_organism_scientific_name(chado_get_organism(['organism_id' => $org->organism_id], []));
     }
   }
   return $org_list;
@@ -245,7 +258,7 @@ function chado_get_organism_image_url($organism) {
 
   // Look in the file_usage table of Drupal for the image file. This
   // is the current way for handling uploaded images. It allows the file to
-  // keep it's proper name and extension.
+  // keep its proper name and extension.
   $fid = db_select('file_usage', 'fu')
     ->fields('fu', ['fid'])
     ->condition('module', 'tripal_organism')
@@ -270,7 +283,7 @@ function chado_get_organism_image_url($organism) {
     return $url;
   }
 
-  // If we don't find the file using the genus ans species then look for the
+  // If we don't find the file using the genus and species then look for the
   // image with the node ID in the name. This method was used for Tripal 1.1
   // and 2.x-alpha version.
   $image_name = $nid . ".jpg";
@@ -310,8 +323,14 @@ function chado_autocomplete_organism($text) {
     $sql .= "AND lower(species) like lower(:species) ";
     $args[':species'] = $species . '%';
   }
-  $sql .= "ORDER BY genus, species ";
-  $sql .= "LIMIT 25 OFFSET 0 ";
+  $sql .= "ORDER BY genus, species";
+  // if present in this site's version of chado, include infraspecific nomenclature in sorting
+  if (chado_column_exists('organism', 'infraspecific_name')) {
+    $sql .= ", REPLACE ((SELECT name FROM {cvterm} CVT WHERE CVT.cvterm_id = type_id" .
+            " AND CVT.cv_id = (SELECT cv_id FROM {cv} WHERE name='taxonomic_rank')), 'no_rank', '')," .
+            " infraspecific_name";
+  }
+  $sql .= " LIMIT 25 OFFSET 0";
   $results = chado_query($sql, $args);
   $items = [['args' => [$sql => $args]]];
   foreach ($results as $organism) {
