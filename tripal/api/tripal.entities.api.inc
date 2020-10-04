@@ -646,6 +646,7 @@ function tripal_tripal_cron_notification() {
     foreach ($modules as $module) {
       $function = $module . '_bundle_fields_info';
       $info = $function('TripalEntity', $bundle);
+      drupal_alter('bundle_fields_info', $info, 'TripalEntity', $bundle);
       foreach ($info as $field_name => $details) {
 
         // If the field already exists then skip it.
@@ -671,6 +672,7 @@ function tripal_tripal_cron_notification() {
     foreach ($modules as $module) {
       $function = $module . '_bundle_instances_info';
       $info = $function('TripalEntity', $bundle);
+      drupal_alter('bundle_instances_info', $info, 'TripalEntity', $bundle);
       foreach ($info as $field_name => $details) {
 
         // If the field is already attached to this bundle then skip it.
