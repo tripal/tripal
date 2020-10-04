@@ -105,8 +105,12 @@ function hook_bundle_fields_info($entity_type, $bundle) {
  *
  * @param $info
  *  The fields info array for all fields.
+ * @param $bundle
+ *  The bundle content type object that the field belongs to.
+ * @param $term
+ *  The bundle type term.
  */
-function hook_bundle_fields_info_alter(&$info, $entity_type, $bundle) {
+function hook_bundle_fields_info_alter(&$info, $bundle, $term) {
 
 }
 
@@ -136,8 +140,12 @@ function hook_bundle_instances_info($entity_type, $bundle) {
  *
  * @param $info
  *  The field instance info array for all fields.
+ * @param $bundle
+ *  The bundle content type object that the field belongs to.
+ * @param $term
+ *  The bundle type term.
  */
-function hook_bundle_instances_info_alter(&$info, $entity_type, $bundle) {
+function hook_bundle_instances_info_alter(&$info, $bundle, $term) {
 
 }
 /**

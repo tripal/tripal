@@ -636,6 +636,7 @@ function tripal_tripal_cron_notification() {
   foreach ($all_bundles as $bundle_name) {
     // Get the bundle object.
     $bundle = tripal_load_bundle_entity(['name' => $bundle_name->name]);
+    $term = tripal_load_term_entity(['term_id' => $bundle->term_id]);
     if (!$bundle) {
       tripal_report_error('tripal', TRIPAL_ERROR, "Unrecognized bundle name '%bundle'.",
         ['%bundle' => $bundle_name]);
@@ -647,7 +648,7 @@ function tripal_tripal_cron_notification() {
       $function = $module . '_bundle_fields_info';
       $entity_type = 'TripalEntity';
       $info = $function($entity_type, $bundle);
-      drupal_alter('bundle_fields_info', $info, $entity_type, $bundle);
+      drupal_alter('bundle_fields_info', $info, $bundle, $term);
       foreach ($info as $field_name => $details) {
 
         // If the field already exists then skip it.
@@ -674,7 +675,7 @@ function tripal_tripal_cron_notification() {
       $function = $module . '_bundle_instances_info';
       $entity_type = 'TripalEntity';
       $info = $function($entity_type, $bundle);
-      drupal_alter('bundle_instances_info', $info, $entity_type, $bundle);
+      drupal_alter('bundle_instances_info', $info, $bundle, $term);
       foreach ($info as $field_name => $details) {
 
         // If the field is already attached to this bundle then skip it.

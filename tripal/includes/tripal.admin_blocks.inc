@@ -17,6 +17,7 @@
 function tripal_admin_notification_import_field($field_name_note, $bundle_id, $module, $field_or_instance) {
   // Get the bundle object.
   $bundle = tripal_load_bundle_entity(['name' => $bundle_id]);
+  $term = tripal_load_term_entity(['term_id' => $bundle->term_id]);
   if (!$bundle) {
     tripal_report_error('tripal', TRIPAL_ERROR, "Unrecognized bundle name '%bundle'.",
       ['%bundle' => $bundle_id]);
@@ -28,7 +29,7 @@ function tripal_admin_notification_import_field($field_name_note, $bundle_id, $m
     $function = $module . '_bundle_fields_info';
     $entity_type = 'TripalEntity';
     $info = $function($entity_type, $bundle);
-    drupal_alter('bundle_fields_info', $info, $entity_type, $bundle);
+    drupal_alter('bundle_fields_info', $info, $bundle, $term);
     foreach ($info as $field_name => $details) {
       $field = field_info_field($field_name);
       if ($details['field_name'] == $field_name_note) {
@@ -48,7 +49,7 @@ function tripal_admin_notification_import_field($field_name_note, $bundle_id, $m
       $function = $module . '_bundle_instances_info';
       $entity_type = 'TripalEntity';
       $info = $function($entity_type, $bundle);
-      drupal_alter('_bundle_instances_info', $info, $entity_type, $bundle);
+      drupal_alter('_bundle_instances_info', $info, $bundle, $term);
       foreach ($info as $field_name => $details) {
         if ($details['field_name'] == $field_name_note) {
           // Create the field instance.
