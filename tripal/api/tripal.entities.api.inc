@@ -636,12 +636,13 @@ function tripal_tripal_cron_notification() {
   foreach ($all_bundles as $bundle_name) {
     // Get the bundle object.
     $bundle = tripal_load_bundle_entity(['name' => $bundle_name->name]);
-    $term = tripal_load_term_entity(['term_id' => $bundle->term_id]);
     if (!$bundle) {
       tripal_report_error('tripal', TRIPAL_ERROR, "Unrecognized bundle name '%bundle'.",
         ['%bundle' => $bundle_name]);
       return FALSE;
     }
+    $term = tripal_load_term_entity(['term_id' => $bundle->term_id]);
+
     // Allow modules to add fields to the new bundle.
     $modules = module_implements('bundle_fields_info');
     foreach ($modules as $module) {
