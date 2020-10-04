@@ -16,7 +16,8 @@ use Drupal\Console\Extension\Manager;
 use Drupal\Console\Core\Utils\StringConverter;
 use Drupal\Console\Core\Utils\ChainQueue;
 use Drupal\Core\Field\FieldTypePluginManager;
-use \Drupal\Console\Core\Utils\TranslatorManager;
+use Drupal\Console\Core\Utils\TranslatorManager;
+use Drupal\tripal_console\Command\TripalCommand;
 
 /**
  * Class GenerateFieldTypeCommand.
@@ -26,7 +27,7 @@ use \Drupal\Console\Core\Utils\TranslatorManager;
  *     extensionType="module"
  * )
  */
-class GenerateFieldTypeCommand extends ContainerAwareCommand {
+class GenerateFieldTypeCommand extends TripalCommand {
 
   /**
    * Drupal\Console\Core\Generator\GeneratorInterface definition.
