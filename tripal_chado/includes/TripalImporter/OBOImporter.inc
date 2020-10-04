@@ -894,6 +894,10 @@ class OBOImporter extends TripalImporter {
         and array_key_exists('obo_name', $this->arguments['run_args'])) {
       $namespace = $this->arguments['run_args']['obo_name'];
     }
+    if (!$namespace and array_key_exists('run_args', $this->arguments)
+        and array_key_exists('uobo_name', $this->arguments['run_args'])) {
+      $namespace = $this->arguments['run_args']['uobo_name'];
+    }
 
     // If we can't find the namespace or the short_name then bust.
     if (!$namespace and !$short_name) {
