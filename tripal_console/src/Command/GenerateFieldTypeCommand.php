@@ -37,25 +37,12 @@ class GenerateFieldTypeCommand extends TripalCommand {
   protected $generator;
 
   /**
-   * Contains the YAML parsed output from the command-specific YAML file.
-   * @see src/UserText/[command name].yml
-   */
-  protected $user_text;
-
-  /**
-   * Contains the YAML parsed output from the common YAML file.
-   * @see src/UserText/commonText.yml
-   */
-  protected $common_text;
-
-  /**
    * Constructs a new GenerateFieldTypeCommand object.
    */
   public function __construct(GeneratorInterface $generator) {
     $this->generator = $generator;
-    $module_path = drupal_get_path('module', 'tripal_console');
 
-    $this->common_text = Yaml::parse(file_get_contents("$module_path/src/UserText/commonText.yml"));
+    $module_path = drupal_get_path('module', 'tripal_console');
     $this->user_text = Yaml::parse(file_get_contents("$module_path/src/UserText/tripal.generate.fieldType.yml"));
 
     parent::__construct();
@@ -113,17 +100,6 @@ class GenerateFieldTypeCommand extends TripalCommand {
       ->setAliases(['trpgen-fieldType']);
   }
 
-  protected function promptOption($input, $option) {
-    $optionValue = $input->getOption($option);
-    if (!$optionValue) {
-        $question = $this->user_text['option-help'][$option];
-        if (!$question) {
-          $question = $this->common_text['option-help'][$option]; }
-        $optionValue = $this->getIo()->ask($question);
-        $input->setOption($option, $optionValue);
-    }
-  }
-
   /**
    * {@inheritdoc}
    */
@@ -142,9 +118,23 @@ class GenerateFieldTypeCommand extends TripalCommand {
    * {@inheritdoc}
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    //$this->getIo()->info('execute');
-    $this->getIo()->warning('Not Yet Implemented.');
-    $this->generator->generate([]);
+
+    $summary = 'Generating files in %module for FIELD TYPE: %label (%class)...';
+    $summary = strtr($summary, [
+      '%module' => $input->getOption('module'),
+      '%label' => $input->getOption('type-label'),
+      '%class' => $input->getOption('type-class'),
+    ]);
+    $this->getIo()->info($summary);
+
+    // Now do what we said we would ;-)
+    // -- Compile our paramters:
+    $parameters = [];
+    foreach (['module', 'type-class','type-label', 'type-plugin-id','type-description','default-widget', 'default-formatter'] as $option) {
+      $twig_var = str_replace('-','_', $option);
+      $parameters[$twig_var] = $input->getOption($option);
+    }
+    $this->generator->generate($parameters);
   }
 
 }

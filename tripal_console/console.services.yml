@@ -6,6 +6,6 @@ services:
       - { name: drupal.command }
   tripal_console.tripal_generate_fieldtype_generator:
     class: Drupal\tripal_console\Generator\GenerateFieldTypeGenerator
-    arguments: []
+    arguments: ['@console.extension_manager']
     tags:
       - { name: drupal.generator }
