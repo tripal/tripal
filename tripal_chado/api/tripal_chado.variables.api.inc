@@ -791,7 +791,7 @@ function chado_expand_var($object, $type, $to_expand, $table_options = []) {
       $foreign_table = $to_expand;
 
       // BASE CASE: don't expand the table it already is expanded
-      if (array_key_exists($foreign_table, $object)) {
+      if (property_exists($object, $foreign_table)) {
         return $object;
       }
       $foreign_table_desc = chado_get_schema($foreign_table);
