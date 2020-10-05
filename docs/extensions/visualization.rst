@@ -30,6 +30,10 @@ Mainlab Tripal Data Display contains a set of Drupal/PHP templates that organize
 ND Genotypes
 -------------
 
+.. image:: https://tripal.readthedocs.io/en/7.x-3.x/_images/Tripal-Gold.png
+  :target: https://tripal.readthedocs.io/en/7.x-3.x/extensions/module_rating.html#Gold
+  :alt: Tripal Rating: Gold
+
 This module provides support and visualization of genotypic data stored in a modified GMOD Chado schema. The 3.x branch of this module represents a shift towards support for large scale genotypic datasets through backwards compatible improvements to the Chado schema including a new gathering table for genotypes (genotype_call) modeled after the Chado phenotype table, optimized queries and well-chosen indexes.
 
 `Documentation <https://nd-genotypes.readthedocs.io/en/latest/>`__
