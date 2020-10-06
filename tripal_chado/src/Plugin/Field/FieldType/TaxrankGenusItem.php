@@ -18,16 +18,16 @@ use Drupal\tripal_chado\TypedData\ChadoLinkerDataDefinition;
  *
  * @FieldType(
  *   id = "taxrank__genus",
- *   label = @Translation("Genus"),
+ *   label = @Translation("genus"),
  *   module = "tripal_chado",
  *   category = @Translation("Tripal: Chado"),
- *   description = @Translation("The genus portion of the organism scientific name."),
- *   default_widget = "taxrank__genus_widget",
- *   default_formatter = "taxrank__genus_formatter",
+ *   description = @Translation("A taxonomic category ranking below a family (or Subfamily) and above a species and generally consisting of a group of species exhibiting similar characteristics."),
+ *   default_widget = "taxrank_genus_default_widget",
+ *   default_formatter = "taxrank_genus_default_formatter",
  *   cardinality = 1,
  * )
  */
-class TaxrankGenusItem extends ChadoFieldItemBase {
+class TAXRANKGenusItem extends ChadoFieldItemBase {
 
   /**
    * {@inheritdoc}
@@ -42,19 +42,19 @@ class TaxrankGenusItem extends ChadoFieldItemBase {
 
     // -- Define the Vocabulary.
     // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
-    $settings['term_vocabulary'] = 'OBI';
+    $settings['term_vocabulary'] = 'TAXRANK';
     // The full name of the vocabulary.
-    $settings['vocab_name'] = 'Ontology for Biomedical Investigations';
+    $settings['vocab_name'] = 'Taxonomic Rank Vocabulary';
     // The description of the vocabulary.
-    $settings['vocab_description'] = 'The Ontology for Biomedical Investigations (OBI) is build in a collaborative, international effort and will serve as a resource for annotating biomedical investigations, including the study design, protocols and instrumentation used, the data generated and the types of analysis performed on the data.';
+    $settings['vocab_description'] = 'A vocabulary of taxonomic ranks (species, family, phylum, etc).';
 
     // -- Define the Vocabulary Term.
     // The name of the term.
-    $settings['term_name'] = 'organism';
+    $settings['term_name'] = 'genus';
     // The unique ID (i.e. accession) of the term.
-    $settings['term_accession'] = '0100026';
+    $settings['term_accession'] = '0000005';
     // The definition of the term.
-    $settings['term_definition'] = 'A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.';
+    $settings['term_definition'] = 'A taxonomic category ranking below a family (or Subfamily) and above a species and generally consisting of a group of species exhibiting similar characteristics.';
 
     // -- Additional Settings.
     // Set to TRUE if the site admin is not allowed to change the term
@@ -82,7 +82,7 @@ class TaxrankGenusItem extends ChadoFieldItemBase {
     // The table in Chado that the field maps to.
     $settings['chado_table'] = 'organism';
     // The column of the table in Chado where the value comes from.
-    $settings['chado_column'] = 'organism_id';
+    $settings['chado_column'] = 'genus';
     // The base table.
     $settings['base_table'] = 'organism';
 
@@ -109,83 +109,20 @@ class TaxrankGenusItem extends ChadoFieldItemBase {
 
     // The following nested data definitions describe the keys for the
     // value array and their contents. These are very important for web services.
-    // TODO: Change the values in the properties to be CV terms.
-    $properties['value']->addPropertyDefinition('scientific_name',
-      ChadoDataDefinition::create('string')
-        ->setLabel(new TranslatableMarkup('Scientific Name'))
-        ->setComputed(TRUE)
-        ->setSearchable(TRUE)
-        ->setSearchOperations(['eq', 'ne', 'contains', 'starts'])
-        ->setSortable(TRUE)
-        ->setReadOnly(TRUE)
-        ->setRequired(TRUE)
-    );
 
-    $properties['value']->addPropertyDefinition('genus',
-      ChadoDataDefinition::create('string')
-        ->setLabel(new TranslatableMarkup('Genus'))
-        ->setComputed(TRUE)
-        ->setSearchable(TRUE)
-        ->setSearchOperations(['eq', 'ne', 'contains', 'starts'])
-        ->setSortable(TRUE)
-        ->setReadOnly(FALSE)
-        ->setRequired(TRUE)
-    );
+    // ---- ADD YOUR IMPLEMENTATION HERE ----
 
-    $properties['value']->addPropertyDefinition('species',
-      ChadoDataDefinition::create('string')
-        ->setLabel(new TranslatableMarkup('Species'))
-        ->setComputed(TRUE)
-        ->setSearchable(TRUE)
-        ->setSearchOperations(['eq', 'ne', 'contains', 'starts'])
-        ->setSortable(TRUE)
-        ->setReadOnly(FALSE)
-        ->setRequired(TRUE)
-    );
-
-    $properties['value']->addPropertyDefinition('infraspecies',
-      ChadoDataDefinition::create('string')
-        ->setLabel(new TranslatableMarkup('Infraspecies'))
-        ->setComputed(TRUE)
-        ->setSearchable(TRUE)
-        ->setSearchOperations(['eq', 'ne', 'contains', 'starts'])
-        ->setSortable(TRUE)
-        ->setReadOnly(FALSE)
-        ->setRequired(FALSE)
-    );
-
-    $properties['value']->addPropertyDefinition('infraspecific_type',
-      ChadoDataDefinition::create('string')
-        ->setLabel(new TranslatableMarkup('Infraspecies Type'))
-        ->setComputed(TRUE)
-        ->setSearchable(TRUE)
-        ->setSearchOperations(['eq', 'ne', 'contains', 'starts'])
-        ->setSortable(TRUE)
-        ->setReadOnly(FALSE)
-        ->setRequired(FALSE)
-    );
-
-    $properties['value']->addPropertyDefinition('common_name',
-      ChadoDataDefinition::create('string')
-        ->setLabel(new TranslatableMarkup('Common Name'))
-        ->setComputed(TRUE)
-        ->setSearchable(TRUE)
-        ->setSearchOperations(['eq', 'ne', 'contains', 'starts'])
-        ->setSortable(TRUE)
-        ->setReadOnly(FALSE)
-        ->setRequired(FALSE)
-    );
-
-    $properties['value']->addPropertyDefinition('abbreviation',
-      ChadoDataDefinition::create('string')
-        ->setLabel(new TranslatableMarkup('Abbreviation'))
-        ->setComputed(TRUE)
-        ->setSearchable(TRUE)
-        ->setSearchOperations(['eq', 'ne', 'contains', 'starts'])
-        ->setSortable(TRUE)
-        ->setReadOnly(FALSE)
-        ->setRequired(FALSE)
-    );
+    // For Example,
+    // $properties['value']->addPropertyDefinition('scientific_name',
+    //   ChadoDataDefinition::create('string')
+    //     ->setLabel(new TranslatableMarkup('Scientific Name'))
+    //     ->setComputed(TRUE)
+    //     ->setSearchable(TRUE)
+    //     ->setSearchOperations(['eq', 'ne', 'contains', 'starts'])
+    //     ->setSortable(TRUE)
+    //     ->setReadOnly(TRUE)
+    //     ->setRequired(TRUE)
+    // );
 
     $properties['chado_schema'] = DataDefinition::create('string')
       ->setLabel(new TranslatableMarkup('Chado Schema Name'))
@@ -194,12 +131,6 @@ class TaxrankGenusItem extends ChadoFieldItemBase {
     $properties['record_id'] = DataDefinition::create('integer')
       ->setLabel(new TranslatableMarkup('Chado Record ID'))
       ->setDescription(new TranslatableMarkup('The primary key of this record in chado.'));
-
-    // @todo add back in the chado linker here.
-    // $properties['linker_field'] = ChadoLinkerDataDefinition::create('chado_linker')
-    //  ->setComputed(TRUE)
-    //  ->setReadOnly(TRUE)
-    //  ->setRequired(TRUE);
 
     return $properties;
   }
@@ -216,31 +147,14 @@ class TaxrankGenusItem extends ChadoFieldItemBase {
    */
   public function selectChadoValue($record_id) {
 
-    $orgs = chado_query('SELECT o.*, cvt.name as infraspecific_type
-      FROM {organism} o
-      LEFT JOIN {cvterm} cvt ON cvt.cvterm_id=o.type_id
-      WHERE organism_id=:id',
-      [':id' => $record_id]);
-    // @todo make sure we use the chado_schema
+    // SELECT the values from chado for the specific record passed in.
+    // For example, if this is an organism field then the record=organism_id
+    // ---- ADD YOUR IMPLEMENTATION HERE ----
 
-    // Now overwrite the old values (i.e. cache the new organism).
-    foreach ($orgs as $organism) {
-      $value = [
-        'scientific_name' => $organism->genus . ' ' . $organism->species,
-        'genus' => $organism->genus,
-        'species' => $organism->species,
-        'infraspecific' => $organism->infraspecific_name,
-        'infraspecific_type' => $organism->infraspecific_type,
-        'common_name' => $organism->common_name,
-        'abbreviation' => $organism->abbreviation,
-      ];
-      if ($organism->infraspecific_type) {
-        $value['scientific_name'] .= ' ' . $organism->infraspecific_type;
-      }
-      if ($organism->infraspecific_name) {
-        $value['scientific_name'] .= ' ' . $organism->infraspecific_name;
-      }
-    }
+    // Now compile the value array following the keys defined in
+    // the propertyDefinitions() method above.
+    $value = [];
+    // ---- ADD YOUR IMPLEMENTATION HERE ----
 
     return $value;
   }
@@ -249,22 +163,13 @@ class TaxrankGenusItem extends ChadoFieldItemBase {
    * {@inheritdoc}
    */
   public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
-
     $random = new Random();
-    $values['value'] = $random->word(mt_rand(1, 255));
-    $values['value'] = [
-      'genus' => $random->word(mt_rand(1, 255)),
-      'species' => $random->word(mt_rand(1, 255)),
-      'infraspecific' => $random->word(mt_rand(1, 255)),
-      'infraspecific_type' => $random->word(mt_rand(1, 255)),
-      'common_name' => $random->word(mt_rand(1, 255)),
-      'abbreviation' => $random->word(mt_rand(1, 255)),
-    ];
-    $values['value']['scientific_name'] = $values['value']['genus']
-      . ' ' . $values['value']['species']
-      . ' ' . $values['value']['infraspecific_type']
-      . ' ' . $values['value']['infraspecific_name'];
 
+    // Create a value array as above with the values generated using $random.
+    $values['value'] = [];
+    // ---- ADD YOUR IMPLEMENTATION HERE ----
+
+    // Don't forget to add the record_id and schema!
     $values['record_id'] = mt_rand(1, 25555);
     $values['chado_schema'] = 'chado';
 
