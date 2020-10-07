@@ -6,6 +6,10 @@ The following modules provide specialized displays for Tripal content types.
 Analyzed Phenotypes
 --------------------
 
+.. image:: https://tripal.readthedocs.io/en/7.x-3.x/_images/Tripal-Gold.png
+  :target: https://tripal.readthedocs.io/en/7.x-3.x/extensions/module_rating.html#Gold
+  :alt: Tripal Rating: Gold
+
 This module provides support and visualization for partially analyzed data stored in a modified GMOD Chado schema. It is meant to support large scale phenotypic data through backwards compatible improvements to the Chado schema including the addition of a project and stock foreign key to the existing phenotype table, optimized queries and well-chosen indexes.
 
 `Documentation <https://analyzedphenotypes.readthedocs.io/en/latest/index.html>`__
