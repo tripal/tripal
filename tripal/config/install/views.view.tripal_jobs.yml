@@ -1,12 +1,9 @@
-uuid: f8b39d35-9ac9-4d03-aa7d-507a609a3a4a
 langcode: en
 status: true
 dependencies:
   module:
     - tripal
     - user
-_core:
-  default_config_hash: oUVwWgmSF5aoj3UUJak-zqeR_II0JXTV6TSN-NPKJzw
 id: tripal_jobs
 label: 'Tripal Jobs'
 module: views
@@ -79,113 +76,17 @@ display:
           summary: ''
           description: ''
           columns:
-            job_id: job_id
-            job_name: job_name
-            submit_date: submit_date
-            start_time: start_time
-            end_time: end_time
-            nothing: nothing
             priority: priority
-            progress: progress
-            status: status
-            nothing_1: nothing_1
-            nothing_2: nothing_2
-            nothing_3: nothing_3
-            nothing_4: nothing_4
           info:
-            job_id:
-              sortable: true
-              default_sort_order: asc
-              align: ''
-              separator: ''
-              empty_column: false
-              responsive: ''
-            job_name:
-              sortable: true
-              default_sort_order: asc
-              align: ''
-              separator: ''
-              empty_column: false
-              responsive: ''
-            submit_date:
-              sortable: false
-              default_sort_order: asc
-              align: ''
-              separator: ''
-              empty_column: false
-              responsive: ''
-            start_time:
-              sortable: false
-              default_sort_order: asc
-              align: ''
-              separator: ''
-              empty_column: false
-              responsive: ''
-            end_time:
-              sortable: false
-              default_sort_order: asc
-              align: ''
-              separator: ''
-              empty_column: false
-              responsive: ''
-            nothing:
-              sortable: false
-              default_sort_order: asc
-              align: ''
-              separator: ''
-              empty_column: false
-              responsive: ''
             priority:
-              sortable: true
-              default_sort_order: asc
-              align: ''
-              separator: ''
-              empty_column: false
-              responsive: ''
-            progress:
-              sortable: true
-              default_sort_order: asc
-              align: ''
-              separator: ''
-              empty_column: false
-              responsive: ''
-            status:
-              sortable: true
-              default_sort_order: asc
-              align: ''
-              separator: ''
-              empty_column: false
-              responsive: ''
-            nothing_1:
               sortable: false
               default_sort_order: asc
               align: ''
               separator: ''
               empty_column: false
               responsive: ''
-            nothing_2:
-              sortable: false
-              default_sort_order: asc
-              align: ''
-              separator: ''
-              empty_column: false
-              responsive: ''
-            nothing_3:
-              sortable: false
-              default_sort_order: asc
-              align: ''
-              separator: ''
-              empty_column: false
-              responsive: ''
-            nothing_4:
-              sortable: false
-              default_sort_order: asc
-              align: ''
-              separator: ''
-              empty_column: false
-              responsive: ''
-          default: job_id
-          empty_table: true
+          default: '-1'
+          empty_table: false
       row:
         type: fields
       fields:
@@ -766,130 +667,7 @@ display:
           empty_zero: false
           hide_alter_empty: false
           plugin_id: custom
-      filters:
-        job_name:
-          id: job_name
-          table: tripal_jobs
-          field: job_name
-          relationship: none
-          group_type: group
-          admin_label: ''
-          operator: contains
-          value: ''
-          group: 1
-          exposed: true
-          expose:
-            operator_id: job_name_op
-            label: 'Job Name Contains'
-            description: ''
-            use_operator: false
-            operator: job_name_op
-            operator_limit_selection: false
-            operator_list: {  }
-            identifier: job_name
-            required: false
-            remember: false
-            multiple: false
-            remember_roles:
-              authenticated: authenticated
-              anonymous: '0'
-              administrator: '0'
-            placeholder: ''
-          is_grouped: false
-          group_info:
-            label: ''
-            description: ''
-            identifier: ''
-            optional: true
-            widget: select
-            multiple: false
-            remember: false
-            default_group: All
-            default_group_multiple: {  }
-            group_items: {  }
-          plugin_id: string
-        modulename:
-          id: modulename
-          table: tripal_jobs
-          field: modulename
-          relationship: none
-          group_type: group
-          admin_label: ''
-          operator: '='
-          value: ''
-          group: 1
-          exposed: true
-          expose:
-            operator_id: modulename_op
-            label: 'Submitting Module'
-            description: ''
-            use_operator: false
-            operator: modulename_op
-            operator_limit_selection: false
-            operator_list: {  }
-            identifier: modulename
-            required: false
-            remember: false
-            multiple: false
-            remember_roles:
-              authenticated: authenticated
-              anonymous: '0'
-              administrator: '0'
-            placeholder: ''
-          is_grouped: false
-          group_info:
-            label: ''
-            description: ''
-            identifier: ''
-            optional: true
-            widget: select
-            multiple: false
-            remember: false
-            default_group: All
-            default_group_multiple: {  }
-            group_items: {  }
-          plugin_id: string
-        status:
-          id: status
-          table: tripal_jobs
-          field: status
-          relationship: none
-          group_type: group
-          admin_label: ''
-          operator: '='
-          value: ''
-          group: 1
-          exposed: true
-          expose:
-            operator_id: status_op
-            label: 'Job Status'
-            description: ''
-            use_operator: false
-            operator: status_op
-            operator_limit_selection: false
-            operator_list: {  }
-            identifier: status
-            required: false
-            remember: false
-            multiple: false
-            remember_roles:
-              authenticated: authenticated
-              anonymous: '0'
-              administrator: '0'
-            placeholder: ''
-          is_grouped: false
-          group_info:
-            label: ''
-            description: ''
-            identifier: ''
-            optional: true
-            widget: select
-            multiple: false
-            remember: false
-            default_group: All
-            default_group_multiple: {  }
-            group_items: {  }
-          plugin_id: string
+      filters: {  }
       sorts: {  }
       title: 'Tripal Jobs'
       header:
@@ -915,7 +693,6 @@ display:
       max-age: -1
       contexts:
         - 'languages:language_interface'
-        - url
         - url.query_args
         - user.permissions
       tags: {  }
@@ -931,7 +708,6 @@ display:
       max-age: -1
       contexts:
         - 'languages:language_interface'
-        - url
         - url.query_args
         - user.permissions
       tags: {  }

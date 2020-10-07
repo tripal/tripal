@@ -6,3 +6,7 @@ services:
       - { name: access_check, applies_to: _tripal_access_check }
   tripal.bulkPgSchemaInstaller:
       class: Drupal\tripal\Services\bulkPgSchemaInstaller
+  tripal.job:
+      class: Drupal\tripal\Services\Tripaljob
+  tripal.jobManager:
+      class: Drupal\tripal\Servcies\TripalJobManager
