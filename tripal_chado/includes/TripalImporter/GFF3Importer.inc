@@ -980,6 +980,7 @@ class GFF3Importer extends TripalImporter {
     $attr_terms = [];
     $attr_target = [];
     foreach ($attrs as $attr) {
+      // @TODO Can we replace this with a single trim() function?
       $attr = rtrim($attr);
       $attr = ltrim($attr);
       if (strcmp($attr, '') == 0) {
@@ -1642,7 +1643,7 @@ class GFF3Importer extends TripalImporter {
    */
   private function cacheFeature($gff_feature) {
     // Make sure we're at the end of the file.
-    fseek($this->gff_cache_file, SEEK_END);
+    fseek($this->gff_cache_file, 0, SEEK_END);
 
     // Get the index of this location
     $findex = ftell($this->gff_cache_file);
@@ -1717,7 +1718,6 @@ class GFF3Importer extends TripalImporter {
       $findex = $info['findex'];
       $feature_id = $info['feature_id'];
       $feature = $this->getCachedFeature($findex);
-
       $total++;
       $i++;
 
@@ -1728,7 +1728,7 @@ class GFF3Importer extends TripalImporter {
         $sql .= "(:uniquename_$i, :name_$i, :type_id_$i, :organism_id_$i, :residues_$i, " .
                " :md5checksum_$i, :seqlen_$i, FALSE, FALSE),\n";
         $args[":uniquename_$i"] = $uniquename;
-        $args[":name_$i"] = $feature['name'];
+        $args[":name_$i"] = $feature['name'];     
         $args[":type_id_$i"] = $type_id;
         $args[":organism_id_$i"] = $feature['organism'] ? $feature['organism'] : $this->organism->getID();
         $args[":residues_$i"] = $residues;
