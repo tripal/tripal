@@ -1642,7 +1642,7 @@ class GFF3Importer extends TripalImporter {
    */
   private function cacheFeature($gff_feature) {
     // Make sure we're at the end of the file.
-    fseek($this->gff_cache_file, SEEK_END);
+    fseek($this->gff_cache_file, 0, SEEK_END);
 
     // Get the index of this location
     $findex = ftell($this->gff_cache_file);

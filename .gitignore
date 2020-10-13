@@ -10,4 +10,6 @@ docs/docs
 docs/html
 docs/latex
 docs/xml
+composer.json
+composer.lock
 
