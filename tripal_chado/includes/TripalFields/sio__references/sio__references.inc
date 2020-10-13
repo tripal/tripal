@@ -102,8 +102,15 @@ class sio__references extends ChadoField {
 
         $reference_table = $matches[1];
 
-        // Find the base table this links to and get the fk columns that map it.
+        // Get the schema for the pub linker table table.
         $schema = chado_get_schema($chado_table);
+
+        // Skip tables that don't have a foreign key definition.
+        if (!array_key_exists('foreign keys', $schema)) {
+          continue;
+        }
+
+        // Get information about the linking table.
         $fkeys = $schema['foreign keys'];
         $fkleft = NULL;
         $fkright = NULL;
@@ -165,7 +172,7 @@ class sio__references extends ChadoField {
         }
         if (!empty($entity_sql)) {
           $entity_sql = rtrim($entity_sql, " UNION ");
-          $entity_sql = ", (" . $entity_sql . ") as entity_id";
+          $entity_sql = ", (" . $entity_sql . " LIMIT 1) as entity_id";
         }
 
 
