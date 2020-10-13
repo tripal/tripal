@@ -99,17 +99,37 @@ class sio__references extends ChadoField {
     foreach ($chado_tables as $chado_table) {
       $matches = [];
       if (preg_match('/^(.+?)_pub$/', $chado_table, $matches)) {
+
         $reference_table = $matches[1];
 
         // Find the base table this links to and get the fk columns that map it.
         $schema = chado_get_schema($chado_table);
         $fkeys = $schema['foreign keys'];
+        $fkleft = NULL;
+        $fkright = NULL;
+        $islinked = FALSE;
         foreach ($fkeys as $linked_table => $fk_details) {
+          if ($linked_table == 'pub') {
+            $islinked = TRUE;
+          }
           if ($linked_table == $reference_table) {
             $fkleft = array_keys($fk_details['columns'])[0];
             $fkright = $fk_details['columns'][$fkleft];
           }
         }
+        // If this table doesn't have an FK to a reference table
+        // then it's just a table with a _pub in the name.
+        if (!$fkleft) {
+          continue;
+        }
+        // If this table does not have a FK to the pub table then
+        // we don't want to search it.
+        if (!$islinked) {
+          continue;
+        }
+
+
+        // Build the SQL to find records assocaited with this publication.
         $ref_schema = chado_get_schema($reference_table);
         $ref_pkey = $ref_schema['primary key'][0];
         $select = "SELECT REF.* ";
@@ -120,20 +140,9 @@ class sio__references extends ChadoField {
           $select .= ", CVT.name as type_name";
           $from .= "INNER JOIN {cvterm} CVT on REF.type_id = CVT.cvterm_id ";
         }
-        // Iterate through all of the records in the linker table that
-        // match the given pub ID.
-        $sql = "$select $from WHERE LINK.pub_id = :pub_id";
-        $args = [':pub_id' => $chado_record->pub_id];
-        $options = [
-          'return_array' => TRUE,
-          'include_fk' => [
-            $fkright => [
-              'type_id' => []
-            ],
-          ],
-        ];
 
-        // Get the mapping of the refrence table to a CV term.
+        // Get the mapping of the refrence table to a CV term in case the
+        // records in the table don't have a type_id.
         $ref_mapping = db_select('chado_cvterm_mapping', 'CVM')
           ->fields('CVM')
           ->condition('chado_table', $reference_table)
@@ -144,7 +153,26 @@ class sio__references extends ChadoField {
           $ref_type = chado_get_cvterm(['cvterm_id' => $ref_mapping->cvterm_id]);
         }
 
-        //$records = chado_generate_var($chado_table, ['pub_id' => $chado_record->pub_id], $options);
+        // Are the records in this table associated with a content type?
+        // if so, we want to get those types so we can find the entity ID.
+        $bundles = db_select('chado_bundle', 'CB')
+          ->fields('CB', ['bundle_id'])
+          ->condition('CB.data_table', $reference_table)
+          ->execute();
+        $entity_sql = '';
+        while ($bundle_id = $bundles->fetchField()) {
+          $entity_sql .= "SELECT entity_id FROM [chado_bio_data_" . $bundle_id . "] CBD" . $bundle_id . " WHERE record_id = LINK.$ref_pkey UNION ";
+        }
+        if (!empty($entity_sql)) {
+          $entity_sql = rtrim($entity_sql, " UNION ");
+          $entity_sql = ", (" . $entity_sql . ") as entity_id";
+        }
+
+
+        // Iterate through all of the records in the linker table that
+        // match the given pub ID.
+        $sql = "$select $entity_sql $from WHERE LINK.pub_id = :pub_id";
+        $args = [':pub_id' => $chado_record->pub_id];
         $records = chado_query($sql, $args);
         while($record = $records->fetchObject()) {
         //foreach ($records as $record) {
@@ -174,9 +202,8 @@ class sio__references extends ChadoField {
           }
 
           // If this records is also a published entity then include that.
-          $entity_id = chado_get_record_entity_by_table($reference_table, $record->$ref_pkey);
-          if ($entity_id) {
-            $entity->{$field_name}['und'][$delta]['value']['entity'] = 'TripalEntity:' . $entity_id;
+          if (property_exists($record, 'entity_id') and !empty($record->entity_id)) {
+            $entity->{$field_name}['und'][$delta]['value']['entity'] = 'TripalEntity:' . $record->entity_id;
           }
 
           // If this is the organism table then we will create the name
@@ -197,5 +224,4 @@ class sio__references extends ChadoField {
       }
     }
   }
-
 }
