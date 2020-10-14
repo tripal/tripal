@@ -399,9 +399,9 @@ class GFF3ImporterTest extends TripalTestCase {
       ->condition('type_id', $this->supercontig_cvt)
       ->execute()->fetchObject();
 
-    $this->assertEquals(1000, $scaffold->seqlen);
-    $this->assertEquals(1000, strlen($scaffold->residues));
-    $this->assertEquals('0154424abe69dd64cd428c330d480ba0', $scaffold->md5checksum);
+    $this->assertEquals(720, $scaffold->seqlen);
+    $this->assertEquals(720, strlen($scaffold->residues));
+    $this->assertEquals('83578d8afdaec399c682aa6c0ddd29c9', $scaffold->md5checksum);
   }
 
   /**
