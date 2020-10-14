@@ -1922,7 +1922,6 @@ class GFF3Importer extends TripalImporter {
         $batch_num++;
 
         // Now reset all of the varables for the next batch.
-        print_r($args);
         $sql = '';
         $i = 0;
         $j = 0;
