@@ -1154,6 +1154,15 @@ class GFF3Importer extends TripalImporter {
       $ret['target'] = [];
     }
 
+    // Make sure we only have one Gap if it exists
+    if (array_key_exists('Gap', $attr_others) and count($attr_others['Gap']) > 1) {
+      throw new Exception(t('Each feature can only have one "Gap" attribute. The feature %uniquename has more than one.',
+          [
+            '%uniquename' => $ret['uniquename'],
+          ]));
+    }
+
+
     // Add the properties and parent.
     $ret['properties'] = $attr_others;
     $ret['parent'] = $attr_parent;
