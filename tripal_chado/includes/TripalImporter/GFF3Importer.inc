@@ -1076,6 +1076,9 @@ class GFF3Importer extends TripalImporter {
               strcmp($tag_name, 'Dbxref') != 0 and strcmp($tag_name, 'Ontology_term') != 0 and
               strcmp($tag_name, 'target_organism') != 0 and strcmp($tag_name, 'target_type') != 0 and
               strcmp($tag_name, 'organism' != 0)) {
+        if (array_key_exists($tag_name, $attr_others)) {
+          $attr_others[$tag_name] = []; //Reset it so we can re-add the property
+        }
         foreach ($tags[$tag_name] as $value) {
           if (!array_key_exists($tag_name, $attr_others)) {
             $attr_others[$tag_name] = [];
@@ -1435,6 +1438,8 @@ class GFF3Importer extends TripalImporter {
       if (array_key_exists('name', $gff_feature['target'])) {
         $this->addTargetFeature($gff_feature);
       }
+
+         
     }
 
     // Make sure we have the protein term in our list.
@@ -1447,6 +1452,7 @@ class GFF3Importer extends TripalImporter {
     foreach (array_keys($feature_cvterms) as $name) {
       $this->getTypeID($name, FALSE);
     }
+
 
     // Iterate through the featureprop type terms and get a cvterm_id for
     // each. If it doesn't exist then add a new record.
@@ -1886,7 +1892,6 @@ class GFF3Importer extends TripalImporter {
       $findex = $info['findex'];
       $feature_id = $info['feature_id'];
       $feature = $this->getCachedFeature($findex);
-
       $total++;
 
       // If the feature is not skipped
@@ -1917,6 +1922,7 @@ class GFF3Importer extends TripalImporter {
         $batch_num++;
 
         // Now reset all of the varables for the next batch.
+        print_r($args);
         $sql = '';
         $i = 0;
         $j = 0;
