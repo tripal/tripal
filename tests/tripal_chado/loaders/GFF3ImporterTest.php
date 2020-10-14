@@ -339,8 +339,6 @@ class GFF3ImporterTest extends TripalTestCase {
 
     $this->assertEquals($gap_1, $gaps[$gap_1]->value);
     $this->assertEquals(0, $gaps[$gap_1]->rank);
-    $this->assertEquals($gap_2, $gaps[$gap_2]->value);
-    $this->assertEquals(1, $gaps[$gap_2]->rank);
 
     // Assert note loaded correctly
     $note = db_select('chado.featureprop', 'fp')
