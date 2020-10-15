@@ -7,7 +7,7 @@ Drupal makes it easy to change the look-and-feel of your site by providing Theme
 
 Customizing a Theme
 -------------------
-If you want to make customizations to the theme you should create your own sub theme.  A sub theme borrows from an existing **base theme** (e.g. Bartik) and allows you to make your customizations.  Thus, when updates for a theme are released you can easily upgrade your base theme without losing your changes.   To create a sub theme, follow the instructions on the `Creating a sub-theme page <https://www.drupal.org/docs/7/theming/creating-a-sub-theme>`_ on the Drupal website.  Alternatively, completely custom themes do not borrow from any other theme, you can create your own full-blown theme by following the `Themeing instructions <https://www.drupal.org/docs/7/theming>`_ at the Drupal website.
+If you want to make customizations to the theme you should create your own sub theme.  A sub theme borrows from an existing **base theme** (e.g. Bartik) and allows you to make your customizations.  Thus, when updates for a theme are released you can easily upgrade your base theme without losing your changes.   To create a sub theme, follow the instructions on the `Creating a sub-theme page <https://www.drupal.org/docs/7/theming/creating-a-sub-theme>`_ on the Drupal website.  Alternatively, completely custom themes do not borrow from any other theme, you can create your own full-blown theme by following the `Theming instructions <https://www.drupal.org/docs/7/theming>`_ at the Drupal website.
 
 .. note::
 

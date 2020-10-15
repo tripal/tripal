@@ -116,7 +116,7 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
     // If this is a numeric Drupal file then all is good, no need to check.
     if (!is_numeric($options['tree_file'])) {
       if (!file_exists($options['tree_file'])) {
-        $errors['tree_file'] = t('The file provided does not exists.');
+        $errors['tree_file'] = t('The file provided does not exist.');
         return FALSE;
       }
     }

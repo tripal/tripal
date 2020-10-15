@@ -813,7 +813,7 @@ function tripal_chado_bundle_fields_info_linker(&$info, $details, $entity_type, 
   }
 
   // RELATIONSHIPS
-  // If the linker table does not exists then we don't want to add attach.
+  // If the linker table does not exist then we don't want to add attach.
   $rel_table = $table_name . '_relationship';
   if (chado_table_exists($rel_table)) {
     $field_name = 'sbo__relationship';
@@ -1110,7 +1110,7 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
       if ($column_name == 'uniquename') {
         $base_info['label'] = 'Unique Local Identifier';
         $base_info['required'] = TRUE;
-        $base_info['description'] = 'This publication is housed in Chado whic requires a unique identifer (or name) be provided for every publication. This identifier need not be shown to end-users but it is required. Each site must decide on a format for this unique name.';
+        $base_info['description'] = 'This publication is housed in Chado which requires a unique identifer (or name) be provided for every publication. This identifier need not be shown to end-users but it is required. Each site must decide on a format for this unique name.';
       }
       if ($column_name == 'title') {
         $base_info['description'] = 'The title of the published work.';
@@ -2676,7 +2676,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
   }
 
   // RELATIONSHIPS
-  // If the linker table does not exists then we don't want to add attach.
+  // If the linker table does not exist then we don't want to add attach.
   $rel_table = $table_name . '_relationship';
   if (chado_table_exists($rel_table)) {
     $field_name = 'sbo__relationship';
