@@ -295,7 +295,7 @@ class TripalWebService {
    *   An implementation of a TripalWebServiceResource.
    */
   public function setResource($resource) {
-    // Make sure the $service provides is a TripalWebServcie class.
+    // Make sure the $service provides is a TripalWebService class.
     if (!is_a($resource, 'TripalWebServiceResource')) {
       throw new Exception("Cannot add a new resource to this web service as it is not a TripalWebServiceResource.");
     }

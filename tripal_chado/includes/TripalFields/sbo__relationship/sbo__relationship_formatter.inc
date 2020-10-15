@@ -89,7 +89,7 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
 
       // Add bold font to the object and subject names.
       // @todo add back in bolding...
-      // @todo Fix Current Bug: if type name is in the object name, wierd bolding happens.
+      // @todo Fix Current Bug: if type name is in the object name, weird bolding happens.
       // $phrase = preg_replace("/$subject_type/", "<b>$subject_type</b>", $phrase);
       // $phrase = preg_replace("/$object_type/", "<b>$object_type</b>", $phrase);
 
