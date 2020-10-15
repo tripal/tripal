@@ -95,6 +95,26 @@ function hook_bundle_fields_info($entity_type, $bundle) {
 }
 
 /**
+ * Allows a module to adjust a field's info settings.
+ *
+ * Modules should only adjust the info array for fields that
+ * they manage and not fields that were created by other modules. For example,
+ * if a field corresponds to a column in a custom table of Chado, then the
+ * tripal_chado module will automatically create a field for it. This function
+ * can be used to override the default settings created by Chado.
+ *
+ * @param $info
+ *  The fields info array for all fields.
+ * @param $bundle
+ *  The bundle content type object that the field belongs to.
+ * @param $term
+ *  The bundle type term.
+ */
+function hook_bundle_fields_info_alter(&$info, $bundle, $term) {
+
+}
+
+/**
  * Allows a module to return the field instances of a bundle.
  *
  * @param $entity_type
@@ -108,6 +128,26 @@ function hook_bundle_instances_info($entity_type, $bundle) {
 
 }
 
+
+/**
+ * Allows a module to adjust field instances info settings.
+ *
+ * Modules should only adjust the info array for field instances that
+ * they manage and not fields that were created by other modules. For example,
+ * if a field corresponds to a column in a custom table of Chado, then the
+ * tripal_chado module will automatically create a field for it. This function
+ * can be used to override the default settings created by Chado.
+ *
+ * @param $info
+ *  The field instance info array for all fields.
+ * @param $bundle
+ *  The bundle content type object that the field belongs to.
+ * @param $term
+ *  The bundle type term.
+ */
+function hook_bundle_instances_info_alter(&$info, $bundle, $term) {
+
+}
 /**
  * Indicate if a field has an empty value.
  *
