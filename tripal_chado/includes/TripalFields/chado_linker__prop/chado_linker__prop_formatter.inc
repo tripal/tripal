@@ -27,7 +27,12 @@ class chado_linker__prop_formatter extends ChadoFieldFormatter {
 
     $list = [];
     foreach ($items as $index => $item) {
-      $list[$index] = $item['value'];
+      $value = $item['value'];
+      // any URLs are made into clickable links
+      if ( preg_match('/^https?:/i', $value) ) {
+        $value = t('<a href="!url">!url</a>', ['!url' => $value]);
+      }
+      $list[$index] = $value;
     }
 
     // Also need to make sure to not return markup if the field is empty.
