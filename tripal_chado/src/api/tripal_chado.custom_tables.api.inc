@@ -83,7 +83,8 @@ $transaction = db_transaction();
 
     }
     catch (Exception $e) {
-        // TODO Catch something 
+        \Drupal::logger('tripal_chado')->error($e);
+        $transaction->rollback();
         return FALSE;
     }
 }
@@ -115,32 +116,26 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE, $mvi
     {
         tripal_report_error('trp_ctables', TRIPAL_ERROR,
             'Please provide a value for the $table argument to the chado_create_custom_table() function');
-        echo "bad1\n";
             return FALSE;
     }
     if (!$schema) {
         tripal_report_error('trp_ctables', TRIPAL_ERROR,
             'Please provide a value for the $schema argument to the chado_create_custom_table() function');
-            echo "bad2\n";
             return FALSE;
     }
     if ($schema and !is_array($schema)) {
         tripal_report_error('trp_ctables', TRIPAL_ERROR,
             'Please provide an array for the $schema argument to the chado_create_custom_table() function');
-            echo "bad3\n";
             return FALSE;
     }
 
-    // Meat and potatoes PUMPKIN
     $created = 0;
     $recreated = 0;
 
     $chado_schema = chado_get_schema_name('chado'); // Todo - is this really how we want to get the schema name? 
                                                     // Does not seem like it would work with multi-chado instances.
     $chado_dot = $chado_schema . '.';
-    // Get a database connection object PUMPKIN
     $connection = \Drupal::database();
-    // Initiate a transaction as per docs PUMPKIN
     $transaction = $connection->startTransaction();
     try {
         // See if the table already exists
@@ -156,7 +151,6 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE, $mvi
         
         // Create the table if it doesn't exist.
         if (!$table_exists) {
-            echo "Table doesn't exist, trying to create...\n";
             $connection->schema()->createTable($chado_dot . $table, $schema);
             $created = 1;
         }
@@ -175,7 +169,6 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE, $mvi
 
         // Add this table to tripal_custom_tables, dropping and re-adding if necessary
         if ($centry) {
-            echo "Table was already listed. Dropping...\n";
             $connection->delete('tripal_custom_tables')
                         ->condition('table_name',$table)
                         ->execute();
@@ -191,12 +184,9 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE, $mvi
             ->execute();
                     
     } catch (Exception $e) {
-        echo "You done did it wrong\n"; // Pumpkin - better error text
         $transaction->rollback();
 
-        // PUMPKIN
-        // Don't use watchdog! use logger  https://drupalize.me/blog/201510/how-log-messages-drupal-8
-        watchdog_exception('type', $e);
+        \Drupal::logger('tripal_chado')->error($e);
     }
     
     return $created;
@@ -345,7 +335,6 @@ function chado_delete_custom_table($table_id) {
         
         // Don't delete if this table is a materialized view 
         if($table_details->mview_id) {
-            echo "mview detected\n";
             tripal_report_error('tripal_chado', TRIPAL_ERROR, "Please use the chado_delete_mview() function to delete this custom table as it is a materialized view. Table not deleted.", []);
             //drupal_set_message("This custom table is a materialized view. Please use the " . l('Materialized View', 'admin/tripal/storage/chado/mviews') . " interface to delete it.", 'error');
             //return FALSE;
@@ -360,7 +349,8 @@ function chado_delete_custom_table($table_id) {
         // Return errors if the table doesn't exist (either in
         // tripal_custom_tables or in the database itself).
         if (!$table_details OR !$table_exists) {
-            echo "That table is either not listed in the tripal_custom_tables table or it doesn't exist in the database.\n";
+            $message = "The table " . $table_details->table_name . " is either not listed in the tripal_custom_tables table or it doesn't exist in the database.\n";
+            \Drupal::logger('tripal_chado')->notice($message);
             return FALSE;
         }
 
@@ -370,124 +360,14 @@ function chado_delete_custom_table($table_id) {
             ->execute();
         // Drop the table from Chado (checking if it exists)
         $deleted = $connection->schema()->dropTable($chado_dot . $table_details->table_name);
-        
-        echo "Delisted: " . $delisted . "\n";
-        echo "Deleted:  " . $deleted  . "\n";
-        
-    } catch (Exception $e) {
-
-    }
-}
-
-// PUMPKIN
-function ftest() {
-    // Practice using new Drupal::database() API
-
-    /*\Drupal::database()->insert('ferris_is_dumb')
-        ->fields(array('first' => 'helldo'))
-        ->execute();
-    */
-
-    // Some basic select
-    /*
-    $connection = \Drupal::database();
-    $transaction = $connection->startTransaction();
-    try {
-        $id = $connection->select('ferris_is_dumb','f')
-        ->fields('f',
-            array(
-                'first',
-                'second',
-                'third'
-                )
-            )
-        ->execute();
-        while ($id) {
-            print_r($id->fetchObject());
+        if ($delisted AND $deleted) {
+            return TRUE;
         }
+        else {
+            \Drupal::logger('tripal_chado')->error('Could not delete the ". $table_details->table_name ." table');
+        }
+        
     } catch (Exception $e) {
-        echo "You borked it!\n";
-        $transaction
-            ->rollBack();
-        watchdog_exception('type', $e);
+        tripal_set_message($e,TRIPAL_WARNING);
     }
-    */
-
-    $schema = array(
-        'table'  => 'derp2',
-        'fields' => array(
-            'derp_id' => array (
-                'type'      => 'serial',
-                'not null'  => true,
-            ),
-            'derp_name' => array (
-                'type'      => 'int',
-                'not null'  => true,
-            ),
-            'derp_amount' => array (
-                'type'      => 'int',
-                'not null'  => false,
-            ),
-        ),
-    );
-    /**
-     * Test chado_create_custom_table
-     */
-    /*
-    $created = chado_create_custom_table('derp2',$schema,FALSE);
-    echo "Created: " . $created . "\n";
-    echo "Created type: " . gettype($created) . "\n";
-    */
-    # Create a table with an mview_id
-    //$created = chado_create_custom_table('derp3',$schema,TRUE,3,TRUE);
-
-    /**
-     * Test chado_validate_custom_table_schema()
-     */
-    /*$valid = chado_validate_custom_table_schema($schema);
-    echo "Valid: " . $valid . "\n";
-    */
-
-    /**
-     * Test chado_get_custom_table_id()
-     */
-    // $id = chado_get_custom_table_id('derdp');
-
-    /**
-     * Test chado_get_custom_table_names()
-     */
-    // $names = chado_get_custom_table_names();
-    // print_r($names);
-
-    /**
-     * Test chado_delete_custom_table()
-     */
-    $delete = chado_delete_custom_table(9);
-}
-
-function quick_delete($table_id)
-{
-    $delete = chado_delete_custom_table($table_id);
-}
-function quick_add()
-{
-    $schema = array(
-        'table'  => 'derp2',
-        'fields' => array(
-            'derp_id' => array (
-                'type'      => 'serial',
-                'not null'  => true,
-            ),
-            'derp_name' => array (
-                'type'      => 'int',
-                'not null'  => true,
-            ),
-            'derp_amount' => array (
-                'type'      => 'int',
-                'not null'  => false,
-            ),
-        ),
-    );
-
-    $created = chado_create_custom_table('derp2',$schema,FALSE);
 }
