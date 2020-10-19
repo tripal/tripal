@@ -30,7 +30,7 @@ class chado_linker__prop_formatter extends ChadoFieldFormatter {
       $value = $item['value'];
       // any URLs are made into clickable links
       if ( preg_match('/^https?:/i', $value) ) {
-        $value = t('<a href="!url">!url</a>', ['!url' => $value]);
+        $value = l($value, $value, ['external' => 'TRUE', 'attributes' => ['target' => '_blank']]);
       }
       $list[$index] = $value;
     }
