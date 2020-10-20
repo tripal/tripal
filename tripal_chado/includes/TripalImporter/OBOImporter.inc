@@ -160,6 +160,15 @@ class OBOImporter extends TripalImporter {
    */
   private $default_namespace = '';
 
+
+  /**
+   * Holds the idspace elements from the header. These will correspond
+   * to individual CVs that many belong to the same namespace. For
+   * example, the EDAM vocabulary has a namespace of EDAM but several
+   * id spaces: format, data, operation and topic.
+   */
+  private $idspaces = [];
+
   /**
    * The default database prefix for this ontology.
    *
@@ -841,16 +850,44 @@ class OBOImporter extends TripalImporter {
   private function setDefaults($header) {
     $short_name = '';
     $namespace = '';
+    $idspaces = [];
 
     // Get the 'ontology' and 'default-namespace' headers.  Unfortunately,
     // not all OBO files contain these.
     if (array_key_exists('ontology', $header)) {
-      $short_name = strtoupper($header['ontology'][0]);
+      $ontology = strtoupper($header['ontology'][0]);
+      // Unfortunately, not all OBO files use the headers in the same way.
+      // GO uses 'ontology' correctly to set the default short name (or idspace)
+      // of the controlled vocabulary but EDAM uses a URL.
+      // So we'll hard code a fix for EDAM.
+      if (preg_match('/^\w+$/', $ontology)) {
+        $short_name = $ontology;
+      }
+      if (preg_match('/edamontology\.org/i', $ontology)) {
+        $namespace = 'EDAM';
+        $short_name = 'EDAM';
+      }
     }
     if (array_key_exists('default-namespace', $header)) {
       $namespace = $header['default-namespace'][0];
     }
-
+    if (array_key_exists('idspace', $header)) {
+      $matches = [];
+      foreach ($header['idspace'] as $idspace) {
+        if (preg_match('/^(.*?)\s+(.*?)\s+"(.*)"$/', $idspace, $matches)) {
+          $idname = $matches[1];
+          $idname = preg_replace('/^EDAM_/', '', $idname);
+          $idspaces[$idname]['url'] = $matches[2];
+          $idspaces[$idname]['description'] = $matches[3];
+        }
+        elseif (preg_match('/^(.*?)\s+(.*?)$/', $idspace, $matches)) {
+          $idname = $matches[1];
+          $idname = preg_replace('/^EDAM_/', '', $idname);
+          $idspaces[$idname]['url'] = $matches[2];
+          $idspaces[$idname]['description'] = '';
+        }
+      }
+    }
     // The OBO specification allows the 'ontology' header tag to be nested for
     // subsets (e.g. go/subsets/goslim_plant).  We need to simplify that down
     // to the top-level item.
@@ -890,7 +927,7 @@ class OBOImporter extends TripalImporter {
 
     // If we can't find the namespace or the short_name then bust.
     if (!$namespace and !$short_name) {
-      throw new ErrorException('Cannot determine the namespace or ontology prefix from this OBO file. It is missing both the "default-namespace" and "ontology" headers.');
+      throw new ErrorException('Cannot determine the namespace or ontology prefix from this OBO file. It is missing both the "default-namespace" or a compatible "ontology" header.');
     }
 
     // Set the defaults.
@@ -899,8 +936,13 @@ class OBOImporter extends TripalImporter {
     $this->addDB($this->default_db);
     $cv = $this->addCV($this->default_namespace);
     $this->obo_namespaces[$namespace] = $cv->cv_id;
+    $this->idspaces = $idspaces;
 
-
+    // Add a new database for each idspace and associate it with the
+    // default CV.
+    foreach ($idspaces as $shortname => $idspace) {
+      $this->addDB($shortname, $idspace['url'], $idspace['description']);
+    }
   }
 
   /**
@@ -1774,7 +1816,8 @@ class OBOImporter extends TripalImporter {
       $accession = $matches[2];
 
       // If the term is borrowed then let's try to deal with it.
-      if ($short_name != $this->default_db) {
+      $idspaces = array_keys($this->idspaces);
+      if ($short_name != $this->default_db and !in_array($short_name, $idspaces)) {
 
         // First try to lookup the term and replace the stanza with the updated
         // details.
@@ -2069,6 +2112,11 @@ class OBOImporter extends TripalImporter {
 
           // If this term has a namespace then we want to keep track of it.
           if (array_key_exists('namespace', $stanza)) {
+            // Fix the namespace for EDAM terms so they all use the same
+            // namespacke (i.e. cv record).
+            if ($this->default_namespace == 'EDAM') {
+              $stanza['namespace'][0] = 'EDAM';
+            }
             $namespace = $stanza['namespace'][0];
             $cv = $this->all_cvs[$namespace];
             $this->obo_namespaces[$namespace] = $cv->cv_id;
@@ -2093,6 +2141,11 @@ class OBOImporter extends TripalImporter {
         $stanza = [];
         continue;
       }
+
+      // For EDAM, we have to unfortuantely hard-code a fix as the
+      // short names of terms are correct.
+      $line = preg_replace('/EDAM_(.+?):(.+?)/', '/\1:\2', $line);
+
 
       // break apart the line into the tag and value but ignore any escaped colons
       preg_replace("/\\:/", "|-|-|", $line); // temporarily replace escaped colons
@@ -2247,7 +2300,7 @@ class OBOImporter extends TripalImporter {
    * @return
    *   A Chado database object.
    */
-  private function addDB($dbname) {
+  private function addDB($dbname, $url = '',  $description = '') {
     // Add the database if it doesn't exist.
     $db = NULL;
     if (array_key_exists($dbname, $this->all_dbs)) {
@@ -2256,7 +2309,14 @@ class OBOImporter extends TripalImporter {
     else {
       // If it's not in the cache we can assume it doesn't exist and insert.
       $db = new ChadoRecord('db');
-      $db->setValues(['name' => $dbname]);
+      $values = ['name' => $dbname];
+      if ($url) {
+        $values['url'] = $url;
+      }
+      if ($description) {
+        $values['description'] = $description;
+      }
+      $db->setValues($values);
       $db->insert();
       $db = (object) $db->getValues();
       $this->all_dbs[$dbname] = $db;
@@ -2331,7 +2391,9 @@ class OBOImporter extends TripalImporter {
     }
 
     if (!$accession) {
-      throw new Exception("Cannot add an Alt ID without an accession: '$alt_id'");
+      $this->logMessage("Cannot add an Alt ID without an accession: '!alt_id'", ['!alt_id' => $alt_id]);
+      return;
+      //throw new Exception("Cannot add an Alt ID without an accession: '$alt_id'");
     }
 
     // Add the database if it doesn't exist.
