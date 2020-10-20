@@ -934,8 +934,7 @@ class OBOImporter extends TripalImporter {
     $this->obo_namespaces[$namespace] = $cv->cv_id;
     $this->idspaces = $idspaces;
 
-    // Add a new database for each idspace and associate it with the
-    // default CV.
+    // Add a new database for each idspace.
     foreach ($idspaces as $shortname => $idspace) {
       $this->addDB($shortname, $idspace['url'], $idspace['description']);
     }
