@@ -19,8 +19,8 @@ Welcome to the home of Tripal Development! If you are thinking to yourself "What
 
  # Resources
 
-  - For information on **how to use Tripal** through the Administrative Interface: [Tripal Users Guide](https://tripal.readthedocs.io/en/latest/user_guide.html)
-  - For help **extending Tripal** or understanding how it works: [Tripal Developers Guide](https://tripal.readthedocs.io/en/latest/dev_guide.html)
+  - For information on **how to use Tripal** through the Administrative Interface: [Tripal Users Guide](https://tripal.readthedocs.io/en/latest/user_guide.html).
+  - For help **extending Tripal** or understanding how it works: [Tripal Developers Guide](https://tripal.readthedocs.io/en/latest/dev_guide.html).
   - To check if another group already developed the functionality you need: [Listing of **Available Extension Modules**](https://tripal.readthedocs.io/en/latest/extensions.html)
   - Tripal is developed by a world-wide community! See the [description of our **Governance Structure**](https://tripal.readthedocs.io/en/latest/contributing/governance.html)
   - If you are the head of a research group looking to fund Tripal Development: [Guide to **Funding Proposal** Development](https://tripal.readthedocs.io/en/latest/contributing/funding.html)
