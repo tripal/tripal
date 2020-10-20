@@ -163,9 +163,9 @@ class OBOImporter extends TripalImporter {
 
   /**
    * Holds the idspace elements from the header. These will correspond
-   * to individual CVs that many belong to the same namespace. For
-   * example, the EDAM vocabulary has a namespace of EDAM but several
-   * id spaces: format, data, operation and topic.
+   * to the accession prefixes, or short names (e.g. GO) for the terms. For
+   * example, the EDAM vocabulary has several id spaces:
+   * format, data, operation and topic.
    */
   private $idspaces = [];
 
