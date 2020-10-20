@@ -874,17 +874,13 @@ class OBOImporter extends TripalImporter {
     if (array_key_exists('idspace', $header)) {
       $matches = [];
       foreach ($header['idspace'] as $idspace) {
-        if (preg_match('/^(.*?)\s+(.*?)\s+"(.*)"$/', $idspace, $matches)) {
-          $idname = $matches[1];
-          $idname = preg_replace('/^EDAM_/', '', $idname);
-          $idspaces[$idname]['url'] = $matches[2];
-          $idspaces[$idname]['description'] = $matches[3];
+        if (preg_match('/^(.+?)\s+(.+?)\s+"(.+)"$/', $idspace, $matches)) {
+          $idspaces[$matches[1]]['url'] = $matches[2];
+          $idspaces[$matches[1]]['description'] = $matches[3];
         }
-        elseif (preg_match('/^(.*?)\s+(.*?)$/', $idspace, $matches)) {
-          $idname = $matches[1];
-          $idname = preg_replace('/^EDAM_/', '', $idname);
-          $idspaces[$idname]['url'] = $matches[2];
-          $idspaces[$idname]['description'] = '';
+        elseif (preg_match('/^(.+?)\s+(.+?)$/', $idspace, $matches)) {
+          $idspaces[$matches[1]]['url'] = $matches[2];
+          $idspaces[$matches[1]]['description'] = '';
         }
       }
     }
@@ -2144,7 +2140,7 @@ class OBOImporter extends TripalImporter {
 
       // For EDAM, we have to unfortuantely hard-code a fix as the
       // short names of terms are correct.
-      $line = preg_replace('/EDAM_(.+?):(.+?)/', '/\1:\2', $line);
+      $line = preg_replace('/EDAM_(\w+)/', '\1', $line);
 
 
       // break apart the line into the tag and value but ignore any escaped colons
