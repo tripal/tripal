@@ -21,9 +21,9 @@ Welcome to the home of Tripal Development! If you are thinking to yourself "What
 
   - For information on **how to use Tripal** through the Administrative Interface: [Tripal Users Guide](https://tripal.readthedocs.io/en/latest/user_guide.html)
   - For help **extending Tripal** or understanding how it works: [Tripal Developers Guide](https://tripal.readthedocs.io/en/latest/dev_guide.html)
-  - To check if another group already developed the functionality you need: [Listing of **Available Extension Modules**](https://tripal.readthedocs.io/en/latest/extensions.html)
-  - Tripal is developed by a world-wide community! See the [description of our **Governance Structure**](https://tripal.readthedocs.io/en/latest/contributing/governance.html)
-  - If you are the head of a research group looking to fund Tripal Development: [Guide to **Funding Proposal** Development](https://tripal.readthedocs.io/en/latest/contributing/funding.html)
+  - To check if another group already developed the functionality you need: [Listing of **Available Extension Modules**](https://tripal.readthedocs.io/en/latest/extensions.html).
+  - Tripal is developed by a world-wide community! See the [description of our **Governance Structure**](https://tripal.readthedocs.io/en/latest/contributing/governance.html).
+  - If you are the head of a research group looking to fund Tripal Development: [Guide to **Funding Proposal** Development](https://tripal.readthedocs.io/en/latest/contributing/funding.html).
   - For how to **install Tripal**, follow the instructions in the online Tripal User's Guide for [Tripal v2](https://tripal.info/tutorials/v2.x/installation) or [Tripal v3](https://tripal.readthedocs.io/en/latest/user_guide.html).
   - For how to **upgrade from Tripal 2 to Tripal 3**, follow the [Upgrade Instructions](https://tripal.readthedocs.io/en/latest/user_guide/install_tripal/upgrade_from_tripal2.html) in the Tripal v3 User's Guide.
 
