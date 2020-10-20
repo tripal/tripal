@@ -197,7 +197,7 @@ function chado_add_index($table, $name, $fields, $chado_schema = NULL) {
  *
  * @ingroup tripal_chado_schema_api
  */
-function chado_dbschema_exists($schema) {
+function chado_dbschema_exists($chado_schema) {
 
   // Retrieve the default name of the chado schema if it's not provided.
   if ($chado_schema === NULL) {
@@ -226,7 +226,21 @@ function chado_get_schema_name($schema = 'chado') {
 
   // First we will set our default. This is what will be returned in most cases.
   if ($schema == 'chado') {
-    $schema_name = 'chado';
+
+    // Currently we just return a random version of chado.
+    $installed = chado_get_installed_schemas();
+    if (is_array($installed) && !empty($installed)) {
+      $chadodefn = array_shift($installed);
+      if (is_object($chadodefn) && isset($chadodefn->schema_name)) {
+        $schema_name = $chadodefn->schema_name;
+      }
+      else {
+        $schema_name = 'chado';
+      }
+    }
+    else {
+      $schema_name = 'chado';
+    }
   }
   else {
     $schema_name = 'public';
