@@ -59,3 +59,11 @@ This module provides additional fields for use with Tripal 3. The current versio
 
 `Documentation <https://github.com/tripal/trpfancy_fields/blob/master/README.md>`__
 `Repository <https://github.com/tripal/trpfancy_fields>`__
+
+TripalMap
+-----------
+
+TripalMap MapViewer module displays map data stored in Chado. MapViewer provides interfaces to view all linkage groups of a map, choose a linkage group and zoom in to a specific region of a linkage group, compare maps that share the same markers and change colors of markers/QTL. The interface can be integrated into Tripal map page and hyperlinked to/from any Tripal page that are displayed in maps (marker, QTL, heritable morphological marker and/or gene). The admin page allows site developers some flexibility in the display pattern.
+
+`Documentation <https://gitlab.com/mainlabwsu/tripal_map/blob/master/README.md>`__
+`Repository <https://gitlab.com/mainlabwsu/tripal_map>`__
