@@ -5,3 +5,13 @@ field.widget.settings.obi__organism_default_widget:
     placeholder:
       type: textfield
       label: 'Placeholder'
+field.widget.settings.NCIT__metadata_default_widget:
+  type: mapping
+  label: 'NCIT__metadata_default_widget widget settings'
+  mapping:
+    size:
+      type: integer
+      label: 'Size'
+    placeholder:
+      type: textfield
+      label: 'Placeholder'
