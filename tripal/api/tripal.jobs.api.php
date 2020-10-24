@@ -1,5 +1,7 @@
 <?php
 
+use Drupal\Core\Link;
+use Drupal\Core\Url;
 use Drupal\tripal\Services\TripalJob;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
@@ -85,7 +87,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid,
                         $priority = 10, $includes = [], $ignore_duplicate = FALSE) {
 
-  $user = user_load($uid);
+  $user = \Drupal\user\Entity\User::load($uid);
 
   try {
     $job = new TripalJob();
@@ -107,10 +109,9 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid,
 
       // If this is the Tripal admin user then give a bit more information
       // about how to run the job.
-      if (user_access('administer tripal')) {
-        $jobs_url = url("admin/tripal/tripal_jobs");
-        drupal_set_message(t("Check the <a href='!jobs_url'>jobs page</a> for status.",
-          ['!jobs_url' => $jobs_url]));
+      if ($user->hasPermission('administer tripal')) {
+        $jobs_url = Link::fromTextAndUrl('jobs page', Url::fromUri('internal:/admin/tripal/tripal_jobs'))->toString();
+        drupal_set_message(t("Check the @jobs_url for status.", ['@jobs_url' => $jobs_url]));
         drupal_set_message(t("You can execute the job queue manually on the command line " .
           "using the following Drush command: <br>drush trp-run-jobs --username=%uname --root=%base_path",
           ['%base_path' => DRUPAL_ROOT, '%uname' => $user->name]));
@@ -120,7 +121,8 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid,
       drupal_set_message(t("Job '%job_name' already exists in the queue and was not re-submitted.", ['%job_name' => $job_name]), 'warning');
     }
     return $job->getJobID();
-  } catch (Exception $e) {
+  }
+  catch (Exception $e) {
     tripal_report_error('tripal', TRIPAL_ERROR, $e->getMessage());
     drupal_set_message($e->getMessage(), 'error');
     return FALSE;
@@ -169,10 +171,13 @@ function tripal_is_job_running() {
   // and see if it is still running. If it is not
   // running but does not have an end_time then
   // set the end time and set the status to 'Error'
-  $sql = "SELECT * FROM {tripal_jobs} TJ " .
-    "WHERE TJ.end_time IS NULL and NOT TJ.start_time IS NULL ";
-  $jobs = db_query($sql);
-  foreach ($jobs as $job) {
+  $sql = "
+    SELECT * FROM {tripal_jobs} TJ
+    WHERE TJ.end_time IS NULL and NOT TJ.start_time IS NULL
+  ";
+  $database = \Drupal::database();
+  $query = $database->query($sql);
+  while($job = $query->fetchObject()) {
     $status = shell_exec('ps -p ' . escapeshellarg($job->pid) . ' -o pid=');
     if ($job->pid && $status) {
       // the job is still running so let it go
@@ -181,12 +186,15 @@ function tripal_is_job_running() {
     }
     else {
       // the job is not running so terminate it
-      $record = new stdClass();
-      $record->job_id = $job->job_id;
-      $record->end_time = time();
-      $record->status = 'Error';
-      $record->error_msg = 'Job has terminated unexpectedly.';
-      drupal_write_record('tripal_jobs', $record, 'job_id');
+      $database = \Drupal::database();
+      $database->update('tripal_jobs')
+        ->fields([
+          'end_time' => time(),
+          'status' => 'Error',
+          'error_msg' => 'Job has terminated unexpectedly.',
+        ])
+        ->condition('job_id', $job->job_id)
+        ->execute();
     }
   }
 
@@ -213,23 +221,28 @@ function tripal_max_jobs_exceeded($max_jobs) {
   // Iterate through each job that has not ended and see if it is still running.
   // If it is not running but does not have an end_time then set the end time
   // and set the status to 'Error'
-  $sql = "SELECT * FROM {tripal_jobs} TJ " .
-    "WHERE TJ.end_time IS NULL and NOT TJ.start_time IS NULL ";
-  $jobs = db_query($sql);
-  foreach ($jobs as $job) {
+  $sql = "
+    SELECT * FROM {tripal_jobs} TJ
+    WHERE TJ.end_time IS NULL and NOT TJ.start_time IS NULL
+  ";
+  $database = \Drupal::database();
+  $query = $database->query($sql);
+  while ($job = $query->fetchObject()) {
     $status = shell_exec('ps -p ' . escapeshellarg($job->pid) . ' -o pid=');
     if ($job->pid && $status) {
       // the job is still running
       $num_jobs_running++;
     }
     else {
-      // the job is not running so terminate it
-      $record = new stdClass();
-      $record->job_id = $job->job_id;
-      $record->end_time = time();
-      $record->status = 'Error';
-      $record->error_msg = 'Job has terminated unexpectedly.';
-      drupal_write_record('tripal_jobs', $record, 'job_id');
+      $database = \Drupal::database();
+      $database->update('tripal_jobs')
+      ->fields([
+        'end_time' => time(),
+        'status' => 'Error',
+        'error_msg' => 'Job has terminated unexpectedly.',
+      ])
+      ->condition('job_id', $job->job_id)
+      ->execute();
     }
   }
 
@@ -248,9 +261,9 @@ function tripal_max_jobs_exceeded($max_jobs) {
  * @ingroup tripal_jobs_api
  */
 function tripal_rerun_job($job_id, $goto_jobs_page = TRUE) {
-  global $user;
 
-  $user_id = $user->uid;
+  $current_user = \Drupal::currentUser();
+  $user_id = $current_user->id();
 
   $job = new TripalJob();
   $job->load($job_id);
@@ -269,6 +282,7 @@ function tripal_rerun_job($job_id, $goto_jobs_page = TRUE) {
       'priority' => $job->getPriority(),
       'includes' => $includes,
     ]);
+
     // If no exceptions were thrown then we know the creation worked.  So
     // let the user know!
     drupal_set_message(t("Job '%job_name' submitted.", ['%job_name' => $job->getJobName()]));
@@ -276,9 +290,8 @@ function tripal_rerun_job($job_id, $goto_jobs_page = TRUE) {
     // If this is the Tripal admin user then give a bit more information
     // about how to run the job.
     if (user_access('administer tripal')) {
-      $jobs_url = url("admin/tripal/tripal_jobs");
-      drupal_set_message(t("Check the <a href='!jobs_url'>jobs page</a> for status.",
-        ['!jobs_url' => $jobs_url]));
+      $jobs_url = Link::fromTextAndUrl('jobs page', Url::fromUri('internal:/admin/tripal/tripal_jobs'))->toString();
+      drupal_set_message(t("Check the @jobs_url for status.", ['@jobs_url' => $jobs_url]));
       drupal_set_message(t("You can execute the job queue manually on the command line " .
         "using the following Drush command: <br>drush trp-run-jobs --username=%uname --root=%base_path",
         ['%base_path' => DRUPAL_ROOT, '%uname' => $user->name]));
@@ -379,7 +392,8 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL, $max_jobs = -1, $si
         TJ.job_id = :job_id
       ORDER BY priority ASC, job_id ASC
     ";
-    $jobs = db_query($sql, [':job_id' => $job_id]);
+    $database = \Drupal::database();
+    $query = $database->query($sql, [':job_id' => $job_id]);
   }
   else {
     $sql = "
@@ -391,13 +405,11 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL, $max_jobs = -1, $si
         NOT TJ.status = 'Cancelled'
       ORDER BY priority ASC,job_id ASC
     ";
-    $jobs = db_query($sql);
-  }
-  if ($jobs) {
-    print date('Y-m-d H:i:s') . ": There are " . $jobs->rowCount() . " jobs queued.\n";
+    $database = \Drupal::database();
+    $query = $database->query($sql);
   }
 
-  foreach ($jobs as $jid) {
+  while ($jid = $query->fetchObject()) {
 
     $job_id = $jid->job_id;
 
@@ -424,6 +436,7 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL, $max_jobs = -1, $si
 
     // Run the job
     $callback = $job->getCallback();
+
     print date('Y-m-d H:i:s') . ": Job ID " . $job_id . ".\n";
     print date('Y-m-d H:i:s') . ": Calling: $callback(" . implode(", ", $string_args) . ")\n";
     try {

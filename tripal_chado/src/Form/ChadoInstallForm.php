@@ -184,7 +184,7 @@ class ChadoInstallForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    global $user;
+
     $action_to_do = trim($form_state->getValues()['action_to_do']);
     $schema_name = trim($form_state->getValues()['schema_name']);
     $args = [$action_to_do];
@@ -201,15 +201,10 @@ class ChadoInstallForm extends FormBase {
         . "->dropSchema('".$schema_name."');\"";
         break;
     }
-    $message = [
-      '#markup' => '<strong>Must upgrade Tripal Jobs system first. In the meantime,
-        execute the following drush command: </strong><pre>'.$command.'</pre>',
-    ];
-    \Drupal::messenger()->addMessage($message, 'warning');
 
-    // @upgrade $includes = [module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.install')];
-    // @upgrade tripal_add_job($action_to_do, 'tripal_chado',
-    //  'tripal_chado_install_chado', $args, $user->uid, 10, $includes);
+    $current_user = \Drupal::currentUser();
+    tripal_add_job($action_to_do, 'tripal_chado',
+        'tripal_chado.chadoInstaller', $args, $current_user->id(), 10);
   }
 
   /**

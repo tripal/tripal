@@ -11,6 +11,14 @@ To load a user using a known user ID.
 
    // Load a user with a known UID in the $uid variable.
    $user = \Drupal\user\Entity\User::load($uid);
+   
+To get the current user:
+
+.. code-block:: php
+
+   $current_user = \Drupal::currentUser();
+   $user = \Drupal\user\Entity\User::load($current_user->id());
+  
 
 Creating Links
 --------------
@@ -25,7 +33,20 @@ The Drupal 9 approach is:
 
 .. code-block:: php
 
-  $link = Link::fromTextAndUrl('Administration', Url::fromUri('internal:/admin'))
+   use Drupal\Core\Link;
+   use Drupal\Core\Url;
+
+   $link = Link::fromTextAndUrl('Administration', Url::fromUri('internal:/admin'))
+
+Using Links in `drupal_set_message`:
+
+.. code-block:: php
+
+      $jobs_url = Link::fromTextAndUrl('jobs page', 
+        Url::fromUri('internal:/admin/tripal/tripal_jobs'))->toString();
+      drupal_set_message(t("Check the @jobs_url for status.", 
+        ['@jobs_url' => $jobs_url]));
+
 
 Database Queries
 ----------------
@@ -54,7 +75,7 @@ The `drupal_write_record` was useful in Drupal 7 for directly working with table
 .. code-block:: php
 
    $database = \Drupal::database();
-   $num_updated = $database->update('tripal_job')
+   $num_updated = $database->update('tripal_jobs')
      ->fields([
        'status' => 'Cancelled',
        'progress' => 0,

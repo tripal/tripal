@@ -195,8 +195,12 @@ class TripalJob {
         }
       }
     }
-    if (!function_exists($details['callback'])) {
+    // This may be a callback function or a new Drupal Service call.
+    if (!preg_match('/\./', $details['callback']) and !function_exists($details['callback'])) {
       throw new \Exception("Must provide a valid callback function to the tripal_add_job() function.");
+    }
+    elseif (empty(\Drupal::hasService($details['callback']))) {
+      throw new \Exception("Must provide a valid callback or Drupal Service to the tripal_add_job() function.");
     }
     if (!is_numeric($details['uid'])) {
       throw new \Exception("Must provide a numeric \$uid argument to the tripal_add_job() function.");
@@ -219,6 +223,8 @@ class TripalJob {
     try {
       // Before inserting a new record, and if ignore_duplicate is TRUE then
       // check to see if the job already exists.
+      $job_id = NULL;
+
       if ($details['ignore_duplicate'] === TRUE) {
         $database = \Drupal::database();
         $query = $database->select('tripal_jobs', 'tj');
@@ -233,7 +239,7 @@ class TripalJob {
       }
 
       $database = \Drupal::database();
-      $database->insert('tripal_jobs')
+      $job_id = $database->insert('tripal_jobs')
         ->fields([
           'job_name' => $details['job_name'],
           'modulename' => $details['modulename'],
@@ -246,6 +252,7 @@ class TripalJob {
           'includes' => serialize($includes),
         ])
         ->execute();
+
       // Now load the job into this object.
       $this->load($job_id);
 
@@ -323,35 +330,42 @@ class TripalJob {
       // Set the start time for this job.
       $database = \Drupal::database();
       $database->update('tripal_jobs')
-      ->fields([
-        'start_time' => $this->start_time,
-        'status' => 'Running',
-        'pid' => getmypid(),
-      ])
-      ->condition('job_id', $this->job->job_id)
-      ->execute();
+        ->fields([
+          'start_time' => $this->start_time,
+          'status' => 'Running',
+          'pid' => getmypid(),
+        ])
+        ->condition('job_id', $this->job->job_id)
+        ->execute();
 
-      // Callback functions need the job in order to update
-      // progress.  But prior to Tripal v3 the job callback functions
-      // only accepted a $job_id as the final argument.  So, we need
-      // to see if the callback is Tv3 compatible or older.  If older
-      // we want to still support it and pass the job_id.
       $arguments = $this->job->arguments;
       $callback = $this->job->callback;
-      $ref = new ReflectionFunction($callback);
-      $refparams = $ref->getParameters();
-      if (count($refparams) > 0) {
-        $lastparam = $refparams[count($refparams) - 1];
-        if ($lastparam->getName() == 'job_id') {
-          $arguments[] = $this->job->job_id;
-        }
-        else {
-          $arguments[] = $this;
-        }
-      }
 
-      // Launch the job.
-      call_user_func_array($callback, $arguments);
+      // The callback can be a service or a function.,
+      if (preg_match('/\./', $callback)) {
+        Drupal::service($callback)
+      }
+      else {
+        // Callback functions need the job in order to update
+        // progress.  But prior to Tripal v3 the job callback functions
+        // only accepted a $job_id as the final argument.  So, we need
+        // to see if the callback is Tv3 compatible or older.  If older
+        // we want to still support it and pass the job_id.
+        $ref = new ReflectionFunction($callback);
+        $refparams = $ref->getParameters();
+        if (count($refparams) > 0) {
+          $lastparam = $refparams[count($refparams) - 1];
+          if ($lastparam->getName() == 'job_id') {
+            $arguments[] = $this->job->job_id;
+          }
+          else {
+            $arguments[] = $this;
+          }
+        }
+
+        // Launch the job.
+        call_user_func_array($callback, $arguments);
+      }
 
       // Set the end time for this job.
       $database = \Drupal::database();
