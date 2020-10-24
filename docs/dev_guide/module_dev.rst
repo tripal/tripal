@@ -17,3 +17,4 @@ Custom Module Development
    module_dev/config
    module_dev/theme
    module_dev/caching
+   module_dev/upgrading

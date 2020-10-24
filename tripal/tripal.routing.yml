@@ -51,22 +51,6 @@ tripal.jobs:
   requirements:
     _permission: 'administer tripal'
 
-tripal.jobs_help:
-  path: 'admin/tripal/tripal_jobs/help'
-  defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalJobsHelp'
-    _title: 'Help'
-  requirements:
-    _permission: 'administer tripal'
-
-tripal.jobs_enable:
-  path: 'admin/tripal/tripal_jobs/views/jobs/enable'
-  defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalJobsEnable'
-    _title: 'Enable Jobs Administrative View'
-  requirements:
-    _permission: 'administer tripal'
-
 # Jobs Management Ajax callbacks
 tripal.jobs_cancel:
   path: 'admin/tripal/tripal_jobs/cancel/{id}'

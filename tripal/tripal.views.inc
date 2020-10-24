@@ -47,6 +47,16 @@ function tripal_views_data_jobs(&$data) {
     'help' => t('The Job Management system for Tripal.'),
     'weight' => 10,
   ];
+  $data['tripal_jobs']['table']['join'] = [
+    'users' => [
+      'left_field' => 'uid',
+      'field' => 'uid',
+    ],
+    'user_field_data' => [
+      'left_field' => 'uid',
+      'field' => 'uid',
+    ],
+  ];
 
   // Job ID
   $data['tripal_jobs']['job_id'] = [
@@ -70,14 +80,17 @@ function tripal_views_data_jobs(&$data) {
   $data['tripal_jobs']['uid'] = [
     'title' => t('Job Submitter'),
     'help' => t('The user who submitted the job.'),
-    'relationship' => [
-      'base' => 'user', // The name of the table to join with.
-      'base field' => 'uid', // The name of the field on the joined table.
-      'handler' => 'views_handler_relationship',
-      'label' => t('Submitting User'),
-      'title' => t('Submitting User'),
-      'help' => t('The user who submitted the job'),
-    ],
+    'relationship' =>
+      [
+        // The name of the table to join with.
+        'base' => 'users_field_data',
+        // The name of the field on the joined table.
+        'base field' => 'uid',
+        'id' => 'standard',
+        'label' => t('Submitter'),
+        'title' => t('Submitter'),
+        'help' => t('The user who submitted the job'),
+      ],
   ];
 
   // Job Name
