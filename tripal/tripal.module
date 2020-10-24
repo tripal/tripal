@@ -18,6 +18,7 @@ require_once 'api/tripal.quotas.api.php';
 require_once 'api/tripal.files.api.php';
 require_once 'api/tripal.notice.api.php';
 require_once 'api/tripal.upload.api.php';
+require_once 'api/tripal.jobs.api.php';
 
 /**
  * Implements hook_help().

@@ -1,0 +1,11 @@
+/******************************************************************************
+ * CSS for Jobs 
+ *****************************************************************************/
+.tripal-job-arg-array-val {
+  padding-left: 20px;
+}
+.tripal-job-logs {
+  height: 250px;
+  overflow: scroll;
+  font-family: Courier New, monospace;
+}

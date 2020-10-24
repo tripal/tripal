@@ -758,7 +758,7 @@ display:
             alter_text: true
             text: View
             make_link: true
-            path: 'admin/tripal/tripal_jobs/rerun/{{ job_id }}'
+            path: 'admin/tripal/tripal_jobs/view/{{ job_id }}'
             absolute: false
             external: false
             replace_spaces: false

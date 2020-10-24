@@ -1,7 +1,49 @@
 
 Upgrading from Tripal v3
 ========================
-This page provides useful instructions to help module developers upgrade their Tripal v3 compatible modules to work with Tripal v4.  
+This page provides useful short snippets of code to help module developers upgrade their Tripal v3 compatible modules to work with Tripal v4. This list is not comprehensive or complete, but is meant to be an aid.
+
+Loading a User Object
+---------------------
+To load a user using a known user ID.
+
+.. code-block::php 
+
+   // Load a user with a known UID in the $uid variable.
+   $user = \Drupal\user\Entity\User::load($uid);
+
+Creating Links
+--------------
+To create HTML links the Drupal 7 was was:
+
+.. code-block:: php
+
+  $link = l('Administration', '/admin')
+
+
+The Drupal 9 approach is:
+
+.. code-block:: php
+
+  $link = Link::fromTextAndUrl('Administration', Url::fromUri('internal:/admin'))
+
+Database Queries
+----------------
+
+db_query replacement
+````````````````````
+The `db_query` function is deprecated in Drupal 9. To perform a database query you will need to rework the `db_query` in the following way: 
+
+.. code-block:: php
+
+    // Get the database object.
+    $database = \Drupal::database();
+    
+    // Perform the query by passing the SQL statement and arguments.
+    $query = $database->query($sql, $args);
+
+    // Get the result(s).
+    $job = $query->fetchObject();
 
 
 Views

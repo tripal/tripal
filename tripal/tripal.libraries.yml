@@ -10,6 +10,11 @@ tripal:
     - core/jquery
     - core/drupalSettings
 
+jobs: 
+   css:
+      theme:
+         css/tripal.jobs.css: {}
+         
 tripal-dashboard:
   version: 1.x
   js:
