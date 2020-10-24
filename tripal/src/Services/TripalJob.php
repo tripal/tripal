@@ -343,7 +343,9 @@ class TripalJob {
 
       // The callback can be a service or a function.,
       if (preg_match('/\./', $callback)) {
-        Drupal::service($callback)
+        $func = array_shift($arguments);
+        $service = \Drupal::service($callback);
+        call_user_func_array($service->$func, $arguments);
       }
       else {
         // Callback functions need the job in order to update
@@ -375,7 +377,7 @@ class TripalJob {
           'error_msg' => $this->job->error_msg,
           'progress' => 100,
           'status' => 'Completed',
-          'pid' => '',
+          'pid' => NULL,
         ])
         ->condition('job_id', $this->job->job_id)
         ->execute();
@@ -390,7 +392,7 @@ class TripalJob {
         'error_msg' => $this->job->error_msg,
         'progress' => $this->job->progress,
         'status' => 'Error',
-        'pid' => '',
+        'pid' => NULL,
       ])
       ->condition('job_id', $this->job->job_id)
       ->execute();

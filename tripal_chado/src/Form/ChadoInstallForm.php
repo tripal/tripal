@@ -191,14 +191,10 @@ class ChadoInstallForm extends FormBase {
 
     switch ($action_to_do) {
       case 'Install Chado v1.3':
-        $command = "drush php-eval \""
-        . "\Drupal::service('tripal_chado.chadoInstaller')"
-        . "->install(1.3, '".$schema_name."');\"";
+        $args = ['install', 1.3, $schema_name];
         break;
       case 'Drop Chado Schema':
-        $command = "drush php-eval \""
-        . "\Drupal::service('tripal.bulkPgSchemaInstaller')"
-        . "->dropSchema('".$schema_name."');\"";
+        $args = ['drop', $schema_name];
         break;
     }
 
