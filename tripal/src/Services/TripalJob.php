@@ -220,7 +220,8 @@ class TripalJob {
       // Before inserting a new record, and if ignore_duplicate is TRUE then
       // check to see if the job already exists.
       if ($details['ignore_duplicate'] === TRUE) {
-        $query = db_select('tripal_jobs', 'tj');
+        $database = \Drupal::database();
+        $query = $database->select('tripal_jobs', 'tj');
         $query->fields('tj', ['job_id']);
         $query->condition('job_name', $details['job_name']);
         $query->isNull('start_time');
@@ -231,7 +232,8 @@ class TripalJob {
         }
       }
 
-      $job_id = db_insert('tripal_jobs')
+      $database = \Drupal::database();
+      $database->insert('tripal_jobs')
         ->fields([
           'job_name' => $details['job_name'],
           'modulename' => $details['modulename'],
@@ -281,7 +283,7 @@ class TripalJob {
     try {
       if ($this->job->start_time == 0) {
         $database = \Drupal::database();
-        $num_updated = $database->update('tripal_jobs')
+        $database->update('tripal_jobs')
           ->fields([
             'status' => 'Cancelled',
             'progress' => 0,
@@ -319,13 +321,15 @@ class TripalJob {
       }
 
       // Set the start time for this job.
-      $record = new stdClass();
-      $record->job_id = $this->job->job_id;
-      $record->start_time = $this->start_time;
-      $record->status = 'Running';
-      $record->pid = getmypid();
-      drupal_write_record('tripal_jobs', $record, 'job_id');
-
+      $database = \Drupal::database();
+      $database->update('tripal_jobs')
+      ->fields([
+        'start_time' => $this->start_time,
+        'status' => 'Running',
+        'pid' => getmypid(),
+      ])
+      ->condition('job_id', $this->job->job_id)
+      ->execute();
 
       // Callback functions need the job in order to update
       // progress.  But prior to Tripal v3 the job callback functions
@@ -350,24 +354,33 @@ class TripalJob {
       call_user_func_array($callback, $arguments);
 
       // Set the end time for this job.
-      $record = new stdClass();
-      $record->job_id = $this->job->job_id;
-      $record->end_time = time();
-      $record->error_msg = $this->job->error_msg;
-      $record->progress = 100;
-      $record->status = 'Completed';
-      $record->pid = '';
+      $database = \Drupal::database();
+      $database->update('tripal_jobs')
+        ->fields([
+          'end_time' => time(),
+          'error_msg' => $this->job->error_msg,
+          'progress' => 100,
+          'status' => 'Completed',
+          'pid' => '',
+        ])
+        ->condition('job_id', $this->job->job_id)
+        ->execute();
 
-      drupal_write_record('tripal_jobs', $record, 'job_id');
       $this->load($this->job->job_id);
     }
     catch (\Exception $e) {
-      $record->end_time = time();
-      $record->error_msg = $this->job->error_msg;
-      $record->progress = $this->job->progress;
-      $record->status = 'Error';
-      $record->pid = '';
-      drupal_write_record('tripal_jobs', $record, 'job_id');
+      $database = \Drupal::database();
+      $database->update('tripal_jobs')
+      ->fields([
+        'end_time' => time(),
+        'error_msg' => $this->job->error_msg,
+        'progress' => $this->job->progress,
+        'status' => 'Error',
+        'pid' => '',
+      ])
+      ->condition('job_id', $this->job->job_id)
+      ->execute();
+
       drupal_set_message('Job execution failed: ' . $e->getMessage(), 'error');
     }
   }
@@ -462,7 +475,8 @@ class TripalJob {
     $this->job->progress = $percent_done;
 
     $progress = sprintf("%d", $percent_done);
-    db_update('tripal_jobs')
+    $database = \Drupal::database();
+    $database->update('tripal_jobs')
       ->fields([
         'progress' => $progress,
       ])

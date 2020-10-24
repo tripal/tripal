@@ -71,15 +71,8 @@ class TripalJobController extends ControllerBase{
    *   The Job ID.
    */
   public function tripalJobsRerun($id) {
-
-    // Get the Job.
-    $job = new TripalJob();
-    $job->load($id);
-
-    //tripal_rerun_job in tripal.jobs.inc
-    return [
-      '#markup' => 'Not yet upgraded.',
-    ];
+    tripal_rerun_job($id, FALSE);
+    return new RedirectResponse(Url::fromRoute('admin/tripal/tripal_jobs'));
   }
 
   /**
@@ -89,15 +82,8 @@ class TripalJobController extends ControllerBase{
    *   The Job ID.
    */
   public function tripalJobsExecute($id) {
-
-    // Get the Job.
-    $job = new TripalJob();
-    $job->load($id);
-
-    //tripal_jobs_view in tripal.jobs.inc
-    return [
-      '#markup' => 'Not yet upgraded.',
-    ];
+    tripal_execute_job($id, FALSE);
+    return new RedirectResponse(Url::fromRoute('admin/tripal/tripal_jobs'));
   }
 
   /**

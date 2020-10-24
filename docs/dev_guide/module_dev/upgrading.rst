@@ -50,11 +50,6 @@ drupal_write_record
 ```````````````````
 The `drupal_write_record` was useful in Drupal 7 for directly working with tables that Drupal was aware of.  Here's the replacement:
 
-For Inserting:
-
-.. code-block:: php
-
-For Updating:
 
 .. code-block:: php
 

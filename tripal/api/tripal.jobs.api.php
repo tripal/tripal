@@ -286,7 +286,8 @@ function tripal_rerun_job($job_id, $goto_jobs_page = TRUE) {
     if ($goto_jobs_page) {
       drupal_goto("admin/tripal/tripal_jobs");
     }
-  } catch (Exception $e) {
+  }
+  catch (Exception $e) {
     drupal_set_message($e->getMessage(), 'error');
     tripal_report_error('tripal', TRIPAL_ERROR, $e->getMessage());
   }
@@ -427,7 +428,8 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL, $max_jobs = -1, $si
     print date('Y-m-d H:i:s') . ": Calling: $callback(" . implode(", ", $string_args) . ")\n";
     try {
       $job->run();
-    } catch (Exception $e) {
+    }
+    catch (Exception $e) {
       $job->logMessage($e->getMessage(), [], TRIPAL_ERROR);
       drupal_set_message($e->getMessage(), 'error');
     }
@@ -463,7 +465,8 @@ function tripal_set_job_progress($job_id, $percentage) {
     $job = new TripalJob();
     $job->load($job_id);
     $job->setProgress($percentage);
-  } catch (Exception $e) {
+  }
+  catch (Exception $e) {
     tripal_report_error('tripal', TRIPAL_ERROR, $e->getMessage());
     drupal_set_message($e->getMessage(), 'error');
     return FALSE;
@@ -490,7 +493,8 @@ function tripal_get_job_progress($job_id) {
     $job->load($job_id);
     $progress = $job->getProgress();
     return $progress;
-  } catch (Exception $e) {
+  }
+  catch (Exception $e) {
     tripal_report_error('tripal', TRIPAL_ERROR, $e->getMessage());
     drupal_set_message($e->getMessage(), 'error');
     return FALSE;
@@ -579,7 +583,7 @@ function tripal_execute_job($job_id, $redirect = TRUE) {
     drupal_set_message(t("Job %job_id has finished executing. See below for more information.", ['%job_id' => $job_id]));
   }
   else {
-    drupal_set_message(t("Job %job_id cannot be executed. It has already finished.", ['%job_id' => $job_id]));
+    drupal_set_message(t("Job %job_id cannot be executed. It has already finished.", ['%job_id' => $job_id]), 'error');
   }
 
   if ($redirect) {
