@@ -59,14 +59,6 @@ tripal.jobs_cancel:
   requirements:
     _permission: 'administer tripal'
 
-tripal.jobs_status:
-  path: 'admin/tripal/tripal_jobs/status/{id}'
-  defaults:
-    _controller: '\Drupal\tripal\Controller\TripalJobController::tripalJobsStatus'
-    _title: 'Status of a job'
-  requirements:
-    _permission: 'administer tripal'
-
 tripal.jobs_rerun:
   path: 'admin/tripal/tripal_jobs/rerun/{id}'
   defaults:

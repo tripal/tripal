@@ -9,6 +9,8 @@ use Drupal\Core\Url;
 use Drupal\Core\Render\Markup;
 use Drupal\tripal\Services\TripalJob;
 use Drupal\Entity\User;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+
 /**
  * Controller routines for the Tripal Module
  */
@@ -51,22 +53,48 @@ class TripalJobController extends ControllerBase{
     }
   }
 
+  /**
+   * Cancels a job that is in the waiting state.
+   *
+   * @param $id
+   *   The Job ID.
+   */
   public function tripalJobsCancel($id) {
-    //tripal_cancel_job in tripal.jobs.api.inc
-    return [
-      '#markup' => 'Not yet upgraded.',
-    ];
+    tripal_cancel_job($id, FALSE);
+    return new RedirectResponse(Url::fromRoute('admin/tripal/tripal_jobs'));
   }
 
-  public function tripalJobsStatus($id) {
-    //tripal_jobs_status_view in tripal.jobs.inc
-    return [
-      '#markup' => 'Not yet upgraded.',
-    ];
-  }
-
+  /**
+   * Submits a job to be run again.
+   *
+   * @param $id
+   *   The Job ID.
+   */
   public function tripalJobsRerun($id) {
+
+    // Get the Job.
+    $job = new TripalJob();
+    $job->load($id);
+
     //tripal_rerun_job in tripal.jobs.inc
+    return [
+      '#markup' => 'Not yet upgraded.',
+    ];
+  }
+
+  /**
+   * Executes a job that is in the queue and waits for it to complete.
+   *
+   * @param $id
+   *   The Job ID.
+   */
+  public function tripalJobsExecute($id) {
+
+    // Get the Job.
+    $job = new TripalJob();
+    $job->load($id);
+
+    //tripal_jobs_view in tripal.jobs.inc
     return [
       '#markup' => 'Not yet upgraded.',
     ];
@@ -239,20 +267,4 @@ class TripalJobController extends ControllerBase{
     ];
     return $content;
   }
-
-  public function tripalJobsEnable() {
-    // tripal_enable_view in tripal.jobs.inc
-    return [
-      '#markup' => 'Not yet upgraded.',
-    ];
-  }
-
-  public function tripalJobsExecute($id) {
-    //tripal_jobs_view in tripal.jobs.inc
-    return [
-      '#markup' => 'Not yet upgraded.',
-    ];
-  }
-
-
 }

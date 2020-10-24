@@ -1,13 +1,13 @@
 
-Upgrading from Tripal v3
-========================
-This page provides useful short snippets of code to help module developers upgrade their Tripal v3 compatible modules to work with Tripal v4. This list is not comprehensive or complete, but is meant to be an aid.
+Help for Upgrading a Module
+============================
+This page provides useful short snippets of code to help module developers upgrade their Tripal v3 compatible modules to work with Drupal 8/9. This list is not comprehensive or complete, but is meant to be an aid.
 
 Loading a User Object
 ---------------------
 To load a user using a known user ID.
 
-.. code-block::php 
+.. code-block:: php 
 
    // Load a user with a known UID in the $uid variable.
    $user = \Drupal\user\Entity\User::load($uid);
@@ -30,9 +30,9 @@ The Drupal 9 approach is:
 Database Queries
 ----------------
 
-db_query replacement
-````````````````````
-The `db_query` function is deprecated in Drupal 9. To perform a database query you will need to rework the `db_query` in the following way: 
+db_query
+````````
+The `db_query` function is deprecated in Drupal 9. To perform a database query you will need to rework any calls to the `db_query` function in the following way: 
 
 .. code-block:: php
 
@@ -45,6 +45,27 @@ The `db_query` function is deprecated in Drupal 9. To perform a database query y
     // Get the result(s).
     $job = $query->fetchObject();
 
+
+drupal_write_record 
+```````````````````
+The `drupal_write_record` was useful in Drupal 7 for directly working with tables that Drupal was aware of.  Here's the replacement:
+
+For Inserting:
+
+.. code-block:: php
+
+For Updating:
+
+.. code-block:: php
+
+   $database = \Drupal::database();
+   $num_updated = $database->update('tripal_job')
+     ->fields([
+       'status' => 'Cancelled',
+       'progress' => 0,
+     ])
+     ->condition('job_id', $this->job->job_id)
+     ->execute();
 
 Views
 -----
@@ -128,3 +149,16 @@ In Drupal 8 use code similar to the following to embed a view on a page:
         '#markup' => 'You do not have access to view this page.',
       ];
     }
+
+    
+Attaching CSS
+-------------
+In Drupal 8/9 CSS files are part of "libraries".  Libraries are groups of "assets" such as CSS, JS, or other resources needed for a particular set of pages that the module provides.  Libraries are defined in the `<module_name>.libraries.yml` file.  For information about preparing your CSS files with drupal see the page about `adding css and js files to a module <https://www.drupal.org/node/2274843>`_.  Once the CSS is setup correctly, you want to add "libraries" to pages that use them.  This is done by adding an '#attached' element to the render array returned by a page using the following form:
+
+.. code-block:: php
+
+   '#attached' => [
+     'library' => ['<module_name>/<library_name>'],
+   ] 
+   
+Replace `<module_name>` and `<library_name>` with appropriate values.

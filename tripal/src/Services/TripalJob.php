@@ -86,15 +86,17 @@ class TripalJob {
       // Finally just throw an exception.
       // I can't load a job if I don't know which one.
       else {
-        throw new Exception("You must provide the job_id to load the job.");
+        throw new \Exception("You must provide the job_id to load the job.");
       }
     }
 
     $sql = 'SELECT j.* FROM {tripal_jobs} j WHERE j.job_id = :job_id';
     $args = [':job_id' => $job_id];
-    $this->job = db_query($sql, $args)->fetchObject();
+    $database = \Drupal::database();
+    $query = $database->query($sql, $args);
+    $this->job = $query->fetchObject();
     if (!$this->job) {
-      throw new Exception("Cannot find a job with this ID provided.");
+      throw new \Exception("Cannot find a job with this ID provided.");
     }
 
     // Fix the date/time fields.
@@ -164,16 +166,16 @@ class TripalJob {
 
     // Make sure the arguments are correct.
     if (!$details['job_name']) {
-      throw new Exception("Must provide a 'job_name' to create a job.");
+      throw new \Exception("Must provide a 'job_name' to create a job.");
     }
     if (!$details['modulename']) {
-      throw new Exception("Must provide a 'modulename' to create a job.");
+      throw new \Exception("Must provide a 'modulename' to create a job.");
     }
     if (!$details['callback']) {
-      throw new Exception("Must provide a 'callback' to create a job.");
+      throw new \Exception("Must provide a 'callback' to create a job.");
     }
     if ($details['ignore_duplicate'] !== FALSE and $details['ignore_duplicate'] !== TRUE) {
-      throw new Exception("Must provide either TRUE or FALSE for the ignore_duplicate option when creating a job.");
+      throw new \Exception("Must provide either TRUE or FALSE for the ignore_duplicate option when creating a job.");
     }
 
     $includes = $details['includes'];
@@ -188,24 +190,24 @@ class TripalJob {
             require_once($path);
           }
           elseif (!empty($path)) {
-            throw new Exception("Included files for Tripal Job must exist. This path ($full_path) doesn't exist.");
+            throw new \Exception("Included files for Tripal Job must exist. This path ($full_path) doesn't exist.");
           }
         }
       }
     }
     if (!function_exists($details['callback'])) {
-      throw new Exception("Must provide a valid callback function to the tripal_add_job() function.");
+      throw new \Exception("Must provide a valid callback function to the tripal_add_job() function.");
     }
     if (!is_numeric($details['uid'])) {
-      throw new Exception("Must provide a numeric \$uid argument to the tripal_add_job() function.");
+      throw new \Exception("Must provide a numeric \$uid argument to the tripal_add_job() function.");
     }
     $priority = $details['priority'];
     if (!$priority or !is_numeric($priority) or $priority < 1 or $priority > 10) {
-      throw new Exception("Must provide a numeric \$priority argument between 1 and 10 to the tripal_add_job() function.");
+      throw new \Exception("Must provide a numeric \$priority argument between 1 and 10 to the tripal_add_job() function.");
     }
     $arguments = $details['arguments'];
     if (!is_array($arguments)) {
-      throw new Exception("Must provide an array as the \$arguments argument to the tripal_add_job() function.");
+      throw new \Exception("Must provide an array as the \$arguments argument to the tripal_add_job() function.");
     }
 
     // convert the arguments into a string for storage in the database
@@ -246,8 +248,9 @@ class TripalJob {
       $this->load($job_id);
 
       return TRUE;
-    } catch (Exception $e) {
-      throw new Exception('Cannot create job: ' . $e->getMessage());
+    }
+    catch (\Exception $e) {
+      throw new \Exception('Cannot create job: ' . $e->getMessage());
     }
   }
 
@@ -257,34 +260,38 @@ class TripalJob {
   public function cancel() {
 
     if (!$this->job) {
-      throw new Exception("There is no job associated with this object. Cannot cancel");
+      throw new \Exception("There is no job associated with this object. Cannot cancel");
     }
 
     if ($this->job->status == 'Running') {
-      throw new Exception("Job Cannot be cancelled it is currently running.");
+      throw new \Exception("Job Cannot be cancelled it is currently running.");
 
     }
     if ($this->job->status == 'Completed') {
-      throw new Exception("Job Cannot be cancelled it has already finished.");
+      throw new \Exception("Job Cannot be cancelled it has already finished.");
     }
     if ($this->job->status == 'Error') {
-      throw new Exception("Job Cannot be cancelled it is in an error state.");
+      throw new \Exception("Job Cannot be cancelled it is in an error state.");
     }
     if ($this->job->status == 'Cancelled') {
-      throw new Exception("Job Cannot be cancelled it is already cancelled.");
+      throw new \Exception("Job Cannot be cancelled it is already cancelled.");
     }
 
     // Set the end time for this job.
     try {
       if ($this->job->start_time == 0) {
-        $record = new stdClass();
-        $record->job_id = $this->job->job_id;
-        $record->status = 'Cancelled';
-        $record->progress = '0';
-        drupal_write_record('tripal_jobs', $record, 'job_id');
+        $database = \Drupal::database();
+        $num_updated = $database->update('tripal_jobs')
+          ->fields([
+            'status' => 'Cancelled',
+            'progress' => 0,
+          ])
+          ->condition('job_id', $this->job->job_id)
+          ->execute();
       }
-    } catch (Exception $e) {
-      throw new Exception('Cannot cancel job: ' . $e->getMessage());
+    }
+    catch (\Exception $e) {
+      throw new \Exception('Cannot cancel job: ' . $e->getMessage());
     }
   }
 
@@ -297,7 +304,7 @@ class TripalJob {
     $this->progress_start_time = time();
 
     if (!$this->job) {
-      throw new Exception('Cannot launch job as no job is associated with this object.');
+      throw new \Exception('Cannot launch job as no job is associated with this object.');
     }
 
     try {
@@ -354,7 +361,7 @@ class TripalJob {
       drupal_write_record('tripal_jobs', $record, 'job_id');
       $this->load($this->job->job_id);
     }
-    catch (Exception $e) {
+    catch (\Exception $e) {
       $record->end_time = time();
       $record->error_msg = $this->job->error_msg;
       $record->progress = $this->job->progress;
@@ -373,7 +380,7 @@ class TripalJob {
    */
   public function isRunning() {
     if (!$this->job) {
-      throw new Exception('Cannot check running status as no job is associated with this object.');
+      throw new \Exception('Cannot check running status as no job is associated with this object.');
     }
 
     $status = shell_exec('ps -p ' . escapeshellarg($this->job->pid) . ' -o pid=');
@@ -449,7 +456,7 @@ class TripalJob {
    */
   public function setProgress($percent_done) {
     if (!$this->job) {
-      throw new Exception('Cannot set progress as no job is associated with this object.');
+      throw new \Exception('Cannot set progress as no job is associated with this object.');
     }
 
     $this->job->progress = $percent_done;
