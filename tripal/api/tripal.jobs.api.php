@@ -112,9 +112,14 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid,
       if ($user->hasPermission('administer tripal')) {
         $jobs_url = Link::fromTextAndUrl('jobs page', Url::fromUri('internal:/admin/tripal/tripal_jobs'))->toString();
         drupal_set_message(t("Check the @jobs_url for status.", ['@jobs_url' => $jobs_url]));
-        drupal_set_message(t("You can execute the job queue manually on the command line " .
-          "using the following Drush command: <br>drush trp-run-jobs --username=%uname --root=%base_path",
-          ['%base_path' => DRUPAL_ROOT, '%uname' => $user->name]));
+        drupal_set_message(t("You can execute the job queue manually on the ".
+          "command line using the following Drush command: " .
+          "<br>drush trp-run-jobs --job_id=%job_id --username=%uname --root=%base_path",
+          [
+            '%job_id' => $job->getJobID(),
+            '%base_path' => DRUPAL_ROOT,
+            '%uname' => $user->getAccountName()
+          ]));
       }
     }
     else {
@@ -123,35 +128,12 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid,
     return $job->getJobID();
   }
   catch (Exception $e) {
-    tripal_report_error('tripal', TRIPAL_ERROR, $e->getMessage());
-    drupal_set_message($e->getMessage(), 'error');
+    $logger = \Drupal::service('tripal.logger');
+    $logger->error($e->getMessage(), [], ['drupal_set_messsage' => 'TRUE']);
     return FALSE;
   }
 }
 
-/**
- * Retrieve information regarding a tripal job
- *
- * @param $job_id
- *   The unique identifier of the job
- *
- * @return
- *   An object representing a record from the tripal_job table or FALSE on
- *   failure.
- *
- * @ingroup tripal_jobs_api
- */
-function tripal_get_job($job_id) {
-  try {
-    $job = new TripalJob();
-    $job->load($job_id);
-    return $job->getJob();
-  } catch (Exception $e) {
-    tripal_report_error('tripal', TRIPAL_ERROR, $e->getMessage());
-    drupal_set_message($e->getMessage(), 'error');
-    return FALSE;
-  }
-}
 
 /**
  * Indicates if any jobs are running.
@@ -255,12 +237,20 @@ function tripal_max_jobs_exceeded($max_jobs) {
  * @param $job_id
  *   The job_id of the job to be re-ran
  * @param $goto_jobs_page
+ *   DEPRECATED
  *   If set to TRUE then after the re run job is added Drupal will redirect to
  *   the jobs page
  *
  * @ingroup tripal_jobs_api
  */
-function tripal_rerun_job($job_id, $goto_jobs_page = TRUE) {
+function tripal_rerun_job($job_id, $goto_jobs_page = NULL) {
+
+  if (!is_null($goto_jobs_page)) {
+    $logger = \Drupal::service('tripal.logger');
+    $logger->warning("DEPRECATED: the '\$goto_jobs_page' argument of the ".
+        "tripal_rerun_job function will be removed " .
+        "from the API in a future release. Please update any calls.");
+  }
 
   $current_user = \Drupal::currentUser();
   $user_id = $current_user->id();
@@ -292,17 +282,19 @@ function tripal_rerun_job($job_id, $goto_jobs_page = TRUE) {
     if ($user->hasPermission('administer tripal')) {
       $jobs_url = Link::fromTextAndUrl('jobs page', Url::fromUri('internal:/admin/tripal/tripal_jobs'))->toString();
       drupal_set_message(t("Check the @jobs_url for status.", ['@jobs_url' => $jobs_url]));
-      drupal_set_message(t("You can execute the job queue manually on the command line " .
-        "using the following Drush command: <br>drush trp-run-jobs --username=%uname --root=%base_path",
-        ['%base_path' => DRUPAL_ROOT, '%uname' => $user->name]));
-    }
-    if ($goto_jobs_page) {
-      drupal_goto("admin/tripal/tripal_jobs");
+      drupal_set_message(t("You can execute the job queue manually on the ".
+          "command line using the following Drush command: " .
+          "<br>drush trp-run-jobs --job_id=%job_id --username=%uname --root=%base_path",
+          [
+            '%job_id' => $job->getJobID(),
+            '%base_path' => DRUPAL_ROOT,
+            '%uname' => $user->getAccountName()
+          ]));
     }
   }
   catch (Exception $e) {
-    drupal_set_message($e->getMessage(), 'error');
-    tripal_report_error('tripal', TRIPAL_ERROR, $e->getMessage());
+    $logger = \Drupal::service('tripal.logger');
+    $logger->error($e->getMessage(), [], ['drupal_set_messsage' => 'TRUE']);
   }
 }
 
@@ -312,13 +304,23 @@ function tripal_rerun_job($job_id, $goto_jobs_page = TRUE) {
  * @param $job_id
  *   The job_id of the job to be cancelled
  *
+ * @param $redirect
+ *   DEPRECATED
+ *
  * @return
  *   FALSE if the an error occured or the job could not be canceled, TRUE
  *   otherwise.
  *
  * @ingroup tripal_jobs_api
  */
-function tripal_cancel_job($job_id, $redirect = TRUE) {
+function tripal_cancel_job($job_id, $redirect = NULL) {
+
+  if (!is_null($redirect)) {
+    $logger = \Drupal::service('tripal.logger');
+    $logger->warning("DEPRECATED: the '\$goto_jobs_page' argument of the ".
+        "tripal_rerun_job function will be removed " .
+        "from the API in a future release. Please update any calls.");
+  }
 
   if (!$job_id or !is_numeric($job_id)) {
     watchdog('tripal', "Must provide a numeric \$job_id to the tripal_cancel_job() function.");
@@ -331,17 +333,11 @@ function tripal_cancel_job($job_id, $redirect = TRUE) {
     $job->cancel();
 
     drupal_set_message('Job is now cancelled.');
-    if ($redirect) {
-      return new RedirectResponse(\Drupal\Core\Url::fromRoute('admin/tripal/tripal_jobs'));
-    }
     return TRUE;
   }
   catch (Exception $e) {
-    tripal_report_error('tripal', TRIPAL_ERROR, $e->getMessage());
-    drupal_set_message($e->getMessage(), 'error');
-    if ($redirect) {
-      return new RedirectResponse(\Drupal\Core\Url::fromRoute('admin/tripal/tripal_jobs'));
-    }
+    $logger = \Drupal::service('tripal.logger');
+    $logger->error($e->getMessage(), [], ['drupal_set_messsage' => 'TRUE']);
     return FALSE;
   }
 }
@@ -480,8 +476,8 @@ function tripal_set_job_progress($job_id, $percentage) {
     $job->setProgress($percentage);
   }
   catch (Exception $e) {
-    tripal_report_error('tripal', TRIPAL_ERROR, $e->getMessage());
-    drupal_set_message($e->getMessage(), 'error');
+    $logger = \Drupal::service('tripal.logger');
+    $logger->error($e->getMessage(), [], ['drupal_set_messsage' => 'TRUE']);
     return FALSE;
   }
   return TRUE;
@@ -508,8 +504,8 @@ function tripal_get_job_progress($job_id) {
     return $progress;
   }
   catch (Exception $e) {
-    tripal_report_error('tripal', TRIPAL_ERROR, $e->getMessage());
-    drupal_set_message($e->getMessage(), 'error');
+    $logger = \Drupal::service('tripal.logger');
+    $logger->error($e->getMessage(), [], ['drupal_set_messsage' => 'TRUE']);
     return FALSE;
   }
 }
@@ -543,21 +539,8 @@ function tripal_get_job_progress($job_id) {
  */
 function tripal_get_active_jobs($modulename = NULL) {
   $query = db_select('tripal_jobs', 'TJ')
-    ->fields('TJ', [
-      'job_id',
-      'uid',
-      'job_name',
-      'modulename',
-      'callback',
-      'arguments',
-      'progress',
-      'status',
-      'submit_date',
-      'start_time',
-      'end_time',
-      'error_msg',
-      'priority',
-    ]);
+    ->fields('TJ', ['job_id', 'uid', 'job_name', 'modulename', 'callback', 'arguments',
+      'progress', 'status', 'submit_date', 'start_time', 'end_time', 'error_msg','priority']);
   if ($modulename) {
     $query->where(
       "TJ.modulename = :modulename and NOT (TJ.status = 'Completed' or TJ.status = 'Cancelled')",
@@ -580,12 +563,19 @@ function tripal_get_active_jobs($modulename = NULL) {
  *
  * @param $job_id
  *   The job id to be exeuted.
- * @param bool $redirect [optional]
- *   Whether to redirect to the job page or not.
+ * @param $redirect
+ *   DEPRECATED
  *
  * @ingroup tripal_jobs_api
  */
 function tripal_execute_job($job_id, $redirect = TRUE) {
+
+  if (!is_null($redirect)) {
+    $logger = \Drupal::service('tripal.logger');
+    $logger->warning("DEPRECATED: the '\$goto_jobs_page' argument of the ".
+        "tripal_rerun_job function will be removed " .
+        "from the API in a future release. Please update any calls.");
+  }
 
   $job = new TripalJob();
   $job->load($job_id);
@@ -597,9 +587,5 @@ function tripal_execute_job($job_id, $redirect = TRUE) {
   }
   else {
     drupal_set_message(t("Job %job_id cannot be executed. It has already finished.", ['%job_id' => $job_id]), 'error');
-  }
-
-  if ($redirect) {
-    drupal_goto("admin/tripal/tripal_jobs/view/$job_id");
   }
 }

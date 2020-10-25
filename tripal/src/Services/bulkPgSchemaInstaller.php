@@ -118,7 +118,7 @@ class bulkPgSchemaInstaller {
 
       // Notify the admin and drop the schema.
       // @upgrade tripal_report_error().
-      $this->logger->info("Dropping existing Schema: '$schema_name'\n");
+      $this->logger->info("Dropping existing Schema: '$schema_name'");
       $this->connection->query("drop schema $schema_name cascade");
 
       // Finally, check to see if it was successful.
@@ -131,7 +131,7 @@ class bulkPgSchemaInstaller {
     }
     // If it doesn't exist then we don't need to drop it!
     else {
-      $this->logger->info("Dropping existing schema: '$schema_name' (already dropped).\n");
+      $this->logger->info("Dropping existing schema: '$schema_name' (already dropped).");
       return TRUE;
     }
   }

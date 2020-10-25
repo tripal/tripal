@@ -71,11 +71,11 @@ class chadoInstaller extends bulkPgSchemaInstaller {
     $success = $this->applySQL($init_file, $chado_schema);
     if ($success) {
       // @upgrade tripal_report_error().
-      $this->logger->notice("Install of Chado v1.3 (Step 2 of 2) Successful.\nInstallation Complete\n");
+      $this->logger->info("Install of Chado v1.3 (Step 2 of 2) Successful.\nInstallation Complete\n");
     }
     else {
       // @upgrade tripal_report_error().
-      $this->logger->notice("Installation (Step 2 of 2) Problems!  Please check output for errors.");
+      $this->logger->info("Installation (Step 2 of 2) Problems!  Please check output for errors.");
     }
 
     // 5) Finally set the version and tell Tripal.
@@ -135,7 +135,7 @@ class chadoInstaller extends bulkPgSchemaInstaller {
 
       if ($success) {
         // @upgrade tripal_report_error().
-        print "\tImport part $i of $numChunks Successful!\n";
+        $this->logger->info("  Import part $i of $numChunks Successful!");
       }
       else {
         $failed = TRUE;
@@ -157,7 +157,7 @@ class chadoInstaller extends bulkPgSchemaInstaller {
     }
     else {
       // @upgrade tripal_report_error().
-      $this->logger->notice("Install of Chado v1.3 (Step 1 of 2) Successful.\nInstallation Complete\n");
+      $this->logger->info("Install of Chado v1.3 (Step 1 of 2) Successful.\nInstallation Complete\n");
       return TRUE;
     }
   }
