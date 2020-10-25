@@ -10,3 +10,5 @@ services:
       class: Drupal\tripal\Services\Tripaljob
   tripal.jobManager:
       class: Drupal\tripal\Servcies\TripalJobManager
+  tripal.logger:
+      class: Drupal\tripal\Services\TripalLogger

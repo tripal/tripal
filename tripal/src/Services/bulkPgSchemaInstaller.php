@@ -29,13 +29,27 @@ class bulkPgSchemaInstaller {
   protected $logger;
 
   /**
+   * Holds the Job object
+   */
+  protected $job = NULL;
+
+  /**
+   * A setter for the job object if this class is being run using a Tripal job.
+   */
+  public function setJob(\Drupal\tripal\Services\TripalJob $job) {
+    $this->job = $job;
+    $this->logger->setJob($job);
+  }
+
+
+  /**
    * Constructor: initialize connections.
    */
   public function __construct() {
     $this->connection = \Drupal::database();
 
     // Initialize the logger.
-    $this->logger = \Drupal::logger('tripal');
+    $this->logger = \Drupal::service('tripal.logger');
 
     // Get the default database.
     $databases = $this->connection->getConnectionOptions();
@@ -104,8 +118,7 @@ class bulkPgSchemaInstaller {
 
       // Notify the admin and drop the schema.
       // @upgrade tripal_report_error().
-      $this->logger->info(
-        "Dropping existing Schema: '$schema_name'\n");
+      $this->logger->info("Dropping existing Schema: '$schema_name'\n");
       $this->connection->query("drop schema $schema_name cascade");
 
       // Finally, check to see if it was successful.
@@ -118,8 +131,7 @@ class bulkPgSchemaInstaller {
     }
     // If it doesn't exist then we don't need to drop it!
     else {
-      $this->logger->info(
-        "Dropping existing schema: '$schema_name' (already dropped).\n");
+      $this->logger->info("Dropping existing schema: '$schema_name' (already dropped).\n");
       return TRUE;
     }
   }
@@ -136,8 +148,7 @@ class bulkPgSchemaInstaller {
 
     // First notify the admin we are creating the schema.
     // @upgrade tripal_report_error().
-    $this->logger->info(
-      "Creating '$schema_name' schema\n");
+    $this->logger->info("Creating '$schema_name' schema\n");
 
     // Next, Create it.
     $this->connection->query("CREATE SCHEMA $schema_name");
@@ -184,26 +195,24 @@ class bulkPgSchemaInstaller {
     // Retrieve the SQL file.
     $sql = file_get_contents($sql_file);
 
-  // change any search path commands.
-  if ($schema_name) {
-    	$sql = preg_replace(
-        '/(SET\s*search_path\s*=.*)(chado)/',
-        '$1' . $schema_name,
-        $sql
+    // change any search path commands.
+    if ($schema_name) {
+      $sql = preg_replace(
+          '/(SET\s*search_path\s*=.*)(chado)/',
+          '$1' . $schema_name,
+          $sql
       );
 
-  // Append search path to the beginning.
-  if ($append_search_path) {
-  $sql = 'SET search_path = ' . $schema_name . ";\n" . $sql;
-  }
-  }
-
+      // Append search path to the beginning.
+      if ($append_search_path) {
+        $sql = 'SET search_path = ' . $schema_name . ";\n" . $sql;
+      }
+    }
 
     // Apply the SQL to the database.
     $result = pg_query($pgconnection, $sql);
     if (!$result) {
-      $this->logger->error(
-        "Unable to execute query block.\n");
+      $this->logger->error("Unable to execute query block.\n");
 
       pg_close($pgconnection);
       return FALSE;

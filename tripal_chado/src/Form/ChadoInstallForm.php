@@ -43,13 +43,13 @@ class ChadoInstallForm extends FormBase {
     $form['msg-top'] = [
       '#type' => 'item',
       '#markup' => 'Chado is a relational database schema that underlies many
-      GMOD installations. It is capable of representing many of the general
-      classes of data frequently encountered in modern biology such as sequence,
-      sequence comparisons, phenotypes, genotypes, ontologies, publications,
-      and phylogeny. It has been designed to handle complex representations of
-      biological knowledge and should be considered one of the most
-      sophisticated relational schemas currently available in molecular
-      biology.',
+        GMOD installations. It is capable of representing many of the general
+        classes of data frequently encountered in modern biology such as sequence,
+        sequence comparisons, phenotypes, genotypes, ontologies, publications,
+        and phylogeny. It has been designed to handle complex representations of
+        biological knowledge and should be considered one of the most
+        sophisticated relational schemas currently available in molecular
+        biology.',
       '#prefix' => '<blockquote>',
       '#suffix' => t('- <a href="@url">GMOD Chado Documentation</a></blockquote>',
         ['@url' => Url::fromUri('https://chado.readthedocs.io/en/rtd/')->toString()]),
@@ -147,7 +147,7 @@ class ChadoInstallForm extends FormBase {
 
     $form['button'] = [
       '#type' => 'submit',
-      '#value' => t('Install/Upgrade Chado'),
+      '#value' => t('Submit'),
     ];
 
     $form['#prefix'] = '<div id="tripal_chado_load_form">';
@@ -189,18 +189,22 @@ class ChadoInstallForm extends FormBase {
     $schema_name = trim($form_state->getValues()['schema_name']);
     $args = [$action_to_do];
 
+    $current_user = \Drupal::currentUser();
+
     switch ($action_to_do) {
       case 'Install Chado v1.3':
-        $args = ['install', 1.3, $schema_name];
+        $args = [$action_to_do, $schema_name];
+        tripal_add_job($action_to_do, 'tripal_chado',
+          'tripal_chado_install_chado', $args, $current_user->id(), 10);
         break;
       case 'Drop Chado Schema':
         $args = ['drop', $schema_name];
+        $args = [$schema_name];
+        tripal_add_job($action_to_do, 'tripal_chado',
+            'tripal_chado_drop_schema', $args, $current_user->id(), 10);
         break;
     }
 
-    $current_user = \Drupal::currentUser();
-    tripal_add_job($action_to_do, 'tripal_chado',
-        'tripal_chado.chadoInstaller', $args, $current_user->id(), 10);
   }
 
   /**

@@ -195,12 +195,8 @@ class TripalJob {
         }
       }
     }
-    // This may be a callback function or a new Drupal Service call.
-    if (!preg_match('/\./', $details['callback']) and !function_exists($details['callback'])) {
+    if (!function_exists($details['callback'])) {
       throw new \Exception("Must provide a valid callback function to the tripal_add_job() function.");
-    }
-    elseif (empty(\Drupal::hasService($details['callback']))) {
-      throw new \Exception("Must provide a valid callback or Drupal Service to the tripal_add_job() function.");
     }
     if (!is_numeric($details['uid'])) {
       throw new \Exception("Must provide a numeric \$uid argument to the tripal_add_job() function.");
@@ -341,33 +337,25 @@ class TripalJob {
       $arguments = $this->job->arguments;
       $callback = $this->job->callback;
 
-      // The callback can be a service or a function.,
-      if (preg_match('/\./', $callback)) {
-        $func = array_shift($arguments);
-        $service = \Drupal::service($callback);
-        call_user_func_array($service->$func, $arguments);
-      }
-      else {
-        // Callback functions need the job in order to update
-        // progress.  But prior to Tripal v3 the job callback functions
-        // only accepted a $job_id as the final argument.  So, we need
-        // to see if the callback is Tv3 compatible or older.  If older
-        // we want to still support it and pass the job_id.
-        $ref = new ReflectionFunction($callback);
-        $refparams = $ref->getParameters();
-        if (count($refparams) > 0) {
-          $lastparam = $refparams[count($refparams) - 1];
-          if ($lastparam->getName() == 'job_id') {
-            $arguments[] = $this->job->job_id;
-          }
-          else {
-            $arguments[] = $this;
-          }
+      // Callback functions need the job in order to update
+      // progress.  But prior to Tripal v3 the job callback functions
+      // only accepted a $job_id as the final argument.  So, we need
+      // to see if the callback is Tv3 compatible or older.  If older
+      // we want to still support it and pass the job_id.
+      $ref = new \ReflectionFunction($callback);
+      $refparams = $ref->getParameters();
+      if (count($refparams) > 0) {
+        $lastparam = $refparams[count($refparams) - 1];
+        if ($lastparam->getName() == 'job_id') {
+          $arguments[] = $this->job->job_id;
         }
-
-        // Launch the job.
-        call_user_func_array($callback, $arguments);
+        else {
+          $arguments[] = $this;
+        }
       }
+
+      // Launch the job.
+      call_user_func_array($callback, $arguments);
 
       // Set the end time for this job.
       $database = \Drupal::database();
@@ -663,7 +651,47 @@ class TripalJob {
   }
 
   /**
+   * Adds a message to the job's log.
+   *
+   * Consider using the \Drupal\tripal\Services\TripalLogger rather than
+   * this function as it supports logging to both the Job and to the
+   * Drupal system log at the same time.
+   *
+   * However, if you prefer to log to Drupal and to the Log separately use this
+   * function only for logging to the job.
+   *
+   * @param $message
+   *   The message MUST be a string or object implementing __toString().
+   * @param $context
+   *   The message MAY contain placeholders in the form: {foo} where foo will
+   *   be replaced by the context data in key "foo". The context array can
+   *   contain arbitrary data. The only assumption that can be made by
+   *   implementors is that if an Exception instance is given to produce a
+   *   stack trace, it MUST be in a key named "exception".
+   */
+  public function log($message, $context=[]) {
+    // Generate a translated message.
+    $tmessage = t($message, $context);
+
+    // For the sake of the command-line user, print the message to the
+    // terminal.
+    print $tmessage . "\n";
+
+    // Add this message to the job's log.
+    $this->job->error_msg .= "\n" . $tmessage;
+  }
+
+
+  /**
+   * DEPRECATD
+   *
    * Logs a message for the job.
+   *
+   * This function is deprecated in Tripal v4.  It will be removed in a future
+   * release of Tripal. Please use the \Drupal\tripal\Services\TripalLogger
+   * class or the `job` function of this class. The preferred approach is
+   * the TripalLogger as it supports logging to both the job and to the Drupal
+   * logger.
    *
    * There is no distinction between status messages and error logs.  Any
    * message that is intended for the user to review the status of the job
@@ -704,6 +732,12 @@ class TripalJob {
    *     - TRIPAL_DEBUG: Debug-level messages.
    */
   public function logMessage($message, $variables = [], $severity = TRIPAL_INFO) {
+
+    $logger = \Drupal::service('tripal.logger');
+    $logger->warning("DEPRECATED: the '@function' function will be removed from the API in " .
+        "a future release. Please use the TripalLogger service instead",
+        ['@function' => 'TripalJob::logMessage']);
+
     // Generate a translated message.
     $tmessage = t($message, $variables);
 

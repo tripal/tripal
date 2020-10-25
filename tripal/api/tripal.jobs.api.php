@@ -272,7 +272,6 @@ function tripal_rerun_job($job_id, $goto_jobs_page = TRUE) {
   $arguments = $job->getArguments();
   $includes = $job->getIncludes();
 
-  $newJob = new Tripaljob();
   try {
     $job->create([
       'job_name' => $job->getJobName(),
@@ -291,7 +290,7 @@ function tripal_rerun_job($job_id, $goto_jobs_page = TRUE) {
     // If this is the Tripal admin user then give a bit more information
     // about how to run the job.
     if ($user->hasPermission('administer tripal')) {
-      //$jobs_url = Link::fromTextAndUrl('jobs page', Url::fromUri('internal:/admin/tripal/tripal_jobs'))->toString();
+      $jobs_url = Link::fromTextAndUrl('jobs page', Url::fromUri('internal:/admin/tripal/tripal_jobs'))->toString();
       drupal_set_message(t("Check the @jobs_url for status.", ['@jobs_url' => $jobs_url]));
       drupal_set_message(t("You can execute the job queue manually on the command line " .
         "using the following Drush command: <br>drush trp-run-jobs --username=%uname --root=%base_path",

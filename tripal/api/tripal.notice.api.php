@@ -28,7 +28,13 @@ define('TRIPAL_DEBUG', 7);
 
 
 /**
+ * DEPRECATED
+ *
  * Provide better error notice for Tripal.
+ *
+ * This function is deprecated in Tripal v4.  It will be removed in a future
+ * release of Tripal. Please use the \Drupal\tripal\Services\TripalLogger
+ * class instead.
  *
  * Please be sure to set the $options array as desired. For example, by default
  * this function sends all messages to the Drupal logger. If a long running
@@ -72,6 +78,11 @@ define('TRIPAL_DEBUG', 7);
  * @ingroup tripal_notify_api
  */
 function tripal_report_error($type, $severity, $message, $variables = [], $options = []) {
+
+  $logger = \Drupal::service('tripal.logger');
+  $logger->warning("DEPRECATED: the '@function' function will be removed from the API in " .
+      "a future release. Please use the TripalLogger service for logging. For setting " .
+      "messages use the Drupal messenger interface.", ['@function' => 'tripal_report_error']);
 
   $suppress = getenv('TRIPAL_SUPPRESS_ERRORS');
 
@@ -243,7 +254,7 @@ function tripal_set_message($message, $importance = TRIPAL_INFO, $options = []) 
     '</div>';
 
   // Handle whether to return the HTML & let the caller deal with it
-  // or to use drupal_set_message to put it near the top of the page  & let the 
+  // or to use drupal_set_message to put it near the top of the page  & let the
   // theme deal with it.
   if ($options['return_html']) {
     return '<div class="messages tripal-site-admin-only">' . $full_message . '</div>';
@@ -254,7 +265,13 @@ function tripal_set_message($message, $importance = TRIPAL_INFO, $options = []) 
 }
 
 /**
+ * DEPRECATED
+ *
  * File-based error logging for Tripal.
+ *
+ * This function is deprecated in Tripal v4.  It will be removed in a future
+ * release of Tripal. Please use the \Drupal\tripal\Services\TripalLogger
+ * class instead.
  *
  * Consider using the tripal_report_error function rather than
  * calling this function directly, as that function calls this one for non

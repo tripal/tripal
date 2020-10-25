@@ -61,7 +61,7 @@ class TripalJobController extends ControllerBase{
    */
   public function tripalJobsCancel($id) {
     tripal_cancel_job($id, FALSE);
-    return new RedirectResponse(Url::fromRoute('admin/tripal/tripal_jobs'));
+    return $this->redirect('tripal.jobs');
   }
 
   /**
@@ -72,7 +72,7 @@ class TripalJobController extends ControllerBase{
    */
   public function tripalJobsRerun($id) {
     tripal_rerun_job($id, FALSE);
-    return new RedirectResponse(Url::fromRoute('admin/tripal/tripal_jobs'));
+    return $this->redirect('tripal.jobs');
   }
 
   /**
@@ -83,7 +83,7 @@ class TripalJobController extends ControllerBase{
    */
   public function tripalJobsExecute($id) {
     tripal_execute_job($id, FALSE);
-    return new RedirectResponse(Url::fromRoute('admin/tripal/tripal_jobs'));
+    return $this->redirect('tripal.jobs');
   }
 
   /**
@@ -110,7 +110,7 @@ class TripalJobController extends ControllerBase{
     $job->load($id);
 
     // Allow the modules to describe their job arguments for the user.
-    $arg_hook = $job->modulename . "_job_describe_args";
+    $arg_hook = $job->getModuleName() . "_job_describe_args";
     $arguments = $job->getArguments();
     if (is_callable($arg_hook)) {
       $new_args = call_user_func_array($arg_hook, [$job->getCallback(), $arguments]);
@@ -148,7 +148,7 @@ class TripalJobController extends ControllerBase{
     // Set the title of the page.
     $request = \Drupal::request();
     if ($route = $request->attributes->get(\Symfony\Cmf\Component\Routing\RouteObjectInterface::ROUTE_OBJECT)) {
-      $route->setDefault('_title', 'Job Details: ' . $job->job_name);
+      $route->setDefault('_title', 'Job Details: ' . $job->getJobName());
     }
 
     // Build the links array for the dropbutton.
@@ -159,16 +159,19 @@ class TripalJobController extends ControllerBase{
     ];
     $links['rerun'] = [
       'title' => t('Re-run this job'),
-      'url' => Url::fromUri("internal:/admin/tripal/tripal_jobs/rerun/" . $id)
+      'url' => Url::fromUri("internal:/admin/tripal/tripal_jobs/rerun/" . $id,
+          ['query' => ['destination' => Url::fromUri('internal:/admin/tripal/tripal_jobs/view/' . $id)->toString()]])
     ];
     if ($job->getStartTime() == 0 and $job->getEndTime() == 0) {
       $links['cancel'] = [
         'title' => t('Cancel this job'),
-        'url' => Url::fromUri("internal:/admin/tripal/tripal_jobs/cancel/" . $id)
+        'url' => Url::fromUri("internal:/admin/tripal/tripal_jobs/cancel/" . $id,
+            ['query' => ['destination' => Url::fromUri('internal:/admin/tripal/tripal_jobs/view/' . $id)->toString()]])
       ];
       $links['execute'] = [
         'title' => t('Execute this job'),
-        'url' => Url::fromUri("internal:/admin/tripal/tripal_jobs/execute/" . $id)
+        'url' => Url::fromUri("internal:/admin/tripal/tripal_jobs/execute/" . $id,
+            ['query' => ['destination' => Url::fromUri('internal:/admin/tripal/tripal_jobs/view/' . $id)->toString()]])
       ];
     }
 
@@ -184,7 +187,7 @@ class TripalJobController extends ControllerBase{
       '#rows' => [
         [
           ['header' => TRUE, 'data' => 'Job Name'],
-          $job->job_name
+          $job->getJobName()
         ],
         [
           ['header' => TRUE, 'data' => 'Actions'],
