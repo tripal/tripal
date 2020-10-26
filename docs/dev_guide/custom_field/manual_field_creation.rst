@@ -122,7 +122,7 @@ Sometimes a field is meant to provide a visualization or some other functionalit
 
 
 .. note::
-  Be sure to only set this to TRUE when you are absolutely certain the contents would not be needed in web services.  Tripal was designed so that what appears on the page will always appear in web services.  Aside form the formatting we see on the website, the content should be the same.
+  Be sure to only set this to TRUE when you are absolutely certain the contents would not be needed in web services.  Tripal was designed so that what appears on the page will always appear in web services.  Aside from the formatting we see on the website, the content should be the same.
 
 Finally, the last item in our Class variables is the **download_formatters**.  Tripal provides an API that allows tools to group entities into data collections.  Data collections are like "baskets" or "shopping carts".   Entities that are in data collections can be downloaded into files.  If your field is compatible with specific file downloaders you can specify those here.  A file downloader is a special TripalFieldDownloader class that "speaks" certain file formats.  Tripal, by default, provides the TripalTabDownloader (for tab-delimited files), the TripalCSVDownloader (for CSV files), a TripalNucFASTADownloader for creating nucleotide FASTA files and a TripalProteinFASTADownloader for protein FASTA files.   If your field is compatible with any of these formatters you can specify them in the following array:
 
@@ -198,7 +198,7 @@ Next, let's initialize our field's value to be empty.  When setting a field valu
     );
 
 
-Notice that our field has some sub elements. The first is 'und'.  This element corresponds to the "language" of the text.  Drupal supports multiple spoken languages and wants to know the language of text we provide.  For Tripal fields we always use 'und' meaning 'undefined'.   The next element is the delta index number.  Field have a cardinality, or in other words they can have multiple values.  For every value we add we increment that index, always starting at zero.  The last element is our 'value' element and it is here where we put our element. You may notice that our **delta** index is hard coded to 0.  This is because an entity can only always have one organism that it is associated with.  We will never have more than one.
+Notice that our field has some sub elements. The first is 'und'.  This element corresponds to the "language" of the text.  Drupal supports multiple spoken languages and wants to know the language of text we provide.  For Tripal fields we always use 'und' meaning 'undefined'.   The next element is the delta index number.  Fields have a cardinality, or in other words they can have multiple values.  For every value we add we increment that index, always starting at zero.  The last element is our 'value' element and it is here where we put our element. You may notice that our **delta** index is hard coded to 0.  This is because an entity can only always have one organism that it is associated with.  We will never have more than one.
 
 Now that we've got some preliminary values and we've initialized our value array we can start adding values!  Before we do though, let's double check that we have a record.  If we don't have a record for this entity, we can't get a value.
 
@@ -222,7 +222,7 @@ We can easily get all of the values we need from this organism object.   We can 
 
 .. code-block:: php 
 
-      $label = tripal_replace_chado_tokens($string, $organism);
+      $label = chado_replace_tokens($string, $organism);
       $entity->{$field_name}['und'][0]['value'] = array(
         $label_term => $label,
         $genus_term => $organism->genus,
@@ -278,7 +278,7 @@ We do this because anything in the 'value' element is intended for the end-user.
 
   1.  Does the user need this value?  If yes, put it in the 'value' element.
   2.  Does Tripal need the value when writing back to the Chado table?  If yes, put it as a hidden element.
-  3.  Does the user need to see the value an will this same value need to be written to the table?  If yes, then you have to put the value in both places.
+  3.  Does the user need to see the value and will this same value need to be written to the table?  If yes, then you have to put the value in both places.
 
 For our **obi__organism** field it is for entities with records in the **feature, stock, library**, etc. tables. Those tables only have an **organism_id** to represent the organism.  So, that's the database column this field is supporting.  We therefore, need to put that field as a hidden field, and all the others are just helpful to the user and don't get saved in the feature, stock or library tables. So, those go in the values array.
 

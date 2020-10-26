@@ -41,6 +41,8 @@ class sio__references extends ChadoField {
     'chado_column' => 'pub_id',
     // The base table.
     'base_table' => 'pub',
+    // The number of items to show on a page.
+    'items_per_page' => 10,
   ];
 
   // The default widget for this field.
@@ -97,75 +99,136 @@ class sio__references extends ChadoField {
     foreach ($chado_tables as $chado_table) {
       $matches = [];
       if (preg_match('/^(.+?)_pub$/', $chado_table, $matches)) {
+
         $reference_table = $matches[1];
 
-        // Find the base table this links to and get the fk columns that map it.
+        // Get the schema for the pub linker table table.
         $schema = chado_get_schema($chado_table);
+
+        // Skip tables that don't have a foreign key definition.
+        if (!array_key_exists('foreign keys', $schema)) {
+          continue;
+        }
+
+        // Get information about the linking table.
         $fkeys = $schema['foreign keys'];
+        $fkleft = NULL;
+        $fkright = NULL;
+        $islinked = FALSE;
         foreach ($fkeys as $linked_table => $fk_details) {
+          if ($linked_table == 'pub') {
+            $islinked = TRUE;
+          }
           if ($linked_table == $reference_table) {
             $fkleft = array_keys($fk_details['columns'])[0];
             $fkright = $fk_details['columns'][$fkleft];
           }
-
         }
+        // If this table doesn't have an FK to a reference table
+        // then it's just a table with a _pub in the name.
+        if (!$fkleft) {
+          continue;
+        }
+        // If this table does not have a FK to the pub table then
+        // we don't want to search it.
+        if (!$islinked) {
+          continue;
+        }
+
+
+        // Build the SQL to find records assocaited with this publication.
+        $ref_schema = chado_get_schema($reference_table);
+        $ref_pkey = $ref_schema['primary key'][0];
+        $select = "SELECT REF.* ";
+        $from = "FROM {" . $chado_table . "} LINK
+            INNER JOIN {" . $reference_table . "} REF on LINK.$fkleft = REF.$fkright
+        ";
+        if (array_key_exists('type_id', $ref_schema['fields'])) {
+          $select .= ", CVT.name as type_name";
+          $from .= "INNER JOIN {cvterm} CVT on REF.type_id = CVT.cvterm_id ";
+        }
+
+        // Get the mapping of the refrence table to a CV term in case the
+        // records in the table don't have a type_id.
+        $ref_mapping = db_select('chado_cvterm_mapping', 'CVM')
+          ->fields('CVM')
+          ->condition('chado_table', $reference_table)
+          ->execute()
+          ->fetchObject();
+        $ref_type = NULL;
+        if ($ref_mapping) {
+          $ref_type = chado_get_cvterm(['cvterm_id' => $ref_mapping->cvterm_id]);
+        }
+
+        // Are the records in this table associated with a content type?
+        // if so, we want to get those types so we can find the entity ID.
+        $bundles = db_select('chado_bundle', 'CB')
+          ->fields('CB', ['bundle_id'])
+          ->condition('CB.data_table', $reference_table)
+          ->execute();
+        $entity_sql = '';
+        while ($bundle_id = $bundles->fetchField()) {
+          $entity_sql .= "SELECT entity_id FROM [chado_bio_data_" . $bundle_id . "] CBD" . $bundle_id . " WHERE record_id = LINK.$ref_pkey UNION ";
+        }
+        if (!empty($entity_sql)) {
+          $entity_sql = rtrim($entity_sql, " UNION ");
+          $entity_sql = ", (" . $entity_sql . " LIMIT 1) as entity_id";
+        }
+
+
         // Iterate through all of the records in the linker table that
         // match the given pub ID.
-        $records = chado_generate_var($chado_table, ['pub_id' => $chado_record->pub_id], ['return_array' => TRUE]);
-        foreach ($records as $record) {
+        $sql = "$select $entity_sql $from WHERE LINK.pub_id = :pub_id";
+        $args = [':pub_id' => $chado_record->pub_id];
+        $records = chado_query($sql, $args);
+        while($record = $records->fetchObject()) {
+        //foreach ($records as $record) {
+
           // We want to add a 'type' and 'name' element to the values (at a
           // minimum) for each of the records.  Unfortunately, every base table
-          // is different and their may not be an easy to identify name,
+          // is different and there may not be an easy to identify name,
           // so... we'll do the best we can.
           $entity->{$field_name}['und'][$delta]['value'] = [];
 
           // First get the type of record.
-          if (property_exists($record->$fkleft, 'type_id') and $record->$fkleft->type_id) {
-            $entity->{$field_name}['und'][$delta]['value']['rdfs:type'] = $record->$fkleft->type_id->name;
+          if (property_exists($record, 'type_name')) {
+            $entity->{$field_name}['und'][$delta]['value']['rdfs:type'] = $record->type_name;
           }
           else {
-            // If there's not a type_id column then see if the table is mapped
-            // to a type.
-            $mapping = db_select('chado_cvterm_mapping', 'CVM')
-              ->fields('CVM')
-              ->condition('chado_table', $reference_table)
-              ->execute()
-              ->fetchObject();
-            if ($mapping) {
-              $cvterm = chado_get_cvterm(['cvterm_id' => $mapping->cvterm_id]);
-              $entity->{$field_name}['und'][$delta]['value']['rdfs:type'] = $cvterm->name;
+            if ($ref_type) {
+              $entity->{$field_name}['und'][$delta]['value']['rdfs:type'] = $ref_type->name;
             }
           }
 
           // Add in the name and uniquename (identifier) if those fields exist.
-          if (property_exists($record->$fkleft, 'name')) {
-            $entity->{$field_name}['und'][$delta]['value']['schema:name'] = $record->$fkleft->name;
+          if (property_exists($record, 'name')) {
+            $entity->{$field_name}['und'][$delta]['value']['schema:name'] = $record->name;
           }
-          if (property_exists($record->$fkleft, 'uniquename')) {
-            $entity->{$field_name}['und'][$delta]['value']['data:0842'] = $record->$fkleft->name;
+          if (property_exists($record, 'uniquename')) {
+            $entity->{$field_name}['und'][$delta]['value']['data:0842'] = $record->name;
           }
 
           // If this records is also a published entity then include that.
-          if (property_exists($record->$fkleft, 'entity_id')) {
-            $entity->{$field_name}['und'][$delta]['value']['entity'] = 'TripalEntity:' . $record->$fkleft->entity_id;
+          if (property_exists($record, 'entity_id') and !empty($record->entity_id)) {
+            $entity->{$field_name}['und'][$delta]['value']['entity'] = 'TripalEntity:' . $record->entity_id;
           }
 
           // If this is the organism table then we will create the name
           // specially.
-          if (property_exists($record->$fkleft, 'genus')) {
-            $name = '<i>' . $record->$fkleft->genus . ' ' . $record->$fkleft->species . '</i>';
-            if (property_exists($record->$fkleft, 'infraspecific_name')) {
+          if (property_exists($record, 'genus')) {
+            $name = '<i>' . $record->genus . ' ' . $record->species . '</i>';
+            if (property_exists($record, 'infraspecific_name')) {
               if ($record->$fkleft->type_id) {
-                $name .= ' ' . $record->$fkleft->type_id->name;
+                $name .= ' ' . $record->type_name;
               }
-              $name .= ' ' . $record->$fkleft->infraspecific_name;
+              $name .= ' ' . $record->infraspecific_name;
             }
             $entity->{$field_name}['und'][$delta]['value']['schema:name'] = $name;
+            $entity->{$field_name}['und'][$delta]['value']['rdfs:type'] = $ref_type->name;
           }
           $delta++;
         }
       }
     }
   }
-
 }

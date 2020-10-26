@@ -702,7 +702,7 @@ function chado_insert_cv($name, $definition) {
   $sel_values = ['name' => $name];
   $results = chado_select_record('cv', ['*'], $sel_values);
 
-  // If it does not exists then add it.
+  // If it does not exist then add it.
   if (count($results) == 0) {
     $success = chado_insert_record('cv', $ins_values);
     if (!$success) {
@@ -963,7 +963,7 @@ function chado_insert_cvterm($term, $options = []) {
         'is_for_definition' => 1,
       ];
       $result = chado_select_record('cvterm_dbxref', ['*'], $values);
-      // if the cvterm_dbxref record does not exists then add it
+      // if the cvterm_dbxref record does not exist then add it
       if (count($result) == 0) {
         $options = [
           'return_record' => FALSE,

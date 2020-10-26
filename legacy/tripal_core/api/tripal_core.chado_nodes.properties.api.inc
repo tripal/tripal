@@ -178,7 +178,7 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
   // make sure the property table exists before proceeding.
   if (!chado_table_exists($details['property_table'])) {
     drupal_set_message("Cannot add property elements to the form. The property table, '" .
-      $details['property_table'] . "', does not exists", "error");
+      $details['property_table'] . "', does not exist", "error");
     tripal_report_error('tcprops_form', TRIPAL_ERROR,
       "Cannot add property elements to the form. The property table, '%name', cannot be found.",
       ['%name' => $details['property_table']]);
@@ -203,7 +203,7 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
     $result = chado_select_record('cv', ['cv_id'], ['name' => $details['cv_name']]);
     if (count($result) == 0) {
       drupal_set_message("Cannot add property elements to the form. The CV name, '" .
-        $details['cv_name'] . "', does not exists", "error");
+        $details['cv_name'] . "', does not exist", "error");
       tripal_report_error('tcprops_form', TRIPAL_ERROR,
         "Cannot add property elements to the form. The CV named, '%name', cannot be found.",
         ['%name' => $details['cv_name']]);
