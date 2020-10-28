@@ -2765,12 +2765,15 @@ class GFF3Importer extends TripalImporter {
     }
     else {
       $uniquename = $attrs['ID'][0];
-      preg_match('[a-zA-Z0-9.:^*$@!+_?-|]', $uniquename, $matches);
+
+      // Run ID validation checks based on GFF3 specifications 
+      preg_match('/[a-zA-Z0-9\.:\^\*\$@!\+_\?-\|]*/', $uniquename, $matches);
       if($matches[0] != $uniquename) {
         throw new Exception(t("ID !uniquename contains invalid characters. Only 
           characters included in this regular expression is allowed 
           [a-zA-Z0-9.:^*$@!+_?-|]", ['!uniquename' => $uniquename]));
       }
+
       $name = $attrs['Name'][0];
     }
 

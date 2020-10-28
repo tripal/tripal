@@ -27,10 +27,10 @@ class GFF3ImporterTest extends TripalTestCase {
       'update' => 1,
       'create_organism' => 0,
       'create_target' => 0,
-      ///regexps for mRNA and protein.
+      // regexps for mRNA and protein.
       're_mrna' => NULL,
       're_protein' => NULL,
-      //optional
+      // optional
       'target_organism_id' => NULL,
       'target_type' => NULL,
       'start_line' => NULL,
@@ -70,10 +70,10 @@ class GFF3ImporterTest extends TripalTestCase {
       'update' => 1,
       'create_organism' => 0,
       'create_target' => 0,
-      ///regexps for mRNA and protein.
+      // regexps for mRNA and protein.
       're_mrna' => NULL,
       're_protein' => NULL,
-      //optional
+      // optional
       'target_organism_id' => NULL,
       'target_type' => NULL,
       'start_line' => NULL,
@@ -114,10 +114,10 @@ class GFF3ImporterTest extends TripalTestCase {
       'update' => 1,
       'create_organism' => 0,
       'create_target' => 0,
-      ///regexps for mRNA and protein.
+      // regexps for mRNA and protein.
       're_mrna' => NULL,
       're_protein' => NULL,
-      //optional
+      // optional
       'target_organism_id' => NULL,
       'target_type' => NULL,
       'start_line' => NULL,
@@ -128,7 +128,7 @@ class GFF3ImporterTest extends TripalTestCase {
     $hasException = false;
     try {    
       $this->loadLandmarks($analysis, $organism);
-      // This will produce an exception due to unescaped whitespace in ID
+      // This will produce an exception due to right arrow in ID
       $this->runGFFLoader($run_args, $gff_file);
     }
     catch(\Exception $ex) {
@@ -159,10 +159,10 @@ class GFF3ImporterTest extends TripalTestCase {
       'update' => 1,
       'create_organism' => 0,
       'create_target' => 0,
-      ///regexps for mRNA and protein.
+      // regexps for mRNA and protein.
       're_mrna' => NULL,
       're_protein' => NULL,
-      //optional
+      // optional
       'target_organism_id' => NULL,
       'target_type' => NULL,
       'start_line' => NULL,
@@ -182,6 +182,50 @@ class GFF3ImporterTest extends TripalTestCase {
 
     // We expect an exception to happen so we are looking for a return of true
     $this->assertEquals($hasException, true);
+  }
+
+  /**
+   * Run the GFF loader on gff_invalidstartend.gff for testing.
+   *
+   * This tests whether the GFF loader fixes start end values 
+   */  
+  public function testGFFImporterInvalidStartEnd() {
+    $gff_file = ['file_local' => __DIR__ . '/../data/gff_invalidstartend.gff'];
+    $analysis = factory('chado.analysis')->create();
+    $organism = factory('chado.organism')->create();
+    $run_args = [
+      'analysis_id' => $analysis->analysis_id,
+      'organism_id' => $organism->organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+    ];
+
+   
+    $this->loadLandmarks($analysis, $organism);
+    // This will produce an exception of duplicate feature ID
+    $this->runGFFLoader($run_args, $gff_file);
+
+    $results = db_select('chado.feature', 'f')
+      ->fields('f', ['uniquename'])
+      ->condition('f.uniquename', 'FRAEX38873_v2_000000010')
+      ->execute()
+      ->fetchAll();    
+
+    // We expect the feature to still be added to the database
+    // since the GFF Loader caters for reversing backward numbers
+    $this->assertEquals(count($results), 1);
   }
 
   /**
