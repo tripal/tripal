@@ -52,6 +52,95 @@ class GFF3ImporterTest extends TripalTestCase {
   }
 
   /**
+   * Run the GFF loader on gff_unescaped_ids.gff for testing.
+   *
+   * This tests whether the GFF loader detects invalid ID that contains  
+   * unescaped whitespaces. The GFF loader should throw an exception which this
+   * unit test detects.
+   */  
+  public function testGFFImporterUnescapedWhitespaceID() {
+    $gff_file = ['file_local' => __DIR__ . '/../data/gff_unescaped_ids.gff'];
+    $analysis = factory('chado.analysis')->create();
+    $organism = factory('chado.organism')->create();
+    $run_args = [
+      'analysis_id' => $analysis->analysis_id,
+      'organism_id' => $organism->organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      ///regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      //optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+    ];
+
+    $hasException = false;
+    try {    
+      $this->loadLandmarks($analysis, $organism);
+      // This will produce an exception due to unescaped whitespace in ID
+      $this->runGFFLoader($run_args, $gff_file);
+    }
+    catch(\Exception $ex) {
+      $hasException = true;
+    }
+
+    // We expect an exception to happen so we are looking for a return of true
+    $this->assertEquals($hasException, true);
+  }
+
+  /**
+   * Run the GFF loader on gff_rightarrow_ids.gff for testing.
+   *
+   * This tests whether the GFF loader detects invalid ID that contains  
+   * beginning arrow >. The GFF loader should throw an exception which this
+   * unit detects.
+   */  
+  public function testGFFImporterRightArrowID() {
+    $gff_file = ['file_local' => __DIR__ . '/../data/gff_rightarrow_id.gff'];
+    $analysis = factory('chado.analysis')->create();
+    $organism = factory('chado.organism')->create();
+    $run_args = [
+      'analysis_id' => $analysis->analysis_id,
+      'organism_id' => $organism->organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      ///regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      //optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+    ];
+
+    $hasException = false;
+    try {    
+      $this->loadLandmarks($analysis, $organism);
+      // This will produce an exception due to unescaped whitespace in ID
+      $this->runGFFLoader($run_args, $gff_file);
+    }
+    catch(\Exception $ex) {
+      $hasException = true;
+    }
+
+    // We expect an exception to happen so we are looking for a return of true
+    $this->assertEquals($hasException, true);
+  }
+
+
+  /**
    * Run the GFF loader on gff_duplicate_ids.gff for testing.
    *
    * This tests whether the GFF loader detects duplicate IDs which makes a 

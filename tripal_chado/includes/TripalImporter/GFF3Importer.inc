@@ -2765,6 +2765,12 @@ class GFF3Importer extends TripalImporter {
     }
     else {
       $uniquename = $attrs['ID'][0];
+      if(preg_match('[\\][\s]', $uniquename) == 0 && preg_match('[\s]', $uniquename) == 1) {
+        throw new Exception(t("ID !uniquename has one or more unescaped whitespaces", ['!uniquename' => $uniquename]));
+      }
+      if(substr($uniquename, 0, 1) == ">") {
+        throw new Exception(t("ID !uniquename should not begin with a right arrow >", ['!uniquename' => $uniquename]));
+      }
       $name = $attrs['Name'][0];
     }
 
