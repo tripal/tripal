@@ -80,13 +80,25 @@ class NCITMetadataItem extends ChadoFieldItemBase {
 
     // -- Chado Table.
     // The table in Chado that the field maps to.
-    $settings['chado_table'] = NULL;
+    $settings['chado_table'] = 'feature';
     // The column of the table in Chado where the value comes from.
-    $settings['chado_column'] = NULL;
+    $settings['chado_column'] = 'uniquename';
     // The base table.
-    $settings['base_table'] = NULL;
+    $settings['base_table'] = 'feature';
 
     return $settings;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
+    $elements = parent::storageSettingsForm($form, $form_state, $has_data);
+
+    $elements['chado_table']['#disabled'] = FALSE;
+    $elements['chado_column']['#disabled'] = FALSE;
+
+    return $elements;
   }
 
   /**
@@ -114,14 +126,6 @@ class NCITMetadataItem extends ChadoFieldItemBase {
     $properties['record_id'] = DataDefinition::create('integer')
       ->setLabel(new TranslatableMarkup('Chado Record ID'))
       ->setDescription(new TranslatableMarkup('The primary key of this record in chado.'));
-
-    $properties['chado_table'] = DataDefinition::create('string')
-      ->setLabel(new TranslatableMarkup('Chado Table'))
-      ->setDescription(new TranslatableMarkup('The name of the chado table this record resides in.'));
-
-    $properties['chado_column'] = DataDefinition::create('string')
-      ->setLabel(new TranslatableMarkup('Chado Column'))
-      ->setDescription(new TranslatableMarkup('The name of the chado column this metadata is stored in.'));
 
     return $properties;
   }

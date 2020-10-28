@@ -94,6 +94,24 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
       '#disabled' => TRUE,
     ];
 
+    $elements['chado_table'] = [
+      '#type' => 'textfield',
+      '#title' => t('Chado Table'),
+      '#description' => t('The chado table data for this field is stored in.'),
+      '#required' => TRUE,
+      '#default_value' => $this->getSetting('chado_table'),
+      '#disabled' => TRUE,
+    ];
+
+    $elements['chado_column'] = [
+      '#type' => 'textfield',
+      '#title' => t('Chado Column'),
+      '#description' => t('The chado table column that data for this field is stored in.'),
+      '#required' => TRUE,
+      '#default_value' => $this->getSetting('chado_column'),
+      '#disabled' => TRUE,
+    ];
+
     return $elements;
   }
 
