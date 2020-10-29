@@ -14,7 +14,7 @@ A Drush-based loader for VCF files that follows the genotype storage rules outli
 Mainlab Chado Loader
 ---------------------
 
-MCL (Mainlab Chado Loader) is a module that enables users to upload their biological data to Chado database schema. Users are required to transfer their biological data into various types of data template files. MCL, then, uploads these data template files into a chado schema.
+MCL (Mainlab Chado Loader) is a module that enables users to upload their biological data to Chado database schema. Users are required to transfer their biological data into various types of data template files. MCL, then, uploads these data template files into a Chado schema.
 
 `Documentation <https://gitlab.com/mainlabwsu/mcl/blob/master/README.md>`__
 `Repository <https://gitlab.com/mainlabwsu/mcl>`__

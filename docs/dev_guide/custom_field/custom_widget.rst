@@ -135,7 +135,7 @@ But what do you do if the record you want to link to via foreign key constraint 
       // Set all chado fields to their values.
     }
     // Otherwise, maybe we are creating the entity...
-    // The storage API should handle this case and automagically add the key in // once the chado record is created... so all we need to do is set the
+    // The storage API should handle this case and automatically add the key in // once the chado record is created... so all we need to do is set the
     // other columns.
     elseif ($subject_name && $object_id && $type_id) {
       $form_state['values'][$field_name][$langcode][$delta]['value'] = 'value must be set but is not used';
