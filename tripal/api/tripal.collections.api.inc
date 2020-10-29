@@ -4,7 +4,7 @@
  * @file
  *
  * Provides the API for working with Data collections. This includes creation,
- * experiation, and retreival.
+ * expiration, and retrieval.
  */
 
 /**
@@ -26,7 +26,7 @@
  * Creates a collection of entities for a given user.
  *
  * Use this function if you want to create a new collection with an bundle.
- * Otherwise, a new colleciton can also be created by creating an new instance
+ * Otherwise, a new collection can also be created by creating an new instance
  * of a TripalEntityCollection object.
  *
  * @param  $details

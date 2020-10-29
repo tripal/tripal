@@ -476,15 +476,15 @@ function tripal_load_include_downloader_class($class) {
  * A Drupal field attached to an entity may have multiple items (i.e. it has
  * a cardinality > 1).  Each of these items will always have a 'value' key that
  * contains the data for that field. However, fields can also have other keys
- * with their own values.  You can easily retreive the value of these keys
+ * with their own values.  You can easily retrieve the value of these keys
  * using this function.  What makes this function useful is that you can
  * provide a default value to use if the key has no value.  This is useful
  * when developing a TripalField::widgetForm function and you need to
- * retreive default values and you don't want to have to always check if the
+ * retrieve default values and you don't want to have to always check if the
  * value is set.
  *
  * @param $items
- *   The fields $items array. Compatbile with that returned by field_get_items.
+ *   The fields $items array. Compatible with that returned by field_get_items.
  * @param $delta
  *   The index of the item.
  * @parm $key
