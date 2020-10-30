@@ -17,7 +17,7 @@ Defining URL paths and the programmatic flow to a rendered webpage is known as *
 
 This route defines that a user navigating to ``https://yourdrupalsite/hello`` will render the content defined by the ``helloWorld`` method in the ``HelloWorldController`` class. The ``defaults`` key provides parameters to the handlers responsible for returning your content to the user. In this case, that includes the title of the page and where to get the content from. Finally, the ``requirements`` key defines conditions which must be met for the content to display; for example, permissions that the current user must have.
 
-The other key thing to note about the above route is the ``{{name}}`` placeholder used in the path. By surrounding a variable name in curly brackets you can pass paramters to your controller. The important thing to note is that the name of your path variable must match exactly and exist in your specified controller method (i.e. ``HelloWorldController::helloWorld($name)``).
+The other key thing to note about the above route is the ``{{name}}`` placeholder used in the path. By surrounding a variable name in curly brackets you can pass parameters to your controller. The important thing to note is that the name of your path variable must match exactly and exist in your specified controller method (i.e. ``HelloWorldController::helloWorld($name)``).
 
 
 Additional Resources:
@@ -29,7 +29,7 @@ Additional Resources:
 Menu Items
 -------------
 
-The menu system has an extensive user interface (UI) for defining menus and the links within them. This is great for management for your Tripal site as it allows you to dynamically add menu items requested by your community. However, when developing custom modules, you will also want to define these menu items programatically to save time and provide navigation to other sites using your module. To do this you will want to use the ``.links.menu.yml`` file which lives in the base directory of your module. It looks like this:
+The menu system has an extensive user interface (UI) for defining menus and the links within them. This is great for management for your Tripal site as it allows you to dynamically add menu items requested by your community. However, when developing custom modules, you will also want to define these menu items programmatically to save time and provide navigation to other sites using your module. To do this you will want to use the ``.links.menu.yml`` file which lives in the base directory of your module. It looks like this:
 
 .. code::
 
@@ -57,7 +57,7 @@ Additional Resources
 Links
 ------
 
-When programatically creating page content, you will often want to add links. To add internal links, use the route name as shown below. This ensures that your link doesn't break if the route is changed.
+When programmatically creating page content, you will often want to add links. To add internal links, use the route name as shown below. This ensures that your link doesn't break if the route is changed.
 
 .. code:: php
 
@@ -71,7 +71,7 @@ To generate a link to an external resource, you can use the following:
   $link = Link::fromTextAndUrl('This is a link',
     Url::fromUri('http://www.google.com'));
 
-For all the different ways to generate URLs see the following resources -the tutorial is particularily complete.
+For all the different ways to generate URLs see the following resources -the tutorial is particularly complete.
 
 Additional Resources
  - `Agaric Tutorial: Creating Links in Code for Drupal 8 <https://agaric.coop/blog/creating-links-code-drupal-8>`_

@@ -14,7 +14,7 @@ Choose a module machine name that is descriptive, short and unique. It is always
  - It must be unique. Your module should not have the same short name as any other module, theme, or installation profile you will be using on the site.
  - It should not be any of the reserved terms : src, lib, vendor, assets, css, files, images, js, misc, templates, includes, fixtures, Drupal.
 
-It is also a good idea to ensure your module name encompases the full functionality you would like to develop. For example, while your current goal may be importing a specific file format, you are likely to want to develop customized display through Tripal fields in the future. As such, you would want to stay away from ``my_file_format_importer`` and go with something more general like ``my_data_type``. We also recommend you prefix your module name with a short identifier for you lab. This will ensure your module name is unique.
+It is also a good idea to ensure your module name encompasses the full functionality you would like to develop. For example, while your current goal may be importing a specific file format, you are likely to want to develop customized display through Tripal fields in the future. As such, you would want to stay away from ``my_file_format_importer`` and go with something more general like ``my_data_type``. We also recommend you prefix your module name with a short identifier for you lab. This will ensure your module name is unique.
 
 Prepare a module skeleton
 ---------------------------
@@ -48,7 +48,7 @@ As mentioned when preparing a module skeleton above, your entire module will be 
 
  - ``config``: contains files defining default configuration including variables and schema.
  - ``src``: contains the bulk of your module including controllers, forms, fields and blocks.
- - ``templates``: contains your Twig template files for mofifying display of fields and pages.
+ - ``templates``: contains your Twig template files for modifying display of fields and pages.
  - ``tests``: contains your automated phpunit tests.
 
 The sub-directories and files within are described in the following image:

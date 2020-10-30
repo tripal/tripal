@@ -30,9 +30,9 @@ Chado_ is meant to be installed into a PostgreSQL database and is designed to ho
 Chado Installation
 --------------------
 
-When you install the Tripal Chado module you will be automatically prompted to install Chado. This creates a schema within your Drupal database to house the chado tables listed in the resources above. To install chado manually navigate to Structure > Tripal > Data Storage > Chado > Install Chado. Then just choose your version and run the associated Tripal job.
+When you install the Tripal Chado module you will be automatically prompted to install Chado. This creates a schema within your Drupal database to house the Chado tables listed in the resources above. To install Chado manually navigate to Structure > Tripal > Data Storage > Chado > Install Chado. Then just choose your version and run the associated Tripal job.
 
-If you need to install chado programatically, use the following service from within a fully bootstrapped Tripal site.
+If you need to install Chado programmatically, use the following service from within a fully bootstrapped Tripal site.
 
 .. code-block:: php
 	:caption: Installs Chado version 1.3 in a schema named 'chado'.
