@@ -105,7 +105,7 @@ function tripal_get_entity_tokens($bundle, $options = []) {
  * @param TripalEntity $entity
  *   The entity with field values used to find values of tokens.
  * @param TripalBundle $bundle_entity
- *   The bundle enitity containing special values sometimes needed for token
+ *   The bundle entity containing special values sometimes needed for token
  *   replacement.
  *
  * @return

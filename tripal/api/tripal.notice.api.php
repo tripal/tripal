@@ -12,7 +12,7 @@
  * @ingroup tripal_api
  * @{
  * Provides an application programming interface (API) for improved user
- * notivications.  These API functions can be used to set messages for
+ * notifications.  These API functions can be used to set messages for
  * end-users, administrators, or simple logging.
  *
  * @}
@@ -39,7 +39,7 @@ define('TRIPAL_DEBUG', 7);
  * will add backtrace information to the message.
  *
  * @param $type
- *   The catagory to which this message belongs. Can be any string, but the
+ *   The category to which this message belongs. Can be any string, but the
  *   general practice is to use the name of the module.
  * @param $severity
  *   The severity of the message; one of the following values:

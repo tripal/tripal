@@ -22,12 +22,12 @@ use \Drupal\tripal\Entity\TripalTerm;
  *         prefix does not support appending then the exact location for the
  *         position of the short_name and the term accession will be
  *         specified with the {db} and {accession} tags respectively.
- *       - TripalVocab: the tripal vocabulary object.
+ *       - TripalVocab: the Tripal vocabulary object.
  *     - accession : The name unique ID of the term.
  *     - url : The URL for the term.
  *     - name : The name of the term.
  *     - definition : The term's description.
- *     - TripalTerm: the tripal term object.
+ *     - TripalTerm: the Tripal term object.
  *   Returns NULL if the term cannot be found.
  *
  * @ingroup tripal_terms_api
