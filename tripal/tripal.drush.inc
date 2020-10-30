@@ -32,6 +32,9 @@ function tripal_drush_help($command) {
     case 'trp-get-currjob':
       return dt('Returns details about the currently running tripal job including percent complete.');
       break;
+    case 'trp-version':
+      return dt('Returns the current version of Tripal that is installed.');
+      break;
     // Placeholders for unimplmeneted jobs
     case 'trp-show-job':
       break;
@@ -123,6 +126,13 @@ function tripal_drush_command() {
     'arguments' => [],
     'examples' => [
       'Standard example' => 'drush trp-set-permissions --user=administrator',
+    ],
+  ];
+  $items['trp-version'] = [
+    'description' => dt('Returns the current version of Tripal that is installed.'),
+    'arguments' => [],
+    'examples' => [
+      'Standard usage' => 'drush trp-version',
     ],
   ];
   return $items;
@@ -390,4 +400,18 @@ function drush_tripal_trp_set_permissions() {
 
   drush_print(dt(""));
   drush_print(dt("Permissions is now complete."));
+}
+
+/**
+ * Returns the current version of Tripal
+ * 
+ * Executed when 'drush trp-version' is called.
+ * 
+ * @ingroup tripal_drush
+ *
+ * @return string
+ */
+function drush_tripal_trp_version() {
+  $version = system_get_info('module', 'tripal');
+  drush_print("Tripal version: " . $version['version']);
 }
