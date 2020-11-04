@@ -5,6 +5,12 @@ name: PHPUnit Tests
 # Run this workflow every time a new commit is pushed to your repository
 on: [push, pull_request]
 
+strategy:
+  matrix:
+    php-versions: ['7.1', '7.2']
+
+name: Testing Tripal Core (PHP ${{ matrix.php-versions }})
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
@@ -41,7 +47,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.2'
+          php-version: ${{ matrix.php-versions }}
           # Install extensions for PHP-PostgreSQL
           extensions: mbstring, intl, php-pgsql, php-gd, php-xml
           # Increase memory limit to 2G
