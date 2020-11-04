@@ -1,5 +1,5 @@
 # Run our PHPUnit tests
-name: PHPUnit Tests
+name: PHPUnit-Tests
 
 # Controls when the action will run.
 # Run this workflow every time a new commit is pushed to your repository
