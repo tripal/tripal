@@ -5,18 +5,18 @@ name: PHPUnit Tests
 # Run this workflow every time a new commit is pushed to your repository
 on: [push, pull_request]
 
-strategy:
-  matrix:
-    php-versions: ['7.1', '7.2']
-
-name: Testing Tripal Core (PHP ${{ matrix.php-versions }})
-
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
   run-tests:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    # Matrix Build for this job.
+    strategy:
+      matrix:
+        php-versions: ['7.1', '7.2']
+    # Name the matrix build so we can tell them apart.
+    name: PHPUnit Testing of Tripal Core (PHP ${{ matrix.php-versions }})
 
     # Service containers to run with `run-tests`
     services:
