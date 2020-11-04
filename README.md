@@ -1,4 +1,4 @@
-[![7.x-3.x Build Status](https://travis-ci.org/tripal/tripal.svg?branch=7.x-3.x)](https://travis-ci.org/tripal/tripal)
+![PHPUnit Tests](https://github.com/tripal/tripal/workflows/PHPUnit%20Tests/badge.svg)
 [![All Contributors](https://img.shields.io/badge/all_contributors-14-orange.svg?style=flat-square)](#contributors)
 [![Documentation Status](https://readthedocs.org/projects/tripal/badge/?version=latest)](https://tripal.readthedocs.io/en/latest/?badge=latest)
 
