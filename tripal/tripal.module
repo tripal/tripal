@@ -1621,3 +1621,14 @@ function tripal_field_group_table_rows_alter(&$element, &$children) {
     }
   }
 }
+
+/**
+ * Returns the current version of Tripal, according to the tripal.info file
+ * 
+ * @return string
+ *   The version string of Tripal. Ex. 7.x-3.1
+ */
+function tripal_version() {
+  $version = system_get_info('module', 'tripal');
+  return $version['version'];
+}
