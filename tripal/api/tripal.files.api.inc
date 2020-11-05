@@ -22,7 +22,7 @@
  * installation of the module in the .install file.  However this causes
  * permission problems if the module is installed via drush with a
  * user account that is not the same as the web user.  Therefore, this
- * function should not be called in a location accessiblve via a drush
+ * function should not be called in a location accessible via a drush
  * command.  The tripal_get_files_dir() and tripal_get_files_stream()
  * will automatically create the directory if it doesn't exist so there is
  * little need to call this function directly.

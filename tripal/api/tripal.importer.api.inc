@@ -134,7 +134,7 @@ function tripal_load_include_importer_class($class) {
  * Tripal provides the TripalImporter class to allow site developers to
  * create their own data loaders.  Site users can then use any data loader
  * implemented for the site by submitting the form that comes with the
- * TripalImporter impelmentation.  This function runs the importer using the
+ * TripalImporter implementation.  This function runs the importer using the
  * arguments provided by the user.
  *
  * @param $import_id
