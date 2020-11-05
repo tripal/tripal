@@ -27,7 +27,7 @@ Consider the term for `organism <http://www.ebi.ac.uk/ols/ontologies/obi/terms?i
 
 .. figure:: select_vocab_terms.1.organism.png
 
-Notice how the teal box (the **short name**) is OBI, and the orange box contains the **full accession**, OBI:0100026 which includes but the **short name** and the unique term **accession** value.  Unfortunately, the OLS does not indicate the **namespace** terms.   So, as a rule we will use the short name converted to lower case.  Before using this term in a Tripal Bundle or Field you may need to insert this term into Chado.  You can do so in your custom module cude using the **tripal_insert_cvterm** function. The following provides a demonstration:
+Notice how the teal box (the **short name**) is OBI, and the orange box contains the **full accession**, OBI:0100026 which includes but the **short name** and the unique term **accession** value.  Unfortunately, the OLS does not indicate the **namespace** terms.   So, as a rule we will use the short name converted to lower case.  Before using this term in a Tripal Bundle or Field you may need to insert this term into Chado.  You can do so in your custom module code using the **tripal_insert_cvterm** function. The following provides a demonstration:
 
 .. code-block:: php
 
@@ -104,7 +104,7 @@ Some ontologies are b into sub-ontologies. This includes the Gene Ontology (GO).
 .. figure:: select_vocab_terms.3.go.png
 
 
-Case 4: Ontologies with muliptle short names
+Case 4: Ontologies with multiple short names
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The EDAM ontology builds its term accessions using different short names instead of the ontology. Consider the EDAM term for `Sequence <http://www.ebi.ac.uk/ols/ontologies/edam/terms?iri=http%3A%2F%2Fedamontology.org%2Fdata_2044>`_. The teal box is EDAM, the orange box is data:2044, and there is no **namespace**.
