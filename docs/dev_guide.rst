@@ -15,5 +15,6 @@ Developer's Guide
    dev_guide/exporting_field_settings
    dev_guide/custom_data_loader
    dev_guide/custom_web_services
+   dev_guide/CI
    dev_guide/rtd
    dev_guide/tutorials
