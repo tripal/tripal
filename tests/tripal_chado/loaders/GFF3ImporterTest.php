@@ -229,6 +229,61 @@ class GFF3ImporterTest extends TripalTestCase {
   }
 
   /**
+   * Run the GFF loader on gff_score.gff for testing.
+   *
+   * This tests whether the GFF loader interprets the score values
+   */  
+  public function testGFFImporterScoreTest() {
+    $gff_file = ['file_local' => __DIR__ . '/../data/gff_score.gff'];
+    $analysis = factory('chado.analysis')->create();
+    $organism = factory('chado.organism')->create();
+    $run_args = [
+      'analysis_id' => $analysis->analysis_id,
+      'organism_id' => $organism->organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+    ];
+
+   
+    $this->loadLandmarks($analysis, $organism);
+    $this->runGFFLoader($run_args, $gff_file);
+
+    // Test that integer values get placed in the db
+    $results = db_query('SELECT * FROM chado.analysisfeature WHERE significance = 2 LIMIT 1', array(
+    ));
+    foreach ($results as $row){
+      $this->assertEquals($row->significance,2);
+    }
+
+    // Test that decimal/float values get placed in the db
+    $results = db_query('SELECT * FROM chado.analysisfeature WHERE significance = 2.5 LIMIT 1', array(
+    ));
+    foreach ($results as $row){
+      $this->assertEquals($row->significance,2.5);
+    } 
+    
+    // Test that negative score values get placed in the db
+    $results = db_query('SELECT * FROM chado.analysisfeature WHERE significance = -2.5 LIMIT 1', array(
+    ));
+    foreach ($results as $row){
+      $this->assertEquals($row->significance,-2.5);
+    }     
+
+  }  
+
+  /**
    * Run the GFF loader on small_gene.gff for testing.
    *
    * This gff has many attributes that we would like to test in the
