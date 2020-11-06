@@ -294,7 +294,7 @@ function tripal_rerun_job($job_id, $goto_jobs_page = TRUE) {
  *   The job_id of the job to be cancelled
  *
  * @return
- *   FALSE if the an error occured or the job could not be canceled, TRUE
+ *   FALSE if the an error occurred or the job could not be canceled, TRUE
  *   otherwise.
  *
  * @ingroup tripal_jobs_api
@@ -330,7 +330,7 @@ function tripal_cancel_job($job_id, $redirect = TRUE) {
  *
  * @param $job_id
  *   To launch a specific job provide the job id.  This option should be
- *   used sparingly as the jobs queue managment system should launch jobs
+ *   used sparingly as the jobs queue management system should launch jobs
  *   based on order and priority.  However there are times when a specific
  *   job needs to be launched and this argument will allow it.  Only jobs
  *   which have not been run previously will run.
@@ -390,7 +390,7 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL, $max_jobs = -1, $si
 
     $job_id = $jid->job_id;
 
-    // Create the Tripoaljob object.
+    // Create the Tripaljob object.
     $job = new TripalJob();
     $job->load($job_id);
 
@@ -462,7 +462,7 @@ function tripal_set_job_progress($job_id, $percentage) {
 }
 
 /**
- * Retrieves the current proress of a job.
+ * Retrieves the current progress of a job.
  *
  * @param $job_id
  *   The job_id to get the progress for
@@ -508,9 +508,9 @@ function tripal_get_job_progress($job_id) {
  *    - status: The status of the job: Waiting, Completed, Running or Cancelled.
  *    - submit_date:  The UNIX timestamp when the job was submitted.
  *    - start_time: The UNIX timestamp for when the job started running.
- *    - end_time: The UNIX timestampe when the job completed running.
- *    - error_msg: Any error message that occured during execution of the job.
- *    - prirotiy: The execution priority of the job (value between 1 and 10)
+ *    - end_time: The UNIX timestamp when the job completed running.
+ *    - error_msg: Any error message that occurred during execution of the job.
+ *    - priority: The execution priority of the job (value between 1 and 10)
  *
  * @ingroup tripal_jobs_api
  */
@@ -552,7 +552,7 @@ function tripal_get_active_jobs($modulename = NULL) {
  * Execute a specific Tripal Job.
  *
  * @param $job_id
- *   The job id to be exeuted.
+ *   The job id to be executed.
  * @param bool $redirect [optional]
  *   Whether to redirect to the job page or not.
  *

@@ -28,7 +28,7 @@ The Tripal ElasticSearch module allows you to easily manage the indexing and dis
 Tripal MegaSearch
 ---------------------
 
-Tripal MegaSearch is a tool for downloading biological data stored in a Tripal/Chado database. The module was designed to be generic and flexible so it can be used on most Tripal sites. Site administrators may choose from 1) a set of predefined materialized views or 2) chado base tables as the data source to serve data. If neither data source is desired, developers may create their own materialized views and serve them through Tripal MegaSearch via a flexible dynamic query form. This form allows filters to be added dynamically and combined using 'AND/OR' operators. The filters correspond to the underlying data source columns so the user can filter data on each column.
+Tripal MegaSearch is a tool for downloading biological data stored in a Tripal/Chado database. The module was designed to be generic and flexible so it can be used on most Tripal sites. Site administrators may choose from 1) a set of predefined materialized views or 2) Chado base tables as the data source to serve data. If neither data source is desired, developers may create their own materialized views and serve them through Tripal MegaSearch via a flexible dynamic query form. This form allows filters to be added dynamically and combined using 'AND/OR' operators. The filters correspond to the underlying data source columns so the user can filter data on each column.
 
 `Documentation <https://gitlab.com/mainlabwsu/tripal_megasearch/blob/master/README.md>`__
 `Repository <https://gitlab.com/mainlabwsu/tripal_megasearch>`__
