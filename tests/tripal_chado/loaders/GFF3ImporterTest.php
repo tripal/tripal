@@ -281,7 +281,96 @@ class GFF3ImporterTest extends TripalTestCase {
       $this->assertEquals($row->significance,-2.5);
     }     
 
-  }  
+  }
+
+  /**
+   * Run the GFF loader on gff_strand.gff for testing.
+   *
+   * This tests whether the GFF loader interprets the strand values
+   */  
+  public function testGFFImporterStrandTest() {
+    $gff_file = ['file_local' => __DIR__ . '/../data/gff_strand.gff'];
+    $analysis = factory('chado.analysis')->create();
+    $organism = factory('chado.organism')->create();
+    $run_args = [
+      'analysis_id' => $analysis->analysis_id,
+      'organism_id' => $organism->organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+    ];
+
+   
+    $this->loadLandmarks($analysis, $organism);
+    $this->runGFFLoader($run_args, $gff_file);
+
+    // Test that integer values for strand that get placed in the db
+    // Strand data gets saved in chado.featureloc
+    $results = db_query('SELECT * FROM chado.featureloc fl 
+      LEFT JOIN chado.feature f ON (fl.feature_id = f.feature_id)
+      WHERE uniquename = :uniquename LIMIT 1', 
+      array(
+        ':uniquename' => 'FRAEX38873_v2_000000010'
+      )
+    );
+
+    foreach ($results as $row) {
+      $this->assertEquals($row->strand, 1); // +
+    }
+
+    $results = db_query('SELECT * FROM chado.featureloc fl 
+      LEFT JOIN chado.feature f ON (fl.feature_id = f.feature_id)
+      WHERE uniquename = :uniquename LIMIT 1', 
+      array(
+        ':uniquename' => 'FRAEX38873_v2_000000010.1'
+      )
+    );
+
+    foreach ($results as $row) {
+      $this->assertEquals($row->strand,-1); // -
+    } 
+    
+    $results = db_query('SELECT * FROM chado.featureloc fl 
+      LEFT JOIN chado.feature f ON (fl.feature_id = f.feature_id)
+      WHERE uniquename = :uniquename LIMIT 1', 
+      array(
+        ':uniquename' => 'FRAEX38873_v2_000000010.2'
+      )
+    );
+
+    foreach ($results as $row) {
+      $this->assertEquals($row->strand, 0); // ?
+    }
+    
+    $results = db_query('SELECT * FROM chado.featureloc fl 
+      LEFT JOIN chado.feature f ON (fl.feature_id = f.feature_id)
+      WHERE uniquename = :uniquename LIMIT 1', 
+      array(
+        ':uniquename' => 'FRAEX38873_v2_000000010.3'
+      )
+    );
+
+    foreach ($results as $row) {
+      $this->assertEquals($row->strand, 0); // .
+    }     
+
+    // This GFF should create 5 featureloc records
+    $results = db_query('SELECT COUNT(*) as c FROM chado.featureloc;');
+    foreach ($results as $row) {
+      $this->assertEquals($row->c, 5);
+    }
+  }
 
   /**
    * Run the GFF loader on small_gene.gff for testing.

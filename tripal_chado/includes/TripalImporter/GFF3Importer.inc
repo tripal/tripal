@@ -952,6 +952,9 @@ class GFF3Importer extends TripalImporter {
     if (strcmp($ret['strand'], '.') == 0) {
       $ret['strand'] = 0;
     }
+    elseif (strcmp($ret['strand'], '?') == 0) {
+      $ret['strand'] = 0;
+    }
     elseif (strcmp($ret['strand'], '+') == 0) {
       $ret['strand'] = 1;
     }
