@@ -948,6 +948,13 @@ class GFF3Importer extends TripalImporter {
     $ret['start'] = $fmin;
     $ret['stop'] = $fmax;
 
+    // Check to make sure strand has a valid character
+    if (preg_match('/[\+-\?\.]/',$ret['strand']) == false) {
+      print_r($ret['strand']);
+      throw new Exception(t('Invalid strand detected on line !line, 
+        strand can only be +-?.',['!line' => $line]));      
+    }    
+
     // Format the strand for chado
     if (strcmp($ret['strand'], '.') == 0) {
       $ret['strand'] = 0;
