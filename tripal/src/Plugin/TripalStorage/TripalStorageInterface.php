@@ -42,7 +42,7 @@ interface TripalStorageInterface {
 	 * @return bool
 	 *   TRUE if the entity was altered; FALSE otherwise.
 	 */
-	public function preSaveEntity(EntityInterface &$entity);
+	public function preSaveEntity(&$entity);
 
 	/**
 	 * Provides an opprotunity to save data before the entity is saved
@@ -60,7 +60,7 @@ interface TripalStorageInterface {
 	 * @return bool
 	 *   TRUE if the entity was altered; FALSE otherwise.
 	 */
-	public function saveEntity($id, EntityInterface $entity);
+	public function saveEntity($id, &$entity);
 
 	/**
 	 * Provides an opprotunity to clean up values after the save.
@@ -75,6 +75,6 @@ interface TripalStorageInterface {
 	 * @return bool
 	 *   TRUE if the entity was altered; FALSE otherwise.
 	 */
-	public function postSaveEntity(EntityInterface $entity, $update);
+	public function postSaveEntity(&$entity, $update);
 
 }

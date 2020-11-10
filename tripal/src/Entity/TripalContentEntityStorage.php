@@ -29,6 +29,12 @@ class TripalContentEntityStorage extends SQLContentEntityStorage implements SqlE
 		$entities = parent::doLoadMultiple($ids);
 
 		// @debug dpm($entities, 'TripalContentEntityStorage::doLoadMultiple()');
+		$pluginManager = \Drupal::service('plugin.manager.tripalstorage');
+    $plugin_definitions = $pluginManager->getDefinitions();
+		foreach ($plugin_definitions as $tsid => $tsdefn) {
+			$plugin = $pluginManager->createInstance($tsid);
+			$plugin->loadMultipleEntities($ids, $entities);
+		}
 
 		return $entities;
 	}
@@ -40,6 +46,12 @@ class TripalContentEntityStorage extends SQLContentEntityStorage implements SqlE
 		parent::postLoad($entities);
 
 		// @debug dpm($entities, 'TripalContentEntityStorage::postLoad()');
+		$pluginManager = \Drupal::service('plugin.manager.tripalstorage');
+		$plugin_definitions = $pluginManager->getDefinitions();
+		foreach ($plugin_definitions as $tsid => $tsdefn) {
+			$plugin = $pluginManager->createInstance($tsid);
+			$plugin->postEntityLoad($entities);
+		}
 	}
 
 	/**
@@ -48,6 +60,12 @@ class TripalContentEntityStorage extends SQLContentEntityStorage implements SqlE
 	protected function doPreSave(EntityInterface $entity) {
 
 		// @debug dpm(['id' => $id, 'entity' => $entity], 'TripalContentEntityStorage::doPreSave()');
+		$pluginManager = \Drupal::service('plugin.manager.tripalstorage');
+		$plugin_definitions = $pluginManager->getDefinitions();
+		foreach ($plugin_definitions as $tsid => $tsdefn) {
+			$plugin = $pluginManager->createInstance($tsid);
+			$plugin->preSaveEntity($entity);
+		}
 
 		$id = parent::doPreSave($entity);
 
@@ -60,6 +78,12 @@ class TripalContentEntityStorage extends SQLContentEntityStorage implements SqlE
 	protected function doSave($id, EntityInterface $entity) {
 
 		// @debug dpm(['success' => $success, 'id' => $id, 'entity' => $entity], 'TripalContentEntityStorage::doSave()');
+		$pluginManager = \Drupal::service('plugin.manager.tripalstorage');
+		$plugin_definitions = $pluginManager->getDefinitions();
+		foreach ($plugin_definitions as $tsid => $tsdefn) {
+			$plugin = $pluginManager->createInstance($tsid);
+			$plugin->saveEntity($id, $entity);
+		}
 
 		$success = parent::doSave($id, $entity);
 
@@ -73,6 +97,12 @@ class TripalContentEntityStorage extends SQLContentEntityStorage implements SqlE
 		parent::doPostSave($entity, $update);
 
 		// @debug dpm(['update' => $update, 'entity' => $entity], 'TripalContentEntityStorage::doPostSave()');
+		$pluginManager = \Drupal::service('plugin.manager.tripalstorage');
+		$plugin_definitions = $pluginManager->getDefinitions();
+		foreach ($plugin_definitions as $tsid => $tsdefn) {
+			$plugin = $pluginManager->createInstance($tsid);
+			$plugin->postSaveEntity($entity, $update);
+		}
 
 	}
 

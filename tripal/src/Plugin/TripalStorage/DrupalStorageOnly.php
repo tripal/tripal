@@ -34,21 +34,21 @@ class DrupalStorageOnly extends PluginBase implements TripalStorageInterface {
 	/**
 	 * @{inheritdoc}
 	 */
-	public function preSaveEntity(EntityInterface &$entity) {
+	public function preSaveEntity(&$entity) {
 		return FALSE; // Entities not altered.
 	}
 
 	/**
 	 * @{inheritdoc}
 	 */
-	public function saveEntity($id, EntityInterface $entity) {
+	public function saveEntity($id, &$entity) {
 		return FALSE; // Entities not altered.
 	}
 
 	/**
 	 * @{inheritdoc}
 	 */
-	public function postSaveEntity(EntityInterface $entity, $update) {
+	public function postSaveEntity(&$entity, $update) {
 		return FALSE; // Entities not altered.
 	}
 }
