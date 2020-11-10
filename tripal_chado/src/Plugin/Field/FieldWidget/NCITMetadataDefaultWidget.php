@@ -12,9 +12,9 @@ use Drupal\Core\Form\FormStateInterface;
  * @FieldWidget(
  *   id = "NCIT__metadata_default_widget",
  *   module = "tripal_chado",
- *   label = @Translation("Edit Metadata"),
+ *   label = @Translation("Simple Metadata Textfield"),
  *   field_types = {
- *     "NCIT__metadata"
+ *     "ncit__metadata"
  *   }
  * )
  */

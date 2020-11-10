@@ -47,7 +47,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   * @return array
   *   Returns an array with values matching the field definition.
   */
-  public function selectChadoValue($record_id) {
+  public function selectChadoValue($record_id, $item) {
     return NULL;
   }
 

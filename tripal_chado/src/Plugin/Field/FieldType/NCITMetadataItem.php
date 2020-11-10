@@ -80,11 +80,11 @@ class NCITMetadataItem extends ChadoFieldItemBase {
 
     // -- Chado Table.
     // The table in Chado that the field maps to.
-    $settings['chado_table'] = 'feature';
+    $settings['chado_table'] = '';
     // The column of the table in Chado where the value comes from.
-    $settings['chado_column'] = 'uniquename';
+    $settings['chado_column'] = '';
     // The base table.
-    $settings['base_table'] = 'feature';
+    $settings['base_table'] = '';
 
     return $settings;
   }

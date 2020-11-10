@@ -13,9 +13,9 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @FieldFormatter(
  *   id = "NCIT__metadata_default_formatter",
- *   label = @Translation("Simple Metadata Display"),
+ *   label = @Translation("Simple Metadata String"),
  *   field_types = {
- *     "NCIT__metadata"
+ *     "ncit__metadata"
  *   }
  * )
  */
