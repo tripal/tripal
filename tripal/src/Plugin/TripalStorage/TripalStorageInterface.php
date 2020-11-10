@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\tripal\TripalStorage;
+namespace Drupal\tripal\Plugin\TripalStorage;
 
 /**
  * Defines the interface for Tripal Storage plugins.

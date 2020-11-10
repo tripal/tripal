@@ -98,15 +98,6 @@ class RDFSTypeItem extends TripalFieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public static function defaultStorageSettings() {
-    return [
-      'max_length' => 255,
-    ] + parent::defaultStorageSettings();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
     $random = new Random();
     $values['value'] = $random->word(mt_rand(1, 50));
@@ -145,24 +136,5 @@ class RDFSTypeItem extends TripalFieldItemBase {
       ]);
     }
     return $constraints;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
-    $element = [];
-    $element['max_length'] = [
-      '#type' => 'number',
-      '#title' => t('Maximum length'),
-      '#default_value' => $this
-        ->getSetting('max_length'),
-      '#required' => TRUE,
-      '#description' => t('The maximum length of the field in characters.'),
-      '#min' => 1,
-      '#disabled' => $has_data,
-    ];
-    $element += parent::storageSettingsForm($form, $form_state, $has_data);
-    return $element;
   }
 }

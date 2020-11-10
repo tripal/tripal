@@ -2,7 +2,7 @@
 
 namespace Drupal\tripal\Entity;
 
-use Drupal\Core\Entity\Sql\SQLContentEntityStorage;
+use Drupal\Core\Entity\Sql\SqlContentEntityStorage;
 use Drupal\Core\Entity\Sql\SqlEntityStorageInterface;
 use Drupal\Core\Entity\Schema\DynamicallyFieldableEntityStorageSchemaInterface;
 use Drupal\Core\Entity\EntityBundleListenerInterface;

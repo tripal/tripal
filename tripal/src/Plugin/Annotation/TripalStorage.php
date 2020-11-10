@@ -1,9 +1,11 @@
 <?php
 
-namespace Drupal\tripal\TripalStorage;
+namespace Drupal\tripal\Plugin\Annotation;
+
+use Drupal\Component\Annotation\AnnotationBase;
 
 /**
- * Defines a TripalStorage annotation object.
+ * Defines a custom plugin annotation for TripalStorage plugins.
  *
  * Additional keys for tripal storage plugins can be defined in
  * hook_tripalstorage_info_alter().
@@ -14,7 +16,7 @@ namespace Drupal\tripal\TripalStorage;
  *
  * @Annotation
  */
-class TripalStorage extends Plugin {
+class TripalStorage extends AnnotationBase {
 
 	/**
    * The tripal storage type ID.
@@ -39,13 +41,15 @@ class TripalStorage extends Plugin {
    */
   public $description;
 
-  /**
-   * The name of the tripal storage class.
-   *
-   * This is not provided manually, it will be added by the discovery mechanism.
-   *
-   * @var string
+	/**
+   * {@inheritdoc}
    */
-  public $class;
-
+  public function get() {
+    return array(
+      'id' => $this->id,
+      'label' => $this->label,
+      'description' => $this->description,
+			'class' => $this->class
+    );
+  }
 }
