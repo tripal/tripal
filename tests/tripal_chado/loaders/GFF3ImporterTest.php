@@ -15,7 +15,8 @@ class GFF3ImporterTest extends TripalTestCase {
    * @group gff
    */
   public function testGFFImporter() {
-    $gff_file = ['file_remote' => 'https://raw.githubusercontent.com/statonlab/tripal_dev_seed/master/Fexcel_mini/gff/filtered.gff'];
+    $gff_file = ['file_local' => __DIR__ . '/../data/small_gene.gff'];
+    $fasta = ['file_local' => __DIR__ . '/../data/short_scaffold.fasta'];    
     $analysis = factory('chado.analysis')->create();
     $organism = factory('chado.organism')->create();
     $run_args = [
@@ -26,26 +27,392 @@ class GFF3ImporterTest extends TripalTestCase {
       'update' => 1,
       'create_organism' => 0,
       'create_target' => 0,
-      ///regexps for mRNA and protein.
+      // regexps for mRNA and protein.
       're_mrna' => NULL,
       're_protein' => NULL,
-      //optional
+      // optional
       'target_organism_id' => NULL,
       'target_type' => NULL,
       'start_line' => NULL,
       'landmark_type' => NULL,
       'alt_id_attr' => NULL,
     ];
-    $this->loadLandmarks($analysis, $organism);
+    $this->loadLandmarks($analysis, $organism, $fasta);
     $this->runGFFLoader($run_args, $gff_file);
 
-    $name = 'FRAEX38873_v2_000000110.2.exon4';
+    // This protein is an explicit protein / polypeptide imported from the GFF
+    // file. 
+    $name = 'test_protein_001.1';
     $query = db_select('chado.feature', 'f')
       ->fields('f', ['uniquename'])
       ->condition('f.uniquename', $name)
       ->execute()
       ->fetchField();
     $this->assertEquals($name, $query);
+  }
+
+  /**
+   * Run the GFF loader on gff_unescaped_ids.gff for testing.
+   *
+   * This tests whether the GFF loader detects invalid ID that contains  
+   * unescaped whitespaces. The GFF loader should throw an exception which this
+   * unit test detects.
+   */  
+  public function testGFFImporterUnescapedWhitespaceID() {
+    $gff_file = ['file_local' => __DIR__ . '/../data/gff_unescaped_ids.gff'];
+    $analysis = factory('chado.analysis')->create();
+    $organism = factory('chado.organism')->create();
+    $run_args = [
+      'analysis_id' => $analysis->analysis_id,
+      'organism_id' => $organism->organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+    ];
+
+    $hasException = false;
+    try {    
+      $this->loadLandmarks($analysis, $organism);
+      // This will produce an exception due to unescaped whitespace in ID
+      $this->runGFFLoader($run_args, $gff_file);
+    }
+    catch(\Exception $ex) {
+      $hasException = true;
+    }
+
+    // We expect an exception to happen so we are looking for a return of true
+    $this->assertEquals($hasException, true);
+  }
+
+  /**
+   * Run the GFF loader on gff_rightarrow_ids.gff for testing.
+   *
+   * This tests whether the GFF loader detects invalid ID that contains  
+   * beginning arrow >. The GFF loader should throw an exception which this
+   * unit detects.
+   */  
+  public function testGFFImporterRightArrowID() {
+    $gff_file = ['file_local' => __DIR__ . '/../data/gff_rightarrow_id.gff'];
+    $analysis = factory('chado.analysis')->create();
+    $organism = factory('chado.organism')->create();
+    $run_args = [
+      'analysis_id' => $analysis->analysis_id,
+      'organism_id' => $organism->organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+    ];
+
+    $hasException = false;
+    try {    
+      $this->loadLandmarks($analysis, $organism);
+      // This will produce an exception due to right arrow in ID
+      $this->runGFFLoader($run_args, $gff_file);
+    }
+    catch(\Exception $ex) {
+      $hasException = true;
+    }
+
+    // We expect an exception to happen so we are looking for a return of true
+    $this->assertEquals($hasException, true);
+  }
+
+
+  /**
+   * Run the GFF loader on gff_duplicate_ids.gff for testing.
+   *
+   * This tests whether the GFF loader detects duplicate IDs which makes a 
+   * GFF file invalid since IDs should be unique. The GFF loader should throw 
+   * and exception which this test checks for
+   */  
+  public function testGFFImporterDuplicateIDsExceptionCheck() {
+    $gff_file = ['file_local' => __DIR__ . '/../data/gff_duplicate_ids.gff'];
+    $analysis = factory('chado.analysis')->create();
+    $organism = factory('chado.organism')->create();
+    $run_args = [
+      'analysis_id' => $analysis->analysis_id,
+      'organism_id' => $organism->organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+    ];
+
+    $hasException = false;
+    try {    
+      $this->loadLandmarks($analysis, $organism);
+      // This will produce an exception of duplicate feature ID
+      $this->runGFFLoader($run_args, $gff_file);
+    }
+    catch(\Exception $ex) {
+      $hasException = true;
+    }
+
+    // We expect an exception to happen so we are looking for a return of true
+    $this->assertEquals($hasException, true);
+  }
+
+  /**
+   * Run the GFF loader on gff_invalidstartend.gff for testing.
+   *
+   * This tests whether the GFF loader fixes start end values 
+   */  
+  public function testGFFImporterInvalidStartEnd() {
+    $gff_file = ['file_local' => __DIR__ . '/../data/gff_invalidstartend.gff'];
+    $analysis = factory('chado.analysis')->create();
+    $organism = factory('chado.organism')->create();
+    $run_args = [
+      'analysis_id' => $analysis->analysis_id,
+      'organism_id' => $organism->organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+    ];
+
+   
+    $this->loadLandmarks($analysis, $organism);
+    // This will produce an exception of duplicate feature ID
+    $this->runGFFLoader($run_args, $gff_file);
+
+    $results = db_select('chado.feature', 'f')
+      ->fields('f', ['uniquename'])
+      ->condition('f.uniquename', 'FRAEX38873_v2_000000010')
+      ->execute()
+      ->fetchAll();    
+
+    // We expect the feature to still be added to the database
+    // since the GFF Loader caters for reversing backward numbers
+    $this->assertEquals(count($results), 1);
+  }
+
+  /**
+   * Run the GFF loader on gff_score.gff for testing.
+   *
+   * This tests whether the GFF loader interprets the score values
+   */  
+  public function testGFFImporterScoreTest() {
+    $gff_file = ['file_local' => __DIR__ . '/../data/gff_score.gff'];
+    $analysis = factory('chado.analysis')->create();
+    $organism = factory('chado.organism')->create();
+    $run_args = [
+      'analysis_id' => $analysis->analysis_id,
+      'organism_id' => $organism->organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+    ];
+
+   
+    $this->loadLandmarks($analysis, $organism);
+    $this->runGFFLoader($run_args, $gff_file);
+
+    // Test that integer values get placed in the db
+    $results = db_query('SELECT * FROM chado.analysisfeature WHERE significance = 2 LIMIT 1', array(
+    ));
+    foreach ($results as $row){
+      $this->assertEquals($row->significance,2);
+    }
+
+    // Test that decimal/float values get placed in the db
+    $results = db_query('SELECT * FROM chado.analysisfeature WHERE significance = 2.5 LIMIT 1', array(
+    ));
+    foreach ($results as $row){
+      $this->assertEquals($row->significance,2.5);
+    } 
+    
+    // Test that negative score values get placed in the db
+    $results = db_query('SELECT * FROM chado.analysisfeature WHERE significance = -2.5 LIMIT 1', array(
+    ));
+    foreach ($results as $row){
+      $this->assertEquals($row->significance,-2.5);
+    }     
+
+  }
+
+    /**
+   * Run the GFF loader on gff_strand.gff for testing.
+   *
+   * This tests whether the GFF loader interprets the strand values
+   */  
+  public function testGFFImporterInvalidStrandTest() {
+    $gff_file = ['file_local' => __DIR__ . '/../data/gff_strand_invalid.gff'];
+    $analysis = factory('chado.analysis')->create();
+    $organism = factory('chado.organism')->create();
+    $run_args = [
+      'analysis_id' => $analysis->analysis_id,
+      'organism_id' => $organism->organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+    ];
+
+   
+    $this->loadLandmarks($analysis, $organism);
+    
+    $isException = false;
+    try {
+      $this->runGFFLoader($run_args, $gff_file);
+    }
+    catch(\Exception $ex) {
+      $isException = true;
+    }
+
+    $this->assertEquals($isException, true);
+
+  }
+
+  /**
+   * Run the GFF loader on gff_strand.gff for testing.
+   *
+   * This tests whether the GFF loader interprets the strand values
+   */  
+  public function testGFFImporterStrandTest() {
+    $gff_file = ['file_local' => __DIR__ . '/../data/gff_strand.gff'];
+    $analysis = factory('chado.analysis')->create();
+    $organism = factory('chado.organism')->create();
+    $run_args = [
+      'analysis_id' => $analysis->analysis_id,
+      'organism_id' => $organism->organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+    ];
+
+   
+    $this->loadLandmarks($analysis, $organism);
+    $this->runGFFLoader($run_args, $gff_file);
+
+    // Test that integer values for strand that get placed in the db
+    // Strand data gets saved in chado.featureloc
+    $results = db_query('SELECT * FROM chado.featureloc fl 
+      LEFT JOIN chado.feature f ON (fl.feature_id = f.feature_id)
+      WHERE uniquename = :uniquename LIMIT 1', 
+      array(
+        ':uniquename' => 'FRAEX38873_v2_000000010'
+      )
+    );
+
+    foreach ($results as $row) {
+      $this->assertEquals($row->strand, 1); // +
+    }
+
+    $results = db_query('SELECT * FROM chado.featureloc fl 
+      LEFT JOIN chado.feature f ON (fl.feature_id = f.feature_id)
+      WHERE uniquename = :uniquename LIMIT 1', 
+      array(
+        ':uniquename' => 'FRAEX38873_v2_000000010.1'
+      )
+    );
+
+    foreach ($results as $row) {
+      $this->assertEquals($row->strand,-1); // -
+    } 
+    
+    $results = db_query('SELECT * FROM chado.featureloc fl 
+      LEFT JOIN chado.feature f ON (fl.feature_id = f.feature_id)
+      WHERE uniquename = :uniquename LIMIT 1', 
+      array(
+        ':uniquename' => 'FRAEX38873_v2_000000010.2'
+      )
+    );
+
+    foreach ($results as $row) {
+      $this->assertEquals($row->strand, 0); // ?
+    }
+    
+    $results = db_query('SELECT * FROM chado.featureloc fl 
+      LEFT JOIN chado.feature f ON (fl.feature_id = f.feature_id)
+      WHERE uniquename = :uniquename LIMIT 1', 
+      array(
+        ':uniquename' => 'FRAEX38873_v2_000000010.3'
+      )
+    );
+
+    foreach ($results as $row) {
+      $this->assertEquals($row->strand, 0); // .
+    }     
+
+    // This GFF should create 5 featureloc records
+    $results = db_query('SELECT COUNT(*) as c FROM chado.featureloc;');
+    foreach ($results as $row) {
+      $this->assertEquals($row->c, 5);
+    }
   }
 
   /**
@@ -339,8 +706,6 @@ class GFF3ImporterTest extends TripalTestCase {
 
     $this->assertEquals($gap_1, $gaps[$gap_1]->value);
     $this->assertEquals(0, $gaps[$gap_1]->rank);
-    $this->assertEquals($gap_2, $gaps[$gap_2]->value);
-    $this->assertEquals(1, $gaps[$gap_2]->rank);
 
     // Assert note loaded correctly
     $note = db_select('chado.featureprop', 'fp')
@@ -401,10 +766,64 @@ class GFF3ImporterTest extends TripalTestCase {
       ->condition('type_id', $this->supercontig_cvt)
       ->execute()->fetchObject();
 
-    $this->assertEquals(1000, $scaffold->seqlen);
-    $this->assertEquals(1000, strlen($scaffold->residues));
-    $this->assertEquals('0154424abe69dd64cd428c330d480ba0', $scaffold->md5checksum);
+    $this->assertEquals(720, $scaffold->seqlen);
+    $this->assertEquals(720, strlen($scaffold->residues));
+    $this->assertEquals('83578d8afdaec399c682aa6c0ddd29c9', $scaffold->md5checksum);
   }
+  
+  /**
+   * Test that when checked, explicit proteins are created when specified within
+   * the GFF file. Explicit proteins will not respect the skip_protein argument
+   * and will therefore be added to the database.
+   *
+   * @group gff
+   * @ticket 77
+   *
+   */
+  public function testGFFPolypeptide() {
+    $gff_file = ['file_local' => __DIR__ . '/../data/simpleGFF.gff'];
+    $analysis = factory('chado.analysis')->create();
+    $organism = factory('chado.organism')->create();
+    $run_args = [
+      // The new argument
+      'skip_protein' => 1,
+      'analysis_id' => $analysis->analysis_id,
+      'organism_id' => $organism->organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+    ];
+    $this->loadLandmarks($analysis, $organism);
+
+    $this->runGFFLoader($run_args, $gff_file);
+
+    $identifier = [
+      'cv_id' => ['name' => 'sequence'],
+      'name' => 'polypeptide',
+    ];
+    $protein_type_id = tripal_get_cvterm($identifier);
+
+    $name = 'FRAEX38873_v2_000000010.1.3_test_protein';
+    $query = db_select('chado.feature', 'f')
+      ->fields('f', ['uniquename'])
+      ->condition('f.uniquename', $name)
+      ->condition('f.type_id', $protein_type_id->cvterm_id)
+      ->execute()
+      ->fetchAll();
+    $this->assertEquals(1, count($query));
+  }
+
 
   /**
    * Add a skip protein option.  Test that when checked, implicit proteins are
@@ -415,14 +834,12 @@ class GFF3ImporterTest extends TripalTestCase {
    *
    */
   public function testGFFNoProteinOption() {
-
-    $gff_file = ['file_remote' => 'https://raw.githubusercontent.com/statonlab/tripal_dev_seed/master/Fexcel_mini/gff/filtered.gff'];
+    $gff_file = ['file_local' => __DIR__ . '/../data/gff_protein_generation.gff'];
     $analysis = factory('chado.analysis')->create();
     $organism = factory('chado.organism')->create();
     $run_args = [
-      //The new argument
+      //Skip protein feature generation
       'skip_protein' => 1,
-      ///
       'analysis_id' => $analysis->analysis_id,
       'organism_id' => $organism->organism_id,
       'use_transaction' => 1,
@@ -441,9 +858,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'alt_id_attr' => NULL,
     ];
     $this->loadLandmarks($analysis, $organism);
-
     $this->runGFFLoader($run_args, $gff_file);
-
 
     $identifier = [
       'cv_id' => ['name' => 'sequence'],
@@ -451,19 +866,20 @@ class GFF3ImporterTest extends TripalTestCase {
     ];
     $protein_type_id = tripal_get_cvterm($identifier);
 
-    //This works i think i just dont have proteins described in the GFF.
-
-    $name = 'FRAEX38873_v2_000000110.1-protein';
-    $query = db_select('chado.feature', 'f')
+    $name = "FRAEX38873_v2_000000190.1-protein";
+    $results = db_select('chado.feature', 'f')
       ->fields('f', ['uniquename'])
       ->condition('f.uniquename', $name)
       ->condition('f.type_id', $protein_type_id->cvterm_id)
       ->execute()
-      ->fetchField();
-    $this->assertFalse($query);
+      ->fetchAll();
 
+    // There should be no proteins since we used the skip_proteins flag and no
+    // explicit proteins were specified in the test file
+    $this->assertEquals(0, count($results));
+
+    // Now perform a unit test where we do not skip proteins generation
     $run_args['skip_protein'] = 0;
-
     $this->runGFFLoader($run_args, $gff_file);
 
     $query = db_select('chado.feature', 'f')
@@ -473,8 +889,8 @@ class GFF3ImporterTest extends TripalTestCase {
       ->execute()
       ->fetchObject();
     $this->assertEquals($name, $query->uniquename);
-
   }
+
 
   /**
    * The GFF importer should still create explicitly defined proteins if
@@ -534,7 +950,7 @@ class GFF3ImporterTest extends TripalTestCase {
 
   private function loadLandmarks($analysis, $organism, $landmark_file = array()) {
     if (empty($landmark_file)) {
-      $landmark_file = ['file_remote' => 'https://raw.githubusercontent.com/statonlab/tripal_dev_seed/master/Fexcel_mini/sequences/empty_landmarks.fasta'];
+      $landmark_file = ['file_local' => __DIR__ . '/../data/empty_landmarks.fasta'];
     }
 
     $run_args = [

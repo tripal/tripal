@@ -948,8 +948,18 @@ class GFF3Importer extends TripalImporter {
     $ret['start'] = $fmin;
     $ret['stop'] = $fmax;
 
+    // Check to make sure strand has a valid character
+    if (preg_match('/[\+-\?\.]/',$ret['strand']) == false) {
+      print_r($ret['strand']);
+      throw new Exception(t('Invalid strand detected on line !line, 
+        strand can only be +-?.',['!line' => $line]));      
+    }    
+
     // Format the strand for chado
     if (strcmp($ret['strand'], '.') == 0) {
+      $ret['strand'] = 0;
+    }
+    elseif (strcmp($ret['strand'], '?') == 0) {
       $ret['strand'] = 0;
     }
     elseif (strcmp($ret['strand'], '+') == 0) {
@@ -2765,6 +2775,15 @@ class GFF3Importer extends TripalImporter {
     }
     else {
       $uniquename = $attrs['ID'][0];
+
+      // Run ID validation checks based on GFF3 specifications 
+      preg_match('/[a-zA-Z0-9\.:\^\*\$@!\+_\?-\|]*/', $uniquename, $matches);
+      if($matches[0] != $uniquename) {
+        throw new Exception(t("ID !uniquename contains invalid characters. Only 
+          characters included in this regular expression is allowed 
+          [a-zA-Z0-9.:^*$@!+_?-|]", ['!uniquename' => $uniquename]));
+      }
+
       $name = $attrs['Name'][0];
     }
 
