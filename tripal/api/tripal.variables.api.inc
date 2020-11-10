@@ -30,7 +30,7 @@
  *   The description for the variable
  *
  * @return
- *   A record object containg the variable that was added if successful.
+ *   A record object containing the variable that was added if successful.
  *
  * @ingroup tripal_variables_api
  */
@@ -71,7 +71,7 @@ function tripal_insert_variable($name, $description) {
  *   The name of the variable to retrieve
  *
  * @return
- *   A record object containg the variable.
+ *   A record object containing the variable.
  *
  * @ingroup tripal_variables_api
  */

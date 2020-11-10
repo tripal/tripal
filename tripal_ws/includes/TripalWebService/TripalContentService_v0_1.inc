@@ -147,7 +147,8 @@ class TripalContentService_v0_1 extends TripalWebService {
         FIELD_LOAD_CURRENT, ['field_id' => $field['id']]);
     }
 
-    $this->addEntityField($this->resource, $term, $entity, $bundle, $field, $instance, $service_path, $expfield);
+    $field_service_path = $service_path . '/' . urlencode($term['name']);
+    $this->addEntityField($this->resource, $term, $entity, $bundle, $field, $instance, $field_service_path, $expfield);
   }
 
   /**
@@ -319,9 +320,6 @@ class TripalContentService_v0_1 extends TripalWebService {
       $instance_settings = $instance['settings'];
       if (array_key_exists('auto_attach', $instance['settings']) and
         $instance_settings['auto_attach'] == FALSE) {
-        // Add a URL only if there are values. If there are no values then
-        // don't add a URL which would make the end-user think they can get
-        // that information.
         $items = field_get_items('TripalEntity', $entity, $field_name);
         $term_key = $this->getContextTerm($term, ['lowercase', 'spacing']);
         $resource->addContextItem($term_key, $vocabulary . ':' . $accession);
@@ -329,25 +327,16 @@ class TripalContentService_v0_1 extends TripalWebService {
           '@id' => $term['url'],
           '@type' => '@id',
         ]);
-        if ($items and count($items) > 0 and $items[0]['value']) {
-          $this->addResourceProperty($resource, $term, $service_path . '/' . $entity->id . '/' . urlencode($term['name']), [
-            'lowercase',
-            'spacing',
-          ]);
-        }
-        else {
-          if ($hide_fields == FALSE) {
-            $this->addResourceProperty($resource, $term, NULL, [
-              'lowercase',
-              'spacing',
-            ]);
-          }
-        }
+        $this->addResourceProperty($resource, $term, $service_path . '/' . $entity->id . '/' . urlencode($term['name']), [
+          'lowercase',
+          'spacing',
+        ]);
         continue;
       }
 
       // Get the details for this field for the JSON-LD response.
-      $this->addEntityField($resource, $term, $entity, $bundle, $field, $instance, $service_path);
+      $field_service_path = $service_path . '/' . $entity->id . '/' . urlencode($term['name']);
+      $this->addEntityField($resource, $term, $entity, $bundle, $field, $instance, $field_service_path);
     }
   }
 
@@ -419,12 +408,25 @@ class TripalContentService_v0_1 extends TripalWebService {
       // If the value is an array and this is the field page then all of those
       // key/value pairs should be added directly to the response.
       if (is_array($values[0])) {
+        if (array_key_exists('@type', $values[0])) {
+          [$vocabulary, $accession] = explode(':', $values[0]['@type']);
+          $term = tripal_get_term_details($vocabulary, $accession);
+          $resource->addContextItem($term['vocabulary']['short_name'], $term['vocabulary']['sw_url']);
+          $resource->addContextItem($values[0]['@type'], $term['url']);
+          $resource->addContextItem($term['name'], $values[0]['@type']);
+          $values[0]['@type'] = $term['name'];
+        }
+
         if ($expfield) {
           foreach ($values[0] as $k => $v) {
+            if ($k == '@type') {
+              continue;
+            }
             $resource->addProperty($k, $v);
           }
         }
         else {
+
           $this->addResourceProperty($resource, $term, $values[0], [
             'lowercase',
             'spacing',
@@ -446,28 +448,54 @@ class TripalContentService_v0_1 extends TripalWebService {
 
       // If this is the expanded field page then we need to swap out
       // the resource for a collection.
-      $response = new TripalWebServiceCollection($service_path . '/' . urlencode($expfield), $this->params);
+      $response = new TripalWebServiceCollection($service_path, $this->params);
       $label = tripal_get_term_details('rdfs', 'label');
       $this->addResourceProperty($response, $label, $instance['label']);
       $i = 0;
+
       foreach ($values as $delta => $element) {
-        $member = new TripalWebServiceResource($service_path . '/' . urlencode($expfield));
+        $member = new TripalWebServiceResource($service_path);
         $member->setID($i);
+
+        // Turn off the @id and @type keys unless the element has these.
+        $member->disableID();
+        $member->disbleType();
+
         // Add the context of the parent resource because all of the keys
         // were santizied and set to match the proper context.
         $member->setContext($resource);
-        $this->setResourceType($member, $term);
+
+        // Iterate through the key/value pairs of the list.
         foreach ($element as $key => $value) {
+          // If this element has an '@id' then replace the generic
+          // service path that each member element automatically gets
+          // with this value.
+          if ($key == '@id') {
+            $member->setServicePath($value);
+            $member->enableID();
+            continue;
+          }
+          if ($key == '@type') {
+            [$vocabulary, $accession] = explode(':', $value);
+            $tterm = tripal_get_term_details($vocabulary, $accession);
+            $member->addContextItem($tterm['vocabulary']['short_name'], $tterm['vocabulary']['sw_url']);
+            $member->addContextItem($value, $tterm['url']);
+            $member->addContextItem($tterm['name'], $value);
+            $member->setType($tterm['name']);
+            $member->enableType();
+            continue;
+          }
           $member->addProperty($key, $value);
         }
-        $response->addMember($member);
-        $i++;
+        if (!empty($element)) {
+          $response->addMember($member);
+          $i++;
+        }
       }
       if ($expfield) {
         $this->resource = $response;
       }
       else {
-        //$this->resource->addProperty($key, $response);
         $this->addResourceProperty($resource, $term, $response, [
           'lowercase',
           'spacing',
@@ -520,6 +548,9 @@ class TripalContentService_v0_1 extends TripalWebService {
           // Index number (0, 1, 2...) of a hydra:member array.
           $temp[$k] = $this->sanitizeFieldKeys($resource, $v, $bundle, $service_path);
         }
+        elseif ($k == 'entity') {
+          $temp[$k] = $v;
+        }
         else {
           // TODO: this is an error, if we get here then we have
           // a key that isn't using the proper format... what to do?
@@ -560,6 +591,7 @@ class TripalContentService_v0_1 extends TripalWebService {
           $item_entity = reset($item_entity);
           $bundle = tripal_load_bundle_entity(['name' => $item_entity->bundle]);
           $items['@id'] = $this->getServicePath() . '/' . urlencode($bundle->label) . '/' . $item_eid;
+          $items['@type'] = $bundle->accession;
         }
         unset($items['entity']);
       }
@@ -879,13 +911,13 @@ class TripalContentService_v0_1 extends TripalWebService {
 
     // Get the TripalBundle, TripalTerm and TripalVocab type for this type.
     $bundle = tripal_load_bundle_entity(['label' => $ctype]);
-    
+
     // Check that the user has access to this bundle.  If not then the
     // function call will throw an error.
     if (!user_access('view ' . $bundle->name)) {
       throw new Exception("Permission Denied.");
     }
-        
+
     $term = entity_load('TripalTerm', ['id' => $bundle->term_id]);
     $term = reset($term);
 
@@ -1023,9 +1055,10 @@ class TripalContentService_v0_1 extends TripalWebService {
 
       // Add in any requested fields
       foreach ($add_fields as $expfield => $expfield_details) {
+        $field_service_path = $service_path . '/' . $entity->id . '/' . urlencode($expfield);
         $this->addEntityField($member, $expfield_details['term'], $entity,
           $bundle, $expfield_details['field'], $expfield_details['instance'],
-          $service_path);
+            $field_service_path);
       }
       $this->resource->addMember($member);
     }
@@ -1058,7 +1091,7 @@ class TripalContentService_v0_1 extends TripalWebService {
         // Show only content types users have access to and skip the rest.
         continue;
       }
-      
+
       $entity = entity_load('TripalTerm', ['id' => $bundle->term_id]);
       $term = reset($entity);
       $vocab = $term->vocab;

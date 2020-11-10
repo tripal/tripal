@@ -50,7 +50,7 @@ Step 1: Upgrade Tripal
 
   .. code-block:: bash
 
-    drush pm-download tripal-7.x-3.1
+    drush pm-download tripal-7.x-3.5
 
 5. Enable the tripal module
 

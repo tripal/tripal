@@ -2,7 +2,7 @@
 /**
  * @file
  * Provides an application programming interface (API) for working with
- * controlled vocaublary terms.
+ * controlled vocabulary terms.
  */
 
 /**
@@ -10,7 +10,7 @@
  * @ingroup tripal_api
  * @{
  * Tripal provides an application programming interface (API) for working with
- * controlled vocaublary terms.  Tripal v3 is highly dependent on controlled
+ * controlled vocabulary terms.  Tripal v3 is highly dependent on controlled
  * vocabularies for identifying all content types and fields attached to those
  * content types.  However, Tripal v3 is also database agnostic. Therefore,
  * controlled vocabularies can be stored in any database back-end.  By default
@@ -66,7 +66,7 @@ function hook_vocab_storage_info() {
  *
  * Tripal allows for vocabularies to be stored separately from the biological
  * data. This hook allows the default term storage backend to provide an
- * approprite form for importing ontologies (either in OBO or OWL format).
+ * appropriate form for importing ontologies (either in OBO or OWL format).
  *
  * @param $form
  * @param $form_state

@@ -32,6 +32,44 @@ class TripalWebServiceResource {
 
 
   /**
+   * All resources should have a @type and an @id.  But, there
+   * are times when we don't want any, such as an array of unpblished
+   * properties (e.g. featureloc elements).  These can be set to
+   * TRUE to disable.
+   */
+  protected $disable_type = FALSE;
+  protected $disable_id = FALSE;
+
+
+  /**
+   * Exclude the @type element form the data of this resource.
+   */
+  public function disbleType() {
+    $this->disable_type = TRUE;
+  }
+
+  /**
+   * Include the @type element form the data of this resource.
+   */
+  public function enableType() {
+    $this->disable_type = FALSE;
+  }
+
+  /**
+   * Exclude the @id element form the data of this resource.
+   */
+  public function disableID() {
+    $this->disable_id = TRUE;
+  }
+
+  /**
+   * Include the @id element form the data of this resource.
+   */
+  public function enableID() {
+    $this->disable_id = FALSE;
+  }
+
+  /**
    * Implements the constructor.
    *
    * @param  $service_path
@@ -111,6 +149,20 @@ class TripalWebServiceResource {
     $this->checkKey($type);
     $this->type = $type;
     $this->data['@type'] = $type;
+  }
+
+  /**
+   * Sets the service path for this resource.
+   *
+   * By default, the service path is provided to the constructor, but
+   * this function will allow it to be changed if needed.
+   *
+   * @param $service_path
+   *   The URL for the service path.
+   */
+  public function setServicePath($service_path) {
+    $this->service_path = $service_path;
+    $this->data['@id'] = $service_path;
   }
 
   /**
@@ -341,7 +393,14 @@ class TripalWebServiceResource {
    *   An associative array containing the data section of the response.
    */
   public function getData() {
-    return $this->data;
+    $data = $this->data;
+    if ($this->disable_id) {
+      unset($data['@id']);
+    }
+    if ($this->disable_type) {
+      unset($data['@type']);
+    }
+    return $data;
   }
 
   /**

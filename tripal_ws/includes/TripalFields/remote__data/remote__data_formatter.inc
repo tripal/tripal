@@ -24,7 +24,7 @@ class remote__data_formatter extends WebServicesFieldFormatter {
     $field_name = $this->field['field_name'];
 
     // Get any subfields and the header label.  Shift the array because the
-    // results should already be the value of the fisrt entry.
+    // results should already be the value of the first entry.
     $rd_field_name = $this->instance['settings']['data_info']['rd_field_name'];
     $subfields = explode(',', $rd_field_name);
     $header_label = $this->getHeaderLabel($subfields);

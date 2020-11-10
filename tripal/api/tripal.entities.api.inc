@@ -215,7 +215,7 @@ function hook_tripal_default_title_format($bundle, $available_tokens) {
 function tripal_load_entity($entity_type, $ids = FALSE, $reset = FALSE,
                             $field_ids = [], $cache = TRUE) {
 
-  // The $conditions is deprecated in the funtion arguments of entity_load
+  // The $conditions is deprecated in the function arguments of entity_load
   // so it was removed from the parameters of this function as well. But
   // the load() function of the entity controller still expects it so set it
   // to an empty array.
@@ -286,7 +286,7 @@ function tripal_load_term_entity($values) {
 }
 
 /**
- * Retrieves a TripalVocab entity that maches the given arguments.
+ * Retrieves a TripalVocab entity that matches the given arguments.
  *
  * @param $values
  *   An associative array used to match a vocabulary.
@@ -331,7 +331,7 @@ function tripal_load_vocab_entity($values) {
  *     - name:  the bundle name (e.g. 'bio_data_234')
  *     - label: the bundle label (e.g. 'Organism')
  *     - term_id: the term ID to which the bundle belongs
- *     - accession: the full acccession for the bundle (e.g. OBI:0100026)
+ *     - accession: the full accession for the bundle (e.g. OBI:0100026)
  *
  * @return
  *   A TripalBundle entity object or NULL if not found.
@@ -565,7 +565,7 @@ function tripal_create_bundle($args, $job = NULL) {
     // Attache the bundle fields.
     tripal_create_bundle_fields($bundle, $term);
 
-    // Specifically commiting here since we have a fully featured bundle.
+    // Specifically committing here since we have a fully featured bundle.
     // Post-create hook implementations assume we have a
     // created bundle so we don't want to rollback if a
     // custom implementation causes an exception.
@@ -641,11 +641,15 @@ function tripal_tripal_cron_notification() {
         ['%bundle' => $bundle_name]);
       return FALSE;
     }
+    $term = tripal_load_term_entity(['term_id' => $bundle->term_id]);
+
     // Allow modules to add fields to the new bundle.
     $modules = module_implements('bundle_fields_info');
     foreach ($modules as $module) {
       $function = $module . '_bundle_fields_info';
-      $info = $function('TripalEntity', $bundle);
+      $entity_type = 'TripalEntity';
+      $info = $function($entity_type, $bundle);
+      drupal_alter('bundle_fields_info', $info, $bundle, $term);
       foreach ($info as $field_name => $details) {
 
         // If the field already exists then skip it.
@@ -670,7 +674,9 @@ function tripal_tripal_cron_notification() {
     $modules = module_implements('bundle_instances_info');
     foreach ($modules as $module) {
       $function = $module . '_bundle_instances_info';
-      $info = $function('TripalEntity', $bundle);
+      $entity_type = 'TripalEntity';
+      $info = $function($entity_type, $bundle);
+      drupal_alter('bundle_instances_info', $info, $bundle, $term);
       foreach ($info as $field_name => $details) {
 
         // If the field is already attached to this bundle then skip it.
@@ -822,7 +828,7 @@ function tripal_create_bundle_fields($bundle, $term) {
     // Make sure the term is not used for any other existing field instance.
     $skip = FALSE;
     foreach ($existing_instances as $existing_name => $existing_instance) {
-      // If this instance term is the same as this exsiting term and the
+      // If this instance term is the same as this existing term and the
       // instance name is not the same then we have a problem.
       $existing_term_id = $existing_instance['settings']['term_vocabulary'] . ':' . $existing_instance['settings']['term_accession'];
       $existing_field = field_info_field($existing_name);
@@ -838,7 +844,7 @@ function tripal_create_bundle_fields($bundle, $term) {
         $skip = TRUE;
       }
 
-      // If the instance term is the same as this exsting term but the storage
+      // If the instance term is the same as this existing term but the storage
       // types are different then we have a problem.
       $existing_storage = $existing_field['storage']['type'];
       $this_field_storage = $field_info[$details['field_name']]['storage']['type'];
@@ -985,7 +991,7 @@ function tripal_update_bundle_field($field_name, $field_info, $entity_type_name,
  * @param string $variable_name
  *   The name of the variable as in tripal_variables.name.
  * @param int $bundle_id
- *   The unique identfier for the bundle you want the value for.
+ *   The unique identifier for the bundle you want the value for.
  *
  * @return text
  *   The value of the specified variable for the specified bundle.
@@ -1023,7 +1029,7 @@ function tripal_get_bundle_variable($variable_name, $bundle_id, $default = FALSE
  * @param string $variable_name
  *   The name of the variable as in tripal_variables.name.
  * @param int $bundle_id
- *   The unique identfier for the bundle you want the value for.
+ *   The unique identifier for the bundle you want the value for.
  * @param $text $value
  *   The value of the variable for the given bundle.
  *
@@ -1314,7 +1320,7 @@ function _tripal_get_entity_tokens_for_elements($instance, $parent, $elements, &
  * @param TripalEntity $entity
  *   The entity with field values used to find values of tokens.
  * @param TripalBundle $bundle_entity
- *   The bundle enitity containing special values sometimes needed for token
+ *   The bundle entity containing special values sometimes needed for token
  *   replacement.
  *
  * @return
@@ -1402,7 +1408,7 @@ function tripal_replace_entity_tokens($string, &$entity, $bundle_entity = NULL) 
       $value = $bundle_entity->id;
     }
     // The TripalBundle__bundle_id is a special token for substituting the
-    // entty id.
+    // entity id.
     elseif ($field_name === 'TripalEntity__entity_id') {
       // This token should be the id of the TripalEntity.
       $value = $entity->id;
@@ -1516,7 +1522,7 @@ function tripal_get_bundle_details($bundle_name) {
     'fields' => [],
   ];
 
-  // Iterate through each feild and provide a discription of it and
+  // Iterate through each field and provide a description of it and
   // it's sub elements.
   foreach ($instances as $instance) {
     // Skip deleted fields.
@@ -1545,7 +1551,7 @@ function tripal_get_bundle_details($bundle_name) {
       'required' => $instance['required'] ? TRUE : FALSE,
       'type' => 'xs:string',
       'readonly' => TRUE,
-      // The cardinatlity value always comes from the field.
+      // The cardinality value always comes from the field.
       'cardinality' => $field['cardinality'],
     ];
 
@@ -1584,7 +1590,7 @@ function tripal_get_bundle_details($bundle_name) {
 function _tripal_get_bundle_field_element_details($elements, &$field_details) {
   $field_details['elements'] = [];
   foreach ($elements as $element_key => $element_info) {
-    // Handle the entity element differnetly.
+    // Handle the entity element differently.
     if ($element_key == 'entity') {
       continue;
     }
@@ -1737,7 +1743,7 @@ function tripal_unpublish_orphans(int $bundle_id, TripalJob $job = NULL) {
  *   cleaned up.
  *
  * @return integer
- *   The number of entitites that were cleaned up.
+ *   The number of entities that were cleaned up.
  */
 function hook_bundle_delete_orphans(TripalBundle $bundle, array $ids, TripalJob $job = NULL) {
 
@@ -1746,7 +1752,7 @@ function hook_bundle_delete_orphans(TripalBundle $bundle, array $ids, TripalJob 
 }
 
 /**
- * A hook for modules to report on oprhaned entities.
+ * A hook for modules to report on orphaned entities.
  *
  * An orphaned entity can occur if the module that created the entity
  * unknowingly lost its underlying record in its data store.  Such a case
@@ -1754,12 +1760,12 @@ function hook_bundle_delete_orphans(TripalBundle $bundle, array $ids, TripalJob 
  * outside of the module's control. This function allows each module
  * to report if any orphans are missing for a given bundle type.
  *
- * @param TripalBunldle $bundle
+ * @param TripalBundle $bundle
  *   A TripalBundle object for the bundle that should be checked for
  *   orphaned entities.
  * @param bool $count
  *   TRUE if the function should return only the number of orphaned entities.
- *   FALSE if the function should return the list of orphned entities.
+ *   FALSE if the function should return the list of orphaned entities.
  * @param integer $offset
  *   For paging of entities set this to the offset within the total count.
  * @param integer $limit

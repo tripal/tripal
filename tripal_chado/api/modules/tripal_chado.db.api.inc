@@ -375,7 +375,7 @@ function chado_insert_db($values, $options = []) {
   $sel_values = ['name' => $dbname];
   $result = chado_select_record('db', ['*'], $sel_values);
 
-  // If it does not exists then add it.
+  // If it does not exist then add it.
   if (count($result) == 0) {
     $ins_options = ['statement_name' => 'ins_db_nadeurur'];
     $success = chado_insert_record('db', $ins_values, $ins_options);

@@ -184,7 +184,7 @@ function drush_tripal_phylogeny_trp_update_phylotree() {
       $options['phylotree_id'] = $phylotree[0]->phylotree_id;
     }
     else {
-      drush_print('A phylotree record with this name does not exists.');
+      drush_print('A phylotree record with this name does not exist.');
     }
   }
 
@@ -234,7 +234,7 @@ function drush_tripal_phylogeny_trp_delete_phylotree() {
       $options['phylotree_id'] = $phylotree[0]->phylotree_id;
     }
     else {
-      drush_print('A phylotree record with this name does not exists.');
+      drush_print('A phylotree record with this name does not exist.');
     }
   }
 

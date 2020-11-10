@@ -17,7 +17,7 @@
  * @}
  */
 
-// Globals used by Tripals Error catching functions
+// Globals used by Tripal's Error catching functions
 // Should match those defined by watchdog
 define('TRIPAL_CRITICAL', 2);
 define('TRIPAL_ERROR', 3);
@@ -39,7 +39,7 @@ define('TRIPAL_DEBUG', 7);
  * will add backtrace information to the message.
  *
  * @param $type
- *   The catagory to which this message belongs. Can be any string, but the
+ *   The category to which this message belongs. Can be any string, but the
  *   general practice is to use the name of the module.
  * @param $severity
  *   The severity of the message; one of the following values:

@@ -812,7 +812,7 @@ function tripal_theme($existing, $type, $theme, $path) {
     'tripal_add_list' => array(
       'variables' => array('content' => NULL),
     ),
-    // Themeing for all fields.
+    // Theming for all fields.
     'tripal_field_default' => array(
       'render element' => 'element',
       'file' => 'includes/tripal.fields.inc',
@@ -1653,4 +1653,15 @@ function tripal_job_describe_args($callback, $args) {
     return $ret;
   }
   return $args;
+}
+
+/**
+ * Returns the current version of Tripal, according to the tripal.info file
+ * 
+ * @return string
+ *   The version string of Tripal. Ex. 7.x-3.1
+ */
+function tripal_version() {
+  $version = system_get_info('module', 'tripal');
+  return $version['version'];
 }
