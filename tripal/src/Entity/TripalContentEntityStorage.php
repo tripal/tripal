@@ -7,6 +7,7 @@ use Drupal\Core\Entity\Sql\SqlEntityStorageInterface;
 use Drupal\Core\Entity\Schema\DynamicallyFieldableEntityStorageSchemaInterface;
 use Drupal\Core\Entity\EntityBundleListenerInterface;
 use Drupal\Core\Entity\EntityInterface;
+
 /**
  * A content entity database storage implementation for TripalEntity.
  *
@@ -45,9 +46,10 @@ class TripalContentEntityStorage extends SQLContentEntityStorage implements SqlE
 	 * @{inheritdoc}
 	 */
 	protected function doPreSave(EntityInterface $entity) {
-		$id = parent::doPreSave($entity);
 
 		// @debug dpm(['id' => $id, 'entity' => $entity], 'TripalContentEntityStorage::doPreSave()');
+
+		$id = parent::doPreSave($entity);
 
 		return $id;
 	}
@@ -56,9 +58,10 @@ class TripalContentEntityStorage extends SQLContentEntityStorage implements SqlE
 	 * @{inheritdoc}
 	 */
 	protected function doSave($id, EntityInterface $entity) {
-		$success = parent::doSave($id, $entity);
 
 		// @debug dpm(['success' => $success, 'id' => $id, 'entity' => $entity], 'TripalContentEntityStorage::doSave()');
+
+		$success = parent::doSave($id, $entity);
 
 		return $success;
 	}
