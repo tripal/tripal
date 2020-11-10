@@ -19,6 +19,7 @@ use Drupal\user\UserInterface;
  *   label = @Translation("Tripal Content"),
  *   bundle_label = @Translation("Tripal Content type"),
  *   handlers = {
+ *     "storage" = "Drupal\tripal\Entity\TripalContentEntityStorage",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\tripal\ListBuilders\TripalEntityListBuilder",
  *     "views_data" = "Drupal\tripal\Entity\TripalEntityViewsData",
