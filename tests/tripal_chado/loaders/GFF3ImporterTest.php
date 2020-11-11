@@ -416,6 +416,145 @@ class GFF3ImporterTest extends TripalTestCase {
   }
 
   /**
+   * Run the GFF loader on gff_phase.gff for testing.
+   *
+   * This tests whether the GFF loader interprets the phase values correctly
+   * for CDS rows.
+   */  
+  public function testGFFImporterPhaseTest() {
+    $gff_file = ['file_local' => __DIR__ . '/../data/gff_phase.gff'];
+    $analysis = factory('chado.analysis')->create();
+    $organism = factory('chado.organism')->create();
+    $run_args = [
+      'analysis_id' => $analysis->analysis_id,
+      'organism_id' => $organism->organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+    ];
+
+   
+    $this->loadLandmarks($analysis, $organism);
+    $this->runGFFLoader($run_args, $gff_file);
+
+    $results = db_query("SELECT * FROM chado.feature 
+      WHERE uniquename = :uniquename LIMIT 1", array(
+      ':uniquename' => 'FRAEX38873_v2_000000010.1.cds1'
+      )
+    );
+
+    // Check to make sure it returns a single row (implying a match)
+    // by the uniquename specified
+    $this->assertEquals($results->rowCount(), 1);
+
+    $results = db_query("SELECT * FROM chado.featureloc 
+      WHERE phase = 1 LIMIT 1", array(
+      )
+    );
+
+    // Check to make sure it returns a single row (implying a match)
+    // by phase value 1
+    $this->assertEquals($results->rowCount(), 1);    
+  }
+
+  /**
+   * Run the GFF loader on gff_phase_invalid_number.gff for testing.
+   *
+   * This tests whether the GFF loader interprets the phase values correctly
+   * for CDS rows when a number outside of the range 0,1,2 is specified.
+   */  
+  public function testGFFImporterInvalidPhaseNumberTest() {
+    $gff_file = ['file_local' => __DIR__ . '/../data/gff_phase_invalid_number.gff'];
+    $analysis = factory('chado.analysis')->create();
+    $organism = factory('chado.organism')->create();
+    $run_args = [
+      'analysis_id' => $analysis->analysis_id,
+      'organism_id' => $organism->organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+    ];
+
+    $this->loadLandmarks($analysis, $organism);
+    $hasException = false;
+    try {
+      $this->runGFFLoader($run_args, $gff_file);
+    }
+    catch (\Exception $ex) {
+      $hasException = true;
+    }
+
+    // An exception should have been thrown since the phase number is invalid
+    $this->assertEquals($hasException, true);
+  }
+
+  /**
+   * Run the GFF loader on gff_phase_invalid_character.gff for testing.
+   *
+   * This tests whether the GFF loader interprets the phase values correctly
+   * for CDS rows when a character outside of the range 0,1,2 is specified.
+   */  
+  public function testGFFImporterInvalidPhaseCharacterTest() {
+    $gff_file = ['file_local' => __DIR__ . '/../data/gff_phase_invalid_character.gff'];
+    $analysis = factory('chado.analysis')->create();
+    $organism = factory('chado.organism')->create();
+    $run_args = [
+      'analysis_id' => $analysis->analysis_id,
+      'organism_id' => $organism->organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+    ];
+
+    $this->loadLandmarks($analysis, $organism);
+    $hasException = false;
+    try {
+      $this->runGFFLoader($run_args, $gff_file);
+    }
+    catch (\Exception $ex) {
+      $hasException = true;
+    }
+
+    // An exception should have been thrown since the phase number is invalid
+    $this->assertEquals($hasException, true);
+  }
+
+
+
+  /**
    * Run the GFF loader on small_gene.gff for testing.
    *
    * This gff has many attributes that we would like to test in the

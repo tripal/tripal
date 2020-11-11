@@ -950,7 +950,6 @@ class GFF3Importer extends TripalImporter {
 
     // Check to make sure strand has a valid character
     if (preg_match('/[\+-\?\.]/',$ret['strand']) == false) {
-      print_r($ret['strand']);
       throw new Exception(t('Invalid strand detected on line !line, 
         strand can only be +-?.',['!line' => $line]));      
     }    
@@ -968,6 +967,14 @@ class GFF3Importer extends TripalImporter {
     elseif (strcmp($ret['strand'], '-') == 0) {
       $ret['strand'] = -1;
     }
+
+    
+    if (preg_match('/[012\.]/',$ret['phase']) == false) {
+      throw new Exception(t('Invalid phase detected on line !line, 
+        phase can only be 0,1,2 or . (period)',['!line' => $line]));      
+    }
+    
+
     if (strcmp($ret['phase'], '.') == 0) {
       if ($ret['type'] == 'cds') {
         $ret['phase'] = '0';
