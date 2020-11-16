@@ -52,11 +52,55 @@ class GFF3ImporterTest extends TripalTestCase {
   }
 
   /**
+   * Run the GFF loader on gff_seqid_invalid_character.gff for testing.
+   * Seqids seem to also be called landmarks within GFF loader.
+   * This tests whether the GFF loader has any issues with characters like  
+   * single quotes.
+   */  
+  public function testGFFImporterSeqidWithInvalidCharacter() {
+    $gff_file = ['file_local' => 
+      __DIR__ . '/../data/gff_seqid_invalid_character.gff'];
+    $analysis = factory('chado.analysis')->create();
+    $organism = factory('chado.organism')->create();
+    $run_args = [
+      'analysis_id' => $analysis->analysis_id,
+      'organism_id' => $organism->organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+    ];
+
+  
+    $this->loadLandmarks($analysis, $organism);
+    // This will produce an exception due to quote character in Seqid
+    $hasException = false;
+    try {
+      $this->runGFFLoader($run_args, $gff_file);
+    }
+    catch (\Exception $ex) {
+      $hasException = true;
+    }
+
+    $this->assertEquals($hasException, true);
+
+  }
+
+  /**
    * Run the GFF loader on gff_unescaped_ids.gff for testing.
    *
-   * This tests whether the GFF loader detects invalid ID that contains  
-   * unescaped whitespaces. The GFF loader should throw an exception which this
-   * unit test detects.
+   * This tests whether the GFF loader adds IDs that contain whitespaces. 
+   * The GFF loader should allow it
    */  
   public function testGFFImporterUnescapedWhitespaceID() {
     $gff_file = ['file_local' => __DIR__ . '/../data/gff_unescaped_ids.gff'];
@@ -81,26 +125,21 @@ class GFF3ImporterTest extends TripalTestCase {
       'alt_id_attr' => NULL,
     ];
 
-    $hasException = false;
-    try {    
-      $this->loadLandmarks($analysis, $organism);
-      // This will produce an exception due to unescaped whitespace in ID
-      $this->runGFFLoader($run_args, $gff_file);
-    }
-    catch(\Exception $ex) {
-      $hasException = true;
-    }
+  
+    $this->loadLandmarks($analysis, $organism);
+    // This should go through just fine
+    $this->runGFFLoader($run_args, $gff_file);
 
-    // We expect an exception to happen so we are looking for a return of true
-    $this->assertEquals($hasException, true);
+    $results = db_query("SELECT * FROM chado.feature WHERE uniquename = 
+      'FRAEX38873_v2_000000010 SPACED';");
+    $this->assertEquals($results->rowCount(), 1);
   }
 
   /**
    * Run the GFF loader on gff_rightarrow_ids.gff for testing.
    *
-   * This tests whether the GFF loader detects invalid ID that contains  
-   * beginning arrow >. The GFF loader should throw an exception which this
-   * unit detects.
+   * This tests whether the GFF loader fails if ID contains  
+   * arrow >. It should not fail.
    */  
   public function testGFFImporterRightArrowID() {
     $gff_file = ['file_local' => __DIR__ . '/../data/gff_rightarrow_id.gff'];
@@ -125,18 +164,16 @@ class GFF3ImporterTest extends TripalTestCase {
       'alt_id_attr' => NULL,
     ];
 
-    $hasException = false;
-    try {    
-      $this->loadLandmarks($analysis, $organism);
-      // This will produce an exception due to right arrow in ID
-      $this->runGFFLoader($run_args, $gff_file);
-    }
-    catch(\Exception $ex) {
-      $hasException = true;
-    }
+ 
+    $this->loadLandmarks($analysis, $organism);
+    // This will produce an exception due to right arrow in ID
+    $this->runGFFLoader($run_args, $gff_file);
 
-    // We expect an exception to happen so we are looking for a return of true
-    $this->assertEquals($hasException, true);
+    $results = db_query("SELECT * FROM chado.feature 
+      WHERE uniquename = '>FRAEX38873_v2_000000010';");
+
+    // We expect this record to get inserted.
+    $this->assertEquals($results->rowCount(), 1);
   }
 
 
