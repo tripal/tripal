@@ -1,0 +1,130 @@
+# Run some PHPUnit tests
+name: PHPUnit-Tests
+
+# When do we want the tests to run?
+on: [push, pull_request]
+
+# Define jobs that are part of the workflow
+jobs:
+  # Job 1: 'build'
+  run-tests:
+    # Runner type
+    runs-on: ubuntu-latest
+    # PHP Targets
+    strategy:
+    matrix:
+      php-versions: ['7.1, '7.2']
+    # Give the builds names so we can tell them apart
+    name: PHPUnit Testing of Tripal 4 (PHP ${{ matrix.php-versions }})
+
+    # Services that we want
+    services:
+      # Label
+      image: postgres
+      env:
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: dbpass
+        POSTGRES_DB: test_db
+      options: >-
+        --health-cmd pg_isready
+        --health-interval 10s
+        --health-timeout 5s
+        --health-retries 5
+      ports:
+        -5432:5432
+
+    # Steps in the sequence
+    steps:
+      # Check out the repo
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      # Set up PHP environment for PHP versions specifed above
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          # PHP configuration
+          php-version: ${{ matrix.php-versions }}
+          extensions: mbstring, intl, php-pgsql, php-gd, php-xml
+          ini-values: memory_limit=2G
+          coverage: xdebug
+          tools: composer, phpunit
+      # Set up Drush
+      - name: Install Drush
+        run: |
+          composer global require "drush/drush:~8"
+          /home/runner/.composer/vendor/bin/drush --version
+      # Install Drupal
+      - name: Install Drupal
+        env:
+          DRUSH: "/home/runner/.composer/vendor/bin/drush"
+          DRUPAL_ROOT: "/home/runner/work/drupal"
+          POSTGRES_CONNECTION_STRING: 'pgsql://postgres:dbpass@localhost:5432/test_db'
+          ACCOUNT_NAME: tripaladmin
+          ACCOUNT_PASS: somereallysecurepassword
+        run: |
+          echo "==> Downloading Drupal"
+          cd /home/runner/work
+          $DRUSH dl drupal-8 -y
+          mv drupal-7* drupal
+          echo "==> Installing Drupal"
+          cd $DRUPAL_ROOT
+          $DRUSH si -y --root=$DRUPAL_ROOT \
+                --db-url=$POSTGRES_CONNECTION_STRING \
+                --account-name=$ACCOUNT_NAME \
+                --account-pass=$ACCOUNT_PASS \
+                --site-mail=admin@example.com \
+                --site-name=Tripal3
+          echo "==> Downloading dependencies"
+          $DRUSH dl -y views ctools entity redirect date ds field_group field_group_table
+          echo "==> Enabling dependencies"
+          $DRUSH en -y views ctools entity redirect date ds field_group field_group_table
+          echo "==> Apply Drupal Patch"
+          cd $DRUPAL_ROOT
+          wget --no-check-certificate https://drupal.org/files/drupal.pgsql-bytea.27.patch
+          patch -p1 < drupal.pgsql-bytea.27.patch
+      # Install Tripal, Chado, prepare Drupal/Chado databases
+      # Also patches views
+      #########################################################
+      # Need to customize this for T4D8 in its current state! #
+      #########################################################
+      - name: Install Tripal
+        env:
+          DRUSH: "/home/runner/.composer/vendor/bin/drush"
+          DRUPAL_ROOT: "/home/runner/work/drupal"
+          POSTGRES_CONNECTION_STRING: 'pgsql://postgres:dbpass@localhost:5432/test_db'
+          ACCOUNT_NAME: tripaladmin
+          ACCOUNT_PASS: somereallysecurepassword
+        run: |
+          echo "==> Move Tripal into the Drupal modules directory"
+          ls /home/runner/work/tripal/tripal
+          cp -R /home/runner/work/tripal/tripal $DRUPAL_ROOT/sites/all/modules
+          echo "==> Apply Views Patch"
+          cd $DRUPAL_ROOT/sites/all/modules/views
+          patch -p1 < ../tripal/tripal_chado_views/views-sql-compliant-three-tier-naming-1971160-30.patch
+          echo "==> Install Tripal"
+          cd $DRUPAL_ROOT
+          $DRUSH en -y tripal tripal_chado tripal_chado_views tripal_ws tripal_ds
+          echo "==> Install Chado"
+          $DRUSH eval "module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.install'); tripal_chado_load_drush_submit('Install Chado v1.3');"
+          $DRUSH trp-run-jobs --username=$ACCOUNT_NAME
+          echo "==> Prepare Chado"
+          $DRUSH eval "module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.setup'); tripal_chado_prepare_drush_submit();"
+          $DRUSH trp-run-jobs --username=$ACCOUNT_NAME
+      # Runs the PHPUnit tests.
+      # https://github.com/mheap/phpunit-github-actions-printer is used
+      # to report PHPUnit fails in a meaningful way to github in PRs.
+      - name: PHPUnit Tests
+        env:
+          DRUSH: "/home/runner/.composer/vendor/bin/drush"
+          DRUPAL_ROOT: "/home/runner/work/drupal"
+          POSTGRES_CONNECTION_STRING: 'pgsql://postgres:dbpass@localhost:5432/test_db'
+          ACCOUNT_NAME: tripaladmin
+          ACCOUNT_PASS: somereallysecurepassword
+        run: |
+          cd $DRUPAL_ROOT/sites/all/modules/tripal
+          composer require --dev mheap/phpunit-github-actions-printer
+          composer update
+          cp tests/.travis.env tests/.env
+          ./vendor/bin/phpunit --printer mheap\\GithubActionsReporter\\Printer
+
+
