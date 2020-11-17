@@ -52,6 +52,51 @@ class GFF3ImporterTest extends TripalTestCase {
   }
 
   /**
+   * Run the GFF loader on gff_unescaped_ids.gff for testing.
+   *
+   * This tests whether the GFF loader adds IDs that contain whitespaces. 
+   * The GFF loader should allow it
+   */  
+  public function testGFFImporterUnescapedTagWithComma() {
+    $gff_file = ['file_local' => __DIR__ . '/../data/gff_tag_unescaped_character.gff'];
+    $analysis = factory('chado.analysis')->create();
+    $organism = factory('chado.organism')->create();
+    $run_args = [
+      'analysis_id' => $analysis->analysis_id,
+      'organism_id' => $organism->organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+    ];
+
+  
+    $this->loadLandmarks($analysis, $organism);
+    // This should throw an error based on the tag name having the comma
+    $hasException = false;
+    try {
+      $this->runGFFLoader($run_args, $gff_file);
+    }
+    catch (\Exception $ex) {
+      $hasException = true;
+    }
+
+    $this->assertEquals($hasException, true);
+
+  }
+
+
+  /**
    * Run the GFF loader on gff_seqid_invalid_character.gff for testing.
    * Seqids seem to also be called landmarks within GFF loader.
    * This tests whether the GFF loader has any issues with characters like  

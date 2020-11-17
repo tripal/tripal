@@ -950,7 +950,7 @@ class GFF3Importer extends TripalImporter {
 
     // Landmark (seqid) validation checks based on GFF3 specifications 
     preg_match('/[a-zA-Z0-9\.:\^\*\$@!\+_\?-\|]*/', $ret['landmark'], $matches);
-    if($matches[0] != $ret['landmark']) {
+    if ($matches[0] != $ret['landmark']) {
       throw new Exception(t("Landmark/seqid !landmark contains invalid 
         characters. Only characters included in this regular expression is 
         allowed [a-zA-Z0-9.:^*$@!+_?-|]", 
@@ -1018,6 +1018,22 @@ class GFF3Importer extends TripalImporter {
 
       // Break apart each attribute into key/value pairs.
       $tag = preg_split("/=/", $attr, 2);
+
+      // Tag name validation checks based on GFF3 specifications 
+      preg_match('/.+[,=;].+/', $tag[0], $matches);
+      if (count($matches) > 0) {
+        throw new Exception(t('Attribute tag name !tagname contains invalid / 
+        unescaped characters', ['!tagname' => $tag[0]])
+        );
+      }
+
+      // Value validation checks based on GFF3 specifications
+      preg_match('/.+[,=;].+/', $tag[1], $matches);
+      if (count($matches) > 0) {
+        throw new Exception(t('Attribute value name !value contains invalid / 
+        unescaped characters', ['!value' => $tag[1]])
+        );
+      }
 
       // Multiple values of an attribute are separated by commas
       $tag_name = $tag[0];
