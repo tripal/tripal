@@ -100,6 +100,49 @@ class GFF3ImporterTest extends TripalTestCase {
    * This tests whether the GFF loader adds IDs that contain a comma. 
    * The GFF loader should allow it
    */  
+  public function testGFFImporterEscapedTagValueWithComma() {
+    $gff_file = ['file_local' => __DIR__ . '/../data/gff_tagvalue_encoded_character.gff'];
+    $analysis = factory('chado.analysis')->create();
+    $organism = factory('chado.organism')->create();
+    $run_args = [
+      'analysis_id' => $analysis->analysis_id,
+      'organism_id' => $organism->organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+    ];
+
+  
+    $this->loadLandmarks($analysis, $organism);
+    $this->runGFFLoader($run_args, $gff_file);
+
+    $results = db_query("SELECT * FROM chado.feature",array());
+
+    foreach ($results as $row) {
+      print_r($row);
+    }
+
+    //$this->assertEquals($hasException, true);
+  }
+
+
+  /**
+   * Run the GFF loader on gff_tagvalue_unescaped_character.gff for testing.
+   *
+   * This tests whether the GFF loader adds IDs that contain a comma. 
+   * The GFF loader should allow it
+   */  
   public function testGFFImporterUnescapedTagValueWithComma() {
     $gff_file = ['file_local' => __DIR__ . '/../data/gff_tagvalue_unescaped_character.gff'];
     $analysis = factory('chado.analysis')->create();

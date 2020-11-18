@@ -1035,6 +1035,12 @@ class GFF3Importer extends TripalImporter {
         );
       }
 
+      // Let us convert escaped characters back to original 
+      // Is this too general?\
+      $tag[0] = urldecode($tag[0]);
+      $tag[1] = urldecode($tag[1]);
+
+
       // Multiple values of an attribute are separated by commas
       $tag_name = $tag[0];
       if (!array_key_exists($tag_name, $tags)) {
@@ -2799,7 +2805,6 @@ class GFF3Importer extends TripalImporter {
     elseif (!array_key_exists('Name', $attrs)) {
       $uniquename = $attrs['ID'][0];
       $name = $attrs['ID'][0];
-
     }
     elseif (!array_key_exists('ID', $attrs)) {
       $uniquename = $attrs['Name'][0];
