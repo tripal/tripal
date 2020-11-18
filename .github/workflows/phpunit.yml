@@ -66,7 +66,7 @@ jobs:
           echo "==> Downloading Drupal"
           cd /home/runner/work
           $DRUSH dl drupal-8 -y
-          mv drupal-7* drupal
+          mv drupal-8* drupal
           echo "==> Installing Drupal"
           cd $DRUPAL_ROOT
           $DRUSH si -y --root=$DRUPAL_ROOT \
