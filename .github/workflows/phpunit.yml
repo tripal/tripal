@@ -12,8 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     # PHP Targets
     strategy:
-    matrix:
-      php-versions: ['7.1, '7.2']
+      matrix:
+        php-versions: ['7.1, '7.2']
     # Give the builds names so we can tell them apart
     name: PHPUnit Testing of Tripal 4 (PHP ${{ matrix.php-versions }})
 
