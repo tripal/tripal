@@ -75,14 +75,13 @@ jobs:
                 --account-pass=$ACCOUNT_PASS \
                 --site-mail=admin@example.com \
                 --site-name=Tripal3
-          echo "==> Downloading dependencies"
+
+          echo "\n==> Downloading dependencies"
           $DRUSH dl -y views ctools entity redirect date ds field_group field_group_table
-          echo "==> Enabling dependencies"
+          
+          echo "\n==> Enabling dependencies"
           $DRUSH en -y views ctools entity redirect date ds field_group field_group_table
-          echo "==> Apply Drupal Patch"
-          cd $DRUPAL_ROOT
-          wget --no-check-certificate https://drupal.org/files/drupal.pgsql-bytea.27.patch
-          patch -p1 < drupal.pgsql-bytea.27.patch
+          
       # Install Tripal, Chado, prepare Drupal/Chado databases
       # Also patches views
       #########################################################
