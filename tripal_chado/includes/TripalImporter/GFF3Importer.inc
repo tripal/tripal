@@ -443,8 +443,6 @@ class GFF3Importer extends TripalImporter {
     $target_type = trim($form_state['values']['target_type']);
     $create_target = $form_state['values']['create_target'];
     $create_organism = $form_state['values']['create_organism'];
-    $add_only = $form_state['values']['add_only'];
-    $update = $form_state['values']['update'];
     $refresh = 0; //$form_state['values']['refresh'];
     $remove = 0; //$form_state['values']['remove'];
     $line_number = trim($form_state['values']['line_number']);
@@ -453,13 +451,6 @@ class GFF3Importer extends TripalImporter {
     $re_mrna = trim($form_state['values']['re_mrna']);
     $re_protein = trim($form_state['values']['re_protein']);
 
-    // @coder-ignore: there are no functions being called here
-    if (($add_only AND ($update OR $refresh OR $remove)) OR
-      ($update AND ($add_only OR $refresh OR $remove)) OR
-      ($refresh AND ($update OR $add_only OR $remove)) OR
-      ($remove AND ($update OR $refresh OR $add_only))) {
-      form_set_error('add_only', t("Please select only one checkbox from the import options section"));
-    }
 
     if ($line_number and !is_numeric($line_number) or $line_number < 0) {
       form_set_error('line_number', t("Please provide an integer line number greater than zero."));
@@ -959,9 +950,9 @@ class GFF3Importer extends TripalImporter {
 
     // Check to make sure strand has a valid character
     if (preg_match('/[\+-\?\.]/',$ret['strand']) == false) {
-      throw new Exception(t('Invalid strand detected on line !line, 
-        strand can only be +-?.',['!line' => $line]));      
-    }    
+      throw new Exception(t('Invalid strand detected on line !line,
+        strand can only be +-?.',['!line' => $line]));
+    }
 
     // Format the strand for chado
     if (strcmp($ret['strand'], '.') == 0) {
@@ -977,12 +968,12 @@ class GFF3Importer extends TripalImporter {
       $ret['strand'] = -1;
     }
 
-    
+
     if (preg_match('/[012\.]/',$ret['phase']) == false) {
-      throw new Exception(t('Invalid phase detected on line !line, 
-        phase can only be 0,1,2 or . (period)',['!line' => $line]));      
+      throw new Exception(t('Invalid phase detected on line !line,
+        phase can only be 0,1,2 or . (period)',['!line' => $line]));
     }
-    
+
 
     if (strcmp($ret['phase'], '.') == 0) {
       if ($ret['type'] == 'cds') {
@@ -1540,7 +1531,7 @@ class GFF3Importer extends TripalImporter {
       if ($type == 'cds' or $type == 'protein' or $type == 'polypeptide') {
         $parent_name = $feature['parent'];
         if ($parent_name) {
-          if (!array_key_exists($parent_name, $proteins)) {
+          if (!array_key_exists($parent_name, $this->proteins)) {
             $this->proteins[$parent_name] = [];
           }
           if ($type == 'cds') {
@@ -2812,7 +2803,6 @@ class GFF3Importer extends TripalImporter {
     }
     else {
       $uniquename = $attrs['ID'][0];
-
       $name = $attrs['Name'][0];
     }
 
