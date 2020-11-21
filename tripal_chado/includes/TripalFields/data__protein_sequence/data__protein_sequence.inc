@@ -93,18 +93,12 @@ class data__protein_sequence extends ChadoField {
       WHERE
         FR.object_id = :feature_id and
         CVT.name = 'polypeptide' and
-        RCVT.name  IN ('derives_from', 'part_of')
+        RCVT.name IN ('derives_from', 'part_of')
       ORDER BY FR.rank ASC
     ";
     $proteins = chado_query($sql, [':feature_id' => $feature->feature_id]);
     while ($protein = $proteins->fetchObject()) {
       $entity->{$field_name}['und'][$num_seqs]['value'] = $protein->residues;
-      // Because we'll be saving a feature we need to maintain all of it's
-      // columns in the feature table. The following will add them all.
-      $columns = get_object_vars($protein);
-      foreach ($columns as $colname => $value) {
-        $entity->{$field_name}['und'][$num_seqs]['chado-feature__' . $colname] = $value;
-      }
       $num_seqs++;
     }
   }
