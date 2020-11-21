@@ -635,7 +635,6 @@ class TripalWebService {
 
     if (!$term) {
       $backtrace = debug_backtrace();
-      print_r($backtrace[1]['args']);
       throw new Exception('addContextTerm: Please provide a non NUll or non empty $term.');
 
     }
