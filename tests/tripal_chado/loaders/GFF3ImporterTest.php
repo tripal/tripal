@@ -95,13 +95,57 @@ class GFF3ImporterTest extends TripalTestCase {
   }
 
   /**
+   * Run the GFF loader on gff_tag_parent_verification.gff for testing.
+   *
+   * This tests whether the GFF loader adds Parent attributes
+   * The GFF loader should allow it
+   */  
+  public function testGFFImporterTagParentVerification() {
+    $gff_file = ['file_local' =>
+      __DIR__ . '/../data/gff_tag_parent_verification.gff'];
+    $analysis = factory('chado.analysis')->create();
+    $organism = factory('chado.organism')->create();
+    $run_args = [
+      'analysis_id' => $analysis->analysis_id,
+      'organism_id' => $organism->organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+    ];
+
+  
+    $this->loadLandmarks($analysis, $organism);
+    $this->runGFFLoader($run_args, $gff_file);
+
+    $results = db_query("SELECT * FROM chado.feature_relationship fr
+      LEFT JOIN chado.feature f ON (fr.object_id = f.feature_id)
+      WHERE f.uniquename = 'FRAEX38873_v2_000000010'
+    ;",array());
+
+    // Found parent via object_id FRAEX38873_v2_000000010
+    $this->assertEquals($results->rowCount(), 1);
+  }
+
+  /**
    * Run the GFF loader on gff_tagvalue_unescaped_character.gff for testing.
    *
    * This tests whether the GFF loader adds IDs that contain a comma. 
    * The GFF loader should allow it
    */  
   public function testGFFImporterEscapedTagValueWithEncodedCharacter() {
-    $gff_file = ['file_local' => __DIR__ . '/../data/gff_tagvalue_encoded_character.gff'];
+    $gff_file = ['file_local' => 
+      __DIR__ . '/../data/gff_tagvalue_encoded_character.gff'];
     $analysis = factory('chado.analysis')->create();
     $organism = factory('chado.organism')->create();
     $run_args = [
