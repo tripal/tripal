@@ -1025,13 +1025,7 @@ class GFF3Importer extends TripalImporter {
         unescaped characters', ['!value' => $tag[1]])
         );
       }
-
-      // Let us convert escaped characters back to original 
-      // Is this too general?\
-      $tag[0] = urldecode($tag[0]);
-      $tag[1] = urldecode($tag[1]);
-
-
+      
       // Multiple values of an attribute are separated by commas
       $tag_name = $tag[0];
       if (!array_key_exists($tag_name, $tags)) {

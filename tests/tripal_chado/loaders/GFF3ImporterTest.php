@@ -100,7 +100,7 @@ class GFF3ImporterTest extends TripalTestCase {
    * This tests whether the GFF loader adds IDs that contain a comma. 
    * The GFF loader should allow it
    */  
-  public function testGFFImporterEscapedTagValueWithComma() {
+  public function testGFFImporterEscapedTagValueWithEncodedCharacter() {
     $gff_file = ['file_local' => __DIR__ . '/../data/gff_tagvalue_encoded_character.gff'];
     $analysis = factory('chado.analysis')->create();
     $organism = factory('chado.organism')->create();
@@ -127,13 +127,10 @@ class GFF3ImporterTest extends TripalTestCase {
     $this->loadLandmarks($analysis, $organism);
     $this->runGFFLoader($run_args, $gff_file);
 
-    $results = db_query("SELECT * FROM chado.feature",array());
+    $results = db_query("SELECT * FROM chado.feature 
+      WHERE uniquename = 'FRAEX38873_v2_000000010,20';",array());
 
-    foreach ($results as $row) {
-      print_r($row);
-    }
-
-    //$this->assertEquals($hasException, true);
+    $this->assertEquals($results->rowCount(), 1);
   }
 
 
