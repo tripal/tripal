@@ -74,12 +74,10 @@ jobs:
                 --account-name=$ACCOUNT_NAME \
                 --account-pass=$ACCOUNT_PASS \
                 --site-mail=admin@example.com \
-                --site-name=Tripal3
-
-          echo "\n==> Downloading dependencies"
+                --site-name=Tripal4D8
+          echo "==> Downloading dependencies"
           $DRUSH dl -y views ctools entity redirect date ds field_group field_group_table
-          
-          echo "\n==> Enabling dependencies"
+          echo "==> Enabling dependencies"
           $DRUSH en -y views ctools entity redirect date ds field_group field_group_table
           
       # Install Tripal, Chado, prepare Drupal/Chado databases
@@ -96,11 +94,7 @@ jobs:
           ACCOUNT_PASS: somereallysecurepassword
         run: |
           echo "==> Move Tripal into the Drupal modules directory"
-          ls /home/runner/work/tripal/tripal
-          cp -R /home/runner/work/tripal/tripal $DRUPAL_ROOT/sites/all/modules
-          echo "==> Apply Views Patch"
-          cd $DRUPAL_ROOT/sites/all/modules/views
-          patch -p1 < ../tripal/tripal_chado_views/views-sql-compliant-three-tier-naming-1971160-30.patch
+          cp -R /home/runner/work/t4d8 $DRUPAL_ROOT/modules
           echo "==> Install Tripal"
           cd $DRUPAL_ROOT
           $DRUSH en -y tripal tripal_chado tripal_chado_views tripal_ws tripal_ds
@@ -121,7 +115,7 @@ jobs:
           ACCOUNT_NAME: tripaladmin
           ACCOUNT_PASS: somereallysecurepassword
         run: |
-          cd $DRUPAL_ROOT/sites/all/modules/tripal
+          cd $DRUPAL_ROOT/sites/all/modules/t4d8
           composer require --dev mheap/phpunit-github-actions-printer
           composer update
           cp tests/.travis.env tests/.env
