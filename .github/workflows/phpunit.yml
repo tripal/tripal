@@ -97,13 +97,10 @@ jobs:
           cp -R /home/runner/work/t4d8 $DRUPAL_ROOT/modules
           echo "==> Install Tripal"
           cd $DRUPAL_ROOT
-          $DRUSH en -y tripal tripal_chado tripal_chado_views tripal_ws tripal_ds
+          $DRUSH en -y tripal tripal_chado
           echo "==> Install Chado"
-          $DRUSH eval "module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.install'); tripal_chado_load_drush_submit('Install Chado v1.3');"
-          $DRUSH trp-run-jobs --username=$ACCOUNT_NAME
-          echo "==> Prepare Chado"
-          $DRUSH eval "module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.setup'); tripal_chado_prepare_drush_submit();"
-          $DRUSH trp-run-jobs --username=$ACCOUNT_NAME
+          $DRUSH php-eval "\Drupal::service('tripal_chado.chadoInstaller')->install(1.3, 'chado')"
+          echo "==> No Prepare Chado step, right?"
       # Runs the PHPUnit tests.
       # https://github.com/mheap/phpunit-github-actions-printer is used
       # to report PHPUnit fails in a meaningful way to github in PRs.
