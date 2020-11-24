@@ -112,6 +112,7 @@ jobs:
           ACCOUNT_NAME: tripaladmin
           ACCOUNT_PASS: somereallysecurepassword
         run: |
+          cp -R /home/runner/work/t4d8 $DRUPAL_ROOT/modules
           cd $DRUPAL_ROOT/modules/t4d8/tripal/tests/src/Functional
           composer require --dev mheap/phpunit-github-actions-printer
           composer update
