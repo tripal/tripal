@@ -104,18 +104,16 @@ jobs:
       # Runs the PHPUnit tests.
       # https://github.com/mheap/phpunit-github-actions-printer is used
       # to report PHPUnit fails in a meaningful way to github in PRs.
-      - name: PHPUnit Tests
+      - name: PHPUnit Tests - Tripal
         env:
           DRUSH: "/home/runner/.composer/vendor/bin/drush"
           DRUPAL_ROOT: "/home/runner/work/drupal"
           POSTGRES_CONNECTION_STRING: 'pgsql://postgres:dbpass@localhost:5432/test_db'
           ACCOUNT_NAME: tripaladmin
           ACCOUNT_PASS: somereallysecurepassword
-        run: |
-          cd $DRUPAL_ROOT/sites/all/modules/t4d8
+         run: |
+          cd $DRUPAL_ROOT/modules/t4d8/tripal/tests/src/Functional
           composer require --dev mheap/phpunit-github-actions-printer
           composer update
-          cp tests/.travis.env tests/.env
           ./vendor/bin/phpunit --printer mheap\\GithubActionsReporter\\Printer
-
 
