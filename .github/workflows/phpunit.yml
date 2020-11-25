@@ -113,8 +113,13 @@ jobs:
           ACCOUNT_PASS: somereallysecurepassword
         run: |
           cd $DRUPAL_ROOT/
+          echo "one"
           composer require --dev mheap/phpunit-github-actions-printer
+          echo "two"
           composer update
+          echo "three"
           phpunit --printer mheap\\GithubActionsReporter\\Printer
+          echo "four"
           phpunit --configuration core t4d8
+          echo "five"
 
