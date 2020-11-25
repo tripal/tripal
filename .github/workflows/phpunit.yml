@@ -99,12 +99,12 @@ jobs:
           cd $DRUPAL_ROOT
           $DRUSH en -y tripal tripal_chado
           echo "==> Install Chado"
-          $DRUSH php-eval "\Drupal::service('tripal_chado.chadoInstaller')->install(1.3, 'chado')"
-          echo "==> No Prepare Chado step, right?"
+          $DRUSH php-eval "\Drupal::service('tripal_chado.chadoInstaller')->install(1.3, 'testchado')"
+          echo "==> No Prepare Chado step, yet..."
       # Runs the PHPUnit tests.
       # https://github.com/mheap/phpunit-github-actions-printer is used
       # to report PHPUnit fails in a meaningful way to github in PRs.
-      - name: PHPUnit Tests - Tripal
+      - name: PHPUnit Tests
         env:
           DRUSH: "/home/runner/.composer/vendor/bin/drush"
           DRUPAL_ROOT: "/home/runner/work/drupal"
@@ -112,7 +112,7 @@ jobs:
           ACCOUNT_NAME: tripaladmin
           ACCOUNT_PASS: somereallysecurepassword
         run: |
-          cd $DRUPAL_ROOT/t4d8/tripal/tests/src/Functional
+          cd $DRUPAL_ROOT/
           composer require --dev mheap/phpunit-github-actions-printer
           composer update
           ./vendor/bin/phpunit --printer mheap\\GithubActionsReporter\\Printer
