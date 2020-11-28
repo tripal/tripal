@@ -480,7 +480,6 @@ class GFF3Importer extends TripalImporter {
    * @see TripalImporter::run()
    */
   public function run() {
-
     $arguments = $this->arguments['run_args'];
     $this->gff_file = $this->arguments['files'][0]['file_path'];
 
@@ -578,7 +577,6 @@ class GFF3Importer extends TripalImporter {
 
     // Create the cache file for storing parsed GFF entries.
     $this->openCacheFile();
-
     // Load the GFF3.
     try {
       $this->logMessage("Step  1 of 26: Caching GFF3 file...                             ");
