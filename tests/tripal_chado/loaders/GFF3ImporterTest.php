@@ -91,7 +91,7 @@ class GFF3ImporterTest extends TripalTestCase {
       $hasException = true;
     }
 
-    $this->assertEquals($hasException, true);
+    $this->assertEquals($hasException, false);
   }
 
   /**
@@ -262,7 +262,7 @@ class GFF3ImporterTest extends TripalTestCase {
       $hasException = true;
     }
 
-    $this->assertEquals($hasException, true);
+    $this->assertEquals($hasException, false);
   }
 
   /**
@@ -659,11 +659,6 @@ class GFF3ImporterTest extends TripalTestCase {
       $this->assertEquals($row->strand, 0); // .
     }     
 
-    // This GFF should create 5 featureloc records
-    $results = db_query('SELECT COUNT(*) as c FROM chado.featureloc;');
-    foreach ($results as $row) {
-      $this->assertEquals($row->c, 5);
-    }
   }
 
   /**
