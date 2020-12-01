@@ -579,13 +579,6 @@ class TripalImporter {
     // Generate a translated message.
     $tmessage = t($message, $variables);
 
-    // If running from terminal / command line, output messages to terminal
-    // We should only allow this output for command line and not web page loads
-    // since we don't want this output on webpages.
-    if (defined('STDIN')) { 
-      echo "\n" . $tmessage;
-    } 
-
     // If we have a job then pass along the messaging to the job.
     if ($this->job) {
       $this->job->logMessage($message, $variables, $severity);
