@@ -1024,7 +1024,7 @@ class GFF3Importer extends TripalImporter {
         $attr_aliases = array_merge($attr_aliases, $tags[$tag_name]);
       }
       elseif (strcmp($tag_name, 'Parent') == 0) {
-        $attr_parent = urldecode($tag[1]);
+        $attr_parent = $tag[1];
       }
       elseif (strcmp($tag_name, 'Dbxref') == 0) {
         $attr_dbxref = array_merge($attr_dbxref, $tags[$tag_name]);
