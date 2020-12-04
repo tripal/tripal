@@ -20,16 +20,16 @@ Currently we have the following installed:
 
     a) Stand-alone container for testing or demonstration.
     ```
-    docker run --publish=9000:80 --name=drupal8dev_ci -t -i -d laceysanderson/drupal8dev_ci:drupal8.9.3-pgsql
+    docker run --publish=9000:80 --name=t4d8 -tid tripalproject/tripaldocker:latest
     ```
     b) Development container with current directory mounted within the container for easy edits. Change my_module with the name of yours.
     ```
-    docker run --publish=9000:80 --name=drupal8dev_ci -t -i -d --volume=`pwd`:/var/www/drupal8/web/modules/my_module laceysanderson/drupal8dev_ci:drupal8.9.3-pgsql
+    docker run --publish=9000:80 --name=t4d8 -tid --volume=`pwd`:/var/www/drupal8/web/modules/my_module tripalproject/tripaldocker:latest
     ```
 
 2. Start the PostgreSQL database.
 ```
-docker exec drupal8dev_ci service postgresql start
+docker exec t4d8 service postgresql start
 ```
 
 3. Navigate to http://localhost:9000 to your fully function site. Drupal was installed using the standard profile during image creation. The administration user is drupaladmin:some_admin_password.
@@ -38,17 +38,17 @@ docker exec drupal8dev_ci service postgresql start
 ## Usage
  - Run Drupal Core PHP Unit Tests:
      ```
-     docker exec drupal8dev_ci phpunit --configuration core core/modules/simpletest/tests
+     docker exec t4d8 phpunit --configuration core core/modules/simpletest/tests
      ```
  - Run Drupal Console to generate code for your module!
      ```
-     docker exec drupal8dev_ci drupal generate:module
+     docker exec t4d8 drupal generate:module
      ```
  - Run Drush to rebuild the cache
      ```
-     docker exec drupal8dev_ci drush cr
+     docker exec t4d8 drush cr
      ```
  - Run Composer to upgrade Drupal
      ```
-     docker exec drupal8dev_ci composer up
+     docker exec t4d8 composer up
      ```
