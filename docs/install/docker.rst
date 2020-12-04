@@ -1,74 +1,80 @@
-
-Native Docker
+Tripal Docker
 ================
 
-This is the typical way to interact with docker and involves using an image to create a container for specific work. This ensures long term storage and is ideal for long term development.
+Tripal Docker is currently focused on Development and Unit Testing. There will be a production focused Tripal Docker soon.
+
+Software Stack
+------------------
+
+Currently we have the following installed:
+ - Debian Buster(10)
+ - PHP 7.3.25 with extensions needed for Drupal (Memory limit 1028M)
+ - Apache 2.4.38
+ - PostgreSQL 11.9 (Debian 11.9-0+deb10u1)
+ - Composer 2.0.7
+ - Drupal Console 1.9.7
+ - Drush 10.3.6
+ - Drupal 8.9.10  (8.x-dev) downloaded using composer.
 
 Setup
--------
+----------
 
- - Pull the docker image onto your computer:
+1. Run the image in the background mapping it's web server to your port 9000.
 
-  .. code:: bash
+    a) Stand-alone container for testing or demonstration.
 
-    docker pull laceysanderson/tripal4dev:tripal4-d8.8.x
+    .. code::
 
- - Clone a local copy of tripal 4:
+      docker run --publish=9000:80 --name=t4d8 -tid tripalproject/tripaldocker:latest
 
-  .. code:: bash
+    b) Development container with current directory mounted within the container for easy edits. Change my_module with the name of yours.
 
-    https://github.com/tripal/t4d8.git
+    .. code::
 
- - Run the image mapping the local copy of tripal 4 into the container for easy updates and port 80 in the docker container to port 9001 on your local computer:
+      docker run --publish=9000:80 --name=t4d8 -tid --volume=`pwd`:/var/www/drupal8/web/modules/my_module tripalproject/tripaldocker:latest
 
-  .. code:: bash
+2. Start the PostgreSQL database.
 
-    docker run --publish=9001:80 -v `pwd`/t4d8:/var/www/html/drupal8/web/modules/t4d8 --name=tripal4dev -tid laceysanderson/tripal4dev:tripal4-d8.8.x
+.. code::
 
- - Start the database server:
+  docker exec t4d8 service postgresql start
 
-  .. code:: bash
 
-    docker exec tripal4dev service postgresql start
+Development Site Information:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
- - Visit the website at localhost:9001/drupal8/web. The admin user is ``drupaladmin`` and the password is ``some_admin_password``
++-------------------------+-----------------------+
+| URL                     | http://localhost:9000 |
++-------------------------+-----------------------+
+| Administrative User     | drupaladmin           |
++-------------------------+-----------------------+
+| Administrative Password | some_admin_password   |
++-------------------------+-----------------------+
+
 
 Usage
---------
+----------
 
-- To access the drupal container run:
+ - Run Drupal Core PHP Unit Tests:
 
- .. code:: bash
+   .. code::
 
-   docker exec -it tripal4dev bash
+     docker exec t4d8 phpunit --configuration core core/modules/simpletest/tests
 
-- To access the database run (The password is ``drupal8developmentonlylocal``):
+ - Run Drupal Console to generate code for your module!
 
- .. code:: bash
+   .. code::
 
-   docker exec -it tripal4dev drupal8/vendor/bin/drush sql:cli
+     docker exec t4d8 drupal generate:module
 
-- To run drush commands:
+ - Run Drush to rebuild the cache
 
- .. code:: bash
+   .. code::
 
-   docker exec tripal4dev drupal8/vendor/bin/drush [YOUR OPTIONS]
+     docker exec t4d8 drush cr
 
-- To run unit tests:
+ - Run Composer to upgrade Drupal
 
- .. code:: bash
+   .. code::
 
-   docker exec tripal4dev drupal8/vendor/bin/phpunit --config drupal8/web/core drupal8/web/modules/t4d8
-
-- To update drupal run:
-
- .. code:: bash
-
-   docker exec -w /var/www/html/drupal8 tripal4dev composer up
-
-- To download a module provided by the Drupal package manager:
-
-
- .. code:: bash
-
-   docker exec -w /var/www/html/drupal8 tripal4dev composer require drupal/devel
+     docker exec t4d8 composer up
