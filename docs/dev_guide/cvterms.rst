@@ -6,7 +6,7 @@ Controlled vocabularies are simply a collection of agreed upon names (knowns as 
 
 Tripal and Chado both use controlled vocabularies extensively to categorize data and metadata. The use of controlled vocabulary terms also allows both Tripal and Chado to be extremely flexible while also remaining very descriptive with rich metadata.
 
-In Tripal, controlled vocabularies and their terms are Drupal content entities. This means they are managed similar to tripal content (i.e. biological data) and will not be sync'd between production and development instances.
+In Tripal, controlled vocabularies and their terms are Drupal content entities. This means they are managed similar to Tripal content (i.e. biological data) and will not be sync'd between production and development instances.
 
 In Tripal 4 specifically, Tripal Controlled Vocabularies and their terms are completely independent of Chado. However, for sites which choose to use Chado for controlled vocabularies (recommended) there is tight cross-linking available. This ensures we remain database agnostic while also encouraging close interaction between Tripal and Chado.
 

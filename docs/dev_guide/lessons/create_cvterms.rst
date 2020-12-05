@@ -2,11 +2,11 @@
 Controlled Vocabulary Terms Create/Load
 =========================================
 
-This lesson will teach you how to programatically create new controlled vocabularies (CVs) and their terms (CVterms). It will also show you how to load both CVs and CVterms which already exist in your Tripal site.
+This lesson will teach you how to programmatically create new controlled vocabularies (CVs) and their terms (CVterms). It will also show you how to load both CVs and CVterms which already exist in your Tripal site.
 
 .. warning::
 
-  This lesson was written before Chado integration. As such it shows how database agnostic Tripal 4 is. In the future we will add a section about how to connect these terms to your Chado cvterms and how to create terms from those existing in chado.
+  This lesson was written before Chado integration. As such it shows how database agnostic Tripal 4 is. In the future we will add a section about how to connect these terms to your Chado cvterms and how to create terms from those existing in Chado.
 
 .. note::
 
@@ -20,7 +20,7 @@ Controlled Vocabularies (CVs)
   **Background:** :doc:`/dev_guide/cvterms`
 
   Questions:
-    - How do I programatically create a controlled vocabulary?
+    - How do I programmatically create a controlled vocabulary?
     - How do I load existing controlled vocabularies?
     - How do I access values once I have the vocabulary?
 
@@ -85,7 +85,7 @@ Controlled Vocabulary Terms (CVterms)
   **Background:** :doc:`/dev_guide/cvterms`
 
   Questions:
-    - How do I programatically add a term to an existing vocabulary.
+    - How do I programmatically add a term to an existing vocabulary.
     - How do I load an existing CVterm?
     - How do I access values once I have the term?
 
