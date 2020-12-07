@@ -52,11 +52,269 @@ class GFF3ImporterTest extends TripalTestCase {
   }
 
   /**
+   * Run the GFF loader on gff_tag_unescaped_character.gff for testing.
+   *
+   * This tests whether the GFF loader adds IDs that contain a comma. 
+   * The GFF loader should allow it
+   */  
+  public function testGFFImporterUnescapedTagWithComma() {
+    $gff_file = ['file_local' => __DIR__ . '/../data/gff_tag_unescaped_character.gff'];
+    $analysis = factory('chado.analysis')->create();
+    $organism = factory('chado.organism')->create();
+    $run_args = [
+      'analysis_id' => $analysis->analysis_id,
+      'organism_id' => $organism->organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+    ];
+
+  
+    $this->loadLandmarks($analysis, $organism);
+    // This should throw an error based on the tag name having the comma
+    $hasException = false;
+    try {
+      $this->runGFFLoader($run_args, $gff_file);
+    }
+    catch (\Exception $ex) {
+      $hasException = true;
+    }
+
+    $this->assertEquals($hasException, false);
+  }
+
+  /**
+   * Run the GFF loader on small_gene.gff for testing.
+   *
+   * This tests whether the GFF loader adds Alias attributes
+   * The GFF loader should allow it
+   */  
+  public function testGFFImporterTagAliasVerification() {
+    $gff_file = ['file_local' =>
+      __DIR__ . '/../data/small_gene.gff'];
+    $fasta = ['file_local' => __DIR__ . '/../data/short_scaffold.fasta'];      
+    $analysis = factory('chado.analysis')->create();
+    $organism = factory('chado.organism')->create();
+    $run_args = [
+      'analysis_id' => $analysis->analysis_id,
+      'organism_id' => $organism->organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+    ];
+
+  
+    $this->loadLandmarks($analysis, $organism, $fasta);
+    $this->runGFFLoader($run_args, $gff_file);
+
+    $results = db_query("SELECT * FROM chado.feature_synonym fs
+      LEFT JOIN chado.synonym s ON (fs.feature_synonym_id = s.synonym_id)
+      WHERE name = 'first_test_gene'
+    ;",array());
+
+    $this->assertEquals($results->rowCount(), 1);
+  }
+
+
+  /**
+   * Run the GFF loader on gff_tag_parent_verification.gff for testing.
+   *
+   * This tests whether the GFF loader adds Parent attributes
+   * The GFF loader should allow it
+   */  
+  public function testGFFImporterTagParentVerification() {
+    $gff_file = ['file_local' =>
+      __DIR__ . '/../data/gff_tag_parent_verification.gff'];
+    $analysis = factory('chado.analysis')->create();
+    $organism = factory('chado.organism')->create();
+    $run_args = [
+      'analysis_id' => $analysis->analysis_id,
+      'organism_id' => $organism->organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+    ];
+
+  
+    $this->loadLandmarks($analysis, $organism);
+    $this->runGFFLoader($run_args, $gff_file);
+
+    $results = db_query("SELECT * FROM chado.feature_relationship fr
+      LEFT JOIN chado.feature f ON (fr.object_id = f.feature_id)
+      WHERE f.uniquename = 'FRAEX38873_v2_000000010'
+    ;",array());
+
+    // Found parent via object_id FRAEX38873_v2_000000010
+    $this->assertEquals($results->rowCount(), 1);
+  }
+
+  /**
+   * Run the GFF loader on gff_tagvalue_unescaped_character.gff for testing.
+   *
+   * This tests whether the GFF loader adds IDs that contain a comma. 
+   * The GFF loader should allow it
+   */  
+  public function testGFFImporterEscapedTagValueWithEncodedCharacter() {
+    $gff_file = ['file_local' => 
+      __DIR__ . '/../data/gff_tagvalue_encoded_character.gff'];
+    $analysis = factory('chado.analysis')->create();
+    $organism = factory('chado.organism')->create();
+    $run_args = [
+      'analysis_id' => $analysis->analysis_id,
+      'organism_id' => $organism->organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+    ];
+
+  
+    $this->loadLandmarks($analysis, $organism);
+    $this->runGFFLoader($run_args, $gff_file);
+
+    $results = db_query("SELECT * FROM chado.feature 
+      WHERE uniquename = 'FRAEX38873_v2_000000010,20';",array());
+
+    $this->assertEquals($results->rowCount(), 1);
+  }
+
+
+  /**
+   * Run the GFF loader on gff_tagvalue_unescaped_character.gff for testing.
+   *
+   * This tests whether the GFF loader adds IDs that contain a comma. 
+   * The GFF loader should allow it
+   */  
+  public function testGFFImporterUnescapedTagValueWithComma() {
+    $gff_file = ['file_local' => __DIR__ . '/../data/gff_tagvalue_unescaped_character.gff'];
+    $analysis = factory('chado.analysis')->create();
+    $organism = factory('chado.organism')->create();
+    $run_args = [
+      'analysis_id' => $analysis->analysis_id,
+      'organism_id' => $organism->organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+    ];
+
+  
+    $this->loadLandmarks($analysis, $organism);
+    // This should throw an error based on the tag name having the comma
+    $hasException = false;
+    try {
+      $this->runGFFLoader($run_args, $gff_file);
+    }
+    catch (\Exception $ex) {
+      $hasException = true;
+    }
+
+    $this->assertEquals($hasException, false);
+  }
+
+  /**
+   * Run the GFF loader on gff_seqid_invalid_character.gff for testing.
+   * Seqids seem to also be called landmarks within GFF loader.
+   * This tests whether the GFF loader has any issues with characters like  
+   * single quotes.
+   */  
+  public function testGFFImporterSeqidWithInvalidCharacter() {
+    $gff_file = ['file_local' => 
+      __DIR__ . '/../data/gff_seqid_invalid_character.gff'];
+    $analysis = factory('chado.analysis')->create();
+    $organism = factory('chado.organism')->create();
+    $run_args = [
+      'analysis_id' => $analysis->analysis_id,
+      'organism_id' => $organism->organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+    ];
+
+  
+    $this->loadLandmarks($analysis, $organism);
+    // This will produce an exception due to quote character in Seqid
+    $hasException = false;
+    try {
+      $this->runGFFLoader($run_args, $gff_file);
+    }
+    catch (\Exception $ex) {
+      $hasException = true;
+    }
+
+    $this->assertEquals($hasException, true);
+
+  }
+
+  /**
    * Run the GFF loader on gff_unescaped_ids.gff for testing.
    *
-   * This tests whether the GFF loader detects invalid ID that contains  
-   * unescaped whitespaces. The GFF loader should throw an exception which this
-   * unit test detects.
+   * This tests whether the GFF loader adds IDs that contain whitespaces. 
+   * The GFF loader should allow it
    */  
   public function testGFFImporterUnescapedWhitespaceID() {
     $gff_file = ['file_local' => __DIR__ . '/../data/gff_unescaped_ids.gff'];
@@ -81,26 +339,21 @@ class GFF3ImporterTest extends TripalTestCase {
       'alt_id_attr' => NULL,
     ];
 
-    $hasException = false;
-    try {    
-      $this->loadLandmarks($analysis, $organism);
-      // This will produce an exception due to unescaped whitespace in ID
-      $this->runGFFLoader($run_args, $gff_file);
-    }
-    catch(\Exception $ex) {
-      $hasException = true;
-    }
+  
+    $this->loadLandmarks($analysis, $organism);
+    // This should go through just fine
+    $this->runGFFLoader($run_args, $gff_file);
 
-    // We expect an exception to happen so we are looking for a return of true
-    $this->assertEquals($hasException, true);
+    $results = db_query("SELECT * FROM chado.feature WHERE uniquename = 
+      'FRAEX38873_v2_000000010 SPACED';");
+    $this->assertEquals($results->rowCount(), 1);
   }
 
   /**
    * Run the GFF loader on gff_rightarrow_ids.gff for testing.
    *
-   * This tests whether the GFF loader detects invalid ID that contains  
-   * beginning arrow >. The GFF loader should throw an exception which this
-   * unit detects.
+   * This tests whether the GFF loader fails if ID contains  
+   * arrow >. It should not fail.
    */  
   public function testGFFImporterRightArrowID() {
     $gff_file = ['file_local' => __DIR__ . '/../data/gff_rightarrow_id.gff'];
@@ -125,18 +378,16 @@ class GFF3ImporterTest extends TripalTestCase {
       'alt_id_attr' => NULL,
     ];
 
-    $hasException = false;
-    try {    
-      $this->loadLandmarks($analysis, $organism);
-      // This will produce an exception due to right arrow in ID
-      $this->runGFFLoader($run_args, $gff_file);
-    }
-    catch(\Exception $ex) {
-      $hasException = true;
-    }
+ 
+    $this->loadLandmarks($analysis, $organism);
+    // This will produce an exception due to right arrow in ID
+    $this->runGFFLoader($run_args, $gff_file);
 
-    // We expect an exception to happen so we are looking for a return of true
-    $this->assertEquals($hasException, true);
+    $results = db_query("SELECT * FROM chado.feature 
+      WHERE uniquename = '>FRAEX38873_v2_000000010';");
+
+    // We expect this record to get inserted.
+    $this->assertEquals($results->rowCount(), 1);
   }
 
 
@@ -408,11 +659,6 @@ class GFF3ImporterTest extends TripalTestCase {
       $this->assertEquals($row->strand, 0); // .
     }     
 
-    // This GFF should create 5 featureloc records
-    $results = db_query('SELECT COUNT(*) as c FROM chado.featureloc;');
-    foreach ($results as $row) {
-      $this->assertEquals($row->c, 5);
-    }
   }
 
   /**

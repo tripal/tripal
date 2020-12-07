@@ -480,7 +480,6 @@ class GFF3Importer extends TripalImporter {
    * @see TripalImporter::run()
    */
   public function run() {
-
     $arguments = $this->arguments['run_args'];
     $this->gff_file = $this->arguments['files'][0]['file_path'];
 
@@ -578,7 +577,6 @@ class GFF3Importer extends TripalImporter {
 
     // Create the cache file for storing parsed GFF entries.
     $this->openCacheFile();
-
     // Load the GFF3.
     try {
       $this->logMessage("Step  1 of 26: Caching GFF3 file...                             ");
@@ -939,6 +937,15 @@ class GFF3Importer extends TripalImporter {
     $ret['start'] = $fmin;
     $ret['stop'] = $fmax;
 
+    // Landmark (seqid) validation checks based on GFF3 specifications 
+    preg_match('/[a-zA-Z0-9\.:\^\*\$@!\+_\?-\|]*/', $ret['landmark'], $matches);
+    if ($matches[0] != $ret['landmark']) {
+      throw new Exception(t("Landmark/seqid !landmark contains invalid 
+        characters. Only characters included in this regular expression is 
+        allowed [a-zA-Z0-9.:^*$@!+_?-|]", 
+        ['!landmark' => $ret['landmark']]));
+    }
+
     // Check to make sure strand has a valid character
     if (preg_match('/[\+-\?\.]/',$ret['strand']) == false) {
       throw new Exception(t('Invalid strand detected on line !line,
@@ -1000,7 +1007,7 @@ class GFF3Importer extends TripalImporter {
 
       // Break apart each attribute into key/value pairs.
       $tag = preg_split("/=/", $attr, 2);
-
+      
       // Multiple values of an attribute are separated by commas
       $tag_name = $tag[0];
       if (!array_key_exists($tag_name, $tags)) {
@@ -1017,7 +1024,7 @@ class GFF3Importer extends TripalImporter {
         $attr_aliases = array_merge($attr_aliases, $tags[$tag_name]);
       }
       elseif (strcmp($tag_name, 'Parent') == 0) {
-        $attr_parent = urldecode($tag[1]);
+        $attr_parent = $tag[1];
       }
       elseif (strcmp($tag_name, 'Dbxref') == 0) {
         $attr_dbxref = array_merge($attr_dbxref, $tags[$tag_name]);
@@ -2765,7 +2772,6 @@ class GFF3Importer extends TripalImporter {
     elseif (!array_key_exists('Name', $attrs)) {
       $uniquename = $attrs['ID'][0];
       $name = $attrs['ID'][0];
-
     }
     elseif (!array_key_exists('ID', $attrs)) {
       $uniquename = $attrs['Name'][0];
@@ -2773,15 +2779,6 @@ class GFF3Importer extends TripalImporter {
     }
     else {
       $uniquename = $attrs['ID'][0];
-
-      // Run ID validation checks based on GFF3 specifications
-      preg_match('/[a-zA-Z0-9\.:\^\*\$@!\+_\?-\|]*/', $uniquename, $matches);
-      if($matches[0] != $uniquename) {
-        throw new Exception(t("ID !uniquename contains invalid characters. Only
-          characters included in this regular expression is allowed
-          [a-zA-Z0-9.:^*$@!+_?-|]", ['!uniquename' => $uniquename]));
-      }
-
       $name = $attrs['Name'][0];
     }
 
