@@ -42,7 +42,6 @@ jobs:
       # Set up PHP environment for PHP versions specifed above
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
-        uses: php-actions/phpunit@v1
         with:
           # PHP configuration
           php-version: ${{ matrix.php-versions }}
@@ -50,6 +49,9 @@ jobs:
           ini-values: memory_limit=2G
           coverage: xdebug
           tools: composer, phpunit
+      # Set up phpunit
+      - name: Setup PHPUnit
+        uses: php-actions/phpunit@v1
       # Set up Drush
       - name: Install Drush
         run: |
