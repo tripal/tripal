@@ -51,7 +51,7 @@ jobs:
           tools: composer, phpunit
       # Set up phpunit
       - name: Setup PHPUnit
-        uses: php-actions/phpunit@v1
+        uses: php-actions/phpunit@v7
       # Set up Drush
       - name: Install Drush
         run: |
