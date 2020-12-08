@@ -42,6 +42,7 @@ jobs:
       # Set up PHP environment for PHP versions specifed above
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
+        uses: php-actions/phpunit@v1
         with:
           # PHP configuration
           php-version: ${{ matrix.php-versions }}
