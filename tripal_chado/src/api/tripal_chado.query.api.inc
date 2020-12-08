@@ -5,6 +5,8 @@
  * and selecting from chado.
  */
 
+use Drupal\Component\Utility\Html;
+
 /**
  * @defgroup tripal_chado_query_api Chado Query
  * @ingroup tripal_chado_api
@@ -2119,14 +2121,14 @@ function chado_schema_get_foreign_key($table_desc, $field, $values, $options = N
     // @todo: what do we do if we get to this point and we have a fk
     // relationship expected but we don't have any definition for one in the
     // table schema??
-    $version = $GLOBALS["chado_version"];
+    $version = chado_get_version();
     $message = t("There is no foreign key relationship defined for " . $field . " .
        To define a foreign key relationship, determine the table this foreign
        key referrs to (<foreign table>) and then implement
        hook_chado_chado_schema_v<version>_<foreign table>(). See
        tripal_chado_chado_v1_2_schema_feature for an example. Chado version: $version");
     tripal_report_error('tripal_chado', TRIPAL_ERROR, $message);
-    drupal_set_message(check_plain($message), 'error');
+    drupal_set_message(Html::escape($message), 'error');
   }
 
   return [];

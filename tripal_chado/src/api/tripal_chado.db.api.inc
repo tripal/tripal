@@ -608,6 +608,8 @@ function chado_associate_dbxref($basetable, $record_id, $dbxref, $options = [], 
  * This function is intended to be used in autocomplete forms
  * for searching for accession that begin with the provided string.
  *
+ * @todo currently doesn't support multiple chado schema.
+ *
  * @param $db_id
  *   The DB ID in which to search for the term.
  * @param $string
