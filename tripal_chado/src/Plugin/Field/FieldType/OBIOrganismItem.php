@@ -214,7 +214,7 @@ class OBIOrganismItem extends ChadoFieldItemBase {
    *   propertyDefinitions(). All data to be used in display of the field must
    *   be included here.
    */
-  public function selectChadoValue($record_id) {
+  public function selectChadoValue($record_id, $item) {
 
     $orgs = chado_query('SELECT o.*, cvt.name as infraspecific_type
       FROM {organism} o

@@ -6,3 +6,6 @@ services:
       - { name: access_check, applies_to: _tripal_access_check }
   tripal.bulkPgSchemaInstaller:
       class: Drupal\tripal\Services\bulkPgSchemaInstaller
+  plugin.manager.tripalstorage:
+      class: Drupal\tripal\Services\TripalStorageManager
+      parent: default_plugin_manager

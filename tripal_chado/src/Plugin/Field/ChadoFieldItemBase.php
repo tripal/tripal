@@ -25,8 +25,6 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    */
   public static function defaultStorageSettings() {
     $settings = parent::defaultStorageSettings();
-    $settings['max_length'] = 255;
-    $settings['tripal_custom_storage'] = 'chado';
 
     // -- Chado Table.
     // The table in Chado that the field maps to.
@@ -47,7 +45,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   * @return array
   *   Returns an array with values matching the field definition.
   */
-  public function selectChadoValue($record_id) {
+  public function selectChadoValue($record_id, $item) {
     return NULL;
   }
 
@@ -82,15 +80,23 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    * {@inheritdoc}
    */
   public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
-    $elements = [];
+    $elements = parent::storageSettingsForm($form, $form_state, $has_data);
 
-    $elements['max_length'] = [
-      '#type' => 'number',
-      '#title' => t('Maximum length for the chado schema name'),
-      '#default_value' => $this->getSetting('max_length'),
+    $elements['chado_table'] = [
+      '#type' => 'textfield',
+      '#title' => t('Chado Table'),
+      '#description' => t('The chado table data for this field is stored in.'),
       '#required' => TRUE,
-      '#description' => t('The maximum length of the field in characters.'),
-      '#min' => 1,
+      '#default_value' => $this->getSetting('chado_table'),
+      '#disabled' => TRUE,
+    ];
+
+    $elements['chado_column'] = [
+      '#type' => 'textfield',
+      '#title' => t('Chado Column'),
+      '#description' => t('The chado table column that data for this field is stored in.'),
+      '#required' => TRUE,
+      '#default_value' => $this->getSetting('chado_column'),
       '#disabled' => TRUE,
     ];
 
