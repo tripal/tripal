@@ -8,6 +8,7 @@
 use Drupal\Core\Routing\RouteMatchInterface;
 
 require_once 'src/api/tripal_chado.schema.api.inc';
+require_once 'src/api/tripal_chado.custom_tables.api.inc';
 require_once 'src/api/tripal_chado.query.api.inc';
 require_once 'src/api/tripal_chado.variables.api.inc';
 require_once 'src/api/tripal_chado.organism.api.inc';
