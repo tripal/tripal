@@ -43,13 +43,13 @@ class ChadoInstallForm extends FormBase {
     $form['msg-top'] = [
       '#type' => 'item',
       '#markup' => 'Chado is a relational database schema that underlies many
-      GMOD installations. It is capable of representing many of the general
-      classes of data frequently encountered in modern biology such as sequence,
-      sequence comparisons, phenotypes, genotypes, ontologies, publications,
-      and phylogeny. It has been designed to handle complex representations of
-      biological knowledge and should be considered one of the most
-      sophisticated relational schemas currently available in molecular
-      biology.',
+        GMOD installations. It is capable of representing many of the general
+        classes of data frequently encountered in modern biology such as sequence,
+        sequence comparisons, phenotypes, genotypes, ontologies, publications,
+        and phylogeny. It has been designed to handle complex representations of
+        biological knowledge and should be considered one of the most
+        sophisticated relational schemas currently available in molecular
+        biology.',
       '#prefix' => '<blockquote>',
       '#suffix' => t('- <a href="@url">GMOD Chado Documentation</a></blockquote>',
         ['@url' => Url::fromUri('https://chado.readthedocs.io/en/rtd/')->toString()]),
@@ -147,7 +147,7 @@ class ChadoInstallForm extends FormBase {
 
     $form['button'] = [
       '#type' => 'submit',
-      '#value' => t('Install/Upgrade Chado'),
+      '#value' => t('Submit'),
     ];
 
     $form['#prefix'] = '<div id="tripal_chado_load_form">';
@@ -184,32 +184,27 @@ class ChadoInstallForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    global $user;
+
     $action_to_do = trim($form_state->getValues()['action_to_do']);
     $schema_name = trim($form_state->getValues()['schema_name']);
     $args = [$action_to_do];
 
+    $current_user = \Drupal::currentUser();
+
     switch ($action_to_do) {
       case 'Install Chado v1.3':
-        $command = "drush php-eval \""
-        . "\Drupal::service('tripal_chado.chadoInstaller')"
-        . "->install(1.3, '".$schema_name."');\"";
+        $args = [$action_to_do, $schema_name];
+        tripal_add_job($action_to_do, 'tripal_chado',
+          'tripal_chado_install_chado', $args, $current_user->id(), 10);
         break;
       case 'Drop Chado Schema':
-        $command = "drush php-eval \""
-        . "\Drupal::service('tripal.bulkPgSchemaInstaller')"
-        . "->dropSchema('".$schema_name."');\"";
+        $args = ['drop', $schema_name];
+        $args = [$schema_name];
+        tripal_add_job($action_to_do, 'tripal_chado',
+            'tripal_chado_drop_schema', $args, $current_user->id(), 10);
         break;
     }
-    $message = [
-      '#markup' => '<strong>Must upgrade Tripal Jobs system first. In the meantime,
-        execute the following drush command: </strong><pre>'.$command.'</pre>',
-    ];
-    \Drupal::messenger()->addMessage($message, 'warning');
 
-    // @upgrade $includes = [module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.install')];
-    // @upgrade tripal_add_job($action_to_do, 'tripal_chado',
-    //  'tripal_chado_install_chado', $args, $user->uid, 10, $includes);
   }
 
   /**

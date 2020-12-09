@@ -7,4 +7,3 @@ files:
   quota: 1000000000
   # Number of days until files are automatically deleted (defaults to 60 days)
   expiration: 60
-

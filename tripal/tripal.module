@@ -11,6 +11,7 @@ use Drupal\Core\Entity\EntityBase;
 use Symfony\Component\HttpFoundation\JsonResponse;
 // use Drupal\shortcut\Entity\ShortcutSet;
 use Drupal\Core\Render\Element;
+use Drupal\Core\Config\FileStorage;
 
 require_once 'api/tripal.entities.api.php';
 require_once 'api/tripal.terms.api.php';
@@ -18,6 +19,8 @@ require_once 'api/tripal.quotas.api.php';
 require_once 'api/tripal.files.api.php';
 require_once 'api/tripal.notice.api.php';
 require_once 'api/tripal.upload.api.php';
+require_once 'api/tripal.jobs.api.php';
+require_once 'api/tripal.deprecated.api.php';
 
 /**
  * Implements hook_help().
@@ -480,4 +483,29 @@ function tripal_check_new_fields($bundle_name) {
 
   $response = new RedirectResponse("admin/structure/bio_data/manage/$bundle_name/fields");
   $response->send();
+}
+
+
+/**
+ * Implements hook_rebuild().
+ */
+function tripal_rebuild() {
+
+  //
+  // Make sure the Tripal Jobs view is present. If not then add it.
+  //
+
+  // First get the config file.
+  $dir = drupal_get_path('module', 'tripal');
+  $fileStorage = new FileStorage($dir);
+  $config = $fileStorage->read('config/install/views.view.tripal_jobs');
+
+  // Next load the storage system for views entieis and check if the view
+  // already exists. If it does then don't reload it.
+  $storage = \Drupal::entityTypeManager()->getStorage('view');
+  $view = $storage->load('tripal_jobs');
+  if (!$view) {
+    $view = $storage->create($config);
+    $view->save();
+  }
 }

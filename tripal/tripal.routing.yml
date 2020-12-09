@@ -46,48 +46,23 @@ tripal.extension:
 tripal.jobs:
   path: 'admin/tripal/tripal_jobs'
   defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalJobs'
+    _controller: '\Drupal\tripal\Controller\TripalJobController::tripalJobs'
     _title: 'Jobs'
   requirements:
     _permission: 'administer tripal'
 
-tripal.jobs_help:
-  path: 'admin/tripal/tripal_jobs/help'
-  defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalJobsHelp'
-    _title: 'Help'
-  requirements:
-    _permission: 'administer tripal'
-
-tripal.jobs_enable:
-  path: 'admin/tripal/tripal_jobs/views/jobs/enable'
-  defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalJobsEnable'
-    _title: 'Enable Jobs Administrative View'
-  requirements:
-    _permission: 'administer tripal'
-
-# Jobs Management Ajax callbacks
 tripal.jobs_cancel:
   path: 'admin/tripal/tripal_jobs/cancel/{id}'
   defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalJobsCancel'
+    _controller: '\Drupal\tripal\Controller\TripalJobController::tripalJobsCancel'
     _title: 'Cancel a pending job'
-  requirements:
-    _permission: 'administer tripal'
-
-tripal.jobs_status:
-  path: 'admin/tripal/tripal_jobs/status/{id}'
-  defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalJobsStatus'
-    _title: 'Status of a job'
   requirements:
     _permission: 'administer tripal'
 
 tripal.jobs_rerun:
   path: 'admin/tripal/tripal_jobs/rerun/{id}'
   defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalJobsRerun'
+    _controller: '\Drupal\tripal\Controller\TripalJobController::tripalJobsRerun'
     _title: 'Re-run an existing job'
   requirements:
     _permission: 'administer tripal'
@@ -95,15 +70,15 @@ tripal.jobs_rerun:
 tripal.jobs_view:
   path: 'admin/tripal/tripal_jobs/view/{id}'
   defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalJobsView'
-    _title: 'View job details.'
+    _controller: '\Drupal\tripal\Controller\TripalJobController::tripalJobsView'
+    _title: 'Job details.'
   requirements:
     _permission: 'administer tripal'
 
 tripal.jobs_execute:
   path: 'admin/tripal/tripal_jobs/execute/{id}'
   defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalJobsExecute'
+    _controller: '\Drupal\tripal\Controller\TripalJobController::tripalJobsExecute'
     _title: 'Execute an existing job'
   requirements:
     _permission: 'administer tripal'

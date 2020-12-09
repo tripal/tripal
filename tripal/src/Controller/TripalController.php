@@ -6,7 +6,7 @@ use Drupal\Core\Breadcrumb\Breadcrumb;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
-
+use Drupal\Core\Render\Markup;
 /**
  * Controller routines for the Tripal Module
  */
@@ -33,61 +33,7 @@ class TripalController extends ControllerBase{
     ];
   }
 
-  public function tripalJobs() {
-    //tripal_jobs_admin_view in tripal.jobs.inc
-    return [
-      '#markup' => 'Not yet upgraded.',
-    ];
-  }
 
-  public function tripalJobsHelp() {
-    //tripal_job_help in tripal.jobs.inc
-    return [
-      '#markup' => 'Not yet upgraded.',
-    ];
-  }
-
-  public function tripalJobsCancel($id) {
-    //tripal_cancel_job in tripal.jobs.api.inc
-    return [
-      '#markup' => 'Not yet upgraded.',
-    ];
-  }
-
-  public function tripalJobsStatus($id) {
-    //tripal_jobs_status_view in tripal.jobs.inc
-    return [
-      '#markup' => 'Not yet upgraded.',
-    ];
-  }
-
-  public function tripalJobsRerun($id) {
-    //tripal_rerun_job in tripal.jobs.inc
-    return [
-      '#markup' => 'Not yet upgraded.',
-    ];
-  }
-
-  public function tripalJobsView($id) {
-    //tripal_jobs_view in tripal.jobs.inc
-    return [
-      '#markup' => 'Not yet upgraded.',
-    ];
-  }
-
-  public function tripalJobsEnable() {
-    // tripal_enable_view in tripal.jobs.inc
-    return [
-      '#markup' => 'Not yet upgraded.',
-    ];
-  }
-
-  public function tripalJobsExecute($id) {
-    //tripal_jobs_view in tripal.jobs.inc
-    return [
-      '#markup' => 'Not yet upgraded.',
-    ];
-  }
 
   public function tripalAttachField($id) {
     //tripal_jobs_view in tripal.jobs.inc

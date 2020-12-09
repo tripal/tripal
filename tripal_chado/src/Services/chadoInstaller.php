@@ -25,6 +25,7 @@ class chadoInstaller extends bulkPgSchemaInstaller {
     1.3 => 41,
   ];
 
+
   /**
    * Install chado in the specified schema.
    *
@@ -41,16 +42,14 @@ class chadoInstaller extends bulkPgSchemaInstaller {
     // VALIDATION.
     // Check the version is valid.
     if (!in_array($version, ['1.3'])) {
-      $this->logger->error(
-        "That version is not supported by the installer.");
+      $this->logger->error("That version is not supported by the installer.");
       return FALSE;
     }
     // Check the schema name is valid.
     if (preg_match('/^[a-z][a-z0-9]+$/', $chado_schema) === 0) {
       // Schema name must be a single word containing only lower case letters
       // or numbers and cannot begin with a number.
-      $this->logger->error(
-        "Schema name must be a single alphanumeric word beginning with a number and all lowercase.");
+      $this->logger->error("Schema name must be a single alphanumeric word beginning with a number and all lowercase.");
       return FALSE;
     }
 
@@ -72,13 +71,11 @@ class chadoInstaller extends bulkPgSchemaInstaller {
     $success = $this->applySQL($init_file, $chado_schema);
     if ($success) {
       // @upgrade tripal_report_error().
-      $this->logger->notice(
-        "Install of Chado v1.3 (Step 2 of 2) Successful.\nInstallation Complete\n");
+      $this->logger->info("Install of Chado v1.3 (Step 2 of 2) Successful.\nInstallation Complete\n");
     }
     else {
       // @upgrade tripal_report_error().
-      $this->logger->error(
-        "Installation (Step 2 of 2) Problems!  Please check output above for errors.");
+      $this->logger->info("Installation (Step 2 of 2) Problems!  Please check output for errors.");
     }
 
     // 5) Finally set the version and tell Tripal.
@@ -138,13 +135,12 @@ class chadoInstaller extends bulkPgSchemaInstaller {
 
       if ($success) {
         // @upgrade tripal_report_error().
-        print "\tImport part $i of $numChunks Successful!\n";
+        $this->logger->info("  Import part $i of $numChunks Successful!");
       }
       else {
         $failed = TRUE;
         // @upgrade tripal_report_error().
-        $this->logger->error(
-          "Schema installation part $i of $numChunks Failed...");
+        $this->logger->error("Schema installation part $i of $numChunks Failed...");
           break;
       }
     }
@@ -156,14 +152,12 @@ class chadoInstaller extends bulkPgSchemaInstaller {
     // Finally report back to the admin how we did.
     if ($failed) {
       // @upgrade tripal_report_error().
-      $this->logger->error(
-        "Installation (Step 1 of 2) Problems!  Please check output above for errors.");
+      $this->logger->error("Installation (Step 1 of 2) Problems!  Please check output above for errors.");
       return FALSE;
     }
     else {
       // @upgrade tripal_report_error().
-      $this->logger->notice(
-        "Install of Chado v1.3 (Step 1 of 2) Successful.\nInstallation Complete\n");
+      $this->logger->info("Install of Chado v1.3 (Step 1 of 2) Successful.\nInstallation Complete\n");
       return TRUE;
     }
   }
