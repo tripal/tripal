@@ -105,7 +105,7 @@ class TripalLogger {
     $message_str = $this->messageString($message, $context);
 
     global $base_url;
-    $prefix = '[site ' . $base_url . '] [TRIPAL ' . strtoupper($type) . '] ';
+    $prefix = '[site ' . $base_url . '] [TRIPAL] ';
 
     if (!isset($options['is_progress_bar'])) {
       $message_str = $prefix . str_replace("\n", "", trim($message_str));
