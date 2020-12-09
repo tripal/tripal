@@ -123,6 +123,7 @@ function tripal_preprocess_html(&$variables) {
   Drupal::database()->query("SET DATESTYLE TO :style", array(':style' => 'MDY'));
 
   //Ask users to do the registration form
+  // @upgrade when Issue #45 is closed.
   //if (\Drupal::currentUser()->hasPermission('administer tripal')) {
     //if (empty($config->get('tripal_site_registration') ?: FALSE) || !($config->get('disable_tripal_reporting') ?: FALSE)) {
       //\Drupal::messenger()->addWarning(t('Please register your Tripal Site.
@@ -220,18 +221,6 @@ function tripal_access_user_data($uid) {
 }
 
 /**
- * @todo need to confirm what this is in reference to? I don't know this hook.
- * Implements hook_coder_ignore().
- * Defines the path to the file (tripal.coder_ignores.txt) where ignore rules for coder are stored
- */
-function tripal_coder_ignore() {
-  return array(
-    'path' => drupal_get_path('module', 'tripal'),
-    'line prefix' => drupal_get_path('module', 'tripal'),
-  );
-}
-
-/**
  * Implements hook_menu_local_tasks_alter().
  * https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Core%21Menu%21menu.api.php/function/hook_menu_local_tasks_alter/8.8.x
  * Used to add action links to pages.
@@ -253,6 +242,7 @@ function tripal_menu_local_tasks_alter(&$data, $router_item, $root_path) {
 /**
  * Implements hook_shortcut_default_set().
  * Modify the shortcut menu to include Biological content links.
+ * @upgrade when Issue #21 decides what to do here.
  *
  * @param object $account
  *   The user account whose default shortcut set will be returned. If not provided, the
@@ -319,7 +309,6 @@ function tripal_shortcut_default_set($account) {
  * @return
  *   A tripal data type array or FALSE if $type does not exist.
  */
-
 function TripalBundle_load($bundle_type, $reset = FALSE) {
   // Get the type of entity by the ID.
   $bundle = Drupal::database()->select('tripal_bundle', 'tdt')
@@ -387,86 +376,6 @@ function tripal_import_api() {
   module_load_include('inc', 'tripal', 'api/tripal.collections.api');
   module_load_include('inc', 'tripal', 'api/tripal.quotas.api');
   module_load_include('inc', 'tripal', 'api/tripal.DEPRECATED.api');
-}
-
-/**
- *
- * Implements hook_form_FORM_ID_alter().
- *
- * The field_ui_field_edit_form is used for customizing the settings of
- * a field attached to an entity.
- *
- * This alter function disables some of the form widgets when the storage
- * backend indicates they are not appropriate.
- */
-function tripal_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {
-  // If this is the field_ui_field_edit_form (i.e. the form that appears
-  // when editing a field that is attached to an entity). Then we want
-  // to add term settings for any field attached to a TripalEntity
-  // content type.
-  if ($form['#instance']['entity_type'] == 'TripalEntity') {
-
-    // Add the form elements for setting the vocabulary terms.
-    tripal_field_instance_settings_form_alter($form, $form_state);
-
-    // Make sure we preserve the auto_attach settings.
-    $auto_attach = TRUE;
-    if (array_key_exists('auto_attach', $form['#instance']['settings'])) {
-      $auto_attach = $form['#instance']['settings']['auto_attach'];
-    }
-    $form['instance']['settings']['auto_attach'] = array(
-      '#type' => 'value',
-      '#value' => $auto_attach,
-    );
-  }
-}
-
-
-/**
- * Implements hook_form_alter().
- */
-function tripal_form_alter(&$form, $form_state, $form_id) {
-
-  // Remove fields that have no form. It's just a bit too confusing to have
-  // widgets appear in the form but without any form elements inside them.
-  if ($form_id == 'tripal_entity_form') {
-    $children = Element::children($form);
-    foreach ($children as $child) {
-      // Count the number of form elements.
-      if (array_key_exists('und', $form[$child])) {
-        $total_widgets = 0;
-        // Some fields with cardinality of one that aren't TripalFields
-        // may not have an array, so we need to catch those.
-        if (array_key_exists('#type', $form[$child]['und'])) {
-          $total_widgets++;
-        }
-        foreach ($form[$child]['und'] as $delta => $element) {
-          if (is_numeric($delta)) {
-            $total_widgets += count(Element::children($element));
-            // Ignore the weight column
-            if (array_key_exists('_weight', $element)) {
-              $total_widgets--;
-            }
-            // Ignore a hidden value column
-            if (array_key_exists('value', $element) and $element['value']['#type'] == 'value') {
-              $total_widgets--;
-            }
-            // Some form elements don't have a 'value' and they don't have any
-            // widgets (i.e image field and description field. We don't
-            // want to loose those, so add one to the widget count.
-            if (!array_key_exists('value', $element)) {
-              $total_widgets++;
-            }
-          }
-        }
-        // If we have no widgets then here's not a form for this field so just
-        // remove it.
-        if ($total_widgets == 0) {
-          unset($form[$child]);
-        }
-      }
-    }
-  }
 }
 
 function tripal_check_new_fields($bundle_name) {
