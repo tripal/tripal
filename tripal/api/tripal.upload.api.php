@@ -87,7 +87,7 @@
  *
  *
  * 3) Files are uploaded automatically to Tripal.  Files are saved in the
- * Tripal user's directory.  You can retreive information about the
+ * Tripal user's directory.  You can retrieve information about the
  * file by querying for the file category for the current project.
  *
  * @code
@@ -107,12 +107,12 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 /**
  * Allows a module to interact with the Tripal file uploader during upload.
  *
- * This function is called prior to an 'action' aoccuring and allows the
+ * This function is called prior to an 'action' occurring and allows the
  * module that is responsible for the file upload to halt an upload if
  * needed.
  *
  * @param $action
- *   The current action that is being peformed during the upload process. The
+ *   The current action that is being performed during the upload process. The
  *   actions are:  'save', 'check' and 'merge'.
  * @param $details
  *   An associative array containing details about the upload process. Valid
@@ -136,7 +136,7 @@ function hook_file_upload_check($action, $details, &$message) {
       // Place code here when chunks are being saved.
       break;
     case 'check':
-      // Place code here when a chunck is being checked if the upload
+      // Place code here when a chunk is being checked if the upload
       // completed successfully.
       break;
     case 'merge':
@@ -440,7 +440,7 @@ function tripal_file_upload_merge($filename, $type, $user_dir) {
         $chunks_written = $log['chunks_written'];
         $max_chunk = max(array_keys($chunks_written));
         // Iterate through the chunks in order and see if any are missing.
-        // If so then break out of the loop and fail. Otherwise concatentate
+        // If so then break out of the loop and fail. Otherwise concatenate
         // them together.
         for ($i = 0; $i <= $max_chunk; $i++) {
           if (!array_key_exists($i, $chunks_written)) {

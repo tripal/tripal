@@ -41,7 +41,7 @@ function tripal_get_user_quota($uid) {
  *  The User ID for whom the quota will be set.
  * @param $quota
  *  The quota
- * @param int $expriation
+ * @param int $expiration
  *   The expiration timestamp
  *
  * @return int The inserted record.

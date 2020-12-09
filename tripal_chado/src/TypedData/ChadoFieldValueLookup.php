@@ -15,15 +15,14 @@ class ChadoFieldValueLookup extends TypedData implements TypedDataInterface {
    */
   public function setValue($value, $notify = TRUE) {
 
-    // Grab the record_id from the OBIOrganismItem.
-    // This may grab the old value not the new one :-(.
+    // Grab the record_id from the Field Type.
     $property_name = $this->definition->getSetting('record_id');
     $item = $this->getParent();
     $record_id = (string) $item->get($property_name)->getValue();
 
     // Use the record_id to look up the new organism.
     if ($record_id) {
-      $value = $item->selectChadoValue($record_id);
+      $value = $item->selectChadoValue($record_id, $item);
     }
 
     // This is where we cache the data from chado in the Drupal Database.

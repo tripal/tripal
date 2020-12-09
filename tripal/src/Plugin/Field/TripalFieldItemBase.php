@@ -254,4 +254,49 @@ abstract class TripalFieldItemBase extends FieldItemBase {
     $element['#element_validate'][] = 'tripal_field_instance_settings_form_alter_validate';
     return $element;
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultStorageSettings() {
+    return [
+      'max_length' => 255,
+      'tripalstorage' => 'drupalonly',
+    ] + parent::defaultStorageSettings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
+    $element = [];
+
+    $element['max_length'] = [
+      '#type' => 'number',
+      '#title' => t('Maximum length'),
+      '#default_value' => $this->getSetting('max_length'),
+      '#required' => TRUE,
+      '#description' => t('The maximum length of the field in characters.'),
+      '#min' => 1,
+      '#disabled' => $has_data,
+    ];
+
+    $type = \Drupal::service('plugin.manager.tripalstorage');
+    $plugin_definitions = $type->getDefinitions();
+    $tripalstorage_options = [];
+    foreach ($plugin_definitions as $id => $defn) {
+      $tripalstorage_options[ $id ] = $defn['label']->get();
+    }
+    $element['tripalstorage'] = [
+      '#type' => 'select',
+      '#title' => 'Tripal Storage',
+      '#description' => 'Choose where data will be stored. It is not recommended to change this setting unless specifically told to.',
+      '#options' => $tripalstorage_options,
+      '#default_value' => $this->getSetting('tripalstorage'),
+      '#disabled' => $has_data,
+    ];
+
+    $element += parent::storageSettingsForm($form, $form_state, $has_data);
+    return $element;
+  }
 }

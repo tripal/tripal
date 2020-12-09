@@ -15,6 +15,7 @@ function tripal_chado_schema() {
   $schema = [];
 
   $schema['chado_installations'] = tripal_chado_chado_installations_schema();
+  $schema['tripal_custom_tables'] = tripal_chado_tripal_custom_tables_schema();
 
   return $schema;
 }
@@ -53,5 +54,50 @@ function tripal_chado_chado_installations_schema() {
       'schema_name' => ['schema_name'],
     ],
     'primary key' => ['install_id'],
+  ];
+}
+
+/**
+ * Describes the Tripal Custom Tables (tripal_custom_Tables) table.
+ * This keeps track of tables created by Tripal and stored in chado 
+ * 
+ * PUMPKIN? that may or may not
+ * PUMPKIN? also be materialized views. (is this true? it doesn't)
+ * PUMPKIN? like mviews.
+ */
+function tripal_chado_tripal_custom_tables_schema() {
+  return [
+    'fields' => array(
+      'table_id' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+      'table_name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE
+      ),
+      'schema' => array(
+        'type' => 'text',
+        'not null' => TRUE
+      ),
+      'mview_id' => array(
+        'type' => 'int',
+        'not null' => FALSE
+      )
+    ),
+    'indexes' => array(
+      'table_id' => array('table_id'),
+    ),
+    'primary key' => array('table_id'),
+    'foreign keys' => array(
+      'tripal_mviews' => array(
+        'table' => 'tripal_mviews',
+        'columns' => array(
+          'mview_id' => 'mview_id'
+        ),
+      ),
+    ),
   ];
 }

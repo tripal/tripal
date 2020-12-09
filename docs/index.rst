@@ -13,5 +13,6 @@ This documentation is meant to guide users, admin and developers in the usage an
    :caption: Contents:
 
    install
+   tripal_console
    dev_guide
    contributing
