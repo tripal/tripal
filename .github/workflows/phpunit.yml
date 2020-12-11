@@ -48,7 +48,7 @@ jobs:
           extensions: mbstring, intl, php-pgsql, php-gd, php-xml
           ini-values: memory_limit=2G
           coverage: xdebug
-          tools: composer, phpunit
+          tools: composer, phpunit:8.5.8
       # Set up Drush
       - name: Install Drush
         run: |
