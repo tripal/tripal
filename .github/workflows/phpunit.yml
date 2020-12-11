@@ -103,6 +103,9 @@ jobs:
       - name: PHPUnit Tests
         env:
           DRUPAL_ROOT: "/home/runner/work/drupal"
+          SIMPLETEST_BASE_URL: "http://localhost"
+          SIMPLETEST_DB: 'pgsql://postgres:dbpass@localhost:5432/test_db'
+          BROWSER_OUTPUT_DIRECTORY: "/home/runner/work/drupal/web/sites/default/files/simpletest"
         run: |
           cd $DRUPAL_ROOT/
           composer require --dev mheap/phpunit-github-actions-printer
