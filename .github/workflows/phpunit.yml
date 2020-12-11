@@ -110,5 +110,5 @@ jobs:
           cd $DRUPAL_ROOT/
           composer require --dev mheap/phpunit-github-actions-printer
           composer update
-          phpunit --printer mheap\\GithubActionsReporter\\Printer --configuration web/core web/modules/t4d8
+          vendor/bin/phpunit --printer mheap\\GithubActionsReporter\\Printer --configuration web/core web/modules/t4d8
 
