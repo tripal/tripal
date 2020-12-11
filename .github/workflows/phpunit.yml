@@ -90,7 +90,7 @@ jobs:
           echo "==> Move Tripal into the Drupal modules directory"
           cd $DRUPAL_ROOT
           composer require tripal/tripal
-          cp -R /home/runner/work/t4d8 $DRUPAL_ROOT/modules
+          cp -R /home/runner/work/t4d8 $DRUPAL_ROOT/web/modules/
           echo "==> Install Tripal"
           cd $DRUPAL_ROOT
           $DRUSH en -y tripal tripal_chado
@@ -104,8 +104,8 @@ jobs:
         env:
           DRUPAL_ROOT: "/home/runner/work/drupal"
         run: |
-          cd $DRUPAL_ROOT/web/
+          cd $DRUPAL_ROOT/
           composer require --dev mheap/phpunit-github-actions-printer
           composer update
-          phpunit --printer mheap\\GithubActionsReporter\\Printer --configuration core modules/t4d8
+          phpunit --printer mheap\\GithubActionsReporter\\Printer --configuration web/core web/modules/t4d8
 
