@@ -48,7 +48,7 @@ jobs:
           extensions: mbstring, intl, php-pgsql, php-gd, php-xml
           ini-values: memory_limit=2G
           coverage: xdebug
-          tools: composer, phpunit:8.5.8
+          tools: composer
       # Set up Drush
       - name: Install Drush
         run: |
@@ -103,12 +103,14 @@ jobs:
       - name: PHPUnit Tests
         env:
           DRUPAL_ROOT: "/home/runner/work/drupal"
-          SIMPLETEST_BASE_URL: "http://localhost"
+          SIMPLETEST_BASE_URL: "http://127.0.0.1:8080"
           SIMPLETEST_DB: 'pgsql://postgres:dbpass@localhost:5432/test_db'
           BROWSER_OUTPUT_DIRECTORY: "/home/runner/work/drupal/web/sites/default/files/simpletest"
         run: |
           cd $DRUPAL_ROOT/
           composer require --dev mheap/phpunit-github-actions-printer
           composer update
+          service apache2 status
+          service apache2 restart
           vendor/bin/phpunit --printer mheap\\GithubActionsReporter\\Printer --configuration web/core web/modules/t4d8
 
