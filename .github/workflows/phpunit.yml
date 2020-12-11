@@ -75,10 +75,6 @@ jobs:
                 --account-pass=$ACCOUNT_PASS \
                 --site-mail=admin@example.com \
                 --site-name=Tripal4D8
-          echo "==> Downloading dependencies"
-          $DRUSH dl -y views ctools entity redirect date ds field_group field_group_table
-          echo "==> Enabling dependencies"
-          $DRUSH en -y views ctools entity redirect date ds field_group field_group_table
           
       # Install Tripal, Chado, prepare Drupal/Chado databases
       # Also patches views
