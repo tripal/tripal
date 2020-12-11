@@ -13,7 +13,7 @@ jobs:
     # PHP Targets
     strategy:
       matrix:
-        php-versions: ['7.1']
+        php-versions: ['7.3']
     # Give the builds names so we can tell them apart
     name: PHPUnit Testing of Tripal 4 (PHP ${{ matrix.php-versions }})
 
@@ -49,9 +49,6 @@ jobs:
           ini-values: memory_limit=2G
           coverage: xdebug
           tools: composer, phpunit
-      # Set up phpunit
-      - name: Setup PHPUnit
-        uses: php-actions/phpunit@v7
       # Set up Drush
       - name: Install Drush
         run: |
@@ -60,16 +57,16 @@ jobs:
       # Install Drupal
       - name: Install Drupal
         env:
-          DRUSH: "/home/runner/.composer/vendor/bin/drush"
           DRUPAL_ROOT: "/home/runner/work/drupal"
           POSTGRES_CONNECTION_STRING: 'pgsql://postgres:dbpass@localhost:5432/test_db'
           ACCOUNT_NAME: tripaladmin
           ACCOUNT_PASS: somereallysecurepassword
+          COMPOSER_MEMORY_LIMIT: -1
+          DRUSH: "/home/runner/.composer/vendor/bin/drush"
         run: |
           echo "==> Downloading Drupal"
           cd /home/runner/work
-          $DRUSH dl drupal-8 -y
-          mv drupal-8* drupal
+          composer create-project drupal-composer/drupal-project:8.x-dev drupal --stability dev --no-interaction
           echo "==> Installing Drupal"
           cd $DRUPAL_ROOT
           $DRUSH si -y --root=$DRUPAL_ROOT \
@@ -92,9 +89,7 @@ jobs:
         env:
           DRUSH: "/home/runner/.composer/vendor/bin/drush"
           DRUPAL_ROOT: "/home/runner/work/drupal"
-          POSTGRES_CONNECTION_STRING: 'pgsql://postgres:dbpass@localhost:5432/test_db'
           ACCOUNT_NAME: tripaladmin
-          ACCOUNT_PASS: somereallysecurepassword
         run: |
           echo "==> Move Tripal into the Drupal modules directory"
           cp -R /home/runner/work/t4d8 $DRUPAL_ROOT/modules
@@ -109,20 +104,10 @@ jobs:
       # to report PHPUnit fails in a meaningful way to github in PRs.
       - name: PHPUnit Tests
         env:
-          DRUSH: "/home/runner/.composer/vendor/bin/drush"
           DRUPAL_ROOT: "/home/runner/work/drupal"
-          POSTGRES_CONNECTION_STRING: 'pgsql://postgres:dbpass@localhost:5432/test_db'
-          ACCOUNT_NAME: tripaladmin
-          ACCOUNT_PASS: somereallysecurepassword
         run: |
           cd $DRUPAL_ROOT/
-          echo "one"
           composer require --dev mheap/phpunit-github-actions-printer
-          echo "two"
           composer update
-          echo "three"
-          phpunit --printer mheap\\GithubActionsReporter\\Printer
-          echo "four"
-          phpunit --configuration core t4d8
-          echo "five"
+          phpunit --printer mheap\\GithubActionsReporter\\Printer --configuration core modules/t4d8
 
