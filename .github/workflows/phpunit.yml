@@ -88,6 +88,8 @@ jobs:
           ACCOUNT_NAME: tripaladmin
         run: |
           echo "==> Move Tripal into the Drupal modules directory"
+          cd $DRUPAL_ROOT
+          composer require tripal/tripal
           cp -R /home/runner/work/t4d8 $DRUPAL_ROOT/modules
           echo "==> Install Tripal"
           cd $DRUPAL_ROOT
