@@ -1,19 +1,32 @@
 {
-  "name": "drupal/tripal",
-  "description": "Tripal is an toolkit to facilitate construction of online genomic, genetic (and other biological) websites.",
+  "name": "tripal/tripal",
   "type": "drupal-module",
+  "description": "Tripal is a toolkit to facilitate construction of online genomic, genetic (and other biological) websites.",
+  "keywords": ["tripal","drupal", "biological-data", "species", "model-organism"],
   "homepage": "https://tripal.info",
   "support": {
     "issues": "https://github.com/tripal/t4d8/issues"
   },
   "license": "GPL-2.0-or-later",
   "minimum-stability": "dev",
+  "authors": [
+        {
+            "name": "Lacey-Anne Sanderson",
+            "website": "https://github.com/laceysanderson/",
+            "role": "Developer"
+        },
+        {
+            "name": "Stephen P. Ficklin",
+            "website": "https://github.com/spficklin/",
+            "role": "Developer"
+        }
+  ],
   "require-dev": {
     "doctrine/instantiator": "1.0.*",
     "fzaninotto/faker": "^1.7"
   },
   "require": {
-    "php": "^7.1"
+    "php": "^7.3",
   },
   "repositories": {
     "drupal": {
