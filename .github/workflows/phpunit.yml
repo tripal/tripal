@@ -104,7 +104,7 @@ jobs:
         env:
           DRUPAL_ROOT: "/home/runner/work/drupal"
         run: |
-          cd $DRUPAL_ROOT/
+          cd $DRUPAL_ROOT/web/
           composer require --dev mheap/phpunit-github-actions-printer
           composer update
           phpunit --printer mheap\\GithubActionsReporter\\Printer --configuration core modules/t4d8
