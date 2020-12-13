@@ -35,9 +35,9 @@ jobs:
           DRUPAL_ROOT: "/var/www/drupal8/web"
         working-directory: /var/www/drupal8/web
         run: |
-          ls
-          mv $GITHUB_WORKSPACE ./modules/
-          ls modules/
+          mkdir ./modules/t4d8
+          cp -R $GITHUB_WORKSPACE/* ./modules/t4d8/
+          ls modules/t4d8
           
       # Runs the PHPUnit tests.
       # https://github.com/mheap/phpunit-github-actions-printer is used
