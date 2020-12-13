@@ -29,15 +29,26 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
+      # Move the checked out code into the Drupal site, etc.
+      - name: Prepare Environment
+        env:
+          DRUPAL_ROOT: "/var/www/drupal8/web"
+        working-directory: /var/www/drupal8/web
+        run: |
+          ls
+          mv $GITHUB_WORKSPACE ./modules/
+          ls modules/
+          
       # Runs the PHPUnit tests.
       # https://github.com/mheap/phpunit-github-actions-printer is used
       # to report PHPUnit fails in a meaningful way to github in PRs.
       - name: PHPUnit Tests
+        env:
+          DRUPAL_ROOT: "/var/www/drupal8/web"
+        working-directory: /var/www/drupal8
         run: |
-          ls
-          echo $GITHUB_WORKSPACE
-          ls $GITHUB_WORKSPACE
-          # composer require --dev mheap/phpunit-github-actions-printer
-          # composer update
-          # vendor/bin/phpunit --printer mheap\\GithubActionsReporter\\Printer --configuration web/core web/modules/t4d8
+          cd $DRUPAL_ROOT
+          composer require --dev mheap/phpunit-github-actions-printer
+          composer update
+          vendor/bin/phpunit --printer mheap\\GithubActionsReporter\\Printer --configuration web/core web/modules/t4d8
 
