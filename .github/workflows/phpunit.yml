@@ -21,6 +21,7 @@ jobs:
     # TripalDocker: https://hub.docker.com/repository/docker/tripalproject/tripaldocker
     container:
       image:  tripalproject/tripaldocker:${{ matrix.dockertags }}
+      ports: [80]
     
 
     # Steps in the sequence
