@@ -31,8 +31,6 @@ jobs:
 
       # Move the checked out code into the Drupal site, etc.
       - name: Prepare Environment
-        env:
-          DRUPAL_ROOT: "/var/www/drupal8/web"
         working-directory: /var/www/drupal8/web
         run: |
           cp -R $GITHUB_WORKSPACE/* ./modules/t4d8/
@@ -42,11 +40,8 @@ jobs:
       # https://github.com/mheap/phpunit-github-actions-printer is used
       # to report PHPUnit fails in a meaningful way to github in PRs.
       - name: PHPUnit Tests
-        env:
-          DRUPAL_ROOT: "/var/www/drupal8/web"
         working-directory: /var/www/drupal8
         run: |
-          cd $DRUPAL_ROOT
           composer require --dev mheap/phpunit-github-actions-printer
           composer update
           vendor/bin/phpunit --printer mheap\\GithubActionsReporter\\Printer --configuration web/core web/modules/t4d8
