@@ -116,8 +116,6 @@ jobs:
           cd $DRUPAL_ROOT/
           composer require --dev mheap/phpunit-github-actions-printer
           composer update
-          service apache2 status
-          service apache2 restart
           $DRUSH status
           vendor/bin/phpunit --printer mheap\\GithubActionsReporter\\Printer --configuration web/core web/modules/t4d8
       
