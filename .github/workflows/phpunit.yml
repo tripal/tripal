@@ -6,111 +6,38 @@ on: [push, pull_request]
 
 # Define jobs that are part of the workflow
 jobs:
-  # Job 1: 'build'
   run-tests:
     # Runner type
     runs-on: ubuntu-latest
     # PHP Targets
     strategy:
       matrix:
-        php-versions: ['7.3']
+        dockertags: ['drupal8.9.10-dev']
     # Give the builds names so we can tell them apart
-    name: PHPUnit Testing of Tripal 4 (PHP ${{ matrix.php-versions }})
+    name: PHPUnit Testing (TripalDocker ${{ matrix.dockertags }})
 
-    # Services that we want
-    services:
-      # Label
-      postgres:
-        image: postgres
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: dbpass
-          POSTGRES_DB: test_db
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
+    # runs all of the steps inside the specified container rather than on the VM host.
+    # Because of this the network configuration changes from host based network to a container network.
+    # TripalDocker: https://hub.docker.com/repository/docker/tripalproject/tripaldocker
+    container:
+      image:  tripalproject/tripaldocker:${{ matrix.dockertags }}
+    
 
     # Steps in the sequence
     steps:
       # Check out the repo
       - name: Checkout Repository
         uses: actions/checkout@v2
-      # Set up PHP environment for PHP versions specifed above
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          # PHP configuration
-          php-version: ${{ matrix.php-versions }}
-          extensions: mbstring, intl, php-pgsql, php-gd, php-xml
-          ini-values: memory_limit=2G
-          coverage: xdebug
-          tools: composer
-      # Set up Drush
-      - name: Install Drush
-        run: |
-          composer global require "drush/drush:~8"
-          /home/runner/.composer/vendor/bin/drush --version
-      # Install Drupal
-      - name: Install Drupal
-        env:
-          DRUPAL_ROOT: "/home/runner/work/drupal"
-          POSTGRES_CONNECTION_STRING: 'pgsql://postgres:dbpass@localhost:5432/test_db'
-          ACCOUNT_NAME: tripaladmin
-          ACCOUNT_PASS: somereallysecurepassword
-          COMPOSER_MEMORY_LIMIT: -1
-          DRUSH: "/home/runner/.composer/vendor/bin/drush"
-        run: |
-          echo "==> Downloading Drupal"
-          cd /home/runner/work
-          composer create-project drupal-composer/drupal-project:8.x-dev drupal --stability dev --no-interaction
-          echo "==> Installing Drupal"
-          cd $DRUPAL_ROOT
-          $DRUSH si -y --root=$DRUPAL_ROOT \
-                --db-url=$POSTGRES_CONNECTION_STRING \
-                --account-name=$ACCOUNT_NAME \
-                --account-pass=$ACCOUNT_PASS \
-                --site-mail=admin@example.com \
-                --site-name=Tripal4D8
-          
-      # Install Tripal, Chado, prepare Drupal/Chado databases
-      # Also patches views
-      #########################################################
-      # Need to customize this for T4D8 in its current state! #
-      #########################################################
-      - name: Install Tripal
-        env:
-          DRUSH: "/home/runner/.composer/vendor/bin/drush"
-          DRUPAL_ROOT: "/home/runner/work/drupal"
-          ACCOUNT_NAME: tripaladmin
-        run: |
-          echo "==> Move Tripal into the Drupal modules directory"
-          cd $DRUPAL_ROOT
-          composer require tripal/tripal
-          cp -R /home/runner/work/t4d8 $DRUPAL_ROOT/web/modules/
-          echo "==> Install Tripal"
-          cd $DRUPAL_ROOT
-          $DRUSH en -y tripal tripal_chado
-          echo "==> Install Chado"
-          $DRUSH php-eval "\Drupal::service('tripal_chado.chadoInstaller')->install(1.3, 'testchado')"
-          echo "==> No Prepare Chado step, yet..."
+
       # Runs the PHPUnit tests.
       # https://github.com/mheap/phpunit-github-actions-printer is used
       # to report PHPUnit fails in a meaningful way to github in PRs.
       - name: PHPUnit Tests
-        env:
-          DRUPAL_ROOT: "/home/runner/work/drupal"
-          SIMPLETEST_BASE_URL: "http://127.0.0.1:8080"
-          SIMPLETEST_DB: 'pgsql://postgres:dbpass@localhost:5432/test_db'
-          BROWSER_OUTPUT_DIRECTORY: "/home/runner/work/drupal/web/sites/default/files/simpletest"
         run: |
-          cd $DRUPAL_ROOT/
-          composer require --dev mheap/phpunit-github-actions-printer
-          composer update
-          service apache2 status
-          service apache2 restart
-          vendor/bin/phpunit --printer mheap\\GithubActionsReporter\\Printer --configuration web/core web/modules/t4d8
+          ls
+          echo $GITHUB_WORKSPACE
+          ls $GITHUB_WORKSPACE
+          # composer require --dev mheap/phpunit-github-actions-printer
+          # composer update
+          # vendor/bin/phpunit --printer mheap\\GithubActionsReporter\\Printer --configuration web/core web/modules/t4d8
 
