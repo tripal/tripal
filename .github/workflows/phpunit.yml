@@ -40,6 +40,10 @@ jobs:
       # https://github.com/mheap/phpunit-github-actions-printer is used
       # to report PHPUnit fails in a meaningful way to github in PRs.
       - name: PHPUnit Tests
+        env: 
+          SIMPLETEST_BASE_URL: "http://localhost"
+          SIMPLETEST_DB: "pgsql://drupaladmin:drupal8developmentonlylocal@localhost/sitedb"
+          BROWSER_OUTPUT_DIRECTORY: "/var/www/drupal8/web/sites/default/files/simpletest"
         working-directory: /var/www/drupal8
         run: |
           composer require --dev mheap/phpunit-github-actions-printer
