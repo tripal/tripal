@@ -109,7 +109,7 @@ jobs:
         env:
           DRUPAL_ROOT: "/home/runner/work/drupal"
           DRUSH: "/home/runner/.composer/vendor/bin/drush"
-          SIMPLETEST_BASE_URL: "http://127.0.0.1:8080"
+          SIMPLETEST_BASE_URL: "http://127.0.0.1"
           SIMPLETEST_DB: 'pgsql://postgres:dbpass@localhost:5432/test_db'
           BROWSER_OUTPUT_DIRECTORY: "/home/runner/work/drupal/web/sites/default/files/simpletest"
         run: |
