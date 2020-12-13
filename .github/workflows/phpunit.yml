@@ -46,7 +46,7 @@ jobs:
           BROWSER_OUTPUT_DIRECTORY: "/var/www/drupal8/web/sites/default/files/simpletest"
         working-directory: /var/www/drupal8
         run: |
-          service postgres restart
+          service postgresql restart
           composer require --dev mheap/phpunit-github-actions-printer
           composer update
           vendor/bin/phpunit --printer mheap\\GithubActionsReporter\\Printer --configuration web/core web/modules/t4d8
