@@ -15,7 +15,7 @@ jobs:
       matrix:
         dockertags: ['drupal8.9.10-dev']
     # Give the builds names so we can tell them apart
-    name: PHPUnit Testing (TipalDocker ${{ matrix.dockertags }})
+    name: PHPUnit Testing (TripalDocker ${{ matrix.dockertags }})
 
     # Steps in the sequence
     steps:
@@ -34,9 +34,7 @@ jobs:
       # to report PHPUnit fails in a meaningful way to github in PRs.
       - name: PHPUnit Tests
         run: |
-          docker exec tripaldocker pwd
-          docker exec tripaldocker ls
           docker exec tripaldocker composer require --dev mheap/phpunit-github-actions-printer
           docker exec tripaldocker composer update
-          docker exec tripaldocker phpunit --printer mheap\\GithubActionsReporter\\Printer --configuration web/core web/modules/t4d8
+          docker exec tripaldocker phpunit --printer mheap\\GithubActionsReporter\\Printer --configuration core modules/t4d8
       
