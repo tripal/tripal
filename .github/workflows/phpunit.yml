@@ -17,25 +17,12 @@ jobs:
     # Give the builds names so we can tell them apart
     name: PHPUnit Testing (TipalDocker ${{ matrix.dockertags }})
 
-    # Services that we want
-    services:
-      # Spin up Tripaldocker as a service to run the tests in
-      tripaldocker:
-        image: tripalproject/tripaldocker:${{ matrix.dockertags }}
-        env:
-          SIMPLETEST_BASE_URL: "http://localhost"
-          SIMPLETEST_DB: 'pgsql://drupaladmin:drupal8developmentonlylocal@localhost/sitedb'
-          BROWSER_OUTPUT_DIRECTORY: "/var/www/drupal8/web/sites/default/files/simpletest"
-        ports:
-          - 80:80
-          - 5432:5432
-          - 433:433
-
     # Steps in the sequence
     steps:
       # Check out the repo
       - name: Checkout Repository
         uses: actions/checkout@v2
+      # Just spin up docker the good ol' fashion way.
       - name: Spin up Docker
         run: |
           docker run --publish=80:80 --name=tripaldocker -tid \
