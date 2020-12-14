@@ -28,15 +28,15 @@ jobs:
           docker run --publish=80:80 --name=tripaldocker -tid \
             --volume=`pwd`:/var/www/drupal8/web/modules/t4d8 \
             tripalproject/tripaldocker:${{ matrix.dockertags }}
-          docker exec -it tripaldocker drush status
+          docker exec tripaldocker drush status
       # Runs the PHPUnit tests.
       # https://github.com/mheap/phpunit-github-actions-printer is used
       # to report PHPUnit fails in a meaningful way to github in PRs.
       - name: PHPUnit Tests
         run: |
-          docker exec -it tripaldocker pwd
-          docker exec -it tripaldocker ls
-          docker exec -it tripaldocker composer require --dev mheap/phpunit-github-actions-printer
-          docker exec -it tripaldocker composer update
-          docker exec -it tripaldocker phpunit --printer mheap\\GithubActionsReporter\\Printer --configuration web/core web/modules/t4d8
+          docker exec tripaldocker pwd
+          docker exec tripaldocker ls
+          docker exec tripaldocker composer require --dev mheap/phpunit-github-actions-printer
+          docker exec tripaldocker composer update
+          docker exec tripaldocker phpunit --printer mheap\\GithubActionsReporter\\Printer --configuration web/core web/modules/t4d8
       
