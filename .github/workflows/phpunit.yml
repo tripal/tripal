@@ -34,7 +34,7 @@ jobs:
       # to report PHPUnit fails in a meaningful way to github in PRs.
       - name: PHPUnit Tests
         run: |
-          docker exec tripaldocker composer require --dev mheap/phpunit-github-actions-printer
-          docker exec tripaldocker composer update
+          docker exec tripaldocker --workdir=/var/www/drupal8 composer require --dev mheap/phpunit-github-actions-printer
+          docker exec tripaldocker --workdir=/var/www/drupal8 composer update
           docker exec tripaldocker phpunit --printer mheap\\GithubActionsReporter\\Printer --configuration core modules/t4d8
       
