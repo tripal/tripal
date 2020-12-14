@@ -36,7 +36,12 @@ jobs:
       # Check out the repo
       - name: Checkout Repository
         uses: actions/checkout@v2
-
+      - name: Spin up Docker
+        run: |
+          docker run --publish=80:80 --name=tripaldocker -tid \
+            --volume=`pwd`:/var/www/drupal8/web/modules/t4d8 \
+            tripalproject/tripaldocker:${{ matrix.dockertags }}
+          docker exec -it tripaldocker drush status
       # Runs the PHPUnit tests.
       # https://github.com/mheap/phpunit-github-actions-printer is used
       # to report PHPUnit fails in a meaningful way to github in PRs.
