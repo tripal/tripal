@@ -40,6 +40,7 @@ jobs:
         run: |
           docker exec --workdir=/var/www/drupal8 tripaldocker composer require --dev mheap/phpunit-github-actions-printer
           docker exec --workdir=/var/www/drupal8 tripaldocker composer update
+          docker exec tripaldocker service postgresql restart
           docker exec -e SIMPLETEST_BASE_URL=$SIMPLETEST_BASE_URL \
             -e SIMPLETEST_DB=$SIMPLETEST_DB \
             -e BROWSER_OUTPUT_DIRECTORY=$BROWSER_OUTPUT_DIRECTORY \
