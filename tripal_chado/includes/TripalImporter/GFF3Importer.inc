@@ -903,7 +903,7 @@ class GFF3Importer extends TripalImporter {
    *  An associative array containing the 9 elements othe GFF3 file. The
    *  9th element is an associative array of the attributes.
    */
-  private function parseFeature($line) {
+  private function parseGFF3Line($line) {
     $date = getdate();
 
     // get the columns
@@ -937,12 +937,12 @@ class GFF3Importer extends TripalImporter {
     $ret['start'] = $fmin;
     $ret['stop'] = $fmax;
 
-    // Landmark (seqid) validation checks based on GFF3 specifications 
+    // Landmark (seqid) validation checks based on GFF3 specifications
     preg_match('/[a-zA-Z0-9\.:\^\*\$@!\+_\?-\|]*/', $ret['landmark'], $matches);
     if ($matches[0] != $ret['landmark']) {
-      throw new Exception(t("Landmark/seqid !landmark contains invalid 
-        characters. Only characters included in this regular expression is 
-        allowed [a-zA-Z0-9.:^*$@!+_?-|]", 
+      throw new Exception(t("Landmark/seqid !landmark contains invalid
+        characters. Only characters included in this regular expression is
+        allowed [a-zA-Z0-9.:^*$@!+_?-|]",
         ['!landmark' => $ret['landmark']]));
     }
 
@@ -1007,7 +1007,7 @@ class GFF3Importer extends TripalImporter {
 
       // Break apart each attribute into key/value pairs.
       $tag = preg_split("/=/", $attr, 2);
-      
+
       // Multiple values of an attribute are separated by commas
       $tag_name = $tag[0];
       if (!array_key_exists($tag_name, $tags)) {
@@ -1103,10 +1103,42 @@ class GFF3Importer extends TripalImporter {
     // A feature may get ignored. But let's default this to FALSE.
     $ret['skipped'] = FALSE;
 
+    // A line may have more than one feature (e.g. match, EST_match, etc).
+    // This flag, when TRUE, tells the parseGFF3 function to repeat this line.
+    $ret['repeat'] = FALSE;
+
     // If neither name nor uniquename are provided then generate one.
     $names = $this->getFeatureNames($tags, $ret['type'], $ret['landmark'], $ret['start'], $ret['stop']);
     $attr_uniquename = $names['uniquename'];
     $attr_name = $names['name'];
+
+    // If this is a match feature (match, EST_match, cDNA_match, etc), then
+    // we need to handle this line specially.
+    if (preg_match('/match$/i', $ret['type'])) {
+
+      // If the feature already exists that means we need to add a match_part
+      // feature.  If not, then we will add a flag to the results to tell
+      // the parseGFF3 function to repeat this line, as it has two features:
+      // the match and the match_part.  All other match feature with the same
+      // ID in the GFF3 will just be match_part features.
+      $parent_check = preg_replace('/_part_\d+/', '', $attr_uniquename);
+      if (array_key_exists($parent_check, $this->features)) {
+         // Set the match_part parent
+         // remove the "_part_X" suffix added by the getFeatureNames to find
+         // the parent.
+         $attr_parent = $parent_check;
+         $ret['type'] = 'match_part';
+      }
+      else {
+        // Unset all attributes as these belong on the match_part
+        $attr_dbxref = [];
+        $attr_aliases = [];
+        $attr_terms = [];
+        $attr_derives = [];
+        $attr_others = [];
+        $ret['repeat'] = TRUE;
+      }
+    }
 
     $ret['name'] = $attr_name;
     $ret['uniquename'] = $attr_uniquename;
@@ -1156,7 +1188,9 @@ class GFF3Importer extends TripalImporter {
       $ret['attrs'][$key] = $value;
     }
 
-    // Add the organism  entry.
+    // Add the organism entry, but if we don't have one for this feature
+    // (in the case where the target_organism attribute doesn't match
+    // an organism in the databse) then skip this feature.
     $ret['organism'] = $attr_organism;
     if (!$ret['organism']) {
       $ret['skipped'] = TRUE;
@@ -1176,7 +1210,6 @@ class GFF3Importer extends TripalImporter {
             '%uniquename' => $ret['uniquename'],
           ]));
     }
-
 
     // Add the properties and parent.
     $ret['properties'] = $attr_others;
@@ -1395,69 +1428,14 @@ class GFF3Importer extends TripalImporter {
       }
 
       // Parse this feature from this line of the GFF3 file.
-      $gff_feature = $this->parseFeature($line);
+      $gff_feature = $this->parseGFF3Line($line);
+      $this->prepareFeature($gff_feature, $feature_cvterms, $featureprop_cvterms);
 
-      // Add the landmark if it doesn't exist in the landmark list.
-      if (!array_key_exists($gff_feature['landmark'], $this->landmarks)) {
-        $this->landmarks[$gff_feature['landmark']] = FALSE;
-      }
-
-      // Organize DBs and DBXrefs for faster access later on.
-      foreach ($gff_feature['dbxrefs'] as $index => $info) {
-        if (!array_key_exists($info['db'], $this->db_lookup)) {
-          $this->db_lookup[$info['db']] = FALSE;
-        }
-        if (!array_key_exists($index, $this->dbxref_lookup)) {
-          $this->dbxref_lookup[$index] = $info;
-        }
-      }
-
-      // We want to make sure the Ontology_term attribute dbxrefs are
-      // also easily looked up... but we do not want to create them
-      // if they do not exist the precense of the 'cvterm' key will
-      // tell the loadDbxrefs() function to not create the term.
-      foreach ($gff_feature['terms'] as $index => $info) {
-        if (!array_key_exists($info['db'], $this->db_lookup)) {
-          $this->db_lookup[$info['db']] = FALSE;
-        }
-
-        if (!array_key_exists($index, $this->dbxref_lookup)) {
-          $this->dbxref_lookup[$index] = $info;
-          $this->dbxref_lookup[$index]['cvterm_id'] = NULL;
-        }
-      }
-
-      // Organize the CVterms for faster access later on.
-      if (!array_key_exists($gff_feature['type'], $feature_cvterms)) {
-        $feature_cvterms[$gff_feature['type']] = 0;
-      }
-      $feature_cvterms[$gff_feature['type']]++;
-
-      // Add any target feature types to the list as well.
-      if (array_key_exists('name', $gff_feature['target'])) {
-        if (!array_key_exists($gff_feature['target']['type'], $feature_cvterms)) {
-          $feature_cvterms[$gff_feature['target']['type']] = 0;
-        }
-        $feature_cvterms[$gff_feature['target']['type']]++;
-      }
-
-      // Organize the feature property types for faster access later on.
-      foreach ($gff_feature['properties'] as $prop_name => $value) {
-        if (!array_key_exists($prop_name, $featureprop_cvterms)) {
-          $featureprop_cvterms[$prop_name] = NULL;
-        }
-        $featureprop_cvterms[$prop_name]++;
-      }
-
-      // Cache the GFF feature details for later lookup.
-      if (strcmp($gff_feature['uniquename'], $gff_feature['landmark']) != 0) {
-        $this->cacheFeature($gff_feature);
-      }
-
-      // If this feature has a target then we need to add the target as
-      // new feature for insertion.
-      if (array_key_exists('name', $gff_feature['target'])) {
-        $this->addTargetFeature($gff_feature);
+      // If there is a second feature (in the case of a match) then
+      // repeat this line (to get the match_part).
+      if ($gff_feature['repeat'] === TRUE) {
+        $gff_feature = $this->parseGFF3Line($line);
+        $this->prepareFeature($gff_feature, $feature_cvterms, $featureprop_cvterms);
       }
     }
 
@@ -1477,7 +1455,75 @@ class GFF3Importer extends TripalImporter {
     foreach (array_keys($featureprop_cvterms) as $name) {
       $this->getTypeID($name, TRUE);
     }
+  }
 
+  /**
+   *
+   */
+  private function prepareFeature($gff_feature, &$feature_cvterms, &$featureprop_cvterms) {
+
+    // Add the landmark if it doesn't exist in the landmark list.
+    if (!array_key_exists($gff_feature['landmark'], $this->landmarks)) {
+      $this->landmarks[$gff_feature['landmark']] = FALSE;
+    }
+
+    // Organize DBs and DBXrefs for faster access later on.
+    foreach ($gff_feature['dbxrefs'] as $index => $info) {
+      if (!array_key_exists($info['db'], $this->db_lookup)) {
+        $this->db_lookup[$info['db']] = FALSE;
+      }
+      if (!array_key_exists($index, $this->dbxref_lookup)) {
+        $this->dbxref_lookup[$index] = $info;
+      }
+    }
+
+    // We want to make sure the Ontology_term attribute dbxrefs are
+    // also easily looked up... but we do not want to create them
+    // if they do not exist the precense of the 'cvterm' key will
+    // tell the loadDbxrefs() function to not create the term.
+    foreach ($gff_feature['terms'] as $index => $info) {
+      if (!array_key_exists($info['db'], $this->db_lookup)) {
+        $this->db_lookup[$info['db']] = FALSE;
+      }
+
+      if (!array_key_exists($index, $this->dbxref_lookup)) {
+        $this->dbxref_lookup[$index] = $info;
+        $this->dbxref_lookup[$index]['cvterm_id'] = NULL;
+      }
+    }
+
+    // Organize the CVterms for faster access later on.
+    if (!array_key_exists($gff_feature['type'], $feature_cvterms)) {
+      $feature_cvterms[$gff_feature['type']] = 0;
+    }
+    $feature_cvterms[$gff_feature['type']]++;
+
+    // Add any target feature types to the list as well.
+    if (array_key_exists('name', $gff_feature['target'])) {
+      if (!array_key_exists($gff_feature['target']['type'], $feature_cvterms)) {
+        $feature_cvterms[$gff_feature['target']['type']] = 0;
+      }
+      $feature_cvterms[$gff_feature['target']['type']]++;
+    }
+
+    // Organize the feature property types for faster access later on.
+    foreach ($gff_feature['properties'] as $prop_name => $value) {
+      if (!array_key_exists($prop_name, $featureprop_cvterms)) {
+        $featureprop_cvterms[$prop_name] = NULL;
+      }
+      $featureprop_cvterms[$prop_name]++;
+    }
+
+    // Cache the GFF feature details for later lookup.
+    if (strcmp($gff_feature['uniquename'], $gff_feature['landmark']) != 0) {
+      $this->cacheFeature($gff_feature);
+    }
+
+    // If this feature has a target then we need to add the target as
+    // new feature for insertion.
+    if (array_key_exists('name', $gff_feature['target'])) {
+      $this->addTargetFeature($gff_feature);
+    }
   }
 
   /**
@@ -2796,12 +2842,20 @@ class GFF3Importer extends TripalImporter {
         }
         $uniquename = $uniquename . "_" . $i;
       }
-      // A name can be duplicated if there is a target match alignment and
-      // the feature appears first in the GFF as a target before it appears
-      // on it's own independent line of the gff file.
-      elseif ($prev_feature['is_target'] == TRUE) {
-        // Do nothing, the previous feature is a target so we'll overwrite
-        // it with this record.
+      // If this is a match feature (e.g. match, EST_match, cDNA_match, etc).
+      // then we can accept a duplicated ID in the GFF3 file.  But we
+      // must rename it before going into Chado.  For this, we will allow
+      // the match feature to keep the original ID and we will create a new
+      // name for the match_part.
+      elseif (preg_match('/match$/', $type)) {
+        $i = 1;
+        $temp_uname = $uniquename;
+        do {
+          $temp_uname = $uniquename . "_part_" . $i;
+          $i++;
+        }
+        while (array_key_exists($temp_uname, $this->features));
+        $uniquename = $temp_uname;
       }
       else {
         throw new Exception(t("A feature with the same ID exists multiple times: !uname", ['!uname' => $uniquename]));
