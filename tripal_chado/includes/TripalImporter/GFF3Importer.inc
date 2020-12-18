@@ -365,13 +365,14 @@ class GFF3Importer extends TripalImporter {
     $form['targets']['adesc'] = [
       '#markup' => t("When alignments are represented in the GFF file (e.g. such as
        alignments of cDNA sequences to a whole genome, or blast matches), they are
-       represented using two feature types: 'match' (or cDNA_match, EST_match, etc.)
-       and 'match_part'.  These features may also have a 'Target' attribute to
-       specify the sequence that is being aligned.
+       represented using the term 'match' or more specific match types: 'cDNA_match', 'EST_match', etc.
+       These features may also have a 'Target' attribute to
+       specify the sequence that is being aligned and the alignment coordinates on that sequence.
        However, the organism to which the aligned sequence belongs may not be present in the
        GFF file.  Here you can specify the organism and feature type of the target sequences.
        The options here will apply to all targets unless the organism and type are explicity
-       set in the GFF file using the 'target_organism' and 'target_type' attributes."),
+       set in the GFF file using the 'target_organism' and 'target_type' attributes, or for the
+       type if a more specific type name is given (e.g. cDNA_match or EST_match)."),
     ];
     $form['targets']['target_organism_id'] = [
       '#title' => t('Target Organism'),
@@ -390,7 +391,8 @@ class GFF3Importer extends TripalImporter {
       '#description' => t("Optional. If the unique name for a target sequence is not unique (e.g. a protein
        and an mRNA have the same name) then you must specify the type for all targets in the GFF file. If
        the targets are of different types then the type must be specified using the 'target_type=type' attribute
-       in the GFF file. This must be a valid Sequence Ontology (SO) term."),
+       in the GFF file. This must be a valid Sequence Ontology (SO) term. If the matches in the GFF3 file
+       use specific match types (e.g. cDNA_match, EST_match, etc.) then this can be left blank. "),
     ];
     $form['targets']['create_target'] = [
       '#type' => 'checkbox',
@@ -1043,11 +1045,12 @@ class GFF3Importer extends TripalImporter {
         $attr_organism = $this->findOrganism($tags[$tag_name][0], $this->current_line);
       }
       elseif (strcmp($tag_name, 'Target') == 0) {
-        $matches = [];
         if (count($tags[$tag_name]) > 1) {
           throw new Exception(t('Each feature can only have one "Target" attribute. The feature %uniquename has more than one.',
               ['%uniquename' => $ret['uniquename']]));
         }
+        # Get the elements of the target.
+        $matches = [];
         if (preg_match('/^(.*?)\s+(\d+)\s+(\d+)(\s+[\+|\-])*$/', trim($tags[$tag_name][0]), $matches)) {
           $attr_target['name'] = $matches[1];
           $attr_target['start'] = $matches[2];
@@ -1073,6 +1076,19 @@ class GFF3Importer extends TripalImporter {
           }
           $attr_target['organism_id'] = $this->target_organism_id ? $this->target_organism_id : $this->organism_id;
           $attr_target['type_id'] = $this->target_type_id ? $this->target_type_id : NULL;
+          $attr_target['type'] = $this->target_type ? $this->target_type : NULL;
+
+          // If this Target aligns to a feature where the match type is specified
+          // (e.g. cDNA_match, EST_match, etc.) then we can pull the type for
+          // the target feature from the feature type.
+          if (preg_match('/(.+)_match/', $ret['type'], $matches)) {
+            $attr_target['type'] = $matches[1];
+            $attr_target['type_id'] = $this->getTypeID($matches[1], FALSE);
+          }
+        }
+        else {
+          throw new Exception(t('The "Target" attribute is incorreclty formatted for the feature "%uniquename."',
+              ['%uniquename' => $ret['uniquename']]));
         }
       }
       elseif (strcmp($tag_name, 'target_organism') == 0) {
@@ -1080,6 +1096,7 @@ class GFF3Importer extends TripalImporter {
       }
       elseif (strcmp($tag_name, 'target_type') == 0) {
         $attr_target['type'] = $tags[$tag_name][0];
+        $attr_target['type_id'] = $this->getTypeID($tags[$tag_name][0], FALSE);
       }
       // Get the list of non-reserved attributes these will get added
       // as properties to the featureprop table.  The 'Note', 'Gap', 'Is_Circular',
@@ -1196,8 +1213,8 @@ class GFF3Importer extends TripalImporter {
       $ret['skipped'] = TRUE;
     }
 
-    // Add the target. If the type_id is missing then remove it and we'll
-    // skip it.
+    // Add the target. If the type_id is missing then remove the targeet
+    // and we'll skip it.
     $ret['target'] = $attr_target;
     if (!array_key_exists('type', $ret['target']) or empty($ret['target'])) {
       $ret['target'] = [];
@@ -1458,7 +1475,7 @@ class GFF3Importer extends TripalImporter {
   }
 
   /**
-   *
+   * Prepare the database prior to working with the feature.
    */
   private function prepareFeature($gff_feature, &$feature_cvterms, &$featureprop_cvterms) {
 
@@ -1662,13 +1679,13 @@ class GFF3Importer extends TripalImporter {
       $feature = [
         'is_target' => TRUE,
         'line' => $this->current_line,
-        'landmark' => $gff_feature['landmark'],
+        'landmark' => NULL,
         'source' => $gff_feature['source'],
         'type' => $gff_feature['target']['type'],
-        'start' => $gff_feature['target']['start'],
-        'stop' => $gff_feature['target']['stop'],
-        'strand' => $gff_feature['target']['strand'],
-        'phase' => $gff_feature['target']['phase'],
+        'start' => NULL,
+        'stop' => NULL,
+        'strand' => NULL,
+        'phase' => NULL,
         'attr' => [],
         'skipped' => FALSE,
         'name' => $gff_feature['target']['name'],
@@ -2377,7 +2394,10 @@ class GFF3Importer extends TripalImporter {
   }
 
   /**
+   * Features that represent alignments have a second featureloc.
    *
+   * The second featureloc entry belongs on the target sequence which
+   * should either exist or was added if desired by the end-user.
    */
   private function insertFeatureTargets() {
     $batch_size = 1000;
