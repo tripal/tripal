@@ -911,11 +911,13 @@ function tripal_form_field_ui_display_overview_form_alter(&$form, &$form_state, 
   $fields_names = element_children($form['fields']);
   foreach ($fields_names as $field_name) {
     $field_info = field_info_field($field_name);
-    if ($field_info['type'] == 'kvproperty_adder') {
-      unset($form['fields'][$field_name]);
-    }
-    if ($field_info['type'] == 'cvterm_class_adder') {
-      unset($form['fields'][$field_name]);
+    if ($field_info) {
+      if ($field_info['type'] == 'kvproperty_adder') {
+        unset($form['fields'][$field_name]);
+      }
+      if ($field_info['type'] == 'cvterm_class_adder') {
+        unset($form['fields'][$field_name]);
+      }
     }
   }
 }
