@@ -6,6 +6,10 @@ The following modules provide interfaces for collection and/or loading of biolog
 Genotype Loader
 ----------------
 
+.. image:: https://tripal.readthedocs.io/en/7.x-3.x/_images/Tripal-Gold.png
+  :target: https://tripal.readthedocs.io/en/7.x-3.x/extensions/module_rating.html#Gold
+  :alt: Tripal Rating: Gold
+  
 A Drush-based loader for VCF files that follows the genotype storage rules outline by ND genotypes. It has been optimized to handle very large files and supports customization of ontology terms used.
 
 `Documentation <https://genotypes-loader.readthedocs.io/en/latest/>`__
