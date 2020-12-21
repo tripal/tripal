@@ -48,5 +48,5 @@ jobs:
             -e SIMPLETEST_DB=$SIMPLETEST_DB \
             -e BROWSER_OUTPUT_DIRECTORY=$BROWSER_OUTPUT_DIRECTORY \
             tripaldocker phpunit --printer mheap\\GithubActionsReporter\\Printer \
-              --configuration core modules/t4d8
+              --configuration core modules/contrib/tripal
       
