@@ -10,7 +10,10 @@ use Drupal\tripal_chado\api\ChadoSchema;
 /**
  * Testing the tripal_chado/api/tripal_chado.schema.api.inc functions.
  *
- * @group tripal_chado
+ * @group Tripal
+ * @group Tripal Chado
+ * @group Tripal Database
+ * @group Tripal API
  */
 class SchemaAPITest extends BrowserTestBase {
 

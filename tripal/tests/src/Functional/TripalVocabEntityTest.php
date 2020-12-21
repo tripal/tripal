@@ -9,10 +9,9 @@ use Drupal\Core\Url;
 /**
  * Tests the basic functions of the TripalVocab Entity Type.
  *
- * @ingroup tripal
- *
- * @group TripalVocab
- * @group entities
+ * @group Tripal
+ * @group Tripal Vocab
+ * @group Tripal Entities
  */
 class TripalVocabEntityTest extends BrowserTestBase {
 

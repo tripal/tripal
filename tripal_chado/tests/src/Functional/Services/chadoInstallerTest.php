@@ -8,7 +8,10 @@ use Drupal\Tests\BrowserTestBase;
 /**
  * Simple test to ensure that main page loads with module enabled.
  *
- * @group tripal_chado
+ * @group Tripal
+ * @group Tripal Chado
+ * @group Tripal Services
+ * @group Tripal Database
  */
 class chadoInstallerTest extends BrowserTestBase {
 
