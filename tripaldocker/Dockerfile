@@ -158,7 +158,7 @@ RUN service apache2 restart \
   && composer require tripal/tripal \
   && composer require drupal/devel \
   && vendor/bin/drush en devel tripal tripal_chado -y \
-  && vendor/bin/drush php:eval "\Drupal::service('tripal_chado.chadoInstaller', 'testchado')->install(1.3);"
+  && vendor/bin/drush trp-install-chado"
 
 ############# Scripts #########################################################
 
