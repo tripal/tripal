@@ -26,7 +26,7 @@ jobs:
       - name: Spin up Docker
         run: |
           docker run --publish=80:80 --name=tripaldocker -tid \
-            --volume=`pwd`:/var/www/drupal8/web/modules/t4d8 \
+            --volume=`pwd`:/var/www/drupal8/web/modules/contrib/tripal \
             tripalproject/tripaldocker:${{ matrix.dockertags }}
           docker exec tripaldocker service postgresql restart
           docker exec tripaldocker drush cr
