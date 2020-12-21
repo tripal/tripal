@@ -566,9 +566,16 @@ function tripal_chado_populate_vocab_EDAM() {
     'id' => 'data:2044',
     'name' => 'Sequence',
     'cv_name' => 'EDAM',
-    'definition' => 'One or more molecular sequences, possibly with associated annotation..',
+    'definition' => 'One or more molecular sequences, possibly with associated annotation.',
   ]);
   chado_associate_semweb_term('feature', 'residues', $term);
+
+  $term = chado_insert_cvterm([
+    'id' => 'data:0849',
+    'name' => 'Sequence record',
+    'cv_name' => 'EDAM',
+    'definition' => 'A molecular sequence and associated metadata.',
+  ]);
 
   $term = chado_insert_cvterm([
     'id' => 'data:0842',

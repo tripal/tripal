@@ -524,7 +524,7 @@ class sbo__relationship extends ChadoField {
       // relationship type and the object and subject
       'include_fk' => [
         'type_id' => 1,
-        $object_id_key => [
+          $object_id_key => [
           'type_id' => 1,
           'organism_id' => 1,
         ],

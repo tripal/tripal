@@ -72,15 +72,20 @@ function _ds_layout_settings_info($bundle_name, $instances) {
         $instance_base_table = array_key_exists('base_table', $instance['settings']) ? $instance['settings']['base_table'] : '';
         $instance_base_chado = array_key_exists('chado_table', $instance['settings']) ? $instance['settings']['chado_table'] : '';
         $prop_table = strpos($instance_base_chado, 'prop');
+        $data_sequence_record = strpos($instance_name, 'data__sequence_record');
         $data_sequence = strpos($instance_name, 'data__sequence');
         if ($instance_base_chado && $instance_base_table) {
 
           if ($instance_base_chado == $instance_base_table) {
-            if ($prop_table !== FALSE) {
-              array_push($prop_fields, $instance_name);
-            }
-            elseif ($data_sequence !== FALSE) {
+            if ($data_sequence_record !== FALSE) {
               array_push($data_sequence_fields, $instance_name);
+            }
+            elseif ($data_sequence !== FALSE or $instance_name == 'so__cds' or $instance_name == 'data__protein_sequence') {
+              // Do nothing as these chado column sequence fields
+              // should be hidden by default.
+            }
+            elseif ($prop_table !== FALSE) {
+              array_push($prop_fields, $instance_name);
             }
             else {
               array_push($summary_fields, $instance_name);
@@ -88,11 +93,15 @@ function _ds_layout_settings_info($bundle_name, $instances) {
 
           }
           elseif ($instance_base_chado != $instance_base_table) {
-            if ($prop_table !== FALSE) {
-              array_push($prop_fields, $instance_name);
-            }
-            elseif ($data_sequence !== FALSE) {
+            if ($data_sequence_record !== FALSE) {
               array_push($data_sequence_fields, $instance_name);
+            }
+            elseif ($data_sequence !== FALSE or $instance_name == 'so__cds' or $instance_name == 'data__protein_sequence') {
+              // Do nothing as these chado column sequence fields
+              // should be hidden by default.
+            }
+            elseif ($prop_table !== FALSE) {
+              array_push($prop_fields, $instance_name);
             }
             else {
               array_push($all_other_fields, $instance);

@@ -12,7 +12,8 @@ class data__protein_sequence_formatter extends ChadoFieldFormatter {
    * @see TripalFieldFormatter::view()
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
-    $content = 'There is no protein sequence.';
+
+    $content = 'There is no protein sequence available.';
     if (count($items) > 0 and $items[0]['value']) {
       $num_bases = 50;
       $content = '<pre class="protein-residues-formatter">';

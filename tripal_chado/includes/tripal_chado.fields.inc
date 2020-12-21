@@ -380,6 +380,18 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
         'type' => 'field_chado_storage',
       ],
     ];
+
+    $field_name = 'data__sequence_record';
+    $field_type = 'data__sequence_record';
+    $info[$field_name] = [
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'locked' => FALSE,
+      'storage' => [
+        'type' => 'field_chado_storage',
+      ],
+    ];
   }
 
   // FEATURE SEQLEN
@@ -1699,6 +1711,38 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         'default' => [
           'label' => 'above',
           'type' => 'data__sequence_formatter',
+          'settings' => [],
+        ],
+      ],
+    ];
+
+    $field_name = 'data__sequence_record';
+    $info[$field_name] = [
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Sequences',
+      'description' => 'A molecular sequence and associated metadata.',
+      'required' => FALSE,
+      'settings' => [
+        'auto_attach' => FALSE,
+        'chado_table' => $table_name,
+        'chado_column' => 'residues',
+        'base_table' => $table_name,
+        'term_accession' => '0849',
+        'term_vocabulary' => 'data',
+        'term_name' => 'Sequence record',
+      ],
+      'widget' => [
+        'type' => 'data__sequence_record_widget',
+        'settings' => [
+          'display_label' => 1,
+        ],
+      ],
+      'display' => [
+        'default' => [
+          'label' => 'above',
+          'type' => 'data__sequence_record_formatter',
           'settings' => [],
         ],
       ],
