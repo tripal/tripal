@@ -39,6 +39,8 @@ class sbo__database_cross_reference extends ChadoField {
     'term_fixed' => FALSE,
     // The number of items to show on a page.
     'items_per_page' => 10,
+    // Limit to the number of items to show in cases of large number of cross references.
+    'max_items' => 10000,
   ];
 
   // The default widget for this field.
@@ -142,29 +144,38 @@ class sbo__database_cross_reference extends ChadoField {
     $options = ['return_array' => 1];
 
     // Build the SQL to find records associated with this publication.
+    $max_items = array_key_exists('max_items', $this->instance['settings']) ? $this->instance['settings']['max_items'] : 10000;
     $sql = "SELECT REF.accession, DB.name, DB.urlprefix "
          . "FROM {".$linker_table."} LINK "
          . "INNER JOIN {dbxref} REF on LINK.dbxref_id = REF.dbxref_id "
          . "INNER JOIN {db} DB on REF.db_id = DB.db_id "
-         . "WHERE LINK.$fkey_lcolumn = :id";
-    $args = [':id' => $entity->{'chado_record_id'}];
+         . "WHERE LINK.$fkey_lcolumn = :id "
+         // Ignore the GFF_source database. This is a weird thing required by
+         // GBrowse and is added by the GFF loader. We don't want to show it.
+         . "AND NOT DB.name = 'GFF_source' "
+         . "ORDER BY REF.accession "  // if we hit the limit, the subset should be consistent
+         . "LIMIT :limit";
+    $args = [':id' => $entity->{'chado_record_id'},
+             ':limit' => $max_items + 1];
     $records = chado_query($sql, $args);
 
     // Store the query results
     $delta = 0;
     while($record = $records->fetchObject()) {
-      // Ignore the GFF_source database. This is a weird thing required by
-      // GBrowse and is added by the GFF loader. We don't want to show it.
-      if ($record->name == 'GFF_source') {
-        continue;
+      // Need this check to detect the case where the limit exactly equals the number of records
+      if ($delta < $max_items) {
+        $entity->{$field_name}['und'][$delta] = [];
+        $entity->{$field_name}['und'][$delta]['value'][$dbname_term] = $record->name;
+        $entity->{$field_name}['und'][$delta]['value'][$accession_term] = $record->accession;
+        $entity->{$field_name}['und'][$delta]['value'][$dburl_term] = $record->urlprefix;
       }
-      $entity->{$field_name}['und'][$delta] = [];
-      $entity->{$field_name}['und'][$delta]['value'][$dbname_term] = $record->name;
-      $entity->{$field_name}['und'][$delta]['value'][$accession_term] = $record->accession;
-      $entity->{$field_name}['und'][$delta]['value'][$dburl_term] = $record->urlprefix;
       $delta++;
     }
-
+    // Display a warning if we have exceeded the maximum number of cross references
+    if ( $delta > $max_items ) {
+      $entity->{$field_name}['und'][$delta]['value'][$dbname_term] = 'Note';
+      $entity->{$field_name}['und'][$delta]['value'][$accession_term] = "Only the first $max_items cross references are shown";
+    }
   }
 
   /**

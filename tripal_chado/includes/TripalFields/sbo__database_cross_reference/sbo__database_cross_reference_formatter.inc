@@ -36,11 +36,11 @@ class sbo__database_cross_reference_formatter extends ChadoFieldFormatter {
     foreach ($items as $delta => $item) {
       $db = $item['value'][$dbname_term];
       $accession = $item['value'][$accession_term];
-      // It is possible that a database does not have a url, in which case no link can be generated
-      if ($item['value'][$dburl_term]) {
+      // It is possible that a database does not have a url, in which case no link can be generated.
+      if (array_key_exists($dburl_term, $item['value']) and $item['value'][$dburl_term]) {
         $url = $item['value'][$dburl_term];
 
-        // this emulates chado_get_dbxref_url() but implemented inline here for better performance
+        // This emulates chado_get_dbxref_url() but implemented inline here for better performance.
         $db_count = 0;
         $acc_count = 0;
         $url = preg_replace('/\{db\}/', $db, $url, -1, $acc_count);
