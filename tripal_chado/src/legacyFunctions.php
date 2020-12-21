@@ -1,5 +1,7 @@
 <?php
 
+use Drupal\tripal\Services\TripalJob;
+
 /**
  * Submit Load Chado Schema Form
  *
@@ -24,8 +26,11 @@ function tripal_chado_load_drush_submit($action, $chado_schema = 'chado') {
 function tripal_chado_install_chado($action, $chado_schema = 'chado', $job = NULL) {
 
   if ($action == 'Install Chado v1.3') {
+    $current_user = \Drupal::currentUser();
     $installer = \Drupal::service('tripal_chado.chadoInstaller');
-    $installer->setJob($job);
+    if ($job) {
+      $installer->setJob($job);
+    }
     $success = $installer->install(1.3, $chado_schema);
   }
   else {
