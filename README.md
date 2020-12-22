@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/tripal/t4d8.svg?branch=9.x-4.x)](https://travis-ci.org/tripal/t4d8)
+![PHPUnit-Tests](https://github.com/tripal/t4d8/workflows/PHPUnit-Tests/badge.svg)
 
 
 ![alt tag](https://raw.githubusercontent.com/tripal/tripal/7.x-3.x/tripal/theme/images/tripal_logo.png)
