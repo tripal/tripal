@@ -105,7 +105,7 @@ function chado_get_publication($identifiers, $options = []) {
     }
     else {
       tripal_report_error('tripal_pub_api', TRIPAL_ERROR,
-        "chado_get_publication: The dbxref identifier is not correctly formatted.",
+        "chado_get_publication: The dbxref identifier is not correctly formatted. Identifiers passed: %identifier.",
         ['%identifier' => print_r($identifiers, TRUE)]
       );
     }
