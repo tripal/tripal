@@ -37,6 +37,4 @@ This upgrade to Drupal 8 is a community effort. As such, we NEED YOUR HELP!
 
 # Timeline
 
-We are currently running **approximately one month behind schedule -we need your help!** We still plan to release the Tripal 4 alpha on time although it may not include Data Importers.
-
 [![timeline](docs/Tripal4-Upgrade-Timeline.png)](https://time.graphics/line/387503)
