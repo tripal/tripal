@@ -31,12 +31,10 @@ class chadoInstaller extends bulkPgSchemaInstaller {
    *
    * @param float $version
    *   The version of chado you would like to install.
-   * @param string $chado_schema
-   *   The name of the schema you would like to install chado in.
    */
-  public function install($version, $chado_schema = 'chado') {
+  public function install($version) {
     $this->newVersion = $version;
-    $this->schemaName = $chado_schema;
+    $chado_schema = $this->schemaName;
     $connection = $this->connection;
 
     // VALIDATION.

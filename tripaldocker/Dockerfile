@@ -138,8 +138,8 @@ EXPOSE 80 5432
 
 ## Install Drupal.
 RUN cd /var/www/drupal8 \
-  && service apache2 start \
-  && service postgresql start \
+  && service apache2 restart \
+  && service postgresql restart \
   && sleep 30 \
   && /var/www/drupal8/vendor/drush/drush/drush site-install standard \
   --db-url=pgsql://drupaladmin:drupal8developmentonlylocal@localhost/sitedb \
@@ -151,17 +151,14 @@ RUN cd /var/www/drupal8 \
 
 ############# Tripal ##########################################################
 
-## Get Tripal for Github.
-RUN cd /var/www/drupal8/web/modules \
-  && git clone --single-branch --branch 9.x-4.x https://github.com/tripal/t4d8.git
-
 WORKDIR /var/www/drupal8
-RUN service apache2 start \
-  && service postgresql start \
+RUN service apache2 restart \
+  && service postgresql restart \
   && sleep 30 \
+  && composer require tripal/tripal \
   && composer require drupal/devel \
   && vendor/bin/drush en devel tripal tripal_chado -y \
-  && vendor/bin/drush php-eval "module_load_include('inc', 'tripal_chado', 'src/LegacyIncludes/tripal_chado.install'); tripal_chado_install_chado('Install Chado v1.3');"
+  && vendor/bin/drush trp-install-chado"
 
 ############# Scripts #########################################################
 
@@ -179,5 +176,7 @@ RUN ln -s /var/www/drupal8/vendor/drupal/console/bin/drupal /usr/local/bin/ \
 
 ## Set the working directory to DRUPAL_ROOT
 WORKDIR /var/www/drupal8/web
+
+EXPOSE 80
 
 ENTRYPOINT ["init.sh"]

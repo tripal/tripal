@@ -8,7 +8,11 @@ use Drupal\tripal_chado\api\ChadoSchema;
 
 /**
  * Tests the current Chado Database is compliant with the schema definition
- * used by Tripal
+ * used by Tripal.
+ *
+ * @group Tripal
+ * @group Tripal Chado
+ * @group Tripal Database
  */
 class ChadoComplianceTest extends BrowserTestBase {
 

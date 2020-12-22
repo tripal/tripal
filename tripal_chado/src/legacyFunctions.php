@@ -1,5 +1,7 @@
 <?php
 
+use Drupal\tripal\Services\TripalJob;
+
 /**
  * Submit Load Chado Schema Form
  *
@@ -8,8 +10,9 @@
 function tripal_chado_load_drush_submit($action, $chado_schema = 'chado') {
 
   if ($action == 'Install Chado v1.3') {
-    \Drupal::service('tripal_chado.chadoInstaller', $chado_schema)
-      ->install(1.3);
+    $installer = \Drupal::service('tripal_chado.chadoInstaller');
+    $installer->setSchema($chado_schema);
+    $success = $installer->install(1.3);
   }
   else {
     \Drupal::logger('tripal_chado')->error("NOT SUPPORTED: " . $action);
@@ -25,8 +28,11 @@ function tripal_chado_install_chado($action, $chado_schema = 'chado', $job = NUL
 
   if ($action == 'Install Chado v1.3') {
     $installer = \Drupal::service('tripal_chado.chadoInstaller');
-    $installer->setJob($job);
-    $success = $installer->install(1.3, $chado_schema);
+    $installer->setSchema($chado_schema);
+    if ($job) {
+      $installer->setJob($job);
+    }
+    $success = $installer->install(1.3);
   }
   else {
     \Drupal::logger('tripal_chado')->error("NOT SUPPORTED: " . $action);

@@ -7,7 +7,7 @@ services:
 sudo: required
 
 php:
-  - 7.3
+  - 7.1
 
 env:
   - IMAGE=laceysanderson/drupal8dev_ci:drupal8.8-pgsql DRUPAL_ROOT=/var/www/html/drupal8

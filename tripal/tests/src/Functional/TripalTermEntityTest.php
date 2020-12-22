@@ -10,10 +10,9 @@ use Drupal\Core\Url;
 /**
  * Tests the basic functions of the TripalTerm Entity Type.
  *
- * @ingroup tripal
- *
- * @group TripalTerm
- * @group entities
+ * @group Tripal
+ * @group Tripal Term
+ * @group Tripal Entities
  */
 class TripalTermEntityTest extends BrowserTestBase {
 

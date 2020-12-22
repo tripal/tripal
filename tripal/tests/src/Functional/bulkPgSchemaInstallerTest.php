@@ -8,7 +8,8 @@ use Drupal\Core\Database\Database;
 /**
  * Tests the basic functions of the Bulk PostgreSQL Schema Installer.
  *
- * @ingroup tripal
+ * @group Tripal
+ * @group Tripal Database
  */
 class bulkPgSchemaInstallerTest extends BrowserTestBase {
 
