@@ -185,6 +185,40 @@ class TripalTermEntityTest extends BrowserTestBase {
   }
 
   /**
+   * Basic Tests for the Tripal Vocabulary API.
+   *
+   * @group tripal_term
+   */
+  public function testTripalTermAPI() {
+
+    $test_details = [
+      'vocabulary' => [
+        'name' => 'Full name with unique bit ' . uniqid(),
+        'short_name' => 'SO' . uniqid(),
+        'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. In ultrices, arcu sed ultricies condimentum, quam tortor tristique libero, eget auctor est magna quis nibh.',
+      ],
+      'accession' => 'SO:' . uniqid(),
+      'name' => 'Lorem ipsum ' . uniqid(),
+      'definition' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. In ultrices, arcu sed ultricies condimentum, quam tortor tristique libero, eget auctor est magna quis nibh.',
+    ];
+
+    $success = tripal_add_term($test_details);
+    $this->assertTrue($success, "tripal_add_term() returns TRUE if the term was created successfully.");
+
+    $retrieved_details = tripal_get_term_details(
+      $test_details['vocabulary']['short_name'],
+      $test_details['accession']
+    );
+    unset($retrieved_details['TripalTerm']);
+    unset($retrieved_details['vocabulary']['TripalVocab']);
+    $this->assertEquals($test_details, $retrieved_details,
+      "We should be able to retrieve what we created using the short name.");
+
+    $term_object = tripal_get_TripalTerm($test_details);
+    $this->assertIsObject($term_object, "tripal_get_TripalTerm() should return an object.");
+  }
+
+  /**
    * Test all paths exposed by the module, by permission.
    *
    * @group tripal_term

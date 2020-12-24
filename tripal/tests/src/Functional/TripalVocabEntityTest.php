@@ -160,6 +160,46 @@ class TripalVocabEntityTest extends BrowserTestBase {
   }
 
   /**
+   * Basic Tests for the Tripal Vocabulary API.
+   *
+   * @group tripal_vocab
+   */
+  public function testTripalVocabAPI() {
+
+    $test_details = [
+      'name' => 'Full name with unique bit ' . uniqid(),
+      'short_name' => 'SO' . uniqid(),
+      'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. In ultrices, arcu sed ultricies condimentum, quam tortor tristique libero, eget auctor est magna quis nibh.',
+    ];
+
+    $success = tripal_add_vocabulary($test_details);
+    $this->assertTrue($success, "tripal_add_vocabulary() returns TRUE if the vocabulary was created successfully.");
+
+    $retrieved_details = tripal_get_vocabulary_details($test_details['name']);
+    unset($retrieved_details['TripalVocab']);
+    $this->assertEquals($test_details, $retrieved_details,
+      "We should be able to retrieve what we created using the name.");
+
+    $retrieved_details = tripal_get_vocabulary_details($test_details['short_name']);
+    unset($retrieved_details['TripalVocab']);
+    $this->assertEquals($test_details, $retrieved_details,
+      "We should be able to retrieve what we created using the short name.");
+
+    $vocab_object = tripal_get_TripalVocab(['name' => $test_details['name']]);
+    $this->assertIsObject($vocab_object, "tripal_get_TripalVocab() should return an object.");
+
+    $vocab_object = tripal_get_TripalVocab([
+      'short_name' => $test_details['short_name']
+    ]);
+    $this->assertIsObject($vocab_object, "tripal_get_TripalVocab() should return an object.");
+
+    $retrieved_details = tripal_get_vocabulary_details($test_details['short_name'], $vocab_object);
+    unset($retrieved_details['TripalVocab']);
+    $this->assertEquals($test_details, $retrieved_details,
+      "We should be able to retrieve what we created using the short name especially if we pass in the object!");
+  }
+
+  /**
    * Test all paths exposed by the module, by permission.
    *
    * @group tripal_vocab
