@@ -21,4 +21,4 @@ If you are using the docker distributed with this module, then you can run tests
 
 .. code:: bash
 
-  docker-compose exec drupal drupal9/vendor/bin/phpunit --config drupal9/web/core drupal9/web/modules/t4d8
+  docker exec --workdir=/var/www/drupal8/web/modules/contrib/tripal t4d8 phpunit
