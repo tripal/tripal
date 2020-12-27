@@ -11,7 +11,7 @@ COPY . /app
 RUN chmod -R +x /app && apt-get update 1> ~/aptget.update.log \
   && apt-get install git unzip zip wget gnupg2 supervisor vim --yes -qq 1> ~/aptget.extras.log
 
-########## POTSGRESQL #########################################################
+########## POSTGRESQL #########################################################
 
 ## See https://stackoverflow.com/questions/51033689/how-to-fix-error-on-postgres-install-ubuntu
 RUN mkdir -p /usr/share/man/man1 && mkdir -p /usr/share/man/man7
@@ -48,6 +48,11 @@ RUN echo "listen_addresses='*'" >> /etc/postgresql/11/main/postgresql.conf
 EXPOSE 5432
 
 ########## PHP EXTENSIONS #####################################################
+RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
+## Xdebug
+RUN pecl install xdebug-3.0.1 \
+    && docker-php-ext-enable xdebug \
+    && echo "xdebug.mode = coverage" >> /usr/local/etc/php/php.ini
 ## install the PHP extensions we need
 RUN set -eux; \
 	\
@@ -116,6 +121,7 @@ WORKDIR /var/www/html
 ENV SIMPLETEST_BASE_URL=http://localhost
 ENV SIMPLETEST_DB=pgsql://drupaladmin:drupal8developmentonlylocal@localhost/sitedb
 ENV BROWSER_OUTPUT_DIRECTORY=/var/www/drupal8/web/sites/default/files/simpletest
+RUN mkdir /var/www/drupal8/web/sites/default/files/simpletest
 
 ## Install composer and Drush.
 WORKDIR /var/www
@@ -158,7 +164,7 @@ RUN service apache2 restart \
   && composer require tripal/tripal \
   && composer require drupal/devel \
   && vendor/bin/drush en devel tripal tripal_chado -y \
-  && vendor/bin/drush trp-install-chado"
+  && vendor/bin/drush trp-install-chado
 
 ############# Scripts #########################################################
 
