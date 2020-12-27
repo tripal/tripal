@@ -125,6 +125,19 @@ class TripalVocab extends ContentEntityBase implements ContentEntityInterface {
     return $this;
   }
 
+  public function getDetails() {
+    $details = [];
+
+    $details['TripalVocab'] = $this;
+    $details['name'] = $this->getName();
+    $details['short_name'] = $this->getLabel();
+    $details['description'] = $this->getDescription();
+    // TODO: Add URL and URL prefix once they are available.
+    // $vocabulary['num_terms'] = $object->getNumberofTerms();
+
+    return $details;
+  }
+
   /**
    * {@inheritdoc}
    */

@@ -39,40 +39,8 @@
  * @ingroup tripal_terms_api
  */
 function tripal_add_vocabulary($details) {
-  $logger = \Drupal::service('tripal.logger');
-
-  if (!array_key_exists('short_name', $details)) {
-    $logger->error('The vocabulary short name must be specified using the "short_name" key.');
-    return FALSE;
-  }
-  if (!array_key_exists('name', $details)) {
-    $logger->error('The full vocabulary name must be specified using the "name" key.');
-    return FALSE;
-  }
-  if (!array_key_exists('description', $details)) {
-    $logger->error('The vocabulary must be described using the "description" key.');
-    return FALSE;
-  }
-
-  // Check to see if the vocabulary already exists.
-  $exists = tripal_get_vocabulary_details($details['name']);
-  if (!$exists) {
-    $exists = tripal_get_vocabulary_details($details['short_name']);
-  }
-  if ($exists) {
-    $vocab = $exists['TripalVocab'];
-  }
-  else {
-    $vocab = \Drupal\tripal\Entity\TripalVocab::create();
-  }
-
-  // Set the details.
-  $vocab->setLabel($details['short_name']);
-  $vocab->setName($details['name']);
-  $vocab->setDescription($details['description']);
-  $vocab->save();
-
-  return TRUE;
+  return \Drupal::service('tripal.tripalVocab.manager')
+    ->addVocabulary($details);
 }
 
 /**
@@ -85,9 +53,7 @@ function tripal_add_vocabulary($details) {
  * vocabularies and allow it to return the details about the term.
  *
  * @param $name
- *   The name of the vocabulary.
- * @param $object
- *   The TripalVocab object. This parameter can speed up retrieval.
+ *   The name or short name of the vocabulary.
  *
  * @return
  *   An array with at least the following keys:
@@ -106,83 +72,42 @@ function tripal_add_vocabulary($details) {
  *
  * @ingroup tripal_terms_api
  */
-function tripal_get_vocabulary_details($name, $object = NULL) {
+function tripal_get_vocabulary_details($name) {
   $logger = \Drupal::service('tripal.logger');
+  $TripalVocabManager = \Drupal::service('tripal.tripalVocab.manager');
   $vocabulary = [];
 
   if (!is_string($name)) {
     $logger->error('You must pass a string to tripal_get_vocabulary_details() to return details. Instead you passed: :var', [':var' => print_r($name, TRUE)]);
+    return FALSE;
   }
 
   // Retrieve the TripalVocab object if we wern't given it.
-  if (!$object) {
-    $object = tripal_get_TripalVocab(['name' => $name]);
-  }
+  $object = $TripalVocabManager->getVocabularies(['name' => $name]);
   // If the name didn't work, maybe they gave us the short name?
   if (!$object) {
-    $object = tripal_get_TripalVocab(['short_name' => $name]);
+    $object = $TripalVocabManager->getVocabularies(['short_name' => $name]);
   }
 
   // If we were unable to retrieve it, let the caller know it doesn't exist.
   if (!$object) {
-    $logger->debug('We wre unable to retrieve the Tripal Vocabulary with the name :var.', [':var' => $name]);
+    $logger->debug('We were unable to retrieve the Tripal Vocabulary with the name :var.', [':var' => $name]);
     return FALSE;
   }
 
-  $vocabulary['TripalVocab'] = $object;
-  $vocabulary['name'] = $object->getName();
-  $vocabulary['short_name'] = $object->getLabel();
-  $vocabulary['description'] = $object->getDescription();
-  // TODO: Add URL and URL prefix once they are available.
-  // $vocabulary['num_terms'] = $object->getNumberofTerms();
-
-  return $vocabulary;
-}
-
-/**
- * Retrieve the TripalVocab object.
- *
- * @param array $details
- *    An array of criteria to uniquely select the vocabulary.
- *    Supported keys include:
- *      - name: The full name of the vocabulary (e.g. 'sequence').
- *      - short_name: The short name of the vocabulary (e.g. 'SO').
- *
- * @ingroup tripal_terms_api
- */
-function tripal_get_TripalVocab($details) {
-  $logger = \Drupal::service('tripal.logger');
-
-  if (!is_array($details)) {
-    $logger->error('You must pass an array to tripal_get_TripalVocab() to find the object. Instead you passed: :var', [':var' => print_r($details, TRUE)]);
+  if (is_array($object)) {
+    $result = [];
+    foreach($object as $vocab) {
+      $result[] = $vocab->getDetails();
+    }
+  }
+  elseif (is_object($object)) {
+    $result = $object->getDetails();
+    return $result;
+  }
+  else {
     return FALSE;
   }
-
-  $query = \Drupal::entityQuery('tripal_vocab');
-  if (array_key_exists('name', $details)) {
-	   $query->condition('name', $details['name']);
-  }
-  if (array_key_exists('short_name', $details)) {
-	   $query->condition('vocabulary', $details['short_name']);
-  }
-	$vocab_ids = $query->execute();
-
-	if (sizeof($vocab_ids) === 1) {
-    $id = array_pop($vocab_ids);
-    $vocab = \Drupal\tripal\Entity\TripalVocab::load($id);
-    return $vocab;
-  }
-  elseif (empty($vocab_ids)) {
-    $logger->debug('No TripalVocab results were returned for :params', [':params' => print_r($details, TRUE)]);
-  }
-  elseif (sizeof($vocab_ids) > 1) {
-    $logger->debug('Too many TripalVocab objects were returned for :params', [':params' => print_r($details, TRUE)]);
-  }
-  elseif (!is_array($vocab_ids)) {
-    $logger->debug('Drupal::entityQuery encountered an error when trying to retrieve TripalVocab objects based on the following ', [':params' => print_r($details, TRUE)]);
-  }
-
-  return FALSE;
 }
 
 /**
@@ -196,40 +121,14 @@ function tripal_get_TripalVocab($details) {
  * @ingroup tripal_terms_api
  */
 function tripal_get_vocabularies() {
-  $logger = \Drupal::service('tripal.logger');
-  $vocabularies = [];
+  $objects = \Drupal::service('tripal.tripalVocab.manager')
+    ->getVocabularies([]);
 
-  $query = \Drupal::entityQuery('tripal_vocab');
-	$vocab_ids = $query->execute();
-
-  if (!is_array($vocab_ids)) {
-    $logger->debug('Drupal::entityQuery encountered an error when trying to retrieve all TripalVocab objects.');
-    return FALSE;
+  $results = [];
+  foreach ($objects as $vocab) {
+    $results[] = $vocab->getDetails();
   }
-
-  foreach ($vocab_ids as $id) {
-    $vocab_object = \Drupal\tripal\Entity\TripalVocab::load($id);
-    if (is_object ($vocab_object)) {
-      $vocab_name = $vocab_object->getName();
-      $vocab = tripal_get_vocabulary_details($vocab_name, $vocab_object);
-
-      if (is_object($vocab)) {
-        $vocabularies[] = $vocab;
-      }
-      else {
-        $logger->debug('Unable to retrieve details for the vocabulary :name even though we passed in an object.', [':name' => $vocab_name]);
-      }
-    }
-    else {
-      $logger->debug('Unable to load the TripalVocab with an id of :id', [':id' => $id]);
-    }
-  }
-
-  if (empty($vocabularies)) {
-    $logger->debug('Your system has no Tripal Vocabularies created.');
-  }
-
-  return $vocabularies;
+  return $results;
 }
 
 /**
