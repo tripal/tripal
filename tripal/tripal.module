@@ -13,14 +13,14 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Config\FileStorage;
 
-require_once 'api/tripal.entities.api.php';
-require_once 'api/tripal.terms.api.php';
-require_once 'api/tripal.quotas.api.php';
-require_once 'api/tripal.files.api.php';
-require_once 'api/tripal.notice.api.php';
-require_once 'api/tripal.upload.api.php';
-require_once 'api/tripal.jobs.api.php';
-require_once 'api/tripal.deprecated.api.php';
+require_once 'src/api/tripal.entities.api.php';
+require_once 'src/api/tripal.terms.api.php';
+require_once 'src/api/tripal.quotas.api.php';
+require_once 'src/api/tripal.files.api.php';
+require_once 'src/api/tripal.notice.api.php';
+require_once 'src/api/tripal.upload.api.php';
+require_once 'src/api/tripal.jobs.api.php';
+require_once 'src/api/tripal.deprecated.api.php';
 
 /**
  * Implements hook_help().

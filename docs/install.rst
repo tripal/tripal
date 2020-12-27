@@ -19,7 +19,7 @@ Specific Installation Guides
 The recommended method to get involved in Tripal 4 development is Tripal Docker installation. This most closely mimics the enviornment automated tests are run on.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    install/traditional
    install/docker

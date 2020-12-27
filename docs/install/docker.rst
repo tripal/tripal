@@ -59,22 +59,22 @@ Usage
 
    .. code::
 
-     docker exec t4d8 phpunit --configuration core modules/contrib/tripal
+    docker exec --workdir=/var/www/drupal8/web/modules/contrib/tripal t4d8 phpunit
 
  - Run Drupal Console to generate code for your module!
 
    .. code::
 
-     docker exec t4d8 drupal generate:module
+    docker exec t4d8 drupal generate:module
 
  - Run Drush to rebuild the cache
 
    .. code::
 
-     docker exec t4d8 drush cr
+    docker exec t4d8 drush cr
 
  - Run Composer to upgrade Drupal
 
    .. code::
 
-     docker exec t4d8 composer up
+    docker exec t4d8 composer up
