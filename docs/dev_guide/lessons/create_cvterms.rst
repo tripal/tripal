@@ -32,23 +32,14 @@ The following code demonstrates how to create a Tripal Controlled Vocabulary (CV
 
 .. code:: php
 
-  $vocab = \Drupal\tripal\Entity\TripalVocab::create();
-  $vocab->setLabel('SO');
-  $vocab->setName('sequence');
-  $vocab->setDescription('The Sequence Ontology is a set of terms and relationships used to describe the features and attributes of biological sequence. SO includes different kinds of features which can be located on the sequence.');
-  $vocab->save();
+  $details = [
+    'short_name' => 'SO',
+    'name' => 'sequence',
+    'description' => 'The Sequence Ontology is a set of terms and relationships used to describe the features and attributes of biological sequence. SO includes different kinds of features which can be located on the sequence.'
+  ];
+  \Drupal::service('tripal.tripalVocab.manager')->addVocabulary($details);
 
-First we create an empty object instance to act as our CV using the line ``$vocab = \Drupal\tripal\Entity\TripalVocab::create();``. Notice that we use the full namespace of the TripalVocab class to instantiate it -this ensures that Drupal magic will be able to autoload the class on demand.
-
-Next we set the values for the CV. This is done using a number of set methods provided by TripalVocab. The label is the short name of the vocabulary (in this case SO) and the name is the full human-readable name of the vocabulary (in this case sequence). We can also provide a description to provide additional context to the CV.
-
-.. code:: php
-
-  $vocab->setLabel('SO');
-  $vocab->setName('sequence');
-  $vocab->setDescription('The Sequence Ontology is a set of terms and relationships used to describe the features and attributes of biological sequence. SO includes different kinds of features which can be located on the sequence.');
-
-The last but critical step is to call ``$vocab->save();`` which saves your new CV to the database.
+This code sample simply describes the controlled vocabulary you would like to create as an associative array and then uses the ``tripal.tripalVocab.manager`` service to create it.
 
 You can check that the CV saves properly by navigating to Home > Administration > Structure > Tripal Controlled Vocabularies (``admin/structure/tripal_vocab``) and ensuring your new CV is in the list of existing CVs.
 
@@ -61,14 +52,14 @@ Now that you have at least one CV, you can load an existing CV. This is demonstr
 
 .. code:: php
 
-  $vocab_id = 1;
-  $vocab = \Drupal\tripal\Entity\TripalVocab::load($vocab_id);
+  $vocab = \Drupal::service('tripal.tripalVocab.manager')->getVocabularies([
+    'name' => 'sequence',
+    'short_name' => 'SO'
+  ]);
 
-.. warning::
+The getVocabularies() method allows you to retrieve Tripal Vocabulary objects using their name and/or short_name.
 
-  We are still working on APIs to help you load CVs by name or label.
-
-Once you have a TripalVocab object, you can retrieve the value of various properties by using the following methods:
+Once you have a Tripal Vocabulary object, you can retrieve the value of various properties by using the following methods:
 
 .. code:: php
 
@@ -96,15 +87,18 @@ The following code demonstrates how to create a Tripal Controlled Vocabulary Ter
 
 .. code:: php
 
-  $vocab_id = 1;
-  $term = \Drupal\tripal\Entity\TripalTerm::create();
-  $term->setVocabID($vocab_id);
-  $term->setAccession('0000704');
-  $term->setName('gene');
-  $term->setDefinition('A region (or regions) that includes all of the sequence elements necessary to encode a functional transcript. A gene may include regulatory regions, transcribed regions and/or other functional sequence regions.');
-  $term->save();
+  $details = [
+    'accession' => '0000704',
+    'name' => 'gene',
+    'vocabulary' => [
+      'name' => 'sequence',
+      'short_name' => 'SO',
+    ],
+    'definition' => 'A region (or regions) that includes all of the sequence elements necessary to encode a functional transcript. A gene may include regulatory regions, transcribed regions and/or other functional sequence regions.',
+  ];
+  \Drupal::service('tripal.tripalTerm.manager')->addTerm($details);
 
-This follows the same format as for creating the sequence ontology CV. First we create the empty TripalTerm object, then we set the values for the various properties and finally, we save it to the database.
+This follows the same format as for creating the sequence ontology CV. First we describe the term we want to create including the Tripal Vocabulary and then we use the ``tripal.tripalTerm.manager`` service to create it. This service will create the controlled vocabulary if it doesn't already exist!
 
 To check if your CVterm was created properly you can look on the listing at Home > Administration > Structure > Tripal Controlled Vocabulary Terms (``admin/structure/tripal_term``) and ensuring your new CVterm is in the list of existing CVterms.
 
@@ -117,13 +111,13 @@ Now that you have at least one CVterm, you can load an existing CVterm. This is 
 
 .. code::
 
-  $term_id = 1;
-  $term = \Drupal\tripal\Entity\TripalTerm::load($term_id);
-
-
-.. warning::
-
-  We are still working on APIs to help you load CVterms by name, accession or vocabulary.
+  $details = [
+    'accession' => '0000704',
+    'vocabulary' => [
+      'short_name' => 'SO',
+    ],
+  ];
+  $term = \Drupal::service('tripal.tripalTerm.manager')->getTerms($details);
 
 Once you have a TripalTerm object, you can retrieve the value of various properties by using the following methods:
 

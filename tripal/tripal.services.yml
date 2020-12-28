@@ -10,6 +10,10 @@ services:
       class: Drupal\tripal\Services\Tripaljob
   tripal.logger:
       class: Drupal\tripal\Services\TripalLogger
+  tripal.tripalVocab.manager:
+      class: Drupal\tripal\Services\TripalVocabManager
+  tripal.tripalTerm.manager:
+      class: Drupal\tripal\Services\TripalTermManager
   plugin.manager.tripalstorage:
       class: Drupal\tripal\Services\TripalStorageManager
       parent: default_plugin_manager

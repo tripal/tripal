@@ -161,6 +161,22 @@ class TripalTerm extends ContentEntityBase implements TripalTermInterface {
   }
 
   /**
+   * Get Details.
+   */
+  public function getDetails() {
+    $details = [];
+
+    $details['TripalTerm'] = $this;
+    $vocab = $this->getVocab();
+    $details['vocabulary'] = $vocab->getDetails();
+    $details['accession'] = $this->getAccession();
+    $details['name'] = $this->getName();
+    $details['definition'] = $this->getDefinition();
+
+    return $details;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {

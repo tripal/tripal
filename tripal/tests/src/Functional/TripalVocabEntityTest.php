@@ -164,7 +164,7 @@ class TripalVocabEntityTest extends BrowserTestBase {
    *
    * @group tripal_vocab
    */
-  public function testTripalVocabAPI() {
+  public function testTripalVocabProceduralAPI() {
 
     $test_details = [
       'name' => 'Full name with unique bit ' . uniqid(),
@@ -184,19 +184,46 @@ class TripalVocabEntityTest extends BrowserTestBase {
     unset($retrieved_details['TripalVocab']);
     $this->assertEquals($test_details, $retrieved_details,
       "We should be able to retrieve what we created using the short name.");
+  }
 
-    $vocab_object = tripal_get_TripalVocab(['name' => $test_details['name']]);
-    $this->assertIsObject($vocab_object, "tripal_get_TripalVocab() should return an object.");
+  /**
+   * Basic Tests for the Tripal Vocabulary API.
+   *
+   * @group tripal_vocab
+   */
+  public function testTripalVocabManager() {
 
-    $vocab_object = tripal_get_TripalVocab([
-      'short_name' => $test_details['short_name']
-    ]);
-    $this->assertIsObject($vocab_object, "tripal_get_TripalVocab() should return an object.");
+    $test_details = [
+      'name' => 'Full name with unique bit ' . uniqid(),
+      'short_name' => 'SO' . uniqid(),
+      'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. In ultrices, arcu sed ultricies condimentum, quam tortor tristique libero, eget auctor est magna quis nibh.',
+    ];
 
-    $retrieved_details = tripal_get_vocabulary_details($test_details['short_name'], $vocab_object);
-    unset($retrieved_details['TripalVocab']);
-    $this->assertEquals($test_details, $retrieved_details,
-      "We should be able to retrieve what we created using the short name especially if we pass in the object!");
+    $manager = \Drupal::service('tripal.tripalVocab.manager');
+
+    $success = $manager->addVocabulary($test_details);
+    $this->assertTrue($success, "Unable to add Vocabulary using manager.");
+
+    $exists = $manager->checkExists($test_details);
+    $this->assertEquals(1, $exists, "The vocabulary should exist because we just created it.");
+
+    $vocab = $manager->getVocabularies($test_details);
+    $this->assertIsObject($vocab, "We should have been able to retrieve the object.");
+
+    $vocab_id = $vocab->id();
+    $vocab2 = $manager->loadVocabularies([$vocab_id]);
+    $this->assertEquals($vocab, $vocab2, "We should be able to retrieve the same object using getVocabularies and loadVocabularies.");
+
+    // Now we can try updating them.
+    $test_details['description'] = 'NEW SHORTER DESCRIPTION ' . uniqid();
+    $success = $manager->updateVocabulary($test_details);
+    $this->assertTrue($success, "We should have been able to update it.");
+    $vocab3 = $manager->getVocabularies($test_details);
+    $this->assertIsObject($vocab3, "We should have been able to retrieve the updated object.");
+    $this->assertNotEquals($vocab, $vocab3, "The updated object should be different.");
+    $vocab3_id = $vocab3->id();
+    $this->assertEquals($vocab_id, $vocab3_id, "But the ID should be the same.");
+
   }
 
   /**
