@@ -155,61 +155,7 @@ function tripal_get_vocabularies() {
  * @ingroup tripal_terms_api
  */
 function tripal_add_term($details) {
-  $logger = \Drupal::service('tripal.logger');
-
-  if (!array_key_exists('vocabulary', $details)) {
-    $logger->error('The vocabulary must be specified using the "vocabulary" key.');
-    return FALSE;
-  }
-  if (!array_key_exists('accession', $details)) {
-    $logger->error('The term accession must be specified using the "accession" key.');
-    return FALSE;
-  }
-  if (!array_key_exists('name', $details)) {
-    $logger->error('The name of the term must be specified using the "name" key.');
-    return FALSE;
-  }
-  if (!array_key_exists('definition', $details)) {
-    $logger->error('The definition of the term must be specified using the "definition" key.');
-    return FALSE;
-  }
-
-  // First, we need the vocabulary.
-  // This function will make sure it exists.
-  $success = tripal_add_vocabulary($details['vocabulary']);
-  if ($success) {
-    // Then we retrieve the object.
-    $vocab = tripal_get_TripalVocab($details['vocabulary']);
-    if (!$vocab) {
-      $logger->error('Unable to retrieve TripalVocab even though we just created it.');
-      return FALSE;
-    }
-
-    // Now we try to retrieve the term in case it already exists.
-    $term_exists = tripal_get_term_details(
-      $details['vocabulary']['short_name'],
-      $details['accession']
-    );
-    if ($term_exists) {
-      $term = $term_exists['TripalTerm'];
-    }
-    else {
-      $term = \Drupal\tripal\Entity\TripalTerm::create();
-    }
-
-    $term->setVocabID($vocab->id());
-    $term->setAccession($details['accession']);
-    $term->setName($details['name']);
-    $term->setDefinition($details['definition']);
-    $term->save();
-
-    return TRUE;
-  }
-  else {
-    $this->error('Unable to create or retrieve vocabulary which is required to create a term. Parameters: :param', [':param' => print_r($details, TRUE)]);
-    return FALSE;
-  }
-
+  return \Drupal::service('tripal.tripalTerm.manager')->addTerm($details);
 }
 
 /**
@@ -243,51 +189,24 @@ function tripal_add_term($details) {
  * @ingroup tripal_terms_api
  */
 function tripal_get_term_details($vocabulary, $accession) {
-  $logger = \Drupal::service('tripal.logger');
 
-  if (empty($vocabulary)) {
-    $logger->error("Unable to retrieve details for term due to missing vocabulary name");
-    return FALSE;
-  }
-  if (empty($accession)) {
-    $logger->error("Unable to retrieve details for term due to missing accession");
-    return FALSE;
-  }
-
-	$vocab = tripal_get_TripalVocab(['short_name' => $vocabulary]);
-  if (!$vocab) {
-    $logger->debug('Unable to retrieve vocabulary.');
-    return FALSE;
-  }
-
-	$term['TripalTerm'] = tripal_get_TripalTerm([
+  // Set the details array as expected by the new API.
+  $details = [
+    'vocabulary' => tripal_get_vocabulary_details($vocabulary),
     'accession' => $accession,
-    'vocab_id' => $vocab->id()
-  ]);
-	if (!is_object($term['TripalTerm'])) {
-		$logger->debug('Unable to find TripalTerm with :accession and :vocab',
-      [':accession' => $accession, ':vocab' => $vocabulary]);
-		return FALSE;
-	}
+  ];
+  if (array_key_exists('TripalVocab', $details['vocabulary'])) {
+    $details['vocabulary']['vocab_id'] = $details['vocabulary']['TripalVocab']
+      ->id();
+  }
 
-	// Next retrieve term details.
-	$term['accession'] = $term['TripalTerm']->getAccession();
-	$term['name'] = $term['TripalTerm']->getName();
-	$term['definition'] = $term['TripalTerm']->getDefinition();
-	// TODO: Add URL once it is available.
-
-	// Finally retrieve the vocabulary and vocab details.
-	$term['vocabulary']['TripalVocab'] = $vocab;
-	if (!is_object($term['vocabulary']['TripalVocab'])) {
-		$logger->debug("Unable to retrieve details for term due to missing vocabulary.");
-		return FALSE;
-	}
-	$term['vocabulary']['name'] = $vocab->getName();
-	$term['vocabulary']['short_name'] = $vocab->getLabel();
-	$term['vocabulary']['description'] = $vocab->getDescription();
-	// TODO: Add URL and URL prefix once they are available.
-
-  return $term;
+  $term = \Drupal::service('tripal.tripalTerm.manager')->getTerms($details);
+  if (is_object($term)) {
+    return $term->getDetails();
+  }
+  else {
+    return NULL;
+  }
 }
 
 /**
@@ -309,58 +228,7 @@ function tripal_get_term_details($vocabulary, $accession) {
  * @ingroup tripal_terms_api
  */
 function tripal_get_TripalTerm($details) {
-  $logger = \Drupal::service('tripal.logger');
-
-  if (!is_array($details)) {
-    $logger->error('The details must be provided in an array.');
-    return FALSE;
-  }
-
-  // If the vocabulary is specified we want the ID.
-  $vocab_id = NULL;
-  if (array_key_exists('vocabulary', $details)) {
-    if (array_key_exists('vocab_id', $details['vocabulary'])) {
-      $vocab_id = $details['vocabulary']['vocab_id'];
-    }
-    else {
-      $vocab = tripal_get_TripalVocab($details['vocabulary']);
-      if ($vocab) {
-        $vocab_id = $vocab->id();
-      }
-      else {
-        $logger->error('Unable to retrieve vocabulary from the information provided.');
-        return FALSE;
-      }
-    }
-  }
-
-  // Now actually query for the term.
-  $query = \Drupal::entityQuery('tripal_term');
-  if (array_key_exists('name', $details)) {
-	  $query->condition('name', $details['name']);
-  }
-  if (array_key_exists('accession', $details)) {
-	  $query->condition('accession', $details['accession']);
-  }
-  if ($vocab_id) {
-    $query->condition('vocab_id', $vocab_id);
-  }
-	$term_ids = $query->execute();
-
-	if (sizeof($term_ids) === 1) {
-    $id = array_pop($term_ids);
-    $term = \Drupal\tripal\Entity\TripalTerm::load($id);
-    return $term;
-  }
-  elseif (empty($term_ids)) {
-    $logger->debug('No TripalTerm results were returned for :params', [':params' => print_r($details, TRUE)]);
-  }
-  elseif (sizeof($term_ids) > 1) {
-    $logger->debug('Too many TripalTerm objects were returned for :params', [':params' => print_r($details, TRUE)]);
-  }
-  elseif (!is_array($term_ids)) {
-    $logger->debug('Drupal::entityQuery encountered an error when trying to retrieve TripalTerm objects based on the following ', [':params' => print_r($details, TRUE)]);
-  }
+  return \Drupal::service('tripal.tripalTerm.manager')->getTerms($details);
 }
 
 /**

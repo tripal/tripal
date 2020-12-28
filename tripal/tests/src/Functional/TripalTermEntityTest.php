@@ -87,18 +87,18 @@ class TripalTermEntityTest extends BrowserTestBase {
     // Now fill out the form and submit.
     // Post content, save an instance. Go to the new page after saving.
     // -- Create a vocab for use in the form.
-    $vocab_name = 'tripalvocab-'.time();
-    $vocab = \Drupal\tripal\Entity\TripalVocab::create();
-    $vocab->setLabel($vocab_name);
-    $vocab->setName($vocab_name);
-    $vocab->save();
-    $vocab_label = $vocab->getLabel();
-    $this->assertEquals($vocab_name, $vocab_label);
+    $term_name = 'tripalvocab-'.time();
+    $term = \Drupal\tripal\Entity\TripalVocab::create();
+    $term->setLabel($term_name);
+    $term->setName($term_name);
+    $term->save();
+    $term_label = $term->getLabel();
+    $this->assertEquals($term_name, $term_label);
     // -- Create the other values.
     $name = 'TripalTerm ' . uniqid();
     $accession = uniqid();
     $add = [
-      'vocab_id' => $vocab_label . ' (' . $vocab->getID() . ')',
+      'vocab_id' => $term_label . ' (' . $term->getID() . ')',
       'accession' => $accession,
       'name' => $name,
     ];
@@ -119,7 +119,7 @@ class TripalTermEntityTest extends BrowserTestBase {
     // We should also see our new record listed with edit/delete links.
     $assert->pageTextContains($name);
     $assert->pageTextContains($accession);
-    $assert->pageTextContains($vocab_label);
+    $assert->pageTextContains($term_label);
     $assert->linkExists('Edit');
     $assert->linkExists('Delete');
 
@@ -147,7 +147,7 @@ class TripalTermEntityTest extends BrowserTestBase {
     // We should also see our new record listed with edit/delete links.
     $assert->pageTextContains($new_term_name);
     $assert->pageTextContains($accession);
-    $assert->pageTextContains($vocab_label);
+    $assert->pageTextContains($term_label);
     $assert->linkExists('Edit');
     $assert->linkExists('Delete');
 
@@ -168,7 +168,7 @@ class TripalTermEntityTest extends BrowserTestBase {
     $this->drupalGet('admin/structure/tripal_term');
     $assert->pageTextContains($new_term_name);
     $assert->pageTextContains($accession);
-    $assert->pageTextContains($vocab_label);
+    $assert->pageTextContains($term_label);
     $assert->linkExists('Edit');
     $assert->linkExists('Delete');
 
@@ -189,7 +189,7 @@ class TripalTermEntityTest extends BrowserTestBase {
    *
    * @group tripal_term
    */
-  public function testTripalTermAPI() {
+  public function testTripalTermProceduralAPI() {
 
     $test_details = [
       'vocabulary' => [
@@ -219,6 +219,50 @@ class TripalTermEntityTest extends BrowserTestBase {
   }
 
   /**
+   * Basic Tests for the Tripal Term API.
+   *
+   * @group tripal_term
+   */
+  public function testTripalTermManager() {
+
+    $test_details = [
+      'vocabulary' => [
+        'name' => 'Full name with unique bit ' . uniqid(),
+        'short_name' => 'SO' . uniqid(),
+        'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. In ultrices, arcu sed ultricies condimentum, quam tortor tristique libero, eget auctor est magna quis nibh.',
+      ],
+      'accession' => 'SO:' . uniqid(),
+      'name' => 'Lorem ipsum ' . uniqid(),
+      'definition' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. In ultrices, arcu sed ultricies condimentum, quam tortor tristique libero, eget auctor est magna quis nibh.',
+    ];
+
+    $manager = \Drupal::service('tripal.tripalTerm.manager');
+
+    $success = $manager->addTerm($test_details);
+    $this->assertTrue($success, "Unable to add term using manager.");
+
+    $exists = $manager->checkExists($test_details);
+    $this->assertEquals(1, $exists, "The term should exist because we just created it.");
+
+    $term = $manager->getTerms($test_details);
+    $this->assertIsObject($term, "We should have been able to retrieve the object.");
+
+    $term_id = $term->id();
+    $term2 = $manager->loadTerms([$term_id]);
+    $this->assertEquals($term, $term2, "We should be able to retrieve the same object using getVocabularies and loadVocabularies.");
+
+    // Now we can try updating them.
+    $test_details['description'] = 'NEW SHORTER DESCRIPTION ' . uniqid();
+    $success = $manager->updateTerm($test_details);
+    $this->assertTrue($success, "We should have been able to update it.");
+    $term3 = $manager->getTerms($test_details);
+    $this->assertIsObject($term3, "We should have been able to retrieve the updated object.");
+    $this->assertNotEquals($term, $term3, "The updated object should be different.");
+    $term3_id = $term3->id();
+    $this->assertEquals($term_id, $term3_id, "But the ID should be the same.");
+  }
+
+  /**
    * Test all paths exposed by the module, by permission.
    *
    * @group tripal_term
@@ -227,13 +271,13 @@ class TripalTermEntityTest extends BrowserTestBase {
     $assert = $this->assertSession();
 
     // Generate a vocab so that we can test the paths against it.
-    $vocab = TripalTerm::create([
+    $term = TripalTerm::create([
       'vocabulary' => 'somename',
     ]);
-    $vocab->save();
+    $term->save();
 
     // Gather the test data.
-    $data = $this->providerTestPaths($vocab->id());
+    $data = $this->providerTestPaths($term->id());
 
     // Run the tests.
     foreach ($data as $datum) {
@@ -267,16 +311,16 @@ class TripalTermEntityTest extends BrowserTestBase {
    *   - Path to request.
    *   - Permission for the user.
    */
-  protected function providerTestPaths($vocab_id) {
+  protected function providerTestPaths($term_id) {
     return [
       [
         200,
-        '/admin/structure/tripal_term/' . $vocab_id,
+        '/admin/structure/tripal_term/' . $term_id,
         'view controlled vocabulary term entities',
       ],
       [
         403,
-        '/admin/structure/tripal_term/' . $vocab_id,
+        '/admin/structure/tripal_term/' . $term_id,
         '',
       ],
       [
@@ -301,22 +345,22 @@ class TripalTermEntityTest extends BrowserTestBase {
       ],
       [
         200,
-        '/admin/structure/tripal_term/' . $vocab_id . '/edit',
+        '/admin/structure/tripal_term/' . $term_id . '/edit',
         'edit controlled vocabulary term entities',
       ],
       [
         403,
-        '/admin/structure/tripal_term/' . $vocab_id . '/edit',
+        '/admin/structure/tripal_term/' . $term_id . '/edit',
         '',
       ],
       [
         200,
-        '/admin/structure/tripal_term/' . $vocab_id . '/delete',
+        '/admin/structure/tripal_term/' . $term_id . '/delete',
         'delete controlled vocabulary term entities',
       ],
       [
         403,
-        '/admin/structure/tripal_term/' . $vocab_id . '/delete',
+        '/admin/structure/tripal_term/' . $term_id . '/delete',
         '',
       ],
     ];
