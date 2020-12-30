@@ -67,48 +67,52 @@ class TripalTerm extends ContentEntityBase implements TripalTermInterface {
   }
 
   /**
-   * @see \Drupal\tripal\Entity\TripalTermInterface::getID()
+   * {@inheritdoc}
    */
   public function getID() {
     return $this->get('id')->value;
   }
 
   /**
-   * @see \Drupal\tripal\Entity\TripalTermInterface::getID()
+   * {@inheritdoc}
    */
   public function getLabel() {
     return $this->getName();
   }
 
   /**
-   * @see \Drupal\tripal\Entity\TripalTermInterface::getVocabID()
+   * {@inheritdoc}
    */
   public function getVocabID(){
     return $this->get('vocab_id')->getString();
   }
 
   /**
-   * @see \Drupal\tripal\Entity\TripalTermInterface::setVocabID()
+   * {@inheritdoc}
    */
   public function setVocabID($vocab_id) {
     $this->set('vocab_id', $vocab_id);
     return $this;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getVocab() {
     $vocab_id = $this->getVocabID();
     $vocab = TripalVocab::load($vocab_id);
     return $vocab;
   }
+
   /**
-   * @see \Drupal\tripal\Entity\TripalTermInterface::getAccession()
+   * {@inheritdoc}
    */
   public function getAccession() {
     return $this->get('accession')->value;
   }
 
   /**
-   * @see \Drupal\tripal\Entity\TripalTermInterface::setAccession()
+   * {@inheritdoc}
    */
   public function setAccession($accession) {
     $this->set('accession', $accession);
@@ -116,14 +120,14 @@ class TripalTerm extends ContentEntityBase implements TripalTermInterface {
   }
 
   /**
-   * @see \Drupal\tripal\Entity\TripalTermInterface::getName()
+   * {@inheritdoc}
    */
   public function getName() {
     return $this->get('name')->value;
   }
 
   /**
-   * @see \Drupal\tripal\Entity\TripalTermInterface::setName()
+   * {@inheritdoc}
    */
   public function setName($name) {
     $this->set('name', $name);
@@ -131,14 +135,14 @@ class TripalTerm extends ContentEntityBase implements TripalTermInterface {
   }
 
   /**
-   * @see \Drupal\tripal\Entity\TripalTermInterface::getDefinition()
+   * {@inheritdoc}
    */
   public function getDefinition() {
     return $this->get('definition')->value;
   }
 
   /**
-   * @see \Drupal\tripal\Entity\TripalTermInterface::setDefinition()
+   * {@inheritdoc}
    */
   public function setDefinition($definition) {
     $this->set('definition', $definition);
@@ -146,14 +150,14 @@ class TripalTerm extends ContentEntityBase implements TripalTermInterface {
   }
 
   /**
-   * @see \Drupal\tripal\Entity\TripalTermInterface::getCreatedTime()
+   * {@inheritdoc}
    */
   public function getCreatedTime() {
     return $this->get('created')->value;
   }
 
   /**
-   * @see \Drupal\tripal\Entity\TripalTermInterface::setCreatedTime()
+   * {@inheritdoc}
    */
   public function setCreatedTime($timestamp) {
     $this->set('created', $timestamp);
@@ -161,7 +165,7 @@ class TripalTerm extends ContentEntityBase implements TripalTermInterface {
   }
 
   /**
-   * Get Details.
+   * {@inheritdoc}
    */
   public function getDetails() {
     $details = [];
