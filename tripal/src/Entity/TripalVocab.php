@@ -16,7 +16,7 @@ use Drupal\tripal\Entity\TripalVocabInterface;
  *
  * @ContentEntityType(
  *   id = "tripal_vocab",
- *   label = @Translation("Tripal Controlled Vocabulary"),
+ *   label = @Translation("Tripal Vocabulary"),
  *   handlers = {
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\tripal\ListBuilders\TripalVocabListBuilder",
