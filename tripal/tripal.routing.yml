@@ -204,7 +204,7 @@ entity.tripal_vocab.collection:
   path: '/admin/structure/tripal_vocab'
   defaults:
     _entity_list: 'tripal_vocab'
-    _title: 'Tripal Controlled Vocabularies'
+    _title: 'Tripal Vocabularies'
   requirements:
     _permission: 'view controlled vocabulary entities'
 
@@ -222,7 +222,7 @@ entity.tripal_term.collection:
   path: '/admin/structure/tripal_term'
   defaults:
     _entity_list: 'tripal_term'
-    _title: 'Tripal Controlled Vocabulary Terms'
+    _title: 'Tripal Terms'
   requirements:
     _permission: 'view controlled vocabulary term entities'
 
