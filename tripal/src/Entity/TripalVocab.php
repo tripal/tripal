@@ -21,7 +21,6 @@ use Drupal\tripal\Entity\TripalVocabInterface;
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\tripal\ListBuilders\TripalVocabListBuilder",
  *     "views_data" = "Drupal\tripal\Entity\TripalVocabViewsData",
- *     "translation" = "Drupal\tripal\TripalVocabTranslationHandler",
  *
  *     "form" = {
  *       "default" = "Drupal\tripal\Form\TripalVocabForm",

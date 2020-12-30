@@ -186,11 +186,6 @@ class TripalTerm extends ContentEntityBase implements TripalTermInterface {
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = parent::baseFieldDefinitions($entity_type);
 
-    $fields['vocab_id'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Vocabulary ID'))
-      ->setDescription(t('The ID of the TripalVocab entity to which this term belongs.'))
-      ->setSetting('target_type', 'tripal_vocab');
-
     $fields['accession'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Accession'))
       ->setDescription(t('The unique ID (or accession) of this term in the vocabulary.'))
@@ -213,6 +208,17 @@ class TripalTerm extends ContentEntityBase implements TripalTermInterface {
       ->setSettings(array(
         'text_processing' => 0,
       ));
+
+    $fields['vocab_id'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Vocabularies'))
+      ->setDescription(t('The vocabularies (e.g. sequence) this term is included in.'))
+      ->setCardinality(-1)
+      ->setSetting('target_type', 'tripal_vocab');
+
+    $fields['idspace_id'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('IDSpace'))
+      ->setDescription(t('The IDSpace (e.g. SO) this term belongs to. The IDSpace also indicates the default vocabulary.'))
+      ->setSetting('target_type', 'tripal_vocab_space');
 
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Created'))

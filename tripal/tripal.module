@@ -50,6 +50,12 @@ function tripal_theme() {
     'template' => 'tripal_vocab',
   );
 
+  $theme['tripal_vocab_space'] = array(
+    'render element' => 'elements',
+    'file' => 'templates/tripal_vocab_space.page.inc',
+    'template' => 'tripal_vocab_space',
+  );
+
   $theme['tripal_term'] = array(
     'render element' => 'elements',
     'file' => 'templates/tripal_term.page.inc',
