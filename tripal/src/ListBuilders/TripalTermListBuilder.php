@@ -19,9 +19,10 @@ class TripalTermListBuilder extends EntityListBuilder {
    */
   public function buildHeader() {
 
+    $header['namespace'] = $this->t('Namespace');
+    $header['IDSpace'] = $this->t('IDSpace');
+    $header['accession'] = $this->t('Term Accession');
     $header['name'] = $this->t('Term Name');
-    $header['cv'] = $this->t('Vocabulary');
-    $header['accession'] = $this->t('Accession');
 
     return $header + parent::buildHeader();
   }
@@ -31,23 +32,40 @@ class TripalTermListBuilder extends EntityListBuilder {
    */
   public function buildRow(EntityInterface $entity) {
     /* @var $entity \Drupal\tripal\Entity\TripalTerm */
-    $vocab = $entity->getVocab();
-    $vocab_label = '';
-    $vocab_name = '';
+    $idspace = $entity->getIDSpace();
+    $vocab = ($idspace) ? $idspace->getVocab() : FALSE;
+
+    // Namespace.
     if ($vocab) {
-      $vocab_name = Link::fromTextAndUrl(
-        $vocab->getName(),
+      $row['namespace'] = Link::fromTextAndUrl(
+        $vocab->getNamespace(),
         $vocab->toUrl('canonical', ['tripal_vocab' => $vocab->id()])
       )->toString();
-      $vocab_label = $vocab->getLabel();
+    }
+    else {
+      $row['namespace'] = '';
     }
 
+    // IDSpace.
+    if ($idspace) {
+      $row['IDSpace'] = Link::fromTextAndUrl(
+        $idspace->getIDSpace(),
+        $idspace->toUrl('canonical', ['tripal_vocab_space' => $idspace->id()])
+      )->toString();
+    }
+    else {
+      $row['IDSpace'] = '';
+    }
+
+    // Term Accession.
+    $row['accession'] = $entity->getAccession();
+
+    // Term Name.
     $row['name'] = Link::fromTextAndUrl(
       $entity->getName(),
       $entity->toUrl('canonical', ['tripal_term' => $entity->id()])
     )->toString();
-    $row['cv'] = $vocab_name;
-    $row['accession'] = $vocab_label . ':' . $entity->getAccession();
+
 
     return $row + parent::buildRow($entity);
   }

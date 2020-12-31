@@ -21,7 +21,6 @@ use Drupal\user\UserInterface;
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\tripal\ListBuilders\TripalTermListBuilder",
  *     "views_data" = "Drupal\tripal\Entity\TripalTermViewsData",
- *     "translation" = "Drupal\tripal\TripalTermTranslationHandler",
  *
  *     "form" = {
  *       "default" = "Drupal\tripal\Form\TripalTermForm",
@@ -49,22 +48,11 @@ use Drupal\user\UserInterface;
  *     "delete-form" = "/admin/structure/tripal_term/{tripal_term}/delete",
  *     "collection" = "/admin/structure/tripal_term",
  *   },
- *   field_ui_base_route = "tripal_term.settings"
  * )
  */
 class TripalTerm extends ContentEntityBase implements TripalTermInterface {
 
   use EntityChangedTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function preCreate(EntityStorageInterface $storage_controller, array &$values) {
-    parent::preCreate($storage_controller, $values);
-    $values += array(
-      'user_id' => \Drupal::currentUser()->id(),
-    );
-  }
 
   /**
    * {@inheritdoc}
@@ -83,14 +71,47 @@ class TripalTerm extends ContentEntityBase implements TripalTermInterface {
   /**
    * {@inheritdoc}
    */
+  public function getIDSpaceID(){
+    return $this->get('idspace_id')->getString();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setIDSpaceID($idspace_id) {
+    $this->set('idspace_id', $idspace_id);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getIDSpace() {
+    $idspace_id = $this->getIDSpaceID();
+    $idspace = \Drupal\tripal\Entity\TripalVocabSpace::load($idspace_id);
+    return $idspace;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getVocabID(){
-    return $this->get('vocab_id')->getString();
+    $raw_values = $this->get('vocab_id')->getValue();
+    $ids = [];
+    foreach ($raw_values as $raw) {
+      $ids[] = $raw['target_id'];
+    }
+    return $ids;
   }
 
   /**
    * {@inheritdoc}
    */
   public function setVocabID($vocab_id) {
+    // @todo Check at least one is the default vocabulary for the IDSpace?
+    if (!is_array($vocab_id)) {
+      $vocab_id = [ $vocab_id ];
+    }
     $this->set('vocab_id', $vocab_id);
     return $this;
   }
@@ -99,9 +120,14 @@ class TripalTerm extends ContentEntityBase implements TripalTermInterface {
    * {@inheritdoc}
    */
   public function getVocab() {
-    $vocab_id = $this->getVocabID();
-    $vocab = TripalVocab::load($vocab_id);
-    return $vocab;
+    $result = [];
+
+    $vocab_ids = $this->getVocabID();
+    foreach ($vocab_ids as $vocab_id) {
+      $result[] = \Drupal\tripal\Entity\TripalVocab::load($vocab_id);
+    }
+
+    return $result;
   }
 
   /**

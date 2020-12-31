@@ -30,6 +30,33 @@ interface TripalTermInterface extends ContentEntityInterface, EntityChangedInter
   public function getLabel();
 
   /**
+   * Retrieves the unique identifier for the linked Tripal IDSpace.
+   *
+   * @return int
+   *   The unique identifier for the linked TripalVocabSpace.
+   */
+  public function getIDSpaceID();
+
+  /**
+   * Link an existing Tripal IDSpace to this term.
+   *
+   * @param int $idspace_id
+   *   The internal unique identifier for the TripalVocabSpace to link.
+   *
+   * @return \Drupal\tripal\Entity\TripalTermInterface
+   *   The current term is returned to allow chaining of commands.
+   */
+  public function setIDSpaceID($idspace_id);
+
+  /**
+   * The linked Tripal IDSpace.
+   *
+   * @return \Drupal\tripal\Entity\TripalVocabInterface
+   *   The linked Tripal IDSpace.
+   */
+  public function getIDSpace();
+
+  /**
    * Retrieves the unique identifier for the linked Tripal Vocabulary.
    *
    * @return int
