@@ -27,11 +27,14 @@ function template_preprocess_tripal_vocab(array &$variables) {
   $tripal_vocab = $variables['elements']['#tripal_vocab'];
 
   // Add the main properties into the content variable.
-  $variables['content']['vocabulary'] = [
-    '#markup' => ($tripal_vocab) ? $tripal_vocab->getLabel() : '',
-  ];
   $variables['content']['name'] = [
     '#markup' => ($tripal_vocab) ? $tripal_vocab->getName() : '',
+  ];
+  $variables['content']['namespace'] = [
+    '#markup' => ($tripal_vocab) ? $tripal_vocab->getNamespace() : '',
+  ];
+  $variables['content']['url'] = [
+    '#markup' => ($tripal_vocab) ? $tripal_vocab->getURL() : '',
   ];
   $variables['content']['description'] = [
     '#markup' => ($tripal_vocab) ? $tripal_vocab->getDescription(): '',

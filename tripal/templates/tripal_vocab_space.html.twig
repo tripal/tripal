@@ -1,0 +1,29 @@
+{#
+/**
+ * @file tripal_vocab_space.html.twig
+ * Default theme implementation to present Tripal Vocabulary IDSpace data.
+ *
+ * This template is used when viewing Tripal Vocabulary IDSpace pages.
+ *
+ *
+ * Available variables:
+ * - content: A list of content items. Use 'content' to print all content, or
+ * - attributes: HTML attributes for the container element.
+ *
+ * @see template_preprocess_tripal_vocab_space()
+ *
+ * @ingroup themeable
+ */
+#}
+<div{{ attributes.addClass('tripal_vocab_space') }}>
+  {% if content %}
+  <table>
+  <tbody>
+    <tr><th>Vocabulary</th><td>{{ content.vocab.name }}</td></tr>
+    <tr><th>Namespace</th><td>{{ content.vocab.namespace }}</td></tr>
+    <tr><th>IDSpace</th><td>{{ content.IDSpace }}</td></tr>
+    <tr><th>Term URL</th><td>{{ content.URLPrefix }}</td></tr>
+  </tbody>
+  </table>
+  {% endif %}
+</div>

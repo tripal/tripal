@@ -15,6 +15,21 @@ How are CVs used in Tripal?
 
 Controlled vocabulary terms are used to define Tripal Content Types. Additionally, all Tripal Fields are defined using a controlled vocabulary term. As such, all biological content managed by Tripal is associated with a categorizing controlled vocabulary term and each piece of metadata defining a single piece of content is also defined using a controlled vocabulary. This ensures that Tripal content is `semantic web ready <https://www.w3.org/standards/semanticweb/>`_, as well as, ensuring it is well organized for both researchers and computer software.
 
+How are CVs modelled in Tripal?
+--------------------------------
+
+.. image:: images/tripal_vocab_model.png
+
+Vocabulary with multiple IDSpaces (e.g. EDAM)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Now let's think about the EDAM vocabulary which has multiple IDspaces. We would have multiple terms (TripalTerm), each attached to a single IDspace (TripalVocabSpace). Each IDSpace references a single namespace (TripalVocab). This results in a single namespace (TripalVocab; EDAM) referenced by multiple IDspaces (TripalVocabSpace; Data, Operation, Format, etc.).
+
+Vocabulary with borrowed terms
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Now lets think about the borrowed term situation. We would have a single term (TripalTerm) attached to a single IDspace (TripalVocabSpace) and included in multiple vocabularies (TripalVocab) with one being the originator namespace and the rest being accessory namespaces.
+
 Finding a CVterm
 ------------------
 

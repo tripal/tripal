@@ -20,7 +20,10 @@
     <table>
     <tbody>
       <tr><th>Name</th><td>{{ content.name }}</td></tr>
-      <tr><th>Short Name</th><td>{{ content.vocabulary }}</td></tr>
+      <tr><th>Namespace</th><td>{{ content.namespace }}</td></tr>
+      <tr><th>URL</th><td><a href="{{ content.url }}" target="_blank">
+        {{ content.url }}
+      </a></td></tr>
     </tbody>
     </table>
     <p>{{ content.description }}</p>

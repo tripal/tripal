@@ -50,17 +50,17 @@ class TripalVocabEntityTest extends BrowserTestBase {
 
     // First check that the listing shows up in the structure menu.
     $this->drupalGet('admin/structure');
-    $assert->linkExists('Tripal Controlled Vocabularies');
-    $this->clickLink('Tripal Controlled Vocabularies');
+    $assert->linkExists('Tripal Vocabularies');
+    $this->clickLink('Tripal Vocabularies');
 
     // Web_user user has the right to view listing.
     // We should now be on admin/structure/tripal_vocab.
     // thus check for the expected title.
-    $assert->pageTextContains('Tripal Controlled Vocabularies');
+    $assert->pageTextContains('Tripal Vocabularies');
 
     // We start out without any content... thus check we are told there
     // are no controlled vocabularies.
-    $msg = 'There are no tripal controlled vocabulary entities yet.';
+    $msg = 'There are no tripal vocabulary entities yet.';
     $assert->pageTextContains($msg);
 
     // TripalVocab Add Form.
@@ -73,11 +73,11 @@ class TripalVocabEntityTest extends BrowserTestBase {
     // @todo fails $this->clickLink('Add Vocabulary');
     $this->drupalGet('admin/structure/tripal_vocab/add');
     // We should now be on admin/structure/tripal_vocab/add.
-    $assert->pageTextContains('Add tripal controlled vocabulary');
-    $assert->fieldExists('Short Name');
-    $assert->fieldValueEquals('Short Name', '');
+    $assert->pageTextContains('Add tripal vocabulary');
     $assert->fieldExists('Full Name');
     $assert->fieldValueEquals('Full Name', '');
+    $assert->fieldExists('Namespace');
+    $assert->fieldValueEquals('Namespace', '');
     $assert->fieldExists('Description');
     $assert->fieldValueEquals('Description', '');
 
@@ -85,16 +85,17 @@ class TripalVocabEntityTest extends BrowserTestBase {
     // Post content, save an instance. Go to the new page after saving.
     $vocab_name = 'test ' . date('Ymd');
     $add = [
-      'vocabulary' => $vocab_name,
+      'name' => $vocab_name,
+      'namespace' => uniqid(),
     ];
-    $this->drupalPostForm(NULL, $add, 'Save');
-    $assert->pageTextContains('Created the ' . $vocab_name . ' Controlled Vocabulary.');
+    $this->drupalPostForm('admin/structure/tripal_vocab/add', $add, 'Save');
+    $assert->pageTextContains('Created the ' . $vocab_name . ' Tripal Vocabulary.');
 
     // Then go back to the listing.
     $this->drupalGet('admin/structure/tripal_vocab');
 
     // There should now be entities thus we shouldn't see the empty msg.
-    $msg = 'There are no tripal controlled vocabulary entities yet.';
+    $msg = 'There are no tripal vocabulary entities yet.';
     $assert->pageTextNotContains($msg);
 
     // We should also see our new record listed with edit/delete links.
@@ -109,17 +110,18 @@ class TripalVocabEntityTest extends BrowserTestBase {
     $this->clickLink('Edit');
     // We should now be on admin/structure/tripal_vocab/{tripal_vocab}/edit.
     $assert->pageTextContains('Edit');
-    $assert->fieldExists('Short Name');
-    $assert->fieldValueEquals('Short Name', $vocab_name);
+    $assert->fieldExists('Name');
+    $assert->fieldValueEquals('Name', $add['name']);
+    $assert->fieldExists('Namespace');
+    $assert->fieldValueEquals('Namespace', $add['namespace']);
 
     // Now fill out the form and submit.
     // Post content, save the instance.
     $new_vocab_name = 'CHANGED' . uniqid();
-    $edit = [
-      'vocabulary' => $new_vocab_name,
-    ];
-    $this->drupalPostForm(NULL, $edit, 'Save');
-    $assert->pageTextContains('Saved the ' . $new_vocab_name . ' Controlled Vocabulary.');
+    $edit = $add;
+    $edit['name'] = $new_vocab_name;
+    $this->drupalPostForm(null, $edit, 'Save');
+    $assert->pageTextContains('Saved the ' . $new_vocab_name . ' Tripal Vocabulary.');
 
     // Then go back to the listing.
     $this->drupalGet('admin/structure/tripal_vocab');
@@ -135,8 +137,6 @@ class TripalVocabEntityTest extends BrowserTestBase {
     $this->clickLink('Delete');
 
     // Check that we get the confirmation form.
-    $msg = 'Are you sure you want to delete the tripal controlled vocabulary';
-    $assert->pageTextContains($msg);
     $assert->pageTextContains('This action cannot be undone.');
     $assert->buttonExists('Delete');
     // @todo fails $assert->buttonExists('Cancel');
@@ -151,7 +151,7 @@ class TripalVocabEntityTest extends BrowserTestBase {
     // Now we delete the record.
     $this->clickLink('Delete');
     $this->drupalPostForm(NULL, [], 'Delete');
-    $msg = 'The tripal controlled vocabulary ' . $new_vocab_name . ' has been deleted.';
+    $msg = 'The tripal vocabulary ' . $new_vocab_name . ' has been deleted.';
     $assert->pageTextContains($msg);
 
     // Ensure the vocab is no longer in the listing.
@@ -168,7 +168,7 @@ class TripalVocabEntityTest extends BrowserTestBase {
 
     $test_details = [
       'name' => 'Full name with unique bit ' . uniqid(),
-      'short_name' => 'SO' . uniqid(),
+      'idspace' => 'SO' . uniqid(),
       'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. In ultrices, arcu sed ultricies condimentum, quam tortor tristique libero, eget auctor est magna quis nibh.',
     ];
 
@@ -176,13 +176,11 @@ class TripalVocabEntityTest extends BrowserTestBase {
     $this->assertTrue($success, "tripal_add_vocabulary() returns TRUE if the vocabulary was created successfully.");
 
     $retrieved_details = tripal_get_vocabulary_details($test_details['name']);
-    unset($retrieved_details['TripalVocab']);
-    $this->assertEquals($test_details, $retrieved_details,
+    $this->assertContains($test_details['name'], $retrieved_details,
       "We should be able to retrieve what we created using the name.");
 
-    $retrieved_details = tripal_get_vocabulary_details($test_details['short_name']);
-    unset($retrieved_details['TripalVocab']);
-    $this->assertEquals($test_details, $retrieved_details,
+    $retrieved_details = tripal_get_vocabulary_details($test_details['idspace']);
+    $this->assertContains($test_details['name'], $retrieved_details,
       "We should be able to retrieve what we created using the short name.");
   }
 
@@ -195,7 +193,7 @@ class TripalVocabEntityTest extends BrowserTestBase {
 
     $test_details = [
       'name' => 'Full name with unique bit ' . uniqid(),
-      'short_name' => 'SO' . uniqid(),
+      'idspace' => 'SO' . uniqid(),
       'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. In ultrices, arcu sed ultricies condimentum, quam tortor tristique libero, eget auctor est magna quis nibh.',
     ];
 
@@ -204,7 +202,7 @@ class TripalVocabEntityTest extends BrowserTestBase {
     $success = $manager->addVocabulary($test_details);
     $this->assertTrue($success, "Unable to add Vocabulary using manager.");
 
-    $exists = $manager->checkExists($test_details);
+    $exists = $manager->checkVocabExists($test_details);
     $this->assertEquals(1, $exists, "The vocabulary should exist because we just created it.");
 
     $vocab = $manager->getVocabularies($test_details);

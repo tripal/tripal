@@ -18,8 +18,8 @@ class TripalVocabListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   public function buildHeader() {
-    $header['name'] = $this->t('Controlled Vocabulary Name');
-    $header['short_name'] = $this->t('Short Name');
+    $header['name'] = $this->t('Name');
+    $header['namespace'] = $this->t('Namespace');
     return $header + parent::buildHeader();
   }
 
@@ -34,9 +34,8 @@ class TripalVocabListBuilder extends EntityListBuilder {
       $entity->toUrl('canonical', ['tripal_entity_type' => $entity->id()])
     )->toString();
 
-    $row['short_name'] = $entity->getLabel();
+    $row['namespace'] = $entity->getNamespace();
 
     return $row + parent::buildRow($entity);
   }
-
 }

@@ -5,7 +5,7 @@ namespace Drupal\tripal\Form;
 use Drupal\Core\Entity\ContentEntityDeleteForm;
 
 /**
- * Provides a form for deleting Controlled Vocabulary entities.
+ * Provides a form for deleting Tripal Vocabulary entities.
  *
  * @ingroup tripal
  */

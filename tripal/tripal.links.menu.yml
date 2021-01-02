@@ -20,23 +20,19 @@ entity.tripal_entity_type.collection:
 
 # Listing.
 entity.tripal_vocab.collection:
-  title: 'Tripal Controlled Vocabularies'
+  title: 'Tripal Vocabularies'
   route_name: entity.tripal_vocab.collection
-  description: 'Manage Tripal Controlled Vocabularies (e.g. SO; sequence).'
+  description: 'Manage the vocabularies which form the core of Tripal (used for categorizing and describing content and metadata).'
   parent: system.admin_structure
   weight: 98
+
+##
+# Tripal Vocab IDSpace
+##
 
 ##
 # Tripal Term.
 ##
-
-# Listing.
-entity.tripal_term.collection:
-  title: 'Tripal Controlled Vocabulary Terms'
-  route_name: entity.tripal_term.collection
-  description: 'Manage Tripal Controlled Vocabulary Terms used for categorization of biological content (e.g. SO:0000704; gene).'
-  parent: system.admin_structure
-  weight: 98
 
 ## CVterm lookup.
 tripal.cv_lookup:
