@@ -33,8 +33,9 @@ The following code demonstrates how to create a Tripal Controlled Vocabulary (CV
 .. code:: php
 
   $details = [
-    'short_name' => 'SO',
-    'name' => 'sequence',
+    'idspace' => 'SO',
+    'namespace' => 'sequence',
+    'name' => 'The Sequence Ontology',
     'description' => 'The Sequence Ontology is a set of terms and relationships used to describe the features and attributes of biological sequence. SO includes different kinds of features which can be located on the sequence.'
   ];
   \Drupal::service('tripal.tripalVocab.manager')->addVocabulary($details);
@@ -45,6 +46,11 @@ You can check that the CV saves properly by navigating to Home > Administration 
 
 .. image:: images/create_cvterms.1.png
 
+This also automatically creates a Tripal IDSpace. A vocabulary can have multiple IDSpaces (e.g. EDAM has data, format, operations, etc.) but the method above will automatically create a single IDSpace associated with the vocabulary. You can check the IDSpace was created correctly by clicking on "View Tripal IDSpaces" at the top of the vocabulary listing and ensuring your new IDSpace is in the list of existing IDSpaces.
+
+.. image:: images/create_cvterms.2.png
+
+
 Load CV
 ^^^^^^^^^
 
@@ -53,18 +59,18 @@ Now that you have at least one CV, you can load an existing CV. This is demonstr
 .. code:: php
 
   $vocab = \Drupal::service('tripal.tripalVocab.manager')->getVocabularies([
-    'name' => 'sequence',
-    'short_name' => 'SO'
+    'name' => 'The Sequence Ontology',
+    'namespace' => 'sequence',
   ]);
 
-The getVocabularies() method allows you to retrieve Tripal Vocabulary objects using their name and/or short_name.
+The getVocabularies() method allows you to retrieve Tripal Vocabulary objects using their name and/or namespace.
 
 Once you have a Tripal Vocabulary object, you can retrieve the value of various properties by using the following methods:
 
 .. code:: php
 
   $id = $vocab->id();
-  $short_name = $vocab->getLabel();
+  $namespace = $vocab->getNamespace();
   $humanreadable_name = $vocab->getName();
   $description = $vocab->getDescription();
 
@@ -92,7 +98,7 @@ The following code demonstrates how to create a Tripal Controlled Vocabulary Ter
     'name' => 'gene',
     'vocabulary' => [
       'name' => 'sequence',
-      'short_name' => 'SO',
+      'idspace' => 'SO',
     ],
     'definition' => 'A region (or regions) that includes all of the sequence elements necessary to encode a functional transcript. A gene may include regulatory regions, transcribed regions and/or other functional sequence regions.',
   ];
@@ -100,9 +106,9 @@ The following code demonstrates how to create a Tripal Controlled Vocabulary Ter
 
 This follows the same format as for creating the sequence ontology CV. First we describe the term we want to create including the Tripal Vocabulary and then we use the ``tripal.tripalTerm.manager`` service to create it. This service will create the controlled vocabulary if it doesn't already exist!
 
-To check if your CVterm was created properly you can look on the listing at Home > Administration > Structure > Tripal Controlled Vocabulary Terms (``admin/structure/tripal_term``) and ensuring your new CVterm is in the list of existing CVterms.
+To check if your CVterm was created properly you can look on the listing at Home > Administration > Structure > Tripal Vocabulary (``admin/structure/tripal_vocab``) then click on "View Tripal Terms" and ensure your new CVterm is in the list of existing CVterms.
 
-.. image:: images/create_cvterms.2.png
+.. image:: images/create_cvterms.3.png
 
 Load CVterm
 ^^^^^^^^^^^^^
@@ -114,7 +120,8 @@ Now that you have at least one CVterm, you can load an existing CVterm. This is 
   $details = [
     'accession' => '0000704',
     'vocabulary' => [
-      'short_name' => 'SO',
+      'namespace' => 'sequence',
+      'idspace' => 'SO',
     ],
   ];
   $term = \Drupal::service('tripal.tripalTerm.manager')->getTerms($details);
@@ -123,9 +130,9 @@ Once you have a TripalTerm object, you can retrieve the value of various propert
 
 .. code::
 
-  $vocab = $term->getVocab();
-  $vocab_short_name = $vocab->getLabel();
+  $idspace = $term->getIDSpace();
+  $idspace_label = $idspace->getIDSpace();
   $accession = $term->getAccession();
-  $full_accession = $vocab_short_name . ':' . $accession;
+  $full_accession = $idspace_label . ':' . $accession;
   $name = $term->getName();
   $definition = $term->getDefinition();
