@@ -28,9 +28,16 @@
  *
  * @param $details
  *   An array with at least the following keys:
- *     -name: The full name of the vocabulary.
- *     -short_name:  The short name for the vocabulary (e.g. SO, PATO, etc).
- *     -description: The description of this vocabulary.
+ *    - name: The full name of the vocabulary (e.g. The Sequence Ontology).
+ *    - namespace: The namespace of the vocabulary (e.g. sequence).
+ *    - idspace: The ID space of the vocabulary (e.g. SO). If there is more
+ *         then one IDSpace, use addIDSpace() to add additional ones.
+ *    - short_name: The short name of the vocabulary (e.g. SO).
+ *         DEPRECATED: replaced by idspace.
+ *    - description: A description of the vocabulary.
+ *    - url: the URL containing a reference for this vocabulary.
+ *    - urlprefix: The URL with tokens referencing a specific term in the
+ *         given idspace.
  *
  * @return
  *   TRUE if the vocabulary was added, FALSE otherwise.  If the vocabulary
@@ -53,19 +60,18 @@ function tripal_add_vocabulary($details) {
  * vocabularies and allow it to return the details about the term.
  *
  * @param $name
- *   The name or short name of the vocabulary.
+ *   The name, namespace or idspace of the vocabulary.
  *
  * @return
  *   An array with at least the following keys:
- *     - name: The full name of the vocabulary.
- *     - short_name: The short name abbreviation for the vocabulary.
- *     - description: A brief description of the vocabulary.
- *     - url:  A URL for the online resources for the vocabulary.
- *     - urlprefix: A URL to which the short_name and term
- *       accession can be appended to form a complete URL for a term.  If the
- *       prefix does not support appending then the exact location for the
- *       position of the short_name and the term accession will be
- *       specified with the {db} and {accession} tags respectively.
+ *     - name: The full name of the vocabulary (e.g. The Sequence Ontology).
+ *     - namespace: The namespace of the vocabulary (e.g. sequence).
+ *     - idspace: The ID space of the vocabulary (e.g. SO). If there is more
+ *         then one IDSpace, use addIDSpace() to add additional ones.
+ *     - description: A description of the vocabulary.
+ *     - url: the URL containing a reference for this vocabulary.
+ *     - urlprefix: The URL with tokens referencing a specific term in the
+ *         given idspace.
  *     - sw_url: The URL for mapping terms via the semantic web.
  *     - num_terms: The number of terms loaded in the vocabulary.
  *     - TripalVocab: The object describing this vocabulary.
@@ -140,10 +146,16 @@ function tripal_get_vocabularies() {
  * @param $details
  *   An array with at least the following keys:
  *     -vocabulary : An associative array with the following keys
- *       -name: The full name of the vocabulary (e.g. 'sequence').
- *       -short_name:  The short name for the vocabulary (e.g. SO, PATO, etc).
- *       -description: The description of this vocabulary.
- *       -url: The URL for the vocabulary.
+ *       - name: The full name of the vocabulary (e.g. The Sequence Ontology).
+ *       - namespace: The namespace of the vocabulary (e.g. sequence).
+ *       - idspace: The ID space of the vocabulary (e.g. SO). If there is more
+ *         then one IDSpace, use addIDSpace() to add additional ones.
+ *       - short_name: The short name of the vocabulary (e.g. SO).
+ *         DEPRECATED: replaced by idspace.
+ *       - description: A description of the vocabulary.
+ *       - url: the URL containing a reference for this vocabulary.
+ *       - urlprefix: The URL with tokens referencing a specific term in the
+ *         given idspace.
  *     -accession : The name unique ID of the term.
  *     -name : The name of the term.
  *     -definition : The term's description.
@@ -169,15 +181,16 @@ function tripal_add_term($details) {
  * @return
  *   An array with at least the following keys:
  *     - vocabulary : An array containing the following keys:
- *       - name : The full name of the vocabulary.
- *       - short_name : The short name abbreviation for the vocabulary.
- *       - description : A brief description of the vocabulary.
- *       - url : (optional) A URL for the online resources for the vocabulary.
- *       - urlprefix : (optional) A URL to which the short_name and term
- *         accession can be appended to form a complete URL for a term.  If the
- *         prefix does not support appending then the exact location for the
- *         position of the short_name and the term accession will be
- *         specified with the {db} and {accession} tags respectively.
+ *       - name: The full name of the vocabulary (e.g. The Sequence Ontology).
+ *       - namespace: The namespace of the vocabulary (e.g. sequence).
+ *       - idspace: The ID space of the vocabulary (e.g. SO). If there is more
+ *         then one IDSpace, use addIDSpace() to add additional ones.
+ *       - short_name: The short name of the vocabulary (e.g. SO).
+ *         DEPRECATED: replaced by idspace.
+ *       - description: A description of the vocabulary.
+ *       - url: the URL containing a reference for this vocabulary.
+ *       - urlprefix: The URL with tokens referencing a specific term in the
+ *         given idspace.
  *       - TripalVocab: the Tripal vocabulary object.
  *     - accession : The name unique ID of the term.
  *     - url : The URL for the term.
@@ -201,34 +214,21 @@ function tripal_get_term_details($vocabulary, $accession) {
   }
 
   $term = \Drupal::service('tripal.tripalTerm.manager')->getTerms($details);
-  if (is_object($term)) {
+  if (is_array($term)) {
+    if (sizeof($term) === 1) {
+      $term = array_pop($term);
+      return $term->getDetails();
+    }
+    else {
+      return NULL;
+    }
+  }
+  elseif (is_object($term)) {
     return $term->getDetails();
   }
   else {
     return NULL;
   }
-}
-
-/**
- * Return the TripalTerm Object.
- *
- * @param array $details
- *   Details which uniquely identify the term to retrieve.
- *   The following keys are supported:
- *     - vocabulary: An array containing the following keys:
- *       - name: The full name of the vocabulary.
- *       - short_name: The short name abbreviation for the vocabulary.
- *       - vocab_id: the id of the TripalVocab object.
- *     - accession: The name unique ID of the term.
- *     - name: The name of the term.
- *
- * @return
- *   The TripalTerm if found and FALSE otherwise.
- *
- * @ingroup tripal_terms_api
- */
-function tripal_get_TripalTerm($details) {
-  return \Drupal::service('tripal.tripalTerm.manager')->getTerms($details);
 }
 
 /**
