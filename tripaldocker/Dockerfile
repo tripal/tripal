@@ -121,7 +121,6 @@ WORKDIR /var/www/html
 ENV SIMPLETEST_BASE_URL=http://localhost
 ENV SIMPLETEST_DB=pgsql://drupaladmin:drupal8developmentonlylocal@localhost/sitedb
 ENV BROWSER_OUTPUT_DIRECTORY=/var/www/drupal8/web/sites/default/files/simpletest
-RUN mkdir /var/www/drupal8/web/sites/default/files/simpletest
 
 ## Install composer and Drush.
 WORKDIR /var/www
@@ -135,7 +134,8 @@ RUN export COMPOSER_MEMORY_LIMIT=-1 \
   && composer create-project drupal-composer/drupal-project:8.x-dev drupal8 --stability dev --no-interaction
 
 ## Set files directory permissions
-RUN chown -R www-data:www-data /var/www/drupal8 \
+RUN mkdir /var/www/drupal8/web/sites/default/files/simpletest \
+  && chown -R www-data:www-data /var/www/drupal8 \
   && chmod 02775 -R /var/www/drupal8/web/sites/default/files \
   && usermod -g www-data root
 
