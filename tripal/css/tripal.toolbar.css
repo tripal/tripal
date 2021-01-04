@@ -1,0 +1,34 @@
+
+/**
+ * @file
+ * Styling for tripal toolbar.
+ */
+
+.toolbar .toolbar-tray-vertical .edit-tripal-toolbar {
+  text-align: right; /* LTR */
+  padding: 1em;
+}
+
+[dir="rtl"] .toolbar .toolbar-tray-vertical .edit-tripal-toolbar {
+  text-align: left;
+}
+
+.toolbar .toolbar-tray-horizontal .edit-tripal-toolbar {
+  float: right; /* LTR */
+}
+
+[dir="rtl"] .toolbar .toolbar-tray-horizontal .edit-tripal-toolbar {
+  float: left;
+}
+
+.toolbar .toolbar-tray-horizontal .toolbar-menu {
+  float: left; /* LTR */
+}
+
+[dir="rtl"] .toolbar .toolbar-tray-horizontal .toolbar-menu {
+  float: right;
+}
+
+.toolbar-horizontal .toolbar-horizontal-item-hidden {
+  display: none;
+}
