@@ -307,8 +307,7 @@ function tripal_feature_theme($existing, $type, $theme, $path) {
   return $items;
 }
 /**
- * Implements hook_job_describe_args() in order to describe the various feature jobs
- * to the tripal jobs interface.
+ * Implements hook_job_describe_args()
  *
  * @ingroup tripal_legacy_feature
  */

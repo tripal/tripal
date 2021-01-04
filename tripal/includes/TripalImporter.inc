@@ -579,7 +579,6 @@ class TripalImporter {
     // Generate a translated message.
     $tmessage = t($message, $variables);
 
-
     // If we have a job then pass along the messaging to the job.
     if ($this->job) {
       $this->job->logMessage($message, $variables, $severity);
