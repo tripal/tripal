@@ -42,10 +42,8 @@ USER root
 RUN mv /app/default_files/postgresql/pg_hba.conf /etc/postgresql/11/main/pg_hba.conf
 
 ## And add ``listen_addresses`` to ``/etc/postgresql/11/main/postgresql.conf``
-RUN echo "listen_addresses='*'" >> /etc/postgresql/11/main/postgresql.conf
-
-## Expose the PostgreSQL port
-EXPOSE 5432
+RUN echo "listen_addresses='*'" >> /etc/postgresql/11/main/postgresql.conf \
+  && echo "max_locks_per_transaction = 1024" >> /etc/postgresql/11/main/postgresql.conf
 
 ########## PHP EXTENSIONS #####################################################
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
@@ -139,9 +137,6 @@ RUN mkdir /var/www/drupal8/web/sites/default/files/simpletest \
   && chmod 02775 -R /var/www/drupal8/web/sites/default/files \
   && usermod -g www-data root
 
-## Expose http and psql port
-EXPOSE 80 5432
-
 ## Install Drupal.
 RUN cd /var/www/drupal8 \
   && service apache2 restart \
@@ -183,6 +178,7 @@ RUN ln -s /var/www/drupal8/vendor/drupal/console/bin/drupal /usr/local/bin/ \
 ## Set the working directory to DRUPAL_ROOT
 WORKDIR /var/www/drupal8/web
 
-EXPOSE 80
+## Expose http and psql port
+EXPOSE 80 5432
 
 ENTRYPOINT ["init.sh"]
