@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 // use Drupal\shortcut\Entity\ShortcutSet;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Config\FileStorage;
+use Drupal\Core\Url;
 
 require_once 'src/api/tripal.entities.api.php';
 require_once 'src/api/tripal.terms.api.php';
@@ -50,6 +51,12 @@ function tripal_theme() {
     'template' => 'tripal_vocab',
   );
 
+  $theme['tripal_vocab_space'] = array(
+    'render element' => 'elements',
+    'file' => 'templates/tripal_vocab_space.page.inc',
+    'template' => 'tripal_vocab_space',
+  );
+
   $theme['tripal_term'] = array(
     'render element' => 'elements',
     'file' => 'templates/tripal_term.page.inc',
@@ -69,6 +76,139 @@ function tripal_theme() {
   ];
 
   return $theme;
+}
+
+/**
+ * Implements hook_toolbar().
+ */
+function tripal_toolbar () {
+  $items = [];
+
+  $items['tripal'] = [
+    '#cache' => [
+      'contexts' => [
+        'user.permissions',
+      ],
+    ],
+  ];
+
+  if (!\Drupal::currentUser()->hasPermission('administer tripal')) {
+    return $items;
+  }
+
+  $items['tripal'] += [
+    '#type' => 'toolbar_item',
+    'tab' => [
+      '#type' => 'link',
+      '#title' => t('Tripal'),
+      '#url' => Url::fromRoute('tripal.admin'),
+      '#attributes' => [
+        'title' => t('Tripal administration'),
+        'class' => ['toolbar-icon', 'toolbar-icon-tripal'],
+        'aria-pressed' => 'false',
+      ],
+    ],
+    'tray' => [
+      '#heading' => t('Tripal Administration'),
+      'tripal-toolbar-tray' => [
+        '#prefix' => '<ul class="toolbar-menu">',
+        '#suffix' => '</ul>',
+        'content' => [
+          '#type' => 'link',
+          '#title' => t('Content'),
+          '#url' => Url::fromRoute('entity.tripal_entity.collection'),
+          '#attributes' => [
+            'title' => 'Find biological content pages.',
+            'class' => ['toolbar-icon','toolbar-icon-tripal-content'],
+          ],
+          '#prefix' => '<li class="menu-item">',
+          '#suffix' => '</li>',
+        ],
+        'jobs' => [
+          '#type' => 'link',
+          '#title' => t('Jobs'),
+          '#url' => Url::fromRoute('tripal.jobs'),
+          '#attributes' => [
+            'title' => 'Configure the form/page display for biological content.',
+            'class' => ['toolbar-icon','toolbar-icon-tripal-jobs'],
+          ],
+          '#prefix' => '<li class="menu-item">',
+          '#suffix' => '</li>',
+        ],
+        'importers' => [
+          '#type' => 'link',
+          '#title' => t('Data Loaders'),
+          '#url' => Url::fromRoute('tripal.data_loaders'),
+          '#attributes' => [
+            'title' => 'Importers for biological content.',
+            'class' => ['toolbar-icon','toolbar-icon-tripal-importers'],
+          ],
+          '#prefix' => '<li class="menu-item">',
+          '#suffix' => '</li>',
+        ],
+        'page_structure' => [
+          '#type' => 'link',
+          '#title' => t('Page Structure'),
+          '#url' => Url::fromRoute('entity.tripal_entity_type.collection'),
+          '#attributes' => [
+            'title' => 'Configure the form/page display for biological content.',
+            'class' => ['toolbar-icon','toolbar-icon-tripal-structure'],
+          ],
+          '#prefix' => '<li class="menu-item">',
+          '#suffix' => '</li>',
+        ],
+        'vocabs' => [
+          '#type' => 'link',
+          '#title' => t('Vocabularies'),
+          '#url' => Url::fromRoute('entity.tripal_vocab.collection'),
+          '#attributes' => [
+            'title' => 'The ontological structure behind your Tripal site.',
+            'class' => ['toolbar-icon','toolbar-icon-tripal-vocab'],
+          ],
+          '#prefix' => '<li class="menu-item">',
+          '#suffix' => '</li>',
+        ],
+        'storage' => [
+          '#type' => 'link',
+          '#title' => t('Data Storage'),
+          '#url' => Url::fromRoute('tripal.storage'),
+          '#attributes' => [
+            'title' => 'Flexible data storage for your biological content.',
+            'class' => ['toolbar-icon','toolbar-icon-tripal-storage'],
+          ],
+          '#prefix' => '<li class="menu-item">',
+          '#suffix' => '</li>',
+        ],
+        'extensions' => [
+          '#type' => 'link',
+          '#title' => t('Extensions'),
+          '#url' => Url::fromRoute('tripal.extension'),
+          '#attributes' => [
+            'title' => 'Provides administration of Tripal Extension modules.',
+            'class' => ['toolbar-icon','toolbar-icon-tripal-extend'],
+          ],
+          '#prefix' => '<li class="menu-item">',
+          '#suffix' => '</li>',
+        ],
+        'more' => [
+          '#type' => 'link',
+          '#title' => t('more'),
+          '#url' => Url::fromRoute('tripal.admin'),
+          '#attributes' => [
+            'title' => 'For additional Tripal administration.',
+            'class' => ['toolbar-icon','toolbar-icon-tripal-more'],
+          ],
+          '#prefix' => '<li class="menu-item">',
+          '#suffix' => '</li>',
+        ],
+      ],
+    ],
+    '#attached' => [
+      'library' => 'tripal/tripal-toolbar',
+    ],
+  ];
+
+  return $items;
 }
 
 /**

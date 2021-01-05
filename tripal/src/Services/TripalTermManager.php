@@ -216,8 +216,39 @@ class TripalTermManager {
       }
     }
 
+    // Now we need the vocabulary.
+    // If they gave it to us, then use it!
+    if (array_key_exists('idspace_id', $details['vocabulary'])) {
+      $idspace_id = $details['vocabulary']['idspace_id'];
+    }
+    elseif (array_key_exists('TripalVocabSpace', $details['vocabulary'])) {
+      $idspace_id = $details['vocabulary']['TripalVocabSpace']->id();
+    }
+    // Otherwise, look it up...
+    else {
+      $idspace = \Drupal::service('tripal.tripalVocab.manager')
+        ->getIDSpace($details['vocabulary']);
+      if (is_object($idspace)) {
+        $idspace_id = $idspace->id();
+      }
+      // Or even create it.
+      elseif ($options['insertVocabulary'] === TRUE) {
+        $success = \Drupal::service('tripal.tripalVocab.manager')
+          ->saveVocabulary($details['vocabulary']);
+        if ($success) {
+          $idspace = \Drupal::service('tripal.tripalVocab.manager')
+            ->getIDSpace($details['vocabulary']);
+          $idspace_id = $idspace->id();
+        }
+      }
+      else {
+        $this->logger->error("Unable to retrieve idspace then we can't save the term.");
+      }
+    }
+
     // Now we have an object, we need to set the values.
     $term->setVocabID($vocab_id);
+    $term->setIDSpaceID($idspace_id);
     $term->setAccession($details['accession']);
     $term->setName($details['name']);
     $term->setDefinition($details['definition']);

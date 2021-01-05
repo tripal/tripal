@@ -19,9 +19,28 @@
   {% if content %}
     <table>
     <tbody>
-      <tr><th>Vocabulary</th><td>{{ content.vocab.name }}</td></tr>
-      <tr><th>Name</th><td>{{ content.name }}</td></tr>
-      <tr><th>Accession</th><td>{{ content.vocab.short }}:{{ content.accession }}</td></tr>
+      <tr><th>Core Vocabulary</th><td>
+        <a href="{{ path(content.vocab.route, {'tripal_vocab': content.vocab.id}) }}">
+          {{ content.vocab.name }}</a>
+      </td></tr>
+      {% if content.allvocabs %}
+        <tr><th>Accessory Vocabularies</th><td>
+          {% for vocab in content.allvocabs %}
+            {% if not loop.last %}
+              <a href="{{ path(vocab.route, {'tripal_vocab': vocab.id}) }}">
+                {{ vocab.name }} ({{ vocab.namespace}})</a>,
+            {% else %}
+              <a href="{{ path(vocab.route, {'tripal_vocab': vocab.id}) }}">
+                {{ vocab.name }} ({{ vocab.namespace}})</a>
+            {% endif %}
+          {% endfor %}
+          </td></tr>
+      {% endif %}
+      <tr><th>Namespace (IDSpace)</th><td>
+        {{ content.vocab.namespace }} ({{ content.idspace }})
+      </td></tr>
+      <tr><th>Accession</th><td>{{ content.idspace }}:{{ content.accession }}</td></tr>
+      <tr><th>Term Name</th><td>{{ content.name }}</td></tr>
     </tbody>
     </table>
     <p>{{ content.definition }}</p>

@@ -204,9 +204,27 @@ entity.tripal_vocab.collection:
   path: '/admin/structure/tripal_vocab'
   defaults:
     _entity_list: 'tripal_vocab'
-    _title: 'Tripal Controlled Vocabularies'
+    _title: 'Tripal Vocabularies'
   requirements:
     _permission: 'view controlled vocabulary entities'
+
+# TripalVocabSpace:
+
+# entity.tripal_vocab_space.canonical:
+#   path: /admin/structure/tripal_idspace/{tripal_vocab_space}
+# entity.tripal_vocab_space.add-form:
+#   path: '/admin/structure/tripal_idspace/add'
+# entity.tripal_vocab_space.edit-form:
+#   path: '/admin/structure/tripal_idspace/{tripal_vocab_space}/edit'
+# entity.tripal_vocab_space.delete-form:
+#   path: '/admin/structure/tripal_idspace/{tripal_vocab_space}/delete'
+entity.tripal_vocab_space.collection:
+  path: '/admin/structure/tripal_idspace'
+  defaults:
+    _entity_list: 'tripal_vocab_space'
+    _title: 'Tripal Vocabulary IDSpaces'
+  requirements:
+    _permission: 'view tripal vocabulary idspace entities'
 
 # TripalTerm:
 
@@ -222,7 +240,7 @@ entity.tripal_term.collection:
   path: '/admin/structure/tripal_term'
   defaults:
     _entity_list: 'tripal_term'
-    _title: 'Tripal Controlled Vocabulary Terms'
+    _title: 'Tripal Terms'
   requirements:
     _permission: 'view controlled vocabulary term entities'
 

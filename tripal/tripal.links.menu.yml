@@ -20,23 +20,19 @@ entity.tripal_entity_type.collection:
 
 # Listing.
 entity.tripal_vocab.collection:
-  title: 'Tripal Controlled Vocabularies'
+  title: 'Tripal Vocabularies'
   route_name: entity.tripal_vocab.collection
-  description: 'Manage Tripal Controlled Vocabularies (e.g. SO; sequence).'
+  description: 'Manage the vocabularies which form the core of Tripal (used for categorizing and describing content and metadata).'
   parent: system.admin_structure
   weight: 98
+
+##
+# Tripal Vocab IDSpace
+##
 
 ##
 # Tripal Term.
 ##
-
-# Listing.
-entity.tripal_term.collection:
-  title: 'Tripal Controlled Vocabulary Terms'
-  route_name: entity.tripal_term.collection
-  description: 'Manage Tripal Controlled Vocabulary Terms used for categorization of biological content (e.g. SO:0000704; gene).'
-  parent: system.admin_structure
-  weight: 98
 
 ## CVterm lookup.
 tripal.cv_lookup:
@@ -52,7 +48,7 @@ tripal.admin:
   route_name: tripal.admin
   title: 'Tripal'
   description: 'Manage the behavior or Tripal and its various modules.'
-  parent: system.admin_structure
+  parent: system.admin
 
 tripal.admin_register:
   route_name: tripal.admin_register
@@ -88,19 +84,6 @@ tripal.jobs:
   title: 'Jobs'
   parent: tripal.admin
   weight: 50
-
-tripal.jobs_help:
-  route_name: tripal.jobs_help
-  title: 'Help'
-  description: 'Help for the tripal job management system.'
-  parent: tripal.jobs
-  weight: 1
-
-tripal.jobs_enable:
-  route_name: tripal.jobs_enable
-  title: 'Enable Jobs Administrative View'
-  parent: tripal.jobs
-  weight: 2
 
 tripal.data_loaders:
   route_name: tripal.data_loaders

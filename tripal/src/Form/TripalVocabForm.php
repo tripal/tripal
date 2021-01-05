@@ -21,23 +21,30 @@ class TripalVocabForm extends ContentEntityForm {
     $form = parent::buildForm($form, $form_state);
     $entity = $this->entity;
 
-    $form['vocabulary'] = [
-      '#title' => $this->t('Short Name'),
-      '#description' => 'The short name for the vocabulary (e.g. SO, PATO).',
-      '#type' => 'textfield',
-      '#default_value' => $entity->getLabel(),
-    ];
-
     $form['name'] = [
       '#title' => $this->t('Full Name'),
-      '#description' => 'The full name for the vocabulary (e.g. sequence).',
+      '#description' => 'The full human-readable name for the ontology (e.g. The Sequence Ontology).',
       '#type' => 'textfield',
       '#default_value' => $entity->getName(),
     ];
 
+    $form['namespace'] = [
+      '#title' => $this->t('Namespace'),
+      '#description' => 'The default namespace for the ontology (e.g. sequence).',
+      '#type' => 'textfield',
+      '#default_value' => $entity->getNamespace(),
+    ];
+
+    $form['url'] = [
+      '#title' => $this->t('Reference URL'),
+      '#description' => 'The URL referencing the original source for the ontology. This is used to provide attribution.',
+      '#type' => 'textfield',
+      '#default_value' => $entity->getURL(),
+    ];
+
     $form['description'] = [
       '#title' => $this->t('Description'),
-      '#description' => 'The definition for the current vocabulary.',
+      '#description' => 'A description for the current ontology.',
       '#type' => 'textarea',
       '#default_value' => $entity->getDescription(),
     ];
@@ -54,13 +61,13 @@ class TripalVocabForm extends ContentEntityForm {
 
     switch ($status) {
       case SAVED_NEW:
-        $this->messenger()->addMessage($this->t('Created the %label Controlled Vocabulary.', [
+        $this->messenger()->addMessage($this->t('Created the %label Tripal Vocabulary.', [
           '%label' => $entity->getLabel(),
         ]));
         break;
 
       default:
-        $this->messenger()->addMessage($this->t('Saved the %label Controlled Vocabulary.', [
+        $this->messenger()->addMessage($this->t('Saved the %label Tripal Vocabulary.', [
           '%label' => $entity->getLabel(),
         ]));
     }

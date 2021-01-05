@@ -33,6 +33,31 @@ entity.tripal_vocab.add_form:
   appears_on:
     - entity.tripal_vocab.collection
 
+## Link to terms from the vocabulary listing.
+entity.tripal_vocab.term_listing:
+  route_name: 'entity.tripal_term.collection'
+  title: 'View Tripal Terms'
+  appears_on:
+    - entity.tripal_vocab.collection
+
+## Link to terms from the vocabulary listing.
+entity.tripal_vocab.idspace_listing:
+  route_name: 'entity.tripal_vocab_space.collection'
+  title: 'View Tripal IDSpaces'
+  appears_on:
+    - entity.tripal_vocab.collection
+
+##
+# Tripal Vocab IDSpace
+##
+
+## Add an IDSpace link on the Listing Page.
+entity.tripal_vocab_space.add_form:
+  route_name: entity.tripal_vocab_space.add_form
+  title: 'Add IDSpace'
+  appears_on:
+    - entity.tripal_vocab_space.collection
+
 ##
 # Tripal Term Entity.
 ##

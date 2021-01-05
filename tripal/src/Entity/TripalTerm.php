@@ -21,7 +21,6 @@ use Drupal\user\UserInterface;
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\tripal\ListBuilders\TripalTermListBuilder",
  *     "views_data" = "Drupal\tripal\Entity\TripalTermViewsData",
- *     "translation" = "Drupal\tripal\TripalTermTranslationHandler",
  *
  *     "form" = {
  *       "default" = "Drupal\tripal\Form\TripalTermForm",
@@ -49,7 +48,6 @@ use Drupal\user\UserInterface;
  *     "delete-form" = "/admin/structure/tripal_term/{tripal_term}/delete",
  *     "collection" = "/admin/structure/tripal_term",
  *   },
- *   field_ui_base_route = "tripal_term.settings"
  * )
  */
 class TripalTerm extends ContentEntityBase implements TripalTermInterface {
@@ -59,56 +57,88 @@ class TripalTerm extends ContentEntityBase implements TripalTermInterface {
   /**
    * {@inheritdoc}
    */
-  public static function preCreate(EntityStorageInterface $storage_controller, array &$values) {
-    parent::preCreate($storage_controller, $values);
-    $values += array(
-      'user_id' => \Drupal::currentUser()->id(),
-    );
-  }
-
-  /**
-   * @see \Drupal\tripal\Entity\TripalTermInterface::getID()
-   */
   public function getID() {
     return $this->get('id')->value;
   }
 
   /**
-   * @see \Drupal\tripal\Entity\TripalTermInterface::getID()
+   * {@inheritdoc}
    */
   public function getLabel() {
     return $this->getName();
   }
 
   /**
-   * @see \Drupal\tripal\Entity\TripalTermInterface::getVocabID()
+   * {@inheritdoc}
    */
-  public function getVocabID(){
-    return $this->get('vocab_id')->getString();
+  public function getIDSpaceID(){
+    return $this->get('idspace_id')->getString();
   }
 
   /**
-   * @see \Drupal\tripal\Entity\TripalTermInterface::setVocabID()
+   * {@inheritdoc}
+   */
+  public function setIDSpaceID($idspace_id) {
+    $this->set('idspace_id', $idspace_id);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getIDSpace() {
+    $idspace_id = $this->getIDSpaceID();
+    $idspace = \Drupal\tripal\Entity\TripalVocabSpace::load($idspace_id);
+    return $idspace;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getVocabID(){
+    $raw_values = $this->get('vocab_id')->getValue();
+    $ids = [];
+    foreach ($raw_values as $raw) {
+      $ids[] = $raw['target_id'];
+    }
+    return $ids;
+  }
+
+  /**
+   * {@inheritdoc}
    */
   public function setVocabID($vocab_id) {
+    // @todo Check at least one is the default vocabulary for the IDSpace?
+    if (!is_array($vocab_id)) {
+      $vocab_id = [ $vocab_id ];
+    }
     $this->set('vocab_id', $vocab_id);
     return $this;
   }
 
-  public function getVocab() {
-    $vocab_id = $this->getVocabID();
-    $vocab = TripalVocab::load($vocab_id);
-    return $vocab;
-  }
   /**
-   * @see \Drupal\tripal\Entity\TripalTermInterface::getAccession()
+   * {@inheritdoc}
+   */
+  public function getVocab() {
+    $result = [];
+
+    $vocab_ids = $this->getVocabID();
+    foreach ($vocab_ids as $vocab_id) {
+      $result[] = \Drupal\tripal\Entity\TripalVocab::load($vocab_id);
+    }
+
+    return $result;
+  }
+
+  /**
+   * {@inheritdoc}
    */
   public function getAccession() {
     return $this->get('accession')->value;
   }
 
   /**
-   * @see \Drupal\tripal\Entity\TripalTermInterface::setAccession()
+   * {@inheritdoc}
    */
   public function setAccession($accession) {
     $this->set('accession', $accession);
@@ -116,14 +146,14 @@ class TripalTerm extends ContentEntityBase implements TripalTermInterface {
   }
 
   /**
-   * @see \Drupal\tripal\Entity\TripalTermInterface::getName()
+   * {@inheritdoc}
    */
   public function getName() {
     return $this->get('name')->value;
   }
 
   /**
-   * @see \Drupal\tripal\Entity\TripalTermInterface::setName()
+   * {@inheritdoc}
    */
   public function setName($name) {
     $this->set('name', $name);
@@ -131,14 +161,14 @@ class TripalTerm extends ContentEntityBase implements TripalTermInterface {
   }
 
   /**
-   * @see \Drupal\tripal\Entity\TripalTermInterface::getDefinition()
+   * {@inheritdoc}
    */
   public function getDefinition() {
     return $this->get('definition')->value;
   }
 
   /**
-   * @see \Drupal\tripal\Entity\TripalTermInterface::setDefinition()
+   * {@inheritdoc}
    */
   public function setDefinition($definition) {
     $this->set('definition', $definition);
@@ -146,14 +176,14 @@ class TripalTerm extends ContentEntityBase implements TripalTermInterface {
   }
 
   /**
-   * @see \Drupal\tripal\Entity\TripalTermInterface::getCreatedTime()
+   * {@inheritdoc}
    */
   public function getCreatedTime() {
     return $this->get('created')->value;
   }
 
   /**
-   * @see \Drupal\tripal\Entity\TripalTermInterface::setCreatedTime()
+   * {@inheritdoc}
    */
   public function setCreatedTime($timestamp) {
     $this->set('created', $timestamp);
@@ -161,14 +191,17 @@ class TripalTerm extends ContentEntityBase implements TripalTermInterface {
   }
 
   /**
-   * Get Details.
+   * {@inheritdoc}
    */
   public function getDetails() {
     $details = [];
 
     $details['TripalTerm'] = $this;
-    $vocab = $this->getVocab();
+    $idspace = $this->getIDSpace();
+    $vocab = $idspace->getVocab();
     $details['vocabulary'] = $vocab->getDetails();
+    $details['vocabulary']['short_name'] = $idspace->getIDSpace();
+    $details['vocabulary']['idspace'] = $details['vocabulary']['short_name'];
     $details['accession'] = $this->getAccession();
     $details['name'] = $this->getName();
     $details['definition'] = $this->getDefinition();
@@ -181,11 +214,6 @@ class TripalTerm extends ContentEntityBase implements TripalTermInterface {
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = parent::baseFieldDefinitions($entity_type);
-
-    $fields['vocab_id'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Vocabulary ID'))
-      ->setDescription(t('The ID of the TripalVocab entity to which this term belongs.'))
-      ->setSetting('target_type', 'tripal_vocab');
 
     $fields['accession'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Accession'))
@@ -209,6 +237,17 @@ class TripalTerm extends ContentEntityBase implements TripalTermInterface {
       ->setSettings(array(
         'text_processing' => 0,
       ));
+
+    $fields['vocab_id'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Vocabularies'))
+      ->setDescription(t('The vocabularies (e.g. sequence) this term is included in.'))
+      ->setCardinality(-1)
+      ->setSetting('target_type', 'tripal_vocab');
+
+    $fields['idspace_id'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('IDSpace'))
+      ->setDescription(t('The IDSpace (e.g. SO) this term belongs to. The IDSpace also indicates the default vocabulary.'))
+      ->setSetting('target_type', 'tripal_vocab_space');
 
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Created'))

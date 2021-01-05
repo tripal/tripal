@@ -31,6 +31,27 @@ view controlled vocabulary entities:
   title: 'View Controlled Vocabularies'
 
 ##
+# CV IDSpaces
+##
+
+add tripal vocabulary idspace entities:
+  title: 'Create new Tripal Vocabulary IDSpace entities'
+
+administer tripal vocabulary idspace entities:
+  title: 'Administer Tripal Vocabulary IDSpace entities'
+  description: 'Allow to access the administration form to configure Tripal Vocabulary IDSpace entities.'
+  restrict access: true
+
+delete tripal vocabulary idspace entities:
+  title: 'Delete Tripal Vocabulary IDSpace entities'
+
+edit tripal vocabulary idspace entities:
+  title: 'Edit Tripal Vocabulary IDSpace entities'
+
+view tripal vocabulary idspace entities:
+  title: 'View Tripal Vocabulary IDSpace entities'
+
+##
 # CV Terms
 ##
 add controlled vocabulary term entities:

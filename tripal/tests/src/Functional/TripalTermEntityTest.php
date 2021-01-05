@@ -50,16 +50,12 @@ class TripalTermEntityTest extends BrowserTestBase {
 
     // TripalTerm Listing.
     //-------------------------------------------
-
-    // First check that the listing shows up in the structure menu.
-    $this->drupalGet('admin/structure');
-    $assert->linkExists('Tripal Controlled Vocabulary Terms');
-    $this->clickLink('Tripal Controlled Vocabulary Terms');
+    $this->drupalGet('admin/structure/tripal_term');
 
     // Web_user user has the right to view listing.
     // We should now be on admin/structure/tripal_term.
     // thus check for the expected title.
-    $assert->pageTextContains('Tripal Controlled Vocabulary Terms');
+    $assert->pageTextContains('Tripal Terms');
 
     // We start out without any content... thus check we are told there
     // are no Controlled Vocabulary Terms.
@@ -77,8 +73,10 @@ class TripalTermEntityTest extends BrowserTestBase {
     $this->drupalGet('admin/structure/tripal_term/add');
     // We should now be on admin/structure/tripal_term/add.
     $assert->pageTextContains('Add tripal controlled vocabulary term');
-    $assert->fieldExists('Tripal Controlled Vocabulary');
-    $assert->fieldValueEquals('Tripal Controlled Vocabulary', '');
+    $assert->fieldExists('IDSpace');
+    $assert->fieldValueEquals('IDSpace', '');
+    $assert->fieldExists('Vocabulary');
+    $assert->fieldValueEquals('Vocabulary', '');
     $assert->fieldExists('Accession');
     $assert->fieldValueEquals('Accession', '');
     $assert->fieldExists('Term Name');
@@ -87,23 +85,31 @@ class TripalTermEntityTest extends BrowserTestBase {
     // Now fill out the form and submit.
     // Post content, save an instance. Go to the new page after saving.
     // -- Create a vocab for use in the form.
-    $term_name = 'tripalvocab-'.time();
-    $term = \Drupal\tripal\Entity\TripalVocab::create();
-    $term->setLabel($term_name);
-    $term->setName($term_name);
-    $term->save();
-    $term_label = $term->getLabel();
-    $this->assertEquals($term_name, $term_label);
+    $vocab_name = 'tripalvocab-'.time();
+    $vocab = \Drupal\tripal\Entity\TripalVocab::create();
+    $vocab->setNamespace($vocab_name);
+    $vocab->setName($vocab_name);
+    $vocab->save();
+    $vocab_label = $vocab->getName();
+    $this->assertEquals($vocab_name, $vocab_label);
+    // -- Create a IDSpace for use in the form.
+    $idspace_name = uniqid();
+    $idspace = \Drupal\tripal\Entity\TripalVocabSpace::create();
+    $idspace->setIDSpace($idspace_name);
+    $idspace->setVocabID($vocab->id());
+    $idspace->save();
     // -- Create the other values.
     $name = 'TripalTerm ' . uniqid();
     $accession = uniqid();
     $add = [
-      'vocab_id' => $term_label . ' (' . $term->getID() . ')',
+      'vocab_id' => $vocab_label . ' (' . $vocab->getID() . ')',
+      'idspace_id' => $idspace_name . ' (' . $idspace->id() . ')',
       'accession' => $accession,
       'name' => $name,
     ];
+
     // Submit the form.
-    $this->drupalPostForm(null, $add, 'Save');
+    $this->drupalPostForm('admin/structure/tripal_term/add', $add, 'Save');
 
     // Now there should be a term.
     $assert->responseContains('Created');
@@ -119,7 +125,8 @@ class TripalTermEntityTest extends BrowserTestBase {
     // We should also see our new record listed with edit/delete links.
     $assert->pageTextContains($name);
     $assert->pageTextContains($accession);
-    $assert->pageTextContains($term_label);
+    $assert->pageTextContains($idspace_name);
+    $assert->pageTextContains($vocab_label);
     $assert->linkExists('Edit');
     $assert->linkExists('Delete');
 
@@ -140,14 +147,14 @@ class TripalTermEntityTest extends BrowserTestBase {
       'name' => $new_term_name,
     ];
     $this->drupalPostForm(NULL, $edit, 'Save');
-    $assert->pageTextContains('Saved the ' . $new_term_name . ' controlled vocabulary term.');
+    $assert->pageTextContains('Saved the ' . $new_term_name . ' Tripal Term.');
 
     // Then go back to the listing.
     $this->drupalGet('admin/structure/tripal_term');
     // We should also see our new record listed with edit/delete links.
     $assert->pageTextContains($new_term_name);
     $assert->pageTextContains($accession);
-    $assert->pageTextContains($term_label);
+    $assert->pageTextContains($vocab_label);
     $assert->linkExists('Edit');
     $assert->linkExists('Delete');
 
@@ -168,7 +175,7 @@ class TripalTermEntityTest extends BrowserTestBase {
     $this->drupalGet('admin/structure/tripal_term');
     $assert->pageTextContains($new_term_name);
     $assert->pageTextContains($accession);
-    $assert->pageTextContains($term_label);
+    $assert->pageTextContains($vocab_label);
     $assert->linkExists('Edit');
     $assert->linkExists('Delete');
 
@@ -209,13 +216,8 @@ class TripalTermEntityTest extends BrowserTestBase {
       $test_details['vocabulary']['short_name'],
       $test_details['accession']
     );
-    unset($retrieved_details['TripalTerm']);
-    unset($retrieved_details['vocabulary']['TripalVocab']);
-    $this->assertEquals($test_details, $retrieved_details,
+    $this->assertContains($test_details['accession'], $retrieved_details,
       "We should be able to retrieve what we created using the short name.");
-
-    $term_object = tripal_get_TripalTerm($test_details);
-    $this->assertIsObject($term_object, "tripal_get_TripalTerm() should return an object.");
   }
 
   /**
@@ -270,11 +272,22 @@ class TripalTermEntityTest extends BrowserTestBase {
   public function testPaths() {
     $assert = $this->assertSession();
 
-    // Generate a vocab so that we can test the paths against it.
-    $term = TripalTerm::create([
-      'vocabulary' => 'somename',
-    ]);
-    $term->save();
+    $test_details = [
+      'vocabulary' => [
+        'name' => 'Full name with unique bit ' . uniqid(),
+        'short_name' => 'SO' . uniqid(),
+        'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. In ultrices, arcu sed ultricies condimentum, quam tortor tristique libero, eget auctor est magna quis nibh.',
+      ],
+      'accession' => 'SO:' . uniqid(),
+      'name' => 'Lorem ipsum ' . uniqid(),
+      'definition' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. In ultrices, arcu sed ultricies condimentum, quam tortor tristique libero, eget auctor est magna quis nibh.',
+    ];
+
+    $manager = \Drupal::service('tripal.tripalTerm.manager');
+
+    $success = $manager->addTerm($test_details);
+    $this->assertTrue($success, "Unable to add term to test paths agaist.");
+    $term = $manager->getTerms($test_details);
 
     // Gather the test data.
     $data = $this->providerTestPaths($term->id());

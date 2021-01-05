@@ -13,7 +13,7 @@ jobs:
     # PHP Targets
     strategy:
       matrix:
-        dockertags: ['drupal8.9.10-dev']
+        dockertags: ['drupal8.9.11-dev']
     # Give the builds names so we can tell them apart
     name: PHPUnit Testing (TripalDocker ${{ matrix.dockertags }})
 
@@ -48,4 +48,3 @@ jobs:
             -e BROWSER_OUTPUT_DIRECTORY=$BROWSER_OUTPUT_DIRECTORY \
             tripaldocker phpunit --printer mheap\\GithubActionsReporter\\Printer \
               --configuration core modules/contrib/tripal
-      
