@@ -13,23 +13,23 @@ abstract class TripalTermStorageBase extends PluginBase implements TripalTermSto
    * @{inheritdoc}
    */
   public function getID() {
-    // @todo
-    return 'ID';
+    // Retrieve the @id property from the annotation and return it.
+    return $this->pluginDefinition['id'];
   }
 
   /**
    * @{inheritdoc}
    */
   public function getLabel() {
-    // @todo
-    return 'Label';
+    // Retrieve the @label property from the annotation and return it.
+    return $this->pluginDefinition['label'];
   }
 
   /**
    * @{inheritdoc}
    */
   public function getDescription() {
-    // @todo
-    return 'Description';
+    // Retrieve the @description property from the annotation and return it.
+    return $this->pluginDefinition['description'];
   }
 }
