@@ -22,6 +22,18 @@ interface TripalTermStorageInterface extends PluginInspectionInterface {
   public function preCreateVocab(&$values, EntityStorageInterface $storage);
 
   /**
+   * Save Tripal Vocabulary IDSpace details to an additional storage backend.
+   *
+   * @param array $values
+   *   The property values for the TripalVocabSpace object to be created.
+   * @param EntityStorageInterface $storage
+   *   The storage object used to create the TripalVocabSpace.
+   *
+   * @see TripalVocabSpace::preCreate().
+   */
+  public function preCreateVocabSpace(&$values, EntityStorageInterface $storage);
+
+  /**
    * Save Tripal Term details to an additional storage backend.
    *
    * @param array $values
@@ -48,6 +60,22 @@ interface TripalTermStorageInterface extends PluginInspectionInterface {
    * @see TripalVocab::load()
    */
   public function loadVocab($id, TripalVocab &$entity);
+
+  /**
+   * Add details to a Tripal Vocabulary IDSpace from an additional storage backend.
+   *
+   * @param int $id
+   *   The unique identifier of the Tripal Vocabulary IDSpace to be loaded.
+   * @param TripalVocabSpace $entity
+   *   The entity loaded using TripalVocabSpace::load() ready to be added to.
+   *
+   * @return TripalVocabSpace
+   *   The fully loaded Tripal Vocabulary. This should be the $entity parameter
+   *    passed in with storage-specific details added and nothing removed.
+   *
+   * @see TripalVocabSpace::load()
+   */
+  public function loadVocabSpace($id, TripalVocabSpace &$entity);
 
   /**
    * Add details to a Tripal Term from an additional storage backend.
