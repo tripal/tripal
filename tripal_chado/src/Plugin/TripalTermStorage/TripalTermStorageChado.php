@@ -2,7 +2,13 @@
 
 namespace Drupal\tripal_chado\Plugin\TripalTermStorage;
 
+use Drupal\tripal\Entity\TripalVocab;
+use Drupal\tripal\Entity\TripalVocabSpace;
+use Drupal\tripal\Entity\TripalTerm;
+
 use Drupal\tripal\Plugin\TripalTermStorage\TripalTermStorageBase;
+use Drupal\tripal\Plugin\TripalTermStorage\TripalTermStorageInterface;
+use Drupal\Core\Entity\EntityStorageInterface;
 
 /**
  * TripalTerm Storage plugin: Chado Integration.
@@ -21,56 +27,48 @@ class TripalTermStorageChado extends TripalTermStorageBase implements TripalTerm
    * {@inheritdoc}
    */
   public function preSaveVocab(TripalVocab &$entity, EntityStorageInterface $storage) {
-    // By default we don't need to do anything.
-    // The default entity machinery will save all fields in Drupal storage.
+
   }
 
   /**
    * {@inheritdoc}
    */
   public function preSaveVocabSpace(TripalVocabSpace &$entity, EntityStorageInterface $storage) {
-    // By default we don't need to do anything.
-    // The default entity machinery will save all fields in Drupal storage.
+
   }
 
   /**
    * {@inheritdoc}
    */
   public function preSaveTerm(TripalTerm &$entity, EntityStorageInterface $storage) {
-    // By default we don't need to do anything.
-    // The default entity machinery will save all fields in Drupal storage.
+
   }
 
   /**
    * {@inheritdoc}
    */
   public function postSaveVocab(TripalVocab &$entity, EntityStorageInterface $storage, $update) {
-    // By default we don't need to do anything.
-    // The default entity machinery will save all fields in Drupal storage.
+
   }
 
   /**
    * {@inheritdoc}
    */
   public function postSaveVocabSpace(TripalVocabSpace &$entity, EntityStorageInterface $storage, $update) {
-    // By default we don't need to do anything.
-    // The default entity machinery will save all fields in Drupal storage.
+
   }
 
   /**
    * {@inheritdoc}
    */
   public function postSaveTerm(TripalTerm &$entity, EntityStorageInterface $storage, $update) {
-    // By default we don't need to do anything.
-    // The default entity machinery will save all fields in Drupal storage.
+
   }
 
   /**
    * {@inheritdoc}
    */
   public function loadVocab($id, TripalVocab &$entity) {
-    // By default we don't need to anything.
-    // The default entity machinery will load all fields.
     return $entity;
   }
 
@@ -78,8 +76,6 @@ class TripalTermStorageChado extends TripalTermStorageBase implements TripalTerm
    * {@inheritdoc}
    */
   public function loadVocabSpace($id, TripalVocabSpace &$entity) {
-    // By default we don't need to anything.
-    // The default entity machinery will load all fields.
     return $entity;
   }
 
@@ -87,8 +83,6 @@ class TripalTermStorageChado extends TripalTermStorageBase implements TripalTerm
    * {@inheritdoc}
    */
   public function loadTerm($id, TripalTerm &$entity) {
-    // By default we don't need to anything.
-    // The default entity machinery will load all fields.
     return $entity;
   }
 }
