@@ -59,10 +59,18 @@ class TripalTerm extends ContentEntityBase implements TripalTermInterface {
    */
   public function preSave(EntityStorageInterface $storage) {
     parent::preSave($storage);
-    // @debug dpm($this->get('name')->value, 'TripalTerm::preSave() NAME');
-    // @debug dpm($this->id(), 'TripalTerm::preSave() ID');
-    // CREATE: Name was set correctly but the id was not yet.
-    // UPDATE: Name was the new value and id was set.
+
+    // Use the plugin manager to get a list of all implementations
+    // of our TripalTermStorage plugin.
+    $manager = \Drupal::service('plugin.manager.tripal.termStorage');
+    $implementations = $manager->getDefinitions();
+
+    // Then foreach implementation we want to create an instance of
+    // that particular term storage plugin and call the appropriate method.
+    foreach (array_keys($implementations) as $instance_id) {
+      $instance = $manager->createInstance($instance_id);
+      $instance->preSaveTerm($this, $storage);
+    }
   }
 
   /**
@@ -70,10 +78,18 @@ class TripalTerm extends ContentEntityBase implements TripalTermInterface {
    */
   public function postSave(EntityStorageInterface $storage, $update = TRUE) {
     parent::postSave($storage, $update);
-    // @debug dpm($this->get('name')->value, 'TripalTerm::postSave() NAME');
-    // @debug dpm($this->id(), 'TripalTerm::postSave() ID');
-    // CREATE:  name and id were set.
-    // UPDATE: Name was the new value and id was set.
+
+    // Use the plugin manager to get a list of all implementations
+    // of our TripalTermStorage plugin.
+    $manager = \Drupal::service('plugin.manager.tripal.termStorage');
+    $implementations = $manager->getDefinitions();
+
+    // Then foreach implementation we want to create an instance of
+    // that particular term storage plugin and call the appropriate method.
+    foreach (array_keys($implementations) as $instance_id) {
+      $instance = $manager->createInstance($instance_id);
+      $instance->postSaveTerm($this, $storage, $update);
+    }
   }
 
   /**

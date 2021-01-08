@@ -57,10 +57,18 @@ class TripalVocabSpace extends ContentEntityBase implements TripalVocabSpaceInte
    */
   public function preSave(EntityStorageInterface $storage) {
     parent::preSave($storage);
-    // @debug dpm($this->get('IDSpace')->value, 'TripalVocabSpace::preSave() IDSpace');
-    // @debug dpm($this->id(), 'TripalVocabSpace::preSave() ID');
-    // CREATE: Name was set correctly but the id was not yet.
-    // UPDATE: Name was the new value and id was set.
+
+    // Use the plugin manager to get a list of all implementations
+    // of our TripalTermStorage plugin.
+    $manager = \Drupal::service('plugin.manager.tripal.termStorage');
+    $implementations = $manager->getDefinitions();
+
+    // Then foreach implementation we want to create an instance of
+    // that particular term storage plugin and call the appropriate method.
+    foreach (array_keys($implementations) as $instance_id) {
+      $instance = $manager->createInstance($instance_id);
+      $instance->preSaveVocabSpace($this, $storage);
+    }
   }
 
   /**
@@ -68,10 +76,18 @@ class TripalVocabSpace extends ContentEntityBase implements TripalVocabSpaceInte
    */
   public function postSave(EntityStorageInterface $storage, $update = TRUE) {
     parent::postSave($storage, $update);
-    // @debug dpm($this->get('IDSpace')->value, 'TripalVocabSpace::postSave() IDSpace');
-    // @debug dpm($this->id(), 'TripalVocabSpace::postSave() ID');
-    // CREATE:  name and id were set.
-    // UPDATE: Name was the new value and id was set.
+
+    // Use the plugin manager to get a list of all implementations
+    // of our TripalTermStorage plugin.
+    $manager = \Drupal::service('plugin.manager.tripal.termStorage');
+    $implementations = $manager->getDefinitions();
+
+    // Then foreach implementation we want to create an instance of
+    // that particular term storage plugin and call the appropriate method.
+    foreach (array_keys($implementations) as $instance_id) {
+      $instance = $manager->createInstance($instance_id);
+      $instance->postSaveVocabSpace($this, $storage, $update);
+    }
   }
 
   /**
