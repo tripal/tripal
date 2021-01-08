@@ -24,8 +24,8 @@ class TripalTermStorageManager extends DefaultPluginManager {
    *   The module handler to invoke the alter hook with.
    */
   public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler) {
-    parent::__construct('
-      Plugin/TripalTermStorage',
+    parent::__construct(
+      'Plugin/TripalTermStorage',
       $namespaces,
       $module_handler,
       'Drupal\tripal\Plugin\TripalTermStorage\TripalTermStorageInterface',

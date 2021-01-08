@@ -55,6 +55,28 @@ class TripalVocabSpace extends ContentEntityBase implements TripalVocabSpaceInte
   /**
    * {@inheritdoc}
    */
+  public function preSave(EntityStorageInterface $storage) {
+    parent::preSave($storage);
+    // @debug dpm($this->get('IDSpace')->value, 'TripalVocabSpace::preSave() IDSpace');
+    // @debug dpm($this->id(), 'TripalVocabSpace::preSave() ID');
+    // CREATE: Name was set correctly but the id was not yet.
+    // UPDATE: Name was the new value and id was set.
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+    parent::postSave($storage, $update);
+    // @debug dpm($this->get('IDSpace')->value, 'TripalVocabSpace::postSave() IDSpace');
+    // @debug dpm($this->id(), 'TripalVocabSpace::postSave() ID');
+    // CREATE:  name and id were set.
+    // UPDATE: Name was the new value and id was set.
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getIDSpace() {
     return $this->get('IDSpace')->value;
   }

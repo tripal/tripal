@@ -1,13 +1,21 @@
 <?php
 
-namespace Drupal\tripal\Plugin\TripalTermStorage;
+namespace Drupal\tripal_chado\Plugin\TripalTermStorage;
 
-use Drupal\Component\Plugin\PluginBase;
+use Drupal\tripal\Plugin\TripalTermStorage\TripalTermStorageBase;
 
 /**
- * Base class for TripalTerm Storage plugins.
+ * TripalTerm Storage plugin: Chado Integration.
+ *
+ * @ingroup tripal_chado
+ *
+ * @TripalTermStorage(
+ *   id = "chado",
+ *   label = @Translation("GMOD Chado Integration"),
+ *   description = @Translation("Ensures Tripal Vocabularies are linked with chado cvterms."),
+ * )
  */
-abstract class TripalTermStorageBase extends PluginBase implements TripalTermStorageInterface {
+class TripalTermStorageChado extends TripalTermStorageBase implements TripalTermStorageInterface {
 
   /**
    * {@inheritdoc}
@@ -82,29 +90,5 @@ abstract class TripalTermStorageBase extends PluginBase implements TripalTermSto
     // By default we don't need to anything.
     // The default entity machinery will load all fields.
     return $entity;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getID() {
-    // Retrieve the @id property from the annotation and return it.
-    return $this->pluginDefinition['id'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getLabel() {
-    // Retrieve the @label property from the annotation and return it.
-    return $this->pluginDefinition['label'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDescription() {
-    // Retrieve the @description property from the annotation and return it.
-    return $this->pluginDefinition['description'];
   }
 }

@@ -12,38 +12,98 @@ interface TripalTermStorageInterface extends PluginInspectionInterface {
   /**
    * Save Tripal Vocabulary details to an additional storage backend.
    *
-   * @param array $values
-   *   The property values for the TripalVocab object to be created.
+   * To retrieve values use $entity->get('fieldname')->value. Check for update
+   * based on whether the 'id' field is set.
+   *
+   * @param TripalVocab $entity
+   *   The TripalVocab entity populated with new values. If this is on insert,
+   *   the id will not yet be set.
    * @param EntityStorageInterface $storage
    *   The storage object used to create the TripalVocab.
    *
-   * @see TripalVocab::preCreate().
+   * @see TripalVocab::preSave().
    */
-  public function preCreateVocab(&$values, EntityStorageInterface $storage);
+  public function preSaveVocab(TripalVocab &$entity, EntityStorageInterface $storage);
 
   /**
    * Save Tripal Vocabulary IDSpace details to an additional storage backend.
    *
-   * @param array $values
-   *   The property values for the TripalVocabSpace object to be created.
+   * To retrieve values use $entity->get('fieldname')->value. Check for update
+   * based on whether the 'id' field is set.
+   *
+   * @param TripalVocabSpace $entity
+   *   The TripalVocabSpace entity populated with new values. If this is on insert,
+   *   the id will not yet be set.
    * @param EntityStorageInterface $storage
    *   The storage object used to create the TripalVocabSpace.
    *
-   * @see TripalVocabSpace::preCreate().
+   * @see TripalVocabSpace::preSave().
    */
-  public function preCreateVocabSpace(&$values, EntityStorageInterface $storage);
+  public function preSaveVocabSpace(TripalVocabSpace &$entity, EntityStorageInterface $storage);
 
   /**
    * Save Tripal Term details to an additional storage backend.
    *
-   * @param array $values
-   *   The property values for the TripalTerm object to be created.
+   * To retrieve values use $entity->get('fieldname')->value. Check for update
+   * based on whether the 'id' field is set.
+   *
+   * @param TripalTerm $entity
+   *   The TripalTerm entity populated with new values. If this is on insert,
+   *   the id will not yet be set.
    * @param EntityStorageInterface $storage
    *   The storage object used to create the TripalTerm.
    *
-   * @see TripalTerm::preCreate().
+   * @see TripalTerm::preSave().
    */
-  public function preCreateTerm(&$values, EntityStorageInterface $storage);
+  public function preSaveTerm(TripalTerm &$entity, EntityStorageInterface $storage);
+
+  /**
+   * Save Tripal Vocabulary details to an additional storage backend.
+   *
+   * To retrieve values use $entity->get('fieldname')->value.
+   *
+   * @param TripalVocab $entity
+   *   The TripalVocab entity populated with new values.
+   * @param EntityStorageInterface $storage
+   *   The storage object used to create the TripalVocab.
+   * @param bool $update
+   *   Indicates whether the entity is being updated or created.
+   *
+   * @see TripalVocab::postSave().
+   */
+  public function postSaveVocab(TripalVocab &$entity, EntityStorageInterface $storage, $update);
+
+  /**
+   * Save Tripal Vocabulary IDSpace details to an additional storage backend.
+   *
+   * To retrieve values use $entity->get('fieldname')->value.
+   *
+   * @param TripalVocabSpace $entity
+   *   The TripalVocabSpace entity populated with new values.
+   * @param EntityStorageInterface $storage
+   *   The storage object used to create the TripalVocabSpace.
+   * @param bool $update
+   *   Indicates whether the entity is being updated or created.
+   *
+   * @see TripalVocabSpace::postSave().
+   */
+  public function postSaveVocabSpace(TripalVocabSpace &$entity, EntityStorageInterface $storage, $update);
+
+  /**
+   * Save Tripal Term details to an additional storage backend.
+   *
+   * To retrieve values use $entity->get('fieldname')->value.
+   *
+   * @param TripalTerm $entity
+   *   The TripalTerm entity populated with new values.
+   * @param EntityStorageInterface $storage
+   *   The storage object used to create the TripalTerm.
+   * @param bool $update
+   *   Indicates whether the entity is being updated or created.
+   *
+   * @see TripalTerm::postSave().
+   */
+  public function postSaveTerm(TripalTerm &$entity, EntityStorageInterface $storage, $update);
 
   /**
    * Add details to a Tripal Vocabulary from an additional storage backend.

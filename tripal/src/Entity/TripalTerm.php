@@ -57,6 +57,28 @@ class TripalTerm extends ContentEntityBase implements TripalTermInterface {
   /**
    * {@inheritdoc}
    */
+  public function preSave(EntityStorageInterface $storage) {
+    parent::preSave($storage);
+    // @debug dpm($this->get('name')->value, 'TripalTerm::preSave() NAME');
+    // @debug dpm($this->id(), 'TripalTerm::preSave() ID');
+    // CREATE: Name was set correctly but the id was not yet.
+    // UPDATE: Name was the new value and id was set.
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+    parent::postSave($storage, $update);
+    // @debug dpm($this->get('name')->value, 'TripalTerm::postSave() NAME');
+    // @debug dpm($this->id(), 'TripalTerm::postSave() ID');
+    // CREATE:  name and id were set.
+    // UPDATE: Name was the new value and id was set.
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getID() {
     return $this->get('id')->value;
   }
