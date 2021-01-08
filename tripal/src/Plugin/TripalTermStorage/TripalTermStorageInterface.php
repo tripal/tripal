@@ -2,6 +2,11 @@
 
 namespace Drupal\tripal\Plugin\TripalTermStorage;
 
+use Drupal\tripal\Entity\TripalVocab;
+use Drupal\tripal\Entity\TripalVocabSpace;
+use Drupal\tripal\Entity\TripalTerm;
+
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Component\Plugin\PluginInspectionInterface;
 
 /**
