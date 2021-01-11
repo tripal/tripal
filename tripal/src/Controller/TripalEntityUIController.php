@@ -33,6 +33,7 @@ class TripalEntityUIController extends ControllerBase {
       ->getStorage('tripal_entity_type')
       ->loadByProperties([]);
 
+
     // Now compile them into variables to be used in twig.
     $bundles = [];
     foreach ($bundle_entities as $entity) {
@@ -42,6 +43,17 @@ class TripalEntityUIController extends ControllerBase {
         'title' => $entity->getLabel(),
         'help' => $entity->getHelpText(),
         'url' => Url::fromRoute('entity.tripal_entity.add_form', ['tripal_entity_type' => $entity->getName()]),
+      ];
+    }
+
+    // If there are no tripal content types / bundles
+    if (count($bundle_entities) <= 0) {
+      $bundles['tripal_content_types']['title'] = 'Tripal Content Types';
+      $bundles['tripal_content_types']['members'][] = [
+        'title' => 'There are no tripal content types, please begin by ' .
+                   'creating a vocabulary.',
+        'help' => '',
+        'url' => Url::fromRoute('entity.tripal_vocab.collection'),
       ];
     }
 
