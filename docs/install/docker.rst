@@ -78,3 +78,20 @@ Usage
    .. code::
 
     docker exec t4d8 composer up
+
+Troubleshooting
+---------------
+
+- Issue: On my web browser, I got the message "The provided host name is not valid for this server.".
+
+  Solution: It is most likely because you tried to access the site through a URL different from "localhost" or "127.0.0.1". For instance, if you run docker on a server and want to access your d8t4 site through that server name, you will have to edit the settings.php file inside the docker (at the time writting this, it would be everytime you (re)start the docker) and change the last line containing the parameter "$settings[trusted_host_patterns]":
+
+  .. code::
+
+  docker exec -it t4d8 vi /var/www/drupal8/web/sites/default/settings.php
+  
+  For instance, if your server name is "www.yourservername.org":
+  
+  .. code::
+  
+  $settings[trusted_host_patterns] = [ '^localhost$', '^127\.0\.0\.1$', '^www\.yourservername\.org$', ];
