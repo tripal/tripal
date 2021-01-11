@@ -59,11 +59,11 @@ class TripalTermStorageChado extends TripalTermStorageBase implements TripalTerm
 
     // Finally, we need to link the records.
     $connection = \Drupal::service('database');
-    $result = $connection->insert('chado_tripalvocab')
+    $result = $connection->merge('chado_tripalvocab')
+      ->key('tripalvocab_id', $tripalvocab_id)
       ->fields([
         'schema_name' => $chado_schema_name,
         'cv_id' => $cv_id,
-        'tripalvocab_id' => $tripalvocab_id,
       ])
       ->execute();
 
@@ -111,11 +111,11 @@ class TripalTermStorageChado extends TripalTermStorageBase implements TripalTerm
 
     // Finally, we need to link the records.
     $connection = \Drupal::service('database');
-    $result = $connection->insert('chado_tripalvocabspace')
+    $result = $connection->merge('chado_tripalvocabspace')
+      ->key('tripalvocabspace_id', $tripalvocabspace_id)
       ->fields([
         'schema_name' => $chado_schema_name,
         'db_id' => $db_id,
-        'tripalvocabspace_id' => $tripalvocabspace_id,
       ])
       ->execute();
 
@@ -168,11 +168,11 @@ class TripalTermStorageChado extends TripalTermStorageBase implements TripalTerm
 
     // Finally, we need to link the records.
     $connection = \Drupal::service('database');
-    $result = $connection->insert('chado_tripalterm')
+    $result = $connection->merge('chado_tripalterm')
+      ->key('tripalterm_id', $tripalterm_id)
       ->fields([
         'schema_name' => $chado_schema_name,
         'cvterm_id' => $cvterm_id,
-        'tripalterm_id' => $tripalterm_id,
       ])
       ->execute();
 
