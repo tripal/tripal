@@ -44,7 +44,11 @@ class TripalTermStorageChado extends TripalTermStorageBase implements TripalTerm
       $cv_id = $exists[0]->cv_id;
     }
     else {
-      $cv = chado_insert_record('cv', $chadocv, [], $chado_schema_name);
+      // Because we already checked uniqueness with the select above,
+      // we don't need to do validation for the insert. This is added
+      // to help performance.
+      $options['skip_validation'] = TRUE;
+      $cv = chado_insert_record('cv', $chadocv, $options, $chado_schema_name);
       if ($cv) {
         $cv_id = $cv['cv_id'];
       }
@@ -92,7 +96,11 @@ class TripalTermStorageChado extends TripalTermStorageBase implements TripalTerm
       $db_id = $exists[0]->db_id;
     }
     else {
-      $db = chado_insert_record('db', $chadodb, [], $chado_schema_name);
+      // Because we already checked uniqueness with the select above,
+      // we don't need to do validation for the insert. This is added
+      // to help performance.
+      $options['skip_validation'] = TRUE;
+      $db = chado_insert_record('db', $chadodb, $options, $chado_schema_name);
       if ($db) {
         $db_id = $db['db_id'];
       }
@@ -132,15 +140,21 @@ class TripalTermStorageChado extends TripalTermStorageBase implements TripalTerm
     $vocab = $idspace->getVocab();
 
     // Get the chado cvterm_id.
-    $chadocvterm['id'] = $idspace->getIDSpace() . ':' . $entity->getAccession();
+    $cvterm_accession = $entity->getAccession();
+    $chadocvterm['db_name'] = $idspace->getIDSpace();
+    $chadocvterm['id'] = $chadocvterm['db_name'] . ':' . $cvterm_accession;
     $chadocvterm['name'] = $entity->getName();
     $chadocvterm['definition'] = $entity->getDefinition();
     $chadocvterm['cv_name'] = $vocab->getNamespace();
 
-    $cvtermcheck = ['id' => $chadocvterm['id'] ];
-    $exists = chado_get_cvterm($cvtermcheck, [], $chado_schema_name);
+    $dbxrefcheck = [ ':db_name' => $chadocvterm['db_name'], ':accession' => $cvterm_accession];
+    $exists = chado_query('SELECT cvterm_id FROM {cvterm} cvt
+      LEFT JOIN {dbxref} dbx ON dbx.dbxref_id=cvt.dbxref_id
+      LEFT JOIN {db} db ON db.db_id=dbx.db_id
+      WHERE db.name = :db_name AND dbx.accession = :accession',
+      $dbxrefcheck, [] , $chado_schema_name)->fetchField();
     if ($exists) {
-      $cvterm_id = $exists->cvterm_id;
+      $cvterm_id = $exists;
     }
     else {
       $cvterm = chado_insert_cvterm($chadocvterm, [], $chado_schema_name);
