@@ -46,5 +46,5 @@ jobs:
           docker exec -e SIMPLETEST_BASE_URL=$SIMPLETEST_BASE_URL \
             -e SIMPLETEST_DB=$SIMPLETEST_DB \
             -e BROWSER_OUTPUT_DIRECTORY=$BROWSER_OUTPUT_DIRECTORY \
-            tripaldocker phpunit --printer mheap\\GithubActionsReporter\\Printer \
-              --configuration core modules/contrib/tripal
+            --workdir=/var/www/drupal8/web/modules/contrib/tripal \
+            tripaldocker phpunit --printer mheap\\GithubActionsReporter\\Printer
