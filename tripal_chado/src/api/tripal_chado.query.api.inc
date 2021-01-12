@@ -1754,7 +1754,6 @@ function chado_query($sql, $args = [], $options = [], $chado_schema_name = NULL)
 
   // Check if Chado is within the same database as Drupal (i.e. local).
   $is_local = chado_is_local(FALSE, $chado_schema_name);
-
   // Validation:
   // -- SQL should be a string.
   if (!is_string($sql)) {

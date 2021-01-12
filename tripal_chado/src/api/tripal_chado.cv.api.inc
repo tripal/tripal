@@ -470,36 +470,32 @@ function chado_insert_cvterm($term, $options = [], $schema_name = 'chado') {
   if (array_key_exists('namespace', $term)) {
     $cvname = $term['namespace'];
   }
+
+  $is_relationship = 0; // default value
   if (isset($term['is_relationship'])) {
     $is_relationship = $term['is_relationship'];
   }
-  else {
-    $is_relationship = 0;
-  }
+
+  $dbname = 'internal'; // default value
   if (isset($term['db_name'])) {
     $dbname = $term['db_name'];
   }
-  else {
-    $dbname = 'internal';
-  }
+
+  $update = 1; // default value
   if (isset($options['update_existing'])) {
     $update = $options['update_existing'];
   }
-  else {
-    $update = 1;
-  }
+ 
+  $name = $id; // default value
   if (array_key_exists('name', $term)) {
     $name = $term['name'];
   }
-  else {
-    $name = $id;
-  }
+
+  $definition = ''; //default value
   if (array_key_exists('definition', $term)) {
     $definition = preg_replace('/^\"(.*)\"/', '\1', $term['definition']);
   }
-  else {
-    $definition = '';
-  }
+
   if (array_key_exists('is_obsolete', $term)) {
     $is_obsolete = $term['is_obsolete'];
     if (strcmp($is_obsolete, 'true') == 0) {
