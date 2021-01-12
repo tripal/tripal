@@ -60,9 +60,9 @@ function tripal_chado_drop_schema($schema, $job = NULL) {
  */
 function tripal_chado_prepare_chado($chado_schema = 'chado', $job = NULL) {
   $preparer = \Drupal::service('tripal_chado.chadoPreparer');
-  $preparer->setSchema($chado_schema);
   if ($job) {
     $preparer->setJob($job);
   }
+  $preparer->setSchema($chado_schema);
   $success = $preparer->prepare();
 }
