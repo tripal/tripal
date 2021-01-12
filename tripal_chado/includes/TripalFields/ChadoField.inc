@@ -323,6 +323,8 @@ class ChadoField extends TripalField {
    * @see TripalField::instanceSettingsForm()
    */
   public function instanceSettingsForm() {
+    $element = parent::instanceSettingsForm();
+
     // Make sure we don't lose our Chado table mappings when the settings
     // are updated.  Setting them as values in the form ensures they don't
     // get accidentally overwritten.

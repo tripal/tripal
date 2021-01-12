@@ -35,6 +35,10 @@ class so__transcript extends ChadoField {
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
     'term_fixed' => FALSE,
+    // Contains the list of fields on the transcript child that the
+    // user wants to have displayed for the transcript.  The
+    // `so__transcript_expanded_formatter will display these.
+    'transcript_fields' => []
   ];
 
   // The default widget for this field.
@@ -181,6 +185,116 @@ class so__transcript extends ChadoField {
       }
       $i++;
     }
+  }
+
+  /**
+   * @see TripalField::globalSettingsForm()
+   */
+  public function instanceSettingsForm() {
+    $element = parent::instanceSettingsForm();
+
+    $settings = $this->instance['settings'];
+
+
+    $element['transcript_fields'] = [
+      '#type' => 'value',
+      '#default_value' => $settings['transcript_fields'],
+    ];
+
+    //Get the content type for the mRNA term (SO:0000234) and it's feilds.
+    $bundle = tripal_load_bundle_entity(['accession' => 'SO:0000234']);
+    $fields = field_info_instances('TripalEntity', $bundle->name);
+
+    foreach ($fields as $field_name => $details) {
+      $weight = $details['display']['default']['weight'];
+      $element['field-'. $weight] = [
+        '#type' => 'value',
+        '#value' => $field_name,
+        '#weight' => $weight,
+      ];
+      $element['field-'. $weight . '-check'] = [
+        '#type' => 'checkbox',
+        '#weight' => $weight,
+      ];
+      $element['field-'. $weight . '-label'] = [
+        '#type' => 'markup',
+        '#markup' => t($details['label']),
+        '#weight' => $weight,
+      ];
+      $element['field-'. $weight . '-description'] = [
+        '#type' => 'markup',
+        '#markup' => t($details['description']),
+        '#weight' => $weight,
+      ];
+      $element['field-'. $weight . '-weight'] = [
+        '#type' => 'textfield',
+        '#default_value' => $weight,
+        '#weight' => $weight,
+        '#size' => 3,
+        '#attributes' => [
+          'class' => ['tripal-field-settings-table-weights'],
+        ],
+      ];
+    }
+    return $element;
+  }
+
+  /**
+   * @see TripalField::settingsTheme()
+   */
+  public function settingsTheme($element) {
+
+    $headers = ['', 'Field', 'Description', ''];
+    $rows = [];
+    foreach (element_children($element) as $child) {
+      $matches = [];
+      if (preg_match('/^field-(\d+)-(.+)$/', $child, $matches)) {
+        $weight = $matches[1];
+        switch ($matches[2]) {
+          case 'check':
+            $rows[$weight]['data'][0] = drupal_render($element[$child]);
+            break;
+          case 'label':
+            $rows[$weight]['data'][1] = drupal_render($element[$child]);
+            break;
+          case 'description':
+            $rows[$weight]['data'][2] = drupal_render($element[$child]);
+            break;
+          case 'weight':
+            $rows[$weight]['data'][3] = drupal_render($element[$child]);
+            break;
+        }
+        ksort($rows[$weight]['data']);
+        $rows[$weight]['class'] = ['draggable'];
+      }
+    }
+    ksort($rows);
+
+    $table = [
+      'header' => $headers,
+      'rows' => $rows,
+      'attributes' => ["id" => 'tripal-field-settings-table'],
+      'sticky' => TRUE,
+      'caption' => t('Content Panes Available in the TOC'),
+      'colgroups' => [],
+      'empty' => t('There are no content panes for this page'),
+    ];
+    drupal_add_tabledrag('tripal-field-settings-table', 'order', 'sibling', 'tripal-field-settings-table-weights');
+
+    $fset = [];
+    $fset['fields'] = [
+      '#type' => 'fieldset',
+      '#title' => 'Field Selection',
+      '#description' => t('Select the fields that you want displayed on the gene page for each transcript that belongs to the gene.  If no fields are selected then a default display is provided.'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    ];
+    $fset['fields']['table'] = [
+      '#type' => 'markup',
+      '#markup' => theme_table($table),
+    ];
+
+    return drupal_render($fset['fields']);
   }
 
 }

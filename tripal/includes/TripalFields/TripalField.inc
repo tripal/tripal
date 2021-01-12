@@ -668,8 +668,42 @@ class TripalField {
 
     $element['#field'] = $this->field;
     $element['#instance'] = $this->instance;
+    $element['#theme'] = ['tripal_field_settings_default'];
     $element['#element_validate'][] = 'tripal_field_instance_settings_form_validate';
     return $element;
+  }
+
+  /**
+   * The theme function for the instance settings form.
+   *
+   * @param $element
+   * A form element array containing basic properties for the widget:
+   *  - #entity_type: The name of the entity the field is attached to.
+   *  - #bundle: The name of the field bundle the field is contained in.
+   *  - #field_name: The name of the field.
+   *  - #language: The language the field is being edited in.
+   *  - #field_parents: The 'parents' space for the field in the form. Most
+   *    widgets can simply overlook this property. This identifies the location
+   *    where the field values are placed within $form_state['values'], and is
+   *    used to access processing information for the field through the
+   *    field_form_get_state() and field_form_set_state() functions.
+   *  - #columns: A list of field storage columns of the field.
+   *  - #title: The sanitized element label for the field instance, ready for
+   *    output.
+   *  - #description: The sanitized element description for the field instance,
+   *    ready for output.
+   *  - #required: A Boolean indicating whether the element value is required;
+   *    for required multiple value fields, only the first widget's values are
+   *    required.
+   *  - #delta: The order of this item in the array of subelements; see
+   *    $delta above
+   *
+   * @return
+   *   A drupal renderable array or HTML or an empty string if no
+   *   theming is to be applied.
+   */
+  public function settingsTheme($element) {
+
   }
 
   /**
