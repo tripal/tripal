@@ -42,7 +42,7 @@ class TripalTermEntityTest extends BrowserTestBase {
 
     // Anonymous User should not see the tripal vocab listing.
     // Thus we will try to go to the listing... then check we can't.
-    $this->drupalGet('admin/structure/tripal_term');
+    $this->drupalGet('admin/structure/tripal-vocabularies/term');
     $assert->pageTextContains('Access denied');
 
     // Now login our priviledged user.
@@ -50,10 +50,10 @@ class TripalTermEntityTest extends BrowserTestBase {
 
     // TripalTerm Listing.
     //-------------------------------------------
-    $this->drupalGet('admin/structure/tripal_term');
+    $this->drupalGet('admin/structure/tripal-vocabularies/term');
 
     // Web_user user has the right to view listing.
-    // We should now be on admin/structure/tripal_term.
+    // We should now be on admin/structure/tripal-vocabularies/term.
     // thus check for the expected title.
     $assert->pageTextContains('Tripal Terms');
 
@@ -70,8 +70,8 @@ class TripalTermEntityTest extends BrowserTestBase {
     // @fails $this->assertSession()->responseContains('Add Term');
 
     // Go to the Add Term page.
-    $this->drupalGet('admin/structure/tripal_term/add');
-    // We should now be on admin/structure/tripal_term/add.
+    $this->drupalGet('admin/structure/tripal-vocabularies/term/add');
+    // We should now be on admin/structure/tripal-vocabularies/term/add.
     $assert->pageTextContains('Add tripal controlled vocabulary term');
     $assert->fieldExists('IDSpace');
     $assert->fieldValueEquals('IDSpace', '');
@@ -109,14 +109,14 @@ class TripalTermEntityTest extends BrowserTestBase {
     ];
 
     // Submit the form.
-    $this->drupalPostForm('admin/structure/tripal_term/add', $add, 'Save');
+    $this->drupalPostForm('admin/structure/tripal-vocabularies/term/add', $add, 'Save');
 
     // Now there should be a term.
     $assert->responseContains('Created');
     $assert->responseContains($name);
 
     // Then go back to the listing.
-    $this->drupalGet('admin/structure/tripal_term');
+    $this->drupalGet('admin/structure/tripal-vocabularies/term');
 
     // There should now be entities thus we shouldn't see the empty msg.
     $msg = 'There are no tripal controlled vocabulary term entities yet.';
@@ -135,7 +135,7 @@ class TripalTermEntityTest extends BrowserTestBase {
 
     // Go to the edit form for our new entity.
     $this->clickLink('Edit');
-    // We should now be on admin/structure/tripal_term/{tripal_term}/edit.
+    // We should now be on admin/structure/tripal-vocabularies/term/{tripal_term}/edit.
     $assert->pageTextContains('Edit');
     $assert->fieldExists('Term Name');
     $assert->fieldValueEquals('Term Name', $name);
@@ -150,7 +150,7 @@ class TripalTermEntityTest extends BrowserTestBase {
     $assert->pageTextContains('Saved the ' . $new_term_name . ' Tripal Term.');
 
     // Then go back to the listing.
-    $this->drupalGet('admin/structure/tripal_term');
+    $this->drupalGet('admin/structure/tripal-vocabularies/term');
     // We should also see our new record listed with edit/delete links.
     $assert->pageTextContains($new_term_name);
     $assert->pageTextContains($accession);
@@ -172,7 +172,7 @@ class TripalTermEntityTest extends BrowserTestBase {
 
     // First we cancel and check the record is not deleted.
     // @todo fails $this->drupalPostForm(NULL, [], 'edit_cancel');
-    $this->drupalGet('admin/structure/tripal_term');
+    $this->drupalGet('admin/structure/tripal-vocabularies/term');
     $assert->pageTextContains($new_term_name);
     $assert->pageTextContains($accession);
     $assert->pageTextContains($vocab_label);
@@ -185,7 +185,7 @@ class TripalTermEntityTest extends BrowserTestBase {
     $msg = "The tripal controlled vocabulary term $new_term_name has been deleted.";
     $assert->pageTextContains($msg);
 
-    $this->drupalGet('admin/structure/tripal_term');
+    $this->drupalGet('admin/structure/tripal-vocabularies/term');
     $assert->pageTextNotContains($new_term_name);
     $assert->pageTextNotContains($accession);
 
@@ -328,52 +328,52 @@ class TripalTermEntityTest extends BrowserTestBase {
     return [
       [
         200,
-        '/admin/structure/tripal_term/' . $term_id,
+        '/admin/structure/tripal-vocabularies/term/' . $term_id,
         'view controlled vocabulary term entities',
       ],
       [
         403,
-        '/admin/structure/tripal_term/' . $term_id,
+        '/admin/structure/tripal-vocabularies/term/' . $term_id,
         '',
       ],
       [
         200,
-        '/admin/structure/tripal_term',
+        '/admin/structure/tripal-vocabularies/term',
         'view controlled vocabulary term entities',
       ],
       [
         403,
-        '/admin/structure/tripal_term',
+        '/admin/structure/tripal-vocabularies/term',
         '',
       ],
       [
         200,
-        '/admin/structure/tripal_term/add',
+        '/admin/structure/tripal-vocabularies/term/add',
         'add controlled vocabulary term entities',
       ],
       [
         403,
-        '/admin/structure/tripal_term/add',
+        '/admin/structure/tripal-vocabularies/term/add',
         '',
       ],
       [
         200,
-        '/admin/structure/tripal_term/' . $term_id . '/edit',
+        '/admin/structure/tripal-vocabularies/term/' . $term_id . '/edit',
         'edit controlled vocabulary term entities',
       ],
       [
         403,
-        '/admin/structure/tripal_term/' . $term_id . '/edit',
+        '/admin/structure/tripal-vocabularies/term/' . $term_id . '/edit',
         '',
       ],
       [
         200,
-        '/admin/structure/tripal_term/' . $term_id . '/delete',
+        '/admin/structure/tripal-vocabularies/term/' . $term_id . '/delete',
         'delete controlled vocabulary term entities',
       ],
       [
         403,
-        '/admin/structure/tripal_term/' . $term_id . '/delete',
+        '/admin/structure/tripal-vocabularies/term/' . $term_id . '/delete',
         '',
       ],
     ];

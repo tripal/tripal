@@ -40,7 +40,7 @@ class TripalVocabEntityTest extends BrowserTestBase {
 
     // Anonymous User should not see the tripal vocab listing.
     // Thus we will try to go to the listing... then check we can't.
-    $this->drupalGet('admin/structure/tripal_vocab');
+    $this->drupalGet('admin/structure/tripal-vocabularies/vocab');
     $assert->pageTextContains('Access denied');
 
     $this->drupalLogin($web_user);
@@ -54,7 +54,7 @@ class TripalVocabEntityTest extends BrowserTestBase {
     $this->clickLink('Tripal Vocabularies');
 
     // Web_user user has the right to view listing.
-    // We should now be on admin/structure/tripal_vocab.
+    // We should now be on admin/structure/tripal-vocabularies/vocab.
     // thus check for the expected title.
     $assert->pageTextContains('Tripal Vocabularies');
 
@@ -71,8 +71,8 @@ class TripalVocabEntityTest extends BrowserTestBase {
 
     // Go to the Add Vocabulary page.
     // @todo fails $this->clickLink('Add Vocabulary');
-    $this->drupalGet('admin/structure/tripal_vocab/add');
-    // We should now be on admin/structure/tripal_vocab/add.
+    $this->drupalGet('admin/structure/tripal-vocabularies/vocab/add');
+    // We should now be on admin/structure/tripal-vocabularies/vocab/add.
     $assert->pageTextContains('Add tripal vocabulary');
     $assert->fieldExists('Full Name');
     $assert->fieldValueEquals('Full Name', '');
@@ -88,11 +88,11 @@ class TripalVocabEntityTest extends BrowserTestBase {
       'name' => $vocab_name,
       'namespace' => uniqid(),
     ];
-    $this->drupalPostForm('admin/structure/tripal_vocab/add', $add, 'Save');
+    $this->drupalPostForm('admin/structure/tripal-vocabularies/vocab/add', $add, 'Save');
     $assert->pageTextContains('Created the ' . $vocab_name . ' Tripal Vocabulary.');
 
     // Then go back to the listing.
-    $this->drupalGet('admin/structure/tripal_vocab');
+    $this->drupalGet('admin/structure/tripal-vocabularies/vocab');
 
     // There should now be entities thus we shouldn't see the empty msg.
     $msg = 'There are no tripal vocabulary entities yet.';
@@ -108,7 +108,7 @@ class TripalVocabEntityTest extends BrowserTestBase {
 
     // Go to the edit form for our new entity.
     $this->clickLink('Edit');
-    // We should now be on admin/structure/tripal_vocab/{tripal_vocab}/edit.
+    // We should now be on admin/structure/tripal-vocabularies/vocab/{tripal_vocab}/edit.
     $assert->pageTextContains('Edit');
     $assert->fieldExists('Name');
     $assert->fieldValueEquals('Name', $add['name']);
@@ -124,7 +124,7 @@ class TripalVocabEntityTest extends BrowserTestBase {
     $assert->pageTextContains('Saved the ' . $new_vocab_name . ' Tripal Vocabulary.');
 
     // Then go back to the listing.
-    $this->drupalGet('admin/structure/tripal_vocab');
+    $this->drupalGet('admin/structure/tripal-vocabularies/vocab');
     // We should also see our new record listed with edit/delete links.
     $assert->pageTextNotContains($vocab_name);
     $assert->pageTextContains($new_vocab_name);
@@ -143,7 +143,7 @@ class TripalVocabEntityTest extends BrowserTestBase {
 
     // First we cancel and check the record is not deleted.
     // @todo fails $this->drupalPostForm(NULL, [], 'edit_cancel');
-    $this->drupalGet('admin/structure/tripal_vocab');
+    $this->drupalGet('admin/structure/tripal-vocabularies/vocab');
     $assert->pageTextContains($new_vocab_name);
     $assert->linkExists('Edit');
     $assert->linkExists('Delete');
@@ -155,7 +155,7 @@ class TripalVocabEntityTest extends BrowserTestBase {
     $assert->pageTextContains($msg);
 
     // Ensure the vocab is no longer in the listing.
-    $this->drupalGet('admin/structure/tripal_vocab');
+    $this->drupalGet('admin/structure/tripal-vocabularies/vocab');
     $assert->pageTextNotContains($new_vocab_name);
   }
 
@@ -277,52 +277,52 @@ class TripalVocabEntityTest extends BrowserTestBase {
     return [
       [
         200,
-        '/admin/structure/tripal_vocab/' . $vocab_id,
+        '/admin/structure/tripal-vocabularies/vocab/' . $vocab_id,
         'view controlled vocabulary entities',
       ],
       [
         403,
-        '/admin/structure/tripal_vocab/' . $vocab_id,
+        '/admin/structure/tripal-vocabularies/vocab/' . $vocab_id,
         '',
       ],
       [
         200,
-        '/admin/structure/tripal_vocab',
+        '/admin/structure/tripal-vocabularies/vocab',
         'view controlled vocabulary entities',
       ],
       [
         403,
-        '/admin/structure/tripal_vocab',
+        '/admin/structure/tripal-vocabularies/vocab',
         '',
       ],
       [
         200,
-        '/admin/structure/tripal_vocab/add',
+        '/admin/structure/tripal-vocabularies/vocab/add',
         'add controlled vocabulary entities',
       ],
       [
         403,
-        '/admin/structure/tripal_vocab/add',
+        '/admin/structure/tripal-vocabularies/vocab/add',
         '',
       ],
       [
         200,
-        '/admin/structure/tripal_vocab/' . $vocab_id . '/edit',
+        '/admin/structure/tripal-vocabularies/vocab/' . $vocab_id . '/edit',
         'edit controlled vocabulary entities',
       ],
       [
         403,
-        '/admin/structure/tripal_vocab/' . $vocab_id . '/edit',
+        '/admin/structure/tripal-vocabularies/vocab/' . $vocab_id . '/edit',
         '',
       ],
       [
         200,
-        '/admin/structure/tripal_vocab/' . $vocab_id . '/delete',
+        '/admin/structure/tripal-vocabularies/vocab/' . $vocab_id . '/delete',
         'delete controlled vocabulary entities',
       ],
       [
         403,
-        '/admin/structure/tripal_vocab/' . $vocab_id . '/delete',
+        '/admin/structure/tripal-vocabularies/vocab/' . $vocab_id . '/delete',
         '',
       ],
     ];
