@@ -230,6 +230,25 @@ class TripalTermStorageChado extends TripalTermStorageBase implements TripalTerm
    * {@inheritdoc}
    */
   public function loadVocab($id, TripalVocab &$entity) {
+
+    // Select the linking between this entity and chado.
+    $connection = \Drupal::service('database');
+    $chado_deets = $connection->select('chado_tripalvocab', 't')
+      ->fields('t', ['schema_name', 'cv_id'])
+      ->condition('tripalvocab_id', $id)
+      ->execute()
+      ->fetchObject();
+
+    // Add in the chado details for the current record.
+    $select = ['cv_id' => $chado_deets->cv_id];
+    $options = ['include_fk' => []];
+    $entity->chado_record = chado_generate_var('cv', $select, $options, $chado_deets->schema_name);
+    $entity->chado_record->tablename = 'cv';
+    $entity->chado_record->entity_id = $id;
+
+    // Add in the chado primary key for easy access.
+    $entity->chado_record_id = $chado_deets->cv_id;
+
     return $entity;
   }
 
@@ -237,6 +256,25 @@ class TripalTermStorageChado extends TripalTermStorageBase implements TripalTerm
    * {@inheritdoc}
    */
   public function loadVocabSpace($id, TripalVocabSpace &$entity) {
+
+    // Select the linking between this entity and chado.
+    $connection = \Drupal::service('database');
+    $chado_deets = $connection->select('chado_tripalvocabspace', 't')
+      ->fields('t', ['schema_name', 'db_id'])
+      ->condition('tripalvocabspace_id', $id)
+      ->execute()
+      ->fetchObject();
+
+    // Add in the chado details for the current record.
+    $select = ['db_id' => $chado_deets->db_id];
+    $options = ['include_fk' => []];
+    $entity->chado_record = chado_generate_var('db', $select, $options, $chado_deets->schema_name);
+    $entity->chado_record->tablename = 'db';
+    $entity->chado_record->entity_id = $id;
+
+    // Add in the chado primary key for easy access.
+    $entity->chado_record_id = $chado_deets->db_id;
+
     return $entity;
   }
 
@@ -244,6 +282,25 @@ class TripalTermStorageChado extends TripalTermStorageBase implements TripalTerm
    * {@inheritdoc}
    */
   public function loadTerm($id, TripalTerm &$entity) {
+
+    // Select the linking between this entity and chado.
+    $connection = \Drupal::service('database');
+    $chado_deets = $connection->select('chado_tripalterm', 't')
+      ->fields('t', ['schema_name', 'cvterm_id'])
+      ->condition('tripalterm_id', $id)
+      ->execute()
+      ->fetchObject();
+
+    // Add in the chado details for the current record.
+    $select = ['cvterm_id' => $chado_deets->cvterm_id];
+    $options = ['include_fk' => []];
+    $entity->chado_record = chado_generate_var('cvterm', $select, $options, $chado_deets->schema_name);
+    $entity->chado_record->tablename = 'cvterm';
+    $entity->chado_record->entity_id = $id;
+
+    // Add in the chado primary key for easy access.
+    $entity->chado_record_id = $chado_deets->cvterm_id;
+
     return $entity;
   }
 }

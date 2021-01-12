@@ -92,6 +92,27 @@ class TripalVocab extends ContentEntityBase implements TripalVocabInterface {
   /**
    * {@inheritdoc}
    */
+  public static function postLoad(EntityStorageInterface $storage, array &$entities) {
+    parent::postLoad($storage, $entities);
+
+    // Use the plugin manager to get a list of all implementations
+    // of our TripalTermStorage plugin.
+    $manager = \Drupal::service('plugin.manager.tripal.termStorage');
+    $implementations = $manager->getDefinitions();
+
+    // Then foreach implementation we want to create an instance of
+    // that particular term storage plugin and call the appropriate method.
+    foreach (array_keys($implementations) as $instance_id) {
+      $instance = $manager->createInstance($instance_id);
+      foreach ($entities as $id => $entity) {
+        $instance->loadVocab($id, $entities[$id]);
+      }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function delete() {
 
     // Use the plugin manager to get a list of all implementations
