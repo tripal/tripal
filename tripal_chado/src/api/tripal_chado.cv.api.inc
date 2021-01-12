@@ -527,8 +527,24 @@ function chado_insert_cvterm($term, $options = [], $schema_name = 'chado') {
     tripal_report_error('tripal_cv', TRIPAL_WARNING, "A database identifier is missing from the term: $id", []);
     return 0;
   }
+
+
+
   // Make sure the CV name exists.
-  $cv = chado_get_cv(['name' => $cvname], [], $schema_name);
+
+  // Check if CV already exists
+  // $cv = chado_get_cv(['name' => $cvname], [], $schema_name); // BEFOREOPT: 5.9ms
+  
+  // OPT: 5.3ms
+  $sql_cv = "SELECT * FROM {cv} WHERE name = :name LIMIT 1";
+  $results_cv = chado_query($sql_cv, [':name' => $cvname], [], $schema_name);
+  $cv = null;
+  foreach ($results_cv as $row_cv) {
+    $cv = "dummyval";
+  }
+  
+
+  // If CV does not exist
   if (!$cv) {
     $cv = chado_insert_cv($cvname, '', [], $schema_name);
   }

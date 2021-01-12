@@ -157,5 +157,38 @@ class ChadoCvAPITest extends BrowserTestBase {
       $this->assertTrue(ChadoSchema::schemaExists($this::$schemaName), 
       'testchado schema could not be found to perform further tests');
     }
-	}
+  }
+  
+	/**
+   * Tests chado.cvterm associated functions.
+   *
+   * @group tripal-chado
+   * @group chado-cv
+   */
+  public function testcvterm_single() {
+    $time_start_cv = microtime(true);
+    $cvval = [
+      'name' => 'cv-test' . uniqid(),
+      'definition' => 'none',
+      ];
+    $cv = chado_insert_cv($cvval['name'], $cvval['definition'], [], 'testchado');
+    $time_end_cv = microtime(true);
+
+    $time_start_cvterm = microtime(true);
+    $cvtermval = [
+      'cv_name' => $cv->name,
+      'id' => 'chado_properties:version',
+      'db_name' => 'null',
+      'name' => 'cvterm-test' . uniqid(),
+      'definition' => 'Lorem ipsum and I forget the rest.',
+    ];
+    $return = chado_insert_cvterm($cvtermval, [], 'testchado');
+    $time_end_cvterm = microtime(true);
+
+    $time_elapsed_cv = $time_end_cv - $time_start_cv;
+    $time_elapsed_cvterm = $time_end_cvterm - $time_start_cvterm;
+    echo "\n\n\n\n";
+    echo $time_elapsed_cv . " ms\n";
+    echo $time_elapsed_cvterm . " ms\n";
+  }
 }
