@@ -111,6 +111,42 @@ interface TripalTermStorageInterface extends PluginInspectionInterface {
   public function postSaveTerm(TripalTerm &$entity, EntityStorageInterface $storage, $update);
 
   /**
+   * Delete details for a Tripal Vocabulary from an additional storage backend.
+   *
+   * To retrieve values use $entity->get('fieldname')->value.
+   *
+   * @param TripalVocab $entity
+   *   The entity which is being deleted.
+   *
+   * @see TripalVocab::delete().
+   */
+  public function deleteVocab(TripalVocab $entity);
+
+  /**
+   * Delete details for a Tripal Vocab IDSpace from an additional storage backend.
+   *
+   * To retrieve values use $entity->get('fieldname')->value.
+   *
+   * @param TripalVocabSpace $entity
+   *   The entity which is being deleted.
+   *
+   * @see TripalVocabSpace::delete().
+   */
+  public function deleteVocabSpace(TripalVocabSpace $entity);
+
+  /**
+   * Delete details for a Tripal Term from an additional storage backend.
+   *
+   * To retrieve values use $entity->get('fieldname')->value.
+   *
+   * @param TripalTerm $entity
+   *   The entity which is being deleted.
+   *
+   * @see TripalTerm::delete().
+   */
+  public function deleteTerm(TripalTerm $entity);
+
+  /**
    * Add details to a Tripal Vocabulary from an additional storage backend.
    *
    * @param int $id

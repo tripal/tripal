@@ -181,6 +181,54 @@ class TripalTermStorageChado extends TripalTermStorageBase implements TripalTerm
   /**
    * {@inheritdoc}
    */
+  public function deleteVocab(TripalVocab $entity) {
+
+    // We are not deleting from Chado!
+    // As such, the chado cv will remain even if we created it.
+
+    // We do want to delete the linking record though.
+    $id = $entity->get('id')->value;
+    $connection = \Drupal::service('database');
+    $result = $connection->delete('chado_tripalvocab')
+      ->condition('tripalvocab_id', $id)
+      ->execute();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function deleteVocabSpace(TripalVocabSpace $entity) {
+
+    // We are not deleting from Chado!
+    // As such, the chado db will remain even if we created it.
+
+    // We do want to delete the linking record though.
+    $id = $entity->get('id')->value;
+    $connection = \Drupal::service('database');
+    $result = $connection->delete('chado_tripalvocabspace')
+      ->condition('tripalvocabspace_id', $id)
+      ->execute();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function deleteTerm(TripalTerm $entity) {
+
+    // We are not deleting from Chado!
+    // As such, the chado cvterm/dbxref will remain even if we created it.
+
+    // We do want to delete the linking record though.
+    $id = $entity->get('id')->value;
+    $connection = \Drupal::service('database');
+    $result = $connection->delete('chado_tripalterm')
+      ->condition('tripalterm_id', $id)
+      ->execute();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function loadVocab($id, TripalVocab &$entity) {
     return $entity;
   }

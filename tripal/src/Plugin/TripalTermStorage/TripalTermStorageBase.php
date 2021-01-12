@@ -67,6 +67,30 @@ abstract class TripalTermStorageBase extends PluginBase implements TripalTermSto
   /**
    * {@inheritdoc}
    */
+  public function deleteVocab(TripalVocab $entity) {
+    // Be default we don't need to do anything.
+    // The default entity machinery will delete all fields in Drupal storage.
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function deleteVocabSpace(TripalVocabSpace $entity) {
+    // Be default we don't need to do anything.
+    // The default entity machinery will delete all fields in Drupal storage.
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function deleteTerm(TripalTerm $entity) {
+    // Be default we don't need to do anything.
+    // The default entity machinery will delete all fields in Drupal storage.
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function loadVocab($id, TripalVocab &$entity) {
     // By default we don't need to anything.
     // The default entity machinery will load all fields.
