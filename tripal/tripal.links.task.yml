@@ -25,6 +25,26 @@ entity.tripal_entity.delete_form:
   weight: 10
 
 ##
+# Tripal Vocabularies
+##
+
+# Provides tabs on the structure/tripal-vocabularies page.
+entity.tripal_vocab.collection:
+  route_name: entity.tripal_vocab.collection
+  base_route: entity.tripal_vocab.collection
+  title: Vocabularies
+
+entity.tripal_vocab_space.collection:
+  route_name: entity.tripal_vocab_space.collection
+  base_route: entity.tripal_vocab.collection
+  title: IDSpaces
+
+entity.tripal_term.collection:
+  route_name: entity.tripal_term.collection
+  base_route: entity.tripal_vocab.collection
+  title: Terms
+
+##
 # Tripal Vocab Entity.
 ##
 

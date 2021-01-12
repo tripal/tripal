@@ -40,11 +40,11 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *     "label" = "IDSpace",
  *   },
  *   links = {
- *     "canonical" = "/admin/structure/tripal_idspace/{tripal_vocab_space}",
- *     "add-form" = "/admin/structure/tripal_idspace/add",
- *     "edit-form" = "/admin/structure/tripal_idspace/{tripal_vocab_space}/edit",
- *     "delete-form" = "/admin/structure/tripal_idspace/{tripal_vocab_space}/delete",
- *     "collection" = "/admin/structure/tripal_idspace",
+ *     "canonical" = "/admin/structure/tripal-vocabularies/idspace/{tripal_vocab_space}",
+ *     "add-form" = "/admin/structure/tripal-vocabularies/idspace/add",
+ *     "edit-form" = "/admin/structure/tripal-vocabularies/idspace/{tripal_vocab_space}/edit",
+ *     "delete-form" = "/admin/structure/tripal-vocabularies/idspace/{tripal_vocab_space}/delete",
+ *     "collection" = "/admin/structure/tripal-vocabularies/idspace",
  *   },
  * )
  */

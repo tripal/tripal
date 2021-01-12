@@ -41,11 +41,11 @@ use Drupal\tripal\Entity\TripalVocabInterface;
  *     "label" = "name",
  *   },
  *   links = {
- *     "canonical" = "/admin/structure/tripal_vocab/{tripal_vocab}",
- *     "add-form" = "/admin/structure/tripal_vocab/add",
- *     "edit-form" = "/admin/structure/tripal_vocab/{tripal_vocab}/edit",
- *     "delete-form" = "/admin/structure/tripal_vocab/{tripal_vocab}/delete",
- *     "collection" = "/admin/structure/tripal_vocab",
+ *     "canonical" = "/admin/structure/tripal-vocabularies/vocab/{tripal_vocab}",
+ *     "add-form" = "/admin/structure/tripal-vocabularies/vocab/add",
+ *     "edit-form" = "/admin/structure/tripal-vocabularies/vocab/{tripal_vocab}/edit",
+ *     "delete-form" = "/admin/structure/tripal-vocabularies/vocab/{tripal_vocab}/delete",
+ *     "collection" = "/admin/structure/tripal-vocabularies/vocab",
  *   },
  * )
  */

@@ -75,7 +75,7 @@ class TripalVocabSpaceForm extends ContentEntityForm {
           '%label' => $entity->label(),
         ]));
     }
-    $form_state->setRedirect('entity.tripal_vocab_space.canonical', ['tripal_vocab_space' => $entity->id()]);
+    $form_state->setRedirect('entity.tripal_vocab_space.collection', ['tripal_vocab_space' => $entity->id()]);
   }
 
 }

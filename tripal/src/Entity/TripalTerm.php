@@ -42,11 +42,11 @@ use Drupal\user\UserInterface;
  *     "label" = "name",
  *   },
  *   links = {
- *     "canonical" = "/admin/structure/tripal_term/{tripal_term}",
- *     "add-form" = "/admin/structure/tripal_term/add",
- *     "edit-form" = "/admin/structure/tripal_term/{tripal_term}/edit",
- *     "delete-form" = "/admin/structure/tripal_term/{tripal_term}/delete",
- *     "collection" = "/admin/structure/tripal_term",
+ *     "canonical" = "/admin/structure/tripal-vocabularies/term/{tripal_term}",
+ *     "add-form" = "/admin/structure/tripal-vocabularies/term/add",
+ *     "edit-form" = "/admin/structure/tripal-vocabularies/term/{tripal_term}/edit",
+ *     "delete-form" = "/admin/structure/tripal-vocabularies/term/{tripal_term}/delete",
+ *     "collection" = "/admin/structure/tripal-vocabularies/term",
  *   },
  * )
  */
