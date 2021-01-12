@@ -2,10 +2,10 @@
 
 namespace Drupal\tripal\Entity;
 
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
-use Drupal\Core\Entity\EntityPublishedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 
 /**
@@ -40,17 +40,96 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *     "label" = "IDSpace",
  *   },
  *   links = {
- *     "canonical" = "/admin/structure/tripal_idspace/{tripal_vocab_space}",
- *     "add-form" = "/admin/structure/tripal_idspace/add",
- *     "edit-form" = "/admin/structure/tripal_idspace/{tripal_vocab_space}/edit",
- *     "delete-form" = "/admin/structure/tripal_idspace/{tripal_vocab_space}/delete",
- *     "collection" = "/admin/structure/tripal_idspace",
+ *     "canonical" = "/admin/structure/tripal-vocabularies/idspace/{tripal_vocab_space}",
+ *     "add-form" = "/admin/structure/tripal-vocabularies/idspace/add",
+ *     "edit-form" = "/admin/structure/tripal-vocabularies/idspace/{tripal_vocab_space}/edit",
+ *     "delete-form" = "/admin/structure/tripal-vocabularies/idspace/{tripal_vocab_space}/delete",
+ *     "collection" = "/admin/structure/tripal-vocabularies/idspace",
  *   },
  * )
  */
 class TripalVocabSpace extends ContentEntityBase implements TripalVocabSpaceInterface {
 
   use EntityChangedTrait;
+
+  /**
+   * {@inheritdoc}
+   */
+  public function preSave(EntityStorageInterface $storage) {
+    parent::preSave($storage);
+
+    // Use the plugin manager to get a list of all implementations
+    // of our TripalTermStorage plugin.
+    $manager = \Drupal::service('plugin.manager.tripal.termStorage');
+    $implementations = $manager->getDefinitions();
+
+    // Then foreach implementation we want to create an instance of
+    // that particular term storage plugin and call the appropriate method.
+    foreach (array_keys($implementations) as $instance_id) {
+      $instance = $manager->createInstance($instance_id);
+      $instance->preSaveVocabSpace($this, $storage);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+    parent::postSave($storage, $update);
+
+    // Use the plugin manager to get a list of all implementations
+    // of our TripalTermStorage plugin.
+    $manager = \Drupal::service('plugin.manager.tripal.termStorage');
+    $implementations = $manager->getDefinitions();
+
+    // Then foreach implementation we want to create an instance of
+    // that particular term storage plugin and call the appropriate method.
+    foreach (array_keys($implementations) as $instance_id) {
+      $instance = $manager->createInstance($instance_id);
+      $instance->postSaveVocabSpace($this, $storage, $update);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function postLoad(EntityStorageInterface $storage, array &$entities) {
+    parent::postLoad($storage, $entities);
+
+    // Use the plugin manager to get a list of all implementations
+    // of our TripalTermStorage plugin.
+    $manager = \Drupal::service('plugin.manager.tripal.termStorage');
+    $implementations = $manager->getDefinitions();
+
+    // Then foreach implementation we want to create an instance of
+    // that particular term storage plugin and call the appropriate method.
+    foreach (array_keys($implementations) as $instance_id) {
+      $instance = $manager->createInstance($instance_id);
+      foreach ($entities as $id => $entity) {
+        $instance->loadVocabSpace($id, $entities[$id]);
+      }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function delete() {
+
+    // Use the plugin manager to get a list of all implementations
+    // of our TripalTermStorage plugin.
+    $manager = \Drupal::service('plugin.manager.tripal.termStorage');
+    $implementations = $manager->getDefinitions();
+
+    // Then foreach implementation we want to create an instance of
+    // that particular term storage plugin and call the appropriate method.
+    foreach (array_keys($implementations) as $instance_id) {
+      $instance = $manager->createInstance($instance_id);
+      $instance->deleteVocabSpace($this);
+    }
+
+    parent::delete();
+  }
 
   /**
    * {@inheritdoc}

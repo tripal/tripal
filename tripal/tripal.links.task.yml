@@ -25,6 +25,26 @@ entity.tripal_entity.delete_form:
   weight: 10
 
 ##
+# Tripal Vocabularies
+##
+
+# Provides tabs on the structure/tripal-vocabularies page.
+entity.tripal_vocab.collection:
+  route_name: entity.tripal_vocab.collection
+  base_route: entity.tripal_vocab.collection
+  title: Vocabularies
+
+entity.tripal_vocab_space.collection:
+  route_name: entity.tripal_vocab_space.collection
+  base_route: entity.tripal_vocab.collection
+  title: IDSpaces
+
+entity.tripal_term.collection:
+  route_name: entity.tripal_term.collection
+  base_route: entity.tripal_vocab.collection
+  title: Terms
+
+##
 # Tripal Vocab Entity.
 ##
 
@@ -63,6 +83,27 @@ entity.tripal_vocab_space.edit_form:
 entity.tripal_vocab_space.delete_form:
   route_name:  entity.tripal_vocab_space.delete_form
   base_route:  entity.tripal_vocab_space.canonical
+  title: Delete
+  weight: 10
+
+##
+# Tripal Term Entity.
+##
+
+# Tripal Term routing definition
+entity.tripal_term.canonical:
+  route_name: entity.tripal_term.canonical
+  base_route: entity.tripal_term.canonical
+  title: 'View'
+
+entity.tripal_term.edit_form:
+  route_name: entity.tripal_term.edit_form
+  base_route: entity.tripal_term.canonical
+  title: 'Edit'
+
+entity.tripal_term.delete_form:
+  route_name:  entity.tripal_term.delete_form
+  base_route:  entity.tripal_term.canonical
   title: Delete
   weight: 10
 

@@ -17,3 +17,6 @@ services:
   plugin.manager.tripalstorage:
       class: Drupal\tripal\Services\TripalStorageManager
       parent: default_plugin_manager
+  plugin.manager.tripal.termStorage:
+    class: Drupal\tripal\Plugin\TripalTermStorage\TripalTermStorageManager
+    parent: default_plugin_manager

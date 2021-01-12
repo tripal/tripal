@@ -41,11 +41,11 @@ use Drupal\tripal\Entity\TripalVocabInterface;
  *     "label" = "name",
  *   },
  *   links = {
- *     "canonical" = "/admin/structure/tripal_vocab/{tripal_vocab}",
- *     "add-form" = "/admin/structure/tripal_vocab/add",
- *     "edit-form" = "/admin/structure/tripal_vocab/{tripal_vocab}/edit",
- *     "delete-form" = "/admin/structure/tripal_vocab/{tripal_vocab}/delete",
- *     "collection" = "/admin/structure/tripal_vocab",
+ *     "canonical" = "/admin/structure/tripal-vocabularies/vocab/{tripal_vocab}",
+ *     "add-form" = "/admin/structure/tripal-vocabularies/vocab/add",
+ *     "edit-form" = "/admin/structure/tripal-vocabularies/vocab/{tripal_vocab}/edit",
+ *     "delete-form" = "/admin/structure/tripal-vocabularies/vocab/{tripal_vocab}/delete",
+ *     "collection" = "/admin/structure/tripal-vocabularies/vocab",
  *   },
  * )
  */
@@ -54,8 +54,80 @@ class TripalVocab extends ContentEntityBase implements TripalVocabInterface {
   /**
    * {@inheritdoc}
    */
-  public static function preCreate(EntityStorageInterface $storage, array &$values) {
-    parent::preCreate($storage, $values);
+  public function preSave(EntityStorageInterface $storage) {
+    parent::preSave($storage);
+
+    // Use the plugin manager to get a list of all implementations
+    // of our TripalTermStorage plugin.
+    $manager = \Drupal::service('plugin.manager.tripal.termStorage');
+    $implementations = $manager->getDefinitions();
+
+    // Then foreach implementation we want to create an instance of
+    // that particular term storage plugin and call the appropriate method.
+    foreach (array_keys($implementations) as $instance_id) {
+      $instance = $manager->createInstance($instance_id);
+      $instance->preSaveVocab($this, $storage);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+    parent::postSave($storage, $update);
+
+    // Use the plugin manager to get a list of all implementations
+    // of our TripalTermStorage plugin.
+    $manager = \Drupal::service('plugin.manager.tripal.termStorage');
+    $implementations = $manager->getDefinitions();
+
+    // Then foreach implementation we want to create an instance of
+    // that particular term storage plugin and call the appropriate method.
+    foreach (array_keys($implementations) as $instance_id) {
+      $instance = $manager->createInstance($instance_id);
+      $instance->postSaveVocab($this, $storage, $update);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function postLoad(EntityStorageInterface $storage, array &$entities) {
+    parent::postLoad($storage, $entities);
+
+    // Use the plugin manager to get a list of all implementations
+    // of our TripalTermStorage plugin.
+    $manager = \Drupal::service('plugin.manager.tripal.termStorage');
+    $implementations = $manager->getDefinitions();
+
+    // Then foreach implementation we want to create an instance of
+    // that particular term storage plugin and call the appropriate method.
+    foreach (array_keys($implementations) as $instance_id) {
+      $instance = $manager->createInstance($instance_id);
+      foreach ($entities as $id => $entity) {
+        $instance->loadVocab($id, $entities[$id]);
+      }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function delete() {
+
+    // Use the plugin manager to get a list of all implementations
+    // of our TripalTermStorage plugin.
+    $manager = \Drupal::service('plugin.manager.tripal.termStorage');
+    $implementations = $manager->getDefinitions();
+
+    // Then foreach implementation we want to create an instance of
+    // that particular term storage plugin and call the appropriate method.
+    foreach (array_keys($implementations) as $instance_id) {
+      $instance = $manager->createInstance($instance_id);
+      $instance->deleteVocab($this);
+    }
+
+    parent::delete();
   }
 
   /**
