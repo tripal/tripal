@@ -2,4 +2,4 @@ services:
     tripal_chado.chadoInstaller:
         class: Drupal\tripal_chado\Services\chadoInstaller
     tripal_chado.chadoPreparer:
-        class: Drupal\tripal_chado\Services\chadoInstaller
+        class: Drupal\tripal_chado\Services\chadoPreparer
