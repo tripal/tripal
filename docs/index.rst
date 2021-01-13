@@ -9,6 +9,7 @@ This documentation is meant to guide users, admin and developers in the usage an
    :caption: Contents:
 
    install
+   sitebuilding_guide
    users_guide
    admin_guide
    dev_guide
