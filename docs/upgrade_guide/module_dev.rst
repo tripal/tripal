@@ -1,24 +1,63 @@
 
-Help for Upgrading a Module
-============================
+Upgrading an Extension Module
+================================
+
 This page provides useful short snippets of code to help module developers upgrade their Tripal v3 compatible modules to work with Drupal 8/9. This list is not comprehensive or complete, but is meant to be an aid.
+
+tripal_set_message() and tripal_report_error()
+---------------------------------------------------
+
+These functions have been upgraded and thus can be used as is. However, the new way is use a logger service as shown below.
+
+.. code-block:: php
+
+  $logger = \Drupal::service('tripal.logger');
+  $logger->notice('Hello world');
+  $logger->info('Hello world');
+  $logger->warning('Hello world');
+  $logger->error('Hello world');
+  $logger->debug('Hello world');
+
+drupal_set_message()
+----------------------
+
+Changelog: https://www.drupal.org/node/2774931
+
+.. code-block:: php
+
+  use Drupal\Core\Messenger\MessengerInterface;
+  // if not set by constructor...
+  $this->messenger = \Drupal::messenger();
+
+  // Add specific type of message within classes.
+  $this->messenger->addMessage('Hello world', 'custom');
+  $this->messenger->addError('Hello world');
+  $this->messenger->addStatus('Hello world');
+  $this->messenger->addWarning('Hello world');
+
+  // In procedural code:
+  $messenger = \Drupal::messenger();
+  $messenger->addMessage('Hello world', 'custom');
+  $messenger->addError('Hello world');
+  $messenger->addStatus('Hello world');
+  $messenger->addWarning('Hello world');
 
 Loading a User Object
 ---------------------
 To load a user using a known user ID.
 
-.. code-block:: php 
+.. code-block:: php
 
    // Load a user with a known UID in the $uid variable.
    $user = \Drupal\user\Entity\User::load($uid);
-   
+
 To get the current user:
 
 .. code-block:: php
 
    $current_user = \Drupal::currentUser();
    $user = \Drupal\user\Entity\User::load($current_user->id());
-  
+
 
 Creating Links
 --------------
@@ -42,9 +81,9 @@ Using Links in `drupal_set_message`:
 
 .. code-block:: php
 
-      $jobs_url = Link::fromTextAndUrl('jobs page', 
+      $jobs_url = Link::fromTextAndUrl('jobs page',
         Url::fromUri('internal:/admin/tripal/tripal_jobs'))->toString();
-      drupal_set_message(t("Check the @jobs_url for status.", 
+      drupal_set_message(t("Check the @jobs_url for status.",
         ['@jobs_url' => $jobs_url]));
 
 
@@ -53,13 +92,13 @@ Database Queries
 
 db_query
 ````````
-The `db_query` function is deprecated in Drupal 9. To perform a database query you will need to rework any calls to the `db_query` function in the following way: 
+The `db_query` function is deprecated in Drupal 9. To perform a database query you will need to rework any calls to the `db_query` function in the following way:
 
 .. code-block:: php
 
     // Get the database object.
     $database = \Drupal::database();
-    
+
     // Perform the query by passing the SQL statement and arguments.
     $query = $database->query($sql, $args);
 
@@ -67,7 +106,7 @@ The `db_query` function is deprecated in Drupal 9. To perform a database query y
     $job = $query->fetchObject();
 
 
-drupal_write_record 
+drupal_write_record
 ```````````````````
 The `drupal_write_record` was useful in Drupal 7 for directly working with tables that Drupal was aware of.  Here's the replacement:
 
@@ -130,11 +169,11 @@ You can find additional handlers at these API pages:
 
 The hook_views_default_views() function
 ```````````````````````````````````````
-In Drupal v7 this function was used to provide the set of views that you would like the end-user to see automatically when the module is installed.  This function is no longer used neither is the `<modulename>.views_default.inc` file where this hook would be stored. Instead the default views are provided in YML format.  
+In Drupal v7 this function was used to provide the set of views that you would like the end-user to see automatically when the module is installed.  This function is no longer used neither is the `<modulename>.views_default.inc` file where this hook would be stored. Instead the default views are provided in YML format.
 
 **Step 1: Create the View**: To recreate any views that your module provided in Drupal 7, you must recreate the View using the Views UI interface. No coding is required.
 
-**Step 2: Export the View**: Once the view has been recreated, you can export the YML for the view by navigating to ``Admin`` >> ``Configuration`` >> ``Configuration Synchronization``.  Click the ``Export`` tab at the top, then click the ``single item`` link below the tab.  In the page that appears you should then select ``View`` from the ``Configuration type`` dropdown and then select the name of the view you want to export. The YML code for the selected view will appear in the textarea below. The screenshot below shows an example: 
+**Step 2: Export the View**: Once the view has been recreated, you can export the YML for the view by navigating to ``Admin`` >> ``Configuration`` >> ``Configuration Synchronization``.  Click the ``Export`` tab at the top, then click the ``single item`` link below the tab.  In the page that appears you should then select ``View`` from the ``Configuration type`` dropdown and then select the name of the view you want to export. The YML code for the selected view will appear in the textarea below. The screenshot below shows an example:
 
 .. image:: ./default_views_export.png
 
@@ -166,7 +205,7 @@ In Drupal 8 use code similar to the following to embed a view on a page:
       ];
     }
 
-    
+
 Attaching CSS
 -------------
 In Drupal 8/9 CSS files are part of "libraries".  Libraries are groups of "assets" such as CSS, JS, or other resources needed for a particular set of pages that the module provides.  Libraries are defined in the `<module_name>.libraries.yml` file.  For information about preparing your CSS files with drupal see the page about `adding css and js files to a module <https://www.drupal.org/node/2274843>`_.  Once the CSS is setup correctly, you want to add "libraries" to pages that use them.  This is done by adding an '#attached' element to the render array returned by a page using the following form:
@@ -175,6 +214,6 @@ In Drupal 8/9 CSS files are part of "libraries".  Libraries are groups of "asset
 
    '#attached' => [
      'library' => ['<module_name>/<library_name>'],
-   ] 
-   
+   ]
+
 Replace `<module_name>` and `<library_name>` with appropriate values.

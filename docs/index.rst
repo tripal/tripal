@@ -13,4 +13,5 @@ This documentation is meant to guide users, admin and developers in the usage an
    users_guide
    admin_guide
    dev_guide
+   upgrade_guide
    contributing
