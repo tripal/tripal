@@ -1,6 +1,6 @@
 
-Developers' Handbook
-======================
+Extending Tripal
+===================
 
 .. toctree::
    :maxdepth: 2
@@ -11,4 +11,5 @@ Developers' Handbook
    dev_guide/biodb
    dev_guide/module_dev
    dev_guide/testing
+   dev_guide/tripal_console
    dev_guide/lessons

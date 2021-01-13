@@ -18,4 +18,3 @@ Custom Module Development
    module_dev/theme
    module_dev/caching
    module_dev/alternate_databackend
-   module_dev/upgrading

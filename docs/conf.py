@@ -27,14 +27,14 @@ lexers["php-annotations"] = PhpLexer(startinline=True, linenos=1)
 
 # -- Project information -----------------------------------------------------
 
-project = u'Tripal 4.x'
+project = u'Tripal'
 copyright = u'2020, Tripal Project Management Committee with the help of the Tripal Community'
 author = u'Tripal Project Management Committee with the help of the Tripal Community'
 
 # The short X.Y version
-version = u''
+version = u'4.x'
 # The full version, including alpha/beta/rc tags
-release = u'8.x-4.x'
+release = u'9.x-4.x'
 
 
 # -- General configuration ---------------------------------------------------
