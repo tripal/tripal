@@ -1,6 +1,6 @@
 
-Installation
-==============
+Install Tripal
+================
 
 Required Dependencies
 -----------------------
