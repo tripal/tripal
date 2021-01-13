@@ -26,19 +26,27 @@ class TripalEntityTypeListBuilder extends ConfigEntityListBuilder {
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity) {
+
+    // Add om the Label with link.
     $row['label'] = Link::fromTextAndUrl(
       $entity->label(),
       $entity->toUrl('edit-form', ['tripal_entity_type' => $entity->id()])
     )->toString();
+
+    // Add in the machine name.
     $row['id'] = $entity->id();
 
-    //dpm($entity, 'entity');
+    // Add in the term with link.
     $row['term'] = 'Uknown';
     $term = $entity->getTerm();
     if ($term) {
-      $vocab = $term->getVocab();
-      if ($vocab) {
-        $row['term'] = $term->getName() . ' (' . $vocab->getLabel() . ':' . $term->getAccession() . ')';
+      $idspace = $term->getIDSpace();
+      if ($idspace) {
+        $term_display = $term->getName() . ' (' . $idspace->getIDSpace() . ':' . $term->getAccession() . ')';
+        $row['term'] = Link::fromTextAndUrl(
+          $term_display,
+          $term->toUrl('canonical', ['tripal_term' => $term->id()])
+        )->toString();
       }
     }
     return $row + parent::buildRow($entity);
