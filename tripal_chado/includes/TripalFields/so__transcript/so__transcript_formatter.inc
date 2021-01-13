@@ -16,6 +16,7 @@ class so__transcript_formatter extends ChadoFieldFormatter {
 
     // Get the settings
     $settings = $display['settings'];
+    dpm($this->instance['settings']);
 
     $headers = ['Transcript Name', 'Identifier', 'Type', 'Location'];
     $rows = [];

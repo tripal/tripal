@@ -445,8 +445,8 @@ function tripal_field_instance_settings_form($field, $instance) {
   $field_class = $field['type'];
   if (tripal_load_include_field_class($field_class)) {
     $field = new $field_class($field, $instance);
-    $form =  $field->instanceSettingsForm();
-    return [$form];
+    $form = $field->instanceSettingsForm();
+    return $form;
   }
 }
 

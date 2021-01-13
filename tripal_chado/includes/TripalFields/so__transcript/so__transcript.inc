@@ -206,27 +206,35 @@ class so__transcript extends ChadoField {
     $fields = field_info_instances('TripalEntity', $bundle->name);
 
     foreach ($fields as $field_name => $details) {
-      $weight = $details['display']['default']['weight'];
-      $element['field-'. $weight] = [
+
+      $defaults = [];
+      if (array_key_exists($field_name, $settings['transcript_fields'])) {
+        $defaults = $settings['transcript_fields'][$field_name];
+      }
+
+      $weight = array_key_exists('weight', $defaults) ? $defaults['weight'] : $details['display']['default']['weight'];
+      $checked =  array_key_exists('show', $defaults) ? $defaults['show'] : 0;
+      $element['themeable']['field-'. $weight] = [
         '#type' => 'value',
         '#value' => $field_name,
         '#weight' => $weight,
       ];
-      $element['field-'. $weight . '-check'] = [
+      $element['themeable']['field-'. $weight . '-check'] = [
         '#type' => 'checkbox',
         '#weight' => $weight,
+        '#default_value' => $checked,
       ];
-      $element['field-'. $weight . '-label'] = [
+      $element['themeable']['field-'. $weight . '-label'] = [
         '#type' => 'markup',
         '#markup' => t($details['label']),
         '#weight' => $weight,
       ];
-      $element['field-'. $weight . '-description'] = [
+      $element['themeable']['field-'. $weight . '-description'] = [
         '#type' => 'markup',
         '#markup' => t($details['description']),
         '#weight' => $weight,
       ];
-      $element['field-'. $weight . '-weight'] = [
+      $element['themeable']['field-'. $weight . '-weight'] = [
         '#type' => 'textfield',
         '#default_value' => $weight,
         '#weight' => $weight,
@@ -237,6 +245,45 @@ class so__transcript extends ChadoField {
       ];
     }
     return $element;
+  }
+
+  /**
+   * @see TripalField::instanceSettingsFormValidate()
+   */
+  public function instanceSettingsFormValidate($form, &$form_state) {
+    $settings = $form_state['values']['instance']['settings']['themeable'];
+
+    // Iterate through the themable elements to get the weights and
+    // checks for each field. Store that info in a temp array.
+    $temp = [];
+    foreach ($settings as $element => $value) {
+      $matches = [];
+      if (preg_match('/^field-(\d+)-check$/', $element, $matches)) {
+        $orig_weight = $matches[1];
+        $new_weight = $settings['field-' . $orig_weight . '-weight'];
+        $field_name = $settings['field-' . $orig_weight];
+        $temp[$new_weight]['name'] = $field_name;
+        $temp[$new_weight]['show'] = $value;
+      }
+    }
+
+    // Sort and resstart the weights from zero.
+    ksort($temp);
+    $temp = array_values($temp);
+
+    // Now build the transcirpt_fields setting value.
+    $transcript_fields = [];
+    foreach ($temp as $weight => $field) {
+      $field_name = $field['name'];
+      $transcript_fields[$field_name] = [
+        'weight' => $weight,
+        'show' => $field['show'],
+      ];
+    }
+
+    // Now store the values for the setting properly and remove the unwanted.
+    $form_state['values']['instance']['settings']['transcript_fields'] = $transcript_fields;
+    unset($form_state['values']['instance']['settings']['themeable']);
   }
 
   /**
@@ -284,11 +331,14 @@ class so__transcript extends ChadoField {
     $fset = [];
     $fset['fields'] = [
       '#type' => 'fieldset',
-      '#title' => 'Field Selection',
-      '#description' => t('Select the fields that you want displayed on the gene page for each transcript that belongs to the gene.  If no fields are selected then a default display is provided.'),
+      '#title' => 'Transcipt (mRNA) Field Selection',
+      '#description' => t('Select the fields that you want displayed on the gene page for each transcript.  If no fields are selected then a default display is provided.'),
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
+      '#attributes' => ['class' => ['collapsible', 'collapsed']],
     ];
+    drupal_add_library('system', 'drupal.collapse');
+
     $fset['fields']['table'] = [
       '#type' => 'markup',
       '#markup' => theme_table($table),
