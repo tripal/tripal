@@ -528,22 +528,17 @@ function chado_insert_cvterm($term, $options = [], $schema_name = 'chado') {
     return 0;
   }
 
-
-
-  // Make sure the CV name exists.
-
   // Check if CV already exists
-  // $cv = chado_get_cv(['name' => $cvname], [], $schema_name); // BEFOREOPT: 5.9ms
-  
+  //$cv = chado_get_cv(['name' => $cvname], [], $schema_name); // BEFOREOPT: 5.9ms
   // OPT: 5.3ms
-  $sql_cv = "SELECT * FROM {cv} WHERE name = :name LIMIT 1";
+  $sql_cv = "SELECT cv_id FROM {cv} WHERE name = :name LIMIT 1";
   $results_cv = chado_query($sql_cv, [':name' => $cvname], [], $schema_name);
   $cv = null;
   foreach ($results_cv as $row_cv) {
-    $cv = "dummyval";
+    $cv = new stdClass();
+    $cv->cv_id = $row_cv->cv_id;
   }
   
-
   // If CV does not exist
   if (!$cv) {
     $cv = chado_insert_cv($cvname, '', [], $schema_name);

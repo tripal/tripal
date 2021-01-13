@@ -187,8 +187,10 @@ class ChadoCvAPITest extends BrowserTestBase {
 
     $time_elapsed_cv = $time_end_cv - $time_start_cv;
     $time_elapsed_cvterm = $time_end_cvterm - $time_start_cvterm;
+    /*
     echo "\n\n\n\n";
     echo $time_elapsed_cv . " ms\n";
     echo $time_elapsed_cvterm . " ms\n";
+    */
   }
 }
