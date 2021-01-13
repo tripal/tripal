@@ -5,6 +5,7 @@ namespace Drupal\tripal\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Drupal\Core\Url;
+use Drupal\Core\Link;
 
 /**
  * Controller routines related to Tripal Entity and Tripal Entity Type UIs.
@@ -33,6 +34,7 @@ class TripalEntityUIController extends ControllerBase {
       ->getStorage('tripal_entity_type')
       ->loadByProperties([]);
 
+
     // Now compile them into variables to be used in twig.
     $bundles = [];
     foreach ($bundle_entities as $entity) {
@@ -44,6 +46,24 @@ class TripalEntityUIController extends ControllerBase {
         'url' => Url::fromRoute('entity.tripal_entity.add_form', ['tripal_entity_type' => $entity->getName()]),
       ];
     }
+
+    // If there are no tripal content types / bundles
+    if (count($bundle_entities) <= 0) {
+      $url_vocab_management = Url::fromRoute('entity.tripal_vocab.collection');
+      $link = Link::fromTextAndUrl('creating a vocabulary', 
+                $url_vocab_management)->toString();
+
+      // Because this message contains a link, we need to render it before
+      // displaying it using the messenger. 
+      $message = 'There are currently no tripal content types, ' .
+                 'please begin by ' . $link . '.';
+      $rendered_message = \Drupal\Core\Render\Markup::create($message);
+
+      // Display the message to create a vocabulary
+      $messenger = \Drupal::messenger();
+      $messenger->addMessage($rendered_message,'warning');
+    }
+    
 
     // Finally, let tripal-entity-content-add-list.html.twig add the markup.
     return [

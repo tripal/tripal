@@ -37,4 +37,59 @@ If you need to install Chado programmatically, use the following service from wi
 .. code-block:: php
 	:caption: Installs Chado version 1.3 in a schema named 'chado'.
 
-	\Drupal::service('tripal_chado.chadoInstaller')->install(1.3, 'chado');
+	$installer = \Drupal::service('tripal_chado.chadoInstaller');
+	$installer->setSchema('chado');
+	$success = $installer->install(1.3);
+
+Alternatively, you can install chado via the command line using the following Drush command.
+
+.. code-block:: php
+	:caption: Installs Chado version 1.3 in a schema named 'chado' using Drush.
+
+	drush trp-install-chado --schema-name='chado' --version=1.3
+
+Tripal Vocabularies & Terms
+-----------------------------
+
+Tripal Vocabularies and Terms are database agnostic and store their details in the Drupal database as controlled by the Drupal Entity API. Tripal has implemented a TripalTermStorage Plugin to allow Tripal extension modules to provide additional storage for Tripal Vocabularies, IDSpaces and Terms. The core Tripal Chado module has implemented this plugin to ensure these Tripal entities are linked to their Chado equivalents.
+
+The following describes the mapping between Tripal Entities and their Chado counterparts:
+
+ - Tripal Vocabularies (see TripalVocab class) = cv
+
+ 		- TripalVocab::namespace = cv.name
+		- TripalVocab::name = cv.definition
+		- TripalVocab::url = db.url
+
+ - Tripal Vocabulary IDSpaces (see TripalVocabSpace class) = db
+
+ 		- TripalVocabSpace::name = db.name
+		- TripalVocabSpace::description = db.description
+		- TripalVocabSpace::urlprefix = db.urlprefix
+
+ - Tripal Terms (see TripalTerm class) = cvterm and dbxref
+
+ 		- TripalTerm::name = cvterm.name
+		- TripalTerm::definition = cvterm.definition
+		- TripalTerm::accession = dbxref.accession
+
+For information on this mapping on a per entity basis, the chado details have been added to the Tripal entities. The following examples show how to access them.
+
+.. code-block:: php
+
+	// First, retrieve the Tripal Vocabulary object.
+	$tripalvocab = \Drupal::service('tripal.tripalVocab.manager')->getVocabularies([
+		'namespace' => 'sequence',
+	]);
+
+	// Now access the cv.cv_id from that object.
+	$cv_id = $tripalvocab->chado_record_id;
+
+	// You can also access the chado record directly...
+	$cv = $tripalvocab->chado_record;
+
+	// The same pattern holds true for IDspaces and Terms.
+	$db_id = $tripalIDSpace->chado_record_id;
+	$db = $tripalIDSpace->chado_record;
+	$cvterm_id = $tripalTerm->chado_record_id;
+	$cvterm = $tripalTerm->chado_record;

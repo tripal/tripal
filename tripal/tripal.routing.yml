@@ -193,15 +193,15 @@ tripal.content_bio_data_field_check:
 # TripalVocab:
 
 # entity.tripal_vocab.canonical:
-#   path: /admin/structure/tripal_vocab/{tripal_vocab}
+#   path: /admin/structure/tripal-vocabularies/vocab/{tripal_vocab}
 # entity.tripal_vocab.add-form:
-#   path: '/admin/structure/tripal_vocab/add'
+#   path: '/admin/structure/tripal-vocabularies/vocab/add'
 # entity.tripal_vocab.edit-form:
-#   path: '/admin/structure/tripal_vocab/{tripal_vocab}/edit'
+#   path: '/admin/structure/tripal-vocabularies/vocab/{tripal_vocab}/edit'
 # entity.tripal_vocab.delete-form:
-#   path: '/admin/structure/tripal_vocab/{tripal_vocab}/delete'
+#   path: '/admin/structure/tripal-vocabularies/vocab/{tripal_vocab}/delete'
 entity.tripal_vocab.collection:
-  path: '/admin/structure/tripal_vocab'
+  path: '/admin/structure/tripal-vocabularies/vocab'
   defaults:
     _entity_list: 'tripal_vocab'
     _title: 'Tripal Vocabularies'
@@ -211,15 +211,15 @@ entity.tripal_vocab.collection:
 # TripalVocabSpace:
 
 # entity.tripal_vocab_space.canonical:
-#   path: /admin/structure/tripal_idspace/{tripal_vocab_space}
+#   path: /admin/structure/tripal-vocabularies/idspace/{tripal_vocab_space}
 # entity.tripal_vocab_space.add-form:
-#   path: '/admin/structure/tripal_idspace/add'
+#   path: '/admin/structure/tripal-vocabularies/idspace/add'
 # entity.tripal_vocab_space.edit-form:
-#   path: '/admin/structure/tripal_idspace/{tripal_vocab_space}/edit'
+#   path: '/admin/structure/tripal-vocabularies/idspace/{tripal_vocab_space}/edit'
 # entity.tripal_vocab_space.delete-form:
-#   path: '/admin/structure/tripal_idspace/{tripal_vocab_space}/delete'
+#   path: '/admin/structure/tripal-vocabularies/idspace/{tripal_vocab_space}/delete'
 entity.tripal_vocab_space.collection:
-  path: '/admin/structure/tripal_idspace'
+  path: '/admin/structure/tripal-vocabularies/idspace'
   defaults:
     _entity_list: 'tripal_vocab_space'
     _title: 'Tripal Vocabulary IDSpaces'
@@ -229,15 +229,15 @@ entity.tripal_vocab_space.collection:
 # TripalTerm:
 
 # entity.tripal_term.canonical:
-#   path: /admin/structure/tripal_term/{tripal_term}
+#   path: /admin/structure/tripal-vocabularies/term/{tripal_term}
 # entity.tripal_term.add-form:
-#   path: '/admin/structure/tripal_term/add'
+#   path: '/admin/structure/tripal-vocabularies/term/add'
 # entity.tripal_term.edit-form:
-#   path: '/admin/structure/tripal_term/{tripal_term}/edit'
+#   path: '/admin/structure/tripal-vocabularies/term/{tripal_term}/edit'
 # entity.tripal_term.delete-form:
-#   path: '/admin/structure/tripal_term/{tripal_term}/delete'
+#   path: '/admin/structure/tripal-vocabularies/term/{tripal_term}/delete'
 entity.tripal_term.collection:
-  path: '/admin/structure/tripal_term'
+  path: '/admin/structure/tripal-vocabularies/term'
   defaults:
     _entity_list: 'tripal_term'
     _title: 'Tripal Terms'

@@ -17,6 +17,11 @@ function tripal_chado_schema() {
   $schema['chado_installations'] = tripal_chado_chado_installations_schema();
   $schema['tripal_custom_tables'] = tripal_chado_tripal_custom_tables_schema();
 
+  // Add tables to integrate the independant Tripal Vocabularies to Chado terms.
+  $schema['chado_tripalvocab'] = tripal_chado_chado_vocab();
+  $schema['chado_tripalvocabspace'] = tripal_chado_chado_vocabidspace();
+  $schema['chado_tripalterm'] = tripal_chado_chado_term();
+
   return $schema;
 }
 
@@ -58,12 +63,107 @@ function tripal_chado_chado_installations_schema() {
 }
 
 /**
- * Describes the Tripal Custom Tables (tripal_custom_Tables) table.
- * This keeps track of tables created by Tripal and stored in chado 
- * 
- * PUMPKIN? that may or may not
- * PUMPKIN? also be materialized views. (is this true? it doesn't)
- * PUMPKIN? like mviews.
+ * Links Tripal Vocabularies to Chado cvs.
+ */
+function tripal_chado_chado_vocab() {
+  return [
+    'fields' => [
+      'mapping_id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'schema_name' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'cv_id' => [
+        'type' => 'int',
+        'not null' => TRUE,
+      ],
+      'tripalvocab_id' => [
+        'type' => 'int',
+        'not null' => TRUE,
+      ],
+    ],
+    'indexes' => [
+      'chado' => ['schema_name', 'cv_id'],
+      'tripal' => ['tripalvocab_id'],
+    ],
+    'primary key' => ['mapping_id'],
+  ];
+}
+
+/**
+ * Links Tripal Vocabulary IDSpaces to Chado dbs.
+ */
+function tripal_chado_chado_vocabidspace() {
+  return [
+    'fields' => [
+      'mapping_id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'schema_name' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'db_id' => [
+        'type' => 'int',
+        'not null' => TRUE,
+      ],
+      'tripalvocabspace_id' => [
+        'type' => 'int',
+        'not null' => TRUE,
+      ],
+    ],
+    'indexes' => [
+      'chado' => ['schema_name', 'db_id'],
+      'tripal' => ['tripalvocabspace_id'],
+    ],
+    'primary key' => ['mapping_id'],
+  ];
+}
+
+/**
+ * Links Tripal Vocabularies to Chado cvs.
+ */
+function tripal_chado_chado_term() {
+  return [
+    'fields' => [
+      'mapping_id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'schema_name' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'cvterm_id' => [
+        'type' => 'int',
+        'not null' => TRUE,
+      ],
+      'tripalterm_id' => [
+        'type' => 'int',
+        'not null' => TRUE,
+      ],
+    ],
+    'indexes' => [
+      'chado' => ['schema_name', 'cvterm_id'],
+      'tripal' => ['tripalterm_id'],
+    ],
+    'primary key' => ['mapping_id'],
+  ];
+}
+
+/**
+ * Describes the Tripal Custom Tables (tripal_custom_tables) table.
+ * This keeps track of tables created by Tripal and stored in chado.
  */
 function tripal_chado_tripal_custom_tables_schema() {
   return [
