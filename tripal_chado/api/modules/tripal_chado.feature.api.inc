@@ -793,7 +793,7 @@ function chado_get_fasta_defline($feature, $notes = '', $featureloc = NULL, $typ
     $defline .= "length=" . $length . "bp|";
   }
   if ($featureloc) {
-    $defline .= "location=Sequence derived from alignment at " . chado_get_location_string($featureloc);
+    $defline .= "location=Sequence derived from: " . chado_get_location_string($featureloc);
     $defline .= " (" . $featureloc->srcfeature_id->organism_id->genus . " " . $featureloc->srcfeature_id->organism_id->species . ")|";
   }
   if ($notes) {

@@ -26,6 +26,7 @@ class data__sequence_record_formatter extends ChadoFieldFormatter {
     $fmax_term = chado_get_semweb_term('featureloc', 'fmax');
     $strand_term = chado_get_semweb_term('featureloc', 'strand');
     $phase_term = chado_get_semweb_term('featureloc', 'phase');
+    $fasta_defline = 'local:fasta_definition';
 
     $content = [];
 
@@ -36,6 +37,7 @@ class data__sequence_record_formatter extends ChadoFieldFormatter {
 
       $num_bases = 50;
       $residues = '<pre class="residues-formatter">';
+      $residues .= ">" . $item['value'][$fasta_defline] . "<br>";
       $residues .= wordwrap($item['value'][$sequence_term], $num_bases, "<br>", TRUE);
       $residues .= '</pre>';
 

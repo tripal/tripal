@@ -84,8 +84,8 @@ class data__sequence_record extends ChadoField {
     // If this is an mRNA feature then add the gene parent, full length
     // mRNA, CDS and protein.
     if ($feature->type_id->name == 'mRNA') {
-      $this->addGeneParent($entity, $feature, $field_name);
       $featurelocs = $this->addFLmRNA($entity, $feature, $field_name);
+      $this->addGeneParent($entity, $feature, $field_name);
       if (count($featurelocs) > 0) {
         $this->addCDS($entity, $feature, $field_name, $featurelocs);
         $this->addProtein($entity, $feature, $field_name);
@@ -111,6 +111,7 @@ class data__sequence_record extends ChadoField {
     $seq_coords_term = 'data:2012';
     $seq_length_term = chado_get_semweb_term('feature', 'seqlen');
     $seq_md5sum_term = chado_get_semweb_term('feature', 'md5checksum');
+    $fasta_defline = 'local:fasta_definition';
 
     $options = [
       'derive_from_parent' => 1,
@@ -123,12 +124,13 @@ class data__sequence_record extends ChadoField {
 
       $entity->{$field_name}['und'][]['value'] = [
         $sequence_term => $seq['residues'],
-        $label_term =>  ucfirst(preg_replace('/_/', ' ', $feature->type_id->name)) . ' Sequence (' . number_format(strlen($seq['residues'])) . 'bp)',
-        $description_term => 'This sequence was extracted from the reference sequence location at ' . $coords['schema:description'] . '.',
+        $label_term =>  'Derived ' . ucfirst(preg_replace('/_/', ' ', $feature->type_id->name)) . ' Sequence (' . number_format(strlen($seq['residues'])) . 'bp)',
+        $description_term => 'This sequence was derived by extracting bases from the reference sequence location at ' . $coords['schema:description'] . '.',
         $seq_coords_term => $coords,
         $seq_length_term => strlen($seq['residues']),
         $seq_md5sum_term => md5($seq['residues']),
-        $type_term => $feature->type_id->name
+        $type_term => $feature->type_id->name,
+        $fasta_defline => $seq['defline'],
       ];
 
       $featurelocs[] = $featureloc;
@@ -137,10 +139,7 @@ class data__sequence_record extends ChadoField {
   }
 
   /**
-   *
-   * @param unknown $entity
-   * @param unknown $feature
-   * @param unknown $field_name
+   * Adds the primary sequence from the feature.residues column.
    */
   private function addPrimary(&$entity, $feature, $field_name) {
 
@@ -150,25 +149,24 @@ class data__sequence_record extends ChadoField {
     $sequence_term = chado_get_semweb_term('feature', 'residues');
     $seq_length_term = chado_get_semweb_term('feature', 'seqlen');
     $seq_md5sum_term = chado_get_semweb_term('feature', 'md5checksum');
+    $fasta_defline = 'local:fasta_definition';
 
     if ($feature->residues) {
       $entity->{$field_name}['und'][]['value'] = [
-        $label_term => 'Primary ' . preg_replace('/_/', ' ', $feature->type_id->name) . 'Sequence (' . number_format($feature->seqlen) . 'bp)',
+        $label_term => 'Primary ' . preg_replace('/_/', ' ', $feature->type_id->name) . ' Sequence (' . number_format($feature->seqlen) . 'bp)',
         $description_term => 'This is the primary representative sequence for this feature.',
         $sequence_term => $feature->residues,
         $seq_length_term => $feature->seqlen,
         $seq_md5sum_term => $feature->md5checksum,
-        $type_term => $feature->type_id->name
+        $type_term => $feature->type_id->name,
+        $fasta_defline => chado_get_fasta_defline($feature)
       ];
     }
   }
 
 
   /**
-   *
-   * @param unknown $entity
-   * @param unknown $feature
-   * @param unknown $field_name
+   * Adds the full length mRNA sequence (only for gene features).
    */
   private function addFLmRNA(&$entity, $feature, $field_name) {
     $label_term = 'rdfs:label';
@@ -178,6 +176,7 @@ class data__sequence_record extends ChadoField {
     $seq_coords_term = 'data:2012';
     $seq_length_term = chado_get_semweb_term('feature', 'seqlen');
     $seq_md5sum_term = chado_get_semweb_term('feature', 'md5checksum');
+    $fasta_defline = 'local:fasta_definition';
 
     // Sometimes an mRNA may have only exons, only CDS or both exons and
     // CDS.  We need to know which.
@@ -212,12 +211,13 @@ class data__sequence_record extends ChadoField {
 
       $entity->{$field_name}['und'][]['value'] = [
         $sequence_term => $seq['residues'],
-        $label_term => 'Full Length mRNA Sequence (' . number_format(strlen($seq['residues'])) . 'bp)',
-        $description_term => 'This full length mRNA sequence was extracted from the reference sequence location at ' . $coords['schema:description'] . ' and contains: ' . implode(', ', $types) ,
+        $label_term => 'Derived mRNA Sequence (' . number_format(strlen($seq['residues'])) . 'bp)',
+        $description_term => 'This full length mRNA sequence was derived by extracting bases from the reference sequence location at ' . $coords['schema:description'] . ' and contains: ' . implode(', ', $types) ,
         $seq_coords_term => $coords,
         $seq_length_term => strlen($seq['residues']),
         $seq_md5sum_term => md5($seq['residues']),
-        $type_term => 'mRNA'
+        $type_term => 'mRNA',
+        $fasta_defline => $seq['defline']
       ];
 
       $featurelocs[] = $featureloc;
@@ -226,9 +226,7 @@ class data__sequence_record extends ChadoField {
   }
 
   /**
-   *
-   * @param unknown $featureloc_id
-   * @return unknown
+   * Retrieves the feature location information.
    */
   private function getFeatureLoc($featureloc_id) {
     $featurelocs_sql = "
@@ -241,9 +239,7 @@ class data__sequence_record extends ChadoField {
   }
 
   /**
-   *
-   * @param unknown $featureloc
-   * @return string[]|number[]|NULL[]|unknown[]
+   * Gets the sequence location string for a featureloc record.
    */
   private function getSequenceCoords($featureloc) {
     $description_term = 'schema:description';
@@ -277,10 +273,7 @@ class data__sequence_record extends ChadoField {
   }
 
   /**
-   *
-   * @param unknown $entity
-   * @param unknown $feature
-   * @param unknown $field_name
+   * Adds the CDS sequence (only for an mRNA feature)
    */
   private function addCDS(&$entity, $feature, $field_name, $featurelocs) {
     $label_term = 'rdfs:label';
@@ -289,6 +282,7 @@ class data__sequence_record extends ChadoField {
     $sequence_term = chado_get_semweb_term('feature', 'residues');
     $seq_length_term = chado_get_semweb_term('feature', 'seqlen');
     $seq_md5sum_term = chado_get_semweb_term('feature', 'md5checksum');
+    $fasta_defline = 'local:fasta_definition';
 
     foreach ($featurelocs as $featureloc) {
       $cds_feature = [
@@ -311,20 +305,18 @@ class data__sequence_record extends ChadoField {
         $entity->{$field_name}['und'][]['value'] = [
           $label_term => 'Coding Sequence (' . number_format($cds_sequence[0]['length']) . 'bp)',
           $sequence_term => $cds_sequence[0]['residues'],
-          $description_term => 'This CDS was extracted from the reference sequence location at ' . $coords['schema:description'] . '.' ,
+          $description_term => 'This CDS was derived by extracting bases from the reference sequence location at ' . $coords['schema:description'] . '.' ,
           $seq_length_term => $cds_sequence[0]['length'],
           $seq_md5sum_term => md5($cds_sequence[0]['residues']),
-          $type_term => 'CDS'
+          $type_term => 'CDS',
+          $fasta_defline => $cds_sequence[0]['defline']
         ];
       }
     }
   }
 
   /**
-   *
-   * @param unknown $entity
-   * @param unknown $feature
-   * @param unknown $field_name
+   * Adds the sequecne for a gene parent (only for gene children).
    */
   private function addGeneParent(&$entity, $feature, $field_name) {
     $label_term = 'rdfs:label';
@@ -334,6 +326,7 @@ class data__sequence_record extends ChadoField {
     $sequence_term = chado_get_semweb_term('feature', 'residues');
     $seq_length_term = chado_get_semweb_term('feature', 'seqlen');
     $seq_md5sum_term = chado_get_semweb_term('feature', 'md5checksum');
+    $fasta_defline = 'local:fasta_definition';
 
     $sql = "
       SELECT FO.*
@@ -355,7 +348,8 @@ class data__sequence_record extends ChadoField {
           $label_term => 'The gene sequence.',
           $seq_length_term => strlen($gene->residues),
           $seq_md5sum_term => md5($gene->residues),
-          $type_term => 'polypeptide'
+          $type_term => 'gene',
+          $fasta_defline => chado_get_fasta_defline($gene),
         ];
       }
       else {
@@ -364,13 +358,14 @@ class data__sequence_record extends ChadoField {
           $featureloc = $this->getFeatureLoc($seq['featureloc_id']);
           $coords = $this->getSequenceCoords($featureloc);
           $entity->{$field_name}['und'][]['value'] = [
-            $label_term => 'Gene Sequence (' . number_format(strlen($seq['residues'])) . 'bp)',
+            $label_term => 'Derived Gene Sequence (' . number_format(strlen($seq['residues'])) . 'bp)',
             $sequence_term => $seq['residues'],
-            $description_term => 'This gene sequence was extracted from the reference sequence location at ' . $coords['schema:description'] . '.' ,
+            $description_term => 'This gene sequence was derived by extracting bases from the reference sequence location at ' . $coords['schema:description'] . '.' ,
             $seq_coords_term => $coords,
             $seq_length_term => strlen($seq['residues']),
             $seq_md5sum_term => md5($seq['residues']),
-            $type_term => 'gene'
+            $type_term => 'gene',
+            $fasta_defline => $seq['defline'],
           ];
         }
       }
@@ -378,10 +373,7 @@ class data__sequence_record extends ChadoField {
   }
 
   /**
-   *
-   * @param unknown $entity
-   * @param unknown $feature
-   * @param unknown $field_name
+   * Adds the protein sequence (only for mRNA features).
    */
   private function addProtein(&$entity, $feature, $field_name) {
     $label_term = 'rdfs:label';
@@ -390,6 +382,7 @@ class data__sequence_record extends ChadoField {
     $sequence_term = chado_get_semweb_term('feature', 'residues');
     $seq_length_term = chado_get_semweb_term('feature', 'seqlen');
     $seq_md5sum_term = chado_get_semweb_term('feature', 'md5checksum');
+    $fasta_defline = 'local:fasta_definition';
 
     $sql = "
       SELECT F.*
@@ -412,7 +405,8 @@ class data__sequence_record extends ChadoField {
           $description_term => 'The protein sequence.',
           $seq_length_term => strlen($protein->residues),
           $seq_md5sum_term => md5($protein->residues),
-          $type_term => 'polypeptide'
+          $type_term => 'polypeptide',
+          $fasta_defline => chado_get_fasta_defline($protein),
         ];
       }
     }
