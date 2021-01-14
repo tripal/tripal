@@ -79,23 +79,6 @@ function tripal_theme() {
 }
 
 /**
- * Implements hook_library_info().
- */
-function tripal_library_info() {
-  // @see css/tripal.toolbar.css and miscellaneous.
-  $libraries = [];
-  $toolbar_style = drupal_get_path('module', 'tripal') . '/css/tripal.toolbar.css';
-
-  $libraries['tripal.icons'] = [
-    'title' => 'Tripal toolbar icons',
-    'version' => '0.1',
-    'css' => [$toolbar_style => []],
-  ];
-
-  return $libraries;
-}
-
-/**
  * Implements hook_toolbar().
  */
 function tripal_toolbar () {
@@ -115,11 +98,6 @@ function tripal_toolbar () {
 
   $items['tripal'] += [
     '#type' => 'toolbar_item',
-    '#attached' => [
-      'library' => [
-        ['tripal' => 'tripal.icons']
-      ]
-    ],
     'tab' => [
       '#type' => 'link',
       '#title' => t('Tripal'),
