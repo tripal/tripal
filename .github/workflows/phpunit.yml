@@ -13,7 +13,7 @@ jobs:
     # PHP Targets
     strategy:
       matrix:
-        dockertags: ['drupal8.9.x-dev', 'drupal9.0.x-dev', 'drupal9.1.x-dev']
+        dockertags: ['drupal8.9.x-dev', 'drupal9.0.x-dev']
     # Give the builds names so we can tell them apart
     name: PHPUnit Testing (TripalDocker ${{ matrix.dockertags }})
 
