@@ -86,7 +86,7 @@ function tripal_library_info() {
   $libraries = [];
   $toolbar_style = drupal_get_path('module', 'tripal') . '/css/tripal.toolbar.css';
 
-  $lbraries['tripal.icons'] = [
+  $libraries['tripal.icons'] = [
     'title' => 'Tripal toolbar icons',
     'version' => '0.1',
     'css' => [$toolbar_style => []],
