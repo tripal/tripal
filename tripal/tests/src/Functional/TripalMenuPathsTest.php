@@ -43,7 +43,7 @@ class TripalMenuPathsTest extends BrowserTestBase {
     // Run the tests.
     foreach ($data as $datum) {
       $html = $this->drupalGet($datum[1]);
-      $assert->statusCodeEquals($datum[0], 'Recieved an unexpected status code for '.$datum[1]);
+      $assert->statusCodeEquals($datum[0]);
     }
   }
 
