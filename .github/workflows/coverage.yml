@@ -2,7 +2,7 @@
 name: Test Coverage
 
 # When do we want the tests to run?
-on: [pull_request]
+on: [push, pull_request]
 
 # Define jobs that are part of the workflow
 jobs:
