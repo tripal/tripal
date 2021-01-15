@@ -1,0 +1,49 @@
+# Run some PHPUnit tests
+name: Test Coverage
+
+# When do we want the tests to run?
+on: [pull_request]
+
+# Define jobs that are part of the workflow
+jobs:
+  # Job 1: 'build'
+  run-tests:
+    # Runner type
+    runs-on: ubuntu-latest
+    name: Test Coverage
+
+    steps:
+      # Check out the repo
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      # Just spin up docker the good ol' fashion way.
+      - name: Spin up Docker
+        run: |
+          docker run --publish=80:80 --name=tripaldocker -tid \
+            --volume=`pwd`:/var/www/drupal8/web/modules/contrib/tripal \
+            tripalproject/tripaldocker:drupal8.9.x-dev
+          docker exec tripaldocker service postgresql restart
+          docker exec tripaldocker drush cr
+          docker exec tripaldocker drush trp-drop-chado --schema-name=chado
+          docker exec tripaldocker drush trp-prep-tests
+      # Runs the PHPUnit tests.
+      # https://github.com/mheap/phpunit-github-actions-printer is used
+      # to report PHPUnit fails in a meaningful way to github in PRs.
+      # Stopped using mheap due to warning w/ phpunit8->9
+      - name: Run Tests for Coverage
+        env:
+          SIMPLETEST_BASE_URL: "http://localhost"
+          SIMPLETEST_DB: "pgsql://drupaladmin:drupal8developmentonlylocal@localhost/sitedb"
+          BROWSER_OUTPUT_DIRECTORY: "/var/www/drupal8/web/sites/default/files/simpletest"
+        run: |
+          docker exec tripaldocker service postgresql restart
+          docker exec -e SIMPLETEST_BASE_URL=$SIMPLETEST_BASE_URL \
+            -e SIMPLETEST_DB=$SIMPLETEST_DB \
+            -e BROWSER_OUTPUT_DIRECTORY=$BROWSER_OUTPUT_DIRECTORY \
+            --workdir=/var/www/drupal8/web/modules/contrib/tripal \
+            tripaldocker phpunit --coverage-text --coverage-clover ./clover.xml
+          docker cp tripaldocker:/var/www/drupal8/web/modules/contrib/tripal/clover.xml ./clover.xml
+      - name: Publish code coverage to Code Climate
+        uses: paambaati/codeclimate-action@v2.7.5
+        env:
+          CC_TEST_REPORTER_ID: 33d9655ce902af56f5f85c901a8ee79948aaa5b5c5db2814037202517bfe7b26
