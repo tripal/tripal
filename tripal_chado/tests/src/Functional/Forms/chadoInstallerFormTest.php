@@ -68,7 +68,7 @@ class chadoInstallerFormTest extends BrowserTestBase {
       'schema_name' => uniqid(),
     ];
     // Submit the form.
-    $this->drupalPostForm(null, $values, 'Submit');
+    $this->submitForm($values, 'Submit');
 
     // Now there should be a message mentioning the schema to be installed.
     $assert->responseContains($values['schema_name']);
