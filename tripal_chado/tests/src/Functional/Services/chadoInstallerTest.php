@@ -22,7 +22,7 @@ class chadoInstallerTest extends BrowserTestBase {
    *
    * @var array
    */
-  public static $modules = ['tripal', 'tripal_chado'];
+  protected static $modules = ['tripal', 'tripal_chado'];
 
   /**
    * Tests that we can install chado and also drop it.

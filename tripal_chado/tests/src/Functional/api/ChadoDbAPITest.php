@@ -22,13 +22,13 @@ class ChadoDbAPITest extends BrowserTestBase {
    * Modules to enable.
    * @var array
    */
-  public static $modules = ['tripal', 'tripal_chado'];
+  protected static $modules = ['tripal', 'tripal_chado'];
 
   /**
    * Schema to do testing out of.
    * @var string
    */
-  public static $schemaName = 'testchado';
+  protected static $schemaName = 'testchado';
 
   /**
    * Tests chado.db associated functions.
@@ -96,7 +96,7 @@ class ChadoDbAPITest extends BrowserTestBase {
    * @group chado-db
    */
   public function testDbxref() {
-    
+
 		$this->markTestIncomplete('This test is causing errors in the new environment.');
 
 		// INSERT.

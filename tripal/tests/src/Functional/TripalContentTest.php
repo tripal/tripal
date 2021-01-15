@@ -15,7 +15,7 @@ use Drupal\Core\Url;
 class TripalContentTest extends BrowserTestBase {
     protected $defaultTheme = 'stable';
 
-    public static $modules = ['tripal', 'block', 'field_ui'];
+    protected static $modules = ['tripal', 'block', 'field_ui'];
 
   /**
    * Basic tests for Tripal Content Types.
@@ -44,9 +44,9 @@ class TripalContentTest extends BrowserTestBase {
     $assert->linkExists('creating a vocabulary');
 
     // Visit the link for creating a vocabulary and make sure it loads
-    $this->clickLink('creating a vocabulary'); 
+    $this->clickLink('creating a vocabulary');
     $assert->pageTextContains('tripal vocabulary');
-    
+
   }
 
 }

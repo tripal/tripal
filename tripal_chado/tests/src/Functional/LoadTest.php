@@ -20,7 +20,7 @@ class LoadTest extends BrowserTestBase {
    *
    * @var array
    */
-  public static $modules = ['tripal_chado'];
+  protected static $modules = ['tripal_chado'];
 
   /**
    * A user with permission to administer site configuration.

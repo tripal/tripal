@@ -21,7 +21,7 @@ class chadoInstallerFormTest extends BrowserTestBase {
    *
    * @var array
    */
-  public static $modules = ['tripal', 'tripal_chado'];
+  protected static $modules = ['tripal', 'tripal_chado'];
 
   /**
    * A user with permission to administer site configuration.

@@ -19,7 +19,7 @@ class TripalTermEntityTest extends BrowserTestBase {
   // protected $htmlOutputEnabled = TRUE;
   protected $defaultTheme = 'stable';
 
-  public static $modules = ['tripal', 'block', 'field_ui'];
+  protected static $modules = ['tripal', 'block', 'field_ui'];
 
   /**
    * Basic tests for TripalTerm Entity.
