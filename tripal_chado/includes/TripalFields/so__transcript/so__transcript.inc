@@ -331,7 +331,7 @@ class so__transcript extends ChadoField {
     $fset = [];
     $fset['fields'] = [
       '#type' => 'fieldset',
-      '#title' => 'Transcipt (mRNA) Field Selection',
+      '#title' => 'Transcript (mRNA) Field Selection',
       '#description' => t('Select the fields that you want displayed on the gene page for each transcript.  If no fields are selected then a default display is provided.'),
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
