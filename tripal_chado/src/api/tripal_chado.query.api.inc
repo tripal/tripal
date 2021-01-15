@@ -1754,7 +1754,6 @@ function chado_query($sql, $args = [], $options = [], $chado_schema_name = NULL)
 
   // Check if Chado is within the same database as Drupal (i.e. local).
   $is_local = chado_is_local(FALSE, $chado_schema_name);
-
   // Validation:
   // -- SQL should be a string.
   if (!is_string($sql)) {
@@ -1879,7 +1878,7 @@ function chado_query($sql, $args = [], $options = [], $chado_schema_name = NULL)
     else {
       $previous_db = chado_set_active('chado', $chado_schema_name);
       $results = \Drupal::database()->query($sql, $args, $options);
-      chado_set_active($previous_db, $chado_schema_name);
+      chado_set_active($previous_db, $chado_schema_name);    
     }
   }
 
@@ -2105,7 +2104,7 @@ function chado_schema_get_foreign_key($table_desc, $field, $values, $options = N
           // The column name of the foreign key matches the field we want
           // so this is the right relationship.  Now we want to select.
           $select_cols = [$right];
-          $result = chado_select_record($table, $select_cols, $values, $options);
+          $result = chado_select_record($table, $select_cols, $values, $options, $chado_schema_name);
           $fields = [];
           if ($result and count($result) > 0) {
             foreach ($result as $obj) {
