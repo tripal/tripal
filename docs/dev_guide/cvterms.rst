@@ -15,6 +15,11 @@ How are CVs used in Tripal?
 
 Controlled vocabulary terms are used to define Tripal Content Types. Additionally, all Tripal Fields are defined using a controlled vocabulary term. As such, all biological content managed by Tripal is associated with a categorizing controlled vocabulary term and each piece of metadata defining a single piece of content is also defined using a controlled vocabulary. This ensures that Tripal content is `semantic web ready <https://www.w3.org/standards/semanticweb/>`_, as well as, ensuring it is well organized for both researchers and computer software.
 
+IDSpace and Accession
+----------------------
+
+Because the human readable names of controlled vocabularies and their terms often conflict with other vocabularies and terms in biology, additional values must be defined that are always unique. For a controlled vocabulary that value is its IDSpace. For a controlled vocabulary's term that value is its accession.
+
 How are CVs modelled in Tripal?
 --------------------------------
 

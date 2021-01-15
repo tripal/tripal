@@ -12,7 +12,7 @@ Choose a module machine name that is descriptive, short and unique. It is always
  - It must contain only lower-case letters and underscores.
  - It must not contain any spaces.
  - It must be unique. Your module should not have the same short name as any other module, theme, or installation profile you will be using on the site.
- - It should not be any of the reserved terms : src, lib, vendor, assets, css, files, images, js, misc, templates, includes, fixtures, Drupal.
+ - It should not be any of the reserved terms : src, lib, vendor, assets, css, files, images, js, misc, templates, includes, fixtures, drupal.
 
 It is also a good idea to ensure your module name encompasses the full functionality you would like to develop. For example, while your current goal may be importing a specific file format, you are likely to want to develop customized display through Tripal fields in the future. As such, you would want to stay away from ``my_file_format_importer`` and go with something more general like ``my_data_type``. We also recommend you prefix your module name with a short identifier for you lab. This will ensure your module name is unique.
 

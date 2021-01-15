@@ -22,13 +22,13 @@ class ChadoQueryAPITest extends BrowserTestBase {
    * Modules to enable.
    * @var array
    */
-  public static $modules = ['tripal', 'tripal_chado'];
+  protected static $modules = ['tripal', 'tripal_chado'];
 
   /**
    * Schema to do testing out of.
    * @var string
    */
-  public static $schemaName = 'testchado';
+  protected static $schemaName = 'testchado';
 
   /**
    * Tests chado_query().
