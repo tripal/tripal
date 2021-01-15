@@ -146,7 +146,7 @@ class TripalTermEntityTest extends BrowserTestBase {
     $edit = [
       'name' => $new_term_name,
     ];
-    $this->drupalPostForm(NULL, $edit, 'Save');
+    $this->submitForm($edit, 'Save');
     $assert->pageTextContains('Saved the ' . $new_term_name . ' Tripal Term.');
 
     // Then go back to the listing.
