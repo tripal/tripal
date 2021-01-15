@@ -18,7 +18,7 @@ class TripalVocabEntityTest extends BrowserTestBase {
   // protected $htmlOutputEnabled = TRUE;
   protected $defaultTheme = 'stable';
 
-  public static $modules = ['tripal', 'block', 'field_ui'];
+  protected static $modules = ['tripal', 'block', 'field_ui'];
 
   /**
    * Basic tests for Tripal Vocab Entity.
@@ -88,7 +88,7 @@ class TripalVocabEntityTest extends BrowserTestBase {
       'name' => $vocab_name,
       'namespace' => uniqid(),
     ];
-    $this->drupalPostForm('admin/structure/tripal-vocabularies/vocab/add', $add, 'Save');
+    $this->submitForm($add, 'Save');
     $assert->pageTextContains('Created the ' . $vocab_name . ' Tripal Vocabulary.');
 
     // Then go back to the listing.
@@ -120,7 +120,7 @@ class TripalVocabEntityTest extends BrowserTestBase {
     $new_vocab_name = 'CHANGED' . uniqid();
     $edit = $add;
     $edit['name'] = $new_vocab_name;
-    $this->drupalPostForm(null, $edit, 'Save');
+    $this->submitForm($edit, 'Save');
     $assert->pageTextContains('Saved the ' . $new_vocab_name . ' Tripal Vocabulary.');
 
     // Then go back to the listing.
@@ -150,7 +150,7 @@ class TripalVocabEntityTest extends BrowserTestBase {
 
     // Now we delete the record.
     $this->clickLink('Delete');
-    $this->drupalPostForm(NULL, [], 'Delete');
+    $this->submitForm([], 'Delete');
     $msg = 'The tripal vocabulary ' . $new_vocab_name . ' has been deleted.';
     $assert->pageTextContains($msg);
 

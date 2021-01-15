@@ -19,7 +19,7 @@ class TripalTermEntityTest extends BrowserTestBase {
   // protected $htmlOutputEnabled = TRUE;
   protected $defaultTheme = 'stable';
 
-  public static $modules = ['tripal', 'block', 'field_ui'];
+  protected static $modules = ['tripal', 'block', 'field_ui'];
 
   /**
    * Basic tests for TripalTerm Entity.
@@ -109,7 +109,7 @@ class TripalTermEntityTest extends BrowserTestBase {
     ];
 
     // Submit the form.
-    $this->drupalPostForm('admin/structure/tripal-vocabularies/term/add', $add, 'Save');
+    $this->submitForm($add, 'Save');
 
     // Now there should be a term.
     $assert->responseContains('Created');
@@ -146,7 +146,7 @@ class TripalTermEntityTest extends BrowserTestBase {
     $edit = [
       'name' => $new_term_name,
     ];
-    $this->drupalPostForm(NULL, $edit, 'Save');
+    $this->submitForm($edit, 'Save');
     $assert->pageTextContains('Saved the ' . $new_term_name . ' Tripal Term.');
 
     // Then go back to the listing.
@@ -181,7 +181,7 @@ class TripalTermEntityTest extends BrowserTestBase {
 
     // Now we delete the record.
     $this->clickLink('Delete');
-    $this->drupalPostForm(NULL, [], 'Delete');
+    $this->submitForm([], 'Delete');
     $msg = "The tripal controlled vocabulary term $new_term_name has been deleted.";
     $assert->pageTextContains($msg);
 

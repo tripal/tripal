@@ -15,7 +15,7 @@
  * @ingroup themeable
  */
 #}
-{% spaceless %}
+{% apply spaceless %}
   {% for category in types  %}
   <h3>{{category.title}}</h3>
   <ul class="admin-list">
@@ -29,4 +29,4 @@
     {% endfor %}
   </ul>
   {% endfor %}
-{% endspaceless %}
+{% endapply %}

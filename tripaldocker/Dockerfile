@@ -5,6 +5,8 @@ FROM php:7.3-apache-buster
 
 MAINTAINER Lacey-Anne Sanderson <laceyannesanderson@gmail.com>
 
+ARG drupalversion='8.x-dev'
+
 COPY . /app
 
 ## Install some basic support programs and update apt-get.
@@ -129,10 +131,16 @@ RUN chmod a+x /app/init_scripts/composer-init.sh \
 ## Use composer to install Drupal.
 WORKDIR /var/www
 RUN export COMPOSER_MEMORY_LIMIT=-1 \
-  && composer create-project drupal-composer/drupal-project:8.x-dev drupal8 --stability dev --no-interaction
+  && composer create-project drupal/recommended-project:${drupalversion} drupal8 --stability dev --no-interaction \
+  && cd drupal8 \
+  && composer require --dev drupal/core-dev:${drupalversion} \
+  && composer require drush/drush \
+  && composer up \
+  && ls /var/www/drupal8/web/sites/default/
 
 ## Set files directory permissions
-RUN mkdir /var/www/drupal8/web/sites/default/files/simpletest \
+RUN mkdir /var/www/drupal8/web/sites/default/files \
+  && mkdir /var/www/drupal8/web/sites/default/files/simpletest \
   && chown -R www-data:www-data /var/www/drupal8 \
   && chmod 02775 -R /var/www/drupal8/web/sites/default/files \
   && usermod -g www-data root
