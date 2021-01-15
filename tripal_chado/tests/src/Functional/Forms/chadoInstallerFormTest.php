@@ -33,7 +33,7 @@ class chadoInstallerFormTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
     $this->user = $this->drupalCreateUser([
       'administer site configuration',
@@ -71,9 +71,7 @@ class chadoInstallerFormTest extends BrowserTestBase {
     $this->drupalPostForm(null, $values, 'Submit');
 
     // Now there should be a message mentioning the schema to be installed.
-    $assert->responseContains($values['schema_name'],
-      "There should now be a message telling us how to install
-      the new schema.");
+    $assert->responseContains($values['schema_name']);
   }
 
 }
