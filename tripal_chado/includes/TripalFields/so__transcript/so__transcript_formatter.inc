@@ -7,150 +7,224 @@ class so__transcript_formatter extends ChadoFieldFormatter {
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = ['so__transcript'];
-    
+
   /**
    *
    * @see TripalFieldFormatter::view()
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
-    // Get the settings
-    $settings = $display['settings'];
-    $_entity = $entity;
-    
-    // if no transcript (mRNA) fields are selected in the transcript fields edit page, use a table to list the mRNA name, id, type and location only
-    $headers = ['Transcript Name', 'Identifier', 'Type', 'Location'];
-    $rows = [];
-    
     $mRNA_fieldset = [];
-    $fields_exist = FALSE; 
+
+    // If there are no items return an empty element.
+    if (count($items) == 0) {
+      return $this->returnEmpty($element);
+    }
+
+    // Iterate through the list of fields so that we can load the mRNA
+    // entity with all of the field requested by the site admin. If we
+    // don't do this first then auto_attach fields won't be added.
+    $fields = $this->instance['settings']['transcript_fields'];
+    $field_ids = [];
+    foreach ($fields as $field_name => $field_value) {
+      $field_info = field_info_field($field_name);
+      $field_ids[] = $field_info['id'];
+    }
+
+    // For backwards compatibility if no field IDs were provided then
+    // return the original table of four rows.
+    if (count($field_ids) == 0) {
+      return $this->returnDefaulTable($element, $items);
+    }
+
+    // Iterate through each mRNA (transcript).
+    $transcripts = [];
+    foreach ($items as $delta => $item) {
+
+      // Skip empty items;
+      if (!$item['value']) {
+        continue;
+      }
+
+      // If any transcript is not published (i.e. it doesn't have an entity)
+      // then we want to just return the default table and stop.
+      if (!array_key_exists('entity', $item['value'])) {
+        return $this->returnDefaulTable($element, $items);
+      }
+      list($entity_type, $mRNA_entity_id) = explode(':', $item['value']['entity']);
+
+      // Now load the mRNA entity with all of the fields.
+      $result = tripal_load_entity('TripalEntity', [$mRNA_entity_id], FALSE, $field_ids);
+      reset($result);
+      $mRNA_entity = $result[$mRNA_entity_id];
+
+      // Create the fieldset for this transcript.
+      $transcripts[$mRNA_entity_id] = [
+        '#type' => 'fieldset',
+        '#title' => $mRNA_entity->title,
+        '#description' => '',
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+        '#attributes' => ['class' => ['collapsible', 'collapsed']],
+      ];
+      drupal_add_library('system', 'drupal.collapse');
+
+
+      // Add a link to the mRNA page.
+      $feature_name = $mRNA_entity->title;
+      $feature_name = l($feature_name, "bio_data/" . $mRNA_entity->id, ['attributes' => ['target' => "_blank"]]);
+      $transcripts[$mRNA_entity_id]['mRNA_link'] = [
+        '#type' => 'markup',
+        '#markup' => "<i>Click, " . $feature_name . ", For the full transcript page.</i>",
+      ];
+
+      // Now add all fields to the fieldset.
+      $this->addFieldsetFields($mRNA_entity, $fields, $transcripts[$mRNA_entity_id]);
+
+    }
+    $element[0] = $transcripts;
+  }
+
+  /**
+   * Builds a fieldset for the entity.
+   */
+  private function addFieldsetFields($mRNA_entity, $fields, &$fieldset) {
+
+    // Get some settings about the transcript content type.
+    $mRNA_bundle = tripal_load_bundle_entity(['name'=> $mRNA_entity->bundle]);
+    $hide_empty = tripal_get_bundle_variable('hide_empty_field', $mRNA_bundle->id);
+
+    // Get the Entity ID for the transcript.
+    $entity_id = $mRNA_entity->id;
+
+    // We will use a summary table to house the fields that have a
+    // cardinality of one. These will appear at the top of the fieldset.
+    $summary_rows = [];
+
+    // Iterate through the list of fields that the site admin has indicated
+    // that they want to show in the transcript fieldset. They are provided
+    // in order that they should be shown.
+    foreach ($fields as $field_name => $field_value) {
+
+      // Skip fields that the site admin does not want to show.
+      if (array_key_exists('show', $field_value) and ($field_value['show'] != 1)) {
+        continue;
+      }
+
+      // Load the field instance info. We'll need this to determine the
+      // cardinality of the field and to render it for display.
+      $field_info = field_info_field($field_name);
+      $field_instance = field_info_instance('TripalEntity', $field_name, $mRNA_entity->bundle);
+
+      // For the display we want to honor the site admin's wishes and not
+      // show fields that are empty if they have that setting turned on.
+      $field_items = field_get_items('TripalEntity', $mRNA_entity, $field_name);
+      $field_is_empty = tripal_field_is_empty($field_info, $field_items);
+      if ($field_is_empty and $hide_empty) {
+        continue;
+      }
+
+      // If the default display is to hide this field then skip it too.
+      if ($field_instance['display']['default']['type'] == 'hidden') {
+        continue;
+      }
+
+      // Get the render array for this field.
+      $field_element = field_view_field('TripalEntity', $mRNA_entity, $field_name, $field_instance['display']['default']);
+      $field_element['#label_display'] = 'hidden';
+
+      // We need to know the cardinality of this field. If it has a
+      // cardinatliy of 1 we'll put it in the summary table for the
+      // transcript that appears at the top of the fieldset. If not we'll
+      // let it render as is, in the order it's provided to us here.
+      $cardinality = array_key_exists('cardinality', $field_info) ? $field_info['cardinality'] : 1;
+      if ($cardinality == 1) {
+
+        // add field to a special transcripts table, where fields have cardinality of 1
+        $summary_rows[] = [
+          [
+            'data' => $field_instance['label'],
+            'header' => TRUE,
+          ],
+          [
+            'data' => drupal_render($field_element),
+          ]
+        ];
+      }
+      // Else add the field as is.
+      else {
+        $fieldset[$field_name . '_header'] = [
+          '#type' => 'markup',
+          '#markup' => '<h3 class="tripal-chado-gene-transcript-fieldset-item">' . $field_instance['label'] . '</h3>',
+        ];
+        $fieldset[$field_name] = [
+          '#type' => 'markup',
+          '#markup' => drupal_render($field_element),
+        ];
+      }
+    } // End looping over fields.
+
+    // If the summary table has values then
+    if (count($summary_rows) > 0) {
+      // display fields of single cardinality in a special transcripts table
+      $summary_table = [
+        'header' => [],
+        'rows' => $summary_rows,
+        'attributes' => [
+          'id' => 'tripal_feature-table-transcript-fields-object',
+          'class' => 'tripal-data-table',
+        ],
+        'sticky' => FALSE,
+        'caption' => "",
+        'colgroups' => [],
+        'empty' => 'This feature has no single cardinality transcript fields',
+      ];
+
+      $fieldset['summary_header'] = [
+        '#type' => 'markup',
+        '#markup' => '<h3>Transcript Summary</h3>',
+        '#weight' => -101,
+      ];
+      $fieldset['summary_table'] = [
+        '#type' => 'markup',
+        '#markup' => theme_table($summary_table),
+        '#weight' => -100,
+      ];
+    }
+  }
+
+  /**
+   * Returns the default table.
+   *
+   * For backwards compatibility this function returns a table
+   * of four columns and one row per transcript.
+   */
+  private function returnDefaulTable(&$element, $items) {
+
+    $default_headers = ['Transcript Name', 'Identifier', 'Type', 'Location'];
+    $default_rows = [];
+
     foreach ($items as $delta => $item) {
 
       if (!$item['value']) {
         continue;
       }
-      
-      $transcript = $item['value'];
 
-      // Get the field values
-      $feature_name = $transcript['schema:name'];
-      $feature_uname = $transcript['data:0842'];
-      $loc = $transcript['SO:0000735'];
-      $type = $transcript['rdfs:type'];
-      
-      // Add a link if there is an entity.
-      if (array_key_exists('entity', $item['value']) and $item['value']['entity']) {
-      
-        list($entity_type, $entity_id) = explode(':', $item['value']['entity']);
-        
-        $transcript_name = $feature_name;
-        // the transcript id is the identifier for the mRNA transcript
-        $transcript_id = $entity_id; 
-        $mRNA_fieldset[$transcript_id] = [
-          '#type' => 'fieldset',
-          '#title' => $transcript_name,
-          '#description' => '',
-          '#collapsible' => TRUE,
-          '#collapsed' => TRUE,
-          '#attributes' => ['class' => ['collapsible', 'collapsed']],
-        ];
-        drupal_add_library('system', 'drupal.collapse');
-        $mRNA_fieldset[$transcript_id]['table'] = [];
-        
-        $transcript_fields_header = [];
-        $transcript_field_rows = [];
-        $single_cardinality_fields_exist = FALSE;
-        
-        // mRNA expanded fields
-        // obtain each field for the mRNA as specified in the transcripts field edit configuration
-        $fields = $this->instance['settings']['transcript_fields'];
-        $entity = TripalEntity_load($entity_id);
-        foreach ($fields as $field_name => $field_value) {
+      // Get the field values.
+      $feature_name = $item['value']['schema:name'];
+      $feature_uname = $item['value']['data:0842'];
+      $loc = $item['value']['SO:0000735'];
+      $type = $item['value']['rdfs:type'];
+      $feature_name = l($feature_name, "bio_data/" . $entity_id, ['attributes' => ['target' => "_blank"]]);
 
-          if (array_key_exists('show', $field_value) and ($field_value['show'] != 1)) {
-            // this field is not selected for display in the transcripts field edit configuration page  
-            continue;
-          }
-          $fields_exist = TRUE;
-          
-          // Load the field info.
-          $field_info = field_info_field($field_name);
-          $field_instance = field_info_instance('TripalEntity', $field_name, $entity->bundle); // get title and description
-          $field_items = field_get_items('TripalEntity', $entity, $field_name);
-          $field_element = field_view_field('TripalEntity', $entity, $field_name, $field_instance['display']['default']);
-          $field_element['#label_display'] = 'hidden';
-          
-          // use $_entity parameter for gene to obtain the 'hide empty' gene field setting
-          $bundle = tripal_load_bundle_entity(['name'=> $_entity->bundle]);
-          $hide_empty = tripal_get_bundle_variable('hide_empty_field', $bundle->id);
-          $cardinality = array_key_exists('cardinality', $field_info) ? $field_info['cardinality'] : 1; 
-          $field_is_empty = $this->isFieldEmpty($field_items);
-          
-          // do not show this field if empty and specified to be hidden from the gene edit page
-          if ($field_is_empty and $hide_empty) {
-            continue;
-          }
-          
-          // check field cardinality 
-          if ($cardinality == 1) {
-            // add field to a special transcripts table, where fields have cardinality of 1
-            $single_cardinality_fields_exist = TRUE;
-            $transcript_field_rows[] = [
-              [
-                'data' => $field_instance['label'], 
-                'header' => TRUE,
-              ],
-              [
-                'data' => drupal_render($field_element),
-              ]  
-            ];
-          }
-          else {
-            // render the fields with cardinality not 1 individually after the special transcripts table.  
-            $mRNA_fieldset[$transcript_id][$field_name] = [
-              '#type' => 'item',
-              '#title' => $field_instance['label'],
-              '#description' => $field_instance['description'],  
-              '#markup' => drupal_render($field_element),
-            ];
-          }
-        }
-        
-        $feature_name = l($feature_name, "bio_data/" . $entity_id, ['attributes' => ['target' => "_blank"]]);
-      
-        if ($single_cardinality_fields_exist) {
-          // display fields of single cardinality in a special transcripts table
-          $transcript_fields_table = [
-            'header' => $transcript_fields_header,
-            'rows' => $transcript_field_rows,
-            'attributes' => [
-              'id' => 'tripal_feature-table-transcript-fields-object',
-              'class' => 'tripal-data-table',
-            ],
-            'sticky' => FALSE,
-            'caption' => "",
-            'colgroups' => [],
-            'empty' => 'This feature has no single cardinality transcript fields',
-          ];
-          
-          $mRNA_fieldset[$transcript_id]['table'] = [
-            '#type' => 'markup',
-            '#markup' => theme_table($transcript_fields_table),
-          ];
-        }
-      }
-      
-      $mRNA_fieldset[$transcript_id]['mRNA_link'] = [
-        '#type' => 'markup',
-        '#markup' => "For further details go to ".$feature_name,
-      ];
-      $rows[] = [$feature_name, $feature_uname, $type, $loc];
+      $default_rows[] = [$feature_name, $feature_uname, $type, $loc];
     }
-    
-    $table = [
-      'header' => $headers,
-        'rows' => $rows,
-        'attributes' => [
+
+    // Build the default table
+    $default_table = [
+      'header' => $default_headers,
+      'rows' => $default_rows,
+      'attributes' => [
         'id' => 'tripal_feature-table-transcripts-object',
         'class' => 'tripal-data-table',
       ],
@@ -159,69 +233,21 @@ class so__transcript_formatter extends ChadoFieldFormatter {
       'colgroups' => [],
       'empty' => 'This feature has no transcripts',
     ];
-       
-    // once we have our table array structure defined, we call Drupal's theme_table()
-    // function to generate the table.
-    if (count($items) > 0) {
-      if ($fields_exist) {
-        $content = $mRNA_fieldset;
-        $element[0] = $content;
-      }
-      else {
-        $content = theme_table($table);
-        $element[0] = [
-          '#type' => 'markup',
-          '#markup' => $content,
-        ];
-      }
-    }
-  }
-  
-  /**
-   * Checks if the field is empty. 
-   *
-   * @param $field_items
-   *   The TripalEntity field items, holds the value for the field.
-   *
-   * @return bool 
-   *   TRUE if field is empty, otherwise FALSE.
-   */
-  public function isFieldEmpty($field_items) {
-      
-    $field_is_empty = FALSE;
 
-    // handle when field_items is an array with single of multiple values
-    if (is_array($field_items)) {
-      if (sizeof($field_items) == 1) {
-        if (sizeof($field_items[0]) == 1) {
-          if (is_string($field_items[0]['value'])) {
-            if (strlen($field_items[0]['value']) == 0) {
-              // the value is of zero length  
-              $field_is_empty = TRUE;
-            }
-          }
-        }
-        else {
-          $all_empty = TRUE;
-          foreach ($field_items[0] as $key=>$val) {
-            if ((is_string($val) and (strlen($val) != 0)) or (!is_string($val))) {
-              // the value is a string of non-zero length, or not a string at all  
-              $all_empty = FALSE;
-            }
-          }
-          if ($all_empty) {
-            $field_is_empty = TRUE;
-          }
-        }
-      }
-    }
-    elseif ($field_items == null) {
-      $field_is_empty = TRUE;
-    }
-    
-    return $field_is_empty;
-    
+    $element[0] = [
+      '#type' => 'markup',
+      '#markup' => theme_table($default_table),
+    ];
   }
-  
+
+  /**
+   * Returns an empty element for the view.
+   */
+  private function returnEmpty(&$element){
+    $element[0] = [
+      '#type' => 'markup',
+      '#markup' => '',
+    ];
+  }
 }
 
