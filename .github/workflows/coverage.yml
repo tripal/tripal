@@ -55,8 +55,6 @@ jobs:
       - name: Publish code coverage to Code Climate
         run: |
           docker exec --workdir=/var/www/drupal8/web/modules/contrib/tripal \
-            -e CC_TEST_REPORTER_ID='33d9655ce902af56f5f85c901a8ee79948aaa5b5c5db2814037202517bfe7b26' \
-            -e GIT_BRANCH={$GITHUB_REF_SLUG} \
-            -e GIT_COMMIT_SHA={$GITHUB_SHA} \
             tripaldocker ./cc-test-reporter after-build clover.xml \
+            --id 33d9655ce902af56f5f85c901a8ee79948aaa5b5c5db2814037202517bfe7b26
             --debug -t clover -p /var/www/drupal8/web/modules/contrib/tripal
