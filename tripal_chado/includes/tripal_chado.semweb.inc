@@ -1457,6 +1457,17 @@ function tripal_chado_populate_vocab_LOCAL() {
     'db_name' => 'local',
   ]);
 
+  //--------
+  // Feature
+  //--------
+  $term = chado_insert_cvterm([
+    'name' => 'fasta_definition',
+    'definition' => 'The definition line for a FASTA formatted sequence',
+    'cv_name' => 'local',
+    'is_relationship' => 0,
+    'db_name' => 'local',
+  ]);
+
   //--------------
   // Feature Map
   //--------------

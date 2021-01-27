@@ -2081,13 +2081,32 @@ function tripal_chado_update_7338() {
  */
 function tripal_chado_update_7339() {
   try {
-    $term = chado_insert_cvterm([
+    chado_insert_cvterm([
       'id' => 'data:0849',
       'name' => 'Sequence record',
       'cv_name' => 'EDAM',
       'definition' => 'A molecular sequence and associated metadata.',
     ]);
     drupal_set_message("\n\nNOTE: This update includes a new \"Sequences\" field. It compiles both primary sequences and sequences extracted from the reference into a single list. For mRNA it provides gene, full length mRNA, CDS and protein sequences (if available). Please consider using this new field and disabling other sequence fields.\n\n");
+  } catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
+
+
+/**
+ * Adds the "FASTA definition" cvterm for the data__sequence_record field.
+ */
+function tripal_chado_update_7340() {
+  try {
+    chado_insert_cvterm([
+      'name' => 'fasta_definition',
+      'definition' => 'The definition line for a FASTA formatted sequence',
+      'cv_name' => 'local',
+      'is_relationship' => 0,
+      'db_name' => 'local',
+    ]);
   } catch (\PDOException $e) {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Could not perform update: '. $error);
