@@ -2593,7 +2593,7 @@ class GFF3Importer extends TripalImporter {
     }
 
     // Get the organism object.
-    [$genus, $species] = explode(':', $organism_attr, 2);
+    list($genus, $species) = explode(':', $organism_attr, 2);
     $organism = new ChadoRecord('organism');
     $organism->setValues([
       'genus' => $genus,
