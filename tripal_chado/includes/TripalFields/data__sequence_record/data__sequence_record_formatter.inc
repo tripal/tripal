@@ -51,7 +51,6 @@ class data__sequence_record_formatter extends ChadoFieldFormatter {
 
     }
 
-
     if (empty($content)) {
       $element[0] = [
         '#type' => 'markup',

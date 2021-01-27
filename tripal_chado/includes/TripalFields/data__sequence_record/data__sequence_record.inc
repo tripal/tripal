@@ -75,6 +75,9 @@ class data__sequence_record extends ChadoField {
     $field_name = $this->field['field_name'];
     $feature = $entity->chado_record;
 
+    // Intialize the field items array
+    $entity->{$field_name}['und'] = [];
+
     // Add the primary sequence from the Chada feature table, residues column.
     $feature = chado_expand_var($feature, 'field', 'feature.residues');
 
