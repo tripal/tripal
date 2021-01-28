@@ -2154,6 +2154,9 @@ class GFF3Importer extends TripalImporter {
         $start = $feature['start'];
         // We can have multiple children that start at the same location
         // so we'll store children in an array indexed by start position.
+        if (!array_key_exists($parent, $this->parent_lookup)) {
+          $this->parent_lookup[$parent] = [];
+        }
         if (!array_key_exists($start, $this->parent_lookup[$parent])) {
           $this->parent_lookup[$parent][$start] = [];
         }
