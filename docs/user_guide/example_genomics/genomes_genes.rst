@@ -30,6 +30,9 @@ Enter the following:
   "Landmark Type", "supercontig"
   "All other options", "leave as default"
 
+.. note::
+    The Landmark Type is provided for this demo GFF3 file because the chromosome is not defined in the file, only the genomic features on the chromosomes.  The landmark type is not needed if the GFF3 file has the chromosomes (scaffolds or contigs) defined in the GFF3 file.
+
 Finally, click the Import GFF3 file button. You'll notice a job was submitted to the jobs subsystem. Now, to complete the process we need the job to run. We'll do this manually:
 
 ::
