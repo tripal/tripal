@@ -72,7 +72,7 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
       $subject_type = $item['value']['local:relationship_subject']['rdfs:type'];
       $object_name = $item['value']['local:relationship_object']['schema:name'];
       $object_type = $item['value']['local:relationship_object']['rdfs:type'];
-      $phrase = $item['value']['SIO:000493'];
+      $clause_parts = $item['value']['SIO:000493'];
 
       // Handle some special cases.
       // For mRNA objects we don't want to show the CDS, exons, 5' UTR, etc.
@@ -87,31 +87,27 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
         continue;
       }
 
-      // Add bold font to the object and subject names.
-      // @todo add back in bolding...
-      // @todo Fix Current Bug: if type name is in the object name, weird bolding happens.
-      // $phrase = preg_replace("/$subject_type/", "<b>$subject_type</b>", $phrase);
-      // $phrase = preg_replace("/$object_type/", "<b>$object_type</b>", $phrase);
-
       // Convert the object/subject to a link if an entity exists for it.
       if (array_key_exists('entity', $item['value']['local:relationship_object'])) {
         list($entity_type, $object_entity_id) = explode(':', $item['value']['local:relationship_object']['entity']);
 
         if ($object_entity_id != $entity->id) {
-          $link = l($object_name, 'bio_data/' . $object_entity_id);
-          $phrase = str_replace($object_name, $link, $phrase);
+          $clause_parts[11] = l($clause_parts[11], 'bio_data/' . $object_entity_id);
         }
       }
       if (array_key_exists('entity', $item['value']['local:relationship_subject'])) {
         list($entity_type, $subject_entity_id) = explode(':', $item['value']['local:relationship_subject']['entity']);
         if ($subject_entity_id != $entity->id) {
-          $link = l($subject_name, 'bio_data/' . $subject_entity_id);
-          $phrase = str_replace($subject_name, $link, $phrase);
+          $clause_parts[3] = l($clause_parts[3], 'bio_data/' . $subject_entity_id);
         }
       }
 
+      // Add bold font to the object and subject names.
+      $clause_parts[3] = '<b>' . $clause_parts[3] . '</b>';
+      $clause_parts[11] = '<b>' . $clause_parts[11] . '</b>';
+
       $rows[][] = [
-        'data' => $phrase,
+        'data' => implode('', $clause_parts),
         //'class' => array('tripal-entity-unattached field-items')
       ];
     }

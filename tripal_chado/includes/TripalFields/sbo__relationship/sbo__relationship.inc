@@ -438,15 +438,17 @@ class sbo__relationship extends ChadoField {
     // Example: The genetic_marker, MARKER1 , derives from the sequence_variant, VARIANT1.
     // The above relationship will be shown both on marker and variant pages
     // and as such both subject and object names need to be shown.
-    $clause = 'The ' . $subject_type . ', ' .
-      $subject_name . ', ' . $verb . ' ' . $rel_type_clean . ' ' .
-      $object_type . ', ' . $object_name . '.';
+    // Keep the clause as an array for now so we can apply formatting
+    // and links in the formatter
+    $clause = [ 'The ', $subject_type, ', ', $subject_name, ', ',
+                $verb, ' ', $rel_type_clean, ' ', $object_type,
+                ', ', $object_name, '.' ];
     $entity->{$field_name}['und'][$delta]['value']['SIO:000493'] = $clause;
 
     // Adding a label allows us to provide a single text value for the
     // entire field. It is this text value that can be used in tab/csv
     // downloaders.
-    $entity->{$field_name}['und'][$delta]['value']['rdfs:label'] = $clause;
+    $entity->{$field_name}['und'][$delta]['value']['rdfs:label'] = implode('', $clause);
 
     $entity->{$field_name}['und'][$delta]['chado-' . $field_table . '__' . $pkey] = $relationship->$pkey;
     $entity->{$field_name}['und'][$delta]['chado-' . $field_table . '__' . $subject_id_key] = $relationship->$subject_id_key->$subject_pkey;
@@ -524,7 +526,7 @@ class sbo__relationship extends ChadoField {
       // relationship type and the object and subject
       'include_fk' => [
         'type_id' => 1,
-          $object_id_key => [
+        $object_id_key => [
           'type_id' => 1,
           'organism_id' => 1,
         ],
@@ -658,6 +660,7 @@ class sbo__relationship extends ChadoField {
       case 'genome of':
       case 'part of':
         $verb = 'is a';
+        break;
       case 'position of':
       case 'sequence of':
       case 'variant of':
@@ -674,6 +677,7 @@ class sbo__relationship extends ChadoField {
       case 'is a':
       case 'is a maternal parent of':
       case 'is a paternal parent of':
+      case 'is a subproject of':
       case 'is consecutive sequence of':
       case 'maximally overlaps':
       case 'overlaps':
