@@ -157,7 +157,6 @@ class so__transcript extends ChadoField {
     $results = chado_query($sql, [':feature_id' => $record->feature_id]);
     $i = 0;
     while ($transcript = $results->fetchObject()) {
-      dpm($transcript);
       // Get the location of this mRNA.
       $sql = "
         SELECT FL.*, F.name as srcfeature_name
