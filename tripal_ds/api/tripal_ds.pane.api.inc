@@ -39,7 +39,7 @@ function tripal_ds_create_field($field_label, $field_name, $bundle_name) {
   //Build the rest of the passes parameters.
   $group_field_name = 'gp_' . $field_name;
   //Create the field groups.
-  tripal_ds_additional_fields_field_group_info($bundle_name, $field_label, $group_field_name, $field_name);
+  tripal_ds_add_generic_field_group($bundle_name, $field_label, $group_field_name, $field_name);
   //Place the field groups in the layout.
   tripal_ds_update_ds_layout($bundle_name, $field_name, $group_field_name);
 }
