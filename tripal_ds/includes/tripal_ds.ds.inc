@@ -160,31 +160,6 @@ function _ds_layout_settings_info($bundle_name, $instances) {
         usort($right_fields, tripal_ds_sort_object('label'));
       }
     }
-//     elseif (empty($all_field_groups)) {
-//       //Add the original instances that were passed and the field_groups that
-//       //were created.
-//       $field_group_fields = db_select('field_group', 'fg')
-//         ->fields('fg', ['group_name', 'data'])
-//         ->condition('bundle', $bundle_name, '=')
-//         ->execute()
-//         ->fetchAll();
-
-//       $instance_names = [];
-//       $field_group_names = [];
-//       foreach ($sorted_instances as $key => $instance) {
-//         $instance_names[$key]['field_name'] = $instance['field_name'];
-//         $instance_names[$key]['label'] = $instance['label'];
-
-//       }
-//       foreach ($field_group_fields as $key => $field_group_name) {
-//         $data = unserialize($field_group_name->data);
-//         $field_group_names[$key]['field_name'] = $field_group_name->group_name;
-//         $field_group_names[$key]['label'] = $data['format_settings']['label'];
-
-//       }
-//       $all_field_groups = array_merge($instance_names, $field_group_names);
-//       usort($all_field_groups, tripal_ds_sort_array('label'));
-//    }
 
     // Now build the $region_right array and the fields array.
     $i = 0;
