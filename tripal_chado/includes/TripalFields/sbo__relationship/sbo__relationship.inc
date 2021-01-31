@@ -443,7 +443,8 @@ class sbo__relationship extends ChadoField {
     $clause = [ 'The ', $subject_type, ', ', $subject_name, ', ',
                 $verb, ' ', $rel_type_clean, ' ', $object_type,
                 ', ', $object_name, '.' ];
-    $entity->{$field_name}['und'][$delta]['value']['SIO:000493'] = $clause;
+    $entity->{$field_name}['und'][$delta]['clause_parts'] = $clause;
+    $entity->{$field_name}['und'][$delta]['value']['SIO:000493'] = implode('', $clause);
 
     // Adding a label allows us to provide a single text value for the
     // entire field. It is this text value that can be used in tab/csv

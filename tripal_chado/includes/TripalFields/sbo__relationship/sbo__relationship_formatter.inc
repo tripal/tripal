@@ -72,7 +72,7 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
       $subject_type = $item['value']['local:relationship_subject']['rdfs:type'];
       $object_name = $item['value']['local:relationship_object']['schema:name'];
       $object_type = $item['value']['local:relationship_object']['rdfs:type'];
-      $clause_parts = $item['value']['SIO:000493'];
+      $clause_parts = $item['clause_parts'];
 
       // Handle some special cases.
       // For mRNA objects we don't want to show the CDS, exons, 5' UTR, etc.
@@ -152,5 +152,4 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
     ];
   }
 }
-
 
