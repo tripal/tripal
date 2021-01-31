@@ -72,7 +72,15 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
       $subject_type = $item['value']['local:relationship_subject']['rdfs:type'];
       $object_name = $item['value']['local:relationship_object']['schema:name'];
       $object_type = $item['value']['local:relationship_object']['rdfs:type'];
-      $clause_parts = $item['clause_parts'];
+      $rel_type = $item['value']['local:relationship_type'];
+
+      // Get some better human-readable formats for the type and verb.
+      $verb = sbo__relationship::get_rel_verb($rel_type);
+      $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
+
+      $clause_parts = [ 'The ', $subject_type, ', ', $subject_name, ', ',
+        $verb, ' ', $rel_type_clean, ' ', $object_type,
+        ', ', $object_name, '.' ];
 
       // Handle some special cases.
       // For mRNA objects we don't want to show the CDS, exons, 5' UTR, etc.

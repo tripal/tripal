@@ -440,16 +440,15 @@ class sbo__relationship extends ChadoField {
     // and as such both subject and object names need to be shown.
     // Keep the clause as an array for now so we can apply formatting
     // and links in the formatter
-    $clause = [ 'The ', $subject_type, ', ', $subject_name, ', ',
-                $verb, ' ', $rel_type_clean, ' ', $object_type,
-                ', ', $object_name, '.' ];
-    $entity->{$field_name}['und'][$delta]['clause_parts'] = $clause;
-    $entity->{$field_name}['und'][$delta]['value']['SIO:000493'] = implode('', $clause);
+    $clause = 'The ' . $subject_type . ', ' .
+        $subject_name . ', ' . $verb . ' ' . $rel_type_clean . ' ' .
+        $object_type . ', ' . $object_name . '.';
+    $entity->{$field_name}['und'][$delta]['value']['SIO:000493'] = $clause;
 
     // Adding a label allows us to provide a single text value for the
     // entire field. It is this text value that can be used in tab/csv
     // downloaders.
-    $entity->{$field_name}['und'][$delta]['value']['rdfs:label'] = implode('', $clause);
+    $entity->{$field_name}['und'][$delta]['value']['rdfs:label'] = $clause;
 
     $entity->{$field_name}['und'][$delta]['chado-' . $field_table . '__' . $pkey] = $relationship->$pkey;
     $entity->{$field_name}['und'][$delta]['chado-' . $field_table . '__' . $subject_id_key] = $relationship->$subject_id_key->$subject_pkey;
@@ -648,7 +647,7 @@ class sbo__relationship extends ChadoField {
    * @return
    *   The verb to use when creating a sentence of the relationship.
    */
-  private function get_rel_verb($rel_type) {
+  public static function get_rel_verb($rel_type) {
     $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
     $verb = '';
     switch ($rel_type_clean) {
