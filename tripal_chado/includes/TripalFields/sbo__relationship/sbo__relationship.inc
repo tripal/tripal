@@ -433,7 +433,6 @@ class sbo__relationship extends ChadoField {
     $object_type = $entity->{$field_name}['und'][$delta]['value']['local:relationship_object']['rdfs:type'];
     $object_name = $entity->{$field_name}['und'][$delta]['value']['local:relationship_object']['schema:name'];
 
-
     // Remember the current entity could be either the subject or object!
     // Example: The genetic_marker, MARKER1 , derives from the sequence_variant, VARIANT1.
     // The above relationship will be shown both on marker and variant pages

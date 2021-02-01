@@ -78,10 +78,6 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
       $verb = sbo__relationship::get_rel_verb($rel_type);
       $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
 
-      $clause_parts = [ 'The ', $subject_type, ', ', $subject_name, ', ',
-        $verb, ' ', $rel_type_clean, ' ', $object_type,
-        ', ', $object_name, '.' ];
-
       // Handle some special cases.
       // For mRNA objects we don't want to show the CDS, exons, 5' UTR, etc.
       // we want to show the parent gene and the protein.
@@ -100,22 +96,28 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
         list($entity_type, $object_entity_id) = explode(':', $item['value']['local:relationship_object']['entity']);
 
         if ($object_entity_id != $entity->id) {
-          $clause_parts[11] = l($clause_parts[11], 'bio_data/' . $object_entity_id);
+          $object_name = l($object_name, 'bio_data/' . $object_entity_id);
         }
       }
       if (array_key_exists('entity', $item['value']['local:relationship_subject'])) {
         list($entity_type, $subject_entity_id) = explode(':', $item['value']['local:relationship_subject']['entity']);
         if ($subject_entity_id != $entity->id) {
-          $clause_parts[3] = l($clause_parts[3], 'bio_data/' . $subject_entity_id);
+          $subject_name = l($subject_name, 'bio_data/' . $subject_entity_id);
         }
       }
 
-      // Add bold font to the object and subject names.
-      $clause_parts[3] = '<b>' . $clause_parts[3] . '</b>';
-      $clause_parts[11] = '<b>' . $clause_parts[11] . '</b>';
+      // Add bold font to the subject and object names.
+      $subject_name = '<b>' . $subject_name . '</b>';
+      $object_name = '<b>' . $object_name . '</b>';
+
+      // The $clause text here will match what is already in $item['value']['SIO:000493']
+      // but we rebuild it here to incorporated links and formatting
+      $clause = 'The ' . $subject_type . ', ' .
+        $subject_name . ', ' . $verb . ' ' . $rel_type_clean . ' ' .
+        $object_type . ', ' . $object_name . '.';
 
       $rows[][] = [
-        'data' => implode('', $clause_parts),
+        'data' => $clause,
         //'class' => array('tripal-entity-unattached field-items')
       ];
     }
