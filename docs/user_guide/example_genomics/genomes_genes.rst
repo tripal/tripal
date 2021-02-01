@@ -26,7 +26,7 @@ Enter the following:
 
   "File", "Upload the file name Citrus_sinensis-orange1.1g015632m.g.gff3"
   "Analysis", "Whole Genome Assembly and Annotation of Citrus sinensis"
-  "Organism", "Citrus sinensis"
+  "Existing Organism", "Citrus sinensis"
   "Landmark Type", "supercontig"
   "All other options", "leave as default"
 

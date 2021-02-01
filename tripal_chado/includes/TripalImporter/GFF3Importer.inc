@@ -306,17 +306,6 @@ class GFF3Importer extends TripalImporter {
       '#required' => TRUE,
       '#options' => $organisms,
     ];
-    $form['create_organism'] = [
-      '#type' => 'checkbox',
-      '#title' => t('Create organism'),
-      '#required' => FALSE,
-      '#description' => t('The Tripal GFF loader supports the "organism" attribute. This allows features of a
-       different organism to be aligned to the landmark sequence.  The format of the
-       attribute is "organism=[genus]:[species]", where [genus] is the organism\'s genus and [species] is the
-       species name. Check this box to automatically add the organism to the database if it does not already exists.
-       Otherwise lines with an organism attribute where the organism is not present in the database will be skipped.'),
-    ];
-
     $form['landmark_type'] = [
       '#title' => t('Landmark Type'),
       '#type' => 'textfield',
@@ -324,6 +313,7 @@ class GFF3Importer extends TripalImporter {
        for the landmark sequences in the GFF fie (e.g. 'chromosome'). This is only needed if
        the landmark features (first column of the GFF3 file) are not already in the database.."),
     ];
+
 
     $form['proteins'] = [
       '#type' => 'fieldset',
@@ -410,7 +400,16 @@ class GFF3Importer extends TripalImporter {
       '#collapsible' => TRUE,
       '#collapsed' => FALSE,
     ];
-
+    $form['advanced']['create_organism'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Create organism'),
+      '#required' => FALSE,
+      '#description' => t('The Tripal GFF loader supports the "organism" attribute. This allows features of a
+       different organism to be aligned to the landmark sequence.  The format of the
+       attribute is "organism=[genus]:[species]", where [genus] is the organism\'s genus and [species] is the
+       species name. Check this box to automatically add the organism to the database if it does not already exists.
+       Otherwise lines with an organism attribute where the organism is not present in the database will be skipped.'),
+    ];
 
     $form['advanced']['line_number'] = [
       '#type' => 'textfield',
