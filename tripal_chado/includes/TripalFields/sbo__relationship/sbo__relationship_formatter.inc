@@ -59,6 +59,9 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
+    // Load the Field class into scope for use below.
+    tripal_load_include_field_class('sbo__relationship');
+
     // Get the settings
     $settings = $display['settings'];
     $rows = [];
