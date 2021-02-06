@@ -522,33 +522,30 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     $data[$priority]['error'] = TRUE;
     return;
   }
-
-  // Check that template required fields are present. if a required field is
-  // missing and this
-  // is an optional record then just return. otherwise raise an error
+  
+  // Check for optional records in template. If an optional field is not found
+  // and the record is required, raise an error
   $skip_optional = 0;
   foreach ($table_data['required'] as $field => $required) {
-    if ($required) {
-      // check if the field has no value (or array is empty)
-      if (!isset($values[$field]) or
-        (is_array($values[$field]) and count($values[$field]) == 0)) {
-        // check if the record is optional.  For backwards compatiblity we need to
-        // check if the 'mode' is set to 'optional'
-        if ($table_data['optional'] or preg_match('/optional/', $table_data['mode']) or
-          $table_data['select_optional']) {
-          $skip_optional = 1;
-          // set the values array to be empty since we all required fields are
-          // optional and we can't do a select/insert so we don't want to keep
-          // the values if this record is used in a later FK relationship.
-          $values = [];
-        }
-        else {
-          $msg = "Line " . $addt->line_num . ' "' . $table_data['record_id'] .
-            '" (' . $table_data['mode'] . ') Missing template required value: ' . $table . '.' . $field;
-          tripal_bulk_loader_throw_error($msg, [], TRIPAL_WARNING);
-          $data[$priority]['error'] = TRUE;
-          $no_errors = FALSE;
-        }
+    // check if the field has no value (or array is empty)
+    if (!isset($values[$field]) or
+      (is_array($values[$field]) and count($values[$field]) == 0)) {
+      // check if the record is optional.  For backwards compatiblity we need to
+      // check if the 'mode' is set to 'optional'
+      if ($table_data['optional'] or preg_match('/optional/', $table_data['mode']) or
+        $table_data['select_optional']) {
+        $skip_optional = 1;
+        // set the values array to be empty since we all required fields are
+        // optional and we can't do a select/insert so we don't want to keep
+        // the values if this record is used in a later FK relationship.
+        $values = [];
+      }
+      elseif ($required) {
+        $msg = "Line " . $addt->line_num . ' "' . $table_data['record_id'] .
+          '" (' . $table_data['mode'] . ') Missing template required value: ' . $table . '.' . $field;
+        tripal_bulk_loader_throw_error($msg, [], TRIPAL_WARNING);
+        $data[$priority]['error'] = TRUE;
+        $no_errors = FALSE;
       }
     }
   }
