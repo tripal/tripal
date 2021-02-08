@@ -44,6 +44,12 @@ tripal.cv_lookup:
 ##
 # Tripal Admin menu
 ##
+tripal.admin:
+  route_name: tripal.admin
+  title: 'Tripal'
+  description: 'Manage the behavior or Tripal and its various modules.'
+  parent: system.admin
+
 tripal.admin_register:
   route_name: tripal.admin_register
   title: 'Tripal Registration'
