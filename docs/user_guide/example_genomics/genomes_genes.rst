@@ -26,8 +26,12 @@ Enter the following:
 
   "File", "Upload the file name Citrus_sinensis-orange1.1g015632m.g.gff3"
   "Analysis", "Whole Genome Assembly and Annotation of Citrus sinensis"
-  "Organism", "Citrus sinensis"
+  "Existing Organism", "Citrus sinensis"
+  "Landmark Type", "supercontig"
   "All other options", "leave as default"
+
+.. note::
+    The Landmark Type is provided for this demo GFF3 file because the chromosome is not defined in the file, only the genomic features on the chromosomes.  The landmark type is not needed if the GFF3 file has the chromosomes (scaffolds or contigs) defined in the GFF3 file.
 
 Finally, click the Import GFF3 file button. You'll notice a job was submitted to the jobs subsystem. Now, to complete the process we need the job to run. We'll do this manually:
 
@@ -78,7 +82,7 @@ You should see output similar to the following:
     Step 22 of 26: Insert feature ontology terms...
     Step 23 of 26: Insert 'derives_from' relationships...
     Step 24 of 26: Insert Targets...
-    Step 25 of 26: Associate features with analysis....              
+    Step 25 of 26: Associate features with analysis....
     Step 26 of 26: Adding sequences data (Skipped: none available)...
 
     Done.

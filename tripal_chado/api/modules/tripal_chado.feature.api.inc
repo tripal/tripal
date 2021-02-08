@@ -785,21 +785,21 @@ function chado_get_fasta_defline($feature, $notes = '', $featureloc = NULL, $typ
 
   // Construct the definition line.
   $defline = $feature->uniquename . " " .
-    'ID=' . $feature->uniquename . "|" .
-    'Name=' . $feature->name . "|" .
-    'organism=' . $feature->organism_id->genus . " " . $feature->organism_id->species . "|" .
-    'type=' . $type . '|';
+    'ID=' . $feature->uniquename . "; " .
+    'Name=' . $feature->name . "; " .
+    'organism=' . $feature->organism_id->genus . " " . $feature->organism_id->species . "; " .
+    'type=' . $type . '; ';
   if ($length > 0) {
-    $defline .= "length=" . $length . "bp|";
+    $defline .= "length=" . $length . "bp; ";
   }
   if ($featureloc) {
-    $defline .= "location=Sequence derived from alignment at " . chado_get_location_string($featureloc);
+    $defline .= "location=Sequence derived from: " . chado_get_location_string($featureloc);
     $defline .= " (" . $featureloc->srcfeature_id->organism_id->genus . " " . $featureloc->srcfeature_id->organism_id->species . ")|";
   }
   if ($notes) {
-    $defline .= "Notes=$notes|";
+    $defline .= "Notes=$notes; ";
   }
-  $defline = substr($defline, 0, -1); // remove the trailing |
+  $defline = substr($defline, 0, -2); // remove the trailing "; "
   return $defline;
 }
 

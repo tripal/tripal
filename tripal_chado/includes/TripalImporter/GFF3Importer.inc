@@ -306,17 +306,6 @@ class GFF3Importer extends TripalImporter {
       '#required' => TRUE,
       '#options' => $organisms,
     ];
-    $form['create_organism'] = [
-      '#type' => 'checkbox',
-      '#title' => t('Create organism'),
-      '#required' => FALSE,
-      '#description' => t('The Tripal GFF loader supports the "organism" attribute. This allows features of a
-       different organism to be aligned to the landmark sequence.  The format of the
-       attribute is "organism=[genus]:[species]", where [genus] is the organism\'s genus and [species] is the
-       species name. Check this box to automatically add the organism to the database if it does not already exists.
-       Otherwise lines with an organism attribute where the organism is not present in the database will be skipped.'),
-    ];
-
     $form['landmark_type'] = [
       '#title' => t('Landmark Type'),
       '#type' => 'textfield',
@@ -324,6 +313,7 @@ class GFF3Importer extends TripalImporter {
        for the landmark sequences in the GFF fie (e.g. 'chromosome'). This is only needed if
        the landmark features (first column of the GFF3 file) are not already in the database.."),
     ];
+
 
     $form['proteins'] = [
       '#type' => 'fieldset',
@@ -410,7 +400,16 @@ class GFF3Importer extends TripalImporter {
       '#collapsible' => TRUE,
       '#collapsed' => FALSE,
     ];
-
+    $form['advanced']['create_organism'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Create organism'),
+      '#required' => FALSE,
+      '#description' => t('The Tripal GFF loader supports the "organism" attribute. This allows features of a
+       different organism to be aligned to the landmark sequence.  The format of the
+       attribute is "organism=[genus]:[species]", where [genus] is the organism\'s genus and [species] is the
+       species name. Check this box to automatically add the organism to the database if it does not already exists.
+       Otherwise lines with an organism attribute where the organism is not present in the database will be skipped.'),
+    ];
 
     $form['advanced']['line_number'] = [
       '#type' => 'textfield',
@@ -2033,7 +2032,7 @@ class GFF3Importer extends TripalImporter {
     $batch_num = 1;
     $sql = '';
     $args = [];
-    foreach ($this->parent_lookup as $parent => $children) {
+    foreach ($this->parent_lookup as $parent => $starts) {
       $total++;
       $i++;
 
@@ -2041,21 +2040,22 @@ class GFF3Importer extends TripalImporter {
       $parent_uniquename = $parent_feature['uniquename'];
       $parent_feature_id = $this->features[$parent_uniquename]['feature_id'];
       if (!$parent_feature['skipped']) {
-
-        foreach ($children as $child_findex) {
-          $j++;
-          $child_feature = $this->getCachedFeature($child_findex);
-          $child_uniquename = $child_feature['uniquename'];
-          $child_feature_id = $this->features[$child_uniquename]['feature_id'];
-          $type_id = $part_of;
-          if ($child_feature['type'] == 'polypeptide' or $child_feature['type'] == 'protein') {
-            $type_id = $derives_from;
+        foreach ($starts as $start => $children) {
+          foreach ($children as $child_findex) {
+            $j++;
+            $child_feature = $this->getCachedFeature($child_findex);
+            $child_uniquename = $child_feature['uniquename'];
+            $child_feature_id = $this->features[$child_uniquename]['feature_id'];
+            $type_id = $part_of;
+            if ($child_feature['type'] == 'polypeptide' or $child_feature['type'] == 'protein') {
+              $type_id = $derives_from;
+            }
+            $sql .= "(:subject_id_$j, :object_id_$j, :type_id_$j, :rank_$j),\n";
+            $args[":subject_id_$j"] = $child_feature_id;
+            $args[":object_id_$j"] = $parent_feature_id;
+            $args[":type_id_$j"] = $type_id;
+            $args[":rank_$j"] = $this->features[$child_uniquename]['rank'];
           }
-          $sql .= "(:subject_id_$j, :object_id_$j, :type_id_$j, :rank_$j),\n";
-          $args[":subject_id_$j"] = $child_feature_id;
-          $args[":object_id_$j"] = $parent_feature_id;
-          $args[":type_id_$j"] = $type_id;
-          $args[":rank_$j"] = $this->features[$child_uniquename]['rank'];
         }
       }
 
@@ -2151,7 +2151,15 @@ class GFF3Importer extends TripalImporter {
         // Place features in order that they appear by their start coordinates.
         $parent = $feature['parent'];
         $start = $feature['start'];
-        $this->parent_lookup[$parent][$start] = $info['findex'];
+        // We can have multiple children that start at the same location
+        // so we'll store children in an array indexed by start position.
+        if (!array_key_exists($parent, $this->parent_lookup)) {
+          $this->parent_lookup[$parent] = [];
+        }
+        if (!array_key_exists($start, $this->parent_lookup[$parent])) {
+          $this->parent_lookup[$parent][$start] = [];
+        }
+        $this->parent_lookup[$parent][$start][] = $info['findex'];
       }
       $this->setItemsHandled($i);
     }
@@ -2168,15 +2176,16 @@ class GFF3Importer extends TripalImporter {
     $this->setItemsHandled(0);
     $this->setTotalItems(count(array_keys($this->parent_lookup)));
     $i = 0;
-    foreach ($this->parent_lookup as $parent => $children) {
-      $starts = array_keys($children);
+    foreach ($this->parent_lookup as $parent => $starts) {
+      $starts = array_keys($starts);
       sort($starts);
       $j = 0;
       foreach ($starts as $start) {
-        $child_findex = $children[$start];
-        $child = $this->getCachedFeature($child_findex);
-        $this->features[$child['uniquename']]['rank'] = $j;
-        $j++;
+        foreach ($this->parent_lookup[$parent][$start] as $child_findex) {
+          $child = $this->getCachedFeature($child_findex);
+          $this->features[$child['uniquename']]['rank'] = $j;
+          $j++;
+        }
       }
       $this->setItemsHandled($j);
     }
@@ -2593,7 +2602,7 @@ class GFF3Importer extends TripalImporter {
     }
 
     // Get the organism object.
-    [$genus, $species] = explode(':', $organism_attr, 2);
+    list($genus, $species) = explode(':', $organism_attr, 2);
     $organism = new ChadoRecord('organism');
     $organism->setValues([
       'genus' => $genus,

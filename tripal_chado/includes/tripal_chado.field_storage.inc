@@ -398,6 +398,16 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
             // as the column value.
             $entity->{$field_name}['und'][0]['value'] = $record->$field_column;
             $entity->{$field_name}['und'][0]['chado-' . $field_table . '__' . $field_column] = $record->$field_column;
+
+            // For datetime columns we need to strip out the milliseconds if
+            // they are there because the Drupal date field can't deal with
+            // miliseconds and causes the displayed time to rever to the
+            // current time.
+            if ($field_type == 'datetime') {
+              $datevalue = $entity->{$field_name}['und'][0]['value'];
+              $datevalue = preg_replace('/^(\d+-\d+-\d+ \d+:\d+:\d+)\.\d+$/', '\1', $datevalue);
+              $entity->{$field_name}['und'][0]['value'] = $datevalue;
+            }
           }
         }
 

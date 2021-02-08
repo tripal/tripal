@@ -26,38 +26,32 @@ class data__sequence_record_formatter extends ChadoFieldFormatter {
     $fmax_term = chado_get_semweb_term('featureloc', 'fmax');
     $strand_term = chado_get_semweb_term('featureloc', 'strand');
     $phase_term = chado_get_semweb_term('featureloc', 'phase');
-
-    $content = [];
+    $fasta_defline = 'local:fasta_definition';
 
     foreach ($items as $delta => $item) {
-      if (empty($item['value'])) {
+      if (!$item['value']) {
         continue;
       }
 
       $num_bases = 50;
       $residues = '<pre class="residues-formatter">';
+      $residues .= ">" . $item['value'][$fasta_defline] . "<br>";
       $residues .= wordwrap($item['value'][$sequence_term], $num_bases, "<br>", TRUE);
       $residues .= '</pre>';
 
-      $content[] = [
+      $element[$delta] = [
         '#type' => 'item',
         '#title' => $item['value'][$label_term],
         '#description' => $item['value'][$description_term],
         '#markup' => $residues,
       ];
-
-
     }
 
-
-    if (empty($content)) {
+    if (count($element) == 0) {
       $element[0] = [
         '#type' => 'markup',
-        '#markup' => '',
+        '#markup' => 'There are no sequences for this feature.',
       ];
-      return;
     }
-
-    $element[0] = $content;
   }
 }
