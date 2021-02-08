@@ -15,3 +15,11 @@ tripal_chado.chado_install_form:
     _title: 'Chado Installation'
   requirements:
     _permission: 'administer tripal'
+
+tripal_chado.chado_prepare_form:
+  path: 'admin/tripal/storage/chado/prepare'
+  defaults:
+    _form: '\Drupal\tripal_chado\Form\ChadoPrepareForm'
+    _title: 'Chado Preparation'
+  requirements:
+    _permission: 'administer tripal'
