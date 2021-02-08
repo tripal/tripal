@@ -507,27 +507,32 @@ function chado_insert_record($table, $values, $options = []) {
     }
 
     if (is_array($value)) {
+      // Do not insert value if empty (NULL)
+      if (empty($value)) {
+        $insert_values[$field] = NULL;
+      }
       // Select the value from the foreign key relationship for this value.
-      $results = chado_schema_get_foreign_key($table_desc, $field, $value);
-
-      if (sizeof($results) > 1) {
-        tripal_report_error('tripal_chado', TRIPAL_ERROR,
-          'chado_insert_record: Too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)',
-          ['!foreign_key' => $field, '!criteria' => print_r($value, TRUE)],
-          ['print' => $print_errors]
-        );
-        return FALSE;
-      }
-      elseif (sizeof($results) < 1) {
-        tripal_report_error('tripal_chado', TRIPAL_DEBUG,
-          'chado_insert_record: no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)',
-          ['!foreign_key' => $field, '!criteria' => print_r($value, TRUE)],
-          ['print' => $print_errors]
-        );
-        return FALSE;
-      }
       else {
-        $insert_values[$field] = $results[0];
+        $results = chado_schema_get_foreign_key($table_desc, $field, $value);
+        if (sizeof($results) > 1) {
+          tripal_report_error('tripal_chado', TRIPAL_ERROR,
+            'chado_insert_record: Too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)',
+            ['!foreign_key' => $field, '!criteria' => print_r($value, TRUE)],
+            ['print' => $print_errors]
+          );
+          return FALSE;
+        }
+        elseif (sizeof($results) < 1) {
+          tripal_report_error('tripal_chado', TRIPAL_DEBUG,
+            'chado_insert_record: no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)',
+            ['!foreign_key' => $field, '!criteria' => print_r($value, TRUE)],
+            ['print' => $print_errors]
+          );
+          return FALSE;
+        }
+        else {
+          $insert_values[$field] = $results[0];
+        }
       }
     }
     else {
@@ -852,27 +857,33 @@ function chado_update_record($table, $match, $values, $options = NULL) {
   // Get the values used for updating.
   foreach ($values as $field => &$value) {
     if (is_array($value)) {
-      $foreign_options = [];
+      // Do not insert value if empty (NULL)
+      if (empty($value)) {
+        $update_values[$field] = NULL;
+      }
       // Select the value from the foreign key relationship for this value.
-      $results = chado_schema_get_foreign_key($table_desc, $field, $value, $foreign_options);
-      if (sizeof($results) > 1) {
-        tripal_report_error('tripal_chado', TRIPAL_ERROR,
-          'chado_update_record: When trying to find update values, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)',
-          ['!foreign_key' => $field, '!criteria' => print_r($value, TRUE)],
-          ['print' => $print_errors]
-        );
-        return FALSE;
-      }
-      elseif (sizeof($results) < 1) {
-        tripal_report_error('tripal_chado', TRIPAL_DEBUG,
-          'chado_update_record: When trying to find update values, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)',
-          ['!foreign_key' => $field, '!criteria' => print_r($value, TRUE)],
-          ['print' => $print_errors]
-        );
-        return FALSE;
-      }
       else {
-        $update_values[$field] = $results[0];
+        $foreign_options = [];
+        $results = chado_schema_get_foreign_key($table_desc, $field, $value, $foreign_options);
+        if (sizeof($results) > 1) {
+          tripal_report_error('tripal_chado', TRIPAL_ERROR,
+            'chado_update_record: When trying to find update values, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)',
+            ['!foreign_key' => $field, '!criteria' => print_r($value, TRUE)],
+            ['print' => $print_errors]
+          );
+          return FALSE;
+        }
+        elseif (sizeof($results) < 1) {
+          tripal_report_error('tripal_chado', TRIPAL_DEBUG,
+            'chado_update_record: When trying to find update values, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)',
+            ['!foreign_key' => $field, '!criteria' => print_r($value, TRUE)],
+            ['print' => $print_errors]
+          );
+          return FALSE;
+        }
+        else {
+          $update_values[$field] = $results[0];
+        }
       }
     }
     else {
