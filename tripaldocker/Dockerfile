@@ -5,7 +5,7 @@ FROM php:7.3-apache-buster
 
 MAINTAINER Lacey-Anne Sanderson <laceyannesanderson@gmail.com>
 
-ARG drupalversion='8.x-dev'
+ARG drupalversion='8.9.x-dev'
 
 COPY . /app
 
