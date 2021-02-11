@@ -143,6 +143,12 @@ class chado_linker__prop_widget extends ChadoFieldWidget {
     $value = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__value'];
     $form_state['values'][$field_name]['und'][$delta]['value'] = $value;
 
+    // A value of zero gets set to empty when sbumitted and some prop
+    // tables don't have a default value set (e.g. pubprop).
+    if (!$form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__rank']) {
+      $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__rank'] = 0;
+    }
+
     // If the user removed the property then we want to clear out the other
     // fields except the pkey value. If the pkey field is present and the value
     // is present then the chado storage backend will delete the record.

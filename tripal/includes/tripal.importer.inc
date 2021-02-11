@@ -80,7 +80,7 @@ function tripal_get_importer_form($form, &$form_state, $class) {
     $analyses = [];
     $analyses[''] = '';
     while ($analysis = $org_rset->fetchObject()) {
-      $analyses[$analysis->analysis_id] = "$analysis->name ($analysis->program $analysis->programversion, $analysis->sourcename)";
+      $analyses[$analysis->analysis_id] = $analysis->name;
     }
     $form['analysis_id'] = [
       '#title' => t('Analysis'),

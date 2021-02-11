@@ -98,6 +98,12 @@ class data__sequence_record extends ChadoField {
     else {
       $this->addGenericReference($entity, $feature, $field_name);
     }
+
+    // The field should always return a 'value' key so even if we don't
+    // have a sequence we still need to add it
+    if (count(array_keys($entity->{$field_name}['und'])) == 0) {
+      $entity->{$field_name}['und'][0]['value'] = '';
+    }
   }
 
   /**

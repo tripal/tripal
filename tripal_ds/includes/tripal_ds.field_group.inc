@@ -7,7 +7,7 @@
  * @param $fields
  *  Array of the machine names of the children of the field group being created.
  */
-function _summary_field_group_info($bundle_name, $fields) {
+function tripal_ds_add_summary_field_group($bundle_name, $fields) {
   //Tripal pane to nest the summary fieldset within.
   $field_group_tripalpane = new stdClass();
   $field_group_tripalpane->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially*/
@@ -80,7 +80,7 @@ function _summary_field_group_info($bundle_name, $fields) {
  * @param $fields
  *  Array of the machine names of the children of the field group being created.
  */
-function _prop_field_group_info($bundle_name, $fields) {
+function tripal_ds_add_prop_field_group($bundle_name, $fields) {
   //Tripal pane  to nest the fieldset within.
   $field_group_tripalpane = new stdClass();
   $field_group_tripalpane->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially*/
@@ -152,7 +152,7 @@ function _prop_field_group_info($bundle_name, $fields) {
  * @param $fields
  *  Array of the machine names of the children of the field group being created.
  */
-function _data_sequence_field_group_info($bundle_name, $fields) {
+function tripal_ds_add_sequences_field_group($bundle_name, $fields) {
   //Tripal pane  to nest the fieldset within.
   $field_group_tripalpane = new stdClass();
   $field_group_tripalpane->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially*/
@@ -182,7 +182,7 @@ function _data_sequence_field_group_info($bundle_name, $fields) {
   ];
   drupal_write_record('field_group', $field_group_tripalpane);
   //Write to the tripal_ds table to record the new tripal pane.
-  tripal_ds_bundle_menu_item($bundle_name, 'Sequence', 'group_sequence_tripalpane', 'TripalEntity');
+  tripal_ds_bundle_menu_item($bundle_name, 'Sequences', 'group_sequence_tripalpane', 'TripalEntity');
 
   //Table of fields.
   $field_group = new stdClass();
@@ -230,7 +230,7 @@ function _data_sequence_field_group_info($bundle_name, $fields) {
  * @param $field_name
  *  Machine name of the child element.
  */
-function tripal_ds_additional_fields_field_group_info($bundle_name, $field_label, $group_field_name, $field_name) {
+function tripal_ds_add_generic_field_group($bundle_name, $field_label, $group_field_name, $field_name) {
   //Write to the tripal_ds table to record the new tripal pane.
   tripal_ds_bundle_menu_item($bundle_name, $field_label, $group_field_name, 'TripalEntity');
 

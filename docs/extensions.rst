@@ -8,6 +8,7 @@ The below modules are Tripal 3 compatible and grouped roughly by category:
 
    extensions/administrative
    extensions/analysis
+   extensions/breeding
    extensions/data_input
    extensions/developer
    extensions/3rd_party
