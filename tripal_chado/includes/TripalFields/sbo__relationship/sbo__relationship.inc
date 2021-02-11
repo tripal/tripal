@@ -248,15 +248,20 @@ class sbo__relationship extends ChadoField {
       case 'quantification_relationship':
       case 'element_relationship':
       case 'project_relationship':
+        $this->base_name_columns = ['name'];
+        $this->base_type_column = 'table_name';
+        break;
+
       case 'pub_relationship':
         $this->base_name_columns = ['title'];
         $this->base_type_column = 'table_name';
-      break;
+        break;
 
       case 'organism_relationship':
         $this->base_name_columns = ['genus', 'species'];
         $this->base_type_column = 'table_name';
         break;
+
       case 'phylonode_relationship':
         $this->base_name_columns = ['label'];
         $this->base_type_column = 'table_name';
@@ -266,6 +271,7 @@ class sbo__relationship extends ChadoField {
         $this->base_name_columns = ['name'];
         $this->base_type_column = 'type_id';
         break;
+
       default:
         // @todo update this to use the schema.
         $this->base_name_columns = ['name'];
