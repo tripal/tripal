@@ -127,9 +127,10 @@ class so__transcript_formatter extends ChadoFieldFormatter {
     }
     $transcripts['transcript_dropdown'] = [
       '#type' => 'select',
-      '#title' => 'Transcripts',
+      '#title' => 'Transcripts for this gene',
       '#options' => $options,
       '#weight' => -100,
+      '#description' => 'Select a transcript to view more details.',
       '#attributes' => ['class' => ['tripal-chado-so__transcript-select']]
     ];
     $element[0] = $transcripts;
