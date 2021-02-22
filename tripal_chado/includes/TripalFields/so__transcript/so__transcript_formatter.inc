@@ -21,6 +21,12 @@ class so__transcript_formatter extends ChadoFieldFormatter {
       return $this->returnEmpty($element);
     }
 
+    // For backwards compatibility if the 'transcript_fields' setting
+    // is not available then return the default table.
+    if (!array_key_exists('transcript_fields', $this->instance['settings'])) {
+      return $this->returnDefaultTable($element, $items);
+    }
+
     // Iterate through the list of fields so that we can load the mRNA
     // entity with all of the field requested by the site admin. If we
     // don't do this first then auto_attach fields won't be added.
@@ -34,7 +40,7 @@ class so__transcript_formatter extends ChadoFieldFormatter {
     // For backwards compatibility if no field IDs were provided then
     // return the original table of four rows.
     if (count($field_ids) == 0) {
-      return $this->returnDefaulTable($element, $items);
+      return $this->returnDefaultTable($element, $items);
     }
 
     // Iterate through each mRNA (transcript).
@@ -49,7 +55,7 @@ class so__transcript_formatter extends ChadoFieldFormatter {
       // If any transcript is not published (i.e. it doesn't have an entity)
       // then we want to just return the default table and stop.
       if (!array_key_exists('entity', $item['value'])) {
-        return $this->returnDefaulTable($element, $items);
+        return $this->returnDefaultTable($element, $items);
       }
       list($entity_type, $mRNA_entity_id) = explode(':', $item['value']['entity']);
 
@@ -199,7 +205,7 @@ class so__transcript_formatter extends ChadoFieldFormatter {
    * For backwards compatibility this function returns a table
    * of four columns and one row per transcript.
    */
-  private function returnDefaulTable(&$element, $items) {
+  private function returnDefaultTable(&$element, $items) {
 
     $default_headers = ['Transcript Name', 'Identifier', 'Type', 'Location'];
     $default_rows = [];
@@ -215,7 +221,11 @@ class so__transcript_formatter extends ChadoFieldFormatter {
       $feature_uname = $item['value']['data:0842'];
       $loc = $item['value']['SO:0000735'];
       $type = $item['value']['rdfs:type'];
-      $feature_name = l($feature_name, "bio_data/" . $entity_id, ['attributes' => ['target' => "_blank"]]);
+      if (array_key_exists('entity', $item['value']) and $item['value']['entity']) {
+        list($entity_type, $entity_id) = explode(':', $item['value']['entity']);
+        $feature_name = l($feature_name, "bio_data/" . $entity_id, ['attributes' => ['target' => "_blank"]]);
+      }
+
 
       $default_rows[] = [$feature_name, $feature_uname, $type, $loc];
     }
