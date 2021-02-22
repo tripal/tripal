@@ -201,8 +201,13 @@ class so__transcript extends ChadoField {
       '#default_value' => $settings['transcript_fields'],
     ];
 
-    //Get the content type for the mRNA term (SO:0000234) and it's feilds.
+    // Get the content type for the mRNA term (SO:0000234) and it's feilds.
+    // If it isn't published then don't show the form below.
     $bundle = tripal_load_bundle_entity(['accession' => 'SO:0000234']);
+    if (!$bundle) {
+      return $element;
+    }
+
     $fields = field_info_instances('TripalEntity', $bundle->name);
 
     foreach ($fields as $field_name => $details) {
@@ -324,7 +329,7 @@ class so__transcript extends ChadoField {
       'sticky' => TRUE,
       'caption' => t('Content Panes Available in the TOC'),
       'colgroups' => [],
-      'empty' => t('There are no content panes for this page'),
+      'empty' => t('There are no content panes for this page. The mRNA content type must exist to customize.'),
     ];
     drupal_add_tabledrag('tripal-field-settings-table', 'order', 'sibling', 'tripal-field-settings-table-weights');
 
@@ -332,7 +337,7 @@ class so__transcript extends ChadoField {
     $fset['fields'] = [
       '#type' => 'fieldset',
       '#title' => 'Transcript (mRNA) Field Selection',
-      '#description' => t('Select the fields that you want displayed on the gene page for each transcript.  If no fields are selected then a default display is provided.'),
+      '#description' => t('Here, you can customize what information is provided to the end-user about transcripts.  Select the fields that you want displayed on the page.  If no fields are selected then a default display is provided. All mRNA for a gene must be published or the default display will be provided.'),
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
       '#attributes' => ['class' => ['collapsible', 'collapsed']],

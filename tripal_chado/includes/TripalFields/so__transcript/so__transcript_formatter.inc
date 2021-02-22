@@ -21,30 +21,20 @@ class so__transcript_formatter extends ChadoFieldFormatter {
       return $this->returnEmpty($element);
     }
 
+    // Get the list of fields that are t o be shown
+    $fields_to_show = [];
+    if (array_key_exists('transcript_fields', $this->instance['settings'])) {
+      $fields_to_show = $this->fieldsToShow($this->instance['settings']['transcript_fields']);
+    }
+
     // For backwards compatibility if the 'transcript_fields' setting
     // is not available then return the default table.
-    if (!array_key_exists('transcript_fields', $this->instance['settings'])) {
+    if (count($fields_to_show) == 0) {
       return $this->returnDefaultTable($element, $items);
     }
 
-    // Iterate through the list of fields so that we can load the mRNA
-    // entity with all of the field requested by the site admin. If we
-    // don't do this first then auto_attach fields won't be added.
-    $fields = $this->instance['settings']['transcript_fields'];
-    $field_ids = [];
-    foreach ($fields as $field_name => $field_value) {
-      $field_info = field_info_field($field_name);
-      $field_ids[] = $field_info['id'];
-    }
-
-    // For backwards compatibility if no field IDs were provided then
-    // return the original table of four rows.
-    if (count($field_ids) == 0) {
-      return $this->returnDefaultTable($element, $items);
-    }
-
-    // Iterate through each mRNA (transcript).
-    $transcripts = [];
+    // If any of the transcripts are not published then just provide the
+    // default view
     foreach ($items as $delta => $item) {
 
       // Skip empty items;
@@ -57,6 +47,108 @@ class so__transcript_formatter extends ChadoFieldFormatter {
       if (!array_key_exists('entity', $item['value'])) {
         return $this->returnDefaultTable($element, $items);
       }
+    }
+
+    // Iterate through the list of fields so that we can load the mRNA
+    // entity with all of the field requested by the site admin. If we
+    // don't do this first then auto_attach fields won't be added.
+    $field_ids = [];
+    foreach ($fields_to_show as $field_name) {
+      $field_info = field_info_field($field_name);
+      $field_ids[] = $field_info['id'];
+    }
+
+    // For backwards compatibility if no field IDs were provided then
+    // return the original table of four rows.
+    if (count($field_ids) == 0) {
+      return $this->returnDefaultTable($element, $items);
+    }
+
+    #return $this->returnFieldsets($items, $element, $field_ids, $fields_to_show);
+    return $this->returnDropDown($items, $element, $field_ids, $fields_to_show);
+
+  }
+
+  /**
+   * Returns a list of fields names that the site admin wants to show.
+   */
+  private function fieldsToShow($transcript_fields) {
+    $to_show = [];
+    foreach($transcript_fields as $field_name => $details) {
+      if ($details['show'] == 1) {
+        $to_show[] = $field_name;
+      }
+    }
+    return $to_show;
+  }
+
+  /**
+   *
+   */
+  private function returnDropDown($items, &$element, $field_ids, $fields_to_show) {
+
+    drupal_add_js(drupal_get_path ('module', 'tripal_chado') . '/theme/js/so__transcript.js');
+
+    // Iterate through each mRNA (transcript).
+    $options = [0 => '--Select a transcript to view--'];
+    $transcripts = [];
+    foreach ($items as $delta => $item) {
+
+      // Skip empty items;
+      if (!$item['value']) {
+        continue;
+      }
+
+      list($entity_type, $mRNA_entity_id) = explode(':', $item['value']['entity']);
+      $result = tripal_load_entity('TripalEntity', [$mRNA_entity_id], FALSE, $field_ids);
+      reset($result);
+      $mRNA_entity = $result[$mRNA_entity_id];
+      $options[$mRNA_entity_id] = $mRNA_entity->title;
+
+      // Create the fieldset for this transcript.
+      $transcripts[$mRNA_entity_id] = [
+        '#type' => 'markup',
+        '#prefix' => '<div id="' . 'tripal-chado-so__transcript-' . $mRNA_entity_id . '" class="tripal-chado-so__transcript-box">',
+        '#suffix' => '</div>',
+      ];
+
+      // Add a link to the mRNA page.
+      $feature_name = $mRNA_entity->title;
+      $feature_name = l($feature_name, "bio_data/" . $mRNA_entity->id, ['attributes' => ['target' => "_blank"]]);
+      $transcripts[$mRNA_entity_id]['mRNA_link'] = [
+        '#type' => 'markup',
+        '#markup' => "<i>Click, " . $feature_name . ", for the full transcript page.</i>",
+        '#weight' => -102
+      ];
+
+      // Now add all fields to the fieldset.
+      $this->addFields($mRNA_entity, $fields_to_show, $transcripts[$mRNA_entity_id]);
+
+    }
+    $transcripts['transcript_dropdown'] = [
+      '#type' => 'select',
+      '#title' => 'Transcripts',
+      '#options' => $options,
+      '#weight' => -100,
+      '#attributes' => ['class' => ['tripal-chado-so__transcript-select']]
+    ];
+    $element[0] = $transcripts;
+  }
+
+  /**
+   *
+   */
+  private function returnFieldsets($items, &$element, $field_ids, $fields_to_show) {
+
+    // Iterate through each mRNA (transcript).
+    $transcripts = [];
+    foreach ($items as $delta => $item) {
+
+      // Skip empty items;
+      if (!$item['value']) {
+        continue;
+      }
+
       list($entity_type, $mRNA_entity_id) = explode(':', $item['value']['entity']);
 
       // Now load the mRNA entity with all of the fields.
@@ -81,11 +173,11 @@ class so__transcript_formatter extends ChadoFieldFormatter {
       $feature_name = l($feature_name, "bio_data/" . $mRNA_entity->id, ['attributes' => ['target' => "_blank"]]);
       $transcripts[$mRNA_entity_id]['mRNA_link'] = [
         '#type' => 'markup',
-        '#markup' => "<i>Click, " . $feature_name . ", For the full transcript page.</i>",
+        '#markup' => "<i>Click, " . $feature_name . ", for the full transcript page.</i>",
       ];
 
       // Now add all fields to the fieldset.
-      $this->addFieldsetFields($mRNA_entity, $fields, $transcripts[$mRNA_entity_id]);
+      $this->addFields($mRNA_entity, $fields_to_show, $transcripts[$mRNA_entity_id]);
 
     }
     $element[0] = $transcripts;
@@ -94,7 +186,7 @@ class so__transcript_formatter extends ChadoFieldFormatter {
   /**
    * Builds a fieldset for the entity.
    */
-  private function addFieldsetFields($mRNA_entity, $fields, &$fieldset) {
+  private function addFields($mRNA_entity, $fields, &$fieldset) {
 
     // Get some settings about the transcript content type.
     $mRNA_bundle = tripal_load_bundle_entity(['name'=> $mRNA_entity->bundle]);
@@ -110,14 +202,9 @@ class so__transcript_formatter extends ChadoFieldFormatter {
     // Iterate through the list of fields that the site admin has indicated
     // that they want to show in the transcript fieldset. They are provided
     // in order that they should be shown.
-    foreach ($fields as $field_name => $field_value) {
+    foreach ($fields as $field_name) {
 
-      // Skip fields that the site admin does not want to show.
-      if (array_key_exists('show', $field_value) and ($field_value['show'] != 1)) {
-        continue;
-      }
-
-      // Load the field instance info. We'll need this to determine the
+        // Load the field instance info. We'll need this to determine the
       // cardinality of the field and to render it for display.
       $field_info = field_info_field($field_name);
       $field_instance = field_info_instance('TripalEntity', $field_name, $mRNA_entity->bundle);
@@ -188,7 +275,7 @@ class so__transcript_formatter extends ChadoFieldFormatter {
 
       $fieldset['summary_header'] = [
         '#type' => 'markup',
-        '#markup' => '<h3>Transcript Summary</h3>',
+        '#markup' => '<h3>Transcript ' . $mRNA_entity->title . '</h3>',
         '#weight' => -101,
       ];
       $fieldset['summary_table'] = [
