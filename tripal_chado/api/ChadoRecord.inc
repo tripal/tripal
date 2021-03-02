@@ -108,13 +108,6 @@ class ChadoRecord {
    */
   protected $required_cols = [];
 
-
-  /**
-   * @var array
-   *   An array of default values.
-   */
-  protected $default_values = [];
-
   /**
    * @var boolean
    *   An array of required columns which have yet to be set.
@@ -175,16 +168,13 @@ class ChadoRecord {
       $this->column_names[] = $column_name;
     }
 
-    // Get the required columns and default values.
+    // Get the required columns.
     foreach ($this->schema['fields'] as $column => $col_schema) {
       foreach ($col_schema as $param => $val) {
         if (preg_match('/not null/i', $param) and $col_schema[$param]) {
           $this->required_cols[] = $column;
           // Currently all required columns are missing.
           $this->missing_required_col[$column] = TRUE;
-        }
-        if (preg_match('/default/i', $param) and $col_schema[$param] !== '') {
-          $this->default_values[$column] = $col_schema[$param];
         }
       }
     }
@@ -578,10 +568,8 @@ class ChadoRecord {
       throw new Exception($message);
     }
 
-    // Make sure that the value is not NULL if this is a required field and if
-    // it doesn't have a default value.
-    if (in_array($column_name, $this->required_cols) and $value === '__NULL__' and
-        !array_key_exists($column_name, $this->default_values)) {
+    // Make sure that the value is not NULL if this is a required field.
+    if (in_array($column_name, $this->required_cols) and $value === '__NULL__') {
       $message = t('ChadoRecord::setValue(). The column named, "!column", ' .
         'requires a value for the table: "!table".',
         [
