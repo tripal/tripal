@@ -178,7 +178,7 @@ class data__accession_widget extends ChadoFieldWidget {
     $fieldset = [
       '#title' => $element['#title'],
       '#value' => '',
-      '#description' => $element['#description'],
+      '#description' =>  $element['#description'],
       '#children' => $layout,
     ];
 

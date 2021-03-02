@@ -633,9 +633,16 @@ class TripalField {
   }
 
   /**
+   * Validates the instance settings form.
+   *
+   * Remember if you used the 'themeable' option for form elements you
+   * must copy the values correctly.  See the description in hte
+   * `instanceSettingsForm()` function for details.
    *
    * @param $form
+   *   The form object.
    * @param $form_state
+   *   The form_state object.
    */
   public function settingsFormValidate($form, &$form_state) {
 
@@ -656,6 +663,17 @@ class TripalField {
    *   $element = parent::instanceSettingsForm();
    * @endcode
    *
+   * Additinally, theming of the instance setting form is not supported by
+   * Drupal, but Tripal will allow you to theme form elements if you
+   * place them in the $element['themeable'] variable.  However, if you place
+   * form elements there you must set corresponding form elements of type
+   * 'value' at the base level of the element array and copy appropriate
+   * settings values  from the
+   * $form_state['values']['instance']['settings']['themeable'] variable into
+   * the
+   * $form_state['values']['instance']['settings'] variable. Do this in the
+   * `instanceSettingsFormValidate()` function.
+   *
    * Please note, the form generated with this function does not easily
    * support AJAX calls in the same way that other Drupal forms do.  If you
    * need to use AJAX you must manually alter the $form in your ajax call.
@@ -668,8 +686,45 @@ class TripalField {
 
     $element['#field'] = $this->field;
     $element['#instance'] = $this->instance;
+    $element['themeable'] = [];
+    $element['themeable']['#field'] = $this->field;
+    $element['themeable']['#instance'] = $this->instance;
+    $element['themeable']['#theme'] = 'tripal_field_settings_default';
     $element['#element_validate'][] = 'tripal_field_instance_settings_form_validate';
     return $element;
+  }
+
+  /**
+   * The theme function for the instance settings form.
+   *
+   * @param $element
+   * A form element array containing basic properties for the widget:
+   *  - #entity_type: The name of the entity the field is attached to.
+   *  - #bundle: The name of the field bundle the field is contained in.
+   *  - #field_name: The name of the field.
+   *  - #language: The language the field is being edited in.
+   *  - #field_parents: The 'parents' space for the field in the form. Most
+   *    widgets can simply overlook this property. This identifies the location
+   *    where the field values are placed within $form_state['values'], and is
+   *    used to access processing information for the field through the
+   *    field_form_get_state() and field_form_set_state() functions.
+   *  - #columns: A list of field storage columns of the field.
+   *  - #title: The sanitized element label for the field instance, ready for
+   *    output.
+   *  - #description: The sanitized element description for the field instance,
+   *    ready for output.
+   *  - #required: A Boolean indicating whether the element value is required;
+   *    for required multiple value fields, only the first widget's values are
+   *    required.
+   *  - #delta: The order of this item in the array of subelements; see
+   *    $delta above
+   *
+   * @return
+   *   A drupal renderable array or HTML or an empty string if no
+   *   theming is to be applied.
+   */
+  public function settingsTheme($element) {
+
   }
 
   /**
