@@ -49,6 +49,9 @@
   height: 10px;
 }
 
+.tripal-chado-gene-transcript-fieldset-item {
+  border-bottom: 1px solid #AAAAAA;
+}
 
 #edit-feature-pub #autocomplete li {
   white-space: normal;

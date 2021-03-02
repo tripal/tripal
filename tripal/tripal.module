@@ -817,6 +817,11 @@ function tripal_theme($existing, $type, $theme, $path) {
       'render element' => 'element',
       'file' => 'includes/tripal.fields.inc',
     ),
+    // Theming for all field settings forms.
+    'tripal_field_settings_default' => array(
+      'render element' => 'element',
+      'file' => 'includes/tripal.fields.inc',
+    ),
     // Themed forms
     'tripal_views_handler_area_collections_fields_fset' => array(
       'render element' => 'form',
@@ -1657,7 +1662,7 @@ function tripal_job_describe_args($callback, $args) {
 
 /**
  * Returns the current version of Tripal, according to the tripal.info file
- * 
+ *
  * @return string
  *   The version string of Tripal. Ex. 7.x-3.1
  */
