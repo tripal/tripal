@@ -315,7 +315,7 @@ function chado_autocomplete_pub($string = '') {
   ";
   $pubs = chado_query($sql, [':str' => $string . '%']);
   while ($pub = $pubs->fetchObject()) {
-    $val = $pub->title . " [id:" . $pub->pub_id . "]";
+    $val = $pub->title . " [id: " . $pub->pub_id . "]";
     $items[$val] = $pub->title;
   }
 
