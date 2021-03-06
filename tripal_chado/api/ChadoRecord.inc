@@ -391,7 +391,7 @@ class ChadoRecord {
         continue;
       }
 
-      if ($value == '__NULL__') {
+      if ($value === '__NULL__') {
         $sql .= $column . ' = NULL, ';
       }
       else {
@@ -569,7 +569,7 @@ class ChadoRecord {
     }
 
     // Make sure that the value is not NULL if this is a required field.
-    if (in_array($column_name, $this->required_cols) and $value == '__NULL__') {
+    if (in_array($column_name, $this->required_cols) and $value === '__NULL__') {
       $message = t('ChadoRecord::setValue(). The column named, "!column", ' .
         'requires a value for the table: "!table".',
         [
