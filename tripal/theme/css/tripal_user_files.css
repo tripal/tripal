@@ -5,6 +5,7 @@
 #tripal-user-file-tree {
   margin: 0;
   padding: 10px;
+  max-height: 250px;
   overflow: auto;
   border: 1px solid #AAAAAA;
 }
