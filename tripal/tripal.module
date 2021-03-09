@@ -573,10 +573,21 @@ function tripal_menu() {
 
   // User file renew.
   $items['user/%/files/%/renew'] = [
-    'title' => 'Renew File',
+    'title' => 'Renew File Expiration',
     'description' => "Renew a user's file",
     'page callback' => 'tripal_renew_file',
     'page arguments' => [3],
+    'access callback' => 'tripal_access_user_files',
+    'access arguments' => ['renew', 1, 3],
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal.user.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+  ];
+  $items['user/%/files/%/permanent'] = [
+    'title' => 'Make File Permanent',
+    'description' => "Removes the expiration date of a file. It will never be removed.",
+    'page callback' => 'tripal_set_file_permanent',
+    'page arguments' => [3, TRUE],
     'access callback' => 'tripal_access_user_files',
     'access arguments' => ['renew', 1, 3],
     'type' => MENU_CALLBACK,

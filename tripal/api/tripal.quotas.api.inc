@@ -88,6 +88,12 @@ function tripal_expire_files(TripalJob $job = NULL) {
     ->fields('tgfe')
     ->execute();
   while ($result = $results->fetchObject()) {
+    // Skip files that have an expiration date of -1.  These are files
+    // that should be permenant.
+    if ($result->expiration_date == -1) {
+      continue;
+    }
+    // For files that have exceeded the expiration date, remove those.
     if (time() > $result->expiration_date) {
 
       $file = file_load($result->fid);
@@ -112,17 +118,32 @@ function tripal_expire_files(TripalJob $job = NULL) {
  *
  * @param $fid
  *   The file ID of the file to reset.
+ * @param $is_permanent
+ *   Set to TRUE if this file should be marked to never expire.
+ * @param $days
+ *   Manually set a number of days until expirtaion. If this is NULL then
+ *   the default setting is used.
  *
  * @return
  *   The new expiration date on success, FALSE on failure.
  */
-function tripal_reset_file_expiration($fid) {
+function tripal_reset_file_expiration($fid, $is_permanent=FALSE, $days=NULL) {
 
   $file = file_load($fid);
   try {
-    $quota = tripal_get_user_quota($file->uid);
-    $custom_expiration = $quota->custom_expiration;
-    $expiration_date = time() + $custom_expiration * 24 * 60 * 60;
+    if ($is_permanent===TRUE) {
+      $expiration_date = -1;
+    }
+    else {
+      $quota = tripal_get_user_quota($file->uid);
+      $custom_expiration = $quota->custom_expiration;
+      if (is_integer($days)) {
+        $expiration_date = time() + $days * 24 * 60 * 60;
+      }
+      else {
+        $expiration_date = time() + $custom_expiration * 24 * 60 * 60;
+      }
+    }
 
     db_delete('tripal_expiration_files')
       ->condition('fid', $fid)
