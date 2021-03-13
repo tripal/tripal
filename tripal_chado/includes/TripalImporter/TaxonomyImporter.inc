@@ -491,7 +491,7 @@ class TaxonomyImporter extends TripalImporter {
       ];
       $this->addTaxonomyNode($tree, $node, $lineage_depth);
 
-      // Set the indecies for the tree.
+      // Set the indices for the tree.
       chado_assign_phylogeny_tree_indices($tree);
     }
 
@@ -880,7 +880,7 @@ class TaxonomyImporter extends TripalImporter {
       ];
       $this->addTaxonomyNode($this->tree, $node, $lineage_depth);
 
-      // Set the indecies for the tree.
+      // Set the indices for the tree.
       chado_assign_phylogeny_tree_indices($this->tree);
       return TRUE;
     }

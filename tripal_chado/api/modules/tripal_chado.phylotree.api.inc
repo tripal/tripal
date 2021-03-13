@@ -181,7 +181,7 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
   }
 
   // A Dbxref is required by the phylotree module, but if the
-  // tree was generated in-house and the site admin doens't want to
+  // tree was generated in-house and the site admin doesn't want to
   // assign a local dbxref then we will set it to the null db
   // and the local:null dbxref.
   if (array_key_exists('dbxref', $options)) {
@@ -683,7 +683,7 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
       if ($tree['is_internal']) {
         $values['type_id'] = $vocab['internal']->cvterm_id;
         $values['parent_phylonode_id'] = $parent['phylonode_id'];
-        // TOOD: a feature may be associated here but it is recommended that it
+        // TODO: a feature may be associated here but it is recommended that it
         // be a feature of type SO:match and should represent the alignment of
         // all features beneath it.
       }
@@ -897,7 +897,7 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $j
       module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.phylotree_newick');
       $tree = tripal_phylogeny_parse_newick_file($file_name);
 
-      // Assign the right and left indecies to the tree ndoes.
+      // Assign the right and left indices to the tree nodes.
       chado_assign_phylogeny_tree_indices($tree);
     }
     // Iterate through the tree nodes and add them to Chado in accordance

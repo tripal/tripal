@@ -55,7 +55,7 @@ require_once 'api/modules/tripal_chado.module.DEPRECATED.api.inc';
 // REQUIRED INCLUDE FILES
 //
 // These require files implement hooks and therefore must
-// ways be included when the module is interpreted.
+// always be included when the module is interpreted.
 require_once "includes/tripal_chado.entity.inc";
 require_once "includes/tripal_chado.schema.inc";
 require_once "includes/tripal_chado.vocab_storage.inc";

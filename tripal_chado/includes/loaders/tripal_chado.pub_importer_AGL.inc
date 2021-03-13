@@ -708,7 +708,7 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
           $author = tripal_pub_remote_search_AGL_get_author($xml, $ind1);
           $pub['Author List'][] = $author;
           break;
-        case '110':  // main entry-corporate nmae
+        case '110':  // main entry-corporate name
           $author = [];
           $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
           foreach ($codes as $code => $value) {

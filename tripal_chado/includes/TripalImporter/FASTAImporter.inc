@@ -839,7 +839,7 @@ class FASTAImporter extends TripalImporter {
 
     // add in the analysis link
     if ($analysis_id) {
-      // if the association doens't already exist then add one
+      // if the association doesn't already exist then add one
       $values = [
         'analysis_id' => $analysis_id,
         'feature_id' => $feature->feature_id,

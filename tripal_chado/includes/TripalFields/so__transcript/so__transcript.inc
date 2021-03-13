@@ -201,7 +201,7 @@ class so__transcript extends ChadoField {
       '#default_value' => $settings['transcript_fields'],
     ];
 
-    // Get the content type for the mRNA term (SO:0000234) and it's feilds.
+    // Get the content type for the mRNA term (SO:0000234) and its fields.
     // If it isn't published then don't show the form below.
     $bundle = tripal_load_bundle_entity(['accession' => 'SO:0000234']);
     if (!$bundle) {
