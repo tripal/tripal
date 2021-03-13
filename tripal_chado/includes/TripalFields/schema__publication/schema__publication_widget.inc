@@ -58,7 +58,7 @@ class schema__publication_widget extends ChadoFieldWidget {
       $pub_id = tripal_get_field_item_keyval($items, $delta, $pub_item_id, $pub_id);
       if ($pub_id) {
         $pub = chado_get_publication(['pub_id' => $pub_id]);
-        $title = $pub->title . ' [id:' . $pub->pub_id . ']';
+        $title = $pub->title . ' [id: ' . $pub->pub_id . ']';
       }
     }
 
@@ -122,7 +122,7 @@ class schema__publication_widget extends ChadoFieldWidget {
     $title = $form_state['values'][$field_name]['und'][$delta]['pub_title'];
     if ($title) {
       $matches = [];
-      if (preg_match('/^.*\[id:(\d+)]$/', $title, $matches)) {
+      if (preg_match('/^.*\[id: (\d+)]$/', $title, $matches)) {
         $pub_id = $matches[1];
         $pub = chado_generate_var('pub', ['pub_id' => $pub_id]);
         $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__pub_id'] = $pub->pub_id;

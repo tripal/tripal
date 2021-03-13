@@ -248,15 +248,20 @@ class sbo__relationship extends ChadoField {
       case 'quantification_relationship':
       case 'element_relationship':
       case 'project_relationship':
-      case 'pub_relationship':
-        $this->base_type_column = 'table_name';
         $this->base_name_columns = ['name'];
-      break;
+        $this->base_type_column = 'table_name';
+        break;
+
+      case 'pub_relationship':
+        $this->base_name_columns = ['title'];
+        $this->base_type_column = 'table_name';
+        break;
 
       case 'organism_relationship':
         $this->base_name_columns = ['genus', 'species'];
         $this->base_type_column = 'table_name';
         break;
+
       case 'phylonode_relationship':
         $this->base_name_columns = ['label'];
         $this->base_type_column = 'table_name';
@@ -266,6 +271,7 @@ class sbo__relationship extends ChadoField {
         $this->base_name_columns = ['name'];
         $this->base_type_column = 'type_id';
         break;
+
       default:
         // @todo update this to use the schema.
         $this->base_name_columns = ['name'];
@@ -418,6 +424,13 @@ class sbo__relationship extends ChadoField {
     $object_id_key = $this->object_id_column;
     // @todo grab these separately like it was before.
     $subject_pkey = $object_pkey = $this->base_schema['primary key'][0];
+
+    // A publication title can exceed the character limit for chado_expand_var()
+    // so make sure it has been added.
+    // TODO Should this step be generalized to other content type that could have a long name?
+    if (in_array('pub.title', $relationship->expandable_fields)) {
+      $relationship = chado_expand_var($relationship, 'field', 'pub.title', []);
+    }
 
     $entity->{$field_name}['und'][$delta]['value'] = [
       'local:relationship_subject' => $this->getRelationshipSubject($relationship),
