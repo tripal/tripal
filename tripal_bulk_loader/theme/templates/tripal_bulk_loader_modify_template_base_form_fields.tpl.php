@@ -18,11 +18,12 @@ $header = [
   'Chado Field',
   'Field Type',
   'Field Settings',
+  'Required',
 ]; //'Data Column', 'Constant Value', 'Referred Record');
 $rows = [];
 
 // This is an array to keep track of the record => field index as well as the number of fields.
-// It is used to make the record column span all the field rows providing more room for 
+// It is used to make the record column span all the field rows providing more room for
 // information and a visual separation between records.
 // Expect: record_id => array(index1, index2, index3)
 $field_record = [];
@@ -81,9 +82,14 @@ foreach (element_children($element) as $key) {
     'class' => ['field-type'],
   ];
 
-  // Finally specify the field value.
-
+  // Specify the field value.
   $row[] = $value;
+
+  // Specify if the field is required.
+  $row[] = [
+    'data' => drupal_render($row_element['required']),
+    'class' => ['field-required'],
+  ];
 
   // Add this field to the table.
   $rows[] = [
