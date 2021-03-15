@@ -17,3 +17,20 @@ In addition to the default settings for all users, you may want to allow specifi
 Here you must specify the Drupal user name of the user who should be granted a custom quota.  This field will auto populate suggestions as you type to help you find the correct username.  Enter the desired quota size and expiration days and click the **Submit** button. you will then see the user-specific quota listed in the table at the bottom of the page:
 
 .. image:: ./file_management.user_quotas.3.png
+
+User's Files
+------------
+User's with permission to upload files are able to use the Tripal file uploader to add files to the server.  The core Tripal Data Importers use the Tripal file uploader and extension modules may use it as well.  You can enable this functionality for users by Navigating to **Admin** > **People** and click the **Permissions** Tab. next scrol to the **Tripal** section and set the **Upload Files** permissions as desired for your site.  The following screenshot shows the permission on a default Drupal site.
+
+
+.. image:: ./file_upload_permission.png.png
+
+User's who have the ability to upload files can manage files on their own Account pages.  
+
+As described in the previous section, the site administrator can set a system-wide or user-specific default expiration number of days for a file. This means files will be removed automatically from the server once their expiration data is set.
+
+.. note::
+
+  Automatic removal of files can only occur if the Drupal cron is setup to run automatically.
+  
+Each  
