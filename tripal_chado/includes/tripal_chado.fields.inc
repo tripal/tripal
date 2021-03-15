@@ -861,7 +861,7 @@ function tripal_chado_bundle_fields_info_linker(&$info, $details, $entity_type, 
 }
 
 /**
- * Impelments hook_create_tripalfield_instance().
+ * Implements hook_create_tripalfield_instance().
  *
  * This is a Tripal defined hook that supports integration with the
  * TripalEntity field.

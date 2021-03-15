@@ -1431,7 +1431,7 @@ class OBOImporter extends TripalImporter {
       }
     }
 
-    // We have no conflict so it's save to update or insert.
+    // We have no conflict so it's safe to update or insert.
     return FALSE;
   }
 
@@ -1502,7 +1502,7 @@ class OBOImporter extends TripalImporter {
     chado_query($sql, [':cvterm_id' => $cvterm_id]);
 
     // We should never have the problem where we don't have a cvterm_id. The
-    // saveTerm() function should always return on.  But if for some unknown
+    // saveTerm() function should always return one.  But if for some unknown
     // reason we don't have one then fail.
     if (!$cvterm_id) {
       throw new Exception(t('Missing cvterm after saving term: !term',

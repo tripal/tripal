@@ -178,7 +178,7 @@ function tripal_phylogeny_ajax_get_tree_json($phylotree_id)
       ];
 
       // If the nodes are taxonomic then set an equal distance
-      if ($phylotree->type_id->name == 'taxonomy' or $phylotree->type_id->name == 'Speces tree') {
+      if ($phylotree->type_id->name == 'taxonomy' or $phylotree->type_id->name == 'Species tree') {
         $node['length'] = 0.001;
       }
 

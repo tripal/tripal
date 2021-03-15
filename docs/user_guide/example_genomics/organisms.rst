@@ -44,7 +44,7 @@ Tripal makes it easy to import additional information about any organisms within
 
 .. image:: organisms.taxonomy_loader.png
 
-Click the checbox beside the 'Import taxonomy for existing species' and click Submit.  Now run the submitted job:
+Click the checkbox beside the 'Import taxonomy for existing species' and click Submit.  Now run the submitted job:
 
 ::
 

@@ -490,7 +490,7 @@ function chado_generate_var($table, $values, $base_options = []) {
  * extremely long, such as text fields are automatically excluded to prevent
  * long page loads.  Linking tables that have a many-to-one relationship with
  * the record are also excluded.  This function allows for custom expansion
- * of the record created by chado_generate_var() by specifyin the field and
+ * of the record created by chado_generate_var() by specifying the field and
  * tables that should be added.
  *
  * Example Usage:

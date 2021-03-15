@@ -143,7 +143,7 @@ class chado_linker__prop_widget extends ChadoFieldWidget {
     $value = $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__value'];
     $form_state['values'][$field_name]['und'][$delta]['value'] = $value;
 
-    // A value of zero gets set to empty when sbumitted and some prop
+    // A value of zero gets set to empty when submitted and some prop
     // tables don't have a default value set (e.g. pubprop).
     if (!$form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__rank']) {
       $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__rank'] = 0;

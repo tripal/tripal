@@ -58,7 +58,7 @@ function chado_publish_records($values, $job = NULL) {
   // the terminal
   $message_type = 'publish_records';
   $message_opts = [
-    'watchdog' == FALSE,
+    'watchdog' => FALSE,
     'job' => $job,
     'print' => TRUE,
   ];

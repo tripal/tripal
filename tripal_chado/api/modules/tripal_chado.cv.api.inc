@@ -219,7 +219,7 @@ function chado_get_cvterm($identifiers, $options = []) {
     ];
     $result = chado_select_record('cvtermsynonym', ['cvterm_id'], $values, $options);
 
-    // if the synonym doens't exist or more than one record is returned then
+    // if the synonym doesn't exist or more than one record is returned then
     // return false.
     if (count($result) == 0) {
       return FALSE;

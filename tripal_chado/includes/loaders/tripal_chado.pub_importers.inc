@@ -1004,7 +1004,7 @@ function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE, $job =
   // the terminal
   $message_type = 'pub_import';
   $message_opts = [
-    'watchdog' == TRUE,
+    'watchdog' => FALSE,
     'job' => $job,
     'print' => TRUE,
   ];
@@ -1120,12 +1120,12 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
   // to the terminal
   $message_type = 'pub_import';
   $message_opts = [
-    'watchdog' == FALSE,
+    'watchdog' => FALSE,
     'job' => $job,
     'print' => TRUE,
   ];
   $error_opts = [
-    'watchdog' == TRUE,
+    'watchdog' => TRUE,
     'job' => $job,
     'print' => TRUE,
   ];
