@@ -524,14 +524,16 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   }
 
   // Check that template required fields are present. if a required field is
-  // missing and this
-  // is an optional record then just return. otherwise raise an error
+  // missing and this is an optional record then just return. otherwise raise
+  // an error
   $skip_optional = 0;
   foreach ($table_data['required'] as $field => $required) {
+
     if ($required) {
       // check if the field has no value (or array is empty)
       if (!isset($values[$field]) or
         (is_array($values[$field]) and count($values[$field]) == 0)) {
+
         // check if the record is optional.  For backwards compatiblity we need to
         // check if the 'mode' is set to 'optional'
         if ($table_data['optional'] or preg_match('/optional/', $table_data['mode']) or

@@ -426,6 +426,10 @@ function tripal_bulk_loader_modify_template_base_form($form, &$form_state = NULL
             '#type' => 'hidden',
             '#value' => $priority,
           ],
+          'required' => [
+            '#type' => 'item',
+            '#markup' => $field['required'] ? '&#10004;' : '',
+          ],
           'field_name' => [
             '#type' => 'item',
             '#markup' => $field['title'],
@@ -1848,7 +1852,16 @@ function tripal_bulk_loader_template_field_form_default_values($mode, &$form_sta
   $v['foreign_record'] = (isset($form_state['values']['foreign_record'])) ? $form_state['values']['foreign_record'] : 'NULL';
   $v['foreign_field_options'] = $ref_chado_fields;
   $v['foreign_field'] = (isset($form_state['values']['foreign_field'])) ? $form_state['values']['foreign_field'] : current($ref_chado_fields);
-  $v['required'] = (isset($form_state['values']['required'])) ? $form_state['values']['required'] : FALSE;
+
+  // The required checkbox should be forced as checked if this database
+  // column is set to 'not null'. Otherwise, use the form state.
+  if (array_key_exists('not null', $table_description['fields'][$field]) and
+      $table_description['fields'][$field]['not null'] === TRUE) {
+    $v['required'] = 'FORCE_TRUE';
+  }
+  else {
+    $v['required'] = (isset($form_state['values']['required'])) ? $form_state['values']['required'] : $template_field['required'];
+  }
 
   if (isset($original_field['regex']) && empty($form_state['storage']['regex']['pattern'])) {
     $form_state['storage']['regex']['pattern'] = $original_field['regex']['pattern'];
@@ -2169,6 +2182,16 @@ function tripal_bulk_loader_template_field_form($form, &$form_state = NULL) {
     '#default_value' => $values['required'],
   ];
 
+  // If the required value is set as "FORCE_TRUE" then that means the
+  // underlying database column is set to NOT NULL so the end-user should
+  // not be able to change if this field is required or not.
+  if ($values['required'] === 'FORCE_TRUE') {
+    $form['fields']['field']['additional']['required']['#attributes']['disabled'] = TRUE;
+    $form['fields']['field']['additional']['required']['#value'] = 1;
+    $form['fields']['field']['additional']['required']['#default_value'] = 1;
+    $form['fields']['field']['additional']['required']['#title'] = 'The database constraints force this field to be required.';
+  }
+
   $form['fields']['field']['additional']['regex_transform'] = [
     '#type' => 'fieldset',
     '#title' => 'Transform Data File Value Rules',
@@ -2188,7 +2211,7 @@ function tripal_bulk_loader_template_field_form($form, &$form_state = NULL) {
   $pattern_default = '';
   $replace_default = '';
 
-  // Check to see if there is more than one regex and if so warn them that 
+  // Check to see if there is more than one regex and if so warn them that
   // this feature is no longer supported. We don't want people to lose existing
   // transformation rules just by tweaking the field so we will only set defaults
   // if there is a single rule and summarize multiple rules statically.
@@ -2420,7 +2443,6 @@ function tripal_bulk_loader_template_field_form_submit($form, &$form_state) {
     $form_state['rebuild'] = FALSE;
     $form_state['redirect'] = 'admin/tripal/loaders/bulk/template/' . $form_state['storage']['template_id'] . '/edit';
   }
-
 }
 
 /**
