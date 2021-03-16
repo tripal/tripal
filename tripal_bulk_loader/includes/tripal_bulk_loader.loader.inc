@@ -152,15 +152,11 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
   $node = node_load($nid);
   print "Template: " . $node->template->name . " (" . $node->template_id . ")\n";
 
-  // Determine the total number of non-blank lines in the file.
+  // Determine the total number of lines in the file.
   $total_lines = 0;
   $handle = fopen($node->file, "r");
   while (!feof($handle)) {
     $line = fgets($handle);
-    $line = trim($line);
-    if (empty($line)) {
-      continue;
-    } // skips blank lines
     $total_lines++;
   }
   fclose($handle);
