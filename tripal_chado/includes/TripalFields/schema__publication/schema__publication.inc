@@ -135,24 +135,27 @@ class schema__publication extends ChadoField {
         $i = 0;
         foreach ($record->$linker_table as $index => $linker) {
           $pub = $linker->pub_id;
-          $pubs[$pub->pub_id] = $pub;
+          $pubs[$pub->pub_id] = [
+            'pub' => $pub,
+            'pkey' => $linker->$pkey,
+          ];
         }
       }
     }
     else {
       $pub = $record->{$field_column};
       if ($pub) {
-        $pubs[$pub->pub_id] = $pub;
+        $pubs[$pub->pub_id]['pub'] = $pub;
       }
     }
 
     $i = 0;
     foreach ($pubs as $pub_id => $pub) {
-      $pub_details = chado_get_minimal_pub_info($pub);
+      $pub_details = chado_get_minimal_pub_info($pub['pub']);
 
       $entity->{$field_name}['und'][$i]['value'] = $pub_details;
       if ($linker_table) {
-        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $pkey] = $linker->$pkey;
+        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $pkey] = $pub['pkey'];
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $fkey_lcolumn] = $linker->$fkey_lcolumn->$fkey_lcolumn;
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . 'pub_id'] = $pub_id;
       }
@@ -160,8 +163,8 @@ class schema__publication extends ChadoField {
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $field_column] = $pub_id;
       }
 
-      if (property_exists($pub, 'entity_id')) {
-        $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $pub->entity_id;
+      if (property_exists($pub['pub'], 'entity_id')) {
+        $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $pub['pub']->entity_id;
       }
       $i++;
     }
