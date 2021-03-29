@@ -91,7 +91,7 @@ function tripal_bulk_loader_form($node, $form_state) {
   $form['loader']['has_header'] = [
     '#type' => 'radios',
     '#title' => t('File has a Header'),
-    '#options' => [1 => 'Yes', 2 => 'No'],
+    '#options' => [1 => 'Yes', 0 => 'No'],
     '#weight' => -7,
     '#default_value' => (isset($node->file_has_header)) ? $node->file_has_header : 1,
   ];

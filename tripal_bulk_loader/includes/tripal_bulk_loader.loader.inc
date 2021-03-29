@@ -164,10 +164,14 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
     $total_lines++;
   }
   fclose($handle);
+  // do not count header line in the non-blank line count
+  if (($total_lines) and (preg_match('/(t|true|1)/', $node->file_has_header))) {
+    $total_lines--;
+  }
 
   // Correct for files with a single line and no enter character.
   $total_lines = ($total_lines == 0) ? 1 : $total_lines;
-  print "File: " . $node->file . " (" . $total_lines . " lines)\n";
+  print "File: " . $node->file . " (" . $total_lines . " lines with data)\n";
 
   //print "\nClearing all prepared statements from previous runs of this loader...\n";
   //tripal_core_chado_clear_prepared('_'.$node->nid.'_');
@@ -397,7 +401,10 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
 
         // percentage of lines processed for the current group
         $group_progress = round(($num_lines / $total_lines) * 100);
-        tripal_bulk_loader_progress_bar($num_lines, $total_lines);
+        // don't show progress for the last line, that is printed at the end of this function
+        if ($num_lines < $total_lines) {
+          tripal_bulk_loader_progress_bar($num_lines, $total_lines);
+        }
 
         // percentage of lines processed for all groups
         // <previous group index> * 100 + <current group progress>
@@ -476,7 +483,7 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
       $loaded_without_errors = FALSE;
       break;
     }
-    tripal_bulk_loader_progress_bar($total_lines, $total_lines);
+    tripal_bulk_loader_progress_bar($num_lines, $total_lines);
     tripal_bulk_loader_progress_file_track_job($job_id, FALSE, FALSE, TRUE);
   } //end of foreach constant set
 
