@@ -48,6 +48,9 @@
   text-align: center;
   width: 50px;
 }
+#tripal-bulk-loader-modify-template-base-form td.field-required {
+  text-align: center;
+}
 #tripal-bulk-loader-modify-template-base-form td.record {
   width: 100px;
   background-color: #F2F3ED;

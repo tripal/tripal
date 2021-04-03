@@ -38,7 +38,7 @@
  *   value is the error message.
  *
  * @return
- *   If validation failes then FALSE is returned.  Any options that do not pass
+ *   If validation fails then FALSE is returned.  Any options that do not pass
  *   validation checks will be added in the $errors array with the key being
  *   the option and the value being the error message.  If validation
  *   is successful then TRUE is returned.

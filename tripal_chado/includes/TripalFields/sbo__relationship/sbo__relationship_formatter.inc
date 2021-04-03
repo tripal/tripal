@@ -2,7 +2,7 @@
 
 class sbo__relationship_formatter extends ChadoFieldFormatter {
 
-  // The default lable for this field.
+  // The default label for this field.
   public static $default_label = 'Relationship Statements';
 
   // The list of field types for which this formatter is appropriate.
@@ -59,6 +59,9 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
    */
   public function view(&$element, $entity_type, $entity, $langcode, $items, $display) {
 
+    // Load the Field class into scope for use below.
+    tripal_load_include_field_class('sbo__relationship');
+
     // Get the settings
     $settings = $display['settings'];
     $rows = [];
@@ -72,7 +75,11 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
       $subject_type = $item['value']['local:relationship_subject']['rdfs:type'];
       $object_name = $item['value']['local:relationship_object']['schema:name'];
       $object_type = $item['value']['local:relationship_object']['rdfs:type'];
-      $phrase = $item['value']['SIO:000493'];
+      $rel_type = $item['value']['local:relationship_type'];
+
+      // Get some better human-readable formats for the type and verb.
+      $verb = sbo__relationship::get_rel_verb($rel_type);
+      $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
 
       // Handle some special cases.
       // For mRNA objects we don't want to show the CDS, exons, 5' UTR, etc.
@@ -87,31 +94,33 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
         continue;
       }
 
-      // Add bold font to the object and subject names.
-      // @todo add back in bolding...
-      // @todo Fix Current Bug: if type name is in the object name, wierd bolding happens.
-      // $phrase = preg_replace("/$subject_type/", "<b>$subject_type</b>", $phrase);
-      // $phrase = preg_replace("/$object_type/", "<b>$object_type</b>", $phrase);
-
       // Convert the object/subject to a link if an entity exists for it.
       if (array_key_exists('entity', $item['value']['local:relationship_object'])) {
         list($entity_type, $object_entity_id) = explode(':', $item['value']['local:relationship_object']['entity']);
 
         if ($object_entity_id != $entity->id) {
-          $link = l($object_name, 'bio_data/' . $object_entity_id);
-          $phrase = str_replace($object_name, $link, $phrase);
+          $object_name = l($object_name, 'bio_data/' . $object_entity_id);
         }
       }
       if (array_key_exists('entity', $item['value']['local:relationship_subject'])) {
         list($entity_type, $subject_entity_id) = explode(':', $item['value']['local:relationship_subject']['entity']);
         if ($subject_entity_id != $entity->id) {
-          $link = l($subject_name, 'bio_data/' . $subject_entity_id);
-          $phrase = str_replace($subject_name, $link, $phrase);
+          $subject_name = l($subject_name, 'bio_data/' . $subject_entity_id);
         }
       }
 
+      // Add bold font to the subject and object names.
+      $subject_name = '<b>' . $subject_name . '</b>';
+      $object_name = '<b>' . $object_name . '</b>';
+
+      // The $clause text here will match what is already in $item['value']['SIO:000493']
+      // but we rebuild it here to incorporated links and formatting
+      $clause = 'The ' . $subject_type . ', ' .
+        $subject_name . ', ' . $verb . ' ' . $rel_type_clean . ' ' .
+        $object_type . ', ' . $object_name . '.';
+
       $rows[][] = [
-        'data' => $phrase,
+        'data' => $clause,
         //'class' => array('tripal-entity-unattached field-items')
       ];
     }
@@ -156,5 +165,4 @@ class sbo__relationship_formatter extends ChadoFieldFormatter {
     ];
   }
 }
-
 

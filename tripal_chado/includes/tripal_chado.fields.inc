@@ -380,6 +380,18 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
         'type' => 'field_chado_storage',
       ],
     ];
+
+    $field_name = 'data__sequence_record';
+    $field_type = 'data__sequence_record';
+    $info[$field_name] = [
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'locked' => FALSE,
+      'storage' => [
+        'type' => 'field_chado_storage',
+      ],
+    ];
   }
 
   // FEATURE SEQLEN
@@ -563,7 +575,7 @@ function tripal_chado_bundle_fields_info_custom(&$info, $details, $entity_type, 
   if (array_key_exists('pub_id', $schema['fields']) and $table_name != 'pub') {
 
     // Remove the schema__publication added by the
-    // tripal_chado_bunde_instnaces_info_base function.
+    // tripal_chado_bunde_instances_info_base function.
     unset($info['schema__publication']);
 
     $field_name = 'schema__publication_single';
@@ -813,7 +825,7 @@ function tripal_chado_bundle_fields_info_linker(&$info, $details, $entity_type, 
   }
 
   // RELATIONSHIPS
-  // If the linker table does not exists then we don't want to add attach.
+  // If the linker table does not exist then we don't want to add attach.
   $rel_table = $table_name . '_relationship';
   if (chado_table_exists($rel_table)) {
     $field_name = 'sbo__relationship';
@@ -849,7 +861,7 @@ function tripal_chado_bundle_fields_info_linker(&$info, $details, $entity_type, 
 }
 
 /**
- * Impelments hook_create_tripalfield_instance().
+ * Implements hook_create_tripalfield_instance().
  *
  * This is a Tripal defined hook that supports integration with the
  * TripalEntity field.
@@ -1110,7 +1122,7 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
       if ($column_name == 'uniquename') {
         $base_info['label'] = 'Unique Local Identifier';
         $base_info['required'] = TRUE;
-        $base_info['description'] = 'This publication is housed in Chado whic requires a unique identifer (or name) be provided for every publication. This identifier need not be shown to end-users but it is required. Each site must decide on a format for this unique name.';
+        $base_info['description'] = 'This publication is housed in Chado which requires a unique identifer (or name) be provided for every publication. This identifier need not be shown to end-users but it is required. Each site must decide on a format for this unique name.';
       }
       if ($column_name == 'title') {
         $base_info['description'] = 'The title of the published work.';
@@ -1703,6 +1715,38 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         ],
       ],
     ];
+
+    $field_name = 'data__sequence_record';
+    $info[$field_name] = [
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Sequences',
+      'description' => 'A molecular sequence and associated metadata.',
+      'required' => FALSE,
+      'settings' => [
+        'auto_attach' => FALSE,
+        'chado_table' => $table_name,
+        'chado_column' => 'residues',
+        'base_table' => $table_name,
+        'term_accession' => '0849',
+        'term_vocabulary' => 'data',
+        'term_name' => 'Sequence record',
+      ],
+      'widget' => [
+        'type' => 'data__sequence_record_widget',
+        'settings' => [
+          'display_label' => 1,
+        ],
+      ],
+      'display' => [
+        'default' => [
+          'label' => 'above',
+          'type' => 'data__sequence_record_formatter',
+          'settings' => [],
+        ],
+      ],
+    ];
   }
 
   // FEATURE SEQLEN
@@ -2062,7 +2106,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
   if (array_key_exists('pub_id', $schema['fields']) and $table_name != 'pub') {
 
     // Remove the schema__publication added by the
-    // tripal_chado_bunde_instnaces_info_base function.
+    // tripal_chado_bunde_instances_info_base function.
     unset($info['schema__publication']);
 
     $field_name = 'schema__publication_single';
@@ -2100,7 +2144,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
 
   if ($table_name == 'assay') {
     // Remove the ncit__operator added by the
-    // tripal_chado_bunde_instnaces_info_base function.
+    // tripal_chado_bunde_instances_info_base function.
     unset($info['ncit__operator']);
 
     $field_name = 'assay__operator_id';
@@ -2676,7 +2720,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
   }
 
   // RELATIONSHIPS
-  // If the linker table does not exists then we don't want to add attach.
+  // If the linker table does not exist then we don't want to add attach.
   $rel_table = $table_name . '_relationship';
   if (chado_table_exists($rel_table)) {
     $field_name = 'sbo__relationship';

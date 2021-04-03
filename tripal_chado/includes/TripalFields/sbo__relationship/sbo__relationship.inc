@@ -11,21 +11,21 @@ class sbo__relationship extends ChadoField {
   // the field and it's default widget and formatter.
   // --------------------------------------------------------------------------
 
-  // The default lable for this field.
+  // The default label for this field.
   public static $default_label = 'Relationship';
 
   // The default description for this field.
   public static $description = 'Relationships between records.';
 
-  // Provide a list of instance specific settings. These can be access within
+  // Provide a list of instance specific settings. These can be accessed within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
-  // then Drupal with automatically change these settings for the instnace.
+  // then Drupal will automatically change these settings for the instance.
   // It is recommended to put settings at the instance level whenever possible.
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
   public static $default_instance_settings = [
-    // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
+    // The short name for the vocabulary (e.g. schema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'SBO',
     // The name of the term.
     'term_name' => 'Relationship',
@@ -248,15 +248,20 @@ class sbo__relationship extends ChadoField {
       case 'quantification_relationship':
       case 'element_relationship':
       case 'project_relationship':
-      case 'pub_relationship':
-        $this->base_type_column = 'table_name';
         $this->base_name_columns = ['name'];
-      break;
+        $this->base_type_column = 'table_name';
+        break;
+
+      case 'pub_relationship':
+        $this->base_name_columns = ['title'];
+        $this->base_type_column = 'table_name';
+        break;
 
       case 'organism_relationship':
         $this->base_name_columns = ['genus', 'species'];
         $this->base_type_column = 'table_name';
         break;
+
       case 'phylonode_relationship':
         $this->base_name_columns = ['label'];
         $this->base_type_column = 'table_name';
@@ -266,6 +271,7 @@ class sbo__relationship extends ChadoField {
         $this->base_name_columns = ['name'];
         $this->base_type_column = 'type_id';
         break;
+
       default:
         // @todo update this to use the schema.
         $this->base_name_columns = ['name'];
@@ -309,7 +315,7 @@ class sbo__relationship extends ChadoField {
       'schema:name' => implode(' ', $name),
     ];
 
-    // If the object has a uniquename then add that in for refernce.
+    // If the object has a uniquename then add that in for reference.
     if (property_exists($relationship->{$this->subject_id_column}, 'uniquename')) {
       $record['data:0842'] = $relationship->{$this->subject_id_column}->uniquename;
     }
@@ -419,6 +425,13 @@ class sbo__relationship extends ChadoField {
     // @todo grab these separately like it was before.
     $subject_pkey = $object_pkey = $this->base_schema['primary key'][0];
 
+    // A publication title can exceed the character limit for chado_expand_var()
+    // so make sure it has been added.
+    // TODO Should this step be generalized to other content type that could have a long name?
+    if (in_array('pub.title', $relationship->expandable_fields)) {
+      $relationship = chado_expand_var($relationship, 'field', 'pub.title', []);
+    }
+
     $entity->{$field_name}['und'][$delta]['value'] = [
       'local:relationship_subject' => $this->getRelationshipSubject($relationship),
       'local:relationship_type' => $relationship->type_id->name,
@@ -433,14 +446,15 @@ class sbo__relationship extends ChadoField {
     $object_type = $entity->{$field_name}['und'][$delta]['value']['local:relationship_object']['rdfs:type'];
     $object_name = $entity->{$field_name}['und'][$delta]['value']['local:relationship_object']['schema:name'];
 
-
     // Remember the current entity could be either the subject or object!
     // Example: The genetic_marker, MARKER1 , derives from the sequence_variant, VARIANT1.
     // The above relationship will be shown both on marker and variant pages
     // and as such both subject and object names need to be shown.
+    // Keep the clause as an array for now so we can apply formatting
+    // and links in the formatter
     $clause = 'The ' . $subject_type . ', ' .
-      $subject_name . ', ' . $verb . ' ' . $rel_type_clean . ' ' .
-      $object_type . ', ' . $object_name . '.';
+        $subject_name . ', ' . $verb . ' ' . $rel_type_clean . ' ' .
+        $object_type . ', ' . $object_name . '.';
     $entity->{$field_name}['und'][$delta]['value']['SIO:000493'] = $clause;
 
     // Adding a label allows us to provide a single text value for the
@@ -645,7 +659,7 @@ class sbo__relationship extends ChadoField {
    * @return
    *   The verb to use when creating a sentence of the relationship.
    */
-  private function get_rel_verb($rel_type) {
+  public static function get_rel_verb($rel_type) {
     $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
     $verb = '';
     switch ($rel_type_clean) {
@@ -658,6 +672,7 @@ class sbo__relationship extends ChadoField {
       case 'genome of':
       case 'part of':
         $verb = 'is a';
+        break;
       case 'position of':
       case 'sequence of':
       case 'variant of':
@@ -674,6 +689,7 @@ class sbo__relationship extends ChadoField {
       case 'is a':
       case 'is a maternal parent of':
       case 'is a paternal parent of':
+      case 'is a subproject of':
       case 'is consecutive sequence of':
       case 'maximally overlaps':
       case 'overlaps':

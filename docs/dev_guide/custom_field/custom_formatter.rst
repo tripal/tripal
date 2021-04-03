@@ -64,11 +64,11 @@ You may recall that the ``$items`` array structure is the same as that created b
 
 Because our organisms are also published entities we want to link to their respective pages each time an organism is displayed.  Because the ``value`` array has an element named ``entity`` we know that this item is published.  Lines 5-6 of the ``view()`` function shown above use this information to create a clickable link to the organism page.   Finally, the ``$element`` argument is set to provide content of type ``markup``.  This ``$element`` array is a `Drupal renderable array <https://www.drupal.org/docs/7/api/render-arrays/render-arrays-overview>`_.
 
-Lastly, notice the element named ``chado-feature__organsim_id``.  This element is at the same level as the ``value`` element.  This data is meant to be used internally by the field. It maps this fields values to the appropriate table in Chado where the data is stored.  
+Lastly, notice the element named ``chado-feature__organism_id``.  This element is at the same level as the ``value`` element.  This data is meant to be used internally by the field. It maps this fields values to the appropriate table in Chado where the data is stored.  
 
 .. warning:: 
 
-  You should never show the user any data that is outside of ``value`` element.  Remember that your field can be shown by other viewers, including web services.  By ensuring that data in the ``value`` element is mean to be displayed we ensure that information on the web page, web services, or any othe future form of display is always consistent.
+  You should never show the user any data that is outside of ``value`` element.  Remember that your field can be shown by other viewers, including web services.  By ensuring that data in the ``value`` element is mean to be displayed we ensure that information on the web page, web services, or any other future form of display is always consistent.
 
 In summary, the following should be observed when processing the ``$items`` array for viewing:
 
@@ -81,11 +81,11 @@ In summary, the following should be observed when processing the ``$items`` arra
 
 .. warning::
 
-  You should never have SQL statments or any API calls that retreive data in the foramter ``view()`` function. The formatter should strictly format data for viewing.
+  You should never have SQL statements or any API calls that retrieve data in the formatter ``view()`` function. The formatter should strictly format data for viewing.
   
 Creating Pagers
 ~~~~~~~~~~~~~~~
-The example shown in the previous section was for a field that will always only contain a single element.  However some fields may contain a large number of elements.  Consider an mRNA and it's relationships to subfeatures: exons, 5' UTRs, 3'UTRs, CDS, etc.).  A large mRNA can have many relationships.  Alternatively, consider the case where a genentic map content type may have a field that lists all of the markers on the map.  Such a list could become extremely long on the page.  In these cases it may be best to only list a few items at a time and to provide a pager to let the user cycle through the items.  An example of a pager added to the bottom of relationships is shown in the example below.
+The example shown in the previous section was for a field that will always only contain a single element.  However some fields may contain a large number of elements.  Consider an mRNA and it's relationships to subfeatures: exons, 5' UTRs, 3'UTRs, CDS, etc.).  A large mRNA can have many relationships.  Alternatively, consider the case where a genetic map content type may have a field that lists all of the markers on the map.  Such a list could become extremely long on the page.  In these cases it may be best to only list a few items at a time and to provide a pager to let the user cycle through the items.  An example of a pager added to the bottom of relationships is shown in the example below.
 
 .. image:: custom_formatter.pager.1.png
 
@@ -130,9 +130,9 @@ Now that we have a pager, it has been setup for AJAX and we know the current pag
       '#markup' => $content . $pager,
     );
     
-The settingsForm() Funtion.
+The settingsForm() Function.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Sometimes you may want to provide some control to the site developer for the formatter.  For example, the ``sbo__relationship_formater`` allows the site developer to customize the title that appears above the table that houses relationships and the text the appears if there are no relationships.  By default the title is "Relationships" and the empty text indicates there are no relationships. Both are a bit too generic.  The ``settingsForm()`` function allows you to provide a Drupal form for the field that appears on the **Administer > Strucutre > Tripal Content Types** on any content type's **manage display** page:
+Sometimes you may want to provide some control to the site developer for the formatter.  For example, the ``sbo__relationship_formatter`` allows the site developer to customize the title that appears above the table that houses relationships and the text the appears if there are no relationships.  By default the title is "Relationships" and the empty text indicates there are no relationships. Both are a bit too generic.  The ``settingsForm()`` function allows you to provide a Drupal form for the field that appears on the **Administer > Structure > Tripal Content Types** on any content type's **manage display** page:
 
 .. image:: custom_formatter.settings.1.png
 
@@ -162,7 +162,7 @@ The form shown in the screenshot above is provided by the ``settingsForm()`` fun
   
 The form is typical of any form.  Note, however that the ``#default_value`` is set using the current settings values.
 
-A settings form is useful but it only works when Drupal knows what settings you want for your field.  You must provide the settings names (e.g. "title" and "empty" in this case) when you  attach your field to a given content type (i.e. bundle).  You tell Drupal to attach this field to a content type using the ``hook_bundle_instance_info`` function.  See 
+A settings form is useful but it only works when Drupal knows what settings you want for your field.  You must provide the settings names (e.g. "title" and "empty" in this case) when you  attach your field to a given content type (i.e. bundle).  You tell Drupal to attach this field to a content type using the ``hook_bundle_instances_info`` function.  See 
 the :doc:`create_instance` to learn more about this function.  Briefly, the ``display`` section of the info array for the ``sbo__relationship`` field contains the following settings for the ``display``:
 
 .. code-block:: php

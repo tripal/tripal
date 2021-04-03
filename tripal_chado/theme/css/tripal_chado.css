@@ -36,7 +36,7 @@
 
 .residues-formatter {
   color: black;
-  height: 100px;
+  height: 200px;
   max-width: 500px;
   overflow: scroll;
   white-space: normal;
@@ -49,6 +49,9 @@
   height: 10px;
 }
 
+.tripal-chado-gene-transcript-fieldset-item {
+  border-bottom: 1px solid #AAAAAA;
+}
 
 #edit-feature-pub #autocomplete li {
   white-space: normal;

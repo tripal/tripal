@@ -445,7 +445,8 @@ function tripal_field_instance_settings_form($field, $instance) {
   $field_class = $field['type'];
   if (tripal_load_include_field_class($field_class)) {
     $field = new $field_class($field, $instance);
-    return $field->instanceSettingsForm();
+    $form = $field->instanceSettingsForm();
+    return $form;
   }
 }
 
@@ -827,7 +828,6 @@ function tripal_field_formatter_settings_form($field, $instance,
     $formatter = new $formatter_class($field, $instance);
     $elements = $formatter->settingsForm($view_mode, $form, $form_state);
   }
-
   return $elements;
 }
 
@@ -911,11 +911,13 @@ function tripal_form_field_ui_display_overview_form_alter(&$form, &$form_state, 
   $fields_names = element_children($form['fields']);
   foreach ($fields_names as $field_name) {
     $field_info = field_info_field($field_name);
-    if ($field_info['type'] == 'kvproperty_adder') {
-      unset($form['fields'][$field_name]);
-    }
-    if ($field_info['type'] == 'cvterm_class_adder') {
-      unset($form['fields'][$field_name]);
+    if ($field_info) {
+      if ($field_info['type'] == 'kvproperty_adder') {
+        unset($form['fields'][$field_name]);
+      }
+      if ($field_info['type'] == 'cvterm_class_adder') {
+        unset($form['fields'][$field_name]);
+      }
     }
   }
 }
@@ -926,6 +928,7 @@ function tripal_form_field_ui_display_overview_form_alter(&$form, &$form_state, 
  * @param $variables
  */
 function theme_tripal_field_default($variables) {
+
   $element = $variables['element'];
   $field = $element['#field'];
   $instance = $element['#instance'];
@@ -936,5 +939,23 @@ function theme_tripal_field_default($variables) {
   if (class_exists($widget_class)) {
     $widget = new $widget_class($field, $instance);
     return $widget->theme($element);
+  }
+}
+
+/**
+ * Theme function for all TripalFieldWidget objects.
+ *
+ * @param $variables
+ */
+function theme_tripal_field_settings_default($variables) {
+
+  $element = $variables['element'];
+  $field = $element['#field'];
+  $instance = $element['#instance'];
+  $field_class = $element['#field']['field_name'];
+  tripal_load_include_field_class($field_class);
+  if (class_exists($field_class)) {
+    $field = new $field_class($field, $instance);
+    return $field->settingsTheme($element);
   }
 }

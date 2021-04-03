@@ -11,21 +11,21 @@ class so__cds extends ChadoField {
   // the field and it's default widget and formatter.
   // --------------------------------------------------------------------------
 
-  // The default lable for this field.
+  // The default label for this field.
   public static $default_label = 'Coding Sequence';
 
   // The default description for this field.
   public static $description = 'A contiguous sequence which begins with, and includes, a start codon and ends with, and includes, a stop codon.';
 
-  // Provide a list of instance specific settings. These can be access within
+  // Provide a list of instance specific settings. These can be accessed within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
-  // then Drupal with automatically change these settings for the instnace.
+  // then Drupal will automatically change these settings for the instance.
   // It is recommended to put settings at the instance level whenever possible.
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
   public static $default_instance_settings = [
-    // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
+    // The short name for the vocabulary (e.g. schema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'SO',
     // The name of the term.
     'term_name' => 'CDS',
@@ -72,24 +72,24 @@ class so__cds extends ChadoField {
       'value' => '',
     ];
 
-    $options = [
-      'return_array' => TRUE,
-      'order_by' => ['rank' => 'ASC'],
-    ];
-    $feature = chado_expand_var($feature, 'table', 'featureloc', $options);
-    $featurelocs = $feature->featureloc->feature_id;
-
-    // Verify that we have featurelocs before entering the loop
-    if (!is_array($featurelocs)) {
-      return;
-    }
-
-    foreach ($featurelocs as $featureloc) {
+    // Get the featureloc records that this feature is aligned to. We use
+    // this SQL rather than the chado_expand_var function because we don't
+    // want the residues included from the srcfeature_id which may be huge
+    // and overrun memory.
+    $featurelocs_sql = "
+      SELECT FL.featureloc_id, FL.srcfeature_id
+      FROM {featureloc} FL
+      WHERE FL.feature_id = :feature_id
+      ORDER BY rank ASC
+    ";
+    $aligned = chado_query($featurelocs_sql, [':feature_id' => $feature->feature_id]);
+    $index = 0;
+    while ($featureloc = $aligned->fetchObject()) {
       // Generate a CDS sequence if one exsits for this feature alignment.
       $cds_sequence = chado_get_feature_sequences(
         [
           'feature_id' => $feature->feature_id,
-          'parent_id' => $featureloc->srcfeature_id->feature_id,
+          'parent_id' => $featureloc->srcfeature_id,
           'name' => $feature->name,
           'featureloc_id' => $featureloc->featureloc_id,
         ],
@@ -111,7 +111,17 @@ class so__cds extends ChadoField {
         // that one mRNA is only aligned to a single location on the assembly so we
         // can access the CDS sequence with index 0.
         if ($cds_sequence[0]['residues']) {
-          $entity->{$field_name}['und'][$num_seqs++]['value'] = $cds_sequence[0]['residues'];
+          $entity->{$field_name}['und'][$num_seqs++] = [
+            'value' => $cds_sequence[0]['residues'],
+            // This field was incorrelctly listed as a field in the featureprop
+            // table, but really it is a derived field. So, we have to do this
+            // hacky fix to get around the problem.
+            'chado-featureprop__featureprop_id' => NULL,
+            'chado-featureprop__feature_id' => NULL,
+            'chado-featureprop__value' => NULL,
+            'chado-featureprop__type_id' => NULL,
+            'chado-featureprop__rank' => NULL
+          ];
         }
       }
     }

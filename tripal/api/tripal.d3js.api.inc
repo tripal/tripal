@@ -24,7 +24,7 @@
 
 
 /**
- * Load D3.js releated javascripts for the current page.
+ * Load D3.js related javascripts for the current page.
  *
  * @ingroup tripal_d3js_api
  */

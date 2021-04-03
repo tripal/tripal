@@ -218,7 +218,7 @@ function tripal_chado_add_db_form_fields(&$form, $form_state, $dbid = NULL) {
 }
 
 /**
- * Validation fucntion for tripal_db_db_add_form
+ * Validation function for tripal_db_db_add_form
  *
  * @ingroup tripal_db
  */
@@ -227,7 +227,7 @@ function tripal_chado_db_add_form_validate($form, &$form_state) {
 }
 
 /**
- * Validation fucntion for tripal_db_db_edit_form
+ * Validation function for tripal_db_db_edit_form
  *
  * @ingroup tripal_db
  */

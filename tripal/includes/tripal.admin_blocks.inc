@@ -23,10 +23,15 @@ function tripal_admin_notification_import_field($field_name_note, $bundle_id, $m
     drupal_goto("admin/dashboard");
     return FALSE;
   }
+  $term = tripal_load_term_entity(['term_id' => $bundle->term_id]);
 
+
+  $instance = NULL;
   if ($field_or_instance == 'field') {
     $function = $module . '_bundle_fields_info';
-    $info = $function('TripalEntity', $bundle);
+    $entity_type = 'TripalEntity';
+    $info = $function($entity_type, $bundle);
+    drupal_alter('bundle_fields_info', $info, $bundle, $term);
     foreach ($info as $field_name => $details) {
       $field = field_info_field($field_name);
       if ($details['field_name'] == $field_name_note) {
@@ -44,7 +49,9 @@ function tripal_admin_notification_import_field($field_name_note, $bundle_id, $m
   else {
     if ($field_or_instance == 'instance') {
       $function = $module . '_bundle_instances_info';
-      $info = $function('TripalEntity', $bundle);
+      $entity_type = 'TripalEntity';
+      $info = $function($entity_type, $bundle);
+      drupal_alter('bundle_instances_info', $info, $bundle, $term);
       foreach ($info as $field_name => $details) {
         if ($details['field_name'] == $field_name_note) {
           // Create the field instance.
@@ -68,7 +75,7 @@ function tripal_admin_notification_import_field($field_name_note, $bundle_id, $m
       ->execute();
   }
   else {
-    drupal_set_message(t("There was a problem creating: %field", ['%field' => $info[$field_name]['label']]));
+    drupal_set_message(t("There was a problem creating field."), 'error');
   }
 
   drupal_goto("admin/dashboard");

@@ -11,7 +11,7 @@ The Chado Query API
 
 Provides an API for querying of chado including inserting, updating, deleting and selecting from specific chado tables. There is also a generic function, ``chado_query()``, to execute and SQL statement on chado. It is ideal to use these functions to interact with chado in order to keep your module compatible with both local & external chado databases. Furthermore, it ensures connection to the chado database is taken care of for you.
 
-Generic Queries to a specifc chado table
+Generic Queries to a specific chado table
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Selecting Records
@@ -222,8 +222,8 @@ To check the existence of a specific table and column, you can use the following
 
       [ do your query, etc. here ]
 
-    } else { [warn the admin using tripal_repot_error()] }
-  } else { [warn the admin using tripal_repot_error()] }
+    } else { [warn the admin using tripal_report_error()] }
+  } else { [warn the admin using tripal_report_error()] }
 
 Checking the Schema Version
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

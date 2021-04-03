@@ -24,7 +24,7 @@ function tripal_feature_delete_form() {
   $form['is_unique'] = [
     '#title' => t('Names are Unique Names'),
     '#type' => 'checkbox',
-    '#description' => t('Select this checbox if the names listed in the feature
+    '#description' => t('Select this checkbox if the names listed in the feature
       names box above are the unique name of the feature rather than the human readable names.'),
   ];
   $cv = tripal_get_cv(['name' => 'sequence']);

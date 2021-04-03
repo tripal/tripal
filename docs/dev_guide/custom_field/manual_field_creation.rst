@@ -60,15 +60,15 @@ As described in the section titled Tripal Data Structures, fields that are attac
 .. code-block:: php
 
   
-  // Provide a list of instance specific settings. These can be access within
+  // Provide a list of instance specific settings. These can be accessed within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
-  // then Drupal with automatically change these settings for the instance.
+  // then Drupal will automatically change these settings for the instance.
   // It is recommended to put settings at the instance level whenever possible.
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
   public static $default_instance_settings  = array(
-    // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
+    // The short name for the vocabulary (e.g. schema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'OBI',
     // The name of the term.
     'term_name' => 'organism',
@@ -113,7 +113,7 @@ Sometimes a field is meant to provide a visualization or some other functionalit
 
   
   // A boolean specifying that the field will not contain any data. This
-  // should exclude the field from web serivces or downloads.  An example
+  // should exclude the field from web services or downloads.  An example
   // could be a quick search field that appears on the page that redirects
   // the user but otherwise provides no data.
 
@@ -121,12 +121,12 @@ Sometimes a field is meant to provide a visualization or some other functionalit
   public static $no_data = FALSE;
 
 
-  .. note::
-  Be sure to only set this to TRUE when you are absolutely certain the contents would not be needed in web services.  Tripal was designed so that what appears on the page will always appear in web services.  Aside form the formatting we see on the website, the content should be the same.
+.. note::
+  Be sure to only set this to TRUE when you are absolutely certain the contents would not be needed in web services.  Tripal was designed so that what appears on the page will always appear in web services.  Aside from the formatting we see on the website, the content should be the same.
 
 Finally, the last item in our Class variables is the **download_formatters**.  Tripal provides an API that allows tools to group entities into data collections.  Data collections are like "baskets" or "shopping carts".   Entities that are in data collections can be downloaded into files.  If your field is compatible with specific file downloaders you can specify those here.  A file downloader is a special TripalFieldDownloader class that "speaks" certain file formats.  Tripal, by default, provides the TripalTabDownloader (for tab-delimited files), the TripalCSVDownloader (for CSV files), a TripalNucFASTADownloader for creating nucleotide FASTA files and a TripalProteinFASTADownloader for protein FASTA files.   If your field is compatible with any of these formatters you can specify them in the following array:
 
-.. .. code-block::
+.. code-block::
 
   // Indicates the download formats for this field.  The list must be the
   // name of a child class of the TripalFieldDownloader.
@@ -156,7 +156,7 @@ Because this is a ChadoField and the TripalChado module supports this field and 
 
     $record = $entity->chado_record;
 
-Having the record helps tremendously.  Our **obi__organism** field is meant to be attached to genomic feature content types (e.g. genes, mRNA, etc.), germplasm, etc.  Therefore, the entity will be a record of one of those types. In the case of a genomic feature, these come from the **feature** table of Chado.  In the case of a germplam, these records come from the **stock** table of Chado.  Both of these records have an **organism_id** field which is a foreign key to the organism table where we find out details about the organism.
+Having the record helps tremendously.  Our **obi__organism** field is meant to be attached to genomic feature content types (e.g. genes, mRNA, etc.), germplasm, etc.  Therefore, the entity will be a record of one of those types. In the case of a genomic feature, these come from the **feature** table of Chado.  In the case of germplasm, these records come from the **stock** table of Chado.  Both of these records have an **organism_id** field which is a foreign key to the organism table where we find out details about the organism.
 
 Before we set the values for our field, we need a little bit more information.  Remember that all field instances have settings?   The Tripal Chado module also populates for us the name of the Chado table and the column that this field maps to.  Our obi__organism field can be used for multiple Bundles.  A gene bundle would map to the **feature** table of Chado and a germplasm Bundle would map to the **stock** table.  We need to know what table and column this field is mapping to:  We can get that from the instance object of the class and its settings:
 
@@ -186,7 +186,7 @@ Now, let's plan how we want our values to appear in our field.  The organism rec
     $infraspecific_type_term = tripal_get_chado_semweb_term('organism', 'type_id');
 
 
-Notice that for our organism fields we can easily get the ontology terms for them using the API function **tripal_get_chado_semweb_term**.  You will also notice a **label_term** variable.  Sometimes a user may want to see the full name of the organism and not pieces of it in various elements.  Therefore, we will provide a label in our list of values that will concatenate the full organism name.  This field is not in our organism table so we hard-code the term 'rdfs:lable' which is a term from the Resource Data Framework Schema vocabulary that defines a label.
+Notice that for our organism fields we can easily get the ontology terms for them using the API function **tripal_get_chado_semweb_term**.  You will also notice a **label_term** variable.  Sometimes a user may want to see the full name of the organism and not pieces of it in various elements.  Therefore, we will provide a label in our list of values that will concatenate the full organism name.  This field is not in our organism table so we hard-code the term 'rdfs:label' which is a term from the Resource Data Framework Schema vocabulary that defines a label.
 
 Next, let's initialize our field's value to be empty.  When setting a field value we must do so in the entity object that got passed into our load function.  The entity is an object and it stores values using the names of the fields.  The following code sets an empty record for our field:
 
@@ -198,7 +198,7 @@ Next, let's initialize our field's value to be empty.  When setting a field valu
     );
 
 
-Notice that our field has some sub elements. The first is 'und'.  This element corresponds to the "language" of the text.  Drupal supports mulitple spoken languages and wants to know the language of text we provide.  For Tripal fields we always use 'und' meaning 'undefined'.   The next element is the delta index number.  Field have a cardinality, or in other words they can have multiple values.  For every value we add we increment that index, always starting at zero.  The last element is our 'value' element and it is here where we put our element. You may notice that our **delta** index is hard coded to 0.  This is because an entity can only always have one organism that it is associated with.  We will never have more than one.
+Notice that our field has some sub elements. The first is 'und'.  This element corresponds to the "language" of the text.  Drupal supports multiple spoken languages and wants to know the language of text we provide.  For Tripal fields we always use 'und' meaning 'undefined'.   The next element is the delta index number.  Fields have a cardinality, or in other words they can have multiple values.  For every value we add we increment that index, always starting at zero.  The last element is our 'value' element and it is here where we put our element. You may notice that our **delta** index is hard coded to 0.  This is because an entity can only always have one organism that it is associated with.  We will never have more than one.
 
 Now that we've got some preliminary values and we've initialized our value array we can start adding values!  Before we do though, let's double check that we have a record.  If we don't have a record for this entity, we can't get a value.
 
@@ -222,7 +222,7 @@ We can easily get all of the values we need from this organism object.   We can 
 
 .. code-block:: php 
 
-      $label = tripal_replace_chado_tokens($string, $organism);
+      $label = chado_replace_tokens($string, $organism);
       $entity->{$field_name}['und'][0]['value'] = array(
         $label_term => $label,
         $genus_term => $organism->genus,
@@ -278,7 +278,7 @@ We do this because anything in the 'value' element is intended for the end-user.
 
   1.  Does the user need this value?  If yes, put it in the 'value' element.
   2.  Does Tripal need the value when writing back to the Chado table?  If yes, put it as a hidden element.
-  3.  Does the user need to see the value an will this same value need to be written to the table?  If yes, then you have to put the value in both places.
+  3.  Does the user need to see the value and will this same value need to be written to the table?  If yes, then you have to put the value in both places.
 
 For our **obi__organism** field it is for entities with records in the **feature, stock, library**, etc. tables. Those tables only have an **organism_id** to represent the organism.  So, that's the database column this field is supporting.  We therefore, need to put that field as a hidden field, and all the others are just helpful to the user and don't get saved in the feature, stock or library tables. So, those go in the values array.
 
@@ -392,9 +392,9 @@ The code above generates and returns an associative array that provides metadata
       'type' => 'xs:complexType',
       'elements' => array(
 
-Notice the value for $field_term variable was easily obtained by calling the $this->getFieldTermID function and all of the terms for the elements were obtained using the chado_get_semweb_term function which maps table columns in the Chado database schema to ontology terms.  The operations key indicates which search filter operations are supported for the field as a whole.  For this example these include 'eq' (for equals), 'contains' and 'starts' (for starts with).   The field is sortable and searchable so those values are set to TRUE.   Later, we weill learn how to implement the sorting, searching and filtering that the field will support.  For now we know we want them so we set the values accordingly.  Additionally, the field allows updating so 'readonly' is set to FALSE.   By convention, the 'type' of a field follows the XML data types for simple types (https://www.w3schools.com/xml/schema_simple.asp) and Complex types (https://www.w3schools.com/xml/schema_complex.asp) that have multiple elements.  Because our obi__organism field has subelements  and is not a single value, the field type is 'xs:complexType'.
+Notice the value for $field_term variable was easily obtained by calling the $this->getFieldTermID function and all of the terms for the elements were obtained using the chado_get_semweb_term function which maps table columns in the Chado database schema to ontology terms.  The operations key indicates which search filter operations are supported for the field as a whole.  For this example these include 'eq' (for equals), 'contains' and 'starts' (for starts with).   The field is sortable and searchable so those values are set to TRUE.   Later, we will learn how to implement the sorting, searching and filtering that the field will support.  For now we know we want them so we set the values accordingly.  Additionally, the field allows updating so 'readonly' is set to FALSE.   By convention, the 'type' of a field follows the XML data types for simple types (https://www.w3schools.com/xml/schema_simple.asp) and Complex types (https://www.w3schools.com/xml/schema_complex.asp) that have multiple elements.  Because our obi__organism field has subelements  and is not a single value, the field type is 'xs:complexType'.
 
-The array keys just mentioned fully describe our field to Drupal and Tripal.  Next we will define the sub elements in the same way, and these go in the 'elements' key.  First, we will describe the label.  Our obi__oranganism field provides a handly label element that concatenates the genus, species and infraspecific name into one simple string.  Therefore, we need to describe this element in the same way we described the field itself.  In the code below that the key is set to 'rdfs:label' (which is the controlled vocabulary term for a label) and that the child keys are the same as for the field.
+The array keys just mentioned fully describe our field to Drupal and Tripal.  Next we will define the sub elements in the same way, and these go in the 'elements' key.  First, we will describe the label.  Our obi__organism field provides a handy label element that concatenates the genus, species and infraspecific name into one simple string.  Therefore, we need to describe this element in the same way we described the field itself.  In the code below that the key is set to 'rdfs:label' (which is the controlled vocabulary term for a label) and that the child keys are the same as for the field.
 
 .. code-block:: php
 
@@ -412,7 +412,7 @@ The array keys just mentioned fully describe our field to Drupal and Tripal.  Ne
             'required' => FALSE,
           ),
 
-Notice that our field will allow searching, provides a variety of search filter options, is sortable and defines the type as 'xs:string'.  The remaing elements follow the same pattern.  As another example, here is the genus element:
+Notice that our field will allow searching, provides a variety of search filter options, is sortable and defines the type as 'xs:string'.  The remaining elements follow the same pattern.  As another example, here is the genus element:
 
 .. code-block:: php
 
@@ -494,7 +494,7 @@ As described above in the elementInfo function section, some fields and elements
       }
     }
 
-The code above is how the field tells Drupal and Tripal how to find and filter the records that this field corresponds to.  First, we retreive the field alias and operators:and as with the load and elementInfo functions we get the controlled vocabulary terms for our field and field elements:
+The code above is how the field tells Drupal and Tripal how to find and filter the records that this field corresponds to.  First, we retrieve the field alias and operators, and as with the load and elementInfo functions we get the controlled vocabulary terms for our field and field elements:
 
 
 .. code-block:: php

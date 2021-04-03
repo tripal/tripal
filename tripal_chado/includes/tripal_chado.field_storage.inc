@@ -398,6 +398,16 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
             // as the column value.
             $entity->{$field_name}['und'][0]['value'] = $record->$field_column;
             $entity->{$field_name}['und'][0]['chado-' . $field_table . '__' . $field_column] = $record->$field_column;
+
+            // For datetime columns we need to strip out the milliseconds if
+            // they are there because the Drupal date field can't deal with
+            // miliseconds and causes the displayed time to rever to the
+            // current time.
+            if ($field_type == 'datetime') {
+              $datevalue = $entity->{$field_name}['und'][0]['value'];
+              $datevalue = preg_replace('/^(\d+-\d+-\d+ \d+:\d+:\d+)\.\d+$/', '\1', $datevalue);
+              $entity->{$field_name}['und'][0]['value'] = $datevalue;
+            }
           }
         }
 
@@ -1451,7 +1461,7 @@ function tripal_chado_field_storage_bundle_mapping_form_prop_select(&$form, &$fo
       'Yes' => 'Yes',
       'No' => 'No',
     ],
-    '#description' => t('Sometimes records can be distringuished
+    '#description' => t('Sometimes records can be distinguished
       using a value in property table, especially if there is no column
       in the specified Chado table to identify the
       record type. In these cases the property table can be used.'),
@@ -1543,7 +1553,7 @@ function tripal_chado_field_storage_bundle_mapping_form_linker_select(&$form, &$
       'Yes' => 'Yes',
       'No' => 'No',
     ],
-    '#description' => t('Sometimes records can be distringuished
+    '#description' => t('Sometimes records can be distinguished
       using a linker table, especially if there is no column
       in the specified Chado table to identify the
       record type. In these cases the linker table can be used.'),
@@ -1830,7 +1840,7 @@ function tripal_chado_field_storage_bundle_mapping_form_validate($form, &$form_s
     if (!$valid) {
       return;
     }
-    // If we're here then alll validations passed and we are good to go!
+    // If we're here then all validations passed and we are good to go!
     $form_state['chado-stage'] = 'complete';
   }
 
@@ -1876,7 +1886,7 @@ function tripal_chado_field_storage_bundle_mapping_form_validate($form, &$form_s
       return;
     }
 
-    // If we're here then alll validations passed and we are good to go!
+    // If we're here then all validations passed and we are good to go!
     $form_state['chado-stage'] = 'complete';
   }
 

@@ -325,7 +325,8 @@ class ChadoRecord {
         $this->values[$this->pkey] = $record_id;
         $this->record_id = $record_id;
       }
-    } catch (Exception $e) {
+    }
+    catch (Exception $e) {
       $message = t('ChadoRecord::insert(). Could not insert a record into the ' .
         'table, !table, with the following values: !values. ERROR: !error',
         [
@@ -389,8 +390,14 @@ class ChadoRecord {
       if ($column == $this->pkey) {
         continue;
       }
-      $sql .= $column . ' = :' . $column . ', ';
-      $update_args[':' . $column] = $value;
+
+      if ($value === '__NULL__') {
+        $sql .= $column . ' = NULL, ';
+      }
+      else {
+        $sql .= $column . ' = :' . $column . ', ';
+        $update_args[':' . $column] = $value;
+      }
     }
     // Remove the trailing comma and space.
     $sql = substr($sql, 0, -2);
@@ -400,7 +407,8 @@ class ChadoRecord {
     // Now try the update.
     try {
       chado_query($sql, $update_args);
-    } catch (Exception $e) {
+    }
+    catch (Exception $e) {
       $message = t('ChadoRecord::update(). Could not update a record in the ' .
         'table, !table, with !record_id as the record ID and the following ' .
         'values: !values. ERROR: !error',
@@ -561,7 +569,7 @@ class ChadoRecord {
     }
 
     // Make sure that the value is not NULL if this is a required field.
-    if (!in_array($column_name, $this->required_cols) and $value == '__NULL__') {
+    if (in_array($column_name, $this->required_cols) and $value === '__NULL__') {
       $message = t('ChadoRecord::setValue(). The column named, "!column", ' .
         'requires a value for the table: "!table".',
         [
@@ -654,7 +662,8 @@ class ChadoRecord {
     }
     try {
       $results = chado_query($sql, $select_args);
-    } catch (Exception $e) {
+    }
+    catch (Exception $e) {
       $message = t('ChadoRecord::find(). Could not find a record in the ' .
         'table, !table, with the following values: !values. ERROR: !error',
         [

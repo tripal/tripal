@@ -352,7 +352,7 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
   // if ($days) { $ccl .= "and year>=($days) "; }
   // if ($latestyear) { $ccl .= "and year<=($latestyear) "; }
 
-  // remove any preceeding 'and' or 'or'
+  // remove any preceding 'and' or 'or'
   $ccl = preg_replace('/^\s*(and|or)/', '', $ccl);
 
   // yaz_connect() prepares for a connection to a Z39.50 server. This function is non-blocking
@@ -554,6 +554,31 @@ function tripal_pub_AGL_count($yazc, $search_str) {
 }
 
 /**
+ * Decode the unusal text encoding returned from our
+ * call to yaz_record(..., 'xml; charset=marc-8,utf-8')
+ * Some characters are in UTF-8, some are encoded as HTML
+ * entities, and some HTML entities are double-encoded,
+ * for example &amp;#x2018;
+ * A straight call to mb_convert_encoding() will corrupt
+ * any UTF-8 characters, so only convert what appears
+ * to be an HTML entity
+ *
+ * @param $text
+ *   The string to be decoded to "pure" UTF-8
+ *
+ * @return
+ *   The decoded string
+ *
+ * @ingroup tripal_pub
+ */
+function tripal_pub_AGL_decode($text) {
+  // first handle double encoding situations by replacing &amp;
+  $text = preg_replace("/&amp;/", "&", $text);
+  // then replace all HTML entities
+  return(html_entity_decode($text, ENT_COMPAT|ENT_HTML401, "UTF-8"));
+}
+
+/**
  * Parse publication XML for a single publication
  *
  * Description of XML format:
@@ -659,7 +684,10 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
           foreach ($codes as $code => $value) {
             switch ($code) {
               case 'a': // System control number
-                $pub['Publication Accession'] = $value;
+                // rarely there will be a second control number with a "ns" prefix. Ignore them
+                if (!preg_match('/^ns/', $value)) {
+                  $pub['Publication Accession'] = $value;
+                }
                 break;
             }
           }
@@ -680,7 +708,7 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
           $author = tripal_pub_remote_search_AGL_get_author($xml, $ind1);
           $pub['Author List'][] = $author;
           break;
-        case '110':  // main entry-corporate nmae
+        case '110':  // main entry-corporate name
           $author = [];
           $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
           foreach ($codes as $code => $value) {
@@ -965,16 +993,16 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
     $pub['Authors'] = $pub['Author List'];
   }
 
-  // for Title, Abstract, Authors, convert the html entity and remove special unicode chars that are not meant for display
-  $pub['Title'] = preg_replace('/[\p{So}]/u', '', mb_convert_encoding($pub['Title'], 'UTF-8', 'HTML-ENTITIES'));
+  // for several fields that may contain them, convert html entities to unicode characters
+  $pub['Title'] = tripal_pub_AGL_decode($pub['Title']);
   if (key_exists('Abstract', $pub)) {
-    $pub['Abstract'] = preg_replace('/[\p{So}]/u', '', mb_convert_encoding($pub['Abstract'], 'UTF-8', 'HTML-ENTITIES'));
+    $pub['Abstract'] = tripal_pub_AGL_decode($pub['Abstract']);
   }
   $newauths = [];
   if (array_key_exists('Author List', $pub)) {
     foreach ($pub['Author List'] AS $auth) {
       foreach ($auth AS $k => $v) {
-        $auth[$k] = preg_replace('/[\p{So}]/u', '', mb_convert_encoding($v, 'UTF-8', 'HTML-ENTITIES'));
+        $auth[$k] = tripal_pub_AGL_decode($auth[$k]);
       }
       array_push($newauths, $auth);
     }
@@ -983,9 +1011,20 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
   else {
     $pub['Author List'] = [['Surname' => 'anonymous']];
   }
+  if (array_key_exists('Authors', $pub)) {
+    $pub['Authors'] = tripal_pub_AGL_decode($pub['Authors']);
+  }
+  if (array_key_exists('Keywords', $pub)) {
+    foreach ($pub['Keywords'] as &$keyword) {
+      $keyword = tripal_pub_AGL_decode($keyword);
+    }
+  }
+  if (array_key_exists('Notes', $pub)) {
+    $pub['Notes'] = tripal_pub_AGL_decode($pub['Notes']);
+  }
 
   // build the citation
-  $pub['Citation'] = chado_pub_create_citation($pub);
+  $pub['Citation'] = tripal_pub_AGL_decode(chado_pub_create_citation($pub));
 
   $pub['raw'] = $pub_xml;
 

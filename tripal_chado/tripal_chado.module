@@ -55,7 +55,7 @@ require_once 'api/modules/tripal_chado.module.DEPRECATED.api.inc';
 // REQUIRED INCLUDE FILES
 //
 // These require files implement hooks and therefore must
-// ways be included when the module is interpreted.
+// always be included when the module is interpreted.
 require_once "includes/tripal_chado.entity.inc";
 require_once "includes/tripal_chado.schema.inc";
 require_once "includes/tripal_chado.vocab_storage.inc";
@@ -994,19 +994,7 @@ function tripal_chado_exclude_type_by_default() {
 /**
  * Implements hook_job_describe_args().
  *
- * Describes the arguments for the chado_populate_mview job to allow for
- * greater readability in the jobs details pages.
- *
- * @param $callback
- *   The callback of the current tripal job (this is the function that will be
- *   executed when tripal_launch_jobs.php is run.
- * @param $args
- *   An array of arguments passed in when the job was registered.
- *
- * @return
- *   A more readable $args array
- *
- * @ingroup tripal
+ * @ingroup tripal_chado
  */
 function tripal_chado_job_describe_args($callback, $args) {
   $new_args = array();

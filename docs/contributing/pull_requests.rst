@@ -63,7 +63,7 @@ The goal of this document is to make it easy for **A)** contributors to make pul
 - PRs that address a specific issue **must** link to the related issue page.
     - In almost every case, there should be an issue for a PR.  This allows feedback and discussion before the coding happens.  Not grounds to reject, but encourage users to create issues at start of their PR.  Better late than never :).
 - Each PR **must** be tested/approved by at least 1 contributor, if approved, a "trusted committer" will merge the PR.
-    - Testers **should** describe how the testing was performed if applicable (allows others to replicate the test).    
+    - Testers **should** describe how the testing was performed if applicable (allows others to replicate the test).
     - While Tripal's review body is small, the code review must be a thorough functional test.
     - At the Project Management Committee's (PMC) discretion, a PR may be subject to a non-functional review.  Generally these are small and obvious commits.
     - Tripal's guiding philosophy is to encourage open contribution.  With this in mind, committers should **work with contributors** to resolve issues in their PRs.  PRs that will not be merged should be closed, **transparently citing** the reason for closure.  In an ideal world, features that would be closed are discouraged at the **issue phase** before the code is written!
@@ -81,9 +81,23 @@ The goal of this document is to make it easy for **A)** contributors to make pul
 - PRs for new feature should remain open until adequately discussed (see guidelines below) and approved by a vote (all members of the PMC must vote in favour).
 
 
-.. note::
+How to create a PR
+^^^^^^^^^^^^^^^^^^^^^
 
-  If you need more instructions creating a pull request, see for example the `KnowPulse workflow <https://knowpulse.readthedocs.io/en/latest/developer_docs/dev_workflow.html#workflow>`_
+There are great instructions on creating a PR on `Digital Ocean: How To Create a Pull Request on GitHub <https://www.digitalocean.com/community/tutorials/how-to-create-a-pull-request-on-github>`_.
+
+**The tl;dr version:**
+
+1. `Fork the repository <https://docs.github.com/en/github/getting-started-with-github/fork-a-repo>`_ or `update an existing fork <https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/syncing-a-fork>`_
+2. `Clone <https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository>`_ the fork
+3. `Create a branch <https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging>`_ specific to your change: ``[issue\_number]-[tripal\_version]-[short\_description]``
+4. Make your changes, `committing <https://git-scm.com/docs/git-commit#_examples>`_ often with useful commit messages.
+5. `Push <https://git-scm.com/docs/git-push#_examples>`_ your changes to your fork.
+6. `Create a PR by going to your fork <https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request-from-a-fork>`_: target should be ``tripal:7.x-3.x``. For specifics, see guidelines above.
+
+.. note:
+
+  If you are a `committer <>`_, you can clone the Tripal repository directly with no need to create or maintain a fork. Please make sure you are always creating new branches off of ``7.x-3.x`` and that you have pulled all recent changes to ``7.x-3.x`` before creating a new branch.
 
 How PRs and Issues are Handled
 ------------------------------

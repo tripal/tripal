@@ -1,0 +1,136 @@
+# Run our PHPUnit tests
+name: PHPUnit-Tests
+
+# Controls when the action will run.
+# Run this workflow every time a new commit is pushed to your repository
+on: [push, pull_request]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  run-tests:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    # Matrix Build for this job.
+    strategy:
+      matrix:
+        php-versions: ['7.1', '7.2']
+    # Name the matrix build so we can tell them apart.
+    name: PHPUnit Testing of Tripal Core (PHP ${{ matrix.php-versions }})
+
+    # Service containers to run with `run-tests`
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: dbpass
+          POSTGRES_DB: test_db
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      # Sets up the PHP environment for PHP 7.2
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          # Install extensions for PHP-PostgreSQL
+          extensions: mbstring, intl, php-pgsql, php-gd, php-xml
+          # Increase memory limit to 2G
+          ini-values: memory_limit=2G
+          # Enable xdebug for coverage reporting
+          coverage: xdebug
+          # Install composer and phpunit globally.
+          tools: composer, phpunit
+      # Install Drush 8.x globally
+      # NOTE: `drush` is not available without the full path.
+      #       I tried adding it to the path but that broke other things.
+      - name: Install Drush
+        run: |
+          composer global require "drush/drush:~8"
+          /home/runner/.composer/vendor/bin/drush --version
+      # Install Drupal and Drupal module dependencies for Tripal.
+      # It also patches Drupal.
+      - name: Install Drupal
+        env:
+          DRUSH: "/home/runner/.composer/vendor/bin/drush"
+          DRUPAL_ROOT: "/home/runner/work/drupal"
+          POSTGRES_CONNECTION_STRING: 'pgsql://postgres:dbpass@localhost:5432/test_db'
+          ACCOUNT_NAME: tripaladmin
+          ACCOUNT_PASS: somereallysecurepassword
+        run: |
+          echo "==> Downloading Drupal"
+          cd /home/runner/work
+          $DRUSH dl drupal-7 -y
+          mv drupal-7* drupal
+          echo "==> Installing Drupal"
+          cd $DRUPAL_ROOT
+          $DRUSH si -y --root=$DRUPAL_ROOT \
+                --db-url=$POSTGRES_CONNECTION_STRING \
+                --account-name=$ACCOUNT_NAME \
+                --account-pass=$ACCOUNT_PASS \
+                --site-mail=admin@example.com \
+                --site-name=Tripal3
+          echo "==> Downloading dependencies"
+          $DRUSH dl -y views ctools entity redirect date ds field_group field_group_table
+          echo "==> Enabling Dependencies"
+          $DRUSH en -y views ctools entity redirect date ds field_group field_group_table
+          echo "==> Apply Drupal Patch"
+          cd $DRUPAL_ROOT
+          wget --no-check-certificate https://drupal.org/files/drupal.pgsql-bytea.27.patch
+          patch -p1 < drupal.pgsql-bytea.27.patch
+      # Install Tripal, Chado and prepares the Drupal/Chado databases
+      # Also patches views.
+      - name: Install Tripal
+        env:
+          DRUSH: "/home/runner/.composer/vendor/bin/drush"
+          DRUPAL_ROOT: "/home/runner/work/drupal"
+          POSTGRES_CONNECTION_STRING: 'pgsql://postgres:dbpass@localhost:5432/test_db'
+          ACCOUNT_NAME: tripaladmin
+          ACCOUNT_PASS: somereallysecurepassword
+        run: |
+          echo "==> Move Tripal into the Drupal modules directory"
+          ls /home/runner/work/tripal/tripal
+          cp -R /home/runner/work/tripal/tripal $DRUPAL_ROOT/sites/all/modules
+          echo "==> Apply Views Patch"
+          cd $DRUPAL_ROOT/sites/all/modules/views
+          patch -p1 < ../tripal/tripal_chado_views/views-sql-compliant-three-tier-naming-1971160-30.patch
+          echo "==> Install Tripal"
+          cd $DRUPAL_ROOT
+          $DRUSH en -y tripal tripal_chado tripal_chado_views tripal_ws tripal_ds
+          echo "==> Install Chado"
+          $DRUSH eval "module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.install'); tripal_chado_load_drush_submit('Install Chado v1.3');"
+          $DRUSH trp-run-jobs --username=$ACCOUNT_NAME
+          echo "==> Prepare Chado"
+          $DRUSH eval "module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.setup'); tripal_chado_prepare_drush_submit();"
+          $DRUSH trp-run-jobs --username=$ACCOUNT_NAME
+      # Runs the PHPUnit tests.
+      # https://github.com/mheap/phpunit-github-actions-printer is used
+      # to report PHPUnit fails in a meaningful way to github in PRs.
+      - name: PHPUnit Tests
+        env:
+          DRUSH: "/home/runner/.composer/vendor/bin/drush"
+          DRUPAL_ROOT: "/home/runner/work/drupal"
+          POSTGRES_CONNECTION_STRING: 'pgsql://postgres:dbpass@localhost:5432/test_db'
+          ACCOUNT_NAME: tripaladmin
+          ACCOUNT_PASS: somereallysecurepassword
+        run: |
+          cd $DRUPAL_ROOT/sites/all/modules/tripal
+          composer require --dev mheap/phpunit-github-actions-printer
+          composer update
+          cp tests/.travis.env tests/.env
+          ./vendor/bin/phpunit --printer mheap\\GithubActionsReporter\\Printer

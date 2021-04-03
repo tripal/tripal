@@ -2,7 +2,7 @@
 
 class data__sequence_formatter extends ChadoFieldFormatter {
 
-  // The default lable for this field.
+  // The default label for this field.
   public static $default_label = 'Sequence';
 
   // The list of field types for which this formatter is appropriate.

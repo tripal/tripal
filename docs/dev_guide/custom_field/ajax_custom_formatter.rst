@@ -36,7 +36,7 @@ The selector has specified that wrapper, and the AJAX callback function ``exampl
       $selected = isset($form_state['values']['featuremap_select']);
     }
 
-    // We need to provide a container for Dupal AJAX to replace.
+    // We need to provide a container for Drupal AJAX to replace.
     // Here we use a fieldset with a set ID which we can refer to below.
     $form['rendered_maps'] = [
       '#type' => 'fieldset',

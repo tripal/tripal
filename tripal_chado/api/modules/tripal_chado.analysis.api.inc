@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Provides API functions specificially for managing analysis records in Chado.
+ * Provides API functions specifically for managing analysis records in Chado.
  *
  * @ingroup tripal_chado
  */
@@ -19,7 +19,7 @@
 /**
  * Retrieves a chado analysis variable.
  *
- * @param $itentifier
+ * @param $identifier
  *   an array with the key stating what the identifier is. Supported keys
  *   (only on of the following unique keys is required):
  *    - analysis_id: the chado analysis.analysis_id primary key.

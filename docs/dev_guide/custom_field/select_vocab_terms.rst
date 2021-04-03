@@ -4,7 +4,7 @@ Selecting Vocabulary Terms
 Ontologies: what and why?
 -------------------------
 
-Tripal 3 requires all bundles and fields to be associated with a Controlled Vocabulary (CV). CVs are dictionaries of defined terms (CV terms) that make data machine-accessible, ensuring uniform terms are used across experiments, organisms and websites. Without CVterms, our scientific knowledge might be split by "dialects". Plant biologists might study temperature stress, while animal biologists study heat shock. Each group might benefit from the knowledge of the other, but they use a different vocabulary to describe the same thing, creating challenges for data discovery and exchange. CV terms make this easier not just for people, but especially for machines. Ontologies take this a step further. Where CVs are controlled lists of CVterms, ontologies are a controlled language, that include heirarchical relationships of terms.
+Tripal 3 requires all bundles and fields to be associated with a Controlled Vocabulary (CV). CVs are dictionaries of defined terms (CV terms) that make data machine-accessible, ensuring uniform terms are used across experiments, organisms and websites. Without CVterms, our scientific knowledge might be split by "dialects". Plant biologists might study temperature stress, while animal biologists study heat shock. Each group might benefit from the knowledge of the other, but they use a different vocabulary to describe the same thing, creating challenges for data discovery and exchange. CV terms make this easier not just for people, but especially for machines. Ontologies take this a step further. Where CVs are controlled lists of CVterms, ontologies are a controlled language, that include hierarchical relationships of terms.
 
 Tripal leverages vocabularies to make use of the `Semantic Web <https://en.wikipedia.org/wiki/Semantic_Web>`_. Every bundle and field defined in Tripal will be associated with a CVterm. Therefore, it is important to find community developed terms.  The `EMBL EBI Ontology Lookup Service <http://www.ebi.ac.uk/ols/index>`_ provides an easy location to search for and identify terms.  When choosing terms for new Bundles and Fields, think carefully about the terms you will use to describe your objects. Selecting the proper CV term that best describes the data may be the most challenging part of creating custom Bundles and Fields!
 
@@ -27,7 +27,7 @@ Consider the term for `organism <http://www.ebi.ac.uk/ols/ontologies/obi/terms?i
 
 .. figure:: select_vocab_terms.1.organism.png
 
-Notice how the teal box (the **short name**) is OBI, and the orange box contains the **full accession**, OBI:0100026 which includes but the **short name** and the unique term **accession** value.  Unfortunately, the OLS does not indicate the **namespace** terms.   So, as a rule we will use the short name converted to lower case.  Before using this term in a Tripal Bundle or Field you may need to insert this term into Chado.  You can do so in your custom module cude using the **tripal_insert_cvterm** function. The following provides a demonstration:
+Notice how the teal box (the **short name**) is OBI, and the orange box contains the **full accession**, OBI:0100026 which includes but the **short name** and the unique term **accession** value.  Unfortunately, the OLS does not indicate the **namespace** terms.   So, as a rule we will use the short name converted to lower case.  Before using this term in a Tripal Bundle or Field you may need to insert this term into Chado.  You can do so in your custom module code using the **tripal_insert_cvterm** function. The following provides a demonstration:
 
 .. code-block:: php
 
@@ -104,7 +104,7 @@ Some ontologies are b into sub-ontologies. This includes the Gene Ontology (GO).
 .. figure:: select_vocab_terms.3.go.png
 
 
-Case 4: Ontologies with muliptle short names
+Case 4: Ontologies with multiple short names
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The EDAM ontology builds its term accessions using different short names instead of the ontology. Consider the EDAM term for `Sequence <http://www.ebi.ac.uk/ols/ontologies/edam/terms?iri=http%3A%2F%2Fedamontology.org%2Fdata_2044>`_. The teal box is EDAM, the orange box is data:2044, and there is no **namespace**.

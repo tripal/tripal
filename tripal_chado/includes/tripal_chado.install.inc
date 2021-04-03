@@ -58,7 +58,7 @@ function tripal_chado_load_form($form, $form_state) {
         'stockcollection_db',
       ]);
       $items = [
-        'PostgreSQL version 9.1 is required to perform this upgrade. If your Tripal
+        'PostgreSQL version 9.5 is required to perform this upgrade. If your Tripal
          site uses an older version please upgrade before proceeding.',
         'A major change between Chado v1.2 and v1.3 is that primary and foreign
          keys were upgraded from integers to big integers. If your site has custom
@@ -499,54 +499,6 @@ function tripal_chado_upgrade_chado_1_2_to_1_3_pre_alter() {
         }
       }
 
-    }
-  }
-  // Now create the sequences if they don't already exist.
-  $sequences = [
-    'analysis_cvterm_analysis_cvterm_id_seq',
-    'analysis_dbxref_analysis_dbxref_id_seq',
-    'analysis_pub_analysis_pub_id_seq',
-    'analysis_relationship_analysis_relationship_id_seq',
-    'contactprop_contactprop_id_seq',
-    'dbprop_dbprop_id_seq',
-    'feature_contact_feature_contact_id_seq',
-    'featuremap_contact_featuremap_contact_id_seq',
-    'featuremap_dbxref_featuremap_dbxref_id_seq',
-    'featuremap_organism_featuremap_organism_id_seq',
-    'featuremapprop_featuremapprop_id_seq',
-    'featureposprop_featureposprop_id_seq',
-    'library_contact_library_contact_id_seq',
-    'library_expression_library_expression_id_seq',
-    'library_expressionprop_library_expressionprop_id_seq',
-    'library_featureprop_library_featureprop_id_seq',
-    'library_relationship_library_relationship_id_seq',
-    'library_relationship_pub_library_relationship_pub_id_seq',
-    'nd_experiment_analysis_nd_experiment_analysis_id_seq',
-    'organism_cvterm_organism_cvterm_id_seq',
-    'organism_cvtermprop_organism_cvtermprop_id_seq',
-    'organism_pub_organism_pub_id_seq',
-    'organism_relationship_organism_relationship_id_seq',
-    'organismprop_pub_organismprop_pub_id_seq',
-    'phenotypeprop_phenotypeprop_id_seq',
-    'phylotreeprop_phylotreeprop_id_seq',
-    'project_analysis_project_analysis_id_seq',
-    'project_dbxref_project_dbxref_id_seq',
-    'project_feature_project_feature_id_seq',
-    'project_stock_project_stock_id_seq',
-    'pubauthor_contact_pubauthor_contact_id_seq',
-    'stock_feature_stock_feature_id_seq',
-    'stock_featuremap_stock_featuremap_id_seq',
-    'stock_library_stock_library_id_seq',
-    'stockcollection_db_stockcollection_db_id_seq',
-  ];
-  foreach ($sequences as $sequence) {
-
-    // Now add in the sequences if they don't already exist. There is no
-    // PostgreSQL 'CREATE SEQUENCE IF NOT EXIST' so we're forced to do it here
-    // and these create statements were removed from the diff upgrade file.
-    if (!chado_sequence_exists($sequence)) {
-      $sql = "CREATE SEQUENCE {" . $sequence . "} START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1";
-      chado_query($sql);
     }
   }
 }

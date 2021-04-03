@@ -41,108 +41,113 @@ function _ds_layout_settings_info($bundle_name, $instances) {
   $region_left = [];
   $prop_fields = [];
   $summary_fields = [];
-  $data_sequence_fields = [];
-  $all_other_fields = [];
+  $unhandled_fields = [];
   $fields_with_regions = [];
   $i = 0;
-  $all_fields = [];
+
 
   try {
+
     // Get the bundle and term objects.
     $bundle = tripal_load_bundle_entity(['name' => $bundle_name]);
     $term = tripal_load_term_entity(['term_id' => $bundle->term_id]);
 
-    // Build one large multidimensional array of all instances to sort in alpha
-    // order to display fields in label alpha order.
+    // Get the list of fields and sort them by label.
+    $sorted_instances = [];
     foreach ($instances as $key => $instance) {
-      $all_fields[$i] = $instance;
+      $sorted_instances[$i] = $instance;
       $i++;
     }
-    usort($all_fields, tripal_ds_sort_array('label'));
+    usort($sorted_instances, tripal_ds_sort_array('label'));
 
-    // Iterate through the fields of this bundle.
-    foreach ($all_fields as $key => $instance) {
+    // Iterate through the fields of this bundle and put them into appropriate
+    // field groups.
+    foreach ($sorted_instances as $key => $instance) {
+      $base_table = array_key_exists('base_table', $instance['settings']) ? $instance['settings']['base_table'] : '';
+      $chado_table = array_key_exists('chado_table', $instance['settings']) ? $instance['settings']['chado_table'] : '';
       $instance_name = $instance['field_name'];
+
+      // Add the bundle type to the summary fields.
       if ($instance_name == "rdfs__type") {
         array_push($summary_fields, $instance_name);
+        continue;
+      }
+
+      // The tripal_chado module adds an image to the organism content
+      // type so we want to make sure that image goes in the summary.
+      // It is not a TripalField so it won't have a chado table.
+      if ($instance_name == 'data__image' and $term->name == 'organism') {
+        array_push($summary_fields, $instance_name);
+        continue;
+      }
+
+      // For fields that have a data__sequence prefix we want to hide these
+      // unless it's the data__sequence_record field which displays all of the
+      // sequence data and should be in it's own fieldset.
+      if (preg_match('/data__sequence/', $instance_name)) {
+        if ($instance_name == 'data__sequence_record') {
+          $instance['display']['default']['label'] = 'hidden';
+          field_update_instance($instance);
+          array_push($unhandled_fields, $instance);
+        }
+        continue;
+      }
+
+      // For the same reason, hide the CDS and protein fields
+      if ($instance_name == 'so__cds' or $instance_name == 'data__protein_sequence'){
+        continue;
+      }
+
+      // If this field holds a value from the prop table then add it to the
+      // properties field group.
+      if (preg_match('/_prop$/', $chado_table)) {
+        array_push($prop_fields, $instance_name);
+        continue;
+      }
+
+      // Put all fields from the base table in the summary and all other
+      // fields that were not handled above into a different array for
+      // handling later.
+      if ($base_table == $chado_table) {
+        array_push($summary_fields, $instance_name);
+        continue;
       }
       else {
-        //TODO: How do we handle non-chado dbs, placement of fields within
-        // tripal panes might need to be done in a hook.
-        $instance_base_table = array_key_exists('base_table', $instance['settings']) ? $instance['settings']['base_table'] : '';
-        $instance_base_chado = array_key_exists('chado_table', $instance['settings']) ? $instance['settings']['chado_table'] : '';
-        $prop_table = strpos($instance_base_chado, 'prop');
-        $data_sequence = strpos($instance_name, 'data__sequence');
-        if ($instance_base_chado && $instance_base_table) {
-
-          if ($instance_base_chado == $instance_base_table) {
-            if ($prop_table !== FALSE) {
-              array_push($prop_fields, $instance_name);
-            }
-            elseif ($data_sequence !== FALSE) {
-              array_push($data_sequence_fields, $instance_name);
-            }
-            else {
-              array_push($summary_fields, $instance_name);
-            }
-
-          }
-          elseif ($instance_base_chado != $instance_base_table) {
-            if ($prop_table !== FALSE) {
-              array_push($prop_fields, $instance_name);
-            }
-            elseif ($data_sequence !== FALSE) {
-              array_push($data_sequence_fields, $instance_name);
-            }
-            else {
-              array_push($all_other_fields, $instance);
-
-              // Update the display settings so that the title is hidden.
-              $instance['display']['default']['label'] = 'hidden';
-              field_update_instance($instance);
-            }
-          }
-        }
-        else {
-          // The tripal_chado module adds an image to the organism content
-          // type so we want to make sure that image goes in the summary.
-          // It is not a TripalField so it won't have a chado table.
-          if ($instance_name == 'data__image' and $term->name == 'organism') {
-            array_push($summary_fields, $instance_name);
-          }
-        }
+        // Update the display settings so that the title is hidden.
+        $instance['display']['default']['label'] = 'hidden';
+        field_update_instance($instance);
+        array_push($unhandled_fields, $instance);
       }
-    }
+    } // end looping over fields.
 
-    // Consolidate the field sets.
+    // Create the summary and properties field groups.
     if (!empty($summary_fields)) {
-      _summary_field_group_info($bundle_name, $summary_fields);
+      tripal_ds_add_summary_field_group($bundle_name, $summary_fields);
     }
     if (!empty($prop_fields)) {
-      _prop_field_group_info($bundle_name, $prop_fields);
-    }
-    if (!empty($data_sequence_fields)) {
-      _data_sequence_field_group_info($bundle_name, $data_sequence_fields);
-    }
-    if (!empty($all_other_fields)) {
-      foreach ($all_other_fields as $key => $other_field) {
-        $group_field_name = 'gp_' . $other_field['field_name'];
-
-        // Need to truncate the names because of database field size restrictions,
-        // updating fields here to ensure name consistency.
-        $group_field_name = substr($group_field_name, 0, 27);
-
-        // Add random numbers to ensure the field name is unique within the 32
-        // character limit of the field.
-        $group_field_name = $group_field_name . rand(0, 99999);
-        tripal_ds_additional_fields_field_group_info($bundle_name, $other_field['label'], $group_field_name, $other_field['field_name']);
-      }
+      tripal_ds_add_prop_field_group($bundle_name, $prop_fields);
     }
 
-    // Build one large multidimensional array of all instances to sort in alpha
-    // order to display fields in label alpha order.
+    // All other fields get their own field group (i.e. Tripal Pane).
+    foreach ($unhandled_fields as $key => $other_field) {
+      $group_field_name = 'gp_' . $other_field['field_name'];
+
+      // Need to truncate the names because of database field size restrictions,
+      // updating fields here to ensure name consistency.
+      $group_field_name = substr($group_field_name, 0, 27);
+
+      // Add random numbers to ensure the field name is unique within the 32
+      // character limit of the field.
+      $group_field_name = $group_field_name . rand(0, 99999);
+
+      // Now add a generic field group for this field.
+      tripal_ds_add_generic_field_group($bundle_name, $other_field['label'], $group_field_name, $other_field['field_name']);
+    }
+
+    // Build one large multidimensional array of all field groups to sort
+    // in alpha order to display fields in label alpha order.
     $right_fields = [];
-    $all_field_groups = field_group_info_groups('TripalEntity', $bundle_name);
+    $all_field_groups = field_group_info_groups('TripalEntity', $bundle_name, NULL, TRUE);
 
     if (!empty($all_field_groups)) {
       if (is_array($all_field_groups)) {
@@ -154,31 +159,6 @@ function _ds_layout_settings_info($bundle_name, $instances) {
         }
         usort($right_fields, tripal_ds_sort_object('label'));
       }
-    }
-    elseif (empty($all_field_groups)) {
-      //Add the original instances that were passed and the field_groups that
-      //were created.
-      $field_group_fields = db_select('field_group', 'fg')
-        ->fields('fg', ['group_name', 'data'])
-        ->condition('bundle', $bundle_name, '=')
-        ->execute()
-        ->fetchAll();
-
-      $instance_names = [];
-      $field_group_names = [];
-      foreach ($all_fields as $key => $instance) {
-        $instance_names[$key]['field_name'] = $instance['field_name'];
-        $instance_names[$key]['label'] = $instance['label'];
-
-      }
-      foreach ($field_group_fields as $key => $field_group_name) {
-        $data = unserialize($field_group_name->data);
-        $field_group_names[$key]['field_name'] = $field_group_name->group_name;
-        $field_group_names[$key]['label'] = $data['format_settings']['label'];
-
-      }
-      $all_field_groups = array_merge($instance_names, $field_group_names);
-      usort($all_field_groups, tripal_ds_sort_array('label'));
     }
 
     // Now build the $region_right array and the fields array.
@@ -328,7 +308,7 @@ function _ds_layout_pub_settings_info($bundle_name, $instances) {
       $group_field_name = $group_field_name . rand(0, 99999);
 
       // Build the field group.
-      tripal_ds_additional_fields_field_group_info($bundle_name, $other_field['label'], $group_field_name, $other_field['field_name']);
+      tripal_ds_add_generic_field_group($bundle_name, $other_field['label'], $group_field_name, $other_field['field_name']);
 
       // Update arrays.
       array_push($temporary_field, $group_field_name, $other_field['field_name']);

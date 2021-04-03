@@ -142,7 +142,7 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
     $placeholder_prefix = 'arg';
     $i = 0;
     foreach ($filters as $filter_name => $details) {
-      // we only want to inclue non-exposed filters
+      // we only want to include non-exposed filters
       if ($details->options['exposed'] == FALSE) {
         $i++;
 

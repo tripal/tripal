@@ -26,8 +26,12 @@ Enter the following:
 
   "File", "Upload the file name Citrus_sinensis-orange1.1g015632m.g.gff3"
   "Analysis", "Whole Genome Assembly and Annotation of Citrus sinensis"
-  "Organism", "Citrus sinensis"
+  "Existing Organism", "Citrus sinensis"
+  "Landmark Type", "supercontig"
   "All other options", "leave as default"
+
+.. note::
+    The Landmark Type is provided for this demo GFF3 file because the chromosome is not defined in the file, only the genomic features on the chromosomes.  The landmark type is not needed if the GFF3 file has the chromosomes (scaffolds or contigs) defined in the GFF3 file.
 
 Finally, click the Import GFF3 file button. You'll notice a job was submitted to the jobs subsystem. Now, to complete the process we need the job to run. We'll do this manually:
 
@@ -39,27 +43,54 @@ You should see output similar to the following:
 
 ::
 
-  Tripal Job Launcher
-  Running as user 'administrator'
-  -------------------
-  2018-06-29 18:00:50: There are 1 jobs queued.
-  2018-06-29 18:00:50: Job ID 8.
-  2018-06-29 18:00:50: Calling: tripal_run_importer(12)
+    2020-10-02 21:53:18
+    Tripal Job Launcher
+    Running as user 'admin'
+    -------------------
+    2020-10-02 21:53:18: There are 1 jobs queued.
+    2020-10-02 21:53:18: Job ID 1310.
+    2020-10-02 21:53:18: Calling: tripal_run_importer(123)
 
-  Running 'Chado GFF3 File Loader' importer
-  NOTE: Loading of file is performed using a database transaction.
-  If it fails or is terminated prematurely then all insertions and
-  updates are rolled back and will not be found in the database
+    Running 'Chado GFF3 File Loader' importer
+    NOTE: Loading of file is performed using a database transaction.
+    If it fails or is terminated prematurely then all insertions and
+    updates are rolled back and will not be found in the database
 
-  Opening /var/www/html/sites/default/files/tripal/users/1/Citrus_sinensis-orange1.1g015632m.g.gff3
-  Percent complete: 100.00%. Memory: 32,211,360 bytes.
-  Adding protein sequences if CDS exist and no proteins in GFF...
-  Setting ranks of children...
+    Opening /var/www/html/sites/default/files/tripal/users/1/Citrus_sinensis-orange1.1g015632m.g.gff3
+    Opening temporary cache file: /tmp/TripalGFF3Import_aUgoru
+    Step  1 of 26: Caching GFF3 file...
+    Step  2 of 26: Find existing landmarks...
+    Step  3 of 26: Insert new landmarks (if needed)...
+    Step  4 of 26: Find missing proteins...
+    Step  5 of 26: Add missing proteins to list of features...
+    Step  6 of 26: Find existing features...
+    Step  7 of 26: Clear attributes of existing features...
+    Step  8 of 26: Processing 135 features...
+    Step  9 of 26: Get new feature IDs...
+    Step 10 of 26: Insert locations...
+    Step 11 of 26: Associate parents and children...
+    Step 12 of 26: Calculate child ranks...
+    Step 13 of 26: Add child-parent relationships...
+    Step 14 of 26: Insert properties...
+    Step 15 of 26: Find synonyms (aliases)...
+    Step 16 of 26: Insert new synonyms (aliases)...
+    Step 17 of 26: Insert feature synonyms (aliases)...
+    Step 18 of 26: Find cross references...
+    Step 19 of 26: Insert new cross references...
+    Step 20 of 26: Get new cross references IDs...
+    Step 21 of 26: Insert feature cross references...
+    Step 22 of 26: Insert feature ontology terms...
+    Step 23 of 26: Insert 'derives_from' relationships...
+    Step 24 of 26: Insert Targets...
+    Step 25 of 26: Associate features with analysis....
+    Step 26 of 26: Adding sequences data (Skipped: none available)...
 
-  Done.
+    Done.
+    Committing Transaction...
 
-  Remapping Chado Controlled vocabularies to Tripal Terms...
-  Done.
+    Remapping Chado Controlled vocabularies to Tripal Terms...
+    Done.
+
 
 .. note::
 
@@ -160,7 +191,7 @@ Now the scaffold sequence and mRNA sequences are loaded!
   It is not required to load the mRNA sequences as those can be derived from their alignments with the scaffold sequence. However, in Chado the **feature** table has a **residues** column. Therefore, it is best practice to load the sequence when possible.
 
 Creating Gene Pages
-----------------------
+-------------------
 Now that we've loaded our feature data, we must publish them. This is different than when we manually created our Organism and Analysis pages.  Using the GFF and FASTA loaders we imported our data into Chado, but currently there are no published pages for this data that we loaded.  To publish these genomic features, navigating to Structure → Tripal Content Types and click the link titled Publish Chado Content.  The following page appears:
 
 .. image:: genomes_genes.3.png
@@ -221,3 +252,29 @@ Next find an mRNA page to view.  Remember when we loaded our FASTA file for mRNA
 - We associated the Phytozome accession with the features using a regular expression when importing the FASTA file.
 
 All data that appears on the page is derived from the GFF file and the FASTA  files we loaded.
+
+
+Customizing Transcripts on Gene Pages
+-------------------------------------
+By default the gene pages provided by Tripal will have a link in the sidebar table of contents named **Transcripts** and when clicked a table appears that lists all of the transcripts (or mRNA) that belong to the gene.  The user can click to view more information about each published transcript.
+
+.. image:: genomes_genes.6.png
+
+Sometimes however, more than just a listing of transcripts is desired on a gene page.  You can customize the information that is presented about each transcript by navigating to the gene content type at  **Structure → Tripal Content Types** and clicking **mange fields** in the **Gene** row.  This page allows you to customize the way fields are displayed on the gene page.  Scroll down the page to the **Transcript** row and click the **edit** button.  The following page should appear.
+
+.. image:: genomes_genes.7.png
+
+Open the field set titled **Transcript (mRNA) Field Selection** to view a table that lists all of the available fields for a transcript.
+
+.. image:: genomes_genes.8.png
+
+On this page you can check the boxes next to the field that you want to show for a transcript on the gene page.  For this example, we will select the fields **Name**, **Identifier**, **Resource Type**, **Anotations**, and **Sequences** (they may not be in this order on your own site). You can control the order in which fields will be shown by dragging them using the crosshairs icon next to each one.  Scroll to the bottom of the page and click the **Save Settings** button.
+
+Next return to the gene page, reload it, and click on the **Transcripts** link. Now you are provided a select box with the transcript names. When a transcript is selected, the pane below will populate with the fields that you selected when editing in the Transcript field.
+
+.. image:: genomes_genes.9.png
+
+You can return to the Transcript field edit page under the Gene content  type at any time to add, remove or change the order of fields that appear for the transcript.
+
+.. note::
+    Transcripts on a gene page can only be customized if all of them are published. If not, the default table listing is shown.

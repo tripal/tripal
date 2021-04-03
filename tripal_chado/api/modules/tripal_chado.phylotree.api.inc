@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Provides API functions specificially for managing phylogenetic and taxonomic
+ * Provides API functions specifically for managing phylogenetic and taxonomic
  * tree records in Chado.
  */
 
@@ -10,7 +10,7 @@
  * @defgroup tripal_phylotree_api Chado Phylotree
  * @ingroup tripal_chado_api
  * @{
- * Provides API functions specificially for managing phylogenetic and taxonomic
+ * Provides API functions specifically for managing phylogenetic and taxonomic
  * tree records in Chado.  The API consists of functions for creation,
  * retrieval, update and deltion (CRUD) for phylogenetic tree records as
  * well as importing of trees in the newick file format.
@@ -44,7 +44,7 @@
  *   value is the error message.
  *
  * @return
- *   If validation failes then FALSE is returned.  Any options that do not pass
+ *   If validation fails then FALSE is returned.  Any options that do not pass
  *   validation checks will be added in the $errors array with the key being
  *   the option and the value being the error message.  If validation
  *   is successful then TRUE is returned.
@@ -116,7 +116,7 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
     // If this is a numeric Drupal file then all is good, no need to check.
     if (!is_numeric($options['tree_file'])) {
       if (!file_exists($options['tree_file'])) {
-        $errors['tree_file'] = t('The file provided does not exists.');
+        $errors['tree_file'] = t('The file provided does not exist.');
         return FALSE;
       }
     }
@@ -181,7 +181,7 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
   }
 
   // A Dbxref is required by the phylotree module, but if the
-  // tree was generated in-house and the site admin doens't want to
+  // tree was generated in-house and the site admin doesn't want to
   // assign a local dbxref then we will set it to the null db
   // and the local:null dbxref.
   if (array_key_exists('dbxref', $options)) {
@@ -619,7 +619,7 @@ function chado_assign_phylogeny_tree_indices(&$tree, &$index = 1) {
  *   -organism_id:  The organism_id for associtating the node with an organism.
  *   -properties:   An array of key/value pairs where the key is the cvterm_id
  *                  and the value is the property value.  These properties
- *                  will be assocaited with the phylonode.
+ *                  will be associated with the phylonode.
  *
  * Prior to importing the tree the indicies can be set by using the
  * chado_assign_phylogeny_tree_indices() function.
@@ -683,7 +683,7 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
       if ($tree['is_internal']) {
         $values['type_id'] = $vocab['internal']->cvterm_id;
         $values['parent_phylonode_id'] = $parent['phylonode_id'];
-        // TOOD: a feature may be associated here but it is recommended that it
+        // TODO: a feature may be associated here but it is recommended that it
         // be a feature of type SO:match and should represent the alignment of
         // all features beneath it.
       }
@@ -745,7 +745,7 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
     $phylonode = chado_insert_record('phylonode', $values);
     $tree['phylonode_id'] = $phylonode['phylonode_id'];
 
-    // This is a taxonomic tree, so assocaite this node with an
+    // This is a taxonomic tree, so associate this node with an
     // organism if one is provided.
     if (array_key_exists('organism_id', $tree)) {
       $values = [
@@ -897,7 +897,7 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $j
       module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.phylotree_newick');
       $tree = tripal_phylogeny_parse_newick_file($file_name);
 
-      // Assign the right and left indecies to the tree ndoes.
+      // Assign the right and left indices to the tree nodes.
       chado_assign_phylogeny_tree_indices($tree);
     }
     // Iterate through the tree nodes and add them to Chado in accordance

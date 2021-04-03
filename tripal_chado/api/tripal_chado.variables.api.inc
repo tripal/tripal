@@ -41,7 +41,7 @@
  *   $feature = chado_generate_var('feature', $values);
  * @endcode
  *
- * The $values array passed to this fucntion can be of the same format used
+ * The $values array passed to this function can be of the same format used
  * by the chado_select_record() function.
  *
  * If a field is a foreign key then its value is an object that contains
@@ -119,13 +119,13 @@
  *     property table (e.g. featureprop) and you want the CV and accession
  *     but do not want the DB the following array would work:
  *
- *        $table_options =  array(
- *          'include_fk' => array(
- *            'type_id' => array(
+ *        $table_options =  [
+ *          'include_fk' => [
+ *            'type_id' => [
  *              'cv_id' => 1,
  *              'dbxref_id' => 1,
- *            )
- *          )
+ *            ]
+ *          ]
  *        );
  *
  *     The above array will expand the 'type_id' of the property table but only
@@ -198,19 +198,19 @@ function chado_generate_var($table, $values, $base_options = []) {
 
   // This allows modules to specify that some fields should be excluded by default
   // For example, tripal core provides a tripal_chado_exclude_field_from_feature_by_default()
-  // which says that we usually don't want to include the residues field by 
+  // which says that we usually don't want to include the residues field by
   // default since it can be very large and cause performance issues.
 
-  // If a field is excluded by default it can always be expanded at a later 
-  // point by calling chado_expand_var($chado_var, 'field', 
+  // If a field is excluded by default it can always be expanded at a later
+  // point by calling chado_expand_var($chado_var, 'field',
   // <field name as shown in expandable_fields array>);
 
   // First get an array of all the fields to be removed for the current table
-  // module_invoke_all() is drupal's way of invoking all implementations of the 
+  // module_invoke_all() is drupal's way of invoking all implementations of the
   // specified hook and merging all of the results.
 
   // $fields_to_remove should be an array with the keys matching field names
-  // and the values being strings to be executed using php_eval() to determine 
+  // and the values being strings to be executed using php_eval() to determine
   // whether to exclude the field (evaluates to TRUE) or not (evaluates to FALSE)
   $fields_to_remove = module_invoke_all('exclude_field_from_' . $table . '_by_default');
 
@@ -226,7 +226,7 @@ function chado_generate_var($table, $values, $base_options = []) {
     }
 
     // If criteria then remove from query
-    // @coder-ignore: only module designers can populate $criteria -not a 
+    // @coder-ignore: only module designers can populate $criteria -not a
     // security risk.
     $success = php_eval('<?php return ' . $criteria . '; ?>');
     if ($success) {
@@ -239,35 +239,35 @@ function chado_generate_var($table, $values, $base_options = []) {
   // Get fields to be removed by type................................
   // This gets all implementations of hook_exclude_type_by_default().
 
-  // This allows modules to specify that some types of fields should be excluded 
-  // by default For example, tripal core provides a 
-  // tripal_chado_exclude_type_by_default() which says that text fields are 
+  // This allows modules to specify that some types of fields should be excluded
+  // by default For example, tripal core provides a
+  // tripal_chado_exclude_type_by_default() which says that text fields are
   // often very large and if they are longer than 250 characters then
   // we want to exclude them by default
 
-  // If a field is excluded by default it can always be expanded at a later 
-  // point by calling chado_expand_var($chado_var, 'field', 
+  // If a field is excluded by default it can always be expanded at a later
+  // point by calling chado_expand_var($chado_var, 'field',
   //<field name as shown in expandable_fields array>);
 
   // First get an array of all the types of fields to be removed for the current
-  // table module_invoke_all() is drupal's way of invoking all implementations 
+  // table module_invoke_all() is drupal's way of invoking all implementations
   // of the specified hook and merging all of the results.
 
   // $types_to_remove should be an array with the keys matching field names
-  // and the values being strings to be executed using php_eval() to determine 
+  // and the values being strings to be executed using php_eval() to determine
   // whether to exclude the field (evaluates to TRUE) or not (evaluates to FALSE)
   // (ie: array('text' => 'strlen("<field_value> ") > 100');
   $types_to_remove = module_invoke_all('exclude_type_by_default');
 
   // Get a list of all the types of fields
-  // the key is the type of field and the value is an array of fields of this 
+  // the key is the type of field and the value is an array of fields of this
   // type.
   $field_types = [];
   foreach ($table_desc['fields'] as $field_name => $field_array) {
     $field_types[$field_array['type']][] = $field_name;
   }
 
-  // We want to use the types to remove in conjunction with our table field 
+  // We want to use the types to remove in conjunction with our table field
   // descriptions to determine which fields might need to be removed.
   foreach ($types_to_remove as $field_type => $criteria) {
 
@@ -286,8 +286,8 @@ function chado_generate_var($table, $values, $base_options = []) {
         }
 
         // If criteria then remove from query
-        // (as long as <field_value> is not needed for the criteria to be 
-        // evaluated) @coder-ignore: only module designers can populate 
+        // (as long as <field_value> is not needed for the criteria to be
+        // evaluated) @coder-ignore: only module designers can populate
         //$criteria -not a security risk.
         $success = php_eval('<?php return ' . $criteria . '; ?>');
         if ($success) {
@@ -316,7 +316,7 @@ function chado_generate_var($table, $values, $base_options = []) {
 
       // For Tripal v2 compatibility
       // check if the current table maps to a node type-------------------------
-      // If this table is connected to a node there will be a chado_tablename 
+      // If this table is connected to a node there will be a chado_tablename
       // table in drupal.
       $base_tables = chado_get_base_tables();
       if (module_exists('tripal_core') and db_table_exists('chado_' . $table)) {
@@ -344,10 +344,10 @@ function chado_generate_var($table, $values, $base_options = []) {
 
       // Remove any fields where criteria needs to be evalulated----------------
       // The fields to be removed can be populated by implementing either
-      // hook_exclude_field_from_<table>_by_default() where <table> is the 
-      // current table OR hook_exclude_type_by_default() where there are fields 
-      // of the specified type in the current table It only reaches this point 
-      // if the criteria specified for whether or not to exclude the field 
+      // hook_exclude_field_from_<table>_by_default() where <table> is the
+      // current table OR hook_exclude_type_by_default() where there are fields
+      // of the specified type in the current table It only reaches this point
+      // if the criteria specified for whether or not to exclude the field
       // includes <field_value> which means it has to be evaluated after
       // the query has been executed.
       foreach ($fields_to_remove as $field_name => $criteria) {
@@ -358,7 +358,7 @@ function chado_generate_var($table, $values, $base_options = []) {
           break;
         }
 
-        // Replace <field_value> with the actual value of the field from the 
+        // Replace <field_value> with the actual value of the field from the
         // query.
         $field_name_safe = preg_replace('/\'|"|\\\/', '\\1', $object->{$field_name});
         $criteria = preg_replace('/<field_value>/', $field_name_safe, $criteria);
@@ -379,22 +379,22 @@ function chado_generate_var($table, $values, $base_options = []) {
           $foreign_table = $foreign_key_array['table'];
           foreach ($foreign_key_array['columns'] as $foreign_key => $primary_key) {
 
-            // Note: Foreign key is the field in the current table whereas 
-            // primary_key is the field in the table referenced by the foreign 
+            // Note: Foreign key is the field in the current table whereas
+            // primary_key is the field in the table referenced by the foreign
             // key, don't do anything if the foreign key is empty
             if (empty($object->{$foreign_key})) {
               continue;
             }
 
             if (is_array($include_fk)) {
-              // Don't recurse if the callee has supplied an $fk_include list 
+              // Don't recurse if the callee has supplied an $fk_include list
               // and this FK table is not in the list.
               if (is_array($include_fk) and !array_key_exists($foreign_key, $include_fk)) {
                 $object->expandable_foreign_keys[] = $table . '.' . $foreign_key . ' => ' . $foreign_table;
                 continue;
               }
             }
-            // If we have the option but it is not an array then we don't 
+            // If we have the option but it is not an array then we don't
             // recurse any further.
             if ($include_fk === TRUE) {
               $object->expandable_foreign_keys[] = $table . '.' . $foreign_key . ' => ' . $foreign_table;
@@ -490,7 +490,7 @@ function chado_generate_var($table, $values, $base_options = []) {
  * extremely long, such as text fields are automatically excluded to prevent
  * long page loads.  Linking tables that have a many-to-one relationship with
  * the record are also excluded.  This function allows for custom expansion
- * of the record created by chado_generate_var() by specifyin the field and
+ * of the record created by chado_generate_var() by specifying the field and
  * tables that should be added.
  *
  * Example Usage:
@@ -713,8 +713,8 @@ function chado_expand_var($object, $type, $to_expand, $table_options = []) {
           // Get the value of the foreign key from the object
           $field_value = $object->{$field_name};
 
-          // Get the name of the field in the foreign table using the table 
-          // description For example, with the 
+          // Get the name of the field in the foreign table using the table
+          // description For example, with the
           // feature.type_id => cvterm.cvterm_id we need cvterm_id
           $foreign_field_name = FALSE;
           foreach ($table_desc['foreign keys'][$foreign_table]['columns'] as $left => $right) {
@@ -729,7 +729,7 @@ function chado_expand_var($object, $type, $to_expand, $table_options = []) {
 
             // Generate a chado variable of the foreign key
             // For example, if the foreign key to expand is feature.type_id
-            // then we want to generate a chado cvterm variable that matches the 
+            // then we want to generate a chado cvterm variable that matches the
             // feature.type_id.
             $foreign_var = chado_generate_var(
               $foreign_table, // thus in the example above, generate a cvterm var
@@ -740,7 +740,7 @@ function chado_expand_var($object, $type, $to_expand, $table_options = []) {
             // Check that the foreign object was returned.
             if ($foreign_var) {
 
-              // It was so now we can add this chado variable to our current 
+              // It was so now we can add this chado variable to our current
               // object in place of the key value.
               $object->{$field_name} = $foreign_var;
               $object->expanded = $to_expand;
@@ -778,7 +778,7 @@ function chado_expand_var($object, $type, $to_expand, $table_options = []) {
 
         }
       }
-      // Otherwise we weren't able to extract the parts of the foreign key to 
+      // Otherwise we weren't able to extract the parts of the foreign key to
       // expand thus we will warn the administrator.
       else {
         tripal_report_error('tripal_chado', TRIPAL_ERROR,
@@ -791,13 +791,13 @@ function chado_expand_var($object, $type, $to_expand, $table_options = []) {
       $foreign_table = $to_expand;
 
       // BASE CASE: don't expand the table it already is expanded
-      if (array_key_exists($foreign_table, $object)) {
+      if (property_exists($object, $foreign_table)) {
         return $object;
       }
       $foreign_table_desc = chado_get_schema($foreign_table);
 
-      // If we don't get a foreign_table (which could happen of a custom 
-      // table is not correctly defined or the table name is mispelled then we 
+      // If we don't get a foreign_table (which could happen of a custom
+      // table is not correctly defined or the table name is mispelled then we
       // should return gracefully.
       if (!is_array($foreign_table_desc)) {
         return $object;
@@ -837,16 +837,16 @@ function chado_expand_var($object, $type, $to_expand, $table_options = []) {
             $filter_criteria = [$left => $object->{$right}];
           }
 
-          // Generate a new object for this table using the FK values in the 
+          // Generate a new object for this table using the FK values in the
           // base table.
           $new_options = $table_options;
           $foreign_object = chado_generate_var($foreign_table, $filter_criteria, $new_options);
 
-          // If the generation of the object was successful, update the base 
+          // If the generation of the object was successful, update the base
           // object to include it.
           if ($foreign_object) {
             // In the case where the foreign key relationship exists more
-            // than once with the same table we want to alter the array 
+            // than once with the same table we want to alter the array
             // structure to include the field name.
             if (count($foreign_table_desc['foreign keys'][$base_table]['columns']) > 1) {
               if (!property_exists($object, $foreign_table)) {
@@ -867,7 +867,7 @@ function chado_expand_var($object, $type, $to_expand, $table_options = []) {
           // If the object returned is NULL then handle that.
           else {
             // In the case where the foreign key relationship exists more
-            // than once with the same table we want to alter the array 
+            // than once with the same table we want to alter the array
             // structure to include the field name.
             if (count($foreign_table_desc['foreign keys'][$base_table]['columns']) > 1) {
               if (!property_exists($object, $foreign_table)) {
@@ -881,18 +881,18 @@ function chado_expand_var($object, $type, $to_expand, $table_options = []) {
           }
         }
       }
-      // RECURSIVE CASE: if the table is not connected directly to the current 
-      // base table through a foreign key relationship, then maybe it has a 
+      // RECURSIVE CASE: if the table is not connected directly to the current
+      // base table through a foreign key relationship, then maybe it has a
       // relationship to one of the nested objects.
       else {
 
         // We need to recurse -the table has a relationship to one of the nested
-        // objects. We assume it's a nested object if the value of the field is 
+        // objects. We assume it's a nested object if the value of the field is
         // an object.
         $did_expansion = 0;
         foreach ((array) $object as $field_name => $field_value) {
 
-          // CASE #1: This field is an already expanded foreign key and the 
+          // CASE #1: This field is an already expanded foreign key and the
           // table to be expanded is in the table referenced by the foreign key.
 
           // First of all it can only be expanded if it's an object
@@ -902,10 +902,10 @@ function chado_expand_var($object, $type, $to_expand, $table_options = []) {
           }
 
           // CASE #2: This field is an already expanded object (ie: the field is
-          // actually the expanded table name) and the table to be expanded is 
+          // actually the expanded table name) and the table to be expanded is
           // related to it.
 
-          // Check to see if the $field_name is a valid chado table, we don't 
+          // Check to see if the $field_name is a valid chado table, we don't
           // need to call chado_expand_var on fields that aren't tables.
           $check = chado_get_schema($field_name);
           if ($check) {
@@ -914,7 +914,7 @@ function chado_expand_var($object, $type, $to_expand, $table_options = []) {
           }
         }
 
-        // If we did not expand this table we should return a message that the 
+        // If we did not expand this table we should return a message that the
         // foreign tabl could not be expanded.
         if (!$did_expansion) {
           tripal_report_error('tripal_chado', TRIPAL_ERROR, 'chado_expand_var: Could not expand %table. ' .
@@ -929,7 +929,7 @@ function chado_expand_var($object, $type, $to_expand, $table_options = []) {
 
     case "node": //-------------------------------------------------------------
 
-      // BASE CASE: if the node to be expanded is for our base table, then just 
+      // BASE CASE: if the node to be expanded is for our base table, then just
       // expand it.
       if ($object->tablename == $to_expand) {
 
@@ -940,7 +940,7 @@ function chado_expand_var($object, $type, $to_expand, $table_options = []) {
         }
         // Try to get the nid based on the tablename.
         else {
-          // Invoke all hook_node_info to avoid hard-coding the chado_$table 
+          // Invoke all hook_node_info to avoid hard-coding the chado_$table
           // assumption..
           foreach (module_invoke_all('node_info') as $node_info) {
             if (array_key_exists('chado_node_api', $node_info)) {
@@ -973,7 +973,7 @@ function chado_expand_var($object, $type, $to_expand, $table_options = []) {
           unset($object->expandable_nodes);
 
           // The node becomes the base object with the obejct added to it.
-          // For example, we may start with a feature object with a name, 
+          // For example, we may start with a feature object with a name,
           // uniquename , type, etc. After expanding we will return the node and
           // at $node->feature you will find the original object.
           $node->{$base_table} = $object;
@@ -993,7 +993,7 @@ function chado_expand_var($object, $type, $to_expand, $table_options = []) {
           }
         } //End of if node.
       }
-      // RECURSIVE CASE: check to see if the node to be expanded associates with 
+      // RECURSIVE CASE: check to see if the node to be expanded associates with
       // a chado table within one of the nested objects.
       else {
 
@@ -1019,7 +1019,7 @@ function chado_expand_var($object, $type, $to_expand, $table_options = []) {
   }
 
   // Move expandable arrays downwards -------------------------------
-  // If the type was either table or foreign key then a new chado variable was 
+  // If the type was either table or foreign key then a new chado variable was
   // generated this variable will have it's own expandable array's which need to
   // be moved down and merged with the base objects expandable arrays.
 
@@ -1054,7 +1054,7 @@ function chado_expand_var($object, $type, $to_expand, $table_options = []) {
         // Move expandable foreign keys downwards.
         if (isset($field_value->expandable_foreign_keys) and is_array($field_value->expandable_foreign_keys)) {
 
-          // If the current object has it's own expandable foreign keys then 
+          // If the current object has it's own expandable foreign keys then
           // merge them.
           if (isset($object->expandable_foreign_keys)) {
             $object->expandable_foreign_keys = array_merge(
@@ -1116,7 +1116,7 @@ function chado_expand_var($object, $type, $to_expand, $table_options = []) {
   // This tells us what we have expanded (ie: that we succeeded)
   // and is needed to remove the entry from the expandable array.
 
-  // If there is no expanded field in the current object then check any of the 
+  // If there is no expanded field in the current object then check any of the
   // nested objects and move it down.
   if (!property_exists($object, 'expanded')) {
 
@@ -1139,7 +1139,7 @@ function chado_expand_var($object, $type, $to_expand, $table_options = []) {
   // We check again because it might have been moved downwards above.
   if (property_exists($object, 'expanded')) {
 
-    // If so, then remove the expanded identifier from the correct expandable 
+    // If so, then remove the expanded identifier from the correct expandable
     // array..
     $expandable_name = 'expandable_' . $type . 's';
     if (property_exists($object, $expandable_name) and $object->{$expandable_name}) {

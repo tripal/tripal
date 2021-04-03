@@ -80,7 +80,7 @@ function tripal_get_importer_form($form, &$form_state, $class) {
     $analyses = [];
     $analyses[''] = '';
     while ($analysis = $org_rset->fetchObject()) {
-      $analyses[$analysis->analysis_id] = "$analysis->name ($analysis->program $analysis->programversion, $analysis->sourcename)";
+      $analyses[$analysis->analysis_id] = $analysis->name;
     }
     $form['analysis_id'] = [
       '#title' => t('Analysis'),
@@ -103,7 +103,7 @@ function tripal_get_importer_form($form, &$form_state, $class) {
   $element_form = $importer->form($element, $form_state);
   // Quick check to make sure we had an array returned so array_merge() works.
   if (!is_array($element_form)) {
-    $element_form = arry();
+    $element_form = array();
   }
 
   // Merge the custom form with our default one.
@@ -111,11 +111,14 @@ function tripal_get_importer_form($form, &$form_state, $class) {
   // to change the order of their elements in reference to the default ones.
   $form = array_merge($form, $element_form);
 
-  $form['button'] = [
-    '#type' => 'submit',
-    '#value' => t($class::$button_text),
-    '#weight' => 10,
-  ];
+  if ($class::$use_button == TRUE) {
+    $form['button'] = [
+      '#type' => 'submit',
+      '#value' => t($class::$button_text),
+      '#weight' => 10,
+    ];
+  }
+
   return $form;
 }
 

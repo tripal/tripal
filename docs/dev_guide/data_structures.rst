@@ -1,7 +1,7 @@
 Tripal Data Structures
 =======================
 
-This page explains the relationships between Entity types, Bundles (content type), Entities and Fields. These are data structures provided by Drupal that Tripal v3 uses to expose biological content through your Drupal site, and to provide flexibility in site customization.  It is important to understand these terms and their relationships before developing new modules or custom functionlaity.   A quick summary of these Drupal data structures are as follows:
+This page explains the relationships between Entity types, Bundles (content type), Entities and Fields. These are data structures provided by Drupal that Tripal v3 uses to expose biological content through your Drupal site, and to provide flexibility in site customization.  It is important to understand these terms and their relationships before developing new modules or custom functionality.   A quick summary of these Drupal data structures are as follows:
 
 * Entity:  a discrete data record.  Entities are most commonly are seen as "pages" on a Drupal web site.
 * Field:  an "atomic" piece of ancillary data that describes, defines or expands the entity.  Common fields include the name of an entity, a "body" of descriptive text, etc.
@@ -9,7 +9,7 @@ This page explains the relationships between Entity types, Bundles (content type
 * Entity Type:  despite the confusing name, an entity type is simply a group of bundles that are somehow related.  Drupal provides a "Node" Entity type that includes the Page and Article bundles.  All of the Tripal bundles (content types) belong to the TripalEntity Entity type.
 
 
-The following figure describes the heirarchical relationship between Drupal Entity types (e.g. Node) in comparison with TripalEntity entity types (e.g. Chromosome, Germplasm, etc.).
+The following figure describes the hierarchical relationship between Drupal Entity types (e.g. Node) in comparison with TripalEntity entity types (e.g. Chromosome, Germplasm, etc.).
 
 
 .. figure:: /_images/dev_guide/data_structures/Terminology-Diagram.png

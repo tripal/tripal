@@ -11,21 +11,21 @@ class data__sequence_coordinates extends ChadoField {
   // the field and it's default widget and formatter.
   // --------------------------------------------------------------------------
 
-  // The default lable for this field.
+  // The default label for this field.
   public static $default_label = 'Sequence Coordinates';
 
   // The default description for this field.
   public static $description = 'Locations on reference sequences where the feature is located.';
 
-  // Provide a list of instance specific settings. These can be access within
+  // Provide a list of instance specific settings. These can be accessed within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
-  // then Drupal with automatically change these settings for the instnace.
+  // then Drupal will automatically change these settings for the instance.
   // It is recommended to put settings at the instance level whenever possible.
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
   public static $default_instance_settings = [
-    // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
+    // The short name for the vocabulary (e.g. schema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'data',
     // The name of the term.
     'term_name' => 'sequence_coordinates',
@@ -224,49 +224,53 @@ class data__sequence_coordinates extends ChadoField {
     $strand_term = chado_get_semweb_term('featureloc', 'strand');
     $phase_term = chado_get_semweb_term('featureloc', 'phase');
 
-    $options = [
-      'return_array' => TRUE,
-      'order_by' => ['rank' => 'ASC'],
-    ];
-    $feature = chado_expand_var($feature, 'table', 'featureloc', $options);
-
     // Set some defauls for the empty record
     $entity->{$field_name}['und'][0] = [
       'value' => '',
     ];
 
-    // Get the featureloc records that this feature is aligned to.
-    $aligned = $feature->featureloc->feature_id;
-    if ($aligned) {
-      foreach ($aligned as $index => $featureloc) {
-        $srcfeature = $featureloc->srcfeature_id->name;
-        $strand = '';
-        if ($featureloc->strand == 1) {
-          $strand = '+';
-        }
-        elseif ($featureloc->strand == -1) {
-          $strand = '-';
-        }
-        else {
-          $strand = '';
-        }
-        $fmin = $featureloc->fmin + 1;
-        $fmax = $featureloc->fmax;
-        $entity->{$field_name}['und'][$index] = [
-          'value' => [
-            $description => $srcfeature . ':' . $fmin . '-' . $fmax . $strand,
-            $reference_term => $srcfeature,
-            $fmin_term => $fmin,
-            $fmax_term => $fmax,
-            $strand_term => $strand,
-            $phase_term => $featureloc->phase,
-          ],
-        ];
-        $sentity_id = chado_get_record_entity_by_table('feature_id', $featureloc->srcfeature_id->feature_id);
-        if ($sentity_id) {
-          $entity->{$field_name}['und'][0]['value']['entity'] = 'TripalEntity:' . $sentity_id;
-        }
+    // Get the featureloc records that this feature is aligned to. We use
+    // this SQL rather than the chado_expand_var function because we don't
+    // want the residues included from the srcfeature_id which may be huge
+    // and overrun memory.
+    $featurelocs_sql = "
+      SELECT SRCF.name, FL.srcfeature_id, FL.strand, FL.fmin, FL.fmax, FL,phase
+      FROM {featureloc} FL
+        INNER JOIN {feature} SRCF on SRCF.feature_id = FL.srcfeature_id
+      WHERE FL.feature_id = :feature_id
+      ORDER BY rank ASC
+    ";
+    $aligned = chado_query($featurelocs_sql, [':feature_id' => $feature->feature_id]);
+    $index = 0;
+    while ($featureloc = $aligned->fetchObject()) {
+      $srcfeature = $featureloc->name;
+      $strand = '';
+      if ($featureloc->strand == 1) {
+        $strand = '+';
       }
+      elseif ($featureloc->strand == -1) {
+        $strand = '-';
+      }
+      else {
+        $strand = '';
+      }
+      $fmin = $featureloc->fmin + 1;
+      $fmax = $featureloc->fmax;
+      $entity->{$field_name}['und'][$index] = [
+        'value' => [
+          $description => $srcfeature . ':' . $fmin . '-' . $fmax . $strand,
+          $reference_term => $srcfeature,
+          $fmin_term => $fmin,
+          $fmax_term => $fmax,
+          $strand_term => $strand,
+          $phase_term => $featureloc->phase,
+        ],
+      ];
+      $sentity_id = chado_get_record_entity_by_table('feature_id', $featureloc->srcfeature_id);
+      if ($sentity_id) {
+        $entity->{$field_name}['und'][0]['value']['entity'] = 'TripalEntity:' . $sentity_id;
+      }
+      $index++;
     }
   }
 }

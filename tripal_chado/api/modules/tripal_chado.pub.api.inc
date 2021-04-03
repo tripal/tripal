@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Provides API functions specificially for managing publication
+ * Provides API functions specifically for managing publication
  * records in Chado.
  */
 
@@ -9,7 +9,7 @@
  * @defgroup tripal_pub_api Chado Publication
  * @ingroup tripal_chado_api
  * @{
- * Provides API functions specificially for managing publication
+ * Provides API functions specifically for managing publication
  * records in Chado.
  * @}
  */
@@ -105,7 +105,7 @@ function chado_get_publication($identifiers, $options = []) {
     }
     else {
       tripal_report_error('tripal_pub_api', TRIPAL_ERROR,
-        "chado_get_publication: The dbxref identifier is not correctly formatted.",
+        "chado_get_publication: The dbxref identifier is not correctly formatted. Identifiers passed: %identifier.",
         ['%identifier' => print_r($identifiers, TRUE)]
       );
     }
@@ -156,7 +156,7 @@ function chado_get_publication($identifiers, $options = []) {
 
 /**
  * The publication table of Chado only has a unique constraint for the
- * uniquename of the publiation, but in reality a publication can be considered
+ * uniquename of the publication, but in reality a publication can be considered
  * unique by a combination of the title, publication type, published year and
  * series name (e.g. journal name or conference name). The site administrator
  * can configure how publications are determined to be unique.  This function
@@ -315,7 +315,7 @@ function chado_autocomplete_pub($string = '') {
   ";
   $pubs = chado_query($sql, [':str' => $string . '%']);
   while ($pub = $pubs->fetchObject()) {
-    $val = $pub->title . " [id:" . $pub->pub_id . "]";
+    $val = $pub->title . " [id: " . $pub->pub_id . "]";
     $items[$val] = $pub->title;
   }
 
@@ -362,7 +362,7 @@ function chado_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE,
   // the terminal
   $message_type = 'pub_import';
   $message_opts = [
-    'watchdog' == FALSE,
+    'watchdog' => FALSE,
     'print' => TRUE,
   ];
 
@@ -498,7 +498,7 @@ function chado_execute_pub_importer($import_id, $publish = TRUE,
   // the terminal
   $message_type = 'pub_import';
   $message_opts = [
-    'watchdog' == FALSE,
+    'watchdog' => FALSE,
     'job' => $job,
     'print' => TRUE,
   ];
@@ -664,7 +664,7 @@ function chado_reimport_publications($do_contact = FALSE, $dbxref = NULL,
   // the terminal
   $message_type = 'pub_import';
   $message_opts = [
-    'watchdog' == FALSE,
+    'watchdog' => FALSE,
     'print' => TRUE,
   ];
 
@@ -1170,6 +1170,47 @@ function chado_pub_create_citation($pub) {
 }
 
 /**
+ * Retrieves an array with all database cross references
+ *
+ * Implemented as SQL for performance reasons because chado_expand_var
+ * can take too long as it loads more information than needed
+ *
+ * @param $pub_id
+ *   A pub_id from the 'chado.pub' table
+ *
+ * @return
+ *   An array of records with the following keys:  'accession', 'version',
+ *   'description', 'name', 'url', 'urlprefix'.
+ *   These are the column names from the 'dbxref' and 'db' tables
+ *
+ * @ingroup tripal_pub_api
+ */
+function chado_get_pub_dbxrefs($pub_id) {
+  $fkey = 'pub_id';  // Should this be looked up in the schema?
+  $options = ['return_array' => 1];
+  $sql = "SELECT REF.accession, REF.version, REF.description, DB.name, DB.url, DB.urlprefix "
+       . "FROM {pub_dbxref} LINK "
+       . "INNER JOIN {dbxref} REF on LINK.dbxref_id = REF.dbxref_id "
+       . "INNER JOIN {db} DB on REF.db_id = DB.db_id "
+       . "WHERE LINK.$fkey = :pub_id";
+  $args = [':pub_id' => $pub_id];
+  $records = chado_query($sql, $args);
+
+  $results = [];
+  $delta = 0;
+  while($record = $records->fetchObject()) {
+    $results[$delta]['accession'] = $record->accession;
+    $results[$delta]['version'] = $record->version;
+    $results[$delta]['description'] = $record->description;
+    $results[$delta]['name'] = $record->name;
+    $results[$delta]['url'] = $record->url;
+    $results[$delta]['urlprefix'] = $record->urlprefix;
+    $delta++;
+  }
+  return $results;
+}
+
+/**
  * Retrieves the minimal information to uniquely describe any publication.
  *
  * The returned array is an associative array where the keys are
@@ -1238,17 +1279,24 @@ function chado_get_minimal_pub_info($pub) {
     }
   }
 
+  // Load all database cross references.
+  $pub_dbxrefs = chado_get_pub_dbxrefs($pub->pub_id);
+
   // Get the first database cross-reference with a url.
-  $options = ['return_array' => 1];
-  $pub = chado_expand_var($pub, 'table', 'pub_dbxref', $options);
-  $dbxref = NULL;
-  if ($pub->pub_dbxref) {
-    foreach ($pub->pub_dbxref as $index => $pub_dbxref) {
-      if ($pub_dbxref->dbxref_id->db_id->urlprefix) {
-        $dbxref = $pub_dbxref->dbxref_id;
-      }
-    }
-  }
+// it is not clear what this was doing, it would have retrieved the last not the first
+// dbxref with a url, but the variable $dbxref is not referenced later. It could have
+// added information to $pub, but that does not appear to be referenced later.
+// chado_expand_var() can sometimes take a long time to execute, so just remove it?
+//  $options = ['return_array' => 1];
+//  $pub = chado_expand_var($pub, 'table', 'pub_dbxref', $options);
+//  $dbxref = NULL;
+//  if ($pub->pub_dbxref) {
+//    foreach ($pub->pub_dbxref as $index => $pub_dbxref) {
+//      if ($pub_dbxref->dbxref_id->db_id->urlprefix) {
+//        $dbxref = $pub_dbxref->dbxref_id;
+//      }
+//    }
+//  }
 
   // Get the URL.
   $values = [
@@ -1270,17 +1318,10 @@ function chado_get_minimal_pub_info($pub) {
     }
   }
 
-  // Get the list of database cross references.
-  $values = [
-    'pub_id' => $pub->pub_id,
-  ];
-  $options = [
-    'return_array' => 1,
-  ];
-  $pub_dbxrefs = chado_generate_var('pub_dbxref', $values, $options);
+  // Generate a list of database cross references formatted as "DB:accession".
   $dbxrefs = [];
   foreach ($pub_dbxrefs as $pub_dbxref) {
-    $dbxrefs[] = $pub_dbxref->dbxref_id->db_id->name . ':' . $pub_dbxref->dbxref_id->accession;
+    $dbxrefs[] = $pub_dbxref['name'] . ':' . $pub_dbxref['accession'];
   }
 
   // Get the citation.

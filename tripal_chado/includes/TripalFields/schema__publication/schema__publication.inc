@@ -11,22 +11,22 @@ class schema__publication extends ChadoField {
   // the field and it's default widget and formatter.
   // --------------------------------------------------------------------------
 
-  // The default lable for this field.
+  // The default label for this field.
   public static $default_label = 'Publication';
 
   // The default description for this field.
   public static $description = 'Associates a publication (e.g. journal article,
             conference proceedings, book chapter, etc.) with this record.';
 
-  // Provide a list of instance specific settings. These can be access within
+  // Provide a list of instance specific settings. These can be accessed within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
-  // then Drupal with automatically change these settings for the instnace.
+  // then Drupal will automatically change these settings for the instance.
   // It is recommended to put settings at the instance level whenever possible.
   // If you override this variable in a child class be sure to replicate the
   // term_name, term_vocab, term_accession and term_fixed keys as these are
   // required for all TripalFields.
   public static $default_instance_settings = [
-    // The short name for the vocabulary (e.g. shcema, SO, GO, PATO, etc.).
+    // The short name for the vocabulary (e.g. schema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'schema',
     // The name of the term.
     'term_name' => 'publication',
@@ -135,24 +135,27 @@ class schema__publication extends ChadoField {
         $i = 0;
         foreach ($record->$linker_table as $index => $linker) {
           $pub = $linker->pub_id;
-          $pubs[$pub->pub_id] = $pub;
+          $pubs[$pub->pub_id] = [
+            'pub' => $pub,
+            'pkey' => $linker->$pkey,
+          ];
         }
       }
     }
     else {
       $pub = $record->{$field_column};
       if ($pub) {
-        $pubs[$pub->pub_id] = $pub;
+        $pubs[$pub->pub_id]['pub'] = $pub;
       }
     }
 
     $i = 0;
     foreach ($pubs as $pub_id => $pub) {
-      $pub_details = chado_get_minimal_pub_info($pub);
+      $pub_details = chado_get_minimal_pub_info($pub['pub']);
 
       $entity->{$field_name}['und'][$i]['value'] = $pub_details;
       if ($linker_table) {
-        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $pkey] = $linker->$pkey;
+        $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $pkey] = $pub['pkey'];
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $fkey_lcolumn] = $linker->$fkey_lcolumn->$fkey_lcolumn;
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . 'pub_id'] = $pub_id;
       }
@@ -160,8 +163,8 @@ class schema__publication extends ChadoField {
         $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__' . $field_column] = $pub_id;
       }
 
-      if (property_exists($pub, 'entity_id')) {
-        $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $pub->entity_id;
+      if (property_exists($pub['pub'], 'entity_id')) {
+        $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $pub['pub']->entity_id;
       }
       $i++;
     }

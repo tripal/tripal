@@ -305,9 +305,6 @@ function tripal_pub_form_alter(&$form, &$form_state, $form_id) {
 /**
  * Implements hook_job_describe_args().
  *
- * @param $callback
- * @param $args
- *
  * @ingroup tripal_legacy_pub
  */
 function tripal_pub_job_describe_args($callback, $args) {

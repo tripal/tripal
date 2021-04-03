@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Provides API functions specificially for managing controlled vocabulary
+ * Provides API functions specifically for managing controlled vocabulary
  * records in Chado.
  *
  * @ingroup tripal_chado
@@ -11,7 +11,7 @@
  * @defgroup tripal_chado_cv_api Chado CV
  * @ingroup tripal_chado_api
  * @{
- * Provides API functions specificially for managing controlled vocabulary
+ * Provides API functions specifically for managing controlled vocabulary
  * records in Chado. Please note that Tripal v3 provides a generic set of
  * API functions for working with controlled vocabularies (CVs). This allows for
  * CVs to be stored using any back-end.  By default CV's continue to be housed
@@ -219,7 +219,7 @@ function chado_get_cvterm($identifiers, $options = []) {
     ];
     $result = chado_select_record('cvtermsynonym', ['cvterm_id'], $values, $options);
 
-    // if the synonym doens't exist or more than one record is returned then
+    // if the synonym doesn't exist or more than one record is returned then
     // return false.
     if (count($result) == 0) {
       return FALSE;
@@ -702,7 +702,7 @@ function chado_insert_cv($name, $definition) {
   $sel_values = ['name' => $name];
   $results = chado_select_record('cv', ['*'], $sel_values);
 
-  // If it does not exists then add it.
+  // If it does not exist then add it.
   if (count($results) == 0) {
     $success = chado_insert_record('cv', $ins_values);
     if (!$success) {
@@ -963,7 +963,7 @@ function chado_insert_cvterm($term, $options = []) {
         'is_for_definition' => 1,
       ];
       $result = chado_select_record('cvterm_dbxref', ['*'], $values);
-      // if the cvterm_dbxref record does not exists then add it
+      // if the cvterm_dbxref record does not exist then add it
       if (count($result) == 0) {
         $options = [
           'return_record' => FALSE,

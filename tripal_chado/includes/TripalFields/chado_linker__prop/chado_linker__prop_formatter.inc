@@ -2,7 +2,7 @@
 
 class chado_linker__prop_formatter extends ChadoFieldFormatter {
 
-  // The default lable for this field.
+  // The default label for this field.
   public static $default_label = 'Chado Property';
 
   // The list of field types for which this formatter is appropriate.
@@ -27,7 +27,12 @@ class chado_linker__prop_formatter extends ChadoFieldFormatter {
 
     $list = [];
     foreach ($items as $index => $item) {
-      $list[$index] = $item['value'];
+      $value = $item['value'];
+      // any URLs are made into clickable links
+      if ( preg_match('/^https?:/i', $value) ) {
+        $value = l($value, $value, ['external' => 'TRUE', 'attributes' => ['target' => '_blank']]);
+      }
+      $list[$index] = $value;
     }
 
     // Also need to make sure to not return markup if the field is empty.
