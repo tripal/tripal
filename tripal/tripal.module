@@ -747,6 +747,12 @@ function tripal_permission() {
       'title' => t('Upload Files'),
       'description' => t('Allows the user to upload files using Tripal\'s HTML5 loader.'),
     ),
+    'make files permanent' => array(
+      'title' => t('Make Files Permanent'),
+      'description' => t('Allows the user to make files they have access to ' .
+         'permanent. Files that are permanent will not expire and will not ' .
+         'be cleaned up.'),
+    ),
     'view dev helps' => array(
       'title' => t('View Developer Hints'),
       'description' => t('Tripal will provide blue shaded boxes that provide

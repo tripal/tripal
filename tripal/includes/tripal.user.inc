@@ -519,10 +519,13 @@ function tripal_view_file($uid, $fid) {
 
 
   $actions = l('Delete', "user/$uid/files/$file->fid/delete") . '<br>' .
-      l('Download', "user/$uid/files/$file->fid/download") . '<br>' .
-      l('Renew Expiration', "user/$uid/files/$file->fid/renew") . '<br>';
-  if ($expiration_date != -1) {
-    $actions .= l('Make Permanent', "user/$uid/files/$file->fid/permanent");
+    l('Download', "user/$uid/files/$file->fid/download") . '<br>' .
+    l('Renew Expiration', "user/$uid/files/$file->fid/renew") . '<br>';
+
+  if (user_access('make files permanent')) {
+    if ($expiration_date != -1) {
+      $actions .= l('Make Permanent', "user/$uid/files/$file->fid/permanent");
+    }
   }
   $rows[] = [
     [
