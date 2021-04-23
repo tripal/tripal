@@ -81,8 +81,8 @@ function tripal_user_get_files_item_list($files_list, &$i = 0) {
   if ($i == 0) {
     $items[] = [
       'data' => '<span><b>File</b></span>' .
-        '<span class="file-expires"><b>Expires</b></span>' .
-        '<span class="file-size"><b>Size</b></span>',
+        '<span class="tripal-user-file-expires tripal-user-file-browser-header"><b>Expires</b></span>' .
+        '<span class="tripal-user-file-size tripal-user-file-browser-header"><b>Size</b></span>',
     ];
   }
 
@@ -95,25 +95,31 @@ function tripal_user_get_files_item_list($files_list, &$i = 0) {
         'data' => $filename,
         'children' => tripal_user_get_files_item_list($file, $i),
         'class' => [
-          'tree-node-folder',
-          'tree-node-closed',
+          'tripal-user-tree-node-folder',
+          'tripal-user-tree-node-closed',
           ($i % 2 == 0) ? 'even' : 'odd',
         ],
       ];
     }
     // If this is a file then give details for it.
     else {
-      $datediff = $file->expiration_date - time();
-      $dayleft = round($datediff / (60 * 60 * 24));
-      if ($dayleft < 0) {
-        $dayleft = 0;
+      if ($file->expiration_date == -1) {
+        $daysleft = 'Never';
       }
-      $expiration = $file->expiration_date ? date('Y-m-d', $file->expiration_date) : '';
+      else {
+        $datediff = $file->expiration_date - time();
+        $daysleft = round($datediff / (60 * 60 * 24));
+        if ($daysleft < 0) {
+          $daysleft = 0;
+        }
+        $expiration = $file->expiration_date ? date('Y-m-d', $file->expiration_date) : '';
+        $daysleft = $daysleft . ' days';
+      }
       $items[] = [
-        'data' => '<span class="file-details"><span class="file-name">' . $filename . '</span>' .
-          '<span class="file-expires">' . $dayleft . ' days</span>' .
-          '<span class="file-size">' . tripal_format_bytes($file->filesize) . '</span></span>',
-        'class' => ['tree-node-file', ($i % 2 == 0) ? 'even' : 'odd'],
+        'data' => '<span class="tripal-user-file-details"><span class="tripal-user-file-name">' . $filename . '</span>' .
+          '<span class="tripal-user-file-expires">' . $daysleft . '</span>' .
+          '<span class="tripal-user-file-size">' . tripal_format_bytes($file->filesize) . '</span></span>',
+        'class' => ['tripal-user-tree-node-file', ($i % 2 == 0) ? 'even' : 'odd'],
         'fid' => $file->fid,
         'uid' => $file->uid,
       ];
@@ -216,32 +222,40 @@ function tripal_user_files_page($uid) {
   $quota = tripal_get_user_quota($uid);
   $usage = tripal_get_user_usage($uid);
 
+  drupal_add_library('system', 'drupal.collapse');
   $content = [
     'page_title' => [
       '#type' => 'markup',
       '#markup' => '<h2>Your Files</h2>',
     ],
-    'page_description' => [
-      '#type' => 'markup',
-      '#markup' => '<p>' . t('Each user is allowed to consume a limited amount of space for files. This page provides details about your current usage, your limits and files in your account.') . '</p>',
-    ],
-    'usage' => [
-      '#type' => 'item',
-      '#title' => 'Current Usage',
-      '#markup' => tripal_format_bytes($usage),
-      '#description' => t('The total number of bytes you currently consume.'),
-    ],
-    'quota' => [
-      '#type' => 'item',
-      '#title' => 'Current Quota',
-      '#markup' => tripal_format_bytes($quota->custom_quota),
-      '#description' => t('The maximum number of bytes of files you can upload.'),
-    ],
-    'expiration' => [
-      '#type' => 'item',
-      '#title' => 'Current Days to Expire',
-      '#markup' => $quota->custom_expiration,
-      '#description' => t('The number of days a file will remain on the server before deletion. The expiration of date of a file can be renewed by selecting the file name and then selecting the "Renew" link in the file details table.'),
+    'limits' => [
+      '#type' => 'fieldset',
+      '#title' => 'Usage and Limits',
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#attributes' => ['class' => ['collapsible', 'collapsed']],
+      'page_description' => [
+        '#type' => 'markup',
+        '#markup' => '<p>' . t('Each user is allowed to consume a limited amount of space for files. This page provides details about your current usage, your limits and files in your account.') . '</p>',
+      ],
+      'usage' => [
+        '#type' => 'item',
+        '#title' => 'Current Usage',
+        '#markup' => tripal_format_bytes($usage),
+        '#description' => t('The total number of bytes you currently consume.'),
+      ],
+      'quota' => [
+        '#type' => 'item',
+        '#title' => 'Current Quota',
+        '#markup' => tripal_format_bytes($quota->custom_quota),
+        '#description' => t('The maximum number of bytes of files you can upload.'),
+      ],
+      'expiration' => [
+        '#type' => 'item',
+        '#title' => 'Current Days to Expire',
+        '#markup' => $quota->custom_expiration,
+        '#description' => t('The number of days a file will remain on the server before deletion. The expiration of date of a file can be renewed by selecting the file name and then selecting the "Renew" link in the file details table.'),
+      ],
     ],
     'data_collections' => [
       '#type' => 'item',
@@ -256,11 +270,15 @@ function tripal_user_files_page($uid) {
       '#type' => 'item',
       '#title' => 'File Browser',
       '#markup' => $theme_files,
+      '#prefix' => '<div id="tripal-user-file-browser">',
+      '#suffix' => '</div>',
     ],
     'file_details' => [
       '#type' => 'item',
       '#title' => 'File Details',
-      '#markup' => '<div id="tripal-user-file-details">Click a file above for details.</div>',
+      '#markup' => 'Click a file name for details.',
+      '#prefix' => '<div id="tripal-user-file-details">',
+      '#suffix' => '</div>',
     ],
   ];
 
@@ -288,7 +306,24 @@ function tripal_renew_file($fid) {
   $success = tripal_reset_file_expiration($fid);
 
   if ($success) {
-    drupal_set_message('Successfully updated expiration date.');
+    drupal_set_message(t('The expiration date for the file, \'!fname\', is now reset.', ['!fname' => $file->filename]));
+  }
+  drupal_goto('user/' . $file->uid . '/files/');
+}
+
+/**
+ * User action to remove the expiration of a file.
+ *
+ * Sets the expriation date to a -1 value indicating that the file
+ * should not be automatically removed.
+ *
+ **/
+function tripal_set_file_permanent($fid) {
+  $file = file_load($fid);
+  $success = tripal_reset_file_expiration($fid, TRUE);
+
+  if ($success) {
+    drupal_set_message(t('The file, \'!fname\', is now permanent.', ['!fname' => $file->filename]));
   }
   drupal_goto('user/' . $file->uid . '/files/');
 }
@@ -430,10 +465,6 @@ function tripal_view_file($uid, $fid) {
   $headers = [];
   $rows = [];
 
-  $actions = l('Delete', "user/$uid/files/$file->fid/delete") . '<br>' .
-    l('Download', "user/$uid/files/$file->fid/download") . '<br>' .
-    l('Renew', "user/$uid/files/$file->fid/renew");
-
   // Name row
   $rows[] = [
     [
@@ -459,7 +490,12 @@ function tripal_view_file($uid, $fid) {
     ->condition('fid', $fid)
     ->execute()
     ->fetchField();
-  $expiration = $expiration_date ? date('Y-m-d H:i:s', $expiration_date) : '';
+  if ($expiration_date == -1) {
+    $expiration = 'Never';
+  }
+  else {
+    $expiration = $expiration_date ? date('Y-m-d H:i:s', $expiration_date) : '';
+  }
   $rows[] = [
     [
       'data' => 'Expiration Date',
@@ -480,6 +516,17 @@ function tripal_view_file($uid, $fid) {
       file_get_contents($md5_file),
     ];
   }
+
+
+  $actions = l('Delete', "user/$uid/files/$file->fid/delete") . '<br>' .
+    l('Download', "user/$uid/files/$file->fid/download") . '<br>' .
+    l('Renew Expiration', "user/$uid/files/$file->fid/renew") . '<br>';
+
+  if (user_access('make files permanent')) {
+    if ($expiration_date != -1) {
+      $actions .= l('Make Permanent', "user/$uid/files/$file->fid/permanent");
+    }
+  }
   $rows[] = [
     [
       'data' => 'Actions',
@@ -488,6 +535,7 @@ function tripal_view_file($uid, $fid) {
     ],
     $actions,
   ];
+
 
   $file_content = theme_table([
     'header' => $headers,
