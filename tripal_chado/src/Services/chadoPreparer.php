@@ -101,8 +101,8 @@ class ChadoPreparer {
     \Drupal::service('tripal.tripalVocab.manager')->addVocabulary([
       'idspace' => 'NCIT',
       'namespace' => 'ncit',
-      'name' => 'The NCIt OBO Edition project aims to increase integration of the NCIt with OBO Library ontologies. NCIt is a reference terminology that includes broad coverage of the cancer domain, including cancer related diseases, findings and abnormalities. NCIt OBO Edition releases should be considered experimental.',
-      'description' => 'NCI Thesaurus OBO Edition.',
+      'name' => 'NCI Thesaurus OBO Edition',
+      'description' => 'The NCIt OBO Edition project aims to increase integration of the NCIt with OBO Library ontologies.',
       'url' => 'http://purl.obolibrary.org/obo/ncit.owl',
       'urlprefix' => ' http://purl.obolibrary.org/obo/{db}_{accession}',
     ]);
@@ -111,7 +111,7 @@ class ChadoPreparer {
       'accession' => 'C25693',
       'name' => 'Subgroup',
       'vocabulary' => [
-        'name' => 'ncit',
+        'namespace' => 'ncit',
         'idspace' => 'NCIT',
       ],
       'definition' => 'A subdivision of a larger group with members often exhibiting similar characteristics. [ NCI ]',
@@ -121,7 +121,7 @@ class ChadoPreparer {
       'idspace' => 'rdfs',
       'namespace' => 'rdfs',
       'name' => 'Resource Description Framework Schema',
-      'description' => 'Resource Description Framework Schema',
+      'description' => 'RDF Schema provides a data-modelling vocabulary for RDF data.',
       'url' => 'https://www.w3.org/TR/rdf-schema/',
       'urlprefix' => 'http://www.w3.org/2000/01/rdf-schema#{accession}',
     ]);
@@ -130,7 +130,7 @@ class ChadoPreparer {
       'accession' => 'comment',
       'name' => 'comment',
       'vocabulary' => [
-        'name' => 'rdfs',
+        'namespace' => 'rdfs',
         'idspace' => 'rdfs',
       ],
       'definition' => 'A human-readable description of a resource\'s name.',
@@ -138,40 +138,92 @@ class ChadoPreparer {
 
     // TODO:
     // T3 loads many terms we need for default content types through the OBO
-    // Importer. As of Jan 12 2021 the OBO importer has not yet been migrated
+    // Importer. As of April 19, 2021 the OBO importer has not yet been migrated
     // to T4 and therefore cannot be used. As a result, I will be adding a few
     // terms here individually using the vocab and term managers. In the
     // future, this should be replaced with calls to the OBO importer so that
     // the terms can be imported automatically.
+    $terms = [];
 
-    // accession|name|dbname|cvname|cvdesc|dbdesc|url|urlprefix|definition
-    $terms = [
-      '0100026|organism|OBI|obi|Ontology for Biomedical Investigation. The Ontology for Biomedical Investigations (OBI) is build in a collaborative, international effort and will serve as a resource for annotating biomedical investigations, including the study design, protocols and instrumentation used, the data generated and the types of analysis performed on the data. This ontology arose from the Functional Genomics Investigation Ontology (FuGO) and will contain both terms that are common to all biomedical investigations, including functional genomics investigations and those that are more domain specific.|The Ontology for Biomedical Investigation.|http://obi-ontology.org/page/Main_Page|http://purl.obolibrary.org/obo/{db}_{accession}|A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.',
-      '0000704|gene|SO|sequence|The sequence ontology.|The sequence ontology.|http://www.sequenceontology.org/|http://www.sequenceontology.org/browser/current_svn/term/{db}:{accession}',
-      '0000044|accession|CO_010|germplasm_ontology|GCP germplasm ontology|Crop Germplasm Ontology|http://www.cropontology.org/get-ontology/CO_010|http://www.cropontology.org/terms/CO_010:{accession}',
-      '2945|Analysis|operation|EDAM|EDAM is an ontology of well established, familiar concepts that are prevalent within bioinformatics, including types of data and data identifiers, data formats, operations and topics. EDAM is a simple ontology - essentially a set of terms with synonyms and definitions - organised into an intuitive hierarchy for convenient use by curators, software developers and end-users. EDAM is suitable for large-scale semantic annotations and categorization of diverse bioinformatics resources. EDAM is also suitable for diverse application including for example within workbenches and workflow-management systems, software distributions, and resource registries|A function that processes a set of inputs and results in a set of outputs, or associates arguments (inputs) with values (outputs). Special cases are: a) An operation that consumes no input (has no input arguments).|http://edamontology.org/page|http://edamontology.org/{db}_{accession}|Apply analytical methods to existing data of a specific type.',
+    // Organism.
+    $terms['SO:0100026'] = [
+      'accession' => '0100026',
+      'name' => 'organism',
+      'definition' => 'A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.',
+      'vocabulary' => [
+        'name' => 'The Ontology for Biomedical Investigation',
+        'namespace' => 'obi',
+        'idspace' => 'OBI',
+        'description' => 'The Ontology for Biomedical Investigations (OBI) will serve as a resource for annotating biomedical investigations, including the study design, protocols and instrumentation used, the data generated and the types of analysis performed on the data.',
+        'url' => 'http://obi-ontology.org/page/Main_Page',
+        'urlprefix' => 'http://purl.obolibrary.org/obo/{db}_{accession}',
+      ],
     ];
 
-    foreach ($terms as $term) {
-      $term = explode('|', $term);
-      \Drupal::service('tripal.tripalVocab.manager')->addVocabulary([
-        'idspace' => $term[2],
-        'namespace' => $term[3],
-        'name' => $term[4],
-        'description' => $term[5],
-        'url' => $term[6],
-        'urlprefix' => $term[7],
-      ]);
+    // Gene.
+    $terms['SO:0000704'] = [
+      'accession' => '0000704',
+      'name' => 'gene',
+      'definition' => 'A region (or regions) that includes all of the sequence elements necessary to encode a functional transcript. A gene may include regulatory regions, transcribed regions and/or other functional sequence regions.',
+      'vocabulary' => [
+        'name' => 'The Sequence Ontology',
+        'namespace' => 'sequence',
+        'idspace' => 'SO',
+        'description' => 'The Sequence Ontology (SO) is a collaborative ontology project for the definition of sequence features used in biological sequence annotation.',
+        'url' => 'http://www.sequenceontology.org/',
+        'urlprefix' => 'http://www.sequenceontology.org/browser/current_svn/term/{db}:{accession}',
+      ],
+    ];
 
-      \Drupal::service('tripal.tripalTerm.manager')->addTerm([
-        'accession' => $term[0],
-        'name' => $term[1],
-        'vocabulary' => [
-          'name' => $term[3],
-          'idspace' => $term[2],
-        ],
-        'definition' => $term[8],
-      ]);
+    // Germplasm Accession.
+    $terms['CO_010:0000044'] = [
+      'accession' => '0000044',
+      'name' => 'accession',
+      'definition' => '',
+      'vocabulary' => [
+        'name' => 'GCP germplasm ontology',
+        'namespace' => 'germplasm_ontology',
+        'idspace' => 'CO_010',
+        'description' => 'Provides desciptors for germplasm collections. Adapted from Descriptors for Banana (Musa spp.) (1996) and Descriptors for Mango by Bioversity.',
+        'url' => 'http://www.cropontology.org/ontology/CO_010/Germplasm',
+        'urlprefix' => 'http://www.cropontology.org/terms/{db}:{accession}/index.html',
+      ],
+    ];
+
+    // Analysis.
+    $terms['2945'] = [
+      'accession' => '2945',
+      'name' => 'Analysis',
+      'definition' => 'Apply analytical methods to existing data of a specific type.',
+      'vocabulary' => [
+        'name' => 'EDAM - Ontology of bioscientific data analysis',
+        'namespace' => 'EDAM',
+        'idspace' => 'operation',
+        'description' => 'EDAM is a comprehensive ontology of well-established, familiar concepts that are prevalent within computational biology, bioinformatics, and bioimage informatics.',
+        'url' => 'http://edamontology.org/page',
+        'urlprefix' => 'http://edamontology.org/{db}_{accession}',
+      ],
+    ];
+
+    /* Template for adding more.
+    $terms[''] = [
+      'accession' => '',
+      'name' => '',
+      'definition' => '',
+      'vocabulary' => [
+        'name' => '',
+        'namespace' => '',
+        'idspace' => '',
+        'description' => '',
+        'url' => '',
+        'urlprefix' => '',
+      ],
+    ]; */
+
+    // Actually add the terms described above.
+    // The term manager will create the vocabulary if it doesn't exist.
+    foreach ($terms as $term) {
+      \Drupal::service('tripal.tripalTerm.manager')->addTerm($term);
     }
 
     // ###################################################################
@@ -271,11 +323,11 @@ class ChadoPreparer {
     ]);
 
     $organism = TripalEntityType::create([
-      'id' => 'organism',
-      'name' => 'organism',
+      'id' => 1,
+      'name' => 'bio_data_1',
       'label' => 'Organism',
       'term_id' => $term->getID(),
-      'help_text' => 'help',
+      'help_text' => $term->getDefinition(),
       'category' => 'General',
     ]);
     $organism->save();
@@ -291,23 +343,23 @@ class ChadoPreparer {
 
     $analysis = TripalEntityType::create([
       'id' => 2,
-      'name' => 'analysis',
+      'name' => 'bio_data_2',
       'label' => 'Analysis',
       'term_id' => $term->getID(),
-      'help_text' => 'help',
+      'help_text' => $term->getDefinition(),
       'category' => 'General',
     ]);
     $analysis->save();
 
-    // TODO: Create the 'Project' entity type.
+    // TODO: Create the 'Project' entity type. bio_data_3
 
-    // TODO: Create the 'Study' entity type.
+    // TODO: Create the 'Study' entity type. bio_data_4
 
-    // TODO: Create the 'Contact' entity type.
+    // TODO: Create the 'Contact' entity type. bio_data_5
 
-    // TODO: Create the 'Publication' entity type.
+    // TODO: Create the 'Publication' entity type. bio_data_6
 
-    // TODO: Create the 'Protocol' entity type.
+    // TODO: Create the 'Protocol' entity type. bio_data_7
   }
 
   /**
@@ -324,43 +376,43 @@ class ChadoPreparer {
     ]);
 
     $gene = TripalEntityType::create([
-      'id' => 'gene',
-      'name' => 'gene',
+      'id' => 8,
+      'name' => 'bio_data_8',
       'label' => 'Gene',
       'term_id' => $term->getID(),
-      'help_text' => 'help',
+      'help_text' => $term->getDefinition(),
       'category' => 'Genomic',
     ]);
     $gene->save();
 
-    // TODO: Create the 'mRNA' entity type.
+    // TODO: Create the 'mRNA' entity type. bio_data_9
 
-    // TODO: Create the 'Phylogenetic tree' entity type.
+    // TODO: Create the 'Phylogenetic tree' entity type. bio_data_10
 
-    // TODO: Create the 'Physical Map' entity type.
+    // TODO: Create the 'Physical Map' entity type. bio_data_11
 
-    // TODO: Create the 'DNA Library' entity type.
+    // TODO: Create the 'DNA Library' entity type. bio_data_12
 
-    // TODO: Create the 'Genome Assembly' entity type.
+    // TODO: Create the 'Genome Assembly' entity type. bio_data_13
 
-    // TODO: Create the 'Genome Annotation' entity type.
+    // TODO: Create the 'Genome Annotation' entity type. bio_data_14
 
-    // TODO: Create the 'Genome Project' entity type.
+    // TODO: Create the 'Genome Project' entity type. bio_data_15
   }
 
   /**
    * Creates the "Genetic" category of content types.
    */
   protected function geneticContentTypes() {
-    // TODO: Create the 'Genetic Map' entity type.
+    // TODO: Create the 'Genetic Map' entity type. bio_data_16
 
-    // TODO: Create the 'QTL' entity type.
+    // TODO: Create the 'QTL' entity type. bio_data_17
 
-    // TODO: Create the 'Sequence Variant' entity type.
+    // TODO: Create the 'Sequence Variant' entity type. bio_data_18
 
-    // TODO: Create the 'Genetic Marker' entity type.
+    // TODO: Create the 'Genetic Marker' entity type. bio_data_19
 
-    // TODO: Create the 'Heritable Phenotypic Marker' entity type.
+    // TODO: Create the 'Heritable Phenotypic Marker' entity type. bio_data_20
   }
 
   /**
@@ -379,30 +431,30 @@ class ChadoPreparer {
     ]);
 
     $germplasm_accession = TripalEntityType::create([
-      'id' => 'germplasm_accession',
-      'name' => 'germplasm_accession',
+      'id' => 21,
+      'name' => 'bio_data_21',
       'label' => 'Germplasm Accession',
       'term_id' => $term->getID(),
-      'help_text' => 'help',
+      'help_text' => $term->getDefinition(),
       'category' => 'Germplasm/Breeding',
     ]);
     $germplasm_accession->save();
 
-    // TODO: Create the 'Breeding Cross' entity type.
+    // TODO: Create the 'Breeding Cross' entity type. bio_data_22
 
-    // TODO: Create the 'Germplasm Variety' entity type.
+    // TODO: Create the 'Germplasm Variety' entity type. bio_data_23
 
-    // TODO: Create the 'Recombinant Inbred Line' entity type.
+    // TODO: Create the 'Recombinant Inbred Line' entity type. bio_data_24
   }
 
   /**
    * Creates the "Expression" category of content types.
    */
   protected function expressionContentTypes() {
-    // TODO: Create the 'biological sample' entity type.
+    // TODO: Create the 'biological sample' entity type. bio_data_25
 
-    // TODO: Create the 'Assay' entity type.
+    // TODO: Create the 'Assay' entity type. bio_data_26
 
-    // TODO: Create the 'Array Design' entity type.
+    // TODO: Create the 'Array Design' entity type. bio_data_27
   }
 }
