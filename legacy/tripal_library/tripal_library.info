@@ -3,7 +3,7 @@ description = Supports the library tables of Chado by providing pages for viewin
 core = 7.x
 project = tripal
 package = Tripal v2 Legacy
-version = 7.x-3.5
+version = 7.x-3.6
 
 dependencies[] = tripal_core
 dependencies[] = tripal_chado_views
