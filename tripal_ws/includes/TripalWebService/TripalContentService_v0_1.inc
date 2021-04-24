@@ -409,7 +409,7 @@ class TripalContentService_v0_1 extends TripalWebService {
       // key/value pairs should be added directly to the response.
       if (is_array($values[0])) {
         if (array_key_exists('@type', $values[0])) {
-          [$vocabulary, $accession] = explode(':', $values[0]['@type']);
+          list($vocabulary, $accession) = explode(':', $values[0]['@type']);
           $term = tripal_get_term_details($vocabulary, $accession);
           $resource->addContextItem($term['vocabulary']['short_name'], $term['vocabulary']['sw_url']);
           $resource->addContextItem($values[0]['@type'], $term['url']);
@@ -476,7 +476,7 @@ class TripalContentService_v0_1 extends TripalWebService {
             continue;
           }
           if ($key == '@type') {
-            [$vocabulary, $accession] = explode(':', $value);
+            list($vocabulary, $accession) = explode(':', $value);
             $tterm = tripal_get_term_details($vocabulary, $accession);
             $member->addContextItem($tterm['vocabulary']['short_name'], $tterm['vocabulary']['sw_url']);
             $member->addContextItem($value, $tterm['url']);
