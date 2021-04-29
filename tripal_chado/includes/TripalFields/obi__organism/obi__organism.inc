@@ -204,7 +204,7 @@ class obi__organism extends ChadoField {
     $tokens = chado_get_tokens('organism');
     foreach ($tokens as $token) {
       // if infraspecific_name exists, add in the special handler for infraspecific_type
-      if ($token['token'] == '[organism.infraspecific_name]') {
+      if (preg_match('/\.infraspecific_name\]$/, $token['token']) {
         $rows[] = [
           '[infraspecific_type]',
           'The type of infraspecific nomenclature, e.g. subspecies',
