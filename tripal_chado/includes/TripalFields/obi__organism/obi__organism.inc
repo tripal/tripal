@@ -123,8 +123,25 @@ class obi__organism extends ChadoField {
       if (!$organism) {
         return;
       }
+
       $string = $settings['field_display_string'];
+      // the infraspecific type as a text string (e.g. 'subspecies') is not
+      // in the table schema, so we can't access $organism->type_id->name
+      // using chado_replace_tokens(). Therefore, add a special handler for this,
+      // we will use '[infraspecific_type]' for this field
+      if (strpos($string, '[infraspecific_type]') !== false) {
+        $infraspecific_type = '';
+        if ($organism->type_id) {
+          $infraspecific_type = $organism->type_id->name;
+        }
+        // mask the 'no_rank' type from display
+        if ($infraspecific_type == 'no_rank') {
+          $infraspecific_type = '';
+        }
+        $string = preg_replace('/\[infraspecific_type\]/', $infraspecific_type, $string);
+      }
       $label = chado_replace_tokens($string, $organism);
+
       $entity->{$field_name}['und'][0]['value'] = [
         $label_term => $label,
         $genus_term => $organism->genus,
@@ -158,7 +175,7 @@ class obi__organism extends ChadoField {
       '#type' => 'item',
       '#markup' => 'You may rewrite the way this field is presented to the end-user.
         The Rewrite Value field allows you to use tokens to indicate how the
-        value should be displayed.  Tokens will be substituted with appriorate
+        value should be displayed.  Tokens will be substituted with appropriate
         data from the database.  See the Available tokens list for the
         tokens you may use.',
     ];
@@ -167,8 +184,8 @@ class obi__organism extends ChadoField {
       '#type' => 'textfield',
       '#title' => 'Rewrite Value',
       '#description' => t('Provide a mixture of text and/or tokens for the format.
-          For example: [organism.genus] [organism.species].  When displayed,
-          the tokens will be replaced with the actual value.'),
+          For example: [organism.genus] [organism.species] [infraspecific_type] [organism.infraspecific_name].
+          When displayed, the tokens will be replaced with the actual value.'),
       '#default_value' => $settings['field_display_string'],
     ];
 
@@ -186,6 +203,13 @@ class obi__organism extends ChadoField {
     // have entities.
     $tokens = chado_get_tokens('organism');
     foreach ($tokens as $token) {
+      // if infraspecific_name exists, add in the special handler for infraspecific_type
+      if ($token['token'] == '[organism.infraspecific_name]') {
+        $rows[] = [
+          '[infraspecific_type]',
+          'The type of infraspecific nomenclature, e.g. subspecies',
+        ];
+      }
       $rows[] = [
         $token['token'],
         $token['description'],
