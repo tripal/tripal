@@ -359,16 +359,18 @@ function chado_get_tokens($base_table) {
       foreach ($details['columns'] as $left_field => $right_field) {
 
         $sub_token_prefix = $base_table . '.' . $left_field;
-        $sub_location_prefix = implode(' > ', [$base_table, $left_field]);
-
         $sub_tokens = chado_get_tokens($table);
-        if (is_array($sub_tokens)) {
-          $tokens = array_merge($tokens, $sub_tokens);
+        foreach ($sub_tokens as $key => $sub_token) {
+          $key = preg_replace('/[\[\]]/','', $key);
+          $new_key = '[' . $sub_token_prefix .'>' . $key . ']';
+          $new_location = implode(' > ', [$base_table, $left_field, $sub_token['field']]);
+          $tokens[$new_key] = $sub_token;
+          $tokens[$new_key]['token'] = $new_key;
+          $tokens[$new_key]['location'] = $new_location;
         }
       }
     }
   }
-
   return $tokens;
 }
 
@@ -388,12 +390,14 @@ function chado_get_tokens($base_table) {
  * @ingroup tripal_chado_api
  */
 function chado_replace_tokens($string, $record) {
-  // Get the list of tokens
+
+  // Get the list of tokens.
   $tokens = chado_get_tokens($record->tablename);
 
-  // Determine which tokens were used in the format string
+  // Determine which tokens were used in the format string.
   if (preg_match_all('/\[[^]]+\]/', $string, $used_tokens)) {
-    // Get the value for each token used
+
+    // Get the value for each token used.
     foreach ($used_tokens[0] as $token) {
       $token_info = $tokens[$token];
       if (!empty($token_info)) {
@@ -401,25 +405,22 @@ function chado_replace_tokens($string, $record) {
         $var = $record;
         $value = '';
 
-        // Iterate through each portion of the location string. An example string
-        // might be:  stock > type_id > name.
+        // Iterate through each portion of the location string. An example
+        // string might be:  stock > type_id > name.
         $location = explode('>', $token_info['location']);
         foreach ($location as $index) {
           $index = trim($index);
 
-          // if $var is an object then it is the $node object or a table
-          // that has been expanded.
-          if (is_object($var)) {
-            // check to see if the index is a member of the object. If so,
-            // then reset the $var to this value.
-            if (property_exists($var, $index)) {
+          // if $var is an object then it is and expanded table.
+          // So, we'll reset $var to be this value and allow the
+          // loop to continue to the next level.
+          if (is_object($var) and property_exists($var, $index)) {
+            if (is_object($var->$index)) {
+              $var = $var->$index;
+            }
+            else {
               $value = $var->$index;
             }
-          }
-          // if the $var is an array then there are multiple instances of the same
-          // table in a FK relationship (e.g. relationship tables)
-          elseif (is_array($var)) {
-            $value = $var[$index];
           }
           else {
             tripal_report_error('tripal_chado', TRIPAL_WARNING,
