@@ -1306,7 +1306,7 @@ function tripal_bulk_loader_delete_template_record_form($form, &$form_state) {
     tripal_set_message('Unable to determine the template_id from the path.', TRIPAL_ERROR);
     return $form;
   }
-  elseif (!$record_id) {
+  elseif (!isset($record_id)) {
     tripal_set_message('Unable to determine the record_id from the path.', TRIPAL_ERROR);
     return $form;
   }
