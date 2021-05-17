@@ -108,7 +108,6 @@ function tripal_chado_publish_form($form, &$form_state) {
         $function = $instance['widget']['module'] . '_field_widget_form';
         $items = [];
         $delta = 0;
-        $element = [];
         if (function_exists($function)) {
           $element = $function($form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
         }
