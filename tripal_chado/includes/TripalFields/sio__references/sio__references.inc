@@ -37,7 +37,7 @@ class sio__references extends ChadoField {
     'term_fixed' => FALSE,
     // The table in Chado that the instance maps to.
     'chado_table' => 'pub',
-    // The primary key column of hte table in Dhado.
+    // The primary key column of the table in Chado.
     'chado_column' => 'pub_id',
     // The base table.
     'base_table' => 'pub',
@@ -124,7 +124,7 @@ class sio__references extends ChadoField {
             $fkright = $fk_details['columns'][$fkleft];
           }
         }
-        // If this table doesn't have an FK to a reference table
+        // If this table doesn't have a FK to a reference table
         // then it's just a table with a _pub in the name.
         if (!$fkleft) {
           continue;
@@ -182,7 +182,6 @@ class sio__references extends ChadoField {
         $args = [':pub_id' => $chado_record->pub_id];
         $records = chado_query($sql, $args);
         while($record = $records->fetchObject()) {
-        //foreach ($records as $record) {
 
           // We want to add a 'type' and 'name' element to the values (at a
           // minimum) for each of the records.  Unfortunately, every base table
@@ -190,15 +189,27 @@ class sio__references extends ChadoField {
           // so... we'll do the best we can.
           $entity->{$field_name}['und'][$delta]['value'] = [];
 
-          // First get the type of record.
+          // First get the type of record. Several must be coded as special cases, unfortunately.
           if (property_exists($record, 'type_name')) {
-            $entity->{$field_name}['und'][$delta]['value']['rdfs:type'] = $record->type_name;
+            $rdfs_type = $record->type_name;
+          }
+          elseif (property_exists($record, 'featuremap_id')) {
+            $rdfs_type = 'Map';
+          }
+          elseif (property_exists($record, 'analysis_id')) {
+            $rdfs_type = 'Analysis';
+          }
+          elseif (property_exists($record, 'project_id')) {
+            $rdfs_type = 'Project';
+          }
+          elseif ($ref_type) {
+            $rdfs_type = $ref_type->name;
           }
           else {
-            if ($ref_type) {
-              $entity->{$field_name}['und'][$delta]['value']['rdfs:type'] = $ref_type->name;
-            }
+            // default when we can't find anything better
+            $rdfs_type = $reference_table;
           }
+          $entity->{$field_name}['und'][$delta]['value']['rdfs:type'] = $rdfs_type;
 
           // Add in the name and uniquename (identifier) if those fields exist.
           if (property_exists($record, 'name')) {

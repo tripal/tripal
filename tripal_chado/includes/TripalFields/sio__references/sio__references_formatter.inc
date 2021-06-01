@@ -60,7 +60,7 @@ class sio__references_formatter extends ChadoFieldFormatter {
 
       $rows[] = [
         [
-          'data' => ucfirst($type) . '(s)',
+          'data' => ucfirst($type),
           'header' => TRUE,
           'width' => '20%',
         ],
