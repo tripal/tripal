@@ -548,10 +548,10 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
         if ($table_data['optional'] or preg_match('/optional/', $table_data['mode']) or
           $table_data['select_optional']) {
           $skip_optional = 1;
-          // set the values array to be empty since we all required fields are
+          // set the values array to be NULL since we all required fields are
           // optional and we can't do a select/insert so we don't want to keep
           // the values if this record is used in a later FK relationship.
-          $values = [];
+          $values = NULL;
         }
         else {
           $msg = "Line " . $addt->line_num . ' "' . $table_data['record_id'] .
