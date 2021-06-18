@@ -66,6 +66,7 @@ class TripalJob {
    * create() function.
    */
   public function __construct() {
+    $this->messenger = \Drupal::messenger();
   }
 
   /**
@@ -100,9 +101,9 @@ class TripalJob {
     }
 
     // Fix the date/time fields.
-    $this->job->submit_date_string = $this->job->submit_date ? format_date($this->job->submit_date) : '';
-    $this->job->start_time_string = $this->job->start_time ? format_date($this->job->start_time) : '';
-    $this->job->end_time_string = $this->job->end_time ? format_date($this->job->end_time) : '';
+    $this->job->submit_date_string = $this->job->submit_date ? \Drupal::service('date.formatter')->format($this->job->submit_date) : '';
+    $this->job->start_time_string = $this->job->start_time ? \Drupal::service('date.formatter')->format($this->job->start_time) : '';
+    $this->job->end_time_string = $this->job->end_time ? \Drupal::service('date.formatter')->format($this->job->end_time) : '';
 
     // Unserialize the includes.
     $this->job->includes = unserialize($this->job->includes);
@@ -385,7 +386,7 @@ class TripalJob {
       ->condition('job_id', $this->job->job_id)
       ->execute();
 
-      drupal_set_message('Job execution failed: ' . $e->getMessage(), 'error');
+      $this->messenger->addError('Job execution failed: ' . $e->getMessage());
     }
   }
 

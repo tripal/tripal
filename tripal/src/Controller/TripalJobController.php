@@ -222,15 +222,15 @@ class TripalJobController extends ControllerBase{
         ],
         [
           ['header' => TRUE, 'data' => 'Submit Date'],
-          $job->getSubmitTime() ? format_date($job->getSubmitTime()) : ''
+          $job->getSubmitTime() ? \Drupal::service('date.formatter')->format($job->getSubmitTime()) : ''
         ],
         [
           ['header' => TRUE, 'data' => 'Start time'],
-          $job->getStartTime() ? format_date($job->getStartTime()) : ''
+          $job->getStartTime() ? \Drupal::service('date.formatter')->format($job->getStartTime()) : ''
         ],
         [
           ['header' => TRUE, 'data' => 'End time'],
-          $job->getEndTime() ? format_date($job->getEndTime()) : ''
+          $job->getEndTime() ? \Drupal::service('date.formatter')->format($job->getEndTime()) : ''
         ],
         [
           ['header' => TRUE, 'data' => 'Priority'],
