@@ -836,9 +836,15 @@ function chado_insert_cvterm($term, $options = []) {
   if ($dbname) {
     $accession = $id;
   }
-  if (preg_match('/^.+?:.*$/', $id)) {
-    $accession = preg_replace('/^.+?:(.*)$/', '\1', $id);
-    $dbname = preg_replace('/^(.+?):.*$/', '\1', $id);
+  // The accession in $id may not always be dbname:accession, e.g. url,
+  // so only extract values if nothing is already defined
+  if (preg_match('/^[^:]*\D[^:]*:.*$/', $id)) {
+    if (!accession) {
+      $accession = preg_replace('/^.+?:(.*)$/', '\1', $id);
+    }
+    if (!dbname) {
+      $dbname = preg_replace('/^(.+?):.*$/', '\1', $id);
+    }
   }
   // Check that we have a database name, give a different message if it's a
   // relationship.
