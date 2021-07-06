@@ -837,13 +837,14 @@ function chado_insert_cvterm($term, $options = []) {
     $accession = $id;
   }
   // The accession in $id may not always be dbname:accession, e.g. url,
-  // so only extract values if nothing is already defined
-  if (preg_match('/^[^:]*\D[^:]*:.*$/', $id)) {
-    if (!accession) {
-      $accession = preg_replace('/^.+?:(.*)$/', '\1', $id);
-    }
-    if (!dbname) {
-      $dbname = preg_replace('/^(.+?):.*$/', '\1', $id);
+  // so only extract values if the first part is a valid db name
+  if (preg_match('/^(.+?):(.*)$/', $id, $matches)) {
+    $testdbname = $matches[1];
+    $testaccession = $matches[2];
+    $validdb = chado_select_record('db', ['name'], ['name' => $testdbname]);
+    if ($validdb) {
+      $dbname = $testdbname;
+      $accession = $testaccession;
     }
   }
   // Check that we have a database name, give a different message if it's a
