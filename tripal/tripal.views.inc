@@ -30,7 +30,7 @@ function tripal_views_data() {
   $data = [];
   // Job Management System.
   tripal_views_data_jobs($data);
-  // Add all TripalEntity bundles. 
+  // Add all TripalEntity bundles.
   tripal_views_data_tripal_bundles($data);
   // Add all the TripalFields for each bundle.
   tripal_views_data_fields($data);
@@ -54,7 +54,7 @@ function tripal_views_data() {
 function tripal_views_data_alter(&$data) {
 
   // Iterate through all of the views data and find
-  // those that are associated with fields attached to 
+  // those that are associated with fields attached to
   // Tripal entities.  For known field types (e.g. Taxonomy) we
   // can support those.
   foreach ($data as $data_table => $definition) {
@@ -74,7 +74,7 @@ function tripal_views_data_alter(&$data) {
           continue;
         }
 
-        //  
+        //
         // Now update views for integrating other data with our Tripal Entities.
         //
 
@@ -94,7 +94,7 @@ function tripal_views_data_alter(&$data) {
             continue;
           }
 
-          // Support the taxonomy_term_reference field when it's added to a 
+          // Support the taxonomy_term_reference field when it's added to a
           // Tripal content type
           if ($field['type'] == 'taxonomy_term_reference') {
             $data[$bundle_term_id][$field_name] = [
@@ -146,12 +146,6 @@ function tripal_views_data_fields(&$data) {
       continue;
     }
 
-    // Fields that don't connect to the Tripal Storage API should be added 
-    // differently
-    if (!array_key_exists('tripal_storage_api', $field['storage']['settings'])) {
-      continue;
-    }
-
     // Get the field data for views.
     $fdata = [];
 
@@ -176,7 +170,7 @@ function tripal_views_data_fields(&$data) {
       $accession = $all_bundles[$bundle_name]->accession;
       $view_base_id = $vocabulary . '__' . $accession;
 
-      // Fields that aren't a TripalField class should be handled using the 
+      // Fields that aren't a TripalField class should be handled using the
       // generic TripalField::viewsData function.
       $instance = field_info_instance('TripalEntity', $field['field_name'], $bundle_name);
       if (!in_array($field_type, $tripal_field_types)) {
