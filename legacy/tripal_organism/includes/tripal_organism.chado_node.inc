@@ -86,7 +86,7 @@ function tripal_organism_node_access($node, $op, $account) {
       }
     }
     if ($op == 'view') {
-      if (!user_access('access chado_organism content', $account)) {
+      if (!user_access('access content', $account)) {
         return NODE_ACCESS_DENY;
       }
     }
