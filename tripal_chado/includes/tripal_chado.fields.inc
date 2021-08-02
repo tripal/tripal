@@ -2760,7 +2760,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ],
     ];
   }
-  return;
+
   // SYNONYMS
   $syn_table = $table_name . '_synonym';
   if (chado_table_exists($syn_table)) {
