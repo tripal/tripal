@@ -712,6 +712,7 @@ function tripal_entity_form_submit($form, &$form_state) {
     }
     return;
   }
+
   if ($form_state['clicked_button']['#name'] == 'unpublish_data') {
     if (entity_access('unpublish', 'TripalEntity', $entity, $user)) {
       $form_state['redirect'] = 'bio_data/' . $entity->id . '/unpublish';
@@ -719,15 +720,15 @@ function tripal_entity_form_submit($form, &$form_state) {
     return;
   }
 
-  $username = $form_state['values']['author_name'];
-  $user = user_load_by_name($username);
-  $entity->uid = $user->uid;
+  if (!array_key_exists('#entity', $form)) {
+    $entity->uid = $user->uid;
 
-  $create_date = $form_state['values']['author_date'];
-  $entity->created = $create_date;
+    $create_date = $form_state['values']['author_date'];
+    $entity->created = $create_date;
 
-  $published = $form_state['values']['status'];
-  $entity->status = $published;
+    $published = $form_state['values']['status'];
+    $entity->status = $published;
+  }
 
   // Allow the fields to perform actions prior to submit.
   $instances = field_info_instances('TripalEntity', $entity->bundle);
@@ -737,6 +738,9 @@ function tripal_entity_form_submit($form, &$form_state) {
     if ($entity_type == 'TripalEntity' and array_key_exists($field_name, $form)) {
       foreach ($form[$field_name][$langcode] as $delta => $field_form) {
         if (!preg_match('/^\d+$/', $delta)) {
+          continue;
+        }
+        if (!array_key_exists('#field', $field_form)) {
           continue;
         }
         $widget_type = $instance['widget']['type'];

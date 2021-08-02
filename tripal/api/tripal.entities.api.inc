@@ -1351,12 +1351,15 @@ function tripal_replace_entity_tokens($string, &$entity, $bundle_entity = NULL) 
     $token = preg_replace('/[\[\]]/', '', $token);
     $elements = explode(',', $token);
     $field_name = array_shift($elements);
+
     //$field_name = str_replace(array('.','[',']'), array('__','',''), $field_name);
     if (!property_exists($entity, $field_name) or empty($entity->{$field_name})) {
       $field = field_info_field($field_name);
-      $storage = $field['storage'];
-      $attach_fields[$storage['type']]['storage'] = $storage;
-      $attach_fields[$storage['type']]['fields'][] = $field;
+      if ($field) {
+        $storage = $field['storage'];
+        $attach_fields[$storage['type']]['storage'] = $storage;
+        $attach_fields[$storage['type']]['fields'][] = $field;
+      }
     }
   }
 
@@ -1435,7 +1438,10 @@ function tripal_replace_entity_tokens($string, &$entity, $bundle_entity = NULL) 
  */
 function _tripal_replace_entity_tokens_for_elements($elements, $values) {
   $term_id = array_shift($elements);
-  $value = $values[$term_id];
+  $value = '';
+  if (array_key_exists($term_id, $values)) {
+    $value = $values[$term_id];
+  }
   if (count($elements) == 0) {
     return $value;
   }
