@@ -748,7 +748,7 @@ function chado_phylotree_node_access($node, $op, $account) {
       }
     }
     if ($op == 'view') {
-      if (!user_access('access chado_phylotree content', $account)) {
+      if (!user_access('access content', $account)) {
         return NODE_ACCESS_DENY;
       }
     }
