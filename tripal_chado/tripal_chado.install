@@ -33,6 +33,8 @@ function tripal_chado_install() {
     // Fix the SOFP feature_property issue from the legacy feature_property.
     tripal_chado_fix_legacy_SOFP_7338();
 
+    module_load_include('inc', 'tripal_chado', 'includes/setup/tripal_chado.chado_vx_x');
+    tripal_chado_add_db2cv_mview_mview();
   }
 
   tripal_insert_variable('bundle_category', 'Bundles can be categorized to allow for grouping');
