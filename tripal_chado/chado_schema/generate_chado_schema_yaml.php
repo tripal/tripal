@@ -48,7 +48,8 @@ while ($table = $result->fetchField()) {
   print "  fields:\n";
   $results = \Drupal::database()->query("SELECT column_name, data_type, is_nullable, character_maximum_length, ordinal_position, column_default
     FROM information_schema.columns
-    WHERE table_name = :table", [':table' => $table])->fetchAll();
+    WHERE table_name = :table
+      AND table_schema = 'chado'", [':table' => $table])->fetchAll();
   foreach ($results as $c) {
     print "    " . $c->column_name . ":\n";
 
@@ -90,7 +91,9 @@ while ($table = $result->fetchField()) {
         JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name
         JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name
     WHERE
-        tc.table_name = :name";
+        tc.table_name = :name
+        AND tc.table_schema = 'chado'
+        ";
   $results = \Drupal::database()->query($sql, [':name' => $table])->fetchAll();
   $ukeys = [];
   $fkeys = [];
@@ -147,7 +150,8 @@ while ($table = $result->fetchField()) {
         JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name
         JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name
     WHERE
-        ccu.table_name = :name";
+        ccu.table_name = :name
+        AND tc.table_schema = 'chado'";
   $results = \Drupal::database()->query($sql, [':name' => $table])->fetchAll();
   if ($results) {
     $reftables = [];
