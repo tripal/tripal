@@ -62,10 +62,10 @@ while ($table = $result->fetchField()) {
 
     // Not Null:
     if ($c->is_nullable == 'YES') {
-      print "      not null: TRUE\n";
+      print "      not null: FALSE\n";
     }
     else {
-      print "      not null: FALSE\n";
+      print "      not null: TRUE\n";
     }
 
     // Size:
