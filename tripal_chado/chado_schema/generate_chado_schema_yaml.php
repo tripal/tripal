@@ -115,6 +115,7 @@ while ($table = $result->fetchField()) {
 
   // -- Unique Keys:
   if ($ukeys) {
+    ksort($ukeys);
     print "  unique keys:\n";
     foreach ($ukeys as $uname => $ucolumns) {
       print "    " . $uname . ": " . implode(', ', $ucolumns) . "\n";
@@ -128,6 +129,7 @@ while ($table = $result->fetchField()) {
 
   // -- Foreign Keys:
   if ($fkeys) {
+    ksort($fkeys);
     print "  foreign keys:\n";
     foreach ($fkeys as $fk) {
       print "    " . $fk['table'] . ":\n";
@@ -160,6 +162,7 @@ while ($table = $result->fetchField()) {
         $reftables[$r->table_name] = $r->table_name;
       }
     }
+    sort($reftables);
     print "  referring_tables: " . implode(", ", $reftables) . "\n";
   }
 }
