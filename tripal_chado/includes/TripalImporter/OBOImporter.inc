@@ -1078,7 +1078,7 @@ class OBOImporter extends TripalImporter {
     // Next get the term.
     //$iri = urlencode(urlencode($base_iri . $accession));
     //$full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontologyID . '/terms/' . $iri;
-    $full_url = "https://www.ebi.ac.uk/ols/ontologies/$ontologyID/$type?iri=$iri"
+    $full_url = 'https://www.ebi.ac.uk/ols/ontologies/' . $ontologyID . '/' . $type . '?iri=' . $iri;
     $response = drupal_http_request($full_url, []);
     if (!$response) {
       throw new Exception(t('Did not get a response from EBI OLS trying to lookup term: !id',
