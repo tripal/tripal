@@ -1038,13 +1038,15 @@ class OBOImporter extends TripalImporter {
     $accession = $pair[1];
 
     // First get the ontology so we can build an IRI for the term
-    $base_iri = '';
+    //$base_iri = '';
     $ontologyID = '';
+    $iri = '';
+    $type ='';
     if (array_key_exists($short_name, $this->baseIRIs)) {
       list($ontologyID, $base_iri) = $this->baseIRIs[$short_name];
     }
     else {
-      $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $short_name;
+      $full_url = 'https://www.ebi.ac.uk/ols/api/search?q=' . $id;
       $response = drupal_http_request($full_url, []);
       if (!$response) {
         throw new Exception(t('Did not get a response from EBI OLS trying to lookup ontology: !ontology',
@@ -1064,14 +1066,19 @@ class OBOImporter extends TripalImporter {
           ]), TRIPAL_WARNING);
       }
       //What should happen with this stuff?
-      $base_iri = $ontology_results['config']['baseUris'][0];
-      $ontologyID = $ontology_results['ontologyId'];
-      $this->baseIRIs[$short_name] = [$ontologyID, $base_iri];
+      //$base_iri = $ontology_results['config']['baseUris'][0];
+      //$ontologyID = $ontology_results['ontologyId'];
+      //$this->baseIRIs[$short_name] = [$ontologyID, $base_iri];
+      $iri = urlencode(urlencode($ontology_results['response']['docs'][0]['iri']));
+      $ontologyID=$ontology_results['response']['docs'][0]['id'];
+      $type=$ontology_results['response']['docs'][0]['type']; # property|class
+
     }
 
     // Next get the term.
-    $iri = urlencode(urlencode($base_iri . $accession));
-    $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontologyID . '/terms/' . $iri;
+    //$iri = urlencode(urlencode($base_iri . $accession));
+    //$full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontologyID . '/terms/' . $iri;
+    $full_url = "https://www.ebi.ac.uk/ols/ontologies/$ontologyID/$type?iri=$iri"
     $response = drupal_http_request($full_url, []);
     if (!$response) {
       throw new Exception(t('Did not get a response from EBI OLS trying to lookup term: !id',
