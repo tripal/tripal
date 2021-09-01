@@ -544,9 +544,9 @@ class TripalLogger {
       if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
         $this->logger->debug($message, $context);
       }
-    }
 
-    $this->log2Server($message, $context, $options);
+      $this->log2Server('DEBUG: ' . $message, $context, $options);
+    }
   }
 
   /**
