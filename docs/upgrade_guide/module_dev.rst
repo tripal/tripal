@@ -42,6 +42,13 @@ Changelog: https://www.drupal.org/node/2774931
   $messenger->addStatus('Hello world');
   $messenger->addWarning('Hello world');
 
+format_date()
+-------------
+
+.. code-block:: php
+
+  \Drupal::service('date.formatter')->format($time);
+
 Loading a User Object
 ---------------------
 To load a user using a known user ID.
