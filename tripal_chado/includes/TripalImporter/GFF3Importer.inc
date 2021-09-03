@@ -105,6 +105,13 @@ class GFF3Importer extends TripalImporter {
    */
   private $update = TRUE;
 
+
+    /**
+   * A list of features to have names updated.
+   */
+  private $update_names = [];
+
+
   /**
    * If the GFF file contains a 'Target' attribute then the feature and the
    * target will have an alignment created, but to find the proper target
@@ -486,6 +493,7 @@ class GFF3Importer extends TripalImporter {
 
     // Set the private member variables of this class using the loader inputs.
     $this->organism_id = $arguments['organism_id'];
+    $this->update_names=[];
     $this->analysis_id = $arguments['analysis_id'];
     $this->add_only = $arguments['add_only'];
     $this->update = $arguments['update'];
@@ -615,6 +623,9 @@ class GFF3Importer extends TripalImporter {
       $this->logMessage("Step  8 of 26: Processing !num_features features...               ",
           ['!num_features' => number_format(count(array_keys($this->features)))]);
       $this->insertFeatures();
+      $this->logMessage("Step  8.1 of 26: Processing !num_features feature Names to update...               ",
+          ['!num_features' =>  number_format(count(array_keys($this->update_names)))]);
+      $this->updateFeatureNames();
 
       $this->logMessage("Step  9 of 26: Get new feature IDs...                             ");
       $this->findFeatures();
@@ -1230,7 +1241,6 @@ class GFF3Importer extends TripalImporter {
     // Add the properties and parent.
     $ret['properties'] = $attr_others;
     $ret['parent'] = $attr_parent;
-
     return $ret;
   }
 
@@ -1352,6 +1362,7 @@ class GFF3Importer extends TripalImporter {
 
     // The landmark was found, remember it
     $this->landmarks[$landmark_name] = $landmark->getID();
+
     return $landmark;
   }
   /**
@@ -1361,7 +1372,6 @@ class GFF3Importer extends TripalImporter {
    *   The line from the GFF file that is the ##sequence-region comment.
    */
   private function insertHeaderLandmark($line) {
-
     $region_matches = [];
     if (preg_match('/^##sequence-region\s+(\w*?)\s+(\d+)\s+(\d+)$/i', $line, $region_matches)) {
       $rid = $region_matches[1];
@@ -1531,9 +1541,10 @@ class GFF3Importer extends TripalImporter {
     }
 
     // Cache the GFF feature details for later lookup.
-    if (strcmp($gff_feature['uniquename'], $gff_feature['landmark']) != 0) {
+    // SOFIA: THIS IS IT, HERE is where landmarks dont get cached.
+#    if (strcmp($gff_feature['uniquename'], $gff_feature['landmark']) != 0) {
       $this->cacheFeature($gff_feature);
-    }
+#    }
 
     // If this feature has a target then we need to add the target as
     // new feature for insertion.
@@ -1840,6 +1851,58 @@ class GFF3Importer extends TripalImporter {
     }
   }
 
+
+  /**
+   * SOFIA:
+   * UPDATES the feature records in Chado.
+   */
+  private function updateFeatureNames() {
+    $batch_size = 1000;
+    $num_features = count(array_keys($this->update_names));
+    $num_batches = (int) ($num_features / $batch_size) + 1;
+
+    $this->setItemsHandled(0);
+    $this->setTotalItems($num_batches);
+#batch update: https://www.alibabacloud.com/blog/how-does-postgresql-implement-batch-update-deletion-and-insertion_596030
+    $init_sql = "UPDATE {feature}
+        SET name=tmp.name from (values\n";
+
+    $fin_sql = ") as tmp (name,feature_id) where {feature}.feature_id::text=tmp.feature_id\n";
+
+
+    $i = 0;
+    $total = 0;
+    $batch_num = 1;
+    $sql = '';
+    $args = [];
+    foreach ($this->update_names as $feature_id => $new_name){
+
+      $total++;
+      $i++;
+      // Only do an update if this feature already exist in the database and is flagged for update.
+      // SOFIA: future project, make is_obsolute updatable. make sure to add is_obsolute collection to cached feature
+        $sql .= "(:name_$i,:feature_id_$i),\n";
+        $args[":name_$i"] = $new_name;
+        $args[":feature_id_$i"] = $feature_id;
+
+      // If we've reached the size of the batch then let's do the insert.
+      if ($i == $batch_size or $total == $num_features) {
+        if (count($args) > 0) {
+          $sql = rtrim($sql, ",\n");
+          $sql = $init_sql . $sql . $fin_sql;
+          chado_query($sql, $args);
+        }
+        $this->setItemsHandled($batch_num);
+        $batch_num++;
+        // Now reset all of the variables for the next batch.
+        $sql = '';
+        $i = 0;
+        $args = [];
+      }
+    }
+  }
+
+
   /**
    * Check if the features exist in the database.
    */
@@ -1851,7 +1914,7 @@ class GFF3Importer extends TripalImporter {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    $sql = "SELECT uniquename, type_id, organism_id, feature_id FROM {feature} WHERE uniquename in (:uniquenames)";
+    $sql = "SELECT uniquename, name, type_id, organism_id, feature_id FROM {feature} WHERE uniquename in (:uniquenames)";
     $i = 0;
     $total = 0;
     $batch_num = 1;
@@ -1881,6 +1944,13 @@ class GFF3Importer extends TripalImporter {
               }
               if ($matched_type_id == $f->type_id and $matched_organism_id == $f->organism_id) {
                 $this->features[$f->uniquename]['feature_id'] = $f->feature_id;
+                $this->features[$f->uniquename]['name'] = $f->name;
+		# SOFIA: check to see if the name has changed
+		if ($f->name != $matched_feature['name']) {
+                  ## need to update name of feature
+		  ## add flag to cached feature that indicates updated needed
+		  $this->update_names[$f->feature_id]=$matched_feature['name'];
+	        }
               }
             }
           }
@@ -2082,6 +2152,7 @@ class GFF3Importer extends TripalImporter {
    *
    */
   private function findDbxrefs() {
+
     $batch_size = 1000;
     $num_dbxrefs = count(array_keys($this->dbxref_lookup));
     $num_batches = (int) ($num_dbxrefs / $batch_size) + 1;
@@ -2240,6 +2311,7 @@ class GFF3Importer extends TripalImporter {
    *
    */
   private function insertDbxrefs() {
+
     $batch_size = 1000;
     $num_dbxrefs = count(array_keys($this->dbxref_lookup));
     $num_batches = (int) ($num_dbxrefs / $batch_size) + 1;
@@ -2821,6 +2893,7 @@ class GFF3Importer extends TripalImporter {
     $name = '';
 
     // If there is no ID or name then try to create a name and ID.
+    // SOFIA: Name typo?? should name be Name?
     if (!array_key_exists('ID', $attrs) and !array_key_exists('name', $attrs)) {
 
       // Check if an alternate ID field is suggested, if so, then use
@@ -2895,7 +2968,6 @@ class GFF3Importer extends TripalImporter {
         throw new Exception(t("A feature with the same ID exists multiple times: !uname", ['!uname' => $uniquename]));
       }
     }
-
     return [
       'name' => $name,
       'uniquename' => $uniquename,
