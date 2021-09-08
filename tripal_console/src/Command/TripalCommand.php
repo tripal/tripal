@@ -44,7 +44,7 @@ class TripalCommand extends ContainerAwareCommand {
    * Constructs a new GenerateFieldTypeCommand object.
    */
   public function __construct() {
-    $module_path = drupal_get_path('module', 'tripal_console');
+    $module_path = \Drupal::service('extension.list.module')->getPath('tripal_console');
 
     $this->common_text = Yaml::parse(file_get_contents("$module_path/src/UserText/commonText.yml"));
 
