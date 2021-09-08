@@ -4,3 +4,4 @@ composer.phar
 tripaldocker/dev/.env
 */_build
 vendor
+.phpunit.result.cache

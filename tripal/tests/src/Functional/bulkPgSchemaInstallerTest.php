@@ -64,7 +64,7 @@ class bulkPgSchemaInstallerTest extends BrowserTestBase {
 		$this->assertTrue($schema_exists, "Unable to find newly created schema $schema_name.");
 
 		// Test applying SQL to a schema.
-		$sql_file = drupal_get_path('module', 'tripal') . '/tests/src/testFiles/smallTestSchema.sql';
+		$sql_file = \Drupal::service('extension.list.module')->getPath('tripal') . '/tests/src/testFiles/smallTestSchema.sql';
 		$return_code = $service->applySQL($sql_file, $schema_name, TRUE);
 		$this->assertTrue($return_code, "applySQL($schema_name) did not return TRUE.");
 		// Check specific tables exist.

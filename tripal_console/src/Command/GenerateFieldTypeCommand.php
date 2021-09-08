@@ -42,7 +42,7 @@ class GenerateFieldTypeCommand extends TripalCommand {
   public function __construct(GeneratorInterface $generator) {
     $this->generator = $generator;
 
-    $module_path = drupal_get_path('module', 'tripal_console');
+    $module_path = \Drupal::service('extension.list.module')->getPath('tripal_console');
     $this->user_text = Yaml::parse(file_get_contents("$module_path/src/UserText/tripal.generate.fieldType.yml"));
 
     parent::__construct();

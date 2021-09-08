@@ -13,7 +13,7 @@ class TripalRoutes {
    */
   public function dataLoaders() {
     $routes = [];
-    // @TODO This needs to be built out for all the loaders, this is just an 
+    // @TODO This needs to be built out for all the loaders, this is just an
     // example on how to start.
     // Add in the loaders
     // $importers = tripal_get_importers();
@@ -36,9 +36,9 @@ class TripalRoutes {
     //     if (!$callback_path) {
     //       $callback_path = 'includes/tripal.importer.inc';
     //     }
-    //     $file_path = drupal_get_path('module', 'tripal');
+    //     $file_path = \Drupal::service('extension.list.module')->getPath('tripal');
     //     if ($callback_path and $callback_module) {
-    //       $file_path = drupal_get_path('module', $callback_module);
+    //       $file_path = \Drupal::service('extension.list.module')->getPath($callback_module);
     //     }
 
 
