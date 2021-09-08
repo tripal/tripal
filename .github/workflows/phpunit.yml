@@ -15,7 +15,7 @@ jobs:
       matrix:
         drupalversion: ['8.9.x-dev', '9.0.x-dev', '9.1.x-dev']
     # Give the builds names so we can tell them apart
-    name: PHPUnit Drupal ${{ matrix.dockertags }}
+    name: PHPUnit Drupal ${{ matrix.drupalversion }}
 
     # Steps in the sequence
     steps:
