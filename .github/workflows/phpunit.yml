@@ -13,28 +13,30 @@ jobs:
     # PHP Targets
     strategy:
       matrix:
-        dockertags: ['drupal8.9.x-dev', 'drupal9.0.x-dev', 'drupal9.1.x-dev']
+        drupalversion: ['8.9.x-dev', '9.0.x-dev', '9.1.x-dev']
     # Give the builds names so we can tell them apart
-    name: PHPUnit ${{ matrix.dockertags }}
+    name: PHPUnit Drupal ${{ matrix.dockertags }}
 
     # Steps in the sequence
     steps:
       # Check out the repo
       - name: Checkout Repository
         uses: actions/checkout@v2
-      # Just spin up docker the good ol' fashion way.
-      - name: Spin up Docker
+      # Here we fully  build a docker using the current checked out code
+      # to ensure we have not broken the install/build process.
+      - name: Build the Docker
         run: |
+          docker build --tag=tripaldocker:localdocker --build-arg drupalversion='${{ matrix.drupalversion }}' tripaldocker/
           docker run --publish=80:80 --name=tripaldocker -tid \
             --volume=`pwd`:/var/www/drupal8/web/modules/contrib/tripal \
-            tripalproject/tripaldocker:${{ matrix.dockertags }}
+            tripaldocker:localdocker
           docker exec tripaldocker service postgresql restart
           docker exec tripaldocker drush cr
           docker exec tripaldocker drush trp-drop-chado --schema-name=chado
           docker exec tripaldocker drush trp-prep-tests
       # Drupal 9.1.x needs prophecy-phpunit due to https://www.drupal.org/project/drupal/issues/3182653
       - name: Add prophecy-phpunit
-        if: ${{ matrix.dockertags == 'drupal9.1.x-dev' }}
+        if: ${{ matrix.drupalversion == '9.1.x-dev' }}
         run: |
           docker exec --workdir /var/www/drupal8 tripaldocker composer require phpspec/prophecy-phpunit
       # Runs the PHPUnit tests.
