@@ -27,10 +27,18 @@ jobs:
       - name: Build the Docker
         run: |
           docker build --tag=tripaldocker:localdocker --build-arg drupalversion='${{ matrix.drupalversion }}' tripaldocker/
+      # Just spin up docker the good ol' fashion way.
+      - name: Spin up Local Docker
+        run: |
           docker run --publish=80:80 --name=tripaldocker -tid \
             --volume=`pwd`:/var/www/drupal8/web/modules/contrib/tripal \
             tripaldocker:localdocker
           docker exec tripaldocker service postgresql restart
+      # Now prepare the new docker container for running tests.
+      # We specifically do not have a `chado` named schema to test that
+      # an assumption hasn't been made here.
+      - name: Prep Local Docker for Tests
+        run: |
           docker exec tripaldocker drush cr
           docker exec tripaldocker drush trp-drop-chado --schema-name=chado
           docker exec tripaldocker drush trp-prep-tests
@@ -43,7 +51,7 @@ jobs:
       # https://github.com/mheap/phpunit-github-actions-printer is used
       # to report PHPUnit fails in a meaningful way to github in PRs.
       # Stopped using mheap due to warning w/ phpunit8->9
-      - name: PHPUnit Tests
+      - name: Run PHPUnit Tests
         env:
           SIMPLETEST_BASE_URL: "http://localhost"
           SIMPLETEST_DB: "pgsql://drupaladmin:drupal8developmentonlylocal@localhost/sitedb"
