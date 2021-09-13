@@ -1540,10 +1540,7 @@ class GFF3Importer extends TripalImporter {
     }
 
     // Cache the GFF feature details for later lookup.
-    // SOFIA: THIS IS IT, HERE is where landmarks don't get cached.
-    //if (strcmp($gff_feature['uniquename'], $gff_feature['landmark']) != 0) {
     $this->cacheFeature($gff_feature);
-    // }
 
     // If this feature has a target then we need to add the target as
     // new feature for insertion.
