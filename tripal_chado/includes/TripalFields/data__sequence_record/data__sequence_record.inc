@@ -132,9 +132,10 @@ class data__sequence_record extends ChadoField {
       $featureloc = $this->getFeatureLoc($seq['featureloc_id']);
       $coords = $this->getSequenceCoords($featureloc);
 
-      # SOFIA: if the feature is a srcfeature don't derive sequence from itself
+      // SOFIA: If the feature is a srcfeature don't derive sequence from itself
       if ($feature->feature_id !=  $featureloc->srcfeature_id){
-        # i am not quite sure what the $option is doing, i am going to set it to 0 since there is no seq derived from parent
+	// I am not quite sure what the $option is doing, but I am going to set it 
+	// to 0 since there is no seq derived from parent
         $options = [
           'derive_from_parent' => 0,
          ];
