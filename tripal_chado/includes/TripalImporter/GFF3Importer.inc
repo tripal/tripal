@@ -493,7 +493,6 @@ class GFF3Importer extends TripalImporter {
 
     // Set the private member variables of this class using the loader inputs.
     $this->organism_id = $arguments['organism_id'];
-    $this->update_names=[];
     $this->analysis_id = $arguments['analysis_id'];
     $this->add_only = $arguments['add_only'];
     $this->update = $arguments['update'];
@@ -588,7 +587,7 @@ class GFF3Importer extends TripalImporter {
     $this->openCacheFile();
     // Load the GFF3.
     try {
-      $this->logMessage("Step  1 of 26: Caching GFF3 file...                             ");
+      $this->logMessage("Step  1 of 27: Caching GFF3 file...                             ");
       $this->parseGFF3();
 
       // Prep the database for necessary records.
@@ -596,93 +595,93 @@ class GFF3Importer extends TripalImporter {
       $this->prepNullPub();
       $this->prepDBs();
 
-      $this->logMessage("Step  2 of 26: Find existing landmarks...                         ");
+      $this->logMessage("Step  2 of 27: Find existing landmarks...                         ");
       $this->findLandmarks();
 
-      $this->logMessage("Step  3 of 26: Insert new landmarks (if needed)...                ");
+      $this->logMessage("Step  3 of 27: Insert new landmarks (if needed)...                ");
       $this->insertLandmarks();
 
       if (!$this->skip_protein) {
-        $this->logMessage("Step  4 of 26: Find missing proteins...                           ");
+        $this->logMessage("Step  4 of 27: Find missing proteins...                           ");
         $this->findMissingProteins();
 
-        $this->logMessage("Step  5 of 26: Add missing proteins to list of features...        ");
+        $this->logMessage("Step  5 of 27: Add missing proteins to list of features...        ");
         $this->addMissingProteins();
       }
       else {
-        $this->logMessage("Step  4 of 26: Find missing proteins (Skipped)...                ");
-        $this->logMessage("Step  5 of 26: Add missing proteins to list of features (Skipped)...");
+        $this->logMessage("Step  4 of 27: Find missing proteins (Skipped)...                ");
+        $this->logMessage("Step  5 of 27: Add missing proteins to list of features (Skipped)...");
       }
 
-      $this->logMessage("Step  6 of 26: Find existing features...                          ");
+      $this->logMessage("Step  6 of 27: Find existing features...                          ");
       $this->findFeatures();
 
-      $this->logMessage("Step  7 of 26: Clear attributes of existing features...            ");
+      $this->logMessage("Step  7 of 27: Clear attributes of existing features...            ");
       $this->deleteFeatureData();
 
-      $this->logMessage("Step  8 of 26: Processing !num_features features...               ",
+      $this->logMessage("Step  8 of 27: Processing !num_features features...               ",
           ['!num_features' => number_format(count(array_keys($this->features)))]);
       $this->insertFeatures();
-      $this->logMessage("Step  8.1 of 26: Processing !num_features feature Names to update...               ",
+      $this->logMessage("Step  9 of 27: Processing !num_features feature Names to update...               ",
           ['!num_features' =>  number_format(count(array_keys($this->update_names)))]);
       $this->updateFeatureNames();
 
-      $this->logMessage("Step  9 of 26: Get new feature IDs...                             ");
+      $this->logMessage("Step  10 of 27: Get new feature IDs...                             ");
       $this->findFeatures();
 
-      $this->logMessage("Step 10 of 26: Insert locations...                               ");
+      $this->logMessage("Step 11 of 27: Insert locations...                               ");
       $this->insertFeatureLocs();
 
-      $this->logMessage("Step 11 of 26: Associate parents and children...                 ");
+      $this->logMessage("Step 12 of 27: Associate parents and children...                 ");
       $this->associateChildren();
 
-      $this->logMessage("Step 12 of 26: Calculate child ranks...                          ");
+      $this->logMessage("Step 13 of 27: Calculate child ranks...                          ");
       $this->calculateChildRanks();
 
-      $this->logMessage("Step 13 of 26: Add child-parent relationships...                 ");
+      $this->logMessage("Step 14 of 27: Add child-parent relationships...                 ");
       $this->insertFeatureParents();
 
-      $this->logMessage("Step 14 of 26: Insert properties...                               ");
+      $this->logMessage("Step 15 of 27: Insert properties...                               ");
       $this->insertFeatureProps();
 
-      $this->logMessage("Step 15 of 26: Find synonyms (aliases)...                         ");
+      $this->logMessage("Step 16 of 27: Find synonyms (aliases)...                         ");
       $this->findSynonyms();
 
-      $this->logMessage("Step 16 of 26: Insert new synonyms (aliases)...                  ");
+      $this->logMessage("Step 17 of 27: Insert new synonyms (aliases)...                  ");
       $this->insertSynonyms();
 
-      $this->logMessage("Step 17 of 26: Insert feature synonyms (aliases)...              ");
+      $this->logMessage("Step 18 of 27: Insert feature synonyms (aliases)...              ");
       $this->insertFeatureSynonyms();
 
-      $this->logMessage("Step 18 of 26: Find cross references...                          ");
+      $this->logMessage("Step 19 of 27: Find cross references...                          ");
       $this->findDbxrefs();
 
-      $this->logMessage("Step 19 of 26: Insert new cross references...                    ");
+      $this->logMessage("Step 21 of 27: Insert new cross references...                    ");
       $this->insertDbxrefs();
 
-      $this->logMessage("Step 20 of 26: Get new cross references IDs...                   ");
+      $this->logMessage("Step 21 of 27: Get new cross references IDs...                   ");
       $this->findDbxrefs();
 
-      $this->logMessage("Step 21 of 26: Insert feature cross references...                ");
+      $this->logMessage("Step 22 of 27: Insert feature cross references...                ");
       $this->insertFeatureDbxrefs();
 
-      $this->logMessage("Step 22 of 26: Insert feature ontology terms...                  ");
+      $this->logMessage("Step 23 of 27: Insert feature ontology terms...                  ");
       $this->insertFeatureCVterms();
 
-      $this->logMessage("Step 23 of 26: Insert 'derives_from' relationships...            ");
+      $this->logMessage("Step 24 of 27: Insert 'derives_from' relationships...            ");
       $this->insertFeatureDerivesFrom();
 
-      $this->logMessage("Step 24 of 26: Insert Targets...                                 ");
+      $this->logMessage("Step 25 of 27: Insert Targets...                                 ");
       $this->insertFeatureTargets();
 
-      $this->logMessage("Step 25 of 26: Associate features with analysis....              ");
+      $this->logMessage("Step 26 of 27: Associate features with analysis....              ");
       $this->insertFeatureAnalysis();
 
       if (!empty($this->residue_index)) {
-        $this->logMessage("Step 26 of 26: Adding sequences data...                        ");
+        $this->logMessage("Step 27 of 27: Adding sequences data...                        ");
         $this->insertFeatureSeqs();
       }
-      $this->logMessage("Step 26 of 26: Adding sequences data (Skipped: none available)...");
+      $this->logMessage("Step 27 of 27: Adding sequences data (Skipped: none available)...");
     }
     // On exception, catch the error, clean up the cache file and rethrow
     catch (Exception $e) {
@@ -1059,7 +1058,7 @@ class GFF3Importer extends TripalImporter {
           throw new Exception(t('Each feature can only have one "Target" attribute. The feature %uniquename has more than one.',
               ['%uniquename' => $ret['uniquename']]));
         }
-        # Get the elements of the target.
+        // Get the elements of the target.
         $matches = [];
         if (preg_match('/^(.*?)\s+(\d+)\s+(\d+)(\s+[\+|\-])*$/', trim($tags[$tag_name][0]), $matches)) {
           $attr_target['name'] = $matches[1];
@@ -1541,10 +1540,10 @@ class GFF3Importer extends TripalImporter {
     }
 
     // Cache the GFF feature details for later lookup.
-    // SOFIA: THIS IS IT, HERE is where landmarks dont get cached.
-#    if (strcmp($gff_feature['uniquename'], $gff_feature['landmark']) != 0) {
-      $this->cacheFeature($gff_feature);
-#    }
+    // SOFIA: THIS IS IT, HERE is where landmarks don't get cached.
+    //if (strcmp($gff_feature['uniquename'], $gff_feature['landmark']) != 0) {
+    $this->cacheFeature($gff_feature);
+    // }
 
     // If this feature has a target then we need to add the target as
     // new feature for insertion.
@@ -1853,8 +1852,7 @@ class GFF3Importer extends TripalImporter {
 
 
   /**
-   * SOFIA:
-   * UPDATES the feature records in Chado.
+   * UPDATES the name of feature records in Chado.
    */
   private function updateFeatureNames() {
     $batch_size = 1000;
@@ -1863,7 +1861,7 @@ class GFF3Importer extends TripalImporter {
 
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
-#batch update: https://www.alibabacloud.com/blog/how-does-postgresql-implement-batch-update-deletion-and-insertion_596030
+    // Batch update: https://www.alibabacloud.com/blog/how-does-postgresql-implement-batch-update-deletion-and-insertion_596030
     $init_sql = "UPDATE {feature}
         SET name=tmp.name from (values\n";
 
@@ -1880,10 +1878,10 @@ class GFF3Importer extends TripalImporter {
       $total++;
       $i++;
       // Only do an update if this feature already exist in the database and is flagged for update.
-      // SOFIA: future project, make is_obsolute updatable. make sure to add is_obsolute collection to cached feature
-        $sql .= "(:name_$i,:feature_id_$i),\n";
-        $args[":name_$i"] = $new_name;
-        $args[":feature_id_$i"] = $feature_id;
+      // TO DO: make is_obsolute updatable. Make sure to add is_obsolute collection to cached feature
+      $sql .= "(:name_$i, :feature_id_$i),\n";
+      $args[":name_$i"] = $new_name;
+      $args[":feature_id_$i"] = $feature_id;
 
       // If we've reached the size of the batch then let's do the insert.
       if ($i == $batch_size or $total == $num_features) {
@@ -1945,11 +1943,11 @@ class GFF3Importer extends TripalImporter {
               if ($matched_type_id == $f->type_id and $matched_organism_id == $f->organism_id) {
                 $this->features[$f->uniquename]['feature_id'] = $f->feature_id;
                 $this->features[$f->uniquename]['name'] = $f->name;
-		# SOFIA: check to see if the name has changed
+		// Checking to see if the name has changed and therefore needs updating
 		if ($f->name != $matched_feature['name']) {
-                  ## need to update name of feature
-		  ## add flag to cached feature that indicates updated needed
-		  $this->update_names[$f->feature_id]=$matched_feature['name'];
+                  // Yes. we need to update name of this feature.
+		  // Adding flag to cached feature that indicates updated needed.
+		  $this->update_names[$f->feature_id] = $matched_feature['name'];
 	        }
               }
             }
@@ -2892,9 +2890,7 @@ class GFF3Importer extends TripalImporter {
     $uniquename = '';
     $name = '';
 
-    // If there is no ID or name then try to create a name and ID.
-    // SOFIA: Name typo?? should name be Name?
-    if (!array_key_exists('ID', $attrs) and !array_key_exists('name', $attrs)) {
+    if (!array_key_exists('ID', $attrs) and !array_key_exists('Name', $attrs)) {
 
       // Check if an alternate ID field is suggested, if so, then use
       // that for the name.
