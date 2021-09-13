@@ -2547,7 +2547,7 @@ class OBOImporter extends TripalImporter {
    *
    * @ingroup tripal_obo_loader
    */
-  private function oboEbiLookup($accession, $type_of_search, $found_iri) {
+  private function oboEbiLookup($accession, $type_of_search, $found_iri = NULL) {
     //Grab just the ontology from the $accession.
     $parts = explode(':', $accession);
     $ontology = strtolower($parts[0]);
