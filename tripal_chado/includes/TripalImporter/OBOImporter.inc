@@ -1046,9 +1046,7 @@ class OBOImporter extends TripalImporter {
       list($ontologyID, $base_iri) = $this->baseIRIs[$short_name];
     }
     else {
-      $query_count = 0;   
       $ontology_results =  $this->oboEbiLookup($id, 'query');
-      $query_count++;
       if (!$ontology_results) {
         $ontology_results =  $this->oboEbiLookup($id, 'query-non-local'); 
       }
@@ -1076,9 +1074,9 @@ class OBOImporter extends TripalImporter {
         $defining_ontology = $each['is_defining_ontology'];
         // First result should have defining_ontology=true, but if 
         // it doesn't, use the first result with obo_id=$id
-	if ($defining_ontology == 'false' and $obo_id != $id) {
-	  continue;
-	}
+        if ($defining_ontology == 'false' and $obo_id != $id) {
+          continue;
+        }
         $iri = urlencode(urlencode($each['iri']));
         $ontologyID = $each['ontology_name'];
 	// Type should be 'property' or 'class' in the response
@@ -1102,7 +1100,7 @@ class OBOImporter extends TripalImporter {
           if ( !$defining_ontology and $obo_id != $id ) {    
             continue;
           }  
-      	  $found_iri = urlencode(urlencode($each['iri']));
+          $found_iri = urlencode(urlencode($each['iri']));
           $ontology = $each['ontology_name'];
 	  // Type should be 'property' or 'class' in the response
           $type = $each['type'];
