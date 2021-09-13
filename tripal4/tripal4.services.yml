@@ -1,0 +1,4 @@
+services:
+  tripal4.vocab.manager:
+    class: Drupal\tripal4\Plugin\TripalVocabManager
+    parent: default_plugin_manager
