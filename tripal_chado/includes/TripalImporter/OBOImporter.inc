@@ -2584,8 +2584,8 @@ class OBOImporter extends TripalImporter {
       $response = drupal_http_request($full_url, $options);
       if (!empty($response)) {
         $response = drupal_json_decode($response->data);
-       }
-     }
+      }
+    }
     elseif ($type_of_search == 'query') {
       $options = [];
       $full_url = 'http://www.ebi.ac.uk/ols/api/search?q=' . $accession . '&queryFields=obo_id&local=true';
