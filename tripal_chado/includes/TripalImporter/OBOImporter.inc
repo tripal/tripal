@@ -1104,10 +1104,10 @@ class OBOImporter extends TripalImporter {
           $ontology = $each['ontology_name'];
           // Type should be 'property' or 'class' in the response
           $type = $each['type'];
-	  if ($type == 'property') {
+          if ($type == 'property') {
             $type = 'properties';
-	  }
-	  elseif ( $type == 'class') {
+          }
+          elseif ( $type == 'class') {
             $type = 'terms';
           }
 	  $results = $this->oboEbiLookup($id, $type, $found_iri);
