@@ -1102,7 +1102,7 @@ class OBOImporter extends TripalImporter {
           }  
           $found_iri = urlencode(urlencode($each['iri']));
           $ontology = $each['ontology_name'];
-	  // Type should be 'property' or 'class' in the response
+          // Type should be 'property' or 'class' in the response
           $type = $each['type'];
 	  if ($type == 'property') {
             $type = 'properties';
