@@ -1104,12 +1104,6 @@ class OBOImporter extends TripalImporter {
           $ontology = $each['ontology_name'];
           // Type should be 'property' or 'class' in the response
           $type = $each['type'];
-          if ($type == 'property') {
-            $type = 'properties';
-          }
-          elseif ( $type == 'class') {
-            $type = 'terms';
-          }
 	  $results = $this->oboEbiLookup($id, $type, $found_iri);
         } 
       }
@@ -2603,6 +2597,13 @@ class OBOImporter extends TripalImporter {
       }
     }
     elseif ($found_iri) {
+      $type = '';
+      if ($type_of_search == 'property') {
+        $type = 'properties';
+      }
+      elseif ( $type_of_search == 'class') {
+        $type = 'terms';
+      }
       $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontology . '/' . $type . '/' . $found_iri;
       $options = [];
       $response = drupal_http_request($full_url, $options);
