@@ -7,7 +7,7 @@ use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 
 /**
- * Provides the Importer plugin manager.
+ * Provides the tripal vocabulary plugin manager.
  */
 class ImporterManager extends DefaultPluginManager {
 
@@ -28,7 +28,7 @@ class ImporterManager extends DefaultPluginManager {
       ,ModuleHandlerInterface $module_handler
   ) {
     parent::__construct(
-        'Plugin/TripalVocab'
+        "Plugin/TripalVocab"
         ,$namespaces
         ,$module_handler
         ,'Drupal\tripal4\Plugin\TripalVocabInterface'

@@ -3,25 +3,23 @@
 namespace Drupal\tripal4\Plugin;
 
 use Drupal\Component\Plugin\PluginInspectionInterface;
+use Drupal\tripal4\Vocabulary\Term
 
 /**
- * Defines an interface for Tripal Vocabulary plugins.
+ * Defines an interface for tripal vocabulary plugins.
  */
 interface TripalVocabInterface extends PluginInspectionInterface {
 
   /**
-   * Tests if the given term name and accession exists in this vocabulary.
+   * Tests if the given term exists in this vocabulary.
    *
-   * @param string name
-   *   The term's name.
-   *
-   * @param string accession
-   *   The term's accession.
+   * @param \Drupal\tripal4\Vocabulary\Term term
+   *   The given term.
    *
    * @return bool
    *   True if the given term exists or false otherwise.
    */
-  public function hasTerm(string $name, string $accession);
+  public function hasTerm(Term $term);
 
   /**
    * Returns a list of valid terms based off matches from the given partial
@@ -31,9 +29,7 @@ interface TripalVocabInterface extends PluginInspectionInterface {
    *   The partial term name.
    *
    * @return array
-   *   An array of valid term items. Each item of the array is an array with
-   *   two strings. The first string is the term's name and the second is its
-   *   accession.
+   *   An array of valid \Drupal\tripal4\Vocabulary\Term objects.
    */
   public function suggestTerms(string $partial);
 

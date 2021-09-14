@@ -5,7 +5,7 @@ namespace Drupal\tripal4\Annotation;
 use Drupal\Component\Annotation\Plugin;
 
 /**
- * Defines a Tripal Vocabulary item annotation object.
+ * Defines a tripal vocabulary item annotation object.
  *
  * @see \Drupal\products\Plugin\ImporterManager
  *
