@@ -1047,7 +1047,9 @@ class OBOImporter extends TripalImporter {
     }
     else {
       $ontology_results =  $this->oboEbiLookup($id, 'query');
-      if (!$ontology_results) {
+      // If results were received but the number of results is 0, do a query-non-local lookup.
+      if ($ontology_results['response']['numFound'] == 0) {
+        print "oboEbiLookup($id, 'query-non-local')\n";
         $ontology_results =  $this->oboEbiLookup($id, 'query-non-local'); 
       }
       if (!$ontology_results) {
@@ -1104,7 +1106,10 @@ class OBOImporter extends TripalImporter {
           $ontology = $each['ontology_name'];
           // Type should be 'property' or 'class' in the response
           $type = $each['type'];
-	  $results = $this->oboEbiLookup($id, $type, $found_iri);
+          $results = $this->oboEbiLookup($id, $type, $found_iri, $ontology);
+          // if this term is the defining_ontology and we have the correct ID, 
+          // we dont need more, get it and stop
+          break;
         } 
       }
     }
@@ -2547,12 +2552,31 @@ class OBOImporter extends TripalImporter {
    *
    * @ingroup tripal_obo_loader
    */
-  private function oboEbiLookup($accession, $type_of_search, $found_iri = NULL) {
+  private function oboEbiLookup($accession, $type_of_search, $found_iri = NULL, $found_ontology = NULL) {
     //Grab just the ontology from the $accession.
     $parts = explode(':', $accession);
     $ontology = strtolower($parts[0]);
     $ontology = preg_replace('/\s+/', '', $ontology);
-    if ($type_of_search == 'ontology') {
+    if ($found_iri) {
+      // When we cannot grab the ontology from the accession or the IRI cannot be automatically formed we
+      // we need to use the ontology and the IRI found in the previous query.
+      $ontology = $found_ontology;
+      $type = '';
+      if ($type_of_search == 'property') {
+        $type = 'properties';
+      }
+      elseif ( $type_of_search == 'class') {
+        $type = 'terms';
+      }
+      $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontology . '/' . $type . '/' . $found_iri;
+      print "fullurl: $full_url\n";
+      $options = [];
+      $response = drupal_http_request($full_url, $options);
+      if (!empty($response)) {
+        $response = drupal_json_decode($response->data);
+      }
+    }
+    elseif ($type_of_search == 'ontology') {
       $options = [];
       $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontology;
       $response = drupal_http_request($full_url, $options);
@@ -2591,21 +2615,6 @@ class OBOImporter extends TripalImporter {
     elseif ($type_of_search == 'query-non-local') {
       $options = [];
       $full_url = 'http://www.ebi.ac.uk/ols/api/search?q=' . $accession . '&queryFields=obo_id';
-      $response = drupal_http_request($full_url, $options);
-      if (!empty($response)) {
-        $response = drupal_json_decode($response->data);
-      }
-    }
-    elseif ($found_iri) {
-      $type = '';
-      if ($type_of_search == 'property') {
-        $type = 'properties';
-      }
-      elseif ( $type_of_search == 'class') {
-        $type = 'terms';
-      }
-      $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontology . '/' . $type . '/' . $found_iri;
-      $options = [];
       $response = drupal_http_request($full_url, $options);
       if (!empty($response)) {
         $response = drupal_json_decode($response->data);
