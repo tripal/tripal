@@ -656,7 +656,7 @@ class GFF3Importer extends TripalImporter {
       $this->logMessage("Step 19 of 27: Find cross references...                          ");
       $this->findDbxrefs();
 
-      $this->logMessage("Step 21 of 27: Insert new cross references...                    ");
+      $this->logMessage("Step 20 of 27: Insert new cross references...                    ");
       $this->insertDbxrefs();
 
       $this->logMessage("Step 21 of 27: Get new cross references IDs...                   ");
