@@ -3,12 +3,12 @@
 namespace Drupal\tripal4\Plugin;
 
 use Drupal\Component\Plugin\PluginBase;
-use Drupal\tripal4\Plugin\TripalVocabInterface
+use Drupal\tripal4\Plugin\IdSpaceInterface
 
 /**
- * Base class for tripal vocabulary plugins.
+ * Base class for tripal id space plugins.
  */
-abstract class TripalVocabBase extends PluginBase implements TripalVocabInterface {
+abstract class IdSpaceBase extends PluginBase implements IdSpaceInterface {
 
   /**
    * {@inheritdoc}

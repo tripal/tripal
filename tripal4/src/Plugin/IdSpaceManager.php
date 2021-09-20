@@ -7,12 +7,12 @@ use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 
 /**
- * Provides the tripal vocabulary plugin manager.
+ * Provides the tripal id space plugin manager.
  */
-class ImporterManager extends DefaultPluginManager {
+class IdSpaceManager extends DefaultPluginManager {
 
   /**
-   * Constructs a new tripal vocabulary plugin manager.
+   * Constructs a new tripal id space plugin manager.
    *
    * @param \Traversable $namespaces
    *   An object that implements \Traversable which contains the root paths
@@ -28,14 +28,14 @@ class ImporterManager extends DefaultPluginManager {
       ,ModuleHandlerInterface $module_handler
   ) {
     parent::__construct(
-        "Plugin/TripalVocab"
+        "Plugin/TripalIdSpace"
         ,$namespaces
         ,$module_handler
-        ,'Drupal\tripal4\Plugin\TripalVocabInterface'
-        ,'Drupal\tripal4\Annotation\TripalVocab'
+        ,'Drupal\tripal4\Plugin\IdSpaceInterface'
+        ,'Drupal\tripal4\Annotation\IdSpace'
     );
-    $this->alterInfo('tripal_vocab_info');
-    $this->setCacheBackend($cache_backend,'tripal_vocab_plugins');
+    $this->alterInfo('tripal_id_space_info');
+    $this->setCacheBackend($cache_backend,'tripal_id_space_plugins');
   }
 
 }

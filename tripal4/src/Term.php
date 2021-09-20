@@ -15,6 +15,13 @@ class Term {
   public $name;
 
   /**
+   * The term id space.
+   *
+   * @var string
+   */
+  public $idSpace;
+
+  /**
    * The term accession.
    *
    * @var string
@@ -22,16 +29,20 @@ class Term {
   public $accession;
 
   /**
-   * Constructs a new term object with the given name and accession.
+   * Constructs a new term object with the given name, id space, and accession.
    *
    * @param string name
    *   The name.
    *
+   * @param string idSpace
+   *   The id space.
+   *
    * @param string accession
    *   The accession.
    */
-  public function __construct($name,$accession) {
+  public function __construct($name,$idSpace,$accession) {
     $this->name = $name;
+    $this->idSpace = $idSpace;
     $this->accession = $accession;
   }
 
@@ -45,7 +56,7 @@ class Term {
    *   True if equal otherwise false.
    */
   public function isEqual(Term $other) {
-      return $this->name == $other->name && $this->accession == $other->accession;
+      return $this->idSpace == $other->idSpace && $this->accession == $other->accession;
   }
 
 }

@@ -11,7 +11,7 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @Annotation
  */
-class TripalVocab extends Plugin {
+class Vocabulary extends Plugin {
 
   /**
    * The plugin ID.
