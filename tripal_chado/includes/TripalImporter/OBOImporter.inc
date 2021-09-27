@@ -952,7 +952,7 @@ class OBOImporter extends TripalImporter {
 
     // Check if the EBI ontology search has this ontology:
     try {
-      $results = $this->oboEbiLookup($ontology, 'ontology');
+      $results = $this->oboEbiLookup($ontology, 'ontology'); 
       if ($results and array_key_exists('config', $results) and array_key_exists('default-namespace', $results['config']['annotations'])) {
         $namespace = $results['config']['annotations']['default-namespace'];
         if (is_array($namespace)) {
@@ -1040,17 +1040,22 @@ class OBOImporter extends TripalImporter {
     // First get the ontology so we can build an IRI for the term
     $base_iri = '';
     $ontologyID = '';
+    $iri = '';
+    $type ='';
     if (array_key_exists($short_name, $this->baseIRIs)) {
       list($ontologyID, $base_iri) = $this->baseIRIs[$short_name];
     }
     else {
-      $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $short_name;
-      $response = drupal_http_request($full_url, []);
-      if (!$response) {
-        throw new Exception(t('Did not get a response from EBI OLS trying to lookup ontology: !ontology',
-          ['!ontology' => $short_name]));
+      $ontology_results =  $this->oboEbiLookup($id, 'query');
+      // If results were received but the number of results is 0, do a query-non-local lookup.
+      if ($ontology_results['response']['numFound'] == 0) {
+        print "oboEbiLookup($id, 'query-non-local')\n";
+        $ontology_results =  $this->oboEbiLookup($id, 'query-non-local'); 
       }
-      $ontology_results = drupal_json_decode($response->data);
+      if (!$ontology_results) {
+        throw new Exception(t('Did not get a response from EBI OLS trying to lookup ontology: !id',
+          ['!id' => $id]));
+      }
       if ($ontology_results['error']) {
 
         $this->logMessage(t('Cannot find the ontology via an EBI OLS lookup: !short_name. \n' .
@@ -1063,27 +1068,60 @@ class OBOImporter extends TripalImporter {
             '!url' => $full_url,
           ]), TRIPAL_WARNING);
       }
-      //What should happen with this stuff?
-      $base_iri = $ontology_results['config']['baseUris'][0];
-      $ontologyID = $ontology_results['ontologyId'];
-      $this->baseIRIs[$short_name] = [$ontologyID, $base_iri];
+      // The following foreach code works but, I am not sure that
+      // I am retrieving each query result from the json associative
+      // array with the correct style
+      foreach ($ontology_results['response']['docs'] as $each ) {
+        $obo_id = $each['obo_id'];
+        $defining_ontology = $each['is_defining_ontology'];
+        // First result should have defining_ontology=true, but if 
+        // it doesn't, use the first result with obo_id=$id
+        if ($defining_ontology == 'false' and $obo_id != $id) {
+          continue;
+        }
+        $iri = urlencode(urlencode($each['iri']));
+        $ontologyID = $each['ontology_name'];
+        // Type should be 'property' or 'class' in the response
+        $type = $each['type'];
+      }
     }
 
     // Next get the term.
-    $iri = urlencode(urlencode($base_iri . $accession));
-    $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontologyID . '/terms/' . $iri;
-    $response = drupal_http_request($full_url, []);
-    if (!$response) {
-      throw new Exception(t('Did not get a response from EBI OLS trying to lookup term: !id',
-        ['!id' => $id]));
+    $query = $type;
+    if ($type == 'class') {
+      $query = 'term';
     }
-    $results = drupal_json_decode($response->data);
+    $results =  $this->oboEbiLookup($id, $query);
     if (!$results) {
-      $this->logMessage('Error: no data with !url.  The response was: !response', [
-        '!url' => $full_url,
-        '!response' => $response,
-      ]);
-
+      $query = 'query-non-local';
+      $ontology_results = $this->oboEbiLookup($id, $query);
+      if ($ontology_results) {
+        foreach ($ontology_results['response']['docs'] as $each ){
+          $obo_id = $each['obo_id'];
+          $defining_ontology = $each['is_defining_ontology'];
+          if ( !$defining_ontology and $obo_id != $id ) {    
+            continue;
+          }  
+          $found_iri = urlencode(urlencode($each['iri']));
+          $ontology = $each['ontology_name'];
+          // Type should be 'property' or 'class' in the response
+          $type = $each['type'];
+          $results = $this->oboEbiLookup($id, $type, $found_iri, $ontology);
+          // if this term is the defining_ontology and we have the correct ID, 
+          // we dont need more, get it and stop
+          break;
+        } 
+      }
+    }
+    if (!$results) {
+      throw new Exception(t('Did not get a response from EBI OLS trying to lookup: !type !id with !url',
+        ['!type'=> $type, '!id' => $id, '!url' => $full_url]));
+      $this->logMessage('Error: no data with !id.  The response was: !response result was:!results', 
+        [
+          '!id' => $id,
+          '!response' => $response,
+    	  '!results' => $results,
+        ]);
       return FALSE;
     }
 
@@ -2514,12 +2552,31 @@ class OBOImporter extends TripalImporter {
    *
    * @ingroup tripal_obo_loader
    */
-  private function oboEbiLookup($accession, $type_of_search) {
+  private function oboEbiLookup($accession, $type_of_search, $found_iri = NULL, $found_ontology = NULL) {
     //Grab just the ontology from the $accession.
     $parts = explode(':', $accession);
     $ontology = strtolower($parts[0]);
     $ontology = preg_replace('/\s+/', '', $ontology);
-    if ($type_of_search == 'ontology') {
+    if ($found_iri) {
+      // When we cannot grab the ontology from the accession or the IRI cannot be automatically formed we
+      // we need to use the ontology and the IRI found in the previous query.
+      $ontology = $found_ontology;
+      $type = '';
+      if ($type_of_search == 'property') {
+        $type = 'properties';
+      }
+      elseif ( $type_of_search == 'class') {
+        $type = 'terms';
+      }
+      $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontology . '/' . $type . '/' . $found_iri;
+      print "fullurl: $full_url\n";
+      $options = [];
+      $response = drupal_http_request($full_url, $options);
+      if (!empty($response)) {
+        $response = drupal_json_decode($response->data);
+      }
+    }
+    elseif ($type_of_search == 'ontology') {
       $options = [];
       $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontology;
       $response = drupal_http_request($full_url, $options);
@@ -2532,6 +2589,16 @@ class OBOImporter extends TripalImporter {
       $iri = urlencode(urlencode("http://purl.obolibrary.org/obo/" . str_replace(':', '_', $accession)));
       $options = [];
       $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontology . '/' . 'terms/' . $iri;
+      $response = drupal_http_request($full_url, $options);
+      if (!empty($response)) {
+        $response = drupal_json_decode($response->data);
+      }
+    }
+    elseif ($type_of_search == 'property') {
+    //The IRI of the terms, this value must be double URL encoded
+      $iri = urlencode(urlencode("http://purl.obolibrary.org/obo/" . str_replace(':', '_', $accession)));
+      $options = [];
+      $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontology . '/' . 'properties/' . $iri;
       $response = drupal_http_request($full_url, $options);
       if (!empty($response)) {
         $response = drupal_json_decode($response->data);

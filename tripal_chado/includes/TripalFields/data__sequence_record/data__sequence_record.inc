@@ -127,9 +127,20 @@ class data__sequence_record extends ChadoField {
     ];
     $seqs = chado_get_feature_sequences(['feature_id' => $feature->feature_id], $options);
     $featurelocs = [];
+
     foreach ($seqs as $seq) {
       $featureloc = $this->getFeatureLoc($seq['featureloc_id']);
       $coords = $this->getSequenceCoords($featureloc);
+
+      // SOFIA: If the feature is a srcfeature don't derive sequence from itself
+      if ($feature->feature_id !=  $featureloc->srcfeature_id){
+	// I am not quite sure what the $option is doing, but I am going to set it 
+	// to 0 since there is no seq derived from parent
+        $options = [
+          'derive_from_parent' => 0,
+         ];
+         continue;
+      }
 
       $entity->{$field_name}['und'][]['value'] = [
         $sequence_term => $seq['residues'],
