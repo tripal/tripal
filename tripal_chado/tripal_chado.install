@@ -732,16 +732,20 @@ function tripal_chado_fix_legacy_SOFP_7338() {
     chado_update_record('cvterm', ['cvterm_id' => $id], ['is_relationshiptype' => 0]);
   }
 
-  // Repopulate the mview.
-  $mview_id = chado_get_mview_id('db2cv_mview');
-  global $user;
-  tripal_add_job(
-    'Repopulating db2cv to fix legacy SOFP',
-    'tripal_chado',
-    'chado_populate_mview',
-    [$mview_id],
-    $user->uid
-  );
+  // Repopulate the mview if the table exists.  This is only the case during
+  // an upgrade from Tripal v2. Otherwise the db2cv_mview gets created
+  // during the prepare Chado stage of the install and is not needed here.
+  if (chado_table_exists('db2cv_mview')) {
+    $mview_id = chado_get_mview_id('db2cv_mview');
+    global $user;
+    tripal_add_job(
+      'Repopulating db2cv to fix legacy SOFP',
+      'tripal_chado',
+      'chado_populate_mview',
+      [$mview_id],
+      $user->uid
+    );
+  }
 }
 
 /**
