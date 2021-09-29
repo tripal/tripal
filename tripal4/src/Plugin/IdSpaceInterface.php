@@ -2,13 +2,13 @@
 
 namespace Drupal\tripal4\Plugin;
 
-use Drupal\Component\Plugin\PluginInspectionInterface;
+use Drupal\tripal4\Plugin\CollectionPluginInterface;
 use Drupal\tripal4\Term
 
 /**
  * Defines an interface for tripal id space plugins.
  */
-interface IdSpaceInterface extends PluginInspectionInterface {
+interface IdSpaceInterface extends CollectionPluginInterface {
 
   /**
    * Tests if the given term exists in this id space.

@@ -67,6 +67,28 @@ class CollectionPluginManager extends DefaultPluginManager {
   }
 
   /**
+   * Removes the collection with the given name in this manager. If no such
+   * collection exists with the given name then this does nothing.
+   *
+   * @param string $name
+   *   The collection name.
+   *
+   * @return bool
+   *   True if the matching collection was removed or false otherwise.
+   */
+  public function remove($name) {
+  }
+
+  /**
+   * Returns an array of names of all existing collection plugins.
+   *
+   * @return array
+   *   Collection plugin names.
+   */
+  public function getList() {
+  }
+
+  /**
    * Loads and returns an existing collection plugin with the given name. If
    * the given name does not exist then NULL is returned.
    *
@@ -77,15 +99,6 @@ class CollectionPluginManager extends DefaultPluginManager {
    *   The loaded collection plugin or NULL.
    */
   public function load($name) {
-  }
-
-  /**
-   * Returns an array of names of all existing collection plugins.
-   *
-   * @return array
-   *   Collection plugin names.
-   */
-  public function getList() {
   }
 
   /**
