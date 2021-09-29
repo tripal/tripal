@@ -22,6 +22,13 @@ class Term {
   public $idSpace;
 
   /**
+   * The default vocabulary.
+   *
+   * @var string
+   */
+  public $defaultVocab;
+
+  /**
    * The term accession.
    *
    * @var string
@@ -37,12 +44,16 @@ class Term {
    * @param string idSpace
    *   The id space.
    *
+   * @param string defaultVocab
+   *   The default vocabulary.
+   *
    * @param string accession
    *   The accession.
    */
-  public function __construct($name,$idSpace,$accession) {
+  public function __construct($name,$idSpace,$defaultVocab,$accession) {
     $this->name = $name;
     $this->idSpace = $idSpace;
+    $this->defaultVocab = $defaultVocab;
     $this->accession = $accession;
   }
 

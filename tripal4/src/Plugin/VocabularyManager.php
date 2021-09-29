@@ -2,14 +2,14 @@
 
 namespace Drupal\tripal4\Plugin;
 
-use Drupal\Core\Plugin\DefaultPluginManager;
+use Drupal\tripal4\Plugin\CollectionPluginManager;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 
 /**
  * Provides the tripal vocabulary plugin manager.
  */
-class VocabularyManager extends DefaultPluginManager {
+class VocabularyManager extends CollectionPluginManager {
 
   /**
    * Constructs a new tripal vocabulary plugin manager.
@@ -33,9 +33,10 @@ class VocabularyManager extends DefaultPluginManager {
         ,$module_handler
         ,'Drupal\tripal4\Plugin\VocabularyInterface'
         ,'Drupal\tripal4\Annotation\Vocabulary'
+        ,"tripal_vcoabulary_collection"
     );
-    $this->alterInfo('tripal_vocabulary_info');
-    $this->setCacheBackend($cache_backend,'tripal_vocabulary_plugins');
+    $this->alterInfo("tripal_vocabulary_info");
+    $this->setCacheBackend($cache_backend,"tripal_vocabulary_plugins");
   }
 
 }

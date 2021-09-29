@@ -14,10 +14,10 @@ interface VocabularyInterface extends IdSpaceInterface {
    * Returns a list of valid terms based off matches from the given partial term
    * name. A given max number of terms are returned.
    *
-   * @param string partial
+   * @param string $partial
    *   The partial term name.
    *
-   * @param int max
+   * @param int $max
    *   The given max number returned.
    *
    * @return array

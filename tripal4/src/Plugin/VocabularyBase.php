@@ -2,13 +2,13 @@
 
 namespace Drupal\tripal4\Plugin;
 
-use Drupal\Component\Plugin\PluginBase;
+use Drupal\tripal4\Plugin\CollectionPluginBase;
 use Drupal\tripal4\Plugin\VocabularyInterface
 
 /**
  * Base class for tripal vocabulary plugins.
  */
-abstract class VocabularyBase extends PluginBase implements VocabularyInterface {
+abstract class VocabularyBase extends CollectionPluginBase implements VocabularyInterface {
 
   /**
    * {@inheritdoc}

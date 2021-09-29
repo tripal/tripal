@@ -2,13 +2,13 @@
 
 namespace Drupal\tripal4\Plugin;
 
-use Drupal\Component\Plugin\PluginBase;
+use Drupal\tripal4\Plugin\CollectionPluginBase;
 use Drupal\tripal4\Plugin\IdSpaceInterface
 
 /**
  * Base class for tripal id space plugins.
  */
-abstract class IdSpaceBase extends PluginBase implements IdSpaceInterface {
+abstract class IdSpaceBase extends CollectionPluginBase implements IdSpaceInterface {
 
   /**
    * {@inheritdoc}

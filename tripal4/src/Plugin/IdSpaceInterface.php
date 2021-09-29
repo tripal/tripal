@@ -13,7 +13,7 @@ interface IdSpaceInterface extends PluginInspectionInterface {
   /**
    * Tests if the given term exists in this id space.
    *
-   * @param \Drupal\tripal4\Vocabulary\Term term
+   * @param \Drupal\tripal4\Vocabulary\Term $term
    *   The given term.
    *
    * @return bool
@@ -26,7 +26,7 @@ interface IdSpaceInterface extends PluginInspectionInterface {
    * this id space. If the given term is a root of this id space then NULL
    * is returned.
    *
-   * @param \Drupal\tripal4\Vocabulary\Term child
+   * @param \Drupal\tripal4\Vocabulary\Term $child
    *   The given term.
    *
    * @return mixed
@@ -39,7 +39,7 @@ interface IdSpaceInterface extends PluginInspectionInterface {
    * term for this id space or NULL. If the given term is NULL then the root
    * children of this id space is returned.
    *
-   * @param mixed parent
+   * @param \Drupal\tripal4\Vocabulary\Term|NULL $parent
    *   The given term or NULL.
    *
    * @return array
