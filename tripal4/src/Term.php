@@ -36,6 +36,22 @@ class Term {
   public $accession;
 
   /**
+   * Returns a list of valid terms based off matches from the given partial term
+   * name. A given max number of terms are returned.
+   *
+   * @param string $partial
+   *   The partial term name.
+   *
+   * @param int $max
+   *   The given max number returned.
+   *
+   * @return array
+   *   An array of valid \Drupal\tripal4\Vocabulary\Term objects.
+   */
+  public static function suggestTerms(string $partial, int $max = 10) {
+  }
+
+  /**
    * Constructs a new term object with the given name, id space, and accession.
    *
    * @param string name

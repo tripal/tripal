@@ -63,12 +63,16 @@ class CollectionPluginManager extends DefaultPluginManager {
    * @return \Drupal\tripal4\Plugin\TripalCollectionPluginBase
    *   The new collection.
    */
-  public function create($name,$pluginId) {
+  public function createCollection($name,$pluginId) {
   }
 
   /**
    * Removes the collection with the given name in this manager. If no such
    * collection exists with the given name then this does nothing.
+   * !!!WARNING!!!
+   * If the data in the removed collection is referenced by other collections or
+   * entities this could break data integrity. This method must be used with
+   * extreme caution!
    *
    * @param string $name
    *   The collection name.
@@ -76,7 +80,7 @@ class CollectionPluginManager extends DefaultPluginManager {
    * @return bool
    *   True if the matching collection was removed or false otherwise.
    */
-  public function remove($name) {
+  public function removeCollection($name) {
   }
 
   /**
@@ -85,7 +89,7 @@ class CollectionPluginManager extends DefaultPluginManager {
    * @return array
    *   Collection plugin names.
    */
-  public function getList() {
+  public function getCollectionList() {
   }
 
   /**
@@ -98,7 +102,7 @@ class CollectionPluginManager extends DefaultPluginManager {
    * @return \Drupal\tripal4\Plugin\TripalCollectionPluginBase|NULL
    *   The loaded collection plugin or NULL.
    */
-  public function load($name) {
+  public function loadCollection($name) {
   }
 
   /**
@@ -106,6 +110,6 @@ class CollectionPluginManager extends DefaultPluginManager {
    *
    * @var string
    */
-  private $table;
+  private $collectionTable;
 
 }
