@@ -1,0 +1,7 @@
+name: 'Tripal Biological Database'
+type: module
+description: 'Biological database layer for Tripal.'
+core_version_requirement: ^8.8 || ^9
+package: 'Tripal'
+dependencies:
+  - tripal:tripal

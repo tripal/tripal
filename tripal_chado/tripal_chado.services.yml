@@ -1,5 +1,14 @@
 services:
-    tripal_chado.chadoInstaller:
-        class: Drupal\tripal_chado\Services\chadoInstaller
-    tripal_chado.chadoPreparer:
-        class: Drupal\tripal_chado\Services\chadoPreparer
+  tripal_chado.database:
+    class: Drupal\tripal_chado\Database\ChadoConnection
+    arguments: ['chado']
+  tripal_chado.cloner:
+    class: Drupal\tripal_chado\Services\ChadoCloner
+  tripal_chado.installer:
+    class: Drupal\tripal_chado\Services\ChadoInstaller
+  tripal_chado.integrator:
+    class: Drupal\tripal_chado\Services\ChadoIntegrator
+  tripal_chado.upgrader:
+    class: Drupal\tripal_chado\Services\ChadoUpgrader
+  tripal_chado.preparer:
+      class: Drupal\tripal_chado\Services\ChadoPreparer
