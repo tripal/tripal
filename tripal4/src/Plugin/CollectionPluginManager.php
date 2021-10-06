@@ -71,8 +71,8 @@ class CollectionPluginManager extends DefaultPluginManager {
    * collection exists with the given name then this does nothing.
    * !!!WARNING!!!
    * If the data in the removed collection is referenced by other collections or
-   * entities this could break data integrity. This method must be used with
-   * extreme caution!
+   * entities this could cause data loss. This method must be used with extreme
+   * caution!
    *
    * @param string $name
    *   The collection name.
@@ -84,10 +84,10 @@ class CollectionPluginManager extends DefaultPluginManager {
   }
 
   /**
-   * Returns an array of names of all existing collection plugins.
+   * Returns an array of collection names of all existing collections.
    *
    * @return array
-   *   Collection plugin names.
+   *   Collection names.
    */
   public function getCollectionList() {
   }

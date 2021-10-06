@@ -11,18 +11,19 @@ use Drupal\tripal4\Term
 interface VocabularyInterface extends CollectionPluginInterface {
 
   /**
-   * Returns list of id space plugin's machine names that is contained in this vocabulary.
+   * Returns list of id space collection names that is contained in this vocabulary.
    * 
    * @return array
-   *   An array of id space plugin machine name strings.
+   *   An array of id space collection name strings.
    */
   public function getIdSpaceNames();
 
   /**
-   * Adds the id space with the given name to this vocabulary. The given name must be a valid id space collection.
+   * Adds the id space with the given collection name to this vocabulary. The
+   * given collection name must be a valid id space collection.
    *
    * @param string $idSpace
-   *   The id space name.
+   *   The id space collection name.
    *
    * @return bool
    *   True on success or false otherwise.
@@ -30,13 +31,13 @@ interface VocabularyInterface extends CollectionPluginInterface {
   public function addIdSpace($idSpace);
 
   /**
-   * Removes the id space from this vocabulary with the given name.
+   * Removes the id space from this vocabulary with the given collection name.
    *
    * @param string $idSpace
-   *   The id space name.
+   *   The id space collection name.
    *
    * @return bool
-   * True on success or false otherwise.
+   *   True on success or false otherwise.
    */
   public function removeIdSpace($idspace);
 

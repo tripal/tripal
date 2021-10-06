@@ -8,32 +8,26 @@ namespace Drupal\tripal4\Vocabulary;
 class Term {
 
   /**
-   * The term name.
+   * Constructs a new term object with the given name, id space, and accession.
    *
-   * @var string
-   */
-  public $name;
-
-  /**
-   * The term id space.
+   * @param string name
+   *   The name.
    *
-   * @var string
-   */
-  public $idSpace;
-
-  /**
-   * The default vocabulary.
+   * @param string idSpace
+   *   The id space.
    *
-   * @var string
-   */
-  public $defaultVocab;
-
-  /**
-   * The term accession.
+   * @param string accession
+   *   The accession.
    *
-   * @var string
+   * @param string defaultVocab
+   *   The default vocabulary.
    */
-  public $accession;
+  public function __construct($name,$idSpace,$accession,$defaultVocab) {
+    $this->name = $name;
+    $this->idSpace = $idSpace;
+    $this->defaultVocab = $defaultVocab;
+    $this->accession = $accession;
+  }
 
   /**
    * Returns a list of valid terms based off matches from the given partial term
@@ -52,28 +46,6 @@ class Term {
   }
 
   /**
-   * Constructs a new term object with the given name, id space, and accession.
-   *
-   * @param string name
-   *   The name.
-   *
-   * @param string idSpace
-   *   The id space.
-   *
-   * @param string defaultVocab
-   *   The default vocabulary.
-   *
-   * @param string accession
-   *   The accession.
-   */
-  public function __construct($name,$idSpace,$defaultVocab,$accession) {
-    $this->name = $name;
-    $this->idSpace = $idSpace;
-    $this->defaultVocab = $defaultVocab;
-    $this->accession = $accession;
-  }
-
-  /**
    * Tests if the given term is equal to this term.
    *
    * @param \Drupal\tripal4\Vocabulary\Term other
@@ -85,5 +57,82 @@ class Term {
   public function isEqual(Term $other) {
       return $this->idSpace == $other->idSpace && $this->accession == $other->accession;
   }
+
+  /**
+   * Returns this term's name.
+   *
+   * @return string
+   *   The name.
+   */
+  public function getName() {
+    return $this->name;
+  }
+
+  /**
+   * Returns this term's id space collection name.
+   *
+   * @return string
+   *   The id space collection name.
+   */
+  public function getIdSpace() {
+    return $this->idSpace;
+  }
+
+  /**
+   * Returns an instance of this term's id space.
+   *
+   * @return \Drupal\tripal4\Plugin\IdSpaceInterface
+   *   The id space instance.
+   */
+  public function getIdSpaceObject() {
+  }
+
+  /**
+   * Returns this term's accession.
+   *
+   * @return string
+   *   The accession.
+   */
+  public function getAccession() {
+    return $this->accession;
+  }
+
+  /**
+   * Returns this term's default vocabulary collection name.
+   *
+   * @return string
+   *   The vocabulary collection name.
+   */
+  public function getDefaultVocab() {
+    return $this->defaultVocab;
+  }
+
+  /**
+   * The term name.
+   *
+   * @var string
+   */
+  private $name;
+
+  /**
+   * The term id space.
+   *
+   * @var string
+   */
+  private $idSpace;
+
+  /**
+   * The term accession.
+   *
+   * @var string
+   */
+  private $accession;
+
+  /**
+   * The default vocabulary.
+   *
+   * @var string
+   */
+  private $defaultVocab;
 
 }
