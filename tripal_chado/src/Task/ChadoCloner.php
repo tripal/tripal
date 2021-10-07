@@ -15,7 +15,8 @@ use Drupal\tripal_biodb\Exception\ParameterException;
  * // Where 'chado' is the name of an existing Chado schema and 'new_chado_copy'
  * // is the name of an unexisting schema that will be created and receive the
  * // full copy of the 'chado' schema content.
- * $cloner = new Drupal\tripal_chado\Task\ChadoCloner([
+ * $cloner = \Drupal::service('tripal_chado.cloner');
+ * $cloner->setParameters([
  *   'input_schemas'  => ['chado'],
  *   'output_schemas' => ['new_chado_copy'],
  * ]);
@@ -41,7 +42,7 @@ class ChadoCloner extends ChadoTaskBase {
    * ['input_schemas' => ['original_name'], 'output_schemas' => ['copy_name'], ]
    * ```
    *
-   * @throws \Drupal\tripal_chado\Exception\ParameterException
+   * @throws \Drupal\tripal_biodb\Exception\ParameterException
    *   A descriptive exception is thrown in cas of invalid parameters.
    */
   public function validateParameters() :void {
@@ -80,6 +81,12 @@ class ChadoCloner extends ChadoTaskBase {
           . $output_schema->getSchemaName()
           . '" already exists. Please remove that schema first.'
         );
+      }
+
+      // Check target name is not reserved.
+      $issue = $bio_tool->isInvalidSchemaName($output_schema->getSchemaName());
+      if ($issue) {
+        throw new ParameterException($issue);
       }
 
       // Check if the source schema exists.
@@ -121,13 +128,13 @@ class ChadoCloner extends ChadoTaskBase {
    *   TRUE if the task was performed with success and FALSE if the task was
    *   completed but without the expected success.
    *
-   * @throws Drupal\tripal_chado\Exception\TaskException
+   * @throws Drupal\tripal_biodb\Exception\TaskException
    *   Thrown when a major failure prevents the task from being performed.
    *
-   * @throws \Drupal\tripal_chado\Exception\ParameterException
+   * @throws \Drupal\tripal_biodb\Exception\ParameterException
    *   Thrown if parameters are incorrect.
    *
-   * @throws Drupal\tripal_chado\Exception\LockException
+   * @throws Drupal\tripal_biodb\Exception\LockException
    *   Thrown when the locks can't be acquired.
    */
   public function performTask() :bool {

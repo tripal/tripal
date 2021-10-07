@@ -158,6 +158,10 @@ class BioDbTool {
     bool $reload_config = FALSE
   ) :string {
 
+    // @todo: Maybe add a flag to enable message translation.
+    // Reminder: exception messages should not be translated while user
+    // interface should be. Here, we may use the messages in both situation.
+
     $issue = '';
     // Make sure we have a valid schema name.
     if (63 < strlen($schema_name)) {
@@ -181,16 +185,12 @@ class BioDbTool {
       // they are installed, through config modifications.
       // See tripal_biodb_install() for an example.
       static::initSchemaReservation($reload_config);
-      foreach (static::$reservedSchemaPatterns as $reserved_pattern => $description) {
-        // Adds regex wildcard
-        $reserved_pattern = preg_replace('/(?<!\.)\*/', '.*', $reserved_pattern);
-        if (preg_match("/^$reserved_pattern\$/", $schema_name)) {
-          $issue =
-            "The '"
-            . $reserved_pattern
-            . "' schema name pattern is reserved for: $description."
-          ;
-        }
+      if ($reserved = static::isSchemaReserved($schema_name)) {
+        $pattern = array_key_first($reserved);
+        $description = $reserved[$pattern];
+        $issue =
+          "'$schema_name' matches the reservation pattern '$pattern' used for: $description."
+        ;
       }
     }
     return $issue;
@@ -300,6 +300,30 @@ class BioDbTool {
       }
     }
     return $removed_patterns;
+  }
+
+  /**
+   * Tells if a schema name is reserved or not.
+   *
+   * @param string $schema_name
+   *   The name of the schema to check.
+   *
+   * @return bool|array
+   *   FALSE if the given schema name is not reserved, otherwise it will return
+   *   an array with the reservation pattern matching the name as keys and their
+   *   associated descriptions as values.
+   */
+  public function isSchemaReserved(string $schema_name) {
+    static::initSchemaReservation();
+    $reserved = FALSE;
+    foreach (static::$reservedSchemaPatterns as $reserved_pattern => $description) {
+      // Adds regex wildcard
+      $reserved_pattern = preg_replace('/(?<!\.)\*/', '.*', $reserved_pattern);
+      if (preg_match("/^$reserved_pattern\$/", $schema_name)) {
+        $reserved[$reserved_pattern] = $description;
+      }
+    }
+    return $reserved;
   }
 
   /**

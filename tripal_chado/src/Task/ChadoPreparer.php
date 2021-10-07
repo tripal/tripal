@@ -8,6 +8,22 @@ use Drupal\tripal_biodb\Exception\LockException;
 use Drupal\tripal_biodb\Exception\ParameterException;
 use Drupal\tripal\Entity\TripalEntityType;
 
+/**
+ * Chado preparer.
+ *
+ * Usage:
+ * @code
+ * // Where 'chado' is the name of the Chado schema to prepare.
+ * $preparer = \Drupal::service('tripal_chado.preparer');
+ * $preparer->setParameters([
+ *   'output_schemas' => ['chado'],
+ * ]);
+ * if (!$preparer->performTask()) {
+ *   // Display a message telling the user the task failed and details are in
+ *   // the site logs.
+ * }
+ * @endcode
+ */
 class ChadoPreparer extends ChadoTaskBase {
 
   /**
@@ -24,7 +40,7 @@ class ChadoPreparer extends ChadoTaskBase {
    * ['output_schemas' => ['schema_name'], ]
    * ```
    *
-   * @throws \Drupal\tripal_chado\Exception\ParameterException
+   * @throws \Drupal\tripal_biodb\Exception\ParameterException
    *   A descriptive exception is thrown in cas of invalid parameters.
    */
   public function validateParameters() :void {
@@ -83,13 +99,13 @@ class ChadoPreparer extends ChadoTaskBase {
    *   TRUE if the task was performed with success and FALSE if the task was
    *   completed but without the expected success.
    *
-   * @throws Drupal\tripal_chado\Exception\TaskException
+   * @throws Drupal\tripal_biodb\Exception\TaskException
    *   Thrown when a major failure prevents the task from being performed.
    *
-   * @throws \Drupal\tripal_chado\Exception\ParameterException
+   * @throws \Drupal\tripal_biodb\Exception\ParameterException
    *   Thrown if parameters are incorrect.
    *
-   * @throws Drupal\tripal_chado\Exception\LockException
+   * @throws Drupal\tripal_biodb\Exception\LockException
    *   Thrown when the locks can't be acquired.
    */
   public function performTask() :bool {

@@ -13,7 +13,8 @@ use Drupal\tripal_biodb\Exception\ParameterException;
  * Usage:
  * @code
  * // Where 'chado' is the name of an existing Chado schema.
- * $upgrader = new Drupal\tripal_chado\Task\ChadoUpgrader([
+ * $upgrader = \Drupal::service('tripal_chado.upgrader');
+ * $upgrader->setParameters([
  *   'output_schemas' => ['chado'],
  * ]);
  * if (!$upgrader->performTask()) {
@@ -71,20 +72,19 @@ class ChadoUpgrader extends ChadoTaskBase {
    *
    * @var \Drupal\tripal_biodb\Database\BioDbTool
    */
-  protected $bioDbTool;
+  protected $bioTool;
 
   /**
    * {@inheritdoc}
    */
   public function __construct(
-    array $parameters = [],
     ?\Drupal\Core\Database\Connection $database = NULL,
     ?\Psr\Log\LoggerInterface $logger = NULL,
     ?\Drupal\tripal_biodb\Lock\SharedLockBackendInterface $locker = NULL,
     ?\Drupal\Core\State\StateInterface $state = NULL
   ) {
-    parent::__construct($parameters, $database, $logger, $locker, $state);
-    $this->bioDbTool = \Drupal::service('tripal_biodb.tool');
+    parent::__construct($database, $logger, $locker, $state);
+    $this->bioTool = \Drupal::service('tripal_biodb.tool');
   }
 
   /**
@@ -102,7 +102,7 @@ class ChadoUpgrader extends ChadoTaskBase {
    * ]
    * ```
    *
-   * @throws \Drupal\tripal_chado\Exception\ParameterException
+   * @throws \Drupal\tripal_biodb\Exception\ParameterException
    *   A descriptive exception is thrown in cas of invalid parameters.
    */
   public function validateParameters() :void {
@@ -299,13 +299,13 @@ class ChadoUpgrader extends ChadoTaskBase {
    *   TRUE if the task was performed with success and FALSE if the task was
    *   completed but without the expected success.
    *
-   * @throws Drupal\tripal_chado\Exception\TaskException
+   * @throws Drupal\tripal_biodb\Exception\TaskException
    *   Thrown when a major failure prevents the task from being performed.
    *
-   * @throws \Drupal\tripal_chado\Exception\ParameterException
+   * @throws \Drupal\tripal_biodb\Exception\ParameterException
    *   Thrown if parameters are incorrect.
    *
-   * @throws Drupal\tripal_chado\Exception\LockException
+   * @throws Drupal\tripal_biodb\Exception\LockException
    *   Thrown when the locks can't be acquired.
    */
   public function performTask() :bool {
@@ -361,7 +361,7 @@ class ChadoUpgrader extends ChadoTaskBase {
 
       try {
         // Get Drupal schema name.
-        $drupal_schema = $this->bioDbTool->getDrupalSchemaName();
+        $drupal_schema = $this->bioTool->getDrupalSchemaName();
         if ($this->parameters['fh']) {
           // Make sure we will work on the given schema when using SQL file.
           $sql_query =
@@ -470,7 +470,11 @@ class ChadoUpgrader extends ChadoTaskBase {
         // @todo: Test transaction behavior.
       }
       catch (Exception $e) {
-        $chado_schema->query('ROLLBACK;');
+        $this->connection->query(
+          'ROLLBACK; ROLLBACK; ROLLBACK;',
+          [],
+          ['allow_delimiter_in_query' => TRUE,]
+        );
         // Rethrow exception.
         throw $e;
       }
@@ -1262,9 +1266,7 @@ class ChadoUpgrader extends ChadoTaskBase {
     // First loop adds missing tables, upgrade columns on existing table,
     // removes column defaults, all constraints and indexes.
     foreach ($new_tables as $new_table_name => $new_table) {
-      if (!isset($this->upgradeQueries[$new_table_name])) {
-        $this->upgradeQueries[$new_table_name] = [];
-      }
+      $this->upgradeQueries[$new_table_name] ??= [];
 
       // Get new table definition.
       $new_table_definition = $ref_schema->schema()->getTableDef(
@@ -1315,8 +1317,8 @@ class ChadoUpgrader extends ChadoTaskBase {
             // Column exists, compare.
             // Data type.
             $old_type = $old_table_definition['columns'][$new_column]['type'];
-            $new_type = $new_table_definition['columns'][$new_column]['type'];
-            if ($old_type != $new_type) {
+
+            if ($old_type != $new_column_type) {
               $alter_sql[] = "ALTER COLUMN $new_column TYPE $new_column_type";
             }
             // NULL option.
@@ -1718,6 +1720,8 @@ class ChadoUpgrader extends ChadoTaskBase {
       }
       $sql_query =
         'CREATE OR REPLACE VIEW '
+        . $chado_schema->getQuotedSchemaName()
+        . '.'
         . $view->table_name
         . ' AS '
         . $view->def
@@ -1740,7 +1744,10 @@ class ChadoUpgrader extends ChadoTaskBase {
           ':view_name' => $view->table_name,
         ])
       ;
-      if ($comment && ($comment = $comment->fetch())) {
+      if ($comment
+          && ($comment = $comment->fetch())
+          && !empty($comment->comment)
+      ) {
         $sql_query =
           "COMMENT ON VIEW "
           . $chado_schema->getQuotedSchemaName()

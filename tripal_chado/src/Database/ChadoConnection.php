@@ -115,10 +115,15 @@ class ChadoConnection extends BioConnection {
     ?string $schema_name = NULL,
     bool $exact_version = FALSE
   ) :string {
-    $schema_name = $this->getDefaultSchemaName($schema_name);
-
     // By default, we don't know the version.
     $version = '';
+
+    try {
+      $schema_name = $this->getDefaultSchemaName($schema_name);
+    }
+    catch (ConnectionException $e) {
+      return $version;
+    }
 
     $result = $this->select('chado_installations' ,'i')
       ->fields('i', ['version'])
@@ -260,15 +265,30 @@ class ChadoConnection extends BioConnection {
    *   following structure:
    *   "schema_name": name of the schema (same as the key);
    *   "version": detected version of Chado;
-   *   "is_test": TRUE if it is a test schema and FALSE otherwise;
+   *   "is_default": TRUE if it is the default Chado schema, FALSE otherwise.
+   *   "is_test": if it is a test schema, the key of the corresponding prefix
+   *     as it is set in the config and FALSE otherwise;
+   *   "is_reserved": the value returned by
+   *     Drupal\tripal_biodb\Database\BioDbTool::isSchemaReserved;
    *   "has_data": TRUE if the schema contains more than just default records;
    *   "size": size of the schema in bytes;
-   *   "is_integrated": FALSE if not integrated with Tripal and an array
+   *   "integration": FALSE if not integrated with Tripal and an array
    *     otherwise with the following fields: 'install_id', 'schema_name',
    *     'version', 'created', 'updated'.
    */
   public function getAvailableInstances() :array {
     $chado_schemas = [];
+
+    // Get test schema prefix. If none set, we use '0' so we can test the prefix
+    // and avoid false-positive since no schema name is allowed to start by a
+    // number.
+    $test_prefixes = \Drupal::config('tripal_biodb.settings')
+      ->get('test_schema_base_names', '0')
+    ;
+    // Get default schema name.
+    $default_schema_name = \Drupal::config('tripal_chado.settings')
+      ->get('default_schema')
+    ;
 
     // First we get a list of available schemas excluding obvious non-chado
     // schemas.
@@ -279,7 +299,7 @@ class ChadoConnection extends BioConnection {
       SELECT schema_name AS \"name\"
       FROM information_schema.schemata
       WHERE
-        schema_name NOT IN ('information_schema', 'public', 'pg_catalog');
+        schema_name NOT IN ('information_schema', 'pg_catalog');
     ";
     $schemas = $this->query($sql_query)->fetchAll();
 
@@ -291,23 +311,37 @@ class ChadoConnection extends BioConnection {
         ['install_id', 'schema_name', 'version', 'created', 'updated']
       )
       ->execute()
-      ->fetchAllAssoc('schema_name')
+      ->fetchAllAssoc('schema_name', \PDO::FETCH_ASSOC)
     ;
 
     foreach ($schemas as $schema) {
       $version = $this->findVersion($schema->name);
-      if (FALSE !== $version) {
+      if ('' !== $version) {
         // Get size.
-        $schema_size = $this->getSchemaSize($schema->name);
+        $schema_size = $this->bioTool->getSchemaSize($schema->name);
         $has_data = (static::EMPTY_CHADO_SIZE < $schema_size);
+        // Check for test schema.
+        $is_test = FALSE;
+        foreach ($test_prefixes as $key => $prefix) {
+          if (str_starts_with($schema->name, $prefix)) {
+            $is_test = $key;
+          }
+        }
         // Check if part of Tripal.
         $integration = $integrated_schemas[$schema->name] ?? FALSE;
+        // Check if default.
+        $is_default = FALSE;
+        if ($integration && ($schema->name == $default_schema_name)) {
+          $is_default = TRUE;
+        }
         // Add schema to available Chado schema list.
         $schema_class = $this->getBioClass('Schema');
         $chado_schemas[$schema->name] = [
           'schema_name' => $schema->name,
           'version'     => $version,
-          'is_test'     => (0 === strpos($schema->name, $schema_class::TEST_SCHEMA_BASE_NAME)),
+          'is_default'  => $is_default,
+          'is_test'     => $is_test,
+          'is_reserved' => $this->bioTool->isSchemaReserved($schema->name),
           'has_data'    => $has_data,
           'size'        => $schema_size,
           'integration' => $integration,

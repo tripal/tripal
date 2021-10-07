@@ -1,14 +1,20 @@
 services:
+  # @todo: the static argument approach should be replaced by a factory that can
+  # find default Chado schema instance (which may not be 'chado').
   tripal_chado.database:
     class: Drupal\tripal_chado\Database\ChadoConnection
     arguments: ['chado']
   tripal_chado.cloner:
-    class: Drupal\tripal_chado\Services\ChadoCloner
+    class: Drupal\tripal_chado\Task\ChadoCloner
   tripal_chado.installer:
-    class: Drupal\tripal_chado\Services\ChadoInstaller
+    class: Drupal\tripal_chado\Task\ChadoInstaller
   tripal_chado.integrator:
-    class: Drupal\tripal_chado\Services\ChadoIntegrator
+    class: Drupal\tripal_chado\Task\ChadoIntegrator
   tripal_chado.upgrader:
-    class: Drupal\tripal_chado\Services\ChadoUpgrader
+    class: Drupal\tripal_chado\Task\ChadoUpgrader
+  tripal_chado.renamer:
+    class: Drupal\tripal_chado\Task\ChadoRenamer
+  tripal_chado.remover:
+    class: Drupal\tripal_chado\Task\ChadoRemover
   tripal_chado.preparer:
-      class: Drupal\tripal_chado\Services\ChadoPreparer
+    class: Drupal\tripal_chado\Task\ChadoPreparer

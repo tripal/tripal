@@ -40,7 +40,37 @@ interface BioTaskInterface {
   public function getId() :string;
 
   /**
+   * Sets task parameters.
+   *
+   * It sets (or sets again) task parameter before task execution. Only schema
+   * names are checked here, no other parameter validation are performed.
+   * Parameters are validate at runtime by ::performTask, just before the actual
+   * task is started.
+   *
+   * @param $parameters
+   *   A associative array of parameters used to configure the task. The
+   *   array should include the keys 'input_schemas' and 'output_schemas', both
+   *   containing an array of ordered schema names (or an empty array).
+   *   'input_schemas' are biological schemas used for reading only which may be
+   *   shared for reading with other concurrent tasks. 'output_schemas' are
+   *   schemas that will be created or modified and must not be shared (
+   *   exclusive use) during the task. If a schema comes from a different
+   *   database than the default one (ie. the one used by Drupal), the schema
+   *   name must be prefixed by the database key name (and not the "target", as
+   *   describbed in \Drupal\Core\Database\Database::getConnection()) followed
+   *   by a dot.
+   *
+   * @throws \Drupal\tripal_biodb\Exception\ParameterException
+   *   A descriptive exception is thrown in case of an invalid schema name.
+   */
+  public function setParameters(array $parameters = []) :void;
+
+  /**
    * Validate task parameters.
+   *
+   * This method should be called just before executing a task in the
+   * ::performTask method and should not need to be called from outside the
+   * class.
    *
    * @throws \Drupal\tripal_biodb\Exception\ParameterException
    *   A descriptive exception is thrown in cas of invalid parameters.

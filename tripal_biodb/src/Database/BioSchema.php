@@ -761,7 +761,7 @@ EOD;
       }
     }
     elseif ('database' == $source) {
-      $cache_key = $table . '/' . $format;
+      $cache_key = $this->defaultSchema . '/' . $table . '/' . $format;
       if (!isset($table_structures[$cache_key])) {
         $table_ddl = $this->getTableDdl($table);
         if ('SQL' == $format) {
@@ -808,7 +808,8 @@ EOD;
       $db_ddls = [];
     }
 
-    if (!isset($db_ddls[$table_name])) {
+    $cache_key = $this->defaultSchema . '/' . $table_name;
+    if (!isset($db_ddls[$cache_key])) {
       $schema_name = $this->defaultSchema;
       $drupal_schema = $this->bioTool->getDrupalSchemaName();
 
@@ -825,9 +826,9 @@ EOD;
       if ($result) {
         $table_raw_definition = $result->fetch(\PDO::FETCH_OBJ)->definition;
       }
-      $db_ddls[$table_name] = $table_raw_definition;
+      $db_ddls[$cache_key] = $table_raw_definition;
     }
-    return $db_ddls[$table_name];
+    return $db_ddls[$cache_key];
   }
 
   /**
@@ -853,7 +854,8 @@ EOD;
       $db_dependencies = [];
     }
 
-    if (!isset($db_dependencies[$table_name])) {
+    $cache_key = $this->defaultSchema . '/' . $table_name;
+    if (!isset($db_dependencies[$cache_key])) {
       $schema_name = $this->defaultSchema;
       $sql_query = "
         SELECT
@@ -887,9 +889,9 @@ EOD;
           $referencing->column => $referencing->depcolumn
         ];
       }
-      $db_dependencies[$table_name] = $referencing_tables;
+      $db_dependencies[$cache_key] = $referencing_tables;
     }
-    return $db_dependencies[$table_name];
+    return $db_dependencies[$cache_key];
   }
 
   /**

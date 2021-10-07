@@ -404,7 +404,7 @@ abstract class BioConnection extends PgConnection {
 
     // Check name is valid.
     if (!empty($schema_name)
-        && ($issue = $this->bioTool->isInvalidSchemaName($schema_name))
+        && ($issue = $this->bioTool->isInvalidSchemaName($schema_name, TRUE))
     ) {
       throw new ConnectionException(
         "Could not use the schema name '$schema_name'.\n$issue"
@@ -490,8 +490,8 @@ abstract class BioConnection extends PgConnection {
    *   $schema_name if set and valid, or the current schema name.
    *
    * @throws \Drupal\tripal_biodb\Exception\ConnectionException
-   *  If the given schema name is invalid or none of $schema_name and
-   *  $this->schemaName are set.
+   *  If the given schema name is invalid (ignoring schema name reservations)
+   *  or none of $schema_name and $this->schemaName are set.
    */
   protected function getDefaultSchemaName(
     ?string $schema_name = NULL,
@@ -510,7 +510,7 @@ abstract class BioConnection extends PgConnection {
       $schema_name = $this->schemaName;
     }
     else {
-      if ($issue = $this->bioTool->isInvalidSchemaName($schema_name)) {
+      if ($issue = $this->bioTool->isInvalidSchemaName($schema_name, TRUE)) {
         throw new ConnectionException($issue);
       }
     }

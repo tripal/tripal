@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Functional\Services;
+namespace Drupal\Tests\tripal_chado\Functional\Task;
 
 use Drupal\Tests\UnitTestCase;
 
@@ -10,17 +10,17 @@ use Drupal\Tests\Core\Database\Stub\StubPDO;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 
 // use Drupal\Core\Database\Driver\pgsql\Connection;
-use Drupal\tripal_chado\Services\ChadoCloner;
+use Drupal\tripal_chado\Task\ChadoCloner;
 use Drupal\tripal_chado\api\ChadoSchema;
 
 /**
  * Tests for Chado cloner.
  *
- * @coversDefaultClass \Drupal\tripal_chado\Services\ChadoCloner
+ * @coversDefaultClass \Drupal\tripal_chado\Task\ChadoCloner
  *
  * @group Tripal
  * @group Tripal Chado
- * @group Tripal Services
+ * @group Tripal Task
  */
 class ChadoClonerTest extends UnitTestCase {
 

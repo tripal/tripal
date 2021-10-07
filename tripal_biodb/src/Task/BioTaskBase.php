@@ -84,18 +84,6 @@ abstract class BioTaskBase implements BioTaskInterface {
   /**
    * Creates a BioTaskBase object.
    *
-   * @param $parameters
-   *   A associative array of parameters used to configure the task. The
-   *   array should include the keys 'input_schemas' and 'output_schemas', both
-   *   containing an array of ordered schema names (or an empty array).
-   *   'input_schemas' are biological schemas used for reading only which may be
-   *   shared for reading with other concurrent tasks. 'output_schemas' are
-   *   schemas that will be created or modified and must not be shared (
-   *   exclusive use) during the task. If a schema comes from a different
-   *   database than the default one (ie. the one used by Drupal), the schema
-   *   name must be prefixed by the database key name (and not the "target", as
-   *   describbed in \Drupal\Core\Database\Database::getConnection()) followed
-   *   by a dot.
    * @param ?\Drupal\Core\Database\Connection $connection
    *   The main database connection.
    * @param ?\Psr\Log\LoggerInterface $logger
@@ -109,14 +97,11 @@ abstract class BioTaskBase implements BioTaskInterface {
    * @see https://www.drupal.org/docs/8/api/database-api/database-configuration
    */
   public function __construct(
-    array $parameters = [],
     ?\Drupal\Core\Database\Connection $database = NULL,
     ?\Psr\Log\LoggerInterface $logger = NULL,
     ?\Drupal\tripal_biodb\Lock\SharedLockBackendInterface $locker = NULL,
     ?\Drupal\Core\State\StateInterface $state = NULL
   ) {
-    // Task parameters.
-    $this->parameters = $parameters + $this->parameters;
     // Database.
     if (!isset($database)) {
       $database = \Drupal::database();
@@ -137,6 +122,21 @@ abstract class BioTaskBase implements BioTaskInterface {
       $state = \Drupal::state();
     }
     $this->state = $state;
+
+    // Initializes task identifer.
+    $this->initId();
+  }
+  
+  /**
+   * {@inheritdoc}
+   */
+  public function setParameters(array $parameters = []) :void {
+    // Task parameters.
+    $this->parameters =
+      $parameters
+      + ['input_schemas' => [], 'output_schemas' => [], ]
+    ;
+
     // Initializes schema data.
     $this->inputSchemas = $this->prepareSchemas(
       $this->parameters['input_schemas']
@@ -144,6 +144,7 @@ abstract class BioTaskBase implements BioTaskInterface {
     $this->outputSchemas = $this->prepareSchemas(
       $this->parameters['output_schemas']
     );
+
     // Initializes task identifer.
     $this->initId();
   }
@@ -188,6 +189,10 @@ abstract class BioTaskBase implements BioTaskInterface {
   protected function prepareSchemas(array $schema_list) :array {
     $schemas = [];
     foreach ($schema_list as $schema) {
+      // We need to take into account schemas prefixed with a database key.
+      // The following regex separate the key from the schema name and also do a
+      // pre-check on schema names that will be fully validated when the
+      // connection object will be instanciated.
       if (!preg_match(
             '/^((?:.+\.)?)([a-z_\\xA0-\\xFF][a-z_\\xA0-\\xFF0-9]*)$/',
             $schema,
@@ -352,9 +357,10 @@ abstract class BioTaskBase implements BioTaskInterface {
    *
    * This implementation should be replaced by extending classes (do not call
    * parent::performTask method as it throws an error). It is provided as
-   * an example skeleton and for testing: first, it check parameters, it
-   * acquires required locks, manages lock failures, then it performs the task
-   * and finally releases the locks.
+   * an example skeleton and for testing: first, it check parameters by calling
+   * ::validateParameters, it acquires required locks by calling
+   * ::acquireTaskLocks, manages lock failures, then it performs the task and
+   * finally releases the locks by calling ::releaseTaskLocks.
    *
    * @return bool
    *   TRUE if the task was performed with success and FALSE otherwise. In

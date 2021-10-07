@@ -72,7 +72,7 @@ class BioTaskBaseFunctionalTest extends KernelTestBase {
     // Call the constructor.
     $reflected_class = new \ReflectionClass(\Drupal\tripal_biodb\Task\BioTaskBase::class);
     $constructor = $reflected_class->getConstructor();
-    $constructor->invoke($tmock, $parameters);
+    $constructor->invoke($tmock);
 
     // // Create a new initialized object to cehck constructor work.
     // $tmock = $this->getMockBuilder(\Drupal\tripal_biodb\Task\BioTaskBase::class)
@@ -88,6 +88,7 @@ class BioTaskBaseFunctionalTest extends KernelTestBase {
     // ;
 
     // Check default values.
+    $tmock->setParameters($parameters);
     $db_name = \Drupal::service('database')->getConnectionOptions()['database'];
     $this->assertEquals('task-' . $db_name . '-1i-insch-1o-outsch', $tmock->getId(), 'Id set.');
     $this->assertInstanceOf('\Psr\Log\LoggerInterface', $tmock->getLogger(), 'Logger.');

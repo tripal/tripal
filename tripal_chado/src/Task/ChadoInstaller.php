@@ -13,7 +13,8 @@ use Drupal\tripal_biodb\Exception\ParameterException;
  * Usage:
  * @code
  * // Where 'chado' is the name of the Chado schema to instanciate.
- * $installer = new Drupal\tripal_chado\Task\ChadoInstaller([
+ * $installer = \Drupal::service('tripal_chado.installer');
+ * $installer->setParameters([
  *   'output_schemas' => ['chado'],
  *   'version' => '1.3',
  * ]);
@@ -53,7 +54,7 @@ class ChadoInstaller extends ChadoTaskBase {
    * ['output_schemas' => ['chado'], 'version' => '1.3']
    * ```
    *
-   * @throws \Drupal\tripal_chado\Exception\ParameterException
+   * @throws \Drupal\tripal_biodb\Exception\ParameterException
    *   A descriptive exception is thrown in cas of invalid parameters.
    */
   public function validateParameters() :void {
@@ -101,6 +102,11 @@ class ChadoInstaller extends ChadoTaskBase {
           . '" already exists. Please remove that schema first.'
         );
       }
+      // Check name is not reserved.
+      $issue = $bio_tool->isInvalidSchemaName($output_schema->getSchemaName());
+      if ($issue) {
+        throw new ParameterException($issue);
+      }
     }
     catch (\Exception $e) {
       // Log.
@@ -130,13 +136,13 @@ class ChadoInstaller extends ChadoTaskBase {
    *   TRUE if the task was performed with success and FALSE if the task was
    *   completed but without the expected success.
    *
-   * @throws Drupal\tripal_chado\Exception\TaskException
+   * @throws Drupal\tripal_biodb\Exception\TaskException
    *   Thrown when a major failure prevents the task from being performed.
    *
-   * @throws \Drupal\tripal_chado\Exception\ParameterException
+   * @throws \Drupal\tripal_biodb\Exception\ParameterException
    *   Thrown if parameters are incorrect.
    *
-   * @throws Drupal\tripal_chado\Exception\LockException
+   * @throws Drupal\tripal_biodb\Exception\LockException
    *   Thrown when the locks can't be acquired.
    */
   public function performTask() :bool {

@@ -18,6 +18,7 @@ function tripal_chado_install($is_syncing) {
   $reserved_schema_patterns['frange'] = 'feature range (chado)';
   $reserved_schema_patterns['genetic_code'] = 'genetic code (chado)';
   $reserved_schema_patterns['so'] = 'sequence ontology (chado)';
+  $reserved_schema_patterns[Drupal\tripal_chado\Task\ChadoUpgrader::CHADO_REF_SCHEMA_13] = 'upgrade template (chado)';
   $config->set('reserved_schema_patterns', $reserved_schema_patterns)->save();
   
   $test_schema_base_names = $config->get('test_schema_base_names') ?? [];
