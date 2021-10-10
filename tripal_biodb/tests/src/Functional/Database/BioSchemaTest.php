@@ -290,7 +290,7 @@ class BioSchemaTest extends KernelTestBase {
     $this->assertLessThan(1000, $init_size, 'New schema empty.');
     
     // Load test data fixture into test schema.
-    $success = $biodb->executeSqlFile(__DIR__ . '/../../../fixtures/test_schema.sql', TRUE);
+    $success = $biodb->executeSqlFile(__DIR__ . '/../../../fixtures/test_schema.sql', 'none');
     $this->assertTrue($success, 'Schema test data loaded.');
 
     // Get new size.

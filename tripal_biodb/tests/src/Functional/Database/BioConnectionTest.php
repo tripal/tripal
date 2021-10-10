@@ -233,9 +233,22 @@ class BioConnectionTest extends KernelTestBase {
    * @cover ::__construct
    */
   public function testBioConnectionConstructorPublicSchemaDefaultKey() {
-    $this->expectException(\Drupal\tripal_biodb\Exception\ConnectionException::class);
-    $this->expectExceptionMessage('reserved');
-    $dbmock = $this->getBioConnectionMock('public');
+    // Now schema can use reserved schema name as long as they are valid.
+    // This is to allow working on reserved schemas without messing up with
+    // schema name reservations. We assume that the schema name provided has
+    // been checked before for reservation through methods
+    // BioDbTool::isSchemaReserved (or BioDbTool::isInvalidSchemaName with
+    // $ignore_reservation = FALSE).
+    // $this->expectException(\Drupal\tripal_biodb\Exception\ConnectionException::class);
+    // $this->expectExceptionMessage('reserved');
+
+    $schema_name = 'public';
+    $bio_tool = \Drupal::service('tripal_biodb.tool');
+    $issue = $bio_tool->isInvalidSchemaName($schema_name);
+    $this->assertNotEmpty($issue, 'Reserved schema name not allowed.');
+    // But the connection should be created.
+    $dbmock = $this->getBioConnectionMock($schema_name);
+    $this->assertEquals($schema_name, $dbmock->getSchemaName(), 'Connection instanciated.');
   }
 
   /**
@@ -244,9 +257,23 @@ class BioConnectionTest extends KernelTestBase {
    * @cover ::__construct
    */
   public function testBioConnectionConstructorReservedSchemaDefaultKey() {
-    $this->expectException(\Drupal\tripal_biodb\Exception\ConnectionException::class);
-    $this->expectExceptionMessage('reserved');
-    $dbmock = $this->getBioConnectionMock('_test_new');
+    // Now schema can use reserved schema name as long as they are valid.
+    // This is to allow working on reserved schemas without messing up with
+    // schema name reservations. We assume that the schema name provided has
+    // been checked before for reservation through methods
+    // BioDbTool::isSchemaReserved (or BioDbTool::isInvalidSchemaName with
+    // $ignore_reservation = FALSE).
+    // $this->expectException(\Drupal\tripal_biodb\Exception\ConnectionException::class);
+    // $this->expectExceptionMessage('reserved');
+    
+    // The schema name should be invalid because it is reserved.
+    $schema_name = '_test_new';
+    $bio_tool = \Drupal::service('tripal_biodb.tool');
+    $issue = $bio_tool->isInvalidSchemaName($schema_name);
+    $this->assertNotEmpty($issue, 'Reserved schema name not allowed.');
+    // But the connection should be created.
+    $dbmock = $this->getBioConnectionMock($schema_name);
+    $this->assertEquals($schema_name, $dbmock->getSchemaName(), 'Connection instanciated.');
   }
 
   /**

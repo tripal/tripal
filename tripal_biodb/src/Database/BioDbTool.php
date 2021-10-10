@@ -665,7 +665,7 @@ class BioDbTool {
    *       <column name> => [
    *        'type'     => <PostgreSQL column type>,
    *        'not null' => <TRUE if column cannot be NULL, FALSE otherwise>,
-   *        'default'  => <'DEFAULT ' followed by column default value>,
+   *        'default'  => <column default value or NULL for no default>,
    *       ],
    *       ...
    *     ],
@@ -780,7 +780,10 @@ class BioDbTool {
         $table_definition['columns'][$match[1]] = [
           'type'     => $match[2],
           'not null' => (FALSE !== stripos($match[3], 'NOT')),
-          'default'  => preg_replace('/(?:^\s+DEFAULT\s+)|(?:\s+$)/', '', $match[4]),
+          'default'  => ($match[4] === '')
+            ? NULL
+            : preg_replace('/(?:^\s+DEFAULT\s+)|(?:\s+$)/', '', $match[4])
+          ,
         ];
       }
       else {
@@ -896,7 +899,9 @@ class BioDbTool {
       $column_def['type'] = trim($column_def['type']);
       $size = NULL;
       // Check for serial.
-      if (preg_match('/^nextval\(/i', $column_def['default'])) {
+      if (isset($column_def['default'])
+          && preg_match('/^nextval\(/i', $column_def['default'])
+      ) {
         $column_def['default'] = '';
         if ($column_def['type'] == 'bigint') {
           $column_def['type'] = 'bigserial';
@@ -1030,7 +1035,7 @@ class BioDbTool {
       if (!empty($scale)) {
         $table_def['fields'][$column]['scale'] = $scale;
       }
-      if (!empty($column_def['default'])) {
+      if (isset($column_def['default'])) {
         $table_def['fields'][$column]['default'] = $column_def['default'];
       }
     }

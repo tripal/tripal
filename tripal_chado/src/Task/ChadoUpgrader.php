@@ -442,7 +442,7 @@ class ChadoUpgrader extends ChadoTaskBase {
           // Do not update if file. Put the query in the SQL file instead.
           $sql_query =
             'UPDATE '
-            . $this->connection->prefixTables('chado_installations')
+            . $this->connection->prefixTables('{chado_installations}')
             . ' SET version = \''
             . $this->parameters['version']
             . '\', created = \''
@@ -471,7 +471,7 @@ class ChadoUpgrader extends ChadoTaskBase {
       }
       catch (Exception $e) {
         $this->connection->query(
-          'ROLLBACK; ROLLBACK; ROLLBACK;',
+          'ROLLBACK;ROLLBACK;',
           [],
           ['allow_delimiter_in_query' => TRUE,]
         );
@@ -940,6 +940,7 @@ class ChadoUpgrader extends ChadoTaskBase {
     $sql_query = "
       SELECT
         sequence_name,
+        data_type,
         start_value,
         minimum_value,
         maximum_value,
@@ -961,6 +962,7 @@ class ChadoUpgrader extends ChadoTaskBase {
     // Check for missing or changed sequences.
     foreach ($new_seqs as $new_seq_name => $new_seq) {
       // Prepare creation/update query.
+      $data_type_sql = ' AS ' . $new_seq->data_type;
       $increment_sql = (
         $new_seq->increment
         ? ' INCREMENT BY ' . $new_seq->increment
@@ -993,12 +995,13 @@ class ChadoUpgrader extends ChadoTaskBase {
         . $chado_schema->getQuotedSchemaName()
         . '.'
         . $new_seq_name
+        . $data_type_sql
         . $increment_sql
         . $min_val_sql
         . $max_val_sql
         . $start_sql
         . $cycle_sql
-        . ';'
+        . ' OWNED BY NONE;'
       ;
 
       if (array_key_exists($new_seq_name, $old_seqs)) {
@@ -1629,7 +1632,7 @@ class ChadoUpgrader extends ChadoTaskBase {
     $chado_schema = $this->outputSchemas[0];
     $ref_schema = $this->inputSchemas[0];
 
-    // Get the list of new sequences.
+    // Get the list of sequences.
     $sql_query = "
     SELECT sequence_name
       FROM information_schema.sequences
@@ -2054,12 +2057,12 @@ class ChadoUpgrader extends ChadoTaskBase {
       $new_column_defs = $new_table_definition['columns'];
       foreach ($new_column_defs as $new_column => $new_column_def) {
         // Replace schema name if there.
-        $new_default = str_replace(
-          $ref_schema->getQuotedSchemaName() . '.',
-          $chado_schema->getQuotedSchemaName() . '.',
-          $new_column_def['default']
-        );
-        if (!empty($new_default)) {
+        if (isset($new_column_def['default'])) {
+          $new_default = str_replace(
+            $ref_schema->getQuotedSchemaName() . '.',
+            $chado_schema->getQuotedSchemaName() . '.',
+            $new_column_def['default']
+          );
           $sql_query =
             "ALTER TABLE "
             . $chado_schema->getQuotedSchemaName()
