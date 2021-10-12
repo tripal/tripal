@@ -881,6 +881,9 @@ class BioDbTool {
    *
    * @return array
    *   An array with details of the table reflecting what is in database.
+   *
+   * @see https://www.drupal.org/docs/7/api/schema-api/data-types/data-types-overview
+   * @see https://api.drupal.org/api/drupal/core!lib!Drupal!Core!Database!database.api.php/group/schemaapi/9.3.x
    */
   public function parseTableDdlToDrupal(string $table_ddl) :array {
     $bio_tool = \Drupal::service('tripal_biodb.tool');
@@ -898,11 +901,13 @@ class BioDbTool {
     foreach ($table_structure['columns'] as $column => $column_def) {
       $column_def['type'] = trim($column_def['type']);
       $size = NULL;
+      $is_int = FALSE;
+      $is_float = FALSE;
       // Check for serial.
       if (isset($column_def['default'])
           && preg_match('/^nextval\(/i', $column_def['default'])
       ) {
-        $column_def['default'] = '';
+        unset($column_def['default']);
         if ($column_def['type'] == 'bigint') {
           $column_def['type'] = 'bigserial';
           $size = 'big';
@@ -956,18 +961,27 @@ class BioDbTool {
           $column_type = 'int';
           $pg_type = $column_def['type'];
           $size = 'big';
+          $is_int = TRUE;
+          break;
+
+        case 'int':
+        case 'integer':
+          $column_type = 'int';
+          $pg_type = $column_def['type'];
+          $size = 'medium';
+          $is_int = TRUE;
           break;
 
         case 'smallint':
           $column_type = 'int';
           $pg_type = $column_def['type'];
           $size = 'small';
+          $is_int = TRUE;
           break;
 
         case 'boolean':
-          $column_type = 'int';
+          $column_type = 'text';
           $pg_type = $column_def['type'];
-          $size = 'tiny';
           break;
 
         case 'decimal':
@@ -975,23 +989,41 @@ class BioDbTool {
           $pg_type = $column_def['type'];
           $precision = $length;
           $length = NULL;
+          $is_float = TRUE;
           break;
 
         case 'real':
           $column_type = 'float';
           $pg_type = $column_def['type'];
+          $is_float = TRUE;
           break;
 
         case 'double':
           $column_type = 'float';
           $pg_type = $column_def['type'];
           $size = 'big';
+          $is_float = TRUE;
           break;
 
-        case 'smallserial':
         case 'bigserial':
           $column_type = 'serial';
           $pg_type = $column_def['type'];
+          $size = 'big';
+          $is_int = TRUE;
+          break;
+
+        case 'serial':
+          $column_type = 'serial';
+          $pg_type = $column_def['type'];
+          $size = 'medium';
+          $is_int = TRUE;
+          break;
+
+        case 'smallserial':
+          $column_type = 'serial';
+          $pg_type = $column_def['type'];
+          $size = 'small';
+          $is_int = TRUE;
           break;
 
         case 'character':
@@ -1023,20 +1055,28 @@ class BioDbTool {
       if (!empty($pg_type)) {
         $table_def['fields'][$column]['pgsql_type'] = $pg_type;
       }
-      if (!empty($length)) {
+      if (isset($length)) {
         $table_def['fields'][$column]['length'] = $length;
       }
-      if (!empty($size)) {
+      if (isset($size)) {
         $table_def['fields'][$column]['size'] = $size;
       }
-      if (!empty($precision)) {
+      if (isset($precision)) {
         $table_def['fields'][$column]['precision'] = $precision;
       }
-      if (!empty($scale)) {
+      if (isset($scale)) {
         $table_def['fields'][$column]['scale'] = $scale;
       }
       if (isset($column_def['default'])) {
-        $table_def['fields'][$column]['default'] = $column_def['default'];
+        if ($is_int) {
+          $table_def['fields'][$column]['default'] = (int) $column_def['default'];
+        }
+        elseif ($is_float) {
+          $table_def['fields'][$column]['default'] = (float) $column_def['default'];
+        }
+        else {
+          $table_def['fields'][$column]['default'] = $column_def['default'];
+        }
       }
     }
 

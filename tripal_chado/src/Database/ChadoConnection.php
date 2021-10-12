@@ -21,7 +21,7 @@ use Drupal\tripal_chado\Database\ChadoSchema;
  *
  * @code
  * $chado = new \Drupal\tripal_chado\Database\ChadoConnection();
- * $parameters = ['format' => 'Drupal'];
+ * $parameters = ['format' => 'drupal'];
  * $table_schema = $chado->schema()->getTableDef($table_name, $parameters);
  * @endcode
  *

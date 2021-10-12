@@ -703,9 +703,9 @@ EOD;
    *   - 'version': version of the biological schema to fetch from a file.
    *     Ignored fot 'database' source.
    *     Default: implementation specific.
-   *   - 'format': return format, either 'SQL' for an array of SQL string,
-   *     'Drupal' for Drupal schema API, 'none' to return nothing or anything
-   *     else to provide a data structure as returned by
+   *   - 'format': return format, either 'sql' for an array of SQL string,
+   *     'drupal' for Drupal schema API, 'none' to return nothing or anything
+   *     else (like 'default') to provide a data structure as returned by
    *     BioDbTool::parseTableDdl plus a 'referenced_by' key containing all the
    *     referencing tables returned by ::getReferencingTables. If the selected
    *     source is 'file' or 'tripal', the format parameter will be ignored and
@@ -721,7 +721,7 @@ EOD;
     static $table_structures = [];
 
     $source = $parameters['source'] ?? 'file';
-    $format = $parameters['format'] ?? '';
+    $format = strtolower($parameters['format'] ?? '');
     $version = $parameters['version']
       ?? $this->connection->getVersion()
     ;
@@ -736,7 +736,7 @@ EOD;
       // Use Connection to get the whole schema definition from a file.
       $schema_parameters = [
         'source' => 'file',
-        'format' => 'Drupal',
+        'format' => 'drupal',
         'version' => $version,
       ];
       // Adds 'clear' and 'none' if needed.
@@ -764,10 +764,10 @@ EOD;
       $cache_key = $this->defaultSchema . '/' . $table . '/' . $format;
       if (!isset($table_structures[$cache_key])) {
         $table_ddl = $this->getTableDdl($table);
-        if ('SQL' == $format) {
+        if ('sql' == $format) {
           $table_structures[$cache_key] = [$table_ddl];
         }
-        elseif ('Drupal' == $format) {
+        elseif ('drupal' == $format) {
           $table_structures[$cache_key] =
             $this->bioTool->parseTableDdlToDrupal($table_ddl);
         }

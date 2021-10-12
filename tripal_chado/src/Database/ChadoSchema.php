@@ -18,7 +18,7 @@ class ChadoSchema extends BioSchema {
     static $schema_structure = [];
 
     $source = $parameters['source'] ?? 'file';
-    $format = $parameters['format'] ?? '';
+    $format = strtolower($parameters['format'] ?? '');
     $version = $parameters['version']
       ?? $this->getVersion()
       ?? $DEFAULT_VERSION
