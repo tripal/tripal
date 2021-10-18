@@ -15,3 +15,4 @@ This documentation is meant to guide users, admin and developers in the usage an
    dev_guide
    upgrade_guide
    contributing
+   design

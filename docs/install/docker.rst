@@ -4,7 +4,7 @@ Tripal Docker
 Tripal Docker is currently focused on Development and Unit Testing. There will be a production focused Tripal Docker soon.
 
 Software Stack
-------------------
+--------------
 
 Currently we have the following installed:
  - Debian Buster(10)
@@ -17,7 +17,7 @@ Currently we have the following installed:
  - Drupal 8.9.10  (8.x-dev) downloaded using composer.
 
 Quickstart
-------------
+----------
 
 1. Run the image in the background mapping it's web server to your port 9000.
 
