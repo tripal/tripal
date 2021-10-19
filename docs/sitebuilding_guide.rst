@@ -1,6 +1,6 @@
 
 Building your Site
-=====================
+==================
 
 .. toctree::
    :maxdepth: 2
