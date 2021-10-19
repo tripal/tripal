@@ -1,5 +1,5 @@
-Core Coding Standards
-=====================
+Design and Coding Standards
+===========================
 
 .. toctree::
    :maxdepth: 3
