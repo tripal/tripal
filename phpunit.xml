@@ -16,9 +16,9 @@
     <!-- Do not limit the amount of memory tests take to run. -->
     <ini name="memory_limit" value="-1"/>
     <!-- Example SIMPLETEST_BASE_URL value: http://localhost -->
-    <env name="SIMPLETEST_BASE_URL" value="http://montreal.risharde.com:21080/drupal"/>
+    <env name="SIMPLETEST_BASE_URL" value="http://localhost"/>
     <!-- Example SIMPLETEST_DB value: mysql://username:password@localhost/databasename#table_prefix -->
-    <env name="SIMPLETEST_DB" value="pgsql://drupal:drupal@localhost/drupal"/>
+    <env name="SIMPLETEST_DB" value="pgsql://drupaladmin:drupal8developmentonlylocal@localhost/sitedb"/>
     <!-- Example BROWSERTEST_OUTPUT_DIRECTORY value: /var/www/drupal8/web/sites/default/files/simpletest -->
     <env name="BROWSERTEST_OUTPUT_DIRECTORY" value=""/>
     <!-- To have browsertest output use an alternative base URL. For example if
