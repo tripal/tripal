@@ -17,4 +17,11 @@ abstract class VocabularyBase extends CollectionPluginBase implements Vocabulary
     parent::__construct($configuration,$plugin_id,$plugin_definition);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getTerms($name,$exact = True) {
+    // TODO
+  }
+
 }

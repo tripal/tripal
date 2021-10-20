@@ -8,22 +8,27 @@ namespace Drupal\tripal4\Vocabulary;
 class Term {
 
   /**
-   * Constructs a new term object with the given name, id space, and accession.
+   * Constructs a new term object with the given name, definition, id space,
+   * accession, and default vocabulary.
    *
-   * @param string name
+   * @param string $name
    *   The name.
    *
-   * @param string idSpace
+   * @param string $definition
+   *   The definition.
+   *
+   * @param string $idSpace
    *   The id space.
    *
-   * @param string accession
+   * @param string $accession
    *   The accession.
    *
    * @param string defaultVocab
-   *   The default vocabulary.
+   *   The default $vocabulary.
    */
-  public function __construct($name,$idSpace,$accession,$defaultVocab) {
+  public function __construct($name,$definition,$idSpace,$accession,$defaultVocab) {
     $this->name = $name;
+    $this->definition = $definition;
     $this->idSpace = $idSpace;
     $this->defaultVocab = $defaultVocab;
     $this->accession = $accession;
@@ -43,6 +48,7 @@ class Term {
    *   An array of valid \Drupal\tripal4\Vocabulary\Term objects.
    */
   public static function suggestTerms(string $partial, int $max = 10) {
+    // TODO
   }
 
   /**
@@ -69,6 +75,36 @@ class Term {
   }
 
   /**
+   * Sets this term's name to the given name.
+   *
+   * @param string $name
+   *   The name.
+   */
+  public function setDefinition($name) {
+    $this->name = $name;
+  }
+
+  /**
+   * Returns this term's definition.
+   *
+   * @return string
+   *   The definition.
+   */
+  public function getDefinition() {
+    return $this->definition;
+  }
+
+  /**
+   * Sets this term's definition to the given definition.
+   *
+   * @param string $definition
+   *   The definition.
+   */
+  public function setDefinition($definition) {
+    $this->definition = $definition;
+  }
+
+  /**
    * Returns this term's id space collection name.
    *
    * @return string
@@ -85,6 +121,7 @@ class Term {
    *   The id space instance.
    */
   public function getIdSpaceObject() {
+    // TODO
   }
 
   /**
@@ -108,11 +145,37 @@ class Term {
   }
 
   /**
+   * Returns this term's URL.
+   *
+   * @return string
+   *   The URL.
+   */
+  public function getURL() {
+    // TODO
+  }
+
+  /**
+   * Saves this term to its id space collection's permanent storage. If this
+   * term already exists in its id space collection then it is updated with this
+   * term instance's data, else it is added as a new term.
+   */
+  public function save() {
+    // TODO
+  }
+
+  /**
    * The term name.
    *
    * @var string
    */
   private $name;
+
+  /**
+   * The term definition.
+   *
+   * @var string
+   */
+  private $definition;
 
   /**
    * The term id space.

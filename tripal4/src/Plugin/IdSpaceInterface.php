@@ -36,6 +36,33 @@ interface IdSpaceInterface extends CollectionPluginInterface {
   public function getChildren($parent = NULL);
 
   /**
+   * Returns the term in this id space with the given accession. If no such term exists then NULL is returned.
+   *
+   * @param string $accession
+   *   The accession.
+   *
+   * @return \Drupal\tripal4\Term|NULL
+   *   The term or NULL.
+   */
+  public function getTerm($accession);
+
+  /**
+   * Returns the terms in this id space whose names match the given name.
+   * Matches can only be exact or a substring depending on the given flag. The
+   * default is to only return exact matches.
+   *
+   * @param string $name
+   *   The name.
+   *
+   * @param bool $exact
+   *   True to only include exact matches else include all substring matches.
+   *
+   * @return array
+   *   Array of matching \Drupal\tripal4\Term instances.
+   */
+  public function getTerms($name,$exact = True);
+
+  /**
    * Sets the default vocabulary of this id space to the given vocabulary name.
    *
    * @param string name
@@ -53,24 +80,22 @@ interface IdSpaceInterface extends CollectionPluginInterface {
   public function getDefaultVocabulary();
 
   /**
-   * Adds a new term to this id space with the given name, accesion, and
-   * optional parent term. If no parent term is given then this new term is
-   * added as a root term of this id space. The given accession must be unique
-   * among all terms of this id space.
+   * Saves the given term to this id space with the given parent term. If the
+   * given term does not exist in this id space then it is added as a new term,
+   * else it is updated. If this is an update to an existing term then the
+   * parent argument is ignored. If no parent term is given and this is a new
+   * term then it is added as a root term of this id space.
    *
-   * @param string $name
-   *   The name.
+   * @param \Drupal\tripal4\Term $term
+   *   The term.
    *
-   * @param string $accession
-   *   The accession.
-   *
-   * @param \Drupal\tripal4\Term|NULL
+   * @param \Drupal\tripal4\Term|NULL $parent
    *   The parent term or NULL.
    *
    * @return bool
    *   True on success or false otherwise.
    */
-  public function addTerm($name,$accession,$parent = NULL);
+  public function saveTerm($term,$parent = NULL);
 
   /**
    * Removes the term with the given accession from this id space. All children
@@ -86,5 +111,21 @@ interface IdSpaceInterface extends CollectionPluginInterface {
    *   True if the term was removed or false otherwise.
    */
   public function removeTerm($accession);
+
+  /**
+   * Returns the URL prefix of this id space.
+   *
+   * @return string
+   *   The URL prefix.
+   */
+  public function getURLPrefix();
+
+  /**
+   * Sets the URL prefix of this id space to the given URL prefix.
+   *
+   * @param string $prefix
+   *   The URL prefix.
+   */
+  public function setURLPrefix($prefix);
 
 }

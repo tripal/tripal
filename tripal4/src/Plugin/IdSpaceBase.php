@@ -26,6 +26,7 @@ abstract class IdSpaceBase extends CollectionPluginBase implements IdSpaceInterf
    * {@inheritdoc}
    */
   public function setDefaultVocabulary($name) {
+    // TODO
   }
 
 }
