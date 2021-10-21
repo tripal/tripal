@@ -7,5 +7,5 @@ This design document is attempting to describe our current design process for En
 .. toctree::
    :maxdepth: 3
 
-   entities-fields/overview
+   entities-fields/requirements
    entities-fields/TripalFieldStorage
