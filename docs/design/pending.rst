@@ -2,6 +2,6 @@ Design In Progress
 ==================
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 1
 
    pending/entities-fields
