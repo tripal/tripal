@@ -1,0 +1,9 @@
+services:
+  tripal_biodb.logger:
+    parent: logger.channel_base
+    arguments: ['tripal_biodb']
+  tripal_biodb.lock:
+    class: Drupal\tripal_biodb\Lock\PersistentDatabaseSharedLockBackend
+    arguments: ['@database', '@lock', '@state']
+  tripal_biodb.tool:
+    class: Drupal\tripal_biodb\Database\BioDbTool

@@ -1,0 +1,192 @@
+<?php
+/**
+ * @file
+ * Contains functions used to install/uninstall tripal_biodb.
+ */
+
+use \Drupal\Core\Database\Database;
+
+/**
+ * Implements hook_install().
+ */
+function tripal_biodb_install($is_syncing) {
+  tripal_biodb_install_cloner();
+  
+  // Reserves Drupal schema in 'reserved_schema_patterns' settings.
+  $bio_tool = \Drupal::service('tripal_biodb.tool');
+  $drupal_schema = $bio_tool->getDrupalSchemaName();
+  $config = \Drupal::service('config.factory')
+    ->getEditable('tripal_biodb.settings')
+  ;
+  $reserved_schema_patterns = $config->get('reserved_schema_patterns') ?? [];
+  $reserved_schema_patterns[$drupal_schema] = 'Drupal installation';
+  $config->set('reserved_schema_patterns', $reserved_schema_patterns)->save();
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function tripal_biodb_uninstall() {
+  tripal_biodb_uninstall_cloner();
+}
+
+/**
+ * Run an SQL file.
+ *
+ * @param string $sql_file
+ *   Path to an SQL file.
+ * @param array $replacements
+ *   An array of search-and-replace values used with preg_replace() to replace
+ *   placeholders in the SQL file with replacement values. The 'search' values
+ *   will be searched and replaced with the 'replace' values.
+ *   Default: [] (no replacements)
+ *
+ * @See \Drupal\Core\Database\Connection::query
+ */
+function tripal_biodb_install_run_sql($sql_file, $replacements) {
+  // Get the default database.
+  $logger = \Drupal::service('tripal.logger');
+  $db = \Drupal::database();
+
+  // Retrieve the SQL file.
+  $sql = file_get_contents($sql_file);
+  if (!$sql) {
+    $message = "Install Tripal Biological Database failed: unable to read '$sql_file' file content.";
+    $logger->error($message);
+    throw new \Exception($message);
+  }
+
+  // Remove starting comments (not the ones in functions).
+  $replacements['search'][] = '/^--[^\n]*\n(?:\s*\n)*/m';
+  $replacements['replace'][] = '';
+  $sql = preg_replace($replacements['search'], $replacements['replace'], $sql);
+  $x = $db->query(
+    $sql,
+    [],
+    [
+      'allow_delimiter_in_query' => TRUE,
+    ]
+  );
+}
+
+/**
+ * Adds schema cloning functionality.
+ */
+function tripal_biodb_install_cloner() {
+  $logger = \Drupal::service('tripal.logger');
+  
+  $sql_cloner_path =
+    drupal_get_path('module', 'tripal_biodb')
+    . '/pg-clone-schema/clone_schema.sql'
+  ;
+
+  // Replaces "public." in SQL if it is not the default Drupal schema.
+  $bio_tool = \Drupal::service('tripal_biodb.tool');
+  $drupal_schema = $bio_tool->getDrupalSchemaName();
+  if (empty($drupal_schema) || ('public' == $drupal_schema)) {
+    $replacements = [];
+    $drupal_schema = 'public';
+  }
+  else {
+    $replacements = [
+      'search' => [
+        '/public\\.tripal_get_table_ddl/',
+        '/public\\.tripal_clone_schema/', 
+      ],
+      'replace' => [
+        $drupal_schema . '.tripal_get_table_ddl',
+        $drupal_schema . '.tripal_clone_schema',
+      ],
+    ];
+  }
+
+  tripal_biodb_install_run_sql($sql_cloner_path, $replacements);
+
+  // Check functions were installed.
+  $function_names = ['tripal_get_table_ddl', 'tripal_clone_schema', ];
+  $db = \Drupal::database();
+  $sql_query = "
+    SELECT COUNT(1) AS \"funcs\"
+    FROM
+      pg_proc p
+      JOIN pg_namespace n ON (
+        n.oid = p.pronamespace
+        AND n.nspname = :schema
+      )
+    WHERE
+      p.proname IN (:function_names[])
+  ";
+  $args = [
+    ':function_names[]' => $function_names,
+    ':schema' => $drupal_schema,
+  ];
+  $result = $db->query($sql_query, $args)->fetch();
+
+  if (!$result || ($result->funcs < 2)) {
+    $message =
+      "Failed to install Tripal SQL cloner functions ($sql_cloner_path).";
+    $logger->error($message);
+    throw new \Exception($message);
+  }
+}
+
+/**
+ * Remove schema cloning functionality.
+ */
+function tripal_biodb_uninstall_cloner() {
+  $logger = \Drupal::service('tripal.logger');
+  $sql_uninstall_cloner_path =
+    drupal_get_path('module', 'tripal_biodb')
+    . '/pg-clone-schema/clone_schema_uninstall.sql'
+  ;
+
+  // Replaces "public." in SQL if it is not the default Drupal schema.
+  $bio_tool = \Drupal::service('tripal_biodb.tool');
+  $drupal_schema = $bio_tool->getDrupalSchemaName();
+  if (empty($drupal_schema) || ('public' == $drupal_schema)) {
+    $replacements = [];
+  }
+  else {
+    $replacements = [
+      'search' => [
+        '/public\\.tripal_get_table_ddl/',
+        '/public\\.tripal_clone_schema/', 
+      ],
+      'replace' => [
+        $drupal_schema . '.tripal_get_table_ddl',
+        $drupal_schema . '.tripal_clone_schema',
+      ],
+    ];
+  }
+
+  tripal_biodb_install_run_sql(
+    $sql_uninstall_cloner_path,
+    $replacements
+  );
+
+  // Check functions were uninstalled.
+  $function_names = ['tripal_get_table_ddl', 'tripal_clone_schema', ];
+  $db = \Drupal::database();
+  $sql_query = "
+    SELECT COUNT(1) AS \"funcs\"
+    FROM
+      pg_proc p
+      JOIN pg_namespace n ON (
+        n.oid = p.pronamespace
+        AND n.nspname = :schema
+      )
+    WHERE
+      p.proname IN (:function_names[])
+  ";
+  $args = [
+    ':function_names[]' => $function_names,
+    ':schema' => $drupal_schema,
+  ];
+  $result = $db->query($sql_query, $args)->fetch();
+
+  if (!$result || ($result->funcs > 0)) {
+    $message =
+      "Failed to uninstall Tripal SQL cloner functions. You may have to remove them manually using '$sql_uninstall_cloner_path'.";
+    $logger->warning($message);
+  }
+}
