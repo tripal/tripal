@@ -166,7 +166,7 @@ RUN service apache2 restart \
   && sleep 30 \
   && composer require tripal/tripal \
   && composer require drupal/devel \
-  && vendor/bin/drush en devel tripal tripal_chado -y \
+  && vendor/bin/drush en devel tripal tripal_biodb tripal_chado -y \
   && vendor/bin/drush trp-install-chado
 
 ############# Scripts #########################################################
