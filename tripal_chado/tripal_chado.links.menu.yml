@@ -13,3 +13,10 @@ tripal_chado.chado_install_form:
   description: 'Installs the Chado database tables, views, etc., inside the current Drupal database.'
   parent: tripal_chado.storage
   weight: 30
+
+tripal_chado.chado_prepare_form:
+  route_name: tripal_chado.chado_prepare_form
+  title: 'Prepare Chado'
+  description: 'Prepares Drupal to use Chado.'
+  parent: tripal_chado.storage
+  weight: 31

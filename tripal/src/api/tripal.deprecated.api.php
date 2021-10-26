@@ -33,7 +33,9 @@ function tripal_get_job($job_id) {
   }
   catch (Exception $e) {
     tripal_report_error('tripal', TRIPAL_ERROR, $e->getMessage());
-    drupal_set_message($e->getMessage(), 'error');
+    // drupal_set_message($e->getMessage(), 'error');
+    $messenger = \Drupal::messenger();
+    $messenger->addError($e->getMessage());
     return FALSE;
   }
 }
