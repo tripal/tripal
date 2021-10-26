@@ -56,5 +56,5 @@ jobs:
         run: |
           docker exec --workdir=/var/www/drupal8/web/modules/contrib/tripal \
             tripaldocker ./cc-test-reporter after-build clover.xml \
-            --id 33d9655ce902af56f5f85c901a8ee79948aaa5b5c5db2814037202517bfe7b26 \
+            --id 37bfc0a7ce6928f7f4be8da9168c5fb65bd49e0a81c082baa08e2747121bec16 \
             --debug -t clover -p /var/www/drupal8/web/modules/contrib/tripal
