@@ -64,6 +64,7 @@ class CollectionPluginManager extends DefaultPluginManager {
    *   The new collection.
    */
   public function createCollection($name,$pluginId) {
+    // TODO
   }
 
   /**
@@ -81,6 +82,7 @@ class CollectionPluginManager extends DefaultPluginManager {
    *   True if the matching collection was removed or false otherwise.
    */
   public function removeCollection($name) {
+    // TODO
   }
 
   /**
@@ -90,6 +92,7 @@ class CollectionPluginManager extends DefaultPluginManager {
    *   Collection names.
    */
   public function getCollectionList() {
+    // TODO
   }
 
   /**
@@ -103,6 +106,7 @@ class CollectionPluginManager extends DefaultPluginManager {
    *   The loaded collection plugin or NULL.
    */
   public function loadCollection($name) {
+    // TODO
   }
 
   /**

@@ -2,7 +2,7 @@
 
 namespace Drupal\tripal4\Plugin;
 
-use Drupal\tripal4\Plugin\CollectionPluginInterface;
+use Drupal\tripal4\Interface\CollectionPluginInterface;
 
 /**
  * Defines an interface for tripal id space plugins.
@@ -36,7 +36,8 @@ interface IdSpaceInterface extends CollectionPluginInterface {
   public function getChildren($parent = NULL);
 
   /**
-   * Returns the term in this id space with the given accession. If no such term exists then NULL is returned.
+   * Returns the term in this id space with the given accession. If no such term
+   * exists then NULL is returned.
    *
    * @param string $accession
    *   The accession.
@@ -47,20 +48,24 @@ interface IdSpaceInterface extends CollectionPluginInterface {
   public function getTerm($accession);
 
   /**
-   * Returns the terms in this id space whose names match the given name.
-   * Matches can only be exact or a substring depending on the given flag. The
-   * default is to only return exact matches.
+   * Returns the terms in this id space whose names match the given name with
+   * the given options array.
+   *
+   * The given options array has the following recognized keys:
+   *
+   * exact(boolean): True to only include exact matches else false to include
+   * all substring matches. The default is false.
    *
    * @param string $name
    *   The name.
    *
-   * @param bool $exact
-   *   True to only include exact matches else include all substring matches.
+   * @param array $options
+   *   The options array.
    *
    * @return array
    *   Array of matching \Drupal\tripal4\Term instances.
    */
-  public function getTerms($name,$exact = True);
+  public function getTerms($name,$options);
 
   /**
    * Sets the default vocabulary of this id space to the given vocabulary name.
@@ -80,14 +85,28 @@ interface IdSpaceInterface extends CollectionPluginInterface {
   public function getDefaultVocabulary();
 
   /**
-   * Saves the given term to this id space with the given parent term. If the
-   * given term does not exist in this id space then it is added as a new term,
-   * else it is updated. If this is an update to an existing term then the
-   * parent argument is ignored. If no parent term is given and this is a new
-   * term then it is added as a root term of this id space.
+   * Saves the given term to this id space with the given options array and
+   * optional parent. If the given parent is NULL and the given term is new then
+   * it is added as a root term of this id space. If the given parent is NULL,
+   * the given term already exists, and the appropriate option was given to
+   * update the existing term's parent then it is moved to a root term of this
+   * id space.
+   *
+   * The given options array has the following recognized keys:
+   *
+   * failIfExists(boolean): True to force this method to fail if the given term
+   * already exists else false to update the term if it already exists. The
+   * default is false.
+   *
+   * updateParent(boolean): True to update The given term's parent to the one
+   * given or false to not update the existing term's parent. If the given term
+   * is new this has no effect. The default is false.
    *
    * @param \Drupal\tripal4\Term $term
    *   The term.
+   *
+   * @param array $options
+   *   The options array.
    *
    * @param \Drupal\tripal4\Term|NULL $parent
    *   The parent term or NULL.
@@ -95,7 +114,7 @@ interface IdSpaceInterface extends CollectionPluginInterface {
    * @return bool
    *   True on success or false otherwise.
    */
-  public function saveTerm($term,$parent = NULL);
+  public function saveTerm($term,$options,$parent = NULL);
 
   /**
    * Removes the term with the given accession from this id space. All children

@@ -2,7 +2,7 @@
 
 namespace Drupal\tripal4\Plugin;
 
-use Drupal\tripal4\Plugin\CollectionPluginInterface;
+use Drupal\tripal4\Interface\CollectionPluginInterface;
 use Drupal\tripal4\Term
 
 /**

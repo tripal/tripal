@@ -2,8 +2,8 @@
 
 namespace Drupal\tripal4\Plugin;
 
-use Drupal\tripal4\Plugin\CollectionPluginBase;
-use Drupal\tripal4\Plugin\VocabularyInterface
+use Drupal\tripal4\Base\CollectionPluginBase;
+use Drupal\tripal4\Interface\VocabularyInterface
 
 /**
  * Base class for tripal vocabulary plugins.

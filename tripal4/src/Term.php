@@ -80,7 +80,7 @@ class Term {
    * @param string $name
    *   The name.
    */
-  public function setDefinition($name) {
+  public function setName($name) {
     $this->name = $name;
   }
 
