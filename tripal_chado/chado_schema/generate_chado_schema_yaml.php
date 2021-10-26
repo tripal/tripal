@@ -48,7 +48,8 @@ while ($table = $result->fetchField()) {
   print "  fields:\n";
   $results = \Drupal::database()->query("SELECT column_name, data_type, is_nullable, character_maximum_length, ordinal_position, column_default
     FROM information_schema.columns
-    WHERE table_name = :table", [':table' => $table])->fetchAll();
+    WHERE table_name = :table
+      AND table_schema = 'chado'", [':table' => $table])->fetchAll();
   foreach ($results as $c) {
     print "    " . $c->column_name . ":\n";
 
@@ -62,10 +63,10 @@ while ($table = $result->fetchField()) {
 
     // Not Null:
     if ($c->is_nullable == 'YES') {
-      print "      not null: TRUE\n";
+      print "      not null: FALSE\n";
     }
     else {
-      print "      not null: FALSE\n";
+      print "      not null: TRUE\n";
     }
 
     // Size:
@@ -90,7 +91,9 @@ while ($table = $result->fetchField()) {
         JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name
         JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name
     WHERE
-        tc.table_name = :name";
+        tc.table_name = :name
+        AND tc.table_schema = 'chado'
+        ";
   $results = \Drupal::database()->query($sql, [':name' => $table])->fetchAll();
   $ukeys = [];
   $fkeys = [];
@@ -112,6 +115,7 @@ while ($table = $result->fetchField()) {
 
   // -- Unique Keys:
   if ($ukeys) {
+    ksort($ukeys);
     print "  unique keys:\n";
     foreach ($ukeys as $uname => $ucolumns) {
       print "    " . $uname . ": " . implode(', ', $ucolumns) . "\n";
@@ -125,6 +129,7 @@ while ($table = $result->fetchField()) {
 
   // -- Foreign Keys:
   if ($fkeys) {
+    ksort($fkeys);
     print "  foreign keys:\n";
     foreach ($fkeys as $fk) {
       print "    " . $fk['table'] . ":\n";
@@ -147,7 +152,8 @@ while ($table = $result->fetchField()) {
         JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name
         JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name
     WHERE
-        ccu.table_name = :name";
+        ccu.table_name = :name
+        AND tc.table_schema = 'chado'";
   $results = \Drupal::database()->query($sql, [':name' => $table])->fetchAll();
   if ($results) {
     $reftables = [];
@@ -156,6 +162,7 @@ while ($table = $result->fetchField()) {
         $reftables[$r->table_name] = $r->table_name;
       }
     }
+    sort($reftables);
     print "  referring_tables: " . implode(", ", $reftables) . "\n";
   }
 }
