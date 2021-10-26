@@ -241,7 +241,7 @@ function tripal_toolbar () {
 function tripal_page_attachments(array &$attachments) {
   $attachments['#attached']['drupalSettings']['tripal']['vars'] = [
     'baseurl' => \Drupal::request()->getSchemeAndHttpHost(),
-    'tripal_path' => drupal_get_path('module', 'tripal'),
+    'tripal_path' => \Drupal::service('extension.list.module')->getPath('tripal'),
   ];
   $attachments['#attached']['library'][] = 'tripal/vars';
 }
@@ -275,7 +275,7 @@ function tripal_preprocess_html(&$variables) {
   $config = \Drupal::config('tripal_admin.settings');
   // add some variables for all javasript to use for building URLs
   $clean_urls = $config->get('clean_url', 0);
-  $tripal_path = drupal_get_path('module', 'tripal');
+  $tripal_path = \Drupal::service('extension.list.module')->getPath('tripal');
   //Add a JS library
   $variables['#attached']['library'][] = 'tripal/tripal-js';
   $variables['#attached']['drupalSettings']['tripal']['tripalJS']['baseurl'] = $base_url;
@@ -569,7 +569,7 @@ function tripal_rebuild() {
   //
 
   // First get the config file.
-  $dir = drupal_get_path('module', 'tripal');
+  $dir = \Drupal::service('extension.list.module')->getPath('tripal');
   $fileStorage = new FileStorage($dir);
   $config = $fileStorage->read('config/install/views.view.tripal_jobs');
 

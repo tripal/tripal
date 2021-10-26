@@ -52,3 +52,17 @@ function tripal_chado_drop_schema($schema, $job = NULL) {
     \Drupal::logger('tripal_chado')->error("No schema was provided. Cannot drop.");
   }
 }
+
+/**
+ * Prepare Chado Schema
+ *
+ * @ingroup tripal_chado
+ */
+function tripal_chado_prepare_chado($chado_schema = 'chado', $job = NULL) {
+  $preparer = \Drupal::service('tripal_chado.chadoPreparer');
+  if ($job) {
+    $preparer->setJob($job);
+  }
+  $preparer->setSchema($chado_schema);
+  $success = $preparer->prepare();
+}

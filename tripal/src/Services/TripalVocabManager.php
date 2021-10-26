@@ -292,6 +292,7 @@ class TripalVocabManager {
     $default_vocab = NULL;
     if (array_key_exists('idspace', $details)) {
       $query = \Drupal::entityQuery('tripal_vocab_space');
+      $query->accessCheck(TRUE);
       $query->condition('IDSpace', $details['idspace']);
       $idspace_ids = $query->execute();
       if (sizeof($idspace_ids) === 1) {
@@ -305,6 +306,7 @@ class TripalVocabManager {
     // TripalVocab
     // Use the Drupal Entity Query mechanism to look for matches.
     $query = \Drupal::entityQuery('tripal_vocab');
+    $query->accessCheck(TRUE);
     if (array_key_exists('name', $details)) {
   	   $query->condition('name', $details['name']);
     }
