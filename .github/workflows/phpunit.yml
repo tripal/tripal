@@ -2,7 +2,7 @@
 name: PHPUnit-Tests
 
 # When do we want the tests to run?
-on: [push, pull_request]
+on: [push]
 
 # Define jobs that are part of the workflow
 jobs:
