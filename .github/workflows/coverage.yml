@@ -2,7 +2,7 @@
 name: Test Coverage
 
 # When do we want the tests to run?
-on: [push, pull_request]
+on: [pull_request]
 
 # Define jobs that are part of the workflow
 jobs:
@@ -21,7 +21,7 @@ jobs:
         run: |
           docker run --publish=80:80 --name=tripaldocker -tid \
             --volume=`pwd`:/var/www/drupal8/web/modules/contrib/tripal \
-            tripalproject/tripaldocker:drupal8.9.x-dev
+            tripalproject/tripaldocker:drupal9.0.x-dev
           docker exec tripaldocker service postgresql restart
           docker exec tripaldocker drush cr
           docker exec tripaldocker drush trp-drop-chado --schema-name=chado
