@@ -252,7 +252,7 @@ function chado_publication_exists($pub_details) {
     $series_name = substr($pub_details['Conference Name'], 0, 255);
   }
 
-  // Make sure the publication is unique using the prefereed import
+  // Make sure the publication is unique using the preferred import
   // duplication check.
   $import_dups_check = variable_get('tripal_pub_import_duplicate_check', 'title_year_media');
   $pubs = [];
