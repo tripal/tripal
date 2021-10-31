@@ -571,8 +571,13 @@ function chado_execute_pub_importer($import_id, $publish = TRUE,
     return FALSE;
   }
 
+  // Summary of importer results for each action
+  $message = 'Done. Publication importer summary:';
+  foreach ($report as $action => $pubs) {
+    $message .= ' ' . $action . '=' . count($pubs);
+  }
   tripal_report_error($message_type, TRIPAL_INFO,
-    "Done.", [], $message_opts);
+    $message, [], $message_opts);
 
   return $report;
 }
