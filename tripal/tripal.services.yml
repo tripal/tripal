@@ -10,19 +10,22 @@ services:
       class: Drupal\tripal\Services\Tripaljob
   tripal.logger:
       class: Drupal\tripal\Services\TripalLogger
+  ## DEPRECATED! Replaced by tripal.vocab + tripal.id_space
   tripal.tripalVocab.manager:
       class: Drupal\tripal\Services\TripalVocabManager
+  ## DEPRECATED! Replaced by tripal.vocab + tripal.id_space
   tripal.tripalTerm.manager:
       class: Drupal\tripal\Services\TripalTermManager
   plugin.manager.tripalstorage:
       class: Drupal\tripal\Services\TripalStorageManager
       parent: default_plugin_manager
+  ## DEPRECATED! Replaced by tripal.vocab + tripal.id_space
   plugin.manager.tripal.termStorage:
     class: Drupal\tripal\Plugin\TripalTermStorage\TripalTermStorageManager
     parent: default_plugin_manager
-  tripal.vocab.manager:
+  plugin.manager.tripal.vocab:
     class: Drupal\tripal\TripalVocabTerms\PluginManagers\VocabularyManager
     parent: default_plugin_manager
-  tripal.id_space.manager:
+  plugin.manager.tripal.id_space:
     class: Drupal\tripal\TripalVocabTerms\PluginManagers\IdSpaceManager
     parent: default_plugin_manager
