@@ -24,7 +24,7 @@ This project acts as the home of Tripal 4 development. Once Tripal 4 is stable, 
 
 ### How to get involved!
 
-This upgrade to Drupal 89is a community effort. As such, we NEED YOUR HELP!
+This upgrade to Drupal 9 is a community effort. As such, we NEED YOUR HELP!
 
   - To get involved, please join [our Tripal Slack](http://tripal.info/join/slack) and comment in the #core-dev channel. 
     - Alternatively, feel free to contact Lacey-Anne Sanderson through Slack direct message.
