@@ -36,4 +36,4 @@ This upgrade to Drupal 89is a community effort. As such, we NEED YOUR HELP!
 
 # Timeline
 
-[![timeline](docs/Tripal4-Upgrade-Timeline.png)](https://time.graphics/line/387503)
+[![timeline](docs/Tripal4-Timeline-2021Nov2.png)](https://time.graphics/line/387503)
