@@ -9,7 +9,7 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 /**
  * Provides a tripal collection plugin manager.
  */
-class CollectionPluginManager extends DefaultPluginManager {
+class TripalCollectionPluginManager extends DefaultPluginManager {
 
   /**
    * Constructs a new tripal collection plugin manager.
@@ -60,7 +60,7 @@ class CollectionPluginManager extends DefaultPluginManager {
    * @param string $pluginId
    *   The plugin id.
    *
-   * @return Drupal\tripal\TripalVocabTerms\CollectionPluginBase
+   * @return Drupal\tripal\TripalVocabTerms\TripalCollectionPluginBase
    *   The new collection.
    */
   public function createCollection($name,$pluginId) {
@@ -102,7 +102,7 @@ class CollectionPluginManager extends DefaultPluginManager {
    * @param string $name
    *   The name.
    *
-   * @return Drupal\tripal\TripalVocabTerms\CollectionPluginBase|NULL
+   * @return Drupal\tripal\TripalVocabTerms\TripalCollectionPluginBase|NULL
    *   The loaded collection plugin or NULL.
    */
   public function loadCollection($name) {

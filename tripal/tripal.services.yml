@@ -24,8 +24,8 @@ services:
     class: Drupal\tripal\Plugin\TripalTermStorage\TripalTermStorageManager
     parent: default_plugin_manager
   plugin.manager.tripal.vocab:
-    class: Drupal\tripal\TripalVocabTerms\PluginManagers\VocabularyManager
+    class: Drupal\tripal\TripalVocabTerms\PluginManagers\TripalVocabularyManager
     parent: default_plugin_manager
   plugin.manager.tripal.id_space:
-    class: Drupal\tripal\TripalVocabTerms\PluginManagers\IdSpaceManager
+    class: Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager
     parent: default_plugin_manager

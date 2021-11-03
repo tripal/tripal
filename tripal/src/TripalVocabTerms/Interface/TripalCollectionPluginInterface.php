@@ -7,7 +7,7 @@ use Drupal\Component\Plugin\PluginInspectionInterface;
 /**
  * Defines an interface for tripal collection plugins.
  */
-interface CollectionPluginInterface extends PluginInspectionInterface {
+interface TripalCollectionPluginInterface extends PluginInspectionInterface {
 
   /**
    * Creates this collection. This must only be called once on this new

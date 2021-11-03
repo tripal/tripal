@@ -7,7 +7,7 @@ use Drupal\Component\Plugin\PluginBase;
 /**
  * Base class for tripal collection plugins.
  */
-class CollectionPluginBase extends PluginBase {
+class TripalCollectionPluginBase extends PluginBase {
 
   /**
    * {@inheritdoc}

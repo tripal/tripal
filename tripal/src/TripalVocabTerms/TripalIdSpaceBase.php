@@ -2,13 +2,13 @@
 
 namespace Drupal\tripal\TripalVocabTerms;
 
-use Drupal\tripal\TripalVocabTerms\CollectionPluginBase;
-use Drupal\tripal\TripalVocabTerms\Interface\IdSpaceInterface
+use Drupal\tripal\TripalVocabTerms\TripalCollectionPluginBase;
+use Drupal\tripal\TripalVocabTerms\Interface\TripalIdSpaceInterface
 
 /**
  * Base class for tripal id space plugins.
  */
-abstract class IdSpaceBase extends CollectionPluginBase implements IdSpaceInterface {
+abstract class TripalIdSpaceBase extends TripalCollectionPluginBase implements TripalIdSpaceInterface {
 
   /**
    * {@inheritdoc}

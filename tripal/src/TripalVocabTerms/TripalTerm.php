@@ -5,7 +5,7 @@ namespace Drupal\tripal\TripalVocabTerms;
 /**
  * Defines a vocabulary term object.
  */
-class Term {
+class TripalTerm {
 
   /**
    * Constructs a new term object with the given name, definition, id space,
@@ -54,13 +54,13 @@ class Term {
   /**
    * Tests if the given term is equal to this term.
    *
-   * @param Drupal\tripal\TripalVocabTerms\Term other
+   * @param Drupal\tripal\TripalVocabTerms\TripalTerm other
    *   The other given term.
    *
    * @return bool
    *   True if equal otherwise false.
    */
-  public function isEqual(Term $other) {
+  public function isEqual(TripalTerm $other) {
       return $this->idSpace == $other->idSpace && $this->accession == $other->accession;
   }
 
@@ -117,7 +117,7 @@ class Term {
   /**
    * Returns an instance of this term's id space.
    *
-   * @return Drupal\tripal\TripalVocabTerms\Interface\IdSpaceInterface
+   * @return Drupal\tripal\TripalVocabTerms\Interface\TripalIdSpaceInterface
    *   The id space instance.
    */
   public function getIdSpaceObject() {

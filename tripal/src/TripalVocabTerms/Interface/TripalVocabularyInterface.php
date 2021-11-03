@@ -2,17 +2,17 @@
 
 namespace Drupal\tripal\TripalVocabTerms\Interface;
 
-use Drupal\tripal\TripalVocabTerms\Interface\CollectionPluginInterface;
-use Drupal\tripal\TripalVocabTerms\Term
+use Drupal\tripal\TripalVocabTerms\Interface\TripalCollectionPluginInterface;
+use Drupal\tripal\TripalVocabTerms\TripalTerm
 
 /**
  * Defines an interface for tripal vocabulary plugins.
  */
-interface VocabularyInterface extends CollectionPluginInterface {
+interface TripalVocabularyInterface extends TripalCollectionPluginInterface {
 
   /**
    * Returns list of id space collection names that is contained in this vocabulary.
-   * 
+   *
    * @return array
    *   An array of id space collection name strings.
    */
@@ -53,7 +53,7 @@ interface VocabularyInterface extends CollectionPluginInterface {
    *   True to only include exact matches else include all substring matches.
    *
    * @return array
-   *   Array of matching Drupal\tripal\TripalVocabTerms\Term instances.
+   *   Array of matching Drupal\tripal\TripalVocabTerms\TripalTerm instances.
    */
   public function getTerms($name,$exact = True);
 

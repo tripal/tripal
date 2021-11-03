@@ -2,14 +2,14 @@
 
 namespace Drupal\tripal\TripalVocabTerms\PluginManagers;
 
-use Drupal\tripal\TripalVocabTerms\PluginManagers\CollectionPluginManager;
+use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalCollectionPluginManager;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 
 /**
  * Provides the tripal id space plugin manager.
  */
-class IdSpaceManager extends CollectionPluginManager {
+class TripalIdSpaceManager extends TripalCollectionPluginManager {
 
   /**
    * Constructs a new tripal id space plugin manager.
@@ -31,8 +31,8 @@ class IdSpaceManager extends CollectionPluginManager {
         "Plugin/TripalIdSpace"
         ,$namespaces
         ,$module_handler
-        ,'Drupal\tripal\TripalVocabTerms\Interface\IdSpaceInterface'
-        ,'Drupal\tripal\TripalVocabTerms\Annotation\IdSpace'
+        ,'Drupal\tripal\TripalVocabTerms\Interface\TripalIdSpaceInterface'
+        ,'Drupal\tripal\TripalVocabTerms\Annotation\TripalIdSpace'
         ,"tripal_idspace_collection"
     );
     $this->alterInfo("tripal_id_space_info");

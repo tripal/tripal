@@ -2,14 +2,14 @@
 
 namespace Drupal\tripal\TripalVocabTerms\PluginManagers;
 
-use Drupal\tripal\TripalVocabTerms\PluginManagers\CollectionPluginManager;
+use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalCollectionPluginManager;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 
 /**
  * Provides the tripal vocabulary plugin manager.
  */
-class VocabularyManager extends CollectionPluginManager {
+class TripalVocabularyManager extends TripalCollectionPluginManager {
 
   /**
    * Constructs a new tripal vocabulary plugin manager.
@@ -31,8 +31,8 @@ class VocabularyManager extends CollectionPluginManager {
         "Plugin/TripalVocabulary"
         ,$namespaces
         ,$module_handler
-        ,'Drupal\tripal\TripalVocabTerms\Interface\VocabularyInterface'
-        ,'Drupal\tripal\TripalVocabTerms\Annotation\Vocabulary'
+        ,'Drupal\tripal\TripalVocabTerms\Interface\TripalVocabularyInterface'
+        ,'Drupal\tripal\TripalVocabTerms\Annotation\TripalVocabulary'
         ,"tripal_vcoabulary_collection"
     );
     $this->alterInfo("tripal_vocabulary_info");

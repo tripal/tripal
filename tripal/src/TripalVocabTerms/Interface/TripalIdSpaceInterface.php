@@ -2,22 +2,22 @@
 
 namespace Drupal\tripal\TripalVocabTerms\Interface;
 
-use Drupal\tripal\TripalVocabTerms\Interface\CollectionPluginInterface;
+use Drupal\tripal\TripalVocabTerms\Interface\TripalCollectionPluginInterface;
 
 /**
  * Defines an interface for tripal id space plugins.
  */
-interface IdSpaceInterface extends CollectionPluginInterface {
+interface TripalIdSpaceInterface extends TripalCollectionPluginInterface {
 
   /**
    * Gets the parent of the given term. The given term must be a valid term for
    * this id space. If the given term is a root of this id space then NULL
    * is returned.
    *
-   * @param Drupal\tripal\TripalVocabTerms\Term $child
+   * @param Drupal\tripal\TripalVocabTerms\TripalTerm $child
    *   The given term.
    *
-   * @return Drupal\tripal\TripalVocabTerms\Term|NULL
+   * @return Drupal\tripal\TripalVocabTerms\TripalTerm|NULL
    *   The parent term or NULL.
    */
   public function getParent($child);
@@ -27,11 +27,11 @@ interface IdSpaceInterface extends CollectionPluginInterface {
    * term for this id space or NULL. If the given term is NULL then the root
    * children of this id space is returned.
    *
-   * @param Drupal\tripal\TripalVocabTerms\Term|NULL $parent
+   * @param Drupal\tripal\TripalVocabTerms\TripalTerm|NULL $parent
    *   The given term or NULL.
    *
    * @return array
-   *   An array of Drupal\tripal\TripalVocabTerms\Term children objects.
+   *   An array of Drupal\tripal\TripalVocabTerms\TripalTerm children objects.
    */
   public function getChildren($parent = NULL);
 
@@ -42,7 +42,7 @@ interface IdSpaceInterface extends CollectionPluginInterface {
    * @param string $accession
    *   The accession.
    *
-   * @return Drupal\tripal\TripalVocabTerms\Term|NULL
+   * @return Drupal\tripal\TripalVocabTerms\TripalTerm|NULL
    *   The term or NULL.
    */
   public function getTerm($accession);
@@ -63,7 +63,7 @@ interface IdSpaceInterface extends CollectionPluginInterface {
    *   The options array.
    *
    * @return array
-   *   Array of matching Drupal\tripal\TripalVocabTerms\Term instances.
+   *   Array of matching Drupal\tripal\TripalVocabTerms\TripalTerm instances.
    */
   public function getTerms($name,$options);
 
@@ -102,13 +102,13 @@ interface IdSpaceInterface extends CollectionPluginInterface {
    * given or false to not update the existing term's parent. If the given term
    * is new this has no effect. The default is false.
    *
-   * @param Drupal\tripal\TripalVocabTerms\Term $term
+   * @param Drupal\tripal\TripalVocabTerms\TripalTerm $term
    *   The term.
    *
    * @param array $options
    *   The options array.
    *
-   * @param Drupal\tripal\TripalVocabTerms\Term|NULL $parent
+   * @param Drupal\tripal\TripalVocabTerms\TripalTerm|NULL $parent
    *   The parent term or NULL.
    *
    * @return bool

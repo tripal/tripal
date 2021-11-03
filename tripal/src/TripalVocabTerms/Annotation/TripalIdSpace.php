@@ -11,7 +11,7 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @Annotation
  */
-class IdSpace extends Plugin {
+class TripalIdSpace extends Plugin {
 
   /**
    * The plugin ID.
