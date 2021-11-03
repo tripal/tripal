@@ -1,9 +1,9 @@
 <?php
 
-namespace Drupal\tripal4\Plugin;
+namespace Drupal\tripal\TripalVocabTerms;
 
-use Drupal\tripal4\Base\CollectionPluginBase;
-use Drupal\tripal4\Interface\IdSpaceInterface
+use Drupal\tripal\TripalVocabTerms\CollectionPluginBase;
+use Drupal\tripal\TripalVocabTerms\Interface\IdSpaceInterface
 
 /**
  * Base class for tripal id space plugins.

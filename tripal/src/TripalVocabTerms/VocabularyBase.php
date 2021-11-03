@@ -1,9 +1,9 @@
 <?php
 
-namespace Drupal\tripal4\Plugin;
+namespace Drupal\tripal\TripalVocabTerms;
 
-use Drupal\tripal4\Base\CollectionPluginBase;
-use Drupal\tripal4\Interface\VocabularyInterface
+use Drupal\tripal\TripalVocabTerms\CollectionPluginBase;
+use Drupal\tripal\TripalVocabTerms\Interface\VocabularyInterface
 
 /**
  * Base class for tripal vocabulary plugins.

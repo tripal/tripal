@@ -1,9 +1,9 @@
 <?php
 
-namespace Drupal\tripal4\Plugin;
+namespace Drupal\tripal\TripalVocabTerms\Interface;
 
-use Drupal\tripal4\Interface\CollectionPluginInterface;
-use Drupal\tripal4\Term
+use Drupal\tripal\TripalVocabTerms\Interface\CollectionPluginInterface;
+use Drupal\tripal\TripalVocabTerms\Term
 
 /**
  * Defines an interface for tripal vocabulary plugins.
@@ -53,7 +53,7 @@ interface VocabularyInterface extends CollectionPluginInterface {
    *   True to only include exact matches else include all substring matches.
    *
    * @return array
-   *   Array of matching \Drupal\tripal4\Term instances.
+   *   Array of matching Drupal\tripal\TripalVocabTerms\Term instances.
    */
   public function getTerms($name,$exact = True);
 

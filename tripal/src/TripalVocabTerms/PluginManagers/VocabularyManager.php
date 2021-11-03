@@ -1,8 +1,8 @@
 <?php
 
-namespace Drupal\tripal4\Plugin;
+namespace Drupal\tripal\TripalVocabTerms\PluginManagers;
 
-use Drupal\tripal4\Plugin\CollectionPluginManager;
+use Drupal\tripal\TripalVocabTerms\PluginManagers\CollectionPluginManager;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 
@@ -31,8 +31,8 @@ class VocabularyManager extends CollectionPluginManager {
         "Plugin/TripalVocabulary"
         ,$namespaces
         ,$module_handler
-        ,'Drupal\tripal4\Plugin\VocabularyInterface'
-        ,'Drupal\tripal4\Annotation\Vocabulary'
+        ,'Drupal\tripal\TripalVocabTerms\Interface\VocabularyInterface'
+        ,'Drupal\tripal\TripalVocabTerms\Annotation\Vocabulary'
         ,"tripal_vcoabulary_collection"
     );
     $this->alterInfo("tripal_vocabulary_info");

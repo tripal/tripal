@@ -1,7 +1,0 @@
-services:
-  tripal4.id_space.manager:
-    class: Drupal\tripal4\Plugin\IdSpaceManager
-    parent: default_plugin_manager
-  tripal4.vocab.manager:
-    class: Drupal\tripal4\Plugin\VocabularyManager
-    parent: default_plugin_manager

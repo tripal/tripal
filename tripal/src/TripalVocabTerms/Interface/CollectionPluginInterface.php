@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\tripal4\Plugin;
+namespace Drupal\tripal\TripalVocabTerms\Interface;
 
 use Drupal\Component\Plugin\PluginInspectionInterface;
 

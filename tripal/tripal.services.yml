@@ -20,3 +20,9 @@ services:
   plugin.manager.tripal.termStorage:
     class: Drupal\tripal\Plugin\TripalTermStorage\TripalTermStorageManager
     parent: default_plugin_manager
+  tripal.vocab.manager:
+    class: Drupal\tripal\TripalVocabTerms\PluginManagers\VocabularyManager
+    parent: default_plugin_manager
+  tripal.id_space.manager:
+    class: Drupal\tripal\TripalVocabTerms\PluginManagers\IdSpaceManager
+    parent: default_plugin_manager

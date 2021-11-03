@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\tripal4\Vocabulary;
+namespace Drupal\tripal\TripalVocabTerms;
 
 /**
  * Defines a vocabulary term object.
@@ -45,7 +45,7 @@ class Term {
    *   The given max number returned.
    *
    * @return array
-   *   An array of valid \Drupal\tripal4\Vocabulary\Term objects.
+   *   An array of valid Drupal\tripal\TripalVocabTerms\Term objects.
    */
   public static function suggestTerms(string $partial, int $max = 10) {
     // TODO
@@ -54,7 +54,7 @@ class Term {
   /**
    * Tests if the given term is equal to this term.
    *
-   * @param \Drupal\tripal4\Vocabulary\Term other
+   * @param Drupal\tripal\TripalVocabTerms\Term other
    *   The other given term.
    *
    * @return bool
@@ -117,7 +117,7 @@ class Term {
   /**
    * Returns an instance of this term's id space.
    *
-   * @return \Drupal\tripal4\Plugin\IdSpaceInterface
+   * @return Drupal\tripal\TripalVocabTerms\Interface\IdSpaceInterface
    *   The id space instance.
    */
   public function getIdSpaceObject() {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\tripal4\Plugin;
+namespace Drupal\tripal\TripalVocabTerms;
 
 use Drupal\Component\Plugin\PluginBase;
 

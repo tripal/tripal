@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\tripal4\Plugin;
+namespace Drupal\tripal\TripalVocabTerms\PluginManagers;
 
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\Core\Cache\CacheBackendInterface;
@@ -60,7 +60,7 @@ class CollectionPluginManager extends DefaultPluginManager {
    * @param string $pluginId
    *   The plugin id.
    *
-   * @return \Drupal\tripal4\Plugin\TripalCollectionPluginBase
+   * @return Drupal\tripal\TripalVocabTerms\CollectionPluginBase
    *   The new collection.
    */
   public function createCollection($name,$pluginId) {
@@ -102,7 +102,7 @@ class CollectionPluginManager extends DefaultPluginManager {
    * @param string $name
    *   The name.
    *
-   * @return \Drupal\tripal4\Plugin\TripalCollectionPluginBase|NULL
+   * @return Drupal\tripal\TripalVocabTerms\CollectionPluginBase|NULL
    *   The loaded collection plugin or NULL.
    */
   public function loadCollection($name) {
