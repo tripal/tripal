@@ -28,15 +28,16 @@ class TripalVocabularyManager extends TripalCollectionPluginManager {
       ,ModuleHandlerInterface $module_handler
   ) {
     parent::__construct(
-        "Plugin/TripalVocabulary"
+        'Plugin/TripalVocabulary'
         ,$namespaces
+        ,$cache_backend
         ,$module_handler
         ,'Drupal\tripal\TripalVocabTerms\Interface\TripalVocabularyInterface'
         ,'Drupal\tripal\TripalVocabTerms\Annotation\TripalVocabulary'
-        ,"tripal_vcoabulary_collection"
+        ,'tripal_vocabulary_collection'
     );
-    $this->alterInfo("tripal_vocabulary_info");
-    $this->setCacheBackend($cache_backend,"tripal_vocabulary_plugins");
+    $this->alterInfo('tripal_vocabulary_info');
+    $this->setCacheBackend($cache_backend,'tripal_vocabulary_plugins');
   }
 
 }

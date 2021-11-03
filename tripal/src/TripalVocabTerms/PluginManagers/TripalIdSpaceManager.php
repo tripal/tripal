@@ -28,15 +28,16 @@ class TripalIdSpaceManager extends TripalCollectionPluginManager {
       ,ModuleHandlerInterface $module_handler
   ) {
     parent::__construct(
-        "Plugin/TripalIdSpace"
+        'Plugin/TripalIdSpace'
         ,$namespaces
+        ,$cache_backend
         ,$module_handler
         ,'Drupal\tripal\TripalVocabTerms\Interface\TripalIdSpaceInterface'
         ,'Drupal\tripal\TripalVocabTerms\Annotation\TripalIdSpace'
-        ,"tripal_idspace_collection"
+        ,'tripal_idspace_collection'
     );
-    $this->alterInfo("tripal_id_space_info");
-    $this->setCacheBackend($cache_backend,"tripal_id_space_plugins");
+    $this->alterInfo('tripal_id_space_info');
+    $this->setCacheBackend($cache_backend,'tripal_id_space_plugins');
   }
 
 }
