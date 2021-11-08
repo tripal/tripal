@@ -5,7 +5,7 @@ FROM php:7.3-apache-buster
 
 MAINTAINER Lacey-Anne Sanderson <laceyannesanderson@gmail.com>
 
-ARG drupalversion='9.0.x-dev'
+ARG drupalversion='9.1.x-dev'
 ARG modules='tripal tripal_chado'
 
 COPY . /app
@@ -135,7 +135,7 @@ RUN export COMPOSER_MEMORY_LIMIT=-1 \
   && composer create-project drupal/recommended-project:${drupalversion} drupal8 --stability dev --no-interaction \
   && cd drupal8 \
   && composer require --dev drupal/core-dev:${drupalversion} \
-  && composer require drush/drush \
+  && composer require drush/drush drupal/console:~1.0 \
   && composer up \
   && ls /var/www/drupal8/web/sites/default/
 
