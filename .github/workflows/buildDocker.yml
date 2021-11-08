@@ -1,0 +1,16 @@
+name: Build and Publish Docker image
+on:
+  push:
+    branches:
+      - autobuild-image
+jobs:
+  push_to_registry:
+    name: Build and publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Build image
+        run: |
+          docker build --tag=tripalproject/tripaldocker:drupal9.1.x-dev --build-arg drupalversion='9.1.x-dev' ./ \
+          && docker images
