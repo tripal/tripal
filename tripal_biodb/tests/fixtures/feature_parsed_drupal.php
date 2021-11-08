@@ -9,19 +9,22 @@ on; see the Sequence Ontology for more. The combination of
 organism_id, uniquename and type_id should be unique.",
   "fields" => [
     "feature_id" => [
-      "type" => "text",
+      "type" => "serial",
       "not null" => true,
       "pgsql_type" => "serial",
+      "size" => "medium",
     ],
     "dbxref_id" => [
-      "type" => "text",
+      "type" => "int",
       "not null" => false,
       "pgsql_type" => "integer",
+      "size" => "medium",
     ],
     "organism_id" => [
-      "type" => "text",
+      "type" => "int",
       "not null" => true,
       "pgsql_type" => "integer",
+      "size" => "medium",
     ],
     "name" => [
       "type" => "varchar",
@@ -40,9 +43,10 @@ organism_id, uniquename and type_id should be unique.",
       "pgsql_type" => "text",
     ],
     "seqlen" => [
-      "type" => "text",
+      "type" => "int",
       "not null" => false,
       "pgsql_type" => "integer",
+      "size" => "medium",
     ],
     "md5checksum" => [
       "type" => "char",
@@ -51,22 +55,21 @@ organism_id, uniquename and type_id should be unique.",
       "length" => 32,
     ],
     "type_id" => [
-      "type" => "text",
-      "not null" => true,
-      "pgsql_type" => "integer",
-    ],
-    "is_analysis" => [
       "type" => "int",
       "not null" => true,
+      "pgsql_type" => "integer",
+      "size" => "medium",
+    ],
+    "is_analysis" => [
+      "type" => "text",
+      "not null" => true,
       "pgsql_type" => "boolean",
-      "size" => "tiny",
       "default" => "false",
     ],
     "is_obsolete" => [
-      "type" => "int",
+      "type" => "text",
       "not null" => true,
       "pgsql_type" => "boolean",
-      "size" => "tiny",
       "default" => "false",
     ],
     "timeaccessioned" => [
