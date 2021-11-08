@@ -548,9 +548,9 @@ class BioSchemaTest extends KernelTestBase {
   CONSTRAINT testtable_c1 UNIQUE (fieldbigint, fieldsmallint),
   CONSTRAINT testtable_foreign_id_fkey FOREIGN KEY (foreign_id) REFERENCES othertesttable(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED
 );
-CREATE UNIQUE INDEX testtable_c1 ON $test_schema.testtable USING btree (fieldbigint, fieldsmallint);
-CREATE UNIQUE INDEX testtable_c2 ON $test_schema.testtable USING btree (fieldbigint, fieldsmallint);
 CREATE INDEX testtable_idx1 ON $test_schema.testtable USING btree (foreign_id);
+CREATE UNIQUE INDEX testtable_c2 ON $test_schema.testtable USING btree (fieldbigint, fieldsmallint);
+CREATE UNIQUE INDEX testtable_c1 ON $test_schema.testtable USING btree (fieldbigint, fieldsmallint);
 COMMENT ON TABLE $test_schema.testtable IS 'Some long description
 on multiple lines.';
 ";
