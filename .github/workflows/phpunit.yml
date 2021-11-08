@@ -13,7 +13,7 @@ jobs:
     # PHP Targets
     strategy:
       matrix:
-        drupalversion: ['9.0.x-dev', '9.1.x-dev']
+        drupalversion: ['9.0.x-dev', '9.1.x-dev', '9.2.x-dev']
     # Give the builds names so we can tell them apart
     name: PHPUnit Drupal ${{ matrix.drupalversion }}
 
@@ -26,7 +26,7 @@ jobs:
       # to ensure we have not broken the install/build process.
       - name: Build the Docker
         run: |
-          docker build --tag=tripaldocker:localdocker --build-arg drupalversion='${{ matrix.drupalversion }}' tripaldocker/
+          docker build --tag=tripaldocker:localdocker --build-arg drupalversion='${{ matrix.drupalversion }}' ./
       # Just spin up docker the good ol' fashion way.
       - name: Spin up Local Docker
         run: |
@@ -44,7 +44,7 @@ jobs:
           docker exec tripaldocker drush trp-prep-tests
       # Drupal 9.1.x needs prophecy-phpunit due to https://www.drupal.org/project/drupal/issues/3182653
       - name: Add prophecy-phpunit
-        if: ${{ matrix.drupalversion == '9.1.x-dev' }}
+        if: ${{ matrix.drupalversion != '9.0.x-dev' }}
         run: |
           docker exec --workdir /var/www/drupal8 tripaldocker composer require phpspec/prophecy-phpunit
       # Runs the PHPUnit tests.

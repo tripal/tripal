@@ -1,5 +1,5 @@
 # Run some PHPUnit tests
-name: Test Coverage
+name: Test Coverage on Drupal 9.0.x-dev
 
 # When do we want the tests to run?
 on: [push]
@@ -16,13 +16,23 @@ jobs:
       # Check out the repo
       - name: Checkout Repository
         uses: actions/checkout@v2
+      # Here we fully  build a docker using the current checked out code
+      # to ensure we have not broken the install/build process.
+      - name: Build the Docker
+        run: |
+          docker build --tag=tripaldocker:localdocker --build-arg drupalversion='9.0.x-dev' ./
       # Just spin up docker the good ol' fashion way.
-      - name: Spin up Docker
+      - name: Spin up Local Docker
         run: |
           docker run --publish=80:80 --name=tripaldocker -tid \
             --volume=`pwd`:/var/www/drupal8/web/modules/contrib/tripal \
-            tripalproject/tripaldocker:drupal9.0.x-dev
+            tripaldocker:localdocker
           docker exec tripaldocker service postgresql restart
+      # Now prepare the new docker container for running tests.
+      # We specifically do not have a `chado` named schema to test that
+      # an assumption hasn't been made here.
+      - name: Prep Local Docker for Tests
+        run: |
           docker exec tripaldocker drush cr
           docker exec tripaldocker drush trp-drop-chado --schema-name=chado
           docker exec tripaldocker drush trp-prep-tests
