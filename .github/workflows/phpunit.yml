@@ -44,7 +44,7 @@ jobs:
           docker exec tripaldocker drush trp-prep-tests
       # Drupal 9.1.x needs prophecy-phpunit due to https://www.drupal.org/project/drupal/issues/3182653
       - name: Add prophecy-phpunit
-        if: ${{ matrix.drupalversion !== '9.0.x-dev' }}
+        if: ${{ matrix.drupalversion != '9.0.x-dev' }}
         run: |
           docker exec --workdir /var/www/drupal8 tripaldocker composer require phpspec/prophecy-phpunit
       # Runs the PHPUnit tests.
