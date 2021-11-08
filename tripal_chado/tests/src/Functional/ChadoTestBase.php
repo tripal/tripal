@@ -28,6 +28,11 @@ use Drupal\tripal_chado\Database\ChadoConnection;
 abstract class ChadoTestBase extends KernelTestBase {
 
   /**
+   * {@inheritdoc}
+   */
+  protected static $modules = ['tripal_biodb', 'tripal_chado'];
+
+  /**
    * Just get a free test schema name.
    */
   public const SCHEMA_NAME_ONLY = 0;
@@ -100,9 +105,6 @@ abstract class ChadoTestBase extends KernelTestBase {
    */
   protected function setUp(): void {
     parent::setUp();
-
-    // Register BioDbTool and Chado services.
-    $this->enableModules(['tripal_biodb', 'tripal_chado']);
 
     // Init Tripal.
     $this->createChadoInstallationsTable();

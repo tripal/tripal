@@ -20,6 +20,11 @@ use Drupal\tripal_biodb\Database\BioConnection;
 class BioSchemaTest extends KernelTestBase {
 
   /**
+   * {@inheritdoc}
+   */
+  protected static $modules = ['tripal_biodb'];
+
+  /**
    * List of tested schemas.
    *
    * Keys are schema names and values are boolean. At test shutdown, when the
@@ -93,9 +98,6 @@ class BioSchemaTest extends KernelTestBase {
       ->get('test_schema_base_names')
       ?? ['default' => '_test_biodb', ]
     ;
-
-    // Register BioDbTool service.
-    $this->enableModules(['tripal_biodb']);
 
     // Mock the Config object.
     $this->proConfig = $this->prophesize(\Drupal\Core\Config\ImmutableConfig::class);

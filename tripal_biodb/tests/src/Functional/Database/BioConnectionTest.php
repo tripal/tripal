@@ -17,6 +17,11 @@ use Drupal\tripal_biodb\Database\BioConnection;
 class BioConnectionTest extends KernelTestBase {
 
   /**
+   * {@inheritdoc}
+   */
+  protected static $modules = ['tripal_biodb'];
+
+  /**
    * Test members.
    *
    * "pro*" members are prophesize objects while their "non-pro*" equivqlent are
@@ -65,9 +70,6 @@ class BioConnectionTest extends KernelTestBase {
       ->get('test_schema_base_names')
       ?? ['default' => '_test_biodb', ]
     ;
-
-    // Register BioDbTool service.
-    $this->enableModules(['tripal_biodb']);
 
     // Mock the Config object.
     $this->proConfig = $this->prophesize(\Drupal\Core\Config\ImmutableConfig::class);
