@@ -8,13 +8,13 @@ Software Stack
 
 Currently we have the following installed:
  - Debian Buster(10)
- - PHP 7.3.25 with extensions needed for Drupal (Memory limit 1028M)
+ - PHP 7.3.32 with extensions needed for Drupal (Memory limit 1028M)
  - Apache 2.4.38
- - PostgreSQL 11.9 (Debian 11.9-0+deb10u1)
- - Composer 2.0.7
+ - PostgreSQL 11.13 (Debian 11.13-0+deb10u1)
+ - Composer 2.1.11
  - Drupal Console 1.9.7
- - Drush 10.3.6
- - Drupal 8.9.10  (8.x-dev) downloaded using composer.
+ - Drush 10.6.1
+ - Drupal 9.1.13 downloaded using composer (or as specified by drupalversion argument).
 
 Quickstart
 ----------
@@ -82,8 +82,10 @@ Usage
 Detailed Setup for Core Development
 ------------------------------------
 
-1. `Install Docker <https://docs.docker.com/get-docker>`_ for your system.
+Using Latest tagged version
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1. `Install Docker <https://docs.docker.com/get-docker>`_ for your system.
 
 2. Clone the most recent version of Tripal 4 keeping track of where you cloned it.
 
@@ -127,6 +129,43 @@ Detailed Setup for Core Development
 
 **Furthermore, the --volume part of the run command ensures any changes made in your local directory are automatically copied into the docker container so you can live edit your website.**
 
+Testing install for a specific branch or update the docker image.
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following instructions will show you how to create the TripalDocker image from the code existing locally. **This should only be needed if you have made changes to Tripal 4 that impact the installation process, you have created a new module and/or if you have created a new Tripal release. Otherwise, you should be able to use the image from docker hub accessed via the docker pull command.**
+
+First if you do not have a local copy of the t4d8 repository, you can use the following instructions to get one. If you do have a copy already, make sure it is up to date and contains the changes you would like to test.
+
+.. code-block:: bash
+
+  mkdir ~/Dockers
+  cd ~/Dockers
+  git clone https://github.com/tripal/t4d8
+
+Next, you use the `docker build <https://docs.docker.com/engine/reference/commandline/build/>`_ command to create an image from the existing TripalDocker Dockerfile. Since we are testing Tripal 4 on multiple versions of Drupal, you can set the Drupal major version using the drupalversion argument as shown below. The version of Drupal used for the latest tag is the default value of the argument in the Dockerfile.
+
+.. code-block:: bash
+
+  cd t4d8
+  docker build --tag=tripalproject/tripaldocker:drupal9.1.x-dev --build-arg drupalversion='9.1.x-dev' ./
+
+This process will take a fair amount of time as it completely installs Drupal, Tripal and PostgreSQL. You will see a large amount of red text but hopefully not any errors. You should always test the image by running it before pushing it up to docker hub!
+
+.. note::
+
+  Make sure the drupal version specified in the tag matches the build argument. The value of ``drupalversion`` must match one of the available tags on `Packagist drupal/core <https://packagist.org/packages/drupal/core>`_.
+
+.. warning::
+
+  If your new changes to Tripal 4 break install, you will experience one of the following depending on the type of error:
+
+  1. The build command executed above will not complete without errors.
+  2. When you run the image after it is built including starting PostgreSQL, you will not have a functional Tripal site.
+
+.. note::
+
+  To **test your image**, execute any of the ``docker run`` commands documented above making sure to also start PostgreSQL (i.e. ``docker exec t4d8 service postgresql restart``). At this point you will already have Drupal, Tripal and Chado installed. It is recommended to also do a quick test of core functionality which may have been impacted by any recent changes.
+
 Troubleshooting
 ---------------
 
@@ -134,7 +173,7 @@ The provided host name is not valid for this server.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 On my web browser, I got the message "The provided host name is not valid for this server".
 
-**Solution:** It is most likely because you tried to access the site through a URL different from ``localhost`` or ``127.0.0.1``. For instance, if you run docker on a server and want to access your d8t4 site through that server name, you will have to edit the settings.php file inside the docker (at the time writting this, it would be everytime you (re)start the docker) and change the last line containing the parameter ``$settings[trusted_host_patterns]``:
+**Solution:** It is most likely because you tried to access the site through a URL different from ``localhost`` or ``127.0.0.1``. For instance, if you run docker on a server and want to access your d8t4 site through that server name, you will have to edit the settings.php file inside the docker (at the time writing this, it would be every time you (re)start the docker) and change the last line containing the parameter ``$settings[trusted_host_patterns]``:
 
 .. code::
 
@@ -158,40 +197,3 @@ As Tripal 4 is currently under rapid development, this could be due to not using
   docker pull tripalproject/tripaldocker:latest
 
 At this point, you can follow up with the appropriate ``docker run`` command. If your run command mounts the current directory through the ``--volume`` parameter then make sure you are in a copy of the t4d8 repository on the main branch with the most recent changes pulled.
-
-Testing install for a specific branch or update the docker image.
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The following instructions will show you how to create the TripalDocker image from the code existing locally. **This should only be needed if you have made changes to Tripal 4 that impact the installation process and/or if you have created a new Tripal release. Otherwise, you should be able to use the image from docker hub accessed via the docker pull command.**
-
-First if you do not have a local copy of the t4d8 repository, you can use the following instructions to get one. If you do have a copy already, make sure it is up to date and contains the changes you would like to test.
-
-.. code-block:: bash
-
-  mkdir ~/Dockers
-  cd ~/Dockers
-  git clone https://github.com/tripal/t4d8
-
-Next, you use the `docker build <https://docs.docker.com/engine/reference/commandline/build/>`_ command to create an image from the existing TripalDocker Dockerfile. Since we are testing Tripal 4 on multiple versions of Drupal, you can set the Drupal major version using the drupalversion argument as shown below. The version of Drupal used for the latest tag is the default value of the argument in the Dockerfile.
-
-.. code-block:: bash
-
-  cd t4d8
-  docker build --tag=tripalproject/tripaldocker:drupal9.0.x-dev --build-arg drupalversion='9.0.x' tripaldocker/
-
-This process will take a fair amount of time as it completely installs Drupal, Tripal and PostgreSQL. You will see a large amount of red text but hopefully not any errors. You should always test the image by running it before pushing it up to docker hub!
-
-.. note::
-
-  Make sure the drupal version specified in the tag matches the build argument. The value of ``drupalversion`` must match one of the available tags on `Packagist drupal/core <https://packagist.org/packages/drupal/core>`_.
-
-.. warning::
-
-  If your new changes to Tripal 4 break install, you will experience one of the following depending on the type of error:
-
-  1. The build command executed above will not complete without errors.
-  2. When you run the image after it is built including starting PostgreSQL, you will not have a functional Tripal site.
-
-.. note::
-
-  To **test your image**, execute any of the ``docker run`` commands documented above making sure to also start PostgreSQL (i.e. ``docker exec t4d8 service postgresql restart``). At this point you will already have Drupal, Tripal and Chado installed. It is recommended to also do a quick test of core functionality which may have been impacted by any recent changes.
