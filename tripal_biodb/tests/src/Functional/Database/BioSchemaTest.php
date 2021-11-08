@@ -32,13 +32,13 @@ class BioSchemaTest extends KernelTestBase {
    *
    * @var array
    */
-  protected static array $testSchemas = [];
+  protected static $testSchemas = [];
 
   /**
    * A database connection.
    *
    * It should be set if not set in any test function that adds schema names to
-   * $testSchemas: `self::$db ??= \Drupal::database();`
+   * $testSchemas: `self::$db = self::$db ?? \Drupal::database();`
    *
    * @var \Drupal\Core\Database\Driver\pgsql\Connection
    */
@@ -256,7 +256,7 @@ class BioSchemaTest extends KernelTestBase {
    */
   public function testBioSchemaScenario1() {
     $db = \Drupal::database();
-    self::$db ??= $db;
+    self::$db = self::$db ?? $db;
     $this->allowTestSchemas();
     $test_schema_base_names = \Drupal::config('tripal_biodb.settings')
       ->get('test_schema_base_names')

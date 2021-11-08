@@ -80,13 +80,13 @@ abstract class ChadoTestBase extends KernelTestBase {
    *
    * @var array
    */
-  protected static array $testSchemas = [];
+  protected static $testSchemas = [];
 
   /**
    * A database connection.
    *
    * It should be set if not set in any test function that adds schema names to
-   * $testSchemas: `self::$db ??= \Drupal::database();`
+   * $testSchemas: `self::$db = self::$db ?? \Drupal::database();`
    * This connection will be used during ::tearDownAfterClass when it will not
    * be possible to instanciate a new connection so it needs to be instanciated
    * before, when a test schema is created.
@@ -322,7 +322,7 @@ abstract class ChadoTestBase extends KernelTestBase {
       default:      
         break;
     }
-    self::$db ??= \Drupal::database();
+    self::$db = self::$db ?? \Drupal::database();
     self::$testSchemas[$schema_name] = TRUE;
 
     return $biodb;

@@ -68,14 +68,14 @@ abstract class BioConnection extends PgConnection {
    *
    * @var string
    */
-  protected string $databaseName = '';
+  protected $databaseName = '';
 
   /**
    * Drupal settings database key.
    *
    * @var string
    */
-  protected string $dbKey = '';
+  protected $dbKey = '';
 
 
   /**
@@ -83,28 +83,28 @@ abstract class BioConnection extends PgConnection {
    *
    * @var string
    */
-  protected string $schemaName = '';
+  protected $schemaName = '';
 
   /**
    * The PostgreSQL quoted name of the biological schema used by this instance.
    *
    * @var string
    */
-  protected string $quotedSchemaName = '';
+  protected $quotedSchemaName = '';
 
   /**
    * An ordered list of extra schema that can be used.
    *
    * @var array
    */
-  protected array $extraSchemas = [];
+  protected $extraSchemas = [];
 
   /**
    * The version for current biological schema instance.
    *
    * @var ?string
    */
-  protected ?string $version = NULL;
+  protected $version = NULL;
 
   /**
    * Logger.
@@ -125,14 +125,14 @@ abstract class BioConnection extends PgConnection {
    *
    * @var array
    */
-  protected array $objectsUsingBioDb = [];
+  protected $objectsUsingBioDb = [];
 
   /**
    * List of classes that will use biological schema as default.
    *
    * @var array
    */
-  protected array $classesUsingBioDb = [];
+  protected $classesUsingBioDb = [];
 
   /**
    * Returns the version number of the given biological schema.

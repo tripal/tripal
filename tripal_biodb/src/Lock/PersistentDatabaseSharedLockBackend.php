@@ -133,7 +133,7 @@ class PersistentDatabaseSharedLockBackend extends PersistentDatabaseLockBackend 
     if ($acquisition
         && ($this->modLocker->acquire(static::STATE_KEY_EXCLUSIVE))
     ) {
-      $pid ??= getmypid() ?: 0;
+      $pid = $pid ?? getmypid() ?: 0;
       // Get exclusive lock status.
       $exclusive_locks = $this->state->get(static::STATE_KEY_EXCLUSIVE, []);
       // Store owner and PID.
@@ -210,7 +210,7 @@ class PersistentDatabaseSharedLockBackend extends PersistentDatabaseLockBackend 
     $name = $this->normalizeName($name);
     $timeout = max($timeout, 0.001);
     $expire = microtime(TRUE) + $timeout;
-    $pid ??= getmypid() ?: 0;
+    $pid = $pid ?? getmypid() ?: 0;
 
     // Get shared lock status.
     $shared_locks = $this->state->get(static::STATE_KEY_SHARED, []);
@@ -258,7 +258,7 @@ class PersistentDatabaseSharedLockBackend extends PersistentDatabaseLockBackend 
       $this->locks[$name] = TRUE;
 
       // Add or update a share for this owner.
-      $shared_locks[$name] ??= [];
+      $shared_locks[$name] = $shared_locks[$name] ?? [];
       $shared_locks[$name][$owner] = [
         'expire' => $expire,
         'pid' => $pid,

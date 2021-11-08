@@ -366,8 +366,8 @@ class BioDbToolUnitTest extends UnitTestCase {
     $alter,
     $message
   ) {
-    $reserved ??= [];
-    $alter ??= [];
+    $reserved = $reserved ?? [];
+    $alter = $alter ?? [];
     $this->proConfig->get('reserved_schema_patterns')->willReturn($reserved);
     $bio_tool = new BioDbTool();
 

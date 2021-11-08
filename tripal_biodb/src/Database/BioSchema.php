@@ -29,7 +29,7 @@ abstract class BioSchema extends PgSchema {
    *
    * @var string
    */
-  protected string $quotedDefaultSchema = '';
+  protected $quotedDefaultSchema = '';
 
   /**
    * BioDbTool tool.

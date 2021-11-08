@@ -40,9 +40,9 @@ class BioDbTool {
   /**
    * Reserved schema name patterns.
    *
-   * @var array
+   * @var ?array
    */
-  protected static ?array $reservedSchemaPatterns;
+  protected static $reservedSchemaPatterns;
 
   /**
    * Get Drupal schema name.
@@ -361,7 +361,7 @@ class BioDbTool {
     string $object_id,
     ?\Drupal\Core\Database\Driver\pgsql\Connection $db = NULL
   ) :string {
-    $db ??= \Drupal::database();
+    $db = $db ?? \Drupal::database();
     $sql = "SELECT quote_ident(:object_id) AS \"qi\";";
     $quoted_object_id = $db
       ->query($sql, [':object_id' => $object_id])
@@ -396,7 +396,7 @@ class BioDbTool {
     string $schema_name,
     ?\Drupal\Core\Database\Driver\pgsql\Connection $db = NULL
   ) :bool {
-    $db ??= \Drupal::database();
+    $db = $db ?? \Drupal::database();
 
     // First make sure we have a valid schema name.
     $bio_tool = \Drupal::service('tripal_biodb.tool');
@@ -445,7 +445,7 @@ class BioDbTool {
     string $schema_name,
     ?\Drupal\Core\Database\Driver\pgsql\Connection $db = NULL
   ) :void {
-    $db ??= \Drupal::database();
+    $db = $db ?? \Drupal::database();
     $bio_tool = \Drupal::service('tripal_biodb.tool');
     $schema_name_quoted = $bio_tool->quoteDbObjectId($schema_name);
     // Create schema.
@@ -481,7 +481,7 @@ class BioDbTool {
     string $target_schema,
     ?\Drupal\Core\Database\Driver\pgsql\Connection $db = NULL
   ) :void {
-    $db ??= \Drupal::database();
+    $db = $db ?? \Drupal::database();
 
     // Clone schema.
     $bio_tool = \Drupal::service('tripal_biodb.tool');
@@ -524,7 +524,7 @@ class BioDbTool {
     string $new_schema_name,
     ?\Drupal\Core\Database\Driver\pgsql\Connection $db = NULL
   ) :void {
-    $db ??= \Drupal::database();
+    $db = $db ?? \Drupal::database();
 
     // Quote schema names if needed.
     $bio_tool = \Drupal::service('tripal_biodb.tool');
@@ -563,7 +563,7 @@ class BioDbTool {
     string $schema_name,
     ?\Drupal\Core\Database\Driver\pgsql\Connection $db = NULL
   ) :void {
-    $db ??= \Drupal::database();
+    $db = $db ?? \Drupal::database();
     $bio_tool = \Drupal::service('tripal_biodb.tool');
     $schema_name_quoted = $bio_tool->quoteDbObjectId($schema_name);
     // Drop schema.
@@ -595,7 +595,7 @@ class BioDbTool {
     string $schema_name,
     ?\Drupal\Core\Database\Driver\pgsql\Connection $db = NULL
   ) :int {
-    $db ??= \Drupal::database();
+    $db = $db ?? \Drupal::database();
 
     $schema_size = 0;
     $sql_query = "
@@ -636,7 +636,7 @@ class BioDbTool {
   public function getDatabaseSize(
     ?\Drupal\Core\Database\Driver\pgsql\Connection $db = NULL
   ) :int {
-    $db ??= \Drupal::database();
+    $db = $db ?? \Drupal::database();
     $db_size = 0;
     $sql_query = '
       SELECT pg_catalog.pg_database_size(d.datname) AS "size"
@@ -763,7 +763,9 @@ class BioDbTool {
             for ($j = 0; $j < count($table_columns); ++$j) {
               $tcol = $table_columns[$j];
               $ftcol = $foreign_table_columns[$j];
-              $table_definition['dependencies'][$foreign_table] ??= [];
+              $table_definition['dependencies'][$foreign_table] =
+                $table_definition['dependencies'][$foreign_table]
+                ?? [];
               $table_definition['dependencies'][$foreign_table][$tcol] = $ftcol;
             }
           }

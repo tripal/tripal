@@ -1269,7 +1269,10 @@ class ChadoUpgrader extends ChadoTaskBase {
     // First loop adds missing tables, upgrade columns on existing table,
     // removes column defaults, all constraints and indexes.
     foreach ($new_tables as $new_table_name => $new_table) {
-      $this->upgradeQueries[$new_table_name] ??= [];
+      $this->upgradeQueries[$new_table_name] =
+        $this->upgradeQueries[$new_table_name]
+        ?? []
+      ;
 
       // Get new table definition.
       $new_table_definition = $ref_schema->schema()->getTableDef(

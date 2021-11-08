@@ -41,7 +41,7 @@ class ChadoInstaller extends ChadoTaskBase {
    *
    * @todo: We should use one single SQL file.
    */
-  protected array $installNumChunks = [
+  protected $installNumChunks = [
     '1.3' => 41,
   ];
 
