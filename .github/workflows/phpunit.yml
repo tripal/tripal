@@ -13,7 +13,7 @@ jobs:
     # PHP Targets
     strategy:
       matrix:
-        drupalversion: ['9.0.x-dev', '9.1.x-dev']
+        drupalversion: ['9.0.x-dev', '9.1.x-dev', '9.2.x-dev']
     # Give the builds names so we can tell them apart
     name: PHPUnit Drupal ${{ matrix.drupalversion }}
 
@@ -26,7 +26,7 @@ jobs:
       # to ensure we have not broken the install/build process.
       - name: Build the Docker
         run: |
-          docker build --tag=tripaldocker:localdocker --build-arg drupalversion='${{ matrix.drupalversion }}' tripaldocker/
+          docker build --tag=tripaldocker:localdocker --build-arg drupalversion='${{ matrix.drupalversion }}' ./
       # Just spin up docker the good ol' fashion way.
       - name: Spin up Local Docker
         run: |
