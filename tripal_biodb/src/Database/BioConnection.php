@@ -46,6 +46,14 @@ use Drupal\tripal_biodb\Exception\ConnectionException;
 abstract class BioConnection extends PgConnection {
 
   /**
+   * {@inheritdoc}
+   */
+  protected $identifierQuotes = [
+    '"',
+    '"',
+  ];
+
+  /**
    * Class lineage to use when checking who called a method.
    *
    * @var array
