@@ -9,7 +9,7 @@
 
 This project acts as the home of Tripal 4 development. Once Tripal 4 is stable, it will be merged back into the [Core Tripal Repository](https://github.com/tripal/tripal).
 
-**All PRs should be made against branch 9.x-4.x which is compatible with Drupal 8.8.x, 8.9.x and 9.0.x**
+**All PRs should be made against branch 9.x-4.x which is compatible with Drupal 9.0.x and 9.1.x**
 
 ## Documentation
 
@@ -24,12 +24,11 @@ This project acts as the home of Tripal 4 development. Once Tripal 4 is stable, 
 
 ### How to get involved!
 
-This upgrade to Drupal 8 is a community effort. As such, we NEED YOUR HELP!
+This upgrade to Drupal 9 is a community effort. As such, we NEED YOUR HELP!
 
-  - [Current issues sorted by priority](https://github.com/tripal/t4d8/projects/1)
-  - To take one on, just comment with your intent!
-  - If a given issue feels too large for you, include what portion you will be taking on in your intention comment :-)
-  - We are happy to provide more guidance, so if you want to take on a given issue but are uncertain how to start -just ask!
+  - To get involved, please join [our Tripal Slack](http://tripal.info/join/slack) and comment in the #core-dev channel. 
+    - Alternatively, feel free to contact Lacey-Anne Sanderson through Slack direct message.
+    - We can use help both with programming, documentation, outreach and welcome all individuals from all backgrounds!
   - We prefer [automated testing](https://tripal4.readthedocs.io/en/latest/dev_guide/testing.html) for all Pull Requests (PRs) and are happy to guide you through the process!
     - Just comment on the issue if you need help designing tests
     - If you need help implementing tests see our [documentation](https://tripal4.readthedocs.io/en/latest/dev_guide/testing.html)
@@ -37,4 +36,4 @@ This upgrade to Drupal 8 is a community effort. As such, we NEED YOUR HELP!
 
 # Timeline
 
-[![timeline](docs/Tripal4-Upgrade-Timeline.png)](https://time.graphics/line/387503)
+[![timeline](docs/Tripal4-Timeline-2021Nov2.png)](https://time.graphics/line/387503)
