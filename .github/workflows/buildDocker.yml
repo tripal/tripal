@@ -23,5 +23,5 @@ jobs:
           push: true
           tags: |
             tripalproject/tripaldocker:drupal${{ matrix.drupalversion }}-test
-            ${{ (matrix.drupalversion == '9.1.x-dev' && 'tripalproject/tripaldocker:latest-test' ) }}
+            ${{ (matrix.drupalversion == '9.1.x-dev' && 'tripalproject/tripaldocker:latest-test' ) || '' }}
           build-args: "drupalversion=${{ matrix.drupalversion }}"
