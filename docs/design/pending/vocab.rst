@@ -11,3 +11,5 @@ Tripal is very ontology-focused with public terms forming the basis of our conte
 
    vocab/overview
    vocab/requirements
+   vocab/file-structure
+   vocab/current-progress
