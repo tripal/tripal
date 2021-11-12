@@ -22,4 +22,4 @@ The base structure of this API is found in ``tripal/src/TripalVocabTerms/``. Spe
 
 We still need to make a core implementation for the vocabulary and id space plugins. This needs further discussion as we may want a Tripal implementation which stores vocabularies in the Drupal database and thus transcend some known issues with storing vocabularies in Chado.
 
-**All implementations should be in the ``src/TripalVocabTerms`` directory of their respective modules.** For example, a Chado implementation would be in ``tripal_chado/src/TripalVocabTerms/ChadoVocabulary.php`` and ``tripal_chado/src/TripalVocabTerms/ChadoIdSpace.php``. You do not need to implement the TripalTerm class as all storage is handled by the vocabulary or ID space containing a given term.
+**All implementations** should be in the ``src/TripalVocabTerms`` directory of their respective modules. For example, a Chado implementation would be in ``tripal_chado/src/TripalVocabTerms/ChadoVocabulary.php`` and ``tripal_chado/src/TripalVocabTerms/ChadoIdSpace.php``. You do not need to implement the TripalTerm class as all storage is handled by the vocabulary or ID space containing a given term.
