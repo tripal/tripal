@@ -63,6 +63,19 @@ class ChadoInstaller extends ChadoTaskBase {
       if (empty($this->parameters['version'])) {
         $this->parameters['version'] = static::DEFAULT_CHADO_VERSION;
       }
+      // Check the version passed in is not an array or object.
+      if (is_array($this->parameters['version'])
+        || is_object($this->parameters['version'])) {
+
+        throw new ParameterException(
+          "The requested version must be a string; whereas, you passed an
+          array or object: " . print_r($this->parameters['version'], TRUE)
+        );
+      }
+      // If the version is not a string then make it so...
+      if (!is_string($this->parameters['version'])) {
+        $this->parameters['version'] = strval($this->parameters['version']);
+      }
       // Check the version is valid.
       if (!array_key_exists(
           $this->parameters['version'],
