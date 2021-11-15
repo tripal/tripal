@@ -42,6 +42,16 @@ interface CollectionPluginInterface extends PluginInspectionInterface {
   public function saveRecords($records);
 
   /**
+   * Loads the values of the given list of records from this tripal storage
+   * plugin. This is done by populating the given list of records using their
+   * set value interface.
+   *
+   * @param list $records
+   *   List of \Drupal\tripal4\TripalStorage\Record objects.
+   */
+  public function loadRecords($records);
+
+  /**
    * Removes the given list of records from this tripal storage plugin.
    *
    * @param list $records
