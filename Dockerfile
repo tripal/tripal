@@ -165,7 +165,8 @@ WORKDIR /var/www/drupal8
 RUN service apache2 restart \
   && service postgresql restart \
   && sleep 30 \
-  && cp -R /app /var/www/drupal8/web/modules/tripal \
+  && mkdir -p /var/www/drupal8/web/modules/contrib \
+  && cp -R /app /var/www/drupal8/web/modules/contrib/tripal \
   && composer require drupal/devel \
   && vendor/bin/drush en devel tripal ${modules} -y \
   && vendor/bin/drush trp-install-chado
