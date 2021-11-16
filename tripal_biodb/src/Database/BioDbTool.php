@@ -838,7 +838,7 @@ class BioDbTool {
         }
         elseif (
           preg_match(
-            '/^\s*COMMENT\s+ON\s+TABLE\s+\S+\s+IS\s+\'((?:[^\'\\\\]|\\\\.)*)(\'\s*;\s*|)$/i',
+            '/^\s*COMMENT\s+ON\s+TABLE\s+\S+\s+IS\s+\'((?:[^\'\\\\]|\\\\.|\'\')*)(\'\s*;\s*|)$/i',
             $table_raw_definition[$i],
             $match
           )
