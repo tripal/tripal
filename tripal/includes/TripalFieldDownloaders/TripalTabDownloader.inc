@@ -12,7 +12,7 @@ class TripalTabDownloader extends TripalFieldDownloader {
   /**
    * A more verbose label that better describes the formatter.
    */
-  static public $full_label = 'Tab delimeted';
+  static public $full_label = 'Tab delimited';
 
   /**
    * Indicates the default extension for the outputfile.

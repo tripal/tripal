@@ -1,5 +1,5 @@
 name = Tripal
-description = Tripal is an toolkit to facilitate construction of online genomic, genetic (and other biological) websites.
+description = Tripal is a toolkit to facilitate construction of online genomic, genetic (and other biological) websites.
 core = 7.x
 project = tripal
 package = Tripal

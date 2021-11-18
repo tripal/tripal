@@ -22,7 +22,7 @@ function tripal_bulk_loader_add_loader_job_form($form, &$form_state, $node) {
   if ($node->job_status == 'Loading...') {
     drupal_set_message(t("The Loading Summary only updates at the end of each constant set.
       Although records may have already been inserted, they won't be available until the
-      current constant set is full loaded and no errors are encountered.", []), 'warning');
+      current constant set is fully loaded and no errors are encountered.", []), 'warning');
   }
 
   $form['nid'] = [
