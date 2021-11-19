@@ -1762,7 +1762,7 @@ function chado_query($sql, $args = [], $options = []) {
     }
 
     // Add an alter hook to allow module developers to change the query right
-    // before it's  executed. Since all queriying of chado by Tripal eventually
+    // before it's executed. Since all querying of chado by Tripal eventually
     // goes through this function, we only need to provide an alter hook at this
     // point in order to ensure developers have complete control over the query
     // being executed. For example, a module developer might want to remove
