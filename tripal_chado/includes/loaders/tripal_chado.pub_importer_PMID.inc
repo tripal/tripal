@@ -898,7 +898,9 @@ function tripal_pub_PMID_parse_date($xml, $element_name) {
         case 'MedlineDate':
           // the medline date is when the date cannot be broken into distinct month day year.
           $xml->read();
-          $date['year'] = preg_replace('/^(\d{4}).*$/', '\1', $xml->value);
+          if (!$date['year']) {
+            $date['year'] = preg_replace('/^.*(\d{4}).*$/', '\1', $xml->value);
+          }
           $date['medline'] = $xml->value;
           break;
         default:
