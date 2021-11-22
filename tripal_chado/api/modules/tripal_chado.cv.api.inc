@@ -946,7 +946,7 @@ function chado_insert_cvterm($term, $options = []) {
     // can't do an insert or it will violate the constraint in the cvterm table.
     // So we'll need to add the record to the cvterm_dbxref table instead.
     if ($dbxref->accession != $accession) {
-      // Get/add the dbxref for his term.
+      // Get/add the dbxref for this term.
       $dbxref_new = chado_insert_dbxref([
         'db_id' => $db->db_id,
         'accession' => $accession,

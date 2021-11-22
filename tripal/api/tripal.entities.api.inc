@@ -1529,7 +1529,7 @@ function tripal_get_bundle_details($bundle_name) {
   ];
 
   // Iterate through each field and provide a description of it and
-  // it's sub elements.
+  // its sub elements.
   foreach ($instances as $instance) {
     // Skip deleted fields.
     if ($instance['deleted']) {

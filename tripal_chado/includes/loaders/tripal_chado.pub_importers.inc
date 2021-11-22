@@ -82,7 +82,7 @@ function tripal_pub_importers_list() {
       <li>Create a new importer by clicking the 'New Importer' link above, and after saving it should appear in the list below.  Click the
           link labeled 'Import Pubs' to schedule a job to import the publications</li>
       <li>The first method only performs the import once.  However, you can schedule the
-          importer to run peridically by adding a cron job. </li>
+          importer to run periodically by adding a cron job. </li>
      </ol><br>");
 
   $form = drupal_get_form('tripal_pub_importer_ncbi_api_key_form');
