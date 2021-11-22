@@ -252,7 +252,7 @@ function chado_publication_exists($pub_details) {
     $series_name = substr($pub_details['Conference Name'], 0, 255);
   }
 
-  // Make sure the publication is unique using the prefereed import
+  // Make sure the publication is unique using the preferred import
   // duplication check.
   $import_dups_check = variable_get('tripal_pub_import_duplicate_check', 'title_year_media');
   $pubs = [];
@@ -571,8 +571,13 @@ function chado_execute_pub_importer($import_id, $publish = TRUE,
     return FALSE;
   }
 
+  // Summary of importer results for each action
+  $message = 'Done. Publication importer summary:';
+  foreach ($report as $action => $pubs) {
+    $message .= ' ' . $action . '=' . count($pubs);
+  }
   tripal_report_error($message_type, TRIPAL_INFO,
-    "Done.", [], $message_opts);
+    $message, [], $message_opts);
 
   return $report;
 }
