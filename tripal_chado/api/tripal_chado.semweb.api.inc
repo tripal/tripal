@@ -146,7 +146,10 @@ function chado_associate_semweb_term($chado_table, $chado_column, $term,
         'chado_table' => $chado_table,
         'chado_column' => $chado_column,
         'cvterm_id' => $term->cvterm_id,
-      ]);
+      ])
+      ->execute();
+
+    // If successful, the returned value will be the value of chado_semweb_id
     if ($id) {
       return TRUE;
     }
