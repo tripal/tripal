@@ -5,7 +5,8 @@ FROM php:7.3-apache-buster
 
 MAINTAINER Lacey-Anne Sanderson <laceyannesanderson@gmail.com>
 
-ARG drupalversion='8.9.x-dev'
+ARG drupalversion='9.1.x-dev'
+ARG modules='tripal tripal_chado'
 
 COPY . /app
 
@@ -41,7 +42,7 @@ USER root
 
 ## Adjust PostgreSQL configuration so that remote connections to the
 ## database are possible.
-RUN mv /app/default_files/postgresql/pg_hba.conf /etc/postgresql/11/main/pg_hba.conf
+RUN mv /app/tripaldocker/default_files/postgresql/pg_hba.conf /etc/postgresql/11/main/pg_hba.conf
 
 ## And add ``listen_addresses`` to ``/etc/postgresql/11/main/postgresql.conf``
 RUN echo "listen_addresses='*'" >> /etc/postgresql/11/main/postgresql.conf \
@@ -124,8 +125,8 @@ ENV BROWSER_OUTPUT_DIRECTORY=/var/www/drupal8/web/sites/default/files/simpletest
 
 ## Install composer and Drush.
 WORKDIR /var/www
-RUN chmod a+x /app/init_scripts/composer-init.sh \
-  && /app/init_scripts/composer-init.sh \
+RUN chmod a+x /app/tripaldocker/init_scripts/composer-init.sh \
+  && /app/tripaldocker/init_scripts/composer-init.sh \
   && vendor/bin/drush --version
 
 ## Use composer to install Drupal.
@@ -134,7 +135,7 @@ RUN export COMPOSER_MEMORY_LIMIT=-1 \
   && composer create-project drupal/recommended-project:${drupalversion} drupal8 --stability dev --no-interaction \
   && cd drupal8 \
   && composer require --dev drupal/core-dev:${drupalversion} \
-  && composer require drush/drush \
+  && composer require drush/drush drupal/console:~1.0 \
   && composer up \
   && ls /var/www/drupal8/web/sites/default/
 
@@ -164,18 +165,19 @@ WORKDIR /var/www/drupal8
 RUN service apache2 restart \
   && service postgresql restart \
   && sleep 30 \
-  && composer require tripal/tripal \
+  && mkdir -p /var/www/drupal8/web/modules/contrib \
+  && cp -R /app /var/www/drupal8/web/modules/contrib/tripal \
   && composer require drupal/devel \
-  && vendor/bin/drush en devel tripal tripal_chado -y \
+  && vendor/bin/drush en devel tripal ${modules} -y \
   && vendor/bin/drush trp-install-chado
 
 ############# Scripts #########################################################
 
 ## Configuration files & Activation script
-RUN mv /app/init_scripts/supervisord.conf /etc/supervisord.conf \
-  && mv /app/default_files/000-default.conf /etc/apache2/sites-available/000-default.conf \
+RUN mv /app/tripaldocker/init_scripts/supervisord.conf /etc/supervisord.conf \
+  && mv /app/tripaldocker/default_files/000-default.conf /etc/apache2/sites-available/000-default.conf \
   && echo "\$settings["trusted_host_patterns"] = [ '^localhost$', '^127\.0\.0\.1$' ];" >> /var/www/drupal8/web/sites/default/settings.php \
-  && mv /app/init_scripts/init.sh /usr/bin/init.sh \
+  && mv /app/tripaldocker/init_scripts/init.sh /usr/bin/init.sh \
   && chmod +x /usr/bin/init.sh
 
 ## Make global commands.

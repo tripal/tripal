@@ -592,7 +592,7 @@ function chado_insert_record($table, $values, $options = [], $chado_schema_name 
 
     // If trying to insert a field that is the primary key, make sure it also
     // is unique.
-    if (array_key_exists('primary key', $table_desc)) {
+    if (array_key_exists('primary key', $table_desc) and count($table_desc['primary key']) > 0) {
       $pkey = $table_desc['primary key'][0];
       if (array_key_exists($pkey, $insert_values)) {
         $coptions = [];
