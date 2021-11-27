@@ -662,41 +662,34 @@ class sbo__relationship extends ChadoField {
   public static function get_rel_verb($rel_type) {
     $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
     $verb = '';
-    switch ($rel_type_clean) {
-      case 'integral part of':
-      case 'instance of':
-        $verb = 'is an';
-        break;
-      case 'proper part of':
-      case 'transformation of':
-      case 'genome of':
-      case 'part of':
-        $verb = 'is a';
-        break;
-      case 'position of':
-      case 'sequence of':
-      case 'variant of':
-        $verb = 'is a';
-        break;
-      case 'derives from':
-      case 'connects on':
-      case 'contains':
-      case 'finishes':
-      case 'guides':
-      case 'has origin':
-      case 'has part':
-      case 'has quality':
-      case 'is a':
-      case 'is a maternal parent of':
-      case 'is a paternal parent of':
-      case 'is a subproject of':
-      case 'is consecutive sequence of':
-      case 'maximally overlaps':
-      case 'overlaps':
-      case 'starts':
-        break;
-      default:
-        $verb = 'is';
+    // can skip anything already starting with 'is' or 'has'
+    if (!preg_match('/^(is|has) /', $rel_type_clean)) {
+      switch ($rel_type_clean) {
+        case 'integral part of':
+        case 'instance of':
+          $verb = 'is an';
+          break;
+        case 'genome of':
+        case 'part of':
+        case 'position of':
+        case 'proper part of':
+        case 'sequence of':
+        case 'transformation of':
+        case 'variant of':
+          $verb = 'is a';
+          break;
+        case 'connects on':
+        case 'contains':
+        case 'derives from':
+        case 'finishes':
+        case 'guides':
+        case 'maximally overlaps':
+        case 'overlaps':
+        case 'starts':
+          break;
+        default:
+          $verb = 'is';
+      }
     }
 
     return $verb;
