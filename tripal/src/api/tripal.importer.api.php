@@ -126,7 +126,7 @@ function tripal_get_importers() {
  *   The TripalImporter class to include.
  *
  * @return
- *   TRUE if the field type class file was found, FALSE otherwise.
+ *   TRUE if the Tripal importer class file was found, FALSE otherwise.
  *
  * @ingroup tripal_importer_api
  */
