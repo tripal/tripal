@@ -263,8 +263,10 @@ class TripalImporter {
    *   An TripalImporter object of the appropriate child class.
    */
   static public function byID($import_id) {
+    $connection = \Drupal::database();
+    
     // Get the importer.
-    $import = db_select('tripal_import', 'ti')
+    $import = -$connection->select('tripal_import', 'ti')
       ->fields('ti')
       ->condition('ti.import_id', $import_id)
       ->execute()
@@ -318,6 +320,7 @@ class TripalImporter {
    * @throws Exception
    */
   public function create($run_args, $file_details = []) {
+    $connection = \Drupal::database();
     // global $user;
     $user = \Drupal\user\Entity\User::load(\Drupal::currentUser()->id());
     $class = get_called_class();
@@ -404,7 +407,7 @@ class TripalImporter {
       );
 
       // Insert the importer record.
-      $import_id = db_insert('tripal_import')
+      $import_id = $connection->insert('tripal_import')
         ->fields($values)
         ->execute();
 
@@ -423,8 +426,9 @@ class TripalImporter {
   public function load($import_id) {
     $class = get_called_class();
 
+    $connection = \Drupal::database();
     // Get the importer.
-    $import = db_select('tripal_import', 'ti')
+    $import = $connection->select('tripal_import', 'ti')
       ->fields('ti')
       ->condition('ti.import_id', $import_id)
       ->execute()
@@ -620,10 +624,10 @@ class TripalImporter {
     else {
       // Report this message to watchdog or set a message.
       if ($severity == TRIPAL_CRITICAL or $severity == TRIPAL_ERROR) {
-        drupal_set_message($tmessage, 'error');
+        \Drupal::messenger()->addMessage($tmessage);
       }
       if ($severity == TRIPAL_WARNING) {
-        drupal_set_message($tmessage, 'warning');
+        \Drupal::messenger()->addMessage($tmessage);
       }
     }
   }
