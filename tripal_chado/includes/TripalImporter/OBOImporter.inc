@@ -312,7 +312,7 @@ class OBOImporter extends TripalImporter {
         $uobo_file = trim($vocab->path);
         $matches = [];
         if (preg_match('/\{(.*?)\}/', $uobo_file, $matches)) {
-          $modpath = drupal_get_path('module', $matches[1]);
+          $modpath = \Drupal::service('extension.list.module')->getPath($matches[1]);
           $uobo_file = preg_replace('/\{.*?\}/', $modpath, $uobo_file);
         }
       }
@@ -680,7 +680,7 @@ class OBOImporter extends TripalImporter {
     // Convert the module name to the real path if present
     if (preg_match("/\{(.*?)\}/", $obo->path, $matches)) {
       $module = $matches[1];
-      $path = drupal_realpath(drupal_get_path('module', $module));
+      $path = \Drupal\Core\File\FileSystem::realpath(\Drupal::service('extension.list.module')->getPath($module));
       $obo->path = preg_replace("/\{.*?\}/", $path, $obo->path);
     }
 
