@@ -6,3 +6,4 @@ Design In Progress
 
    pending/vocab
    pending/entities-fields
+   pending/biodb
