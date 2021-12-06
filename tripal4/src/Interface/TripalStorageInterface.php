@@ -10,52 +10,53 @@ use Drupal\Component\Plugin\PluginInspectionInterface;
 interface CollectionPluginInterface extends PluginInspectionInterface {
 
   /**
-   * Adds the given list of new property types to this tripal storage plugin.
+   * Adds the given array of new property types to this tripal storage plugin.
    *
-   * @param list $schemas
-   *   List of \Drupal\tripal4\Base\StoragePropertyTypeBase objects.
+   * @param array $schemas
+   *   Array of \Drupal\tripal4\Base\StoragePropertyTypeBase objects.
    */
   public function addTypes($types);
 
   /**
-   * Removes the given list of property types from this tripal storage plugin.
+   * Removes the given array of property types from this tripal storage plugin.
    *
-   * @param list $schemas
-   *   List of \Drupal\tripal4\Base\StoragePropertyTypeBase objects.
+   * @param array $schemas
+   *   Array of \Drupal\tripal4\Base\StoragePropertyTypeBase objects.
    */
   public function removeTypes($types);
 
   /**
-   * Adds the given list of new property values to this tripal storage plugin.
+   * Inserts the given array of new property values to this tripal storage
+   * plugin.
    *
-   * @param list $records
-   *   List of \Drupal\tripal4\TripalStorage\StoragePropertyValue objects.
+   * @param array $records
+   *   Array of \Drupal\tripal4\TripalStorage\StoragePropertyValue objects.
    */
-  public function addValues($values);
+  public function insertValues($values);
 
   /**
-   * Saves the given list of property values that already exist to this tripal
-   * storage plugin.
+   * Updates the given array of property values that already exist to this
+   * tripal storage plugin.
    *
-   * @param list $records
-   *   List of \Drupal\tripal4\TripalStorage\StoragePropertyValue objects.
+   * @param array $records
+   *   Array of \Drupal\tripal4\TripalStorage\StoragePropertyValue objects.
    */
-  public function saveValues($values);
+  public function updateValues($values);
 
   /**
-   * Loads the values of the given list of property values from this tripal
+   * Loads the values of the given array of property values from this tripal
    * storage plugin.
    *
-   * @param list $records
-   *   List of \Drupal\tripal4\TripalStorage\StoragePropertyValue objects.
+   * @param array $records
+   *   Array of \Drupal\tripal4\TripalStorage\StoragePropertyValue objects.
    */
   public function loadValues($values);
 
   /**
-   * Removes the given list of property values from this tripal storage plugin.
+   * Deletes the given array of property values from this tripal storage plugin.
    *
-   * @param list $records
-   *   List of \Drupal\tripal4\TripalStorage\StoragePropertyValue objects.
+   * @param array $records
+   *   Array of \Drupal\tripal4\TripalStorage\StoragePropertyValue objects.
    */
-  public function removeValues($values);
+  public function deleteValues($values);
 }
