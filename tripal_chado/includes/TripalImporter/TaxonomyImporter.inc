@@ -1025,6 +1025,6 @@ class TaxonomyImporter extends TripalImporter {
  */
 function tripal_taxon_importer_set_ncbi_api_key($form, $form_state) {
   variable_set('tripal_taxon_importer_ncbi_api_key', check_plain($form_state['values']['ncbi_api_key']));
-  drupal_set_message('NCBI API key has been saved successfully!');
+  \Drupal::messenger()->addMessage('NCBI API key has been saved successfully!');
   return $form['ncbi_api_key'];
 }

@@ -111,8 +111,8 @@ class NewickImporter extends TripalImporter {
     $so_cv = chado_get_cv(['name' => 'sequence']);
     $cv_id = $so_cv->cv_id;
     if (!$so_cv) {
-      drupal_set_message('The Sequence Ontolgoy does not appear to be imported.
-        Please import the Sequence Ontology before adding a tree.', 'error');
+      \Drupal::messenger()->addMessage('The Sequence Ontolgoy does not appear to be imported.
+      Please import the Sequence Ontology before adding a tree.');  
     }
 
     $form['leaf_type'] = [
@@ -201,7 +201,7 @@ class NewickImporter extends TripalImporter {
     // Add any warnings if any were detected
     if (count($warnings) > 0) {
       foreach ($warnings as $field => $message) {
-        drupal_set_message($message, 'warning');
+        \Drupal::messenger()->addMessage($message);
       }
     }
   }
