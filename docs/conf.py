@@ -99,7 +99,7 @@ html_static_path = ['_static']
 # We add the stylesheet this way so that it's loaded after the default.css
 # See https://docs.readthedocs.io/en/latest/guides/adding-custom-css.html
 def setup(app):
-    app.add_stylesheet('theme_overrides.css');
+    app.add_css_file('theme_overrides.css');
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
