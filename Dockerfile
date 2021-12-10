@@ -63,7 +63,10 @@ RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 ## Xdebug
 RUN pecl install xdebug-3.0.1 \
     && docker-php-ext-enable xdebug \
-    && echo "xdebug.mode = coverage" >> /usr/local/etc/php/php.ini
+    && echo "xdebug.mode = coverage" >> /usr/local/etc/php/php.ini \
+    && echo "error_reporting=E_ALL" >> /usr/local/etc/php/conf.d/error_reporting.ini \
+    && cp /app/tripaldocker/default_files/xdebug/xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+
 ## install the PHP extensions we need
 RUN set -eux; \
 	\
