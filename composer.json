@@ -12,13 +12,13 @@
   "authors": [
         {
             "name": "Lacey-Anne Sanderson",
-            "website": "https://github.com/laceysanderson/",
-            "role": "Developer"
+            "homepage": "https://github.com/laceysanderson/",
+            "role": "Lead Developer"
         },
         {
             "name": "Stephen P. Ficklin",
-            "website": "https://github.com/spficklin/",
-            "role": "Developer"
+            "homepage": "https://github.com/spficklin/",
+            "role": "Lead Developer"
         }
   ],
   "require-dev": {
@@ -27,11 +27,5 @@
   },
   "require": {
     "php": "^7.3"
-  },
-  "repositories": {
-    "drupal": {
-      "type": "composer",
-      "url": "https://packages.drupal.org/8"
-    }
   }
 }
