@@ -30,8 +30,8 @@ USER postgres
 ## Create a PostgreSQL role named ``docker`` with ``docker`` as the password and
 ## then create a database `docker` owned by the ``docker`` role.
 RUN    /etc/init.d/postgresql start &&\
-    psql --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';" &&\
-    createdb -O docker docker \
+    psql --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';"  \
+    && createdb -O docker docker \
     && psql --command="CREATE USER drupaladmin WITH PASSWORD 'drupal8developmentonlylocal'" \
     && psql --command="ALTER USER drupaladmin WITH LOGIN" \
     && psql --command="ALTER USER drupaladmin WITH CREATEDB" \
@@ -116,6 +116,11 @@ RUN echo 'memory_limit = 1028M' >> /usr/local/etc/php/conf.d/docker-php-memlimit
 
 WORKDIR /var/www/html
 
+############# APACHE ##########################################################
+
+# Fix Could not determine server's fully qualified domain name.
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+
 ############# DRUPAL ##########################################################
 
 ## Environment variables used for phpunit testing.
@@ -148,8 +153,8 @@ RUN mkdir /var/www/drupal8/web/sites/default/files \
 
 ## Install Drupal.
 RUN cd /var/www/drupal8 \
-  && service apache2 restart \
-  && service postgresql restart \
+  && service apache2 start \
+  && service postgresql start \
   && sleep 30 \
   && /var/www/drupal8/vendor/drush/drush/drush site-install standard \
   --db-url=pgsql://drupaladmin:drupal8developmentonlylocal@localhost/sitedb \
@@ -157,19 +162,23 @@ RUN cd /var/www/drupal8 \
   --account-name=drupaladmin \
   --account-pass=some_admin_password \
   --site-mail="drupaladmin@localhost" \
-  --site-name="Drupal 8 Development"
+  --site-name="Drupal 8 Development" \
+  && service apache2 stop \
+  && service postgresql stop
 
 ############# Tripal ##########################################################
 
 WORKDIR /var/www/drupal8
-RUN service apache2 restart \
-  && service postgresql restart \
+RUN service apache2 start \
+  && service postgresql start \
   && sleep 30 \
   && mkdir -p /var/www/drupal8/web/modules/contrib \
   && cp -R /app /var/www/drupal8/web/modules/contrib/tripal \
   && composer require drupal/devel \
   && vendor/bin/drush en devel tripal ${modules} -y \
-  && vendor/bin/drush trp-install-chado
+  && vendor/bin/drush trp-install-chado \
+  && service apache2 stop \
+  && service postgresql stop
 
 ############# Scripts #########################################################
 
