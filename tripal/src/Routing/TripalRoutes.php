@@ -42,13 +42,11 @@ class TripalRoutes {
           $file_path = drupal_get_path('module', $callback_module);
         }
 
-        // dpm($menu_path);
         $routes[$menu_path] = new Route(
           // Path to attach this route to:
           $menu_path,
           // Route defaults:
           [
-            //'_controller' => '\Drupal\tripal\Controller\TripalController::'. $callback,
             '_form' => '\Drupal\tripal\Form\TripalImporterForm',
             '_title' => $class_name::$name
           ],
