@@ -1013,3 +1013,481 @@ function chado_associate_cvterm($basetable, $record_id, $cvterm, $options = [], 
   print "last:" . print_r($values, TRUE);
   return FALSE;
 }
+
+
+/**
+ * Add the OBO to the tripal_cv_obo table in the Drupal database.
+ *
+ * If the OBO name already exists in the table then the path is updated.
+ *
+ * @param $name
+ *   The human readable name of this ontology.
+ * @param $path
+ *   The file path or URL of the ontology.
+ *
+ * @return
+ *   Returns the ontology ID.
+ *
+ * @ingroup tripal_chado_cv_api
+ */
+function chado_insert_obo($name, $path) {
+  // Make sure an OBO with the same name doesn't already exist.
+  $obo_id = \Drupal::database()->select('tripal_cv_obo', 'tco')
+    ->fields('tco', ['obo_id'])
+    ->condition('name', $name)
+    ->execute()
+    ->fetchField();
+
+  if ($obo_id) {
+    \Drupal::database()->update('tripal_cv_obo')
+      ->fields([
+        'path' => $path,
+      ])
+      ->condition('name', $name)
+      ->execute();
+    return $obo_id;
+  }
+  else {
+    $obo_id = \Drupal::database()->insert('tripal_cv_obo')
+      ->fields([
+        'name' => $name,
+        'path' => $path,
+      ])
+      ->execute();
+    return $obo_id;
+  }
+}
+
+/**
+ * Retrieves an OBO record.
+ *
+ * @param $values
+ *   An associate array with the following allowed keys: obo_id, name.
+ *
+ * @return
+ *   An instance of an OBO record object.
+ *
+ * @ingroup tripal_chado_cv_api
+ */
+function chado_get_obo($values) {
+  $query = db_select('tripal_cv_obo', 'tco')
+    ->fields('tco');
+
+  if (array_key_exists('name', $values)) {
+    $query->condition('tco.name', $values['name']);
+  }
+  if (array_key_exists('obo_id', $values)) {
+    $query->condition('tco.obo_id', $values['obo_id']);
+  }
+  return $query->execute()->fetchObject();
+}
+
+/**
+ * Replacement for the fill_cvtermpath() stored procedure in Chado.
+ *
+ * Fills the cvtermpath table of Chado with relationships between every
+ * node in the ontology graph and all of it's descendents.  This was
+ * previously performed using the fill_cvtermpath() stored procedure of Chado
+ * but that function cannot handle loops in the ontology graphs and results
+ * in stack depth errors in PostgreSQL.
+ *
+ * @param $cv_id
+ *   The controlled vocabulary ID from the cv table of Chado (i.e. cv.cv_id).
+ * @param $job
+ *   An instance of a TripalJob.
+ *
+ * @ingroup tripal_chado_cv_api
+ */
+function chado_update_cvtermpath($cv_id, $job = NULL) {
+
+  $cv = new \Drupal\tripal_chado\Services\ChadoRecord('cv', $cv_id);
+  print "Building cvterm paths for vocabulary: " . $cv->getValue('name') . "\n";
+  print "Clearing the cvtermpath table for this vocabulary...\n";
+  chado_clear_cvtermpath($cv_id);
+  print "Clearing completed.\n";
+
+  // The cache is used to limit repetitive queries by storing known data.
+  $cache = [
+    // Stores all relationships in the cvtermpath table.
+    'rels' => [],
+    // Stores all nodes that were visited when processing all nodes as roots.
+    'roots_processed' => [],
+    // Stores all nodes that were visited when prociessing all children of
+    // a single root. It gets emptied at each root.
+    'nodes_processed' => [],
+    // For easy lookup stores the is_a relationship.
+    'is_a' => NULL,
+  ];
+
+  // TODO: there's a function to determine the current Chado instance.
+  // we should use that.
+  $transaction = db_transaction();
+
+  try {
+
+    // Get the is_a term. The OBO importer adds this for every vocabulary.
+    $sql = "SELECT * FROM {cvterm} WHERE (name = :is_a or name = :is_a_alt) and cv_id = :cv_id";
+    $args = [':is_a' => 'is_a', ':is_a_alt' => 'is a', ':cv_id' => $cv_id];
+    $cache['is_a'] = chado_query($sql, $args)->fetchObject();
+
+    // First cache all the relationships for this vocaublary so that we
+    // don't have to do repetitive queries to Chado.
+    print "Retrieving relationships...\n";
+    $sql = "
+      SELECT CVTR.subject_id, CVTR.type_id, CVTR.object_id, CVTS.name
+      FROM {cvterm_relationship} CVTR
+        INNER JOIN {cvterm} CVTO on CVTO.cvterm_id = CVTR.object_id
+        INNER JOIN {cvterm} CVTS on CVTS.cvterm_id = CVTR.subject_id
+      WHERE CVTO.cv_id = :cv_id
+      ORDER BY CVTO.name, CVTS.name
+    ";
+    $rels = chado_query($sql, [':cv_id' => $cv_id]);
+    $total_items;
+    while ($rel = $rels->fetchObject()) {
+      $cache['rels'][$rel->object_id][] = [
+        $rel->subject_id,
+        $rel->type_id,
+        $rel->name,
+      ];
+    }
+    $total_items = count(array_keys($cache['rels']));
+    if ($job) {
+      \Drupal::service('tripal.logger')->info('Found ' . $total_items  . ' relationships in this vocabulary.');
+      $job->setTotalItems($total_items);
+      \Drupal::service('tripal.logger')->info('Note: Progress updates occur as each term is processed and ' .
+        'some terms take longer than others.');
+      $job->setProgress(0);
+      $job->setInterval(1);
+    }
+
+    // Next get the tree roots. These are terms that are in relationships as
+    // an object but never as a subject.
+    $sql = "
+      SELECT DISTINCT CVT.cvterm_id, CVT.name
+      FROM {cvterm} CVT
+        LEFT JOIN {cvterm_relationship} CVTR ON CVT.cvterm_id = CVTR.subject_id
+        INNER JOIN {cvterm_relationship} CVTR2 ON CVT.cvterm_id = CVTR2.object_id
+      WHERE CVT.cv_id = :cvid AND CVTR.subject_id is NULL and
+        CVT.is_relationshiptype = 0 and CVT.is_obsolete = 0
+    ";
+    $roots = chado_query($sql, [':cvid' => $cv_id]);
+
+    // Iterate through the tree roots.
+    print "Processing terms...\n";
+    while ($root = $roots->fetchObject()) {
+      $root_id = $root->cvterm_id;
+      $root_name = $root->name;
+
+      if ($job) {
+        \Drupal::service('tripal.logger')->info('Processing tree root: ' . $root_name . '...');
+      }
+
+      // Now start descending through the tree and add the relationships
+      // to the cvtermpath table.
+      $num_handled = 0;
+      $depth = 0;
+      _chado_update_cvtermpath_root($cv_id, $root_id, $root_name, $cache, $job,
+        $num_handled, $depth);
+    }
+  } catch (Exception $e) {
+    $transaction->rollback();
+    throw $e;
+  }
+}
+
+/**
+ *
+ * @param unknown $cv_id
+ */
+function chado_clear_cvtermpath($cv_id) {
+  $sql = "DELETE FROM {cvtermpath} WHERE cv_id = :cv_id";
+  chado_query($sql, [':cv_id' => $cv_id]);
+}
+
+/**
+ * Treats a term within the ontology as a root.
+ *
+ * In order to add all relationships between a term and it's descendents each
+ * term gets it's turn as a "root".  The first time this function is called
+ * it should be called with the actual root's of the ontology.  This function
+ * will then recursively treat each child term within the tree as a root in
+ * order to find all relationships.
+ *
+ * @param $cv_id
+ *   The vocaulary Id
+ * @param $root_id
+ *   This root term's cvterm Id.
+ * @param $root_name
+ *   The name of this root term.
+ * @param $cache
+ *   The cache used for lookups.
+ * @param $job
+ *   The TripalJob instance.
+ * @param $num_handled
+ *   Used to keep track of the number of nodes that have been handled for
+ *   progress reporting.
+ * @param $root_depth
+ *   The current depth in the tree of this term.
+ */
+function _chado_update_cvtermpath_root($cv_id, $root_id, $root_name, &$cache,
+                                       $job, &$num_handled, $root_depth = 0) {
+
+
+  // Don't use a node as a root if we've already used it once before.
+  if (in_array($root_id, $cache['roots_processed'])) {
+    return;
+  }
+
+  // Mark this node as having been processed as a root node.
+  $cache['roots_processed'][] = $root_id;
+
+  // For the actual tree roots we need to add a relationship to themselves.
+  if ($root_depth == 0) {
+    $is_a = $cache['is_a'];
+    $type_id = $is_a->cvterm_id;
+    $depth = 1;
+    _chado_update_cvtermpath_add_relationship($type_id, $root_id, $root_id, $cv_id, $depth);
+  }
+
+  // If there are no children do nothing.
+  if (!array_key_exists($root_id, $cache['rels'])) {
+    return;
+  }
+
+  // Get this term's children and recurse.
+  $children = $cache['rels'][$root_id];
+
+  // If there are no children do nothing.
+  if (!$children) {
+    return;
+  }
+
+  // Set the job progress.
+  if ($job) {
+    $job->setItemsHandled($num_handled);
+  }
+  $num_handled++;
+
+  // The $path variable contains only the current path on the descent. This
+  // is used for detecting loops in the graph. If we encounter a node a
+  // second time while traversing a single path of the tree then we've hit
+  // a loop.
+  $path = [];
+
+  // Process the children of this term.
+  $cache['nodes_processed'] = [];
+  $next_depth = 0;
+  _chado_update_cvtermpath_process_children($cv_id, $root_id, $root_id, $path, $cache, $next_depth);
+
+  // Next make each child of this node a root and recurse again.
+  foreach ($children as $child) {
+    $child_id = $child[0];
+    $child_type_id = $child[1];
+    $child_name = $child[2];
+
+    // Process this child as a root.
+    $next_depth = $root_depth + 1;
+    _chado_update_cvtermpath_root($cv_id, $child_id, $child_name, $cache,
+      $job, $num_handled, $next_depth);
+  }
+}
+
+/**
+ * Inserts values into the cvtermpath table.
+ *
+ * After the entire tree below the current root term is traversed, this
+ * function is called and inserts all of the relationships that were found
+ * into the cvtermpath table.
+ *
+ * @param $visited
+ *   The array contaiing relationships for all visited nodes in the tree. These
+ *   elements will become the entries in the cvtermpath table.
+ * @param $job
+ *   The TripalJob instance.
+ */
+function _chado_update_cvtermpath_add_relationship($type_id, $cvterm_id,
+                                                   $root_id, $cv_id, $depth) {
+
+  $cvtermpath = new \Drupal\tripal_chado\Services\ChadoRecord('cvtermpath');
+  $cvtermpath->setValues([
+    'type_id' => $type_id,
+    'subject_id' => $cvterm_id,
+    'object_id' => $root_id,
+    'cv_id' => $cv_id,
+    'pathdistance' => $depth,
+  ]);
+  $cvtermpath->insert();
+}
+
+/**
+ * Handles a single node in the tree.
+ *
+ * This is a recursive function which calls itself as the tree is descended. It
+ * performs a depth-first search of the tree.
+ *
+ * @param $cv_id
+ *   The vocaulary Id
+ * @param $root_id
+ *   This root term's cvterm Id.
+ * @param $cvterm_id
+ *   This term's cvterm Id.
+ * @param $path
+ *   An array used for storing the current path down the tree. This is the
+ *   sequence of nodes visited to this point down a single branch.
+ * @param $cache
+ *   The cache used for lookups.
+ * @param $depth
+ *   The current depth in the tree.
+ */
+function _chado_update_cvtermpath_process_children($cv_id, $root_id, $cvterm_id,
+                                                   $path, &$cache, $depth = 1) {
+
+  $cache['nodes_processed'][$cvterm_id] = TRUE;
+
+  // Have we visited this node before while on this path then we won't
+  // descend further as this means we've hit a loop.
+  if (in_array($cvterm_id, $path)) {
+    return;
+  }
+
+  // Add this term to the path.
+  $path[] = $cvterm_id;
+  //print implode('-', $path) . "\n";
+
+  // If this term does not have children then return.
+  if (!array_key_exists($cvterm_id, $cache['rels'])) {
+    return;
+  }
+
+  // Get this term's children and recurse.
+  $children = $cache['rels'][$cvterm_id];
+
+  // If this term does not have children then return.
+  if (!$children) {
+    return;
+  }
+
+  // If the term has children then recurse on those.
+  $next_depth = $depth + 1;
+  foreach ($children as $child) {
+    $child_id = $child[0];
+    $child_type_id = $child[1];
+
+    // Don't descend for children we've already seen.
+    if (array_key_exists($child_id, $cache['nodes_processed'])) {
+      continue;
+    }
+
+    _chado_update_cvtermpath_add_relationship($child_type_id, $child_id, $root_id,
+      $cv_id, $next_depth);
+
+    _chado_update_cvtermpath_process_children($cv_id, $root_id, $child_id, $path, $cache, $next_depth);
+  }
+}
+
+/**
+ * This function sets the default vocabulary for a given table and field.
+ *
+ * @param $table
+ *   The name of the table that contains a field with a foreign key
+ *   relationship to the cvterm table
+ * @param $field
+ *   The table field name that has the foreign key relationship to the
+ *   cvterm table for which the default vocabulary will be set
+ * @param $cv_name
+ *   The name of the vocabulary
+ *
+ * @return
+ *   TRUE if set, FALSE if an error occured
+ *
+ * @ingroup tripal_legacy_chado_cv_api
+ */
+function tripal_set_default_cv($table, $field, $cv_name, $cv_id = FALSE) {
+
+  // Get the CV object
+  if ($cv_id) {
+    $cv = tripal_get_cv(['cv_id' => $cv_id]);
+  }
+  else {
+    $cv = tripal_get_cv(['name' => $cv_name]);
+  }
+
+  if ($cv) {
+    // first delete any entries for this table and field
+    $num_deleted = \Drupal::database()->delete('tripal_cv_defaults')
+      ->condition('table_name', $table)
+      ->condition('field_name', $field)
+      ->execute();
+
+    // now add the default value
+    $cv_default_id = \Drupal::database()->insert('tripal_cv_defaults')
+      ->fields([
+        'table_name' => $table,
+        'field_name' => $field,
+        'cv_id' => $cv->cv_id,
+      ])
+      ->execute();
+
+    if (!$cv_default_id) {
+      tripal_report_error('tripal_chado', TRIPAL_WARNING,
+        "Cannot set default vocabulary for %table.%field. Check the error logs.",
+        ['%table' => $table, '%field' => $field]);
+      return FALSE;
+    }
+  }
+  else {
+    tripal_report_error('tripal_chado', TRIPAL_WARNING,
+      "Cannot set default vocabulary for %table.%field. The vocabulary name, '%cvname', doesn't exist.",
+      ['%table' => $table, '%field' => $field, '%cvname' => $cv_name]);
+    return FALSE;
+  }
+}
+
+
+/**tripal_chado_cv_api*/
+/**
+ * Retrieves a chado controlled vocabulary variable
+ *
+ * @param $identifier
+ *   An array with the key stating what the identifier is. Supported keys (only
+ *   on of the following unique keys is required):
+ *    - cv_id: the chado cv.cv_id primary key.
+ *    - name: the chado cv.name field (assume unique).
+ * @param $options
+ *   An array of options. Supported keys include:
+ *     - Any keys supported by chado_generate_var(). See that function
+ *       definition fot additional details.
+ *
+ * NOTE: the $identifier parameter can really be any array similar to $values
+ * passed into chado_select_record(). It should fully specify the cv record to
+ * be returned.
+ *
+ * @return
+ *   If unique values were passed in as an identifier then an object describing
+ *   the cv will be returned (will be a chado variable from
+ *   chado_generate_var()). Otherwise, FALSE will be returned.
+ *
+ * @ingroup tripal_chado_module_DEPRECATED_api
+ */
+function tripal_get_cv($identifiers, $options = []) {
+  return chado_get_cv($identifiers, $options);
+}
+
+
+/**
+ * Adds a controlled vocabulary to the CV table of Chado.
+ *
+ * @param $name
+ *   The name of the controlled vocabulary. These are typically all lower case
+ *   with no special characters other than an undrescore (for spaces).
+ * @param $comment
+ *   A description or definition of the vocabulary.
+ *
+ * @return
+ *   An object populated with fields from the newly added database.
+ *
+ * @ingroup tripal_chado_module_DEPRECATED_api
+ */
+function tripal_insert_cv($name, $definition) {
+  return chado_insert_cv($name, $definition);
+}
