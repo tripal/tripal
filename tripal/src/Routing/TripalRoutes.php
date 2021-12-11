@@ -13,10 +13,7 @@ class TripalRoutes {
    */
   public function dataLoaders() {
     $routes = [];
-    // @TODO This needs to be built out for all the loaders, this is just an
-    // example on how to start.
-    // Add in the loaders
- 
+
     $importers = tripal_get_importers();
     foreach ($importers as $class_name) {
       tripal_load_include_importer_class($class_name);

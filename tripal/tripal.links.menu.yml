@@ -98,6 +98,13 @@ tripal.data_loaders_tripalimporterlink:
   parent: tripal.data_loaders
   weight: 10  
 
+#tripal.data_loaders_tripalimporter:
+#  route_name: tripal.data_loaders_tripalimporter
+#  description: 'GFF3 Importer'
+#  title: 'GFF3 Importer'
+#  parent: tripal.data_loaders
+#  weight: 10  
+
 tripal.data_collections:
   route_name: tripal.data_collections
   description: 'Site-wide settings for data collections'
