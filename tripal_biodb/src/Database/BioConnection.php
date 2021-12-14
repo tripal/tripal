@@ -280,7 +280,19 @@ abstract class BioConnection extends PgConnection {
       // he/she wants to do and we won't change those.
       // Note: if the schema name is not valid, an exception will be thrown by
       // setSchemaName() at the end of this constructor.
-      $connection_options['prefix']['1'] = $schema_name . '.';
+      if (empty($connection_options['prefix'])) {
+        $connection_options['prefix'] = ['1' => $schema_name . '.'];
+      }
+      elseif (is_array($connection_options['prefix'])) {
+        $connection_options['prefix']['1'] = $schema_name . '.';
+      }
+      else {
+        // $this->prefixes is a string.
+        $connection_options['prefix'] = [
+          'default' => $connection_options['prefix'],
+          '1' => $schema_name . '.',
+        ];
+      }
       // Add search_path to avoid the use of Drupal schema by mistake.
       // Get biological schema name first.
       $sql =
@@ -426,7 +438,19 @@ abstract class BioConnection extends PgConnection {
 
     // Update schema prefixes.
     $bioschema_prefix = empty($schema_name) ? '' : $schema_name . '.';
-    $this->prefixes['1'] = $bioschema_prefix;
+    if (empty($this->prefixes)) {
+      $this->prefixes = ['1' => $bioschema_prefix];
+    }
+    elseif (is_array($this->prefixes)) {
+      $this->prefixes['1'] = $bioschema_prefix;
+    }
+    else {
+      // $this->prefixes is a string.
+      $this->prefixes = [
+        'default' => $this->prefixes,
+        '1' => $bioschema_prefix,
+      ];
+    }
     $this->setPrefix($this->prefixes);
 
     // Update search_path.
