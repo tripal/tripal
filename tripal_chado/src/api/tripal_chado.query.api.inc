@@ -454,7 +454,7 @@ function chado_set_active($dbname = 'default', $chado_schema_name = NULL) {
  * @ingroup tripal_chado_query_api
  */
 function chado_insert_record($table, $values, $options = [], $chado_schema_name = NULL) {
-
+  $logger = \Drupal::service('tripal.logger');
   $print_errors = (isset($options['print_errors'])) ? $options['print_errors'] : FALSE;
 
   if (!is_array($values)) {
@@ -511,15 +511,20 @@ function chado_insert_record($table, $values, $options = [], $chado_schema_name 
     // Make sure the field is in the table description. If not then return an
     // error message.
     if (!array_key_exists($field, $table_desc['fields'])) {
-      tripal_report_error('tripal_chado', TRIPAL_ERROR,
-        "chado_insert_record; The field '%field' does not exist " .
-        "for the table '%table'.  Cannot perform insert. Values: %array",
-        [
-          '%field' => $field,
-          '%table' => $table,
-          '%array' => print_r($values, 1),
-        ],
-        ['print' => $print_errors]
+      // tripal_report_error('tripal_chado', TRIPAL_ERROR,
+      //   "chado_insert_record; The field '$field' does not exist " .
+      //   "for the table '$table'.  Cannot perform insert. Values: %array",
+      //   [
+      //     '%field' => $field,
+      //     '%table' => $table,
+      //     '%array' => print_r($values, 1),
+      //   ],
+      //   ['print' => $print_errors]
+      // );
+      $logger->error(
+        "chado_insert_record; The field '$field' does not exist " .
+        "for the table '$table'.  Cannot perform insert. Values: " . 
+        print_r($values, 1) . $print_errors
       );
       return FALSE;
     }
@@ -1275,6 +1280,8 @@ function chado_delete_record($table, $match, $options = NULL, $chado_schema_name
  *
  * @ingroup tripal_chado_query_api
  */
+
+
 function chado_select_record($table, $columns, $values, $options = NULL, $chado_schema_name = NULL) {
   $logger = \Drupal::service('tripal.logger');
   // Set defaults for options. If we don't set defaults then
@@ -1423,6 +1430,9 @@ function chado_select_record($table, $columns, $values, $options = NULL, $chado_
           return FALSE;
         }
       }
+
+
+
       $results = chado_select_record($table, $new_columns, $new_values, $new_options, $chado_schema_name);
       // If we have a duplicate record then return the results.
       if (count($results) > 0) {
@@ -1451,6 +1461,7 @@ function chado_select_record($table, $columns, $values, $options = NULL, $chado_
   foreach ($values as $field => $value) {
 	  // echo "-----------------------------------------\n";
 
+
     // Require the field be in the table description.
     if (!array_key_exists($field, $table_desc['fields'])) {
       // tripal_report_error('tripal_chado', TRIPAL_ERROR,
@@ -1463,10 +1474,13 @@ function chado_select_record($table, $columns, $values, $options = NULL, $chado_
       //   ],
       //   ['print' => $print_errors]
       // );
+
+
+
       $logger->error(
         'chado_select_record: The field "' . $field . '" does not exist in the table ' .
         $table . '. Cannot perform query. Values: ' . print_r($values,1) . 
-        '. Fields: ' . print_r($table_desc['fields'], 1) . $print_errors      
+        '. Fields: ' . print_r($table_desc['fields'], 1) . $print_errors
       );
       debug_print_backtrace(0,3);
       return [];
@@ -1541,7 +1555,7 @@ function chado_select_record($table, $columns, $values, $options = NULL, $chado_
             $logger->error(
               'chado_select_record: could not follow the foreign key definition
                for ' . $field . ' where the definition supplied was ' . print_r($value, TRUE)             
-            );            
+            );
             return [];
           }
           // Ensure that there were results returned.
