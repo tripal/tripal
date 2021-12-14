@@ -6,6 +6,7 @@
  */
 
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Config\FileStorage;
 
 require_once 'src/api/tripal_chado.schema.api.inc';
 require_once 'src/api/tripal_chado.custom_tables.api.inc';
@@ -29,5 +30,29 @@ function tripal_chado_help($route_name, RouteMatchInterface $route_match) {
       return $output;
 
     default:
+  }
+}
+
+/**
+ * Implements hook_rebuild().
+ */
+function tripal_chado_rebuild() {
+
+  //
+  // Make sure the Tripal Jobs view is present. If not then add it.
+  //
+
+  // First get the config file.
+  $dir = drupal_get_path('module', 'tripal_chado');
+  $fileStorage = new FileStorage($dir);
+  $config = $fileStorage->read('config/install/views.view.chado_custom_tables');
+
+  // Next load the storage system for views entieis and check if the view
+  // already exists. If it does then don't reload it.
+  $storage = \Drupal::entityTypeManager()->getStorage('view');
+  $view = $storage->load('chado_custom_tables');
+  if (!$view) {
+    $view = $storage->create($config);
+    $view->save();
   }
 }

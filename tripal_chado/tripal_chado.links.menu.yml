@@ -12,7 +12,7 @@ tripal_chado.chado_install_form:
   title: 'Install Chado'
   description: 'Installs the Chado database tables, views, etc., inside the current Drupal database.'
   parent: tripal_chado.storage
-  weight: 30
+  weight: 20
 
 tripal_chado.chado_manager_form:
   route_name: tripal_chado.chado_manager_form
@@ -27,3 +27,24 @@ tripal_chado.chado_prepare_form:
   description: 'Prepares Drupal to use Chado.'
   parent: tripal_chado.storage
   weight: 31
+
+tripal_chado.chado_custom_table_form:
+  route_name: tripal_chado.chado_custom_table_form
+  title: 'Chado Custom Table'
+  description: 'Add new Chado Custom Tables to the database'
+  parent: tripal_chado.storage
+  weight: 30
+
+# tripal_chado.chado_custom_tables_delete_form:
+#   route_name: tripal_chado.chado_custom_tables_delete_form
+#   title: 'Chado Custom Tables Delete'
+#   description: 'Deletes Chado Custom Tables from the database'
+#   parent: tripal_chado.storage
+#   weight: 30  
+
+tripal_chado.chado_custom_tables:
+  route_name: tripal_chado.chado_custom_tables
+  title: 'Chado Custom Tables'
+  description: 'Manage existing Chado Custom Tables'
+  parent: tripal_chado.storage
+  weight: 30  
