@@ -920,12 +920,17 @@ abstract class BioConnection extends PgConnection {
     if (preg_match_all('/\{(\d+):/', $sql, $matches)) {
       $max_index = array_key_last($this->extraSchemas) ?? 1;
       foreach ($matches[1] as $index) {
-        if ($index > $max_index) {
+        if (($index > $max_index)
+            && (!array_key_exists("$index", $this->prefixes))
+        ) {
           throw new ConnectionException(
             "Invalid extra schema specification '$index' in statement:\n$sql\nMaximum schema index is currently $max_index."
           );
         }
-        elseif ((1 == $index) && empty($this->schemaName)) {
+        elseif ((1 == $index)
+          && empty($this->schemaName)
+          && (!array_key_exists('1', $this->prefixes))
+        ) {
           throw new ConnectionException(
             "No main biological schema set for current connection while it has been referenced in the SQL statement:\n$sql."
           );
