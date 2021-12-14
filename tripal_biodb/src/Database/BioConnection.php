@@ -832,8 +832,6 @@ abstract class BioConnection extends PgConnection {
         $this->prefixes['default']
       )
     ;
-    $this->prefixSearch[] = '}';
-    $this->prefixReplace[] = $end_quote;
 
     if (!empty($this->schemaName)) {
       $this->prefixSearch[] = '{1:';
