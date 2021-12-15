@@ -27,13 +27,9 @@ class TripalEntityBase extends ContentEntityBase {
       $field = \Drupal::service("plugin.manager.field.field_type").getInstance($fieldDefinition->getType());
       // If it is a TripalField then...
       if ($field instanceof TripalFieldItemInterface) {
+        // Get empty template list of property values this field uses
+        $props = $field->tripalValuesTemplate();
         // Retrieve the biological data to be saved...
-        // We have a Tripal-specific method here to allow form values to be
-        // modified to match the expected TripalStorage key => value structure.
-        $props = $field->tripalValues();
-        // Call the TripalField level save to allow the field to modify biological
-        // content before we save it to the appropriate backend. This may include
-        // database look-ups to confirm foreign keys but should NOT the core record.
         $field->tripalSave($props,$this);
         // Now we clear the biological data from the Drupal field values to ensure
         // this data is not duplicated.
@@ -76,7 +72,7 @@ class TripalEntityBase extends ContentEntityBase {
         // compile a list of TripalField values grouped by TripalStorage implementations.
         if ($field instanceof TripalFieldItemInterface) {
           $hasTripalFields = TRUE;
-          $props = $field->tripalValues();
+          $props = $field->tripalValuesTemplate();
           $tsid = $field->tripalStorageId();
           if (array_key_exists($tsid,$storageOps)) {
             $storageOps[$tsid] = array_merge($storageOps[$tsid],$props);
