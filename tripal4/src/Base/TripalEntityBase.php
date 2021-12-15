@@ -21,12 +21,25 @@ class TripalEntityBase extends ContentEntityBase {
     // Build all storage operations that will be done, saving the tripal
     // fields that will be saved and clearing them from each entity.
     $storageOps = array()
+    // Specifically, for each field...
     foreach($this->bundleFieldDefinitions() as $fieldDefinition) {
+      // Retrieve its Field Instance class.
       $field = \Drupal::service("plugin.manager.field.field_type").getInstance($fieldDefinition->getType());
+      // If it is a TripalField then...
       if ($field instanceof TripalFieldItemInterface) {
+        // Retrieve the biological data to be saved...
+        // We have a Tripal-specific method here to allow form values to be
+        // modified to match the expected TripalStorage key => value structure.
         $props = $field->tripalValues();
+        // Call the TripalField level save to allow the field to modify biological
+        // content before we save it to the appropriate backend. This may include
+        // database look-ups to confirm foreign keys but should NOT the core record.
         $field->tripalSave($props,$this);
+        // Now we clear the biological data from the Drupal field values to ensure
+        // this data is not duplicated.
         $field->tripalClear($this);
+        // Finally based on the Tripal storage, we add this data to an array
+        // for bulk save of the biological data to the appropriate database (e.g. Chado).
         $tsid = $field->tripalStorageId();
         if (array_key_exists($tsid,$storageOps)) {
           $storageOps[$tsid] = array_merge($storageOps[$tsid],$props);
@@ -37,7 +50,9 @@ class TripalEntityBase extends ContentEntityBase {
       }
     }
 
-    // Save all properties to their respective storage plugins
+    // Save all properties to their respective storage plugins.
+    // This is where the biological data is actually saved to the database
+    // using the appropriate TripalStorage plugin.
     foreach ($storageOps as $tsid => $properties) {
       $tripalStorage = \Drupal::service("plugin.manager.tripal.storage")->getInstance($tsid);
       $tripalStorage->saveValues($properties);
@@ -51,14 +66,16 @@ class TripalEntityBase extends ContentEntityBase {
     parent::postLoad($storage, $entities);
 
     // Build the storage operations that will be done and entity references
-    $storageOps = array()
-    $entityRefs = array()
+    $storageOps = array();
+    $entityRefs = array();
+    // For each entity to be loaded, check each field so we can...
     foreach ($entities as $entity) {
-      $hasTripalFields = False
+      $hasTripalFields = FALSE;
       foreach ($entity->bundleFieldDefinitions() as $fieldDefinition) {
         $field = \Drupal::service("plugin.manager.field.field_type").getInstance($fieldDefinition->getType());
+        // compile a list of TripalField values grouped by TripalStorage implementations.
         if ($field instanceof TripalFieldItemInterface) {
-          $hasTripalFields = True
+          $hasTripalFields = TRUE;
           $props = $field->tripalValues();
           $tsid = $field->tripalStorageId();
           if (array_key_exists($tsid,$storageOps)) {
@@ -67,11 +84,15 @@ class TripalEntityBase extends ContentEntityBase {
           else {
             $storageOps[$tsid] = $props;
           }
-          $entityRefs[$entity->id][$field->getName()]["field"] = $field
+          // Additionally, we compile a list of entities and fields
+          // implementing the TripalField interface.
+          // This is used below to re-add the loaded field values back into
+          // the appropriate entities.
+          $entityRefs[$entity->id][$field->getName()]["field"] = $field;
         }
       }
       if ($hasTripalFields) {
-        $entityRefs[$entity->id]["entity"] = $entity
+        $entityRefs[$entity->id]["entity"] = $entity;
       }
     }
 
@@ -84,21 +105,28 @@ class TripalEntityBase extends ContentEntityBase {
     }
 
     // Add loaded properties to their correct entity and field references
+    // Note: Each $property is an instance of StoragePropertyValue
+    // and thus contains information for it's associated entity ID/Type and
+    // field ID/Key.
     foreach ($loaded as $property) {
       $tid = $property->getEntityId();
-      if (array_key_exists("props",$entityRefs[$tid])) {
-        $entityRefs[$tid] = array_push($entityRefs[$tid],$property);
+      // Note: The StoragePropertyValue field_key is equal to the field's name.
+      $field_key = $property->getFieldKey();
+      if (array_key_exists("props",$entityRefs[$tid][$field_key])) {
+        $entityRefs[$tid][$field_key]["props"] = array_push($entityRefs[$tid],$property);
       }
       else {
-        $entityRefs[$tid] = array($property);
+        $entityRefs[$tid][$field_key]["props"] = array($property);
       }
     }
 
-    // Load all properties with their respective entities and fields
+    // Attach all loaded properties to their respective entities and fields.
     foreach ($entityRefs as $entityRef) {
       $entity = $entityRef["entity"];
       foreach ($entityRef as $fieldRef) {
         $field = $fieldRef["field"];
+        // Finally we let the TripalField attach the it's loaded properties
+        // which allows another opprotunity for re-organization if needed.
         $field->tripalLoad($fieldRef["props"],$entity);
       }
     }
