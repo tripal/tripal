@@ -1,5 +1,7 @@
 <?php
 
+use \Drupal\tripal4\Base\TripalStorageUpdateException
+
 class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
 
   /**
@@ -52,7 +54,28 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
    * {@inheritdoc}
    */
   public function onEntityTypeDelete(EntityTypeInterface $entity_type) {
-    // How can one get field storage definitions from entity_type?
+
+    // build remove storage operations
+    $storageOps = array()
+    foreach ($this->fieldStorageDefinitions() as $storageDefinition) {
+      $field = \Drupal::service("plugin.manager.field.field_type").getInstance($storageDefinition->getType());
+      if ($field instanceof TripalFieldItemInterface) {
+        $types = $field->tripalTypes();
+        $tsid = $field->tripalStorageId();
+        if (array_key_exists($tsid,$storageOps)) {
+          $storageOps[$tsid] = array_merge($storageOps[$tsid],$types);
+        }
+        else {
+          $storageOps[$tsid] = $types;
+        }
+      }
+    }
+
+    // iterate through all storage plugins and remove property types
+    foreach ($storageOps as $tsid => $types) {
+      $tripalStorage = \Drupal::service("plugin.manager.tripal.storage")->getInstance($tsid);
+      $tripalStorage->removeTypes($types);
+    }
   }
 
   /**
@@ -89,7 +112,10 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
           //     to create a new field, migrate the data themselves, and then
           //     delete the old field and associated data.
           if ($oldTypes[$name]->tripalStorageId() != $tsid) {
-            // @todo THROW EXCEPTION
+            throw TripalStorageUpdateException(
+              $entity_type->id
+              ,"Cannot change tripal storage plugin type when updating fields."
+            );
           }
           // Case 1b: the new field already existed and has the same storage.
           //   - we will want to update the key-value information.
