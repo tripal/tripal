@@ -83,7 +83,10 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
         $tsid = $field->tripalStorageId();
         // Case 1: the new field already existed and has the same storage
         //   - we will want to update the key-value information.
-        if ( array_key_exists($name,$oldTypes) && $oldTypes[$name]->tripalStorageId() == $tsid ) {
+        if (array_key_exists($name,$oldTypes)) {
+          if ($oldTypes[$name]->tripalStorageId() != $tsid) {
+            //THROW EXCEPTION
+          }
           $otypes = $oldTypes[$name]->tripalTypes();
           if (array_key_exists($tsid,$storageUpdate)) {
             $storageUpdate[$tsid] = array_push($storageUpdate[$tsid],array($types,$otypes);
