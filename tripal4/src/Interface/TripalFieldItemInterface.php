@@ -31,7 +31,7 @@ interface TripalFieldItemInterface extends FieldItemInterface {
   /**
    * Loads the values from the given array of properties to the given entity.
    *
-   * @param array $values
+   * @param array $properties
    *   Array of \Drupal\tripal4\TripalStorage\StoragePropertyValue objects.
    *
    * @param \Drupal\tripal4\Base\TripalEntityBase $entity
@@ -42,7 +42,7 @@ interface TripalFieldItemInterface extends FieldItemInterface {
   /**
    * Saves the values to the given array of properties from the given entity.
    *
-   * @param array $values
+   * @param array $properties
    *   Array of \Drupal\tripal4\TripalStorage\StoragePropertyValue objects.
    *
    * @param \Drupal\tripal4\Base\TripalEntityBase $entity

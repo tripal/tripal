@@ -81,12 +81,18 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
       if ($field instanceof TripalFieldItemInterface) {
         $types = $field->tripalTypes();
         $tsid = $field->tripalStorageId();
-        // Case 1: the new field already existed and has the same storage
-        //   - we will want to update the key-value information.
         if (array_key_exists($name,$oldTypes)) {
+          // Case 1a: the new field already existed but the storage has changed.
+          //   - this involves migrating of data from one storage to another
+          //     which can be an error prone process leading to data loss.
+          //   - As such, we are going to throw an exception and require admin
+          //     to create a new field, migrate the data themselves, and then
+          //     delete the old field and associated data.
           if ($oldTypes[$name]->tripalStorageId() != $tsid) {
-            //THROW EXCEPTION
+            // @todo THROW EXCEPTION
           }
+          // Case 1b: the new field already existed and has the same storage.
+          //   - we will want to update the key-value information.
           $otypes = $oldTypes[$name]->tripalTypes();
           if (array_key_exists($tsid,$storageUpdate)) {
             $storageUpdate[$tsid] = array_push($storageUpdate[$tsid],array($types,$otypes);
@@ -95,9 +101,7 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
             $storageOps[$tsid] = array(array($types,$otypes));
           }
         }
-        // Case 2: the new field did not exist before with this storage.
-        //   - Both brand new fields (2a) and ones which already existed but with a
-        //     different storage (2b) will fall in this case.
+        // Case 2: the new field did not exist before.
         //   - we will need to add the new field to it's new storage.
         else {
           if (array_key_exists($tsid,$storageAdd)) {
