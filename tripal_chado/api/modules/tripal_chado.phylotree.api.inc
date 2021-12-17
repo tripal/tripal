@@ -589,7 +589,7 @@ function chado_delete_phylotree($phylotree_id) {
 }
 
 /**
- * Iterates through the tree and sets the left and right indicies.
+ * Iterates through the tree and sets the left and right indices.
  *
  * @param $tree
  *   The tree array.
@@ -640,7 +640,7 @@ function chado_assign_phylogeny_tree_indices(&$tree, &$index = 1) {
  *                  and the value is the property value.  These properties
  *                  will be associated with the phylonode.
  *
- * Prior to importing the tree the indicies can be set by using the
+ * Prior to importing the tree the indices can be set by using the
  * chado_assign_phylogeny_tree_indices() function.
  *
  * @param $tree
@@ -771,6 +771,25 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
                 }
               }
             }
+            else {  // $options['leaf_type'] == 'taxonomy'
+              // This is a taxonomy tree. Try to match leaf nodes with organisms.
+              $organism_id = chado_phylogeny_lookup_organism_by_name($tree['name']);
+              if ($organism_id) {
+                $tree['organism_id'] = $organism_id;
+                tripal_report_error($options['message_type'], TRIPAL_INFO,
+                  'Import phylotree: Associated %name to organism_id: %organism_id',
+                  ['%name' => $tree['name'], '%organism_id' => $organism_id],
+                  $options['message_opts']
+                );
+              }
+              else {
+                tripal_report_error($options['message_type'], TRIPAL_WARNING,
+                  'Import phylotree: Warning, unable to associate to an organism that matches %name',
+                  ['%name' => $tree['name']],
+                  $options['message_opts']
+                );
+              }
+            }
           }
         }
       }
@@ -807,6 +826,72 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
       chado_phylogeny_import_tree($tree['branch_set'][$key], $phylotree, $options, $vocab, $tree);
     }
   }
+}
+
+/**
+ * Lookup an organism_id given an organism name (genus species)
+ *
+ * @param $name
+ *   The organism name.
+ *
+ * @return
+ *  organism_id from chado.organism table or FALSE on failure.
+ *
+ * @ingroup tripal_phylotree_api
+ */
+function chado_phylogeny_lookup_organism_by_name($name) {
+  $organism_id = false;
+
+  // spaces in names are likely to be replaced with underscores in newick files
+  $name = trim(preg_replace('/_/', ' ', $name ));
+
+  // First try to find name as is in the abbreviation column. This does not
+  // have a unique constraint, so we must verify that the count is 1
+  $sql = "SELECT COUNT(*) FROM {organism} WHERE abbreviation = :name";
+  $args = [':name' => $name];
+  $count = chado_query($sql, $args)->fetchField();
+  if ($count == 1) {
+    $sql = "SELECT organism_id FROM {organism} WHERE abbreviation = :name";
+    $organism_id = $chado_query($sql, $args)->fetchField();
+  }
+
+  // abbreviation query failed, so now query on genus + species and
+  // optionally infraspecific nomenclature
+  else {
+    $infrasupported = false;
+    $limit = 2;
+    if (chado_column_exists('organism', 'infraspecific_name')) {
+      $infrasupported = true;
+      $limit = 4;
+    }
+    $parts = preg_split('/\s+/', $name, $limit);
+    $sql = "SELECT organism_id FROM {organism} WHERE genus = :genus AND species = :species";
+    $args = [ ':genus' => $parts[0], ':species' => $parts[1] ];
+    if ($infrasupported) {
+      // when there is no infraspecific name, we can use the "no_rank" taxonomic term in
+      // the type_id column, or NULL can be considered equivalent. Wrap these in parentheses
+      $sql .= " AND ( type_id = (SELECT cvterm_id FROM {cvterm} WHERE name = :infraspecific_type"
+           . " AND cv_id = (SELECT cv_id FROM {cv} WHERE name = 'taxonomic_rank'))";
+      if (!array_key_exists(2, $parts)) {
+        $parts[2] = 'no_rank';
+        $sql .= " OR type_id IS NULL";
+      }
+      $sql .= ")";
+      $parts[3] = array_key_exists(3, $parts) ? $parts[3] : false;
+      $args = array_merge( $args, [':infraspecific_type' => $parts[2]] );
+      // if no infraspecific name, specify empty string or null in the SQL
+      if ($parts[3]) {
+        $sql .= " AND infraspecific_name = :infraspecific_name";
+        $args = array_merge( $args, [':infraspecific_name' => $parts[3]] );
+      }
+      else {
+        $sql .= " AND ( infraspecific_name = '' ) IS NOT FALSE";  // must be either empty string or NULL
+      }
+    }
+    // unique constraint on organism table ensures we get zero or one record returned
+    $organism_id = chado_query($sql, $args)->fetchField();
+  }
+  return($organism_id);
 }
 
 /**
