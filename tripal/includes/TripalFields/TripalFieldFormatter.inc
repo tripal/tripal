@@ -186,7 +186,7 @@ class TripalFieldFormatter {
     $pager = preg_replace('/href="\/.+\?page=(.+?)"/', 'href="javascript:void(0)" onclick="tripal_navigate_field_pager(\'' . $field_id . '\', $1)"', $pager);
     $pager = preg_replace('/href="\/.+"/', 'href="javascript:void(0)" onclick="tripal_navigate_field_pager(\'' . $field_id . '\', 0)"', $pager);
 
-    $pager = '<img src="/' . drupal_get_path('module', 'tripal') . '/theme/images/ajax-loader.gif" id="' . $field_id . '-spinner" class="tripal-field-ajax-spinner">' . $pager;
+    $pager = '<img src="/' . drupal_get_path('module', 'tripal') . '/theme/images/ajax-loader.gif" id="' . $field_id . '-spinner" class="tripal-field-ajax-spinner" alt="Loading content">' . $pager;
     return $pager;
   }
 
