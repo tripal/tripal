@@ -1582,7 +1582,7 @@ function tripal_html5_file_validate($element, &$form_state) {
 /**
  * Implements hook_value() for the html5_file form element.
  */
-function tripal_html5_file_value($element, $input = FALSE, &$form_state) {
+function tripal_html5_file_value($element, $input = FALSE, $form_state = NULL) {
 
   if ($input) {
     if (is_array($input)) {
