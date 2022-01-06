@@ -449,7 +449,7 @@ function tripal_create_bundle($args, $job = NULL) {
   $accession = $args['accession'];
   $term_name = $args['term_name'];
   $storage_args = $args['storage_args'];
-  $label = $args['label'];
+  $label = (isset($args['label'])) ? $args['label'] : $args['term_name'];
 
   $message_args = [
     'job' => $job,
@@ -1787,4 +1787,3 @@ function hook_bundle_find_orphans(TripalBundle $bundle, $count = FALSE,
   // See the tripal_chado_bundle_find_orphans() function for an example.
 
 }
-
