@@ -367,7 +367,7 @@ function tripal_chado_prepare_general_types($job) {
     'vocabulary' => 'local',
     'accession' => 'contact',
     'term_name' => 'contact',
-    'label' => 'Contract',
+    'label' => 'Contact',
     'storage_args' => [
       'data_table' => 'contact',
     ],
