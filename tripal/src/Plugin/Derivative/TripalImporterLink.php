@@ -43,7 +43,7 @@ class TripalImporterLink extends DeriverBase implements ContainerDeriverInterfac
   public function getDerivativeDefinitions($base_plugin_definition) {
     $links = [];
  
-    $importers = tripal_get_importers();
+    $importers = \tripal_get_importers();
     foreach($importers as $class_name) {
         $importer_object = new $class_name;
         $links[$class_name] = [

@@ -14,7 +14,7 @@ class TripalRoutes {
   public function dataLoaders() {
     $routes = [];
 
-    $importers = tripal_get_importers();
+    $importers = \tripal_get_importers();
     foreach ($importers as $class_name) {
       tripal_load_include_importer_class($class_name);
       if (class_exists($class_name)) {
