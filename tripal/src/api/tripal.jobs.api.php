@@ -88,6 +88,7 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid,
                         $priority = 10, $includes = [], $ignore_duplicate = FALSE) {
 
   $user = \Drupal\user\Entity\User::load($uid);
+  $messenger = \Drupal::messenger();
 
   try {
     $job = new TripalJob();
@@ -105,14 +106,14 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid,
     if ($is_created) {
       // If no exceptions were thrown then we know the creation worked.  So
       // let the user know!
-      drupal_set_message(t("Job '%job_name' submitted.", ['%job_name' => $job_name]));
+      $messenger->addStatus(t("Job '%job_name' submitted.", ['%job_name' => $job_name]));
 
       // If this is the Tripal admin user then give a bit more information
       // about how to run the job.
       if ($user->hasPermission('administer tripal')) {
         $jobs_url = Link::fromTextAndUrl('jobs page', Url::fromUri('internal:/admin/tripal/tripal_jobs'))->toString();
-        drupal_set_message(t("Check the @jobs_url for status.", ['@jobs_url' => $jobs_url]));
-        drupal_set_message(t("You can execute the job queue manually on the ".
+        $messenger->addStatus(t("Check the @jobs_url for status.", ['@jobs_url' => $jobs_url]));
+        $messenger->addStatus(t("You can execute the job queue manually on the ".
           "command line using the following Drush command: " .
           "<br>drush trp-run-jobs --job_id=%job_id --username=%uname --root=%base_path",
           [
@@ -123,7 +124,7 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid,
       }
     }
     else {
-      drupal_set_message(t("Job '%job_name' already exists in the queue and was not re-submitted.", ['%job_name' => $job_name]), 'warning');
+      $messenger->addWarning(t("Job '%job_name' already exists in the queue and was not re-submitted.", ['%job_name' => $job_name]));
     }
     return $job->getJobID();
   }
@@ -255,6 +256,7 @@ function tripal_rerun_job($job_id, $goto_jobs_page = NULL) {
   $current_user = \Drupal::currentUser();
   $user_id = $current_user->id();
   $user = \Drupal\user\Entity\User::load($current_user->id());
+  $messenger = \Drupal::messenger();
 
   $job = new TripalJob();
   $job->load($job_id);
@@ -275,14 +277,14 @@ function tripal_rerun_job($job_id, $goto_jobs_page = NULL) {
 
     // If no exceptions were thrown then we know the creation worked.  So
     // let the user know!
-    drupal_set_message(t("Job '%job_name' submitted.", ['%job_name' => $job->getJobName()]));
+    $messenger->addStatus(t("Job '%job_name' submitted.", ['%job_name' => $job->getJobName()]));
 
     // If this is the Tripal admin user then give a bit more information
     // about how to run the job.
     if ($user->hasPermission('administer tripal')) {
       $jobs_url = Link::fromTextAndUrl('jobs page', Url::fromUri('internal:/admin/tripal/tripal_jobs'))->toString();
-      drupal_set_message(t("Check the @jobs_url for status.", ['@jobs_url' => $jobs_url]));
-      drupal_set_message(t("You can execute the job queue manually on the ".
+      $messenger->addStatus(t("Check the @jobs_url for status.", ['@jobs_url' => $jobs_url]));
+      $messenger->addStatus(t("You can execute the job queue manually on the ".
           "command line using the following Drush command: " .
           "<br>drush trp-run-jobs --job_id=%job_id --username=%uname --root=%base_path",
           [
@@ -332,7 +334,7 @@ function tripal_cancel_job($job_id, $redirect = NULL) {
     $job->load($job_id);
     $job->cancel();
 
-    drupal_set_message('Job is now cancelled.');
+    \Drupal::messenger()->addStatus('Job is now cancelled.');
     return TRUE;
   }
   catch (Exception $e) {
@@ -363,6 +365,8 @@ function tripal_cancel_job($job_id, $redirect = NULL) {
  * @ingroup tripal_jobs_api
  */
 function tripal_launch_job($do_parallel = 0, $job_id = NULL, $max_jobs = -1, $single = 0) {
+
+  $messenger = \Drupal::messenger();
 
   // First check if any jobs are currently running if they are, don't continue,
   // we don't want to have more than one job script running at a time.
@@ -440,7 +444,7 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL, $max_jobs = -1, $si
     }
     catch (Exception $e) {
       $job->logMessage($e->getMessage(), [], TRIPAL_ERROR);
-      drupal_set_message($e->getMessage(), 'error');
+      $messenger->addError($e->getMessage());
     }
 
     if ($single) {
@@ -570,6 +574,8 @@ function tripal_get_active_jobs($modulename = NULL) {
  */
 function tripal_execute_job($job_id, $redirect = TRUE) {
 
+  $messenger = \Drupal::messenger();
+
   if (!is_null($redirect)) {
     $logger = \Drupal::service('tripal.logger');
     $logger->warning("DEPRECATED: the '\$goto_jobs_page' argument of the ".
@@ -583,9 +589,9 @@ function tripal_execute_job($job_id, $redirect = TRUE) {
   // Run the job.
   if ($job->getStartTime() == 0 and $job->getEndTime() == 0) {
     tripal_launch_job(1, $job_id);
-    drupal_set_message(t("Job %job_id has finished executing. See below for more information.", ['%job_id' => $job_id]));
+    $messenger->addStatus(t("Job %job_id has finished executing. See below for more information.", ['%job_id' => $job_id]));
   }
   else {
-    drupal_set_message(t("Job %job_id cannot be executed. It has already finished.", ['%job_id' => $job_id]), 'error');
+    $messenger->addError(t("Job %job_id cannot be executed. It has already finished.", ['%job_id' => $job_id]));
   }
 }

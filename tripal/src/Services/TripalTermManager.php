@@ -302,6 +302,7 @@ class TripalTermManager {
 
     // Use the Drupal Entity Query mechanism to look for matches.
     $query = \Drupal::entityQuery('tripal_term');
+    $query->accessCheck(TRUE);
     if (array_key_exists('name', $details)) {
   	   $query->condition('name', $details['name']);
     }

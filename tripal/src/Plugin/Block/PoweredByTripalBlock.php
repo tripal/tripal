@@ -16,7 +16,7 @@ use Drupal\Core\Form\FormStateInterface;
  * )
  */
 class PoweredByTripalBlock extends BlockBase implements BlockPluginInterface {
-  
+
   /**
    * {@inheritdoc}
    */
@@ -25,9 +25,10 @@ class PoweredByTripalBlock extends BlockBase implements BlockPluginInterface {
     $size = $config['logo_size'] ?? 'small';
     $type = $config['logo_type'] ?? 'bw';
     $image = "powered_by_tripal_{$type}_{$size}.png";
+    $image_path = base_path() . \Drupal::service('extension.list.module')->getPath('tripal') . '/images/' . $image;
 
     return [
-      '#markup' => '<a href="http://tripal.info"><img border="0" src="' . base_path() . drupal_get_path('module', 'tripal') . '/images/' . $image . '"></a>',
+      '#markup' => '<a href="http://tripal.info"><img border="0" src="' . $image_path . '"></a>',
     ];
   }
 

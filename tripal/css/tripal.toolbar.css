@@ -32,3 +32,166 @@
 .toolbar-horizontal .toolbar-horizontal-item-hidden {
   display: none;
 }
+
+
+.toolbar-link-tripal-admin {
+  border: 10px solid white;
+}
+
+/* Tripal toolbar icons - main menu item */
+.toolbar-bar .toolbar-icon-tripal:before {
+  background-image: url("../miscellaneous/icons/bebebe/tripal.svg");
+}
+
+.no-svg .toolbar-bar .toolbar-icon-tripal:before {
+  background-image: url("../miscellaneous/icons/bebebe/tripal.png");
+}
+
+.toolbar-bar .toolbar-icon-tripal:active:before,
+.toolbar-bar .toolbar-icon-tripal.active:before,
+.toolbar-bar .toolbar-icon-tripal.is-active::before {
+  background-image: url("../miscellaneous/icons/ffffff/tripal.svg");
+}
+
+.no-svg .toolbar-bar .toolbar-icon-tripal:active:before,
+.no-svg .toolbar-bar .toolbar-icon-tripal.active:before,
+.toolbar-bar .toolbar-icon-tripal.is-active::before {
+  background-image: url("../miscellaneous/icons/ffffff/tripal.png");
+}
+
+  /* Tripal toolbar/tray item - sub menu tiems */
+  /* # CONTENT */
+  .toolbar-menu .menu-item .toolbar-icon-tripal-content::before {
+    background-image: url("../miscellaneous/icons/787878/content.svg");
+  }
+
+  .no-svg .toolbar-menu .menu-item .toolbar-icon-tripal-content::before {
+    background-image: url("../miscellaneous/icons/787878/content.png");
+  }
+
+  .toolbar-menu .menu-item .toolbar-icon-tripal-content.is-active::before {
+    background-image: url("../miscellaneous/icons/000000/content.svg");
+  }
+
+  .no-svg .toolbar-menu .menu-item .toolbar-icon-tripal-content.is-active::before {
+    background-image: url("../miscellaneous/icons/000000/content.png");
+  }
+
+  /* # JOBS */
+  .toolbar-menu .menu-item .toolbar-icon-tripal-jobs::before {
+    background-image: url("../miscellaneous/icons/787878/jobs.svg");
+  }
+
+  .no-svg .toolbar-menu .menu-item .toolbar-icon-tripal-jobs::before {
+    background-image: url("../miscellaneous/icons/787878/jobs.png");
+  }
+
+  .toolbar-menu .menu-item .toolbar-icon-tripal-jobs.is-active::before {
+    background-image: url("../miscellaneous/icons/000000/jobs.svg");
+  }
+
+  .no-svg .toolbar-menu .menu-item .toolbar-icon-tripal-jobs.is-active::before {
+    background-image: url("../miscellaneous/icons/000000/jobs.png");
+  }
+
+  /* # IMPORTERS */
+  .toolbar-menu .menu-item .toolbar-icon-tripal-importers::before {
+    background-image: url("../miscellaneous/icons/787878/importers.svg");
+  }
+
+  .no-svg .toolbar-menu .menu-item .toolbar-icon-tripal-importers::before {
+    background-image: url("../miscellaneous/icons/787878/importers.png");
+  }
+
+  .toolbar-menu .menu-item .toolbar-icon-tripal-importers.is-active::before {
+    background-image: url("../miscellaneous/icons/000000/importers.svg");
+  }
+
+  .no-svg .toolbar-menu .menu-item .toolbar-icon-tripal-importers.is-active::before {
+    background-image: url("../miscellaneous/icons/000000/importers.png");
+  }
+
+  /* # PAGE STRUCTURE */
+  .toolbar-menu .menu-item .toolbar-icon-tripal-structure::before {
+    background-image: url("../miscellaneous/icons/787878/structure.svg");
+  }
+
+  .no-svg .toolbar-menu .menu-item .toolbar-icon-tripal-structure::before {
+    background-image: url("../miscellaneous/icons/787878/structure.png");
+  }
+
+  .toolbar-menu .menu-item .toolbar-icon-tripal-structure.is-active::before {
+    background-image: url("../miscellaneous/icons/000000/structure.svg");
+  }
+
+  .no-svg .toolbar-menu .menu-item .toolbar-icon-tripal-structure.is-active::before {
+    background-image: url("../miscellaneous/icons/000000/structure.png");
+  }
+
+  /* # VOCABULARIES */
+  .toolbar-menu .menu-item .toolbar-icon-tripal-vocab::before {
+    background-image: url("../miscellaneous/icons/787878/vocab.svg");
+  }
+
+  .no-svg .toolbar-menu .menu-item .toolbar-icon-tripal-vocab::before {
+    background-image: url("../miscellaneous/icons/787878/vocab.png");
+  }
+
+  .toolbar-menu .menu-item .toolbar-icon-tripal-vocab.is-active::before {
+    background-image: url("../miscellaneous/icons/000000/vocab.svg");
+  }
+
+  .no-svg .toolbar-menu .menu-item .toolbar-icon-tripal-vocab.is-active::before {
+    background-image: url("../miscellaneous/icons/000000/vocab.png");
+  }
+
+  /* # DATA STORAGE */
+  .toolbar-menu .menu-item .toolbar-icon-tripal-storage::before {
+    background-image: url("../miscellaneous/icons/787878/storage.svg");
+  }
+
+  .no-svg .toolbar-menu .menu-item .toolbar-icon-tripal-storage::before {
+    background-image: url("../miscellaneous/icons/787878/storage.png");
+  }
+
+  .toolbar-menu .menu-item .toolbar-icon-tripal-storage.is-active::before {
+    background-image: url("../miscellaneous/icons/000000/storage.svg");
+  }
+
+  .no-svg .toolbar-menu .menu-item .toolbar-icon-tripal-storage.is-active::before {
+    background-image: url("../miscellaneous/icons/000000/storage.png");
+  }
+
+  /* # EXTENSIONS */
+  .toolbar-menu .menu-item .toolbar-icon-tripal-extend::before {
+    background-image: url("../miscellaneous/icons/787878/extend.svg");
+  }
+
+  .no-svg .toolbar-menu .menu-item .toolbar-icon-tripal-extend::before {
+    background-image: url("../miscellaneous/icons/787878/extend.png");
+  }
+
+  .toolbar-menu .menu-item .toolbar-icon-tripal-extend.is-active::before {
+    background-image: url("../miscellaneous/icons/000000/extend.svg");
+  }
+
+  .no-svg .toolbar-menu .menu-item .toolbar-icon-tripal-extend.is-active::before {
+    background-image: url("../miscellaneous/icons/000000/extend.png");
+  }
+
+  /* # MORE */
+  .toolbar-menu .menu-item .toolbar-icon-tripal-more::before {
+    background-image: url("../miscellaneous/icons/787878/more.svg");
+  }
+
+  .no-svg .toolbar-menu .menu-item .toolbar-icon-tripal-more::before {
+    background-image: url("../miscellaneous/icons/787878/more.png");
+  }
+
+  .toolbar-menu .menu-item .toolbar-icon-tripal-more.is-active::before {
+    background-image: url("../miscellaneous/icons/000000/more.svg");
+  }
+
+  .no-svg .toolbar-menu .menu-item .toolbar-icon-tripal-more.is-active::before {
+    background-image: url("../miscellaneous/icons/000000/more.png");
+  }

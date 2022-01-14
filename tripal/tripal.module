@@ -208,6 +208,30 @@ function tripal_toolbar () {
     ],
   ];
 
+  // Determine which tray item should be active
+  // based on the current page.
+  Url::fromRoute('<current>', [], ['absolute'=>'true'])->toString();
+  $curr_route_name = \Drupal::routeMatch()->getRouteName();
+
+  // Tray items routeNames (#url key in the toolbar tray definition above).
+  $tray_items = [
+    'entity.tripal_entity.collection' => 'content',
+    'tripal.jobs' => 'jobs',
+    'tripal.data_loaders' => 'importers',
+    'entity.tripal_entity_type.collection' => 'page_structure',
+    'entity.tripal_vocab.collection' => 'vocab',
+    'tripal.storage' => 'storage',
+    'tripal.extension' => 'extensions',
+    'tripal.admin' => 'more'
+  ];
+
+  foreach($tray_items as $route_name => $page_name) {
+    if ($route_name == $curr_route_name) {
+      array_push($items['tripal']['tray']['tripal-toolbar-tray'][ $page_name ]['#attributes']['class'], 'is-active');
+      break;
+    }
+  }
+
   return $items;
 }
 
@@ -217,7 +241,7 @@ function tripal_toolbar () {
 function tripal_page_attachments(array &$attachments) {
   $attachments['#attached']['drupalSettings']['tripal']['vars'] = [
     'baseurl' => \Drupal::request()->getSchemeAndHttpHost(),
-    'tripal_path' => drupal_get_path('module', 'tripal'),
+    'tripal_path' => \Drupal::service('extension.list.module')->getPath('tripal'),
   ];
   $attachments['#attached']['library'][] = 'tripal/vars';
 }
@@ -251,7 +275,7 @@ function tripal_preprocess_html(&$variables) {
   $config = \Drupal::config('tripal_admin.settings');
   // add some variables for all javasript to use for building URLs
   $clean_urls = $config->get('clean_url', 0);
-  $tripal_path = drupal_get_path('module', 'tripal');
+  $tripal_path = \Drupal::service('extension.list.module')->getPath('tripal');
   //Add a JS library
   $variables['#attached']['library'][] = 'tripal/tripal-js';
   $variables['#attached']['drupalSettings']['tripal']['tripalJS']['baseurl'] = $base_url;
@@ -545,7 +569,7 @@ function tripal_rebuild() {
   //
 
   // First get the config file.
-  $dir = drupal_get_path('module', 'tripal');
+  $dir = \Drupal::service('extension.list.module')->getPath('tripal');
   $fileStorage = new FileStorage($dir);
   $config = $fileStorage->read('config/install/views.view.tripal_jobs');
 
