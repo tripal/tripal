@@ -21,7 +21,7 @@ class chadoInstallerFormTest extends BrowserTestBase {
    *
    * @var array
    */
-  public static $modules = ['tripal', 'tripal_chado'];
+  protected static $modules = ['tripal', 'tripal_chado'];
 
   /**
    * A user with permission to administer site configuration.
@@ -33,7 +33,7 @@ class chadoInstallerFormTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
     $this->user = $this->drupalCreateUser([
       'administer site configuration',
@@ -68,12 +68,10 @@ class chadoInstallerFormTest extends BrowserTestBase {
       'schema_name' => uniqid(),
     ];
     // Submit the form.
-    $this->drupalPostForm(null, $values, 'Submit');
+    $this->submitForm($values, 'Submit');
 
     // Now there should be a message mentioning the schema to be installed.
-    $assert->responseContains($values['schema_name'],
-      "There should now be a message telling us how to install
-      the new schema.");
+    $assert->responseContains($values['schema_name']);
   }
 
 }

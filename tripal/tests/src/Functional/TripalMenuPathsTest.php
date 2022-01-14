@@ -19,7 +19,7 @@ class TripalMenuPathsTest extends BrowserTestBase {
   // protected $htmlOutputEnabled = TRUE;
   protected $defaultTheme = 'stable';
 
-  public static $modules = ['tripal', 'block', 'field_ui'];
+  protected static $modules = ['tripal', 'block', 'field_ui'];
 
   /**
    * Test all paths exposed by the module, by permission.
@@ -43,7 +43,7 @@ class TripalMenuPathsTest extends BrowserTestBase {
     // Run the tests.
     foreach ($data as $datum) {
       $html = $this->drupalGet($datum[1]);
-      $assert->statusCodeEquals($datum[0], 'Recieved an unexpected status code for '.$datum[1]);
+      $assert->statusCodeEquals($datum[0]);
     }
   }
 

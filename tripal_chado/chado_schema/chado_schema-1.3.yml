@@ -3,26 +3,26 @@ acquisition:
   fields:
     acquisition_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     assay_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     protocol_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     channel_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     acquisitiondate:
       type: timestamp without time zone
-      not null: TRUE
+      not null: FALSE
       default: CURRENT_TIMESTAMP
     name:
       type: text
-      not null: TRUE
+      not null: FALSE
     uri:
       type: text
-      not null: TRUE
+      not null: FALSE
   unique keys:
     acquisition_c1: name
   primary key: acquisition_id
@@ -31,36 +31,36 @@ acquisition:
       table: assay
       columns:
         assay_id: assay_id
-    protocol:
-      table: protocol
-      columns:
-        protocol_id: protocol_id
     channel:
       table: channel
       columns:
         channel_id: channel_id
-  referring_tables: acquisitionprop, acquisition_relationship, quantification
+    protocol:
+      table: protocol
+      columns:
+        protocol_id: protocol_id
+  referring_tables: acquisition_relationship, acquisitionprop, quantification
 acquisition_relationship:
   description: "Multiple monochrome images may be merged to form a multi-color image. Red-green images of 2-channel hybridizations are an example of this."
   fields:
     acquisition_relationship_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     subject_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     object_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     acquisition_relationship_c1: subject_id, object_id, type_id, rank
   primary key: acquisition_relationship_id
@@ -68,8 +68,8 @@ acquisition_relationship:
     acquisition:
       table: acquisition
       columns:
-        subject_id: acquisition_id
         object_id: acquisition_id
+        subject_id: acquisition_id
     cvterm:
       table: cvterm
       columns:
@@ -80,19 +80,19 @@ acquisitionprop:
   fields:
     acquisitionprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     acquisition_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     acquisitionprop_c1: acquisition_id, type_id, rank
   primary key: acquisitionprop_id
@@ -111,64 +111,64 @@ analysis:
   fields:
     analysis_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     name:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 255
     description:
       type: text
-      not null: TRUE
+      not null: FALSE
     program:
       type: character varying
-      not null: FALSE
+      not null: TRUE
       size: 255
     programversion:
       type: character varying
-      not null: FALSE
+      not null: TRUE
       size: 255
     algorithm:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 255
     sourcename:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 255
     sourceversion:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 255
     sourceuri:
       type: text
-      not null: TRUE
+      not null: FALSE
     timeexecuted:
       type: timestamp without time zone
-      not null: FALSE
+      not null: TRUE
       default: CURRENT_TIMESTAMP
   unique keys:
     analysis_c1: program, programversion, sourcename
   primary key: analysis_id
-  referring_tables: analysisprop, analysisfeature, analysis_dbxref, analysis_cvterm, analysis_relationship, analysis_pub, phylotree, project_analysis, quantification, nd_experiment_analysis
+  referring_tables: analysis_cvterm, analysis_dbxref, analysis_pub, analysis_relationship, analysisfeature, analysisprop, nd_experiment_analysis, phylotree, project_analysis, quantification
 analysis_cvterm:
   description: "Associate a term from a cv with an analysis."
   fields:
     analysis_cvterm_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     analysis_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     cvterm_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     is_not:
       type: boolean
-      not null: FALSE
+      not null: TRUE
       default: false
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     analysis_cvterm_c1: analysis_id, cvterm_id, rank
   primary key: analysis_cvterm_id
@@ -187,16 +187,16 @@ analysis_dbxref:
   fields:
     analysis_dbxref_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     analysis_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     dbxref_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     is_current:
       type: boolean
-      not null: FALSE
+      not null: TRUE
       default: true
   unique keys:
     analysis_dbxref_c1: analysis_id, dbxref_id
@@ -216,13 +216,13 @@ analysis_pub:
   fields:
     analysis_pub_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     analysis_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     analysis_pub_c1: analysis_id, pub_id
   primary key: analysis_pub_id
@@ -241,22 +241,22 @@ analysis_relationship:
   fields:
     analysis_relationship_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     subject_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     object_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     analysis_relationship_c1: subject_id, object_id, type_id, rank
   primary key: analysis_relationship_id
@@ -276,56 +276,56 @@ analysisfeature:
   fields:
     analysisfeature_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     feature_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     analysis_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     rawscore:
       type: double precision
-      not null: TRUE
+      not null: FALSE
     normscore:
       type: double precision
-      not null: TRUE
+      not null: FALSE
     significance:
       type: double precision
-      not null: TRUE
+      not null: FALSE
     identity:
       type: double precision
-      not null: TRUE
+      not null: FALSE
   unique keys:
     analysisfeature_c1: feature_id, analysis_id
   primary key: analysisfeature_id
   foreign keys:
-    feature:
-      table: feature
-      columns:
-        feature_id: feature_id
     analysis:
       table: analysis
       columns:
         analysis_id: analysis_id
+    feature:
+      table: feature
+      columns:
+        feature_id: feature_id
   referring_tables: analysisfeatureprop
 analysisfeatureprop:
   description: ""
   fields:
     analysisfeatureprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     analysisfeature_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     analysisfeature_id_type_id_rank: analysisfeature_id, type_id, rank
   primary key: analysisfeatureprop_id
@@ -344,19 +344,19 @@ analysisprop:
   fields:
     analysisprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     analysis_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     analysisprop_c1: analysis_id, type_id, rank
   primary key: analysisprop_id
@@ -375,58 +375,58 @@ arraydesign:
   fields:
     arraydesign_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     manufacturer_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     platformtype_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     substratetype_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     protocol_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     dbxref_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     name:
       type: text
-      not null: FALSE
+      not null: TRUE
     version:
       type: text
-      not null: TRUE
+      not null: FALSE
     description:
       type: text
-      not null: TRUE
+      not null: FALSE
     array_dimensions:
       type: text
-      not null: TRUE
+      not null: FALSE
     element_dimensions:
       type: text
-      not null: TRUE
+      not null: FALSE
     num_of_elements:
       type: integer
-      not null: TRUE
+      not null: FALSE
     num_array_columns:
       type: integer
-      not null: TRUE
+      not null: FALSE
     num_array_rows:
       type: integer
-      not null: TRUE
+      not null: FALSE
     num_grid_columns:
       type: integer
-      not null: TRUE
+      not null: FALSE
     num_grid_rows:
       type: integer
-      not null: TRUE
+      not null: FALSE
     num_sub_columns:
       type: integer
-      not null: TRUE
+      not null: FALSE
     num_sub_rows:
       type: integer
-      not null: TRUE
+      not null: FALSE
   unique keys:
     arraydesign_c1: name
   primary key: arraydesign_id
@@ -440,33 +440,33 @@ arraydesign:
       columns:
         platformtype_id: cvterm_id
         substratetype_id: cvterm_id
-    protocol:
-      table: protocol
-      columns:
-        protocol_id: protocol_id
     dbxref:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+    protocol:
+      table: protocol
+      columns:
+        protocol_id: protocol_id
   referring_tables: arraydesignprop, assay, element
 arraydesignprop:
   description: "Extra array design properties that are not accounted for in arraydesign."
   fields:
     arraydesignprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     arraydesign_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     arraydesignprop_c1: arraydesign_id, type_id, rank
   primary key: arraydesignprop_id
@@ -485,35 +485,35 @@ assay:
   fields:
     assay_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     arraydesign_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     protocol_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     assaydate:
       type: timestamp without time zone
-      not null: TRUE
+      not null: FALSE
       default: CURRENT_TIMESTAMP
     arrayidentifier:
       type: text
-      not null: TRUE
+      not null: FALSE
     arraybatchidentifier:
       type: text
-      not null: TRUE
+      not null: FALSE
     operator_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     dbxref_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     name:
       type: text
-      not null: TRUE
+      not null: FALSE
     description:
       type: text
-      not null: TRUE
+      not null: FALSE
   unique keys:
     assay_c1: name
   primary key: assay_id
@@ -522,10 +522,6 @@ assay:
       table: arraydesign
       columns:
         arraydesign_id: arraydesign_id
-    protocol:
-      table: protocol
-      columns:
-        protocol_id: protocol_id
     contact:
       table: contact
       columns:
@@ -534,25 +530,29 @@ assay:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
-  referring_tables: assayprop, assay_project, assay_biomaterial, acquisition, control, study_assay, studyfactorvalue
+    protocol:
+      table: protocol
+      columns:
+        protocol_id: protocol_id
+  referring_tables: acquisition, assay_biomaterial, assay_project, assayprop, control, study_assay, studyfactorvalue
 assay_biomaterial:
   description: "A biomaterial can be hybridized many times (technical replicates), or combined with other biomaterials in a single hybridization (for two-channel arrays)."
   fields:
     assay_biomaterial_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     assay_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     biomaterial_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     channel_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     assay_biomaterial_c1: assay_id, biomaterial_id, channel_id, rank
   primary key: assay_biomaterial_id
@@ -575,13 +575,13 @@ assay_project:
   fields:
     assay_project_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     assay_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     project_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     assay_project_c1: assay_id, project_id
   primary key: assay_project_id
@@ -600,19 +600,19 @@ assayprop:
   fields:
     assayprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     assay_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     assayprop_c1: assay_id, type_id, rank
   primary key: assayprop_id
@@ -631,30 +631,26 @@ biomaterial:
   fields:
     biomaterial_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     taxon_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     biosourceprovider_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     dbxref_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     name:
       type: text
-      not null: TRUE
+      not null: FALSE
     description:
       type: text
-      not null: TRUE
+      not null: FALSE
   unique keys:
     biomaterial_c1: name
   primary key: biomaterial_id
   foreign keys:
-    organism:
-      table: organism
-      columns:
-        taxon_id: organism_id
     contact:
       table: contact
       columns:
@@ -663,19 +659,23 @@ biomaterial:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
-  referring_tables: biomaterial_relationship, biomaterialprop, biomaterial_dbxref, treatment, biomaterial_treatment, assay_biomaterial
+    organism:
+      table: organism
+      columns:
+        taxon_id: organism_id
+  referring_tables: assay_biomaterial, biomaterial_dbxref, biomaterial_relationship, biomaterial_treatment, biomaterialprop, treatment
 biomaterial_dbxref:
   description: ""
   fields:
     biomaterial_dbxref_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     biomaterial_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     dbxref_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     biomaterial_dbxref_c1: biomaterial_id, dbxref_id
   primary key: biomaterial_dbxref_id
@@ -694,16 +694,16 @@ biomaterial_relationship:
   fields:
     biomaterial_relationship_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     subject_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     object_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     biomaterial_relationship_c1: subject_id, object_id, type_id
   primary key: biomaterial_relationship_id
@@ -711,8 +711,8 @@ biomaterial_relationship:
     biomaterial:
       table: biomaterial
       columns:
-        subject_id: biomaterial_id
         object_id: biomaterial_id
+        subject_id: biomaterial_id
     cvterm:
       table: cvterm
       columns:
@@ -723,22 +723,22 @@ biomaterial_treatment:
   fields:
     biomaterial_treatment_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     biomaterial_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     treatment_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     unittype_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     value:
       type: real
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     biomaterial_treatment_c1: biomaterial_id, treatment_id
   primary key: biomaterial_treatment_id
@@ -747,33 +747,33 @@ biomaterial_treatment:
       table: biomaterial
       columns:
         biomaterial_id: biomaterial_id
-    treatment:
-      table: treatment
-      columns:
-        treatment_id: treatment_id
     cvterm:
       table: cvterm
       columns:
         unittype_id: cvterm_id
+    treatment:
+      table: treatment
+      columns:
+        treatment_id: treatment_id
   referring_tables: 
 biomaterialprop:
   description: "Extra biomaterial properties that are not accounted for in biomaterial."
   fields:
     biomaterialprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     biomaterial_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     biomaterialprop_c1: biomaterial_id, type_id, rank
   primary key: biomaterialprop_id
@@ -792,25 +792,25 @@ cell_line:
   fields:
     cell_line_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     name:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 255
     uniquename:
       type: character varying
-      not null: FALSE
+      not null: TRUE
       size: 255
     organism_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     timeaccessioned:
       type: timestamp without time zone
-      not null: FALSE
+      not null: TRUE
       default: CURRENT_TIMESTAMP
     timelastmodified:
       type: timestamp without time zone
-      not null: FALSE
+      not null: TRUE
       default: CURRENT_TIMESTAMP
   unique keys:
     cell_line_c1: uniquename, organism_id
@@ -820,25 +820,25 @@ cell_line:
       table: organism
       columns:
         organism_id: organism_id
-  referring_tables: cell_line_relationship, cell_line_synonym, cell_line_cvterm, cell_line_dbxref, cell_lineprop, cell_line_feature, cell_line_pub, cell_line_library
+  referring_tables: cell_line_cvterm, cell_line_dbxref, cell_line_feature, cell_line_library, cell_line_pub, cell_line_relationship, cell_line_synonym, cell_lineprop
 cell_line_cvterm:
   description: ""
   fields:
     cell_line_cvterm_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     cell_line_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     cvterm_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     cell_line_cvterm_c1: cell_line_id, cvterm_id, pub_id, rank
   primary key: cell_line_cvterm_id
@@ -861,19 +861,19 @@ cell_line_cvtermprop:
   fields:
     cell_line_cvtermprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     cell_line_cvterm_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     cell_line_cvtermprop_c1: cell_line_cvterm_id, type_id, rank
   primary key: cell_line_cvtermprop_id
@@ -892,16 +892,16 @@ cell_line_dbxref:
   fields:
     cell_line_dbxref_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     cell_line_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     dbxref_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     is_current:
       type: boolean
-      not null: FALSE
+      not null: TRUE
       default: true
   unique keys:
     cell_line_dbxref_c1: cell_line_id, dbxref_id
@@ -921,16 +921,16 @@ cell_line_feature:
   fields:
     cell_line_feature_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     cell_line_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     feature_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     cell_line_feature_c1: cell_line_id, feature_id, pub_id
   primary key: cell_line_feature_id
@@ -953,16 +953,16 @@ cell_line_library:
   fields:
     cell_line_library_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     cell_line_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     library_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     cell_line_library_c1: cell_line_id, library_id, pub_id
   primary key: cell_line_library_id
@@ -985,13 +985,13 @@ cell_line_pub:
   fields:
     cell_line_pub_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     cell_line_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     cell_line_pub_c1: cell_line_id, pub_id
   primary key: cell_line_pub_id
@@ -1010,16 +1010,16 @@ cell_line_relationship:
   fields:
     cell_line_relationship_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     subject_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     object_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     cell_line_relationship_c1: subject_id, object_id, type_id
   primary key: cell_line_relationship_id
@@ -1027,8 +1027,8 @@ cell_line_relationship:
     cell_line:
       table: cell_line
       columns:
-        subject_id: cell_line_id
         object_id: cell_line_id
+        subject_id: cell_line_id
     cvterm:
       table: cvterm
       columns:
@@ -1039,23 +1039,23 @@ cell_line_synonym:
   fields:
     cell_line_synonym_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     cell_line_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     synonym_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     is_current:
       type: boolean
-      not null: FALSE
+      not null: TRUE
       default: false
     is_internal:
       type: boolean
-      not null: FALSE
+      not null: TRUE
       default: false
   unique keys:
     cell_line_synonym_c1: synonym_id, cell_line_id, pub_id
@@ -1065,33 +1065,33 @@ cell_line_synonym:
       table: cell_line
       columns:
         cell_line_id: cell_line_id
-    synonym:
-      table: synonym
-      columns:
-        synonym_id: synonym_id
     pub:
       table: pub
       columns:
         pub_id: pub_id
+    synonym:
+      table: synonym
+      columns:
+        synonym_id: synonym_id
   referring_tables: 
 cell_lineprop:
   description: ""
   fields:
     cell_lineprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     cell_line_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     cell_lineprop_c1: cell_line_id, type_id, rank
   primary key: cell_lineprop_id
@@ -1110,13 +1110,13 @@ cell_lineprop_pub:
   fields:
     cell_lineprop_pub_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     cell_lineprop_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     cell_lineprop_pub_c1: cell_lineprop_id, pub_id
   primary key: cell_lineprop_pub_id
@@ -1135,16 +1135,16 @@ chadoprop:
   fields:
     chadoprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     chadoprop_c1: type_id, rank
   primary key: chadoprop_id
@@ -1159,33 +1159,33 @@ channel:
   fields:
     channel_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     name:
       type: text
-      not null: FALSE
+      not null: TRUE
     definition:
       type: text
-      not null: FALSE
+      not null: TRUE
   unique keys:
     channel_c1: name
   primary key: channel_id
-  referring_tables: assay_biomaterial, acquisition
+  referring_tables: acquisition, assay_biomaterial
 contact:
   description: "Model persons, institutes, groups, organizations, etc."
   fields:
     contact_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     name:
       type: character varying
-      not null: FALSE
+      not null: TRUE
       size: 255
     description:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 255
   unique keys:
     contact_c1: name
@@ -1195,54 +1195,54 @@ contact:
       table: cvterm
       columns:
         type_id: cvterm_id
-  referring_tables: contactprop, contact_relationship, pubauthor_contact, feature_contact, featuremap_contact, library_contact, stockcollection, project_contact, arraydesign, assay, biomaterial, quantification, study, nd_experiment_contact
+  referring_tables: arraydesign, assay, biomaterial, contact_relationship, contactprop, feature_contact, featuremap_contact, library_contact, nd_experiment_contact, project_contact, pubauthor_contact, quantification, stockcollection, study
 contact_relationship:
   description: "Model relationships between contacts"
   fields:
     contact_relationship_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     subject_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     object_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     contact_relationship_c1: subject_id, object_id, type_id
   primary key: contact_relationship_id
   foreign keys:
+    contact:
+      table: contact
+      columns:
+        object_id: contact_id
+        subject_id: contact_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
-    contact:
-      table: contact
-      columns:
-        subject_id: contact_id
-        object_id: contact_id
   referring_tables: 
 contactprop:
-  description: "A contact can have any number of slot-value property  tags attached to it. This is an alternative to hardcoding a list of columns in the  relational schema, and is completely extensible."
+  description: "A contact can have any number of slot-value property tags attached to it. This is an alternative to hardcoding a list of columns in the relational schema, and is completely extensible."
   fields:
     contactprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     contact_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     contactprop_c1: contact_id, type_id, rank
   primary key: contactprop_id
@@ -1261,38 +1261,38 @@ control:
   fields:
     control_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     assay_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     tableinfo_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     row_id:
       type: integer
-      not null: FALSE
+      not null: TRUE
     name:
       type: text
-      not null: TRUE
+      not null: FALSE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   primary key: control_id
   foreign keys:
-    cvterm:
-      table: cvterm
-      columns:
-        type_id: cvterm_id
     assay:
       table: assay
       columns:
         assay_id: assay_id
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
     tableinfo:
       table: tableinfo
       columns:
@@ -1303,36 +1303,36 @@ cv:
   fields:
     cv_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     name:
       type: character varying
-      not null: FALSE
+      not null: TRUE
       size: 255
     definition:
       type: text
-      not null: TRUE
+      not null: FALSE
   unique keys:
     cv_c1: name
   primary key: cv_id
-  referring_tables: cvterm, cvtermpath, cvprop
+  referring_tables: cvprop, cvterm, cvtermpath
 cvprop:
   description: "Additional extensible properties can be attached to a cv using this table.  A notable example would be the cv version"
   fields:
     cvprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     cv_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     cvprop_c1: cv_id, type_id, rank
   primary key: cvprop_id
@@ -1351,26 +1351,26 @@ cvterm:
   fields:
     cvterm_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     cv_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     name:
       type: character varying
-      not null: FALSE
+      not null: TRUE
       size: 1024
     definition:
       type: text
-      not null: TRUE
+      not null: FALSE
     dbxref_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     is_obsolete:
       type: integer
-      not null: FALSE
+      not null: TRUE
     is_relationshiptype:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     cvterm_c1: name, cv_id, is_obsolete
     cvterm_c2: dbxref_id
@@ -1384,22 +1384,22 @@ cvterm:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
-  referring_tables: cvterm_relationship, cvtermpath, cvtermsynonym, cvterm_dbxref, cvtermprop, dbxrefprop, cvprop, chadoprop, dbprop, contact, contactprop, contact_relationship, pub, pub_relationship, pubprop, organism, organismprop, organism_cvterm, organism_cvtermprop, organism_relationship, feature, feature_pubprop, featureprop, feature_relationship, feature_relationshipprop, feature_cvterm, feature_cvtermprop, synonym, analysisprop, analysisfeatureprop, analysis_cvterm, analysis_relationship, phenotype, phenotype_cvterm, phenotypeprop, genotype, feature_genotype, environment_cvterm, phenstatement, phendesc, phenotype_comparison_cvterm, genotypeprop, featuremap, featureposprop, featuremapprop, phylotree, phylotreeprop, phylonode, phylonodeprop, phylonode_relationship, expression_cvterm, expression_cvtermprop, expressionprop, feature_expressionprop, library, libraryprop, library_cvterm, library_expressionprop, library_featureprop, library_relationship, stock, stockprop, stock_relationship, stock_relationship_cvterm, stock_cvterm, stock_cvtermprop, stockcollection, stockcollectionprop, stock_dbxrefprop, stock_feature, stock_featuremap, projectprop, project_relationship, protocol, protocolparam, arraydesign, arraydesignprop, assayprop, biomaterial_relationship, biomaterialprop, treatment, biomaterial_treatment, acquisitionprop, acquisition_relationship, quantificationprop, quantification_relationship, control, element, element_relationship, elementresult_relationship, studydesignprop, studyfactor, studyprop, studyprop_feature, cell_line_relationship, cell_line_cvterm, cell_lineprop, cell_line_cvtermprop, nd_experiment, nd_experimentprop, nd_geolocationprop, nd_protocol, nd_reagent, nd_protocol_reagent, nd_protocolprop, nd_experiment_stock, nd_reagent_relationship, nd_reagentprop, nd_experiment_stockprop, nd_experiment_analysis
+  referring_tables: acquisition_relationship, acquisitionprop, analysis_cvterm, analysis_relationship, analysisfeatureprop, analysisprop, arraydesign, arraydesignprop, assayprop, biomaterial_relationship, biomaterial_treatment, biomaterialprop, cell_line_cvterm, cell_line_cvtermprop, cell_line_relationship, cell_lineprop, chadoprop, contact, contact_relationship, contactprop, control, cvprop, cvterm_dbxref, cvterm_relationship, cvtermpath, cvtermprop, cvtermsynonym, dbprop, dbxrefprop, element, element_relationship, elementresult_relationship, environment_cvterm, expression_cvterm, expression_cvtermprop, expressionprop, feature, feature_cvterm, feature_cvtermprop, feature_expressionprop, feature_genotype, feature_pubprop, feature_relationship, feature_relationshipprop, featuremap, featuremapprop, featureposprop, featureprop, genotype, genotypeprop, library, library_cvterm, library_expressionprop, library_featureprop, library_relationship, libraryprop, nd_experiment, nd_experiment_analysis, nd_experiment_stock, nd_experiment_stockprop, nd_experimentprop, nd_geolocationprop, nd_protocol, nd_protocol_reagent, nd_protocolprop, nd_reagent, nd_reagent_relationship, nd_reagentprop, organism, organism_cvterm, organism_cvtermprop, organism_relationship, organismprop, phendesc, phenotype, phenotype_comparison_cvterm, phenotype_cvterm, phenotypeprop, phenstatement, phylonode, phylonode_relationship, phylonodeprop, phylotree, phylotreeprop, project_relationship, projectprop, protocol, protocolparam, pub, pub_relationship, pubprop, quantification_relationship, quantificationprop, stock, stock_cvterm, stock_cvtermprop, stock_dbxrefprop, stock_feature, stock_featuremap, stock_relationship, stock_relationship_cvterm, stockcollection, stockcollectionprop, stockprop, studydesignprop, studyfactor, studyprop, studyprop_feature, synonym, treatment
 cvterm_dbxref:
   description: "In addition to the primary identifier (cvterm.dbxref_id) a cvterm can have zero or more secondary identifiers/dbxrefs, which may refer to records in external databases. The exact semantics of cvterm_dbxref are not fixed. For example: the dbxref could be a pubmed ID that is pertinent to the cvterm, or it could be an equivalent or similar term in another ontology. For example, GO cvterms are typically linked to InterPro IDs, even though the nature of the relationship between them is largely one of statistical association. The dbxref may be have data records attached in the same database instance, or it could be a \"hanging\" dbxref pointing to some external database. NOTE: If the desired objective is to link two cvterms together, and the nature of the relation is known and holds for all instances of the subject cvterm then consider instead using cvterm_relationship together with a well-defined relation."
   fields:
     cvterm_dbxref_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     cvterm_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     dbxref_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     is_for_definition:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     cvterm_dbxref_c1: cvterm_id, dbxref_id
   primary key: cvterm_dbxref_id
@@ -1418,16 +1418,16 @@ cvterm_relationship:
   fields:
     cvterm_relationship_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     subject_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     object_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     cvterm_relationship_c1: subject_id, object_id, type_id
   primary key: cvterm_relationship_id
@@ -1435,64 +1435,64 @@ cvterm_relationship:
     cvterm:
       table: cvterm
       columns:
-        type_id: cvterm_id
-        subject_id: cvterm_id
         object_id: cvterm_id
+        subject_id: cvterm_id
+        type_id: cvterm_id
   referring_tables: 
 cvtermpath:
   description: "The reflexive transitive closure of the cvterm_relationship relation."
   fields:
     cvtermpath_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     subject_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     object_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     cv_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pathdistance:
       type: integer
-      not null: TRUE
+      not null: FALSE
   unique keys:
     cvtermpath_c1: subject_id, object_id, type_id, pathdistance
   primary key: cvtermpath_id
   foreign keys:
-    cvterm:
-      table: cvterm
-      columns:
-        type_id: cvterm_id
-        subject_id: cvterm_id
-        object_id: cvterm_id
     cv:
       table: cv
       columns:
         cv_id: cv_id
+    cvterm:
+      table: cvterm
+      columns:
+        object_id: cvterm_id
+        subject_id: cvterm_id
+        type_id: cvterm_id
   referring_tables: 
 cvtermprop:
   description: "Additional extensible properties can be attached to a cvterm using this table. Corresponds to -AnnotationProperty- in W3C OWL format."
   fields:
     cvtermprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     cvterm_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: FALSE
+      not null: TRUE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     cvtermprop_cvterm_id_type_id_value_rank_key: cvterm_id, type_id, value, rank
   primary key: cvtermprop_id
@@ -1508,17 +1508,17 @@ cvtermsynonym:
   fields:
     cvtermsynonym_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     cvterm_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     synonym:
       type: character varying
-      not null: FALSE
+      not null: TRUE
       size: 1024
     type_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
   unique keys:
     cvtermsynonym_c1: cvterm_id, synonym
   primary key: cvtermsynonym_id
@@ -1534,45 +1534,45 @@ db:
   fields:
     db_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     name:
       type: character varying
-      not null: FALSE
+      not null: TRUE
       size: 255
     description:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 255
     urlprefix:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 255
     url:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 255
   unique keys:
     db_c1: name
   primary key: db_id
-  referring_tables: dbxref, dbprop, stockcollection_db
+  referring_tables: dbprop, dbxref, stockcollection_db
 dbprop:
   description: "An external database can have any number of slot-value property tags attached to it. This is an alternative to hardcoding a list of columns in the relational schema, and is completely extensible. There is a unique constraint, dbprop_c1, for the combination of db_id, rank, and type_id. Multivalued property-value pairs must be differentiated by rank."
   fields:
     dbprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     db_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     dbprop_c1: db_id, type_id, rank
   primary key: dbprop_id
@@ -1591,21 +1591,21 @@ dbxref:
   fields:
     dbxref_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     db_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     accession:
       type: character varying
-      not null: FALSE
+      not null: TRUE
       size: 1024
     version:
       type: character varying
-      not null: FALSE
+      not null: TRUE
       size: 255
     description:
       type: text
-      not null: TRUE
+      not null: FALSE
   unique keys:
     dbxref_c1: db_id, accession, version
   primary key: dbxref_id
@@ -1614,54 +1614,54 @@ dbxref:
       table: db
       columns:
         db_id: db_id
-  referring_tables: cvterm, cvterm_dbxref, dbxrefprop, pub_dbxref, organism_dbxref, feature, feature_dbxref, feature_cvterm_dbxref, analysis_dbxref, featuremap_dbxref, phylotree, phylonode_dbxref, library_dbxref, stock, stock_dbxref, project_dbxref, protocol, arraydesign, assay, biomaterial, biomaterial_dbxref, element, study, cell_line_dbxref, nd_experiment_stock_dbxref, nd_experiment_dbxref
+  referring_tables: analysis_dbxref, arraydesign, assay, biomaterial, biomaterial_dbxref, cell_line_dbxref, cvterm, cvterm_dbxref, dbxrefprop, element, feature, feature_cvterm_dbxref, feature_dbxref, featuremap_dbxref, library_dbxref, nd_experiment_dbxref, nd_experiment_stock_dbxref, organism_dbxref, phylonode_dbxref, phylotree, project_dbxref, protocol, pub_dbxref, stock, stock_dbxref, study
 dbxrefprop:
   description: "Metadata about a dbxref. Note that this is not defined in the dbxref module, as it depends on the cvterm table. This table has a structure analagous to cvtermprop."
   fields:
     dbxrefprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     dbxref_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: FALSE
+      not null: TRUE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     dbxrefprop_c1: dbxref_id, type_id, rank
   primary key: dbxrefprop_id
   foreign keys:
-    dbxref:
-      table: dbxref
-      columns:
-        dbxref_id: dbxref_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    dbxref:
+      table: dbxref
+      columns:
+        dbxref_id: dbxref_id
   referring_tables: 
 eimage:
   description: ""
   fields:
     eimage_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     eimage_data:
       type: text
-      not null: TRUE
+      not null: FALSE
     eimage_type:
       type: character varying
-      not null: FALSE
+      not null: TRUE
       size: 255
     image_uri:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 255
   primary key: eimage_id
   referring_tables: expression_image
@@ -1670,27 +1670,23 @@ element:
   fields:
     element_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     feature_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     arraydesign_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     dbxref_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
   unique keys:
     element_c1: feature_id, arraydesign_id
   primary key: element_id
   foreign keys:
-    feature:
-      table: feature
-      columns:
-        feature_id: feature_id
     arraydesign:
       table: arraydesign
       columns:
@@ -1703,57 +1699,61 @@ element:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
-  referring_tables: elementresult, element_relationship
+    feature:
+      table: feature
+      columns:
+        feature_id: feature_id
+  referring_tables: element_relationship, elementresult
 element_relationship:
   description: "Sometimes we want to combine measurements from multiple elements to get a composite value. Affymetrix combines many probes to form a probeset measurement, for instance."
   fields:
     element_relationship_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     subject_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     object_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     element_relationship_c1: subject_id, object_id, type_id, rank
   primary key: element_relationship_id
   foreign keys:
-    element:
-      table: element
-      columns:
-        subject_id: element_id
-        object_id: element_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    element:
+      table: element
+      columns:
+        object_id: element_id
+        subject_id: element_id
   referring_tables: 
 elementresult:
   description: "An element on an array produces a measurement when hybridized to a biomaterial (traceable through quantification_id). This is the base data from which tables that actually contain data inherit."
   fields:
     elementresult_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     element_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     quantification_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     signal:
       type: double precision
-      not null: FALSE
+      not null: TRUE
   unique keys:
     elementresult_c1: element_id, quantification_id
   primary key: elementresult_id
@@ -1772,197 +1772,197 @@ elementresult_relationship:
   fields:
     elementresult_relationship_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     subject_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     object_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     elementresult_relationship_c1: subject_id, object_id, type_id, rank
   primary key: elementresult_relationship_id
   foreign keys:
-    elementresult:
-      table: elementresult
-      columns:
-        subject_id: elementresult_id
-        object_id: elementresult_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    elementresult:
+      table: elementresult
+      columns:
+        object_id: elementresult_id
+        subject_id: elementresult_id
   referring_tables: 
 environment:
   description: "The environmental component of a phenotype description."
   fields:
     environment_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     uniquename:
       type: text
-      not null: FALSE
+      not null: TRUE
     description:
       type: text
-      not null: TRUE
+      not null: FALSE
   unique keys:
     environment_c1: uniquename
   primary key: environment_id
-  referring_tables: environment_cvterm, phenstatement, phendesc, phenotype_comparison
+  referring_tables: environment_cvterm, phendesc, phenotype_comparison, phenstatement
 environment_cvterm:
   description: ""
   fields:
     environment_cvterm_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     environment_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     cvterm_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     environment_cvterm_c1: environment_id, cvterm_id
   primary key: environment_cvterm_id
   foreign keys:
-    environment:
-      table: environment
-      columns:
-        environment_id: environment_id
     cvterm:
       table: cvterm
       columns:
         cvterm_id: cvterm_id
+    environment:
+      table: environment
+      columns:
+        environment_id: environment_id
   referring_tables: 
 expression:
   description: "The expression table is essentially a bridge table."
   fields:
     expression_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     uniquename:
       type: text
-      not null: FALSE
+      not null: TRUE
     md5checksum:
       type: character
-      not null: TRUE
+      not null: FALSE
       size: 32
     description:
       type: text
-      not null: TRUE
+      not null: FALSE
   unique keys:
     expression_c1: uniquename
   primary key: expression_id
-  referring_tables: expression_cvterm, expressionprop, expression_pub, feature_expression, expression_image, library_expression
+  referring_tables: expression_cvterm, expression_image, expression_pub, expressionprop, feature_expression, library_expression
 expression_cvterm:
   description: ""
   fields:
     expression_cvterm_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     expression_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     cvterm_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
     cvterm_type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
-    expression_cvterm_c1: expression_id, cvterm_id, rank, cvterm_type_id
+    expression_cvterm_c1: expression_id, cvterm_id, cvterm_type_id, rank
   primary key: expression_cvterm_id
   foreign keys:
-    expression:
-      table: expression
-      columns:
-        expression_id: expression_id
     cvterm:
       table: cvterm
       columns:
         cvterm_id: cvterm_id
         cvterm_type_id: cvterm_id
+    expression:
+      table: expression
+      columns:
+        expression_id: expression_id
   referring_tables: expression_cvtermprop
 expression_cvtermprop:
   description: "Extensible properties for expression to cvterm associations. Examples: qualifiers."
   fields:
     expression_cvtermprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     expression_cvterm_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     expression_cvtermprop_c1: expression_cvterm_id, type_id, rank
   primary key: expression_cvtermprop_id
   foreign keys:
-    expression_cvterm:
-      table: expression_cvterm
-      columns:
-        expression_cvterm_id: expression_cvterm_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    expression_cvterm:
+      table: expression_cvterm
+      columns:
+        expression_cvterm_id: expression_cvterm_id
   referring_tables: 
 expression_image:
   description: ""
   fields:
     expression_image_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     expression_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     eimage_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     expression_image_c1: expression_id, eimage_id
   primary key: expression_image_id
   foreign keys:
-    expression:
-      table: expression
-      columns:
-        expression_id: expression_id
     eimage:
       table: eimage
       columns:
         eimage_id: eimage_id
+    expression:
+      table: expression
+      columns:
+        expression_id: expression_id
   referring_tables: 
 expression_pub:
   description: ""
   fields:
     expression_pub_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     expression_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     expression_pub_c1: expression_id, pub_id
   primary key: expression_pub_id
@@ -1981,84 +1981,88 @@ expressionprop:
   fields:
     expressionprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     expression_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     expressionprop_c1: expression_id, type_id, rank
   primary key: expressionprop_id
   foreign keys:
-    expression:
-      table: expression
-      columns:
-        expression_id: expression_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    expression:
+      table: expression
+      columns:
+        expression_id: expression_id
   referring_tables: 
 feature:
   description: "A feature is a biological sequence or a section of a biological sequence, or a collection of such sections. Examples include genes, exons, transcripts, regulatory regions, polypeptides, protein domains, chromosome sequences, sequence variations, cross-genome match regions such as hits and HSPs and so on; see the Sequence Ontology for more. The combination of organism_id, uniquename and type_id should be unique."
   fields:
     feature_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     dbxref_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     organism_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     name:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 255
     uniquename:
       type: text
-      not null: FALSE
+      not null: TRUE
     residues:
       type: text
-      not null: TRUE
+      not null: FALSE
     seqlen:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     md5checksum:
       type: character
-      not null: TRUE
+      not null: FALSE
       size: 32
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     is_analysis:
       type: boolean
-      not null: FALSE
+      not null: TRUE
       default: false
     is_obsolete:
       type: boolean
-      not null: FALSE
+      not null: TRUE
       default: false
     timeaccessioned:
       type: timestamp without time zone
-      not null: FALSE
+      not null: TRUE
       default: CURRENT_TIMESTAMP
     timelastmodified:
       type: timestamp without time zone
-      not null: FALSE
+      not null: TRUE
       default: CURRENT_TIMESTAMP
   unique keys:
     feature_c1: organism_id, uniquename, type_id
   primary key: feature_id
   foreign keys:
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
     dbxref:
       table: dbxref
       columns:
@@ -2067,23 +2071,19 @@ feature:
       table: organism
       columns:
         organism_id: organism_id
-    cvterm:
-      table: cvterm
-      columns:
-        type_id: cvterm_id
-  referring_tables: featureloc, feature_pub, featureprop, feature_dbxref, feature_relationship, feature_cvterm, feature_synonym, feature_contact, featuregroup, analysisfeature, feature_phenotype, feature_genotype, featurerange, featurepos, phylonode, feature_expression, library_feature, stock_feature, project_feature, element, studyprop_feature, cell_line_feature, nd_reagent
+  referring_tables: analysisfeature, cell_line_feature, element, feature_contact, feature_cvterm, feature_dbxref, feature_expression, feature_genotype, feature_phenotype, feature_pub, feature_relationship, feature_synonym, featureloc, featurepos, featureprop, featurerange, library_feature, nd_reagent, phylonode, project_feature, stock_feature, studyprop_feature
 feature_contact:
-  description: "Links contact(s) with a feature.  Used to indicate a particular  person or organization responsible for discovery or that can provide more information on a particular feature."
+  description: "Links contact(s) with a feature.  Used to indicate a particular person or organization responsible for discovery or that can provide more information on a particular feature."
   fields:
     feature_contact_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     feature_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     contact_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     feature_contact_c1: feature_id, contact_id
   primary key: feature_contact_id
@@ -2102,77 +2102,77 @@ feature_cvterm:
   fields:
     feature_cvterm_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     feature_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     cvterm_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     is_not:
       type: boolean
-      not null: FALSE
+      not null: TRUE
       default: false
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     feature_cvterm_c1: feature_id, cvterm_id, pub_id, rank
   primary key: feature_cvterm_id
   foreign keys:
-    feature:
-      table: feature
-      columns:
-        feature_id: feature_id
     cvterm:
       table: cvterm
       columns:
         cvterm_id: cvterm_id
+    feature:
+      table: feature
+      columns:
+        feature_id: feature_id
     pub:
       table: pub
       columns:
         pub_id: pub_id
-  referring_tables: feature_cvtermprop, feature_cvterm_dbxref, feature_cvterm_pub
+  referring_tables: feature_cvterm_dbxref, feature_cvterm_pub, feature_cvtermprop
 feature_cvterm_dbxref:
   description: "Additional dbxrefs for an association. Rows in the feature_cvterm table may be backed up by dbxrefs. For example, a feature_cvterm association that was inferred via a protein-protein interaction may be backed by by refering to the dbxref for the alternate protein. Corresponds to the WITH column in a GO gene association file (but can also be used for other analagous associations). See http://www.geneontology.org/doc/GO.annotation.shtml#file for more details."
   fields:
     feature_cvterm_dbxref_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     feature_cvterm_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     dbxref_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     feature_cvterm_dbxref_c1: feature_cvterm_id, dbxref_id
   primary key: feature_cvterm_dbxref_id
   foreign keys:
-    feature_cvterm:
-      table: feature_cvterm
-      columns:
-        feature_cvterm_id: feature_cvterm_id
     dbxref:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+    feature_cvterm:
+      table: feature_cvterm
+      columns:
+        feature_cvterm_id: feature_cvterm_id
   referring_tables: 
 feature_cvterm_pub:
   description: "Secondary pubs for an association. Each feature_cvterm association is supported by a single primary publication. Additional secondary pubs can be added using this linking table (in a GO gene association file, these corresponding to any IDs after the pipe symbol in the publications column."
   fields:
     feature_cvterm_pub_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     feature_cvterm_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     feature_cvterm_pub_c1: feature_cvterm_id, pub_id
   primary key: feature_cvterm_pub_id
@@ -2191,76 +2191,76 @@ feature_cvtermprop:
   fields:
     feature_cvtermprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     feature_cvterm_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     feature_cvtermprop_c1: feature_cvterm_id, type_id, rank
   primary key: feature_cvtermprop_id
   foreign keys:
-    feature_cvterm:
-      table: feature_cvterm
-      columns:
-        feature_cvterm_id: feature_cvterm_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    feature_cvterm:
+      table: feature_cvterm
+      columns:
+        feature_cvterm_id: feature_cvterm_id
   referring_tables: 
 feature_dbxref:
   description: "Links a feature to dbxrefs."
   fields:
     feature_dbxref_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     feature_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     dbxref_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     is_current:
       type: boolean
-      not null: FALSE
+      not null: TRUE
       default: true
   unique keys:
     feature_dbxref_c1: feature_id, dbxref_id
   primary key: feature_dbxref_id
   foreign keys:
-    feature:
-      table: feature
-      columns:
-        feature_id: feature_id
     dbxref:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+    feature:
+      table: feature
+      columns:
+        feature_id: feature_id
   referring_tables: 
 feature_expression:
   description: ""
   fields:
     feature_expression_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     expression_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     feature_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     feature_expression_c1: expression_id, feature_id, pub_id
   primary key: feature_expression_id
@@ -2283,86 +2283,86 @@ feature_expressionprop:
   fields:
     feature_expressionprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     feature_expression_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     feature_expressionprop_c1: feature_expression_id, type_id, rank
   primary key: feature_expressionprop_id
   foreign keys:
-    feature_expression:
-      table: feature_expression
-      columns:
-        feature_expression_id: feature_expression_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    feature_expression:
+      table: feature_expression
+      columns:
+        feature_expression_id: feature_expression_id
   referring_tables: 
 feature_genotype:
   description: ""
   fields:
     feature_genotype_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     feature_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     genotype_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     chromosome_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
     cgroup:
       type: integer
-      not null: FALSE
+      not null: TRUE
     cvterm_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     feature_genotype_c1: feature_id, genotype_id, cvterm_id, chromosome_id, rank, cgroup
   primary key: feature_genotype_id
   foreign keys:
-    feature:
-      table: feature
-      columns:
-        feature_id: feature_id
-        chromosome_id: feature_id
-    genotype:
-      table: genotype
-      columns:
-        genotype_id: genotype_id
     cvterm:
       table: cvterm
       columns:
         cvterm_id: cvterm_id
+    feature:
+      table: feature
+      columns:
+        chromosome_id: feature_id
+        feature_id: feature_id
+    genotype:
+      table: genotype
+      columns:
+        genotype_id: genotype_id
   referring_tables: 
 feature_phenotype:
   description: "Linking table between features and phenotypes."
   fields:
     feature_phenotype_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     feature_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     phenotype_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     feature_phenotype_c1: feature_id, phenotype_id
   primary key: feature_phenotype_id
@@ -2381,13 +2381,13 @@ feature_pub:
   fields:
     feature_pub_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     feature_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     feature_pub_c1: feature_id, pub_id
   primary key: feature_pub_id
@@ -2406,79 +2406,79 @@ feature_pubprop:
   fields:
     feature_pubprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     feature_pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     feature_pubprop_c1: feature_pub_id, type_id, rank
   primary key: feature_pubprop_id
   foreign keys:
-    feature_pub:
-      table: feature_pub
-      columns:
-        feature_pub_id: feature_pub_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    feature_pub:
+      table: feature_pub
+      columns:
+        feature_pub_id: feature_pub_id
   referring_tables: 
 feature_relationship:
   description: "Features can be arranged in graphs, e.g. \"exon part_of transcript part_of gene\"; If type is thought of as a verb, the each arc or edge makes a statement [Subject Verb Object]. The object can also be thought of as parent (containing feature), and subject as child (contained feature or subfeature). We include the relationship rank/order, because even though most of the time we can order things implicitly by sequence coordinates, we can not always do this - e.g. transpliced genes. It is also useful for quickly getting implicit introns."
   fields:
     feature_relationship_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     subject_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     object_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     feature_relationship_c1: subject_id, object_id, type_id, rank
   primary key: feature_relationship_id
   foreign keys:
-    feature:
-      table: feature
-      columns:
-        subject_id: feature_id
-        object_id: feature_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    feature:
+      table: feature
+      columns:
+        object_id: feature_id
+        subject_id: feature_id
   referring_tables: feature_relationship_pub, feature_relationshipprop
 feature_relationship_pub:
   description: "Provenance. Attach optional evidence to a feature_relationship in the form of a publication."
   fields:
     feature_relationship_pub_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     feature_relationship_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     feature_relationship_pub_c1: feature_relationship_id, pub_id
   primary key: feature_relationship_pub_id
@@ -2497,44 +2497,44 @@ feature_relationshipprop:
   fields:
     feature_relationshipprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     feature_relationship_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     feature_relationshipprop_c1: feature_relationship_id, type_id, rank
   primary key: feature_relationshipprop_id
   foreign keys:
-    feature_relationship:
-      table: feature_relationship
-      columns:
-        feature_relationship_id: feature_relationship_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    feature_relationship:
+      table: feature_relationship
+      columns:
+        feature_relationship_id: feature_relationship_id
   referring_tables: feature_relationshipprop_pub
 feature_relationshipprop_pub:
   description: "Provenance for feature_relationshipprop."
   fields:
     feature_relationshipprop_pub_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     feature_relationshipprop_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     feature_relationshipprop_pub_c1: feature_relationshipprop_id, pub_id
   primary key: feature_relationshipprop_pub_id
@@ -2553,32 +2553,28 @@ feature_synonym:
   fields:
     feature_synonym_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     synonym_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     feature_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     is_current:
       type: boolean
-      not null: FALSE
+      not null: TRUE
       default: false
     is_internal:
       type: boolean
-      not null: FALSE
+      not null: TRUE
       default: false
   unique keys:
     feature_synonym_c1: synonym_id, feature_id, pub_id
   primary key: feature_synonym_id
   foreign keys:
-    synonym:
-      table: synonym
-      columns:
-        synonym_id: synonym_id
     feature:
       table: feature
       columns:
@@ -2587,48 +2583,52 @@ feature_synonym:
       table: pub
       columns:
         pub_id: pub_id
+    synonym:
+      table: synonym
+      columns:
+        synonym_id: synonym_id
   referring_tables: 
 featureloc:
   description: "The location of a feature relative to another feature. Important: interbase coordinates are used. This is vital as it allows us to represent zero-length features e.g. splice sites, insertion points without an awkward fuzzy system. Features typically have exactly ONE location, but this need not be the case. Some features may not be localized (e.g. a gene that has been characterized genetically but no sequence or molecular information is available). Note on multiple locations: Each feature can have 0 or more locations. Multiple locations do NOT indicate non-contiguous locations (if a feature such as a transcript has a non-contiguous location, then the subfeatures such as exons should always be manifested). Instead, multiple featurelocs for a feature designate alternate locations or grouped locations; for instance, a feature designating a blast hit or hsp will have two locations, one on the query feature, one on the subject feature. Features representing sequence variation could have alternate locations instantiated on a feature on the mutant strain. The column:rank is used to differentiate these different locations. Reflexive locations should never be stored - this is for -proper- (i.e. non-self) locations only; nothing should be located relative to itself."
   fields:
     featureloc_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     feature_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     srcfeature_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     fmin:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     is_fmin_partial:
       type: boolean
-      not null: FALSE
+      not null: TRUE
       default: false
     fmax:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     is_fmax_partial:
       type: boolean
-      not null: FALSE
+      not null: TRUE
       default: false
     strand:
       type: smallint
-      not null: TRUE
+      not null: FALSE
     phase:
       type: integer
-      not null: TRUE
+      not null: FALSE
     residue_info:
       type: text
-      not null: TRUE
+      not null: FALSE
     locgroup:
       type: integer
-      not null: FALSE
+      not null: TRUE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     featureloc_c1: feature_id, locgroup, rank
   primary key: featureloc_id
@@ -2644,13 +2644,13 @@ featureloc_pub:
   fields:
     featureloc_pub_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     featureloc_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     featureloc_pub_c1: featureloc_id, pub_id
   primary key: featureloc_pub_id
@@ -2669,17 +2669,17 @@ featuremap:
   fields:
     featuremap_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     name:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 255
     description:
       type: text
-      not null: TRUE
+      not null: FALSE
     unittype_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
   unique keys:
     featuremap_c1: name
   primary key: featuremap_id
@@ -2688,19 +2688,19 @@ featuremap:
       table: cvterm
       columns:
         unittype_id: cvterm_id
-  referring_tables: featurerange, featurepos, featuremap_pub, featuremapprop, featuremap_contact, featuremap_dbxref, featuremap_organism, stock_featuremap
+  referring_tables: featuremap_contact, featuremap_dbxref, featuremap_organism, featuremap_pub, featuremapprop, featurepos, featurerange, stock_featuremap
 featuremap_contact:
-  description: "Links contact(s) with a featuremap.  Used to  indicate a particular person or organization responsible for constrution of or  that can provide more information on a particular featuremap."
+  description: "Links contact(s) with a featuremap.  Used to indicate a particular person or organization responsible for constrution of or that can provide more information on a particular featuremap."
   fields:
     featuremap_contact_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     featuremap_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     contact_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     featuremap_contact_c1: featuremap_id, contact_id
   primary key: featuremap_contact_id
@@ -2719,40 +2719,40 @@ featuremap_dbxref:
   fields:
     featuremap_dbxref_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     featuremap_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     dbxref_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     is_current:
       type: boolean
-      not null: FALSE
+      not null: TRUE
       default: true
   primary key: featuremap_dbxref_id
   foreign keys:
-    featuremap:
-      table: featuremap
-      columns:
-        featuremap_id: featuremap_id
     dbxref:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+    featuremap:
+      table: featuremap
+      columns:
+        featuremap_id: featuremap_id
   referring_tables: 
 featuremap_organism:
   description: "Links a featuremap to the organism(s) with which it is associated."
   fields:
     featuremap_organism_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     featuremap_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     organism_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     featuremap_organism_c1: featuremap_id, organism_id
   primary key: featuremap_organism_id
@@ -2771,13 +2771,13 @@ featuremap_pub:
   fields:
     featuremap_pub_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     featuremap_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   primary key: featuremap_pub_id
   foreign keys:
     featuremap:
@@ -2790,140 +2790,140 @@ featuremap_pub:
         pub_id: pub_id
   referring_tables: 
 featuremapprop:
-  description: "A featuremap can have any number of slot-value property  tags attached to it. This is an alternative to hardcoding a list of columns in the  relational schema, and is completely extensible."
+  description: "A featuremap can have any number of slot-value property tags attached to it. This is an alternative to hardcoding a list of columns in the relational schema, and is completely extensible."
   fields:
     featuremapprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     featuremap_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     featuremapprop_c1: featuremap_id, type_id, rank
   primary key: featuremapprop_id
   foreign keys:
-    featuremap:
-      table: featuremap
-      columns:
-        featuremap_id: featuremap_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    featuremap:
+      table: featuremap
+      columns:
+        featuremap_id: featuremap_id
   referring_tables: 
 featurepos:
   description: ""
   fields:
     featurepos_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     featuremap_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     feature_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     map_feature_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     mappos:
       type: double precision
-      not null: FALSE
+      not null: TRUE
   primary key: featurepos_id
   foreign keys:
-    featuremap:
-      table: featuremap
-      columns:
-        featuremap_id: featuremap_id
     feature:
       table: feature
       columns:
         feature_id: feature_id
         map_feature_id: feature_id
+    featuremap:
+      table: featuremap
+      columns:
+        featuremap_id: featuremap_id
   referring_tables: featureposprop
 featureposprop:
   description: "Property or attribute of a featurepos record."
   fields:
     featureposprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     featurepos_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     featureposprop_c1: featurepos_id, type_id, rank
   primary key: featureposprop_id
   foreign keys:
-    featurepos:
-      table: featurepos
-      columns:
-        featurepos_id: featurepos_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    featurepos:
+      table: featurepos
+      columns:
+        featurepos_id: featurepos_id
   referring_tables: 
 featureprop:
   description: "A feature can have any number of slot-value property tags attached to it. This is an alternative to hardcoding a list of columns in the relational schema, and is completely extensible."
   fields:
     featureprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     feature_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     featureprop_c1: feature_id, type_id, rank
   primary key: featureprop_id
   foreign keys:
-    feature:
-      table: feature
-      columns:
-        feature_id: feature_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    feature:
+      table: feature
+      columns:
+        feature_id: feature_id
   referring_tables: featureprop_pub
 featureprop_pub:
   description: "Provenance. Any featureprop assignment can optionally be supported by a publication."
   fields:
     featureprop_pub_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     featureprop_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     featureprop_pub_c1: featureprop_id, pub_id
   primary key: featureprop_pub_id
@@ -2942,62 +2942,62 @@ featurerange:
   fields:
     featurerange_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     featuremap_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     feature_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     leftstartf_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     leftendf_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     rightstartf_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     rightendf_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     rangestr:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 255
   primary key: featurerange_id
   foreign keys:
-    featuremap:
-      table: featuremap
-      columns:
-        featuremap_id: featuremap_id
     feature:
       table: feature
       columns:
         feature_id: feature_id
-        leftstartf_id: feature_id
         leftendf_id: feature_id
-        rightstartf_id: feature_id
+        leftstartf_id: feature_id
         rightendf_id: feature_id
+        rightstartf_id: feature_id
+    featuremap:
+      table: featuremap
+      columns:
+        featuremap_id: featuremap_id
   referring_tables: 
 genotype:
   description: "Genetic context. A genotype is defined by a collection of features, mutations, balancers, deficiencies, haplotype blocks, or engineered constructs."
   fields:
     genotype_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     name:
       type: text
-      not null: TRUE
+      not null: FALSE
     uniquename:
       type: text
-      not null: FALSE
+      not null: TRUE
     description:
       type: text
-      not null: TRUE
+      not null: FALSE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     genotype_c1: uniquename
   primary key: genotype_id
@@ -3006,133 +3006,133 @@ genotype:
       table: cvterm
       columns:
         type_id: cvterm_id
-  referring_tables: feature_genotype, phenstatement, phendesc, phenotype_comparison, genotypeprop, stock_genotype, nd_experiment_genotype
+  referring_tables: feature_genotype, genotypeprop, nd_experiment_genotype, phendesc, phenotype_comparison, phenstatement, stock_genotype
 genotypeprop:
   description: ""
   fields:
     genotypeprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     genotype_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     genotypeprop_c1: genotype_id, type_id, rank
   primary key: genotypeprop_id
   foreign keys:
-    genotype:
-      table: genotype
-      columns:
-        genotype_id: genotype_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    genotype:
+      table: genotype
+      columns:
+        genotype_id: genotype_id
   referring_tables: 
 library:
   description: ""
   fields:
     library_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     organism_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     name:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 255
     uniquename:
       type: text
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     is_obsolete:
       type: integer
-      not null: FALSE
+      not null: TRUE
     timeaccessioned:
       type: timestamp without time zone
-      not null: FALSE
+      not null: TRUE
       default: CURRENT_TIMESTAMP
     timelastmodified:
       type: timestamp without time zone
-      not null: FALSE
+      not null: TRUE
       default: CURRENT_TIMESTAMP
   unique keys:
     library_c1: organism_id, uniquename, type_id
   primary key: library_id
   foreign keys:
-    organism:
-      table: organism
-      columns:
-        organism_id: organism_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
-  referring_tables: library_synonym, library_pub, libraryprop, library_cvterm, library_feature, library_dbxref, library_expression, library_relationship, library_contact, stock_library, cell_line_library
+    organism:
+      table: organism
+      columns:
+        organism_id: organism_id
+  referring_tables: cell_line_library, library_contact, library_cvterm, library_dbxref, library_expression, library_feature, library_pub, library_relationship, library_synonym, libraryprop, stock_library
 library_contact:
   description: "Links contact(s) with a library.  Used to indicate a particular person or organization responsible for creation of or that can provide more information on a particular library."
   fields:
     library_contact_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     library_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     contact_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     library_contact_c1: library_id, contact_id
   primary key: library_contact_id
   foreign keys:
-    library:
-      table: library
-      columns:
-        library_id: library_id
     contact:
       table: contact
       columns:
         contact_id: contact_id
+    library:
+      table: library
+      columns:
+        library_id: library_id
   referring_tables: 
 library_cvterm:
   description: "The table library_cvterm links a library to controlled vocabularies which describe the library.  For instance, there might be a link to the anatomy cv for \"head\" or \"testes\" for a head or testes library."
   fields:
     library_cvterm_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     library_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     cvterm_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     library_cvterm_c1: library_id, cvterm_id, pub_id
   primary key: library_cvterm_id
   foreign keys:
-    library:
-      table: library
-      columns:
-        library_id: library_id
     cvterm:
       table: cvterm
       columns:
         cvterm_id: cvterm_id
+    library:
+      table: library
+      columns:
+        library_id: library_id
     pub:
       table: pub
       columns:
@@ -3143,57 +3143,57 @@ library_dbxref:
   fields:
     library_dbxref_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     library_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     dbxref_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     is_current:
       type: boolean
-      not null: FALSE
+      not null: TRUE
       default: true
   unique keys:
     library_dbxref_c1: library_id, dbxref_id
   primary key: library_dbxref_id
   foreign keys:
-    library:
-      table: library
-      columns:
-        library_id: library_id
     dbxref:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+    library:
+      table: library
+      columns:
+        library_id: library_id
   referring_tables: 
 library_expression:
   description: "Links a library to expression statements."
   fields:
     library_expression_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     library_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     expression_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     library_expression_c1: library_id, expression_id
   primary key: library_expression_id
   foreign keys:
-    library:
-      table: library
-      columns:
-        library_id: library_id
     expression:
       table: expression
       columns:
         expression_id: expression_id
+    library:
+      table: library
+      columns:
+        library_id: library_id
     pub:
       table: pub
       columns:
@@ -3204,100 +3204,100 @@ library_expressionprop:
   fields:
     library_expressionprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     library_expression_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     library_expressionprop_c1: library_expression_id, type_id, rank
   primary key: library_expressionprop_id
   foreign keys:
-    library_expression:
-      table: library_expression
-      columns:
-        library_expression_id: library_expression_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    library_expression:
+      table: library_expression
+      columns:
+        library_expression_id: library_expression_id
   referring_tables: 
 library_feature:
   description: "library_feature links a library to the clones which are contained in the library.  Examples of such linked features might be \"cDNA_clone\" or  \"genomic_clone\"."
   fields:
     library_feature_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     library_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     feature_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     library_feature_c1: library_id, feature_id
   primary key: library_feature_id
   foreign keys:
-    library:
-      table: library
-      columns:
-        library_id: library_id
     feature:
       table: feature
       columns:
         feature_id: feature_id
+    library:
+      table: library
+      columns:
+        library_id: library_id
   referring_tables: library_featureprop
 library_featureprop:
   description: "Attributes of a library_feature relationship."
   fields:
     library_featureprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     library_feature_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     library_featureprop_c1: library_feature_id, type_id, rank
   primary key: library_featureprop_id
   foreign keys:
-    library_feature:
-      table: library_feature
-      columns:
-        library_feature_id: library_feature_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    library_feature:
+      table: library_feature
+      columns:
+        library_feature_id: library_feature_id
   referring_tables: 
 library_pub:
   description: "Attribution for a library."
   fields:
     library_pub_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     library_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     library_pub_c1: library_id, pub_id
   primary key: library_pub_id
@@ -3316,42 +3316,42 @@ library_relationship:
   fields:
     library_relationship_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     subject_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     object_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     library_relationship_c1: subject_id, object_id, type_id
   primary key: library_relationship_id
   foreign keys:
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
     library:
       table: library
       columns:
         subject_id: library_id
         object_id: library_id
-    cvterm:
-      table: cvterm
-      columns:
-        type_id: cvterm_id
   referring_tables: library_relationship_pub
 library_relationship_pub:
   description: "Provenance of library_relationship."
   fields:
     library_relationship_pub_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     library_relationship_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     library_relationship_pub_c1: library_relationship_id, pub_id
   primary key: library_relationship_pub_id
@@ -3370,32 +3370,28 @@ library_synonym:
   fields:
     library_synonym_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     synonym_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     library_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     is_current:
       type: boolean
-      not null: FALSE
+      not null: TRUE
       default: true
     is_internal:
       type: boolean
-      not null: FALSE
+      not null: TRUE
       default: false
   unique keys:
     library_synonym_c1: synonym_id, library_id, pub_id
   primary key: library_synonym_id
   foreign keys:
-    synonym:
-      table: synonym
-      columns:
-        synonym_id: synonym_id
     library:
       table: library
       columns:
@@ -3404,50 +3400,54 @@ library_synonym:
       table: pub
       columns:
         pub_id: pub_id
+    synonym:
+      table: synonym
+      columns:
+        synonym_id: synonym_id
   referring_tables: 
 libraryprop:
   description: "Tag-value properties - follows standard chado model."
   fields:
     libraryprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     library_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     libraryprop_c1: library_id, type_id, rank
   primary key: libraryprop_id
   foreign keys:
-    library:
-      table: library
-      columns:
-        library_id: library_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    library:
+      table: library
+      columns:
+        library_id: library_id
   referring_tables: libraryprop_pub
 libraryprop_pub:
   description: "Attribution for libraryprop."
   fields:
     libraryprop_pub_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     libraryprop_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     libraryprop_pub_c1: libraryprop_id, pub_id
   primary key: libraryprop_pub_id
@@ -3466,19 +3466,19 @@ magedocumentation:
   fields:
     magedocumentation_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     mageml_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     tableinfo_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     row_id:
       type: integer
-      not null: FALSE
+      not null: TRUE
     mageidentifier:
       type: text
-      not null: FALSE
+      not null: TRUE
   primary key: magedocumentation_id
   foreign keys:
     mageml:
@@ -3495,59 +3495,55 @@ mageml:
   fields:
     mageml_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     mage_package:
       type: text
-      not null: FALSE
+      not null: TRUE
     mage_ml:
       type: text
-      not null: FALSE
+      not null: TRUE
   primary key: mageml_id
   referring_tables: magedocumentation
 nd_experiment:
-  description: "This is the core table for the natural diversity module,  representing each individual assay that is undertaken (this is usually *not* an  entire experiment). Each nd_experiment should give rise to a single genotype or  phenotype and be described via 1 (or more) protocols. Collections of assays that  relate to each other should be linked to the same record in the project table."
+  description: "This is the core table for the natural diversity module, representing each individual assay that is undertaken (this is usually *not* an entire experiment). Each nd_experiment should give rise to a single genotype or phenotype and be described via 1 (or more) protocols. Collections of assays that relate to each other should be linked to the same record in the project table."
   fields:
     nd_experiment_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     nd_geolocation_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   primary key: nd_experiment_id
   foreign keys:
-    nd_geolocation:
-      table: nd_geolocation
-      columns:
-        nd_geolocation_id: nd_geolocation_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
-  referring_tables: nd_experiment_project, nd_experimentprop, nd_experiment_pub, nd_experiment_stock, nd_experiment_protocol, nd_experiment_phenotype, nd_experiment_genotype, nd_experiment_dbxref, nd_experiment_contact, nd_experiment_analysis
+    nd_geolocation:
+      table: nd_geolocation
+      columns:
+        nd_geolocation_id: nd_geolocation_id
+  referring_tables: nd_experiment_analysis, nd_experiment_contact, nd_experiment_dbxref, nd_experiment_genotype, nd_experiment_phenotype, nd_experiment_project, nd_experiment_protocol, nd_experiment_pub, nd_experiment_stock, nd_experimentprop
 nd_experiment_analysis:
   description: "An analysis that is used in an experiment"
   fields:
     nd_experiment_analysis_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     nd_experiment_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     analysis_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
   primary key: nd_experiment_analysis_id
   foreign keys:
-    nd_experiment:
-      table: nd_experiment
-      columns:
-        nd_experiment_id: nd_experiment_id
     analysis:
       table: analysis
       columns:
@@ -3556,90 +3552,94 @@ nd_experiment_analysis:
       table: cvterm
       columns:
         type_id: cvterm_id
+    nd_experiment:
+      table: nd_experiment
+      columns:
+        nd_experiment_id: nd_experiment_id
   referring_tables: 
 nd_experiment_contact:
   description: ""
   fields:
     nd_experiment_contact_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     nd_experiment_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     contact_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   primary key: nd_experiment_contact_id
   foreign keys:
-    nd_experiment:
-      table: nd_experiment
-      columns:
-        nd_experiment_id: nd_experiment_id
     contact:
       table: contact
       columns:
         contact_id: contact_id
+    nd_experiment:
+      table: nd_experiment
+      columns:
+        nd_experiment_id: nd_experiment_id
   referring_tables: 
 nd_experiment_dbxref:
   description: "Cross-reference experiment to accessions, images, etc"
   fields:
     nd_experiment_dbxref_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     nd_experiment_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     dbxref_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   primary key: nd_experiment_dbxref_id
   foreign keys:
-    nd_experiment:
-      table: nd_experiment
-      columns:
-        nd_experiment_id: nd_experiment_id
     dbxref:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+    nd_experiment:
+      table: nd_experiment
+      columns:
+        nd_experiment_id: nd_experiment_id
   referring_tables: 
 nd_experiment_genotype:
   description: "Linking table: experiments to the genotypes they produce. There is a one-to-one relationship between an experiment and a genotype since each genotype record should point to one experiment. Add a new experiment_id for each genotype record."
   fields:
     nd_experiment_genotype_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     nd_experiment_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     genotype_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     nd_experiment_genotype_c1: nd_experiment_id, genotype_id
   primary key: nd_experiment_genotype_id
   foreign keys:
-    nd_experiment:
-      table: nd_experiment
-      columns:
-        nd_experiment_id: nd_experiment_id
     genotype:
       table: genotype
       columns:
         genotype_id: genotype_id
+    nd_experiment:
+      table: nd_experiment
+      columns:
+        nd_experiment_id: nd_experiment_id
   referring_tables: 
 nd_experiment_phenotype:
   description: "Linking table: experiments to the phenotypes they produce. There is a one-to-one relationship between an experiment and a phenotype since each phenotype record should point to one experiment. Add a new experiment_id for each phenotype record."
   fields:
     nd_experiment_phenotype_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     nd_experiment_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     phenotype_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     nd_experiment_phenotype_c1: nd_experiment_id, phenotype_id
   primary key: nd_experiment_phenotype_id
@@ -3654,42 +3654,42 @@ nd_experiment_phenotype:
         phenotype_id: phenotype_id
   referring_tables: 
 nd_experiment_project:
-  description: "Used to group together related nd_experiment records. All nd_experiments  should be linked to at least one project."
+  description: "Used to group together related nd_experiment records. All nd_experiments should be linked to at least one project."
   fields:
     nd_experiment_project_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     project_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     nd_experiment_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     nd_experiment_project_c1: project_id, nd_experiment_id
   primary key: nd_experiment_project_id
   foreign keys:
-    project:
-      table: project
-      columns:
-        project_id: project_id
     nd_experiment:
       table: nd_experiment
       columns:
         nd_experiment_id: nd_experiment_id
+    project:
+      table: project
+      columns:
+        project_id: project_id
   referring_tables: 
 nd_experiment_protocol:
   description: "Linking table: experiments to the protocols they involve."
   fields:
     nd_experiment_protocol_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     nd_experiment_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     nd_protocol_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   primary key: nd_experiment_protocol_id
   foreign keys:
     nd_experiment:
@@ -3706,13 +3706,13 @@ nd_experiment_pub:
   fields:
     nd_experiment_pub_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     nd_experiment_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     nd_experiment_pub_c1: nd_experiment_id, pub_id
   primary key: nd_experiment_pub_id
@@ -3731,18 +3731,22 @@ nd_experiment_stock:
   fields:
     nd_experiment_stock_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     nd_experiment_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     stock_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   primary key: nd_experiment_stock_id
   foreign keys:
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
     nd_experiment:
       table: nd_experiment
       columns:
@@ -3751,118 +3755,114 @@ nd_experiment_stock:
       table: stock
       columns:
         stock_id: stock_id
-    cvterm:
-      table: cvterm
-      columns:
-        type_id: cvterm_id
-  referring_tables: nd_experiment_stockprop, nd_experiment_stock_dbxref
+  referring_tables: nd_experiment_stock_dbxref, nd_experiment_stockprop
 nd_experiment_stock_dbxref:
   description: "Cross-reference experiment_stock to accessions, images, etc"
   fields:
     nd_experiment_stock_dbxref_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     nd_experiment_stock_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     dbxref_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   primary key: nd_experiment_stock_dbxref_id
   foreign keys:
-    nd_experiment_stock:
-      table: nd_experiment_stock
-      columns:
-        nd_experiment_stock_id: nd_experiment_stock_id
     dbxref:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+    nd_experiment_stock:
+      table: nd_experiment_stock
+      columns:
+        nd_experiment_stock_id: nd_experiment_stock_id
   referring_tables: 
 nd_experiment_stockprop:
   description: "Property/value associations for experiment_stocks. This table can store the properties such as treatment"
   fields:
     nd_experiment_stockprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     nd_experiment_stock_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     nd_experiment_stockprop_c1: nd_experiment_stock_id, type_id, rank
   primary key: nd_experiment_stockprop_id
   foreign keys:
-    nd_experiment_stock:
-      table: nd_experiment_stock
-      columns:
-        nd_experiment_stock_id: nd_experiment_stock_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    nd_experiment_stock:
+      table: nd_experiment_stock
+      columns:
+        nd_experiment_stock_id: nd_experiment_stock_id
   referring_tables: 
 nd_experimentprop:
   description: "An nd_experiment can have any number of slot-value property tags attached to it. This is an alternative to hardcoding a list of columns in the relational schema, and is completely extensible. There is a unique constraint, stockprop_c1, for the combination of stock_id, rank, and type_id. Multivalued property-value pairs must be differentiated by rank."
   fields:
     nd_experimentprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     nd_experiment_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     nd_experimentprop_c1: nd_experiment_id, type_id, rank
   primary key: nd_experimentprop_id
   foreign keys:
-    nd_experiment:
-      table: nd_experiment
-      columns:
-        nd_experiment_id: nd_experiment_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    nd_experiment:
+      table: nd_experiment
+      columns:
+        nd_experiment_id: nd_experiment_id
   referring_tables: 
 nd_geolocation:
   description: "The geo-referencable location of the stock. NOTE: This entity is subject to change as a more general and possibly more OpenGIS-compliant geolocation module may be introduced into Chado."
   fields:
     nd_geolocation_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     description:
       type: text
-      not null: TRUE
+      not null: FALSE
     latitude:
       type: real
-      not null: TRUE
+      not null: FALSE
     longitude:
       type: real
-      not null: TRUE
+      not null: FALSE
     geodetic_datum:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 32
     altitude:
       type: real
-      not null: TRUE
+      not null: FALSE
   primary key: nd_geolocation_id
   referring_tables: nd_experiment, nd_geolocationprop
 nd_geolocationprop:
@@ -3870,45 +3870,45 @@ nd_geolocationprop:
   fields:
     nd_geolocationprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     nd_geolocation_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     nd_geolocationprop_c1: nd_geolocation_id, type_id, rank
   primary key: nd_geolocationprop_id
   foreign keys:
-    nd_geolocation:
-      table: nd_geolocation
-      columns:
-        nd_geolocation_id: nd_geolocation_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    nd_geolocation:
+      table: nd_geolocation
+      columns:
+        nd_geolocation_id: nd_geolocation_id
   referring_tables: 
 nd_protocol:
   description: "A protocol can be anything that is done as part of the experiment."
   fields:
     nd_protocol_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     name:
       type: character varying
-      not null: FALSE
+      not null: TRUE
       size: 255
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     nd_protocol_name_key: name
   primary key: nd_protocol_id
@@ -3917,24 +3917,28 @@ nd_protocol:
       table: cvterm
       columns:
         type_id: cvterm_id
-  referring_tables: nd_protocol_reagent, nd_protocolprop, nd_experiment_protocol
+  referring_tables: nd_experiment_protocol, nd_protocol_reagent, nd_protocolprop
 nd_protocol_reagent:
   description: ""
   fields:
     nd_protocol_reagent_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     nd_protocol_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     reagent_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   primary key: nd_protocol_reagent_id
   foreign keys:
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
     nd_protocol:
       table: nd_protocol
       columns:
@@ -3943,58 +3947,54 @@ nd_protocol_reagent:
       table: nd_reagent
       columns:
         reagent_id: nd_reagent_id
-    cvterm:
-      table: cvterm
-      columns:
-        type_id: cvterm_id
   referring_tables: 
 nd_protocolprop:
   description: "Property/value associations for protocol."
   fields:
     nd_protocolprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     nd_protocol_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     nd_protocolprop_c1: nd_protocol_id, type_id, rank
   primary key: nd_protocolprop_id
   foreign keys:
-    nd_protocol:
-      table: nd_protocol
-      columns:
-        nd_protocol_id: nd_protocol_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    nd_protocol:
+      table: nd_protocol
+      columns:
+        nd_protocol_id: nd_protocol_id
   referring_tables: 
 nd_reagent:
   description: "A reagent such as a primer, an enzyme, an adapter oligo, a linker oligo. Reagents are used in genotyping experiments, or in any other kind of experiment."
   fields:
     nd_reagent_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     name:
       type: character varying
-      not null: FALSE
+      not null: TRUE
       size: 80
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     feature_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
   primary key: nd_reagent_id
   foreign keys:
     cvterm:
@@ -4011,91 +4011,91 @@ nd_reagent_relationship:
   fields:
     nd_reagent_relationship_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     subject_reagent_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     object_reagent_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   primary key: nd_reagent_relationship_id
   foreign keys:
-    nd_reagent:
-      table: nd_reagent
-      columns:
-        subject_reagent_id: nd_reagent_id
-        object_reagent_id: nd_reagent_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    nd_reagent:
+      table: nd_reagent
+      columns:
+        object_reagent_id: nd_reagent_id
+        subject_reagent_id: nd_reagent_id
   referring_tables: 
 nd_reagentprop:
   description: ""
   fields:
     nd_reagentprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     nd_reagent_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     nd_reagentprop_c1: nd_reagent_id, type_id, rank
   primary key: nd_reagentprop_id
   foreign keys:
-    nd_reagent:
-      table: nd_reagent
-      columns:
-        nd_reagent_id: nd_reagent_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    nd_reagent:
+      table: nd_reagent
+      columns:
+        nd_reagent_id: nd_reagent_id
   referring_tables: 
 organism:
   description: "The organismal taxonomic classification. Note that phylogenies are represented using the phylogeny module, and taxonomies can be represented using the cvterm module or the phylogeny module."
   fields:
     organism_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     abbreviation:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 255
     genus:
       type: character varying
-      not null: FALSE
+      not null: TRUE
       size: 255
     species:
       type: character varying
-      not null: FALSE
+      not null: TRUE
       size: 255
     common_name:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 255
     infraspecific_name:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 1024
     type_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     comment:
       type: text
-      not null: TRUE
+      not null: FALSE
   unique keys:
     organism_c1: genus, species, type_id, infraspecific_name
   primary key: organism_id
@@ -4104,37 +4104,37 @@ organism:
       table: cvterm
       columns:
         type_id: cvterm_id
-  referring_tables: organism_dbxref, organismprop, organism_pub, organism_cvterm, organism_relationship, feature, phenotype_comparison, featuremap_organism, phylonode_organism, library, stock, biomaterial, cell_line
+  referring_tables: biomaterial, cell_line, feature, featuremap_organism, library, organism_cvterm, organism_dbxref, organism_pub, organism_relationship, organismprop, phenotype_comparison, phylonode_organism, stock
 organism_cvterm:
   description: "organism to cvterm associations. Examples: taxonomic name"
   fields:
     organism_cvterm_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     organism_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     cvterm_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     organism_cvterm_c1: organism_id, cvterm_id, pub_id
   primary key: organism_cvterm_id
   foreign keys:
-    organism:
-      table: organism
-      columns:
-        organism_id: organism_id
     cvterm:
       table: cvterm
       columns:
         cvterm_id: cvterm_id
+    organism:
+      table: organism
+      columns:
+        organism_id: organism_id
     pub:
       table: pub
       columns:
@@ -4145,69 +4145,69 @@ organism_cvtermprop:
   fields:
     organism_cvtermprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     organism_cvterm_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     organism_cvtermprop_c1: organism_cvterm_id, type_id, rank
   primary key: organism_cvtermprop_id
   foreign keys:
-    organism_cvterm:
-      table: organism_cvterm
-      columns:
-        organism_cvterm_id: organism_cvterm_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    organism_cvterm:
+      table: organism_cvterm
+      columns:
+        organism_cvterm_id: organism_cvterm_id
   referring_tables: 
 organism_dbxref:
   description: "Links an organism to a dbxref."
   fields:
     organism_dbxref_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     organism_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     dbxref_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     organism_dbxref_c1: organism_id, dbxref_id
   primary key: organism_dbxref_id
   foreign keys:
-    organism:
-      table: organism
-      columns:
-        organism_id: organism_id
     dbxref:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+    organism:
+      table: organism
+      columns:
+        organism_id: organism_id
   referring_tables: 
 organism_pub:
   description: "Attribution for organism."
   fields:
     organism_pub_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     organism_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     organism_pub_c1: organism_id, pub_id
   primary key: organism_pub_id
@@ -4222,86 +4222,86 @@ organism_pub:
         pub_id: pub_id
   referring_tables: 
 organism_relationship:
-  description: "Specifies relationships between organisms  that are not taxonomic. For example, in breeding, relationships such as  \"sterile_with\", \"incompatible_with\", or \"fertile_with\" would be appropriate. Taxonomic relatinoships should be housed in the phylogeny tables."
+  description: "Specifies relationships between organisms that are not taxonomic. For example, in breeding, relationships such as \"sterile_with\", \"incompatible_with\", or \"fertile_with\" would be appropriate. Taxonomic relatinoships should be housed in the phylogeny tables."
   fields:
     organism_relationship_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     subject_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     object_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     organism_relationship_c1: subject_id, object_id, type_id, rank
   primary key: organism_relationship_id
   foreign keys:
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
     organism:
       table: organism
       columns:
         object_id: organism_id
         subject_id: organism_id
-    cvterm:
-      table: cvterm
-      columns:
-        type_id: cvterm_id
   referring_tables: 
 organismprop:
   description: "Tag-value properties - follows standard chado model."
   fields:
     organismprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     organism_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     organismprop_c1: organism_id, type_id, rank
   primary key: organismprop_id
   foreign keys:
-    organism:
-      table: organism
-      columns:
-        organism_id: organism_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    organism:
+      table: organism
+      columns:
+        organism_id: organism_id
   referring_tables: organismprop_pub
 organismprop_pub:
   description: "Attribution for organismprop."
   fields:
     organismprop_pub_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     organismprop_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     organismprop_pub_c1: organismprop_id, pub_id
   primary key: organismprop_pub_id
@@ -4320,38 +4320,38 @@ phendesc:
   fields:
     phendesc_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     genotype_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     environment_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     description:
       type: text
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     phendesc_c1: genotype_id, environment_id, type_id, pub_id
   primary key: phendesc_id
   foreign keys:
-    genotype:
-      table: genotype
-      columns:
-        genotype_id: genotype_id
-    environment:
-      table: environment
-      columns:
-        environment_id: environment_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    environment:
+      table: environment
+      columns:
+        environment_id: environment_id
+    genotype:
+      table: genotype
+      columns:
+        genotype_id: genotype_id
     pub:
       table: pub
       columns:
@@ -4362,28 +4362,28 @@ phenotype:
   fields:
     phenotype_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     uniquename:
       type: text
-      not null: FALSE
+      not null: TRUE
     name:
       type: text
-      not null: TRUE
+      not null: FALSE
     observable_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     attr_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     cvalue_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     assay_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
   unique keys:
     phenotype_c1: uniquename
   primary key: phenotype_id
@@ -4391,55 +4391,59 @@ phenotype:
     cvterm:
       table: cvterm
       columns:
-        observable_id: cvterm_id
+        assay_id: cvterm_id
         attr_id: cvterm_id
         cvalue_id: cvterm_id
-        assay_id: cvterm_id
-  referring_tables: phenotype_cvterm, feature_phenotype, phenotypeprop, phenstatement, phenotype_comparison, nd_experiment_phenotype
+        observable_id: cvterm_id
+  referring_tables: feature_phenotype, nd_experiment_phenotype, phenotype_comparison, phenotype_cvterm, phenotypeprop, phenstatement
 phenotype_comparison:
   description: "Comparison of phenotypes e.g., genotype1/environment1/phenotype1 \"non-suppressible\" with respect to genotype2/environment2/phenotype2."
   fields:
     phenotype_comparison_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     genotype1_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     environment1_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     genotype2_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     environment2_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     phenotype1_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     phenotype2_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     organism_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     phenotype_comparison_c1: genotype1_id, environment1_id, genotype2_id, environment2_id, phenotype1_id, pub_id
   primary key: phenotype_comparison_id
   foreign keys:
-    genotype:
-      table: genotype
-      columns:
-        genotype1_id: genotype_id
-        genotype2_id: genotype_id
     environment:
       table: environment
       columns:
         environment1_id: environment_id
         environment2_id: environment_id
+    genotype:
+      table: genotype
+      columns:
+        genotype1_id: genotype_id
+        genotype2_id: genotype_id
+    organism:
+      table: organism
+      columns:
+        organism_id: organism_id
     phenotype:
       table: phenotype
       columns:
@@ -4449,41 +4453,37 @@ phenotype_comparison:
       table: pub
       columns:
         pub_id: pub_id
-    organism:
-      table: organism
-      columns:
-        organism_id: organism_id
   referring_tables: phenotype_comparison_cvterm
 phenotype_comparison_cvterm:
   description: ""
   fields:
     phenotype_comparison_cvterm_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     phenotype_comparison_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     cvterm_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     phenotype_comparison_cvterm_c1: phenotype_comparison_id, cvterm_id
   primary key: phenotype_comparison_cvterm_id
   foreign keys:
-    phenotype_comparison:
-      table: phenotype_comparison
-      columns:
-        phenotype_comparison_id: phenotype_comparison_id
     cvterm:
       table: cvterm
       columns:
         cvterm_id: cvterm_id
+    phenotype_comparison:
+      table: phenotype_comparison
+      columns:
+        phenotype_comparison_id: phenotype_comparison_id
     pub:
       table: pub
       columns:
@@ -4494,101 +4494,101 @@ phenotype_cvterm:
   fields:
     phenotype_cvterm_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     phenotype_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     cvterm_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     phenotype_cvterm_c1: phenotype_id, cvterm_id, rank
   primary key: phenotype_cvterm_id
   foreign keys:
-    phenotype:
-      table: phenotype
-      columns:
-        phenotype_id: phenotype_id
     cvterm:
       table: cvterm
       columns:
         cvterm_id: cvterm_id
+    phenotype:
+      table: phenotype
+      columns:
+        phenotype_id: phenotype_id
   referring_tables: 
 phenotypeprop:
   description: "A phenotype can have any number of slot-value property tags attached to it. This is an alternative to hardcoding a list of columns in the relational schema, and is completely extensible. There is a unique constraint, phenotypeprop_c1, for the combination of phenotype_id, rank, and type_id. Multivalued property-value pairs must be differentiated by rank."
   fields:
     phenotypeprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     phenotype_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     phenotypeprop_c1: phenotype_id, type_id, rank
   primary key: phenotypeprop_id
   foreign keys:
-    phenotype:
-      table: phenotype
-      columns:
-        phenotype_id: phenotype_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    phenotype:
+      table: phenotype
+      columns:
+        phenotype_id: phenotype_id
   referring_tables: 
 phenstatement:
   description: "Phenotypes are things like \"larval lethal\".  Phenstatements are things like \"dpp-1 is recessive larval lethal\". So essentially phenstatement is a linking table expressing the relationship between genotype, environment, and phenotype."
   fields:
     phenstatement_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     genotype_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     environment_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     phenotype_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     phenstatement_c1: genotype_id, phenotype_id, environment_id, type_id, pub_id
   primary key: phenstatement_id
   foreign keys:
-    genotype:
-      table: genotype
-      columns:
-        genotype_id: genotype_id
-    environment:
-      table: environment
-      columns:
-        environment_id: environment_id
-    phenotype:
-      table: phenotype
-      columns:
-        phenotype_id: phenotype_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    environment:
+      table: environment
+      columns:
+        environment_id: environment_id
+    genotype:
+      table: genotype
+      columns:
+        genotype_id: genotype_id
+    phenotype:
+      table: phenotype
+      columns:
+        phenotype_id: phenotype_id
     pub:
       table: pub
       columns:
@@ -4599,45 +4599,37 @@ phylonode:
   fields:
     phylonode_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     phylotree_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     parent_phylonode_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     left_idx:
       type: integer
-      not null: FALSE
+      not null: TRUE
     right_idx:
       type: integer
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     feature_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     label:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 255
     distance:
       type: double precision
-      not null: TRUE
+      not null: FALSE
   unique keys:
     phylonode_phylotree_id_left_idx_key: phylotree_id, left_idx
     phylonode_phylotree_id_right_idx_key: phylotree_id, right_idx
   primary key: phylonode_id
   foreign keys:
-    phylotree:
-      table: phylotree
-      columns:
-        phylotree_id: phylotree_id
-    phylonode:
-      table: phylonode
-      columns:
-        parent_phylonode_id: phylonode_id
     cvterm:
       table: cvterm
       columns:
@@ -4646,69 +4638,77 @@ phylonode:
       table: feature
       columns:
         feature_id: feature_id
-  referring_tables: phylonode_dbxref, phylonode_pub, phylonode_organism, phylonodeprop, phylonode_relationship
+    phylonode:
+      table: phylonode
+      columns:
+        parent_phylonode_id: phylonode_id
+    phylotree:
+      table: phylotree
+      columns:
+        phylotree_id: phylotree_id
+  referring_tables: phylonode_dbxref, phylonode_organism, phylonode_pub, phylonode_relationship, phylonodeprop
 phylonode_dbxref:
   description: "For example, for orthology, paralogy group identifiers; could also be used for NCBI taxonomy; for sequences, refer to phylonode_feature, feature associated dbxrefs."
   fields:
     phylonode_dbxref_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     phylonode_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     dbxref_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     phylonode_dbxref_phylonode_id_dbxref_id_key: phylonode_id, dbxref_id
   primary key: phylonode_dbxref_id
   foreign keys:
-    phylonode:
-      table: phylonode
-      columns:
-        phylonode_id: phylonode_id
     dbxref:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+    phylonode:
+      table: phylonode
+      columns:
+        phylonode_id: phylonode_id
   referring_tables: 
 phylonode_organism:
   description: "This linking table should only be used for nodes in taxonomy trees; it provides a mapping between the node and an organism. One node can have zero or one organisms, one organism can have zero or more nodes (although typically it should only have one in the standard NCBI taxonomy tree)."
   fields:
     phylonode_organism_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     phylonode_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     organism_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     phylonode_organism_phylonode_id_key: phylonode_id
   primary key: phylonode_organism_id
   foreign keys:
-    phylonode:
-      table: phylonode
-      columns:
-        phylonode_id: phylonode_id
     organism:
       table: organism
       columns:
         organism_id: organism_id
+    phylonode:
+      table: phylonode
+      columns:
+        phylonode_id: phylonode_id
   referring_tables: 
 phylonode_pub:
   description: ""
   fields:
     phylonode_pub_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     phylonode_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     phylonode_pub_phylonode_id_pub_id_key: phylonode_id, pub_id
   primary key: phylonode_pub_id
@@ -4723,39 +4723,39 @@ phylonode_pub:
         pub_id: pub_id
   referring_tables: 
 phylonode_relationship:
-  description: "This is for  relationships that are not strictly hierarchical; for example, horizontal gene transfer. Most phylogenetic trees are strictly hierarchical, nevertheless it is here for completeness."
+  description: "This is for relationships that are not strictly hierarchical; for example, horizontal gene transfer. Most phylogenetic trees are strictly hierarchical, nevertheless it is here for completeness."
   fields:
     phylonode_relationship_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     subject_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     object_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     rank:
       type: integer
-      not null: TRUE
+      not null: FALSE
     phylotree_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     phylonode_relationship_subject_id_object_id_type_id_key: subject_id, object_id, type_id
   primary key: phylonode_relationship_id
   foreign keys:
-    phylonode:
-      table: phylonode
-      columns:
-        subject_id: phylonode_id
-        object_id: phylonode_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    phylonode:
+      table: phylonode
+      columns:
+        object_id: phylonode_id
+        subject_id: phylonode_id
     phylotree:
       table: phylotree
       columns:
@@ -4766,81 +4766,81 @@ phylonodeprop:
   fields:
     phylonodeprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     phylonode_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: FALSE
+      not null: TRUE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     phylonodeprop_phylonode_id_type_id_value_rank_key: phylonode_id, type_id, value, rank
   primary key: phylonodeprop_id
   foreign keys:
-    phylonode:
-      table: phylonode
-      columns:
-        phylonode_id: phylonode_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    phylonode:
+      table: phylonode
+      columns:
+        phylonode_id: phylonode_id
   referring_tables: 
 phylotree:
   description: "Global anchor for phylogenetic tree."
   fields:
     phylotree_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     dbxref_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     name:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 255
     type_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     analysis_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     comment:
       type: text
-      not null: TRUE
+      not null: FALSE
   primary key: phylotree_id
   foreign keys:
-    dbxref:
-      table: dbxref
-      columns:
-        dbxref_id: dbxref_id
-    cvterm:
-      table: cvterm
-      columns:
-        type_id: cvterm_id
     analysis:
       table: analysis
       columns:
         analysis_id: analysis_id
-  referring_tables: phylotree_pub, phylotreeprop, phylonode, phylonode_relationship
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
+    dbxref:
+      table: dbxref
+      columns:
+        dbxref_id: dbxref_id
+  referring_tables: phylonode, phylonode_relationship, phylotree_pub, phylotreeprop
 phylotree_pub:
   description: "Tracks citations global to the tree e.g. multiple sequence alignment supporting tree construction."
   fields:
     phylotree_pub_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     phylotree_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     phylotree_pub_phylotree_id_pub_id_key: phylotree_id, pub_id
   primary key: phylotree_pub_id
@@ -4855,121 +4855,121 @@ phylotree_pub:
         pub_id: pub_id
   referring_tables: 
 phylotreeprop:
-  description: "A phylotree can have any number of slot-value property  tags attached to it. This is an alternative to hardcoding a list of columns in the  relational schema, and is completely extensible."
+  description: "A phylotree can have any number of slot-value property tags attached to it. This is an alternative to hardcoding a list of columns in the relational schema, and is completely extensible."
   fields:
     phylotreeprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     phylotree_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     phylotreeprop_c1: phylotree_id, type_id, rank
   primary key: phylotreeprop_id
   foreign keys:
-    phylotree:
-      table: phylotree
-      columns:
-        phylotree_id: phylotree_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    phylotree:
+      table: phylotree
+      columns:
+        phylotree_id: phylotree_id
   referring_tables: 
 project:
   description: "Standard Chado flexible property table for projects."
   fields:
     project_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     name:
       type: character varying
-      not null: FALSE
+      not null: TRUE
       size: 255
     description:
       type: text
-      not null: TRUE
+      not null: FALSE
   unique keys:
     project_c1: name
   primary key: project_id
-  referring_tables: projectprop, project_relationship, project_pub, project_contact, project_dbxref, project_analysis, project_feature, project_stock, assay_project, nd_experiment_project
+  referring_tables: assay_project, nd_experiment_project, project_analysis, project_contact, project_dbxref, project_feature, project_pub, project_relationship, project_stock, projectprop
 project_analysis:
-  description: "Links an analysis to a project that may contain multiple analyses.  The rank column can be used to specify a simple ordering in which analyses were executed."
+  description: "Links an analysis to a project that may contain multiple analyses. The rank column can be used to specify a simple ordering in which analyses were executed."
   fields:
     project_analysis_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     project_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     analysis_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     project_analysis_c1: project_id, analysis_id
   primary key: project_analysis_id
   foreign keys:
-    project:
-      table: project
-      columns:
-        project_id: project_id
     analysis:
       table: analysis
       columns:
         analysis_id: analysis_id
+    project:
+      table: project
+      columns:
+        project_id: project_id
   referring_tables: 
 project_contact:
   description: "Linking table for associating projects and contacts."
   fields:
     project_contact_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     project_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     contact_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     project_contact_c1: project_id, contact_id
   primary key: project_contact_id
   foreign keys:
-    project:
-      table: project
-      columns:
-        project_id: project_id
     contact:
       table: contact
       columns:
         contact_id: contact_id
+    project:
+      table: project
+      columns:
+        project_id: project_id
   referring_tables: 
 project_dbxref:
   description: "project_dbxref links a project to dbxrefs."
   fields:
     project_dbxref_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     project_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     dbxref_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     is_current:
       type: boolean
-      not null: FALSE
+      not null: TRUE
       default: true
   unique keys:
     project_dbxref_c1: project_id, dbxref_id
@@ -4989,13 +4989,13 @@ project_feature:
   fields:
     project_feature_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     feature_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     project_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     project_feature_c1: feature_id, project_id
   primary key: project_feature_id
@@ -5014,13 +5014,13 @@ project_pub:
   fields:
     project_pub_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     project_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     project_pub_c1: project_id, pub_id
   primary key: project_pub_id
@@ -5039,116 +5039,116 @@ project_relationship:
   fields:
     project_relationship_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     subject_project_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     object_project_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     project_relationship_c1: subject_project_id, object_project_id, type_id
   primary key: project_relationship_id
   foreign keys:
-    project:
-      table: project
-      columns:
-        subject_project_id: project_id
-        object_project_id: project_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    project:
+      table: project
+      columns:
+        object_project_id: project_id
+        subject_project_id: project_id
   referring_tables: 
 project_stock:
   description: "This table is intended associate records in the stock table with a project."
   fields:
     project_stock_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     stock_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     project_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     project_stock_c1: stock_id, project_id
   primary key: project_stock_id
   foreign keys:
-    stock:
-      table: stock
-      columns:
-        stock_id: stock_id
     project:
       table: project
       columns:
         project_id: project_id
+    stock:
+      table: stock
+      columns:
+        stock_id: stock_id
   referring_tables: 
 projectprop:
   description: ""
   fields:
     projectprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     project_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     projectprop_c1: project_id, type_id, rank
   primary key: projectprop_id
   foreign keys:
-    project:
-      table: project
-      columns:
-        project_id: project_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    project:
+      table: project
+      columns:
+        project_id: project_id
   referring_tables: 
 protocol:
   description: "Procedural notes on how data was prepared and processed."
   fields:
     protocol_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     dbxref_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     name:
       type: text
-      not null: FALSE
+      not null: TRUE
     uri:
       type: text
-      not null: TRUE
+      not null: FALSE
     protocoldescription:
       type: text
-      not null: TRUE
+      not null: FALSE
     hardwaredescription:
       type: text
-      not null: TRUE
+      not null: FALSE
     softwaredescription:
       type: text
-      not null: TRUE
+      not null: FALSE
   unique keys:
     protocol_c1: name
   primary key: protocol_id
@@ -5157,104 +5157,104 @@ protocol:
       table: cvterm
       columns:
         type_id: cvterm_id
-    pub:
-      table: pub
-      columns:
-        pub_id: pub_id
     dbxref:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
-  referring_tables: protocolparam, arraydesign, assay, treatment, acquisition, quantification
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
+  referring_tables: acquisition, arraydesign, assay, protocolparam, quantification, treatment
 protocolparam:
   description: "Parameters related to a protocol. For example, if the protocol is a soak, this might include attributes of bath temperature and duration."
   fields:
     protocolparam_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     protocol_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     name:
       type: text
-      not null: FALSE
+      not null: TRUE
     datatype_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     unittype_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   primary key: protocolparam_id
   foreign keys:
-    protocol:
-      table: protocol
-      columns:
-        protocol_id: protocol_id
     cvterm:
       table: cvterm
       columns:
         datatype_id: cvterm_id
         unittype_id: cvterm_id
+    protocol:
+      table: protocol
+      columns:
+        protocol_id: protocol_id
   referring_tables: 
 pub:
   description: "A documented provenance artefact - publications, documents, personal communication."
   fields:
     pub_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     title:
       type: text
-      not null: TRUE
+      not null: FALSE
     volumetitle:
       type: text
-      not null: TRUE
+      not null: FALSE
     volume:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 255
     series_name:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 255
     issue:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 255
     pyear:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 255
     pages:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 255
     miniref:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 255
     uniquename:
       type: text
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     is_obsolete:
       type: boolean
-      not null: TRUE
+      not null: FALSE
       default: false
     publisher:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 255
     pubplace:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 255
   unique keys:
     pub_c1: uniquename
@@ -5264,92 +5264,92 @@ pub:
       table: cvterm
       columns:
         type_id: cvterm_id
-  referring_tables: pub_relationship, pub_dbxref, pubauthor, pubprop, organismprop_pub, organism_pub, organism_cvterm, featureloc_pub, feature_pub, featureprop_pub, feature_relationship_pub, feature_relationshipprop_pub, feature_cvterm, feature_cvterm_pub, feature_synonym, analysis_pub, phenstatement, phendesc, phenotype_comparison, phenotype_comparison_cvterm, featuremap_pub, phylotree_pub, phylonode_pub, expression_pub, feature_expression, library_synonym, library_pub, libraryprop_pub, library_cvterm, library_expression, library_relationship_pub, stock_pub, stockprop_pub, stock_relationship_cvterm, stock_relationship_pub, stock_cvterm, project_pub, protocol, study, cell_line_synonym, cell_line_cvterm, cell_lineprop_pub, cell_line_feature, cell_line_pub, cell_line_library, nd_experiment_pub
+  referring_tables: analysis_pub, cell_line_cvterm, cell_line_feature, cell_line_library, cell_line_pub, cell_line_synonym, cell_lineprop_pub, expression_pub, feature_cvterm, feature_cvterm_pub, feature_expression, feature_pub, feature_relationship_pub, feature_relationshipprop_pub, feature_synonym, featureloc_pub, featuremap_pub, featureprop_pub, library_cvterm, library_expression, library_pub, library_relationship_pub, library_synonym, libraryprop_pub, nd_experiment_pub, organism_cvterm, organism_pub, organismprop_pub, phendesc, phenotype_comparison, phenotype_comparison_cvterm, phenstatement, phylonode_pub, phylotree_pub, project_pub, protocol, pub_dbxref, pub_relationship, pubauthor, pubprop, stock_cvterm, stock_pub, stock_relationship_cvterm, stock_relationship_pub, stockprop_pub, study
 pub_dbxref:
   description: "Handle links to repositories, e.g. Pubmed, Biosis, zoorec, OCLC, Medline, ISSN, coden..."
   fields:
     pub_dbxref_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     dbxref_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     is_current:
       type: boolean
-      not null: FALSE
+      not null: TRUE
       default: true
   unique keys:
     pub_dbxref_c1: pub_id, dbxref_id
   primary key: pub_dbxref_id
   foreign keys:
-    pub:
-      table: pub
-      columns:
-        pub_id: pub_id
     dbxref:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
   referring_tables: 
 pub_relationship:
   description: "Handle relationships between publications, e.g. when one publication makes others obsolete, when one publication contains errata with respect to other publication(s), or when one publication also appears in another pub."
   fields:
     pub_relationship_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     subject_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     object_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     pub_relationship_c1: subject_id, object_id, type_id
   primary key: pub_relationship_id
   foreign keys:
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
     pub:
       table: pub
       columns:
         subject_id: pub_id
         object_id: pub_id
-    cvterm:
-      table: cvterm
-      columns:
-        type_id: cvterm_id
   referring_tables: 
 pubauthor:
   description: "An author for a publication. Note the denormalisation (hence lack of _ in table name) - this is deliberate as it is in general too hard to assign IDs to authors."
   fields:
     pubauthor_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
     editor:
       type: boolean
-      not null: TRUE
+      not null: FALSE
       default: false
     surname:
       type: character varying
-      not null: FALSE
+      not null: TRUE
       size: 100
     givennames:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 100
     suffix:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 100
   unique keys:
     pubauthor_c1: pub_id, rank
@@ -5365,85 +5365,85 @@ pubauthor_contact:
   fields:
     pubauthor_contact_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     contact_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pubauthor_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     pubauthor_contact_c1: contact_id, pubauthor_id
   primary key: pubauthor_contact_id
   foreign keys:
-    pubauthor:
-      table: pubauthor
-      columns:
-        pubauthor_id: pubauthor_id
     contact:
       table: contact
       columns:
         contact_id: contact_id
+    pubauthor:
+      table: pubauthor
+      columns:
+        pubauthor_id: pubauthor_id
   referring_tables: 
 pubprop:
   description: "Property-value pairs for a pub. Follows standard chado pattern."
   fields:
     pubprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: FALSE
+      not null: TRUE
     rank:
       type: integer
-      not null: TRUE
+      not null: FALSE
   unique keys:
     pubprop_c1: pub_id, type_id, rank
   primary key: pubprop_id
   foreign keys:
-    pub:
-      table: pub
-      columns:
-        pub_id: pub_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
   referring_tables: 
 quantification:
   description: "Quantification is the transformation of an image acquisition to numeric data. This typically involves statistical procedures."
   fields:
     quantification_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     acquisition_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     operator_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     protocol_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     analysis_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     quantificationdate:
       type: timestamp without time zone
-      not null: TRUE
+      not null: FALSE
       default: CURRENT_TIMESTAMP
     name:
       type: text
-      not null: TRUE
+      not null: FALSE
     uri:
       type: text
-      not null: TRUE
+      not null: FALSE
   unique keys:
     quantification_c1: name, analysis_id
   primary key: quantification_id
@@ -5452,6 +5452,10 @@ quantification:
       table: acquisition
       columns:
         acquisition_id: acquisition_id
+    analysis:
+      table: analysis
+      columns:
+        analysis_id: analysis_id
     contact:
       table: contact
       columns:
@@ -5460,104 +5464,104 @@ quantification:
       table: protocol
       columns:
         protocol_id: protocol_id
-    analysis:
-      table: analysis
-      columns:
-        analysis_id: analysis_id
-  referring_tables: quantificationprop, quantification_relationship, elementresult
+  referring_tables: elementresult, quantification_relationship, quantificationprop
 quantification_relationship:
   description: "There may be multiple rounds of quantification, this allows us to keep an audit trail of what values went where."
   fields:
     quantification_relationship_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     subject_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     object_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     quantification_relationship_c1: subject_id, object_id, type_id
   primary key: quantification_relationship_id
   foreign keys:
-    quantification:
-      table: quantification
-      columns:
-        subject_id: quantification_id
-        object_id: quantification_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    quantification:
+      table: quantification
+      columns:
+        object_id: quantification_id
+        subject_id: quantification_id
   referring_tables: 
 quantificationprop:
   description: "Extra quantification properties that are not accounted for in quantification."
   fields:
     quantificationprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     quantification_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     quantificationprop_c1: quantification_id, type_id, rank
   primary key: quantificationprop_id
   foreign keys:
-    quantification:
-      table: quantification
-      columns:
-        quantification_id: quantification_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    quantification:
+      table: quantification
+      columns:
+        quantification_id: quantification_id
   referring_tables: 
 stock:
   description: "Any stock can be globally identified by the combination of organism, uniquename and stock type. A stock is the physical entities, either living or preserved, held by collections. Stocks belong to a collection; they have IDs, type, organism, description and may have a genotype."
   fields:
     stock_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     dbxref_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     organism_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     name:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 255
     uniquename:
       type: text
-      not null: FALSE
+      not null: TRUE
     description:
       type: text
-      not null: TRUE
+      not null: FALSE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     is_obsolete:
       type: boolean
-      not null: FALSE
+      not null: TRUE
       default: false
   unique keys:
     stock_c1: organism_id, uniquename, type_id
   primary key: stock_id
   foreign keys:
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
     dbxref:
       table: dbxref
       columns:
@@ -5566,41 +5570,33 @@ stock:
       table: organism
       columns:
         organism_id: organism_id
-    cvterm:
-      table: cvterm
-      columns:
-        type_id: cvterm_id
-  referring_tables: stock_pub, stockprop, stock_relationship, stock_dbxref, stock_cvterm, stock_genotype, stockcollection_stock, stock_feature, stock_featuremap, stock_library, project_stock, nd_experiment_stock
+  referring_tables: nd_experiment_stock, project_stock, stock_cvterm, stock_dbxref, stock_feature, stock_featuremap, stock_genotype, stock_library, stock_pub, stock_relationship, stockcollection_stock, stockprop
 stock_cvterm:
   description: "stock_cvterm links a stock to cvterms. This is for secondary cvterms; primary cvterms should use stock.type_id."
   fields:
     stock_cvterm_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     stock_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     cvterm_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     is_not:
       type: boolean
-      not null: FALSE
+      not null: TRUE
       default: false
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     stock_cvterm_c1: stock_id, cvterm_id, pub_id, rank
   primary key: stock_cvterm_id
   foreign keys:
-    stock:
-      table: stock
-      columns:
-        stock_id: stock_id
     cvterm:
       table: cvterm
       columns:
@@ -5609,120 +5605,128 @@ stock_cvterm:
       table: pub
       columns:
         pub_id: pub_id
+    stock:
+      table: stock
+      columns:
+        stock_id: stock_id
   referring_tables: stock_cvtermprop
 stock_cvtermprop:
   description: "Extensible properties for stock to cvterm associations. Examples: GO evidence codes; qualifiers; metadata such as the date on which the entry was curated and the source of the association. See the stockprop table for meanings of type_id, value and rank."
   fields:
     stock_cvtermprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     stock_cvterm_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     stock_cvtermprop_c1: stock_cvterm_id, type_id, rank
   primary key: stock_cvtermprop_id
   foreign keys:
-    stock_cvterm:
-      table: stock_cvterm
-      columns:
-        stock_cvterm_id: stock_cvterm_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    stock_cvterm:
+      table: stock_cvterm
+      columns:
+        stock_cvterm_id: stock_cvterm_id
   referring_tables: 
 stock_dbxref:
   description: "stock_dbxref links a stock to dbxrefs. This is for secondary identifiers; primary identifiers should use stock.dbxref_id."
   fields:
     stock_dbxref_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     stock_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     dbxref_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     is_current:
       type: boolean
-      not null: FALSE
+      not null: TRUE
       default: true
   unique keys:
     stock_dbxref_c1: stock_id, dbxref_id
   primary key: stock_dbxref_id
   foreign keys:
-    stock:
-      table: stock
-      columns:
-        stock_id: stock_id
     dbxref:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+    stock:
+      table: stock
+      columns:
+        stock_id: stock_id
   referring_tables: stock_dbxrefprop
 stock_dbxrefprop:
   description: "A stock_dbxref can have any number of slot-value property tags attached to it. This is useful for storing properties related to dbxref annotations of stocks, such as evidence codes, and references, and metadata, such as create/modify dates. This is an alternative to hardcoding a list of columns in the relational schema, and is completely extensible. There is a unique constraint, stock_dbxrefprop_c1, for the combination of stock_dbxref_id, rank, and type_id. Multivalued property-value pairs must be differentiated by rank."
   fields:
     stock_dbxrefprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     stock_dbxref_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     stock_dbxrefprop_c1: stock_dbxref_id, type_id, rank
   primary key: stock_dbxrefprop_id
   foreign keys:
-    stock_dbxref:
-      table: stock_dbxref
-      columns:
-        stock_dbxref_id: stock_dbxref_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    stock_dbxref:
+      table: stock_dbxref
+      columns:
+        stock_dbxref_id: stock_dbxref_id
   referring_tables: 
 stock_feature:
   description: "Links a stock to a feature."
   fields:
     stock_feature_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     feature_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     stock_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     stock_feature_c1: feature_id, stock_id, type_id, rank
   primary key: stock_feature_id
   foreign keys:
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
     feature:
       table: feature
       columns:
@@ -5731,30 +5735,30 @@ stock_feature:
       table: stock
       columns:
         stock_id: stock_id
-    cvterm:
-      table: cvterm
-      columns:
-        type_id: cvterm_id
   referring_tables: 
 stock_featuremap:
   description: "Links a featuremap to a stock."
   fields:
     stock_featuremap_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     featuremap_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     stock_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
   unique keys:
     stock_featuremap_c1: featuremap_id, stock_id, type_id
   primary key: stock_featuremap_id
   foreign keys:
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
     featuremap:
       table: featuremap
       columns:
@@ -5763,48 +5767,44 @@ stock_featuremap:
       table: stock
       columns:
         stock_id: stock_id
-    cvterm:
-      table: cvterm
-      columns:
-        type_id: cvterm_id
   referring_tables: 
 stock_genotype:
   description: "Simple table linking a stock to a genotype. Features with genotypes can be linked to stocks thru feature_genotype -> genotype -> stock_genotype -> stock."
   fields:
     stock_genotype_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     stock_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     genotype_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     stock_genotype_c1: stock_id, genotype_id
   primary key: stock_genotype_id
   foreign keys:
-    stock:
-      table: stock
-      columns:
-        stock_id: stock_id
     genotype:
       table: genotype
       columns:
         genotype_id: genotype_id
+    stock:
+      table: stock
+      columns:
+        stock_id: stock_id
   referring_tables: 
 stock_library:
   description: "Links a stock with a library."
   fields:
     stock_library_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     library_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     stock_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     stock_library_c1: library_id, stock_id
   primary key: stock_library_id
@@ -5823,82 +5823,78 @@ stock_pub:
   fields:
     stock_pub_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     stock_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     stock_pub_c1: stock_id, pub_id
   primary key: stock_pub_id
   foreign keys:
-    stock:
-      table: stock
-      columns:
-        stock_id: stock_id
     pub:
       table: pub
       columns:
         pub_id: pub_id
+    stock:
+      table: stock
+      columns:
+        stock_id: stock_id
   referring_tables: 
 stock_relationship:
   description: ""
   fields:
     stock_relationship_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     subject_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     object_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     stock_relationship_c1: subject_id, object_id, type_id, rank
   primary key: stock_relationship_id
   foreign keys:
-    stock:
-      table: stock
-      columns:
-        subject_id: stock_id
-        object_id: stock_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    stock:
+      table: stock
+      columns:
+        object_id: stock_id
+        subject_id: stock_id
   referring_tables: stock_relationship_cvterm, stock_relationship_pub
 stock_relationship_cvterm:
   description: "For germplasm maintenance and pedigree data, stock_relationship. type_id will record cvterms such as \"is a female parent of\", \"a parent for mutation\", \"is a group_id of\", \"is a source_id of\", etc The cvterms for higher categories such as \"generative\", \"derivative\" or \"maintenance\" can be stored in table stock_relationship_cvterm"
   fields:
     stock_relationship_cvterm_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     stock_relationship_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     cvterm_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
   primary key: stock_relationship_cvterm_id
   foreign keys:
-    stock_relationship:
-      table: stock_relationship
-      columns:
-        stock_relationship_id: stock_relationship_id
     cvterm:
       table: cvterm
       columns:
@@ -5907,76 +5903,80 @@ stock_relationship_cvterm:
       table: pub
       columns:
         pub_id: pub_id
+    stock_relationship:
+      table: stock_relationship
+      columns:
+        stock_relationship_id: stock_relationship_id
   referring_tables: 
 stock_relationship_pub:
   description: "Provenance. Attach optional evidence to a stock_relationship in the form of a publication."
   fields:
     stock_relationship_pub_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     stock_relationship_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     stock_relationship_pub_c1: stock_relationship_id, pub_id
   primary key: stock_relationship_pub_id
   foreign keys:
-    stock_relationship:
-      table: stock_relationship
-      columns:
-        stock_relationship_id: stock_relationship_id
     pub:
       table: pub
       columns:
         pub_id: pub_id
+    stock_relationship:
+      table: stock_relationship
+      columns:
+        stock_relationship_id: stock_relationship_id
   referring_tables: 
 stockcollection:
   description: "The lab or stock center distributing the stocks in their collection."
   fields:
     stockcollection_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     contact_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     name:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 255
     uniquename:
       type: text
-      not null: FALSE
+      not null: TRUE
   unique keys:
     stockcollection_c1: uniquename, type_id
   primary key: stockcollection_id
   foreign keys:
-    cvterm:
-      table: cvterm
-      columns:
-        type_id: cvterm_id
     contact:
       table: contact
       columns:
         contact_id: contact_id
-  referring_tables: stockcollectionprop, stockcollection_stock, stockcollection_db
+    cvterm:
+      table: cvterm
+      columns:
+        type_id: cvterm_id
+  referring_tables: stockcollection_db, stockcollection_stock, stockcollectionprop
 stockcollection_db:
-  description: "Stock collections may be respresented  by an external online database. This table associates a stock collection with  a database where its member stocks can be found. Individual stock that are part  of this collction should have entries in the stock_dbxref table with the same  db_id record"
+  description: "Stock collections may be respresented by an external online database. This table associates a stock collection with a database where its member stocks can be found. Individual stock that are part of this collction should have entries in the stock_dbxref table with the same db_id record"
   fields:
     stockcollection_db_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     stockcollection_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     db_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     stockcollection_db_c1: stockcollection_id, db_id
   primary key: stockcollection_db_id
@@ -5995,134 +5995,134 @@ stockcollection_stock:
   fields:
     stockcollection_stock_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     stockcollection_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     stock_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     stockcollection_stock_c1: stockcollection_id, stock_id
   primary key: stockcollection_stock_id
   foreign keys:
-    stockcollection:
-      table: stockcollection
-      columns:
-        stockcollection_id: stockcollection_id
     stock:
       table: stock
       columns:
         stock_id: stock_id
+    stockcollection:
+      table: stockcollection
+      columns:
+        stockcollection_id: stockcollection_id
   referring_tables: 
 stockcollectionprop:
   description: "The table stockcollectionprop contains the value of the stock collection such as website/email URLs; the value of the stock collection order URLs."
   fields:
     stockcollectionprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     stockcollection_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     stockcollectionprop_c1: stockcollection_id, type_id, rank
   primary key: stockcollectionprop_id
   foreign keys:
-    stockcollection:
-      table: stockcollection
-      columns:
-        stockcollection_id: stockcollection_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    stockcollection:
+      table: stockcollection
+      columns:
+        stockcollection_id: stockcollection_id
   referring_tables: 
 stockprop:
   description: "A stock can have any number of slot-value property tags attached to it. This is an alternative to hardcoding a list of columns in the relational schema, and is completely extensible. There is a unique constraint, stockprop_c1, for the combination of stock_id, rank, and type_id. Multivalued property-value pairs must be differentiated by rank."
   fields:
     stockprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     stock_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     stockprop_c1: stock_id, type_id, rank
   primary key: stockprop_id
   foreign keys:
-    stock:
-      table: stock
-      columns:
-        stock_id: stock_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    stock:
+      table: stock
+      columns:
+        stock_id: stock_id
   referring_tables: stockprop_pub
 stockprop_pub:
   description: "Provenance. Any stockprop assignment can optionally be supported by a publication."
   fields:
     stockprop_pub_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     stockprop_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     stockprop_pub_c1: stockprop_id, pub_id
   primary key: stockprop_pub_id
   foreign keys:
-    stockprop:
-      table: stockprop
-      columns:
-        stockprop_id: stockprop_id
     pub:
       table: pub
       columns:
         pub_id: pub_id
+    stockprop:
+      table: stockprop
+      columns:
+        stockprop_id: stockprop_id
   referring_tables: 
 study:
   description: ""
   fields:
     study_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     contact_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     pub_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     dbxref_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     name:
       type: text
-      not null: FALSE
+      not null: TRUE
     description:
       type: text
-      not null: TRUE
+      not null: FALSE
   unique keys:
     study_c1: name
   primary key: study_id
@@ -6131,52 +6131,52 @@ study:
       table: contact
       columns:
         contact_id: contact_id
-    pub:
-      table: pub
-      columns:
-        pub_id: pub_id
     dbxref:
       table: dbxref
       columns:
         dbxref_id: dbxref_id
+    pub:
+      table: pub
+      columns:
+        pub_id: pub_id
   referring_tables: study_assay, studydesign, studyprop
 study_assay:
   description: ""
   fields:
     study_assay_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     study_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     assay_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
   unique keys:
     study_assay_c1: study_id, assay_id
   primary key: study_assay_id
   foreign keys:
-    study:
-      table: study
-      columns:
-        study_id: study_id
     assay:
       table: assay
       columns:
         assay_id: assay_id
+    study:
+      table: study
+      columns:
+        study_id: study_id
   referring_tables: 
 studydesign:
   description: ""
   fields:
     studydesign_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     study_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     description:
       type: text
-      not null: TRUE
+      not null: FALSE
   primary key: studydesign_id
   foreign keys:
     study:
@@ -6189,172 +6189,172 @@ studydesignprop:
   fields:
     studydesignprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     studydesign_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     studydesignprop_c1: studydesign_id, type_id, rank
   primary key: studydesignprop_id
   foreign keys:
-    studydesign:
-      table: studydesign
-      columns:
-        studydesign_id: studydesign_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    studydesign:
+      table: studydesign
+      columns:
+        studydesign_id: studydesign_id
   referring_tables: 
 studyfactor:
   description: ""
   fields:
     studyfactor_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     studydesign_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     name:
       type: text
-      not null: FALSE
+      not null: TRUE
     description:
       type: text
-      not null: TRUE
+      not null: FALSE
   primary key: studyfactor_id
   foreign keys:
-    studydesign:
-      table: studydesign
-      columns:
-        studydesign_id: studydesign_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    studydesign:
+      table: studydesign
+      columns:
+        studydesign_id: studydesign_id
   referring_tables: studyfactorvalue
 studyfactorvalue:
   description: ""
   fields:
     studyfactorvalue_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     studyfactor_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     assay_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     factorvalue:
       type: text
-      not null: TRUE
+      not null: FALSE
     name:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   primary key: studyfactorvalue_id
   foreign keys:
-    studyfactor:
-      table: studyfactor
-      columns:
-        studyfactor_id: studyfactor_id
     assay:
       table: assay
       columns:
         assay_id: assay_id
+    studyfactor:
+      table: studyfactor
+      columns:
+        studyfactor_id: studyfactor_id
   referring_tables: 
 studyprop:
   description: ""
   fields:
     studyprop_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     study_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     value:
       type: text
-      not null: TRUE
+      not null: FALSE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
   unique keys:
     studyprop_study_id_type_id_rank_key: study_id, type_id, rank
   primary key: studyprop_id
   foreign keys:
-    study:
-      table: study
-      columns:
-        study_id: study_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    study:
+      table: study
+      columns:
+        study_id: study_id
   referring_tables: studyprop_feature
 studyprop_feature:
   description: ""
   fields:
     studyprop_feature_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     studyprop_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     feature_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
   unique keys:
     studyprop_feature_studyprop_id_feature_id_key: studyprop_id, feature_id
   primary key: studyprop_feature_id
   foreign keys:
-    studyprop:
-      table: studyprop
-      columns:
-        studyprop_id: studyprop_id
-    feature:
-      table: feature
-      columns:
-        feature_id: feature_id
     cvterm:
       table: cvterm
       columns:
         type_id: cvterm_id
+    feature:
+      table: feature
+      columns:
+        feature_id: feature_id
+    studyprop:
+      table: studyprop
+      columns:
+        studyprop_id: studyprop_id
   referring_tables: 
 synonym:
   description: "A synonym for a feature. One feature can have multiple synonyms, and the same synonym can apply to multiple features."
   fields:
     synonym_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     name:
       type: character varying
-      not null: FALSE
+      not null: TRUE
       size: 255
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     synonym_sgml:
       type: character varying
-      not null: FALSE
+      not null: TRUE
       size: 255
   unique keys:
     synonym_c1: name, type_id
@@ -6364,63 +6364,63 @@ synonym:
       table: cvterm
       columns:
         type_id: cvterm_id
-  referring_tables: feature_synonym, library_synonym, cell_line_synonym
+  referring_tables: cell_line_synonym, feature_synonym, library_synonym
 tableinfo:
   description: ""
   fields:
     tableinfo_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     name:
       type: character varying
-      not null: FALSE
+      not null: TRUE
       size: 30
     primary_key_column:
       type: character varying
-      not null: TRUE
+      not null: FALSE
       size: 30
     is_view:
       type: integer
-      not null: FALSE
+      not null: TRUE
     view_on_table_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     superclass_table_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     is_updateable:
       type: integer
-      not null: FALSE
+      not null: TRUE
       default: 1
     modification_date:
       type: date
-      not null: FALSE
+      not null: TRUE
       default: now()
   unique keys:
     tableinfo_c1: name
   primary key: tableinfo_id
-  referring_tables: magedocumentation, control
+  referring_tables: control, magedocumentation
 treatment:
   description: "A biomaterial may undergo multiple treatments. Examples of treatments: apoxia, fluorophore and biotin labeling."
   fields:
     treatment_id:
       type: serial
-      not null: FALSE
+      not null: TRUE
     rank:
       type: integer
-      not null: FALSE
+      not null: TRUE
     biomaterial_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     type_id:
       type: bigint
-      not null: FALSE
+      not null: TRUE
     protocol_id:
       type: bigint
-      not null: TRUE
+      not null: FALSE
     name:
       type: text
-      not null: TRUE
+      not null: FALSE
   primary key: treatment_id
   foreign keys:
     biomaterial:

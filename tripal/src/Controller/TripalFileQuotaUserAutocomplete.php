@@ -20,6 +20,7 @@ class TripalFileQuotaUserAutocomplete extends ControllerBase{
     $cleaned = Drupal::database()->escapeLike($request->query->get('q'));
 
     $ids = Drupal::entityQuery('user')
+      ->accessCheck(TRUE)
       ->condition('name', '%' . $cleaned . '%', 'LIKE')
       ->execute();
 

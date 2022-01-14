@@ -64,7 +64,7 @@ class chadoInstaller extends bulkPgSchemaInstaller {
     $this->applyDefaultSchema($version);
 
     // 4) Initialize the schema with basic data.
-    $init_file = drupal_get_path('module', 'tripal_chado') .
+    $init_file = \Drupal::service('extension.list.module')->getPath('tripal_chado') .
       '/chado_schema/initialize-' . $version . '.sql';
     $success = $this->applySQL($init_file, $chado_schema);
     if ($success) {
@@ -124,7 +124,7 @@ class chadoInstaller extends bulkPgSchemaInstaller {
     //   Since the schema SQL file is large we have split it into
     //   multiple chunks. This loop will load each chunk...
     $failed = FALSE;
-    $module_path = drupal_get_path('module', 'tripal_chado');
+    $module_path = \Drupal::service('extension.list.module')->getPath('tripal_chado');
     $path = $module_path . '/chado_schema/parts-v' . $version . '/';
     for ($i = 1; $i <= $numChunks; $i++) {
 

@@ -33,7 +33,7 @@ class GenerateFieldTypeGenerator extends Generator implements GeneratorInterface
   public function generate(array $parameters) {
 
     // Twig template path.
-    $tripal_console_path = drupal_get_path('module', 'tripal_console');
+    $tripal_console_path = \Drupal::service('extension.list.module')->getPath('tripal_console');
     $twig_file = 'fieldtype.php.twig';
     // Add the template folder to the places to look for TWIG templates.
     $this->renderer->addSkeletonDir(DRUPAL_ROOT . '/' . $tripal_console_path . '/templates');
