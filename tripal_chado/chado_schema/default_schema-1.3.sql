@@ -2248,7 +2248,7 @@ CREATE INDEX binloc_boxrange ON featureloc USING GIST (boxrange(fmin, fmax));
 
 
 CREATE OR REPLACE FUNCTION featureloc_slice(bigint, bigint) RETURNS setof featureloc AS
-  'SELECT * from featureloc where boxquery($1, $2) @ boxrange(fmin,fmax)'
+  'SELECT * from featureloc where boxquery($1, $2) <@ boxrange(fmin,fmax)'
 LANGUAGE 'sql';
 
 CREATE OR REPLACE FUNCTION featureloc_slice(varchar, bigint, bigint)
@@ -2256,7 +2256,7 @@ CREATE OR REPLACE FUNCTION featureloc_slice(varchar, bigint, bigint)
   'SELECT featureloc.* 
    FROM featureloc 
    INNER JOIN feature AS srcf ON (srcf.feature_id = featureloc.srcfeature_id)
-   WHERE boxquery($2, $3) @ boxrange(fmin,fmax)
+   WHERE boxquery($2, $3) <@ boxrange(fmin,fmax)
    AND srcf.name = $1 '
 LANGUAGE 'sql';
 
@@ -2264,7 +2264,7 @@ CREATE OR REPLACE FUNCTION featureloc_slice(bigint, bigint, bigint)
   RETURNS setof featureloc AS
   'SELECT * 
    FROM featureloc 
-   WHERE boxquery($2, $3) @ boxrange(fmin,fmax)
+   WHERE boxquery($2, $3) <@ boxrange(fmin,fmax)
    AND srcfeature_id = $1 '
 LANGUAGE 'sql';
 
@@ -37787,7 +37787,7 @@ CREATE OR REPLACE FUNCTION groupoverlaps(bigint, bigint, varchar) RETURNS setof 
     AND ( g1.srcfeature_id = g2.srcfeature_id OR g2.srcfeature_id IS NULL )
     AND g1.group_id = g2.group_id
     AND g1.srcfeature_id = (SELECT feature_id FROM feature WHERE uniquename = $3)
-    AND boxquery($1, $2) @ boxrange(g1.fmin,g2.fmax)
+    AND boxquery($1, $2) <@ boxrange(g1.fmin,g2.fmax)
 ' LANGUAGE 'sql';
 
 CREATE OR REPLACE FUNCTION groupcontains(bigint, bigint, varchar) RETURNS setof featuregroup AS '
@@ -37812,7 +37812,7 @@ CREATE OR REPLACE FUNCTION groupoverlaps(bigint, bigint) RETURNS setof featuregr
   SELECT *
   FROM featuregroup
   WHERE is_root = 1
-    AND boxquery($1, $2) @ boxrange(fmin,fmax)
+    AND boxquery($1, $2) <@ boxrange(fmin,fmax)
 ' LANGUAGE 'sql';
 
 CREATE OR REPLACE FUNCTION groupoverlaps(_int8, _int8, _varchar) RETURNS setof featuregroup AS '
@@ -42029,7 +42029,7 @@ LANGUAGE SQL;
 --
 -- create a point
 CREATE OR REPLACE FUNCTION featureslice(bigint, bigint) RETURNS setof featureloc AS
-  'SELECT * from featureloc where boxquery($1, $2) @ boxrange(fmin,fmax)'
+  'SELECT * from featureloc where boxquery($1, $2) <@ boxrange(fmin,fmax)'
 LANGUAGE 'sql';
 
 --uses the gff3atts to create a GFF3 compliant attribute string
