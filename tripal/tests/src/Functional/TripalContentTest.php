@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\tripal\Functional;
 
-use Drupal\tripal\Entity\TripalVocab;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\Core\Url;
 
@@ -37,15 +36,10 @@ class TripalContentTest extends BrowserTestBase {
     // Perform a user login with the permissions specified above
     $this->drupalLogin($web_user);
 
-    // First check that the link shows up to create new vocabulary
+    // First check that the link shows up to create new content type.
     // if the page contains no content types / bundles
     $this->drupalGet('bio_data/add');
     $assert->pageTextContains('There are currently no tripal content types');
-    $assert->linkExists('creating a vocabulary');
-
-    // Visit the link for creating a vocabulary and make sure it loads
-    $this->clickLink('creating a vocabulary');
-    $assert->pageTextContains('tripal vocabulary');
 
   }
 
