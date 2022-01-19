@@ -26,7 +26,6 @@ class TripalContentTest extends BrowserTestBase {
 
     $web_user = $this->drupalCreateUser([
       'administer tripal',
-      'view controlled vocabulary entities'
     ]);
 
     // Anonymous User should not see this content type add page.
