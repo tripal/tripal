@@ -189,15 +189,17 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    * {@inheritdoc}
    */
   public function getTerm() {
-    $term = \Drupal\tripal\Entity\TripalTerm::load($this->term_id);
-    return $term;
+    $logger = \Drupal::service('tripal.logger');
+    $logger->error('Not Implemented.');
+    return NULL;
   }
 
   /**
    * {@inheritdoc}
    */
   public function setTerm($term_id) {
-    $this->term_id = $term_id;
+    $logger = \Drupal::service('tripal.logger');
+    $logger->error('Not Implemented.');
   }
 
   /**
@@ -398,33 +400,6 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     $tokens[$token] = [
       'label' => 'Tripal Entity Type',
       'description' => 'The human-readable label for this Tripal Content Type.',
-      'token' => $token,
-      'field_name' => NULL,
-      'required' => TRUE,
-    ];
-
-    $token = '[TripalTerm__vocab]';
-    $tokens[$token] = [
-      'label' => 'Tripal Vocab Short Name',
-      'description' => 'The short vocabulary name for the Tripal Term desribing this Tripal Content Type.',
-      'token' => $token,
-      'field_name' => NULL,
-      'required' => TRUE,
-    ];
-
-    $token = '[TripalTerm__name]';
-    $tokens[$token] = [
-      'label' => 'Tripal Term Label',
-      'description' => 'The human-readable name for the Tripal Term desribing this Tripal Content Type.',
-      'token' => $token,
-      'field_name' => NULL,
-      'required' => TRUE,
-    ];
-
-    $token = '[TripalTerm__accession]';
-    $tokens[$token] = [
-      'label' => 'Tripal Term Accession',
-      'description' => 'The unique accession for the Tripal Term desribing this Tripal Content Type.',
       'token' => $token,
       'field_name' => NULL,
       'required' => TRUE,

@@ -37,7 +37,8 @@ class TripalEntityTypeListBuilder extends ConfigEntityListBuilder {
     $row['id'] = $entity->id();
 
     // Add in the term with link.
-    $row['term'] = 'Uknown';
+    $row['term'] = '';
+    /*
     $term = $entity->getTerm();
     if ($term) {
       $idspace = $term->getIDSpace();
@@ -49,6 +50,7 @@ class TripalEntityTypeListBuilder extends ConfigEntityListBuilder {
         )->toString();
       }
     }
+    */
     return $row + parent::buildRow($entity);
   }
 
