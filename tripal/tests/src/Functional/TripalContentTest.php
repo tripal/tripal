@@ -31,7 +31,7 @@ class TripalContentTest extends BrowserTestBase {
     $urls = [
       'Tripal Content Listing' => 'admin/content/bio_data',
       'Tripal Content Type Listing' => 'admin/structure/bio_data',
-      //'Add Tripal Content Listing/Form' => 'bio_data/add',
+      'Add Tripal Content Listing/Form' => 'bio_data/add',
     ];
 
     // Anonymous User should not be able to see any of these urls.
