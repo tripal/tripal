@@ -28,17 +28,28 @@ class TripalContentTest extends BrowserTestBase {
       'administer tripal',
     ]);
 
-    // Anonymous User should not see this content type add page.
-    $this->drupalGet('bio_data/add');
-    $assert->pageTextContains('Access denied');
+    $urls = [
+      'Tripal Content Listing' => 'admin/content/bio_data',
+      'Tripal Content Type Listing' => 'admin/structure/bio_data',
+      //'Add Tripal Content Listing/Form' => 'bio_data/add',
+    ];
+
+    // Anonymous User should not be able to see any of these urls.
+    foreach ($urls as $msg => $url) {
+
+      $this->drupalGet($url);
+      $assert->statusCodeEquals(403);
+      $assert->pageTextContains('Access denied');
+    }
 
     // Perform a user login with the permissions specified above
     $this->drupalLogin($web_user);
 
-    // Then check that we can load the page with the correct permissions.
-    $this->drupalGet('bio_data/add');
-    $assert->statusCodeEquals(200);
-
+    // Then check that we can load each page with the correct permissions.
+    foreach ($urls as $msg => $url) {
+      $this->drupalGet($url);
+      $assert->statusCodeEquals(200);
+    }
   }
 
 }
