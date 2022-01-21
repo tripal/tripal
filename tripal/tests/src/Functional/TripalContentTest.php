@@ -38,7 +38,7 @@ class TripalContentTest extends BrowserTestBase {
     // First check that the link shows up to create new content type.
     // if the page contains no content types / bundles
     $this->drupalGet('bio_data/add');
-    $assert->pageTextContains('There are no Tripal content types yet.');
+    $assert->elementExists('css', 'td.empty.message');
 
   }
 
