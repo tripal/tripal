@@ -35,10 +35,9 @@ class TripalContentTest extends BrowserTestBase {
     // Perform a user login with the permissions specified above
     $this->drupalLogin($web_user);
 
-    // First check that the link shows up to create new content type.
-    // if the page contains no content types / bundles
+    // Then check that we can load the page with the correct permissions.
     $this->drupalGet('bio_data/add');
-    $assert->elementExists('css', 'td.empty.message');
+    $assert->statusCodeEquals(200);
 
   }
 
