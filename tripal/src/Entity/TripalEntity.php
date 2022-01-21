@@ -36,7 +36,7 @@ use Drupal\user\UserInterface;
  *     },
  *   },
  *   base_table = "tripal_entity",
- *   admin_permission = "administer tripal content entities",
+ *   admin_permission = "access tripal content overview",
  *   entity_keys = {
  *     "id" = "id",
  *     "bundle" = "type",
