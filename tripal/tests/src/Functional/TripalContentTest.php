@@ -26,6 +26,8 @@ class TripalContentTest extends BrowserTestBase {
 
     $web_user = $this->drupalCreateUser([
       'administer tripal',
+      'administer tripal content types',
+      'administer tripal content entities',
     ]);
 
     $urls = [
