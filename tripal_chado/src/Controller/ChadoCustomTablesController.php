@@ -10,18 +10,18 @@ use Drupal\Core\Controller\ControllerBase;
  */
 class ChadoCustomTablesController extends ControllerBase {
 
-    /**
-     * Constructs the TripalJobController.
-     *
-     */
-    public function __construct() {
-  
-    }
+  /**
+   * Constructs the ChadoCustomTablesController.
+   *
+   */
+  public function __construct() {
+
+  }
 
   /**
    * Provides the main landing page for managing Jobs.
    */
-  public function admin_custom_tables() {
+  public function customTables() {
 
     // set the breadcrumb
     $breadcrumb = new Breadcrumb();

@@ -379,7 +379,7 @@ display:
           admin_label: ''
           empty: true
           tokenize: false
-          content: '<a href="[site:url]admin/tripal/storage/chado/chado_custom_table">Add new chado custom table</a>'
+          content: '<a href="[site:url]admin/tripal/storage/chado/custom_tables/create">Add Custom Table</a>'
           plugin_id: text_custom
       footer: {  }
       empty: {  }

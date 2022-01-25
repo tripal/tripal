@@ -73,7 +73,7 @@ class ChadoCustomTablesDeleteLink extends FieldPluginBase {
     // Return the text, so the code never thinks the value is empty.
     $table_id = $values->table_id;
     $str = "wth";
-    $url = Url::fromUserInput('/admin/tripal/storage/chado/custom_table_delete/' . $table_id)->toString();
+    $url = Url::fromUserInput('/admin/tripal/storage/chado/custom_tables/delete/' . $table_id)->toString();
     $html = '<a href="' .  $url . '">Delete</a>';
     $markup = new Markup();
 

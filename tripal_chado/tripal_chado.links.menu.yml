@@ -19,25 +19,11 @@ tripal_chado.chado_prepare_form:
   title: 'Prepare Chado'
   description: 'Prepares Drupal to use Chado.'
   parent: tripal_chado.storage
-  weight: 31
+  weight: 21
 
-tripal_chado.chado_custom_table_form:
-  route_name: tripal_chado.chado_custom_table_form
-  title: 'Chado Custom Table'
-  description: 'Add new Chado Custom Tables to the database'
-  parent: tripal_chado.storage
-  weight: 30
-
-# tripal_chado.chado_custom_tables_delete_form:
-#   route_name: tripal_chado.chado_custom_tables_delete_form
-#   title: 'Chado Custom Tables Delete'
-#   description: 'Deletes Chado Custom Tables from the database'
-#   parent: tripal_chado.storage
-#   weight: 30  
-
-tripal_chado.chado_custom_tables:
-  route_name: tripal_chado.chado_custom_tables
+tripal_chado.custom_tables:
+  route_name: tripal_chado.custom_tables
   title: 'Chado Custom Tables'
-  description: 'Manage existing Chado Custom Tables'
+  description: 'Manage custom tables that are added to Chado database.'
   parent: tripal_chado.storage
   weight: 30  
