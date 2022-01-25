@@ -565,7 +565,7 @@ function tripal_check_new_fields($bundle_name) {
 function tripal_rebuild() {
 
   //
-  // Make sure the Tripal Jobs view is present. If not then add it.
+  // Make sure the CustomTables view is present. If not then add it.
   //
 
   // First get the config file.
