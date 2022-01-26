@@ -157,7 +157,9 @@ function tripal_file_upload($type, $filename, $action = NULL, $chunk = 0) {
   $file_size = \Drupal::request()->get('file_size', '');
   $chunk_size = \Drupal::request()->get('chunk_size', '');
 
-  $user_dir = tripal_get_user_files_dir($uid);
+  // \Drupal::service('file_system')->realpath('');
+  // $user_dir = tripal_get_user_files_dir($uid); //old
+  $user_dir = \Drupal::service('file_system')->realpath(tripal_get_user_files_dir($uid));
   if (!tripal_is_user_files_dir_writeable($uid)) {
     $message = "The user's data directory is not writeable: !user_dir";
     \Drupal::logger('tripal')->error($message, [
@@ -518,7 +520,8 @@ function tripal_file_upload_merge($filename, $type, $user_dir) {
     tripal_reset_file_expiration($fid);
 
     // Generate an md5 file the uploaded file.
-    $full_path = \Drupal::service('file_system')->realpath($file->uri);
+    // $full_path = \Drupal::service('file_system')->realpath($file->uri); // old
+    $full_path = \Drupal::service('file_system')->realpath($file->getFileUri());
     $md5sum = md5_file($full_path);
     $md5sum_file = fopen("$full_path.md5", "w");
     fwrite($md5sum_file, $md5sum);

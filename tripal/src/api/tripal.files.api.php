@@ -183,8 +183,9 @@ function tripal_get_user_uploads($uid, $allowed_types = [], $module = 'tripal') 
   $query = $db->select('file_managed', 'FM');
   $query->fields('FM', ['fid']);
   $query->distinct();
+  $query->fields('FM', ['filename']);
   $query->condition('FM.uid', $uid);
-  $query->innerJoin('file_usage', 'FU', "FU.fid = FM.fid");
+  $query->innerJoin('file_usage', 'FU', "\"FU\".fid = \"FM\".fid");
   $query->condition('FU.module', $module);
   $query->orderBy('FM.filename');
   $files = $query->execute();
@@ -193,7 +194,8 @@ function tripal_get_user_uploads($uid, $allowed_types = [], $module = 'tripal') 
   while ($fid = $files->fetchField()) {
     $file = \Drupal\file\Entity\File::load($fid);
     foreach ($allowed_types as $type) {
-      if (preg_match('/\.' . $type . '$/', $file->filename)) {
+      // if (preg_match('/\.' . $type . '$/', $file->filename)) { // old
+      if (preg_match('/\.' . $type . '$/', $file->getFilename())) {  
         $files_list[$fid] = $file;
       }
     }
