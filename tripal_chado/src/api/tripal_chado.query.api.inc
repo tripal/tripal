@@ -1904,7 +1904,7 @@ function chado_query($sql, $args = [], $options = [], $chado_schema_name = NULL)
       $previous_db = chado_set_active('chado');
       try {
         $results = \Drupal::database()->query($sql, $args, $options);
-        $results->allowRowCount = TRUE;
+        // $results->allowRowCount = TRUE;
         chado_set_active($previous_db);
       } catch (Exception $e) {
         chado_set_active($previous_db);
@@ -1915,7 +1915,7 @@ function chado_query($sql, $args = [], $options = [], $chado_schema_name = NULL)
     // query.
     else {
       $results = \Drupal::database()->query($sql, $args, $options);
-      $results->allowRowCount = TRUE;
+      // $results->allowRowCount = TRUE;
     }
   }
   // Check for any cross schema joins (ie: both drupal and chado tables
@@ -1933,7 +1933,7 @@ function chado_query($sql, $args = [], $options = [], $chado_schema_name = NULL)
     else {
       $previous_db = chado_set_active('chado', $chado_schema_name);
       $results = \Drupal::database()->query($sql, $args, $options);
-      $results->allowRowCount = TRUE;
+      // $results->allowRowCount = TRUE;
       chado_set_active($previous_db, $chado_schema_name);    
     }
   }
