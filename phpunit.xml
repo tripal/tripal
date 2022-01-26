@@ -15,6 +15,8 @@
     <ini name="error_reporting" value="32767"/>
     <!-- Do not limit the amount of memory tests take to run. -->
     <ini name="memory_limit" value="-1"/>
+    <!-- Stop specific phpunit deprecation notices that Drupal or Symphony cause. -->
+    <env name="SYMFONY_DEPRECATIONS_HELPER" value="disabled" />
     <!-- Example SIMPLETEST_BASE_URL value: http://localhost -->
     <env name="SIMPLETEST_BASE_URL" value="http://localhost"/>
     <!-- Example SIMPLETEST_DB value: mysql://username:password@localhost/databasename#table_prefix -->
