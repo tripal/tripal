@@ -1057,7 +1057,7 @@ class GFF3Importer extends TripalImporter {
       // on the fmin.  The start rank is 1.  This allows features with other
       // relationships to be '0' (the default), and doesn't interfer with the
       // ordering defined here.
-      $num_recs = $parents->rowCount();
+      // $num_recs = $parents->rowCount(); // this looks unused anyways
       $i = 1;
 
       while ($parent = $parents->fetchObject()) {
