@@ -13,6 +13,7 @@ class TripalRoutes {
    */
   public function dataLoaders() {
     $routes = [];
+    $default_module_path = $file_path = \Drupal::service('extension.list.module')->getPath('tripal');
 
     $importers = \tripal_get_importers();
     foreach ($importers as $class_name) {
@@ -35,9 +36,9 @@ class TripalRoutes {
         if (!$callback_path) {
           $callback_path = 'includes/tripal.importer.inc';
         }
-        $file_path = drupal_get_path('module', 'tripal');
+        $file_path = $default_module_path;
         if ($callback_path and $callback_module) {
-          $file_path = drupal_get_path('module', $callback_module);
+          $file_path = \Drupal::service('extension.list.module')->getPath($callback_module);
         }
 
         $routes[$menu_path] = new Route(
@@ -52,7 +53,7 @@ class TripalRoutes {
           [
             '_permission' => 'allow tripal importer ' . $machine_name,
           ]
-        );  
+        );
       }
     }
     return $routes;
