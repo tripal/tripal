@@ -660,6 +660,7 @@ class ChadoRecord {
     }
 
     // Build the SQL statement for searching.
+    $num_matches = 0;
     $select_args = [];
     $sql = 'SELECT * FROM {' . $this->table_name . '} WHERE 1=1 ';
     foreach ($this->values as $column => $value) {
@@ -668,6 +669,15 @@ class ChadoRecord {
     }
     try {
       $results = chado_query($sql, $select_args);
+
+      // Perform a manual count query
+      $sql_count = $sql;
+      $sql_count = str_replace("*", "COUNT(*) as c1", $sql_count, 1);
+      $results_count = chado_query($sql_count, $select_args);
+      // This foreach happens once
+      foreach ($results_count as $row_count) {
+        $num_matches = $row_count->c1;
+      }
     }
     catch (Exception $e) {
       $message = t('ChadoRecord::find(). Could not find a record in the ' .
@@ -682,8 +692,12 @@ class ChadoRecord {
 
     // If we only have a single match then we're good and we can update the
     // values for this object.
-    $results->allowRowCount = TRUE;
-    $num_matches = $results->rowCount();
+
+    // Replaced by above code which is a little less efficient but count is 
+    // needed for the code below.
+    // $results->allowRowCount = TRUE;
+    // $num_matches = $results->rowCount();
+
     if ($num_matches == 1) {
       $record = $results->fetchAssoc();
       $this->values = [];
