@@ -69,11 +69,11 @@ class chadoInstaller extends bulkPgSchemaInstaller {
     $success = $this->applySQL($init_file, $chado_schema);
     if ($success) {
       // @upgrade tripal_report_error().
-      $this->logger->info("Install of Chado v1.3 (Step 2 of 3) Successful.\n");
+      $this->logger->info("Install of Chado v1.3 (Step 2 of 2) Successful.\nInstallation Complete\n");
     }
     else {
       // @upgrade tripal_report_error().
-      $this->logger->info("Installation (Step 2 of 3) Problems!  Please check output for errors.\n");
+      $this->logger->info("Installation (Step 2 of 2) Problems!  Please check output for errors.");
     }
 
     // 5) Finally set the version and tell Tripal.
@@ -95,9 +95,6 @@ class chadoInstaller extends bulkPgSchemaInstaller {
         'updated' => \Drupal::time()->getRequestTime(),
       ])
       ->execute();
-
-    $this->logger->info("Install of Chado v1.3 (Step 3 of 3) Successful.\nInstallation Complete\n");
-    
   }
 
   /**
@@ -158,7 +155,7 @@ class chadoInstaller extends bulkPgSchemaInstaller {
     }
     else {
       // @upgrade tripal_report_error().
-      $this->logger->info("Install of Chado v1.3 (Step 1 of 2) Successful.\n");
+      $this->logger->info("Install of Chado v1.3 (Step 1 of 2) Successful.\nInstallation Complete\n");
       return TRUE;
     }
   }
