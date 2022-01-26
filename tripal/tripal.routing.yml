@@ -281,7 +281,7 @@ tripal.data_loaders:
     _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
     _title: 'Data Loaders'
   requirements:
-    _permission: 'allow tripal import'
+    _permission: 'administer tripal'
 route_callbacks:
   - '\Drupal\tripal\Routing\TripalRoutes::dataLoaders'
 
