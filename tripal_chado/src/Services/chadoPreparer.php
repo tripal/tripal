@@ -93,7 +93,10 @@ class ChadoPreparer {
     $this->logger->info("Creating default content types...");
     $this->contentTypes();
 
-    $this->logger->info("Loading Tripal Importer prequisites...");
+    $this->logger->info("Loading feature prerequisites...");
+    $this->tripal_feature_install();
+
+    $this->logger->info("Loading Tripal Importer prerequisites...");
     // Attempt to add the tripal_gff_temp table into chado
     $this->logger->info("Add Tripal GFF Temp table...");
     $this->tripal_chado_add_tripal_gff_temp_table();
@@ -126,6 +129,63 @@ class ChadoPreparer {
 
     $this->logger->info("Preparation complete.");
   }
+
+
+  /**
+   * Implements hook_install().
+   *
+   * @ingroup tripal_legacy_feature
+   */
+  function tripal_feature_install() {
+
+    // Note: the feature_property OBO that came with Chado v1.2 should not
+    // be automatically installed.  Some of the terms are duplicates of
+    // others in better maintained vocabularies.  New Tripal sites should
+    // use those.
+    // $obo_path = '{tripal_feature}/files/feature_property.obo';
+    // $obo_id = tripal_insert_obo('Chado Feature Properties', $obo_path);
+    // tripal_submit_obo_job(array('obo_id' => $obo_id));
+
+    // Add the vocabularies used by the feature module.
+    $this->tripal_feature_add_cvs();
+
+    // Set the default vocabularies.
+    tripal_set_default_cv('feature', 'type_id', 'sequence');
+    tripal_set_default_cv('featureprop', 'type_id', 'feature_property');
+    tripal_set_default_cv('feature_relationship', 'type_id', 'feature_relationship');
+  }  
+
+  /**
+   * Add cvs related to publications
+   *
+   * @ingroup tripal_pub
+   */
+  function tripal_feature_add_cvs() {
+
+    // Add cv for relationship types
+    tripal_insert_cv(
+      'feature_relationship',
+      'Contains types of relationships between features.'
+    );
+
+    // The feature_property CV may already exists. It comes with Chado, but
+    // we need to  add it just in case it doesn't get added before the feature
+    // module is installed. But as of Tripal v3.0 the Chado version of this
+    // vocabulary is no longer loaded by default.
+    tripal_insert_cv(
+      'feature_property',
+      'Stores properties about features'
+    );
+
+    // the feature type vocabulary should be the sequence ontology, and even though
+    // this ontology should get loaded we will create it here just so that we can
+    // set the default vocabulary for the feature.type_id field
+    tripal_insert_cv(
+      'sequence',
+      'The Sequence Ontology'
+    );
+  }  
+
 
   /**
    * The base table for TripalEntity entities.
@@ -188,6 +248,9 @@ class ChadoPreparer {
       print "tripal_bundle table already exists... bypassing...\n";
     }  
   }
+
+
+
 
 
   /**
