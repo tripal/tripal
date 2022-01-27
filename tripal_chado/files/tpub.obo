@@ -1,0 +1,1434 @@
+format-version: 1.2
+default-namespace: tripal_pub
+subsetdef: MeSH_Publication_Type "MeSH Publication Types"
+ontology: tpub
+
+[Term]
+id: TPUB:0000001
+name: Publication Dbxref
+relationship: part_of TPUB:0000037 ! Publication Details
+def: A unique identifer for the publication in a remote database.  The format is a database abbreviation and a unique accession separated by a colon.  (e.g. PMID:23493063)
+
+[Term]
+id: TPUB:0000002
+name: Publication
+
+[Term]
+id: TPUB:0000003
+name: Citation
+relationship: part_of TPUB:0000037 ! Publication Details
+def: Biblographic reference for the publication.   
+
+[Term]
+id: TPUB:0000004
+name: Book
+is_a: TPUB:0000015 ! Publication Type
+
+[Term]
+id: TPUB:0000005
+name: Publication Accession
+relationship: part_of TPUB:0000001 ! publication_dbxref
+def:  The accession number for a publication in a remote database.  This term is obsolete in favor of the 'Publication Dbxref' term.
+is_obsolete: true
+
+[Term]
+id: TPUB:0000006
+name: Collective
+def: Used when an author is a collective of individuals rather than a person.
+is_a: TPUB:0000015 ! Publication Type
+relationship: part_of TPUB:0000016 ! Author
+
+[Term]
+id: TPUB:0000007
+name: Master's Thesis
+is_a: TPUB:0000015 ! Publication Type
+
+[Term]
+id: TPUB:0000008
+name: PhD Thesis
+def: PhD thesis or dissertation.
+is_a: TPUB:0000015 ! Publication Type
+
+[Term]
+id: TPUB:0000009
+name: Publication Database
+relationship: part_of TPUB:0000001 ! Publication Dbxref
+def:  The name of the database that houses the publication record. This term is obsolete in favor of the 'Publication Dbxref' term.
+is_obsolete: true
+
+[Term]
+id: TPUB:0000010
+name: Received Date
+is_a: TPUB:0000046 ! Publication Date
+def: The date when the manuscript was first received by the editor for consideration for print. This should be in the format: YYYY Mon Day, where YYYY is a 4 digit year, Mon is a 3-letter English abbreviation for the month followed by the day.  The month and day are optional.
+
+[Term]
+id: TPUB:0000011
+name: Conference Name
+relationship: part_of TPUB:0000037 ! Publication Details
+def: The name of a conference from which presented works are published.
+
+[Term]
+id: TPUB:0000012
+name: Book Chapter
+is_a: TPUB:0000015 ! Publication Type
+
+[Term]
+id: TPUB:0000013
+name: Unknown Type
+is_a: TPUB:0000015 ! Publication Type
+
+[Term]
+id: TPUB:0000014
+name: Web Page
+is_a: TPUB:0000015 ! Publication Type
+
+[Term]
+id: TPUB:0000015
+name: Publication Type
+relationship: part_of TPUB:0000002 ! Publication
+
+[Term]
+id: TPUB:0000016
+name: Author
+relationship: part_of TPUB:0000002 ! Publication
+
+[Term]
+id: TPUB:0000035
+name: Epub Date
+is_a: TPUB:0000046 ! Publication Date
+def:  The date when a manuscript for the publication was first published online.  This may not be the same date it was formally printed. This should be in the format: YYYY Mon Day, where YYYY is a 4 digit year, Mon is a 3-letter English abbreviation for the month followed by the day. The month and day are optional.
+
+[Term]
+id: TPUB:0000036
+name: Accepted Date
+is_a: TPUB:0000046 ! Publication Date
+def:  The date when a manuscript for the publication was first accepted for publication by the editor. This should be in the format: YYYY Mon Day, where YYYY is a 4 digit year, Mon is a 3-letter English abbreviation for the month followed by the day. The month and day are optional.
+
+[Term]
+id: TPUB:0000037
+name: Publication Details
+relationship: part_of TPUB:0000002 ! Publication
+
+[Term]
+id: TPUB:0000038
+name: Journal Abbreviation
+def: The journal title ISO Abbreviation.
+is_a: TPUB:0000257 ! Series Abbreviation
+relationship: part_of TPUB:0000037 ! Publication Details
+
+[Term]
+id: TPUB:0000039
+name: Title
+relationship: part_of TPUB:0000037 ! Publication Details
+def:  The title of the published work.
+
+[Term]
+id: TPUB:0000040
+name: Journal
+is_a: TPUB:0000015 ! Publication Type
+
+[Term]
+id: TPUB:0000041
+name: Patent
+def: Works consisting of documents granted by a government giving exclusive rights to an inventor or assignee to manufacture, use, or sell an invention for a certain number of years. The plural version of this term 
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+synonym: "Patents" EXACT []
+
+[Term]
+id: TPUB:0000042
+name: Volume
+relationship: part_of TPUB:0000037 ! Publication Details
+def:  The volume of the journal where the publication was printed. 
+
+[Term]
+id: TPUB:0000043
+name: Issue
+relationship: part_of TPUB:0000037 ! Publication Details
+def:  The issue of the journal where the publication was printed. 
+
+[Term]
+id: TPUB:0000044
+name: Pages
+relationship: part_of TPUB:0000037 ! Publication Details
+def:  The pages in the published work where the cited information is found.
+
+[Term]
+id: TPUB:0000045
+name: Start Page
+relationship: part_of TPUB:0000037 ! Publication Details
+def:  The first page in the published work where the cited information is found.
+
+[Term]
+id: TPUB:0000046
+name: Publication Date
+relationship: part_of TPUB:0000037 ! Publication Details
+def:  The date the work was published.  This should be in the format: YYYY Mon Day, where YYYY is a 4 digit year, Mon is a 3-letter English abbreviation for the month followed by the day. The month and day are optional.
+
+[Term]
+id: TPUB:0000047
+name: Authors
+relationship: part_of TPUB:0000037 ! Publication Details
+synonym: "Author List" EXACT []
+def:  The list of authors of the publication. For PubMed style citations list each author with the last name first, followed by initials. Each author should be separated by a comma.
+
+[Term]
+id: TPUB:0000048
+name: ISSN
+def: International Standard Serial Number (ISSN) is an eight-character value that uniquely identifies a periodicals in print or other media. There are two sub categories of ISSN: print, p-ISSN and electronic e-ISSN.
+relationship: part_of TPUB:0000037 ! Publication Details
+
+[Term]
+id: TPUB:0000049
+name: DOI
+def: Digital Object Identifier.
+is_a: TPUB:0000080 ! Elocation
+
+[Term]
+id: TPUB:0000050
+name: Abstract
+relationship: part_of TPUB:0000037 ! Publication Details
+def:  The fully printed abstract for the publication.
+
+[Term]
+id: TPUB:0000051
+name: Comments
+relationship: part_of TPUB:0000037 ! Publication Details
+def:  Comments regarding the content in the publication.
+
+[Term]
+id: TPUB:0000052
+name: URL
+relationship: part_of TPUB:0000037 ! Publication Details
+def: A univeral resource locator (URL) reference where the publication can be found.  For publications found online, this would be the web address for the publication. 
+
+[Term]
+id: TPUB:0000053
+name: File Attachment
+relationship: part_of TPUB:0000037 ! Publication Details
+def: The names of a file associated with the publication (e.g. supplemental data). 
+
+[Term]
+id: TPUB:0000059
+name: Year
+relationship: part_of TPUB:0000046 ! Publication Date
+def: The year the work was published. This should be a 4 digit year.
+
+[Term]
+id: TPUB:0000064
+name: Language
+relationship: part_of TPUB:0000037 ! Publication Details
+def:  The full name of the languge of the publication (e.g. English).
+
+[Term]
+id: TPUB:0000065
+name: Keywords
+relationship: part_of TPUB:0000037 ! Publication Details
+def:  Contains controlled terms that describe the content of the article. Multiple keywords should be separated with a comma.  For keyworks with that exist in a formal ontology or vocabulary, the format can be the database abbreviation, followed by the term accession separated by a comma (e.g. GO:591743).
+
+[Term]
+id: TPUB:0000066
+name: Original Title
+relationship: part_of TPUB:0000037 ! Publication Details
+ 
+[Term]
+id: TPUB:0000067
+name: Alias
+relationship: part_of TPUB:0000037 ! Publication Details
+def: A synonym or alternative name for this publication. 
+
+[Term]
+id: TPUB:0000068
+name: Journal Code
+relationship: part_of TPUB:0000037 ! Publication Details
+
+[Term]
+id: TPUB:0000069
+name: pISSN
+is_a: TPUB:0000048 ! ISSN
+def: International Standard Serial Number (ISSN) is an eight-character value that uniquely identifies a periodicals in print or other media. There are two sub categories of ISSN: print, p-ISSN and electronic e-ISSN.
+
+[Term]
+id: TPUB:0000070
+name: Conference Proceedings
+def: A generic term for any article, talk, workshop or poster that is part of a conference proceedings.
+is_a: TPUB:0000015 ! Publication Type
+
+[Term]
+id: TPUB:0000072
+name: eISSN
+is_a: TPUB:0000048 ! ISSN
+def: International Standard Serial Number (ISSN) is an eight-character value that uniquely identifies a periodicals in print or other media. There are two sub categories of ISSN: print, p-ISSN and electronic e-ISSN.
+
+[Term]
+id: TPUB:0000073
+name: Proceedings Talk
+is_a: TPUB:0000070 ! Conference Proceedings
+
+[Term]
+id: TPUB:0000074
+name: Proceedings Article
+is_a: TPUB:0000070 ! Conference Proceedings
+
+[Term]
+id: TPUB:0000075
+name: Journal Name
+is_a: TPUB:0000256 ! Series Name
+relationship: part_of TPUB:0000037 ! Publication Details
+
+[Term]
+id: TPUB:0000076
+name: Proceedings Poster
+is_a: TPUB:0000070 ! Conference Proceedings
+
+[Term]
+id: TPUB:0000077
+name: Conference Year
+relationship: part_of TPUB:0000037 ! Publication Details
+
+[Term]
+id: TPUB:0000078
+name: Proceedings Computer Demo
+is_a: TPUB:0000070 ! Conference Proceedings
+
+[Term]
+id: TPUB:0000079
+name: Vernacular Title
+def: The title of a publication in its original foreign language.
+relationship: part_of TPUB:0000037 ! Publication Details
+
+[Term]
+id: TPUB:0000080
+name: Elocation
+def: Provides an electronic location for the items. This includes Digital Object Identifiers (DOI) or Publisher Item Identifiers (PII).
+relationship: part_of TPUB:0000037 ! Publication Details
+
+[Term]
+id: TPUB:0000081
+name: Publication Model
+def: This term is used to identify the medium/media in which the item is published. There are four possible values which are the same as used by: print, print-electronic, electronic,  electronic-print.  Further explanation:  "print", the journal is published in print format only; "print-electronic",  the journal is published in both print and electronic format; "electronic", the journal is published in electronic format only; "electronic-print", the journal is published first in electronic format followed by print.
+relationship: part_of TPUB:0000037 ! Publication Details
+
+[Term]
+id: TPUB:0000082
+name: PII
+def: Publisher Item Identifier.
+is_a: TPUB:0000081 ! Publication Model
+
+[Term]
+id: TPUB:0000083
+name: Structured Abstract Part
+def: A subset of an abstract.  For example, abstracts that have section headers such as 'Purpose', 'Results', etc., each of these sections would be an individual part of a structured abstract.
+relationship: part_of TPUB:0000050 ! Abstract
+
+[Term]
+id: TPUB:0000084
+name: Copyright
+def: Information regarding the copyright of the publication.
+relationship: part_of TPUB:0000037 ! Publication Details
+
+[Term]
+id: TPUB:0000085
+name: Suffix
+def: Name suffix such as 2nd, 3rd, Jr, Sr., etc.
+relationship: part_of TPUB:0000016 ! Author
+
+[Term]
+id: TPUB:0000087
+name: Language Abbr
+def: An abbreviation for a language (e.g. 3 letters)
+is_a: TPUB:0000064 ! Language
+
+[Term]
+id: TPUB:0000100
+name: Journal Country
+def: The country where the journal was published.
+relationship: part_of TPUB:0000037 ! Publication Details
+
+
+[Term]
+id: TPUB:0000101
+name: Abbreviations
+def: Works consisting of lists of shortened forms of written words or phrases used for brevity. Acronyms are included here.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000102
+name: Abstracts
+def: Works consisting of lists of publications on a subject and that provide full annotated bibliographical information together with substantive summaries or condensations of the facts, ideas, or opinions presented in each publication listed. (From LC Subject Cataloging Manual)
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000103
+name: Academic Dissertations
+def: Works consisting of formal presentations made usually to fulfill requirements for an academic degree.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000104
+name: Addresses
+def: Works consisting of speeches, orations, or written statements, usually formal, directed to a particular group of persons. These are different from LECTURES that are usually delivered to classes for instructional purposes.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000105
+name: Almanacs
+def: Works consisting of a calendar of days, weeks, and months, together with information such as astronomical data, various statistics, etc. (From Genre Terms: A Thesaurus for Use in Rare Book and Special Collections Cataloguing, 2d ed)
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000106
+name: Anecdotes
+def: Works consisting of brief accounts or narratives of incidents or events.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000107
+name: Animation
+def: A film or video wholly or partially created by photographing drawings, sculptures, or other inanimate things in sequence to create the illusion of motion. Animations are also generated by computers. (From Moving Image Materials: Genre Terms, 1988)
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000108
+name: Annual Reports
+def: Works consisting of annual statements concerning the administrative and operational functions of an institution or organization.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000109
+name: Atlases
+def: Works consisting of collections of illustrative plates, charts, etc., usually with explanatory captions.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000110
+name: Autobiography
+def: Works consisting of self-described accounts.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000111
+name: Bibliography
+def: A work consisting of a list of books, articles, documents, publications, and other items, usually on a single subject or related subjects.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000112
+name: Biobibliography
+def: Works consisting of biographical information as well as lists of the writings of those persons.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000113
+name: Biography
+def: Works consisting of an account of the events, works, and achievements, personal and professional, during a person's life. It includes articles on the activities and accomplishments of living persons as well as the presentation of an obituary.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000114
+name: Book Illustrations
+def: Works consisting of photographs, prints, drawings, portraits, plates, diagrams, facsimiles, maps, tables, or other representations or systematic arrangements of data designed to elucidate or decorate the contents of a publication. (From The ALA Glossary of Library and Information Science, 1983, p114)
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000115
+name: Book Reviews
+def: Works consisting of critical analyses of books or other monographic works.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000116
+name: Bookplates
+def: Works consisting of book owner's identification labels. They are usually intended for attaching inside a book or similar object. (From Thesaurus for Graphic Materials II: Genre and Physical Characteristic Terms, 1995)
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000117
+name: Cartoons
+def: Images used to comment on such things as contemporary events, social habits, or political trends; usually executed in a broad or abbreviated manner.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000118
+name: Case Reports
+def: Clinical presentations that may be followed by evaluative studies that eventually lead to a diagnosis.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000119
+name: Catalogs
+def: Works consisting of bibliographic records, created according to specific and uniform principles of construction and under the control of an authority file, which describe the materials contained in a collection, library, or group of libraries. Catalogs include also lists of materials prepared for a particular purpose, such as exhibition catalogs, sales catalogs, garden catalogs, medical supply catalogs. (From The ALA Glossary of Library and Information Sciences, 1983)
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000120
+name: Charts
+def: Information presented in graphic form, for example, graphs or diagrams.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000121
+name: Chronology
+def: Works consisting of lists of events arranged in chronological order.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000122
+name: Classical Article
+def: Works consisting of a current presentation of a previously printed seminal article marking a milestone in the history of medicine or science. It is usually accompanied by introductory remarks heralding its reprinting, often on the anniversary of its original publication or on an anniversary of the author's birth or death. It is usually reprinted in full, with complete bibliographical reference to the original appearance.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000123
+name: Clinical Conference
+def: Work that consists of a conference of physicians on their observations of a patient at the bedside, regarding the physical state, laboratory and other diagnostic findings, clinical manifestations, results of current therapy, etc. A clinical conference usually ends with a confirmation or correction of clinical findings by a pathological diagnosis performed by a pathologist. "Clinical conference" is often referred to as a "clinico-pathological conference."
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000124
+name: Clinical Trial
+def: Work that is the report of a pre-planned clinical study of the safety, efficacy, or optimum dosage schedule of one or more diagnostic, therapeutic, or prophylactic drugs, devices, or techniques in humans selected according to predetermined criteria of eligibility and observed for predefined evidence of favorable and unfavorable effects. While most clinical trials concern humans, this publication type may be used for clinical veterinary articles meeting the requisites for humans. Specific headings for specific types and phases of clinical trials are also available.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000125
+name: Clinical Trial, Phase I
+def: Work that is the report of a pre-planned, usually controlled, clinical study of the safety and efficacy of diagnostic, therapeutic, or prophylactic drugs, devices, or techniques based on a small number of healthy persons and conducted over the period of about a year in either the United States or a foreign country.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000126
+name: Clinical Trial, Phase II
+def: Work that is a report of a pre-planned, usually controlled, clinical study of the safety and efficacy of diagnostic, therapeutic, or prophylactic drugs, devices, or techniques based on several hundred volunteers, including a limited number of patients, and conducted over a period of about two years in either the United States or a foreign country.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+
+[Term]
+id: TPUB:0000127
+name: Clinical Trial, Phase III
+def: Work that is a report of a pre-planned, usually controlled, clinical study of the safety and efficacy of diagnostic, therapeutic, or prophylactic drugs, devices, or techniques after phase II trials. A large enough group of patients is studied and closely monitored by physicians for adverse response to long-term exposure, over a period of about three years in either the United States or a foreign country.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+
+[Term]
+id: TPUB:0000128
+name: Clinical Trial, Phase IV
+def: Work that is a report of a planned post-marketing study of diagnostic, therapeutic, or prophylactic drugs, devices, or techniques that have been approved for general sale after clinical trials, phases I, II, and III. These studies, conducted in the United States or a foreign country, often garner additional data about the safety and efficacy of a product.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+
+[Term]
+id: TPUB:0000129
+name: Collected Correspondence
+def: Works consisting of collected letters by or about a person or on a subject.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000130
+name: Collected Works
+def: Works consisting of collections of previously published works.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000131
+name: Collections
+def: Works that consist of collections of objects.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000132
+name: Comment
+def: Work consisting of a critical or explanatory note written to discuss, support, or dispute an article or other presentation previously published. It may take the form of an article, letter, editorial, etc. It appears in publications under a variety of names: comment, commentary, editorial comment, viewpoint, etc.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000133
+name: Comparative Study
+def: Comparison of outcomes, results, responses, etc for different techniques, therapeutic approaches or other inputs.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000134
+name: Congresses
+def: Published records of the papers delivered at or issued on the occasion of individual congresses, symposia, and meetings; abstracts of papers delivered at such congresses; reports of the officers and delegates of such congresses; combinations of the foregoing; or proceedings of the conference of a society if they are not limited to matters of internal organization.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000135
+name: Consensus Development Conference
+def: A work that consists of summary statements representing the majority and current agreement of physicians, scientists, and other professionals meeting to reach a consensus on a selected subject.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000136
+name: Controlled Clinical Trial
+def: Work consisting of a clinical trial involving one or more test treatments, at least one control treatment, specified outcome measures for evaluating the studied intervention, and a bias-free method for assigning patients to the test treatment. The treatment may be drugs, devices, or procedures studied for diagnostic, therapeutic, or prophylactic effectiveness. Control measures include placebos, active medicine, no-treatment, dosage forms and regimens, historical comparisons, etc. When randomization using mathematical techniques, such as the use of a random numbers table, is employed to assign patients to test or control treatments, the trial is characterized as a RANDOMIZED CONTROLLED TRIAL.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000137
+name: Cookbooks
+def: Collections of recipes or instructions for preparation of food and organization of meals.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000138
+name: Corrected and Republished Article
+def: Work that is the republication of an article to correct, amplify, or restore text and data of the originally published article.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000139
+name: Database
+def: Work consisting of a structured file of information or a set of logically related data stored and retrieved using computer-based means.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000140
+name: Diaries
+def: Works consisting of records, usually private, of writers' experiences, observations, feelings, attitudes, etc. They may also be works marked in calendar order in which to note appointments and the like. (From Random House Unabridged Dictionary, 2d ed)
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000141
+name: Dictionary
+def: A reference book containing a list of words - usually in alphabetical order - giving information about form, pronunciation, etymology, grammar, and meaning. A foreign-language dictionary is an alphabetical list of words of one language with their meaning and equivalents in another language.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000142
+name: Directory
+def: Work consisting of an alphabetical or classified list of names, organizations, subjects, etc., giving usually titles, addresses, affiliations, and other professional data.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000143
+name: Documentaries and Factual Films
+def: Works consisting of films, videos, and programs which depict actual persons or actual events. They do not include frank historical re-creations and do not attempt to judge the truth of the depiction in a film purporting to be factual or documentary in character. (From Moving Image Materials: Genre Terms, 1988)
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+
+[Term]
+id: TPUB:0000144
+name: Drawings
+def: Works consisting of graphic representations of objects or ideas by lines.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000145
+name: Duplicate Publication
+def: Work consisting of an article or book of identical or nearly identical material published simultaneously or successively to material previously published elsewhere, without acknowledgment of the prior publication.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000146
+name: Editorial
+def: Work consisting of a statement of the opinions, beliefs, and policy of the editor or publisher of a journal, usually on current matters of medical or scientific significance to the medical community or society at large. The editorials published by editors of journals representing the official organ of a society or organization are generally substantive.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000147
+name: Electronic Supplementary Materials
+def: Supporting content or information, such as animation, datasets, multimedia files, video, movies, audio files, text files, or software, which is submitted for publication in an online journal or an online edition of a journal. This information may be referenced in the text of the article with a link to the supplementary data provided. CATALOG: do not use
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000148
+name: Encyclopedias
+def: Works containing informational articles on subjects in every field of knowledge, usually arranged in alphabetical order, or a similar work limited to a special field or subject. (From The ALA Glossary of Library and Information Science, 1983)
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000149
+name: Ephemera
+def: Works consisting of transient everyday items, usually printed on paper, that are produced for a specific limited use and then often thrown away. (From Genre Terms: A Thesaurus for Use in Rare Book and Special Collections Cataloguing, 2d ed & The ALA Glossary of Library and Information Science, 1983)
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000150
+name: Essays
+def: Works consisting of collections of papers or interpretive literary compositions not previously published.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000151
+name: Evaluation Studies
+def: Works consisting of studies determining the effectiveness or utility of processes, personnel, and equipment.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000152
+name: Examination Questions
+def: Works consisting of compilations of questions and answers pertaining to a particular subject, used for study and review.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000153
+name: Exhibitions
+def: Public displays or items representative of a given subject.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000154
+name: Festschrift
+def: Work consisting of a collection of essays or other writings contributed by students, teachers, colleagues, and associates to honor a person or institution, usually on the occasion of an anniversary celebration or other event of importance.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000155
+name: Fictional Works
+def: Works consisting of creative writing, not presented as factual.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000156
+name: Forms
+def: Works consisting of or containing a substantial number of blank forms.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000157
+name: Formularies
+def: Works that consist of lists of drugs or collections of recipes, formulas, and prescriptions for the compounding of medicinal preparations.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000158
+name: Government Publications
+def: Works consisting of documents issued by local, regional, or national governments or by their agencies or subdivisions.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000159
+name: Guidebooks
+def: Works consisting of publications for travelers that give information about a city, region, or country, or similar handbooks about buildings, museums, etc. (The ALA Glossary of Library and Information Science, 1983)
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000160
+name: Guideline
+def: Work consisting of a set of statements, directions, or principles presenting current or future rules or policy. Guidelines may be developed by government agencies at any level, institutions, organizations such as professional societies or governing boards, or by the convening of expert panels. The text may be cursive or in outline form, but it is generally a comprehensive guide to problems and approaches in any discipline or activity. This concept relates to the general conduct and administration of health care activities rather than to specific decisions for a particular clinical condition. For that aspect, PRACTICE GUIDELINE is available.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000161
+name: Handbooks
+def: Works consisting of concise reference works in which facts and information pertaining to a certain subject or field are arranged for ready reference and consultation rather than for continuous reading and study.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000162
+name: Herbals
+def: Works such as books on herbs or plants usually describing their medicinal value. (Random House Unabridged Dictionary, 2d ed)
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000163
+name: Historical Article
+def: An article or portion of an article giving an account of past events or circumstances significant in a field of study, a profession, a discovery, an invention, etc. The concept of history is very wide, ranging from the dawn of time to the present. This publication type is often checked in conjunction with BIOGRAPHY.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000164
+name: Humor
+def: Works consisting of jokes and facetiae relating to a subject.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000165
+name: In Vitro
+def: Studies using excised tissues.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000166
+name: Incunabula
+def: Books printed before 1501.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000167
+name: Indexes
+def: Works providing an analytical subject approach to materials in a field of knowledge.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000168
+name: Instructional Films
+def: Works consisting of nonfiction films and video designed to teach, instruct, or train. (From Moving Image Materials: Genre Terms, 1988)
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000169
+name: Interactive Tutorial
+def: Video recordings or other files in which the progress of the instruction or content is determined by user response.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000170
+name: Interview
+def: Work consisting of a conversation with an individual regarding his or her background and other personal and professional details, opinions on specific subjects posed by the interviewer, etc.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000171
+name: Introductory Journal Article
+def: Prefactory summary to a special issue or section of a journal devoted to a specific topic. This introductory text can be of varying length and substance.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000172
+name: Journal Article
+def: The predominant publication type for articles and other items indexed for NLM databases.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000173
+name: Juvenile Literature
+def: Works produced for children through age 15 or through the ninth grade.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000174
+name: Laboratory Manuals
+def: Works containing concise background information and directions for activities, including conducting experiments or diagnostic tests in the laboratory.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000175
+name: Lecture Notes
+def: Works consisting of notes taken at the delivery or reading of a speech before an audience or class, usually given to instruct. (From Random House Unabridged Dictionary, 2d ed)
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000176
+name: Lectures
+def: Works consisting of speeches read or delivered before an audience or class, especially for instruction or to set forth some subject. They are differentiated from ADDRESSES [PUBLICATION TYPE] which are less didactic and more informational, entertaining, inspirational, or polemic. (From Random House Unabridged Dictionary, 2d ed)
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000177
+name: Legal Cases
+def: Works consisting of collections of law reports or the published reports of decided cases and documents or filings related to those cases.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000178
+name: Legislation
+def: Works consisting of the text of proposed or enacted legislation that may be in the form of bills, laws, statutes, ordinances, or government regulations.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000179
+name: Letter
+def: Work consisting of written or printed communication between individuals or between persons and representatives of corporate bodies. The correspondence may be personal or professional. In medical and other scientific publications the letter is usually from one or more authors to the editor of the journal or book publishing the item being commented upon or discussed. LETTER is often accompanied by COMMENT.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000180
+name: Manuscripts
+def: Works prepared by hand including handwritten or typescript drafts of pre-publication papers or works not otherwise reproduced in multiple copies.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000181
+name: Maps
+def: Works consisting of representations, normally to scale and on a flat medium, of a selection of material or abstract features on the surface of the earth. They may be used also in delineating the heavens and celestial bodies. (From Anglo-American Cataloguing Rules, 2d ed, p619)
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000182
+name: Meeting Abstracts
+def: For individual abstracts of presentations at meetings, congresses, conferences, symposia, colloquia, seminars, workshops, round tables, and other professional gatherings.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000183
+name: Meta Analysis
+def: Works consisting of studies using a quantitative method of combining the results of independent studies (usually drawn from the published literature) and synthesizing summaries and conclusions which may be used to evaluate therapeutic effectiveness, plan new studies, etc. It is often an overview of clinical trials. It is usually called a meta-analysis by the author or sponsoring body and should be differentiated from reviews of literature.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000184
+name: Monograph
+def: Work that is any publication that is not a serial or integrating resource. In cataloging usage, It is usually on a single subject or related subjects and is complete in itself, whether constructed of chapters, sections, or parts. While any article encountered in indexing journals can be, strictly speaking, a monograph, as a publication type, a monograph will refer to a cataloging item.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000185
+name: Multicenter Study
+def: Work consisting of a controlled study executed by several cooperating institutions.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000186
+name: News
+def: Works consisting of an announcement or statement of recent or current events of new data and matters of interest in the field of medicine or science. In some publications, such as "Nature" or "Science," the news reports are substantively written and herald medical and scientific data of vital or controversial importance.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000187
+name: Newspaper Article
+def: Work consisting of a news item appearing in a general-interest newspaper or other general news periodical, containing information of current and timely interest in the field of medicine or science. This publication type should not be confused with NEWS Publication Type, reserved for news reports published in various medical or other scientific journals, such as "Nature".
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000188
+name: Nurses' Instruction
+def: Works consisting of materials developed for a nursing audience.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000189
+name: Outlines
+def: Works consisting of brief statements of the principal elements of a subject, usually arranged by heads and subheads.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000190
+name: Overall
+def: A single citation covering papers or abstracts presented at a meeting. The publication type may be used for a single citation with or without the additional indexing or cataloging of individual papers. The individual papers, however, are not labeled OVERALL.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000191
+name: Patents (obsolete)
+def: This term is obsolete in favor of the existing term 'Patent' (TPUB:0000041).
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+is_obsolete: true
+
+
+[Term]
+id: TPUB:0000192
+name: Patient Education Handout
+def: Works consisting of a handout or self-contained informative material used to explain a procedure or a condition or the contents of a specific article in a biomedical journal and written in non-technical language for the patient or consumer.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000193
+name: Periodical Index
+def: Work consisting of a subject approach to the contents of a periodical issuing an annual, biennial, quinquennial, decennial, etc., index. The heading is used for the overall body of articles published by a periodical in the same sense that BIBLIOGRAPHY is useful when published as a single article.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000194
+name: Periodicals
+def: Publications intended to be issued on an ongoing basis, generally more frequently than annually, containing separate articles, stories, or writings.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000195
+name: Personal Narratives
+def: Works consisting of accounts of individual experience in relation to a particular field or of participation in related activities.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000196
+name: Pharmacopoeias
+def: Authoritative works containing lists of drugs and preparations, their description, formulation, analytic composition, main chemical properties, standards for strength, purity, and dosage, chemical tests for determining identity, etc. They have the status of a standard.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000197
+name: Photographs
+def: Still images produced from radiation-sensitive materials (sensitive to light, electron beams, or nuclear radiation), generally by means of the chemical action of light on a sensitive film, paper, glass, or metal. Photographs may be positive or negative, opaque or transparent.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000198
+name: Phrases
+def: Works consisting of common terms, phrases, idioms, and typical conversations, e.g., between health professional and patients. These are often intended for use by non-native speakers of a language.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000199
+name: Pictorial Works
+def: Works consisting exclusively or mainly of pictures but not technical drawings.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000200
+name: Poetry
+def: Works that consist of literary and oral genre expressing meaning via symbolism and following formal or informal patterns.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000201
+name: Popular Works
+def: Works written for non-professional or lay audiences.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000202
+name: Portraits
+def: Works consisting of graphic representations, especially of the face, of real persons, usually posed, living or dead. They are pictures whose purpose is the portrayal of an individual or group of individuals, not pictures which merely include people as part of an event or scene. (From Thesaurus for Graphic Materials II, p540, 1995)
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000203
+name: Postcards
+def: Cards on which a message may be written or printed for mailing without an envelope. Art & Architectural Thesaurus Online www.getty.edu/research/conducting_research/vocabularies/aat/ accessed 12/18/2008
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000204
+name: Posters
+def: Works consisting of single or multi-sheet notices made to attract attention to events, activities, causes, goods, or services. They are for posting, usually in a public place and are chiefly pictorial. They are intended to make an immediate impression from a distance. Posters do not include poster presentations at conferences and meetings. (From Thesaurus for Graphic Materials II: Genre and Physical Characteristic Headings, 1995)
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000205
+name: Practice Guideline
+def: Work consisting of a set of directions or principles to assist the health care practitioner with patient care decisions about appropriate diagnostic, therapeutic, or other clinical procedures for specific clinical circumstances. Practice guidelines may be developed by government agencies at any level, institutions, organizations such as professional societies or governing boards, or by the convening of expert panels. They can provide a foundation for assessing and evaluating the quality and effectiveness of health care in terms of measuring improved health, reduction of variation in services or procedures performed, and reduction of variation in outcomes of health care delivered.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000206
+name: Price Lists
+def: Works consisting of lists giving the prices of items for sale, including drugs, equipment, books, etc. Price lists are less detailed than catalogs and not as long.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000207
+name: Problems and Exercises
+def: Works consisting of collections of practice questions and drills, generally for instructional or review use.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000208
+name: Programmed Instruction
+def: Works consisting of sequenced self-correction texts.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000209
+name: Programs
+def: Works consisting of lists of the events, pieces, performers, speakers, etc., of an entertainment, ceremony, or the like. (From: Genre Terms: A Thesaurus for Use in Rare Book and Special Collections Cataloging, 2d ed)
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000210
+name: Prospectuses
+def: Works consisting of advertisements separately printed and distributed by a publisher to describe and solicit orders for a recent or forthcoming publication. In the case of books, they may include sample pages. (From: ALA Glossary of Library and Information Science, 1983)
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000211
+name: Publication Components
+def: Specific parts of publications.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000212
+name: Publication Formats
+def: Specific genre of publication.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000213
+name: Published Erratum
+def: Work consisting of an acknowledgment of an error, issued by a publisher, editor, or author. It customarily cites the source where the error occurred, giving complete bibliographic data for retrieval. In the case of books and monographs, author, title, imprint, paging, and other helpful references will be given; in the case of journal articles, the author, title, paging, and journal reference will be shown. An erratum notice is variously cited as Errata or Corrigenda.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000214
+name: Randomized Controlled Trial
+def: Work consisting of a clinical trial that involves at least one test treatment and one control treatment, concurrent enrollment and follow-up of the test- and control-treated groups, and in which the treatments to be administered are selected by a random process, such as the use of a random-numbers table.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000215
+name: Resource guides
+def: Works listing and describing various sources of information, from multiple media or in different formats, on a given subject.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000216
+name: Retracted Publication
+def: Work consisting of the designation of an article or book as retracted in whole or in part by an author or authors or an authorized representative. It identifies a citation previously published and now retracted through a formal issuance from the author, publisher, or other authorized agent, and is distinguished from RETRACTION OF PUBLICATION, which identifies the citation retracting the original published item.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000217
+name: Retraction of Publication
+def: Work consisting of a statement issued by one or more authors of an article or a book, withdrawing or disavowing acknowledgment of their participation in performing research or writing the results of their study. In indexing, the retraction is sent to the editor of the publication in which the article appeared and is published under the rubric "retraction" or in the form of a letter. This publication type designates the author's statement of retraction: it should be differentiated from RETRACTED PUBLICATION which labels the retracted publication.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000218
+name: Review
+def: An article or book published after examination of published material on a subject. It may be comprehensive to various degrees and the time range of material scrutinized may be broad or narrow, but the reviews most often desired are reviews of the current literature. The textual material examined may be equally broad and can encompass, in medicine specifically, clinical material as well as experimental research or case reports. State-of-the-art reviews tend to address more current matters. A review of the literature must be differentiated from HISTORICAL ARTICLE on the same subject, but a review of historical literature is also within the scope of this publication type.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000219
+name: Scientific Integrity Review
+def: Work consisting of reports by the United States Office of Research Integrity, identifying questionable research published in articles or books. Notification of the questionable data is carried in the NIH Guide for Grants and Contracts.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000220
+name: Statistics
+def: Works consisting of presentations of numerical data on particular subjects.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000221
+name: Support of Research
+def: Organizational source for funding of research activity.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000222
+name: Tables
+def: Presentations of nonstatistical data in tabular form.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000223
+name: Technical Report
+def: Work consisting of a formal report giving details of the investigation and results of a medical or other scientific problem. When issued by a government agency or comparable official body, its contents may be classified, unclassified, or declassified with regard to security clearance. This publication type may also cover a scientific paper or article that records the current state or current position of scientific research and development. If so labeled by the editor or publisher, this publication type may be properly used for journal articles.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000224
+name: Terminology
+def: Work consisting of lists of the technical terms or expressions used in a specific field. These lists may or may not be formally adopted or sanctioned by usage.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000225
+name: Textbooks
+def: Books intended for use in the study of specific subjects, containing systematic presentation of the principles and essential knowledge of the subjects.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000226
+name: Twin Study
+def: Work consisting of reporting using a method of detecting genetic causes in human traits and genetic factors in behavior using sets of twins.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000227
+name: Unedited Footage
+def: Work consisting of untitled raw motion picture and video footage which has not been edited or assembled into a finished work. (From: Moving Image Materials: Genre Terms, 1988)
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000228
+name: Union Lists
+def: Works consisting of records of the holdings or items owned by two or more libraries.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000229
+name: Unpublished Works
+def: Works that have not been formally published.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000230
+name: Validation Studies
+def: Works consisting of research using processes by which the reliability and relevance of a procedure for a specific purpose are established.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000231
+name: Video-Audio Media
+def: Used with articles which include video files or clips, or for articles which are entirely video.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000232
+name: Webcasts
+def: Content from transmission of live or pre-recorded audio or video via connection or download from the INTERNET.
+is_a: TPUB:0000015 ! Publication Type
+subset: MeSH_Publication_Type
+
+[Term]
+id: TPUB:0000233
+name: Research Support, American Recovery and Reinvestment Act
+subset: MeSH_Publication_Type
+is_a: TPUB:0000015 ! Publication Type
+
+[Term]
+id: TPUB:0000234
+name: Research Support, N.I.H., Extramural
+def: A designation for publications of research resulting from extramural research funded by the National Institutes of Health.
+subset: MeSH_Publication_Type
+is_a: TPUB:0000015 ! Publication Type
+
+[Term]
+id: TPUB:0000235
+name: Research Support, N.I.H., Intramural
+def: A designation for publications of research resulting from intramural research at the National Institutes of Health.
+subset: MeSH_Publication_Type
+is_a: TPUB:0000015 ! Publication Type
+
+[Term]
+id: TPUB:0000236
+name: Research Support, Non-U.S. Gov't
+subset: MeSH_Publication_Type
+is_a: TPUB:0000015 ! Publication Type
+
+[Term]
+id: TPUB:0000237
+name: Research Support, U.S. Gov't, Non-P.H.S.
+subset: MeSH_Publication_Type
+is_a: TPUB:0000015 ! Publication Type
+
+[Term]
+id: TPUB:0000238
+name: Research Support, U.S. Gov't, P.H.S.
+subset: MeSH_Publication_Type
+is_a: TPUB:0000015 ! Publication Type
+
+[Term]
+id: TPUB:0000239
+name: Research Support, U.S. Government
+def: For publications noted as supported by US Government.
+subset: MeSH_Publication_Type
+is_a: TPUB:0000015 ! Publication Type
+
+
+[Term]
+id: TPUB:0000241
+name: English Abstract
+subset: MeSH_Publication_Type
+is_a: TPUB:0000015 ! Publication Type
+
+[Term]
+id: TPUB:0000242
+name: Meta-Analysis
+def: Works consisting of studies using a quantitative method of combining the results of independent studies (usually drawn from the published literature) and synthesizing summaries and conclusions which may be used to evaluate therapeutic effectiveness, plan new studies, etc. It is often an overview of clinical trials. It is usually called a meta-analysis by the author or sponsoring body and should be differentiated from reviews of literature.
+subset: MeSH_Publication_Type
+is_a: TPUB:0000015 ! Publication Type
+
+[Term]
+id: TPUB:0000243
+name: Volume Title
+relationship: part_of TPUB:0000037 ! Publication Details
+
+[Term]
+id: TPUB:0000244
+name: Publisher
+relationship: part_of TPUB:0000037 ! Publication Details
+
+[Term]
+id: TPUB:0000245
+name: Published Location
+relationship: part_of TPUB:0000037 ! Publication Details
+
+[Term]
+id: TPUB:0000246
+name: Prefix
+def: A prefix for a name such as a title (e.g. Mr., Mrs., Dr., Chief, Esquire, etc.)
+relationship: part_of TPUB:0000016 ! Author
+
+[Term]
+id: TPUB:0000247
+name: ISBN
+def: Internaltional Standard Book Number
+relationship: part_of TPUB:0000037 ! Publication Details
+
+[Term]
+id: TPUB:0000248
+name: Notes
+def: Information about the publication that is not classified using another term.
+relationship: part_of TPUB:0000037 ! Publication Details
+
+[Term]
+id: TPUB:0000249
+name: Thesis
+def: A Master's or PhD thesis.
+is_a: TPUB:0000015 ! Publication Type
+
+[Term]
+id: TPUB:0000250
+name: Journal Alias
+relationship: part_of TPUB:0000037 ! Publication Details
+def: An alternate name for a journal
+
+[Term]
+id: TPUB:0000251
+name: Book Name
+relationship: part_of TPUB:0000037 ! Publication Details
+def: The name of a book to which a book chapter belongs.
+
+[Term]
+id: TPUB:0000252
+name: Media Alias
+relationship: part_of TPUB:0000037 ! Publication Details
+def: An alternate name for a journal, book, conference proceedings, etc.
+
+[Term]
+id: TPUB:0000253
+name: Media Code
+relationship: part_of TPUB:0000037 ! Publication Details
+def: A unique special code for a journal, book, conference proceeding, etc
+
+[Term]
+id: TPUB:0000254
+name: Publication Code
+relationship: part_of TPUB:0000037 ! Publication Details
+def: A unique special code for journal article, book, book chapter or any publication type.
+
+[Term]
+id: TPUB:0000255
+name: Patent Number
+relationship: part_of TPUB:0000037 ! Publication Details
+def: A unique special code for journal article, book, book chapter or any publication type.
+
+[Term]
+id: TPUB:0000256
+name: Series Name
+relationship: part_of TPUB:0000037 ! Publication Details
+def: The name media that produces a series of publications (e.g. journal, conference proceedings, etc.)
+
+[Term]
+id: TPUB:0000257
+name: Series Abbreviation
+relationship: part_of TPUB:0000037 ! Publication Details
+def: An abbreviation for the series name.  (e.g. the journal title ISO Abbreviation).
+
+[Typedef]
+id: is_a
+name: is a
+is_transitive: true
+
+[Typedef]
+id: part_of
+name: part of
+is_transitive: true
