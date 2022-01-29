@@ -511,16 +511,6 @@ function chado_insert_record($table, $values, $options = [], $chado_schema_name 
     // Make sure the field is in the table description. If not then return an
     // error message.
     if (!array_key_exists($field, $table_desc['fields'])) {
-      // tripal_report_error('tripal_chado', TRIPAL_ERROR,
-      //   "chado_insert_record; The field '$field' does not exist " .
-      //   "for the table '$table'.  Cannot perform insert. Values: %array",
-      //   [
-      //     '%field' => $field,
-      //     '%table' => $table,
-      //     '%array' => print_r($values, 1),
-      //   ],
-      //   ['print' => $print_errors]
-      // );
       $logger->error(
         "chado_insert_record; The field '$field' does not exist " .
         "for the table '$table'.  Cannot perform insert. Values: " . 
@@ -1280,8 +1270,6 @@ function chado_delete_record($table, $match, $options = NULL, $chado_schema_name
  *
  * @ingroup tripal_chado_query_api
  */
-
-
 function chado_select_record($table, $columns, $values, $options = NULL, $chado_schema_name = NULL) {
   $logger = \Drupal::service('tripal.logger');
   // Set defaults for options. If we don't set defaults then
@@ -1318,11 +1306,6 @@ function chado_select_record($table, $columns, $values, $options = NULL, $chado_
 
   // Check that our columns and values arguments are proper arrays.
   if (!is_array($columns)) {
-	  // tripal_report_error('tripal_chado', TRIPAL_ERROR,
-    //   'chado_select_record; the $columns argument must be an array. Columns:%columns',
-    //   ['%columns' => print_r($columns, TRUE)],
-    //   ['print' => $print_errors]
-    // );
     $logger->error('
       tripal_chado error chado_select_record; the $columns argument must be an array. 
       Columns:' . print_r($columns, TRUE) .  $print_errors
@@ -1330,11 +1313,6 @@ function chado_select_record($table, $columns, $values, $options = NULL, $chado_
     return FALSE;
   }
   if (!is_array($values)) {
-    // tripal_report_error('tripal_chado', TRIPAL_ERROR,
-    //   'chado_select_record; the $values argument must be an array. Values:%values',
-    //   ['%values' => print_r($values, TRUE)],
-    //   ['print' => $print_errors]
-    // );
     $logger->error('
       tripal_chado error chado_select_record; the $values argument must be an array. 
       Values:' . print_r($values, TRUE) . $print_errors
@@ -1343,14 +1321,8 @@ function chado_select_record($table, $columns, $values, $options = NULL, $chado_
   }
 
   // Get the table description.
-  // echo 'chado_select_record Table:' . $table . "\n";
   $table_desc = chado_get_schema($table, $chado_schema_name);
-  // echo 'chado_select_record ' . $table . ' ' . print_r($table_desc, TRUE) . "\n";
   if (!is_array($table_desc)) {
-    // tripal_report_error('tripal_chado', TRIPAL_WARNING,
-    //   'chado_insert_record; There is no table description for !table_name',
-    //   ['!table_name' => $table], ['print' => $print_errors]
-    // );
     $logger->error('
       chado_insert_record; There is no table description for ' . $table . $print_errors
     );
@@ -1413,15 +1385,6 @@ function chado_select_record($table, $columns, $values, $options = NULL, $chado_
         // and there is no default value then we cannot check if the record
         // is a duplicate so return FALSE.
         else {
-          // tripal_report_error('tripal_chado', TRIPAL_ERROR,
-          //   'chado_select_record: There is no value for %field thus we cannot ' .
-          //   'check if this record for table, %table, is unique. %values',
-          //   [
-          //     '%field' => $field,
-          //     '%table' => $table,
-          //     '%values' => print_r($values, TRUE),
-          //   ],
-          //   ['print' => $print_errors]);
           $logger->error(
             'chado_select_record: There is no value for ' . $field . ' thus we cannot ' .
             'check if this record for table, ' . $table . ', is unique. ' . 
@@ -1455,34 +1418,14 @@ function chado_select_record($table, $columns, $values, $options = NULL, $chado_
   // being an array with a 'field', 'op', and 'data' keys with all foreign keys
   // followed.
 
-  // echo ">> \n";
-  // echo 'All values: ' . print_r($values, TRUE) . "\n";
-  // echo 'Table desc: ' . print_r($table_desc['fields'], TRUE) . "\n";
   foreach ($values as $field => $value) {
-	  // echo "-----------------------------------------\n";
-
-
     // Require the field be in the table description.
     if (!array_key_exists($field, $table_desc['fields'])) {
-      // tripal_report_error('tripal_chado', TRIPAL_ERROR,
-      //   'chado_select_record: The field "%field" does not exist in the table "%table".  Cannot perform query. Values: %array. Fields: %fields',
-      //   [
-      //     '%field' => $field,
-      //     '%table' => $table,
-      //     '%array' => print_r($values, 1),
-      //     '%fields' => print_r($table_desc['fields'], 1),
-      //   ],
-      //   ['print' => $print_errors]
-      // );
-
-
-
       $logger->error(
         'chado_select_record: The field "' . $field . '" does not exist in the table ' .
         $table . '. Cannot perform query. Values: ' . print_r($values,1) . 
         '. Fields: ' . print_r($table_desc['fields'], 1) . $print_errors
       );
-      debug_print_backtrace(0,3);
       return [];
     }
 
@@ -1547,11 +1490,6 @@ function chado_select_record($table, $columns, $values, $options = NULL, $chado_
 
           // Ensure that looking up the foreign key didn't fail in an error.
           if ($results === FALSE OR $results === NULL) {
-	          // tripal_report_error('tripal_chado', TRIPAL_ERROR,
-            //   'chado_select_record: could not follow the foreign key definition
-            //   for %field where the definition supplied was %value',
-            //   ['%field' => $field, '%value' => print_r($value, TRUE)]
-            // );
             $logger->error(
               'chado_select_record: could not follow the foreign key definition
                for ' . $field . ' where the definition supplied was ' . print_r($value, TRUE)             
@@ -1560,15 +1498,6 @@ function chado_select_record($table, $columns, $values, $options = NULL, $chado_
           }
           // Ensure that there were results returned.
           elseif (count($results) == 0) {
-            // tripal_report_error('tripal_chado', TRIPAL_ERROR,
-            //   'chado_select_record: the foreign key definition for \'%field\' on table \'%table\' ' .
-            //   'returned no results where the definition supplied was %value',
-            //   [
-            //     '%field' => $field,
-            //     '%table' => $table,
-            //     '%value' => print_r($value, TRUE),
-            //   ]
-            // );
             $logger->error(
               'chado_select_record: the foreign key definition for \'' . $field . '\' on table '. 
               '\'' . $table . '\' ' . 'returned no results where the definition supplied was ' . 
@@ -1904,7 +1833,6 @@ function chado_query($sql, $args = [], $options = [], $chado_schema_name = NULL)
       $previous_db = chado_set_active('chado');
       try {
         $results = \Drupal::database()->query($sql, $args, $options);
-        // $results->allowRowCount = TRUE;
         chado_set_active($previous_db);
       } catch (Exception $e) {
         chado_set_active($previous_db);
@@ -1915,7 +1843,6 @@ function chado_query($sql, $args = [], $options = [], $chado_schema_name = NULL)
     // query.
     else {
       $results = \Drupal::database()->query($sql, $args, $options);
-      // $results->allowRowCount = TRUE;
     }
   }
   // Check for any cross schema joins (ie: both drupal and chado tables
@@ -1933,7 +1860,6 @@ function chado_query($sql, $args = [], $options = [], $chado_schema_name = NULL)
     else {
       $previous_db = chado_set_active('chado', $chado_schema_name);
       $results = \Drupal::database()->query($sql, $args, $options);
-      // $results->allowRowCount = TRUE;
       chado_set_active($previous_db, $chado_schema_name);    
     }
   }
