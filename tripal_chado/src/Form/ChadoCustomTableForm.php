@@ -60,7 +60,7 @@ class ChadoCustomTableForm extends FormBase {
   
       // if this is a materialized view then don't allow editing with this function
       if (property_exists($custom_table, 'mview_id') and $custom_table->mview_id) {
-        drupal_set_message("This custom table is a materialized view. Please use the " . Link::fromTextAndUrl('Materialized View', Url::fromUserInput('/admin/tripal/storage/chado/mviews')) . " interface to edit it.", 'error');
+        \Drupal::messenger()->addMessage("This custom table is a materialized view. Please use the " . Link::fromTextAndUrl('Materialized View', Url::fromUserInput('/admin/tripal/storage/chado/mviews')) . " interface to edit it.", 'error');
         drupal_goto("admin/tripal/storage/chado/custom_tables");
         return [];
       }
@@ -284,14 +284,14 @@ class ChadoCustomTableForm extends FormBase {
   
     if (strcmp($action, 'Edit') == 0) {
       chado_edit_custom_table($table_id, $schema_arr['table'], $schema_arr, $skip_creation);
-      drupal_set_message(t("Custom table has been edited."));
+      \Drupal::messenger()->addMessage(t("Custom table has been edited."), 'status');
     }
     elseif (strcmp($action, 'Add') == 0) {
       chado_create_custom_table($schema_arr['table'], $schema_arr, $skip_creation, NULL, FALSE);
-      drupal_set_message(t("Custom table has been added."));
+      \Drupal::messenger()->addMessage(t("Custom table has been added."), 'status');
     }
     else {
-      drupal_set_message(t("No action performed."));
+      \Drupal::messenger()->addMessage(t("No action performed."), 'status');
     }
   
     // drupal_goto("admin/tripal/storage/chado/custom_tables/view");
