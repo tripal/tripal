@@ -195,7 +195,12 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     $path_alias = str_replace(['%2F', '+'], ['/', '-'], urlencode($path_alias));
 
     // Now finally, set the alias.
-    $path = \Drupal::service('path.alias_storage')->save($system_path, $path_alias, $langcode);
+    $path = \Drupal::entityTypeManager()->getStorage('path_alias')->create([
+      'path' => $system_path,
+      'alias' => $path_alias,
+      'langcode' => $langcode,
+    ]);
+    $path->save();
   }
 
   /**
