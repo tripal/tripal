@@ -20,7 +20,7 @@ jobs:
       # to ensure we have not broken the install/build process.
       - name: Build the Docker
         run: |
-          docker build --tag=tripaldocker:localdocker --build-arg drupalversion='9.0.x-dev' ./
+          docker build --tag=tripaldocker:localdocker --build-arg drupalversion='9.2.x-dev' ./
       # Just spin up docker the good ol' fashion way.
       - name: Spin up Local Docker
         run: |
