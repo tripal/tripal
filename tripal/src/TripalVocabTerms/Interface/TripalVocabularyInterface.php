@@ -3,7 +3,7 @@
 namespace Drupal\tripal\TripalVocabTerms\Interface;
 
 use Drupal\tripal\TripalVocabTerms\Interface\TripalCollectionPluginInterface;
-use Drupal\tripal\TripalVocabTerms\TripalTerm
+use Drupal\tripal\TripalVocabTerms\TripalTerm;
 
 /**
  * Defines an interface for tripal vocabulary plugins.
