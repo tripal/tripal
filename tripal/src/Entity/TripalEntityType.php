@@ -276,6 +276,9 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
       'include title' => FALSE,
     ]);
 
+    // Set an extremely ugly empty title for in case there are no tokens/fields.
+    $format = 'Uknown ' . date('Ymd-h:i:sA');
+
     // A) Check to see if more informed modules have suggested a title for this
     //    type. Invoke hook_tripal_default_title_format() to get all suggestions
     //    from other modules.
@@ -295,31 +298,30 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
         }
       }
       $format = $suggestions[$lightest_key]['format'];
-      return $format;
     }
-
     // B) Generate our own ugly title by simply comma-separating all the
     //    required fields.
-    if (!$format) {
+    else {
       $tmp = [];
 
       // Check which tokens are required fields and join them into a default
       // format.
-      foreach ($tokens as $token) {
+      if (sizeof($tokens) > 0) {
+        foreach ($tokens as $token) {
 
-        // Exclude the type & term since it is not unique.
-        if ($token['token'] == '[type]') {
-          continue;
-        }
+          // Exclude the type & term since it is not unique.
+          if ($token['token'] == '[type]') {
+            continue;
+          }
 
-        // If it is required then add it to the default title
-        // since we know it has a value.
-        if ($token['required']) {
-          $tmp[] = $token['token'];
+          // If it is required then add it to the default title
+          // since we know it has a value.
+          if ($token['required']) {
+            $tmp[] = $token['token'];
+          }
         }
+        $format = implode(', ', $tmp);
       }
-      $format = implode(', ', $tmp);
-      return $format;
     }
 
     return $format;

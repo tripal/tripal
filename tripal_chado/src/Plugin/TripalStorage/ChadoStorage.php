@@ -40,6 +40,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
 	 */
 	public function preSaveEntity(&$entity) {
 
+		/*
 		// Get the Tripal Content Type.
 		$bundle = \Drupal\tripal\Entity\TripalEntityType::load($entity->getType());
 		// Then get the Tripal Term and Tripal Vocab.
