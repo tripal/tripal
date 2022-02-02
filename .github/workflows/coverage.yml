@@ -39,6 +39,10 @@ jobs:
       # Ensure we have the variables we need.
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v3.x
+      # Drupal 9.2.x needs prophecy-phpunit due to https://www.drupal.org/project/drupal/issues/3182653
+      - name: Add prophecy-phpunit
+        run: |
+          docker exec --workdir /var/www/drupal8 tripaldocker composer require phpspec/prophecy-phpunit
       # Prepare for code coverage.
       - name: Prepare for Code Coverage
         run: |
