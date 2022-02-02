@@ -150,7 +150,7 @@ class ChadoRecord {
   public function __construct($table_name, $record_id = NULL) {
 
 
-    $this->logger = \Drupal::service('tripal.logger');  
+    $this->logger = \Drupal::service('tripal.logger');
 
     if (!$table_name) {
       $message = t('ChadoRecord::_construct(). The $table_name argument is required for a ChadoRecord instance.');
@@ -692,12 +692,6 @@ class ChadoRecord {
 
     // If we only have a single match then we're good and we can update the
     // values for this object.
-
-    // Replaced by above code which is a little less efficient but count is 
-    // needed for the code below.
-    // $results->allowRowCount = TRUE;
-    // $num_matches = $results->rowCount();
-
     if ($num_matches == 1) {
       $record = $results->fetchAssoc();
       $this->values = [];
