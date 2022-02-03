@@ -72,6 +72,7 @@ class TripalEntityTypeForm extends EntityForm {
 
     // We need to choose a term if this is a new content type.
     // The term cannot be changed later!
+    /*
     if ($tripal_entity_type->isNew()) {
       $description = t('The Tripal controlled vocabulary term (cv) term which characterizes this content type. For example, to create a content type for storing "genes", use the "gene" term from the Sequence Ontology (SO). <strong>The Tripal CV Term must already exist; you can <a href="@termUrl">add a Tripal CV Term here</a>.</strong>',
         ['@termUrl' => Url::fromRoute('entity.tripal_vocab.collection')->toString()]);
@@ -112,6 +113,7 @@ class TripalEntityTypeForm extends EntityForm {
         '#weight' => -8,
       ];
     }
+    */
 
     $description = "A grouping category for this Tripal Content type. It should be the same as other Tripal Content types and can be used to group similar biological data types to make them easier to find.";
     $form['category'] = [
@@ -235,6 +237,7 @@ class TripalEntityTypeForm extends EntityForm {
     }
 
     // Ensure the cvterm has not already been used for another Content Type.
+    /*
     if ($tripal_entity_type->isNew()) {
       $entities = \Drupal::entityTypeManager()
         ->getStorage('tripal_entity_type')
@@ -244,6 +247,7 @@ class TripalEntityTypeForm extends EntityForm {
         $this->t('A Tripal Content type with choosen Tripal Controlled Vocabulay Term already exists. Please choose a unique term.'));
       }
     }
+    */
   }
 
   /**
@@ -258,7 +262,7 @@ class TripalEntityTypeForm extends EntityForm {
     $tripal_entity_type->setName($values['name']);
     $tripal_entity_type->setLabel($values['label']);
     $tripal_entity_type->setHelpText($values['help']);
-    $tripal_entity_type->setTerm($values['term_id']);
+    //$tripal_entity_type->setTerm($values['term_id']);
     $tripal_entity_type->setTitleFormat($values['title_format']);
     $tripal_entity_type->setURLFormat($values['url_format']);
 

@@ -46,8 +46,11 @@
  * @ingroup tripal_terms_api
  */
 function tripal_add_vocabulary($details) {
-  return \Drupal::service('tripal.tripalVocab.manager')
-    ->addVocabulary($details);
+  //return \Drupal::service('tripal.tripalVocab.manager')
+  ///  ->addVocabulary($details);
+  $logger = \Drupal::service('tripal.logger');
+  $logger->error('Not Implemented.');
+  return FALSE;
 }
 
 /**
@@ -79,41 +82,46 @@ function tripal_add_vocabulary($details) {
  * @ingroup tripal_terms_api
  */
 function tripal_get_vocabulary_details($name) {
+
+  // $logger = \Drupal::service('tripal.logger');
+  // $TripalVocabManager = \Drupal::service('tripal.tripalVocab.manager');
+  // $vocabulary = [];
+  //
+  // if (!is_string($name)) {
+  //   $logger->error('You must pass a string to tripal_get_vocabulary_details() to return details. Instead you passed: :var', [':var' => print_r($name, TRUE)]);
+  //   return FALSE;
+  // }
+  //
+  // // Retrieve the TripalVocab object if we wern't given it.
+  // $object = $TripalVocabManager->getVocabularies(['name' => $name]);
+  // // If the name didn't work, maybe they gave us the short name?
+  // if (!$object) {
+  //   $object = $TripalVocabManager->getVocabularies(['short_name' => $name]);
+  // }
+  //
+  // // If we were unable to retrieve it, let the caller know it doesn't exist.
+  // if (!$object) {
+  //   $logger->debug('We were unable to retrieve the Tripal Vocabulary with the name :var.', [':var' => $name]);
+  //   return FALSE;
+  // }
+  //
+  // if (is_array($object)) {
+  //   $result = [];
+  //   foreach($object as $vocab) {
+  //     $result[] = $vocab->getDetails();
+  //   }
+  // }
+  // elseif (is_object($object)) {
+  //   $result = $object->getDetails();
+  //   return $result;
+  // }
+  // else {
+  //   return FALSE;
+  // }
+
   $logger = \Drupal::service('tripal.logger');
-  $TripalVocabManager = \Drupal::service('tripal.tripalVocab.manager');
-  $vocabulary = [];
-
-  if (!is_string($name)) {
-    $logger->error('You must pass a string to tripal_get_vocabulary_details() to return details. Instead you passed: :var', [':var' => print_r($name, TRUE)]);
-    return FALSE;
-  }
-
-  // Retrieve the TripalVocab object if we wern't given it.
-  $object = $TripalVocabManager->getVocabularies(['name' => $name]);
-  // If the name didn't work, maybe they gave us the short name?
-  if (!$object) {
-    $object = $TripalVocabManager->getVocabularies(['short_name' => $name]);
-  }
-
-  // If we were unable to retrieve it, let the caller know it doesn't exist.
-  if (!$object) {
-    $logger->debug('We were unable to retrieve the Tripal Vocabulary with the name :var.', [':var' => $name]);
-    return FALSE;
-  }
-
-  if (is_array($object)) {
-    $result = [];
-    foreach($object as $vocab) {
-      $result[] = $vocab->getDetails();
-    }
-  }
-  elseif (is_object($object)) {
-    $result = $object->getDetails();
-    return $result;
-  }
-  else {
-    return FALSE;
-  }
+  $logger->error('Not Implemented.');
+  return FALSE;
 }
 
 /**
@@ -127,14 +135,18 @@ function tripal_get_vocabulary_details($name) {
  * @ingroup tripal_terms_api
  */
 function tripal_get_vocabularies() {
-  $objects = \Drupal::service('tripal.tripalVocab.manager')
-    ->getVocabularies([]);
+  // $objects = \Drupal::service('tripal.tripalVocab.manager')
+  //   ->getVocabularies([]);
+  //
+  // $results = [];
+  // foreach ($objects as $vocab) {
+  //   $results[] = $vocab->getDetails();
+  // }
+  // return $results;
 
-  $results = [];
-  foreach ($objects as $vocab) {
-    $results[] = $vocab->getDetails();
-  }
-  return $results;
+  $logger = \Drupal::service('tripal.logger');
+  $logger->error('Not Implemented.');
+  return [];
 }
 
 /**
@@ -167,7 +179,11 @@ function tripal_get_vocabularies() {
  * @ingroup tripal_terms_api
  */
 function tripal_add_term($details) {
-  return \Drupal::service('tripal.tripalTerm.manager')->addTerm($details);
+  //return \Drupal::service('tripal.tripalTerm.manager')->addTerm($details);
+
+  $logger = \Drupal::service('tripal.logger');
+  $logger->error('Not Implemented.');
+  return FALSE;
 }
 
 /**
@@ -203,32 +219,36 @@ function tripal_add_term($details) {
  */
 function tripal_get_term_details($vocabulary, $accession) {
 
-  // Set the details array as expected by the new API.
-  $details = [
-    'vocabulary' => tripal_get_vocabulary_details($vocabulary),
-    'accession' => $accession,
-  ];
-  if (array_key_exists('TripalVocab', $details['vocabulary'])) {
-    $details['vocabulary']['vocab_id'] = $details['vocabulary']['TripalVocab']
-      ->id();
-  }
+  // // Set the details array as expected by the new API.
+  // $details = [
+  //   'vocabulary' => tripal_get_vocabulary_details($vocabulary),
+  //   'accession' => $accession,
+  // ];
+  // if (array_key_exists('TripalVocab', $details['vocabulary'])) {
+  //   $details['vocabulary']['vocab_id'] = $details['vocabulary']['TripalVocab']
+  //     ->id();
+  // }
+  //
+  // $term = \Drupal::service('tripal.tripalTerm.manager')->getTerms($details);
+  // if (is_array($term)) {
+  //   if (sizeof($term) === 1) {
+  //     $term = array_pop($term);
+  //     return $term->getDetails();
+  //   }
+  //   else {
+  //     return NULL;
+  //   }
+  // }
+  // elseif (is_object($term)) {
+  //   return $term->getDetails();
+  // }
+  // else {
+  //   return NULL;
+  // }
 
-  $term = \Drupal::service('tripal.tripalTerm.manager')->getTerms($details);
-  if (is_array($term)) {
-    if (sizeof($term) === 1) {
-      $term = array_pop($term);
-      return $term->getDetails();
-    }
-    else {
-      return NULL;
-    }
-  }
-  elseif (is_object($term)) {
-    return $term->getDetails();
-  }
-  else {
-    return NULL;
-  }
+  $logger = \Drupal::service('tripal.logger');
+  $logger->error('Not Implemented.');
+  return NULL;
 }
 
 /**
@@ -248,6 +268,8 @@ function tripal_get_term_details($vocabulary, $accession) {
 function tripal_get_vocabulary_root_terms($vocabulary) {
 
   // @UPGRADE
+  $logger = \Drupal::service('tripal.logger');
+  $logger->error('Not Implemented.');
   return [];
 }
 
@@ -268,5 +290,7 @@ function tripal_get_vocabulary_root_terms($vocabulary) {
 function tripal_get_term_children($vocabulary, $accession) {
 
   // Tripal Terms do not have a hierarchy.
+  $logger = \Drupal::service('tripal.logger');
+  $logger->error('Not Implemented.');
   return [];
 }

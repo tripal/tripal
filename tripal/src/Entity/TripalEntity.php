@@ -36,7 +36,7 @@ use Drupal\user\UserInterface;
  *     },
  *   },
  *   base_table = "tripal_entity",
- *   admin_permission = "administer tripal content entities",
+ *   admin_permission = "access tripal content overview",
  *   entity_keys = {
  *     "id" = "id",
  *     "bundle" = "type",
@@ -99,8 +99,8 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * {@inheritdoc}
    */
   public function getID() {
-    $entity_id = $this->id->getValue();
-    if (is_array($entity_id)) {
+    $entity_id = $this->id();
+    if (is_array($entity_id) AND array_key_exists(0, $entity_id)) {
       return $entity_id[0]['value'];
     }
     return $entity_id;
@@ -195,7 +195,12 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     $path_alias = str_replace(['%2F', '+'], ['/', '-'], urlencode($path_alias));
 
     // Now finally, set the alias.
-    $path = \Drupal::service('path.alias_storage')->save($system_path, $path_alias, $langcode);
+    $path = \Drupal::entityTypeManager()->getStorage('path_alias')->create([
+      'path' => $system_path,
+      'alias' => $path_alias,
+      'langcode' => $langcode,
+    ]);
+    $path->save();
   }
 
   /**
@@ -278,8 +283,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       $bundle_entity = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
     }
 
-    $term_entity = $bundle_entity->getTerm();
-
     // Determine which tokens were used in the format string
     $used_tokens = [];
     if (preg_match_all('/\[.*?\]/', $string, $matches)) {
@@ -350,15 +353,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       elseif ($token == 'TripalEntityType__label') {
         $value = $bundle_entity->getLabel();
       }
-      elseif ($token == 'TripalTerm__vocab') {
-        $value = $term_entity->getVocab()->getLabel();
-      }
-      elseif ($token == 'TripalTerm__accession') {
-        $value = $term_entity->getAccession();
-      }
-      elseif ($token == 'TripalTerm__name') {
-        $value = $term_entity->getName();
-      }
       else {
         $value_obj = $this->get($field_name);
         if ($value_obj) {
@@ -417,14 +411,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       ))
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
-
-    $fields['term_id'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('CV Term'))
-      ->setDescription(t('The controlled vocabulary term ID.'))
-      ->setRevisionable(FALSE)
-      ->setSetting('target_type', 'tripal_term')
-      ->setSetting('handler', 'default')
-      ->setTranslatable(FALSE);
 
     $fields['title'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Title'))
