@@ -54,8 +54,8 @@ class ChadoCustomTableForm extends FormBase {
     $default_schema = '';
     $default_force_drop = 0;
     if (strcmp($action, 'Edit') == 0) {
-      $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id ";
-      $results = db_query($sql, [':table_id' => $table_id]);
+      $sql = "SELECT * FROM tripal_custom_tables WHERE table_id = :table_id ";
+      $results = chado_query($sql, [':table_id' => $table_id]);
       $custom_table = $results->fetchObject();
   
       // if this is a materialized view then don't allow editing with this function
@@ -243,8 +243,8 @@ class ChadoCustomTableForm extends FormBase {
         if ($action == 'Edit') {
           // see if the table name has changed. If so, then check to make sure
           // it doesn't already exists. We don't want to drop a table we didn't mean to
-          $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id";
-          $results = db_query($sql, [':table_id' => $table_id]);
+          $sql = "SELECT * FROM tripal_custom_tables WHERE table_id = :table_id";
+          $results = chado_query($sql, [':table_id' => $table_id]);
           $ct = $results->fetchObject();
           if ($ct->table_name != $schema_array['table']) {
             $exists = chado_table_exists($schema_array['table']);
@@ -283,12 +283,16 @@ class ChadoCustomTableForm extends FormBase {
   
   
     if (strcmp($action, 'Edit') == 0) {
-      chado_edit_custom_table($table_id, $schema_arr['table'], $schema_arr, $skip_creation);
-      drupal_set_message(t("Custom table has been edited."));
+      $action_result = chado_edit_custom_table($table_id, $schema_arr['table'], $schema_arr, $skip_creation);
+      if($action_result) {
+        \Drupal::messenger()->addMessage(t("Custom table has been edited."), 'status');
+      }
     }
     elseif (strcmp($action, 'Add') == 0) {
-      chado_create_custom_table($schema_arr['table'], $schema_arr, $skip_creation, NULL, FALSE);
-      drupal_set_message(t("Custom table has been added."));
+      $action_result = chado_create_custom_table($schema_arr['table'], $schema_arr, $skip_creation, NULL, FALSE);
+      if($action_result) {
+        \Drupal::messenger()->addMessage(t("Custom table has been added."), 'status');
+      }
     }
     else {
       drupal_set_message(t("No action performed."));
