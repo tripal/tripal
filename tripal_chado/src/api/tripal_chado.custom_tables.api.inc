@@ -4,6 +4,8 @@
  * Provides an API to manage custom tables in Chado.
  */
 
+use Drupal\tripal_chado\api\ChadoSchemaExtended;
+
 /**
  * @defgroup tripal_custom_tables_api Chado Custom Tables
  * @ingroup tripal_chado_api
@@ -26,9 +28,14 @@
  */
 
 function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exists = 1) {
+  $chado_schema = chado_get_schema_name('chado'); // Todo - is this really how we want to get the schema name? 
+                                                  // Does not seem like it would work with multi-chado instances.
+
+  // This connection is the default which is 'public' schema
+  $connection = \Drupal::database();
 
   $messenger = \Drupal::messenger();
-  $transaction = db_transaction();
+  $transaction = $connection->startTransaction();
 
   try {
     // Create a new record.
@@ -39,7 +46,7 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
 
     // Get the current custom table record.
     $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id";
-    $results = db_query($sql, [':table_id' => $table_id]);
+    $results = $connection->query($sql, [':table_id' => $table_id]);
     $custom_table = $results->fetchObject();
 
     // Check if the table is suitable for editing (not mview, doesn't exist in tripal_custom_tables table).
@@ -57,7 +64,8 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
     // If the user changed the table name, we want to drop the old one and force
     // creation of the new one.
     if ($custom_table->table_name != $table_name) {
-      chado_query("DROP TABLE %s", $custom_table->table_name);
+      // chado_query("DROP TABLE %s", $custom_table->table_name);
+      chado_delete_custom_table($table_id);
       $skip_if_exists = 0; // we DO want to create the table now
     }
 
@@ -66,13 +74,13 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
       // Check if the table exists with chado_table_exists instead of db_table_exists because
       //  that function is deprected in Drupal 8 and removed in Drupal 9
       if (chado_table_exists($custom_table->table_name)) {
-          chado_query("DROP TABLE %s", $custom_table->table_name);
-          $messenger->addStatus(t("Custom Table " . $custom_table->table_name . " dropped"));
+          // chado_query("DROP TABLE %s", $custom_table->table_name);
+          chado_delete_custom_table($table_id);
       }
     }
 
     // Update the custom table record and run the create custom table function.
-    \Drupal::database()->insert('tripal_custom_tables')
+    $connection->insert('tripal_custom_tables')
       ->fields([
         'table_id' => $record->table_id,
         'table_name' => $record->table_name,
@@ -80,7 +88,7 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
       ])
       ->execute();
     $success = chado_create_custom_table($table_name, $schema, $skip_if_exists);
-
+    return TRUE;
   }
   catch (Exception $e) {
     \Drupal::logger('tripal_chado')->error($e);
@@ -133,13 +141,23 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE, $mvi
 
   $chado_schema = chado_get_schema_name('chado'); // Todo - is this really how we want to get the schema name? 
                                                   // Does not seem like it would work with multi-chado instances.
-  $chado_dot = $chado_schema . '.';
+
+  // This connection is the default which is 'public' schema
   $connection = \Drupal::database();
+
+  // This database connection is the 'chado' schema
+  $connection_chado = \Drupal\Core\Database\Database::getConnection('default', $chado_schema);
+
+  // Create a transaction for public schema
   $transaction = $connection->startTransaction();
+
+  // Also create a transaction for chado schema
+  $transaction_chado = $connection_chado->startTransaction();
   try {
     // See if the table already exists
-    $table_exists = $connection->schema()->tableExists($chado_dot . $table);
-    // See if the table is listed 
+    $table_exists = $connection_chado->schema()->tableExists($table);
+
+    // See if the table is listed in the public.tripal_custom_tables used to keep record of the table
     $centry = $connection
       ->select('tripal_custom_tables','tct')
       ->fields('tct', ['table_name'])
@@ -148,16 +166,18 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE, $mvi
     
     // Create the table if it doesn't exist.
     if (!$table_exists) {
-      $connection->schema()->createTable($chado_dot . $table, $schema);
+      // Since this is being created in the chado schema, using the connection_chado
+      $connection_chado->schema()->createTable($table, $schema);
       $created = 1;
     }
 
     // Recreate the table if it exists, if it's in the list, and if we aren't skipping existing ones
     if ($table_exists AND is_object($centry) AND !$skip_if_exists) {
-      // Drop the table
-      $connection->schema()->dropTable($chado_dot . $table);
-      // And re-add it
-      $connection->schema()->createTable($chado_dot . $table, $schema);
+      // Drop the table (use the connection_chado since the table is in chado schema)
+      $connection_chado->schema()->dropTable($table);
+
+      // And re-add it (use the connection_chado since the table is in chado schema)
+      $connection_chado->schema()->createTable($table, $schema);
       $recreated = 1;
 
       // TODO the old code unset "referring_tables" from $schema,
@@ -170,7 +190,8 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE, $mvi
         ->condition('table_name',$table)
         ->execute();
     }
-    // Assemble the record
+
+    // Assemble the record to be saved in the public.tripal_custom_tables as a record
     $record = [
       'table_name' => $table,
       'schema'     => serialize($schema),
@@ -179,14 +200,19 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE, $mvi
     $connection->insert('tripal_custom_tables')
       ->fields($record)
       ->execute();
-                  
+
+    return TRUE;   
   } 
   catch (Exception $e) {
+    // Perform rollbacks to both the public and chado schemas
     $transaction->rollback();
+    $transaction_chado->rollback();
+    // Output this error the the recent logs which can be seen via Drupal Recent Logs UI
     \Drupal::logger('tripal_chado')->error($e);
+    return FALSE;
   }
   
-  return $created;
+  // return $created;
 }
 
 /**
@@ -308,8 +334,15 @@ function chado_get_custom_table_names($include_mview = TRUE) {
  * @return void
  */
 function chado_delete_custom_table($table_id) {
+  $chado_schema = chado_get_schema_name('chado');
+
   $connection = \Drupal::database();
+
+  // This database connection is the 'chado' schema
+  $connection_chado = \Drupal\Core\Database\Database::getConnection('default', $chado_schema);
+
   $transaction = $connection->startTransaction();
+  $transaction_chado = $connection_chado->startTransaction();
 
   try {
     // Get details about this table from tripal_custom_tables
@@ -327,16 +360,16 @@ function chado_delete_custom_table($table_id) {
     
     // Don't delete if this table is a materialized view 
     if($table_details->mview_id) {
-      tripal_report_error('tripal_chado', TRIPAL_ERROR, "Please use the chado_delete_mview() function to delete this custom table as it is a materialized view. Table not deleted.", []);
-      //$messenger->addError("This custom table is a materialized view. Please use the " . l('Materialized View', 'admin/tripal/storage/chado/mviews') . " interface to delete it.");
-      //return FALSE;
+      // Output this error the the recent logs which can be seen via Drupal Recent Logs UI
+      \Drupal::logger('tripal_chado')->error("Please use the chado_delete_mview() function to delete this custom table as it is a materialized view. Table not deleted.");
+      return FALSE;
     }
 
     // Also check if it exists in the database as promised.
     $chado_schema = chado_get_schema_name('chado'); // Todo - is this really how we want to get the schema name? 
                                                 // Does not seem like it would work with multi-chado instances.
-    $chado_dot = $chado_schema . '.';
-    $table_exists = $connection->schema()->tableExists($chado_dot . $table_details->table_name);
+
+    $table_exists = $connection_chado->schema()->tableExists($table_details->table_name);
 
     // Return errors if the table doesn't exist (either in
     // tripal_custom_tables or in the database itself).
@@ -352,16 +385,21 @@ function chado_delete_custom_table($table_id) {
       ->execute();
     
     // Drop the table from Chado (checking if it exists)
-    $deleted = $connection->schema()->dropTable($chado_dot . $table_details->table_name);
+    $deleted = $connection_chado->schema()->dropTable($table_details->table_name);
     if ($delisted and $deleted) {
       return TRUE;
     }
     else {
       \Drupal::logger('tripal_chado')->error('Could not delete the ". $table_details->table_name ." table');
+      return FALSE;
     }
       
   } 
   catch (Exception $e) {
-      tripal_set_message($e,TRIPAL_WARNING);
+      // Perform rollbacks to both the public and chado schemas
+      $transaction->rollback();
+      $transaction_chado->rollback();    
+      // Output this error the the recent logs which can be seen via Drupal Recent Logs UI
+      \Drupal::logger('tripal_chado')->error($e);
   }
 }

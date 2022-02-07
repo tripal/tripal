@@ -25,13 +25,13 @@ class ChadoCustomTablesDeleteForm extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state, $table_id = null) {
   
     // get details about this table entry
-    $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id";
-    $results = db_query($sql, [':table_id' => $table_id]);
+    $sql = "SELECT * FROM tripal_custom_tables WHERE table_id = :table_id";
+    $results = chado_query($sql, [':table_id' => $table_id]);
     $entry = $results->fetchObject();
   
     // if this is a materialized view then don't allow editing with this function
     if ($entry->mview_id) {
-      drupal_set_message("This custom table is a materialized view. Please use the " . Link::fromTextAndUrl('Materialized View', Url::fromUserInput('admin/tripal/storage/chado/mviews')) . " interface to delete it.", 'error');
+      \Drupal::messenger()->addMessage("This custom table is a materialized view. Please use the " . Link::fromTextAndUrl('Materialized View', Url::fromUserInput('admin/tripal/storage/chado/mviews')) . " interface to delete it.", 'error');
       drupal_goto("admin/tripal/storage/chado/custom_tables");
       return [];
     }
@@ -66,7 +66,6 @@ class ChadoCustomTablesDeleteForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $values = $form_state->getValues();
-    // drupal_set_message(print_r($values, true));
     
     $action = $values['op'];
     $table_id = $values['table_id'];
@@ -74,14 +73,14 @@ class ChadoCustomTablesDeleteForm extends FormBase {
     if (strcmp($action, 'Delete') == 0) {
       $result = chado_delete_custom_table($table_id);
       if($result == TRUE) {
-        drupal_set_message(t("Custom table successfully deleted"));
+        \Drupal::messenger()->addMessage(t("Custom table successfully deleted"));
       }
       else {
-        drupal_set_message(t("An error occurred when trying to delete custom table. Check the report logs."));
+        \Drupal::messenger()->addMessage(t("An error occurred when trying to delete custom table. Check the report logs."));
       }
     }
     else {
-      drupal_set_message(t("No action performed."));
+      \Drupal::messenger()->addMessage(t("No action performed."));
     }
     // drupal_goto("admin/tripal/storage/chado/custom_tables/view");
     $response = new RedirectResponse(\Drupal\Core\Url::fromUserInput('/admin/tripal/storage/chado/custom_tables')->toString());
