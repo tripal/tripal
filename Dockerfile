@@ -141,7 +141,6 @@ RUN export COMPOSER_MEMORY_LIMIT=-1 \
   && cd drupal8 \
   && composer require --dev drupal/core-dev:${drupalversion} \
   && composer require drush/drush drupal/console:~1.0 \
-  && composer up \
   && ls /var/www/drupal8/web/sites/default/
 
 ## Set files directory permissions
