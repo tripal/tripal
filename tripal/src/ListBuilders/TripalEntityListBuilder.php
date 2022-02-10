@@ -34,7 +34,6 @@ class TripalEntityListBuilder extends EntityListBuilder {
 
     $type_name = $entity->getType();
     $bundle = \Drupal\tripal\Entity\TripalEntityType::load($type_name);
-    $term = $bundle->getTerm();
 
     $row['title'] = Link::fromTextAndUrl(
       $entity->getTitle(),
@@ -42,7 +41,7 @@ class TripalEntityListBuilder extends EntityListBuilder {
     )->toString();
 
     $row['type'] = $bundle->getLabel();
-    $row['term'] = $term->getVocab()->getLabel() . ':' . $term->getAccession();
+    $row['term'] = '';
 
     $row['author'] = '';
     $owner = $entity->getOwner();

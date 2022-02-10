@@ -94,8 +94,6 @@ function tripal_uninstall() {
    $bundle_ids = reset($bundle_ids);
    entity_delete_multiple("TripalBundle", array_keys($bundle_ids));
 
-   // @TODO: Should we delete all TripalVocabularies and TripalTerms?
-
    // Finally purge all fields that are no longer used.
    field_purge_batch(100);
    */

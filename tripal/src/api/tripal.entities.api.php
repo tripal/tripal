@@ -150,3 +150,88 @@ function theme_token_list($tokens) {
     '#rows' => $rows
   ];
 }
+
+/**
+ * Refreshes the bundle such that new fields added by modules will be found
+ * during cron.
+ *
+ * @param $bundle_name
+ *   The name of the bundle to refresh (e.g. bio_data_4).
+ *
+ * @ingroup tripal_entities_api
+ */
+function tripal_tripal_cron_notification() {
+  $num_created = 0;
+
+  // Get all bundle names to cycle through.
+  $all_bundles = db_select('tripal_bundle', 'tb')
+    ->fields('tb', ['name'])
+    ->execute()->fetchAll();
+
+  foreach ($all_bundles as $bundle_name) {
+    // Get the bundle object.
+    $bundle = tripal_load_bundle_entity(['name' => $bundle_name->name]);
+    if (!$bundle) {
+      tripal_report_error('tripal', TRIPAL_ERROR, "Unrecognized bundle name '%bundle'.",
+        ['%bundle' => $bundle_name]);
+      return FALSE;
+    }
+    $term = tripal_load_term_entity(['term_id' => $bundle->term_id]);
+
+    // Allow modules to add fields to the new bundle.
+    $modules = module_implements('bundle_fields_info');
+    foreach ($modules as $module) {
+      $function = $module . '_bundle_fields_info';
+      $entity_type = 'TripalEntity';
+      $info = $function($entity_type, $bundle);
+      drupal_alter('bundle_fields_info', $info, $bundle, $term);
+      foreach ($info as $field_name => $details) {
+
+        // If the field already exists then skip it.
+        $field = field_info_field($details['field_name']);
+        if ($field) {
+          continue;
+        }
+
+        // Create notification that new fields exist.
+        $detail_info = ' Tripal has detected a new field ' . $details['field_name'] . ' for ' . $bundle->label . ' content type is available for import.';
+        $title = 'New field available for import';
+        $actions['Import'] = 'admin/import/field/' . $details['field_name'] . '/' . $bundle_name->name . '/' . $module . '/field';
+        $type = 'Field';
+        $submitter_id = $details['field_name'] . '-' . $bundle_name->name . '-' . $module;
+
+        tripal_add_notification($title, $detail_info, $type, $actions, $submitter_id);
+        $num_created++;
+      }
+    }
+
+    // Allow modules to add instances to the new bundle.
+    $modules = module_implements('bundle_instances_info');
+    foreach ($modules as $module) {
+      $function = $module . '_bundle_instances_info';
+      $entity_type = 'TripalEntity';
+      $info = $function($entity_type, $bundle);
+      drupal_alter('bundle_instances_info', $info, $bundle, $term);
+      foreach ($info as $field_name => $details) {
+
+        // If the field is already attached to this bundle then skip it.
+        $field = field_info_field($details['field_name']);
+        if ($field and array_key_exists('bundles', $field) and
+          array_key_exists('TripalEntity', $field['bundles']) and
+          in_array($bundle->name, $field['bundles']['TripalEntity'])) {
+          continue;
+        }
+
+        // Create notification that new fields exist.
+        $detail_info = ' Tripal has detected a new field ' . $details['field_name'] . ' for ' . $bundle->label . ' content type is available for import.';
+        $title = 'New field available for import';
+        $actions['Import'] = 'admin/import/field/' . $details['field_name'] . '/' . $bundle->name . '/' . $module . '/instance';
+        $type = 'Field';
+        $submitter_id = $details['field_name'] . '-' . $bundle_name->name . '-' . $module;
+
+        tripal_add_notification($title, $detail_info, $type, $actions, $submitter_id);
+        $num_created++;
+      }
+    }
+  }
+}
