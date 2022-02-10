@@ -12,16 +12,24 @@ jobs:
     name: Docker Build (drupal${{ matrix.drupalversion }})
     steps:
       - name: Login to DockerHub
-        uses: docker/login-action@v1 
+        uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      - name: Build and push
+      - name: Build matrix drupal version
         id: docker_build
         uses: docker/build-push-action@v2
         with:
           push: true
           tags: |
             tripalproject/tripaldocker:drupal${{ matrix.drupalversion }}
-            ${{ (matrix.drupalversion == '9.1.x-dev' && 'tripalproject/tripaldocker:latest' ) || '' }}
+          build-args: "drupalversion=${{ matrix.drupalversion }}"
+      - name: Build latest using 9.1.x-dev
+        id: docker_build_latest
+        uses: docker/build-push-action@v2
+        if: ${{ matrix.drupalversion == '9.1.x-dev' }}
+        with:
+          push: true
+          tags: |
+            tripalproject/tripaldocker:latest
           build-args: "drupalversion=${{ matrix.drupalversion }}"
