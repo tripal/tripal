@@ -11,6 +11,7 @@
          beStrictAboutChangesToGlobalState="true"
          printerClass="\Drupal\Tests\Listeners\HtmlOutputPrinter"
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
+  <!-- For coverage reports for phpunit 9. -->
   <coverage>
     <include>
       <directory suffix=".php">tripal/src</directory>
@@ -19,6 +20,15 @@
       <file>tripal_chado/tripal_chado.module</file>
     </include>
   </coverage>
+  <!-- Filter for coverage reports for phpunit 8. -->
+  <filter>
+    <whitelist>
+      <directory suffix=".php">tripal/src</directory>
+      <file>tripal/tripal.module</file>
+      <directory suffix=".php">tripal_chado/src</directory>
+      <file>tripal_chado/tripal_chado.module</file>
+     </whitelist>
+  </filter>
   <php>
     <!-- Set error reporting to E_ALL. -->
     <ini name="error_reporting" value="32767"/>
