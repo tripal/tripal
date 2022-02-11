@@ -387,13 +387,13 @@ function tripal_get_term_details($vocabulary, $accession) {
       // Let the user know that the url is missing.
       if ($url_missing) {
         //         tripal_add_notification(
-        //           "Missing CV term URL", 
+        //           "Missing CV term URL",
         //           t("The controlled vocabulary, %vocab, is missing a URL. Tripal will handle " .
         //             "this by linking to the cv/lookup page of this site. However, the correct " .
-        //             "should be updated for this site", 
+        //             "should be updated for this site",
         //             ['%vocab' => $term['vocabulary']['short_name']]),
-        //           'Controlled Vocabularies', 
-        //           NULL, 
+        //           'Controlled Vocabularies',
+        //           NULL,
         //           'mising-vocab-' . $term['vocabulary']['short_name']
         //         );
       }
@@ -592,7 +592,7 @@ function tripal_get_vocabularies() {
  * @ingroup tripal_terms_api
  */
 function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
-                                     $title = 'Vocabulary Term', $description = '', $is_required,
+                                     $title = 'Vocabulary Term', $description = '', $is_required = FALSE,
                                      $field_name = '', $delta = 0, $callback = '', $wrapper = '', $validate = [],
                                      $weight = 0) {
 
@@ -671,8 +671,8 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
     $form['term_match' . $delta]['terms_list' . $delta] = [
       '#type' => 'fieldset',
       '#title' => t('Matching Terms'),
-      '#description' => t('Please select the best matching term. If the 
-        same term exists in multiple vocabularies you will see more than 
+      '#description' => t('Please select the best matching term. If the
+        same term exists in multiple vocabularies you will see more than
         one option below.'),
     ];
     $match = [

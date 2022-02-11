@@ -43,14 +43,16 @@ function tripal_ws_init() {
 
   $vocab = tripal_get_vocabulary_details('hydra');
 
-  // Following the WC3 Hydra documentation, we want to add  LINK to the header
-  // of the site that indicates where the API documentation can be found.
-  // This allows a hydra-enabled client to discover the API and use it.
-  $attributes = array(
-    'rel' => $vocab['sw_url'] . 'apiDocumentation',
-    'href' => $api_url . '/doc/v0.1',
-  );
-  drupal_add_html_head_link($attributes, $header = FALSE);
+  if (is_array($vocab)) {
+    // Following the WC3 Hydra documentation, we want to add  LINK to the header
+    // of the site that indicates where the API documentation can be found.
+    // This allows a hydra-enabled client to discover the API and use it.
+    $attributes = array(
+      'rel' => $vocab['sw_url'] . 'apiDocumentation',
+      'href' => $api_url . '/doc/v0.1',
+    );
+    drupal_add_html_head_link($attributes, $header = FALSE);
+  }
 }
 
 /**
