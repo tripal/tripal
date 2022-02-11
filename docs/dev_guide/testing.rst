@@ -21,4 +21,4 @@ If you are using the docker distributed with this module, then you can run tests
 
 .. code:: bash
 
-  docker exec --workdir=/var/www/drupal8/web/modules/contrib/tripal t4d8 phpunit
+  docker exec --workdir=/var/www/drupal9/web/modules/contrib/tripal t4d8 phpunit

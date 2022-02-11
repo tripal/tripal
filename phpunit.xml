@@ -11,6 +11,7 @@
          beStrictAboutChangesToGlobalState="true"
          printerClass="\Drupal\Tests\Listeners\HtmlOutputPrinter"
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
+  <!-- For coverage reports for phpunit 9. -->
   <coverage>
     <include>
       <directory suffix=".php">tripal/src</directory>
@@ -19,6 +20,15 @@
       <file>tripal_chado/tripal_chado.module</file>
     </include>
   </coverage>
+  <!-- Filter for coverage reports for phpunit 8. -->
+  <filter>
+    <whitelist>
+      <directory suffix=".php">tripal/src</directory>
+      <file>tripal/tripal.module</file>
+      <directory suffix=".php">tripal_chado/src</directory>
+      <file>tripal_chado/tripal_chado.module</file>
+     </whitelist>
+  </filter>
   <php>
     <!-- Set error reporting to E_ALL. -->
     <ini name="error_reporting" value="32767"/>
@@ -29,8 +39,8 @@
     <!-- Example SIMPLETEST_BASE_URL value: http://localhost -->
     <env name="SIMPLETEST_BASE_URL" value="http://localhost"/>
     <!-- Example SIMPLETEST_DB value: mysql://username:password@localhost/databasename#table_prefix -->
-    <env name="SIMPLETEST_DB" value="pgsql://drupaladmin:drupal8developmentonlylocal@localhost/sitedb"/>
-    <!-- Example BROWSERTEST_OUTPUT_DIRECTORY value: /var/www/drupal8/web/sites/default/files/simpletest -->
+    <env name="SIMPLETEST_DB" value="pgsql://drupaladmin:drupal9developmentonlylocal@localhost/sitedb"/>
+    <!-- Example BROWSERTEST_OUTPUT_DIRECTORY value: /var/www/drupal9/web/sites/default/files/simpletest -->
     <env name="BROWSERTEST_OUTPUT_DIRECTORY" value=""/>
     <!-- To have browsertest output use an alternative base URL. For example if
      SIMPLETEST_BASE_URL is an internal DDEV URL, you can set this to the
