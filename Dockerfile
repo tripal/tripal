@@ -136,12 +136,12 @@ RUN chmod a+x /app/tripaldocker/init_scripts/composer-init.sh \
 
 ## Use composer to install Drupal.
 WORKDIR /var/www
+ARG composerpackages="drupal/core-dev:${drupalversion} drush/drush drupal/console:~1.0"
 RUN export COMPOSER_MEMORY_LIMIT=-1 \
   && composer create-project drupal/recommended-project:${drupalversion} drupal9 --stability dev --no-interaction \
   && cd drupal9 \
-  && composer require --dev drupal/core-dev:${drupalversion} \
-  && composer require drush/drush drupal/console:~1.0 \
-  && ls /var/www/drupal9/web/sites/default/
+  && if [[ ${drupalversion} =~ ^9\.\[1-9] ]]; then composerpackages+=' phpspec/prophecy-phpunit'; fi \
+  && composer require --dev ${composerpackages}
 
 ## Set files directory permissions
 RUN mkdir /var/www/drupal9/web/sites/default/files \
