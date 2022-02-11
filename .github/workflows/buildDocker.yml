@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        drupalversion: ['9.0.x-dev', '9.1.x-dev', '9.2.x-dev']
+        drupalversion: ['9.1.x-dev', '9.2.x-dev', '9.3.x-dev', '9.4.x-dev']
     name: Docker Build (drupal${{ matrix.drupalversion }})
     steps:
       - name: Login to DockerHub

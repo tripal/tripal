@@ -1,5 +1,5 @@
 # Run some PHPUnit tests
-name: Test Coverage on Drupal 9.0.x-dev
+name: Test Coverage on Drupal 9.2.x-dev
 
 # When do we want the tests to run?
 on: [push]
