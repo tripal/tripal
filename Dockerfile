@@ -5,7 +5,7 @@ FROM php:7.3-apache-buster
 
 MAINTAINER Lacey-Anne Sanderson <laceyannesanderson@gmail.com>
 
-ARG drupalversion='9.1.x-dev'
+ARG drupalversion='9.3.x-dev'
 ARG modules='tripal tripal_chado'
 
 COPY . /app
@@ -161,7 +161,7 @@ RUN cd /var/www/drupal9 \
   --account-name=drupaladmin \
   --account-pass=some_admin_password \
   --site-mail="drupaladmin@localhost" \
-  --site-name="Drupal 9 Development" \
+  --site-name="Tripal 4 on Drupal 9 DEVELOPMENT" \
   && service apache2 stop \
   && service postgresql stop
 
