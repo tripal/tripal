@@ -98,6 +98,7 @@ class ChadoPreparer {
    * Loads ontologies necessary for creation of default Tripal content types.
    */
   protected function loadOntologies() {
+    /* OLD METHOD -NEEDS UPGRADE
     \Drupal::service('tripal.tripalVocab.manager')->addVocabulary([
       'idspace' => 'NCIT',
       'namespace' => 'ncit',
@@ -218,7 +219,7 @@ class ChadoPreparer {
         'url' => '',
         'urlprefix' => '',
       ],
-    ]; */
+    ]; -/
 
     // Actually add the terms described above.
     // The term manager will create the vocabulary if it doesn't exist.
@@ -314,25 +315,27 @@ class ChadoPreparer {
    */
   protected function generalContentTypes() {
     // Create the 'Organism' entity type. This uses the obi:organism term.
+    /* OLD METHOD -NEEDS UPGRADE
     $term = \Drupal::service('tripal.tripalTerm.manager')->getTerms([
       'accession' => '0100026',
       'vocabulary' => [
         'namespace' => 'obi',
         'idspace' => 'OBI',
       ],
-    ]);
+    ]);*/
 
     $organism = TripalEntityType::create([
       'id' => 1,
       'name' => 'bio_data_1',
       'label' => 'Organism',
-      'term_id' => $term->getID(),
-      'help_text' => $term->getDefinition(),
+      //'term_id' => $term->getID(),
+      //'help_text' => $term->getDefinition(),
       'category' => 'General',
     ]);
     $organism->save();
 
     // Create the 'Analysis' entity type. This uses the EDAM:analysis term.
+    /* OLD METHOD -NEEDS UPGRADE
     $term = \Drupal::service('tripal.tripalTerm.manager')->getTerms([
       'accession' => '2945',
       'vocabulary' => [
@@ -340,13 +343,14 @@ class ChadoPreparer {
         'idspace' => 'operation',
       ],
     ]);
+    */
 
     $analysis = TripalEntityType::create([
       'id' => 2,
       'name' => 'bio_data_2',
       'label' => 'Analysis',
-      'term_id' => $term->getID(),
-      'help_text' => $term->getDefinition(),
+      //'term_id' => $term->getID(),
+      //'help_text' => $term->getDefinition(),
       'category' => 'General',
     ]);
     $analysis->save();
@@ -367,6 +371,7 @@ class ChadoPreparer {
    */
   protected function genomicContentTypes() {
     // Create the 'Gene' entity type. This uses the sequence:gene term.
+    /* OLD METHOD -NEEDS UPGRADE
     $term = \Drupal::service('tripal.tripalTerm.manager')->getTerms([
       'accession' => '0000704',
       'vocabulary' => [
@@ -374,13 +379,14 @@ class ChadoPreparer {
         'idspace' => 'SO',
       ],
     ]);
+    */
 
     $gene = TripalEntityType::create([
       'id' => 8,
       'name' => 'bio_data_8',
       'label' => 'Gene',
-      'term_id' => $term->getID(),
-      'help_text' => $term->getDefinition(),
+      //'term_id' => $term->getID(),
+      //'help_text' => $term->getDefinition(),
       'category' => 'Genomic',
     ]);
     $gene->save();
@@ -422,6 +428,7 @@ class ChadoPreparer {
     // TODO: Create the 'Phenotypic Trait' entity type.
 
     // Create the 'Germplasm Accession' entity type.
+    /* OLD METHOD -NEEDS UPGRADE
     $term = \Drupal::service('tripal.tripalTerm.manager')->getTerms([
       'accession' => '0000044',
       'vocabulary' => [
@@ -429,13 +436,14 @@ class ChadoPreparer {
         'idspace' => 'CO_010',
       ],
     ]);
+    */
 
     $germplasm_accession = TripalEntityType::create([
       'id' => 21,
       'name' => 'bio_data_21',
       'label' => 'Germplasm Accession',
-      'term_id' => $term->getID(),
-      'help_text' => $term->getDefinition(),
+      //'term_id' => $term->getID(),
+      //'help_text' => $term->getDefinition(),
       'category' => 'Germplasm/Breeding',
     ]);
     $germplasm_accession->save();
