@@ -311,158 +311,184 @@ class ChadoPreparer {
   }
 
   /**
+   * Actual Creation code.
+   */
+  protected function createGivenContentTypes($types, $terms) {
+    foreach($terms as $key => $term_details) {
+      $type_details = $types[$key];
+
+      // TODO: Create the term once the API is upgraded.
+      // $term = \Drupal::service('tripal.tripalTerm.manager')->getTerms($term_details);
+
+      // TODO: Set the term in the type details.
+      // $type_details['term_id'] = $term->getID();
+      // $type_details['help_text'] = $term->getDefinition();
+
+      // Check if the type already exists.
+      // TODO: use term instead of label once it's available.
+      $filter = ['label' => $type_details['label'] ];
+      $exists = \Drupal::entityTypeManager()
+        ->getStorage('tripal_entity_type')
+        ->loadByProperties($filter);
+
+      // Create the Type.
+      if (empty($exists)) {
+        $tripal_type = TripalEntityType::create($type_details);
+        if (is_object($tripal_type)) {
+          $tripal_type->save();
+        }
+        else {
+          print "Failed: " . print_r($type_details) . "\n";
+        }
+      }
+      else {
+        print "Exists\n";
+      }
+    }
+  }
+  /**
    * Creates the "General" category of content types.
    */
   protected function generalContentTypes() {
-    // Create the 'Organism' entity type. This uses the obi:organism term.
-    /* OLD METHOD -NEEDS UPGRADE
-    $term = \Drupal::service('tripal.tripalTerm.manager')->getTerms([
+
+    // The 'Organism' entity type. This uses the obi:organism term.
+    $terms['organism'] =[
       'accession' => '0100026',
       'vocabulary' => [
         'namespace' => 'obi',
         'idspace' => 'OBI',
       ],
-    ]);*/
-
-    $organism = TripalEntityType::create([
+    ];
+    $types['organism']= [
       'id' => 1,
       'name' => 'bio_data_1',
       'label' => 'Organism',
-      //'term_id' => $term->getID(),
-      //'help_text' => $term->getDefinition(),
       'category' => 'General',
-    ]);
-    $organism->save();
+    ];
 
-    // Create the 'Analysis' entity type. This uses the EDAM:analysis term.
-    /* OLD METHOD -NEEDS UPGRADE
-    $term = \Drupal::service('tripal.tripalTerm.manager')->getTerms([
+    // The 'Analysis' entity type. This uses the EDAM:analysis term.
+    $terms['analysis'] = [
       'accession' => '2945',
       'vocabulary' => [
         'namespace' => 'EDAM',
         'idspace' => 'operation',
       ],
-    ]);
-    */
-
-    $analysis = TripalEntityType::create([
+    ];
+    $types['analysis'] = [
       'id' => 2,
       'name' => 'bio_data_2',
       'label' => 'Analysis',
-      //'term_id' => $term->getID(),
-      //'help_text' => $term->getDefinition(),
       'category' => 'General',
-    ]);
-    $analysis->save();
+    ];
 
-    // TODO: Create the 'Project' entity type. bio_data_3
+    // TODO: The 'Project' entity type. bio_data_3
 
-    // TODO: Create the 'Study' entity type. bio_data_4
+    // TODO: The 'Study' entity type. bio_data_4
 
-    // TODO: Create the 'Contact' entity type. bio_data_5
+    // TODO: The 'Contact' entity type. bio_data_5
 
-    // TODO: Create the 'Publication' entity type. bio_data_6
+    // TODO: The 'Publication' entity type. bio_data_6
 
-    // TODO: Create the 'Protocol' entity type. bio_data_7
+    // TODO: The 'Protocol' entity type. bio_data_7
+
+    $this->createGivenContentTypes($types, $terms);
   }
 
   /**
    * Creates the "Genomic" category of content types.
    */
   protected function genomicContentTypes() {
-    // Create the 'Gene' entity type. This uses the sequence:gene term.
-    /* OLD METHOD -NEEDS UPGRADE
-    $term = \Drupal::service('tripal.tripalTerm.manager')->getTerms([
+
+    // The 'Gene' entity type. This uses the sequence:gene term.
+    $terms['gene'] = [
       'accession' => '0000704',
       'vocabulary' => [
         'namespace' => 'sequence',
         'idspace' => 'SO',
       ],
-    ]);
-    */
-
-    $gene = TripalEntityType::create([
+    ];
+    $types['gene'] = [
       'id' => 8,
       'name' => 'bio_data_8',
       'label' => 'Gene',
-      //'term_id' => $term->getID(),
-      //'help_text' => $term->getDefinition(),
       'category' => 'Genomic',
-    ]);
-    $gene->save();
+    ];
 
-    // TODO: Create the 'mRNA' entity type. bio_data_9
+    // TODO: the 'mRNA' entity type. bio_data_9
 
-    // TODO: Create the 'Phylogenetic tree' entity type. bio_data_10
+    // TODO: the 'Phylogenetic tree' entity type. bio_data_10
 
-    // TODO: Create the 'Physical Map' entity type. bio_data_11
+    // TODO: the 'Physical Map' entity type. bio_data_11
 
-    // TODO: Create the 'DNA Library' entity type. bio_data_12
+    // TODO: the 'DNA Library' entity type. bio_data_12
 
-    // TODO: Create the 'Genome Assembly' entity type. bio_data_13
+    // TODO: the 'Genome Assembly' entity type. bio_data_13
 
-    // TODO: Create the 'Genome Annotation' entity type. bio_data_14
+    // TODO: the 'Genome Annotation' entity type. bio_data_14
 
-    // TODO: Create the 'Genome Project' entity type. bio_data_15
+    // TODO: the 'Genome Project' entity type. bio_data_15
+
+    $this->createGivenContentTypes($types, $terms);
   }
 
   /**
    * Creates the "Genetic" category of content types.
    */
   protected function geneticContentTypes() {
-    // TODO: Create the 'Genetic Map' entity type. bio_data_16
+    // TODO: the 'Genetic Map' entity type. bio_data_16
 
-    // TODO: Create the 'QTL' entity type. bio_data_17
+    // TODO: the 'QTL' entity type. bio_data_17
 
-    // TODO: Create the 'Sequence Variant' entity type. bio_data_18
+    // TODO: the 'Sequence Variant' entity type. bio_data_18
 
-    // TODO: Create the 'Genetic Marker' entity type. bio_data_19
+    // TODO: the 'Genetic Marker' entity type. bio_data_19
 
-    // TODO: Create the 'Heritable Phenotypic Marker' entity type. bio_data_20
+    // TODO: the 'Heritable Phenotypic Marker' entity type. bio_data_20
+
+    // $this->createGivenContentTypes($types, $terms);
   }
 
   /**
    * Creates the "Germplasm/Breeding" category of content types.
    */
   protected function germplasmContentTypes() {
-    // TODO: Create the 'Phenotypic Trait' entity type.
 
-    // Create the 'Germplasm Accession' entity type.
-    /* OLD METHOD -NEEDS UPGRADE
-    $term = \Drupal::service('tripal.tripalTerm.manager')->getTerms([
+    // TODO: the 'Phenotypic Trait' entity type.
+
+    // the 'Germplasm Accession' entity type.
+    $terms['accession'] = [
       'accession' => '0000044',
       'vocabulary' => [
         'namespace' => 'germplasm_ontology',
         'idspace' => 'CO_010',
       ],
-    ]);
-    */
-
-    $germplasm_accession = TripalEntityType::create([
+    ];
+    $types['accession'] = [
       'id' => 21,
       'name' => 'bio_data_21',
       'label' => 'Germplasm Accession',
-      //'term_id' => $term->getID(),
-      //'help_text' => $term->getDefinition(),
       'category' => 'Germplasm/Breeding',
-    ]);
-    $germplasm_accession->save();
+    ];
 
-    // TODO: Create the 'Breeding Cross' entity type. bio_data_22
+    // TODO: the 'Breeding Cross' entity type. bio_data_22
 
-    // TODO: Create the 'Germplasm Variety' entity type. bio_data_23
+    // TODO: the 'Germplasm Variety' entity type. bio_data_23
 
-    // TODO: Create the 'Recombinant Inbred Line' entity type. bio_data_24
+    // TODO: the 'Recombinant Inbred Line' entity type. bio_data_24
+
+    $this->createGivenContentTypes($types, $terms);
   }
 
   /**
    * Creates the "Expression" category of content types.
    */
   protected function expressionContentTypes() {
-    // TODO: Create the 'biological sample' entity type. bio_data_25
+    // TODO: the 'biological sample' entity type. bio_data_25
 
-    // TODO: Create the 'Assay' entity type. bio_data_26
+    // TODO: the 'Assay' entity type. bio_data_26
 
-    // TODO: Create the 'Array Design' entity type. bio_data_27
+    // TODO: the 'Array Design' entity type. bio_data_27
+
+    // $this->createGivenContentTypes($types, $terms);
   }
 }
