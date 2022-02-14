@@ -16,8 +16,8 @@ class TripalEntityTypeListBuilder extends ConfigEntityListBuilder {
    * {@inheritdoc}
    */
   public function buildHeader() {
-    $header['label'] = $this->t('Label');
-    $header['id'] = $this->t('Machine name');
+    $header['type-label'] = $this->t('Label');
+    $header['type-id'] = $this->t('Machine name');
     $header['term'] = $this->t('Term');
     return $header + parent::buildHeader();
   }
@@ -26,18 +26,20 @@ class TripalEntityTypeListBuilder extends ConfigEntityListBuilder {
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity) {
+    $row = [];
 
     // Add om the Label with link.
-    $row['label'] = Link::fromTextAndUrl(
+    $row['type-label'] = Link::fromTextAndUrl(
       $entity->label(),
       $entity->toUrl('edit-form', ['tripal_entity_type' => $entity->id()])
     )->toString();
 
     // Add in the machine name.
-    $row['id'] = $entity->id();
+    $row['type-id'] = $entity->id();
 
     // Add in the term with link.
-    $row['term'] = 'Uknown';
+    $row['term'] = '';
+    /*
     $term = $entity->getTerm();
     if ($term) {
       $idspace = $term->getIDSpace();
@@ -49,7 +51,17 @@ class TripalEntityTypeListBuilder extends ConfigEntityListBuilder {
         )->toString();
       }
     }
-    return $row + parent::buildRow($entity);
+    */
+
+    // Add in classes for better themeing and testing.
+    $final_row = [];
+    foreach ($row as $key => $value) {
+      $final_row[$key] = [
+        'data' => $value,
+        'class' => [$key],
+      ];
+    }
+    return $final_row + parent::buildRow($entity);
   }
 
 }
