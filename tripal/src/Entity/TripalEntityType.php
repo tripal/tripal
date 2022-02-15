@@ -495,4 +495,39 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
   public function getAJAXLoadingStatus() {
     return $this->hide_empty_field;
   }
+
+  // --------------------------------------------------------------------------
+  //                             TYPE SORTING
+  //
+  // The following methods pertain to sorting Tripal Entity Types for listing.
+  // --------------------------------------------------------------------------
+
+  /**
+   * Sorts Tripal Entity Types first by category and then by Label.
+   *
+   * @param $a
+   *   The first Tripal Entity Type object.
+   * @param $b
+   *   The second Tripal Entity Type object.
+   */
+  public static function sortByCategory(TripalEntityTypeInterface $a, TripalEntityTypeInterface $b) {
+    $a_value = $a->getCategory();
+    $b_value = $b->getCategory();
+    if ($a_value == $b_value) {
+      $a_label = $a
+        ->label() ?? '';
+      $b_label = $b
+        ->label() ?? '';
+      return strnatcasecmp($a_label, $b_label);
+    }
+    if ($a_value == 'General') {
+      return -1;
+    }
+    elseif ($b_value == 'General') {
+      return 1;
+    }
+    else {
+      return strnatcasecmp($b_value, $a_value);
+    }
+  }
 }
