@@ -338,7 +338,7 @@ class ChadoPreparer {
     foreach($terms as $key => $term_details) {
       $type_details = $types[$key];
 
-      $this->logger->info("Creating " . $type_details['label'] . " (" . $type_details['name'] . ")...\n");
+      $this->logger->info("\n  -- Creating " . $type_details['label'] . " (" . $type_details['name'] . ")...");
 
       // TODO: Create the term once the API is upgraded.
       // $term = \Drupal::service('tripal.tripalTerm.manager')->getTerms($term_details);
@@ -351,7 +351,7 @@ class ChadoPreparer {
         }
       }
       else {
-        $this->logger->warning("\tUnable to find term! Currently it's optional...\n");
+        $this->logger->info("\tNo term attached -waiting on API update.");
       }
 
       // Check if the type already exists.
@@ -366,14 +366,14 @@ class ChadoPreparer {
         $tripal_type = TripalEntityType::create($type_details);
         if (is_object($tripal_type)) {
           $tripal_type->save();
-          $this->logger->info("\tSaved successfully.\n");
+          $this->logger->info("\tSaved successfully.");
         }
         else {
-          $this->logger->error("\tCreation Failed! Details provided were: " . print_r($type_details) . "\n");
+          $this->logger->error("\tCreation Failed! Details provided were: " . print_r($type_details));
         }
       }
       else {
-        $this->logger->warning("\tType already exists -Skipped.\n");
+        $this->logger->info("\tSkipping as the content type already exists.");
       }
     }
   }
