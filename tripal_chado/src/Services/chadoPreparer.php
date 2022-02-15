@@ -311,18 +311,48 @@ class ChadoPreparer {
   }
 
   /**
-   * Actual Creation code.
+   * Helper: Create a given set of types.
+   *
+   * @param $types
+   *   An array of types to be created. The key is used to link the type to
+   *   it's term and the value is an array of details to be passed to the
+   *   create() method for Tripal Entity Types. Some keys should be:
+   *    - id: the integer id for this type; this will go away since it
+   *        should be automatic.
+   *    - name: the machine name for this type. It should be bio_data_[id]
+   *        where [id] matches the integer id above. Also should be automatic.
+   *    - label: a human-readable label for the content type.
+   *    - category: a grouping string to categorize content types in the UI.
+   *    - help_text: a single sentence describing the content type -usually
+   *        the default is the term definition.
+   * @param $terms
+   *   An array of terms which must already exist where the key maps to a
+   *   content type in the $types array. The value for each item is an array of
+   *   details to be passed to the term creation API. Some keys should be:
+   *    - accession: the unique identifier for the term (i.e. 2945)
+   *    - vocabulary:
+   *       - namespace: The name of the vocabulary (i.e. EDAM).
+   *       - idspace: the id space of the term (i.e. operation).
    */
   protected function createGivenContentTypes($types, $terms) {
     foreach($terms as $key => $term_details) {
       $type_details = $types[$key];
 
+      $this->logger->info("Creating " . $type_details['label'] . " (" . $type_details['name'] . ")...\n");
+
       // TODO: Create the term once the API is upgraded.
       // $term = \Drupal::service('tripal.tripalTerm.manager')->getTerms($term_details);
 
       // TODO: Set the term in the type details.
-      // $type_details['term_id'] = $term->getID();
-      // $type_details['help_text'] = $term->getDefinition();
+      if (is_object($term)) {
+        // $type_details['term_id'] = $term->getID();
+        if (!array_key_exists($type_details, 'help_text')) {
+          // $type_details['help_text'] = $term->getDefinition();
+        }
+      }
+      else {
+        $this->logger->warning("\tUnable to find term! Currently it's optional...\n");
+      }
 
       // Check if the type already exists.
       // TODO: use term instead of label once it's available.
@@ -336,18 +366,35 @@ class ChadoPreparer {
         $tripal_type = TripalEntityType::create($type_details);
         if (is_object($tripal_type)) {
           $tripal_type->save();
+          $this->logger->info("\tSaved successfully.\n");
         }
         else {
-          print "Failed: " . print_r($type_details) . "\n";
+          $this->logger->error("\tCreation Failed! Details provided were: " . print_r($type_details) . "\n");
         }
       }
       else {
-        print "Exists\n";
+        $this->logger->warning("\tType already exists -Skipped.\n");
       }
     }
   }
+
   /**
    * Creates the "General" category of content types.
+   *
+   * @code
+   $terms[''] =[
+     'accession' => '',
+     'vocabulary' => [
+       'idspace' => '',
+     ],
+   ];
+   $types['']= [
+     'id' => ,
+     'name' => '',
+     'label' => '',
+     'category' => 'General',
+   ];
+   * @endcode
    */
   protected function generalContentTypes() {
 
@@ -355,7 +402,6 @@ class ChadoPreparer {
     $terms['organism'] =[
       'accession' => '0100026',
       'vocabulary' => [
-        'namespace' => 'obi',
         'idspace' => 'OBI',
       ],
     ];
@@ -381,21 +427,96 @@ class ChadoPreparer {
       'category' => 'General',
     ];
 
-    // TODO: The 'Project' entity type. bio_data_3
+    // The 'Project' entity type. bio_data_3
+    $terms['project'] =[
+      'accession' => 'C47885',
+      'vocabulary' => [
+        'idspace' => 'NCIT',
+      ],
+    ];
+    $types['project']= [
+      'id' => 3,
+      'name' => 'bio_data_3',
+      'label' => 'Project',
+      'category' => 'General',
+    ];
 
-    // TODO: The 'Study' entity type. bio_data_4
+    // The 'Study' entity type. bio_data_4
+    $terms['study'] =[
+      'accession' => '001066',
+      'vocabulary' => [
+        'idspace' => 'SIO',
+      ],
+    ];
+    $types['study']= [
+      'id' => 4,
+      'name' => 'bio_data_4',
+      'label' => 'Study',
+      'category' => 'General',
+    ];
 
-    // TODO: The 'Contact' entity type. bio_data_5
+    // The 'Contact' entity type. bio_data_5
+    $terms['contact'] =[
+      'accession' => 'contact',
+      'vocabulary' => [
+        'idspace' => 'local',
+      ],
+    ];
+    $types['contact']= [
+      'id' => 5,
+      'name' => 'bio_data_5',
+      'label' => 'Contact',
+      'category' => 'General',
+    ];
 
-    // TODO: The 'Publication' entity type. bio_data_6
+    // The 'Publication' entity type. bio_data_6
+    $terms['publication'] =[
+      'accession' => '0000002',
+      'vocabulary' => [
+        'idspace' => 'TPUB',
+      ],
+    ];
+    $types['publication']= [
+      'id' => 6,
+      'name' => 'bio_data_6',
+      'label' => 'Publication',
+      'category' => 'General',
+    ];
 
-    // TODO: The 'Protocol' entity type. bio_data_7
+    // The 'Protocol' entity type. bio_data_7
+    $terms['protocol'] =[
+      'accession' => '00101',
+      'vocabulary' => [
+        'idspace' => 'sep',
+      ],
+    ];
+    $types['protocol']= [
+      'id' => 7,
+      'name' => 'bio_data_7',
+      'label' => 'Protocol',
+      'category' => 'General',
+    ];
 
     $this->createGivenContentTypes($types, $terms);
   }
 
   /**
    * Creates the "Genomic" category of content types.
+   *
+   * @code
+   $terms[''] =[
+     'accession' => '',
+     'vocabulary' => [
+       'idspace' => '',
+     ],
+   ];
+   $types['']= [
+     'id' => ,
+     'name' => '',
+     'label' => '',
+     'category' => 'Genomic',
+   ];
+   * @endcode
    */
   protected function genomicContentTypes() {
 
@@ -414,48 +535,235 @@ class ChadoPreparer {
       'category' => 'Genomic',
     ];
 
-    // TODO: the 'mRNA' entity type. bio_data_9
+    // the 'mRNA' entity type. bio_data_9
+    $terms['mRNA'] =[
+      'accession' => '0000234',
+      'vocabulary' => [
+        'idspace' => 'SO',
+      ],
+    ];
+    $types['mRNA']= [
+      'id' => 9,
+      'name' => 'bio_data_9',
+      'label' => 'mRNA',
+      'category' => 'Genomic',
+    ];
 
-    // TODO: the 'Phylogenetic tree' entity type. bio_data_10
+    // The 'Phylogenetic tree' entity type. bio_data_10
+    $terms['phylo'] =[
+      'accession' => '0872',
+      'vocabulary' => [
+        'idspace' => 'data',
+      ],
+    ];
+    $types['phylo']= [
+      'id' => 10,
+      'name' => 'bio_data_10',
+      'label' => 'Phylogenetic Tree',
+      'category' => 'Genomic',
+    ];
 
-    // TODO: the 'Physical Map' entity type. bio_data_11
+    // The 'Physical Map' entity type. bio_data_11
+    $terms['map'] =[
+      'accession' => '1280',
+      'vocabulary' => [
+        'idspace' => 'data',
+      ],
+    ];
+    $types['map']= [
+      'id' => 11,
+      'name' => 'bio_data_11',
+      'label' => 'Physical Map',
+      'category' => 'Genomic',
+    ];
 
-    // TODO: the 'DNA Library' entity type. bio_data_12
+    // The 'DNA Library' entity type. bio_data_12
+    $terms['library'] =[
+      'accession' => 'C16223',
+      'vocabulary' => [
+        'idspace' => 'NCIT',
+      ],
+    ];
+    $types['library']= [
+      'id' => 12,
+      'name' => 'bio_data_12',
+      'label' => 'DNA Library',
+      'category' => 'Genomic',
+    ];
 
-    // TODO: the 'Genome Assembly' entity type. bio_data_13
+    // The 'Genome Assembly' entity type. bio_data_13
+    $terms['assembly'] =[
+      'accession' => '0525',
+      'vocabulary' => [
+        'idspace' => 'operation',
+      ],
+    ];
+    $types['assembly']= [
+      'id' => 13,
+      'name' => 'bio_data_13',
+      'label' => 'Genome Assembly',
+      'category' => 'Genomic',
+    ];
 
-    // TODO: the 'Genome Annotation' entity type. bio_data_14
+    // The 'Genome Annotation' entity type. bio_data_14
+    $terms['annotation'] =[
+      'accession' => '0362',
+      'vocabulary' => [
+        'idspace' => 'operation',
+      ],
+    ];
+    $types['annotation']= [
+      'id' => 14,
+      'name' => 'bio_data_14',
+      'label' => 'Genome Assembly',
+      'category' => 'Genomic',
+    ];
 
-    // TODO: the 'Genome Project' entity type. bio_data_15
+    // The 'Genome Project' entity type. bio_data_15
+    $terms['genomeproject'] =[
+      'accession' => 'Genome Project',
+      'vocabulary' => [
+        'idspace' => 'local',
+      ],
+    ];
+    $types['genomeproject']= [
+      'id' => 15,
+      'name' => 'bio_data_15',
+      'label' => 'Genome Project',
+      'category' => 'Genomic',
+    ];
 
     $this->createGivenContentTypes($types, $terms);
   }
 
   /**
    * Creates the "Genetic" category of content types.
+   *
+   * @code
+   $terms[''] =[
+     'accession' => '',
+     'vocabulary' => [
+       'idspace' => '',
+     ],
+   ];
+   $types['']= [
+     'id' => ,
+     'name' => '',
+     'label' => '',
+     'category' => 'Genetic',
+   ];
+   * @endcode
    */
   protected function geneticContentTypes() {
-    // TODO: the 'Genetic Map' entity type. bio_data_16
 
-    // TODO: the 'QTL' entity type. bio_data_17
+    // The 'Genetic Map' entity type. bio_data_16
+    $terms['map'] =[
+      'accession' => '1278',
+      'vocabulary' => [
+        'idspace' => 'data',
+      ],
+    ];
+    $types['map']= [
+      'id' => 16,
+      'name' => 'bio_data_16',
+      'label' => 'Genetic Map',
+      'category' => 'Genetic',
+    ];
 
-    // TODO: the 'Sequence Variant' entity type. bio_data_18
+    // The 'QTL' entity type. bio_data_17
+    $terms['qtl'] =[
+      'accession' => '0000771',
+      'vocabulary' => [
+        'idspace' => 'SO',
+      ],
+    ];
+    $types['qtl']= [
+      'id' => 17,
+      'name' => 'bio_data_17',
+      'label' => 'QTL',
+      'category' => 'Genetic',
+    ];
 
-    // TODO: the 'Genetic Marker' entity type. bio_data_19
+    // The 'Sequence Variant' entity type. bio_data_18
+    $terms['variant'] =[
+      'accession' => '0001060',
+      'vocabulary' => [
+        'idspace' => 'SO',
+      ],
+    ];
+    $types['variant']= [
+      'id' => 18,
+      'name' => 'bio_data_18',
+      'label' => 'Sequence Variant',
+      'category' => 'Genetic',
+    ];
 
-    // TODO: the 'Heritable Phenotypic Marker' entity type. bio_data_20
+    // The 'Genetic Marker' entity type. bio_data_19
+    $terms['marker'] =[
+      'accession' => '0001645',
+      'vocabulary' => [
+        'idspace' => 'SO',
+      ],
+    ];
+    $types['marker']= [
+      'id' => 19,
+      'name' => 'bio_data_19',
+      'label' => 'Genetic Marker',
+      'category' => 'Genetic',
+    ];
 
-    // $this->createGivenContentTypes($types, $terms);
+    // The 'Heritable Phenotypic Marker' entity type. bio_data_20
+    $terms['hpn'] =[
+      'accession' => '0001500',
+      'vocabulary' => [
+        'idspace' => 'SO',
+      ],
+    ];
+    $types['hpn']= [
+      'id' => 20,
+      'name' => 'bio_data_20',
+      'label' => 'Heritable Phenotypic Marker',
+      'category' => 'Genetic',
+    ];
+
+    $this->createGivenContentTypes($types, $terms);
   }
 
   /**
    * Creates the "Germplasm/Breeding" category of content types.
+   *
+   * @code
+   $terms[''] =[
+     'accession' => '',
+     'vocabulary' => [
+       'idspace' => '',
+     ],
+   ];
+   $types['']= [
+     'id' => ,
+     'name' => '',
+     'label' => '',
+     'category' => 'Germplasm',
+   ];
+   * @endcode
    */
   protected function germplasmContentTypes() {
 
-    // TODO: the 'Phenotypic Trait' entity type.
+    // The 'Phenotypic Trait' entity type. bio_data_28
+    $terms['trait'] =[
+      'accession' => 'C85496',
+      'vocabulary' => [
+        'idspace' => 'NCIT',
+      ],
+    ];
+    $types['trait']= [
+      'id' => 28,
+      'name' => 'bio_data_28',
+      'label' => 'Phenotypic Trait',
+      'category' => 'Germplasm',
+    ];
 
-    // the 'Germplasm Accession' entity type.
+    // The 'Germplasm Accession' entity type. bio_data_21
     $terms['accession'] = [
       'accession' => '0000044',
       'vocabulary' => [
@@ -470,25 +778,113 @@ class ChadoPreparer {
       'category' => 'Germplasm/Breeding',
     ];
 
-    // TODO: the 'Breeding Cross' entity type. bio_data_22
+    // The 'Breeding Cross' entity type. bio_data_22
+    $terms['cross'] =[
+      'accession' => '0000255',
+      'vocabulary' => [
+        'idspace' => 'CO_010',
+      ],
+    ];
+    $types['cross']= [
+      'id' => 22,
+      'name' => 'bio_data_22',
+      'label' => 'Breeding Cross',
+      'category' => 'Germplasm',
+    ];
 
-    // TODO: the 'Germplasm Variety' entity type. bio_data_23
+    // The 'Germplasm Variety' entity type. bio_data_23
+    $terms['variety'] =[
+      'accession' => '0000029',
+      'vocabulary' => [
+        'idspace' => 'CO_010',
+      ],
+    ];
+    $types['variety']= [
+      'id' => 23,
+      'name' => 'bio_data_23',
+      'label' => 'Germplasm Variety',
+      'category' => 'Germplasm',
+    ];
 
-    // TODO: the 'Recombinant Inbred Line' entity type. bio_data_24
+    // The 'Recombinant Inbred Line' entity type. bio_data_24
+    $terms['ril'] =[
+      'accession' => '0000162',
+      'vocabulary' => [
+        'idspace' => 'CO_010',
+      ],
+    ];
+    $types['ril']= [
+      'id' => 24,
+      'name' => 'bio_data_24',
+      'label' => 'Recombinant Inbred Line',
+      'category' => 'Germplasm',
+    ];
 
     $this->createGivenContentTypes($types, $terms);
   }
 
   /**
    * Creates the "Expression" category of content types.
+   *
+   * @code
+   $terms[''] =[
+     'accession' => '',
+     'vocabulary' => [
+       'idspace' => '',
+     ],
+   ];
+   $types['']= [
+     'id' => ,
+     'name' => '',
+     'label' => '',
+     'category' => 'Expression',
+   ];
+   * @endcode
    */
   protected function expressionContentTypes() {
-    // TODO: the 'biological sample' entity type. bio_data_25
 
-    // TODO: the 'Assay' entity type. bio_data_26
+    // The 'biological sample' entity type. bio_data_25
+    $terms['sample'] =[
+      'accession' => '00195',
+      'vocabulary' => [
+        'idspace' => 'sep',
+      ],
+    ];
+    $types['sample']= [
+      'id' => 25,
+      'name' => 'bio_data_25',
+      'label' => 'Biological Sample',
+      'category' => 'Expression',
+    ];
 
-    // TODO: the 'Array Design' entity type. bio_data_27
+    // The 'Assay' entity type. bio_data_26
+    $terms['assay'] =[
+      'accession' => '0000070',
+      'vocabulary' => [
+        'idspace' => 'OBI',
+      ],
+    ];
+    $types['assay']= [
+      'id' => 26,
+      'name' => 'bio_data_26',
+      'label' => 'Assay',
+      'category' => 'Expression',
+    ];
 
-    // $this->createGivenContentTypes($types, $terms);
+    // The 'Array Design' entity type. bio_data_27
+    $terms['design'] =[
+      'accession' => '0000269',
+      'vocabulary' => [
+        'idspace' => 'EFO',
+      ],
+    ];
+    $types['design']= [
+      'id' => 27,
+      'name' => 'bio_data_27',
+      'label' => 'Array Design',
+      'category' => 'Expression',
+    ];
+
+    $this->createGivenContentTypes($types, $terms);
   }
 }
