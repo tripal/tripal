@@ -730,7 +730,7 @@ class ChadoPreparer {
   }
 
   /**
-   * Creates the "Germplasm/Breeding" category of content types.
+   * Creates the "Germplasm" category of content types.
    *
    * @code
    $terms[''] =[
@@ -775,7 +775,7 @@ class ChadoPreparer {
       'id' => 21,
       'name' => 'bio_data_21',
       'label' => 'Germplasm Accession',
-      'category' => 'Germplasm/Breeding',
+      'category' => 'Germplasm',
     ];
 
     // The 'Breeding Cross' entity type. bio_data_22
