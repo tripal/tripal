@@ -21,6 +21,12 @@ tripal-toolbar:
     component:
       css/tripal.toolbar.css: {}
 
+tripal-entity-type-listbuilder:
+  version: 1.x
+  css:
+    theme:
+      css/tripal_entity_type.listbuilder.css: {}
+
 tripal-dashboard:
   version: 1.x
   js:
