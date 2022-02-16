@@ -8,13 +8,13 @@ Software Stack
 
 Currently we have the following installed:
  - Debian Buster(10)
- - PHP 7.3.32 with extensions needed for Drupal (Memory limit 1028M)
+ - PHP 7.3.33 with extensions needed for Drupal (Memory limit 1028M)
  - Apache 2.4.38
- - PostgreSQL 11.13 (Debian 11.13-0+deb10u1)
- - Composer 2.1.11
- - Drupal Console 1.9.7
- - Drush 10.6.1
- - Drupal 9.1.13 downloaded using composer (or as specified by drupalversion argument).
+ - PostgreSQL 11.14 (Debian 11.14-0+deb10u1)
+ - Composer 2.2.6
+ - Drupal Console 1.9.8
+ - Drush 10.6.2
+ - Drupal 9.1.x-dev downloaded using composer (or as specified by drupalversion argument).
 
 Quickstart
 ----------
@@ -31,7 +31,7 @@ Quickstart
 
     .. code::
 
-      docker run --publish=9000:80 --name=t4d8 -tid --volume=`pwd`:/var/www/drupal8/web/modules/contrib/my_module tripalproject/tripaldocker:latest
+      docker run --publish=9000:80 --name=t4d8 -tid --volume=`pwd`:/var/www/drupal9/web/modules/contrib/my_module tripalproject/tripaldocker:latest
 
 2. Start the PostgreSQL database.
 
@@ -59,7 +59,7 @@ Usage
 
    .. code::
 
-    docker exec --workdir=/var/www/drupal8/web/modules/contrib/tripal t4d8 phpunit
+    docker exec --workdir=/var/www/drupal9/web/modules/contrib/tripal t4d8 phpunit
 
  - Run Drupal Console to generate code for your module!
 
@@ -100,7 +100,7 @@ Using Latest tagged version
   .. code-block:: bash
 
     cd t4d8
-    docker run --publish=9000:80 --name=t4d8 -tid --volume=`pwd`:/var/www/drupal8/web/modules/contrib/tripal tripalproject/tripaldocker:latest
+    docker run --publish=9000:80 --name=t4d8 -tid --volume=`pwd`:/var/www/drupal9/web/modules/contrib/tripal tripalproject/tripaldocker:latest
 
   The first time you run this command you will see ``Unable to find image 'tripalproject/tripaldocker:latest' locally``. This is not an error! It's just a warning and the command will automatically pull the image from the docker cloud.
 
@@ -117,7 +117,7 @@ Using Latest tagged version
 
    .. code-block:: bash
 
-    docker run --publish=9000:80 --name=t4d8 -tid --volume=C:\Users\yourusername\Dockers\t4d8:/var/www/drupal8/web/modules/contrib/tripal tripalproject/tripaldocker:latest``
+    docker run --publish=9000:80 --name=t4d8 -tid --volume=C:\Users\yourusername\Dockers\t4d8:/var/www/drupal9/web/modules/contrib/tripal tripalproject/tripaldocker:latest``
 
 4. Start the PostgreSQL database.
 
@@ -177,7 +177,7 @@ On my web browser, I got the message "The provided host name is not valid for th
 
 .. code::
 
-  docker exec -it t4d8 vi /var/www/drupal8/web/sites/default/settings.php
+  docker exec -it t4d8 vi /var/www/drupal9/web/sites/default/settings.php
 
 For instance, if your server name is ``www.yourservername.org``:
 
