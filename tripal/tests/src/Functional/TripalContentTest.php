@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\tripal\Functional;
 
-use Drupal\tripal\Entity\TripalVocab;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\Core\Url;
 
@@ -27,26 +26,32 @@ class TripalContentTest extends BrowserTestBase {
 
     $web_user = $this->drupalCreateUser([
       'administer tripal',
-      'view controlled vocabulary entities'
+      'administer tripal content types',
+      'access tripal content overview',
     ]);
 
-    // Anonymous User should not see this content type add page.
-    $this->drupalGet('bio_data/add');
-    $assert->pageTextContains('Access denied');
+    $urls = [
+      'Tripal Content Listing' => 'admin/content/bio_data',
+      'Tripal Content Type Listing' => 'admin/structure/bio_data',
+      'Add Tripal Content Listing/Form' => 'bio_data/add',
+    ];
+
+    // Anonymous User should not be able to see any of these urls.
+    foreach ($urls as $msg => $url) {
+
+      $this->drupalGet($url);
+      $assert->statusCodeEquals(403);
+      $assert->pageTextContains('Access denied');
+    }
 
     // Perform a user login with the permissions specified above
     $this->drupalLogin($web_user);
 
-    // First check that the link shows up to create new vocabulary
-    // if the page contains no content types / bundles
-    $this->drupalGet('bio_data/add');
-    $assert->pageTextContains('There are currently no tripal content types');
-    $assert->linkExists('creating a vocabulary');
-
-    // Visit the link for creating a vocabulary and make sure it loads
-    $this->clickLink('creating a vocabulary');
-    $assert->pageTextContains('tripal vocabulary');
-
+    // Then check that we can load each page with the correct permissions.
+    foreach ($urls as $msg => $url) {
+      $this->drupalGet($url);
+      $assert->statusCodeEquals(200);
+    }
   }
 
 }

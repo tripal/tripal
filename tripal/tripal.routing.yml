@@ -190,60 +190,6 @@ tripal.content_bio_data_field_check:
 # Controlled Vocabularies.
 ##
 
-# TripalVocab:
-
-# entity.tripal_vocab.canonical:
-#   path: /admin/structure/tripal-vocabularies/vocab/{tripal_vocab}
-# entity.tripal_vocab.add-form:
-#   path: '/admin/structure/tripal-vocabularies/vocab/add'
-# entity.tripal_vocab.edit-form:
-#   path: '/admin/structure/tripal-vocabularies/vocab/{tripal_vocab}/edit'
-# entity.tripal_vocab.delete-form:
-#   path: '/admin/structure/tripal-vocabularies/vocab/{tripal_vocab}/delete'
-entity.tripal_vocab.collection:
-  path: '/admin/structure/tripal-vocabularies/vocab'
-  defaults:
-    _entity_list: 'tripal_vocab'
-    _title: 'Tripal Vocabularies'
-  requirements:
-    _permission: 'view controlled vocabulary entities'
-
-# TripalVocabSpace:
-
-# entity.tripal_vocab_space.canonical:
-#   path: /admin/structure/tripal-vocabularies/idspace/{tripal_vocab_space}
-# entity.tripal_vocab_space.add-form:
-#   path: '/admin/structure/tripal-vocabularies/idspace/add'
-# entity.tripal_vocab_space.edit-form:
-#   path: '/admin/structure/tripal-vocabularies/idspace/{tripal_vocab_space}/edit'
-# entity.tripal_vocab_space.delete-form:
-#   path: '/admin/structure/tripal-vocabularies/idspace/{tripal_vocab_space}/delete'
-entity.tripal_vocab_space.collection:
-  path: '/admin/structure/tripal-vocabularies/idspace'
-  defaults:
-    _entity_list: 'tripal_vocab_space'
-    _title: 'Tripal Vocabulary IDSpaces'
-  requirements:
-    _permission: 'view tripal vocabulary idspace entities'
-
-# TripalTerm:
-
-# entity.tripal_term.canonical:
-#   path: /admin/structure/tripal-vocabularies/term/{tripal_term}
-# entity.tripal_term.add-form:
-#   path: '/admin/structure/tripal-vocabularies/term/add'
-# entity.tripal_term.edit-form:
-#   path: '/admin/structure/tripal-vocabularies/term/{tripal_term}/edit'
-# entity.tripal_term.delete-form:
-#   path: '/admin/structure/tripal-vocabularies/term/{tripal_term}/delete'
-entity.tripal_term.collection:
-  path: '/admin/structure/tripal-vocabularies/term'
-  defaults:
-    _entity_list: 'tripal_term'
-    _title: 'Tripal Terms'
-  requirements:
-    _permission: 'view controlled vocabulary term entities'
-
 # Term Lookup
 tripal.cv_lookup:
   path: 'cv/lookup'

@@ -189,15 +189,17 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    * {@inheritdoc}
    */
   public function getTerm() {
-    $term = \Drupal\tripal\Entity\TripalTerm::load($this->term_id);
-    return $term;
+    $logger = \Drupal::service('tripal.logger');
+    $logger->error('Not Implemented.');
+    return NULL;
   }
 
   /**
    * {@inheritdoc}
    */
   public function setTerm($term_id) {
-    $this->term_id = $term_id;
+    $logger = \Drupal::service('tripal.logger');
+    $logger->error('Not Implemented.');
   }
 
   /**
@@ -274,6 +276,9 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
       'include title' => FALSE,
     ]);
 
+    // Set an extremely ugly empty title for in case there are no tokens/fields.
+    $format = 'Uknown ' . date('Ymd-h:i:sA');
+
     // A) Check to see if more informed modules have suggested a title for this
     //    type. Invoke hook_tripal_default_title_format() to get all suggestions
     //    from other modules.
@@ -293,31 +298,30 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
         }
       }
       $format = $suggestions[$lightest_key]['format'];
-      return $format;
     }
-
     // B) Generate our own ugly title by simply comma-separating all the
     //    required fields.
-    if (!$format) {
+    else {
       $tmp = [];
 
       // Check which tokens are required fields and join them into a default
       // format.
-      foreach ($tokens as $token) {
+      if (sizeof($tokens) > 0) {
+        foreach ($tokens as $token) {
 
-        // Exclude the type & term since it is not unique.
-        if ($token['token'] == '[type]') {
-          continue;
-        }
+          // Exclude the type & term since it is not unique.
+          if ($token['token'] == '[type]') {
+            continue;
+          }
 
-        // If it is required then add it to the default title
-        // since we know it has a value.
-        if ($token['required']) {
-          $tmp[] = $token['token'];
+          // If it is required then add it to the default title
+          // since we know it has a value.
+          if ($token['required']) {
+            $tmp[] = $token['token'];
+          }
         }
+        $format = implode(', ', $tmp);
       }
-      $format = implode(', ', $tmp);
-      return $format;
     }
 
     return $format;
@@ -398,33 +402,6 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     $tokens[$token] = [
       'label' => 'Tripal Entity Type',
       'description' => 'The human-readable label for this Tripal Content Type.',
-      'token' => $token,
-      'field_name' => NULL,
-      'required' => TRUE,
-    ];
-
-    $token = '[TripalTerm__vocab]';
-    $tokens[$token] = [
-      'label' => 'Tripal Vocab Short Name',
-      'description' => 'The short vocabulary name for the Tripal Term desribing this Tripal Content Type.',
-      'token' => $token,
-      'field_name' => NULL,
-      'required' => TRUE,
-    ];
-
-    $token = '[TripalTerm__name]';
-    $tokens[$token] = [
-      'label' => 'Tripal Term Label',
-      'description' => 'The human-readable name for the Tripal Term desribing this Tripal Content Type.',
-      'token' => $token,
-      'field_name' => NULL,
-      'required' => TRUE,
-    ];
-
-    $token = '[TripalTerm__accession]';
-    $tokens[$token] = [
-      'label' => 'Tripal Term Accession',
-      'description' => 'The unique accession for the Tripal Term desribing this Tripal Content Type.',
       'token' => $token,
       'field_name' => NULL,
       'required' => TRUE,
@@ -517,5 +494,40 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    */
   public function getAJAXLoadingStatus() {
     return $this->hide_empty_field;
+  }
+
+  // --------------------------------------------------------------------------
+  //                             TYPE SORTING
+  //
+  // The following methods pertain to sorting Tripal Entity Types for listing.
+  // --------------------------------------------------------------------------
+
+  /**
+   * Sorts Tripal Entity Types first by category and then by Label.
+   *
+   * @param $a
+   *   The first Tripal Entity Type object.
+   * @param $b
+   *   The second Tripal Entity Type object.
+   */
+  public static function sortByCategory(TripalEntityTypeInterface $a, TripalEntityTypeInterface $b) {
+    $a_value = $a->getCategory();
+    $b_value = $b->getCategory();
+    if ($a_value == $b_value) {
+      $a_label = $a
+        ->label() ?? '';
+      $b_label = $b
+        ->label() ?? '';
+      return strnatcasecmp($a_label, $b_label);
+    }
+    if ($a_value == 'General') {
+      return -1;
+    }
+    elseif ($b_value == 'General') {
+      return 1;
+    }
+    else {
+      return strnatcasecmp($b_value, $a_value);
+    }
   }
 }
