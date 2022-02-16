@@ -62,6 +62,7 @@ jobs:
             -e BROWSER_OUTPUT_DIRECTORY=$BROWSER_OUTPUT_DIRECTORY \
             --workdir=/var/www/drupal9/web/modules/contrib/tripal \
             tripaldocker phpunit --coverage-text --coverage-clover ./clover.xml
+          docker exec tripaldocker ls /var/www/drupal9/web/modules/contrib/tripal
       - name: Publish code coverage to Code Climate
         run: |
           docker exec --workdir=/var/www/drupal9/web/modules/contrib/tripal \
