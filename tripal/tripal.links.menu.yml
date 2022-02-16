@@ -14,26 +14,6 @@ entity.tripal_entity_type.collection:
   parent: system.admin_structure
   weight: 99
 
-##
-# Tripal Vocab.
-##
-
-# Listing.
-entity.tripal_vocab.collection:
-  title: 'Tripal Vocabularies'
-  route_name: entity.tripal_vocab.collection
-  description: 'Manage the vocabularies which form the core of Tripal (used for categorizing and describing content and metadata).'
-  parent: system.admin_structure
-  weight: 98
-
-##
-# Tripal Vocab IDSpace
-##
-
-##
-# Tripal Term.
-##
-
 ## CVterm lookup.
 tripal.cv_lookup:
   title: 'Controlled Vocabularies'

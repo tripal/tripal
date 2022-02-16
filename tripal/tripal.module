@@ -45,24 +45,6 @@ function tripal_help($route_name, RouteMatchInterface $route_match) {
 function tripal_theme() {
   $theme = [];
 
-  $theme['tripal_vocab'] = array(
-    'render element' => 'elements',
-    'file' => 'templates/tripal_vocab.page.inc',
-    'template' => 'tripal_vocab',
-  );
-
-  $theme['tripal_vocab_space'] = array(
-    'render element' => 'elements',
-    'file' => 'templates/tripal_vocab_space.page.inc',
-    'template' => 'tripal_vocab_space',
-  );
-
-  $theme['tripal_term'] = array(
-    'render element' => 'elements',
-    'file' => 'templates/tripal_term.page.inc',
-    'template' => 'tripal_term',
-  );
-
   $theme['tripal_entity'] = array(
     'render element' => 'elements',
     'file' => 'templates/tripal_entity.page.inc',
@@ -157,6 +139,7 @@ function tripal_toolbar () {
           '#prefix' => '<li class="menu-item">',
           '#suffix' => '</li>',
         ],
+        /*
         'vocabs' => [
           '#type' => 'link',
           '#title' => t('Vocabularies'),
@@ -168,6 +151,7 @@ function tripal_toolbar () {
           '#prefix' => '<li class="menu-item">',
           '#suffix' => '</li>',
         ],
+        */
         'storage' => [
           '#type' => 'link',
           '#title' => t('Data Storage'),
@@ -219,7 +203,7 @@ function tripal_toolbar () {
     'tripal.jobs' => 'jobs',
     'tripal.data_loaders' => 'importers',
     'entity.tripal_entity_type.collection' => 'page_structure',
-    'entity.tripal_vocab.collection' => 'vocab',
+    //'entity.tripal_vocab.collection' => 'vocab',
     'tripal.storage' => 'storage',
     'tripal.extension' => 'extensions',
     'tripal.admin' => 'more'

@@ -8,20 +8,28 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        drupalversion: ['9.0.x-dev', '9.1.x-dev', '9.2.x-dev']
+        drupalversion: ['9.1.x-dev', '9.2.x-dev', '9.3.x-dev', '9.4.x-dev']
     name: Docker Build (drupal${{ matrix.drupalversion }})
     steps:
       - name: Login to DockerHub
-        uses: docker/login-action@v1 
+        uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      - name: Build and push
+      - name: Build matrix drupal version
         id: docker_build
         uses: docker/build-push-action@v2
         with:
           push: true
           tags: |
             tripalproject/tripaldocker:drupal${{ matrix.drupalversion }}
-            ${{ (matrix.drupalversion == '9.1.x-dev' && 'tripalproject/tripaldocker:latest' ) || '' }}
+          build-args: "drupalversion=${{ matrix.drupalversion }}"
+      - name: Build latest using 9.3.x-dev
+        id: docker_build_latest
+        uses: docker/build-push-action@v2
+        if: ${{ matrix.drupalversion == '9.3.x-dev' }}
+        with:
+          push: true
+          tags: |
+            tripalproject/tripaldocker:latest
           build-args: "drupalversion=${{ matrix.drupalversion }}"

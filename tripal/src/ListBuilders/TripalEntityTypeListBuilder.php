@@ -16,8 +16,9 @@ class TripalEntityTypeListBuilder extends ConfigEntityListBuilder {
    * {@inheritdoc}
    */
   public function buildHeader() {
-    $header['label'] = $this->t('Label');
-    $header['id'] = $this->t('Machine name');
+    $header['type-category'] = $this->t('Category');
+    $header['type-label'] = $this->t('Label');
+    $header['type-id'] = $this->t('Machine name');
     $header['term'] = $this->t('Term');
     return $header + parent::buildHeader();
   }
@@ -26,30 +27,74 @@ class TripalEntityTypeListBuilder extends ConfigEntityListBuilder {
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity) {
+    $data = [];
 
-    // Add om the Label with link.
-    $row['label'] = Link::fromTextAndUrl(
+    // Category.
+    $data['type-category'] = $entity->getCategory();
+
+    // Add on the Label with link.
+    $data['type-label'] = Link::fromTextAndUrl(
       $entity->label(),
       $entity->toUrl('edit-form', ['tripal_entity_type' => $entity->id()])
     )->toString();
 
     // Add in the machine name.
-    $row['id'] = $entity->id();
+    $data['type-id'] = $entity->id();
 
     // Add in the term with link.
-    $row['term'] = 'Uknown';
+    $data['term'] = '';
+    /*
     $term = $entity->getTerm();
     if ($term) {
       $idspace = $term->getIDSpace();
       if ($idspace) {
         $term_display = $term->getName() . ' (' . $idspace->getIDSpace() . ':' . $term->getAccession() . ')';
-        $row['term'] = Link::fromTextAndUrl(
+        $data['term'] = Link::fromTextAndUrl(
           $term_display,
           $term->toUrl('canonical', ['tripal_term' => $term->id()])
         )->toString();
       }
     }
-    return $row + parent::buildRow($entity);
+    */
+
+    // Add in classes for better themeing and testing.
+    $rowData = [];
+    foreach ($data as $key => $value) {
+      $rowData[$key] = [
+        'data' => $value,
+        'class' => [$key],
+      ];
+    }
+    $row = $rowData + parent::buildRow($entity);
+    return ['class' => [$data['type-category']], 'data' => $row ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function load() {
+    $entity_ids = $this
+      ->getEntityIds();
+    $entities = $this->storage
+      ->loadMultipleOverrideFree($entity_ids);
+
+    // Sort the entities using the entity class's sort() method.
+    // See \Drupal\Core\Config\Entity\ConfigEntityBase::sort().
+    uasort($entities, array(
+      $this->entityType
+        ->getClass(),
+      'sortByCategory',
+    ));
+    return $entities;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function render() {
+    $build = parent::render();
+    $build['table']['#attached']['library'][] = 'tripal/tripal-entity-type-listbuilder';
+    return $build;
   }
 
 }
