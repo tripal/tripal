@@ -61,11 +61,11 @@ jobs:
             -e SIMPLETEST_DB=$SIMPLETEST_DB \
             -e BROWSER_OUTPUT_DIRECTORY=$BROWSER_OUTPUT_DIRECTORY \
             --workdir=/var/www/drupal9/web/modules/contrib/tripal \
-            tripaldocker phpunit --coverage-text --coverage-clover ./clover.xml
-          docker exec tripaldocker ls /var/www/drupal9/web/modules/contrib/tripal
+            tripaldocker phpunit --coverage-text --coverage-clover /var/www/drupal9/clover.xml
+          docker exec tripaldocker ls /var/www/drupal9
       - name: Publish code coverage to Code Climate
         run: |
           docker exec --workdir=/var/www/drupal9/web/modules/contrib/tripal \
-            tripaldocker ./cc-test-reporter after-build clover.xml \
+            tripaldocker ./cc-test-reporter after-build /var/www/drupal9/clover.xml \
             --id 37bfc0a7ce6928f7f4be8da9168c5fb65bd49e0a81c082baa08e2747121bec16 \
             --debug -t clover -p /var/www/drupal9/web/modules/contrib/tripal
