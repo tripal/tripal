@@ -43,9 +43,9 @@ jobs:
       - name: Prepare for Code Coverage
         run: |
           curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-          docker cp cc-test-reporter tripaldocker:/var/www/drupal9/web/modules/contrib/tripal
-          docker exec tripaldocker chmod a+x /var/www/drupal9/web/modules/contrib/tripal/cc-test-reporter
-          docker exec --workdir=/var/www/drupal9/web/modules/contrib/tripal tripaldocker ./cc-test-reporter before-build --debug
+          docker cp cc-test-reporter tripaldocker:/var/www/drupal9
+          docker exec tripaldocker chmod a+x /var/www/drupal9/cc-test-reporter
+          docker exec --workdir=/var/www/drupal9/ tripaldocker ./cc-test-reporter before-build --debug
       # Runs the PHPUnit tests.
       # https://github.com/mheap/phpunit-github-actions-printer is used
       # to report PHPUnit fails in a meaningful way to github in PRs.
@@ -65,7 +65,7 @@ jobs:
           docker exec tripaldocker ls /var/www/drupal9
       - name: Publish code coverage to Code Climate
         run: |
-          docker exec --workdir=/var/www/drupal9/web/modules/contrib/tripal \
-            tripaldocker ./cc-test-reporter after-build /var/www/drupal9/clover.xml \
+          docker exec --workdir=/var/www/drupal9 \
+            tripaldocker ./cc-test-reporter after-build ./clover.xml \
             --id 37bfc0a7ce6928f7f4be8da9168c5fb65bd49e0a81c082baa08e2747121bec16 \
             --debug -t clover -p /var/www/drupal9/web/modules/contrib/tripal
