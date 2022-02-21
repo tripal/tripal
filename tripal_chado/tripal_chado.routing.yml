@@ -1,5 +1,3 @@
-
-
 tripal_chado.storage:
   path: 'admin/tripal/storage/chado'
   defaults:
@@ -13,6 +11,14 @@ tripal_chado.chado_install_form:
   defaults:
     _form: '\Drupal\tripal_chado\Form\ChadoInstallForm'
     _title: 'Chado Installation'
+  requirements:
+    _permission: 'administer tripal'
+
+tripal_chado.chado_manager_form:
+  path: 'admin/tripal/storage/chado/manager'
+  defaults:
+    _form: '\Drupal\tripal_chado\Form\ChadoManagerForm'
+    _title: 'Chado Manager'
   requirements:
     _permission: 'administer tripal'
 

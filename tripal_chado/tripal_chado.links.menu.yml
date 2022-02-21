@@ -14,6 +14,13 @@ tripal_chado.chado_install_form:
   parent: tripal_chado.storage
   weight: 20
 
+tripal_chado.chado_manager_form:
+  route_name: tripal_chado.chado_manager_form
+  title: 'Manage Chado schemas'
+  description: 'Manages Chado schemas (clone, upgrade, rename, remove) and their integration with Tripal.'
+  parent: tripal_chado.storage
+  weight: 30
+
 tripal_chado.chado_prepare_form:
   route_name: tripal_chado.chado_prepare_form
   title: 'Prepare Chado'

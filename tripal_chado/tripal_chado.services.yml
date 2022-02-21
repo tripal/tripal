@@ -1,5 +1,19 @@
 services:
-    tripal_chado.chadoInstaller:
-        class: Drupal\tripal_chado\Services\chadoInstaller
-    tripal_chado.chadoPreparer:
-        class: Drupal\tripal_chado\Services\chadoPreparer
+  # Using '' will find default Chado schema instance (which may not be 'chado').
+  tripal_chado.database:
+    class: Drupal\tripal_chado\Database\ChadoConnection
+    arguments: ['']
+  tripal_chado.cloner:
+    class: Drupal\tripal_chado\Task\ChadoCloner
+  tripal_chado.installer:
+    class: Drupal\tripal_chado\Task\ChadoInstaller
+  tripal_chado.integrator:
+    class: Drupal\tripal_chado\Task\ChadoIntegrator
+  tripal_chado.upgrader:
+    class: Drupal\tripal_chado\Task\ChadoUpgrader
+  tripal_chado.renamer:
+    class: Drupal\tripal_chado\Task\ChadoRenamer
+  tripal_chado.remover:
+    class: Drupal\tripal_chado\Task\ChadoRemover
+  tripal_chado.preparer:
+    class: Drupal\tripal_chado\Task\ChadoPreparer

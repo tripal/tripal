@@ -5,6 +5,9 @@ namespace Drupal\tripal_chado\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\tripal_biodb\Database\BioDbTool;
+use Drupal\tripal_chado\Database\ChadoConnection;
+use Drupal\tripal_chado\Task\ChadoInstaller;
 
 /**
  * Class ChadoInstallForm.
@@ -23,22 +26,7 @@ class ChadoInstallForm extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
 
-    // Add warnings to the admin based on their choice (as needed).
-    $values = $form_state->getValues();
-    if (array_key_exists('action_to_do', $values)) {
-      if ($values['action_to_do'] == "Install Chado v1.3") {
-        \Drupal::messenger()->addMessage(
-            'Please note: if Chado is already installed it will
-            be removed and recreated and all data will be lost. If this is
-            desired or if this is the first time Chado has been installed
-            you can ignore this issue.', 'warning');
-      }
-      elseif ($values['action_to_do'] == "Drop Chado Schema") {
-        \Drupal::messenger()->addMessage(
-            'Please note: all data will be lost in the schema you choose to
-            remove. This is not reversible.', 'warning');
-      }
-    }
+    $chado = new ChadoConnection();
 
     $form['msg-top'] = [
       '#type' => 'item',
@@ -51,69 +39,145 @@ class ChadoInstallForm extends FormBase {
         sophisticated relational schemas currently available in molecular
         biology.',
       '#prefix' => '<blockquote>',
-      '#suffix' => t('- <a href="@url">GMOD Chado Documentation</a></blockquote>',
+      '#suffix' => $this->t('- <a href="@url">GMOD Chado Documentation</a></blockquote>',
         ['@url' => Url::fromUri('https://chado.readthedocs.io/en/rtd/')->toString()]),
+    ];
+
+    $form['msg-warning'] = [
+      '#type' => 'item',
+      '#markup' => 'Please note: if Chado is already installed it will
+            be removed and recreated and all data will be lost. If this is
+            desired or if this is the first time Chado has been installed
+            you can ignore this issue.',
+      // @todo:use CSS class "color-warning".
     ];
 
     // Now that we support multiple chado instances, we need to list all the
     // currently installed ones here since they may be different versions.
-    // @upgrade currently we have no way to pull out all chado installs.
     $rows = [];
-    $installs = chado_get_installed_schemas();
-    foreach($installs as $i) {
-      $rows[] = [
-        $i->schema_name,
-        $i->version,
-        \Drupal::service('date.formatter')->format($i->created),
-        \Drupal::service('date.formatter')->format($i->updated)
-      ];
+    $instances = $chado->getAvailableInstances();
+
+    // Sort instances.
+    uasort($instances, function ($a, $b) {
+      $order = 0;
+      // Sort by test/reservation status first.
+      if ($a['is_test'] || $a['is_reserved']) {
+        if ($b['is_test'] || $b['is_reserved']) {
+          // Then sort by schema name.
+          $order = strcasecmp($a['schema_name'], $b['schema_name']);
+        }
+        else {
+          $order = 1;
+        }
+      }
+      else {
+        if ($b['is_test'] || $b['is_reserved']) {
+          $order = -1;
+        }
+        else {
+          // Then sort by Tripal integration.
+          if ($a['integration']) {
+            if ($b['integration']) {
+              // Then sort by schema name.
+              $order = strcasecmp($a['schema_name'], $b['schema_name']);
+            }
+            else {
+              $order = -1;
+            }
+          }
+          else {
+            if ($b['integration']) {
+              $order = 1;
+            }
+            else {
+              // Then sort by schema name.
+              $order = strcasecmp($a['schema_name'], $b['schema_name']);
+            }
+          }
+        }
+      }
+      return $order;
+    });
+    foreach ($instances as $schema_name => $details) {
+      // Integrated schemas and non-integrated have different informations.
+      if ($details['integration']) {
+        // @todo: row style should highlight it is integrated.
+        // @todo: add a "check" sign in front of default Chado schema.
+        $rows[] = [
+          $details['integration']['schema_name'],
+          $details['integration']['version'],
+          // @todo: use CSS class ".system-status-counter__status-icon--checked"
+          $details['has_data'] ? $this->t('Yes') : $this->t('No'),
+          // @todo: use CSS class ".system-status-counter__status-icon--checked"
+          $this->t('Yes'),
+          \Drupal::service('date.formatter')->format(
+            $details['integration']['created']
+          ),
+          \Drupal::service('date.formatter')->format(
+            $details['integration']['updated']
+          ),
+        ];
+      }
+      else {
+        // @todo: add a row style for test schemas (to "gray" them).
+        $rows[] = [
+          $details['schema_name'],
+          $details['version'],
+          $details['has_data'] ? $this->t('Yes') : $this->t('No'),
+          $details['is_test'] ? $this->t('Test') : $this->t('No'),
+          '',
+          '',
+        ];
+      }
     }
     if (!empty($rows)) {
-      $form['current_version'] = [
+      $form['existing_instances'] = [
         '#type' => 'table',
-        '#caption' => 'Installed version(s) of Chado',
-        '#header' => ['Schema Name', 'Chado Version', 'Created', 'Updated'],
+        '#caption' => 'Existing Chado instances',
+        '#header' => ['Schema Name', 'Chado Version', 'Has data', 'In Tripal', 'Created', 'Updated'],
         '#rows' => $rows,
       ];
+      // Check if a default Chado instance is integrated.
+      if ($chado->schema()->schemaExists()
+          && $instances[$chado->getSchemaName()]['integration']) {
+        $form['current_version'] = [
+          '#type' => 'item',
+          '#markup' => '<div class="messages messages--status">
+              <p>Chado is installed in "'
+              . $chado->getSchemaName()
+              . '" (default Chado schema).</p>
+            </div>',
+        ];
+      }
+      // Check if a schema is integrated but not set as default.
+      elseif ($instances[$rows[0][0]]['integration']) {
+        $form['current_version'] = [
+          '#type' => 'item',
+          '#markup' => '<div class="messages messages--warning">
+              <h2>Chado is installed but no default shcema was set</h2>
+              <p>Please select a default Chado schema using the Chado management menu.</p>
+            </div>',
+        ];
+      }
+      else {
+        $form['current_version'] = [
+          '#type' => 'item',
+          '#markup' => '<div class="messages messages--warning">
+              <h2>Chado not integrated with Tripal</h2>
+              <p>Please integrate an existing Chado schema into Tripal using the Chado management menu or install a new default Chado instance. We recommend you use or upgrade to the most recent version of Chado.</p>
+            </div>',
+        ];
+      }
     }
     else {
       $form['current_version'] = [
         '#type' => 'item',
         '#markup' => '<div class="messages messages--warning">
             <h2>Chado Not Installed</h2>
-            <p>Please select an Install action below and click "Install/Upgrade Chado". We recommend you choose the most recent version of Chado.</p>
+            <p>Please install a new Chado schema. We recommend you choose the most recent version of Chado.</p>
           </div>',
       ];
     }
-
-    $form['msg-middle'] = [
-      '#type' => 'item',
-      '#markup' => t('<br /><p>Use the following drop-down to choose whether you want
-      to install or upgrade Chado. You can use the advanced options to change
-      the schema name for multi-chado install.</p>'),
-    ];
-
-    $form['action_to_do'] = [
-      '#type' => 'select',
-      '#title' => 'Installation/Upgrade Action',
-      '#options' => [
-        'Install Chado v1.3' => t('New Install of Chado v1.3 (erases all
-          existing Chado data if this chado schema already exists).'),
-        'Drop Chado Schema' => t('Remove Existing Chado (erases all existing
-          chado data)'),
-      ],
-      '#required' => TRUE,
-      "#empty_option" => t('- Select an action to perform -'),
-      '#ajax' => [
-        'callback' => '::ajaxFormVersionUpdate',
-        'wrapper' => 'tripal_chado_load_form',
-        'effect' => 'fade',
-        'method' => 'replace',
-        'disable-refocus' => FALSE,
-      ],
-    ];
-
-
 
     // Add some information to admin regarding chado installation.
     $info[] = 'Tripal Chado Integration now supports <strong>setting the schema
@@ -147,11 +211,11 @@ class ChadoInstallForm extends FormBase {
 
     $form['button'] = [
       '#type' => 'submit',
-      '#value' => t('Submit'),
+      '#value' => $this->t(
+        'Install Chado @version',
+        ['@version' => ChadoInstaller::DEFAULT_CHADO_VERSION]
+      ),
     ];
-
-    $form['#prefix'] = '<div id="tripal_chado_load_form">';
-    $form['#suffix'] = '</div>';
 
     return $form;
   }
@@ -161,20 +225,28 @@ class ChadoInstallForm extends FormBase {
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
     $values = $form_state->getValues();
+    $bio_tool = \Drupal::service('tripal_biodb.tool');
 
     // We do not want to allow re-installation of Chado if other
-    // Tripal modules are installed.  This is because the install files
+    // Tripal modules are installed. This is because the install files
     // of those modules may add content to Chado and reinstalling Chado
     // removes that content which may break the modules.
     //
     // Cannot do this and still allow multiple chado installs...
-    // @todo add a hook for modules to add in to the prepare or install processes.
+    // @todo: add a hook for modules to add in to the prepare or install
+    // processes.
+    // It may be solved by a method added to ChadoConnection class that would
+    // check "locked" Chado instances. It may rely on a flag stored into Drupal
+    // config or state? And/or as proposed, by an event/hook to let modules
+    // react.
 
-    // Schema name must be all lowercase with no special characters.
-    // It should also be a single word.
-    if (preg_match('/^[a-z][a-z0-9]+$/', $values['schema_name']) === 0) {
-      $form_state->setErrorByName('schema_name',
-        t('The schema name must be a single word containing only lower case letters or numbers and cannot begin with a number.'));
+    // Check for schema name issues.
+    $issue = $bio_tool->isInvalidSchemaName($values['schema_name']);
+    if ($issue) {
+      $form_state->setErrorByName(
+        'schema_name',
+        $issue
+      );
     }
 
     parent::validateForm($form, $form_state);
@@ -184,40 +256,17 @@ class ChadoInstallForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-
-    $action_to_do = trim($form_state->getValues()['action_to_do']);
-    $schema_name = trim($form_state->getValues()['schema_name']);
-    $args = [$action_to_do];
-
+    $values = $form_state->getValues();
+    $schema_name = trim($values['schema_name']);
     $current_user = \Drupal::currentUser();
-
-    switch ($action_to_do) {
-      case 'Install Chado v1.3':
-        $args = [$action_to_do, $schema_name];
-        tripal_add_job($action_to_do, 'tripal_chado',
-          'tripal_chado_install_chado', $args, $current_user->id(), 10);
-        break;
-      case 'Drop Chado Schema':
-        $args = ['drop', $schema_name];
-        $args = [$schema_name];
-        tripal_add_job($action_to_do, 'tripal_chado',
-            'tripal_chado_drop_schema', $args, $current_user->id(), 10);
-        break;
-    }
-
+    $args = [$schema_name, ChadoInstaller::DEFAULT_CHADO_VERSION];
+    tripal_add_job(
+      t('Install Chado ' . ChadoInstaller::DEFAULT_CHADO_VERSION),
+      'tripal_chado',
+      'tripal_chado_install_chado',
+      $args,
+      $current_user->id(),
+      10
+    );
   }
-
-  /**
-   * Ajax callback: triggered when version is selected
-   * to provide additional feedback and help text.
-   *
-   * @param array $form
-   * @param array $form_state
-   * @return array
-   *   Portion of the form to re-render.
-   */
-  public function ajaxFormVersionUpdate($form, $form_state) {
-    return $form;
-  }
-
 }
