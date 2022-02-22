@@ -47,8 +47,9 @@ function tripal_chado_map_cvterms() {
        (SELECT namespace FROM tripal_vocab TV WHERE id = TM.idspace_id),
         accession,
         name
-     FROM tripal_term TM";    
-    $results = db_query($sql);
+     FROM tripal_term TM"; 
+    $connection = \Drupal::database();   
+    $results = $connection->query($sql);
     while ($tripal_term = $results->fetchObject()) {
       $voc = $tripal_term->vocabulary;
       $accession = $tripal_term->accession;
@@ -81,7 +82,8 @@ function tripal_chado_map_cvterms() {
             "SELECT mapping_id
              FROM chado_cvterm_mapping
              WHERE cvterm_id = :cvterm_id";
-          $mapped = db_query($check_sql, [':cvterm_id' => $cvterm_id])->fetchField();
+          $connection = \Drupal::database();
+          $mapped = $connection->query($check_sql, [':cvterm_id' => $cvterm_id])->fetchField();
           // If mapping does not exist and a table name matches the term name, add it
           if (!$mapped && chado_table_exists($name)) {
             print "Adding mapped tripal term: $name\n";
