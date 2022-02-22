@@ -115,7 +115,8 @@ function tripal_chado_map_cvterms() {
  */
 function tripal_chado_add_cvterm_mapping($cvterm_id, $tablename, $chado_field) {
   // check if the record exists
-  $record = db_select('chado_cvterm_mapping', 'tcm')
+  $connection = \Drupal::database();
+  $record = $connection->select('chado_cvterm_mapping', 'tcm')
     ->fields('tcm', ['mapping_id'])
     ->condition('cvterm_id', $cvterm_id)
     ->execute()

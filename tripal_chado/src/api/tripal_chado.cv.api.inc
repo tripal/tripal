@@ -1070,7 +1070,8 @@ function chado_insert_obo($name, $path) {
  * @ingroup tripal_chado_cv_api
  */
 function chado_get_obo($values) {
-  $query = db_select('tripal_cv_obo', 'tco')
+  $connection = \Drupal::database();
+  $query = $connection->select('tripal_cv_obo', 'tco')
     ->fields('tco');
 
   if (array_key_exists('name', $values)) {

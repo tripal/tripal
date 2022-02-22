@@ -302,8 +302,8 @@ function chado_refresh_mview($mview_id) {
  *
  */
 function chado_get_mviews() {
-
-  $results = db_select('tripal_mviews', 'tm')
+  $connection = \Drupal::database();
+  $results = $connect->select('tripal_mviews', 'tm')
     ->fields('tm', ['mview_id', 'name'])
     ->execute();
 
