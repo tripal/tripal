@@ -9,7 +9,8 @@ function tripal_chado_map_cvterms() {
   $base_tables = chado_get_base_tables();
 
   // Perform this action in a transaction
-  $transaction = db_transaction();
+  $connection = \Drupal::database();
+  $transaction = $connection->startTransaction();
   try {
 
     // Iterate through the referring tables to see what records are there.

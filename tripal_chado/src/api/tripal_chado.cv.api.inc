@@ -1122,7 +1122,8 @@ function chado_update_cvtermpath($cv_id, $job = NULL) {
 
   // TODO: there's a function to determine the current Chado instance.
   // we should use that.
-  $transaction = db_transaction();
+  $connection = \Drupal::database();
+  $transaction = $connection->startTransaction();
 
   try {
 
