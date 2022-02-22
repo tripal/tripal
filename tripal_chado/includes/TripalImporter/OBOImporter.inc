@@ -234,7 +234,8 @@ class OBOImporter extends TripalImporter {
 
     // get a list of db from chado for user to choose
     $sql = "SELECT * FROM tripal_cv_obo ORDER BY name";
-    $results = db_query($sql);
+    $connection = \Drupal::database();
+    $results = $connection->query($sql);
 
     $obos = [];
     $obos[] = 'Select a Vocabulary';
@@ -2652,7 +2653,8 @@ class OBOImporter extends TripalImporter {
       // Refresh the OBO select list
       // get a list of db from chado for user to choose
       $sql = "SELECT * FROM tripal_cv_obo ORDER BY name";
-      $results = db_query($sql);
+      $connection = \Drupal::database();
+      $results = $connection->query($sql);
 
       $obos = [];
       $obos[] = 'Select a Vocabulary';
