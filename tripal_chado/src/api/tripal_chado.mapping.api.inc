@@ -82,7 +82,6 @@ function tripal_chado_map_cvterms() {
             "SELECT mapping_id
              FROM chado_cvterm_mapping
              WHERE cvterm_id = :cvterm_id";
-          $connection = \Drupal::database();
           $mapped = $connection->query($check_sql, [':cvterm_id' => $cvterm_id])->fetchField();
           // If mapping does not exist and a table name matches the term name, add it
           if (!$mapped && chado_table_exists($name)) {
