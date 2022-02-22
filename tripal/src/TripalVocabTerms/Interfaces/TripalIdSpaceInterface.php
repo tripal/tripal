@@ -2,7 +2,7 @@
 
 namespace Drupal\tripal\TripalVocabTerms\Interface;
 
-use Drupal\tripal\TripalVocabTerms\Interface\TripalCollectionPluginInterface;
+use Drupal\tripal\TripalVocabTerms\Interfaces\TripalCollectionPluginInterface;
 
 /**
  * Defines an interface for tripal id space plugins.

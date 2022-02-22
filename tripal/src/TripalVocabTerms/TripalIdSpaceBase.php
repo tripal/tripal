@@ -3,7 +3,7 @@
 namespace Drupal\tripal\TripalVocabTerms;
 
 use Drupal\tripal\TripalVocabTerms\TripalCollectionPluginBase;
-use Drupal\tripal\TripalVocabTerms\Interface\TripalIdSpaceInterface;
+use Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface;
 
 /**
  * Base class for tripal id space plugins.
