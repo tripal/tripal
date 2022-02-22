@@ -146,7 +146,8 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE, $mvi
   $connection = \Drupal::database();
 
   // This database connection is the 'chado' schema
-  $connection_chado = \Drupal\Core\Database\Database::getConnection('default', $chado_schema);
+  // $connection_chado = \Drupal\Core\Database\Database::getConnection('default', $chado_schema);
+  $connection_chado = \Drupal::service('tripal_chado.database');
 
   // Create a transaction for public schema
   $transaction = $connection->startTransaction();
@@ -180,9 +181,8 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = TRUE, $mvi
       $connection_chado->schema()->createTable($table, $schema);
       $recreated = 1;
 
-
-      // TODO the old code unset "referring_tables" from $schema,
-      //      is this necessary?
+      // TODO: the old code unset "referring_tables" from $schema,
+      //       is this necessary?
     }
 
     // Add this table to tripal_custom_tables, dropping and re-adding if necessary
@@ -345,7 +345,8 @@ function chado_delete_custom_table($table_id) {
   $connection = \Drupal::database();
 
   // This database connection is the 'chado' schema
-  $connection_chado = \Drupal\Core\Database\Database::getConnection('default', $chado_schema);
+  // $connection_chado = \Drupal\Core\Database\Database::getConnection('default', $chado_schema);
+  $connection_chado = \Drupal::service('tripal_chado.database');
 
   $transaction = $connection->startTransaction();
   $transaction_chado = $connection_chado->startTransaction();
