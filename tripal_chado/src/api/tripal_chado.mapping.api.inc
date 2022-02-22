@@ -123,7 +123,7 @@ function tripal_chado_add_cvterm_mapping($cvterm_id, $tablename, $chado_field) {
     ->fetchField();
   // insert records into the chado_cvterm_mapping table.
   if (!$record) {
-    db_insert('chado_cvterm_mapping')
+    $connection->insert('chado_cvterm_mapping')
       ->fields(
         [
           'cvterm_id' => $cvterm_id,

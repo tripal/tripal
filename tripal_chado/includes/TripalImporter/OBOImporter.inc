@@ -450,7 +450,8 @@ class OBOImporter extends TripalImporter {
       }
     }
     elseif (!empty($obo_name)) {
-      $obo_id = db_insert('tripal_cv_obo')
+      $connection = \Drupal::database();
+      $obo_id = $connection->insert('tripal_cv_obo')
         ->fields([
           'name' => $obo_name,
           'path' => $obo_url ? $obo_url : $obo_file,

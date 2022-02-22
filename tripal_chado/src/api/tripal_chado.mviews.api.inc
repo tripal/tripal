@@ -42,7 +42,7 @@
  * @ingroup tripal_mviews_api
  */
 function chado_add_mview($name, $modulename, $mv_schema, $query, $comment = NULL, $redirect = TRUE) {
-
+  $connection = \Drupal::database();
   if (!array_key_exists('table', $mv_schema)) {
     tripal_report_error('tripal_chado', TRIPAL_ERROR,
       'Must have a table name when creating an mview.', []);
@@ -52,7 +52,7 @@ function chado_add_mview($name, $modulename, $mv_schema, $query, $comment = NULL
   $mv_table = $mv_schema['table'];
 
   // See if the mv_table name already exsists.
-  $mview_id = db_select('tripal_mviews', 'tm')
+  $mview_id = $connection->select('tripal_mviews', 'tm')
     ->fields('tm', ['mview_id'])
     ->condition('name', $name)
     ->execute()
@@ -61,7 +61,7 @@ function chado_add_mview($name, $modulename, $mv_schema, $query, $comment = NULL
   // Check that the materialized view actually exists and if not,
   // remove the entry from tripal_mviews.
   if ($mview_id AND !chado_table_exists($name)) {
-    db_delete('tripal_mviews')
+    $connection->delete('tripal_mviews')
       ->condition('mview_id', $mview_id)
       ->execute();
     $mview_id = FALSE;
@@ -303,7 +303,7 @@ function chado_refresh_mview($mview_id) {
  */
 function chado_get_mviews() {
   $connection = \Drupal::database();
-  $results = $connect->select('tripal_mviews', 'tm')
+  $results = $connection->select('tripal_mviews', 'tm')
     ->fields('tm', ['mview_id', 'name'])
     ->execute();
 
