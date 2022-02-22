@@ -32,8 +32,8 @@ class TripalVocabularyManager extends TripalCollectionPluginManager {
         ,$namespaces
         ,$cache_backend
         ,$module_handler
-        ,'Drupal\tripal\TripalVocabTerms\Interface\TripalVocabularyInterface'
-        ,'Drupal\tripal\TripalVocabTerms\Annotation\TripalVocabulary'
+        ,'Drupal\tripal\TripalVocabTerms\Interfaces\TripalVocabularyInterface'
+        ,'Drupal\tripal\TripalVocabTerms\Annotations\TripalVocabulary'
         ,'tripal_vocabulary_collection'
     );
     $this->alterInfo('tripal_vocabulary_info');

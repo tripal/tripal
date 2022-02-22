@@ -117,7 +117,7 @@ class TripalTerm {
   /**
    * Returns an instance of this term's id space.
    *
-   * @return Drupal\tripal\TripalVocabTerms\Interface\TripalIdSpaceInterface
+   * @return Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface
    *   The id space instance.
    */
   public function getIdSpaceObject() {

@@ -2,7 +2,7 @@
 
 namespace Drupal\tripal\TripalVocabTerms\Interface;
 
-use Drupal\tripal\TripalVocabTerms\Interface\TripalCollectionPluginInterface;
+use Drupal\tripal\TripalVocabTerms\Interfaces\TripalCollectionPluginInterface;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 
 /**
