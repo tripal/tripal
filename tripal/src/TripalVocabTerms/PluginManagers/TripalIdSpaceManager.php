@@ -32,8 +32,8 @@ class TripalIdSpaceManager extends TripalCollectionPluginManager {
         ,$namespaces
         ,$cache_backend
         ,$module_handler
-        ,'Drupal\tripal\TripalVocabTerms\Interface\TripalIdSpaceInterface'
-        ,'Drupal\tripal\TripalVocabTerms\Annotation\TripalIdSpace'
+        ,'Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface'
+        ,'Drupal\tripal\TripalVocabTerms\Annotations\TripalIdSpace'
         ,'tripal_idspace_collection'
     );
     $this->alterInfo('tripal_id_space_info');
