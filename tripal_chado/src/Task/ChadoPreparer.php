@@ -1,302 +1,244 @@
 <?php
 
-namespace Drupal\tripal_chado\Services;
+namespace Drupal\tripal_chado\Task;
 
-use Drupal\Core\Database\Database;
+use Drupal\tripal_chado\Task\ChadoTaskBase;
+use Drupal\tripal_biodb\Exception\TaskException;
+use Drupal\tripal_biodb\Exception\LockException;
+use Drupal\tripal_biodb\Exception\ParameterException;
 use Drupal\tripal\Entity\TripalEntityType;
 
-class ChadoPreparer {
+/**
+ * Chado preparer.
+ *
+ * Usage:
+ * @code
+ * // Where 'chado' is the name of the Chado schema to prepare.
+ * $preparer = \Drupal::service('tripal_chado.preparer');
+ * $preparer->setParameters([
+ *   'output_schemas' => ['chado'],
+ * ]);
+ * if (!$preparer->performTask()) {
+ *   // Display a message telling the user the task failed and details are in
+ *   // the site logs.
+ * }
+ * @endcode
+ */
+class ChadoPreparer extends ChadoTaskBase {
 
   /**
-   * The name of the schema we are interested in installing/updating chado for.
+   * Name of the task.
    */
-  protected $schemaName;
+  public const TASK_NAME = 'preparer';
 
   /**
-   * The DRUPAL-managed database connection.
+   * Validate task parameters.
+   *
+   * Parameter array provided to the class constructor must include one output
+   * schema and no input schema as shown:
+   * ```
+   * ['output_schemas' => ['schema_name'], ]
+   * ```
+   *
+   * @throws \Drupal\tripal_biodb\Exception\ParameterException
+   *   A descriptive exception is thrown in cas of invalid parameters.
    */
-  protected $connection;
+  public function validateParameters() :void {
+    try {
+      // Check input.
+      if (!empty($this->parameters['input_schemas'])) {
+        throw new ParameterException(
+          "No input schema must be specified."
+        );
+      }
 
-  /**
-   * The drupal logger for tripal.
-   */
-  protected $logger;
+      // Check output.
+      if (empty($this->parameters['output_schemas'])
+          || (1 != count($this->parameters['output_schemas']))
+      ) {
+        throw new ParameterException(
+          "Invalid number of output schemas. Only one output schema must be specified."
+        );
+      }
 
-  /**
-   * Holds the Job object
-   */
-  protected $job = NULL;
+      $bio_tool = \Drupal::service('tripal_biodb.tool');
+      $output_schema = $this->outputSchemas[0];
 
-  /**
-   * Constructor: initialize connections.
-   */
-  public function __construct() {
-    $this->connection = \Drupal::database();
-
-    // Initialize the logger.
-    $this->logger = \Drupal::service('tripal.logger');
+      // Note: schema names have already been validated through BioConnection.
+      // Check if the target schema exists.
+      if (!$output_schema->schema()->schemaExists()) {
+        throw new ParameterException(
+          'Output schema "'
+          . $output_schema->getSchemaName()
+          . '" does not exist.'
+        );
+      }
+    }
+    catch (\Exception $e) {
+      // Log.
+      $this->logger->error($e->getMessage());
+      // Rethrow.
+      throw $e;
+    }
   }
 
   /**
-   * Set the schema name.
+   * Prepare a given chado schema by inserting minimal data.
+   *
+   * Task parameter array provided to the class constructor includes:
+   * - 'input_schemas' array: no input schema
+   * - 'output_schemas' array: one output Chado schema that must exist
+   *   (required)
+   *
+   * Example:
+   * ```
+   * ['output_schemas' => ['chado_schema'], ]
+   * ```
+   *
+   * @return bool
+   *   TRUE if the task was performed with success and FALSE if the task was
+   *   completed but without the expected success.
+   *
+   * @throws Drupal\tripal_biodb\Exception\TaskException
+   *   Thrown when a major failure prevents the task from being performed.
+   *
+   * @throws \Drupal\tripal_biodb\Exception\ParameterException
+   *   Thrown if parameters are incorrect.
+   *
+   * @throws Drupal\tripal_biodb\Exception\LockException
+   *   Thrown when the locks can't be acquired.
    */
-  public function setSchema($schema_name) {
-    // Schema name must be all lowercase with no special characters.
-    // It should also be a single word.
-    if (preg_match('/^[a-z][a-z0-9]+$/', $schema_name) === 0) {
-      $this->logger->error('The schema name must be a single word containing only lower case letters or numbers and cannot begin with a number.');
-      return FALSE;
+  public function performTask() :bool {
+    // Task return status.
+    $task_success = FALSE;
+
+    // Validate parameters.
+    $this->validateParameters();
+
+    // Acquire locks.
+    $success = $this->acquireTaskLocks();
+    if (!$success) {
+      throw new LockException("Unable to acquire all locks for task. See logs for details.");
+    }
+
+    try
+    {
+      $chado_schema = $this->outputSchemas[0];
+
+      $this->setProgress(0.1);
+      $this->logger->notice("Loading ontologies...");
+      $this->loadOntologies();
+
+      $this->setProgress(0.5);
+      $this->logger->notice("Creating default content types...");
+      $this->contentTypes();
+
+      $this->setProgress(1);
+      $task_success = TRUE;
+
+      // Release all locks.
+      $this->releaseTaskLocks();
+
+      // Cleanup state API.
+      $this->state->delete(static::STATE_KEY_DATA_PREFIX . $this->id);
+    }
+    catch (\Exception $e) {
+      $this->logger->error($e->getMessage());
+      // Cleanup state API.
+      $this->state->delete(static::STATE_KEY_DATA_PREFIX . $this->id);
+      // Release all locks.
+      $this->releaseTaskLocks();
+
+      throw new TaskException(
+        "Failed to complete schema integration task.\n"
+        . $e->getMessage()
+      );
+    }
+
+    return $task_success;
+  }
+
+  /**
+   * Set progress value.
+   *
+   * @param float $value
+   *   New progress value.
+   */
+  protected function setProgress(float $value) {
+    $data = ['progress' => $value];
+    $this->state->set(static::STATE_KEY_DATA_PREFIX . $this->id, $data);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getProgress() :float {
+    $data = $this->state->get(static::STATE_KEY_DATA_PREFIX . $this->id, []);
+
+    if (empty($data)) {
+      // No more data available. Assume process ended.
+      $progress = 1;
     }
     else {
-      $this->logger->info('Setting Schema to "' . $schema_name . '".');
-      $this->schemaName = $schema_name;
-      return TRUE;
+      $progress = $data['progress'];
     }
-}
-
-  /**
-   * A setter for the job object if this class is being run using a Tripal job.
-   */
-  public function setJob(\Drupal\tripal\Services\TripalJob $job) {
-    $this->job = $job;
-    $this->logger->setJob($job);
-    return TRUE;
+    return $progress;
   }
 
   /**
-   * Retrieve the Drupal connection to the database.
-   *
-   * @return Drupal\database
-   *   Current Drupal connection.
+   * {@inheritdoc}
    */
-  public function getDrupalConnection() {
-    return $this->connection;
-  }
-
-  /**
-   * Retrieves the message logger.
-   *
-   * @return object
-   *
-   */
-  public function getLogger() {
-    return $this->logger;
-  }
-
-  /**
-   *
-   */
-  public function prepare() {
-    $this->logger->info("Loading ontologies...");
-    $this->loadOntologies();
-
-    $this->logger->info("Creating default content types...");
-    $this->contentTypes();
+  public function getStatus() :string {
+    $status = '';
+    $progress = $this->getProgress();
+    if (1 > $progress) {
+      $status = 'Integration in progress.';
+    }
+    else {
+      $status = 'Integration done.';
+    }
+    return $status;
   }
 
   /**
    * Loads ontologies necessary for creation of default Tripal content types.
    */
   protected function loadOntologies() {
-    /* OLD METHOD -NEEDS UPGRADE
-    \Drupal::service('tripal.tripalVocab.manager')->addVocabulary([
-      'idspace' => 'NCIT',
-      'namespace' => 'ncit',
-      'name' => 'NCI Thesaurus OBO Edition',
-      'description' => 'The NCIt OBO Edition project aims to increase integration of the NCIt with OBO Library ontologies.',
-      'url' => 'http://purl.obolibrary.org/obo/ncit.owl',
-      'urlprefix' => ' http://purl.obolibrary.org/obo/{db}_{accession}',
-    ]);
 
-    \Drupal::service('tripal.tripalTerm.manager')->addTerm([
-      'accession' => 'C25693',
-      'name' => 'Subgroup',
-      'vocabulary' => [
-        'namespace' => 'ncit',
-        'idspace' => 'NCIT',
-      ],
-      'definition' => 'A subdivision of a larger group with members often exhibiting similar characteristics. [ NCI ]',
-    ]);
-
-    \Drupal::service('tripal.tripalVocab.manager')->addVocabulary([
-      'idspace' => 'rdfs',
-      'namespace' => 'rdfs',
-      'name' => 'Resource Description Framework Schema',
-      'description' => 'RDF Schema provides a data-modelling vocabulary for RDF data.',
-      'url' => 'https://www.w3.org/TR/rdf-schema/',
-      'urlprefix' => 'http://www.w3.org/2000/01/rdf-schema#{accession}',
-    ]);
-
-    \Drupal::service('tripal.tripalTerm.manager')->addTerm([
-      'accession' => 'comment',
-      'name' => 'comment',
-      'vocabulary' => [
-        'namespace' => 'rdfs',
-        'idspace' => 'rdfs',
-      ],
-      'definition' => 'A human-readable description of a resource\'s name.',
-    ]);
-
-    // TODO:
-    // T3 loads many terms we need for default content types through the OBO
-    // Importer. As of April 19, 2021 the OBO importer has not yet been migrated
-    // to T4 and therefore cannot be used. As a result, I will be adding a few
-    // terms here individually using the vocab and term managers. In the
-    // future, this should be replaced with calls to the OBO importer so that
-    // the terms can be imported automatically.
-    $terms = [];
-
-    // Organism.
-    $terms['SO:0100026'] = [
-      'accession' => '0100026',
-      'name' => 'organism',
-      'definition' => 'A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.',
-      'vocabulary' => [
-        'name' => 'The Ontology for Biomedical Investigation',
-        'namespace' => 'obi',
-        'idspace' => 'OBI',
-        'description' => 'The Ontology for Biomedical Investigations (OBI) will serve as a resource for annotating biomedical investigations, including the study design, protocols and instrumentation used, the data generated and the types of analysis performed on the data.',
-        'url' => 'http://obi-ontology.org/page/Main_Page',
-        'urlprefix' => 'http://purl.obolibrary.org/obo/{db}_{accession}',
-      ],
-    ];
-
-    // Gene.
-    $terms['SO:0000704'] = [
-      'accession' => '0000704',
-      'name' => 'gene',
-      'definition' => 'A region (or regions) that includes all of the sequence elements necessary to encode a functional transcript. A gene may include regulatory regions, transcribed regions and/or other functional sequence regions.',
-      'vocabulary' => [
-        'name' => 'The Sequence Ontology',
-        'namespace' => 'sequence',
-        'idspace' => 'SO',
-        'description' => 'The Sequence Ontology (SO) is a collaborative ontology project for the definition of sequence features used in biological sequence annotation.',
-        'url' => 'http://www.sequenceontology.org/',
-        'urlprefix' => 'http://www.sequenceontology.org/browser/current_svn/term/{db}:{accession}',
-      ],
-    ];
-
-    // Germplasm Accession.
-    $terms['CO_010:0000044'] = [
-      'accession' => '0000044',
-      'name' => 'accession',
-      'definition' => '',
-      'vocabulary' => [
-        'name' => 'GCP germplasm ontology',
-        'namespace' => 'germplasm_ontology',
-        'idspace' => 'CO_010',
-        'description' => 'Provides desciptors for germplasm collections. Adapted from Descriptors for Banana (Musa spp.) (1996) and Descriptors for Mango by Bioversity.',
-        'url' => 'http://www.cropontology.org/ontology/CO_010/Germplasm',
-        'urlprefix' => 'http://www.cropontology.org/terms/{db}:{accession}/index.html',
-      ],
-    ];
-
-    // Analysis.
-    $terms['2945'] = [
-      'accession' => '2945',
-      'name' => 'Analysis',
-      'definition' => 'Apply analytical methods to existing data of a specific type.',
-      'vocabulary' => [
-        'name' => 'EDAM - Ontology of bioscientific data analysis',
-        'namespace' => 'EDAM',
-        'idspace' => 'operation',
-        'description' => 'EDAM is a comprehensive ontology of well-established, familiar concepts that are prevalent within computational biology, bioinformatics, and bioimage informatics.',
-        'url' => 'http://edamontology.org/page',
-        'urlprefix' => 'http://edamontology.org/{db}_{accession}',
-      ],
-    ];
-
-    /* Template for adding more.
-    $terms[''] = [
-      'accession' => '',
-      'name' => '',
-      'definition' => '',
-      'vocabulary' => [
-        'name' => '',
-        'namespace' => '',
-        'idspace' => '',
-        'description' => '',
-        'url' => '',
-        'urlprefix' => '',
-      ],
-    ]; -/
-
-    // Actually add the terms described above.
-    // The term manager will create the vocabulary if it doesn't exist.
-    foreach ($terms as $term) {
-      \Drupal::service('tripal.tripalTerm.manager')->addTerm($term);
-    }
-
-    // ###################################################################
-    // Begin T3 code to be converted to D8 when the OBO importer is ready.
-    // ###################################################################
     /*
-      // Insert commonly used ontologies into the tables.
-      $ontologies = [
-        [
-          'name' => 'Relationship Ontology (legacy)',
-          'path' => '{tripal_chado}/files/legacy_ro.obo',
-          'auto_load' => FALSE,
-          'cv_name' => 'ro',
-          'db_name' => 'RO',
-        ],
-        [
-          'name' => 'Gene Ontology',
-          'path' => 'http://purl.obolibrary.org/obo/go.obo',
-          'auto_load' => FALSE,
-          'cv_name' => 'cellualar_component',
-          'db_name' => 'GO',
-        ],
-        [
-          'name' => 'Taxonomic Rank',
-          'path' => 'http://purl.obolibrary.org/obo/taxrank.obo',
-          'auto_load' => TRUE,
-          'cv_name' => 'taxonomic_rank',
-          'db_name' => 'TAXRANK',
-        ],
-        [
-          'name' => 'Tripal Contact',
-          'path' => '{tripal_chado}/files/tcontact.obo',
-          'auto_load' => TRUE,
-          'cv_name' => 'tripal_contact',
-          'db_name' => 'TContact',
-        ],
-        [
-          'name' => 'Tripal Publication',
-          'path' => '{tripal_chado}/files/tpub.obo',
-          'auto_load' => TRUE,
-          'cv_name' => 'tripal_pub',
-          'db_name' => 'TPUB',
-        ],
-        [
-          'name' => 'Sequence Ontology',
-          'path' => 'http://purl.obolibrary.org/obo/so.obo',
-          'auto_load' => TRUE,
-          'cv_name' => 'sequence',
-          'db_name' => 'SO',
-        ],
-      ];
+     This currently cannot be implementated as the vocabulary API is being
+     re-done. As such, this method is a placeholder.
 
-      module_load_include('inc', 'tripal_chado', 'includes/TripalImporter/OBOImporter');
-      for ($i = 0; $i < count($ontologies); $i++) {
-        $obo_id = chado_insert_obo($ontologies[$i]['name'], $ontologies[$i]['path']);
-        if ($ontologies[$i]['auto_load'] == TRUE) {
-          // Only load ontologies that are not already in the cv table.
-          $cv = chado_get_cv(['name' => $ontologies[$i]['cv_name']]);
-          $db = chado_get_db(['name' => $ontologies[$i]['db_name']]);
-          if (!$cv or !$db) {
-            print "Loading ontology: " . $ontologies[$i]['name'] . " ($obo_id)...\n";
-            $obo_importer = new OBOImporter();
-            $obo_importer->create(['obo_id' => $obo_id]);
-            $obo_importer->run();
-            $obo_importer->postRun();
-          }
-          else {
-            print "Ontology already loaded (skipping): " . $ontologies[$i]['name'] . "...\n";
-          }
-        }
-      }
+     See https://github.com/tripal/tripal/blob/7.x-3.x/tripal_chado/includes/setup/tripal_chado.setup.inc
+     for the Tripal 3 implementation of this method.
+
+     Vocabularies to be added individually:
+     - NCIT: NCI Thesaurus OBO Edition
+     - rdfs: Resource Description Framework Schema
+
+     Terms to be added individually:
+     - Subgroup (NCIT:C25693)
+     - rdfs:comment
+
+     Ontologies to be imported by the OBO Loader:
+     - Legacy Relationship Ontology: {tripal_chado}/files/legacy_ro.obo
+     - Gene Ontology: http://purl.obolibrary.org/obo/go.obo
+     - Taxonomic Rank: http://purl.obolibrary.org/obo/taxrank.obo
+     - Tripal Contact: {tripal_chado}/files/tcontact.obo
+     - Tripal Publication: {tripal_chado}/files/tpub.obo
+     - Sequence Ontology: http://purl.obolibrary.org/obo/so.obo
+     - Crop Ontology Germplasm: https://raw.githubusercontent.com/UofS-Pulse-Binfo/kp_entities/master/ontologies/CO_010.obo
+     - EDAM Ontology: http://edamontology.org/EDAM.obo
+
+     NOTE: Regarding CO_010 (crop ontology of germplasm), for some reason this
+     has been removed from the original crop ontology website. As such, I've linked
+     here to a file which loads and is correct. We use 4 terms from this ontology
+     for our content types so we may want to consider alternatives.
+     One such alternative may be MCPD: http://agroportal.lirmm.fr/ontologies/CO_020
+
     */
+
+    $this->logger->warning("\tWaiting on completion of the Vocabulary API and Data Loaders.");
   }
 
   /**
@@ -338,7 +280,7 @@ class ChadoPreparer {
     foreach($terms as $key => $term_details) {
       $type_details = $types[$key];
 
-      $this->logger->info("\n  -- Creating " . $type_details['label'] . " (" . $type_details['name'] . ")...");
+      $this->logger->notice("  -- Creating " . $type_details['label'] . " (" . $type_details['name'] . ")...");
 
       // TODO: Create the term once the API is upgraded.
       // $term = \Drupal::service('tripal.tripalTerm.manager')->getTerms($term_details);
@@ -351,7 +293,7 @@ class ChadoPreparer {
         }
       }
       else {
-        $this->logger->info("\tNo term attached -waiting on API update.");
+        $this->logger->warning("\tNo term attached -waiting on API update.");
       }
 
       // Check if the type already exists.
@@ -366,14 +308,14 @@ class ChadoPreparer {
         $tripal_type = TripalEntityType::create($type_details);
         if (is_object($tripal_type)) {
           $tripal_type->save();
-          $this->logger->info("\tSaved successfully.");
+          $this->logger->notice("\tSaved successfully.");
         }
         else {
           $this->logger->error("\tCreation Failed! Details provided were: " . print_r($type_details));
         }
       }
       else {
-        $this->logger->info("\tSkipping as the content type already exists.");
+        $this->logger->notice("\tSkipping as the content type already exists.");
       }
     }
   }

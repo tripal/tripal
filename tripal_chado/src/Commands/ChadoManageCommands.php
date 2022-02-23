@@ -1,5 +1,4 @@
 <?php
-
 namespace Drupal\tripal_chado\Commands;
 
 use Drush\Commands\DrushCommands;
@@ -25,11 +24,22 @@ class ChadoManageCommands extends DrushCommands {
 
     $this->output()->writeln('Installing chado version ' . $options['chado-version'] . ' in a schema named "' . $options['schema-name']. '"');
 
-    $installer = \Drupal::service('tripal_chado.chadoInstaller');
-    $installer->setSchema($options['schema-name']);
-    $success = $installer->install($options['chado-version']);
-    if ($success) {
-      $this->output()->writeln('<info>[Success]</info> Chado was successfully installed.');
+    $installer = \Drupal::service('tripal_chado.installer');
+    $installer->setParameters([
+      'output_schemas' => [  $options['schema-name']  ],
+      'version' => $options['chado-version'],
+    ]);
+    if ($installer->performTask()) {
+      $this->output()->writeln(dt('<info>[Success]</info> Chado was successfully installed.'));
+    }
+    else {
+      throw new \Exception(dt(
+        'Unable to install chado {version} in {schema}',
+        [
+          'schema' => $options['schema-name'],
+          'version' => $options['chado-version'],
+        ]
+      ));
     }
   }
 
@@ -45,12 +55,22 @@ class ChadoManageCommands extends DrushCommands {
    */
   public function dropChado($options = ['schema-name' => 'chado']) {
 
-    $installer = \Drupal::service('tripal.bulkPgSchemaInstaller');
-    $installer->dropSchema($options['schema-name']);
-    $present = $installer->checkSchema($options['schema-name']);
-    if (!$present) {
+    $remover = \Drupal::service('tripal_chado.remover');
+    $remover->setParameters([
+      'output_schemas' => [$options['schema-name']],
+    ]);
+    if ($remover->performTask()) {
       $this->output()->writeln('<info>[Success]</info> Chado was successfully dropped.');
     }
+    else {
+      throw new \Exception(dt(
+        'Unable to drop chado in {schema}',
+        [
+          'schema' => $options['schema-name'],
+        ]
+      ));
+    }
+
   }
 
   /**
@@ -68,11 +88,23 @@ class ChadoManageCommands extends DrushCommands {
 
     $this->output()->writeln('Installing chado version ' . $chado_version . ' in a schema named "' . $schema_name. '"');
 
-    $installer = \Drupal::service('tripal_chado.chadoInstaller');
-    $installer->setSchema($schema_name);
-    $success = $installer->install($chado_version);
-    if ($success) {
-      $this->output()->writeln('<info>[Success]</info> Chado was successfully installed for testing.');
+    $installer = \Drupal::service('tripal_chado.installer');
+    $installer->setParameters([
+      'output_schemas' => [  $schema_name  ],
+      'version' => $chado_version ,
+    ]);
+    if ($installer->performTask()) {
+      $this->output()->writeln(dt('<info>[Success]</info> Chado was successfully installed.'));
+      $this->output()->writeln(dt('<info>[Success]</info> The Chado Test environement was successfully set up.'));
+    }
+    else {
+      throw new \Exception(dt(
+        'Unable to install chado {version} in {schema}',
+        [
+          'schema' => $schema_name,
+          'version' => $chado_version ,
+        ]
+      ));
     }
   }
 }

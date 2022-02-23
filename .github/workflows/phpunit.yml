@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     # PHP Targets
     strategy:
+      fail-fast: false
       matrix:
         drupalversion: ['9.1.x-dev', '9.2.x-dev', '9.3.x-dev', '9.4.x-dev']
     # Give the builds names so we can tell them apart
