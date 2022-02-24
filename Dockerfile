@@ -9,6 +9,15 @@ ARG drupalversion='9.3.x-dev'
 ARG modules='tripal tripal_biodb tripal_chado'
 ARG chadoschema='chado'
 
+# Label docker image
+LABEL drupal.version=${drupalversion}
+LABEL drupal.stability="development"
+LABEL tripal.version="4.x-dev"
+LABEL tripal.stability="development"
+LABEL os.version="buster"
+LABEL php.version="7.3"
+LABEL postgresql.version="11"
+
 COPY . /app
 
 ## Install some basic support programs and update apt-get.
