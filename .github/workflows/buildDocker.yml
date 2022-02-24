@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - 9.x-4.x
+      - test-docker-build
 jobs:
   push_to_registry:
     runs-on: ubuntu-latest
@@ -11,16 +12,16 @@ jobs:
       matrix:
         drupalversion: ['9.2.x-dev', '9.3.x-dev']
         experimental: [false]
-        label: ['Core Version']
+        label: ['Current']
         include:
           - drupalversion: '9.1.x-dev'
             experimental: true
-            label: 'Previous Version'
+            label: 'Previous'
           - drupalversion: '9.4.x-dev'
             experimental: true
-            label: 'Next Version'
+            label: 'Future'
     continue-on-error: ${{ matrix.experimental }}
-    name: Docker Build (drupal${{ matrix.drupalversion }}) -- ${{ matrix.label }}
+    name: Docker Build (drupal${{ matrix.drupalversion }}) -- ${{ matrix.label }} Version
     steps:
       - uses: actions/checkout@v2
         name: Check out code
@@ -33,10 +34,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           build-args: "drupalversion=${{ matrix.drupalversion }}"
-          labels: |
-            "tripal.branch=9.x-4.x"
-            "drupal.version.experimental=${{ matrix.experimental }}"
-            "drupal.version.label=${{ matrix.label }}"
+          labels: 'tripal.branch=9.x-4.x,drupal.version.experimental=${{ matrix.experimental }},drupal.version.label=${{ matrix.label }}'
       - name: Build latest using 9.3.x-dev
         id: docker_build_latest
         uses: docker/build-push-action@v2
@@ -48,7 +46,4 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           build-args: "drupalversion=${{ matrix.drupalversion }}"
-          labels: |
-            "tripal.branch=9.x-4.x"
-            "drupal.version.experimental=${{ matrix.experimental }}"
-            "drupal.version.label=${{ matrix.label }}"
+          labels: 'tripal.branch=9.x-4.x,drupal.version.experimental=${{ matrix.experimental }},drupal.version.label=${{ matrix.label }}'
