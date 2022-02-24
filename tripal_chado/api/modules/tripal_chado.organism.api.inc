@@ -156,6 +156,10 @@ function chado_get_organism_scientific_name($organism) {
         $rank = $organism->type_id->name;
       }
     }
+    // For db query where we explicitly supply infraspecific_type
+    elseif (property_exists($organism, 'infraspecific_type')) {
+      $rank = $organism->infraspecific_type;
+    }
     else {
       $rank_term = chado_get_cvterm(['cvterm_id' => $organism->type_id]);
       if ($rank_term) {
@@ -220,9 +224,10 @@ function chado_get_organism_select_options($syncd_only = TRUE) {
     $csql = "SELECT * FROM {organism} ORDER BY genus, species";
     // if present in this site's version of chado, include infraspecific nomenclature in sorting
     if (chado_column_exists('organism', 'infraspecific_name')) {
-      $csql .= ", REPLACE ((SELECT name FROM {cvterm} CVT WHERE CVT.cvterm_id = type_id" .
-               " AND CVT.cv_id = (SELECT cv_id FROM {cv} WHERE name='taxonomic_rank')), 'no_rank', '')," .
-               " infraspecific_name";
+      $csql = "SELECT organism_id, genus, species, type_id,"
+            . " (REPLACE ((SELECT name FROM {cvterm} CVT WHERE CVT.cvterm_id = type_id AND CVT.cv_id ="
+            . "   (SELECT cv_id FROM {cv} WHERE name='taxonomic_rank')), 'no_rank', '')) AS infraspecific_type,"
+            . " infraspecific_name FROM {organism} ORDER BY genus, species, infraspecific_type, infraspecific_name";
     }
     $orgs = chado_query($csql);
 
