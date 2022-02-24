@@ -12,16 +12,16 @@ jobs:
       matrix:
         drupalversion: ['9.2.x-dev', '9.3.x-dev']
         experimental: [false]
-        label: ['Core Version']
+        label: ['Current']
         include:
           - drupalversion: '9.1.x-dev'
             experimental: true
-            label: 'Previous Version'
+            label: 'Previous'
           - drupalversion: '9.4.x-dev'
             experimental: true
-            label: 'Next Version'
+            label: 'Future'
     continue-on-error: ${{ matrix.experimental }}
-    name: Docker Build (drupal${{ matrix.drupalversion }}) -- ${{ matrix.label }}
+    name: Docker Build (drupal${{ matrix.drupalversion }}) -- ${{ matrix.label }} Version
     steps:
       - uses: actions/checkout@v2
         name: Check out code
