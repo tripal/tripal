@@ -1,5 +1,5 @@
 # Run some PHPUnit tests
-name: PHPUnit-Tests
+name: Optional Version Testing
 
 # When do we want the tests to run?
 on: [push]
@@ -14,10 +14,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        drupalversion: ['9.2.x-dev', '9.3.x-dev']
-
+        include:
+          - drupalversion: '9.1.x-dev'
+            label: 'Backwards Compatibility'
+          - drupalversion: '9.4.x-dev'
+            label: 'Future Version'
     # Give the builds names so we can tell them apart
-    name: PHPUnit Drupal ${{ matrix.drupalversion }} -- REQUIRED
+    name: Testing ${{ matrix.label }} -- Drupal ${{ matrix.drupalversion }}
 
     # Steps in the sequence
     steps:
