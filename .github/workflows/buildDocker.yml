@@ -11,13 +11,16 @@ jobs:
       matrix:
         drupalversion: ['9.2.x-dev', '9.3.x-dev']
         experimental: [false]
+        label: ['Core Version']
         include:
           - drupalversion: '9.1.x-dev'
             experimental: true
+            label: 'Previous Version'
           - drupalversion: '9.4.x-dev'
             experimental: true
+            label: 'Next Version'
     continue-on-error: ${{ matrix.experimental }}
-    name: Docker Build (drupal${{ matrix.drupalversion }})
+    name: Docker Build (drupal${{ matrix.drupalversion }}) -- ${{ matrix.label }}
     steps:
       - name: Login to DockerHub
         uses: docker/login-action@v1
