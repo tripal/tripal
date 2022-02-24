@@ -306,6 +306,7 @@ function tripal_chado_prepare_general_types($job) {
     'vocabulary' => 'OBI',
     'accession' => '0100026',
     'term_name' => 'organism',
+    'label' => 'Organism',
     'storage_args' => [
       'data_table' => 'organism',
     ],
@@ -320,6 +321,7 @@ function tripal_chado_prepare_general_types($job) {
     'vocabulary' => 'operation',
     'accession' => '2945',
     'term_name' => 'Analysis',
+    'label' => 'Analysis',
     'storage_args' => [
       'data_table' => 'analysis',
     ],
@@ -334,6 +336,7 @@ function tripal_chado_prepare_general_types($job) {
     'vocabulary' => 'NCIT',
     'accession' => 'C47885',
     'term_name' => 'Project',
+    'label' => 'Project',
     'storage_args' => [
       'data_table' => 'project',
     ],
@@ -364,6 +367,7 @@ function tripal_chado_prepare_general_types($job) {
     'vocabulary' => 'local',
     'accession' => 'contact',
     'term_name' => 'contact',
+    'label' => 'Contact',
     'storage_args' => [
       'data_table' => 'contact',
     ],
@@ -378,6 +382,7 @@ function tripal_chado_prepare_general_types($job) {
     'vocabulary' => 'TPUB',
     'accession' => '0000002',
     'term_name' => 'Publication',
+    'label' => 'Publication',
     'storage_args' => [
       'data_table' => 'pub',
     ],
@@ -411,6 +416,7 @@ function tripal_chado_prepare_general_types($job) {
     'vocabulary' => 'sep',
     'accession' => '00101',
     'term_name' => 'Protocol',
+    'label' => 'Protocol',
     'storage_args' => [
       'data_table' => 'protocol',
     ],
@@ -430,6 +436,7 @@ function tripal_chado_prepare_genomic_types($job) {
     'vocabulary' => 'SO',
     'accession' => '0000704',
     'term_name' => 'gene',
+    'label' => 'Gene',
     'storage_args' => [
       'data_table' => 'feature',
       'type_column' => 'type_id',
@@ -445,6 +452,7 @@ function tripal_chado_prepare_genomic_types($job) {
     'vocabulary' => 'SO',
     'accession' => '0000234',
     'term_name' => 'mRNA',
+    'label' => 'mRNA',
     'storage_args' => [
       'data_table' => 'feature',
       'type_column' => 'type_id',
@@ -460,6 +468,7 @@ function tripal_chado_prepare_genomic_types($job) {
     'vocabulary' => 'data',
     'accession' => '0872',
     'term_name' => 'Phylogenetic tree',
+    'label' => 'Phylogenetic Tree',
     'storage_args' => [
       'data_table' => 'phylotree',
     ],
@@ -473,6 +482,7 @@ function tripal_chado_prepare_genomic_types($job) {
     'vocabulary' => 'data',
     'accession' => '1280',
     'term_name' => 'Physical Map',
+    'label' => 'Physical Map',
     'storage_args' => [
       'data_table' => 'featuremap',
       'type_linker_table' => 'featuremapprop',
@@ -489,6 +499,7 @@ function tripal_chado_prepare_genomic_types($job) {
     'vocabulary' => 'NCIT',
     'accession' => 'C16223',
     'term_name' => 'DNA Library',
+    'label' => 'DNA Library',
     'storage_args' => [
       'data_table' => 'library',
       'type_column' => 'type_id',
@@ -539,6 +550,7 @@ function tripal_chado_prepare_genomic_types($job) {
     'vocabulary' => 'local',
     'accession' => 'Genome Project',
     'term_name' => 'Genome Project',
+    'label' => 'Genome Project',
     'storage_args' => [
       'data_table' => 'project',
       'type_linker_table' => 'projectprop',
@@ -563,6 +575,7 @@ function tripal_chado_prepare_expression_types($job) {
     'vocabulary' => 'sep',
     'accession' => '00195',
     'term_name' => 'biological sample',
+    'label' => 'Biological Sample',
     'storage_args' => [
       'data_table' => 'biomaterial',
     ],
@@ -594,6 +607,7 @@ function tripal_chado_prepare_expression_types($job) {
     'vocabulary' => 'EFO',
     'accession' => '0000269',
     'term_name' => 'Assay Design',
+    'label' => 'Array Design',
     'storage_args' => [
       'data_table' => 'arraydesign',
     ],
@@ -723,6 +737,7 @@ function tripal_chado_prepare_genetic_types($job) {
     'vocabulary' => 'SO',
     'accession' => '0000771',
     'term_name' => 'QTL',
+    'label' => 'QTL',
     'storage_args' => [
       'data_table' => 'feature',
       'type_column' => 'type_id',

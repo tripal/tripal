@@ -605,16 +605,18 @@ function _chado_execute_pub_importer_publish($publish, $job, $message_type, $mes
       'vocabulary' => 'TPUB',
       'accession' => '0000002',
     ]);
-    $bundle = tripal_load_bundle_entity(['term_id' => $bundle_term->id]);
-    if ($bundle) {
-      tripal_report_error($message_type, TRIPAL_INFO,
-        "Publishing publications with Drupal...", [], $message_opts);
-      chado_publish_records(['bundle_name' => $bundle->name], $job);
+    if ($bundle_term) {
+      $bundle = tripal_load_bundle_entity(['term_id' => $bundle_term->id]);
+      if ($bundle) {
+        tripal_report_error($message_type, TRIPAL_INFO,
+          "Publishing publications with Drupal...", [], $message_opts);
+        chado_publish_records(['bundle_name' => $bundle->name], $job);
+      }
+      // Note: we won't publish contacts as Tripal v2 did because there is
+      // no consisten way to do that. Each site my use a different term for
+      // different contact content types (e.g. all as one 'Contact' type or
+      // specific such as 'Person', 'Organization', etc.).
     }
-    // Note: we won't publish contacts as Tripal v2 did because there is
-    // no consisten way to do that. Each site my use a different term for
-    // different contact content types (e.g. all as one 'Contact' type or
-    // specific such as 'Person', 'Organization', etc.).
   }
 
   // For backwords compatibility with legacy module do a sync.

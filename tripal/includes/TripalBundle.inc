@@ -5,7 +5,7 @@
  */
 class TripalBundle extends Entity {
 
-  public function __construct($values = [], $entity_type) {
+  public function __construct($values = [], $entity_type = NULL) {
     parent::__construct($values, $entity_type);
 
     $this->term = tripal_load_term_entity(['term_id' => $this->term_id]);

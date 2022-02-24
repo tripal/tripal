@@ -372,6 +372,9 @@ function chado_abbreviate_infraspecific_rank($rank) {
     case 'subvariety':
       $abb = 'subvar.';
       break;
+    case 'cultivar':
+      $abb = 'cv.';
+      break;
     case 'forma':
       $abb = 'f.';
       break;
@@ -382,4 +385,42 @@ function chado_abbreviate_infraspecific_rank($rank) {
       $abb = $rank;
   }
   return $abb;
+}
+
+/**
+ * A handy function to expand the infraspecific rank from an abbreviation.
+ *
+ * @param $rank
+ *   The rank below species or its abbreviation.
+ *   A period at the end of the abbreviation is optional.
+ *
+ * @return
+ *   The proper unabbreviated form for the rank.
+ *
+ * @ingroup tripal_organism_api
+ */
+function chado_unabbreviate_infraspecific_rank($rank) {
+  if (preg_match('/^subsp\.?$/', $rank)) {
+    $rank = 'subspecies';
+  }
+  elseif (preg_match('/^ssp\.?$/', $rank)) {
+    $rank = 'subspecies';
+  }
+  elseif (preg_match('/^var\.?$/', $rank)) {
+    $rank = 'varietas';
+  }
+  elseif (preg_match('/^subvar\.?$/', $rank)) {
+    $rank = 'subvarietas';
+  }
+  elseif (preg_match('/^cv\.?$/', $rank)) {
+    $rank = 'cultivar';
+  }
+  elseif (preg_match('/^f\.?$/', $rank)) {
+    $rank = 'forma';
+  }
+  elseif (preg_match('/^subf\.?$/', $rank)) {
+    $rank = 'subforma';
+  }
+  // if none of the above matched, rank is returned unchanged
+  return $rank;
 }

@@ -5,7 +5,7 @@
  */
 class TripalVocab extends Entity {
 
-  public function __construct($values = [], $entity_type) {
+  public function __construct($values = [], $entity_type = NULL) {
     parent::__construct($values, $entity_type);
 
   }
