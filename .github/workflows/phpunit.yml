@@ -35,14 +35,6 @@ jobs:
             --volume=`pwd`:/var/www/drupal9/web/modules/contrib/tripal \
             tripaldocker:localdocker
           docker exec tripaldocker service postgresql restart
-      # Now prepare the new docker container for running tests.
-      # We specifically do not have a `chado` named schema to test that
-      # an assumption hasn't been made here.
-      - name: Prep Local Docker for Tests
-        run: |
-          docker exec tripaldocker drush cr
-          docker exec tripaldocker drush trp-drop-chado --schema-name=chado
-          docker exec tripaldocker drush trp-prep-tests
       # Runs the PHPUnit tests.
       # https://github.com/mheap/phpunit-github-actions-printer is used
       # to report PHPUnit fails in a meaningful way to github in PRs.
