@@ -10,13 +10,25 @@ jobs:
   run-tests:
     # Runner type
     runs-on: ubuntu-latest
-    # PHP Targets
+    # Drupal Targets
     strategy:
       fail-fast: false
       matrix:
-        drupalversion: ['9.1.x-dev', '9.2.x-dev', '9.3.x-dev', '9.4.x-dev']
+        drupalversion: ['9.2.x-dev', '9.3.x-dev']
+        experimental: [false]
+        label: ['Required']
+        include:
+          - drupalversion: '9.1.x-dev'
+            experimental: true
+            label: 'Backwards Compatible?'
+          - drupalversion: '9.4.x-dev'
+            experimental: true
+            label: 'Future Version'
+    # Allows the workflow to still pass
+    # even if the experimental drupal versions fail.
+    continue-on-error: ${{ matrix.experimental }}
     # Give the builds names so we can tell them apart
-    name: PHPUnit Drupal ${{ matrix.drupalversion }}
+    name: PHPUnit Drupal ${{ matrix.drupalversion }} -- ${{ matrix.label }}
 
     # Steps in the sequence
     steps:
