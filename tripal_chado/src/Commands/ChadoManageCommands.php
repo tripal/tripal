@@ -74,6 +74,39 @@ class ChadoManageCommands extends DrushCommands {
   }
 
   /**
+   * Prepare the Tripal Chado system.
+   *
+   * @command tripal-chado:prepare
+   * @aliases trp-prep-chado
+   * @options schema-name
+   *   The name of the chado schema to prepare. Only a single chado schema
+   *   should be prepared with Tripal and this will become the default chado schema.
+   * @usage drush trp-prep-chado --schema-name="chado"
+   *   Prepare the Tripal Chado system and set the schema named "chado" as the
+   *   default Chado instance to use with Tripal.
+   */
+  public function prepareChado($options = ['schema-name' => 'chado']) {
+
+    $this->output()->writeln('Preparing Drupal ("public") + Chado ("' . $options['schema-name'] . '")...');
+
+    $preparer = \Drupal::service('tripal_chado.preparer');
+    $preparer->setParameters([
+      'output_schemas' => [$options['schema-name']],
+    ]);
+    if ($preparer->performTask()) {
+      $this->output()->writeln('<info>[Success]</info> Preparation complete.');
+    }
+    else {
+      throw new \Exception(dt(
+        'Unable to prepare Crupal + Chado in {schema}',
+        [
+          'schema' => $options['schema-name'],
+        ]
+      ));
+    }
+  }
+
+  /**
    * Set-up the Tripal Chado test environment.
    *
    * @command tripal-chado:setup-tests

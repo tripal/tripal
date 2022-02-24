@@ -27,7 +27,7 @@ jobs:
       # to ensure we have not broken the install/build process.
       - name: Build the Docker
         run: |
-          docker build --tag=tripaldocker:localdocker --build-arg drupalversion='${{ matrix.drupalversion }}' ./
+          docker build --tag=tripaldocker:localdocker --build-arg drupalversion='${{ matrix.drupalversion }}' --build-arg chadoschema='testchado' ./
       # Just spin up docker the good ol' fashion way.
       - name: Spin up Local Docker
         run: |
