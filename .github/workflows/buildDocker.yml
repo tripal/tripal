@@ -7,8 +7,16 @@ jobs:
   push_to_registry:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        drupalversion: ['9.1.x-dev', '9.2.x-dev', '9.3.x-dev', '9.4.x-dev']
+        drupalversion: ['9.2.x-dev', '9.3.x-dev']
+        experimental: [false]
+        include:
+          - drupalversion: '9.1.x-dev'
+            experimental: true
+          - drupalversion: '9.4.x-dev'
+            experimental: true
+    continue-on-error: ${{ matrix.experimental }}
     name: Docker Build (drupal${{ matrix.drupalversion }})
     steps:
       - name: Login to DockerHub
