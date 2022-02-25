@@ -9,6 +9,9 @@ use Drupal\Core\Cache\FieldStorageDefinitionInterface;
 use Drupal\tripal\TripalStorage\IntStoragePropertyType;
 use Drupal\Core\TypedData\DataDefinition;
 
+/**
+ * Defines the Tripal field item base class.
+ */
 class TripalFieldItemBase extends FieldItemBase extends TripalFieldItemInterface {
 
   /**
@@ -21,8 +24,7 @@ class TripalFieldItemBase extends FieldItemBase extends TripalFieldItemInterface
       "#type" => "string",
       "#title" => $this->t("Vocabulary Term"),
       "#required" => TRUE,
-      "#description" => $this->t("The vocabulary term."),
-      "#disabled" => $has_data
+      "#description" => $this->t("The vocabulary term.")
     ];
 
     return $elements + parent::fieldSettingsForm($form,$form_state);
@@ -67,7 +69,7 @@ class TripalFieldItemBase extends FieldItemBase extends TripalFieldItemInterface
   public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
     $elements = [];
 
-    # turn into selection
+    // turn into selection
     $elements["storage_plugin_id"] = [
       "#type" => "string",
       "#title" => $this->t("Tripal Storage Plugin ID."),
@@ -87,6 +89,6 @@ class TripalFieldItemBase extends FieldItemBase extends TripalFieldItemInterface
   }
 }
 
-#First field to implement:
-#rdfs_type
-#https://github.com/tripal/tripal/tree/7.x-3.x/tripal/includes/TripalFields/rdfs__type
+// First field to implement:
+// rdfs_type
+// https://github.com/tripal/tripal/tree/7.x-3.x/tripal/includes/TripalFields/rdfs__type
