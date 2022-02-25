@@ -61,13 +61,30 @@ abstract class BioConnection extends PgConnection {
   protected $self_classes = [
     \Drupal\Core\Database\Connection::class => TRUE,
     \Drupal\Core\Database\Driver\pgsql\Connection::class => TRUE,
+    \Drupal\pgsql\Driver\Database\pgsql\Connection::class => TRUE,
     \Drupal\tripal_biodb\Database\BioConnection::class => TRUE,
+  ];
+
+  /**
+   * Supported Connection classes.
+   * These must inherit from \Drupal\Core\Database\Connection
+   *
+   * NOTE: These are in order of preference with the first entry available
+   *  being used to open new connections.
+   * NOTE: the pgsql driver changed namespace in 9.4.x
+   *  Drupal\Core\Database\Driver\pgsql\Connection => Drupal\pgsql\Driver\Database\pgsql\Connection
+   *
+   * @var array
+   */
+  protected static $supported_classes = [
+    'Drupal\pgsql\Driver\Database\pgsql\Connection',
+    'Drupal\Core\Database\Driver\pgsql\Connection'
   ];
 
   /**
    * Database connection.
    *
-   * @var \Drupal\Core\Database\Driver\pgsql\Connection
+   * @var \Drupal\Core\Database\Connection
    */
   protected $database = NULL;
 
@@ -194,14 +211,14 @@ abstract class BioConnection extends PgConnection {
    * To not mess up with Drupal stuff, we need to open a new and distinct
    * database connection for each BioConnection instance.
    *
-   * @param \Drupal\Core\Database\Driver\pgsql\Connection $database
+   * @param \Drupal\Core\Database\Connection $database
    *   The database connection to duplicate.
    *
    * @return \PDO
    *   A \PDO object.
    */
   protected static function openNewPdoConnection(
-    \Drupal\Core\Database\Driver\pgsql\Connection $database
+    \Drupal\Core\Database\Connection $database
   ) {
     // We call this method in a context of an existing connection already
     // used by Drupal so we can avoid a couple of tests and assume it works.
@@ -209,7 +226,14 @@ abstract class BioConnection extends PgConnection {
     $target = $database->target;
     $key = $database->key;
 
-    $pdo_connection = \Drupal\Core\Database\Driver\pgsql\Connection::open(
+    // Open a new connection with the first supported connection available.
+    $database_class = NULL;
+    array_walk(self::$supported_classes, function($class_name) use(&$database_class) {
+      if (class_exists($class_name) AND is_null($database_class)) {
+        $database_class = $class_name;
+      }
+    });
+    $pdo_connection = $database_class::open(
       $database_info[$key][$target]
     );
     return $pdo_connection;
@@ -223,8 +247,8 @@ abstract class BioConnection extends PgConnection {
    *   Default: '' (no schema). It will throw exceptions on methods needing a
    *   default schema but may work on others or when a schema can be passed
    *   as parameter.
-   * @param \Drupal\Core\Database\Driver\pgsql\Connection|string $database
-   *   Either a \Drupal\Core\Database\Driver\pgsql\Connection instance or a
+   * @param \Drupal\Core\Database\Connection|string $database
+   *   Either a \Drupal\Core\Database\Connection instance or a
    *   Drupal database key string (from current site's settings.php).
    *   Extra databases specified in settings.php do not need to specify a
    *   schema name as a database prefix parameter. The prefix will be managed by
@@ -257,12 +281,18 @@ abstract class BioConnection extends PgConnection {
         $database
       );
     }
-    // Make sure we are using a PostgreSQL connection.
-    if (!is_a($database, \Drupal\Core\Database\Driver\pgsql\Connection::class)
-    ) {
-      throw new ConnectionException(
-        "The provided connection object is not a PostgreSQL database connection."
-      );
+
+
+    // Make sure we are using a supported connection.
+    if (is_object($database)) {
+      $database_class = get_class($database);
+      if (!in_array($database_class, self::$supported_classes)) {
+        throw new ConnectionException("The provided connection object is not a PostgreSQL database connection but is instead from $database_class.");
+      }
+    }
+    else {
+      $type = gettype($database);
+      throw new ConnectionException("We expected a PostgreSQL database connection or Drupal database key string but instead recieved a $type.");
     }
 
     // Get a BioDbTool object.
