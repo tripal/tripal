@@ -839,10 +839,10 @@ function chado_insert_cvterm($term, $options = []) {
   // The accession in $id may not always be dbname:accession, e.g. url,
   // so only extract values if nothing is already defined
   if (preg_match('/^[^:]*\D[^:]*:.*$/', $id)) {
-    if (!accession) {
+    if (!$accession) {
       $accession = preg_replace('/^.+?:(.*)$/', '\1', $id);
     }
-    if (!dbname) {
+    if (!$dbname) {
       $dbname = preg_replace('/^(.+?):.*$/', '\1', $id);
     }
   }
