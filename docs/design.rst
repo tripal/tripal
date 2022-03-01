@@ -8,6 +8,5 @@ This is the location for active development of Software Design Documentation (SD
 
    design/overview
    design/file-structure
-   design/training
    design/standards
    design/pending
