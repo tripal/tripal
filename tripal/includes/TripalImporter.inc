@@ -266,7 +266,7 @@ class TripalImporter {
     $connection = \Drupal::database();
     
     // Get the importer.
-    $import = -$connection->select('tripal_import', 'ti')
+    $import = $connection->select('tripal_import', 'ti')
       ->fields('ti')
       ->condition('ti.import_id', $import_id)
       ->execute()

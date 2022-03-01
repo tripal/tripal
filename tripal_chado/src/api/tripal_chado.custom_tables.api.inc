@@ -35,31 +35,62 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
   $connection = \Drupal::database();
 
   $messenger = \Drupal::messenger();
+  $connection = \Drupal::database();
   $transaction = $connection->startTransaction();
 
-  try {
-    // Create a new record.
-    $record = new stdClass();
-    $record->table_id = $table_id;
-    $record->table_name = $table_name;
-    $record->schema = serialize($schema);
+    try {
+        // Create a new record.
+        $record = new stdClass();
+        $record->table_id = $table_id;
+        $record->table_name = $table_name;
+        $record->schema = serialize($schema);
 
-    // Get the current custom table record.
-    $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id";
-    $results = $connection->query($sql, [':table_id' => $table_id]);
-    $custom_table = $results->fetchObject();
+        // Get the current custom table record.
+        $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id";
+        $connection = \Drupal::database();
+        $results = $connection->query($sql, [':table_id' => $table_id]);
+        $custom_table = $results->fetchObject();
 
-    // Check if the table is suitable for editing (not mview, doesn't exist in tripal_custom_tables table).
-    if (!$custom_table) {
-      // tripal_report_error('tripal_chado', TRIPAL_ERROR, "This table is not known to be a custom table. Please add it before trying to edit it.",[]);
-      //$messenger->addError("This table is not known to be a custom table. Please use the " . `l('LINK TEXT', 'LINK_LOCATION') . " interface to add it.");
-      return FALSE;
-    }
-    else if ($custom_table->mview_id) {
-      tripal_report_error('tripal_chado', TRIPAL_ERROR, "Please use the chado_edit_mview() function to edit this custom table as it is a materialized view.", []);
-      $messenger->addError("This custom table is a materialized view. Please use the " . l('Materialized View', 'admin/tripal/storage/chado/mviews') . " interface to edit it.");
-      return FALSE;
-    }
+        // Check if the table is suitable for editing (not mview, doesn't exist in tripal_custom_tables table).
+        if (!$custom_table) {
+           // tripal_report_error('tripal_chado', TRIPAL_ERROR, "This table is not known to be a custom table. Please add it before trying to edit it.",[]);
+            //$messenger->addError("This table is not known to be a custom table. Please use the " . `l('LINK TEXT', 'LINK_LOCATION') . " interface to add it.");
+            return FALSE;
+        }
+        else if ($custom_table->mview_id) {
+            tripal_report_error('tripal_chado', TRIPAL_ERROR, "Please use the chado_edit_mview() function to edit this custom table as it is a materialized view.", []);
+            $messenger->addError("This custom table is a materialized view. Please use the " . l('Materialized View', 'admin/tripal/storage/chado/mviews') . " interface to edit it.");
+            return FALSE;
+        }
+
+        // If the user changed the table name, we want to drop the old one and force
+        // creation of the new one.
+        if ($custom_table->table_name != $table_name) {
+            chado_query("DROP TABLE %s", $custom_table->table_name);
+            $skip_if_exists = 0; // we DO want to create the table now
+        }
+
+        // If skip creation is not set, then drop the table from chado if it exists.
+        if (!$skip_if_exists) {
+            // Check if the table exists with chado_table_exists instead of db_table_exists because
+            //  that function is deprected in Drupal 8 and removed in Drupal 9
+            if (chado_table_exists($custom_table->table_name)) {
+                chado_query("DROP TABLE %s", $custom_table->table_name);
+                $messenger->addStatus(t("Custom Table " . $custom_table->table_name . " dropped"));
+            }
+        }
+
+        // Update the custom table record and run the create custom table function.
+        \Drupal::database()->insert('tripal_custom_tables')
+            ->key('table_id')
+            ->fields(
+                array(
+                    'table_id' => $record->table_id,
+                    'table_name' => $record->table_name,
+                    'schema' => $record->schema
+                    ))
+            ->execute();
+        $success = chado_create_custom_table($table_name, $schema, $skip_if_exists);
 
     // If the user changed the table name, we want to drop the old one and force
     // creation of the new one.
@@ -335,65 +366,60 @@ function chado_get_custom_table_names($include_mview = TRUE) {
  * @return void
  */
 function chado_delete_custom_table($table_id) {
-  $chado_schema = chado_get_schema_name('chado');
+    $connection = \Drupal::database();
+    $transaction = $connection->startTransaction();
 
-  $connection = \Drupal::database();
+    try {
+        // Get details about this table from tripal_custom_tables
+        $query = $connection->select('tripal_custom_tables', 'ct')
+            ->fields('ct', array(
+                'table_id',
+                'table_name',
+                'schema',
+                'mview_id'
+            ))
+            ->condition('ct.table_id',$table_id)
+            ->execute();
+        $table_details = $query->fetchObject();
+        //print_r($table_details);
+        
+        // Don't delete if this table is a materialized view 
+        if($table_details->mview_id) {
+            tripal_report_error('tripal_chado', TRIPAL_ERROR, "Please use the chado_delete_mview() function to delete this custom table as it is a materialized view. Table not deleted.", []);
+            //$messenger->addError("This custom table is a materialized view. Please use the " . l('Materialized View', 'admin/tripal/storage/chado/mviews') . " interface to delete it.");
+            //return FALSE;
+        }
 
-  // This database connection is the 'chado' schema
-  // $connection_chado = \Drupal\Core\Database\Database::getConnection('default', $chado_schema);
-  $connection_chado = \Drupal::service('tripal_chado.database');
+        // Also check if it exists in the database as promised.
+        $chado_schema = chado_get_schema_name('chado'); // Todo - is this really how we want to get the schema name? 
+                                                    // Does not seem like it would work with multi-chado instances.
+        $chado_dot = $chado_schema . '.';
+        $table_exists = $connection->schema()->tableExists($chado_dot . $table_details->table_name);
 
-  $transaction = $connection->startTransaction();
-  $transaction_chado = $connection_chado->startTransaction();
+        // Return errors if the table doesn't exist (either in
+        // tripal_custom_tables or in the database itself).
+        if (!$table_details OR !$table_exists) {
+            $message = "The table " . $table_details->table_name . " is either not listed in the tripal_custom_tables table or it doesn't exist in the database.\n";
+            \Drupal::logger('tripal_chado')->notice($message);
+            return FALSE;
+        }
 
-  try {
-    // Get details about this table from tripal_custom_tables
-    $query = $connection->select('tripal_custom_tables', 'ct')
-      ->fields('ct', [
-        'table_id',
-        'table_name',
-        'schema',
-        'mview_id'
-      ])
-      ->condition('ct.table_id',$table_id)
-      ->execute();
-    $table_details = $query->fetchObject();
-    //print_r($table_details);
-    
-    // Don't delete if this table is a materialized view 
-    if($table_details->mview_id) {
-      // Output this error the the recent logs which can be seen via Drupal Recent Logs UI
-      \Drupal::logger('tripal_chado')->error("Please use the chado_delete_mview() function to delete this custom table as it is a materialized view. Table not deleted.");
-      return FALSE;
-    }
-
-    // Also check if it exists in the database as promised.
-    $chado_schema = chado_get_schema_name('chado'); // Todo - is this really how we want to get the schema name? 
-                                                // Does not seem like it would work with multi-chado instances.
-
-    $table_exists = $connection_chado->schema()->tableExists($table_details->table_name);
-
-    // Return errors if the table doesn't exist (either in
-    // tripal_custom_tables or in the database itself).
-    if (!$table_details or !$table_exists) {
-      $message = "The table " . $table_details->table_name . " is either not listed in the tripal_custom_tables table or it doesn't exist in the database.\n";
-      \Drupal::logger('tripal_chado')->notice($message);
-      return FALSE;
-    }
-
-    // Remove the entry from the tripal_custom_tables table.
-    $delisted = $connection->delete('tripal_custom_tables')
-      ->condition('table_id',$table_id)
-      ->execute();
-    
-    // Drop the table from Chado (checking if it exists)
-    $deleted = $connection_chado->schema()->dropTable($table_details->table_name);
-    if ($delisted and $deleted) {
-      return TRUE;
-    }
-    else {
-      \Drupal::logger('tripal_chado')->error('Could not delete the ". $table_details->table_name ." table');
-      return FALSE;
+        // Remove the entry from the tripal_custom_tables table.
+        $delisted = $connection->delete('tripal_custom_tables')
+            ->condition('table_id',$table_id)
+            ->execute();
+        // Drop the table from Chado (checking if it exists)
+        $deleted = $connection->schema()->dropTable($chado_dot . $table_details->table_name);
+        if ($delisted AND $deleted) {
+            return TRUE;
+        }
+        else {
+            \Drupal::logger('tripal_chado')->error('Could not delete the ". $table_details->table_name ." table');
+        }
+        
+    } catch (Exception $e) {
+        $transaction->rollback();
+        tripal_set_message($e,TRIPAL_WARNING);
     }
       
   } 

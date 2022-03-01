@@ -9,7 +9,8 @@ function tripal_chado_map_cvterms() {
   $base_tables = chado_get_base_tables();
 
   // Perform this action in a transaction
-  $transaction = db_transaction();
+  $connection = \Drupal::database();
+  $transaction = $connection->startTransaction();
   try {
 
     // Iterate through the referring tables to see what records are there.
@@ -47,8 +48,9 @@ function tripal_chado_map_cvterms() {
        (SELECT namespace FROM tripal_vocab TV WHERE id = TM.idspace_id),
         accession,
         name
-     FROM tripal_term TM";    
-    $results = db_query($sql);
+     FROM tripal_term TM"; 
+    $connection = \Drupal::database();   
+    $results = $connection->query($sql);
     while ($tripal_term = $results->fetchObject()) {
       $voc = $tripal_term->vocabulary;
       $accession = $tripal_term->accession;
@@ -81,7 +83,7 @@ function tripal_chado_map_cvterms() {
             "SELECT mapping_id
              FROM chado_cvterm_mapping
              WHERE cvterm_id = :cvterm_id";
-          $mapped = db_query($check_sql, [':cvterm_id' => $cvterm_id])->fetchField();
+          $mapped = $connection->query($check_sql, [':cvterm_id' => $cvterm_id])->fetchField();
           // If mapping does not exist and a table name matches the term name, add it
           if (!$mapped && chado_table_exists($name)) {
             print "Adding mapped tripal term: $name\n";
@@ -114,14 +116,15 @@ function tripal_chado_map_cvterms() {
  */
 function tripal_chado_add_cvterm_mapping($cvterm_id, $tablename, $chado_field) {
   // check if the record exists
-  $record = db_select('chado_cvterm_mapping', 'tcm')
+  $connection = \Drupal::database();
+  $record = $connection->select('chado_cvterm_mapping', 'tcm')
     ->fields('tcm', ['mapping_id'])
     ->condition('cvterm_id', $cvterm_id)
     ->execute()
     ->fetchField();
   // insert records into the chado_cvterm_mapping table.
   if (!$record) {
-    db_insert('chado_cvterm_mapping')
+    $connection->insert('chado_cvterm_mapping')
       ->fields(
         [
           'cvterm_id' => $cvterm_id,

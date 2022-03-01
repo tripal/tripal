@@ -239,7 +239,8 @@ function tripal_run_importer($import_id, \Drupal\tripal\Services\TripalJob $job 
 function tripal_run_importer_run($loader, $job) {
 
   // begin the transaction
-  $transaction = db_transaction();
+  $connection = \Drupal::database();
+  $transaction = $connection->startTransaction();
   try {
     $loader->run();
 
@@ -273,7 +274,8 @@ function tripal_run_importer_run($loader, $job) {
  */
 function tripal_run_importer_post_run($loader, $job) {
   // the transaction
-  $transaction = db_transaction();
+  $connection = \Drupal::database();
+  $transaction = $connection->startTransaction();
   try {
     $loader->postRun();
   } catch (Exception $e) {
