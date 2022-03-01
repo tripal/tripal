@@ -7,7 +7,7 @@ This is the location for active development of Software Design Documentation (SD
    :caption: Contents:
 
    design/overview
+   design/file-structure
    design/training
    design/standards
-   design/current
    design/pending
