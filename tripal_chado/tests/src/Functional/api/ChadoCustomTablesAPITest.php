@@ -15,7 +15,7 @@ use Drupal\tripal_chado\api\DrupalSchemaExtended;
  * @group Tripal Chado
  * @group Tripal API
  */
-class ChadoQueryAPITest extends BrowserTestBase {
+class ChadoCustomTablesAPITest extends BrowserTestBase {
 
   protected $defaultTheme = 'stable';
 
