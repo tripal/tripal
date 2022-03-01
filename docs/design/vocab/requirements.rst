@@ -1,13 +1,13 @@
 
-Requirements
-==============
+Original Requirements
+=======================
 
-The following are the requirements we are taking into account for our design. Please let us know if you have requirements not listed in the document.
+The following are the requirements we took into account for our design. Please let us know if you have requirements not listed in the document.
 
 1. Support multiple data backends
 -----------------------------------
 
-A theme with Tripal 4 is flexible storage for data. We want to ensure our design for vocabularies supports Chado but also has flexibility to be extended (e.g. use Drupal database, graph database, multiple schema in Chado). We also want to make it easier to create custom storage backend then it was in Tripal 3.
+A theme with Tripal 4 is flexible storage for data. We want to ensure our design for vocabularies supports Chado but also has flexibility to be extended (e.g. use Drupal database, graph database, multiple schema in Chado). We also want to make it easier to create custom storage backends than it was in Tripal 3.
 
 2. Performance
 ----------------
