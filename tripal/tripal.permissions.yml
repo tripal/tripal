@@ -32,3 +32,12 @@ view published tripal content entities:
 
 view unpublished tripal content entities:
   title: 'View unpublished Tripal Content'
+
+allow tripal import:
+  title: 'Allow access to Tripal Importer Admin Listing'
+  description: 'Allow access to execute importer'
+  restrict access: true
+
+permission_callbacks:
+  - Drupal\tripal\Controller\TripalImporterPermissionsController::permissions
+
