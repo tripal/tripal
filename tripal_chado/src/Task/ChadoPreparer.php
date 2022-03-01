@@ -136,6 +136,8 @@ class ChadoPreparer extends ChadoTaskBase {
       $this->setProgress(1);
       $task_success = TRUE;
 
+      $this->prepare();
+
       // Release all locks.
       $this->releaseTaskLocks();
 
@@ -201,11 +203,11 @@ class ChadoPreparer extends ChadoTaskBase {
   }
   
   public function prepare() {
-    $this->logger->info("Loading ontologies...");
-    $this->loadOntologies();
+    // $this->logger->info("Loading ontologies...");
+    // $this->loadOntologies();
 
-    $this->logger->info("Creating default content types...");
-    $this->contentTypes();
+    // $this->logger->info("Creating default content types...");
+    // $this->contentTypes();
 
     $this->logger->info("Loading feature prerequisites...");
     $this->tripal_feature_install();
