@@ -228,9 +228,10 @@ function chado_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
  * @ingroup tripal_mviews_api
  */
 function chado_get_mview_id($view_name) {
-  if (db_table_exists('tripal_mviews')) {
+  $connection = \Drupal::database();
+  if ($connection->schema()->table_exists('tripal_mviews')) {
     $sql = "SELECT * FROM {tripal_mviews} WHERE name = :name";
-    $connection = \Drupal::database();
+    
     $results = $connection->query($sql, [':name' => $view_name]);
     $mview = $results->fetchObject();
     if ($mview) {
