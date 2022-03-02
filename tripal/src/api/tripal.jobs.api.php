@@ -542,7 +542,8 @@ function tripal_get_job_progress($job_id) {
  * @ingroup tripal_jobs_api
  */
 function tripal_get_active_jobs($modulename = NULL) {
-  $query = db_select('tripal_jobs', 'TJ')
+  $db = \Drupal::database();
+  $query = $db->select('tripal_jobs', 'TJ')
     ->fields('TJ', ['job_id', 'uid', 'job_name', 'modulename', 'callback', 'arguments',
       'progress', 'status', 'submit_date', 'start_time', 'end_time', 'error_msg','priority']);
   if ($modulename) {
