@@ -40,7 +40,7 @@ class sbo__database_cross_reference extends ChadoField {
     // The number of items to show on a page.
     'items_per_page' => 10,
     // Limit to the number of items to show in cases of large number of cross references.
-    'max_items' => 10000,
+    'max_items' => 1000,
   ];
 
   // The default widget for this field.
