@@ -146,7 +146,7 @@ class sbo__database_cross_reference extends ChadoField {
 
     // Build the SQL to find records associated with this entity.
     // Note that there is no rank column in the xxx_dbxref tables, so the order part of the widget will not be functional
-    $max_items = array_key_exists('max_items', $this->instance['settings']) ? $this->instance['settings']['max_items'] : 10000;
+    $max_items = array_key_exists('max_items', $this->instance['settings']) ? $this->instance['settings']['max_items'] : 1000;
     $sql = "SELECT LINK.".$linker_table."_id AS pkey_id, REF.dbxref_id, REF.accession, DB.db_id, DB.name, DB.urlprefix "
          . "FROM {".$linker_table."} LINK "
          . "INNER JOIN {dbxref} REF on LINK.dbxref_id = REF.dbxref_id "
