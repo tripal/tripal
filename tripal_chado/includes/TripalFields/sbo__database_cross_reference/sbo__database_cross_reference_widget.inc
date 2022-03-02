@@ -8,6 +8,10 @@ class sbo__database_cross_reference_widget extends ChadoFieldWidget {
   // The list of field types for which this formatter is appropriate.
   public static $field_types = ['sbo__database_cross_reference'];
 
+  // The widget may either display ORDER for setting row weights, or allow rearranging, but
+  // the various xxx_dbxref tables do not have rank columns, so this part is non-functional.
+  // We may be able to disable rearranging in a later version of Drupal, but not 7.x
+
   /**
    *
    * @see TripalFieldWidget::form()
