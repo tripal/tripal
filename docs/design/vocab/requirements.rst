@@ -1,5 +1,5 @@
 
-Original Requirements
+Design Requirements
 =======================
 
 The following are the requirements we took into account for our design. Please let us know if you have requirements not listed in the document.

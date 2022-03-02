@@ -19,8 +19,7 @@ We used the Drupal Plugin API to make it easy to provide different storage backe
 For more in-depth documentation on this design, check out the following pages:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    vocab/requirements
    vocab/file-structure
-   vocab/current-progress
