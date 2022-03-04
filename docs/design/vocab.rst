@@ -10,9 +10,9 @@ The following figure provides an example of the relationships between Vocabulari
 
 In order to model the above relationships, we developed the following design:
 
- - Vocabularies are collections of ID spaces that are stored using implementations of the Tripal Vocabulary Plugin.
- - ID spaces are collections of Tripal Terms tied to a single vocabulary that are stored using implementations of the Tripal ID Space Plugin.
- - Terms will not be plugins and their storage will be handled by their IDSpace.
+ - Vocabularies are collections of ID spaces that are stored using implementations of the Tripal Vocabulary Plugin Type.
+ - ID spaces are collections of Tripal Terms tied to a single vocabulary that are stored using implementations of the Tripal ID Space Plugin Type.
+ - Terms will not be plugins and their storage will be handled by their ID Space.
 
 We used the Drupal Plugin API to make it easy to provide different storage backends for controlled vocabularies.
 

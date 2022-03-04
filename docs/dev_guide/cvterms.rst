@@ -28,6 +28,37 @@ The `EBI's Ontology Lookup Service <http://www.ebi.ac.uk/ols/index>`_ is a great
 
   Creation of **local** terms is discouraged but sometimes necessary.  When creating local terms, be both precise and verbose in your description.
 
+Retrieving Tripal Terms
+-------------------------
+
+Terms can be retrieved by
+
+1. Using the Tripal Vocabulary Manager to search terms by name within a vocabulary.
+2. Using the Tripal ID Space Manager to search terms by name or accession within an ID Space.
+3. Using the Tripal ID Space Manager to get parent or child terms of an existing term.
+4. Using the static TripalTerm::suggestTerms method to search by name across vocabularies and ID spaces.
+
+.. table:: Ways to search for TripalTerms
+
+	+------------------+----------------+------------+-----------------+----------+-------------+
+	| Class            | Method         | Return     | Search Property | IDSpace* | Vocabulary* |
+	+==================+================+============+=================+==========+=============+
+	| TripalTerm       | suggestTerms+  | array      | name            | No       | No          |
+	+------------------+----------------+------------+-----------------+----------+-------------+
+	| TripalVocabulary | getTerms       | array      | name            | No       | Yes         |
+	+------------------+----------------+------------+-----------------+----------+-------------+
+	| TripalIdSpace    | getTerms       | array      | name            | Yes      | Yes         |
+	+------------------+----------------+------------+-----------------+----------+-------------+
+	| TripalIdSpace    | getTerm        | TripalTerm | accession       | Yes      | Yes         |
+	+------------------+----------------+------------+-----------------+----------+-------------+
+	| TripalIdSpace    | getParent      | TripalTerm | TripalTerm      | Yes      | Yes         |
+	+------------------+----------------+------------+-----------------+----------+-------------+
+	| TripalIdSpace    | getChildren    | array      | TripalTerm      | Yes      | Yes         |
+	+------------------+----------------+------------+-----------------+----------+-------------+
+
+| *\* These two columns indicate information which is required for the search.*
+| *\+ This is a static method of TripalTerm.*
+
 Chado CV module
 -----------------
 
