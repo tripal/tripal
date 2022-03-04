@@ -146,11 +146,15 @@ class ChadoSchema {
   static function schemaExists($schema_name) {
 
     // First make sure we have a valid schema name.
-    if (preg_match('/^[a-z][a-z0-9]+$/', $schema_name) === 0) {
+    if (preg_match('/^[a-z_][a-z0-9_]+$/', $schema_name) === 0) {
       // Schema name must be a single word containing only lower case letters
       // or numbers and cannot begin with a number.
-      $this->logger->error(
-        "Schema name must be a single alphanumeric word beginning with a number and all lowercase.");
+      // No "$this" in static context.
+      // $this->logger->error(
+      //   "Schema name must be a single alphanumeric word beginning with a number and all lowercase.");
+      \Drupal::messenger()->addMessage(
+        "Schema name must be a single alphanumeric word beginning with a number and all lowercase."
+      );
       return FALSE;
     }
 

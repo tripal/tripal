@@ -1,0 +1,24 @@
+<?php
+
+/**
+ * @file
+ * Contains tripal_biodb.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function tripal_biodb_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the tripal_biodb module.
+    case 'help.page.tripal_biodb':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Biological database abstraction layer for Tripal.') . '</p>';
+      return $output;
+
+    default:
+  }
+}

@@ -5,8 +5,18 @@ FROM php:7.3-apache-buster
 
 MAINTAINER Lacey-Anne Sanderson <laceyannesanderson@gmail.com>
 
-ARG drupalversion='9.1.x-dev'
-ARG modules='tripal tripal_chado'
+ARG drupalversion='9.3.x-dev'
+ARG modules='tripal tripal_biodb tripal_chado'
+ARG chadoschema='chado'
+
+# Label docker image
+LABEL drupal.version=${drupalversion}
+LABEL drupal.stability="development"
+LABEL tripal.version="4.x-dev"
+LABEL tripal.stability="development"
+LABEL os.version="buster"
+LABEL php.version="7.3"
+LABEL postgresql.version="11"
 
 COPY . /app
 
@@ -32,7 +42,7 @@ USER postgres
 RUN    /etc/init.d/postgresql start &&\
     psql --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';"  \
     && createdb -O docker docker \
-    && psql --command="CREATE USER drupaladmin WITH PASSWORD 'drupal8developmentonlylocal'" \
+    && psql --command="CREATE USER drupaladmin WITH PASSWORD 'drupal9developmentonlylocal'" \
     && psql --command="ALTER USER drupaladmin WITH LOGIN" \
     && psql --command="ALTER USER drupaladmin WITH CREATEDB" \
     && psql --command="CREATE DATABASE sitedb WITH OWNER drupaladmin"
@@ -125,8 +135,8 @@ RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 ## Environment variables used for phpunit testing.
 ENV SIMPLETEST_BASE_URL=http://localhost
-ENV SIMPLETEST_DB=pgsql://drupaladmin:drupal8developmentonlylocal@localhost/sitedb
-ENV BROWSER_OUTPUT_DIRECTORY=/var/www/drupal8/web/sites/default/files/simpletest
+ENV SIMPLETEST_DB=pgsql://drupaladmin:drupal9developmentonlylocal@localhost/sitedb
+ENV BROWSER_OUTPUT_DIRECTORY=/var/www/drupal9/web/sites/default/files/simpletest
 
 ## Install composer and Drush.
 WORKDIR /var/www
@@ -136,47 +146,47 @@ RUN chmod a+x /app/tripaldocker/init_scripts/composer-init.sh \
 
 ## Use composer to install Drupal.
 WORKDIR /var/www
+ARG composerpackages="drupal/core-dev:${drupalversion} drush/drush drupal/console:~1.0"
 RUN export COMPOSER_MEMORY_LIMIT=-1 \
-  && composer create-project drupal/recommended-project:${drupalversion} drupal8 --stability dev --no-interaction \
-  && cd drupal8 \
-  && composer require --dev drupal/core-dev:${drupalversion} \
-  && composer require drush/drush drupal/console:~1.0 \
-  && composer up \
-  && ls /var/www/drupal8/web/sites/default/
+  && composer create-project drupal/recommended-project:${drupalversion} drupal9 --stability dev --no-interaction \
+  && cd drupal9 \
+  && if [[ ${drupalversion} =~ ^9\.\[1-9] ]]; then composerpackages+=' phpspec/prophecy-phpunit'; fi \
+  && composer require --dev ${composerpackages}
 
 ## Set files directory permissions
-RUN mkdir /var/www/drupal8/web/sites/default/files \
-  && mkdir /var/www/drupal8/web/sites/default/files/simpletest \
-  && chown -R www-data:www-data /var/www/drupal8 \
-  && chmod 02775 -R /var/www/drupal8/web/sites/default/files \
+RUN mkdir /var/www/drupal9/web/sites/default/files \
+  && mkdir /var/www/drupal9/web/sites/default/files/simpletest \
+  && chown -R www-data:www-data /var/www/drupal9 \
+  && chmod 02775 -R /var/www/drupal9/web/sites/default/files \
   && usermod -g www-data root
 
 ## Install Drupal.
-RUN cd /var/www/drupal8 \
+RUN cd /var/www/drupal9 \
   && service apache2 start \
   && service postgresql start \
   && sleep 30 \
-  && /var/www/drupal8/vendor/drush/drush/drush site-install standard \
-  --db-url=pgsql://drupaladmin:drupal8developmentonlylocal@localhost/sitedb \
+  && /var/www/drupal9/vendor/drush/drush/drush site-install standard \
+  --db-url=pgsql://drupaladmin:drupal9developmentonlylocal@localhost/sitedb \
   --account-mail="drupaladmin@localhost" \
   --account-name=drupaladmin \
   --account-pass=some_admin_password \
   --site-mail="drupaladmin@localhost" \
-  --site-name="Drupal 8 Development" \
+  --site-name="Tripal 4 on Drupal 9 DEVELOPMENT" \
   && service apache2 stop \
   && service postgresql stop
 
 ############# Tripal ##########################################################
 
-WORKDIR /var/www/drupal8
+WORKDIR /var/www/drupal9
 RUN service apache2 start \
   && service postgresql start \
   && sleep 30 \
-  && mkdir -p /var/www/drupal8/web/modules/contrib \
-  && cp -R /app /var/www/drupal8/web/modules/contrib/tripal \
+  && mkdir -p /var/www/drupal9/web/modules/contrib \
+  && cp -R /app /var/www/drupal9/web/modules/contrib/tripal \
   && composer require drupal/devel \
   && vendor/bin/drush en devel tripal ${modules} -y \
-  && vendor/bin/drush trp-install-chado \
+  && vendor/bin/drush trp-install-chado --schema-name=${chadoschema} \
+  && vendor/bin/drush trp-prep-chado --schema-name=${chadoschema} \
   && service apache2 stop \
   && service postgresql stop
 
@@ -185,17 +195,17 @@ RUN service apache2 start \
 ## Configuration files & Activation script
 RUN mv /app/tripaldocker/init_scripts/supervisord.conf /etc/supervisord.conf \
   && mv /app/tripaldocker/default_files/000-default.conf /etc/apache2/sites-available/000-default.conf \
-  && echo "\$settings["trusted_host_patterns"] = [ '^localhost$', '^127\.0\.0\.1$' ];" >> /var/www/drupal8/web/sites/default/settings.php \
+  && echo "\$settings["trusted_host_patterns"] = [ '^localhost$', '^127\.0\.0\.1$' ];" >> /var/www/drupal9/web/sites/default/settings.php \
   && mv /app/tripaldocker/init_scripts/init.sh /usr/bin/init.sh \
   && chmod +x /usr/bin/init.sh
 
 ## Make global commands.
-RUN ln -s /var/www/drupal8/vendor/drupal/console/bin/drupal /usr/local/bin/ \
-  && ln -s /var/www/drupal8/vendor/phpunit/phpunit/phpunit /usr/local/bin/ \
-  && ln -s /var/www/drupal8/vendor/drush/drush/drush /usr/local/bin/
+RUN ln -s /var/www/drupal9/vendor/drupal/console/bin/drupal /usr/local/bin/ \
+  && ln -s /var/www/drupal9/vendor/phpunit/phpunit/phpunit /usr/local/bin/ \
+  && ln -s /var/www/drupal9/vendor/drush/drush/drush /usr/local/bin/
 
 ## Set the working directory to DRUPAL_ROOT
-WORKDIR /var/www/drupal8/web
+WORKDIR /var/www/drupal9/web
 
 ## Expose http and psql port
 EXPOSE 80 5432
