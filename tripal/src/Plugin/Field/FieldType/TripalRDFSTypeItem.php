@@ -4,6 +4,7 @@ namespace Drupal\tripal\Plugin\Field\FieldType;
 
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
+use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
 
 /**
  * Plugin implementation of Tripal RDFS content type.
@@ -22,14 +23,15 @@ class TripalRDFSTypeItem extends TripalFieldItemBase {
    * {@inheritdoc}
    */
   public function tripalTypes() {
-    //TODO: need VarCharStoragePropertyType
+    return [VarCharStoragePropertyType($this->getEntity()->getEntityTypeId(),$this->id,"type",255)];
   }
 
   /**
    * {@inheritdoc}
    */
   public function tripalValuesTemplate() {
-    return [StoragePropertyValue($this->getEntity()->getEntityTypeId(),$this->id,"type")];
+    $entity = $this->getEntity();
+    return [StoragePropertyValue($entity->getEntityTypeId(),$this->id,"type",$entity->id())];
   }
 
   /**
@@ -50,6 +52,7 @@ class TripalRDFSTypeItem extends TripalFieldItemBase {
     foreach ($properties as $property) {
       if ($property->getFieldKey() == "type") {
         $property->setValue($entity->tripalRDFSType);
+      }
     }
   }
 
