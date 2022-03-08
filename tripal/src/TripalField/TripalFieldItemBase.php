@@ -88,7 +88,3 @@ class TripalFieldItemBase extends FieldItemBase extends TripalFieldItemInterface
     return $this->getSetting("storage_plugin_id");
   }
 }
-
-// First field to implement:
-// rdfs_type
-// https://github.com/tripal/tripal/tree/7.x-3.x/tripal/includes/TripalFields/rdfs__type
