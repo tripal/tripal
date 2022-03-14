@@ -40,7 +40,7 @@ class sbo__database_cross_reference extends ChadoField {
     // The number of items to show on a page.
     'items_per_page' => 10,
     // Limit to the number of items to show in cases of large number of cross references.
-    'max_items' => 10000,
+    'max_items' => 1000,
   ];
 
   // The default widget for this field.
@@ -129,6 +129,7 @@ class sbo__database_cross_reference extends ChadoField {
     $schema = chado_get_schema($field_table);
     $pkey = $schema['primary key'][0];
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
+    $fkey_lcolumn_id = $entity->{'chado_record_id'};
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
     $dbname_term = chado_get_semweb_term('db', 'name');
@@ -143,9 +144,10 @@ class sbo__database_cross_reference extends ChadoField {
     $linker_table = $base_table . '_dbxref';
     $options = ['return_array' => 1];
 
-    // Build the SQL to find records associated with this publication.
-    $max_items = array_key_exists('max_items', $this->instance['settings']) ? $this->instance['settings']['max_items'] : 10000;
-    $sql = "SELECT REF.accession, DB.name, DB.urlprefix "
+    // Build the SQL to find records associated with this entity.
+    // Note that there is no rank column in the xxx_dbxref tables, so the order part of the widget will not be functional
+    $max_items = array_key_exists('max_items', $this->instance['settings']) ? $this->instance['settings']['max_items'] : 1000;
+    $sql = "SELECT LINK.".$linker_table."_id AS pkey_id, REF.dbxref_id, REF.accession, DB.db_id, DB.name, DB.urlprefix "
          . "FROM {".$linker_table."} LINK "
          . "INNER JOIN {dbxref} REF on LINK.dbxref_id = REF.dbxref_id "
          . "INNER JOIN {db} DB on REF.db_id = DB.db_id "
@@ -155,7 +157,7 @@ class sbo__database_cross_reference extends ChadoField {
          . "AND NOT DB.name = 'GFF_source' "
          . "ORDER BY REF.accession "  // if we hit the limit, the subset should be consistent
          . "LIMIT :limit";
-    $args = [':id' => $entity->{'chado_record_id'},
+    $args = [':id' => $fkey_lcolumn_id,
              ':limit' => $max_items + 1];
     $records = chado_query($sql, $args);
 
@@ -164,10 +166,18 @@ class sbo__database_cross_reference extends ChadoField {
     while($record = $records->fetchObject()) {
       // Need this check to detect the case where the limit exactly equals the number of records
       if ($delta < $max_items) {
-        $entity->{$field_name}['und'][$delta] = [];
-        $entity->{$field_name}['und'][$delta]['value'][$dbname_term] = $record->name;
-        $entity->{$field_name}['und'][$delta]['value'][$accession_term] = $record->accession;
-        $entity->{$field_name}['und'][$delta]['value'][$dburl_term] = $record->urlprefix;
+        $entity->{$field_name}['und'][$delta] = [
+          'value' => [
+            $dbname_term => $record->name,
+            $accession_term => $record->accession,
+            $dburl_term => $record->urlprefix,
+          ],
+          'chado-' . $field_table . '__' . $pkey => $record->pkey_id,
+          'chado-' . $field_table . '__' . $fkey_lcolumn => $fkey_lcolumn_id,
+          'chado-' . $field_table . '__dbxref_id' => $record->dbxref_id,
+          'db_id' => $record->db_id,
+          'accession' => $record->accession,
+        ];
       }
       $delta++;
     }
