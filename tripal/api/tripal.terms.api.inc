@@ -585,16 +585,28 @@ function tripal_get_vocabularies() {
  *   Indicates if this form element is required.
  * @param $field_name
  *   The name of the field, if this form is being added to a field widget.
- * @param  $delta
+ * @param $delta
  *   The delta value for the field if this form is being added to a field
  *   widget.
+ * @param $callback
+ *   Ajax callback function, defaults to
+ *     'tripal_get_term_lookup_form_ajax_callback'.
+ * @param $wrapper
+ *   Ajax wrapper ID.
+ * @param $validate
+ *   Widget validation configuration.
+ * @param $weight
+ *   The weight value for the field if this form is being added to a field
+ *   widget.
+ * @param $radio
+ *   Display select as a radio button instead of a checkbox.
  *
  * @ingroup tripal_terms_api
  */
 function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
                                      $title = 'Vocabulary Term', $description = '', $is_required = FALSE,
                                      $field_name = '', $delta = 0, $callback = '', $wrapper = '', $validate = [],
-                                     $weight = 0) {
+                                     $weight = 0, $radio = FALSE) {
 
   if (!$callback) {
     $callback = 'tripal_get_term_lookup_form_ajax_callback';
@@ -700,8 +712,12 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
       }
       $term_element_name = 'term-' . $term->cvterm_id . '-' . $delta;
       $definition = property_exists($term, 'definition') ? $term->definition : '';
+      $select_type = 'checkbox';
+      if ($radio) {
+        $select_type = 'radio';
+      }
       $form['term_match' . $delta]['terms_list' . $delta][$term_element_name] = [
-        '#type' => 'checkbox',
+        '#type' => $select_type,
         '#title' => $term->name,
         '#default_value' => $checked,
         '#attributes' => $attrs,
