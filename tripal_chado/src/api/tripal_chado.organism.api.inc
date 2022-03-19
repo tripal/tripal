@@ -254,7 +254,7 @@ function chado_get_organism_image_url($organism) {
     ->execute()
     ->fetchField();
   if ($fid) {
-    $file = file_load($fid);
+    $file = \Drupal\file\Entity\File::load($fid);
     return file_create_url($file->uri);
   }
 
