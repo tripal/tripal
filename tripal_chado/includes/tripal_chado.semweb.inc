@@ -2332,7 +2332,7 @@ function tripal_chado_semweb_edit_form($form, &$form_state, $table = NULL, $colu
     $form['terms_list'] = [
       '#type' => 'fieldset',
       '#title' => t('Matching Terms'),
-      '#description' => t('Please select the term the best matches the
+      '#description' => t('Please select the term that best matches the
           content type you want to create. If the same term exists in
           multiple vocabularies you will see more than one option below.'),
     ];
@@ -2352,7 +2352,7 @@ function tripal_chado_semweb_edit_form($form, &$form_state, $table = NULL, $colu
         $attrs = ['checked' => 'checked'];
       }
       $form['terms_list']['term-' . $term->cvterm_id] = [
-        '#type' => 'checkbox',
+        '#type' => 'radio',
         '#title' => $term->name,
         '#default_value' => $default,
         '#attributes' => $attrs,

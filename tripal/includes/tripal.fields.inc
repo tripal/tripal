@@ -630,7 +630,7 @@ function tripal_field_instance_settings_form_alter_process($element, &$form_stat
     $element['field_term']['instructions'] = [
       '#type' => 'item',
       '#title' => 'Matching terms',
-      '#markup' => t('Please select the term the best matches the
+      '#markup' => t('Please select the term that best matches the
         content type you want to associate with this field. If the same term exists in
         multiple vocabularies you will see more than one option below.'),
     ];
@@ -650,7 +650,7 @@ function tripal_field_instance_settings_form_alter_process($element, &$form_stat
         $attrs = ['checked' => 'checked'];
       }
       $element['field_term']['term-' . $term->cvterm_id] = [
-        '#type' => 'checkbox',
+        '#type' => 'radio',
         '#title' => $term->name,
         '#default_value' => $default,
         '#attributes' => $attrs,

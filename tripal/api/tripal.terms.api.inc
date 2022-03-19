@@ -585,8 +585,18 @@ function tripal_get_vocabularies() {
  *   Indicates if this form element is required.
  * @param $field_name
  *   The name of the field, if this form is being added to a field widget.
- * @param  $delta
+ * @param $delta
  *   The delta value for the field if this form is being added to a field
+ *   widget.
+ * @param $callback
+ *   Ajax callback function, defaults to
+ *     'tripal_get_term_lookup_form_ajax_callback'.
+ * @param $wrapper
+ *   Ajax wrapper ID.
+ * @param $validate
+ *   Widget validation configuration.
+ * @param $weight
+ *   The weight value for the field if this form is being added to a field
  *   widget.
  *
  * @ingroup tripal_terms_api
@@ -681,9 +691,6 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
     // TODO: this should not call the chado functions because we're in the
     // tripal module.
     $terms = chado_generate_var('cvterm', $match, ['return_array' => TRUE]);
-    if ($terms) {
-      $terms = chado_expand_var($terms, 'field', 'cvterm.definition');
-    }
     $num_terms = 0;
     $selected_term = '';
 
@@ -699,9 +706,10 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
         $attrs = ['checked' => 'checked'];
       }
       $term_element_name = 'term-' . $term->cvterm_id . '-' . $delta;
+      $term = chado_expand_var($term, 'field', 'cv.definition');
       $definition = property_exists($term, 'definition') ? $term->definition : '';
       $form['term_match' . $delta]['terms_list' . $delta][$term_element_name] = [
-        '#type' => 'checkbox',
+        '#type' => 'radio',
         '#title' => $term->name,
         '#default_value' => $checked,
         '#attributes' => $attrs,
