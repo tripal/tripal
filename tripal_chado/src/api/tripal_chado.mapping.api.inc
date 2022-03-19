@@ -136,7 +136,7 @@ function tripal_chado_add_cvterm_mapping($cvterm_id, $tablename, $chado_field) {
   }
   // if the record exists, update the term mapping
   else {
-    db_update('chado_cvterm_mapping')
+    $connection->update('chado_cvterm_mapping')
       ->fields(
         [
           'chado_table' => $tablename,
