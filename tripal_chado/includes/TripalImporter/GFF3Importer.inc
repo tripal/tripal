@@ -1707,8 +1707,8 @@ class GFF3Importer extends TripalImporter {
    * Opens the cache file for read/write access.
    */
   private function openCacheFile() {
-    $temp_file = new \Drupal\Core\File\FileSystem::tempnam('temporary://', "TripalGFF3Import_");
-    $this->gff_cache_file_name = new \Drupal\Core\File\FileSystem::realpath($temp_file);
+    $temp_file = \Drupal\Core\File::tempnam('temporary://', "TripalGFF3Import_");
+    $this->gff_cache_file_name = \Drupal\Core\File\FileSystem::realpath($temp_file);
     $this->logger->info("Opening temporary cache file: " . $this->gff_cache_file_name);
     $this->gff_cache_file = fopen($this->gff_cache_file_name, "r+");
   }
