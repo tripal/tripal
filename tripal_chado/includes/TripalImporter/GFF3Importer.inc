@@ -523,7 +523,7 @@ class GFF3Importer extends TripalImporter {
     }
 
     // Get the feature property CV object
-    $this->feature_prop_cv = new ChadoRecord('cv');
+    $this->feature_prop_cv = new \Drupal\tripal_chado\Services\ChadoRecord('cv');
     $this->feature_prop_cv->setValues(['name' => 'feature_property']);
     $num_found = $this->feature_prop_cv->find();
     if ($num_found == 0) {
@@ -531,7 +531,7 @@ class GFF3Importer extends TripalImporter {
     }
 
     // Get the sequence CV object.
-    $this->feature_cv = new ChadoRecord('cv');
+    $this->feature_cv = new \Drupal\tripal_chado\Services\ChadoRecord('cv');
     $this->feature_cv->setValues(['name' => 'sequence']);
     $num_found = $this->feature_cv->find();
     if ($num_found == 0) {
@@ -539,7 +539,7 @@ class GFF3Importer extends TripalImporter {
     }
 
     // Get the organism object.
-    $this->organism = new ChadoRecord('organism');
+    $this->organism = new \Drupal\tripal_chado\Services\ChadoRecord('organism');
     $this->organism->setValues(['organism_id' => $this->organism_id]);
     $num_found = $this->organism->find();
     if ($num_found == 0) {
@@ -547,7 +547,7 @@ class GFF3Importer extends TripalImporter {
     }
 
     // Get the analysis object.
-    $this->analysis = new ChadoRecord('analysis');
+    $this->analysis = new \Drupal\tripal_chado\Services\ChadoRecord('analysis');
     $this->analysis->setValues(['analysis_id' => $this->analysis_id]);
     $num_found = $this->analysis->find();
     if ($num_found == 0) {
@@ -556,7 +556,7 @@ class GFF3Importer extends TripalImporter {
 
     // If a landmark type was provided then get that object.
     if ($this->landmark_type) {
-      $this->landmark_cvterm = new ChadoRecord('cvterm');
+      $this->landmark_cvterm = new \Drupal\tripal_chado\Services\ChadoRecord('cvterm');
       $this->landmark_cvterm->setValues([
           'cv_id' => $this->feature_cv->getValue('cv_id'),
           'name' => $this->landmark_type,
@@ -569,7 +569,7 @@ class GFF3Importer extends TripalImporter {
 
     // If a target type is provided then get the ID.
     if ($this->target_type) {
-      $target_type = new ChadoRecord('cvterm');
+      $target_type = new \Drupal\tripal_chado\Services\ChadoRecord('cvterm');
       $target_type->setValues([
         'name' => $this->target_type,
         'cv_id' => $this->feature_cv->getID()
@@ -1333,7 +1333,7 @@ class GFF3Importer extends TripalImporter {
       return $this->landmarks[$landmark_name];
     }
 
-    $landmark = new ChadoRecord('feature');
+    $landmark = new \Drupal\tripal_chado\Services\ChadoRecord('feature');
     $landmark->setValues([
       'organism_id' => $this->organism_id,
       'uniquename' => $landmark_name,
@@ -1385,7 +1385,7 @@ class GFF3Importer extends TripalImporter {
    * Loads a single landmark by name.
    */
   private function insertLandmark($name) {
-    $feature = new ChadoRecord('feature');
+    $feature = new \Drupal\tripal_chado\Services\ChadoRecord('feature');
     $residues = '';
     $feature->setValues([
       'organism_id' => $this->organism->getValue('organism_id'),
@@ -2662,7 +2662,7 @@ class GFF3Importer extends TripalImporter {
 
     // Get the organism object.
     list($genus, $species) = explode(':', $organism_attr, 2);
-    $organism = new ChadoRecord('organism');
+    $organism = new \Drupal\tripal_chado\Services\ChadoRecord('organism');
     $organism->setValues([
       'genus' => $genus,
       'species' => $species
