@@ -693,9 +693,6 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
     // TODO: this should not call the chado functions because we're in the
     // tripal module.
     $terms = chado_generate_var('cvterm', $match, ['return_array' => TRUE]);
-    if ($terms) {
-      $terms = chado_expand_var($terms, 'field', 'cvterm.definition');
-    }
     $num_terms = 0;
     $selected_term = '';
 
@@ -711,6 +708,7 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
         $attrs = ['checked' => 'checked'];
       }
       $term_element_name = 'term-' . $term->cvterm_id . '-' . $delta;
+      $term = chado_expand_var($term, 'field', 'cv.definition');
       $definition = property_exists($term, 'definition') ? $term->definition : '';
       $select_type = 'checkbox';
       if ($radio) {
