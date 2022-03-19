@@ -598,15 +598,13 @@ function tripal_get_vocabularies() {
  * @param $weight
  *   The weight value for the field if this form is being added to a field
  *   widget.
- * @param $radio
- *   Display select as a radio button instead of a checkbox.
  *
  * @ingroup tripal_terms_api
  */
 function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
                                      $title = 'Vocabulary Term', $description = '', $is_required = FALSE,
                                      $field_name = '', $delta = 0, $callback = '', $wrapper = '', $validate = [],
-                                     $weight = 0, $radio = FALSE) {
+                                     $weight = 0) {
 
   if (!$callback) {
     $callback = 'tripal_get_term_lookup_form_ajax_callback';
@@ -710,12 +708,8 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
       $term_element_name = 'term-' . $term->cvterm_id . '-' . $delta;
       $term = chado_expand_var($term, 'field', 'cv.definition');
       $definition = property_exists($term, 'definition') ? $term->definition : '';
-      $select_type = 'checkbox';
-      if ($radio) {
-        $select_type = 'radio';
-      }
       $form['term_match' . $delta]['terms_list' . $delta][$term_element_name] = [
-        '#type' => $select_type,
+        '#type' => 'radio',
         '#title' => $term->name,
         '#default_value' => $checked,
         '#attributes' => $attrs,
