@@ -682,6 +682,7 @@ class GFF3Importer extends TripalImporter {
     // On exception, catch the error, clean up the cache file and rethrow
     catch (Exception $e) {
       $this->closeCacheFile();
+      echo $e->getTraceAsString();
       throw $e;
     }
   }
