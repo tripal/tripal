@@ -1919,6 +1919,7 @@ class GFF3Importer extends TripalImporter {
       // If we've reached the size of the batch then let's do the select.
       if ($i == $batch_size or $total == $num_features) {
         if (count($names) > 0) {
+          $names = implode(', ', $names);
           $args = [':uniquenames' => $names];
           $results = chado_query($sql, $args);
           while ($f = $results->fetchObject()) {
@@ -1989,6 +1990,7 @@ class GFF3Importer extends TripalImporter {
       // If we've reached the size of the batch then let's do the insert.
       if ($i == $batch_size or $total == $num_features) {
         if (count($feature_ids) > 0) {
+          $feature_ids = implode(', ', $feature_ids);
           $args = [':feature_ids' => $feature_ids];
           chado_query($sql1, $args);
           chado_query($sql2, $args);
@@ -2278,6 +2280,7 @@ class GFF3Importer extends TripalImporter {
       // If we've reached the size of the batch then let's do the select.
       if ($i == $batch_size or $total == $num_landmarks) {
         if (count($names) > 0) {
+          $names = implode(', ', $names);
           $args = [':landmarks' => $names];
           $results = chado_query($sql, $args);
           while ($f = $results->fetchObject()) {
