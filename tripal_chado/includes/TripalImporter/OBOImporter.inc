@@ -433,7 +433,8 @@ class OBOImporter extends TripalImporter {
     // If the user requested to alter the details then do that.
     if ($form_state->getTriggeringElement()['#name'] == 'update_obo_details') {
       $form_values['rebuild'] = TRUE;
-      $success = db_update('tripal_cv_obo')
+      $connection = \Drupal::database();
+      $success = $connection->update('tripal_cv_obo')
         ->fields([
           'name' => $uobo_name,
           'path' => $uobo_url ? $uobo_url : $uobo_file,
@@ -2639,7 +2640,8 @@ class OBOImporter extends TripalImporter {
     $uobo_name = array_key_exists('uobo_name', $form_values) ? trim($form_values['uobo_name']) : '';
     $uobo_url = array_key_exists('uobo_url', $form_values) ? trim($form_values['uobo_url']) : '';
     $uobo_file = array_key_exists('uobo_file', $form_values) ? trim($form_values['uobo_file']) : '';
-    $success = db_update('tripal_cv_obo')
+    $connection = \Drupal::database();
+    $success = $connection->update('tripal_cv_obo')
     ->fields([
       'name' => $uobo_name,
       'path' => $uobo_url ? $uobo_url : $uobo_file,
