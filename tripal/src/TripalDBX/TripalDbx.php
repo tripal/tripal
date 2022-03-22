@@ -107,7 +107,7 @@ class TripalDbx {
    * Check that the given schema name is a valid schema name.
    *
    * Schema name validation can be altered through the configuration variable
-   * reserved_schema_patterns of tripal_biodb.settings. This configuration
+   * reserved_schema_patterns of tripaldbx.settings. This configuration
    * variable contains a list of regex with thier description, used to reserve
    * schema name patterns. For instance, the key '_chado*' with the value
    * 'external (non-Drupal) chado instances' will make this function returns a
@@ -120,7 +120,7 @@ class TripalDbx {
    *   function <module name>_install($is_syncing) {
    *     // Reserves 'myschema' schema in 'reserved_schema_patterns' settings.
    *     $config = \Drupal::service('config.factory')
-   *       ->getEditable('tripal_biodb.settings')
+   *       ->getEditable('tripaldbx.settings')
    *     ;
    *     $reserved_schema_patterns = $config->get('reserved_schema_patterns') ?? [];
    *     $reserved_schema_patterns['myschema'] = 'my schema';
@@ -130,7 +130,7 @@ class TripalDbx {
    *   function <module name>_uninstall() {
    *     // Unreserves 'myschema' schemas in 'reserved_schema_patterns' settings.
    *     $config = \Drupal::service('config.factory')
-   *       ->getEditable('tripal_biodb.settings')
+   *       ->getEditable('tripaldbx.settings')
    *     ;
    *     $reserved_schema_patterns = $config->get('reserved_schema_patterns') ?? [];
    *     unset($reserved_schema_patterns['myschema']);
@@ -213,7 +213,7 @@ class TripalDbx {
    */
   protected function initSchemaReservation(bool $reload_config = FALSE) :void {
     if ($reload_config || !isset(static::$reservedSchemaPatterns)) {
-      $reserved_schema_patterns = \Drupal::config('tripal_biodb.settings')
+      $reserved_schema_patterns = \Drupal::config('tripaldbx.settings')
         ->get('reserved_schema_patterns')
         ?? []
       ;
@@ -225,7 +225,7 @@ class TripalDbx {
    * Adds a schema name pattern for reservation.
    *
    * Schema names matching the given pattern will be considered invalid by
-   * ::isInvalidSchemaName and will not be allowed in BioConnection or BioSchema
+   * ::isInvalidSchemaName and will not be allowed in TripalDbxConnection or TripalDbxSchema
    * objects.
    *
    * @param string $pat_regex
@@ -359,7 +359,7 @@ class TripalDbx {
    * @param string $object_id
    *  Object name to quote if needed.
    * @param ?\Drupal\Core\Database\Driver\pgsql\Connection $db
-   *   A biological database connection object.
+   *   A Drupal PostgreSQL or TripalDBX connection object.
    *   If NULL, current Drupal database is used.
    *
    * @return string
@@ -394,7 +394,7 @@ class TripalDbx {
    * @param string $schema_name
    *   Schema name.
    * @param ?\Drupal\Core\Database\Driver\pgsql\Connection $db
-   *   A biological database connection object.
+   *   A Drupal PostgreSQL or TripalDBX connection object.
    *   If NULL, current Drupal database is used.
    *
    * @return bool
@@ -444,7 +444,7 @@ class TripalDbx {
    * @param string $schema_name
    *   Name of schema to create.
    * @param ?\Drupal\Core\Database\Driver\pgsql\Connection $db
-   *   A biological database connection object.
+   *   A Drupal PostgreSQL or TripalDBX connection object.
    *   If NULL, current Drupal database is used.
    *
    * @throws \Drupal\Core\Database\DatabaseExceptionWrapper
@@ -479,7 +479,7 @@ class TripalDbx {
    *   Destination schema that will be created and filled with a copy of
    *   $source_schema.
    * @param ?\Drupal\Core\Database\Driver\pgsql\Connection $db
-   *   A biological database connection object.
+   *   A Drupal PostgreSQL or TripalDBX connection object.
    *   If NULL, current Drupal database is used.
    *
    * @throws \Drupal\Core\Database\DatabaseExceptionWrapper
@@ -522,7 +522,7 @@ class TripalDbx {
    * @param string $new_schema_name
    *   New name to use.
    * @param ?\Drupal\Core\Database\Driver\pgsql\Connection $db
-   *   A biological database connection object.
+   *   A Drupal PostgreSQL or Tripal DBX connection object.
    *   If NULL, current Drupal database is used.
    *
    * @throws \Drupal\Core\Database\DatabaseExceptionWrapper
@@ -562,7 +562,7 @@ class TripalDbx {
    * @param string $schema_name
    *   Schema name.
    * @param ?\Drupal\Core\Database\Driver\pgsql\Connection $db
-   *   A biological database connection object.
+   *   A Drupal PostgreSQL or Tripal DBX connection object.
    *   If NULL, current Drupal database is used.
    *
    * @throws \Drupal\Core\Database\DatabaseExceptionWrapper
@@ -591,7 +591,7 @@ class TripalDbx {
    * @param string $schema_name
    *   Schema name.
    * @param ?\Drupal\Core\Database\Driver\pgsql\Connection $db
-   *   A biological database connection object.
+   *   A Drupal PostgreSQL or Tripal DBX connection object.
    *   If NULL, current Drupal database is used.
    *
    * @return integer
@@ -628,7 +628,7 @@ class TripalDbx {
   }
 
   /**
-   * Returns the size in bytes of a biological database.
+   * Returns the size in bytes of a TripalDBX managed database.
    *
    * @code
    *   $tripaldbx = \Drupal::service('tripal.dbx');
@@ -636,7 +636,7 @@ class TripalDbx {
    * @endcode
    *
    * @param ?\Drupal\Core\Database\Driver\pgsql\Connection $db
-   *   A biological database connection object.
+   *   A Drupal PostgreSQL or Tripal DBX connection object.
    *
    * @return int
    *   The size in bytes of the database or 0 if the size is not available.
@@ -663,7 +663,7 @@ class TripalDbx {
    *
    * @param string $table_ddl
    *   A string containing table definition as returned by
-   *   \Drupal\tripal_biodb\Database\BioSchema::getTableDdl().
+   *   \Drupal\tripal\TripalDBX\TripalDbxSchema::getTableDdl().
    *
    * @returns array
    *   An associative array with the following structure:
@@ -887,7 +887,7 @@ class TripalDbx {
    *
    * @param string $table_ddl
    *   A string containing table definition as returned by
-   *   \Drupal\tripal_biodb\Database\BioSchema\BioSchema::getTableDdl().
+   *   \Drupal\tripal\TripalDBX\TripalDbxSchema::getTableDdl().
    *
    * @return array
    *   An array with details of the table reflecting what is in database.
