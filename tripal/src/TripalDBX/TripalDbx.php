@@ -48,6 +48,10 @@ class TripalDbx {
   /**
    * Reserved schema name patterns.
    *
+   * Schema names matching the given pattern will be considered invalid by
+   * ::isInvalidSchemaName and will not be allowed in TripalDbxConnection
+   * or TripalDbxSchema objects.
+   *
    * @var ?array
    */
   protected static $reservedSchemaPatterns;
@@ -65,9 +69,13 @@ class TripalDbx {
    *   The name (non-empty string) of the schema used by Drupal installation.
    */
   public function getDrupalSchemaName() :string {
+
+    // We only need to look this up if it hasn't been set yet.
     if (!isset(static::$drupalSchema)) {
-      // Get Drupal schema name.
+
+      // Get Drupal connection details.
       $connection_options = \Drupal::database()->getConnectionOptions();
+
       // Check if Drupal has been installed in a specific schema other than
       // 'public'. If it is the case, Drupal database configuration 'prefix'
       // parameter will contain the schema name followed by a dot.
@@ -108,7 +116,7 @@ class TripalDbx {
    *
    * Schema name validation can be altered through the configuration variable
    * reserved_schema_patterns of tripaldbx.settings. This configuration
-   * variable contains a list of regex with thier description, used to reserve
+   * variable contains a list of regex with their description, used to reserve
    * schema name patterns. For instance, the key '_chado*' with the value
    * 'external (non-Drupal) chado instances' will make this function returns a
    * issue message saying that the pattern is reserved for 'external
@@ -120,8 +128,7 @@ class TripalDbx {
    *   function <module name>_install($is_syncing) {
    *     // Reserves 'myschema' schema in 'reserved_schema_patterns' settings.
    *     $config = \Drupal::service('config.factory')
-   *       ->getEditable('tripaldbx.settings')
-   *     ;
+   *       ->getEditable('tripaldbx.settings');
    *     $reserved_schema_patterns = $config->get('reserved_schema_patterns') ?? [];
    *     $reserved_schema_patterns['myschema'] = 'my schema';
    *     $config->set('reserved_schema_patterns', $reserved_schema_patterns)->save();
@@ -172,26 +179,29 @@ class TripalDbx {
 
     $issue = '';
     // Make sure we have a valid schema name.
+    // -- Check the name is not too long.
     if (63 < strlen($schema_name)) {
       $issue =
         'The schema name is too long and must contain strictly less than 64 characters.'
       ;
     }
+    // -- Check it matches the set regex (i.e. does not contain illegal characters).
     elseif (!preg_match(static::SCHEMA_NAME_REGEXP, $schema_name)) {
       $issue =
         'The schema name must not begin with a number and only contain lower case letters, numbers, underscores and diacritical marks.'
       ;
     }
+    // -- Does not begin with a reserved prefix.
     elseif ((0 === strpos($schema_name, 'pg_')) && !$ignore_reservation) {
       $issue =
         'The schema name must not begin with "pg_" (PostgreSQL reserved prefix).'
       ;
     }
     if (!$ignore_reservation) {
-      // Check reserved patterns.
+      //  -- Check reserved patterns.
       // Note: other reserved patterns should be added by other extensions when
       // they are installed, through config modifications.
-      // See tripal_biodb_install() for an example.
+      // See tripal_install() for an example.
       static::initSchemaReservation($reload_config);
       if ($reserved = static::isSchemaReserved($schema_name)) {
         $pattern = array_key_first($reserved);
@@ -215,8 +225,7 @@ class TripalDbx {
     if ($reload_config || !isset(static::$reservedSchemaPatterns)) {
       $reserved_schema_patterns = \Drupal::config('tripaldbx.settings')
         ->get('reserved_schema_patterns')
-        ?? []
-      ;
+        ?? [];
       static::$reservedSchemaPatterns = $reserved_schema_patterns;
     }
   }

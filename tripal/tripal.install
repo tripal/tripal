@@ -12,25 +12,17 @@ use \Drupal\Core\Database\Database;
  * @ingroup tripal
  */
 function tripal_install() {
-  // On upgrade from Tv2 to Tv3 we need to add a new field to the tripal_jobs
-  // table it's missing.
-  $schema = Database::getConnection()->schema();
-  if (!$schema->fieldExists('tripal_jobs', 'includes')) {
-    $schema->addField('tripal_jobs', 'includes', [
-      'type' => 'text',
-      'description' => "A serialized array of file paths that should be included prior to executing the job.",
-      'length' => 20,
-      'not null' => FALSE,
-    ]);
-  }
 
-  //$menu = [
-  //  'menu_name' => 'data_search',
-  //  'title' => t('Data Search'),
-  //  'description' => '',
-  //];
-  //menu_save($menu);
+  // Reserves Drupal schema in 'reserved_schema_patterns' settings.
+  $tripaldbx = \Drupal::service('tripal.dbx');
+  $drupal_schema = $tripaldbx->getDrupalSchemaName();
+  $config = \Drupal::service('config.factory')
+    ->getEditable('tripaldbx.settings');
+  $reserved_schema_patterns = $config->get('reserved_schema_patterns') ?? [];
+  $reserved_schema_patterns[$drupal_schema] = 'Drupal installation';
+  $config->set('reserved_schema_patterns', $reserved_schema_patterns)->save();
 
+  // Add the Data Search Menu for Tripal specific searches.
   $storage = Drupal::entityTypeManager()->getStorage('menu');
   $menu = $storage->load('data_search');
   if (is_null($menu)) {
