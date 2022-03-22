@@ -1,10 +1,10 @@
 <?php
 
-namespace Drupal\tripal_biodb\Exception;
+namespace Drupal\tripal\TripalDBX\Exception;
 
-use Drupal\tripal_biodb\Exception\BioDbException;
+use Drupal\tripal\TripalDBX\Exception\TripalDbxException;
 
 /**
- * Exception thrown for biological database connection errors.
+ * Exception thrown for Tripal DBX connection errors.
  */
-class ConnectionException extends BioDbException {}
+class ConnectionException extends TripalDbxException {}

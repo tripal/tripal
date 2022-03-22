@@ -2,8 +2,8 @@
 
 namespace Drupal\tripal\TripalDBX;
 
-use Drupal\tripal_biodb\Exception\ConnectionException;
-use Drupal\tripal_biodb\Exception\SchemaException;
+use Drupal\tripal\TripalDbx\Exception\ConnectionException;
+use Drupal\tripal\TripalDbx\Exception\SchemaException;
 
 /**
  * Tripal DBX
@@ -242,7 +242,7 @@ class TripalDbx {
    *   The description of the reservation that may be displayed to users when a
    *   schema name is denied.
    *
-   * @throws \Drupal\tripal_biodb\Exception\SchemaException
+   * @throws \Drupal\tripal\TripalDBX\Exception\SchemaException
    *   if the pattern is empty or does not contain any valid schema name
    *   character.
    */
@@ -597,7 +597,7 @@ class TripalDbx {
    * @return integer
    *   The size in bytes of the schema or 0 if the size is not available.
    *
-   * @throws \Drupal\tripal_biodb\Exception\SchemaException
+   * @throws \Drupal\tripal\TripalDBX\Exception\SchemaException
    */
   public function getSchemaSize(
     string $schema_name,

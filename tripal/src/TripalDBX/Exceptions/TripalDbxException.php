@@ -1,8 +1,8 @@
 <?php
 
-namespace Drupal\tripal_biodb\Exception;
+namespace Drupal\tripal\TripalDbx\Exception;
 
 /**
- * Exception thrown for biological schema general errors.
+ * Exception thrown for Tripal DBX general errors.
  */
-class BioDbException extends \RuntimeException {}
+class TripalDbxException extends \RuntimeException {}
