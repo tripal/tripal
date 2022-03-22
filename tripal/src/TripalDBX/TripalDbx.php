@@ -1,17 +1,25 @@
 <?php
 
-namespace Drupal\tripal_biodb\Database;
+namespace Drupal\tripal\TripalDBX;
 
 use Drupal\tripal_biodb\Exception\ConnectionException;
 use Drupal\tripal_biodb\Exception\SchemaException;
 
 /**
- * Biological database tool.
+ * Tripal DBX
  *
- * This class provides static methods into a single location without the use of
- * globals.
+ * This class provides methods which form the Tripal DBX API.
+ * Specifically, this API focuses on extending Drupal to better handle cross
+ * database and cross schema querying.
+ *
+ * This class should be accessed through the tripal.dbx service
+ * and NOT initiated directly. For example,
+ *   $tripaldbx = \Drupal::service('tripal.dbx');
+ *
+ * Additional Note: This class makes use of static member variables/properties
+ * to avoid using global variables.
  */
-class BioDbTool {
+class TripalDbx {
 
   /**
    * Schema name validation regular expression.
@@ -49,8 +57,8 @@ class BioDbTool {
    *
    * Use:
    * @code
-   *   $bio_tool = \Drupal::service('tripal_biodb.tool');
-   *   $drupal_schema = $bio_tool->getDrupalSchemaName();
+   *   $tripaldbx = \Drupal::service('tripal.dbx');
+   *   $drupal_schema = $tripaldbx->getDrupalSchemaName();
    * @endcode
    *
    * @return string
@@ -133,8 +141,8 @@ class BioDbTool {
    * Use:
    * @code
    *   $schema_name = 'name_to_check';
-   *   $bio_tool = \Drupal::service('tripal_biodb.tool');
-   *   if ($issue = $bio_tool->isInvalidSchemaName($schema_name)) {
+   *   $tripaldbx = \Drupal::service('tripal.dbx');
+   *   if ($issue = $tripaldbx->isInvalidSchemaName($schema_name)) {
    *     throw new \Exception('Invalid schema name: ' . $issue);
    *   }
    * @endcode
@@ -377,8 +385,8 @@ class BioDbTool {
    * Use:
    * @code
    *   $schema_name = 'name_to_test';
-   *   $bio_tool = \Drupal::service('tripal_biodb.tool');
-   *   if ($bio_tool->schemaExists($schema_name)) {
+   *   $tripaldbx = \Drupal::service('tripal.dbx');
+   *   if ($tripaldbx->schemaExists($schema_name)) {
    *     // Schema exists.
    *   }
    * @endcode
@@ -399,8 +407,8 @@ class BioDbTool {
     $db = $db ?? \Drupal::database();
 
     // First make sure we have a valid schema name.
-    $bio_tool = \Drupal::service('tripal_biodb.tool');
-    $issue = $bio_tool->isInvalidSchemaName($schema_name, TRUE);
+    $tripaldbx = \Drupal::service('tripal.dbx');
+    $issue = $tripaldbx->isInvalidSchemaName($schema_name, TRUE);
     if (!empty($issue)) {
       return FALSE;
     }
@@ -429,8 +437,8 @@ class BioDbTool {
    * Use:
    * @code
    *   $schema_name = 'name_to_create';
-   *   $bio_tool = \Drupal::service('tripal_biodb.tool');
-   *   $bio_tool->createSchema($schema_name);
+   *   $tripaldbx = \Drupal::service('tripal.dbx');
+   *   $tripaldbx->createSchema($schema_name);
    * @endcode
    *
    * @param string $schema_name
@@ -446,8 +454,8 @@ class BioDbTool {
     ?\Drupal\Core\Database\Driver\pgsql\Connection $db = NULL
   ) :void {
     $db = $db ?? \Drupal::database();
-    $bio_tool = \Drupal::service('tripal_biodb.tool');
-    $schema_name_quoted = $bio_tool->quoteDbObjectId($schema_name);
+    $tripaldbx = \Drupal::service('tripal.dbx');
+    $schema_name_quoted = $tripaldbx->quoteDbObjectId($schema_name);
     // Create schema.
     $sql_query = "CREATE SCHEMA $schema_name_quoted;";
     $db->query($sql_query);
@@ -461,8 +469,8 @@ class BioDbTool {
    * @code
    *   $source_schema_name = 'source';
    *   $target_schema_name = 'target';
-   *   $bio_tool = \Drupal::service('tripal_biodb.tool');
-   *   $bio_tool->cloneSchema($source_schema_name, $target_schema_name);
+   *   $tripaldbx = \Drupal::service('tripal.dbx');
+   *   $tripaldbx->cloneSchema($source_schema_name, $target_schema_name);
    * @endcode
    *
    * @param string $source_schema
@@ -484,8 +492,8 @@ class BioDbTool {
     $db = $db ?? \Drupal::database();
 
     // Clone schema.
-    $bio_tool = \Drupal::service('tripal_biodb.tool');
-    $drupal_schema = $bio_tool->getDrupalSchemaName();
+    $tripaldbx = \Drupal::service('tripal.dbx');
+    $drupal_schema = $tripaldbx->getDrupalSchemaName();
     $sql_query =
       "SELECT $drupal_schema.tripal_clone_schema(:source_schema, :target_schema, TRUE, FALSE);"
     ;
@@ -505,8 +513,8 @@ class BioDbTool {
    * @code
    *   $old_schema_name = 'old';
    *   $new_schema_name = 'new';
-   *   $bio_tool = \Drupal::service('tripal_biodb.tool');
-   *   $bio_tool->renameSchema($old_schema_name, $new_schema_name);
+   *   $tripaldbx = \Drupal::service('tripal.dbx');
+   *   $tripaldbx->renameSchema($old_schema_name, $new_schema_name);
    * @endcode
    *
    * @param string $old_schema_name
@@ -527,9 +535,9 @@ class BioDbTool {
     $db = $db ?? \Drupal::database();
 
     // Quote schema names if needed.
-    $bio_tool = \Drupal::service('tripal_biodb.tool');
-    $old_schema_name_quoted = $bio_tool->quoteDbObjectId($old_schema_name);
-    $new_schema_name_quoted = $bio_tool->quoteDbObjectId($new_schema_name);
+    $tripaldbx = \Drupal::service('tripal.dbx');
+    $old_schema_name_quoted = $tripaldbx->quoteDbObjectId($old_schema_name);
+    $new_schema_name_quoted = $tripaldbx->quoteDbObjectId($new_schema_name);
 
     // Rename schema.
     $sql_query =
@@ -545,8 +553,8 @@ class BioDbTool {
    *
    * @code
    *   $schema_name = 'schema_to_delete';
-   *   $bio_tool = \Drupal::service('tripal_biodb.tool');
-   *   $bio_tool->dropSchema($schema_name);
+   *   $tripaldbx = \Drupal::service('tripal.dbx');
+   *   $tripaldbx->dropSchema($schema_name);
    * @endcode
    *
    * @param ?string $schema_name
@@ -564,8 +572,8 @@ class BioDbTool {
     ?\Drupal\Core\Database\Driver\pgsql\Connection $db = NULL
   ) :void {
     $db = $db ?? \Drupal::database();
-    $bio_tool = \Drupal::service('tripal_biodb.tool');
-    $schema_name_quoted = $bio_tool->quoteDbObjectId($schema_name);
+    $tripaldbx = \Drupal::service('tripal.dbx');
+    $schema_name_quoted = $tripaldbx->quoteDbObjectId($schema_name);
     // Drop schema.
     $sql_query = "DROP SCHEMA $schema_name_quoted CASCADE;";
     $db->query($sql_query);
@@ -576,8 +584,8 @@ class BioDbTool {
    *
    * @code
    *   $schema_name = 'schema';
-   *   $bio_tool = \Drupal::service('tripal_biodb.tool');
-   *   $schema_size = $bio_tool->getSchemaSize($schema_name);
+   *   $tripaldbx = \Drupal::service('tripal.dbx');
+   *   $schema_size = $tripaldbx->getSchemaSize($schema_name);
    * @endcode
    *
    * @param string $schema_name
@@ -623,8 +631,8 @@ class BioDbTool {
    * Returns the size in bytes of a biological database.
    *
    * @code
-   *   $bio_tool = \Drupal::service('tripal_biodb.tool');
-   *   $db_size = $bio_tool->getDatabaseSize();
+   *   $tripaldbx = \Drupal::service('tripal.dbx');
+   *   $db_size = $tripaldbx->getDatabaseSize();
    * @endcode
    *
    * @param ?\Drupal\Core\Database\Driver\pgsql\Connection $db
@@ -888,8 +896,8 @@ class BioDbTool {
    * @see https://api.drupal.org/api/drupal/core!lib!Drupal!Core!Database!database.api.php/group/schemaapi/9.3.x
    */
   public function parseTableDdlToDrupal(string $table_ddl) :array {
-    $bio_tool = \Drupal::service('tripal_biodb.tool');
-    $table_structure = $bio_tool->parseTableDdl($table_ddl);
+    $tripaldbx = \Drupal::service('tripal.dbx');
+    $table_structure = $tripaldbx->parseTableDdl($table_ddl);
     // Start with the name of the table.
     $table_def = [];
 
