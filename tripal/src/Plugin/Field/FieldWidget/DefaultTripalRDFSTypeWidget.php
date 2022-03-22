@@ -1,8 +1,10 @@
 <?php
 
-namespace Drupal\tripal\Plugin\Field\FieldType;
+namespace Drupal\tripal\Plugin\Field\FieldWidget;
 
 use Drupal\tripal\TripalField\TripalWidgetBase;
+use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Plugin implementation of default Tripal RDFS content type widget.

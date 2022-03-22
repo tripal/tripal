@@ -13,6 +13,8 @@ use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
  *   id = "tripal_rdfs_type",
  *   label = @Translation("Content Type"),
  *   description = @Translation("The resource content type."),
+ *   default_widget = "default_tripal_rdfs_type_widget",
+ *   default_formatter = "default_tripal_rdfs_type_formatter"
  * )
  */
 class TripalRDFSTypeItem extends TripalFieldItemBase {
