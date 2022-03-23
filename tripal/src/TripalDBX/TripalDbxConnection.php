@@ -1,28 +1,28 @@
 <?php
 
-namespace Drupal\tripal_biodb\Database;
+namespace Drupal\tripal\TripalDBX;
 
 use Drupal\Core\Database\Driver\pgsql\Connection as PgConnection;
-use Drupal\tripal_biodb\Database\BioSchema;
-use Drupal\tripal_biodb\Exception\ConnectionException;
+use Drupal\tripal\TripalDBX\TripalDbxSchema;
+use Drupal\tripal\TripalDBX\Exception\ConnectionException;
 
 /**
- * Biological database connection API class.
+ * Tripal DBX Connection API class.
  *
  * This class provides a Tripal-specific extension of the Drupal database
  * connection abstraction class. It extends the base class with specific
- * functions dedicated to manage a biological schema aside of the Drupal schema.
+ * functions dedicated to managing separate schema aside from the Drupal schema.
  * It has been designed mostly based on Chado schema and PostgreSQL features
- * allowing to have several schemas in a same database.
+ * allowing you have several schemas in the same database and query across them.
  *
  * Here are some useful inherited methods to know:
  *
- * - BioConnection::select(), insert(), update(), delete(), truncate(),
+ * - TripalDbxConnection::select(), insert(), update(), delete(), truncate(),
  *   upsert(), prepare(), startTransaction(), commit(), rollBack(), quote(),
  *   quoteIdentifiers(), escape*() methods, query*() methods, and more from
  *   \Drupal\Core\Database\Connection.
  *
- * - BioConnection::schema() that provides a \Drupal\Core\Database\Schema object
+ * - TripalDbxConnection::schema() that provides a \Drupal\Core\Database\Schema object
  *   and offers, beside others, the follwing methods: addIndex(),
  *   addPrimaryKey(), addUniqueKey(), createTable(), dropField(), dropIndex(),
  *   dropPrimaryKey(), dropTable(), dropUniqueKey(), fieldExists(),
@@ -37,13 +37,13 @@ use Drupal\tripal_biodb\Exception\ConnectionException;
  * getMessageLogger() instead, which operates with the \Psr\Log\LoggerInterface
  * class. By default, the message logger is set by the constructor either using
  * the user-provided logger or by instanciating one using the log channel
- * 'tripal_biodb.logger'.
+ * 'tripal.logger'.
  *
  *
  * @see https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Core%21Database%21Driver%21pgsql%21Connection.php/class/Connection/9.0.x
  * @see https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Core%21Database%21Connection.php/class/Connection/9.0.x
  */
-abstract class BioConnection extends PgConnection {
+abstract class TripalDbxConnection extends PgConnection {
 
   /**
    * {@inheritdoc}
@@ -62,7 +62,7 @@ abstract class BioConnection extends PgConnection {
     \Drupal\Core\Database\Connection::class => TRUE,
     \Drupal\Core\Database\Driver\pgsql\Connection::class => TRUE,
     \Drupal\pgsql\Driver\Database\pgsql\Connection::class => TRUE,
-    \Drupal\tripal_biodb\Database\BioConnection::class => TRUE,
+    \Drupal\tripal\TripalDBX\TripalDbxConnection::class => TRUE,
   ];
 
   /**
@@ -104,14 +104,14 @@ abstract class BioConnection extends PgConnection {
 
 
   /**
-   * The name of the biological schema used by this instance.
+   * The name of the Tripal DBX managed schema used by this instance.
    *
    * @var string
    */
   protected $schemaName = '';
 
   /**
-   * The PostgreSQL quoted name of the biological schema used by this instance.
+   * The PostgreSQL quoted name of the Tripal DBX managed schema used by this instance.
    *
    * @var string
    */
@@ -125,7 +125,7 @@ abstract class BioConnection extends PgConnection {
   protected $extraSchemas = [];
 
   /**
-   * The version for current biological schema instance.
+   * The version for current Tripal DBX managed schema instance.
    *
    * @var ?string
    */
@@ -139,28 +139,28 @@ abstract class BioConnection extends PgConnection {
   protected $messageLogger = NULL;
 
   /**
-   * BioDbTool tool.
+   * Access to the TripalDBX API Service.
    *
-   * @var object \Drupal\tripal_biodb\Database\BioDbTool
+   * @var object \Drupal\tripal\TripalDBX\TripalDbx
    */
-  protected $bioTool = NULL;
+  protected $tripalDbxApi = NULL;
 
   /**
-   * List of objects that will use biological schema as default.
-   *
-   * @var array
-   */
-  protected $objectsUsingBioDb = [];
-
-  /**
-   * List of classes that will use biological schema as default.
+   * List of objects that will use TripalDBX managed schema as default.
    *
    * @var array
    */
-  protected $classesUsingBioDb = [];
+  protected $objectsUsingTripalDbx = [];
 
   /**
-   * Returns the version number of the given biological schema.
+   * List of classes that will use TripalDBX managed schema as default.
+   *
+   * @var array
+   */
+  protected $classesUsingTripalDbx = [];
+
+  /**
+   * Returns the version number of the given Tripal DBX managed schema.
    *
    * @param ?string $schema_name
    *   A schema name or NULL to work on current schema.
@@ -169,9 +169,9 @@ abstract class BioConnection extends PgConnection {
    *
    * @return string
    *   The version in a simple format like '1.0', '2.3x' or '4.5+' or '0' if the
-   *   version cannot be guessed but an instance of the biological schema has
+   *   version cannot be guessed but an instance of the Tripal DBX managed schema has
    *   been detected or an empty string if the schema does not appear to be an
-   *   instance of the biological schema. If $exact_version is FALSE , the
+   *   instance of the Tripal DBX managed schema. If $exact_version is FALSE , the
    *   returned version must always starts by a number and can be tested against
    *   numeric values (ie. ">= 1.2"). If $exact_version is TRUE, the format is
    *   free and can start by a letter and hold several dots like 'v1.2.3 alpha'.
@@ -182,7 +182,7 @@ abstract class BioConnection extends PgConnection {
   ) :string;
 
   /**
-   * Get the list of available "bio-databases" instances in current database.
+   * Get the list of available "Tripal DBX Managed schema" instances in current database.
    *
    * This function returns both PostgreSQL schemas integrated with Tripal
    * and free schemas.
@@ -191,7 +191,7 @@ abstract class BioConnection extends PgConnection {
    *   An array of available schema keyed by schema name and having the
    *   following structure:
    *   "schema_name": name of the schema (same as the key);
-   *   "version": detected version of the biological schema;
+   *   "version": detected version of the Tripal DBX managed schema;
    *   "is_test": TRUE if it is a test schema and FALSE otherwise;
    *   "has_data": TRUE if the schema contains more than just default records;
    *   "size": size of the schema in bytes;
@@ -206,10 +206,10 @@ abstract class BioConnection extends PgConnection {
    *
    * Drupal Database class only opens new connection to a database when it is
    * "necessary", which means when a connection to the database is not opened
-   * already. However, in the context of a BioConnection, we need a different
+   * already. However, in the context of a TripalDbxConnection, we need a different
    * database context for each connection since the search_path may be changed.
    * To not mess up with Drupal stuff, we need to open a new and distinct
-   * database connection for each BioConnection instance.
+   * database connection for each TripalDbxConnection instance.
    *
    * @param \Drupal\Core\Database\Connection $database
    *   The database connection to duplicate.
@@ -240,10 +240,10 @@ abstract class BioConnection extends PgConnection {
   }
 
   /**
-   * Constructor for a biological database connection.
+   * Constructor for a Tripal DBX connection.
    *
    * @param string $schema_name
-   *   The biological schema name to use.
+   *   The Tripal DBX managed schema name to use.
    *   Default: '' (no schema). It will throw exceptions on methods needing a
    *   default schema but may work on others or when a schema can be passed
    *   as parameter.
@@ -256,7 +256,7 @@ abstract class BioConnection extends PgConnection {
    * @param ?\Psr\Log\LoggerInterface $logger
    *   A logger in case of operations to log.
    *
-   * @throws \Drupal\tripal_biodb\Exception\ConnectionException
+   * @throws \Drupal\tripal\TripalDBX\Exception\ConnectionException
    * @throws \Drupal\Core\Database\ConnectionNotDefinedException
    *
    * @see https://api.drupal.org/api/drupal/core!lib!Drupal!Core!Database!Database.php/function/Database%3A%3AgetConnection/9.0.x
@@ -295,13 +295,13 @@ abstract class BioConnection extends PgConnection {
       throw new ConnectionException("We expected a PostgreSQL database connection or Drupal database key string but instead recieved a $type.");
     }
 
-    // Get a BioDbTool object.
-    $this->bioTool = \Drupal::service('tripal_biodb.tool');
+    // Get a TripalDBX object.
+    $this->tripalDbxApi = \Drupal::service('tripal.dbx');
 
     // Get option array.
     $connection_options = $database->getConnectionOptions();
     $this->databaseName = $connection_options['database'];
-    // Check if a biological schema name has been specified.
+    // Check if a Tripal DBX managed schema name has been specified.
     if (!empty($schema_name)) {
       // We must use this PostgreSQL schema instead of the Drupal one as default
       // for this dtaabase connection. To do so, we use the schema name as a
@@ -324,7 +324,7 @@ abstract class BioConnection extends PgConnection {
         ];
       }
       // Add search_path to avoid the use of Drupal schema by mistake.
-      // Get biological schema name first.
+      // Get Tripal DBX managed schema name first.
       $sql =
         "SELECT quote_ident("
         . $database->connection->quote($schema_name)
@@ -336,7 +336,7 @@ abstract class BioConnection extends PgConnection {
         ->qi ?: $schema_name
       ;
       // Then, get Drupal schema.
-      $drupal_schema = $this->bioTool->getDrupalSchemaName();
+      $drupal_schema = $this->tripalDbxApi->getDrupalSchemaName();
       $connection_options['init_commands']['search_path'] =
         'SET search_path='
         . $quoted_schema_name
@@ -356,7 +356,7 @@ abstract class BioConnection extends PgConnection {
     // Logger.
     if (!isset($logger)) {
       // We need a logger.
-      $logger = \Drupal::service('tripal_biodb.logger');
+      $logger = \Drupal::service('tripal.logger');
     }
     $this->messageLogger = $logger;
 
@@ -364,12 +364,12 @@ abstract class BioConnection extends PgConnection {
     // prefix appropriately.
     $this->setSchemaName($schema_name);
 
-    // Register Schema class to use biological schema as default.
-    // $this->useBioSchemaFor(PgConnection::class);
-    // $this->useBioSchemaFor(\Drupal\Core\Database\Connection::class);
-    $this->useBioSchemaFor(\Drupal\Core\Database\Schema::class);
-    $this->useBioSchemaFor(\Drupal\Core\Database\Driver\pgsql\Schema::class);
-    $this->useBioSchemaFor(\Drupal\tripal_biodb\Database\BioSchema::class);
+    // Register Schema class to use Tripal DBX managed schema as default.
+    // $this->useTripalDbxSchemaFor(PgConnection::class);
+    // $this->useTripalDbxSchemaFor(\Drupal\Core\Database\Connection::class);
+    $this->useTripalDbxSchemaFor(\Drupal\Core\Database\Schema::class);
+    $this->useTripalDbxSchemaFor(\Drupal\Core\Database\Driver\pgsql\Schema::class);
+    $this->useTripalDbxSchemaFor(\Drupal\tripal\TripalDBX\TripalDbxSchema::class);
   }
 
   /**
@@ -416,7 +416,7 @@ abstract class BioConnection extends PgConnection {
    * (override) Returns a Schema object for manipulating the schema.
    *
    * This method overrides the parent one in order to force the use of the
-   * \Drupal\tripal_biodb\Database\BioSchema class and manage biological schema
+   * \Drupal\tripal\TripalDBX\TripalDbxSchema class and manage Tripal DBX managed schema
    * changes for this connection. The Schema object is updated on changes.
    *
    * @return \Drupal\Core\Database\Schema
@@ -424,14 +424,14 @@ abstract class BioConnection extends PgConnection {
    */
   public function schema() {
     if (empty($this->schema)) {
-      $class = $this->getBioClass('Schema');
+      $class = $this->getTripalDbxClass('Schema');
       $this->schema = new $class($this);
     }
     return $this->schema;
   }
 
   /**
-   * Sets current biological schema name.
+   * Sets current Tripal DBX managed schema name.
    *
    * This method will resets any class member afected by a schema change such as
    * schema version and extra schemas for instance.
@@ -442,9 +442,9 @@ abstract class BioConnection extends PgConnection {
    * is allowed).
    *
    * @param string $schema_name
-   *   The biological schema name to use.
+   *   The Tripal DBX managed schema name to use.
    *
-   * @throws \Drupal\tripal_biodb\Exception\ConnectionException
+   * @throws \Drupal\tripal\TripalDBX\Exception\ConnectionException
    */
   public function setSchemaName(string $schema_name) :void {
     // Does schema change?
@@ -454,7 +454,7 @@ abstract class BioConnection extends PgConnection {
 
     // Check name is valid.
     if (!empty($schema_name)
-        && ($issue = $this->bioTool->isInvalidSchemaName($schema_name, TRUE))
+        && ($issue = $this->tripalDbxApi->isInvalidSchemaName($schema_name, TRUE))
     ) {
       throw new ConnectionException(
         "Could not use the schema name '$schema_name'.\n$issue"
@@ -467,27 +467,27 @@ abstract class BioConnection extends PgConnection {
     $this->quotedSchemaName = '';
 
     // Update schema prefixes.
-    $bioschema_prefix = empty($schema_name) ? '' : $schema_name . '.';
+    $TripalDbxSchema_prefix = empty($schema_name) ? '' : $schema_name . '.';
     if (empty($this->prefixes)) {
-      $this->prefixes = ['1' => $bioschema_prefix];
+      $this->prefixes = ['1' => $TripalDbxSchema_prefix];
     }
     elseif (is_array($this->prefixes)) {
-      $this->prefixes['1'] = $bioschema_prefix;
+      $this->prefixes['1'] = $TripalDbxSchema_prefix;
     }
     else {
       // $this->prefixes is a string.
       $this->prefixes = [
         'default' => $this->prefixes,
-        '1' => $bioschema_prefix,
+        '1' => $TripalDbxSchema_prefix,
       ];
     }
     $this->setPrefix($this->prefixes);
 
     // Update search_path.
     if (!empty($schema_name)) {
-      $quoted_schema_name = $this->bioTool->quoteDbObjectId($schema_name, $this);
+      $quoted_schema_name = $this->tripalDbxApi->quoteDbObjectId($schema_name, $this);
       $this->quotedSchemaName = $quoted_schema_name ?? $schema_name;
-      $drupal_schema = $this->bioTool->getDrupalSchemaName();
+      $drupal_schema = $this->tripalDbxApi->getDrupalSchemaName();
       $search_path =
         $this->connectionOptions['init_commands']['search_path'] =
         'SET search_path=' . $quoted_schema_name . ',' . $drupal_schema;
@@ -498,17 +498,17 @@ abstract class BioConnection extends PgConnection {
   }
 
   /**
-   * Returns current biological schema name.
+   * Returns current Tripal DBX managed schema name.
    *
    * @return string
-   *   Current biological schema name or an empty string if not set.
+   *   Current Tripal DBX managed schema name or an empty string if not set.
    */
   public function getSchemaName() :string {
     return $this->schemaName;
   }
 
   /**
-   * Returns current biological schema name quoted for PostgreSQL queries.
+   * Returns current Tripal DBX managed schema name quoted for PostgreSQL queries.
    *
    * This getter should rarely be used (and in very specific cases).
    * If the schema name does not contain any special characters, it might not
@@ -527,7 +527,7 @@ abstract class BioConnection extends PgConnection {
    * @endcode
    *
    * @return string
-   *   Current biological schema name  quoted by PostgreSQL if necessary or an
+   *   Current Tripal DBX managed schema name  quoted by PostgreSQL if necessary or an
    *   empty string if not set.
    */
   public function getQuotedSchemaName() :string {
@@ -551,7 +551,7 @@ abstract class BioConnection extends PgConnection {
    * @return string
    *   $schema_name if set and valid, or the current schema name.
    *
-   * @throws \Drupal\tripal_biodb\Exception\ConnectionException
+   * @throws \Drupal\tripal\TripalDBX\Exception\ConnectionException
    *  If the given schema name is invalid (ignoring schema name reservations)
    *  or none of $schema_name and $this->schemaName are set.
    */
@@ -572,7 +572,7 @@ abstract class BioConnection extends PgConnection {
       $schema_name = $this->schemaName;
     }
     else {
-      if ($issue = $this->bioTool->isInvalidSchemaName($schema_name, TRUE)) {
+      if ($issue = $this->tripalDbxApi->isInvalidSchemaName($schema_name, TRUE)) {
         throw new ConnectionException($issue);
       }
     }
@@ -613,7 +613,7 @@ abstract class BioConnection extends PgConnection {
    *   replaced by the returned integer and table_name should be an actual table
    *   name).
    *
-   * @throws \Drupal\tripal_biodb\Exception\ConnectionException
+   * @throws \Drupal\tripal\TripalDBX\Exception\ConnectionException
    *   If the given schema name is invalid or does not exist in current
    *   database or there is no current schema.
    */
@@ -624,7 +624,7 @@ abstract class BioConnection extends PgConnection {
       );
     }
     // Check provided name.
-    if ($issue = $this->bioTool->isInvalidSchemaName($schema_name, TRUE)) {
+    if ($issue = $this->tripalDbxApi->isInvalidSchemaName($schema_name, TRUE)) {
       throw new ConnectionException($issue);
     }
     // We reserve index 0 for Drupal schema and index 1 for current schema.
@@ -653,7 +653,7 @@ abstract class BioConnection extends PgConnection {
    *   associated schema set already.
    *   Default: 2.
    *
-   * @throws \Drupal\tripal_biodb\Exception\ConnectionException
+   * @throws \Drupal\tripal\TripalDBX\Exception\ConnectionException
    *   If the given schema name is invalid or does not exist in current
    *   database or there is no current schema or a lower index has not
    *   associated schema or the index is invalid.
@@ -675,7 +675,7 @@ abstract class BioConnection extends PgConnection {
       );
     }
     // Check provided name.
-    if ($issue = $this->bioTool->isInvalidSchemaName($schema_name, TRUE)) {
+    if ($issue = $this->tripalDbxApi->isInvalidSchemaName($schema_name, TRUE)) {
       throw new ConnectionException($issue);
     }
     $this->extraSchemas[$index] = $schema_name;
@@ -704,27 +704,27 @@ abstract class BioConnection extends PgConnection {
   }
 
   /**
-   * Use the biological schema as default for the given things.
+   * Use the Tripal DBX managed schema as default for the given things.
    *
-   * Register an object or a class to make them use the biological schema as
-   * default in any method of this instance of BioConnection.
+   * Register an object or a class to make them use the Tripal DBX managed schema as
+   * default in any method of this instance of TripalDbxConnection.
    *
    * @param string|object
    *   Object or class to register.
    */
-  public function useBioSchemaFor($object_or_class) {
+  public function useTripalDbxSchemaFor($object_or_class) {
     if (is_string($object_or_class)) {
       // Class.
-      $this->classesUsingBioDb[$object_or_class] = $object_or_class;
+      $this->classesUsingTripalDbx[$object_or_class] = $object_or_class;
     }
     else {
       // Object.
-      $this->objectsUsingBioDb[] = $object_or_class;
+      $this->objectsUsingTripalDbx[] = $object_or_class;
     }
   }
 
   /**
-   * Remove the given things from the lists using biological schema as default.
+   * Remove the given things from the lists using Tripal DBX managed schema as default.
    *
    * @param string|object
    *   Object or class to unregister.
@@ -732,21 +732,21 @@ abstract class BioConnection extends PgConnection {
   public function useDrupalSchemaFor($object_or_class) {
     if (is_string($object_or_class)) {
       // Remove class for the list.
-      unset($this->classesUsingBioDb[$object_or_class]);
+      unset($this->classesUsingTripalDbx[$object_or_class]);
     }
     else {
       // Remove object from the list.
-      $this->objectsUsingBioDb = array_filter(
-        $this->objectsUsingBioDb,
+      $this->objectsUsingTripalDbx = array_filter(
+        $this->objectsUsingTripalDbx,
         function ($o) { return $o != $object_or_class; }
       );
     }
   }
 
   /**
-   * Gets the biological database-specific class for the specified category.
+   * Gets the Tripal DBX-specific class for the specified category.
    *
-   * Returns the biological database-specific override class if any for the
+   * Returns the Tripal DBX-specific override class if any for the
    * specified class category.
    *
    * @param string $class
@@ -755,12 +755,12 @@ abstract class BioConnection extends PgConnection {
    * @return string
    *   The name of the class that should be used.
    */
-  public function getBioClass($class) :string {
+  public function getTripalDbxClass($class) :string {
     static $classes = [
-      'Schema' => BioSchema::class,
+      'Schema' => TripalDbxSchema::class,
     ];
     if (!array_key_exists($class, $classes)) {
-      throw new ConnectionException("Invalid BioDb class '$class'.");
+      throw new ConnectionException("Invalid Tripal DBX class '$class'.");
     }
     return $classes[$class];
   }
@@ -776,13 +776,13 @@ abstract class BioConnection extends PgConnection {
    * When working with PostgreSQL and multiple schemas, each table should be
    * prefixed by its schema to avoid conflicting names (in wich case the
    * search_path order is not enought). Since we may work with several
-   * biological "databases" stored in different schemas and we might need to
+   * Tripal DBX managed "databases" stored in different schemas and we might need to
    * cross-query them, we introduce here a new table name denotation that
    * enables the use of multiple schemas in a same static query without
    * conflicts. This new denotation is backward compatible with Drupal's one.
    *
    * Table schemas can be selected using a number followed by a colon, just
-   * after the opening curly brace. For instance, we have 2 biological schemas
+   * after the opening curly brace. For instance, we have 2 Tripal DBX managed schemas
    * named "chado_main" and "chado_other". We will refer them in the $prefix
    * array as $prefix['1'] = 'chado_main.' and $prefix['2'] = 'chado_other.'.
    * Then, for instance, if we want to write a Drupal static query that searches
@@ -874,7 +874,7 @@ abstract class BioConnection extends PgConnection {
         . $start_quote
       ;
 
-      // Then replace tables in biological schemas.
+      // Then replace tables in Tripal DBX managed schemas.
       for ($i = 2; $i <= array_key_last($this->extraSchemas); ++$i) {
         $this->prefixSearch[] = '{' . $i . ':';
         $this->prefixReplace[] =
@@ -913,12 +913,12 @@ abstract class BioConnection extends PgConnection {
   }
 
   /**
-   * Tells if the caller assumes current schema is the biological schema.
+   * Tells if the caller assumes current schema is the Tripal DBX managed schema.
    *
    * @return bool
-   *   TRUE if default schema is not Drupal's but the biological one.
+   *   TRUE if default schema is not Drupal's but the Tripal DBX managed one.
    */
-  protected function shouldUseBioSchema() :bool {
+  protected function shouldUseTripalDbxSchema() :bool {
     $should = FALSE;
     // We start at 2 because this protected method can only be called at level 1
     // from a local class method so we can skip level 1.
@@ -934,8 +934,8 @@ abstract class BioConnection extends PgConnection {
       $calling_class = $backtrace[$bt_level]['class'] ?? '';
       $calling_object = $backtrace[$bt_level]['object'] ?? FALSE;
     }
-    if (!empty($this->classesUsingBioDb[$calling_class])
-        || (in_array($calling_object, $this->objectsUsingBioDb))
+    if (!empty($this->classesUsingTripalDbx[$calling_class])
+        || (in_array($calling_object, $this->objectsUsingTripalDbx))
     ) {
       $should = TRUE;
     }
@@ -962,15 +962,15 @@ abstract class BioConnection extends PgConnection {
           && (!array_key_exists('1', $this->prefixes))
         ) {
           throw new ConnectionException(
-            "No main biological schema set for current connection while it has been referenced in the SQL statement:\n$sql."
+            "No main Tripal DBX managed schema set for current connection while it has been referenced in the SQL statement:\n$sql."
           );
         }
       }
     }
 
-    // Check if caller should use biological schema as default.
+    // Check if caller should use Tripal DBX managed schema as default.
     $has_prefix = (FALSE !== strpos($sql, '{'));
-    if ($has_prefix && $this->shouldUseBioSchema()) {
+    if ($has_prefix && $this->shouldUseTripalDbxSchema()) {
       // Replace default prefixes.
       $sql = preg_replace('/\{([a-z])/i', '{1:\1', $sql);
     }
@@ -982,24 +982,24 @@ abstract class BioConnection extends PgConnection {
    *
    * This function is for when you want to know the prefix of a table. This
    * is not used in prefixTables due to performance reasons.
-   * This override adds the support for biological schema tables.
+   * This override adds the support for Tripal DBX managed schema tables.
    *
    * @param string $table
    *   (optional) The table to find the prefix for.
-   * @param bool $use_bio_schema
-   *   (optional) if TRUE, table will be prefixed with the biological schema
+   * @param bool $use_tdbx_schema
+   *   (optional) if TRUE, table will be prefixed with the Tripal DBX managed schema
    *   name (if not empty).
    */
-  public function tablePrefix($table = 'default', bool $use_bio_schema = FALSE) {
-    $use_bio_schema = ($use_bio_schema || $this->shouldUseBioSchema());
-    if (('default' == $table) && $use_bio_schema) {
+  public function tablePrefix($table = 'default', bool $use_tdbx_schema = FALSE) {
+    $use_tdbx_schema = ($use_tdbx_schema || $this->shouldUseTripalDbxSchema());
+    if (('default' == $table) && $use_tdbx_schema) {
       $table = '1';
     }
 
     if (isset($this->prefixes[$table])) {
       return $this->prefixes[$table];
     }
-    elseif ($use_bio_schema && !empty($this->schemaName)) {
+    elseif ($use_tdbx_schema && !empty($this->schemaName)) {
       return $this->schemaName . '.';
     }
     else {
@@ -1040,7 +1040,7 @@ abstract class BioConnection extends PgConnection {
    * @return bool
    *   Whether the application succeeded.
    *
-   * @throws \Drupal\tripal_biodb\Exception\ConnectionException
+   * @throws \Drupal\tripal\TripalDBX\Exception\ConnectionException
    *  If the schema can't be used (unexisting) or if the search_path can't be
    *  changed (while a specific schema should be used).
    */
@@ -1127,7 +1127,7 @@ abstract class BioConnection extends PgConnection {
    * @return bool
    *   Whether the application succeeded.
    *
-   * @throws \Drupal\tripal_biodb\Exception\ConnectionException
+   * @throws \Drupal\tripal\TripalDBX\Exception\ConnectionException
    */
   public function executeSqlFile(
     string $sql_file_path,
