@@ -15,6 +15,7 @@ require_once 'src/api/tripal_chado.organism.api.inc';
 require_once 'src/api/tripal_chado.db.api.inc';
 require_once 'src/api/tripal_chado.cv.api.inc';
 require_once 'src/api/tripal_chado.mviews.api.inc';
+require_once 'src/api/tripal_chado.mapping.api.inc';
 require_once 'src/legacyFunctions.php';
 
 /**
