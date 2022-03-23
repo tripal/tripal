@@ -299,7 +299,7 @@ class OBOImporter extends TripalImporter {
       $uobo_url = '';
       $uobo_file = '';
 
-      $vocab = db_select('tripal_cv_obo', 't')
+      $vocab = $connection->select('tripal_cv_obo', 't')
         ->fields('t', ['name', 'path'])
         ->condition('obo_id', $obo_id)
         ->execute()
@@ -433,7 +433,8 @@ class OBOImporter extends TripalImporter {
     // If the user requested to alter the details then do that.
     if ($form_state->getTriggeringElement()['#name'] == 'update_obo_details') {
       $form_values['rebuild'] = TRUE;
-      $success = db_update('tripal_cv_obo')
+      $connection = \Drupal::database();
+      $success = $connection->update('tripal_cv_obo')
         ->fields([
           'name' => $uobo_name,
           'path' => $uobo_url ? $uobo_url : $uobo_file,
@@ -450,7 +451,8 @@ class OBOImporter extends TripalImporter {
       }
     }
     elseif (!empty($obo_name)) {
-      $obo_id = db_insert('tripal_cv_obo')
+      $connection = \Drupal::database();
+      $obo_id = $connection->insert('tripal_cv_obo')
         ->fields([
           'name' => $obo_name,
           'path' => $obo_url ? $obo_url : $obo_file,
@@ -477,6 +479,7 @@ class OBOImporter extends TripalImporter {
    */
   // public function formValidate($form, &$form_state) {
   public function validateForm(array &$form, FormStateInterface $form_state) {
+    $connection = \Drupal::database();
     $form_values = $form_state->getValues(); 
     $obo_id = $form_values['obo_id'];
     $obo_name = trim($form_values['obo_name']);
@@ -491,7 +494,7 @@ class OBOImporter extends TripalImporter {
     if ($form_state['clicked_button']['#name'] == 'update_obo_details' or
       $form_state['clicked_button']['#name'] == 'update_load_obo') {
       // Get the current record
-      $vocab = db_select('tripal_cv_obo', 't')
+      $vocab = $connection->select('tripal_cv_obo', 't')
         ->fields('t', ['obo_id', 'name', 'path'])
         ->condition('name', $uobo_name)
         ->execute()
@@ -515,7 +518,7 @@ class OBOImporter extends TripalImporter {
     }
     if ($form_state['clicked_button']['#name'] == 'add_new_obo') {
       // Get the current record
-      $vocab = db_select('tripal_cv_obo', 't')
+      $vocab = $connection->select('tripal_cv_obo', 't')
         ->fields('t', ['obo_id', 'name', 'path'])
         ->condition('name', $obo_name)
         ->execute()
@@ -547,12 +550,12 @@ class OBOImporter extends TripalImporter {
    *     - obo_id:  (required) The ID of the ontology to be imported.
    */
   public function run() {
-
+    $connection = \Drupal::database();
     $arguments = $this->arguments['run_args'];
     $obo_id = $arguments['obo_id'];
 
     // Make sure the $obo_id is valid
-    $obo = db_select('tripal_cv_obo', 'tco')
+    $obo = $connection->select('tripal_cv_obo', 'tco')
       ->fields('tco')
       ->condition('obo_id', $obo_id)
       ->execute()
@@ -2637,7 +2640,8 @@ class OBOImporter extends TripalImporter {
     $uobo_name = array_key_exists('uobo_name', $form_values) ? trim($form_values['uobo_name']) : '';
     $uobo_url = array_key_exists('uobo_url', $form_values) ? trim($form_values['uobo_url']) : '';
     $uobo_file = array_key_exists('uobo_file', $form_values) ? trim($form_values['uobo_file']) : '';
-    $success = db_update('tripal_cv_obo')
+    $connection = \Drupal::database();
+    $success = $connection->update('tripal_cv_obo')
     ->fields([
       'name' => $uobo_name,
       'path' => $uobo_url ? $uobo_url : $uobo_file,

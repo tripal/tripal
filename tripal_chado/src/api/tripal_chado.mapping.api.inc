@@ -9,7 +9,8 @@ function tripal_chado_map_cvterms() {
   $base_tables = chado_get_base_tables();
 
   // Perform this action in a transaction
-  $transaction = db_transaction();
+  $connection = \Drupal::database();
+  $transaction = $connection->startTransaction();
   try {
 
     // Iterate through the referring tables to see what records are there.
@@ -115,14 +116,15 @@ function tripal_chado_map_cvterms() {
  */
 function tripal_chado_add_cvterm_mapping($cvterm_id, $tablename, $chado_field) {
   // check if the record exists
-  $record = db_select('chado_cvterm_mapping', 'tcm')
+  $connection = \Drupal::database();
+  $record = $connection->select('chado_cvterm_mapping', 'tcm')
     ->fields('tcm', ['mapping_id'])
     ->condition('cvterm_id', $cvterm_id)
     ->execute()
     ->fetchField();
   // insert records into the chado_cvterm_mapping table.
   if (!$record) {
-    db_insert('chado_cvterm_mapping')
+    $connection->insert('chado_cvterm_mapping')
       ->fields(
         [
           'cvterm_id' => $cvterm_id,
@@ -134,7 +136,7 @@ function tripal_chado_add_cvterm_mapping($cvterm_id, $tablename, $chado_field) {
   }
   // if the record exists, update the term mapping
   else {
-    db_update('chado_cvterm_mapping')
+    $connection->update('chado_cvterm_mapping')
       ->fields(
         [
           'chado_table' => $tablename,

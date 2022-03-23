@@ -163,8 +163,9 @@ function theme_token_list($tokens) {
 function tripal_tripal_cron_notification() {
   $num_created = 0;
 
+  $db = \Drupal::database();
   // Get all bundle names to cycle through.
-  $all_bundles = db_select('tripal_bundle', 'tb')
+  $all_bundles = $db->select('tripal_bundle', 'tb')
     ->fields('tb', ['name'])
     ->execute()->fetchAll();
 

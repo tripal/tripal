@@ -42,7 +42,7 @@
  * @ingroup tripal_mviews_api
  */
 function chado_add_mview($name, $modulename, $mv_schema, $query, $comment = NULL, $redirect = TRUE) {
-
+  $connection = \Drupal::database();
   if (!array_key_exists('table', $mv_schema)) {
     tripal_report_error('tripal_chado', TRIPAL_ERROR,
       'Must have a table name when creating an mview.', []);
@@ -52,7 +52,7 @@ function chado_add_mview($name, $modulename, $mv_schema, $query, $comment = NULL
   $mv_table = $mv_schema['table'];
 
   // See if the mv_table name already exsists.
-  $mview_id = db_select('tripal_mviews', 'tm')
+  $mview_id = $connection->select('tripal_mviews', 'tm')
     ->fields('tm', ['mview_id'])
     ->condition('name', $name)
     ->execute()
@@ -61,14 +61,15 @@ function chado_add_mview($name, $modulename, $mv_schema, $query, $comment = NULL
   // Check that the materialized view actually exists and if not,
   // remove the entry from tripal_mviews.
   if ($mview_id AND !chado_table_exists($name)) {
-    db_delete('tripal_mviews')
+    $connection->delete('tripal_mviews')
       ->condition('mview_id', $mview_id)
       ->execute();
     $mview_id = FALSE;
   }
 
   if (!$mview_id) {
-    $transaction = db_transaction();
+    $connection = \Drupal::database();
+    $transaction = $connection->startTransaction();
     try {
       // Create a new record.
       $record = new stdClass();
@@ -148,7 +149,8 @@ function chado_add_mview($name, $modulename, $mv_schema, $query, $comment = NULL
 function chado_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
                           $indexed, $query, $special_index, $comment = NULL, $mv_schema = NULL) {
 
-  $transaction = db_transaction();
+  $connection = \Drupal::database();
+  $transaction = $connection->startTransaction();
   try {
     // get the table name from the schema array
     $schema_arr = [];
@@ -226,9 +228,10 @@ function chado_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
  * @ingroup tripal_mviews_api
  */
 function chado_get_mview_id($view_name) {
-  if (db_table_exists('tripal_mviews')) {
+  $connection = \Drupal::database();
+  if ($connection->schema()->tableExists('tripal_mviews')) {
     $sql = "SELECT * FROM {tripal_mviews} WHERE name = :name";
-    $connection = \Drupal::database();
+    
     $results = $connection->query($sql, [':name' => $view_name]);
     $mview = $results->fetchObject();
     if ($mview) {
@@ -302,8 +305,8 @@ function chado_refresh_mview($mview_id) {
  *
  */
 function chado_get_mviews() {
-
-  $results = db_select('tripal_mviews', 'tm')
+  $connection = \Drupal::database();
+  $results = $connection->select('tripal_mviews', 'tm')
     ->fields('tm', ['mview_id', 'name'])
     ->execute();
 
@@ -337,7 +340,8 @@ function chado_delete_mview($mview_id) {
   }
 
   try {
-    $transaction = db_transaction();
+    $connection = \Drupal::database();
+    $transaction = $connection->startTransaction();
 
     // Get this mview details.
     $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id";
@@ -406,7 +410,8 @@ function chado_populate_mview($mview_id) {
   if ($mview) {
     // Execute the query inside a transaction so that it doesn't destroy 
     // existing data that may leave parts of the site unfunctional.
-    $transaction = db_transaction();
+    $connection = \Drupal::database();
+    $transaction = $connection->startTransaction();
     $previous_db = chado_set_active('chado');  // use chado database
     try {
       $success = chado_query("DELETE FROM {" . $mview->mv_table . "}");

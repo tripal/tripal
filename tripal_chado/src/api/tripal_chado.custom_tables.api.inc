@@ -28,7 +28,8 @@
 function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exists = 1) {
 
   $messenger = \Drupal::messenger();
-  $transaction = db_transaction();
+  $connection = \Drupal::database();
+  $transaction = $connection->startTransaction();
 
     try {
         // Create a new record.
@@ -371,6 +372,7 @@ function chado_delete_custom_table($table_id) {
         }
         
     } catch (Exception $e) {
+        $transaction->rollback();
         tripal_set_message($e,TRIPAL_WARNING);
     }
 }

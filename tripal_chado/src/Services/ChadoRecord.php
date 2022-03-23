@@ -672,7 +672,7 @@ class ChadoRecord {
 
       // Perform a manual count query
       $sql_count = $sql;
-      $sql_count = str_replace("*", "COUNT(*) as c1", $sql_count, 1);
+      $sql_count = str_replace("*", "COUNT(*) as c1", $sql_count);
       $results_count = chado_query($sql_count, $select_args);
       // This foreach happens once
       foreach ($results_count as $row_count) {
