@@ -179,7 +179,7 @@ class TripalDbxUnitTest extends UnitTestCase {
     $tripaldbx = new TripalDbx();
 
     // Try to get Drupal schema.
-    $this->expectException(\Drupal\tripal_biodb\Exception\ConnectionException::class);
+    $this->expectException(\Drupal\tripal_biodb\Exceptions\ConnectionException::class);
     $drupal_schema = $tripaldbx->getDrupalSchemaName();
   }
 

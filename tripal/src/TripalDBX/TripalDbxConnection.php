@@ -4,7 +4,7 @@ namespace Drupal\tripal\TripalDBX;
 
 use Drupal\Core\Database\Driver\pgsql\Connection as PgConnection;
 use Drupal\tripal\TripalDBX\TripalDbxSchema;
-use Drupal\tripal\TripalDBX\Exception\ConnectionException;
+use Drupal\tripal\TripalDBX\Exceptions\ConnectionException;
 
 /**
  * Tripal DBX Connection API class.
@@ -256,7 +256,7 @@ abstract class TripalDbxConnection extends PgConnection {
    * @param ?\Drupal\tripal\Services\TripalLogger $logger
    *   A logger in case of operations to log.
    *
-   * @throws \Drupal\tripal\TripalDBX\Exception\ConnectionException
+   * @throws \Drupal\tripal\TripalDBX\Exceptions\ConnectionException
    * @throws \Drupal\Core\Database\ConnectionNotDefinedException
    *
    * @see https://api.drupal.org/api/drupal/core!lib!Drupal!Core!Database!Database.php/function/Database%3A%3AgetConnection/9.0.x
@@ -444,7 +444,7 @@ abstract class TripalDbxConnection extends PgConnection {
    * @param string $schema_name
    *   The Tripal DBX managed schema name to use.
    *
-   * @throws \Drupal\tripal\TripalDBX\Exception\ConnectionException
+   * @throws \Drupal\tripal\TripalDBX\Exceptions\ConnectionException
    */
   public function setSchemaName(string $schema_name) :void {
     // Does schema change?
@@ -551,7 +551,7 @@ abstract class TripalDbxConnection extends PgConnection {
    * @return string
    *   $schema_name if set and valid, or the current schema name.
    *
-   * @throws \Drupal\tripal\TripalDBX\Exception\ConnectionException
+   * @throws \Drupal\tripal\TripalDBX\Exceptions\ConnectionException
    *  If the given schema name is invalid (ignoring schema name reservations)
    *  or none of $schema_name and $this->schemaName are set.
    */
@@ -613,7 +613,7 @@ abstract class TripalDbxConnection extends PgConnection {
    *   replaced by the returned integer and table_name should be an actual table
    *   name).
    *
-   * @throws \Drupal\tripal\TripalDBX\Exception\ConnectionException
+   * @throws \Drupal\tripal\TripalDBX\Exceptions\ConnectionException
    *   If the given schema name is invalid or does not exist in current
    *   database or there is no current schema.
    */
@@ -653,7 +653,7 @@ abstract class TripalDbxConnection extends PgConnection {
    *   associated schema set already.
    *   Default: 2.
    *
-   * @throws \Drupal\tripal\TripalDBX\Exception\ConnectionException
+   * @throws \Drupal\tripal\TripalDBX\Exceptions\ConnectionException
    *   If the given schema name is invalid or does not exist in current
    *   database or there is no current schema or a lower index has not
    *   associated schema or the index is invalid.
@@ -1040,7 +1040,7 @@ abstract class TripalDbxConnection extends PgConnection {
    * @return bool
    *   Whether the application succeeded.
    *
-   * @throws \Drupal\tripal\TripalDBX\Exception\ConnectionException
+   * @throws \Drupal\tripal\TripalDBX\Exceptions\ConnectionException
    *  If the schema can't be used (unexisting) or if the search_path can't be
    *  changed (while a specific schema should be used).
    */
@@ -1127,7 +1127,7 @@ abstract class TripalDbxConnection extends PgConnection {
    * @return bool
    *   Whether the application succeeded.
    *
-   * @throws \Drupal\tripal\TripalDBX\Exception\ConnectionException
+   * @throws \Drupal\tripal\TripalDBX\Exceptions\ConnectionException
    */
   public function executeSqlFile(
     string $sql_file_path,

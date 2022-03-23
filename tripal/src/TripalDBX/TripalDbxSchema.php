@@ -4,7 +4,7 @@ namespace Drupal\tripal\TripalDBX;
 
 use Drupal\Core\Database\Driver\pgsql\Schema as PgSchema;
 use Drupal\tripal\TripalDBX\TripalDbxConnection;
-use Drupal\tripal\TripalDBX\Exception\SchemaException;
+use Drupal\tripal\TripalDBX\Exceptions\SchemaException;
 
 /**
  * Tripal DBX managed schema class.
@@ -61,7 +61,7 @@ abstract class TripalDbxSchema extends PgSchema {
    *   An array with details for the current schema version as defined by
    *   $parameters values.
    *
-   * @throws \Drupal\tripal\TripalDBX\Exception\SchemaException
+   * @throws \Drupal\tripal\TripalDBX\Exceptions\SchemaException
    */
   abstract public function getSchemaDef(array $parameters) :array;
 
@@ -79,7 +79,7 @@ abstract class TripalDbxSchema extends PgSchema {
    * @param \Drupal\tripal\TripalDBX\TripalDbxConnection $connection
    *   A Tripal DBX connection object.
    *
-   * @throws \Drupal\tripal\TripalDBX\Exception\SchemaException
+   * @throws \Drupal\tripal\TripalDBX\Exceptions\SchemaException
    */
   public function __construct(
     \Drupal\tripal\TripalDBX\TripalDbxConnection $connection
@@ -278,7 +278,7 @@ EOD;
    * @return integer
    *   The size in bytes of the schema or 0 if the size is not available.
    *
-   * @throws \Drupal\tripal\TripalDBX\Exception\SchemaException
+   * @throws \Drupal\tripal\TripalDBX\Exceptions\SchemaException
    */
   public function getSchemaSize() :int {
     return $this->tripalDbxApi->getSchemaSize(
@@ -317,7 +317,7 @@ EOD;
    * @return bool
    *   TRUE if the function exists in the schema and FALSE otherwise.
    *
-   * @throws \Drupal\tripal\TripalDBX\Exception\SchemaException
+   * @throws \Drupal\tripal\TripalDBX\Exceptions\SchemaException
    */
   public function functionExists(
     string $function_name,
@@ -399,7 +399,7 @@ EOD;
    * @return bool
    *   TRUE if the seqeuence exists and FALSE if it does not.
    *
-   * @throws \Drupal\tripal\TripalDBX\Exception\SchemaException
+   * @throws \Drupal\tripal\TripalDBX\Exceptions\SchemaException
    */
   public function sequenceExists(
     ?string $table_name = NULL,
@@ -961,7 +961,7 @@ EOD;
    *   New name to use.
    *
    * @throws \Drupal\Core\Database\DatabaseExceptionWrapper
-   * @throws \Drupal\tripal\TripalDBX\Exception\SchemaException
+   * @throws \Drupal\tripal\TripalDBX\Exceptions\SchemaException
    *   if there is no current schema name.
    */
   public function renameSchema(
