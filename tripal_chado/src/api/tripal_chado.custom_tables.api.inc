@@ -39,7 +39,8 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
 
         // Get the current custom table record.
         $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id";
-        $results = db_query($sql, [':table_id' => $table_id]);
+        $connection = \Drupal::database();
+        $results = $connection->query($sql, [':table_id' => $table_id]);
         $custom_table = $results->fetchObject();
 
         // Check if the table is suitable for editing (not mview, doesn't exist in tripal_custom_tables table).
