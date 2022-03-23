@@ -41,32 +41,32 @@ abstract class ChadoTestBase extends KernelTestBase {
    * Create an empty schema.
    */
   public const CREATE_SCHEMA = 1;
-   
+
   /**
    * Create a schema and initialize it with dummy data.
    */
   public const INIT_DUMMY = 2;
-   
+
   /**
    * Create a Chado schema with default data.
    */
   public const INIT_CHADO_EMPTY = 3;
-   
+
   /**
    * Create a Chado schema and initialize it with dummy data.
    */
   public const INIT_CHADO_DUMMY = 4;
-   
+
   /**
    * Bio database tool instance.
    */
   protected $bioTool;
-  
+
   /**
    * Real (Drupal live, not test) config factory.
    */
   protected $realConfigFactory;
-  
+
   /**
    * Base name for test schemas.
    */
@@ -178,7 +178,7 @@ abstract class ChadoTestBase extends KernelTestBase {
       $typed_config
     );
   }
-  
+
   /**
    * Initializes BioDbTool member.
    */
@@ -191,7 +191,7 @@ abstract class ChadoTestBase extends KernelTestBase {
     };
     $clear->call(new BioDbTool());
     // Adds live schema reservation.
-    $reserved_schema_patterns = $this->realConfigFactory->get('tripal_biodb.settings')
+    $reserved_schema_patterns = $this->realConfigFactory->get('tripaldbx.settings')
       ->get('reserved_schema_patterns', [])
     ;
     foreach ($reserved_schema_patterns as $pattern => $description) {
@@ -204,7 +204,7 @@ abstract class ChadoTestBase extends KernelTestBase {
    */
   protected function allowTestSchemas() {
     $this->testSchemaBaseNames = $this->realConfigFactory
-      ->get('tripal_biodb.settings')
+      ->get('tripaldbx.settings')
       ->get('test_schema_base_names', [])
     ;
     $this->bioTool->freeSchemaPattern(
@@ -321,7 +321,7 @@ abstract class ChadoTestBase extends KernelTestBase {
       case static::SCHEMA_NAME_ONLY:
         break;
 
-      default:      
+      default:
         break;
     }
     self::$db = self::$db ?? \Drupal::database();
