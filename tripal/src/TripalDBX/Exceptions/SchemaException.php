@@ -1,8 +1,8 @@
 <?php
 
-namespace Drupal\tripal\TripalDbx\Exception;
+namespace Drupal\tripal\TripalDBX\Exception;
 
-use Drupal\tripal\TripalDbx\Exception\TripalDbxException;
+use Drupal\tripal\TripalDBX\Exception\TripalDbxException;
 
 /**
  * Exception thrown for Tripal DBX schema errors.

@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\tripal\TripalDbx\Exception;
+namespace Drupal\tripal\TripalDBX\Exception;
 
 /**
  * Exception thrown for Tripal DBX general errors.
