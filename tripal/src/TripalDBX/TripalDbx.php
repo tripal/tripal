@@ -668,6 +668,50 @@ class TripalDbx {
   }
 
   /**
+   * Run an SQL file.
+   *
+   * @param string $sql_file
+   *   Path to an SQL file.
+   * @param array $replacements
+   *   An array of search-and-replace values used with preg_replace() to replace
+   *   placeholders in the SQL file with replacement values. The 'search' values
+   *   will be searched and replaced with the 'replace' values.
+   *   Default: [] (no replacements).
+   * @param ?\Drupal\Core\Database\Connection $db
+   *   A connection to the database you want to run the SQL file on.
+   */
+  public function runSqlFile(
+    string $sql_file,
+    array $replacements,
+    ?\Drupal\Core\Database\Connection $db = NULL
+  ) {
+
+    // Get the default database.
+    $logger = \Drupal::service('tripal.logger');
+    $db = $db ?? \Drupal::database();
+
+    // Retrieve the SQL file.
+    $sql = file_get_contents($sql_file);
+    if (!$sql) {
+      $message = "Run SQL file failed: unable to read '$sql_file' file content.";
+      $logger->error($message);
+      throw new \Exception($message);
+    }
+
+    // Remove starting comments (not the ones in functions).
+    $replacements['search'][] = '/^--[^\n]*\n(?:\s*\n)*/m';
+    $replacements['replace'][] = '';
+    $sql = preg_replace($replacements['search'], $replacements['replace'], $sql);
+    $x = $db->query(
+      $sql,
+      [],
+      [
+        'allow_delimiter_in_query' => TRUE,
+      ]
+    );
+  }
+
+  /**
    * Turns a table DDL string into a more usable structure.
    *
    * @param string $table_ddl
