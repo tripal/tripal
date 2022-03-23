@@ -125,6 +125,10 @@ class obi__organism extends ChadoField {
       }
       $string = $settings['field_display_string'];
       $label = chado_replace_tokens($string, $organism);
+      // Infraspecific type, if present but not used, can either be NULL,
+      // an empty string, or the term 'no_rank'. Special case processing
+      // so that this 'no_rank' term is not included in the label.
+      $label = trim(preg_replace('/ no_rank/', '', $label));
       $entity->{$field_name}['und'][0]['value'] = [
         $label_term => $label,
         $genus_term => $organism->genus,
