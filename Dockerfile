@@ -6,7 +6,7 @@ FROM php:7.3-apache-buster
 MAINTAINER Lacey-Anne Sanderson <laceyannesanderson@gmail.com>
 
 ARG drupalversion='9.3.x-dev'
-ARG modules='tripal tripal_chado'
+ARG modules='tripal'
 ARG chadoschema='chado'
 
 # Label docker image
