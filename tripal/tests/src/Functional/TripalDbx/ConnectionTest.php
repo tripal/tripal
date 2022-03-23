@@ -1,25 +1,25 @@
 <?php
 
-namespace Drupal\Tests\tripal_biodb\Functional\Database;
+namespace Drupal\Tests\tripal\Functional\TripalDBX;
 
 use Drupal\KernelTests\KernelTestBase;
-use Drupal\tripal_biodb\Database\BioConnection;
+use Drupal\tripal\TripalDBX\TripalDbxConnection;
 
 /**
- * Tests for biological connection on a real database.
+ * Tests for Tripal DBX connection on a real database.
  *
- * @coversDefaultClass \Drupal\tripal_biodb\Database\BioConnection
+ * @coversDefaultClass \Drupal\tripal\TripalDBX\TripalDbxConnection
  *
  * @group Tripal
- * @group Tripal BioDb
- * @group Tripal BioDb Connection
+ * @group Tripal TripalDBX
+ * @group Tripal TripalDBX Connection
  */
-class BioConnectionTest extends KernelTestBase {
+class ConnectionTest extends KernelTestBase {
 
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['tripal_biodb'];
+  protected static $modules = ['tripal'];
 
   /**
    * Test members.
@@ -63,12 +63,12 @@ class BioConnectionTest extends KernelTestBase {
       $typed_config
     );
     // Get real config elements.
-    $config = $config_factory->get('tripal_biodb.settings');
+    $config = $config_factory->get('tripaldbx.settings');
     $reserved_schema_patterns = $config->get('reserved_schema_patterns');
     $this->assertNotEmpty($reserved_schema_patterns, 'Reserved schema patterns not empty.');
     $test_schema_base_names = $config
       ->get('test_schema_base_names')
-      ?? ['default' => '_test_biodb', ]
+      ?? ['default' => '_test_tripaldbx', ]
     ;
 
     // Mock the Config object.
@@ -87,35 +87,34 @@ class BioConnectionTest extends KernelTestBase {
     );
     $this->config = $this->proConfig->reveal();
 
-    // Mock the ConfigFactory service. 
+    // Mock the ConfigFactory service.
     $this->proConfigFactory = $this->prophesize(\Drupal\Core\Config\ConfigFactory::class);
-    $this->proConfigFactory->get('tripal_biodb.settings')->willReturn($this->config);
+    $this->proConfigFactory->get('tripaldbx.settings')->willReturn($this->config);
     $this->configFactory = $this->proConfigFactory->reveal();
 
     \Drupal::getContainer()->set('config.factory', $this->configFactory);
   }
 
   /**
-   * Builds an initialized BioConnection mock.
+   * Builds an initialized TripalDbxConnection mock.
    *
    * @cover ::__construct
    */
-  protected function getBioConnectionMock(
+  protected function getConnectionMock(
     $schema_name = '',
     $database = 'default',
     $logger = NULL
   ) {
     // Create a mock for the abstract class.
-    $dbmock = $this->getMockBuilder(\Drupal\tripal_biodb\Database\BioConnection::class)
+    $dbmock = $this->getMockBuilder(\Drupal\tripal\TripalDBX\TripalDbxConnection::class)
       ->setConstructorArgs([$schema_name, $database, $logger])
-      ->setMethods(['getBioClass', 'findVersion', 'getAvailableInstances'])
-      ->getMockForAbstractClass()
-    ;
+      ->setMethods(['getTripalDbxClass', 'findVersion', 'getAvailableInstances'])
+      ->getMockForAbstractClass();
     $dbmock
       ->expects($this->any())
-      ->method('getBioClass')
+      ->method('getTripalDbxClass')
       ->with('Schema')
-      ->willReturn('\Drupal\Tests\tripal_biodb\Functional\Database\Subclass\BioSchemaFake')
+      ->willReturn('\Drupal\Tests\tripal\Functional\TripalDBX\Subclass\TripalDbxSchemaFake')
     ;
 
     // Return initialized mock.
@@ -126,11 +125,11 @@ class BioConnectionTest extends KernelTestBase {
    * Allow a test to use reserved default test schema names.
    */
   protected function allowTestSchemas() {
-    $test_schema_base_names = \Drupal::config('tripal_biodb.settings')
+    $test_schema_base_names = \Drupal::config('tripaldbx.settings')
       ->get('test_schema_base_names')
     ;
-    $bio_tool = \Drupal::service('tripal_biodb.tool');
-    $bio_tool->freeSchemaPattern($test_schema_base_names['default'], TRUE);
+    $tripaldbx = \Drupal::service('tripal.dbx');
+    $tripaldbx->freeSchemaPattern($test_schema_base_names['default'], TRUE);
   }
 
   /**
@@ -141,9 +140,9 @@ class BioConnectionTest extends KernelTestBase {
    * @cover ::getDatabaseKey
    * @cover ::getMessageLogger
    */
-  public function testBioConnectionConstructorAllDefault() {
+  public function testConnectionConstructorAllDefault() {
     // Create a mock for the abstract class.
-    $dbmock = $this->getMockBuilder(\Drupal\tripal_biodb\Database\BioConnection::class)
+    $dbmock = $this->getMockBuilder(\Drupal\tripal\TripalDBX\TripalDbxConnection::class)
       ->disableOriginalConstructor()
       ->setMethods(['setTarget', 'setKey', 'setSchemaName'])
       ->getMockForAbstractClass()
@@ -163,7 +162,7 @@ class BioConnectionTest extends KernelTestBase {
     ;
 
     // Call the constructor.
-    $reflected_class = new \ReflectionClass(\Drupal\tripal_biodb\Database\BioConnection::class);
+    $reflected_class = new \ReflectionClass(\Drupal\tripal\TripalDBX\TripalDbxConnection::class);
     $constructor = $reflected_class->getConstructor();
     $constructor->invoke($dbmock);
 
@@ -174,7 +173,7 @@ class BioConnectionTest extends KernelTestBase {
     $this->assertEquals('default', $dbmock->getDatabaseKey(), 'Database key');
     $this->assertEquals('', $dbmock->getVersion(), 'No version.');
     $this->assertEquals('', $dbmock->getQuotedSchemaName(), 'No quoted schema name.');
-    $this->assertStringEndsWith('\BioSchema', $dbmock->getBioClass('Schema'), 'Schema class.');
+    $this->assertStringEndsWith('\TripalDbxSchema', $dbmock->getTripalDbxClass('Schema'), 'Schema class.');
   }
 
   /**
@@ -182,8 +181,8 @@ class BioConnectionTest extends KernelTestBase {
    *
    * @cover ::__construct
    */
-  public function testBioConnectionConstructorTestSchemaDefaultKey() {
-    $dbmock = $this->getBioConnectionMock('test');
+  public function testConnectionConstructorTestSchemaDefaultKey() {
+    $dbmock = $this->getConnectionMock('test');
     $this->assertEquals('test', $dbmock->getSchemaName(), 'Schema name.');
     $this->assertEquals('test', $dbmock->getQuotedSchemaName(), 'Quoted schema name.');
   }
@@ -194,9 +193,9 @@ class BioConnectionTest extends KernelTestBase {
    * @cover ::__construct
    * @cover ::getDatabaseName
    */
-  public function testBioConnectionConstructorNoSchemaDefaultDb() {
+  public function testConnectionConstructorNoSchemaDefaultDb() {
     $db = \Drupal::database();
-    $dbmock = $this->getBioConnectionMock('', $db);
+    $dbmock = $this->getConnectionMock('', $db);
     $this->assertEquals('', $dbmock->getSchemaName(), 'Schema name.');
     $this->assertEquals('', $dbmock->getQuotedSchemaName(), 'Quoted schema name.');
     $this->assertNotEmpty($dbmock->getDatabaseName(), 'Database name.');
@@ -208,9 +207,9 @@ class BioConnectionTest extends KernelTestBase {
    * @cover ::__construct
    * @cover ::getDatabaseName
    */
-  public function testBioConnectionConstructorTestSchemaDefaultDb() {
+  public function testConnectionConstructorTestSchemaDefaultDb() {
     $db = \Drupal::database();
-    $dbmock = $this->getBioConnectionMock('test', $db);
+    $dbmock = $this->getConnectionMock('test', $db);
     $this->assertEquals('test', $dbmock->getSchemaName(), 'Schema name.');
     $this->assertEquals('test', $dbmock->getQuotedSchemaName(), 'Quoted schema name.');
     $this->assertNotEmpty($dbmock->getDatabaseName(), 'Database name.');
@@ -222,8 +221,8 @@ class BioConnectionTest extends KernelTestBase {
    * @cover ::__construct
    * @cover ::getDatabaseName
    */
-  public function testBioConnectionConstructorSpecialSchemaDefaultKey() {
-    $dbmock = $this->getBioConnectionMock('voilà');
+  public function testConnectionConstructorSpecialSchemaDefaultKey() {
+    $dbmock = $this->getConnectionMock('voilà');
     $this->assertEquals('voilà', $dbmock->getSchemaName(), 'Schema name.');
     $this->assertEquals('"voilà"', $dbmock->getQuotedSchemaName(), 'Quoted schema name.');
     $this->assertNotEmpty($dbmock->getDatabaseName(), 'Database name.');
@@ -234,22 +233,22 @@ class BioConnectionTest extends KernelTestBase {
    *
    * @cover ::__construct
    */
-  public function testBioConnectionConstructorPublicSchemaDefaultKey() {
+  public function testConnectionConstructorPublicSchemaDefaultKey() {
     // Now schema can use reserved schema name as long as they are valid.
     // This is to allow working on reserved schemas without messing up with
     // schema name reservations. We assume that the schema name provided has
     // been checked before for reservation through methods
-    // BioDbTool::isSchemaReserved (or BioDbTool::isInvalidSchemaName with
+    // TripalDbx::isSchemaReserved (or TripalDbx::isInvalidSchemaName with
     // $ignore_reservation = FALSE).
-    // $this->expectException(\Drupal\tripal_biodb\Exception\ConnectionException::class);
+    // $this->expectException(\Drupal\tripal\TripalDBX\Exception\ConnectionException::class);
     // $this->expectExceptionMessage('reserved');
 
     $schema_name = 'public';
-    $bio_tool = \Drupal::service('tripal_biodb.tool');
-    $issue = $bio_tool->isInvalidSchemaName($schema_name);
+    $tripaldbx = \Drupal::service('tripal.dbx');
+    $issue = $tripaldbx->isInvalidSchemaName($schema_name);
     $this->assertNotEmpty($issue, 'Reserved schema name not allowed.');
     // But the connection should be created.
-    $dbmock = $this->getBioConnectionMock($schema_name);
+    $dbmock = $this->getConnectionMock($schema_name);
     $this->assertEquals($schema_name, $dbmock->getSchemaName(), 'Connection instanciated.');
   }
 
@@ -258,23 +257,23 @@ class BioConnectionTest extends KernelTestBase {
    *
    * @cover ::__construct
    */
-  public function testBioConnectionConstructorReservedSchemaDefaultKey() {
+  public function testConnectionConstructorReservedSchemaDefaultKey() {
     // Now schema can use reserved schema name as long as they are valid.
     // This is to allow working on reserved schemas without messing up with
     // schema name reservations. We assume that the schema name provided has
     // been checked before for reservation through methods
-    // BioDbTool::isSchemaReserved (or BioDbTool::isInvalidSchemaName with
+    // TripalDbx::isSchemaReserved (or TripalDbx::isInvalidSchemaName with
     // $ignore_reservation = FALSE).
-    // $this->expectException(\Drupal\tripal_biodb\Exception\ConnectionException::class);
+    // $this->expectException(\Drupal\tripal\TripalDBX\Exception\ConnectionException::class);
     // $this->expectExceptionMessage('reserved');
-    
+
     // The schema name should be invalid because it is reserved.
     $schema_name = '_test_new';
-    $bio_tool = \Drupal::service('tripal_biodb.tool');
-    $issue = $bio_tool->isInvalidSchemaName($schema_name);
+    $tripaldbx = \Drupal::service('tripal.dbx');
+    $issue = $tripaldbx->isInvalidSchemaName($schema_name);
     $this->assertNotEmpty($issue, 'Reserved schema name not allowed.');
     // But the connection should be created.
-    $dbmock = $this->getBioConnectionMock($schema_name);
+    $dbmock = $this->getConnectionMock($schema_name);
     $this->assertEquals($schema_name, $dbmock->getSchemaName(), 'Connection instanciated.');
   }
 
@@ -283,10 +282,10 @@ class BioConnectionTest extends KernelTestBase {
    *
    * @cover ::__construct
    */
-  public function testBioConnectionConstructorInvalidSchemaDefaultKey() {
-    $this->expectException(\Drupal\tripal_biodb\Exception\ConnectionException::class);
+  public function testConnectionConstructorInvalidSchemaDefaultKey() {
+    $this->expectException(\Drupal\tripal\TripalDBX\Exception\ConnectionException::class);
     $this->expectExceptionMessage('must not');
-    $dbmock = $this->getBioConnectionMock('0test');
+    $dbmock = $this->getConnectionMock('0test');
   }
 
   /**
@@ -294,14 +293,14 @@ class BioConnectionTest extends KernelTestBase {
    *
    * @cover ::__construct
    */
-  public function testBioConnectionConstructorTestSchemaInvalidDatabase() {
+  public function testConnectionConstructorTestSchemaInvalidDatabase() {
     $mocked_mysqldb = $this->getMockBuilder(\Drupal\Core\Database\Driver\mysql\Connection::class)
       ->disableOriginalConstructor()
       ->getMock()
     ;
-    $this->expectException(\Drupal\tripal_biodb\Exception\ConnectionException::class);
+    $this->expectException(\Drupal\tripal\TripalDBX\Exception\ConnectionException::class);
     $this->expectExceptionMessage('PostgreSQL');
-    $dbmock = $this->getBioConnectionMock('test', $mocked_mysqldb);
+    $dbmock = $this->getConnectionMock('test', $mocked_mysqldb);
   }
 
   /**
@@ -309,9 +308,9 @@ class BioConnectionTest extends KernelTestBase {
    *
    * @cover ::__construct
    */
-  public function testBioConnectionConstructorTestSchemaInvalidKey() {
+  public function testConnectionConstructorTestSchemaInvalidKey() {
     $this->expectException(\Drupal\Core\Database\ConnectionNotDefinedException::class);
-    $dbmock = $this->getBioConnectionMock('test', 'someunexistingdatabasekey');
+    $dbmock = $this->getConnectionMock('test', 'someunexistingdatabasekey');
   }
 
   /**
@@ -320,12 +319,12 @@ class BioConnectionTest extends KernelTestBase {
    * @cover ::__construct
    * @cover ::getDatabaseKey
    */
-  public function testBioConnectionConstructorTestSchemaSecondaryKey() {
+  public function testConnectionConstructorTestSchemaSecondaryKey() {
     // Create a secondary connection on-the-fly that clones the default one.
     $db = \Drupal::database();
     $options = $db->getConnectionOptions();
     \Drupal\Core\Database\Database::addConnectionInfo('secondary', 'default', $options);
-    $dbmock = $this->getBioConnectionMock('test', 'secondary');
+    $dbmock = $this->getConnectionMock('test', 'secondary');
     $this->assertEquals($dbmock->getDatabaseKey(), 'secondary');
   }
 
@@ -334,17 +333,17 @@ class BioConnectionTest extends KernelTestBase {
    *
    * @cover ::__construct
    */
-  public function testBioConnectionConstructorSearchPath() {
+  public function testConnectionConstructorSearchPath() {
     $db = \Drupal::database();
-    $dbmock = $this->getBioConnectionMock('test', $db);
+    $dbmock = $this->getConnectionMock('test', $db);
     $sql = "SELECT setting FROM pg_settings WHERE name = 'search_path';";
     $search_path_drupal = $db->query($sql)->fetch()->setting;
-    $search_path_bio = $dbmock->query($sql)->fetch()->setting;
-    $this->assertNotEquals($search_path_drupal, $search_path_bio, 'Different search paths.');
-    $bio_tool = \Drupal::service('tripal_biodb.tool');
-    $drupal_schema = $bio_tool->getDrupalSchemaName();
-    $this->assertRegexp('/^test\W/', $search_path_bio, 'BioDb search_path has test schema.');
-    $this->assertRegexp("/,\\s*$drupal_schema(?:\W|$)/", $search_path_bio, 'BioDb search_path has Drupal schema as well.');
+    $search_path_tdbx = $dbmock->query($sql)->fetch()->setting;
+    $this->assertNotEquals($search_path_drupal, $search_path_tdbx, 'Different search paths.');
+    $tripaldbx = \Drupal::service('tripal.dbx');
+    $drupal_schema = $tripaldbx->getDrupalSchemaName();
+    $this->assertRegexp('/^test\W/', $search_path_tdbx, 'TripalDbx search_path has test schema.');
+    $this->assertRegexp("/,\\s*$drupal_schema(?:\W|$)/", $search_path_tdbx, 'TripalDbx search_path has Drupal schema as well.');
     $this->assertNotRegexp('/(?:^|\W)test(?:\W|$)/', $search_path_drupal, 'Drupal search_path has not test schema.');
     $this->assertRegexp("/(?:^|\\W)$drupal_schema(?:\W|$)/", $search_path_drupal, 'Drupal search_path has Drupal schema.');
   }
@@ -354,38 +353,38 @@ class BioConnectionTest extends KernelTestBase {
    *
    * @cover ::schema
    */
-  public function testBioSchemaNoSchema() {
-    $dbmock = $this->getBioConnectionMock(''); 
-    $this->expectException(\Drupal\tripal_biodb\Exception\SchemaException::class);
+  public function testSchemaNoSchema() {
+    $dbmock = $this->getConnectionMock('');
+    $this->expectException(\Drupal\tripal\TripalDBX\Exception\SchemaException::class);
     $this->expectExceptionMessage('schema');
     $dbmock->schema();
   }
 
   /**
-   * Tests schema name changes with BioSchema object.
+   * Tests schema name changes with TripalDbxSchema object.
    *
    * @cover ::schema
    * @cover ::setSchemaName
    */
-  public function testBioSchemaChange() {
+  public function testSchemaChange() {
     $schema_name = 'first';
-    $dbmock = $this->getBioConnectionMock($schema_name); 
+    $dbmock = $this->getConnectionMock($schema_name);
     $schema = $dbmock->schema();
     $this->assertNotNull($schema, 'Got a first schema.');
     $internal_schema = $schema->getDefaultSchema();
-    $this->assertEquals($schema_name, $dbmock->getSchemaName(), 'BioConnection schema 1 correct.');
-    $this->assertEquals($schema_name, $internal_schema, 'BioSchema schema 1 correct.');
-    
+    $this->assertEquals($schema_name, $dbmock->getSchemaName(), 'TripalDbxConnection schema 1 correct.');
+    $this->assertEquals($schema_name, $internal_schema, 'TripalDbxSchema schema 1 correct.');
+
     $schema_name = 'second';
-    $dbmock->setSchemaName($schema_name); 
+    $dbmock->setSchemaName($schema_name);
     $schema = $dbmock->schema();
     $this->assertNotNull($schema, 'Got a second schema.');
     $internal_schema = $schema->getDefaultSchema();
-    $this->assertEquals($schema_name, $dbmock->getSchemaName(), 'BioConnection schema 2 correct.');
-    $this->assertEquals($schema_name, $internal_schema, 'BioSchema schema 2 correct.');
+    $this->assertEquals($schema_name, $dbmock->getSchemaName(), 'TripalDbxConnection schema 2 correct.');
+    $this->assertEquals($schema_name, $internal_schema, 'TripalDbxSchema schema 2 correct.');
 
     $dbmock->setSchemaName('');
-    $this->expectException(\Drupal\tripal_biodb\Exception\SchemaException::class);
+    $this->expectException(\Drupal\tripal\TripalDBX\Exception\SchemaException::class);
     $this->expectExceptionMessage('schema');
     $schema = $dbmock->schema();
   }
@@ -406,7 +405,7 @@ class BioConnectionTest extends KernelTestBase {
     $drupal_prefix = \Drupal::database()->getConnectionOptions()['prefix']['default'];
     $drupal_prefix = str_replace('.', '"."', $drupal_prefix);
 
-    $dbmock = $this->getBioConnectionMock('first'); 
+    $dbmock = $this->getConnectionMock('first');
     // Manages fake versions. First schema would be 42 and next 806.
     $dbmock
       ->expects($this->exactly(2))
@@ -427,7 +426,7 @@ class BioConnectionTest extends KernelTestBase {
     $this->assertEquals([2 => 'other'], $extra_schemas, 'Extra schemas.');
 
     $prefix_test = $dbmock->prefixTables(
-      'X {drupal_table}, {0:drupal_table2}, {1:bio1_table}, {2:bio2_table}, {1:bio1_table2}'
+      'X {drupal_table}, {0:drupal_table2}, {1:tdbx1_table}, {2:tdbx2_table}, {1:tdbx1_table2}'
     );
 
     $this->assertEquals(
@@ -435,7 +434,7 @@ class BioConnectionTest extends KernelTestBase {
       . $drupal_prefix
       . 'drupal_table", "'
       . $drupal_prefix
-      . 'drupal_table2", "first"."bio1_table", "other"."bio2_table", "first"."bio1_table2"',
+      . 'drupal_table2", "first"."tdbx1_table", "other"."tdbx2_table", "first"."tdbx1_table2"',
       $prefix_test,
       'Correct table prefixing X.'
     );
@@ -451,30 +450,30 @@ class BioConnectionTest extends KernelTestBase {
     $extra_schemas = $dbmock->getExtraSchemas();
     $this->assertEquals([], $extra_schemas, 'No more extra schemas.');
     $prefix_test = $dbmock->prefixTables(
-      'Y {drupal_table}, {0:drupal_table2}, {1:bio1_table}, {1:bio1_table2}'
+      'Y {drupal_table}, {0:drupal_table2}, {1:tdbx1_table}, {1:tdbx1_table2}'
     );
     $this->assertEquals(
       'Y "'
       . $drupal_prefix
       . 'drupal_table", "'
       . $drupal_prefix
-      . 'drupal_table2", "deuxième"."bio1_table", "deuxième"."bio1_table2"',
+      . 'drupal_table2", "deuxième"."tdbx1_table", "deuxième"."tdbx1_table2"',
       $prefix_test,
       'Correct table prefixing Y.'
     );
   }
 
   /**
-   * Tests ::addExtraSchema with no biological schema.
+   * Tests ::addExtraSchema with no Tripal DBX schema.
    *
    * @cover ::addExtraSchema
    */
   public function testAddExtraSchemaNoSchema() {
     $drupal_prefix = \Drupal::database()->getConnectionOptions()['prefix']['default'];
     $drupal_prefix = str_replace('.', '"."', $drupal_prefix);
-    $dbmock = $this->getBioConnectionMock(); 
+    $dbmock = $this->getConnectionMock();
 
-    $this->expectException(\Drupal\tripal_biodb\Exception\ConnectionException::class);
+    $this->expectException(\Drupal\tripal\TripalDBX\Exception\ConnectionException::class);
     $this->expectExceptionMessage('No current schema');
     $prefix_test = $dbmock->addExtraSchema('toto');
   }
@@ -487,9 +486,9 @@ class BioConnectionTest extends KernelTestBase {
   public function testSetExtraSchemaZero() {
     $drupal_prefix = \Drupal::database()->getConnectionOptions()['prefix']['default'];
     $drupal_prefix = str_replace('.', '"."', $drupal_prefix);
-    $dbmock = $this->getBioConnectionMock(); 
+    $dbmock = $this->getConnectionMock();
 
-    $this->expectException(\Drupal\tripal_biodb\Exception\ConnectionException::class);
+    $this->expectException(\Drupal\tripal\TripalDBX\Exception\ConnectionException::class);
     $this->expectExceptionMessage('Invalid extra schema index');
     $prefix_test = $dbmock->setExtraSchema('toto', 0);
   }
@@ -502,22 +501,22 @@ class BioConnectionTest extends KernelTestBase {
   public function testSetExtraSchemaOne() {
     $drupal_prefix = \Drupal::database()->getConnectionOptions()['prefix']['default'];
     $drupal_prefix = str_replace('.', '"."', $drupal_prefix);
-    $dbmock = $this->getBioConnectionMock(); 
+    $dbmock = $this->getConnectionMock();
 
-    $this->expectException(\Drupal\tripal_biodb\Exception\ConnectionException::class);
+    $this->expectException(\Drupal\tripal\TripalDBX\Exception\ConnectionException::class);
     $this->expectExceptionMessage('Invalid extra schema index');
     $prefix_test = $dbmock->setExtraSchema('toto', 1);
   }
 
   /**
-   * Tests ::prefixTables with no biological schema.
+   * Tests ::prefixTables with no Tripal DBX schema.
    *
    * @cover ::prefixTables
    */
   public function testPrefixNoSchema() {
     $drupal_prefix = \Drupal::database()->getConnectionOptions()['prefix']['default'];
     $drupal_prefix = str_replace('.', '"."', $drupal_prefix);
-    $dbmock = $this->getBioConnectionMock(); 
+    $dbmock = $this->getConnectionMock();
 
     $prefix_test = $dbmock->prefixTables(
       'X {drupal_table}, {0:drupal_table2}'
@@ -532,30 +531,30 @@ class BioConnectionTest extends KernelTestBase {
       'Correct table prefixing X.'
     );
 
-    $this->expectException(\Drupal\tripal_biodb\Exception\ConnectionException::class);
-    $this->expectExceptionMessage('No main biological schema set');
+    $this->expectException(\Drupal\tripal\TripalDBX\Exception\ConnectionException::class);
+    $this->expectExceptionMessage('No main TripalDBX schema set');
     $prefix_test = $dbmock->prefixTables(
-      'Y {drupal_table}, {0:drupal_table2}, {1:bio1_table}'
+      'Y {drupal_table}, {0:drupal_table2}, {1:tdbx1_table}'
     );
   }
 
   /**
-   * Tests ::prefixTables with a biological schema but no extra.
+   * Tests ::prefixTables with a Tripal DBX schema but no extra.
    *
    * @cover ::prefixTables
    */
   public function testPrefixNoExtraSchema() {
     $drupal_prefix = \Drupal::database()->getConnectionOptions()['prefix']['default'];
     $drupal_prefix = str_replace('.', '"."', $drupal_prefix);
-    $test_schema_base_names = \Drupal::config('tripal_biodb.settings')
+    $test_schema_base_names = \Drupal::config('tripaldbx.settings')
       ->get('test_schema_base_names')
     ;
     $this->allowTestSchemas();
 
     $sch_1 = $test_schema_base_names['default'] . '_a';
-    
+
     // Try with 1 schema.
-    $dbmock = $this->getBioConnectionMock($sch_1);
+    $dbmock = $this->getConnectionMock($sch_1);
     // Test prefixing without that schema.
     $prefix_test = $dbmock->prefixTables(
       'X {drupal_table}, {0:drupal_table2}'
@@ -570,9 +569,9 @@ class BioConnectionTest extends KernelTestBase {
       'Correct table prefixing X.'
     );
 
-    // Test prefixing with the biological schema.
+    // Test prefixing with the Tripal DBX schema.
     $prefix_test = $dbmock->prefixTables(
-      'Y {drupal_table}, {0:drupal_table2}, {1:bio1_table}'
+      'Y {drupal_table}, {0:drupal_table2}, {1:tdbx1_table}'
     );
     $this->assertEquals(
       'Y "'
@@ -581,30 +580,30 @@ class BioConnectionTest extends KernelTestBase {
       . $drupal_prefix
       . 'drupal_table2", "'
       . $sch_1
-      . '"."bio1_table"',
+      . '"."tdbx1_table"',
       $prefix_test,
       'Correct table prefixing Y.'
     );
 
     // Test prefixing with an unexisting/not set extra schema.
-    $this->expectException(\Drupal\tripal_biodb\Exception\ConnectionException::class);
+    $this->expectException(\Drupal\tripal\TripalDBX\Exception\ConnectionException::class);
     $this->expectExceptionMessage('Invalid extra schema');
     $prefix_test = $dbmock->prefixTables(
-      'Z {drupal_table}, {0:drupal_table2}, {1:bio1_table}, {2:bio2_table}, {1:bio1_table2}'
+      'Z {drupal_table}, {0:drupal_table2}, {1:tdbx1_table}, {2:tdbx2_table}, {1:tdbx1_table2}'
     );
   }
 
   /**
-   * Tests scenario with a biological schema and 2 extra.
+   * Tests scenario with a Tripal DBX schema and 2 extra.
    *
    * @cover ::prefixTables
    * @cover ::addExtraSchema
    * @cover ::setExtraSchema
    */
-  public function testBioConnectionScenario1() {
+  public function testConnectionScenario1() {
     $drupal_prefix = \Drupal::database()->getConnectionOptions()['prefix']['default'];
     $drupal_prefix = str_replace('.', '"."', $drupal_prefix);
-    $test_schema_base_names = \Drupal::config('tripal_biodb.settings')
+    $test_schema_base_names = \Drupal::config('tripaldbx.settings')
       ->get('test_schema_base_names')
     ;
     $this->allowTestSchemas();
@@ -612,15 +611,15 @@ class BioConnectionTest extends KernelTestBase {
     $sch_1 = $test_schema_base_names['default'] . '_a';
     $sch_2 = $test_schema_base_names['default'] . '_b';
     $sch_3 = $test_schema_base_names['default'] . '_c';
-    
+
     // Try with 3 schemas.
-    $dbmock = $this->getBioConnectionMock($sch_1);
+    $dbmock = $this->getConnectionMock($sch_1);
     $dbmock->addExtraSchema($sch_2);
     $dbmock->addExtraSchema($sch_3);
-    
+
     $extra_schemas = $dbmock->getExtraSchemas();
     $this->assertEquals([2 => $sch_2, 3 => $sch_3], $extra_schemas, 'Extra schemas set.');
-    
+
     // Test prefixing without a schema.
     $prefix_test = $dbmock->prefixTables(
       'X {drupal_table}, {0:drupal_table2}'
@@ -635,9 +634,9 @@ class BioConnectionTest extends KernelTestBase {
       'Correct table prefixing X.'
     );
 
-    // Test prefixing with the default biological schema.
+    // Test prefixing with the default Tripal DBX schema.
     $prefix_test = $dbmock->prefixTables(
-      'Y {drupal_table}, {0:drupal_table2}, {1:bio1_table}'
+      'Y {drupal_table}, {0:drupal_table2}, {1:tdbx1_table}'
     );
     $this->assertEquals(
       'Y "'
@@ -646,14 +645,14 @@ class BioConnectionTest extends KernelTestBase {
       . $drupal_prefix
       . 'drupal_table2", "'
       . $sch_1
-      . '"."bio1_table"',
+      . '"."tdbx1_table"',
       $prefix_test,
       'Correct table prefixing Y.'
     );
 
     // Test prefixing with the 2 extra schema.
     $prefix_test = $dbmock->prefixTables(
-      'Z {drupal_table}, {0:drupal_table2}, {3:bio3_table}, {2:bio2_table}, {1:bio1_table2}'
+      'Z {drupal_table}, {0:drupal_table2}, {3:tdbx3_table}, {2:tdbx2_table}, {1:tdbx1_table2}'
     );
     $this->assertEquals(
       'Z "'
@@ -662,32 +661,32 @@ class BioConnectionTest extends KernelTestBase {
       . $drupal_prefix
       . 'drupal_table2", "'
       . $sch_3
-      . '"."bio3_table", "'
+      . '"."tdbx3_table", "'
       . $sch_2
-      . '"."bio2_table", "'
+      . '"."tdbx2_table", "'
       . $sch_1
-      . '"."bio1_table2"',
+      . '"."tdbx1_table2"',
       $prefix_test,
       'Correct table prefixing Z.'
     );
 
     // Try setting an extra schema with too high index.
-    $this->expectException(\Drupal\tripal_biodb\Exception\ConnectionException::class);
+    $this->expectException(\Drupal\tripal\TripalDBX\Exception\ConnectionException::class);
     $this->expectExceptionMessage('Invalid extra schema index');
     $dbmock->setExtraSchema('toto', 5);
   }
 
   /**
-   * Tests scenario with a biological schema and 2 extra.
+   * Tests scenario with a Tripal DBX schema and 2 extra.
    *
    * @cover ::addExtraSchema
    * @cover ::setExtraSchema
    * @cover ::clearExtraSchemas
    */
-  public function testBioConnectionScenario2() {
+  public function testConnectionScenario2() {
     $drupal_prefix = \Drupal::database()->getConnectionOptions()['prefix']['default'];
     $drupal_prefix = str_replace('.', '"."', $drupal_prefix);
-    $test_schema_base_names = \Drupal::config('tripal_biodb.settings')
+    $test_schema_base_names = \Drupal::config('tripaldbx.settings')
       ->get('test_schema_base_names')
     ;
     $this->allowTestSchemas();
@@ -696,33 +695,33 @@ class BioConnectionTest extends KernelTestBase {
     $sch_2 = $test_schema_base_names['default'] . '_b';
     $sch_3 = $test_schema_base_names['default'] . '_c';
     $sch_4 = $test_schema_base_names['default'] . '_d';
-    
+
     // Try with schemas changes.
-    $dbmock = $this->getBioConnectionMock($sch_1);
+    $dbmock = $this->getConnectionMock($sch_1);
     $dbmock->setExtraSchema($sch_2, 2);
 
     // Replaces previous.
     $dbmock->setExtraSchema($sch_3, 2);
     $extra_schemas = $dbmock->getExtraSchemas();
     $this->assertEquals([2 => $sch_3], $extra_schemas, 'Extra schemas replaced.');
-    
+
     // Add a new one.
     $extra_index3 = $dbmock->addExtraSchema($sch_4);
     $this->assertEquals(3, $extra_index3, 'Extra schemas with correct index.');
     $extra_schemas = $dbmock->getExtraSchemas();
     $this->assertEquals([2 => $sch_3, 3 => $sch_4], $extra_schemas, 'Extra schemas added.');
-    
+
     // Replace first one again.
     $dbmock->setExtraSchema($sch_2, 2);
     $extra_schemas = $dbmock->getExtraSchemas();
     $this->assertEquals([2 => $sch_2, 3 => $sch_4], $extra_schemas, 'Extra schemas replaced again.');
-    
+
     // Add one and replace second one.
     $dbmock->setExtraSchema($sch_4, 4);
     $dbmock->setExtraSchema($sch_3, 3);
     $extra_schemas = $dbmock->getExtraSchemas();
     $this->assertEquals([2 => $sch_2, 3 => $sch_3, 4 => $sch_4], $extra_schemas, 'Extra schemas replaced once more.');
-    
+
     // Clear extra schema.
     $dbmock->clearExtraSchemas();
     $extra_schemas = $dbmock->getExtraSchemas();
@@ -732,7 +731,7 @@ class BioConnectionTest extends KernelTestBase {
     $this->assertEquals(2, $extra_index, 'Extra schemas with restarted index.');
 
     // Try setting an extra schema with too high index.
-    $this->expectException(\Drupal\tripal_biodb\Exception\ConnectionException::class);
+    $this->expectException(\Drupal\tripal\TripalDBX\Exception\ConnectionException::class);
     $this->expectExceptionMessage('Invalid extra schema index');
     $dbmock->setExtraSchema($sch_4, 4);
   }
@@ -744,10 +743,10 @@ class BioConnectionTest extends KernelTestBase {
    * @cover ::addExtraSchema
    * @cover ::setExtraSchema
    */
-  public function testBioConnectionScenario3() {
+  public function testConnectionScenario3() {
     $drupal_prefix = \Drupal::database()->getConnectionOptions()['prefix']['default'];
     $drupal_prefix = str_replace('.', '"."', $drupal_prefix);
-    $test_schema_base_names = \Drupal::config('tripal_biodb.settings')
+    $test_schema_base_names = \Drupal::config('tripaldbx.settings')
       ->get('test_schema_base_names')
     ;
     $this->allowTestSchemas();
@@ -756,29 +755,29 @@ class BioConnectionTest extends KernelTestBase {
     $sch_2 = $test_schema_base_names['default'] . '_b';
     $sch_3 = $test_schema_base_names['default'] . '_c';
     $sch_4 = $test_schema_base_names['default'] . '_d';
-    
+
     // Try with 3 schemas.
-    $dbmock = $this->getBioConnectionMock($sch_1);
+    $dbmock = $this->getConnectionMock($sch_1);
     $dbmock->addExtraSchema($sch_2);
     // Using set with default index to 2, so it will replace previous schema.
     $dbmock->setExtraSchema($sch_3);
     $extra_schemas = $dbmock->getExtraSchemas();
     $this->assertEquals([2 => $sch_3], $extra_schemas, 'Extra schemas set.');
-    
+
     // Test prefixing with the extra schema.
     $prefix_test = $dbmock->prefixTables(
-      'X {2:bio2_table}, {1:bio1_table}, {2:bio2_table2}, {1:bio1_table2}'
+      'X {2:tdbx2_table}, {1:tdbx1_table}, {2:tdbx2_table2}, {1:tdbx1_table2}'
     );
     $this->assertEquals(
       'X "'
       . $sch_3
-      . '"."bio2_table", "'
+      . '"."tdbx2_table", "'
       . $sch_1
-      . '"."bio1_table", "'
+      . '"."tdbx1_table", "'
       . $sch_3
-      . '"."bio2_table2", "'
+      . '"."tdbx2_table2", "'
       . $sch_1
-      . '"."bio1_table2"',
+      . '"."tdbx1_table2"',
       $prefix_test,
       'Correct table prefixing X.'
     );
@@ -789,18 +788,18 @@ class BioConnectionTest extends KernelTestBase {
 
     // Test prefixing with the extra schema.
     $prefix_test = $dbmock->prefixTables(
-      'Y {2:bio2_table}, {1:bio1_table}, {3:bio3_table}, {1:bio1_table2}'
+      'Y {2:tdbx2_table}, {1:tdbx1_table}, {3:tdbx3_table}, {1:tdbx1_table2}'
     );
     $this->assertEquals(
       'Y "'
       . $sch_3
-      . '"."bio2_table", "'
+      . '"."tdbx2_table", "'
       . $sch_1
-      . '"."bio1_table", "'
+      . '"."tdbx1_table", "'
       . $sch_4
-      . '"."bio3_table", "'
+      . '"."tdbx3_table", "'
       . $sch_1
-      . '"."bio1_table2"',
+      . '"."tdbx1_table2"',
       $prefix_test,
       'Correct table prefixing Y.'
     );
@@ -811,10 +810,10 @@ class BioConnectionTest extends KernelTestBase {
     $this->assertEquals([], $extra_schemas, 'Extra schemas cleared.');
 
     // Test prefixing with an unexisting/not set extra schema.
-    $this->expectException(\Drupal\tripal_biodb\Exception\ConnectionException::class);
+    $this->expectException(\Drupal\tripal\TripalDBX\Exception\ConnectionException::class);
     $this->expectExceptionMessage('Invalid extra schema');
     $prefix_test = $dbmock->prefixTables(
-      'Z {drupal_table}, {0:drupal_table2}, {1:bio1_table}, {2:bio2_table}, {1:bio1_table2}'
+      'Z {drupal_table}, {0:drupal_table2}, {1:tdbx1_table}, {2:tdbx2_table}, {1:tdbx1_table2}'
     );
   }
 
@@ -824,15 +823,15 @@ class BioConnectionTest extends KernelTestBase {
    * @cover ::tablePrefix
    */
   public function testTablePrefix() {
-    $test_schema_base_names = \Drupal::config('tripal_biodb.settings')
+    $test_schema_base_names = \Drupal::config('tripaldbx.settings')
       ->get('test_schema_base_names')
     ;
     $this->allowTestSchemas();
     $sch_1 = $test_schema_base_names['default'] . '_a';
-    $dbmock = $this->getBioConnectionMock($sch_1);
+    $dbmock = $this->getConnectionMock($sch_1);
     $result = $dbmock->tablePrefix();
     $this->assertNotEmpty($result, 'Drupal test database prefix.');
-    $this->assertNotEquals($sch_1 . '.', $result, 'Prefix for regular tables not in biological schema.');
+    $this->assertNotEquals($sch_1 . '.', $result, 'Prefix for regular tables not in Tripal DBX schema.');
 
     $result2 = $dbmock->tablePrefix('whatever');
     $this->assertEquals($result, $result2, 'Prefix for regular tables stable.');
@@ -848,17 +847,17 @@ class BioConnectionTest extends KernelTestBase {
    * @cover ::__toString
    */
   public function testToString() {
-    $test_schema_base_names = \Drupal::config('tripal_biodb.settings')
+    $test_schema_base_names = \Drupal::config('tripaldbx.settings')
       ->get('test_schema_base_names')
     ;
     $this->allowTestSchemas();
     $sch_1 = $test_schema_base_names['default'] . '_a';
-    $dbmock = $this->getBioConnectionMock($sch_1);
+    $dbmock = $this->getConnectionMock($sch_1);
     $dbname = $dbmock->getDatabaseName();
     $text = ''.$dbmock;
     $this->assertEquals("$dbname.$sch_1", $text);
 
-    $dbmock = $this->getBioConnectionMock();
+    $dbmock = $this->getConnectionMock();
     $text = ''.$dbmock;
     $this->assertEquals("$dbname.", $text);
   }
@@ -871,17 +870,17 @@ class BioConnectionTest extends KernelTestBase {
    */
   public function testExecuteSqlQueries() {
     // Get a test schema.
-    $test_schema_base_names = \Drupal::config('tripal_biodb.settings')
+    $test_schema_base_names = \Drupal::config('tripaldbx.settings')
       ->get('test_schema_base_names')
     ;
     $this->allowTestSchemas();
     $sch_1 = $test_schema_base_names['default'] . '_a';
-    $dbmock = $this->getBioConnectionMock($sch_1);
-    
+    $dbmock = $this->getConnectionMock($sch_1);
+
     // Queries to check schema and table.
     $schema_exists_sql = "SELECT 1 FROM pg_namespace WHERE nspname = '$sch_1';";
     $table_exists_sql = "SELECT 1 FROM pg_tables WHERE schemaname = '$sch_1' AND tablename = 'someothertable';";
-    
+
     if (!empty($dbmock->query($schema_exists_sql)->fetch())) {
       $this->markTestSkipped(
         "The test schema '$sch_1' already exists and cannot be used for testing."
@@ -918,20 +917,20 @@ class BioConnectionTest extends KernelTestBase {
    */
   public function testExecuteSqlQueriesForceSearchPath() {
     // Get a test schema.
-    $test_schema_base_names = \Drupal::config('tripal_biodb.settings')
+    $test_schema_base_names = \Drupal::config('tripaldbx.settings')
       ->get('test_schema_base_names')
     ;
     $this->allowTestSchemas();
     $sch_1 = $test_schema_base_names['default'] . '_a';
     $sch_2 = $test_schema_base_names['default'] . '_b';
-    $dbmock = $this->getBioConnectionMock($sch_1);
+    $dbmock = $this->getConnectionMock($sch_1);
 
     // Queries to check schema and table.
     $schema_exists_sql = "SELECT 1 FROM pg_namespace WHERE nspname = '$sch_1';";
     $schema2_exists_sql = "SELECT 1 FROM pg_namespace WHERE nspname = '$sch_2';";
     $table_exists_sql = "SELECT 1 FROM pg_tables WHERE schemaname = '$sch_1' AND tablename = 'someothertable';";
     $table2_exists_sql = "SELECT 1 FROM pg_tables WHERE schemaname = '$sch_2' AND tablename = 'someothertable2';";
-    
+
     if (!empty($dbmock->query($schema_exists_sql)->fetch())
         && !empty($dbmock->query($schema2_exists_sql)->fetch())
     ) {
@@ -978,12 +977,12 @@ class BioConnectionTest extends KernelTestBase {
    */
   public function testExecuteSqlFile() {
     // Get a test schema.
-    $test_schema_base_names = \Drupal::config('tripal_biodb.settings')
+    $test_schema_base_names = \Drupal::config('tripaldbx.settings')
       ->get('test_schema_base_names')
     ;
     $this->allowTestSchemas();
     $sch_1 = $test_schema_base_names['default'] . '_a';
-    $dbmock = $this->getBioConnectionMock($sch_1);
+    $dbmock = $this->getConnectionMock($sch_1);
     $schema_exists_sql = "SELECT 1 FROM pg_namespace WHERE nspname = '$sch_1';";
     $table_exists_sql = "SELECT 1 FROM pg_tables WHERE schemaname = '$sch_1' AND tablename = 'testtable';";
 
@@ -991,7 +990,7 @@ class BioConnectionTest extends KernelTestBase {
     $dbmock->query("CREATE SCHEMA $sch_1;");
     $schema_exists = !empty($dbmock->query($schema_exists_sql)->fetch());
     $this->assertTrue($schema_exists, "Schema $sch_1 created.");
-    
+
     try {
       // Execute SQL file.
       $success = $dbmock->executeSqlFile(__DIR__ . '/../../../fixtures/test_schema.sql', 'none');

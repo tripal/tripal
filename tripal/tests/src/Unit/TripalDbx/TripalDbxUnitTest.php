@@ -1,22 +1,22 @@
 <?php
 
-namespace Drupal\Tests\tripal_biodb\Unit\Database;
+namespace Drupal\Tests\tripal\Unit\TripalDBX;
 
 use Drupal\Tests\UnitTestCase;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
-use Drupal\tripal_biodb\Database\BioDbTool;
+use Drupal\tripal\TripalDBX\TripalDbx;
 use Prophecy\Argument;
 
 /**
- * Tests for biological database tool.
+ * Tests for Tripal Dbx service.
  *
- * @coversDefaultClass \Drupal\tripal_biodb\Database\BioDbTool
+ * @coversDefaultClass \Drupal\tripal\TripalDBX\TripalDbx
  *
  * @group Tripal
- * @group Tripal BioDb
- * @group Tripal BioDb Tool
+ * @group Tripal DBX
+ * @group Tripal DBX Service
  */
-class BioDbToolUnitTest extends UnitTestCase {
+class TripalDbxUnitTest extends UnitTestCase {
 
   /**
    * Test members.
@@ -34,8 +34,8 @@ class BioDbToolUnitTest extends UnitTestCase {
   protected $configFactory;
   protected $proModuleHandler;
   protected $moduleHandler;
-  protected $proBioDb;
-  protected $bio_tool;
+  protected $proTripalDbxDb;
+  protected $tripaldbx;
 
   /**
    * {@inheritdoc}
@@ -53,47 +53,47 @@ class BioDbToolUnitTest extends UnitTestCase {
 
     // Mock the ConfigFactory service.
     $this->proConfigFactory = $this->prophesize(\Drupal\Core\Config\ConfigFactory::class);
-    $this->proConfigFactory->get('tripal_biodb.settings')->willReturn($this->config);
+    $this->proConfigFactory->get('tripaldbx.settings')->willReturn($this->config);
     $this->configFactory = $this->proConfigFactory->reveal();
 
     // Mock the module handler.
     $this->proModuleHandler = $this->prophesize(\Drupal\Core\Extension\ModuleHandlerInterface::class);
     $this->moduleHandler = $this->proModuleHandler->reveal();
 
-    // Mock the BioDbTool static functions when needed.
+    // Mock the TripalDbx static functions when needed.
     $is_invalid_schema_name = function($args) {
-      $bio_tool = new BioDbTool();
+      $tripaldbx = new TripalDbx();
       if (1 == count($args)) {
-        return $bio_tool->isInvalidSchemaName($args[0]);
+        return $tripaldbx->isInvalidSchemaName($args[0]);
       }
       elseif (2 == count($args)) {
-        return $bio_tool->isInvalidSchemaName($args[0], $args[1]);
+        return $tripaldbx->isInvalidSchemaName($args[0], $args[1]);
       }
       else {
-        return $bio_tool->isInvalidSchemaName($args[0], $args[1], $args[2]);
+        return $tripaldbx->isInvalidSchemaName($args[0], $args[1], $args[2]);
       }
     };
-    $this->proBioDb = $this->prophesize(\Drupal\tripal_biodb\Database\BioDbTool::class);
-    // $this->proBioDb->isInvalidSchemaName('invalid')->willReturn('Invalid schema name.');
-    // $this->proBioDb->isInvalidSchemaName('valid')->willReturn('');
-    $this->proBioDb->isInvalidSchemaName(Argument::cetera())->will($is_invalid_schema_name);
-    $this->bioDb = $this->proBioDb->reveal();
+    $this->proTripalDbxDb = $this->prophesize(\Drupal\tripal\TripalDBX\TripalDbx::class);
+    // $this->proTripalDbxDb->isInvalidSchemaName('invalid')->willReturn('Invalid schema name.');
+    // $this->proTripalDbxDb->isInvalidSchemaName('valid')->willReturn('');
+    $this->proTripalDbxDb->isInvalidSchemaName(Argument::cetera())->will($is_invalid_schema_name);
+    $this->tripalDbxDb = $this->proTripalDbxDb->reveal();
 
     // Container initialization.
     $this->container = new ContainerBuilder();
     $this->container->set('database', $this->connection);
     $this->container->set('config.factory', $this->configFactory);
     $this->container->set('module_handler', $this->moduleHandler);
-    $this->container->set('tripal_biodb.tool', $this->bioDb);
+    $this->container->set('tripal.dbx', $this->tripalDbxDb);
     \Drupal::setContainer($this->container);
 
-    // Hack to clear BioDbTool cache on each run.
+    // Hack to clear TripalDbx cache on each run.
     $clear = function() {
-      BioDbTool::$drupalSchema
-      = BioDbTool::$reservedSchemaPatterns
+      TripalDbx::$drupalSchema
+      = TripalDbx::$reservedSchemaPatterns
       = NULL;
     };
-    $clear->call(new BioDbTool());
+    $clear->call(new TripalDbx());
   }
 
   /**
@@ -116,16 +116,16 @@ class BioDbToolUnitTest extends UnitTestCase {
       ],
     ]);
 
-    $bio_tool = new BioDbTool();
+    $tripaldbx = new TripalDbx();
     // First call.
     $start_time = hrtime(true);
-    $drupal_schema = $bio_tool->getDrupalSchemaName();
+    $drupal_schema = $tripaldbx->getDrupalSchemaName();
     // Non-public, and in our case 'other'.
     $this->assertEquals('other', $drupal_schema, 'Got a non-public schema name.');
     $end_time = hrtime(true);
 
     $next_start_time = hrtime(true);
-    $drupal_schema = $bio_tool->getDrupalSchemaName();
+    $drupal_schema = $tripaldbx->getDrupalSchemaName();
     $this->assertEquals('other', $drupal_schema, 'Got the same schema name from cache.');
     $next_end_time = hrtime(true);
 
@@ -152,10 +152,10 @@ class BioDbToolUnitTest extends UnitTestCase {
     ]);
     $this->proConnection->query(Argument::cetera())->willReturn($statement);
 
-    $bio_tool = new BioDbTool();
+    $tripaldbx = new TripalDbx();
 
     // Get Drupal schema.
-    $drupal_schema = $bio_tool->getDrupalSchemaName();
+    $drupal_schema = $tripaldbx->getDrupalSchemaName();
     $this->assertEquals('pub', $drupal_schema, 'Got expected schema name.');
   }
 
@@ -176,11 +176,11 @@ class BioDbToolUnitTest extends UnitTestCase {
     ]);
     $this->proConnection->query(Argument::cetera())->willReturn($statement);
 
-    $bio_tool = new BioDbTool();
+    $tripaldbx = new TripalDbx();
 
     // Try to get Drupal schema.
     $this->expectException(\Drupal\tripal_biodb\Exception\ConnectionException::class);
-    $drupal_schema = $bio_tool->getDrupalSchemaName();
+    $drupal_schema = $tripaldbx->getDrupalSchemaName();
   }
 
   /**
@@ -369,20 +369,20 @@ class BioDbToolUnitTest extends UnitTestCase {
     $reserved = $reserved ?? [];
     $alter = $alter ?? [];
     $this->proConfig->get('reserved_schema_patterns')->willReturn($reserved);
-    $bio_tool = new BioDbTool();
+    $tripaldbx = new TripalDbx();
 
     if (!empty($alter)) {
       foreach ($alter as $regex => $desc) {
         if (FALSE === $desc) {
-          $bio_tool->freeSchemaPattern($regex);
+          $tripaldbx->freeSchemaPattern($regex);
         }
         else {
-          $bio_tool->reserveSchemaPattern($regex, $desc);
+          $tripaldbx->reserveSchemaPattern($regex, $desc);
         }
       }
     }
 
-    $result = $bio_tool->isInvalidSchemaName($schema_name);
+    $result = $tripaldbx->isInvalidSchemaName($schema_name);
     if (empty($expected)) {
       $this->assertEmpty($result, $message);
     }
@@ -399,16 +399,16 @@ class BioDbToolUnitTest extends UnitTestCase {
    * @cover ::freeSchemaPattern
    */
   public function testReservedSchemaPattern() {
-    $bio_tool = new BioDbTool();
+    $tripaldbx = new TripalDbx();
     // No default reservation loaded in test environment.
-    $result = $bio_tool->isInvalidSchemaName('public');
+    $result = $tripaldbx->isInvalidSchemaName('public');
     $this->assertEmpty($result, 'Public schema not is reserved yet.');
 
     // Reserve public schema.
-    $bio_tool->reserveSchemaPattern('public', 'public schema is reserved');
-    $bio_tool->reserveSchemaPattern('myschema*', 'private reservation');
+    $tripaldbx->reserveSchemaPattern('public', 'public schema is reserved');
+    $tripaldbx->reserveSchemaPattern('myschema*', 'private reservation');
 
-    $patterns = $bio_tool->getReservedSchemaPattern();
+    $patterns = $tripaldbx->getReservedSchemaPattern();
     $this->assertEquals(
       [
         'public' => 'public schema is reserved',
@@ -418,15 +418,15 @@ class BioDbToolUnitTest extends UnitTestCase {
       'All reserved well.'
     );
 
-    $result = $bio_tool->isInvalidSchemaName('public');
+    $result = $tripaldbx->isInvalidSchemaName('public');
     $this->assertStringContainsStringIgnoringCase('public schema is reserved', $result, 'Public schema is reserved.');
-    $result = $bio_tool->isInvalidSchemaName('myschema_abc');
+    $result = $tripaldbx->isInvalidSchemaName('myschema_abc');
     $this->assertStringContainsStringIgnoringCase('private reservation', $result, 'Private schema is reserved.');
 
     // Should not change a thing.
-    $result = $bio_tool->freeSchemaPattern('myschema_abc');
+    $result = $tripaldbx->freeSchemaPattern('myschema_abc');
     $this->assertEmpty($result, 'Nothing freed from reservation.');
-    $patterns = $bio_tool->getReservedSchemaPattern();
+    $patterns = $tripaldbx->getReservedSchemaPattern();
     $this->assertEquals(
       [
         'public' => 'public schema is reserved',
@@ -435,29 +435,29 @@ class BioDbToolUnitTest extends UnitTestCase {
       $patterns,
       'All reserved well.'
     );
-  
+
     // Release public reservation.
-    $result = $bio_tool->freeSchemaPattern('public');
+    $result = $tripaldbx->freeSchemaPattern('public');
     $this->assertEquals(
       ['public' => 'public schema is reserved',],
       $result,
       'Public schema not reserved.'
     );
-    $patterns = $bio_tool->getReservedSchemaPattern();
+    $patterns = $tripaldbx->getReservedSchemaPattern();
     $this->assertEquals(
       ['myschema*' => 'private reservation',],
       $patterns,
       'All reserved well.'
     );
-    $result = $bio_tool->isInvalidSchemaName('public');
+    $result = $tripaldbx->isInvalidSchemaName('public');
     $this->assertEmpty($result, 'Public schema not is reserved anymore.');
 
     // Add more reservations.
-    $bio_tool->reserveSchemaPattern('public', 'public schema is reserved again');
-    $bio_tool->reserveSchemaPattern('myschema*', 'changed private reservation');
-    $bio_tool->reserveSchemaPattern('.*schema_\w\w\w', 'pattern 2');
-    $bio_tool->reserveSchemaPattern('myschema_\w\w\wxyz', 'pattern 3');
-    $patterns = $bio_tool->getReservedSchemaPattern();
+    $tripaldbx->reserveSchemaPattern('public', 'public schema is reserved again');
+    $tripaldbx->reserveSchemaPattern('myschema*', 'changed private reservation');
+    $tripaldbx->reserveSchemaPattern('.*schema_\w\w\w', 'pattern 2');
+    $tripaldbx->reserveSchemaPattern('myschema_\w\w\wxyz', 'pattern 3');
+    $patterns = $tripaldbx->getReservedSchemaPattern();
     $this->assertEquals(
       [
         'public' => 'public schema is reserved again',
@@ -470,7 +470,7 @@ class BioDbToolUnitTest extends UnitTestCase {
     );
 
     // Free private reservation.
-    $result = $bio_tool->freeSchemaPattern('myschema_abc', TRUE);
+    $result = $tripaldbx->freeSchemaPattern('myschema_abc', TRUE);
     $this->assertEquals(
       [
         'myschema*' => 'changed private reservation',
@@ -479,7 +479,7 @@ class BioDbToolUnitTest extends UnitTestCase {
       $result,
       'Removed 2 reservations.'
     );
-    $patterns = $bio_tool->getReservedSchemaPattern();
+    $patterns = $tripaldbx->getReservedSchemaPattern();
     $this->assertEquals(
       [
         'public' => 'public schema is reserved again',
@@ -496,8 +496,8 @@ class BioDbToolUnitTest extends UnitTestCase {
    * @cover ::schemaExists
    */
   public function testSchemaExistsInvalid() {
-    $bio_tool = new BioDbTool();
-    $exists = $bio_tool->schemaExists('0invalid');
+    $tripaldbx = new TripalDbx();
+    $exists = $tripaldbx->schemaExists('0invalid');
     $this->assertFalse($exists, 'Invalid schema name');
   }
 
@@ -519,11 +519,11 @@ class BioDbToolUnitTest extends UnitTestCase {
 
     $this->container->set('database', $connection);
 
-    $bio_tool = new BioDbTool();
-    $exists = $bio_tool->schemaExists('valid');
+    $tripaldbx = new TripalDbx();
+    $exists = $tripaldbx->schemaExists('valid');
     $this->assertTrue($exists, 'Schema exists.');
 
-    $exists = $bio_tool->schemaExists('unexisting');
+    $exists = $tripaldbx->schemaExists('unexisting');
     $this->assertFalse($exists, 'Schema does not exist.');
   }
 
@@ -534,7 +534,7 @@ class BioDbToolUnitTest extends UnitTestCase {
    */
   public function testParseTableDdl() {
     // Use regular service.
-    $this->container->set('tripal_biodb.tool', new \Drupal\tripal_biodb\Database\BioDbTool());
+    $this->container->set('tripal.dbx', new \Drupal\tripal\TripalDBX\TripalDbx());
     // Get fixture data.
     $ddl = file_get_contents( __DIR__ . '/../../../fixtures/feature_ddl.sql');
     // Import $feature_basic.
@@ -542,11 +542,11 @@ class BioDbToolUnitTest extends UnitTestCase {
     // Import $feature_drupal.
     include  __DIR__ . '/../../../fixtures/feature_parsed_drupal.php';
 
-    $bio_tool = new BioDbTool();
-    $parsed_ddl = $bio_tool->parseTableDdl($ddl);
+    $tripaldbx = new TripalDbx();
+    $parsed_ddl = $tripaldbx->parseTableDdl($ddl);
     $this->assertEquals($feature_basic, $parsed_ddl, 'DDL parsed basic.');
 
-    $parsed_ddl = $bio_tool->parseTableDdlToDrupal($ddl);
+    $parsed_ddl = $tripaldbx->parseTableDdlToDrupal($ddl);
     $this->assertEquals($feature_drupal, $parsed_ddl, 'DDL parsed Drupal.');
   }
 

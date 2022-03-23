@@ -3,23 +3,23 @@
 namespace Drupal\Tests\tripal_biodb\Functional\Database;
 
 use Drupal\KernelTests\KernelTestBase;
-use Drupal\tripal_biodb\Database\BioDbTool;
+use Drupal\tripal\TripalDBX\TripalDbx;
 
 /**
- * Tests for biological database tool on a real database.
+ * Tests for Tripal DBX tool on a real database.
  *
- * @coversDefaultClass \Drupal\tripal_biodb\Database\BioDbTool
+ * @coversDefaultClass \Drupal\tripal\TripalDBX\TripalDbx
  *
  * @group Tripal
- * @group Tripal BioDb
- * @group Tripal BioDb Tool
+ * @group Tripal TripalDBX
+ * @group Tripal TripalDBX Service
  */
-class BioDbToolFunctionalTest extends KernelTestBase {
+class TripalDbxFunctionalTest extends KernelTestBase {
 
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['tripal_biodb'];
+  protected static $modules = ['tripal'];
 
   /**
    * List of tested schemas.
@@ -88,12 +88,12 @@ class BioDbToolFunctionalTest extends KernelTestBase {
       $typed_config
     );
     // Get real config elements.
-    $config = $config_factory->get('tripal_biodb.settings');
+    $config = $config_factory->get('tripaldbx.settings');
     $reserved_schema_patterns = $config->get('reserved_schema_patterns');
     $this->assertNotEmpty($reserved_schema_patterns, 'Reserved schema patterns not empty.');
     $test_schema_base_names = $config
       ->get('test_schema_base_names')
-      ?? ['default' => '_test_biodb', ]
+      ?? ['default' => '_test_tdbx', ]
     ;
 
     // Mock the Config object.
@@ -114,14 +114,14 @@ class BioDbToolFunctionalTest extends KernelTestBase {
 
     // Mock the ConfigFactory service.
     $this->proConfigFactory = $this->prophesize(\Drupal\Core\Config\ConfigFactory::class);
-    $this->proConfigFactory->get('tripal_biodb.settings')->willReturn($this->config);
+    $this->proConfigFactory->get('tripaldbx.settings')->willReturn($this->config);
     $this->configFactory = $this->proConfigFactory->reveal();
 
     \Drupal::getContainer()->set('config.factory', $this->configFactory);
 
-    // Hack to clear BioDbTool cache on each run.
-    $clear = function() {BioDbTool::$drupalSchema = NULL;};
-    $clear->call(new BioDbTool());
+    // Hack to clear TripalDbx Service cache on each run.
+    $clear = function() {TripalDbx::$drupalSchema = NULL;};
+    $clear->call(new TripalDbx());
   }
 
   /**
@@ -161,8 +161,8 @@ class BioDbToolFunctionalTest extends KernelTestBase {
    */
   public function testGetDrupalSchemaNameReal() {
     // Get Drupal schema.
-    $bio_tool = new BioDbTool();
-    $drupal_schema = $bio_tool->getDrupalSchemaName();
+    $tripaldbx = new TripalDbx();
+    $drupal_schema = $tripaldbx->getDrupalSchemaName();
     $this->assertNotEmpty($drupal_schema, 'Got a schema name.');
   }
 
@@ -173,12 +173,12 @@ class BioDbToolFunctionalTest extends KernelTestBase {
    */
   public function testIsInvalidSchemaNameReal() {
     // Get Drupal schema.
-    $bio_tool = new BioDbTool();
-    $drupal_schema = $bio_tool->getDrupalSchemaName();
-    $invalid = $bio_tool->isInvalidSchemaName($drupal_schema);
+    $tripaldbx = new TripalDbx();
+    $drupal_schema = $tripaldbx->getDrupalSchemaName();
+    $invalid = $tripaldbx->isInvalidSchemaName($drupal_schema);
     $this->assertNotEmpty($invalid, 'Drupal schema name is reserved.');
 
-    $valid = $bio_tool->isInvalidSchemaName('aschema');
+    $valid = $tripaldbx->isInvalidSchemaName('aschema');
     $this->assertEquals('', $valid, 'A regular schema name is allowed.');
   }
 
@@ -189,11 +189,11 @@ class BioDbToolFunctionalTest extends KernelTestBase {
    */
   public function testSchemaExistsReal() {
 
-    $bio_tool = new BioDbTool();
-    $exists = $bio_tool->schemaExists('public');
+    $tripaldbx = new TripalDbx();
+    $exists = $tripaldbx->schemaExists('public');
     $this->assertTrue($exists, 'Schema exists.');
 
-    $exists = $bio_tool->schemaExists('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+    $exists = $tripaldbx->schemaExists('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     $this->assertFalse($exists, 'Schema does not exist.');
   }
 
@@ -210,15 +210,15 @@ class BioDbToolFunctionalTest extends KernelTestBase {
    */
   public function testSchemaManagementScenario1() {
 
-    $bio_tool = new BioDbTool();
+    $tripaldbx = new TripalDbx();
     $db = \Drupal::database();
     self::$db = self::$db ?? $db;
 
     // Clear all reserved patterns.
-    $bio_tool->freeSchemaPattern('.*', TRUE);
+    $tripaldbx->freeSchemaPattern('.*', TRUE);
 
     // Get test schema  base name for BioDb from (real) settings (see ::setUp).
-    $test_schema_base_names = \Drupal::config('tripal_biodb.settings')
+    $test_schema_base_names = \Drupal::config('tripaldbx.settings')
       ->get('test_schema_base_names')
     ;
 
@@ -229,26 +229,26 @@ class BioDbToolFunctionalTest extends KernelTestBase {
     self::$testSchemas[$test_schema2] = TRUE;
 
     // Make sure our random test schema does not exist.
-    $exists = $bio_tool->schemaExists($test_schema);
+    $exists = $tripaldbx->schemaExists($test_schema);
     $this->assertFalse($exists, 'Test schema does not exist.');
 
     // Create schema.
-    $bio_tool->createSchema($test_schema);
-    $exists = $bio_tool->schemaExists($test_schema);
+    $tripaldbx->createSchema($test_schema);
+    $exists = $tripaldbx->schemaExists($test_schema);
     $this->assertTrue($exists, 'Test schema created.');
 
     // Rename schema.
-    $bio_tool->renameSchema($test_schema, $test_schema2);
-    $exists = $bio_tool->schemaExists($test_schema);
+    $tripaldbx->renameSchema($test_schema, $test_schema2);
+    $exists = $tripaldbx->schemaExists($test_schema);
     $this->assertFalse($exists, 'Test schema has been renamed.');
-    $exists = $bio_tool->schemaExists($test_schema2);
+    $exists = $tripaldbx->schemaExists($test_schema2);
     $this->assertTrue($exists, 'Test schema 2 is the new test schema.');
 
     // Test size.
-    $ini_size = $bio_tool->getSchemaSize($test_schema);
+    $ini_size = $tripaldbx->getSchemaSize($test_schema);
     $this->assertEquals(0, $ini_size, 'Test schema does not exist and has a size of 0.');
-    $ini_size = $bio_tool->getSchemaSize($test_schema2);
-    $db_size = $bio_tool->getDatabaseSize($db);
+    $ini_size = $tripaldbx->getSchemaSize($test_schema2);
+    $db_size = $tripaldbx->getDatabaseSize($db);
     $this->assertGreaterThan(1000, $db_size, 'Database has a size.');
 
     $sql = "CREATE TABLE $test_schema2.toto (x int);";
@@ -258,22 +258,22 @@ class BioDbToolFunctionalTest extends KernelTestBase {
     $ok = $db->query($sql);
     $this->assertNotEmpty($ok, 'Table created in tests schema 2.');
 
-    $new_size = $bio_tool->getSchemaSize($test_schema2);
+    $new_size = $tripaldbx->getSchemaSize($test_schema2);
     $this->assertGreaterThan($ini_size, $new_size, 'Test schema 2 has grown.');
 
     // Clone schema.
-    $bio_tool->cloneSchema($test_schema2, $test_schema);
-    $exists = $bio_tool->schemaExists($test_schema);
+    $tripaldbx->cloneSchema($test_schema2, $test_schema);
+    $exists = $tripaldbx->schemaExists($test_schema);
     $this->assertTrue($exists, 'Test schema 2 has been cloned into test schema.');
-    $exists = $bio_tool->schemaExists($test_schema2);
+    $exists = $tripaldbx->schemaExists($test_schema2);
     $this->assertTrue($exists, 'Test schema 2 still exist.');
 
     // Drop schema.
-    $bio_tool->dropSchema($test_schema);
-    $exists = $bio_tool->schemaExists($test_schema);
+    $tripaldbx->dropSchema($test_schema);
+    $exists = $tripaldbx->schemaExists($test_schema);
     $this->assertFalse($exists, 'Test schema removed.');
-    $bio_tool->dropSchema($test_schema2);
-    $exists = $bio_tool->schemaExists($test_schema2);
+    $tripaldbx->dropSchema($test_schema2);
+    $exists = $tripaldbx->schemaExists($test_schema2);
     $this->assertFalse($exists, 'Test schema 2 removed.');
 
     self::$testSchemas[$test_schema] = FALSE;
