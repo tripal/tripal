@@ -124,23 +124,23 @@ class obi__organism extends ChadoField {
         return;
       }
       $string = $settings['field_display_string'];
-      // The infraspecific fields were introduced in Chado v1.3, include only if present.
-      // Special case conversion of the type_id 'no_rank' value to an empty string.
-      if (property_exists($organism, 'type_id')) {
-        if ($organism->type_id->name == 'no_rank') {
-          $organism->type_id->name = '';
-        }
-      }
       $label = chado_replace_tokens($string, $organism);
+      // Infraspecific type, if present but not used, can either be NULL,
+      // an empty string, or the term 'no_rank'. Special case processing
+      // so that this 'no_rank' term is not included in the label.
+      $label = trim(preg_replace('/ no_rank/', '', $label));
       $entity->{$field_name}['und'][0]['value'] = [
         $label_term => $label,
         $genus_term => $organism->genus,
         $species_term => $organism->species,
       ];
-      // Again, only present in Chado v1.3+
+      // The infraspecific fields were introduced in Chado v1.3.
       if (property_exists($organism, 'infraspecific_name')) {
-        $entity->{$field_name}['und'][0]['value'][$infraspecific_type_term] = $organism->type_id->name;
+        $entity->{$field_name}['und'][0]['value'][$infraspecific_type_term] = NULL;
         $entity->{$field_name}['und'][0]['value'][$infraspecific_name_term] = $organism->infraspecific_name;
+        if ($organism->type_id) {
+          $entity->{$field_name}['und'][0]['value'][$infraspecific_type_term] = $organism->type_id->name;
+        }
       }
       $entity->{$field_name}['und'][0][$linker_field] = $organism->organism_id;
 
