@@ -658,7 +658,7 @@ function tripal_install_cloner() {
 
   $sql_cloner_path =
     drupal_get_path('module', 'tripal')
-    . 'src/TripalDBX/pg-clone-schema/clone_schema.sql';
+    . '/src/TripalDBX/pg-clone-schema/clone_schema.sql';
 
   // Replaces "public." in SQL if it is not the default Drupal schema.
   $tripaldbx = \Drupal::service('tripal.dbx');
@@ -718,7 +718,7 @@ function tripal_uninstall_cloner() {
 
   $sql_uninstall_cloner_path =
     drupal_get_path('module', 'tripal')
-    . 'src/TripalDBX/pg-clone-schema/clone_schema_uninstall.sql';
+    . '/src/TripalDBX/pg-clone-schema/clone_schema_uninstall.sql';
 
   // Replaces "public." in SQL if it is not the default Drupal schema.
   $tripaldbx = \Drupal::service('tripal.dbx');
