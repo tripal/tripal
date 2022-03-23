@@ -361,7 +361,7 @@ class TripalImporter {
         if (preg_match('/\|/', $file_details['fid'])) {
           $fids = explode('|', $file_details['fid']);
           foreach ($fids as $fid) {
-            $file = file_load($fid);
+            $file = \Drupal\file\Entity\File::load($fid);
             $arguments['files'][] = [
               // 'file_path' => drupal_realpath($file->uri), // old
               'file_path' => \Drupal::service('file_system')->realpath($file->getFileUri()),
@@ -373,7 +373,7 @@ class TripalImporter {
         // Handle a single file.
         else {
           $fid = $file_details['fid'];
-          $file = file_load($fid);
+          $file = \Drupal\file\Entity\File::load($fid);
           $arguments['files'][] = [
             // 'file_path' => drupal_realpath($file->uri), // old
             'file_path' => \Drupal::service('file_system')->realpath($file->getFileUri()),
