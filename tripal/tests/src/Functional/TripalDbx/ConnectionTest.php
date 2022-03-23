@@ -168,7 +168,7 @@ class ConnectionTest extends KernelTestBase {
 
     // Check default values.
     $this->assertEquals('', $dbmock->getSchemaName(), 'No schema name.');
-    $this->assertInstanceOf('\Psr\Log\LoggerInterface', $dbmock->getMessageLogger(), 'Logger.');
+    $this->assertInstanceOf('Drupal\tripal\Services\TripalLogger', $dbmock->getMessageLogger(), 'Logger.');
     $this->assertNotEmpty($dbmock->getDatabaseName(), 'Database name.');
     $this->assertEquals('default', $dbmock->getDatabaseKey(), 'Database key');
     $this->assertEquals('', $dbmock->getVersion(), 'No version.');
@@ -240,7 +240,7 @@ class ConnectionTest extends KernelTestBase {
     // been checked before for reservation through methods
     // TripalDbx::isSchemaReserved (or TripalDbx::isInvalidSchemaName with
     // $ignore_reservation = FALSE).
-    // $this->expectException(\Drupal\tripal\TripalDBX\Exception\ConnectionException::class);
+    // $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
     // $this->expectExceptionMessage('reserved');
 
     $schema_name = 'public';
@@ -264,7 +264,7 @@ class ConnectionTest extends KernelTestBase {
     // been checked before for reservation through methods
     // TripalDbx::isSchemaReserved (or TripalDbx::isInvalidSchemaName with
     // $ignore_reservation = FALSE).
-    // $this->expectException(\Drupal\tripal\TripalDBX\Exception\ConnectionException::class);
+    // $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
     // $this->expectExceptionMessage('reserved');
 
     // The schema name should be invalid because it is reserved.
@@ -283,7 +283,7 @@ class ConnectionTest extends KernelTestBase {
    * @cover ::__construct
    */
   public function testConnectionConstructorInvalidSchemaDefaultKey() {
-    $this->expectException(\Drupal\tripal\TripalDBX\Exception\ConnectionException::class);
+    $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
     $this->expectExceptionMessage('must not');
     $dbmock = $this->getConnectionMock('0test');
   }
@@ -298,7 +298,7 @@ class ConnectionTest extends KernelTestBase {
       ->disableOriginalConstructor()
       ->getMock()
     ;
-    $this->expectException(\Drupal\tripal\TripalDBX\Exception\ConnectionException::class);
+    $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
     $this->expectExceptionMessage('PostgreSQL');
     $dbmock = $this->getConnectionMock('test', $mocked_mysqldb);
   }
@@ -355,7 +355,7 @@ class ConnectionTest extends KernelTestBase {
    */
   public function testSchemaNoSchema() {
     $dbmock = $this->getConnectionMock('');
-    $this->expectException(\Drupal\tripal\TripalDBX\Exception\SchemaException::class);
+    $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\SchemaException::class);
     $this->expectExceptionMessage('schema');
     $dbmock->schema();
   }
@@ -384,7 +384,7 @@ class ConnectionTest extends KernelTestBase {
     $this->assertEquals($schema_name, $internal_schema, 'TripalDbxSchema schema 2 correct.');
 
     $dbmock->setSchemaName('');
-    $this->expectException(\Drupal\tripal\TripalDBX\Exception\SchemaException::class);
+    $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\SchemaException::class);
     $this->expectExceptionMessage('schema');
     $schema = $dbmock->schema();
   }
@@ -473,7 +473,7 @@ class ConnectionTest extends KernelTestBase {
     $drupal_prefix = str_replace('.', '"."', $drupal_prefix);
     $dbmock = $this->getConnectionMock();
 
-    $this->expectException(\Drupal\tripal\TripalDBX\Exception\ConnectionException::class);
+    $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
     $this->expectExceptionMessage('No current schema');
     $prefix_test = $dbmock->addExtraSchema('toto');
   }
@@ -488,7 +488,7 @@ class ConnectionTest extends KernelTestBase {
     $drupal_prefix = str_replace('.', '"."', $drupal_prefix);
     $dbmock = $this->getConnectionMock();
 
-    $this->expectException(\Drupal\tripal\TripalDBX\Exception\ConnectionException::class);
+    $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
     $this->expectExceptionMessage('Invalid extra schema index');
     $prefix_test = $dbmock->setExtraSchema('toto', 0);
   }
@@ -503,7 +503,7 @@ class ConnectionTest extends KernelTestBase {
     $drupal_prefix = str_replace('.', '"."', $drupal_prefix);
     $dbmock = $this->getConnectionMock();
 
-    $this->expectException(\Drupal\tripal\TripalDBX\Exception\ConnectionException::class);
+    $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
     $this->expectExceptionMessage('Invalid extra schema index');
     $prefix_test = $dbmock->setExtraSchema('toto', 1);
   }
@@ -531,7 +531,7 @@ class ConnectionTest extends KernelTestBase {
       'Correct table prefixing X.'
     );
 
-    $this->expectException(\Drupal\tripal\TripalDBX\Exception\ConnectionException::class);
+    $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
     $this->expectExceptionMessage('No main TripalDBX schema set');
     $prefix_test = $dbmock->prefixTables(
       'Y {drupal_table}, {0:drupal_table2}, {1:tdbx1_table}'
@@ -586,7 +586,7 @@ class ConnectionTest extends KernelTestBase {
     );
 
     // Test prefixing with an unexisting/not set extra schema.
-    $this->expectException(\Drupal\tripal\TripalDBX\Exception\ConnectionException::class);
+    $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
     $this->expectExceptionMessage('Invalid extra schema');
     $prefix_test = $dbmock->prefixTables(
       'Z {drupal_table}, {0:drupal_table2}, {1:tdbx1_table}, {2:tdbx2_table}, {1:tdbx1_table2}'
@@ -671,7 +671,7 @@ class ConnectionTest extends KernelTestBase {
     );
 
     // Try setting an extra schema with too high index.
-    $this->expectException(\Drupal\tripal\TripalDBX\Exception\ConnectionException::class);
+    $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
     $this->expectExceptionMessage('Invalid extra schema index');
     $dbmock->setExtraSchema('toto', 5);
   }
@@ -731,7 +731,7 @@ class ConnectionTest extends KernelTestBase {
     $this->assertEquals(2, $extra_index, 'Extra schemas with restarted index.');
 
     // Try setting an extra schema with too high index.
-    $this->expectException(\Drupal\tripal\TripalDBX\Exception\ConnectionException::class);
+    $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
     $this->expectExceptionMessage('Invalid extra schema index');
     $dbmock->setExtraSchema($sch_4, 4);
   }
@@ -810,7 +810,7 @@ class ConnectionTest extends KernelTestBase {
     $this->assertEquals([], $extra_schemas, 'Extra schemas cleared.');
 
     // Test prefixing with an unexisting/not set extra schema.
-    $this->expectException(\Drupal\tripal\TripalDBX\Exception\ConnectionException::class);
+    $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
     $this->expectExceptionMessage('Invalid extra schema');
     $prefix_test = $dbmock->prefixTables(
       'Z {drupal_table}, {0:drupal_table2}, {1:tdbx1_table}, {2:tdbx2_table}, {1:tdbx1_table2}'
