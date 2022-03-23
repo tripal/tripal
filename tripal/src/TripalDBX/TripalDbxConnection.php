@@ -34,7 +34,7 @@ use Drupal\tripal\TripalDBX\Exception\ConnectionException;
  * Note: the setLogger() and getLogger() methods are reserved for database query
  * logging and is operated by Drupal. It works with a \Drupal\Core\Database\Log
  * class. To log messages in extending classes, use setMessageLogger() and
- * getMessageLogger() instead, which operates with the \Psr\Log\LoggerInterface
+ * getMessageLogger() instead, which operates with the \Drupal\tripal\Services\TripalLogger
  * class. By default, the message logger is set by the constructor either using
  * the user-provided logger or by instanciating one using the log channel
  * 'tripal.logger'.
@@ -134,7 +134,7 @@ abstract class TripalDbxConnection extends PgConnection {
   /**
    * Logger.
    *
-   * @var object \Psr\Log\LoggerInterface
+   * @var object \Drupal\tripal\Services\TripalLogger
    */
   protected $messageLogger = NULL;
 
@@ -253,7 +253,7 @@ abstract class TripalDbxConnection extends PgConnection {
    *   Extra databases specified in settings.php do not need to specify a
    *   schema name as a database prefix parameter. The prefix will be managed by
    *   this connection class instance.
-   * @param ?\Psr\Log\LoggerInterface $logger
+   * @param ?\Drupal\tripal\Services\TripalLogger $logger
    *   A logger in case of operations to log.
    *
    * @throws \Drupal\tripal\TripalDBX\Exception\ConnectionException
@@ -266,7 +266,7 @@ abstract class TripalDbxConnection extends PgConnection {
   public function __construct(
     string $schema_name = '',
     $database = 'default',
-    ?\Psr\Log\LoggerInterface $logger = NULL
+    ?\Drupal\tripal\Services\TripalLogger $logger = NULL
   ) {
     // Check a key was provided instead of a connection object.
     if (is_string($database)) {
@@ -395,20 +395,20 @@ abstract class TripalDbxConnection extends PgConnection {
   /**
    * Returns current message logger.
    *
-   * @return \Psr\Log\LoggerInterface
+   * @return \Drupal\tripal\Services\TripalLogger
    *  A message logger.
    */
-  public function getMessageLogger() :\Psr\Log\LoggerInterface {
+  public function getMessageLogger() :\Drupal\tripal\Services\TripalLogger {
     return $this->messageLogger;
   }
 
   /**
    * Sets current message logger.
    *
-   * @param \Psr\Log\LoggerInterface $logger
+   * @param \Drupal\tripal\Services\TripalLogger $logger
    *  A message logger.
    */
-  public function setMessageLogger(\Psr\Log\LoggerInterface $logger) :void {
+  public function setMessageLogger(\Drupal\tripal\Services\TripalLogger $logger) :void {
     $this->messageLogger = $logger;
   }
 
