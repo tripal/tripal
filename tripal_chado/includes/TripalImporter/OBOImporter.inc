@@ -2125,7 +2125,7 @@ class OBOImporter extends TripalImporter {
     $fh = fopen($obo_file, 'r');
     while ($line = fgets($fh)) {
       $line_num++;
-      $size = \Drupal\Component\Utility\Unicode::strlen($line);
+      $size = mb_strlen($line);
       $num_read += $size;
       $line = trim($line);
       $this->setItemsHandled($num_read);
