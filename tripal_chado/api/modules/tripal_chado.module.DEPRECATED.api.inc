@@ -1043,9 +1043,8 @@ function tripal_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
  *                   used.
  *     'match':      Set to 'uniquename' if the leaf nodes should be matched
  *                   with the feature uniquename.
- *     'load_now':   If set, the tree will be loaded immediately if a tree_file
- *                   is provided. Otherwise, the tree will be loaded via
- *                   a Tripal jobs call.
+ *     'load_later': If set, the tree will be loaded via a separate Tripal
+ *                   jobs call. Otherwise, the tree will be loaded immediately.
  *     'no_load':    If set the tree file will not be loaded.
  * @param $errors
  *   An empty array where validation error messages will be set. The keys
@@ -1107,9 +1106,8 @@ function tripal_insert_phylotree(&$options, &$errors, &$warnings) {
  *                   used.
  *     'match':      Set to 'uniquename' if the leaf nodes should be matched
  *                   with the feature uniquename.
- *     'load_now':   If set, the tree will be loaded immediately if a tree_file
- *                   is provided. Otherwise, the tree will be loaded via
- *                   a Tripal jobs call.
+ *     'load_later': If set, the tree will be loaded via a separate Tripal
+ *                   jobs call. Otherwise, the tree will be loaded immediately.
  *
  * @ingroup tripal_chado_module_DEPRECATED_api
  */

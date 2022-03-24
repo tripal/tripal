@@ -34,14 +34,14 @@
  *   functions.
  * @param $errors
  *   An empty array where validation error messages will be set. The keys
- *   of the array will be name of the field from the options array and the
- *   value is the error message.
+ *   of the array will be the name of the field from the options array and
+ *   the value is the error message.
  * @param $warnings
  *   An empty array where validation warning messagges will be set. The
  *   warnings should not stop an insert or an update but should be provided
  *   to the user as information by a drupal_set_message() if appropriate. The
- *   keys of the array will be name of the field from the options array and the
- *   value is the error message.
+ *   keys of the array will be the name of the field from the options array
+ *   and the value is the error message.
  *
  * @return
  *   If validation fails then FALSE is returned.  Any options that do not pass
@@ -54,7 +54,8 @@
 function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
 
   if ($val_type != 'insert' and $val_type != 'update') {
-    tripal_report_error('tripal_phylogeny', TRIPAL_ERROR, "The $val_type argument must be either 'update or 'insert'.");
+    tripal_report_error('tripal_phylogeny', TRIPAL_ERROR,
+                        "The $val_type argument must be either 'update or 'insert'.");
   }
 
   // Set Defaults.
@@ -63,7 +64,7 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
     if (!array_key_exists('match', $options)) {
       $options['match'] = 'name';
     }
-    // The regular expression is to match the entire node name.
+    // The default regular expression is to match the entire node name.
     if (!array_key_exists('name_re', $options) or (!$options['name_re'])) {
       $options['name_re'] = '^(.*)$';
     }
@@ -92,7 +93,9 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
     }
     // Make sure the file format is correct.
     if ($options['format'] != 'newick' and $options['format'] != 'taxonomy') {
-      $errors['format'] = t('The file format is not supported. Currently only the "newick" file format is supported.');
+      $errors['format'] = t('The file format "%format" is not supported. '
+        . 'Currently only the "newick" file format is supported.',
+        [ '%format' => $options['format']]);
       return FALSE;
     }
   }
@@ -105,7 +108,8 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
     $exists = chado_select_record('phylotree', ['phylotree_id'],
       ['phylotree_id' => $options['phylotree_id']], ['has_record' => 1]);
     if (!$exists) {
-      $errors['phylotree_id'] = t('The phylotree_id does not exist.');
+      $errors['phylotree_id'] = t('The phylotree_id "%id" does not exist.',
+        [ '%id' => $options['phylotree_id']]);
       return FALSE;
     }
 
@@ -116,14 +120,16 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
     // If this is a numeric Drupal file then all is good, no need to check.
     if (!is_numeric($options['tree_file'])) {
       if (!file_exists($options['tree_file'])) {
-        $errors['tree_file'] = t('The file provided does not exist.');
+        $errors['tree_file'] = t('The provided file "%file" does not exist.',
+          ['%file' => $options['tree_file']]);
         return FALSE;
       }
     }
     // Make sure the file format is correct.
     if (!array_key_exists('format', $options) or
       ($options['format'] != 'newick' and $options['format'] != 'taxonomy')) {
-      $errors['format'] = t('Please provide a supported file format. Currently only the "newick" file format is supported.');
+      $errors['format'] = t('Please provide a supported file format. '
+        . 'Currently only the "newick" file format is supported.');
       return FALSE;
     }
 
@@ -136,7 +142,8 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
   // Make sure the analysis exists.
   $analysis = NULL;
   if (array_key_exists('analysis_id', $options) and $options['analysis_id']) {
-    $analysis = chado_select_record('analysis', ['analysis_id'], ['analysis_id' => $options['analysis_id']]);
+    $analysis = chado_select_record('analysis',
+      ['analysis_id'], ['analysis_id' => $options['analysis_id']]);
     if (!$analysis) {
       $errors['analysis_id'] = t('The analysis name provided does not exist.');
       return FALSE;
@@ -173,7 +180,8 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
       ];
       $type = chado_select_record('cvterm', ['cvterm_id'], $values);
       if (!$type) {
-        $errors['leaf_type'] = t('The leaf_type provided is not a valid Sequence Ontology term: %term.');
+        $errors['leaf_type'] = t('The leaf_type provided "%term" is not a valid Sequence Ontology term.',
+          ['%term' => $options['leaf_type']]);
         return FALSE;
       }
     }
@@ -270,23 +278,21 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
  *                   term 'polypeptide'.
  *     'tree_file':  The path of the file containing the phylogenetic tree to
  *                   import or a Drupal managed_file numeric ID.
- *     'format':     The file format. Currently only 'newick is supported'.
+ *     'format':     The file format. Currently only 'newick' is supported.
  *
  *  Optional keys:
  *     'dbxref':     A database cross-reference of the form DB:ACCESSION.
  *                   Where DB is the database name, which is already present
  *                   in Chado, and ACCESSION is the unique identifier for
  *                   this tree in the remote database.
- *     'name_re':    If the leaf type is NOT 'taxonomy', then the value of
- *                   this field can be a regular expression to pull out
- *                   the name of the feature from the node label in the
- *                   input tree. If no value is provided the entire label is
- *                   used.
+ *     'name_re':    The value of this field can be a regular expression to pull
+ *                   out the name of the feature or organism from the node label
+ *                   in the input tree. If no value is provided the entire label
+ *                   is used.
  *     'match':      Set to 'uniquename' if the leaf nodes should be matched
  *                   with the feature uniquename.
- *     'load_now':   If set, the tree will be loaded immediately if a tree_file
- *                   is provided. Otherwise, the tree will be loaded via
- *                   a Tripal jobs call.
+ *     'load_later': If set, the tree will be loaded via a separate Tripal
+ *                   jobs call. Otherwise, the tree will be loaded immediately.
  *     'no_load':    If set the tree file will not be loaded.
  *     'job':        The Tripal job object, if present.
  * @param $errors
@@ -374,18 +380,7 @@ function chado_insert_phylotree(&$options, &$errors, &$warnings) {
   // If caller has requested to load the file now then do so, otherwise
   // submit using a Tripal job.
   if (!array_key_exists('no_load', $options) or !$options['no_load']) {
-    if (array_key_exists('load_now', $options) and $options['load_now']) {
-      $args = [
-        'phylotree_id' => $phylotree_id,
-        'leaf_type' => $options['leaf_type'],
-        'match' => $options['match'] ? 'uniquename' : 'name',
-        'name_re' => $options['name_re'],
-        'message_type' => $options['message_type'],
-        'message_opts' => $options['message_opts'],
-      ];
-      chado_phylogeny_import_tree_file($real_file_path, $options['format'], $args);
-    }
-    else {
+    if (array_key_exists('load_later', $options) and $options['load_later']) {
       $args = [
         $real_file_path,
         'newick',
@@ -396,10 +391,21 @@ function chado_insert_phylotree(&$options, &$errors, &$warnings) {
           'name_re' => $options['name_re'],
         ],
       ];
-      if (tripal_add_job("Import Tree File: " . $file->filename, $options['message_type'],
+      if (tripal_add_job("Import Tree File: " . basename($real_file_path), $options['message_type'],
         'chado_phylogeny_import_tree_file', $args, $user->uid)) {
         drupal_set_message(t('The tree visualizations will appear once the tree is fully imported.'));
       }
+    }
+    else {
+      $args = [
+        'phylotree_id' => $phylotree_id,
+        'leaf_type' => $options['leaf_type'],
+        'match' => $options['match'] ? 'uniquename' : 'name',
+        'name_re' => $options['name_re'],
+        'message_type' => $options['message_type'],
+        'message_opts' => $options['message_opts'],
+      ];
+      chado_phylogeny_import_tree_file($real_file_path, $options['format'], $args);
     }
   }
 
@@ -434,21 +440,19 @@ function chado_insert_phylotree(&$options, &$errors, &$warnings) {
  *                   term 'polypeptide'.
  *     'tree_file':  The path of the file containing the phylogenetic tree to
  *                   import or a Drupal managed_file numeric ID.
- *     'format':     The file format. Currently only 'newick is supported'
+ *     'format':     The file format. Currently only 'newick' is supported
  *     'dbxref':     A database cross-reference of the form DB:ACCESSION.
  *                   Where DB is the database name, which is already present
  *                   in Chado, and ACCESSION is the unique identifier for
  *                   this tree in the remote database.
- *     'name_re':    If the leaf type is NOT 'taxonomy', then the value of
- *                   this field can be a regular expression to pull out
- *                   the name of the feature from the node label in the
- *                   input tree. If no value is provided the entire label is
- *                   used.
+ *     'name_re':    The value of this field can be a regular expression to pull
+ *                   out the name of the feature or organism from the node label
+ *                   in the input tree. If no value is provided the entire label
+ *                   is used.
  *     'match':      Set to 'uniquename' if the leaf nodes should be matched
  *                   with the feature uniquename.
- *     'load_now':   If set, the tree will be loaded immediately if a tree_file
- *                   is provided. Otherwise, the tree will be loaded via
- *                   a Tripal jobs call.
+ *     'load_later': If set, the tree will be loaded via a separate Tripal
+ *                   jobs call. Otherwise, the tree will be loaded immediately.
  *
  * @ingroup tripal_phylotree_api
  */
@@ -531,18 +535,7 @@ function chado_update_phylotree($phylotree_id, &$options) {
 
     // If caller has requested to load the file now then do so, otherwise
     // submit using a Tripal job.
-    if (array_key_exists('load_now', $options) and $options['load_now']) {
-      $args = [
-        'phylotree_id' => $options['phylotree_id'],
-        'leaf_type' => $options['leaf_type'],
-        'match' => $options['match'] ? 'uniquename' : 'name',
-        'name_re' => $options['name_re'],
-        'message_type' => $options['message_type'],
-        'message_opts' => $options['message_opts'],
-      ];
-      chado_phylogeny_import_tree_file($real_file_path, $options['format'], $args);
-    }
-    else {
+    if (array_key_exists('load_later', $options) and $options['load_later']) {
       $args = [
         $real_file_path,
         'newick',
@@ -553,10 +546,21 @@ function chado_update_phylotree($phylotree_id, &$options) {
           'name_re' => $options['name_re'],
         ],
       ];
-      if (tripal_add_job("Import Tree File: " . $file->filename, 'tripal_phylogeny',
+      if (tripal_add_job("Import Tree File: " . basename($realfilepath), 'tripal_phylogeny',
         'chado_phylogeny_import_tree_file', $args, $user->uid)) {
         drupal_set_message(t('The tree visualizations will appear once the tree is fully imported.'));
       }
+    }
+    else {
+      $args = [
+        'phylotree_id' => $options['phylotree_id'],
+        'leaf_type' => $options['leaf_type'],
+        'match' => $options['match'] ? 'uniquename' : 'name',
+        'name_re' => $options['name_re'],
+        'message_type' => $options['message_type'],
+        'message_opts' => $options['message_opts'],
+      ];
+      chado_phylogeny_import_tree_file($real_file_path, $options['format'], $args);
     }
   }
 
@@ -718,20 +722,20 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
 
               // This is a sequence-based tree. Try to match leaf nodes with
               // features.
-              // First, Get the Name and uniquename for the feature.
+              // First, get the name and uniquename for the feature.
               $matches = [];
               $sel_values = [];
               if ($options['match'] == "name") {
                 $sel_values['name'] = $tree['name'];
                 $re = $options['name_re'];
-                if (preg_match("/$re/", $tree['name'], $matches)) {
+                if (($re) and (preg_match("/$re/", $tree['name'], $matches))) {
                   $sel_values['name'] = $matches[1];
                 }
               }
               else {
                 $sel_values['uniquename'] = $tree['name'];
                 $re = $options['name_re'];
-                if (preg_match("/$re/", $tree['name'], $matches)) {
+                if (($re) and (preg_match("/$re/", $tree['name'], $matches))) {
                   $sel_values['uniquename'] = $matches[1];
                 }
               }
@@ -773,7 +777,12 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
             }
             else {  // $options['leaf_type'] == 'taxonomy'
               // This is a taxonomy tree. Try to match leaf nodes with organisms.
-              $organism_id = chado_phylogeny_lookup_organism_by_name($tree['name']);
+              $organism_name = $tree['name'];
+              $re = $options['name_re'];
+              if (($re) and (preg_match("/$re/", $organism_name, $matches))) {
+                $organism_name = $matches[1];
+              }
+              $organism_id = chado_phylogeny_lookup_organism_by_name($organism_name);
               if ($organism_id) {
                 $tree['organism_id'] = $organism_id;
                 tripal_report_error($options['message_type'], TRIPAL_INFO,
@@ -835,18 +844,21 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
  *   The organism name.
  *
  * @return
- *  organism_id from chado.organism table or FALSE on failure.
+ *   organism_id from chado.organism table, or FALSE on failure.
  *
  * @ingroup tripal_phylotree_api
  */
 function chado_phylogeny_lookup_organism_by_name($name) {
   $organism_id = false;
+  if (!$name) {
+    return($organism_id);
+  }
 
-  // spaces in names are likely to be replaced with underscores in newick files
+  // spaces in names are often replaced with underscores in newick files
   $name = trim(preg_replace('/_/', ' ', $name ));
 
-  // First try to find name as is in the abbreviation column. This does not
-  // have a unique constraint, so we must verify that the count is 1
+  // First try to find the name as-is in the abbreviation column. This does
+  // not have a unique constraint, so we must verify that the count is 1.
   $sql = "SELECT COUNT(*) FROM {organism} WHERE abbreviation = :name";
   $args = [':name' => $name];
   $count = chado_query($sql, $args)->fetchField();
@@ -855,40 +867,51 @@ function chado_phylogeny_lookup_organism_by_name($name) {
     $organism_id = $chado_query($sql, $args)->fetchField();
   }
 
-  // abbreviation query failed, so now query on genus + species and
-  // optionally infraspecific nomenclature
+  // The abbreviation query failed, so now query on genus + species and
+  // optionally infraspecific nomenclature. Set $limit since prior to chado 1.3
+  // infraspecific nomenclature had to be stored with the species value, so
+  // there might be spaces there.
   else {
-    $infrasupported = false;
+    $infra_supported = false;
     $limit = 2;
     if (chado_column_exists('organism', 'infraspecific_name')) {
-      $infrasupported = true;
+      $infra_supported = true;
       $limit = 4;
     }
     $parts = preg_split('/\s+/', $name, $limit);
     $sql = "SELECT organism_id FROM {organism} WHERE genus = :genus AND species = :species";
     $args = [ ':genus' => $parts[0], ':species' => $parts[1] ];
-    if ($infrasupported) {
-      // when there is no infraspecific name, we can use the "no_rank" taxonomic term in
-      // the type_id column, or NULL can be considered equivalent. Wrap these in parentheses
-      $sql .= " AND ( type_id = (SELECT cvterm_id FROM {cvterm} WHERE name = :infraspecific_type"
+    if ($infra_supported) {
+      // When there is no infraspecific nomenclature for an organism, the
+      // type_id value will be either the "taxonomic_rank:no_rank" term,
+      // or it will be NULL.
+      $sql .= " AND (type_id ="
+           . " (SELECT cvterm_id FROM {cvterm} WHERE name = :infraspecific_type"
            . " AND cv_id = (SELECT cv_id FROM {cv} WHERE name = 'taxonomic_rank'))";
-      if (!array_key_exists(2, $parts)) {
+      if (array_key_exists(2, $parts)) {
+        // Infraspecific type may be abbreviated, the full form is needed
+        // for the sql query, e.g. expand subsp. to subspecies
+        $parts[2] = chado_unabbreviate_infraspecific_rank($parts[2]);
+      }
+      else {
         $parts[2] = 'no_rank';
-        $sql .= " OR type_id IS NULL";
+        $sql .= " OR (type_id IS NULL)";
       }
       $sql .= ")";
-      $parts[3] = array_key_exists(3, $parts) ? $parts[3] : false;
       $args = array_merge( $args, [':infraspecific_type' => $parts[2]] );
-      // if no infraspecific name, specify empty string or null in the SQL
-      if ($parts[3]) {
-        $sql .= " AND infraspecific_name = :infraspecific_name";
+
+      // infraspecific name
+      if (array_key_exists(3, $parts)) {
+        $sql .= " AND (infraspecific_name = :infraspecific_name)";
         $args = array_merge( $args, [':infraspecific_name' => $parts[3]] );
       }
       else {
-        $sql .= " AND ( infraspecific_name = '' ) IS NOT FALSE";  // must be either empty string or NULL
+        // this construction means it must be either empty string or NULL
+        $sql .= " AND ((infraspecific_name = '') IS NOT FALSE)";
       }
     }
-    // unique constraint on organism table ensures we get zero or one record returned
+    // The unique constraint on the organism table ensures we get
+    // either zero or one record returned.
     $organism_id = chado_query($sql, $args)->fetchField();
   }
   return($organism_id);
@@ -960,11 +983,10 @@ function chado_phylogeny_get_node_types_vocab($options) {
  *                   type is 'organism' then this tree represents a
  *                   taxonomic tree.  The default, if not specified, is the
  *                   term 'polypeptide'.
- *     'name_re':    If the leaf type is NOT 'taxonomy', then the value of
- *                   this field can be a regular expression to pull out
- *                   the name of the feature from the node label in the
- *                   input tree. If no value is provided the entire label is
- *                   used.
+ *     'name_re':    The value of this field can be a regular expression to pull
+ *                   out the name of the feature or organism from the node label
+ *                   in the input tree. If no value is provided the entire label
+ *                   is used.
  *     'match':      Set to 'uniquename' if the leaf nodes should be matched
  *                   with the feature uniquename.
  *

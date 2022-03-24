@@ -120,7 +120,7 @@ function chado_phylotree_form($node, &$form_state) {
   // 1) as elements of the $node object.  This occurs when editing an existing phylotree
   // 2) in the $form_state['values'] array which occurs on a failed validation or
   //    ajax callbacks from non submit form elements
-  // 3) in the $form_state['input'[ array which occurs on ajax callbacks from submit
+  // 3) in the $form_state['input'] array which occurs on ajax callbacks from submit
   //    form elements and the form is being rebuilt
   //
   // set form field defaults
@@ -298,12 +298,13 @@ function chado_phylotree_form($node, &$form_state) {
   $form['tree_file']['name_re'] = [
     '#title' => t('Feature Name Regular Expression'),
     '#type' => 'textfield',
-    '#description' => t('If this is a phylogenetic (non taxonomic) tree, then
-          the tree nodes will be automatically associated with features. However,
+    '#description' => t('The tree nodes will be automatically associated with
+          features, or in the case of taxonomic trees, with organisms. However,
           if the nodes in the tree file are not exactly as the names of features
-          but have enough information to uniquely identify the feature then you
-          may provide a regular expression that the importer will use to extract
-          the feature names from the node names.'),
+          or organisms but have enough information to uniquely identify them,
+          then you may provide a regular expression that the importer will use to
+          extract the appropriate names from the node names. For example, remove
+          a prefix ABC_ with ^ABC_(.*)$'),
     '#default_value' => $name_re,
   ];
   $form['tree_file']['match'] = [

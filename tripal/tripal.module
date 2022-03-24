@@ -1657,7 +1657,10 @@ function tripal_job_describe_args($callback, $args) {
     $importer = TripalImporter::byID($args[0]);
     $args = $importer->getArguments();
     $ret = $args['run_args'];
-    $ret['file'] = $args['file']['file_path'];
+    // Legacy parameter, only add if present.
+    if (array_key_exists('file', $args) and array_key_exists('file_path', $args['file'])) {
+      $ret['file'] = $args['file']['file_path'];
+    }
 
     // Remove form elements from the TripalImporter form.
     unset($ret['form_id']);
