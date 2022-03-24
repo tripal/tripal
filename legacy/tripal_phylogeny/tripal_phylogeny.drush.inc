@@ -116,7 +116,7 @@ function tripal_phylogeny_drush_command() {
 }
 
 /**
- * Deletes a phylotree record.
+ * Inserts a phylotree record.
  *
  * Executed when 'drush trp-insert-phylotree' is called.
  *
