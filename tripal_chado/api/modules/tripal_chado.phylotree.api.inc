@@ -546,7 +546,7 @@ function chado_update_phylotree($phylotree_id, &$options) {
           'name_re' => $options['name_re'],
         ],
       ];
-      if (tripal_add_job("Import Tree File: " . basename($realfilepath), 'tripal_phylogeny',
+      if (tripal_add_job("Import Tree File: " . basename($real_file_path), 'tripal_phylogeny',
         'chado_phylogeny_import_tree_file', $args, $user->uid)) {
         drupal_set_message(t('The tree visualizations will appear once the tree is fully imported.'));
       }
