@@ -679,6 +679,10 @@ function chado_assign_phylogeny_tree_indices(&$tree, &$index = 1) {
  */
 function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], $parent = NULL) {
 
+  // Used for final summary message at end of recursion.
+  static $n_associated = 0;
+  static $n_not_associated = 0;
+
   // Get the vocabulary terms used to describe nodes in the tree if one
   // wasn't provided.
   if (count($vocab) == 0) {
@@ -758,6 +762,7 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
               else {
                 if (count($feature) == 1) {
                   $values['feature_id'] = $feature[0]->feature_id;
+                  $n_associated++;
                   tripal_report_error($options['message_type'], TRIPAL_INFO,
                     'Import phylotree: Associated %value by %matchtype to feature_id: %fid',
                     ['%matchtype' => $options['match'], '%value' => $sel_values[$options['match']],
@@ -767,6 +772,7 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
                 }
                 else {
                   // Could not find a feature that matches the name or uniquename
+                  $n_not_associated++;
                   tripal_report_error($options['message_type'], TRIPAL_WARNING,
                     'Import phylotree: Warning, unable to associate to a feature that matches the %matchtype: %value',
                     ['%matchtype' => $options['match'], '%value' => $sel_values[$options['match']] ],
@@ -785,6 +791,7 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
               $organism_id = chado_phylogeny_lookup_organism_by_name($organism_name);
               if ($organism_id) {
                 $tree['organism_id'] = $organism_id;
+                $n_associated++;
                 tripal_report_error($options['message_type'], TRIPAL_INFO,
                   'Import phylotree: Associated %name to organism_id: %organism_id',
                   ['%name' => $tree['name'], '%organism_id' => $organism_id],
@@ -792,6 +799,7 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
                 );
               }
               else {
+                $n_not_associated++;
                 tripal_report_error($options['message_type'], TRIPAL_WARNING,
                   'Import phylotree: Warning, unable to associate to an organism that matches %name',
                   ['%name' => $tree['name']],
@@ -834,6 +842,15 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
     foreach ($tree['branch_set'] as $key => $node) {
       chado_phylogeny_import_tree($tree['branch_set'][$key], $phylotree, $options, $vocab, $tree);
     }
+  }
+  // Report summary status of association of leaf nodes at end of recursion.
+  if (!$parent) {
+    tripal_report_error($options['message_type'], TRIPAL_INFO,
+      'Import phylotree summary: %n_associated nodes were successfully associated to '
+      . 'content, %n_not_associated nodes could not be associated',
+      ['%n_associated' => $n_associated, '%n_not_associated' => $n_not_associated],
+      $options['message_opts']
+      );
   }
 }
 
