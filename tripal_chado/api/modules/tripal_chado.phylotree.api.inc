@@ -722,7 +722,8 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
           // Match this leaf node with an organism or feature depending on the
           // type of tree. But we can't do that if we don't have a name.
           if (!empty($tree['name']) and $tree['name'] != '') {
-            if (!($options['leaf_type'] == 'taxonomy')) {
+            // first is set if arrive from newick loader, second if from NCBI Taxonomy load
+            if (!($options['leaf_type'] == 'taxonomy') and (!$options['taxonomy'])) {
 
               // This is a sequence-based tree. Try to match leaf nodes with
               // features.
@@ -781,7 +782,7 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
                 }
               }
             }
-            else {  // $options['leaf_type'] == 'taxonomy'
+            else {
               // This is a taxonomy tree. Try to match leaf nodes with organisms.
               $organism_name = $tree['name'];
               $re = $options['name_re'];
