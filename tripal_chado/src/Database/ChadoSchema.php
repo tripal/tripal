@@ -3,13 +3,13 @@
 namespace Drupal\tripal_chado\Database;
 
 use Symfony\Component\Yaml\Yaml;
-use Drupal\tripal_biodb\Database\BioSchema;
-use Drupal\tripal_biodb\Exception\SchemaException;
+use Drupal\tripal\TripalDBX\TripalDbxSchema;
+use Drupal\tripal\TripalDBX\Exceptions\SchemaException;
 
 /**
  * Chado schema class.
  */
-class ChadoSchema extends BioSchema {
+class ChadoSchema extends TripalDbxSchema {
 
   /**
    * {@inheritdoc}
