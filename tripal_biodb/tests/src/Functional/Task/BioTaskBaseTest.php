@@ -49,7 +49,7 @@ class BioTaskBaseFunctionalTest extends KernelTestBase {
     // Create a mock for the abstract class.
     $tmock = $this->getMockBuilder(\Drupal\tripal_biodb\Task\BioTaskBase::class)
       ->disableOriginalConstructor()
-      ->setMethods([/*'initId',*/ 'getBioClass'])
+      ->setMethods([/*'initId',*/ 'getTripalDbxClass'])
       ->getMockForAbstractClass()
     ;
     /*$tmock
@@ -58,7 +58,7 @@ class BioTaskBaseFunctionalTest extends KernelTestBase {
     ;*/
     $tmock
       ->expects($this->any())
-      ->method('getBioClass')
+      ->method('getTripalDbxClass')
       ->with('Connection')
       ->willReturn('\Drupal\Tests\tripal_biodb\Functional\Database\Subclass\BioConnectionFake')
     ;
@@ -68,7 +68,7 @@ class BioTaskBaseFunctionalTest extends KernelTestBase {
       'input_schemas' => ['insch'],
       'output_schemas' => ['outsch'],
     ];
-    
+
     // Call the constructor.
     $reflected_class = new \ReflectionClass(\Drupal\tripal_biodb\Task\BioTaskBase::class);
     $constructor = $reflected_class->getConstructor();
@@ -76,13 +76,13 @@ class BioTaskBaseFunctionalTest extends KernelTestBase {
 
     // // Create a new initialized object to cehck constructor work.
     // $tmock = $this->getMockBuilder(\Drupal\tripal_biodb\Task\BioTaskBase::class)
-    //   ->setMethods(['getBioClass'])
+    //   ->setMethods(['getTripalDbxClass'])
     //   ->setConstructorArgs([$parameters])
     //   ->getMockForAbstractClass()
     // ;
     // $tmock
     //   ->expects($this->any())
-    //   ->method('getBioClass')
+    //   ->method('getTripalDbxClass')
     //   ->with('Connection')
     //   ->willReturn('\Drupal\Tests\tripal_biodb\Functional\Database\Subclass\BioConnectionFake')
     // ;
