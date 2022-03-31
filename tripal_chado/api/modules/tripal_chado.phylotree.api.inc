@@ -272,8 +272,8 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
  *     'analysis':   If the analysis_id key is not used then the analysis name
  *                   may be provided to identify the analysis to which the tree
  *                   should be associated.
- *     'leaf_type':  A sequence ontology term or the word 'organism'. If the
- *                   type is 'organism' then this tree represents a
+ *     'leaf_type':  A sequence ontology term or the word 'taxonomy'. If the
+ *                   type is 'taxonomy' then this tree represents a
  *                   taxonomic tree.  The default, if not specified, is the
  *                   term 'polypeptide'.
  *     'tree_file':  The path of the file containing the phylogenetic tree to
@@ -434,8 +434,8 @@ function chado_insert_phylotree(&$options, &$errors, &$warnings) {
  *     'analysis':   If the analysis_id key is not used then the analysis name
  *                   may be provided to identify the analysis to which the tree
  *                   should be associated.
- *     'leaf_type':  A sequence ontology term or the word 'organism'. If the
- *                   type is 'organism' then this tree represents a
+ *     'leaf_type':  A sequence ontology term or the word 'taxonomy'. If the
+ *                   type is 'taxonomy' then this tree represents a
  *                   taxonomic tree.  The default, if not specified, is the
  *                   term 'polypeptide'.
  *     'tree_file':  The path of the file containing the phylogenetic tree to
@@ -459,13 +459,23 @@ function chado_insert_phylotree(&$options, &$errors, &$warnings) {
 function chado_update_phylotree($phylotree_id, &$options) {
   global $user;
 
+  // These are options for the tripal_report_error function. We do not
+  // want to log messages to the watchdog but we do for the job and to
+  // the terminal
+  $options['message_type'] = 'tripal_phylogeny';
+  $options['message_opts'] = [
+    'watchdog' => FALSE,
+    'job' => $options['job'],
+    'print' => TRUE,
+  ];
+
   // Validate the incoming options.
   $errors = [];
   $warnings = [];
   $success = chado_validate_phylotree('update', $options, $errors, $warnings);
   if (!$success) {
     foreach ($errors as $field => $message) {
-      tripal_report_error('tripal_phylogeny', TRIPAL_ERROR, $message);
+      tripal_report_error($options['message_type'], TRIPAL_ERROR, $message, [], $options['message_opts']);
     }
     return FALSE;
   }
@@ -495,7 +505,7 @@ function chado_update_phylotree($phylotree_id, &$options) {
     drupal_set_message(t('Unable to update phylotree.'), 'warning');
     tripal_report_error('tripal_phylogeny', TRIPAL_WARNING,
       'Update phylotree: Unable to update phylotree where values: %values',
-      ['%values' => print_r($values, TRUE)]
+      ['%values' => print_r($values, TRUE)], $options['message_opts']
     );
   }
 
@@ -583,7 +593,7 @@ function chado_delete_phylotree($phylotree_id) {
   // type chado_phylotree or the entry in the chado_phylotree table was lost.
   if (!$phylotree_id) {
     tripal_report_error('tripal_phylogeny', TRIPAL_ERROR,
-      'Please provide a phylotree_id to delete a tree.');
+      'Please provide a phylotree_id to delete a tree.', [], []);
     return FALSE;
   }
 
@@ -654,12 +664,10 @@ function chado_assign_phylogeny_tree_indices(&$tree, &$index = 1) {
  * @param $options
  *   The options provide some direction for how the tree is imported.  The
  *   following keys can be used:
- *   -taxonomy:  Set to 1 if this tree is a taxonomic tree. Set to 0
- *               otherwise.
  *   -leaf_type: Set to the leaf type name. If this is a non-taxonomic tree
  *               that is associated with features, then this should be the
  *               Sequence Ontology term for the feature (e.g. polypeptide).
- *               If this is a taxonomic tree then this option is not needed.
+ *               If this is a taxonomic tree then set to 'taxonomy'.
  *   -match:     Set to either 'name' or 'uniquename'.  This is used for
  *               matching the feature name or uniquename with the node name.
  *               This is not needed for taxonomic trees.
@@ -722,8 +730,7 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
           // Match this leaf node with an organism or feature depending on the
           // type of tree. But we can't do that if we don't have a name.
           if (!empty($tree['name']) and $tree['name'] != '') {
-            // first is set if arrive from newick loader, second if from NCBI Taxonomy load
-            if (!($options['leaf_type'] == 'taxonomy') and (!$options['taxonomy'])) {
+            if (!($options['leaf_type'] == 'taxonomy')) {
 
               // This is a sequence-based tree. Try to match leaf nodes with
               // features.
@@ -997,8 +1004,8 @@ function chado_phylogeny_get_node_types_vocab($options) {
  * @param $options
  *   Options if the phylotree record already exists:
  *     'phylotree_id': The imported nodes will be associated with this tree.
- *     'leaf_type':  A sequence ontology term or the word 'organism'. If the
- *                   type is 'organism' then this tree represents a
+ *     'leaf_type':  A sequence ontology term or the word 'taxonomy'. If the
+ *                   type is 'taxonomy' then this tree represents a
  *                   taxonomic tree.  The default, if not specified, is the
  *                   term 'polypeptide'.
  *     'name_re':    The value of this field can be a regular expression to pull
