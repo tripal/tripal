@@ -37,7 +37,7 @@ class operation__phylotree_vis_formatter extends ChadoFieldFormatter {
         $comment_markup = 'Click a species to view its species page.';
       }
       else {
-        $comment_markup = 'Click a node label to view its stock page.';
+        $comment_markup = 'Click a node label to view its page.';
       }
 
       if ($phylotree->has_nodes) {
