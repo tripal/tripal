@@ -651,7 +651,7 @@ class TripalDbx {
    *   The size in bytes of the database or 0 if the size is not available.
    */
   public function getDatabaseSize(
-    ?\Drupal\Core\Database\Driver\pgsql\Connection $db = NULL
+    ?\Drupal\Core\Database\Connection $db = NULL
   ) :int {
     $db = $db ?? \Drupal::database();
     $db_size = 0;
