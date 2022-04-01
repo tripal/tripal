@@ -337,7 +337,7 @@ abstract class ChadoTestBase extends KernelTestBase {
    *   A bio database connection using the test schema.
    */
   protected function freeTestSchema(
-    \Drupal\tripal_biodb\Database\TripalDbxConnection $tripaldbx_db
+    \Drupal\tripal\TripalDBX\TripalDbxConnection $tripaldbx_db
   ) {
     self::$testSchemas[$tripaldbx_db->getSchemaName()] = FALSE;
     try {
