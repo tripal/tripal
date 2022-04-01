@@ -239,17 +239,21 @@ class TaxonomyImporter extends TripalImporter {
 
     // Get the list of all organisms as we'll need this to lookup existing
     // organisms. Include lookup of NCBI taxid, if present.
-    $sqltaxid = "
+    $sql_common = "
     , (SELECT X.accession FROM {dbxref} X
        LEFT JOIN {organism_dbxref} OD ON OD.dbxref_id = X.dbxref_id
        LEFT JOIN {db} DB ON X.db_id = DB.db_id
        WHERE OD.organism_id = O.organism_id
-       AND DB.name = 'NCBITaxon') as ncbitaxid
+       AND DB.name = 'NCBITaxon') AS ncbitaxid
+    , (SELECT OP.value from {organismprop} OP WHERE
+       type_id = (SELECT cvterm_id FROM {cvterm} WHERE name = 'lineage'
+       AND cv_id = (SELECT cv_id FROM {cv} WHERE name = 'organism_property'))
+       AND OP.organism_id = O.organism_id) AS lineage
     ";
     if (chado_get_version() > 1.2) {
       $sql = "
         SELECT O.*, CVT.name AS type
-        $sqltaxid
+        $sql_common
         FROM {organism} O
           LEFT JOIN {cvterm} CVT ON CVT.cvterm_id = O.type_id
         ORDER BY O.genus, O.species, CVT.name, O.infraspecific_name
@@ -258,13 +262,19 @@ class TaxonomyImporter extends TripalImporter {
     else {
       $sql = "
         SELECT O.*, '' AS type
-        $sqltaxid
+        $sql_common
         FROM {organism} O
         ORDER BY O.genus, O.species
       ";
     }
     $results = chado_query($sql);
     while ($item = $results->fetchObject()) {
+      // If $root_taxon is specified, and lineage is already stored in chado,
+      // then we can filter out undesired organisms here when processing a
+      // sub-tree, and avoid an unnecessary query to NCBI later.
+      if (($root_taxon) and ($item->lineage) and !preg_match("/$root_taxon/i", $item->lineage)) {
+        continue;
+      }
       $this->all_orgs[] = $item;
     }
 
