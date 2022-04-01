@@ -30,7 +30,7 @@ abstract class ChadoTestBase extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['tripal_biodb', 'tripal_chado'];
+  protected static $modules = ['tripal', 'tripal_biodb', 'tripal_chado'];
 
   /**
    * Just get a free test schema name.

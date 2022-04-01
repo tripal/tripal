@@ -33,7 +33,8 @@ class BioTaskBaseFunctionalTest extends KernelTestBase {
    */
   protected function setUp(): void {
     parent::setUp();
-    // Register BioDbTool service.
+    // Register Tripal DBX service.
+    $this->enableModules(['tripal']);
     $this->enableModules(['tripal_biodb']);
   }
 
