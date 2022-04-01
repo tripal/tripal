@@ -402,8 +402,7 @@ class ConnectionTest extends KernelTestBase {
    * @cover ::prefixTables
    */
   public function testSchemaNameChangeImpacts() {
-    $drupal_prefix = \Drupal::database()->getConnectionOptions()['prefix']['default'];
-    $drupal_prefix = str_replace('.', '"."', $drupal_prefix);
+    $drupal_prefix = $this->testhelper_get_drupal_prefix();
 
     $dbmock = $this->getConnectionMock('first');
     // Manages fake versions. First schema would be 42 and next 806.
@@ -469,8 +468,7 @@ class ConnectionTest extends KernelTestBase {
    * @cover ::addExtraSchema
    */
   public function testAddExtraSchemaNoSchema() {
-    $drupal_prefix = \Drupal::database()->getConnectionOptions()['prefix']['default'];
-    $drupal_prefix = str_replace('.', '"."', $drupal_prefix);
+    $drupal_prefix = $this->testhelper_get_drupal_prefix();
     $dbmock = $this->getConnectionMock();
 
     $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
@@ -484,8 +482,7 @@ class ConnectionTest extends KernelTestBase {
    * @cover ::setExtraSchema
    */
   public function testSetExtraSchemaZero() {
-    $drupal_prefix = \Drupal::database()->getConnectionOptions()['prefix']['default'];
-    $drupal_prefix = str_replace('.', '"."', $drupal_prefix);
+    $drupal_prefix = $this->testhelper_get_drupal_prefix();
     $dbmock = $this->getConnectionMock();
 
     $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
@@ -499,8 +496,7 @@ class ConnectionTest extends KernelTestBase {
    * @cover ::setExtraSchema
    */
   public function testSetExtraSchemaOne() {
-    $drupal_prefix = \Drupal::database()->getConnectionOptions()['prefix']['default'];
-    $drupal_prefix = str_replace('.', '"."', $drupal_prefix);
+    $drupal_prefix = $this->testhelper_get_drupal_prefix();
     $dbmock = $this->getConnectionMock();
 
     $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
@@ -514,8 +510,7 @@ class ConnectionTest extends KernelTestBase {
    * @cover ::prefixTables
    */
   public function testPrefixNoSchema() {
-    $drupal_prefix = \Drupal::database()->getConnectionOptions()['prefix']['default'];
-    $drupal_prefix = str_replace('.', '"."', $drupal_prefix);
+    $drupal_prefix = $this->testhelper_get_drupal_prefix();
     $dbmock = $this->getConnectionMock();
 
     $prefix_test = $dbmock->prefixTables(
@@ -544,8 +539,7 @@ class ConnectionTest extends KernelTestBase {
    * @cover ::prefixTables
    */
   public function testPrefixNoExtraSchema() {
-    $drupal_prefix = \Drupal::database()->getConnectionOptions()['prefix']['default'];
-    $drupal_prefix = str_replace('.', '"."', $drupal_prefix);
+    $drupal_prefix = $this->testhelper_get_drupal_prefix();
     $test_schema_base_names = \Drupal::config('tripaldbx.settings')
       ->get('test_schema_base_names')
     ;
@@ -601,8 +595,7 @@ class ConnectionTest extends KernelTestBase {
    * @cover ::setExtraSchema
    */
   public function testConnectionScenario1() {
-    $drupal_prefix = \Drupal::database()->getConnectionOptions()['prefix']['default'];
-    $drupal_prefix = str_replace('.', '"."', $drupal_prefix);
+    $drupal_prefix = $this->testhelper_get_drupal_prefix();
     $test_schema_base_names = \Drupal::config('tripaldbx.settings')
       ->get('test_schema_base_names')
     ;
@@ -684,8 +677,7 @@ class ConnectionTest extends KernelTestBase {
    * @cover ::clearExtraSchemas
    */
   public function testConnectionScenario2() {
-    $drupal_prefix = \Drupal::database()->getConnectionOptions()['prefix']['default'];
-    $drupal_prefix = str_replace('.', '"."', $drupal_prefix);
+    $drupal_prefix = $this->testhelper_get_drupal_prefix();
     $test_schema_base_names = \Drupal::config('tripaldbx.settings')
       ->get('test_schema_base_names')
     ;
@@ -744,8 +736,7 @@ class ConnectionTest extends KernelTestBase {
    * @cover ::setExtraSchema
    */
   public function testConnectionScenario3() {
-    $drupal_prefix = \Drupal::database()->getConnectionOptions()['prefix']['default'];
-    $drupal_prefix = str_replace('.', '"."', $drupal_prefix);
+    $drupal_prefix = $this->testhelper_get_drupal_prefix();
     $test_schema_base_names = \Drupal::config('tripaldbx.settings')
       ->get('test_schema_base_names')
     ;
@@ -1008,6 +999,29 @@ class ConnectionTest extends KernelTestBase {
     $this->assertTrue($table_exists, "Test table 'testtable' created.");
     $schema_not_exists = !empty($dbmock->query($schema_exists_sql)->fetch());
     $this->assertFalse($schema_not_exists, "Schema $sch_1 dropped.");
+  }
+
+  /**
+   * HELPER: Retrieve the Drupal table prefix for the current site.
+   */
+  protected function testhelper_get_drupal_prefix() {
+    $database_options \Drupal::database()->getConnectionOptions();
+
+    $drupal_prefix = '';
+    if (array_key_exists('prefix', $database_options)) {
+      $drupal_prefix = $database_options['prefix'];
+      if (is_array($drupal_prefix)) {
+        if (array_key_exists('default', $drupal_prefix)) {
+          $drupal_prefix = $drupal_prefix['default'];
+        }
+        else {
+          $drupal_prefix = 'cannot_determine';
+        }
+      }
+    }
+    $drupal_prefix = str_replace('.', '"."', $drupal_prefix);
+
+    return $drupal_prefix;
   }
 
 }
