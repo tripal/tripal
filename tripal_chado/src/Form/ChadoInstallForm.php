@@ -5,7 +5,7 @@ namespace Drupal\tripal_chado\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
-use Drupal\tripal\TripalDBX\TripalDbxl;
+use Drupal\tripal\TripalDBX\TripalDbx;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\Task\ChadoInstaller;
 
