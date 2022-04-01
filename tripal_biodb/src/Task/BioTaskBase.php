@@ -68,14 +68,14 @@ abstract class BioTaskBase implements BioTaskInterface {
   protected $parameters = ['input_schemas' => [], 'output_schemas' => [], ];
 
   /**
-   * Input schemas as an array of Drupal\tripal\TripalDBX\TripalDbxConnection.
+   * Input schemas as an array of \Drupal\tripal\TripalDBX\TripalDbxConnection.
    *
    * @var array
    */
   protected $inputSchemas = [];
 
   /**
-   * Output schemas as an array of Drupal\tripal\TripalDBX\TripalDbxConnection.
+   * Output schemas as an array of \Drupal\tripal\TripalDBX\TripalDbxConnection.
    *
    * @var array
    */
@@ -180,7 +180,7 @@ abstract class BioTaskBase implements BioTaskInterface {
    *   \Drupal\Core\Database\Database::getConnection()).
    *
    * @return array
-   *   An ordered array of Drupal\tripal\TripalDBX\TripalDbxConnection objects.
+   *   An ordered array of \Drupal\tripal\TripalDBX\TripalDbxConnection objects.
    *
    * @see https://api.drupal.org/api/drupal/core!lib!Drupal!Core!Database!Database.php/function/Database%3A%3AgetConnection/9.3.x
    *
@@ -223,14 +223,14 @@ abstract class BioTaskBase implements BioTaskInterface {
   /**
    * Returns the lock name to use for the given schema.
    *
-   * @param Drupal\tripal\TripalDBX\TripalDbxConnection $db
+   * @param \Drupal\tripal\TripalDBX\TripalDbxConnection $db
    *   A schema connection.
    *
    * @return string
    *   The lock name.
    */
   protected function getSchemaLockName(
-    Drupal\tripal\TripalDBX\TripalDbxConnection $db
+    \Drupal\tripal\TripalDBX\TripalDbxConnection $db
   ) :string {
     return $db->getDatabaseName() . '.' . $db->getSchemaName();
   }
