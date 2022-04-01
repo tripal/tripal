@@ -1005,7 +1005,7 @@ class ConnectionTest extends KernelTestBase {
    * HELPER: Retrieve the Drupal table prefix for the current site.
    */
   protected function testhelper_get_drupal_prefix() {
-    $database_options \Drupal::database()->getConnectionOptions();
+    $database_options = \Drupal::database()->getConnectionOptions();
 
     $drupal_prefix = '';
     if (array_key_exists('prefix', $database_options)) {
