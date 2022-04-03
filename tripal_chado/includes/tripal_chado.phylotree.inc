@@ -195,11 +195,13 @@ function tripal_phylogeny_ajax_get_tree_json($phylotree_id)
         if (module_exists('tripal_phylogeny')) {
           $node['feature_nid'] = (int)$r->feature_nid;
         } else {
-          if ($r->feature_id) {
-            $entity_id = chado_get_record_entity_by_table('feature', $r->feature_id);
-          }
-          elsif ($r->stock_id) {
+          // If not linked directly to a feature, leaf nodes can also be linked to
+          // stock entities through an intermediate feature.
+          if ($r->stock_id) {
             $entity_id = chado_get_record_entity_by_table('stock', $r->stock_id);
+          }
+          else {
+            $entity_id = chado_get_record_entity_by_table('feature', $r->feature_id);
           }
           $node['feature_eid'] = (int)$entity_id;
         }
