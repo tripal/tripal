@@ -13,9 +13,9 @@ use Drupal\Core\Form\FormStateInterface;
  *   id = "default_tripal_rdfs_type_formatter",
  *   label = @Translation("Default Content Type Formatter"),
  *   description = @Translation("The default resource content type formatter."),
- *   field_types = [
+ *   field_types = {
  *     "tripal_rdfs_type"
- *   ]
+ *   }
  * )
  */
 class DefaultTripalRDFSTypeFormatter extends TripalFormatterBase {
