@@ -1,6 +1,8 @@
 <?php
 
+namespace Drupal\tripal\TripalField;
 
+use Drupal\Core\Field\FieldItemInterface;
 
 interface TripalFieldItemInterface extends FieldItemInterface {
 

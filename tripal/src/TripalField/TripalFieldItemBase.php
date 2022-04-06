@@ -3,16 +3,16 @@
 namespace Drupal\tripal\TripalField;
 
 use Drupal\Core\Field\FieldItemBase;
-use Drupal\tripal\TripalStorage\TripalFieldItemInterface;
+use Drupal\tripal\TripalField\TripalFieldItemInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Cache\FieldStorageDefinitionInterface;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\tripal\TripalStorage\IntStoragePropertyType;
 use Drupal\Core\TypedData\DataDefinition;
 
 /**
  * Defines the Tripal field item base class.
  */
-class TripalFieldItemBase extends FieldItemBase extends TripalFieldItemInterface {
+class TripalFieldItemBase implements TripalFieldItemInterface {
 
   /**
    * {@inheritdoc}
