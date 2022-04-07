@@ -12,7 +12,7 @@ use Drupal\Core\TypedData\DataDefinition;
 /**
  * Defines the Tripal field item base class.
  */
-class TripalFieldItemBase implements TripalFieldItemInterface {
+abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldItemInterface {
 
   /**
    * {@inheritdoc}
