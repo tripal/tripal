@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\tripal\TripalField;
+namespace Drupal\tripal\TripalField\Interfaces;
 
 use Drupal\Core\Field\FieldItemInterface;
 

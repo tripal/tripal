@@ -3,7 +3,7 @@
 namespace Drupal\tripal\TripalField;
 
 use Drupal\Core\Field\FieldItemBase;
-use Drupal\tripal\TripalField\TripalFieldItemInterface;
+use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\tripal\TripalStorage\IntStoragePropertyType;
