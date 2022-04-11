@@ -20,7 +20,7 @@ interface TripalFieldItemInterface extends FieldItemInterface {
    * @return array
    *   Array of \Drupal\tripal4\Base\StoragePropertyTypeBase property types.
    */
-  public function tripalTypes();
+  public static function tripalTypes();
 
   /**
    * Returns an empty template array of all property values this field uses for loading and saving.
