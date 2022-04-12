@@ -177,9 +177,9 @@ class TaxonomyImporter extends TripalImporter {
       '#type' => 'checkbox',
       '#title' => 'Import details for existing species.',
       '#description' => t('The NCBI Taxonomic Importer examines the organisms
-        currently present in the database and queries NCBI for the
+        currently present in this site\'s database, and queries NCBI for the
         taxonomic details.  If the importer is able to match the
-        genus and species with NCBI the species details will be imported,
+        genus and species with NCBI, the species details will be imported,
         and a page containing the taxonomic tree will be created.'),
       '#default_value' => 1,
     ];
