@@ -44,6 +44,6 @@ class IntStoragePropertyType extends StoragePropertyTypeBase {
    *
    * @var int
    */
-  private maxCharacterSize;
+  private $maxCharacterSize;
 
 }
