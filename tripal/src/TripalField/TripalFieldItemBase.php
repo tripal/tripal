@@ -51,7 +51,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
   public static function schema(FieldStorageDefinitionInterface $field_definition) {
     $schema = [];
 
-    foreach (get_called_class()::tripalTypes() as $type) {
+    foreach (get_called_class()::tripalTypes($field_definition->getTargetEntityTypeId()) as $type) {
       if ($type instanceof IntStoragePropertyType) {
         $column = [
           "type" => "int"

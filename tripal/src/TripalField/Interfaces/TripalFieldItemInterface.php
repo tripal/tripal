@@ -16,11 +16,14 @@ interface TripalFieldItemInterface extends FieldItemInterface {
 
   /**
    * Returns the property types required by this field.
+   * 
+   * @param string $entityId
+   *   The entity type id of this field's entity.
    *
    * @return array
    *   Array of \Drupal\tripal4\Base\StoragePropertyTypeBase property types.
    */
-  public static function tripalTypes();
+  public static function tripalTypes($entityTypeId);
 
   /**
    * Returns an empty template array of all property values this field uses for loading and saving.

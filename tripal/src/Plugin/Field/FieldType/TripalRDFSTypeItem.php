@@ -24,8 +24,8 @@ class TripalRDFSTypeItem extends TripalFieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public static function tripalTypes() {
-    return [new VarCharStoragePropertyType($this->getEntity()->getEntityTypeId(),$this->id,"type",255)];
+  public static function tripalTypes($entityTypeId) {
+    return [new VarCharStoragePropertyType($entityTypeId,self::$id,"type",255)];
   }
 
   /**
