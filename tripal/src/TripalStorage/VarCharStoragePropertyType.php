@@ -1,13 +1,13 @@
 <?php
 
-namespace Drupal\tripal4\TripalStorage;
+namespace Drupal\tripal\TripalStorage;
 
-use Drupal\tripal4\Base\StoragePropertyTypeBase;
+use Drupal\tripal\TripalStorage\StoragePropertyTypeBase;
 
 /**
  * Defines the variable character Tripal storage property type.
  */
-class IntStoragePropertyType extends StoragePropertyTypeBase {
+class VarCharStoragePropertyType extends StoragePropertyTypeBase {
 
   /**
    * Constructs a new variable character tripal storage property type.

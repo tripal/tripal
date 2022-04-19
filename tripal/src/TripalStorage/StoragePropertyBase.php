@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\tripal4\Base;
+namespace Drupal\tripal\TripalStorage;
 
 /**
  * Base class for a Tripal storage property type or value.

@@ -1,8 +1,8 @@
 <?php
 
-namespace Drupal\tripal4\TripalStorage;
+namespace Drupal\tripal\TripalStorage;
 
-use Drupal\tripal4\TripalStorage\StoragePropertyBase;
+use Drupal\tripal\TripalStorage\StoragePropertyBase;
 
 /**
  * Base class for a Tripal storage property type.
