@@ -36,7 +36,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
   public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
     $properties = [];
 
-    foreach ($this->tripalTypes() as $type) {
+    foreach (get_called_class()::tripalTypes($field_definition->getTargetEntityTypeId()) as $type) {
       if ($type instanceof IntStoragePropertyType) {
         $properties[$type->getFieldKey()] = DataDefinition::create("integer");
       }
