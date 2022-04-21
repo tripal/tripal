@@ -28,7 +28,7 @@ class DefaultTripalRDFSTypeFormatter extends TripalFormatterBase {
 
     foreach($items as $delta => $item) {
         $elements[$delta] = [
-          "#markup" => $item->get("type");
+          "#markup" => $item->get("type")
         ];
     }
 
