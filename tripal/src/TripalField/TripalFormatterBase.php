@@ -7,5 +7,5 @@ use Drupal\Core\Field\FormatterBase;
 /**
  * Defines the Tripal field formatter base class.
  */
-class TripalFormatterBase extends FormatterBase {
+abstract class TripalFormatterBase extends FormatterBase {
 }
