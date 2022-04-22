@@ -328,7 +328,7 @@ class sbo__relationship extends ChadoField {
     // If the subject has an organism then add that in for reference.
     if (property_exists($relationship->{$this->subject_id_column}, 'organism_id')
       AND is_object($relationship->{$this->subject_id_column}->organism_id)) {
-      $record['OBI:0100026'] = $this->getOrganismName($relationship->{$this->subject_id_column});
+      $record['OBI:0100026'] = $this->getOrganismName($relationship->{$this->subject_id_column}->organism_id);
     }
 
     // Add in the TripalEntity ids if the subject is published.
@@ -390,7 +390,7 @@ class sbo__relationship extends ChadoField {
     // If the object has an organism then add that in for reference.
     if (property_exists($relationship->{$this->object_id_column}, 'organism_id')
       AND is_object($relationship->{$this->object_id_column}->organism_id)) {
-      $record['OBI:0100026'] = $this->getOrganismName($relationship->{$this->object_id_column});
+      $record['OBI:0100026'] = $this->getOrganismName($relationship->{$this->object_id_column}->organism_id);
     }
 
     // Add in the TripalEntity ids if the object is published.
