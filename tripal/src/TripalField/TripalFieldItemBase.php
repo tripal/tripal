@@ -7,7 +7,9 @@ use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\tripal\TripalStorage\IntStoragePropertyType;
+use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
 use Drupal\Core\TypedData\DataDefinition;
+use \RuntimeException;
 
 /**
  * Defines the Tripal field item base class.
@@ -21,7 +23,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $elements = [];
 
     $elements["vocabulary_term"] = [
-      "#type" => "string",
+      "#type" => "item",
       "#title" => $this->t("Vocabulary Term"),
       "#required" => TRUE,
       "#description" => $this->t("The vocabulary term.")
@@ -40,6 +42,16 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       if ($type instanceof IntStoragePropertyType) {
         $properties[$type->getFieldKey()] = DataDefinition::create("integer");
       }
+      else if ($type instanceof VarCharStoragePropertyType) {
+        $properties[$type->getFieldKey()] = DataDefinition::create("string");
+      }
+      else {
+        throw new RuntimeException("Unknown Tripal Property Type class.");
+      }
+    }
+
+    if (empty(properties)) {
+      throw new RuntimeException("Cannot return empty array.");
     }
 
     return $properties;
@@ -58,6 +70,20 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
         ];
         $schema["columns"][$type->getFieldKey()] = $column;
       }
+      else if ($type instanceof VarCharStoragePropertyType) {
+        $column = [
+          "type" => "varchar"
+          ,"size" => $type->getMaxCharacterSize()
+        ];
+        $schema["columns"][$type->getFieldKey()] = $column;
+      }
+      else {
+        throw new RuntimeException("Unknown Tripal Property Type class.");
+      }
+    }
+
+    if (empty(properties)) {
+      throw new RuntimeException("Cannot return empty array.");
     }
 
     return $schema;
@@ -71,7 +97,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
 
     // turn into selection
     $elements["storage_plugin_id"] = [
-      "#type" => "string",
+      "#type" => "item",
       "#title" => $this->t("Tripal Storage Plugin ID."),
       "#required" => TRUE,
       "#description" => $this->t(""),
