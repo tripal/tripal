@@ -123,13 +123,45 @@ class ChadoPreparer extends ChadoTaskBase {
 
     try
     {
-      $chado_schema = $this->outputSchemas[0];
+      $chado_schema = $this->outputSchemas[0]->getSchemaName();
 
       $this->setProgress(0.1);
+      $this->logger->notice("Creating Tripal Materialized Views and Custom Tables...");
+      $chado_version = chado_get_version(FALSE, FALSE, $output_schema);
+      if ($chado_version == '1.1') {
+        $this->add_v1_1_custom_tables();
+        $this->add_vx_x_custom_tables();
+      }
+      if ($chado_version == '1.2') {
+        $this->add_v1_2_custom_tables();
+        $this->add_vx_x_custom_tables();
+      }
+      if ($chado_version == '1.3') {
+        $this->add_vx_x_custom_tables();
+        $this->fix_v1_3_custom_tables();
+      }
+
+      $this->setProgress(0.2);
       $this->logger->notice("Loading ontologies...");
       $this->loadOntologies();
 
+      $this->setProgress(0.3);
+      $this->logger->notice('Populating materialized view cv_root_mview...');
+      // TODO: populate mviews.
+      
+      $this->setProgress(0.4);
+      $this->logger->notice("Making semantic connections for Chado tables/fields...");
+      // $this->populate_chado_semweb_table();
+      
       $this->setProgress(0.5);
+      $this->logger->notice("Map Chado Controlled vocabularies to Tripal Terms...");
+      // TODO
+      
+      $this->setProgress(0.6);
+      $this->logger->notice('Populating materialized view db2cv_mview...'); 
+      // TODO     
+
+      $this->setProgress(0.7);
       $this->logger->notice("Creating default content types...");
       $this->contentTypes();
 
