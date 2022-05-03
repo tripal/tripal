@@ -73,7 +73,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       else if ($type instanceof VarCharStoragePropertyType) {
         $column = [
           "type" => "varchar"
-          ,"size" => $type->getMaxCharacterSize()
+          ,"length" => $type->getMaxCharacterSize()
         ];
         $schema["columns"][$type->getFieldKey()] = $column;
       }
