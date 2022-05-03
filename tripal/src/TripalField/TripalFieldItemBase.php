@@ -23,7 +23,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $elements = [];
 
     $elements["vocabulary_term"] = [
-      "#type" => "item",
+      "#type" => "textfield",
       "#title" => $this->t("Vocabulary Term"),
       "#required" => TRUE,
       "#description" => $this->t("The vocabulary term.")
@@ -97,7 +97,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
 
     // turn into selection
     $elements["storage_plugin_id"] = [
-      "#type" => "item",
+      "#type" => "textfield",
       "#title" => $this->t("Tripal Storage Plugin ID."),
       "#required" => TRUE,
       "#description" => $this->t(""),
