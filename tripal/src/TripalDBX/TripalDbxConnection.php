@@ -15,6 +15,42 @@ use Drupal\tripal\TripalDBX\Exceptions\ConnectionException;
  * It has been designed mostly based on Chado schema and PostgreSQL features
  * allowing you have several schemas in the same database and query across them.
  *
+ * The core functionality provided by extending the core Drupal Connection class
+ * is to support additional schema using the {tablename} notation for the
+ * Drupal schema, {1: tablename} notation for the current Tripal DBX Managed
+ * schema and {2+: tablename} notation for any additional Tripal DBX managed
+ * schema.
+ *
+ * For example, the following code joins chado feature data between two Tripal
+ * DBX managed chado schema and includes a join to the drupal node_field_data
+ * table.
+ *
+ *  $dbxdb = \Drupal::service('tripal_chado.database');
+ *  $dbxdb->setSchemaName('chado1');
+ *  $dbxdb->addExtraSchema('chado2');
+ *  $sql = "
+ *    SELECT * FROM
+ *      {1:feature} f1,
+ *      {2:feature} f2,
+ *      {node_field_data} fd
+ *    WHERE fd.title = f1.uniquename
+ *    AND f1.uniquename = f2.uniquename;";
+ * $results = $dbxdb->query($sql);
+ *
+ * Additionally, this class allows you to use the native PHP/Drupal PDO
+ * query builder as shown in this next example:
+ *
+ * $dbxdb = \Drupal::service('tripal_chado.database');
+ * $query = $dbxdb->select('feature', 'x');
+ * $query->condition('x.is_obsolete', 'f', '=');
+ * $query->fields('x', ['name', 'residues']);
+ * $query->range(0, 10);
+ * $result = $query->execute();
+ * foreach ($result as $record) {
+ *   // Do something with the $record object here.
+ *   // e.g. echo $record->name;
+ * }
+ *
  * Here are some useful inherited methods to know:
  *
  * - TripalDbxConnection::select(), insert(), update(), delete(), truncate(),
@@ -395,6 +431,14 @@ abstract class TripalDbxConnection extends PgConnection {
   /**
    * Returns current message logger.
    *
+   * Note: the setLogger() and getLogger() methods are reserved for database query
+   * logging and is operated by Drupal. It works with a \Drupal\Core\Database\Log
+   * class. To log messages in extending classes, use setMessageLogger() and
+   * getMessageLogger() instead, which operates with the \Drupal\tripal\Services\TripalLogger
+   * class. By default, the message logger is set by the constructor either using
+   * the user-provided logger or by instanciating one using the log channel
+   * 'tripal.logger'.
+   *
    * @return \Drupal\tripal\Services\TripalLogger
    *  A message logger.
    */
@@ -405,6 +449,14 @@ abstract class TripalDbxConnection extends PgConnection {
   /**
    * Sets current message logger.
    *
+   * Note: the setLogger() and getLogger() methods are reserved for database query
+   * logging and is operated by Drupal. It works with a \Drupal\Core\Database\Log
+   * class. To log messages in extending classes, use setMessageLogger() and
+   * getMessageLogger() instead, which operates with the \Drupal\tripal\Services\TripalLogger
+   * class. By default, the message logger is set by the constructor either using
+   * the user-provided logger or by instanciating one using the log channel
+   * 'tripal.logger'.
+   *
    * @param \Drupal\tripal\Services\TripalLogger $logger
    *  A message logger.
    */
@@ -413,7 +465,9 @@ abstract class TripalDbxConnection extends PgConnection {
   }
 
   /**
-   * (override) Returns a Schema object for manipulating the schema.
+   * Returns a Schema object for manipulating the schema.
+   *
+   * OVERRIDES \Drupal\Core\Database\Connection:schema()
    *
    * This method overrides the parent one in order to force the use of the
    * \Drupal\tripal\TripalDBX\TripalDbxSchema class and manage Tripal DBX managed schema
@@ -943,7 +997,37 @@ abstract class TripalDbxConnection extends PgConnection {
   }
 
   /**
-   * {@inheritdoc}
+   * Appends a database prefix to all tables in a query.
+   *
+   * OVERRIDES \Drupal\Core\Database\Connection:prefixTables().
+   *
+   * This API expects all table names to be wrapped in curly brackets with an
+   * integer indicating the schema the table is in. For example, {1: feature}
+   * would indicate the feature table in the current Tripal DBX managed schema,
+   * {0: system} would indicate the drupal system table and additional numeric
+   * indices would be used for extra Tripal DBX managed schema.
+   *
+   * For Example, lets say the schema name of the current TripalDBX managed
+   * schema is "chado", Drupal is in the "public" schema and we have a second
+   * Tripal DBX managed schema named "genotypes".
+   *
+   * Now assume the following query was submitted to this function:
+   *  SELECT f.name as marker_name, g.allele
+   *    FROM {1: feature} f
+   *    LEFT JOIN {2: genotype_call} g ON g.marker_id = f.feature_id
+   *    WHERE f.uniquename = 'MarkerICareAbout'
+   *
+   * Then the returned, properly prefixed query would be:
+   *  SELECT f.name as marker_name, g.allele
+   *    FROM chado.feature f
+   *    LEFT JOIN genotypes.genotype_call g ON g.marker_id = f.feature_id
+   *    WHERE f.uniquename = 'MarkerICareAbout'
+   *
+   * @param string $sql
+   *   A string containing a partial or complete SQL query.
+   *
+   * @return string
+   *   The same query passed in  but now with properly prefixed table names.
    */
   public function prefixTables($sql) {
     // Make sure there is no extra "{number:" in the query.
@@ -978,17 +1062,40 @@ abstract class TripalDbxConnection extends PgConnection {
   }
 
   /**
-   * (override) Find the prefix for a table.
+   * Find the prefix for a table.
+   *
+   * OVERRIDES \Drupal\Core\Database\Connection:tablePrefix().
    *
    * This function is for when you want to know the prefix of a table. This
    * is not used in prefixTables due to performance reasons.
-   * This override adds the support for Tripal DBX managed schema tables.
+   *
+   * This override adds the support for Tripal DBX managed schema tables
+   * by returning the prefix used for a table in a Tripal DBX managed schema
+   * if applicable.
+   *
+   * There are a couple of ways to use this. Call this function with:
+   *   A) $table matching to the index you would use for your Tripal DBX
+   *      managed schema (i.e. 0: drupal, 1:current, 2+:extra in order added).
+   *      This would return the expected prefix used by Tripal DBX (e.g. "chado.")
+   *   B) $myinstance->tablePrefix('default', TRUE).
+   *      This would return the Tripal DBX prefix of the current schema (i.e. index 1).
+   *   C) a Drupal table name  only (i.e. $use_tdbx_schema = FALSE) not realizing
+   *      it's been overriden and get the Drupal table prefix. (Backwards Compatible)
+   *   D) any table name and $use_tdbx_schema = TRUE and get the prefix for the
+   *      current Tripal DBX Managed schema.
+   *
+   * NOTE: This function does not support Drupal per-table prefixing. While
+   *   Drupal supported this originally, it has been deprecated in Drupal 8.3
+   *   according to https://www.drupal.org/project/drupal/issues/2551549
    *
    * @param string $table
    *   (optional) The table to find the prefix for.
    * @param bool $use_tdbx_schema
    *   (optional) if TRUE, table will be prefixed with the Tripal DBX managed schema
    *   name (if not empty).
+   *
+   * @return string
+   *   The prefix that would be used for a table in the specified schema.
    */
   public function tablePrefix($table = 'default', bool $use_tdbx_schema = FALSE) {
     $use_tdbx_schema = ($use_tdbx_schema || $this->shouldUseTripalDbxSchema());
