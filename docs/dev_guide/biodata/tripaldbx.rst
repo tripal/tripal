@@ -14,4 +14,42 @@ Currently Tripal DBX relies on the Drupal PostgreSQL implementations of these cl
 Tripal DBX Connection
 -----------------------
 
-Drupal attempts to minimize the number of connections to the database by only creating a new connection if one does not already exist. This makes sense in the context of a single database schema, however, when dealing with multiple schema you will often need to make changes to the search path in order to access the tables of each schema. This API creates an independent connection to the database for each schema being used which allows the primary Drupal connection to remain unaffected by search path changes.
+There are two main parts of the Drupal Connection class that the Tripal DBX Api overides:
+
+**A) One Database Connection per Instance:**
+
+Drupal attempts to minimize the number of connections to the database by only creating a new connection if one does not already exist. This makes sense in the context of a single database schema; however, when dealing with multiple schema you will often need to make changes to the search path in order to access the tables of each schema. This API creates an independent connection to the database for each TripalDbxConnection instance which ensures the primary Drupal connection remains unaffected by search path changes.
+
+**B) Table Prefixing in Queries:**
+
+Drupal has always had support for prefixing table names; however, this has been a simple string prepended to the beginning of the table name. This is likely due to many database systems not supporting multiple schema within a single database. In version 2 and 3, Tripal used the native Drupal prefixing to access the Chado database in a separate schema. It did this by using a prefix of "chado." which takes advantage of the PostgreSQL syntax for accessing a specific schema (named "chado" in the previous example). In Tripal version 4, we've created the Tripal DBX API which takes this one step further by extending the native PHP/Drupal PDO database layer to use cross schema focused table prefixing. This allows module developers to access multiple chado and additional Tripal DBX managed schema using the object-oriented query builder as demonstrated in the following example:
+
+.. code-block:: php
+
+   // Open a Connection to the default Tripal DBX managed Chado schema.
+   $dbxdb = \Drupal::service('tripal_chado.database');
+
+   // Start a select query on the Chado feature table and assign an alias of x.
+   $query = $dbxdb->select('feature', 'x');
+
+   // Add a where condition that feature.is_obsolete is FALSE.
+   $query->condition('x.is_obsolete', 'f', '=');
+
+   // Select the name and residues columns/fields from the table.
+   $query->fields('x', ['name', 'residues']);
+
+   // And only show the first 10 records/entries.
+   $query->range(0, 10);
+
+   // Finally execute the query we generated against the database.
+   $result = $query->execute();
+
+   // And iterate through the returned results.
+   foreach ($result as $record) {
+     // Do something with the $record object here.
+     // e.g. echo $record->name;
+   }
+
+The above example used a Chado implementation of the Tripal DBX API provided by the ``tripal_chado.database`` service to generate a select query, execute it agains the database focusing on a specific non-Drupal schema and then iterates through the results.
+
+``@todo add documentation for multiple schema.``
