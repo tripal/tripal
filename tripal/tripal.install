@@ -67,6 +67,12 @@ function tripal_add_variables() {
  */
 function tripal_uninstall() {
 
+  // Remove configuration.
+  // -- Reserves Drupal schema in 'reserved_schema_patterns' settings.
+  $config = \Drupal::service('config.factory')
+    ->getEditable('tripaldbx.settings');
+  $config->delete();
+
   // Remove the Tripal DBX Cloner functions from the Drupal schema.
   tripal_uninstall_cloner();
 
