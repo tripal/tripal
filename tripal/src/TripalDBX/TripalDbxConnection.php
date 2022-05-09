@@ -820,16 +820,18 @@ abstract class TripalDbxConnection extends PgConnection {
   }
 
   /**
-   * (override) Sets the list of prefixes used by this database connection.
+   * Sets the list of prefixes used by this database connection.
    *
-   * Overrides parent method in order to manage multiple schema queries.
+   * OVERRIDES \Drupal\Core\Database\Connection:setPrefix().
+   *
+   * This API overrides the parent method in order to manage multiple schema queries.
    *
    * In static Drupal SQL queries, table names must be wrapped in curly braces
    * (https://www.drupal.org/docs/drupal-apis/database-api/static-queries).
    * This allows Drupal to use table prefixes as specified in settings.php file.
    * When working with PostgreSQL and multiple schemas, each table should be
    * prefixed by its schema to avoid conflicting names (in wich case the
-   * search_path order is not enought). Since we may work with several
+   * search_path order is not enough). Since we may work with several
    * Tripal DBX managed "databases" stored in different schemas and we might need to
    * cross-query them, we introduce here a new table name denotation that
    * enables the use of multiple schemas in a same static query without
