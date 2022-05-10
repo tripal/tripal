@@ -1251,6 +1251,18 @@ abstract class TripalDbxConnection extends PgConnection {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function escapeTable($table) {
+    // We need to prefix tables in extra schemas now as escapeTable() removes
+    // any ':' in the table name.
+    if (preg_match('/^\d+:/', $table)) {
+      $table = $this->prefixTables('{' . $table . '}');
+    }
+    return parent::escapeTable($table);
+  }
+
+  /**
    * Implements the magic __toString method.
    */
   public function __toString() {
