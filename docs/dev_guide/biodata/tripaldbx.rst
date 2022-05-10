@@ -14,7 +14,7 @@ Currently Tripal DBX relies on the Drupal PostgreSQL implementations of these cl
 Tripal DBX Connection
 -----------------------
 
-There are two main parts of the Drupal Connection class that the Tripal DBX Api overides:
+There are two main parts of the Drupal Connection class that the Tripal DBX Api overrides:
 
 **A) One Database Connection per Instance:**
 
@@ -52,4 +52,16 @@ Drupal has always had support for prefixing table names; however, this has been 
 
 The above example used a Chado implementation of the Tripal DBX API provided by the ``tripal_chado.database`` service to generate a select query, execute it agains the database focusing on a specific non-Drupal schema and then iterates through the results.
 
-``@todo add documentation for multiple schema.``
+**--- Multiple Schema Support**
+
+Tripal DBX provides multiple database schema support through table prefixing. The first step is to set the schema you are working on in your specific connection. For example, if you were working with two Chado schema (named "chado1" and "chado2" in this example) in addition to the Drupal schema then you would use ``setSchemaName()`` to specify your main schema and then ``addExtraSchema()`` to specify any additional ones.
+
+.. code-block:: php
+
+  $dbxdb = \Drupal::service('tripal_chado.database');
+  $dbxdb->setSchemaName('chado1');
+  $dbxdb->addExtraSchema('chado2');
+
+.. note::
+
+  The primary schema indicated using ``setSchemaName()`` can be decided in a number of ways depending on your use case for multiple schema and the specific query you are executing. The rule of thumb is to make the primary schema match the one "prepared" to work with Chado (i.e. the schema used as a base for Tripal Entities).
