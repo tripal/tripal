@@ -22,15 +22,17 @@ Drupal attempts to minimize the number of connections to the database by only cr
 
 **B) Table Prefixing in Queries:**
 
-Drupal has always had support for prefixing table names; however, this has been a simple string prepended to the beginning of the table name. This is likely due to many database systems not supporting multiple schema within a single database. In version 2 and 3, Tripal used the native Drupal prefixing to access the Chado database in a separate schema. It did this by using a prefix of "chado." which takes advantage of the PostgreSQL syntax for accessing a specific schema (named "chado" in the previous example). In Tripal version 4, we've created the Tripal DBX API which takes this one step further by extending the native PHP/Drupal PDO database layer to use cross schema focused table prefixing. This allows module developers to access multiple chado and additional Tripal DBX managed schema using the object-oriented query builder as demonstrated in the following example:
+Drupal has always had support for prefixing table names; however, this has been a simple string prepended to the beginning of the table name. This is likely due to many database systems not supporting multiple schema within a single database. In version 2 and 3, Tripal used the native Drupal prefixing to access the Chado database in a separate schema. It did this by using a prefix of "chado." which takes advantage of the PostgreSQL syntax for accessing a specific schema (named "chado" in the previous example). In Tripal version 4, we've created the Tripal DBX API which takes this one step further by extending the native PHP/Drupal PDO database layer to use cross schema focused table prefixing. This allows module developers to access multiple chado and additional Tripal DBX managed schema both through direct queries and using the object-oriented query builder.
+
+The PHP/Drupal PDO query is very useful for building dynamic queries as it handles user provided parameters in a very secure manner and can be very accessible for those who are less familar with PostgreSQL syntax. The following example shows how the native Drupal query builder can be used with Chado through the Tripal DBX API:
 
 .. code-block:: php
 
    // Open a Connection to the default Tripal DBX managed Chado schema.
-   $dbxdb = \Drupal::service('tripal_chado.database');
+   $connection = \Drupal::service('tripal_chado.database');
 
    // Start a select query on the Chado feature table and assign an alias of x.
-   $query = $dbxdb->select('feature', 'x');
+   $query = $connection->select('feature', 'x');
 
    // Add a where condition that feature.is_obsolete is FALSE.
    $query->condition('x.is_obsolete', 'f', '=');
@@ -50,7 +52,7 @@ Drupal has always had support for prefixing table names; however, this has been 
      // e.g. echo $record->name;
    }
 
-The above example used a Chado implementation of the Tripal DBX API provided by the ``tripal_chado.database`` service to generate a select query, execute it agains the database focusing on a specific non-Drupal schema and then iterates through the results.
+The above example used a Chado implementation of the Tripal DBX API provided by the ``tripal_chado.database`` service to generate a select query, execute it agains the database focusing on a specific non-Drupal schema and then iterates through the results. It is the equivalent of the following SQL statement: ``SELECT x.name, x.residues FROM chado.feature x WHERE x.is_obsolete = f LIMIT 10`` if the default Chado schema is named ``chado``.
 
 **--- Multiple Schema Support**
 
@@ -58,10 +60,73 @@ Tripal DBX provides multiple database schema support through table prefixing. Th
 
 .. code-block:: php
 
-  $dbxdb = \Drupal::service('tripal_chado.database');
-  $dbxdb->setSchemaName('chado1');
-  $dbxdb->addExtraSchema('chado2');
+  $connection = \Drupal::service('tripal_chado.database');
+  $connection->setSchemaName('chado1');
+  $connection->addExtraSchema('chado2');
 
 .. note::
 
-  The primary schema indicated using ``setSchemaName()`` can be decided in a number of ways depending on your use case for multiple schema and the specific query you are executing. The rule of thumb is to make the primary schema match the one "prepared" to work with Chado (i.e. the schema used as a base for Tripal Entities).
+  The primary schema indicated using ``setSchemaName()`` can be decided in a number of ways depending on your use case for multiple schema and the specific query you are executing. The rule of thumb is to make the primary schema match the one "prepared" to work with Tripal (i.e. the schema used as a base for Tripal Entities).
+
+Now that you have your connection set up indicating the schema you are interested in, you can use the query builder to generate as many queries as you need within the current scope. For example, the following code will generate a query returning chromosome features stored in a separate chado schema (i.e. ``chado2``) and using the primary chado schema (i.e. ``chado1``) for organism  + ontology information:
+
+.. code-block:: php
+
+  // Start a select query on the feature table in the chado2 schema.
+  // Note the schema is indicated by prefixing a "2:" on the table name.
+  $query = $connection->select('2:feature', 'f');
+
+  // Add a join to the organism + cvterm table in the chado1 schema.
+  // Note that no prefix is needed for the primary Tripal DBX managed schema.
+  $query->join('organism', 'o', 'o.organism_id = f.organism_id');
+  $query->join('cvterm', 'cvt', 'cvt.cvterm_id = f.type_id');
+
+  // Add a where clause ensuring only records associated with the Tripalus genus are returned.
+  $query->condition('o.genus', 'Tripalus', '=');
+
+  // Add a where clause ensuring only "chromosome" feature types are returned.
+  $query->condition('cvt.name', 'chromosome', '=');
+
+  // Select the feature feature_id, name + uniquename and the organism genus, species + common name.
+  $query->fields('f', ['feature_id', 'name', 'uniquename']);
+  $query->fields('o', ['genus', 'species', 'common_name']);
+
+  // Finally execute the query we generated against the database.
+  $result = $query->execute();
+
+  // And iterate through the returned results.
+  foreach ($result as $record) {
+    // Do something with the $record object here.
+    // e.g. echo $record->name;
+  }
+
+.. note::
+
+  This API expects all table names to be wrapped in curly brackets with an integer indicating the schema the table is in. For example, {1: feature} would indicate the feature table in the current Tripal DBX managed schema, {0: system} would indicate the drupal system table and additional numeric indices would be used for extra Tripal DBX managed schema.
+
+Alternatively, if you have a specific query in mind and do not need the security or overhead of the query builder, then you can use the Drupal ``query()`` method to execute it directly. The following example shows how you would execute the equivalent query built by the query builder above:
+
+.. code-block:: php
+
+  // Set some variables or retrieve them from your users.
+  $type = 'chromosome';
+  $genus = 'Tripalus';
+
+  // The SQL statement to be executed.
+  // Note that we've used the {1:organism} and {2:feature} for the primary and extra schemas respectively.
+  // Also note that placeholders (i.e. :type) are used for user input.
+  $sql = 'SELECT f.feature_id, f.name, f.uniquename, o.genus, o.species, o.common_name
+          FROM {2:feature} f
+          LEFT JOIN {1:organism} o ON o.organism_id=f.organism_id
+          LEFT JOIN {1:cvterm} cvt ON cvt.cvterm_id=f.type_id
+          WHERE o.genus = :genus AND cvt.name = :type';
+
+  // Finally execute the query we generated against the database
+  // by providing the values for any placeholders.
+  $results = $connection->query($sql, [':genus' => $genus, ':type' => $type]);
+
+  // And iterate through the returned results.
+  foreach ($results as $record) {
+    // Do something with the $record object here.
+    // e.g. echo $record->name;
+  }
