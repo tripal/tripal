@@ -54,6 +54,10 @@ The PHP/Drupal PDO query is very useful for building dynamic queries as it handl
 
 The above example used a Chado implementation of the Tripal DBX API provided by the ``tripal_chado.database`` service to generate a select query, execute it agains the database focusing on a specific non-Drupal schema and then iterates through the results. It is the equivalent of the following SQL statement: ``SELECT x.name, x.residues FROM chado.feature x WHERE x.is_obsolete = f LIMIT 10`` if the default Chado schema is named ``chado``.
 
+.. note::
+
+  For more information on the Drupal query builder, `See the Drupal.org documentation <https://www.drupal.org/docs/8/api/database-api/dynamic-queries/introduction-to-dynamic-queries>`_. There is full support for all the documented Drupal functionality with Tripal DBX managed schema.
+
 **--- Multiple Schema Support**
 
 Tripal DBX provides multiple database schema support through table prefixing. The first step is to set the schema you are working on in your specific connection. For example, if you were working with two Chado schema (named "chado1" and "chado2" in this example) in addition to the Drupal schema then you would use ``setSchemaName()`` to specify your main schema and then ``addExtraSchema()`` to specify any additional ones.
@@ -102,7 +106,7 @@ Now that you have your connection set up indicating the schema you are intereste
 
 .. note::
 
-  This API expects all table names to be wrapped in curly brackets with an integer indicating the schema the table is in. For example, {1: feature} would indicate the feature table in the current Tripal DBX managed schema, {0: system} would indicate the drupal system table and additional numeric indices would be used for extra Tripal DBX managed schema.
+  This API expects all table names to be wrapped in curly brackets with an integer indicating the schema the table is in. For example, ``{1: feature}`` would indicate the feature table in the current Tripal DBX managed schema, ``{0: system}`` would indicate the Drupal system table and additional numeric indices would be used for extra Tripal DBX managed schema (i.e. ``{2: feature}``).
 
 Alternatively, if you have a specific query in mind and do not need the security or overhead of the query builder, then you can use the Drupal ``query()`` method to execute it directly. The following example shows how you would execute the equivalent query built by the query builder above:
 
@@ -130,3 +134,14 @@ Alternatively, if you have a specific query in mind and do not need the security
     // Do something with the $record object here.
     // e.g. echo $record->name;
   }
+
+.. warning::
+
+  When using the ``query`` method to submit SQL statements directly, it is very important to be aware of security and the source of any information. Variables should NEVER be embedded directly in the SQL and all dynamic and/or user input should be handled using placeholders in the SQL statement and then provided when the query is executed.
+
+.. note::
+
+  The ``query`` method shown for multiple schema can also be used for single schema queries as an alternative to the query builder. As indicated in the query builder, for a single schema the ``{tablename}`` can be used and the ``1:`` prefix omitted.
+
+Tripal DBX Schema
+-------------------
