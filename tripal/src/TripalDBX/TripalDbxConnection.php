@@ -1251,7 +1251,27 @@ abstract class TripalDbxConnection extends PgConnection {
   }
 
   /**
-   * {@inheritdoc}
+   * Escapes a table name string.
+   *
+   * OVERRIDES \Drupal\Core\Database\Connection:escapeTable().
+   *
+   * This function is meant to force all table names to be strictly
+   * alphanumeric-plus-underscore. According to the Drupal documentation,
+   * database drivers should never wrap the table name in database-specific
+   * escape characters.
+   *
+   * We have a different use case however, as we need to add prefixes to our
+   * table names based on schema which is indicated using a numerical indicator
+   * before the table name (i.e. '2:'' for the second schema).
+   *
+   * As such, we need to prefix the table names now to ensure that information
+   * is not lost as the parent:escapeTable() method removes the ':'.
+   *
+   * @param string $table
+   *   The value within the curley brackets (i.e. '{2:feature}').
+   * @return string
+   *   The sanitized version of the table name. For Tripal DBX managed schema
+   *   this will include the schema prefix (e.g. 'chado2.feature').
    */
   public function escapeTable($table) {
     // We need to prefix tables in extra schemas now as escapeTable() removes
