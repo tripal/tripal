@@ -145,3 +145,15 @@ Alternatively, if you have a specific query in mind and do not need the security
 
 Tripal DBX Schema
 -------------------
+
+.. note::
+
+  This class should not be instantiated directly but rather it should be accessed through a TripalDbxConnection object using the schema() method. This is to avoid issues when the default Tripal DBX managed schema name is changed in the TripalDbxConnection object which could lead to issues.
+
+  .. warning::
+
+    If you choose to instantiate a TripalDbxSchema object yourself, you are responsible to not change the Tripal DBX managed schema name of the connection object used to instantiate this TripalDbxSchema.
+
+This class provides a Tripal-specific implementation of the `Drupal Schema abstract class <https://api.drupal.org/api/drupal/core!lib!Drupal!Core!Database!Schema.php/class/Schema/9.3.x>`_. The `Drupal PostgreSQL <https://api.drupal.org/api/drupal/core!lib!Drupal!Core!Database!Driver!pgsql!Schema.php/class/Schema/9.3.x>`_ (and other database driver) implementations of the base Drupal Schema class follow the assumption that there is a single schema. As such the core Drupal implementations focus on managing tables within a single schema.
+
+The TripalDBXSchema class extends that table-management functionality to also include schema-focused management including creation, cloning, renaming, dropping and definition export. Additionally, it removes the assumption of a single schema by allowing the default schema to be set based on a Tripal DBX connection.
