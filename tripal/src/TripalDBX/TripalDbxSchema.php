@@ -7,7 +7,31 @@ use Drupal\tripal\TripalDBX\TripalDbxConnection;
 use Drupal\tripal\TripalDBX\Exceptions\SchemaException;
 
 /**
- * Tripal DBX managed schema class.
+ * Tripal DBX API Schema class.
+ *
+ * NOTE: This class should not be instanciated directly but rather it should
+ * be accessed through a TripalDbxConnection object using the schema() method.
+ *
+ * This class provides a Tripal-specific implementation of the Drupal Schema
+ * abstract class. The Drupal PostgreSQL (and other database driver)
+ * implementations of the base Drupal Schema class follow the assumption that
+ * there is a single schema. As such the core Drupal implementations focus on
+ * managing tables within a single schema.
+ *
+ * This implementation extends that table-management functionality to also include
+ * Schema-focused management including creation, cloning, renaming, dropping
+ * and definition export. Additionally, it removes the assumption of a single
+ * schema by allowing the default schema to be set based on a Tripal DBX
+ * connection.
+ *
+ * Here are some useful functions to know that are inherited from Drupal Schema
+ * classes (core + PgSchema implementation):
+ *   - addField(), addIndex(), addPrimaryKey(), addUniqueKey(),
+ *   - createTable(), dropTable()
+ *   - dropField(), dropIndex(), dropPrimaryKey(), dropUniqueKey(),
+ *   - fieldExists(), findPrimaryKeyColumns(),
+ *   - renameTable(), tableExists()
+ *   and more from the documentation.
  *
  * @see https://api.drupal.org/api/drupal/core!lib!Drupal!Core!Database!Driver!pgsql!Schema.php/class/Schema/9.0.x
  * @see https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Core%21Database%21Schema.php/class/Schema/9.0.x
@@ -15,10 +39,13 @@ use Drupal\tripal\TripalDBX\Exceptions\SchemaException;
 abstract class TripalDbxSchema extends PgSchema {
 
   /**
-   * (override) Default schema name.
+   * Default schema name.
    *
-   * Will always be set to something by the constructor (which should be called
-   * by a TripalDbxConnection object).
+   * OVERRIDES \Drupal\Core\Database\Schema:$defaultSchema.
+   *
+   * Drupal assumes that the default schema name is public. However, for multiple
+   * schema support, we need to set this dynamically in the constructor and
+   * thus set it to empty here.
    *
    * @var string
    */
@@ -27,12 +54,19 @@ abstract class TripalDbxSchema extends PgSchema {
   /**
    * PostgreSQL quoted default schema name.
    *
+   * OVERRIDES \Drupal\Core\Database\Schema:$quotedDefaultSchema.
+   *
+   * Same reasoning as above since this is generated based on the default schema.
+   *
    * @var string
    */
   protected $quotedDefaultSchema = '';
 
   /**
    * TripalDbx service object.
+   *
+   * This provides in-class access to the non-schema specific Tripal DBX API
+   * methods.
    *
    * @var object \Drupal\tripal\TripalDBX\TripalDbx
    */
@@ -47,7 +81,7 @@ abstract class TripalDbxSchema extends PgSchema {
    *     get the data from a static YAML file.
    *     Default: 'file'.
    *   - 'version': version of the Tripal DBX managed schema to fetch from a file.
-   *     Ignored fot 'database' source.
+   *     Ignored for 'database' source.
    *     Default: implementation specific.
    *   - 'format': return format, either 'SQL' for an array of SQL string,
    *     'Drupal' for Drupal schema API, 'none' to return nothing or anything
@@ -68,10 +102,15 @@ abstract class TripalDbxSchema extends PgSchema {
   /**
    * Constructor.
    *
+   * OVERRIDES \Drupal\Core\Database\Schema:__construct().
+   *
    * Overrides default constructor to manage the Tripal DBX managed schema name.
-   * The TripalDbxSchema object should be instanciated by the TripalDbxConnection::schema()
-   * method in order to avoid issues when the default Tripal DBX managed schema name is
-   * changed in the TripalDbxConnection object which could lead to issues.
+   *
+   * The TripalDbxSchema object should be instanciated by the
+   * TripalDbxConnection::schema() method in order to avoid issues when the
+   * default Tripal DBX managed schema name is changed in the TripalDbxConnection
+   * object which could lead to issues.
+   *
    * If you choose to instanciate a TripalDbxSchema object yourself, you are
    * responsible to not change the Tripal DBX managed schema name of the connection
    * object used to instanciate this TripalDbxSchema.
@@ -108,16 +147,21 @@ abstract class TripalDbxSchema extends PgSchema {
   }
 
   /**
-   * {@inheritdoc}
+   * Finds all tables that are like the specified base table name.
+   *
+   * OVERRIDES \Drupal\Core\Database\Schema:findTables().
+   *
+   * @guignonv why was this method overriden?
+   *
+   * @param string $table_expression
+   *   An SQL expression, for example "cache_%" (without the quotes).
+   * @return array
+   *   Both the keys and the values are the matching tables.
    */
   public function findTables($table_expression) {
 
     // Load all the tables up front in order to take into account per-table
     // prefixes. The actual matching is done at the bottom of the method.
-    $condition = $this
-      ->buildTableNameCondition('%', 'LIKE');
-    $condition
-      ->compile($this->connection, $this);
     $individually_prefixed_tables = $this->connection
       ->getUnprefixedTablesMap();
     $tables = [];
@@ -127,6 +171,10 @@ abstract class TripalDbxSchema extends PgSchema {
     // couldn't use \Drupal::database()->select() here because it would prefix
     // information_schema.tables and the query would fail.
     // Don't use {} around information_schema.tables table.
+    $condition = $this
+      ->buildTableNameCondition('%', 'LIKE');
+    $condition
+      ->compile($this->connection, $this);
     $results = $this->connection
       ->query("SELECT table_name AS table_name FROM information_schema.tables WHERE " . (string) $condition, $condition
       ->arguments());
@@ -167,7 +215,18 @@ abstract class TripalDbxSchema extends PgSchema {
   }
 
   /**
-   * {@inheritdoc}
+   * Fetch the list of blobs and sequences used on a table.
+   *
+   * OVERRIDES \Drupal\Core\Database\Schema:queryTableInformation().
+   *
+   * @guignonv why was this method overriden?
+   *
+   * @param string $table_name
+   *   The non-prefixed name of the table.
+   * @return object
+   *    An object with two member variables:
+   *     - 'blob_fields' that lists all the blob fields in the table.
+   *     - 'sequences' that lists the sequences used in that table.
    */
   public function queryTableInformation($table) {
 
@@ -248,6 +307,13 @@ EOD;
 
   /**
    * Checks if an index exists in the given table.
+   *
+   * OVERRIDES \Drupal\Core\Database\Schema:indexExists().
+   *
+   * Our version of this method adds an optional parameter $exact_name to support
+   * exact name matches since many biological data-focused databases will not
+   * follow the Drupal index naming pattern. For example, Chado does not follow
+   * this pattern.
    *
    * @param $table
    *   The name of the table in Tripal DBX managed schema.
@@ -449,7 +515,14 @@ EOD;
   }
 
   /**
-   * (override) Check that the constraint exists.
+   * Check that the constraint exists.
+   *
+   * OVERRIDES \Drupal\Core\Database\Schema:constraintExists().
+   *
+   * Our version of this method adds an optional parameter $type to support
+   * type-specific searching and exact name matches since many biological
+   * data-focused databases will not follow the Drupal naming patterns.
+   * For example, Chado does not follow these patterns.
    *
    * @param string $table
    *   The table the constraint applies to.

@@ -7,11 +7,11 @@ use Drupal\tripal\TripalDBX\TripalDbxSchema;
 use Drupal\tripal\TripalDBX\Exceptions\ConnectionException;
 
 /**
- * Tripal DBX Connection API class.
+ * Tripal DBX API Connection class.
  *
  * This class provides a Tripal-specific extension of the Drupal database
- * connection abstraction class. It extends the base class with specific
- * functions dedicated to managing separate schema aside from the Drupal schema.
+ * connection abstract class. It extends the base class with specific
+ * functions dedicated to querying separate schema aside from the Drupal schema.
  * It has been designed mostly based on Chado schema and PostgreSQL features
  * allowing you have several schemas in the same database and query across them.
  *
@@ -74,7 +74,6 @@ use Drupal\tripal\TripalDBX\Exceptions\ConnectionException;
  * class. By default, the message logger is set by the constructor either using
  * the user-provided logger or by instanciating one using the log channel
  * 'tripal.logger'.
- *
  *
  * @see https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Core%21Database%21Driver%21pgsql%21Connection.php/class/Connection/9.0.x
  * @see https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Core%21Database%21Connection.php/class/Connection/9.0.x
@@ -1274,11 +1273,11 @@ abstract class TripalDbxConnection extends PgConnection {
    *   this will include the schema prefix (e.g. 'chado2.feature').
    */
   public function escapeTable($table) {
-    // We need to prefix tables in extra schemas now as escapeTable() removes
-    // any ':' in the table name.
+
     if (preg_match('/^\d+:/', $table)) {
       $table = $this->prefixTables('{' . $table . '}');
     }
+
     return parent::escapeTable($table);
   }
 
