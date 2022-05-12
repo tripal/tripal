@@ -67,7 +67,16 @@ use Drupal\tripal\TripalDBX\Exceptions\ConnectionException;
  *
  * A couple of methods have been added to this class to complete the above list.
  *
- * Note: the setLogger() and getLogger() methods are reserved for database query
+ * NOTE: It has been documented that in some cases extraSchema set in previous
+ * connections have been cached. For example, you create $connection1 and set
+ * an extraSchema('fred') then when you create a new $connection2, 'fred' may
+ * already be set as an extraSchema(). This would be a problem if 2 different
+ * parts of code want to use different extra schemas and expect the schema they
+ * added to be the second one while it would be the third one for the last
+ * one using addExtraSchema(). More work needs to be done to determine the core
+ * cause for this.
+ *
+ * NOTE: the setLogger() and getLogger() methods are reserved for database query
  * logging and is operated by Drupal. It works with a \Drupal\Core\Database\Log
  * class. To log messages in extending classes, use setMessageLogger() and
  * getMessageLogger() instead, which operates with the \Drupal\tripal\Services\TripalLogger
@@ -1073,6 +1082,12 @@ abstract class TripalDbxConnection extends PgConnection {
    * This override adds the support for Tripal DBX managed schema tables
    * by returning the prefix used for a table in a Tripal DBX managed schema
    * if applicable.
+   *
+   * This override adds the optional $use_tdbx_schema parameter which defaults to
+   * False to maintain backwards compatibility for non-cross-schema-aware queries.
+   * Additionally, there is support through this API with this function and
+   * prefixTables() for non-prefixed tables (i.e. {tablename}) to be used for
+   * both Drupal and Chado tables depending on the situation.
    *
    * There are a couple of ways to use this. Call this function with:
    *   A) $table matching to the index you would use for your Tripal DBX
