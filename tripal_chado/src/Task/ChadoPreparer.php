@@ -246,7 +246,7 @@ class ChadoPreparer extends ChadoTaskBase {
       ],
     ];
     
-    // chado_create_custom_table('tripal_gff_temp', $schema, TRUE, NULL, FALSE);
+    chado_create_custom_table('tripal_gff_temp', $schema, TRUE, NULL, FALSE);
   }
   
   /**
