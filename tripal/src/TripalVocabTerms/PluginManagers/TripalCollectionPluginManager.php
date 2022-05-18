@@ -114,6 +114,6 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
    *
    * @var string
    */
-  private $collectionTable;
+  private $table;
 
 }
