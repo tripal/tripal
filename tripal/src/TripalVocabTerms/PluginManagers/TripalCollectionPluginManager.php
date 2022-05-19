@@ -92,7 +92,15 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
    *   Collection names.
    */
   public function getCollectionList() {
-    // TODO
+    $names = []
+
+    $db = \Drupal::database();
+    $result = $db->select($this->table,'n')->fields('name')->execute();
+    foreach ($result as $record) {
+      $names[] = $record->name;
+    }
+
+    return $names;
   }
 
   /**
