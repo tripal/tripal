@@ -5,6 +5,7 @@ namespace Drupal\tripal\TripalVocabTerms\PluginManagers;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use \RuntimeException;
 
 /**
  * Provides a tripal collection plugin manager.
@@ -64,7 +65,14 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
    *   The new collection.
    */
   public function createCollection($name,$pluginId) {
-    // TODO
+    $db = \Drupal::database();
+    $result = $db->insert($this->table)->fields()->execute();
+    if ($result->rowCount() < 1) {
+      throw new RuntimeException("Failed adding tripal collection entry to table.");
+    }
+    $collection = $this->createInstance($pluginId,["collection_name" => $name]);
+    $collecction->create();
+    return $collection;
   }
 
   /**
@@ -82,7 +90,19 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
    *   True if the matching collection was removed or false otherwise.
    */
   public function removeCollection($name) {
-    // TODO
+    $db = \Drupal::database();
+    $result = $db->select($this->table,'n')->condition('n.name',$name)->execute();
+    $record = $result->fetch();
+    if (!$record) {
+      return FALSE;
+    }
+    $result = $db->delete($this->table)->condition('name',$name)->execute();
+    if ($result->rowCount() < 1) {
+      return FALSE;
+    }
+    $collection = $this->createInstance($record->plugin_id,["collection_name" => $name]);
+    $collecction->destroy();
+    return TRUE;
   }
 
   /**
@@ -93,13 +113,11 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
    */
   public function getCollectionList() {
     $names = []
-
     $db = \Drupal::database();
     $result = $db->select($this->table,'n')->fields('name')->execute();
     foreach ($result as $record) {
       $names[] = $record->name;
     }
-
     return $names;
   }
 
@@ -114,7 +132,14 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
    *   The loaded collection plugin or NULL.
    */
   public function loadCollection($name) {
-    // TODO
+    $db = \Drupal::database();
+    $result = $db->select($this->table,'n')->condition('n.name',$name)->execute();
+    $first = $result->fetch();
+    if (!$first) {
+      return NULL;
+    }
+    $collection = $this->createInstance($pluginId,["collection_name" => $name]);
+    return $collection;
   }
 
   /**
