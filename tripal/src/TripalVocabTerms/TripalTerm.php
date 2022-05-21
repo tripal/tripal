@@ -48,7 +48,15 @@ class TripalTerm {
    *   An array of valid Drupal\tripal\TripalVocabTerms\Term objects.
    */
   public static function suggestTerms(string $partial, int $max = 10) {
-    // TODO
+    $terms = []
+
+    $manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+    foreach ($manager->getCollectionList() as $name) {
+      $idspace = $manager->loadCollection($name);
+      $terms[] = $idspace->getTerms($partial,["exact" => FALSE]);
+    }
+
+    return $terms;
   }
 
   /**
@@ -121,7 +129,8 @@ class TripalTerm {
    *   The id space instance.
    */
   public function getIdSpaceObject() {
-    // TODO
+    $manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+    return $manager->loadCollection($this->idSpace);
   }
 
   /**
@@ -151,16 +160,40 @@ class TripalTerm {
    *   The URL.
    */
   public function getURL() {
-    // TODO
+    $idspace = $this->getIdSpace();
+    return $idspace->getURLPrefix().$this->accession;
   }
 
   /**
-   * Saves this term to its id space collection's permanent storage. If this
-   * term already exists in its id space collection then it is updated with this
-   * term instance's data, else it is added as a new term.
+   * Saves this term to its id space with the given options array and
+   * optional parent. If the given parent is NULL and this term is new then
+   * it is added as a root term of its id space. If the given parent is NULL,
+   * this term already exists, and the appropriate option was given to
+   * update this existing term's parent then it is moved to a root term of its
+   * id space.
+   *
+   * The given options array has the following recognized keys:
+   *
+   * failIfExists(boolean): True to force this method to fail if this term
+   * already exists else false to update this term if it already exists. The
+   * default is false.
+   *
+   * updateParent(boolean): True to update this term's parent to the one
+   * given or false to not update this existing term's parent. If this term
+   * is new this has no effect. The default is false.
+   *
+   * @param array $options
+   *   The options array.
+   *
+   * @param Drupal\tripal\TripalVocabTerms\TripalTerm|NULL $parent
+   *   The parent term or NULL.
+   *
+   * @return bool
+   *   True on success or false otherwise.
    */
-  public function save() {
-    // TODO
+  public function save($options,$parent = NULL) {
+    $idspace = $this->getIdSpace();
+    return $idspace->saveTerm($this,$options,$parent);
   }
 
   /**

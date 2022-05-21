@@ -21,7 +21,15 @@ abstract class TripalVocabularyBase extends TripalCollectionPluginBase implement
    * {@inheritdoc}
    */
   public function getTerms($name,$exact = True) {
-    // TODO
+    $names = [];
+
+    $manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+    foreach ($this->getIdSpaceNames() as $idsname) {
+      $idspace = $manager->loadCollection($idsname);
+      $names[] = $idspace->getTerms($name,["exact" => $exact]);
+    }
+
+    return $names;
   }
 
 }
