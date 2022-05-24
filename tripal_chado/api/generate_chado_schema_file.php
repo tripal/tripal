@@ -98,7 +98,7 @@ if (isset($arguments['v'])) {
     " */\n"
   );
 
-  // The SQL for retreiving details about a table.
+  // The SQL for retrieving details about a table.
   $fksql = "
     SELECT
         tc.constraint_name, tc.table_name, kcu.column_name,

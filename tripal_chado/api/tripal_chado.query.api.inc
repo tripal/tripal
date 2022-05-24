@@ -487,7 +487,7 @@ function chado_insert_record($table, $values, $options = []) {
   }
 
   // Iterate through the values array and create a new 'insert_values' array
-  // that has all the values needed for insert with all foreign relationsihps
+  // that has all the values needed for insert with all foreign relationships
   // resolved.
   foreach ($values as $field => $value) {
     // Make sure the field is in the table description. If not then return an

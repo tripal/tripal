@@ -431,7 +431,7 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
  *
  * @return
  *  An array containing the total_records in the dataaset, the search string
- *  and an array of the publications that were retreived.
+ *  and an array of the publications that were retrieved.
  *
  * @ingroup tripal_pub
  */

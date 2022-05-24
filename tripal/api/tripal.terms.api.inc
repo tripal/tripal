@@ -570,7 +570,7 @@ function tripal_get_vocabularies() {
  * The form elements should work with a flat form (no #tree set for the form)
  * or with a form in a TripalField.
  *
- * Use the tripal_get_term_lookup_form_result() function to retreive the
+ * Use the tripal_get_term_lookup_form_result() function to retrieve the
  * result in a form submit or validate.
  *
  * @param $form

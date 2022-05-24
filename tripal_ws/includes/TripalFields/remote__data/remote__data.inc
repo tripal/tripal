@@ -338,7 +338,7 @@ class remote__data extends WebServicesField {
     $element['data_info']['query'] = [
       '#type' => 'textarea',
       '#title' => 'Query to Execute',
-      '#description' => 'Enter the query that will retreive the remote records. ',
+      '#description' => 'Enter the query that will retrieve the remote records.',
       '#default_value' => $this->instance['settings']['data_info']['query'],
       '#rows' => 3,
       '#required' => TRUE,
