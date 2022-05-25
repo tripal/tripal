@@ -274,7 +274,7 @@ Instead, we put it in at the same level as 'value':
 
   $entity->{$field_name}['und'][0][$linker_field]
 
-We do this because anything in the 'value' element is intended for the end-user.  Anything outside of the 'value' is meant for Tripal.  Adding the organism ID to this field as a Tripal "hidden" value allows Tripal to recognize where these values really came from.   When writing your own fields, you must include any values as "hidden" Tripal values that need to be written to the database table.  A good way to remember if you a value should be visible to the end-user or hidden for Tripal is to ask yourself these questions:
+We do this because anything in the 'value' element is intended for the end-user.  Anything outside of the 'value' is meant for Tripal.  Adding the organism ID to this field as a Tripal "hidden" value allows Tripal to recognize where these values really came from.   When writing your own fields, you must include any values as "hidden" Tripal values that need to be written to the database table.  A good way to remember if your value should be visible to the end-user or hidden for Tripal is to ask yourself these questions:
 
   1.  Does the user need this value?  If yes, put it in the 'value' element.
   2.  Does Tripal need the value when writing back to the Chado table?  If yes, put it as a hidden element.

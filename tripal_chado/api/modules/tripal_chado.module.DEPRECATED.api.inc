@@ -737,7 +737,7 @@ function tripal_reverse_compliment_sequence($sequence) {
  *    - upstream: the number of upstream bases included in the sequence
  *    - downstream: the number of downstream bases included in the
  *      sequence
- *    - defline: the definintion line used to create a FASTA sequence
+ *    - defline: the definition line used to create a FASTA sequence
  *    - residues: the residues
  *    - featureloc_id: the featureloc_id if the sequences is from an
  *        alignment
@@ -798,7 +798,7 @@ function tripal_get_feature_sequences($feature, $options) {
  *         the sequence (e.g. from an aggregated sequence)
  *      'upstream'      => the number of upstream bases in the sequence
  *      'downstream'    => the number of downstream bases in the sequence
- *      'defline'       => the definintion line used to create a FASTA sequence
+ *      'defline'       => the definition line used to create a FASTA sequence
  *      'residues'      => the residues
  *      'featureloc_id' => the featureloc_id if from an alignment
  *
@@ -1279,7 +1279,7 @@ function tripal_phylogeny_import_tree_file($file_name, $format, $options = [], $
  * be returned.
  *
  * @return
- *   If a singe publication is retreived using the identifiers, then a
+ *   If a single publication is retrieved using the identifiers, then a
  *   publication array will be returned.  The array is of the same format
  *   returned by the chado_generate_var() function. Otherwise, FALSE will be
  *   returned.
@@ -1348,7 +1348,7 @@ function tripal_autocomplete_pub($string = '') {
 }
 
 /**
- * Imports a singe publication specified by a remote database cross reference.
+ * Imports a single publication specified by a remote database cross reference.
  *
  * @param $pub_dbxref
  *   The unique database ID for the record to update.  This value must
