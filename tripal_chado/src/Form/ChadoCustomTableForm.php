@@ -283,15 +283,26 @@ class ChadoCustomTableForm extends FormBase {
   
   
     if (strcmp($action, 'Edit') == 0) {
+      // dpm('Editing');
+      // dpm($table_id);
+      // dpm($schema_arr['table']);
+      // dpm($schema_arr);
+      // dpm($skip_creation);
       $action_result = chado_edit_custom_table($table_id, $schema_arr['table'], $schema_arr, $skip_creation);
       if($action_result) {
         \Drupal::messenger()->addMessage(t("Custom table has been edited."), 'status');
+      }
+      else {
+        \Drupal::messenger()->addError(t("Error editing the custom table. Please see logs for further details."), 'status');
       }
     }
     elseif (strcmp($action, 'Add') == 0) {
       $action_result = chado_create_custom_table($schema_arr['table'], $schema_arr, $skip_creation, NULL, FALSE);
       if($action_result) {
         \Drupal::messenger()->addMessage(t("Custom table has been added."), 'status');
+      }
+      else {
+        \Drupal::messenger()->addError(t("Custom table could not be created. Please see logs for further details."), 'status');
       }
     }
     else {
