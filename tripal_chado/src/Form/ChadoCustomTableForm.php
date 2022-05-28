@@ -116,49 +116,94 @@ class ChadoCustomTableForm extends FormBase {
         ),
     ];
     
+
+    // // This is the old example using the array() type format
+    // // Kept just in case we ever want to revert back.
+    // array (
+    //   'table' => 'library_stock',
+    //   'fields' => array (
+    //     'library_stock_id' => array(
+    //       'type' => 'serial',
+    //       'not null' => TRUE,
+    //     ),
+    //     'library_id' => array(
+    //       'type' => 'int',
+    //       'not null' => TRUE,
+    //     ),
+    //     'stock_id' => array(
+    //       'type' => 'int',
+    //       'not null' => TRUE,
+    //     ),
+    //   ),
+    //   'primary key' => array(
+    //     'library_stock_id'
+    //   ),
+    //   'unique keys' => array(
+    //     'library_stock_c1' => array(
+    //       'library_id',
+    //       'stock_id'
+    //     ),
+    //   ),
+    //   'foreign keys' => array(
+    //     'library' => array(
+    //       'table' => 'library',
+    //       'columns' => array(
+    //         'library_id' => 'library_id',
+    //       ),
+    //     ),
+    //     'stock' => array(
+    //       'table' => 'stock',
+    //       'columns' => array(
+    //         'stock_id' => 'stock_id',
+    //       ),
+    //     ),
+    //   ),
+    // )
+
     $form['instructions']['example'] = [
       '#type' => 'item',
       '#markup' => "Example library_stock table: <pre>
-  array (
-    'table' => 'library_stock',
-    'fields' => array (
-      'library_stock_id' => array(
-        'type' => 'serial',
-        'not null' => TRUE,
-      ),
-      'library_id' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-      'stock_id' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-    ),
-    'primary key' => array(
-      'library_stock_id'
-    ),
-    'unique keys' => array(
-      'library_stock_c1' => array(
-        'library_id',
-        'stock_id'
-      ),
-    ),
-    'foreign keys' => array(
-      'library' => array(
-        'table' => 'library',
-        'columns' => array(
-          'library_id' => 'library_id',
-        ),
-      ),
-      'stock' => array(
-        'table' => 'stock',
-        'columns' => array(
-          'stock_id' => 'stock_id',
-        ),
-      ),
-    ),
-  )
+
+      [
+        'table' => 'library_stock',
+        'fields' => [
+          'library_stock_id' => [
+            'type' => 'serial',
+            'not null' => TRUE,
+          ],
+          'library_id' => [
+            'type' => 'int',
+            'not null' => TRUE,
+          ],
+          'stock_id' => [
+            'type' => 'int',
+            'not null' => TRUE,
+          ],
+        ],
+        'primary key' => [
+          'library_stock_id'
+        ],
+        'unique keys' => [
+          'library_stock_c1' => [
+            'library_id',
+            'stock_id'
+          ],
+        ],
+        'foreign keys' => [
+          'library' => [
+            'table' => 'library',
+            'columns' => [
+              'library_id' => 'library_id',
+            ],
+          ],
+          'stock' => [
+            'table' => 'stock',
+            'columns' => [
+              'stock_id' => 'stock_id',
+            ],
+         ],
+        ],
+      ]      
       </pre>",
     ];
   
@@ -227,7 +272,8 @@ class ChadoCustomTableForm extends FormBase {
     // make sure the array is valid
     $schema_array = [];
     if ($schema) {
-      $success = preg_match('/^\s*array/', $schema);
+      // $success = preg_match('/^\s*array/', $schema);
+      $success = true;
       if (!$success) {
         $form_state->setErrorByName($values['schema'],
           t("The schema array should begin with the word 'array'."));
