@@ -69,9 +69,6 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
     // If the user changed the table name, we want to drop the old one and force
     // creation of the new one.
     if ($custom_table->table_name != $table_name) {
-      //$connection_chado->query("DROP TABLE :table_name", array(':table_name' => $custom_table->table_name))->execute();
-      // chado_delete_custom_table($table_id);
-
       // This will basically force the old table to be deleted
       // And the new table will have the new table_name
       $skip_if_exists = 0; // we DO want to create the table now
@@ -88,7 +85,20 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
     }
     else {
       if (chado_table_exists($custom_table->table_name)) {
-        \Drupal::logger('tripal_chado')->error('Custom table already exists so it cannot be recreated without selecting the recreate option');
+        // Only update a field and tell the user that the schema alone was
+        // updated in the tripal_custom_tables and not the database table
+        $connection->update('tripal_custom_tables')
+        ->fields([
+          //'table_name' => $record->table_name,
+          'schema' => $record->schema        
+        ])->condition('table_id', $record->table_id, '=')
+        ->execute();
+        \Drupal::messenger()->addMessage(t("Note: Only the schema was updated in the tripal_custom_tables. The actual table structure within chado was not updated."), 'status');
+        return TRUE;          
+
+      }
+      else {
+        \Drupal::logger('tripal_chado')->error('Custom table does not exist but you used the edit button to create a table, use the add new custom table button instead to perform this function.');
         return FALSE;
       }
     }
