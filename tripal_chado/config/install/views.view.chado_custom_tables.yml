@@ -382,7 +382,18 @@ display:
           content: '<a href="[site:url]admin/tripal/storage/chado/chado_custom_table">Add new chado custom table</a>'
           plugin_id: text_custom
       footer: {  }
-      empty: {  }
+      empty:
+        area_text_custom:
+          id: area_text_custom
+          table: views
+          field: area_text_custom
+          relationship: none
+          group_type: group
+          admin_label: ''
+          empty: true
+          tokenize: false
+          content: 'There are no custom tables created as yet'
+          plugin_id: text_custom
       relationships: {  }
       arguments: {  }
       display_extenders: {  }
