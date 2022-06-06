@@ -633,6 +633,50 @@ function tripal_tripal_admin_notifications_schema() {
   return $schema;
 }
 
+function tripal_tripal_id_space_collection_schema() {
+  $schema = [];
+
+  $schema['tripal_id_space_collection'] = [
+    'fields' => [
+      'name' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'plugin_id' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ]
+    ],
+    'primary key' => ['name'],
+  ];
+
+  return $schema;
+}
+
+function tripal_tripal_vocabulary_collection_schema() {
+  $schema = [];
+
+  $schema['tripal_vocabulary_collection'] = [
+    'fields' => [
+      'name' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'plugin_id' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ]
+    ],
+    'primary key' => ['name'],
+  ];
+
+  return $schema;
+}
+
 /**
  * Implements hook_update_N().
  *
