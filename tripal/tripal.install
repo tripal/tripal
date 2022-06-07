@@ -169,6 +169,8 @@ function tripal_schema() {
   $schema['tripal_import'] = tripal_tripal_import_schema();
   $schema['tripal_collection'] = tripal_tripal_collection_schema();
   $schema['tripal_collection_bundle'] = tripal_tripal_collection_bundle_schema();
+  $schema['tripal_id_space_collection'] = tripal_tripal_id_space_collection_schema();
+  $schema['tripal_vocabulary_collection'] = tripal_tripal_vocabulary_collection_schema();
 
   // Adds a table for administrative notifications on the dashboard.
   $schema['tripal_admin_notifications'] = tripal_tripal_admin_notifications_schema();
@@ -634,9 +636,7 @@ function tripal_tripal_admin_notifications_schema() {
 }
 
 function tripal_tripal_id_space_collection_schema() {
-  $schema = [];
-
-  $schema['tripal_id_space_collection'] = [
+  $schema = [
     'fields' => [
       'name' => [
         'type' => 'varchar',
@@ -656,9 +656,7 @@ function tripal_tripal_id_space_collection_schema() {
 }
 
 function tripal_tripal_vocabulary_collection_schema() {
-  $schema = [];
-
-  $schema['tripal_vocabulary_collection'] = [
+  $schema = [
     'fields' => [
       'name' => [
         'type' => 'varchar',
