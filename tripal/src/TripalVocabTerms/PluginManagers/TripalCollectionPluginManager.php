@@ -68,7 +68,7 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
     $db = \Drupal::database();
     $result = $db->insert($this->table)->fields(["name" => $name,"plugin_id" => $pluginId])->execute();
     $collection = $this->createInstance($pluginId,["collection_name" => $name]);
-    $collecction->create();
+    $collection->create();
     return $collection;
   }
 

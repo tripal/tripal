@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\tripal\TripalVocabTerms\Interface;
+namespace Drupal\tripal\TripalVocabTerms\Interfaces;
 
 use Drupal\tripal\TripalVocabTerms\Interfaces\TripalCollectionPluginInterface;
 

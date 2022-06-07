@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\tripal_chado\Plugin\TripalVocabTerms;
+namespace Drupal\tripal_chado\Plugin\TripalVocabulary;
 
 use Drupal\tripal\TripalVocabTerms\TripalVocabularyBase;
 
