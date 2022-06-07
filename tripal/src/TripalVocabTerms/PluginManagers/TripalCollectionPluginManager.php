@@ -67,9 +67,6 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
   public function createCollection($name,$pluginId) {
     $db = \Drupal::database();
     $result = $db->insert($this->table)->fields(["name" => $name,"plugin_id" => $pluginId])->execute();
-    if (!$result or $result->rowCount() < 1) {
-      throw new RuntimeException("Failed adding tripal collection entry to table.");
-    }
     $collection = $this->createInstance($pluginId,["collection_name" => $name]);
     $collecction->create();
     return $collection;
