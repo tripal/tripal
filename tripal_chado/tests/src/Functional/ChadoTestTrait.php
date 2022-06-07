@@ -1,61 +1,12 @@
 <?php
 namespace Drupal\Tests\tripal_chado\Functional;
 
-use Drupal\KernelTests\KernelTestBase;
+
 use Drupal\tripal_biodb\Database\BioDbTool;
 use Drupal\tripal_chado\Database\ChadoConnection;
 
-/**
- * This is a base class for Chado tests.
- *
- * It enables Chado tests schemas and helper functions to efficiently perform
- * tests.
- *
- * Example:
- * @code
- * // Gets a Chado test schema wil dummy data:
- * $biodb = $this->getTestSchema(ChadoTestBase::INIT_CHADO_DUMMY);
- * //... do some tests
- * // After all is done, remove the schema properly:
- * $this->freeTestSchema($biodb);
- * // Note: if a test fails, the tearDownAfterClass will remove unremoved
- * // schemas.
- * @endcode
- *
- * @group Tripal
- * @group Tripal Chado
- */
-abstract class ChadoTestBase extends KernelTestBase {
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['tripal_biodb', 'tripal_chado'];
-
-  /**
-   * Just get a free test schema name.
-   */
-  public const SCHEMA_NAME_ONLY = 0;
-
-  /**
-   * Create an empty schema.
-   */
-  public const CREATE_SCHEMA = 1;
-   
-  /**
-   * Create a schema and initialize it with dummy data.
-   */
-  public const INIT_DUMMY = 2;
-   
-  /**
-   * Create a Chado schema with default data.
-   */
-  public const INIT_CHADO_EMPTY = 3;
-   
-  /**
-   * Create a Chado schema and initialize it with dummy data.
-   */
-  public const INIT_CHADO_DUMMY = 4;
+trait ChadoTestTrait  {
    
   /**
    * Bio database tool instance.
@@ -155,7 +106,7 @@ abstract class ChadoTestBase extends KernelTestBase {
   protected function getRealConfig() {
     // Get original config from Drupal real installation.
     // This is done by getting a connection to the real database first.
-    // Then instanciate a new config factory that will use that database through
+    // Then instantiate a new config factory that will use that database through
     // a new instance of config storage using that database.
     // Get Drupal real database.
     $drupal_db = \Drupal\Core\Database\Database::getConnection(
@@ -218,39 +169,41 @@ abstract class ChadoTestBase extends KernelTestBase {
    */
   protected function createChadoInstallationsTable() {
     $db = \Drupal::database();
-    $db->schema()->createTable('chado_installations',
-      [
-        'fields' => [
-          'install_id' => [
-            'type' => 'serial',
-            'unsigned' => TRUE,
-            'not null' => TRUE,
+    if (!$db->schema()->tableExists('chado_installations')) {
+      $db->schema()->createTable('chado_installations',
+        [
+          'fields' => [
+            'install_id' => [
+              'type' => 'serial',
+              'unsigned' => TRUE,
+              'not null' => TRUE,
+            ],
+            'schema_name' => [
+              'type' => 'varchar',
+              'length' => 255,
+              'not null' => TRUE,
+            ],
+            'version' => [
+              'type' => 'varchar',
+              'length' => 255,
+              'not null' => TRUE,
+            ],
+            'created' => [
+              'type' => 'varchar',
+              'length' => 255,
+            ],
+            'updated' => [
+              'type' => 'varchar',
+              'length' => 255,
+            ],
           ],
-          'schema_name' => [
-            'type' => 'varchar',
-            'length' => 255,
-            'not null' => TRUE,
+          'indexes' => [
+            'schema_name' => ['schema_name'],
           ],
-          'version' => [
-            'type' => 'varchar',
-            'length' => 255,
-            'not null' => TRUE,
-          ],
-          'created' => [
-            'type' => 'varchar',
-            'length' => 255,
-          ],
-          'updated' => [
-            'type' => 'varchar',
-            'length' => 255,
-          ],
-        ],
-        'indexes' => [
-          'schema_name' => ['schema_name'],
-        ],
-        'primary key' => ['install_id'],
-      ]
-    );
+          'primary key' => ['install_id'],
+        ]
+      );
+    }
   }
 
   /**
