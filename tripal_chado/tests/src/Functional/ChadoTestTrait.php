@@ -1,18 +1,27 @@
 <?php
 namespace Drupal\Tests\tripal_chado\Functional;
 
-
+use Drupal\KernelTests\KernelTestBase;
 use Drupal\tripal_biodb\Database\BioDbTool;
 use Drupal\tripal_chado\Database\ChadoConnection;
 
+/**
+ * This is a PHP Trait for Chado tests.
+ *
+ * It provides the functions and member variables that are 
+ * used for both any test class that needs testing with Chado.
+ *
+ * @group Tripal
+ * @group Tripal Chado
+ */
 
 trait ChadoTestTrait  {
    
   /**
    * Bio database tool instance.
    */
-  protected $bioTool;
-  
+  protected $tripal_dbx;
+
   /**
    * Real (Drupal live, not test) config factory.
    */
@@ -64,8 +73,8 @@ trait ChadoTestTrait  {
     // Get config.
     $this->getRealConfig();
 
-    // BioDbTool.
-    $this->initBioDbTool();
+    // TripalDbx.
+    $this->initTripalDbx();
 
     // Allow test schemas.
     $this->allowTestSchemas();
@@ -130,24 +139,24 @@ trait ChadoTestTrait  {
       $typed_config
     );
   }
-  
+
   /**
-   * Initializes BioDbTool member.
+   * Initializes TripalDbx member.
    */
-  protected function initBioDbTool() {
-    $this->bioTool = \Drupal::service('tripal_biodb.tool');
-    // Hack to clear BioDbTool cache on each run.
+  protected function initTripalDbx() {
+    $this->tripal_dbx = \Drupal::service('tripal.dbx');
+    // Hack to clear TripalDbx cache on each run.
     $clear = function() {
-      BioDbTool::$drupalSchema = NULL;
-      BioDbTool::$reservedSchemaPatterns = NULL;
+      TripalDbx::$drupalSchema = NULL;
+      TripalDbx::$reservedSchemaPatterns = NULL;
     };
-    $clear->call(new BioDbTool());
+    $clear->call(new TripalDbx());
     // Adds live schema reservation.
-    $reserved_schema_patterns = $this->realConfigFactory->get('tripal_biodb.settings')
+    $reserved_schema_patterns = $this->realConfigFactory->get('tripaldbx.settings')
       ->get('reserved_schema_patterns', [])
     ;
     foreach ($reserved_schema_patterns as $pattern => $description) {
-      $this->bioTool->reserveSchemaPattern($pattern, $description);
+      $this->tripal_dbx->reserveSchemaPattern($pattern, $description);
     }
   }
 
@@ -156,10 +165,10 @@ trait ChadoTestTrait  {
    */
   protected function allowTestSchemas() {
     $this->testSchemaBaseNames = $this->realConfigFactory
-      ->get('tripal_biodb.settings')
-      ->get('test_schema_base_names', []);
-    
-    $this->bioTool->freeSchemaPattern(
+      ->get('tripaldbx.settings')
+      ->get('test_schema_base_names', [])
+    ;
+    $this->tripal_dbx->freeSchemaPattern(
       $this->testSchemaBaseNames['chado'],
       TRUE
     );
@@ -170,41 +179,39 @@ trait ChadoTestTrait  {
    */
   protected function createChadoInstallationsTable() {
     $db = \Drupal::database();
-    if (!$db->schema()->tableExists('chado_installations')) {
-      $db->schema()->createTable('chado_installations',
-        [
-          'fields' => [
-            'install_id' => [
-              'type' => 'serial',
-              'unsigned' => TRUE,
-              'not null' => TRUE,
-            ],
-            'schema_name' => [
-              'type' => 'varchar',
-              'length' => 255,
-              'not null' => TRUE,
-            ],
-            'version' => [
-              'type' => 'varchar',
-              'length' => 255,
-              'not null' => TRUE,
-            ],
-            'created' => [
-              'type' => 'varchar',
-              'length' => 255,
-            ],
-            'updated' => [
-              'type' => 'varchar',
-              'length' => 255,
-            ],
+    $db->schema()->createTable('chado_installations',
+      [
+        'fields' => [
+          'install_id' => [
+            'type' => 'serial',
+            'unsigned' => TRUE,
+            'not null' => TRUE,
           ],
-          'indexes' => [
-            'schema_name' => ['schema_name'],
+          'schema_name' => [
+            'type' => 'varchar',
+            'length' => 255,
+            'not null' => TRUE,
           ],
-          'primary key' => ['install_id'],
-        ]
-      );
-    }
+          'version' => [
+            'type' => 'varchar',
+            'length' => 255,
+            'not null' => TRUE,
+          ],
+          'created' => [
+            'type' => 'varchar',
+            'length' => 255,
+          ],
+          'updated' => [
+            'type' => 'varchar',
+            'length' => 255,
+          ],
+        ],
+        'indexes' => [
+          'schema_name' => ['schema_name'],
+        ],
+        'primary key' => ['install_id'],
+      ]
+    );
   }
 
   /**
@@ -213,7 +220,7 @@ trait ChadoTestTrait  {
    * @param int $init_level
    *   One of the constant to select the schema initialization level.
    *
-   * @return \Drupal\tripal_biodb\Database\BioConnection
+   * @return \Drupal\tripal_biodb\Database\TripalDbxConnection
    *   A bio database connection using the generated schema.
    */
   protected function getTestSchema(int $init_level = 0) {
@@ -221,61 +228,61 @@ trait ChadoTestTrait  {
       . '_'
       . bin2hex(random_bytes(8))
     ;
-    $biodb = new ChadoConnection($schema_name);
+    $tripaldbx_db = new ChadoConnection($schema_name);
     // Make sure schema is free.
-    if ($biodb->schema()->schemaExists()) {
+    if ($tripaldbx_db->schema()->schemaExists()) {
       $this->markTestSkipped(
         "Failed to generate a free test schema ($schema_name)."
       );
     }
     switch ($init_level) {
       case static::INIT_CHADO_DUMMY:
-        $biodb->schema()->createSchema();
-        $this->assertTrue($biodb->schema()->schemaExists(), 'Test schema created.');
-        $success = $biodb->executeSqlFile(
+        $tripaldbx_db->schema()->createSchema();
+        $this->assertTrue($tripaldbx_db->schema()->schemaExists(), 'Test schema created.');
+        $success = $tripaldbx_db->executeSqlFile(
           __DIR__ . '/../../../chado_schema/chado-only-1.3.sql',
           ['chado' => $schema_name]
         );
         $this->assertTrue($success, 'Chado schema loaded.');
-        $success = $biodb->executeSqlFile(
+        $success = $tripaldbx_db->executeSqlFile(
           __DIR__ . '/../../fixtures/fill_chado.sql',
           'none'
         );
         $this->assertTrue($success, 'Dummy Chado schema loaded.');
-        $this->assertGreaterThan(100, $biodb->schema()->getSchemaSize(), 'Test schema not empty.');
+        $this->assertGreaterThan(100, $tripaldbx_db->schema()->getSchemaSize(), 'Test schema not empty.');
         break;
 
       case static::INIT_CHADO_EMPTY:
-        $biodb->schema()->createSchema();
-        $this->assertTrue($biodb->schema()->schemaExists(), 'Test schema created.');
-        $success = $biodb->executeSqlFile(
+        $tripaldbx_db->schema()->createSchema();
+        $this->assertTrue($tripaldbx_db->schema()->schemaExists(), 'Test schema created.');
+        $success = $tripaldbx_db->executeSqlFile(
           __DIR__ . '/../../../chado_schema/chado-only-1.3.sql',
           ['chado' => $schema_name]
         );
         $this->assertTrue($success, 'Chado schema loaded.');
-        $this->assertGreaterThan(100, $biodb->schema()->getSchemaSize(), 'Test schema not empty.');
+        $this->assertGreaterThan(100, $tripaldbx_db->schema()->getSchemaSize(), 'Test schema not empty.');
         break;
 
       case static::INIT_DUMMY:
-        $biodb->schema()->createSchema();
-        $this->assertTrue($biodb->schema()->schemaExists(), 'Test schema created.');
-        $success = $biodb->executeSqlFile(
+        $tripaldbx_db->schema()->createSchema();
+        $this->assertTrue($tripaldbx_db->schema()->schemaExists(), 'Test schema created.');
+        $success = $tripaldbx_db->executeSqlFile(
           __DIR__ . '/../../fixtures/test_schema.sql',
           'none'
         );
         $this->assertTrue($success, 'Dummy schema loaded.');
-        $this->assertGreaterThan(100, $biodb->schema()->getSchemaSize(), 'Test schema not empty.');
+        $this->assertGreaterThan(100, $tripaldbx_db->schema()->getSchemaSize(), 'Test schema not empty.');
         break;
 
       case static::CREATE_SCHEMA:
-        $biodb->schema()->createSchema();
-        $this->assertTrue($biodb->schema()->schemaExists(), 'Test schema created.');
+        $tripaldbx_db->schema()->createSchema();
+        $this->assertTrue($tripaldbx_db->schema()->schemaExists(), 'Test schema created.');
         break;
 
       case static::SCHEMA_NAME_ONLY:
         break;
 
-      default:      
+      default:
         break;
     }
     self::$db = self::$db ?? \Drupal::database();
@@ -286,21 +293,21 @@ trait ChadoTestTrait  {
     $config = \Drupal::service('config.factory')->getEditable('tripal_chado.settings');    
     $config->set('default_schema', $schema_name)->save();
 
-    return $biodb;
+    return $tripaldbx_db;
   }
 
   /**
    * Removes a Chado test schema and keep track it has been removed correctly.
    *
-   * @param \Drupal\tripal_biodb\Database\BioConnection $biodb
+   * @param \Drupal\tripal_biodb\Database\TripalDbxConnection $tripaldbx_db
    *   A bio database connection using the test schema.
    */
   protected function freeTestSchema(
-    \Drupal\tripal_biodb\Database\BioConnection $biodb
+    \Drupal\tripal\TripalDBX\TripalDbxConnection $tripaldbx_db
   ) {
-    self::$testSchemas[$biodb->getSchemaName()] = FALSE;
+    self::$testSchemas[$tripaldbx_db->getSchemaName()] = FALSE;
     try {
-      $biodb->schema()->dropSchema();
+      $tripaldbx_db->schema()->dropSchema();
     }
     catch (\Exception $e) {
       // Ignore issues.

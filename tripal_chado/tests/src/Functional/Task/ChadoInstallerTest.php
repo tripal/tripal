@@ -26,19 +26,19 @@ class ChadoInstallerFunctionalTest extends ChadoTestKernelBase {
    */
   public function testPerformTaskInstaller() {
     // Get a temporary schema name.
-    $biodb = $this->getTestSchema(ChadoTestKernelBase::SCHEMA_NAME_ONLY);
+    $tripaldbx_db = $this->getTestSchema(ChadoTestKernelBase::SCHEMA_NAME_ONLY);
 
     // Test installer.
     $installer = \Drupal::service('tripal_chado.installer');
     $installer->setParameters([
-      'output_schemas'  => [$biodb->getSchemaName()],
+      'output_schemas'  => [$tripaldbx_db->getSchemaName()],
     ]);
     $success = $installer->performTask();
     $this->assertTrue($success, 'Task performed.');
-    $this->assertTrue($biodb->schema()->schemaExists(), 'Schema created.');
-    $this->assertTrue($biodb->schema()->tableExists('stock'), 'Table created.');
-    $this->assertTrue($biodb->schema()->fieldExists('stock', 'uniquename'), 'Field created.');
+    $this->assertTrue($tripaldbx_db->schema()->schemaExists(), 'Schema created.');
+    $this->assertTrue($tripaldbx_db->schema()->tableExists('stock'), 'Table created.');
+    $this->assertTrue($tripaldbx_db->schema()->fieldExists('stock', 'uniquename'), 'Field created.');
     // @todo: test more... (types, functions, views, indexes, frange schema)
-    $this->freeTestSchema($biodb);
+    $this->freeTestSchema($tripaldbx_db);
   }
 }

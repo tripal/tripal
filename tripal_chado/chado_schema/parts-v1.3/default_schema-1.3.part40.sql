@@ -335,7 +335,7 @@ LANGUAGE SQL;
 --
 -- create a point
 CREATE OR REPLACE FUNCTION featureslice(bigint, bigint) RETURNS setof featureloc AS
-  'SELECT * from featureloc where boxquery($1, $2) @ boxrange(fmin,fmax)'
+  'SELECT * from featureloc where boxquery($1, $2) <@ boxrange(fmin,fmax)'
 LANGUAGE 'sql';
 
 --uses the gff3atts to create a GFF3 compliant attribute string

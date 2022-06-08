@@ -6,7 +6,7 @@ This lesson will teach you how to programmatically create new controlled vocabul
 
 .. warning::
 
-  This lesson was written before Chado integration. As such it shows how database agnostic Tripal 4 is. In the future we will add a section about how to connect these terms to your Chado cvterms and how to create terms from those existing in Chado.
+  This lesson needs to be re-done once vocabulary integration is done. For now, all code samples have been removed as they no longer work.
 
 .. note::
 
@@ -38,7 +38,7 @@ The following code demonstrates how to create a Tripal Controlled Vocabulary (CV
     'name' => 'The Sequence Ontology',
     'description' => 'The Sequence Ontology is a set of terms and relationships used to describe the features and attributes of biological sequence. SO includes different kinds of features which can be located on the sequence.'
   ];
-  \Drupal::service('tripal.tripalVocab.manager')->addVocabulary($details);
+  // Add in code sample of how to retrieve the above term.
 
 This code sample simply describes the controlled vocabulary you would like to create as an associative array and then uses the ``tripal.tripalVocab.manager`` service to create it.
 
@@ -58,10 +58,11 @@ Now that you have at least one CV, you can load an existing CV. This is demonstr
 
 .. code:: php
 
-  $vocab = \Drupal::service('tripal.tripalVocab.manager')->getVocabularies([
+  $details = [
     'name' => 'The Sequence Ontology',
     'namespace' => 'sequence',
-  ]);
+  ];
+  // code sample of how to load the above cv you just created.
 
 The getVocabularies() method allows you to retrieve Tripal Vocabulary objects using their name and/or namespace.
 
@@ -69,10 +70,8 @@ Once you have a Tripal Vocabulary object, you can retrieve the value of various 
 
 .. code:: php
 
-  $id = $vocab->id();
-  $namespace = $vocab->getNamespace();
-  $humanreadable_name = $vocab->getName();
-  $description = $vocab->getDescription();
+  // code sample showing how to access the vocab id, name, description, etc.
+
 
 Controlled Vocabulary Terms (CVterms)
 ---------------------------------------
@@ -102,7 +101,7 @@ The following code demonstrates how to create a Tripal Controlled Vocabulary Ter
     ],
     'definition' => 'A region (or regions) that includes all of the sequence elements necessary to encode a functional transcript. A gene may include regulatory regions, transcribed regions and/or other functional sequence regions.',
   ];
-  \Drupal::service('tripal.tripalTerm.manager')->addTerm($details);
+  // Code sample showing how to create the above term.
 
 This follows the same format as for creating the sequence ontology CV. First we describe the term we want to create including the Tripal Vocabulary and then we use the ``tripal.tripalTerm.manager`` service to create it. This service will create the controlled vocabulary if it doesn't already exist!
 
@@ -124,15 +123,11 @@ Now that you have at least one CVterm, you can load an existing CVterm. This is 
       'idspace' => 'SO',
     ],
   ];
-  $term = \Drupal::service('tripal.tripalTerm.manager')->getTerms($details);
+  // code sample showing how to retrieve the above term.
 
 Once you have a TripalTerm object, you can retrieve the value of various properties by using the following methods:
 
 .. code::
 
-  $idspace = $term->getIDSpace();
-  $idspace_label = $idspace->getIDSpace();
-  $accession = $term->getAccession();
-  $full_accession = $idspace_label . ':' . $accession;
-  $name = $term->getName();
-  $definition = $term->getDefinition();
+  // Code sample showing how to retrieve
+  // the id space, accession, name, definition of a term.

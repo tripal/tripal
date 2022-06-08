@@ -21,6 +21,6 @@ The following individuals are currently contributing to active development of Tr
 - `Stephen Ficklin <https://github.com/spficklin>`_
 - `Rish Ramnath <https://github.com/risharde>`_
 - `Lacey Sanderson <https://github.com/laceysanderson>`_
-- `Valentin Vuignon <https://github.com/guignonv>`_
+- `Valentin Guignon <https://github.com/guignonv>`_
 
 We would also like to acknowledge the assistance of other individuals who have contributed to Tripal v4 through various pull requests and activity at Tripal Codefests.  The full list of contributors is found `here <https://github.com/tripal/t4d8/graphs/contributors>`_.
