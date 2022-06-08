@@ -58,12 +58,5 @@ abstract class ChadoTestKernelBase extends KernelTestBase {
    * Create a Chado schema and initialize it with dummy data.
    */
   public const INIT_CHADO_DUMMY = 4;
-  
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp() {
-    parent::setUp();
-  }
-     
+      
 }

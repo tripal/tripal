@@ -55,8 +55,9 @@ trait ChadoTestTrait  {
    * {@inheritdoc}
    */
   protected function setUp(): void {
+    
     parent::setUp();
-
+    
     // Init Tripal.
     $this->createChadoInstallationsTable();
 
@@ -113,7 +114,7 @@ trait ChadoTestTrait  {
       'default',
       'simpletest_original_default'
     );
-    // Instanciate a new config storage.
+    // Instantiate a new config storage.
     $config_storage = new \Drupal\Core\Config\DatabaseStorage(
       $drupal_db,
       'config'
@@ -156,8 +157,8 @@ trait ChadoTestTrait  {
   protected function allowTestSchemas() {
     $this->testSchemaBaseNames = $this->realConfigFactory
       ->get('tripal_biodb.settings')
-      ->get('test_schema_base_names', [])
-    ;
+      ->get('test_schema_base_names', []);
+    
     $this->bioTool->freeSchemaPattern(
       $this->testSchemaBaseNames['chado'],
       TRUE
@@ -279,6 +280,11 @@ trait ChadoTestTrait  {
     }
     self::$db = self::$db ?? \Drupal::database();
     self::$testSchemas[$schema_name] = TRUE;
+    
+    # Make sure that any other connections to TripalDBX will see this new test schema as 
+    # the default schema.
+    $config = \Drupal::service('config.factory')->getEditable('tripal_chado.settings');    
+    $config->set('default_schema', $schema_name)->save();
 
     return $biodb;
   }

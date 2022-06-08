@@ -13,14 +13,13 @@ use Drupal\tripal\TripalVocabTerms\TripalIdSpaceBase;
  *  )
  */
 class ChadoIdSpace extends TripalIdSpaceBase {
-
+  
   /**
    * Creates this collection. This must only be called once on this new
    * collection instance that has just been created by its collection plugin
    * manager.
    */
   public function create(){
-    
   }
   
   /**
@@ -94,7 +93,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
    * @return array
    *   Array of matching Drupal\tripal\TripalVocabTerms\TripalTerm instances.
    */
-  public function getTerms($name,$options){
+  public function getTerms($name, $options){
     
   }
   
@@ -149,7 +148,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
    * @return bool
    *   True on success or false otherwise.
    */
-  public function saveTerm($term,$options,$parent = NULL){
+  public function saveTerm($term, $options, $parent = NULL){
     
   }
   

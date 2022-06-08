@@ -64,10 +64,10 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
    * @return Drupal\tripal\TripalVocabTerms\TripalCollectionPluginBase
    *   The new collection.
    */
-  public function createCollection($name,$pluginId) {
+  public function createCollection($name, $pluginId) {
     $db = \Drupal::database();
     $result = $db->insert($this->table)->fields(["name" => $name,"plugin_id" => $pluginId])->execute();
-    $collection = $this->createInstance($pluginId,["collection_name" => $name]);
+    $collection = $this->createInstance($pluginId, ["collection_name" => $name]);
     $collection->create();
     return $collection;
   }
@@ -98,7 +98,7 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
       return FALSE;
     }
     $collection = $this->createInstance($record->plugin_id,["collection_name" => $name]);
-    $collecction->destroy();
+    $collection->destroy();
     return TRUE;
   }
 
@@ -125,17 +125,20 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
    * @param string $name
    *   The name.
    *
+   * @param string $pluginId
+   *   The plugin id.
+   *   
    * @return Drupal\tripal\TripalVocabTerms\TripalCollectionPluginBase|NULL
    *   The loaded collection plugin or NULL.
    */
-  public function loadCollection($name) {
+  public function loadCollection($name, $pluginId) {
     $db = \Drupal::database();
     $result = $db->select($this->table,'n')->condition('n.name',$name)->execute();
     $first = $result->fetch();
     if (!$first) {
       return NULL;
     }
-    $collection = $this->createInstance($pluginId,["collection_name" => $name]);
+    $collection = $this->createInstance($pluginId, ["collection_name" => $name]);
     return $collection;
   }
 

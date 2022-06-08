@@ -14,17 +14,8 @@ use Drupal\Core\Test\FunctionalTestSetupTrait;
  * @group Tripal Chado ChadoVocabTerms
  */
 class ChadoVocabTermsTest extends ChadoTestBrowserBase {
-  
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp() {
-    parent::setUp();
+     
     
-    //$this->installSchema('tripal', ['tripal_collection', 'tripal_collection_bundle', 
-//      'tripal_id_space_collection', 'tripal_vocabulary_collection']);
-  }
-   
   /**
    * Tests task.
    * 
@@ -33,38 +24,36 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
    */
   public function testIdSpace() {    
     
+    
     // Create a temporary schema.
-    $biodb = $this->getTestSchema(ChadoTestBrowserBase::INIT_DUMMY);
-        
+    $biodb = $this->getTestSchema(ChadoTestBrowserBase::INIT_DUMMY);  
+           
     // Create instances of the plugin managers for ID Space and Vocabulary.
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');   
-    
-    //print_r($vmanager->getDefinitions());
-    
-    
-    //$db = Database::getConnection();
-    //$result = $db->query("SELECT table_name FROM information_schema.tables;");
-    //$tables = $result->fetchAll();
-    //print_r($tables);
-    
+    $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');          
     
     // We need to create an instance of the ID space collection using an identifier for
     // our collection.  We'll use the same name as the CV ID space.
     // We'll model this test after the Gene Ontology which has one ID Space (i.e., GO) but
     // three vocabularies.
-    $goIdSpace = $idsmanager->createCollection("GO","chado_id_space");    
-    $cc = $vmanager->createCollection("cellular_component","chado_vocabulary");
-    $mf = $vmanager->createCollection("molecular_function","chado_vocabulary");
-    $bp = $vmanager->createCollection("biological_process","chado_vocabulary");    
+    $GO = $idsmanager->createCollection("GO", "chado_id_space");    
+    $cc = $vmanager->createCollection("cellular_component", "chado_vocabulary");
+    $mf = $vmanager->createCollection("molecular_function", "chado_vocabulary");
+    $bp = $vmanager->createCollection("biological_process", "chado_vocabulary");    
+
+    // An ID Space needs a default vocabulary.  This will also add the ID Space
+    // to the vocabulary (two birds with one stone).
+    $GO->setDefaultVocabulary("cellular_component");    
+    
+    // Now add the other two ID Spaces to the vocabularies.    
     $mf->addIdSpace("GO");
-    $cc->addIdSpace("GO");
-    $bp->addIdSpace("GO");
+    $bp->addIdSpace("GO"); 
     
-    // ID spaces need a default vocabulary.  It doesn't make sense to have one for
-    // the gene ontology but we'll set one anyway.
-    $goIdSpace->setDefaultVocabulary("cellular_component");      
+    // Make sure the ID space was added to the db table of Chado.
     
+    // Make sure teh vocabulary was added to the cv table of Chado.
+    
+        
   }
 }
 
