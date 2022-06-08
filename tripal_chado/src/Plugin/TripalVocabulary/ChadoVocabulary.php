@@ -33,9 +33,6 @@ class ChadoVocabulary extends TripalVocabularyBase {
     // Instantiate a BioConnection for Chado.
     $this->chado = \Drupal::service('tripal_chado.database');
     
-    // We want to use the Chado schema as default in queries.
-    $this->chado->useBioSchemaFor($this);    
-    
     // Get the ID Space manager object for easy use elsewhere.
     $this->ids = \Drupal::service('tripal.collection_plugin_manager.idspace');
            

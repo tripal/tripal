@@ -2,7 +2,7 @@
 namespace Drupal\Tests\tripal_chado\Functional;
 
 use Drupal\KernelTests\KernelTestBase;
-use Drupal\tripal_biodb\Database\BioDbTool;
+use Drupal\tripal\TripalDBX\TripalDbx;
 use Drupal\tripal_chado\Database\ChadoConnection;
 
 /**

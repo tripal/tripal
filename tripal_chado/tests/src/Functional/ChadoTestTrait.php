@@ -2,7 +2,7 @@
 namespace Drupal\Tests\tripal_chado\Functional;
 
 use Drupal\KernelTests\KernelTestBase;
-use Drupal\tripal_biodb\Database\BioDbTool;
+use Drupal\tripal\TripalDBX\TripalDbx;
 use Drupal\tripal_chado\Database\ChadoConnection;
 
 /**
@@ -179,39 +179,41 @@ trait ChadoTestTrait  {
    */
   protected function createChadoInstallationsTable() {
     $db = \Drupal::database();
-    $db->schema()->createTable('chado_installations',
-      [
-        'fields' => [
-          'install_id' => [
-            'type' => 'serial',
-            'unsigned' => TRUE,
-            'not null' => TRUE,
+    if (!$db->schema()->tableExists('chado_installations')) {
+      $db->schema()->createTable('chado_installations',
+        [
+          'fields' => [
+            'install_id' => [
+              'type' => 'serial',
+              'unsigned' => TRUE,
+              'not null' => TRUE,
+            ],
+            'schema_name' => [
+              'type' => 'varchar',
+              'length' => 255,
+              'not null' => TRUE,
+            ],
+            'version' => [
+              'type' => 'varchar',
+              'length' => 255,
+              'not null' => TRUE,
+            ],
+            'created' => [
+              'type' => 'varchar',
+              'length' => 255,
+            ],
+            'updated' => [
+              'type' => 'varchar',
+              'length' => 255,
+            ],
           ],
-          'schema_name' => [
-            'type' => 'varchar',
-            'length' => 255,
-            'not null' => TRUE,
+          'indexes' => [
+            'schema_name' => ['schema_name'],
           ],
-          'version' => [
-            'type' => 'varchar',
-            'length' => 255,
-            'not null' => TRUE,
-          ],
-          'created' => [
-            'type' => 'varchar',
-            'length' => 255,
-          ],
-          'updated' => [
-            'type' => 'varchar',
-            'length' => 255,
-          ],
-        ],
-        'indexes' => [
-          'schema_name' => ['schema_name'],
-        ],
-        'primary key' => ['install_id'],
-      ]
-    );
+          'primary key' => ['install_id'],
+        ]
+      );
+    }
   }
 
   /**
