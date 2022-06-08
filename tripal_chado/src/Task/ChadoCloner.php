@@ -71,7 +71,7 @@ class ChadoCloner extends ChadoTaskBase {
           "Schemas must reside in a same database. Could not clone schemas from one database to another with this implementation."
         );
       }
-      $bio_tool = \Drupal::service('tripal_biodb.tool');
+      $tripal_dbx = \Drupal::service('tripal.dbx');
 
       // Note: schema names have already been validated through BioConnection.
       // Check if the target schema is free.
@@ -84,7 +84,7 @@ class ChadoCloner extends ChadoTaskBase {
       }
 
       // Check target name is not reserved.
-      $issue = $bio_tool->isInvalidSchemaName($output_schema->getSchemaName());
+      $issue = $tripal_dbx->isInvalidSchemaName($output_schema->getSchemaName());
       if ($issue) {
         throw new ParameterException($issue);
       }
@@ -154,10 +154,10 @@ class ChadoCloner extends ChadoTaskBase {
     {
       $source_schema = $this->inputSchemas[0];
       $target_schema = $this->outputSchemas[0];
-      $bio_tool = \Drupal::service('tripal_biodb.tool');
+      $tripal_dbx = \Drupal::service('tripal.dbx');
 
       // Get initial database size.
-      $db_size = $bio_tool->getDatabaseSize($target_schema);
+      $db_size = $tripal_dbx->getDatabaseSize($target_schema);
 
       // Get Chado size.
       $chado_size = $source_schema->schema()->getSchemaSize();
@@ -167,7 +167,7 @@ class ChadoCloner extends ChadoTaskBase {
       $this->state->set(static::STATE_KEY_DATA_PREFIX . $this->id, $data);
 
       // Clone schema.
-      $drupal_schema = $bio_tool->getDrupalSchemaName();
+      $drupal_schema = $tripal_dbx->getDrupalSchemaName();
       $args = [
         ':source' => $source_schema->getSchemaName(),
         ':target' => $target_schema->getSchemaName(),
@@ -217,9 +217,9 @@ class ChadoCloner extends ChadoTaskBase {
     }
     else {
       // Compute progress.
-      $bio_tool = \Drupal::service('tripal_biodb.tool');
+      $tripal_dbx = \Drupal::service('tripal.dbx');
       $target_schema = $this->output_schemas[0];
-      $db_size = $bio_tool->getDatabaseSize($target_schema);
+      $db_size = $tripal_dbx->getDatabaseSize($target_schema);
       $progress = ($db_size - $data['db_size']) / $data['chado_size'];
       if (0.01 > $progress) {
         $progress = 0.01;

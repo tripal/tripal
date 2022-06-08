@@ -1,6 +1,6 @@
-name: 'Tripal Biological Database'
+name: 'Tripal BioDB Task API'
 type: module
-description: 'Biological database layer for Tripal.'
+description: 'Provides a database focused TASK API for Tripal.'
 core_version_requirement: ^8.8 || ^9
 package: 'Tripal'
 dependencies:

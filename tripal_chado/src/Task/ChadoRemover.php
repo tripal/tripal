@@ -58,7 +58,7 @@ class ChadoRemover extends ChadoTaskBase {
           "Invalid number of output schemas. Only one output schema to remove should be specified."
         );
       }
-      $bio_tool = \Drupal::service('tripal_biodb.tool');
+      $tripal_dbx = \Drupal::service('tripal.dbx');
       $old_schema = $this->outputSchemas[0];
 
       // Note: schema names have already been validated through BioConnection.

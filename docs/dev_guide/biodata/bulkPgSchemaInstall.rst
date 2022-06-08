@@ -14,6 +14,6 @@ Tripal provides a service to bulk import SQL files into a PostgreSQL database. T
 	// And if the schema exists...
 	if ($service->checkExists($schema_name)) {
 		// Then populate the schema in bulk using an SQL file.
-		$sql_file = drupal_get_path('module', 'tripal') . '/tests/src/testFiles/smallTestSchema.sql';
+		$sql_file = drupal_get_path('module', 'tripal') . '/tests/fixtures/smallTestSchema.sql';
 		$success = $service->applySQL($sql_file, $schema_name, TRUE);
 	}

@@ -1,4 +1,4 @@
-tripal_biodb.settings:
+tripaldbx.settings:
   type: config_object
   mapping:
     reserved_schema_patterns:

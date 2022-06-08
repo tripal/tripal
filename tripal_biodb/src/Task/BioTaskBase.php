@@ -6,7 +6,7 @@ use Drupal\tripal_biodb\Lock\SharedLockBackendInterface;
 use Drupal\tripal_biodb\Exception\TaskException;
 use Drupal\tripal_biodb\Exception\ParameterException;
 use Drupal\tripal_biodb\Exception\LockException;
-use Drupal\tripal_biodb\Database\BioConnection;
+use Drupal\tripal\TripalDBX\TripalDbxConnection;
 
 /**
  * Defines the base class for tasks on one or more biological schemas.
@@ -68,14 +68,14 @@ abstract class BioTaskBase implements BioTaskInterface {
   protected $parameters = ['input_schemas' => [], 'output_schemas' => [], ];
 
   /**
-   * Input schemas as an array of \Drupal\tripal_biodb\Database\BioConnection.
+   * Input schemas as an array of \Drupal\tripal\TripalDBX\TripalDbxConnection.
    *
    * @var array
    */
   protected $inputSchemas = [];
 
   /**
-   * Output schemas as an array of \Drupal\tripal_biodb\Database\BioConnection.
+   * Output schemas as an array of \Drupal\tripal\TripalDBX\TripalDbxConnection.
    *
    * @var array
    */
@@ -126,7 +126,7 @@ abstract class BioTaskBase implements BioTaskInterface {
     // Initializes task identifer.
     $this->initId();
   }
-  
+
   /**
    * {@inheritdoc}
    */
@@ -161,12 +161,12 @@ abstract class BioTaskBase implements BioTaskInterface {
    * @return string
    *   The name of the class that should be used.
    */
-  public function getBioClass($class) {
+  public function getTripalDbxClass($class) {
     static $classes = [
-      'Connection' => BioConnection::class,
+      'Connection' => TripalDbxConnection::class,
     ];
     if (!array_key_exists($class, $classes)) {
-      throw new ConnectionException("Invalid BioDb class '$class'.");
+      throw new ConnectionException("Invalid Tripal DBX class '$class'.");
     }
     return $classes[$class];
   }
@@ -180,7 +180,7 @@ abstract class BioTaskBase implements BioTaskInterface {
    *   \Drupal\Core\Database\Database::getConnection()).
    *
    * @return array
-   *   An ordered array of \Drupal\tripal_biodb\Database\BioConnection objects.
+   *   An ordered array of \Drupal\tripal\TripalDBX\TripalDbxConnection objects.
    *
    * @see https://api.drupal.org/api/drupal/core!lib!Drupal!Core!Database!Database.php/function/Database%3A%3AgetConnection/9.3.x
    *
@@ -204,7 +204,7 @@ abstract class BioTaskBase implements BioTaskInterface {
       $schema_name = $match[2];
       $db_key = $match[1];
       // Check if a specific database has been specified.
-      $class = $this->getBioClass('Connection');
+      $class = $this->getTripalDbxClass('Connection');
 
       if (!empty($db_key)) {
         // Yes, remove trailing dot from key.
@@ -223,14 +223,14 @@ abstract class BioTaskBase implements BioTaskInterface {
   /**
    * Returns the lock name to use for the given schema.
    *
-   * @param \Drupal\tripal_biodb\Database\BioConnection $db
+   * @param \Drupal\tripal\TripalDBX\TripalDbxConnection $db
    *   A schema connection.
    *
    * @return string
    *   The lock name.
    */
   protected function getSchemaLockName(
-    \Drupal\tripal_biodb\Database\BioConnection $db
+    \Drupal\tripal\TripalDBX\TripalDbxConnection $db
   ) :string {
     return $db->getDatabaseName() . '.' . $db->getSchemaName();
   }

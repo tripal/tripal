@@ -58,7 +58,7 @@ class ChadoIntegrator extends ChadoTaskBase {
           "No output schema must be specified."
         );
       }
-      $bio_tool = \Drupal::service('tripal_biodb.tool');
+      $tripal_dbx = \Drupal::service('tripal.dbx');
       $input_schema = $this->inputSchemas[0];
 
       // Note: schema names have already been validated through BioConnection.
