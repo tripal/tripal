@@ -695,7 +695,7 @@ $_$;
 
 CREATE FUNCTION featureloc_slice(bigint, bigint) RETURNS SETOF featureloc
     LANGUAGE sql
-    AS $_$SELECT * from featureloc where boxquery($1, $2) @ boxrange(fmin,fmax)$_$;
+    AS $_$SELECT * from featureloc where boxquery($1, $2) <@ boxrange(fmin,fmax)$_$;
 
 CREATE FUNCTION featureloc_slice(bigint, bigint, bigint) RETURNS SETOF featureloc
     LANGUAGE sql
@@ -708,12 +708,12 @@ CREATE FUNCTION featureloc_slice(character varying, bigint, bigint) RETURNS SETO
     AS $_$SELECT featureloc.*
    FROM featureloc
    INNER JOIN feature AS srcf ON (srcf.feature_id = featureloc.srcfeature_id)
-   WHERE boxquery($2, $3) @ boxrange(fmin,fmax)
+   WHERE boxquery($2, $3) <@ boxrange(fmin,fmax)
    AND srcf.name = $1 $_$;
 
 CREATE FUNCTION featureslice(bigint, bigint) RETURNS SETOF featureloc
     LANGUAGE sql
-    AS $_$SELECT * from featureloc where boxquery($1, $2) @ boxrange(fmin,fmax)$_$;
+    AS $_$SELECT * from featureloc where boxquery($1, $2) <@ boxrange(fmin,fmax)$_$;
 
 CREATE FUNCTION fill_cvtermpath(bigint) RETURNS integer
     LANGUAGE plpgsql

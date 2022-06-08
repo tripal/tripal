@@ -26,17 +26,17 @@ class ChadoRemoverFunctionalTest extends ChadoTestKernelBase {
    */
   public function testPerformTaskRemover() {
     // Create a temporary schema.
-    $biodb = $this->getTestSchema(ChadoTestKernelBase::CREATE_SCHEMA);
+    $tripaldbx_db = $this->getTestSchema(ChadoTestKernelBase::CREATE_SCHEMA);
 
     // Test remover.
     $remover = \Drupal::service('tripal_chado.remover');
     $remover->setParameters([
-      'output_schemas'  => [$biodb->getSchemaName()],
+      'output_schemas'  => [$tripaldbx_db->getSchemaName()],
     ]);
     $success = $remover->performTask();
     $this->assertTrue($success, 'Task performed.');
-    $this->assertFalse($biodb->schema()->schemaExists(), 'Schema removed.');
+    $this->assertFalse($tripaldbx_db->schema()->schemaExists(), 'Schema removed.');
     // Already dropped but we need to let know the "garbage schema collector".
-    $this->freeTestSchema($biodb);
+    $this->freeTestSchema($tripaldbx_db);
   }
 }

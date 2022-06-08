@@ -1,0 +1,11 @@
+name: 'Assert Branch Naming Convention'
+on: pull_request
+
+jobs:
+  branch-naming-rules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: deepakputhraya/action-branch-name@v1.0.0
+        with:
+          regex: 'tv4g[0-9]-(issue){0,1}\d+-{0,1}\w*' # Regex the branch should match. 
+          ignore: 9.x-4.x,8.x-4.x # Ignore exactly matching branch names from convention

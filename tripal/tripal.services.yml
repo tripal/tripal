@@ -10,6 +10,8 @@ services:
     class: Drupal\tripal\Services\Tripaljob
   tripal.logger:
     class: Drupal\tripal\Services\TripalLogger
+  tripal.dbx:
+    class: Drupal\tripal\TripalDBX\TripalDbx
   plugin.manager.tripalstorage:
     class: Drupal\tripal\Services\TripalStorageManager
     parent: default_plugin_manager
