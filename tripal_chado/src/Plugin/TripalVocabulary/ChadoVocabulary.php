@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\tripal_chado\Plugin\TripalVocabTerms;
+namespace Drupal\tripal_chado\Plugin\TripalVocabulary;
 
 use Drupal\tripal\TripalVocabTerms\TripalVocabularyBase;
 
@@ -14,12 +14,28 @@ use Drupal\tripal\TripalVocabTerms\TripalVocabularyBase;
  */
 class ChadoVocabulary extends TripalVocabularyBase {
   /**
+   * Holds an instance of a BioDB connection to Chado.
+   */
+  protected $chado = NULL;
+  
+  /**
+   * Holds an instance of an ID Space Tripal Colllection Manager. 
+   */
+  protected $ids = NULL;
+  
+  
+  /**
    * Creates this collection. This must only be called once on this new
    * collection instance that has just been created by its collection plugin
    * manager.
    */
-  public function create(){
+  public function create(){     
+    // Instantiate a BioConnection for Chado.
+    $this->chado = \Drupal::service('tripal_chado.database');
     
+    // Get the ID Space manager object for easy use elsewhere.
+    $this->ids = \Drupal::service('tripal.collection_plugin_manager.idspace');
+           
   }
   
   /**
@@ -53,6 +69,16 @@ class ChadoVocabulary extends TripalVocabularyBase {
    */
   public function addIdSpace($idSpace){
     
+    // Get the collection for this ID.
+    $id = $this->ids->loadCollection($idSpace, 'chado_id_space');
+    
+    
+    // First make sure that the IDspace doesn't already exist.
+    $query = $this->chado->select('db', 'db')
+      ->condition('db.name', $id->getName(), '=')
+      ->fields('db', ['name']);
+    $result = $query->execute();
+    $dbname = $result->fetchField();
   }
   
   /**

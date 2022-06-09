@@ -2,7 +2,7 @@
 namespace Drupal\Tests\tripal_chado\Functional;
 
 use Drupal\Tests\BrowserTestBase;
-use Drupal\tripal_biodb\Database\BioDbTool;
+use Drupal\tripal\TripalDBX\TripalDbx;
 use Drupal\tripal_chado\Database\ChadoConnection;
 
 /**
@@ -64,6 +64,6 @@ abstract class ChadoTestBrowserBase extends BrowserTestBase {
    * Create a Chado schema and initialize it with dummy data.
    */
   public const INIT_CHADO_DUMMY = 4;
-   
+     
 
 }

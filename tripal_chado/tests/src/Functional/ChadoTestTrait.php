@@ -2,7 +2,7 @@
 namespace Drupal\Tests\tripal_chado\Functional;
 
 use Drupal\KernelTests\KernelTestBase;
-use Drupal\tripal_biodb\Database\BioDbTool;
+use Drupal\tripal\TripalDBX\TripalDbx;
 use Drupal\tripal_chado\Database\ChadoConnection;
 
 /**
@@ -64,8 +64,9 @@ trait ChadoTestTrait  {
    * {@inheritdoc}
    */
   protected function setUp(): void {
+    
     parent::setUp();
-
+    
     // Init Tripal.
     $this->createChadoInstallationsTable();
 
@@ -122,7 +123,7 @@ trait ChadoTestTrait  {
       'default',
       'simpletest_original_default'
     );
-    // Instanciate a new config storage.
+    // Instantiate a new config storage.
     $config_storage = new \Drupal\Core\Config\DatabaseStorage(
       $drupal_db,
       'config'
@@ -178,39 +179,41 @@ trait ChadoTestTrait  {
    */
   protected function createChadoInstallationsTable() {
     $db = \Drupal::database();
-    $db->schema()->createTable('chado_installations',
-      [
-        'fields' => [
-          'install_id' => [
-            'type' => 'serial',
-            'unsigned' => TRUE,
-            'not null' => TRUE,
+    if (!$db->schema()->tableExists('chado_installations')) {
+      $db->schema()->createTable('chado_installations',
+        [
+          'fields' => [
+            'install_id' => [
+              'type' => 'serial',
+              'unsigned' => TRUE,
+              'not null' => TRUE,
+            ],
+            'schema_name' => [
+              'type' => 'varchar',
+              'length' => 255,
+              'not null' => TRUE,
+            ],
+            'version' => [
+              'type' => 'varchar',
+              'length' => 255,
+              'not null' => TRUE,
+            ],
+            'created' => [
+              'type' => 'varchar',
+              'length' => 255,
+            ],
+            'updated' => [
+              'type' => 'varchar',
+              'length' => 255,
+            ],
           ],
-          'schema_name' => [
-            'type' => 'varchar',
-            'length' => 255,
-            'not null' => TRUE,
+          'indexes' => [
+            'schema_name' => ['schema_name'],
           ],
-          'version' => [
-            'type' => 'varchar',
-            'length' => 255,
-            'not null' => TRUE,
-          ],
-          'created' => [
-            'type' => 'varchar',
-            'length' => 255,
-          ],
-          'updated' => [
-            'type' => 'varchar',
-            'length' => 255,
-          ],
-        ],
-        'indexes' => [
-          'schema_name' => ['schema_name'],
-        ],
-        'primary key' => ['install_id'],
-      ]
-    );
+          'primary key' => ['install_id'],
+        ]
+      );
+    }
   }
 
   /**
@@ -286,6 +289,11 @@ trait ChadoTestTrait  {
     }
     self::$db = self::$db ?? \Drupal::database();
     self::$testSchemas[$schema_name] = TRUE;
+    
+    # Make sure that any other connections to TripalDBX will see this new test schema as 
+    # the default schema.
+    $config = \Drupal::service('config.factory')->getEditable('tripal_chado.settings');    
+    $config->set('default_schema', $schema_name)->save();
 
     return $tripaldbx_db;
   }
