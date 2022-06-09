@@ -570,7 +570,7 @@ function tripal_get_vocabularies() {
  * The form elements should work with a flat form (no #tree set for the form)
  * or with a form in a TripalField.
  *
- * Use the tripal_get_term_lookup_form_result() function to retrieve the
+ * Use the tripal_get_term_lookup_form_result() function to retreive the
  * result in a form submit or validate.
  *
  * @param $form
@@ -679,11 +679,12 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
   if ($term_name) {
     $submit_disabled = TRUE;
     $form['term_match' . $delta]['terms_list' . $delta] = [
-      '#type' => 'fieldset',
+      '#type' => 'radios',
       '#title' => t('Matching Terms'),
       '#description' => t('Please select the best matching term. If the
         same term exists in multiple vocabularies you will see more than
         one option below.'),
+      '#after_build' => ['tripal_get_term_lookup_form_options_descriptions'],
     ];
     $match = [
       'name' => $term_name,
@@ -692,35 +693,30 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
     // tripal module.
     $terms = chado_generate_var('cvterm', $match, ['return_array' => TRUE]);
     $num_terms = 0;
-    $selected_term = '';
 
     // Let the user select from any matching terms. Sometimes there may be
-    // more than one that match.
+    // more than one that matches.
+    $options = [];
+    $options_descriptions = [];
+    $default_value = NULL;
     foreach ($terms as $term) {
       // Save the user a click by setting the default value as 1 if there's
       // only one matching term.
-      $checked = FALSE;
-      $attrs = [];
       if ($num_terms == 0 and count($terms) == 1) {
-        $checked = TRUE;
-        $attrs = ['checked' => 'checked'];
+        $default_value = $num_terms;
       }
       $term_element_name = 'term-' . $term->cvterm_id . '-' . $delta;
       $term = chado_expand_var($term, 'field', 'cv.definition');
       $definition = property_exists($term, 'definition') ? $term->definition : '';
-      $form['term_match' . $delta]['terms_list' . $delta][$term_element_name] = [
-        '#type' => 'radio',
-        '#title' => $term->name,
-        '#default_value' => $checked,
-        '#attributes' => $attrs,
-        '#description' => '<b>Vocabulary:</b> ' . $term->cv_id->name . ' (' . $term->dbxref_id->db_id->name . ') ' . $term->cv_id->definition .
-          '<br><b>Term ID: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
-          '<br><b>Definition:</b>  ' . $definition,
-      ];
+      $options[$term_element_name] = $term->name;
+      $options_descriptions[$term_element_name] =
+        '<b>Vocabulary:</b> ' . $term->cv_id->name . ' (' . $term->dbxref_id->db_id->name . ') ' . $term->cv_id->definition .
+        '<br><b>Term ID: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
+        '<br><b>Definition:</b>  ' . $definition;
 
       if (array_key_exists('values', $form_state) and array_key_exists($term_element_name, $form_state['values']) and
         $form_state['values'][$term_element_name] == 1) {
-        $selected_term = $term;
+        $default_value = $num_terms;
       }
       $num_terms++;
     }
@@ -736,32 +732,31 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
       $term = $synonym->cvterm_id;
       // Save the user a click by setting the default value as 1 if there's
       // only one matching term.
-      $checked = FALSE;
-      $attrs = [];
       if ($num_terms == 0 and count($terms) == 1) {
-        $checked = TRUE;
-        $attrs = ['checked' => 'checked'];
+        $default_value = $num_terms;
       }
       $term_element_name = 'term-' . $term->cvterm_id . '-' . $delta;
       $definition = property_exists($term, 'definition') ? $term->definition : '';
-      $form['term_match' . $delta]['terms_list' . $delta][$term_element_name] = [
-        '#type' => 'checkbox',
-        '#title' => $term->name,
-        '#default_value' => $checked,
-        '#attributes' => $attrs,
-        '#description' => '<b>Vocabulary:</b> ' . $term->cv_id->name . ' (' . $term->dbxref_id->db_id->name . ') ' . $term->cv_id->definition .
-          '<br><b>Term: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
-          '<br><b>Definition:</b>  ' . $definition .
-          '<br><b>Synonym:</b> ' . $synonym->synonym,
-      ];
+      $options[$term_element_name] = $term->name;
+      $options_descriptions[$term_element_name] =
+        '<b>Vocabulary:</b> ' . $term->cv_id->name . ' (' . $term->dbxref_id->db_id->name . ') ' . $term->cv_id->definition .
+        '<br><b>Term ID: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
+        '<br><b>Definition:</b>  ' . $definition .
+        '<br><b>Synonym:</b> ' . $synonym->synonym;
 
       if (array_key_exists('values', $form_state) and array_key_exists($term_element_name, $form_state['values']) and
         $form_state['values'][$term_element_name] == 1) {
-        $selected_term = $term;
+        $default_value = $num_terms;
       }
       $num_terms++;
     }
 
+    // Add the options and their individual descriptions, and set default value.
+    $form['term_match' . $delta]['terms_list' . $delta]['#options'] = $options;
+    $form['term_match' . $delta]['terms_list' . $delta]['#options_descriptions'] = $options_descriptions;
+    if (!is_null($default_value)) {
+      $form['term_match' . $delta]['terms_list' . $delta]['#default_value'] = $default_value;
+    }
 
     if ($num_terms == 0) {
       $form['term_match' . $delta]['terms_list' . $delta]['none' . $delta] = [
@@ -770,6 +765,27 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
       ];
     }
   }
+}
+
+/**
+ * Callback to add a #description to an individual radio in a 'radios' group.
+ *
+ * Starting with drupal 8 we can add descriptions to individual elements in a 'radios'
+ * form element, but for drupal 7 we need a callback to implement this.
+ *
+ * @return
+ *   Updated form element.
+ *
+ * @ingroup tripal_terms_api
+ *
+ */
+function tripal_get_term_lookup_form_options_descriptions($element, &$form_state) {
+  foreach (element_children($element) as $key) {
+    if (array_key_exists('#options_descriptions', $element) and array_key_exists($key, $element['#options_descriptions'])) {
+      $element[$key]['#description'] = t('!description', ['!description' => $element['#options_descriptions'][$key]]);
+    }
+  }
+  return $element;
 }
 
 /**
@@ -806,7 +822,7 @@ function tripal_get_term_lookup_form_result($form, $form_state, $field_name = ''
   if (is_array($values)) {
     foreach ($values as $key => $value) {
       $matches = [];
-      if (preg_match("/^term-(\d+)-$delta$/", $key, $matches) and $values['term-' . $matches[1] . '-' . $delta]) {
+      if (preg_match("/^term-(\d+)-$delta$/", $value, $matches)) {
         $cvterm_id = $matches[1];
         $selected[] = chado_generate_var('cvterm', ['cvterm_id' => $cvterm_id]);
       }
