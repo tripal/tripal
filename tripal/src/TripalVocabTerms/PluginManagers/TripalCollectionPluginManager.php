@@ -62,14 +62,19 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
    *   The plugin id.
    *
    * @return Drupal\tripal\TripalVocabTerms\TripalCollectionPluginBase
-   *   The new collection.
+   *   The new collection or NULL if an error occured.
    */
   public function createCollection($name, $pluginId) {
     $db = \Drupal::database();
-    $result = $db->insert($this->table)->fields(["name" => $name,"plugin_id" => $pluginId])->execute();
     $collection = $this->createInstance($pluginId, ["collection_name" => $name]);
-    $collection->create();
-    return $collection;
+    if ($collection->isValid()) {
+      $result = $db->insert($this->table)->fields(["name" => $name,"plugin_id" => $pluginId])->execute();
+      $collection->create();
+      return $collection;
+    }
+    else {
+      return NULL;
+    }
   }
 
   /**
