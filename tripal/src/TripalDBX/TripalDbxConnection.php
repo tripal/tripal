@@ -1040,7 +1040,9 @@ abstract class TripalDbxConnection extends PgConnection {
    *   The same query passed in  but now with properly prefixed table names.
    */
   public function prefixTables($sql) {
+        
     // Make sure there is no extra "{number:" in the query.
+    $matches = [];
     if (preg_match_all('/\{(\d+):/', $sql, $matches)) {
       $max_index = array_key_last($this->extraSchemas) ?? 1;
       foreach ($matches[1] as $index) {
@@ -1058,6 +1060,19 @@ abstract class TripalDbxConnection extends PgConnection {
           throw new ConnectionException(
             "No main Tripal DBX managed schema set for current connection while it has been referenced in the SQL statement:\n$sql."
           );
+        }
+      }
+    }
+    
+    // Check if any tables have already been prefixed. This can happen because
+    // Drupal uses different routes to convert a Select, Insert or Update to a
+    // string which may result in calling this function more than once. If so,
+    // we don't want to repeat it so remove the curly braces from the tables
+    // that have been prefixed already. These should have a period in the table name.
+    if (preg_match_all('/\{(.+?)\}/', $sql, $matches)) {
+      foreach ($matches[1] as $table) {
+        if (preg_match('/^.+?\./', $table)) {
+          $sql = str_replace("{" . $table .  "}", $table, $sql);
         }
       }
     }
