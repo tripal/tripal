@@ -115,6 +115,7 @@ interface TripalIdSpaceInterface extends TripalCollectionPluginInterface {
    *   True on success or false otherwise.
    */
   public function saveTerm($term,$options,$parent = NULL);
+    
 
   /**
    * Removes the term with the given accession from this id space. All children
@@ -144,7 +145,30 @@ interface TripalIdSpaceInterface extends TripalCollectionPluginInterface {
    *
    * @param string $prefix
    *   The URL prefix.
+   *   
+   * @return bool
+   *   True if the value was set or false otherwise.
    */
   public function setURLPrefix($prefix);
+  
+  
+  /**
+   * Returns the description of this id space.
+   *
+   * @return string
+   *   The description.
+   */
+  public function getDescription();
+  
+  /**
+   * Sets the description of this id space.
+   *
+   * @param string $description
+   *   The description.
+   *   
+   * @return bool
+   *   True if the value was set or false otherwise.
+   */
+  public function setDescription($description);
 
 }

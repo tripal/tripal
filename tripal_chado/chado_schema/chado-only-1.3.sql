@@ -1,4 +1,4 @@
-SET search_path = 'chado';
+--SET search_path = 'chado';
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -235,9 +235,9 @@ BEGIN
 END;
 $_$;
 
-SET default_tablespace = '';
+-- SET default_tablespace = '';
 
-SET default_table_access_method = heap;
+-- SET default_table_access_method = heap;
 
 CREATE TABLE cvtermpath (
     cvtermpath_id bigint NOT NULL,

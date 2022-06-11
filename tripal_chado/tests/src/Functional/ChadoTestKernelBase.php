@@ -28,11 +28,13 @@ use Drupal\tripal_chado\Database\ChadoConnection;
 abstract class ChadoTestKernelBase extends KernelTestBase {
   
   use ChadoTestTrait;
+  
+  protected static $modules = ['tripal', 'tripal_biodb', 'tripal_chado'];
+  
 
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['tripal', 'tripal_biodb', 'tripal_chado'];
 
   /**
    * Just get a free test schema name.
@@ -58,5 +60,21 @@ abstract class ChadoTestKernelBase extends KernelTestBase {
    * Create a Chado schema and initialize it with dummy data.
    */
   public const INIT_CHADO_DUMMY = 4;
+  
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp() :void {
+    
+    parent::setUp();
+    
+    // Only initialize the connection to Chado once.
+    if (!$this->tripal_dbx) {
+      $this->createChadoInstallationsTable();
+      $this->getRealConfig();
+      $this->initTripalDbx();
+      $this->allowTestSchemas();
+    }
+  }
       
 }
