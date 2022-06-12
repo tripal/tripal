@@ -68,6 +68,11 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
     if (!is_string($name)) {
       return NULL;
     }
+    
+    $clist = $this->getCollectionList();        
+    if (in_array($name,$clist)) {
+      return NULL;
+    }
     $db = \Drupal::database();
     $collection = $this->createInstance($pluginId, ["collection_name" => $name]);
     if ($collection->isValid()) {

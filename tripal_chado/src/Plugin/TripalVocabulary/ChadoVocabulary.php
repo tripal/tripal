@@ -198,12 +198,18 @@ class ChadoVocabulary extends TripalVocabularyBase {
    */
   public function removeIdSpace($idSpace){
     $id_spaces = $this->getIdSpacesCache();
-    if (in_array($idSpace, $id_spaces)) {
-      unset($id_spaces);
-      $this->setIdSpacesCache($id_spaces);
-      return True;
+    $new_ids = [];
+    $found = False;
+    foreach ($id_spaces as $name) {
+      if ($name != $idSpace) {
+        $new_ids[] = $name;
+      }
+      else {
+        $found = True;
+      }
     }
-    return False;
+    $this->setIdSpacesCache($new_ids);
+    return $found;
   }
   
   /**
@@ -246,6 +252,11 @@ class ChadoVocabulary extends TripalVocabularyBase {
    * {@inheritdoc}
    */
   public function setURL($url){
+    
+    // @todo there may be a problem in the future if we are able to
+    // associate borrowed terms with a vocabulary in Chado.  If we 
+    // add the ID space of borrowed terms to a vocabulary then 
+    // setting the URL will be incorrect for those ID spaces.
     
     // Don't set a value for a vocabulary that isn't valid.
     if (!$this->is_valid) {

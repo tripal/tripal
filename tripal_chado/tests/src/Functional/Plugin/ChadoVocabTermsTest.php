@@ -190,7 +190,7 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     $db = $this->getDB($GO_idspace);
     $this->assertEmpty($db, 'The Chado db has a conflicting record.');   
     
-    // Make sure the IDspace doesn't yet exist.
+    // Make sure the Vocabulary doesn't yet exist.
     $cv = $this->getCV($GO_cc_namespace);
     $this->assertEmpty($cv, 'The Chado cv has a conflicting record.');     
     $cc = $vmanager->createCollection($GO_cc_namespace, "chado_vocabulary");
@@ -239,16 +239,15 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     $GO->setDefaultVocabulary($GO_bp_namespace, "chado_vocabulary");    
     $this->assertTrue($GO->getDefaultVocabulary() == $GO_bp_namespace, 'The default vocabulary was not set correctly by the ChadoIdSpace object.');
     $bp->setURL($GO_url);
-    $this->assertTrue($bp->getURL() == $GO_url, 'The URL was not set correctly by the ChadoVocabulary after setting the default vocabulary.');
-    
+    $this->assertTrue($bp->getURL() == $GO_url, 'The URL was not set correctly by the ChadoVocabulary after setting the default vocabulary.');       
     
     //
     // Testing multiple ID spaces per Vocbulary
     //
     $EDAM_data_idspace = 'data';
     $EDAM_format_idspace = 'format';
-    $EDAM_operation_idspace = 'format';
-    $EDAM_topic_idspace = 'format';
+    $EDAM_operation_idspace = 'operation';
+    $EDAM_topic_idspace = 'topic';
     $EDAM_namespace = 'EDAM';
     $EDAM_data_description = "Information, represented in an information artefact.";
     $EDAM_format_description = "A defined way or layout of representing and structuring data";
@@ -256,9 +255,59 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     $EDAM_topic_description = "A category denoting a rather broad domain or field of interest, of study, application, work, data, or technology";    
     $EDAM_label = 'Gene Ontology Cellular Component Vocabulary';
     $EDAM_urlprefix = "http://edamontology.org/{db}_{accession}";
-    $EADM_url = 'http://edamontology.org';
+    $EDAM_url = 'http://edamontology.org';    
+    $edam = $vmanager->createCollection($EDAM_namespace, "chado_vocabulary");
+    $edam_data = $idsmanager->createCollection($EDAM_data_idspace, "chado_id_space");
+    $edam_format = $idsmanager->createCollection($EDAM_format_idspace, "chado_id_space");
+    $edam_operation = $idsmanager->createCollection($EDAM_operation_idspace, "chado_id_space");
+    $edam_topic = $idsmanager->createCollection($EDAM_topic_idspace, "chado_id_space");        
+    $edam_data->setDefaultVocabulary($EDAM_namespace, 'chado_vocabulary');
+    $edam_format->setDefaultVocabulary($EDAM_namespace, 'chado_vocabulary');
+    $edam_operation->setDefaultVocabulary($EDAM_namespace, 'chado_vocabulary');
+    $edam_topic->setDefaultVocabulary($EDAM_namespace, 'chado_vocabulary');    
+    $edam->setLabel($EDAM_label);
+    $edam->setURL($EDAM_url);
+    $edam_data->setURLPrefix($EDAM_urlprefix);
+    $edam_format->setURLPrefix($EDAM_urlprefix);
+    $edam_operation->setURLPrefix($EDAM_urlprefix);
+    $edam_topic->setURLPrefix($EDAM_urlprefix);    
+    $edam_data->setDescription($EDAM_data_description);
+    $edam_format->setDescription($EDAM_format_description);
+    $edam_operation->setDescription($EDAM_operation_description);
+    $edam_topic->setDescription($EDAM_topic_description);
     
+    // Make sure that all of the ID spaces have been aded to the vocabulary.
+    $id_spaces = $edam->getIdSpaceNames();
+    $this->assertTrue(in_array($EDAM_data_idspace, $id_spaces), "The EDAM data ID space is missing from the vocabulary ID spaces.");
+    $this->assertTrue(in_array($EDAM_format_idspace, $id_spaces), "The EDAM format ID space is missing from the vocabulary ID spaces.");
+    $this->assertTrue(in_array($EDAM_operation_idspace, $id_spaces), "The EDAM operation ID space is missing from the vocabulary ID spaces.");
+    $this->assertTrue(in_array($EDAM_topic_idspace, $id_spaces), "The EDAM topic ID space is missing from the vocabulary ID spaces.");
     
+    // Just do a nother check to make sure the vocabularies and ID spaces got setup correctly.
+    $this->assertTrue($edam->getLabel() == $EDAM_label, "The EDAM label was not correctly returned.");
+    $this->assertTrue($edam->getURL() == $EDAM_url, "The EDAM URL was not correctly returned.");
+    $this->assertTrue($edam->getNameSpace() == $EDAM_namespace, "The EDAM namespace was not correctly returned.");
+    $this->assertTrue($edam_data->getDefaultVocabulary() == $EDAM_namespace, "The default vocabulary for the EDAM data ID Space is not correct.");
+    $this->assertTrue($edam_format->getDefaultVocabulary() == $EDAM_namespace, "The default vocabulary for the EDAM format ID Space is not correct.");
+    $this->assertTrue($edam_operation->getDefaultVocabulary() == $EDAM_namespace, "The default vocabulary for the EDAM operation ID Space is not correct.");
+    $this->assertTrue($edam_topic->getDefaultVocabulary() == $EDAM_namespace, "The default vocabulary for the EDAM topic ID Space is not correct.");    
+    $this->assertTrue($edam_data->getDescription() == $EDAM_data_description, "The EDAM data ID space's description was not correctly returned.");
+    $this->assertTrue($edam_format->getDescription() == $EDAM_format_description, "The EDAM format ID space's description was not correctly returned.");
+    $this->assertTrue($edam_operation->getDescription() == $EDAM_operation_description, "The EDAM operation ID space's description was not correctly returned.");
+    $this->assertTrue($edam_topic->getDescription() == $EDAM_topic_description, "The EDAM topic ID space's description was not correctly returned.");
+    $this->assertTrue($edam_data->getURLPrefix() == $EDAM_urlprefix, "The EDAM data ID space's URL PRefix space description was not correctly returned.");
+    $this->assertTrue($edam_format->getURLPrefix() == $EDAM_urlprefix, "The EDAM format ID space's URL PRefix space description was not correctly returned.");
+    $this->assertTrue($edam_operation->getURLPrefix() == $EDAM_urlprefix, "The EDAM operation ID space's URL PRefix space description was not correctly returned.");    
+    $this->assertTrue($edam_topic->getURLPrefix() == $EDAM_urlprefix, "The EDAM topic ID space's URL PRefix space description was not correctly returned.");
+    
+    // Test removing an ID space
+    $edam->removeIdSpace($EDAM_format_idspace);
+    $edam->removeIdSpace($EDAM_topic_idspace);
+    $id_spaces = $edam->getIdSpaceNames();
+    $this->assertTrue(in_array($EDAM_data_idspace, $id_spaces), "The EDAM data ID space is missing from the vocabulary ID spaces.");
+    $this->assertFalse(in_array($EDAM_format_idspace, $id_spaces), "The EDAM format ID space is not missing from the vocabulary ID spaces.");
+    $this->assertTrue(in_array($EDAM_operation_idspace, $id_spaces), "The EDAM operation ID space is missing from the vocabulary ID spaces.");
+    $this->assertFalse(in_array($EDAM_topic_idspace, $id_spaces), "The EDAM topic ID space is not missing from the vocabulary ID spaces.");       
   }
 }
 
