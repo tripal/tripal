@@ -65,15 +65,26 @@ interface TripalIdSpaceInterface extends TripalCollectionPluginInterface {
    * @return array
    *   Array of matching Drupal\tripal\TripalVocabTerms\TripalTerm instances.
    */
-  public function getTerms($name,$options);
+  public function getTerms($name, $options);
 
   /**
    * Sets the default vocabulary of this id space to the given vocabulary name.
+   * 
+   * Removes this id space from its previous default vocabulary if one is set
+   * and then adds this id space to its new default vocabulary if the given name
+   * is not NULL. It is still the responsibility of an implementation to
+   * actually save changes to its default vocabulary.
    *
    * @param string name
    *   The vocabulary name.
+   *   
+   * @param string $pluginId
+   *   The plugin id.
+   *   
+   * @return bool
+   *   True on success or false otherwise.
    */
-  public function setDefaultVocabulary($name);
+  public function setDefaultVocabulary($name, $pluginId);
 
   /**
    * Returns this id space's default vocabulary name or NULL if no default has
@@ -114,7 +125,7 @@ interface TripalIdSpaceInterface extends TripalCollectionPluginInterface {
    * @return bool
    *   True on success or false otherwise.
    */
-  public function saveTerm($term,$options,$parent = NULL);
+  public function saveTerm($term, $options, $parent = NULL);
     
 
   /**

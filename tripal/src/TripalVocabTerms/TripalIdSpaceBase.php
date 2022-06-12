@@ -18,24 +18,28 @@ abstract class TripalIdSpaceBase extends TripalCollectionPluginBase implements T
   }
 
   /**
-   * Removes this id space from its previous default vocabulary if one is set
-   * and then adds this id space to its new default vocabulary if the given name
-   * is not NULL. It is still the responsibility of an implementation to
-   * actually save changes to its default vocabulary.
-   *
    * {@inheritdoc}
    */
-  public function setDefaultVocabulary($name) {
+  public function setDefaultVocabulary($name, $pluginId) {
+    
+    if (!is_string($name)) {
+      return False;
+    } 
+    
     $manager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
     $oldname = $this->getDefaultVocabulary();
     if ($oldname) {
-      $vocab = $manager->getCollection($oldname);
+      $vocab = $manager->loadCollection($oldname, $pluginId);
       $vocab->removeIdSpace($this->getName());
     }
     if ($name) {
-      $vocab = $manager->getCollection($name);
+      $vocab = $manager->loadCollection($name, $pluginId);
+      if (!$vocab) {
+        return False;
+      }
       $vocab->addIdSpace($this->getName());
     }
+    return TRUE;
   }
 
 }

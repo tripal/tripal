@@ -158,16 +158,29 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     $this->assertTrue($GO->getURLPrefix() == $GO_urlprefix, "The ChadoIdSpace object did not return a correct URL prefix.");
     $this->assertTrue($GO->getDescription() == $GO_description, "The ChadoIdSpace object did not return a correct description.");
     
+    // Change the description and URL prefix and make sure it updates
+    $GO->setDescription('Changed');
+    $GO->setURLPrefix('Changed');
+    $this->assertTrue($GO->getDescription() == 'Changed', "The ChadoIdSpace object did not update the description.");
+    $this->assertTrue($GO->getURLPrefix() == 'Changed', "The ChadoIdSpace object did not update the URL prefix.");            
+    
     // Simulate a change in the `db` record from another source. The getters should pick up the change.
     $this->updateRecord('db', $GO_idspace, 'urlprefix', 'http://replace.me/');
     $this->assertTrue($GO->getURLPrefix() == 'http://replace.me/', "The ChadoIdSpace object did not pick up an update to the URL prefix from an external source.");
     $this->updateRecord('db', $GO_idspace, 'description', 'Replace Me');
     $this->assertTrue($GO->getDescription() == 'Replace Me', "The ChadoIdSpace object did not pick up an update to the description from an external source.");
-    
+           
+    // Destroy the ID Space and make sure it's gone from Tripal but not Chado.
+    $idsmanager->removeCollection($GO_idspace);
+    $GO = $idsmanager->loadCollection($GO_idspace, "chado_id_space");
+    $this->assertTrue($GO === NULL, "The ID Space should be removed from Tripal.");
+    $db = $this->getDB($GO_idspace);
+    $this->assertTrue($db['urlprefix'] == 'http://replace.me/', "The ID Space was removed from Tripal but should not have been removed from Chado.");
+        
     // ID Space cleanup
     $this->cleanDB($GO_idspace);
     $db = $this->getDB($GO_idspace);
-    $this->assertEmpty($db, 'The db record should have been removed.');   
+    $this->assertEmpty($db, 'The db record should have been removed.');    
     
     //
     // Testing ChadoVocabulary Functionality
@@ -197,8 +210,9 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     // Simulate a change in the `cv` record from another source. The getters should pick up the change
     $this->updateRecord('cv', $GO_cc_namespace, 'definition', 'Replace Me');
     $this->assertTrue($cc->getLabel() == 'Replace Me', "The ChadoVocabulary object did not pick up an update to the label from an external source.");
-    
+           
     // Associate the IDSpace with the vocabulary,
+    $GO = $idsmanager->createCollection($GO_idspace, "chado_id_space");    
     $id_spaces = $cc->getIdSpaceNames();
     $this->assertFalse(in_array($GO_idspace, $id_spaces), 'ID spaces should not be set yet in the ChadoVocabulary');
     $cc->addIdSpace($GO_idspace);
@@ -212,12 +226,21 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     $cc->setURL($GO_url);
     $db = $this->getDB($GO_idspace);
     $this->assertTrue($db['url'] == $GO_url, 'The URL was not set correctly by the ChadoVocabulary object.');
+    $this->assertTrue($cc->getURL() == $GO_url, 'The URL was not retrieved by the ChadoVocabulary object.');
             
-    // Now test adding a default vocabulary to an ID space.    
+    // Test adding a URL without an ID space.
     $bp = $vmanager->createCollection($GO_bp_namespace, "chado_vocabulary");
     $bp->setLabel($GO_bp_label);
     $bp->setURL($GO_url);
-    $GO->setDefaultVocabulary($bp);    
+    $this->assertFalse($bp->getURL() == $GO_url, 'The URL should not be set without an ID Space');
+    
+    // Test adding a default vocabulary to an ID space.  This should call the
+    // addIdSpace() function on the vocabulary as well.
+    $GO->setDefaultVocabulary($GO_bp_namespace, "chado_vocabulary");    
+    $this->assertTrue($GO->getDefaultVocabulary() == $GO_bp_namespace, 'The default vocabulary was not set correctly by the ChadoIdSpace object.');
+    $bp->setURL($GO_url);
+    $this->assertTrue($bp->getURL() == $GO_url, 'The URL was not set correctly by the ChadoVocabulary after setting the default vocabulary.');
+    
     
     //
     // Testing multiple ID spaces per Vocbulary

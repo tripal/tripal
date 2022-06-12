@@ -38,13 +38,12 @@ class ChadoIdSpace extends TripalIdSpaceBase {
    */
   protected $is_valid = False;
   
+  
   /**
-   * Tests if this collection is valid or not.
-   *
-   * @return bool
-   *   True if this collection is valid or false otherwise.
+   * {@inheritdoc}
    */
-  public function isValid() {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
     
     // Instantiate the TripalLogger
     $this->messageLogger = \Drupal::service('tripal.logger');
@@ -54,6 +53,13 @@ class ChadoIdSpace extends TripalIdSpaceBase {
     
     // Get the chado definition for the `db` table.
     $this->db_def = $this->chado->schema()->getTableDef('db', ['Source' => 'file']);
+  }
+  
+  
+  /**
+   * {@inheritdoc}
+   */
+  public function isValid() {    
     
     // Make sure the name of this ID Space does not exceeed the allowed size in Chado.
     if (strlen($this->getName()) > $this->db_def['fields']['name']['size']) {
@@ -71,9 +77,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
   
   
   /**
-   * Creates this collection. This must only be called once on this new
-   * collection instance that has just been created by its collection plugin
-   * manager.
+   * {@inheritdoc}
    */
   public function create() {
     
@@ -90,21 +94,24 @@ class ChadoIdSpace extends TripalIdSpaceBase {
   }
   
   /**
-   * Destroys this collection. This must only be called once when on this
-   * existing collection that is being removed from its collection plugin
-   * manager.
+   * {@inheritdoc}
    */
   public function destroy(){
-    // There's no need to destroy anything.
+    // The destroy function is meant to delete the ID space.
+    // But, because CVs and DBs are so critical to almost all 
+    // data in Chado we don't want to remove the records.  
+    // Let's let the collection be deleted as far as 
+    // Tripal is concerned but leave the record in Chado.
+    // So, do nothing here.
   }  
   
   /**
-   * Loads an ID space record from Chado.
-   * 
+   * Loads an ID Space record from Chado.
+   *
    * This function queries the `db` table of Chado to get the values
    * for the ID space.
-   * 
-   * @return 
+   *
+   * @return
    *   An associative array containing the columns of the `db1 table
    *   of Chado or NULL if the db could not be found.
    */
@@ -122,15 +129,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
   }     
   
   /**
-   * Gets the parent of the given term. The given term must be a valid term for
-   * this id space. If the given term is a root of this id space then NULL
-   * is returned.
-   *
-   * @param Drupal\tripal\TripalVocabTerms\TripalTerm $child
-   *   The given term.
-   *
-   * @return Drupal\tripal\TripalVocabTerms\TripalTerm|NULL
-   *   The parent term or NULL.
+   * {@inheritdoc}
    */
   public function getParent($child){
     
@@ -142,15 +141,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
   }
   
   /**
-   * Gets the children terms of the given term. The given term must be a valid
-   * term for this id space or NULL. If the given term is NULL then the root
-   * children of this id space is returned.
-   *
-   * @param Drupal\tripal\TripalVocabTerms\TripalTerm|NULL $parent
-   *   The given term or NULL.
-   *
-   * @return array
-   *   An array of Drupal\tripal\TripalVocabTerms\TripalTerm children objects.
+   * {@inheritdoc}
    */
   public function getChildren($parent = NULL){
     
@@ -162,14 +153,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
   }
   
   /**
-   * Returns the term in this id space with the given accession. If no such term
-   * exists then NULL is returned.
-   *
-   * @param string $accession
-   *   The accession.
-   *
-   * @return Drupal\tripal\TripalVocabTerms\TripalTerm|NULL
-   *   The term or NULL.
+   * {@inheritdoc}
    */
   public function getTerm($accession){
     
@@ -180,94 +164,35 @@ class ChadoIdSpace extends TripalIdSpaceBase {
   }
   
   /**
-   * Returns the terms in this id space whose names match the given name with
-   * the given options array.
-   *
-   * The given options array has the following recognized keys:
-   *
-   * exact(boolean): True to only include exact matches else false to include
-   * all substring matches. The default is false.
-   *
-   * @param string $name
-   *   The name.
-   *
-   * @param array $options
-   *   The options array.
-   *
-   * @return array
-   *   Array of matching Drupal\tripal\TripalVocabTerms\TripalTerm instances.
+   * {@inheritdoc}
    */
   public function getTerms($name, $options){
     
   }  
   
   /**
-   * Returns this id space's default vocabulary name or NULL if no default has
-   * been set.
-   *
-   * @return string
-   *   The vocabulary name.
+   * {@inheritdoc}
    */
   public function getDefaultVocabulary(){
     return $this->default_vocabulary;    
   }
   
   /**
-   * Saves the given term to this id space with the given options array and
-   * optional parent. If the given parent is NULL and the given term is new then
-   * it is added as a root term of this id space. If the given parent is NULL,
-   * the given term already exists, and the appropriate option was given to
-   * update the existing term's parent then it is moved to a root term of this
-   * id space.
-   *
-   * The given options array has the following recognized keys:
-   *
-   * failIfExists(boolean): True to force this method to fail if the given term
-   * already exists else false to update the term if it already exists. The
-   * default is false.
-   *
-   * updateParent(boolean): True to update The given term's parent to the one
-   * given or false to not update the existing term's parent. If the given term
-   * is new this has no effect. The default is false.
-   *
-   * @param Drupal\tripal\TripalVocabTerms\TripalTerm $term
-   *   The term.
-   *
-   * @param array $options
-   *   The options array.
-   *
-   * @param Drupal\tripal\TripalVocabTerms\TripalTerm|NULL $parent
-   *   The parent term or NULL.
-   *
-   * @return bool
-   *   True on success or false otherwise.
+   * {@inheritdoc}
    */
   public function saveTerm($term, $options, $parent = NULL){
     
   }
   
   /**
-   * Removes the term with the given accession from this id space. All children
-   * terms are also removed.
-   * !!!WARNING!!!
-   * If the removed term in this id space is referenced by entities this could
-   * break data integrity. This method must be used with extreme caution!
-   *
-   * @param string $accession
-   *   The accession.
-   *
-   * @return bool
-   *   True if the term was removed or false otherwise.
+   * {@inheritdoc}
    */
   public function removeTerm($accession) {
     
   }
   
   /**
-   * Returns the URL prefix of this id space.
-   *
-   * @return string
-   *   The URL prefix.
+   * {@inheritdoc}
    */
   public function getURLPrefix() {
     $db = $this->loadIdSpace();
@@ -278,13 +203,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
   }
   
   /**
-   * Sets the URL prefix of this id space to the given URL prefix.
-   *
-   * @param string $prefix
-   *   The URL prefix.
-   *   
-   * @return bool
-   *   True if the value was set or false otherwise.
+   * {@inheritdoc}
    */
   public function setURLPrefix($prefix) {
     
@@ -316,10 +235,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
   
   
   /**
-   * Returns the description of this id space.
-   *
-   * @return string
-   *   The description.
+   * {@inheritdoc}
    */
   public function getDescription() {  
     $db = $this->loadIdSpace();
@@ -331,13 +247,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
   }
   
   /**
-   * Sets the description of this id space.
-   *
-   * @param string $description
-   *   The description.
-   *   
-   * @return bool
-   *   True if the value was set or false otherwise.
+   * {@inheritdoc}
    */
   public function setDescription($description) {
     
@@ -367,5 +277,16 @@ class ChadoIdSpace extends TripalIdSpaceBase {
     }
     return True;
 
+  }
+  
+  /**
+   * {@inheritdoc}
+   */
+  public function setDefaultVocabulary($name, $pluginId) {
+    $retval = parent::setDefaultVocabulary($name, $pluginId);
+    if ($retval === True) {
+      $this->default_vocabulary = $name;
+    }
+    return $retval;
   }
 }

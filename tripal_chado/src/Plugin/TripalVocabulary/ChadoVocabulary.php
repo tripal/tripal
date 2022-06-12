@@ -19,11 +19,6 @@ class ChadoVocabulary extends TripalVocabularyBase {
   protected $chado = NULL;
       
   /**
-   * Holds the list of ID Spaces for this vocabulary.
-   */
-  protected $id_spaces = [];
-  
-  /**
    * The definition for the `db` table of Chado.
    */
   protected $db_def = NULL;
@@ -44,12 +39,10 @@ class ChadoVocabulary extends TripalVocabularyBase {
   protected $is_valid = False;
   
   /**
-   * Tests if this collection is valid or not.
-   *
-   * @return bool
-   *   True if this collection is valid or false otherwise.
+   * {@inheritdoc}
    */
-  public function isValid() {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
     
     // Instantiate the TripalLogger
     $this->messageLogger = \Drupal::service('tripal.logger');
@@ -60,6 +53,13 @@ class ChadoVocabulary extends TripalVocabularyBase {
     // Get the chado definition for the `cv` and `db` tables.
     $this->db_def = $this->chado->schema()->getTableDef('db', ['Source' => 'file']);
     $this->cv_def = $this->chado->schema()->getTableDef('cv', ['Source' => 'file']);
+  }
+  
+  
+  /**
+   * {@inheritdoc}
+   */
+  public function isValid() {   
     
     // Make sure the name of this collection does not exceeed the allowed size in Chado.
     if (strlen($this->getName()) > $this->cv_def['fields']['name']['size']) {
@@ -75,9 +75,7 @@ class ChadoVocabulary extends TripalVocabularyBase {
   }
   
   /**
-   * Creates this collection. This must only be called once on this new
-   * collection instance that has just been created by its collection plugin
-   * manager.
+   * {@inheritdoc}
    */
   public function create(){
        
@@ -91,26 +89,26 @@ class ChadoVocabulary extends TripalVocabularyBase {
         ->fields(['name' => $this->getName()]);
       $query->execute();
     }
-    
-    // Set the ID spaces that already exist for this vocabulary in Chado.
-    $this->id_spaces = $this->loadIDSpaces();
   }
   
   /**
-   * Destroys this collection. This must only be called once when on this
-   * existing collection that is being removed from its collection plugin
-   * manager.
+   * {@inheritdoc}
    */
   public function destroy(){
-    // There's no need to destroy anything.    
+    // The destroy function is meant to delete the vocabulary.
+    // But, because CVs and DBs are so critical to almost all
+    // data in Chado we don't want to remove the records.
+    // Let's let the collection be deleted as far as
+    // Tripal is concerned but leave the record in Chado.
+    // So, do nothing here.
   }
  
   
   /**
    * Loads an Vocbulary record from Chado.
    *
-   * This function queries the `db` table of Chado to get the values
-   * for the ID space.
+   * This function queries the `cv` table of Chado to get the values
+   * for the vocabulary.
    *
    * @return
    *   An associative array containing the columns of the `db1 table
@@ -127,36 +125,57 @@ class ChadoVocabulary extends TripalVocabularyBase {
       return $result->fetchAssoc();
     }
     return NULL;
-  } 
-  
-  /**
-   * Loads the ID Spaces that have been assigned to this vocabulary.
-   */
-  protected function loadIDSpaces() {
-    // TODO we need to use the cv2db mview.
-    return [];
-  }
+  }    
     
   /**
-   * Returns list of id space collection names that is contained in this vocabulary.
-   *
-   * @return array
-   *   An array of id space collection name strings.
+   * {@inheritdoc}
    */
   public function getIdSpaceNames(){
-    // Only return the names of the id spaces.
-    return array_keys($this->id_spaces);
+    return $this->getIdSpacesCache();
   }
   
   /**
-   * Adds the id space with the given collection name to this vocabulary. The
-   * given collection name must be a valid id space collection.
-   *
-   * @param string $idSpace
-   *   The id space collection name.
-   *
-   * @return bool
-   *   True on success or false otherwise.
+   * Sets the ID spaces for this vocabulary in the Drupal cache.
+   * 
+   * The current way to map CV's to DB's is to use the `cv2db`
+   * materialized view but there is no guarantee that that mview
+   * is up-to-date and it would take too long to force an update
+   * every time we need to get the ID spaces for a vocabulary.  This
+   * function caches it.
+   * 
+   * @param $id_spaces
+   *   An array containing the names of the ID spaces.
+   */
+  protected function setIdSpacesCache($id_spaces) {
+    $cid = 'chado_vocabulary_' . $this->getName() . '_id_spaces';
+    \Drupal::cache()->set($cid, $id_spaces);
+  }
+  
+  /**
+   * Retrieves from the Drupal cache the ID spaces of this vocabulary.
+   * 
+   * The current way to map CV's to DB's is to use the `cv2db`
+   * materialized view but there is no guarantee that that mview
+   * is up-to-date and it would take too long to force an update
+   * every time we need to get the ID spaces for a vocabulary.  This
+   * function retrieves the ID spaces for a vocabulary from a 
+   * Drupal cache.
+   * 
+   * @return array
+   *   An array of ID Space names.
+   */
+  protected function getIdSpacesCache() {
+    $cid = 'chado_vocabulary_' . $this->getName() . '_id_spaces';
+    $id_spaces = [];
+    if ($cache = \Drupal::cache()->get($cid)) {
+      $id_spaces = $cache->data;
+    }
+    return $id_spaces;
+  }
+  
+  
+  /**
+   * {@inheritdoc}
    */
   public function addIdSpace($idSpace){
     
@@ -164,56 +183,38 @@ class ChadoVocabulary extends TripalVocabularyBase {
     // reference, then add the idSpace to our list.
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
     $id = $idsmanager->loadCollection($idSpace, 'chado_id_space');
-    if ($id) {
-      $this->id_spaces[$idSpace] = $id;
-      return TRUE;
+    if ($id) {      
+      $id_spaces = $this->getIdSpacesCache();      
+      $id_spaces[] = $idSpace;
+      $this->setIdSpacesCache($id_spaces);
+      return True;
     }
-    
-    // TODO: we need to update the cv2db mview.
-    return FALSE;
+    return False;
   }
   
+  
   /**
-   * Removes the id space from this vocabulary with the given collection name.
-   *
-   * @param string $idSpace
-   *   The id space collection name.
-   *
-   * @return bool
-   *   True on success or false otherwise.
+   * {@inheritdoc}
    */
   public function removeIdSpace($idSpace){
-    if (array_key_exists($idSpace, $this->id_spaces)) {
-      unset($this->id_spaces[$idSpace]);
+    $id_spaces = $this->getIdSpacesCache();
+    if (in_array($idSpace, $id_spaces)) {
+      unset($id_spaces);
+      $this->setIdSpacesCache($id_spaces);
+      return True;
     }
-    
-    // TODO: how to handle deltion of an IDspace in Chado? 
-    return TRUE;
+    return False;
   }
   
   /**
-   * Returns the terms in this vocabulary whose names match the given name.
-   * Matches can only be exact or a substring depending on the given flag. The
-   * default is to only return exact matches.
-   *
-   * @param string $name
-   *   The name.
-   *
-   * @param bool $exact
-   *   True to only include exact matches else include all substring matches.
-   *
-   * @return array
-   *   Array of matching Drupal\tripal\TripalVocabTerms\TripalTerm instances.
+   * {@inheritdoc}
    */
   public function getTerms($name, $exact = True){
     
   }
   
   /**
-   * Returns the URL of this vocabulary.
-   *
-   * @return string
-   *   The URL.
+   * {@inheritdoc}
    */
   public function getURL(){
     // Don't get a value for a vocabulary that isn't valid.
@@ -221,28 +222,28 @@ class ChadoVocabulary extends TripalVocabularyBase {
       return NULL;
     }    
     
+    // If we don't have any ID spaces then there is no URL.
+    $id_spaces = $this->getIdSpacesCache();
+    if (count($id_spaces) == 0) {
+      $this->messageLogger->error('ChadoVocabulary: Cannot get the URL when no ID spaces are present for the vocabulary.');      
+      return NULL;
+    }
+    
     // All of the ID spaces for the vocabulary should
     // have the same URL, so only query the first corresponding
     // `db` record to get the URL.
-    $idSpace = $this->id_spaces[array_keys($this->id_spaces)[0]];
-    $query = $this->chado->select('1:db', 'db')
-      ->condition('db.name', $idSpace->getName(), '=')
-      ->fields('db', ['url']);
-    $db = $query->execute();
+    $db = $this->chado->select('1:db', 'db')
+      ->fields('db', ['url'])
+      ->condition('db.name', $id_spaces[0], '=')
+      ->execute();
     if (!$db) {
       return NULL;
     }
-    return $db->fetchAssoc()['url'];   
+    return $db->fetchField();
   }
   
   /**
-   * Sets the URL of this vocabulary to the given URL.
-   *
-   * @param string $url
-   *   The URL.
-   *   
-   * @return bool
-   *   True if the value was set or false otherwise.
+   * {@inheritdoc}
    */
   public function setURL($url){
     
@@ -251,9 +252,16 @@ class ChadoVocabulary extends TripalVocabularyBase {
       return False;
     }
     
+    // If we don't have any ID spaces then there is no URL.
+    $id_spaces = $this->getIdSpacesCache();
+    if (count($id_spaces) == 0) {
+      $this->messageLogger->error('ChadoVocabulary: Cannot set the URL when no ID spaces are present for the vocabulary.');
+      return False;
+    }
+    
     // This value goes to the Chado `db.url` column, so check it's size
     // to make sure it doesn't exceed it.
-    if (strlen($this->getURL()) > $this->db_def['fields']['url']['size']) {
+    if (strlen($url) > $this->db_def['fields']['url']['size']) {
       $this->messageLogger->error('ChadoVocabulary: The vocabulary name must not be longer than @size characters. ' +
           'The value provided was: @value',
           ['@size' => $this->cv_def['fields']['name']['size'],
@@ -262,13 +270,13 @@ class ChadoVocabulary extends TripalVocabularyBase {
     }
     
     // Update the record in the Chado `db` table for the URL for all ID spaces.
-    foreach ($this->id_spaces as $idSpace) {
-      $query = $this->chado->update('1:db')
+    foreach ($id_spaces as $name) {
+      $num_updated = $this->chado->update('1:db')
         ->fields(['url' => $url])
-        ->condition('name', $idSpace->getName(), '=');
-      $num_updated = $query->execute();
+        ->condition('name', $name, '=')      
+        ->execute();
       if ($num_updated != 1) {
-        $this->logInvalidCondition('ChadoVocabulary: The URL could not be updated for the vocabulary.');
+        $this->messageLogger->error('ChadoVocabulary: The URL could not be updated for the vocabulary.');
         return False;        
       }
     }
@@ -290,17 +298,7 @@ class ChadoVocabulary extends TripalVocabularyBase {
   
   
   /**
-   * Sets the label for the vocabulary.
-   *
-   * This is the human readable proper name of the vocabulary.
-   *
-   * Note that the name of the collection serves as the namespace of the vocabulary.
-   *
-   * @param string $label
-   *   The name of the vocabulary.
-   *
-   * @return bool
-   *   True on success or false otherwise.
+   * {@inheritdoc}
    */
   public function setLabel($label) {
     // Don't set a value for an vocubulary that isn't valid.
@@ -326,14 +324,7 @@ class ChadoVocabulary extends TripalVocabularyBase {
   
   
   /**
-   * Returns the label of the vocabulary.
-   *
-   * This is the human readable proper name of the vocabulary.
-   *
-   * Note that the name of the collection serves as the namespace of the vocabulary.
-   *
-   * @return string $label
-   *   The name of the vocabulary.
+   * {@inheritdoc}
    */
   public function getLabel() {
     $cv = $this->loadVocab();
