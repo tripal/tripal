@@ -148,7 +148,7 @@ class ChadoPreparer extends ChadoTaskBase {
 
       $this->setProgress(0.3);
       $this->logger->notice('Populating materialized view cv_root_mview...');
-      // TODO: populate mviews. // SEEMS TO BE MVIEW RELATED AND THUS NOT NEEDED FOR TRIPAL LOADERS
+      // POSTPONED: populate mviews. // SEEMS TO BE MVIEW RELATED AND THUS NOT NEEDED FOR TRIPAL LOADERS
       
       $this->setProgress(0.4);
       $this->logger->notice("Making semantic connections for Chado tables/fields...");
@@ -160,7 +160,7 @@ class ChadoPreparer extends ChadoTaskBase {
       
       $this->setProgress(0.6);
       $this->logger->notice('Populating materialized view db2cv_mview...'); 
-      // TODO     
+      // POSTPONED (mview related)    
 
       $this->setProgress(0.7);
       $this->logger->notice("Creating default content types...");
