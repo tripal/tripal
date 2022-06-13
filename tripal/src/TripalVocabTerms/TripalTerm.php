@@ -26,7 +26,7 @@ class TripalTerm {
    * @param string defaultVocab
    *   The default $vocabulary.
    */
-  public function __construct($name,$definition,$idSpace,$accession,$defaultVocab) {
+  public function __construct($name, $definition, $idSpace, $accession, $defaultVocab) {
     $this->name = $name;
     $this->definition = $definition;
     $this->idSpace = $idSpace;
@@ -160,19 +160,43 @@ class TripalTerm {
    *   The URL.
    */
   public function getURL() {
-    $idspace = $this->getIdSpace();
-    return $idspace->getURLPrefix().$this->accession;
+    $idSpace = $this->getIdSpace();
+    $term_url = $idSpace->getURLPrefix();
+    $idSpace_name = $idSpace->getName();
+    $subbed = False;
+    
+    // If the URL prefix has replacement tokens then apply those.
+    if (preg_match('/\{db\}/', $term_url)) {
+      $term_url = preg_replace("/\{db\}/", $idSpace_name, $term_url);
+      $subbed = True;
+    }
+    if (preg_match('/\{db\}/', $term_url)) {
+      $term_url = preg_replace("/\{accession\}/", $this->accession, $term_url);
+    }
+    
+    // If no replacement tokens were applied then just add the term 
+    // to the end.
+    if (!$subbed) {
+      $term_url = $term_url . $idSpace_name . ":" . $this->accession;
+    }
+    
+    return $term_url;
   }
 
   /**
-   * Saves this term to its id space with the given options array and
-   * optional parent. If the given parent is NULL and this term is new then
-   * it is added as a root term of its id space. If the given parent is NULL,
+   * Saves this term to its id space.
+   * 
+   * If the given parent is NULL and this term is new then it is added as a 
+   * root term of its id space. If the given parent is NULL but
    * this term already exists, and the appropriate option was given to
    * update this existing term's parent then it is moved to a root term of its
    * id space.
+   * 
+   * If the parent is not NULL then a relationship term must be provided
+   * indicating the type of the relationship with the parent (e.g. `is_a`,
+   * `derives_from`, etc.).
    *
-   * The given options array has the following recognized keys:
+   * The options array accepts the following recognized keys:
    *
    * failIfExists(boolean): True to force this method to fail if this term
    * already exists else false to update this term if it already exists. The
@@ -185,15 +209,18 @@ class TripalTerm {
    * @param array $options
    *   The options array.
    *
+   * @param Drupal\tripal\TripalVocabTerms\TripalTerm|NULL $relationship
+   *   The relationship term or NULL.
+   *   
    * @param Drupal\tripal\TripalVocabTerms\TripalTerm|NULL $parent
    *   The parent term or NULL.
    *
    * @return bool
    *   True on success or false otherwise.
    */
-  public function save($options,$parent = NULL) {
+  public function save($options, $parent = NULL, $relationship = NULL) {
     $idspace = $this->getIdSpace();
-    return $idspace->saveTerm($this,$options,$parent);
+    return $idspace->saveTerm($this, $options, $parent, $relationship);
   }
 
   /**

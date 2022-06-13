@@ -119,13 +119,16 @@ interface TripalIdSpaceInterface extends TripalCollectionPluginInterface {
    * @param array $options
    *   The options array.
    *
+   * @param Drupal\tripal\TripalVocabTerms\TripalTerm|NULL $relationship
+   *   The relationship term or NULL.
+   *   
    * @param Drupal\tripal\TripalVocabTerms\TripalTerm|NULL $parent
    *   The parent term or NULL.
    *
    * @return bool
    *   True on success or false otherwise.
    */
-  public function saveTerm($term, $options, $parent = NULL);
+  public function saveTerm($term, $options, $parent = NULL, $relationship = NULL);
     
 
   /**

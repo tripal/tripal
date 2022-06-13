@@ -4,6 +4,8 @@ namespace Drupal\Tests\tripal_chado\Functional;
 
 use Drupal\Core\Database\Database;
 use Drupal\Core\Test\FunctionalTestSetupTrait;
+use Drupal\tripal\TripalVocabTerms\TripalTerm;
+
 
 
 /**
@@ -38,7 +40,7 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
   /**
    * A helper function to retrieve a Chado db record.
    * 
-   * @param $dbname
+   * @param string $dbname
    *   The name of the database to lookup.
    *    
    * @return A database query result. 
@@ -53,6 +55,16 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
       return [];
     }    
     return $result->fetchAssoc();
+  }
+  
+  /**
+   * A helper function to retrieve a Chado cvterm record.
+   * 
+   * @param string $cvname
+   * @param string $cvterm_name
+   */
+  protected function getCVterm($cvname, $cvterm_name) {
+    
   }
   
   /**
@@ -307,7 +319,21 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     $this->assertTrue(in_array($EDAM_data_idspace, $id_spaces), "The EDAM data ID space is missing from the vocabulary ID spaces.");
     $this->assertFalse(in_array($EDAM_format_idspace, $id_spaces), "The EDAM format ID space is not missing from the vocabulary ID spaces.");
     $this->assertTrue(in_array($EDAM_operation_idspace, $id_spaces), "The EDAM operation ID space is missing from the vocabulary ID spaces.");
-    $this->assertFalse(in_array($EDAM_topic_idspace, $id_spaces), "The EDAM topic ID space is not missing from the vocabulary ID spaces.");       
+    $this->assertFalse(in_array($EDAM_topic_idspace, $id_spaces), "The EDAM topic ID space is not missing from the vocabulary ID spaces.");
+    
+    //
+    // Testing TripalTerms
+    //
+    
+    
+    $term = new TripalTerm(
+      'biological_process',
+      'A biological process represents a specific objective that the organism is genetically programmed to achieve. Biological processes are often described by their outcome or ending state, e.g., the biological process of cell division results in the creation of two daughter cells (a divided cell) from a single parent cell. A biological process is accomplished by a particular set of molecular functions carried out by specific gene products (or macromolecular complexes), often in a highly regulated manner and in a particular temporal sequence.',
+      'GO',
+      '0008150',
+      'biological_process'
+    );
+    $term->save();
   }
 }
 
