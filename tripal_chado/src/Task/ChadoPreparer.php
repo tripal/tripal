@@ -128,15 +128,7 @@ class ChadoPreparer extends ChadoTaskBase {
       $this->setProgress(0.1);
       $this->logger->notice("Creating Tripal Materialized Views and Custom Tables...");
       $chado_version = chado_get_version(FALSE, FALSE, $output_schema);
-      // Remove 1.1 and 1.2
-      if ($chado_version == '1.1') {
-        $this->add_v1_1_custom_tables();
-        $this->add_vx_x_custom_tables();
-      }
-      if ($chado_version == '1.2') {
-        $this->add_v1_2_custom_tables();
-        $this->add_vx_x_custom_tables();
-      }
+      
       if ($chado_version == '1.3') {
         $this->add_vx_x_custom_tables();
         $this->fix_v1_3_custom_tables();
@@ -231,7 +223,7 @@ class ChadoPreparer extends ChadoTaskBase {
    * These are tables that Chado uses to manage the site (i.e. temporary
    * loading tables) and not for primary data storage.
    */
-  protected function tripal_chado_add_vx_x_custom_tables() {
+  protected function add_vx_x_custom_tables() {
     // Add in custom tables.
     $this->tripal_chado_add_tripal_gff_temp_table();
     $this->tripal_chado_add_tripal_gffcds_temp_table();
@@ -773,7 +765,7 @@ class ChadoPreparer extends ChadoTaskBase {
    * For Chado v1.2 or greater these tables are not needed as they are part of the
    * schema update.
    */
-  protected function tripal_chado_add_v1_1_custom_tables() {
+  protected function add_v1_1_custom_tables() {
     $this->tripal_chado_add_analysisfeatureprop_table();
   }
 
