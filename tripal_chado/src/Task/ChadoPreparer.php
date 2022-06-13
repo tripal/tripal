@@ -61,7 +61,7 @@ class ChadoPreparer extends ChadoTaskBase {
         );
       }
 
-      $bio_tool = \Drupal::service('tripal_biodb.tool');
+      $tripal_dbx = \Drupal::service('tripal.dbx');
       $output_schema = $this->outputSchemas[0];
 
       // Note: schema names have already been validated through BioConnection.

@@ -230,7 +230,7 @@ CREATE INDEX binloc_boxrange ON featureloc USING GIST (boxrange(fmin, fmax));
 
 
 CREATE OR REPLACE FUNCTION featureloc_slice(bigint, bigint) RETURNS setof featureloc AS
-  'SELECT * from featureloc where boxquery($1, $2) @ boxrange(fmin,fmax)'
+  'SELECT * from featureloc where boxquery($1, $2) <@ boxrange(fmin,fmax)'
 LANGUAGE 'sql';
 
 CREATE OR REPLACE FUNCTION featureloc_slice(varchar, bigint, bigint)
@@ -238,7 +238,7 @@ CREATE OR REPLACE FUNCTION featureloc_slice(varchar, bigint, bigint)
   'SELECT featureloc.*
    FROM featureloc
    INNER JOIN feature AS srcf ON (srcf.feature_id = featureloc.srcfeature_id)
-   WHERE boxquery($2, $3) @ boxrange(fmin,fmax)
+   WHERE boxquery($2, $3) <@ boxrange(fmin,fmax)
    AND srcf.name = $1 '
 LANGUAGE 'sql';
 
@@ -246,7 +246,7 @@ CREATE OR REPLACE FUNCTION featureloc_slice(bigint, bigint, bigint)
   RETURNS setof featureloc AS
   'SELECT *
    FROM featureloc
-   WHERE boxquery($2, $3) @ boxrange(fmin,fmax)
+   WHERE boxquery($2, $3) <@ boxrange(fmin,fmax)
    AND srcfeature_id = $1 '
 LANGUAGE 'sql';
 

@@ -1,28 +1,28 @@
 <?php
 
-namespace Drupal\Tests\tripal_biodb\Functional\Database;
+namespace Drupal\Tests\tripal\Functional\TripalDBX;
 
 use Drupal\KernelTests\KernelTestBase;
-use Drupal\tripal_biodb\Database\BioSchema;
-use Drupal\tripal_biodb\Database\BioConnection;
+use Drupal\tripal\TripalDBX\TripalDbxSchema;
+use Drupal\tripal\TripalDBX\TripalDbxConnection;
 
 /**
- * Tests for biological schema on a real database.
+ * Tests for Tripal DBX schema on a real database.
  *
  * @see https://api.drupal.org/api/drupal/core!lib!Drupal!Core!Database!Schema.php/class/Schema/9.2.x
  *
- * @coversDefaultClass \Drupal\tripal_biodb\Database\BioSchema
+ * @coversDefaultClass \Drupal\tripal\TripalDBX\TripalDbxSchema
  *
  * @group Tripal
- * @group Tripal BioDb
- * @group Tripal BioDb Schema
+ * @group Tripal TripalDBX
+ * @group Tripal TripalDBX Schema
  */
-class BioSchemaTest extends KernelTestBase {
+class SchemaTest extends KernelTestBase {
 
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['tripal_biodb'];
+  protected static $modules = ['tripal'];
 
   /**
    * List of tested schemas.
@@ -65,7 +65,7 @@ class BioSchemaTest extends KernelTestBase {
    */
   protected function setUp(): void {
     parent::setUp();
-    
+
     // Get original config from Drupal real installation.
     // This is done by getting a connection to the real database first.
     // Then instanciate a new config factory that will use that database through
@@ -91,12 +91,12 @@ class BioSchemaTest extends KernelTestBase {
       $typed_config
     );
     // Get real config elements.
-    $config = $config_factory->get('tripal_biodb.settings');
+    $config = $config_factory->get('tripaldbx.settings');
     $reserved_schema_patterns = $config->get('reserved_schema_patterns');
     $this->assertNotEmpty($reserved_schema_patterns, 'Reserved schema patterns not empty.');
     $test_schema_base_names = $config
       ->get('test_schema_base_names')
-      ?? ['default' => '_test_biodb', ]
+      ?? ['default' => '_test_tdbx', ]
     ;
 
     // Mock the Config object.
@@ -117,7 +117,7 @@ class BioSchemaTest extends KernelTestBase {
 
     // Mock the ConfigFactory service.
     $this->proConfigFactory = $this->prophesize(\Drupal\Core\Config\ConfigFactory::class);
-    $this->proConfigFactory->get('tripal_biodb.settings')->willReturn($this->config);
+    $this->proConfigFactory->get('tripaldbx.settings')->willReturn($this->config);
     $this->configFactory = $this->proConfigFactory->reveal();
 
     \Drupal::getContainer()->set('config.factory', $this->configFactory);
@@ -154,26 +154,26 @@ class BioSchemaTest extends KernelTestBase {
   }
 
   /**
-   * Builds an initialized BioSchema mock.
+   * Builds an initialized TripalDbxSchema mock.
    *
    * @param $database_or_schema_name
-   *  Either a \Drupal\tripal_biodb\Database\BioConnection object (or mock) or
+   *  Either a \Drupal\tripal\TripalDBX\TripalDbxConnection object (or mock) or
    *  a schema name to use.
    *
    */
-  protected function getBioSchemaMock($database_or_schema_name) {
+  protected function getTripalDbxSchemaMock($database_or_schema_name) {
     if (is_string($database_or_schema_name)) {
-      $biodb = $this->getMockBuilder(\Drupal\tripal_biodb\Database\BioConnection::class)
+      $tdbx = $this->getMockBuilder(\Drupal\tripal\TripalDBX\TripalDbxConnection::class)
         ->setConstructorArgs([$database_or_schema_name])
         ->getMockForAbstractClass()
       ;
     }
     else {
-      $biodb = $database_or_schema_name;
+      $tdbx = $database_or_schema_name;
     }
     // Create a mock for the abstract class.
-    $scmock = $this->getMockBuilder(\Drupal\tripal_biodb\Database\BioSchema::class)
-      ->setConstructorArgs([$biodb])
+    $scmock = $this->getMockBuilder(\Drupal\tripal\TripalDBX\TripalDbxSchema::class)
+      ->setConstructorArgs([$tdbx])
       ->getMockForAbstractClass()
     ;
 
@@ -185,11 +185,11 @@ class BioSchemaTest extends KernelTestBase {
    * Allow a test to use reserved default test schema names.
    */
   protected function allowTestSchemas() {
-    $test_schema_base_names = \Drupal::config('tripal_biodb.settings')
+    $test_schema_base_names = \Drupal::config('tripaldbx.settings')
       ->get('test_schema_base_names')
     ;
-    $bio_tool = \Drupal::service('tripal_biodb.tool');
-    $bio_tool->freeSchemaPattern($test_schema_base_names['default'], TRUE);
+    $tripaldbx = \Drupal::service('tripal.dbx');
+    $tripaldbx->freeSchemaPattern($test_schema_base_names['default'], TRUE);
   }
 
   /**
@@ -197,23 +197,23 @@ class BioSchemaTest extends KernelTestBase {
    *
    * @cover ::__construct
    */
-  public function testBioSchemaConstructor() {
-    $scmock = $this->getBioSchemaMock('test');
+  public function testTripalDbxSchemaConstructor() {
+    $scmock = $this->getTripalDbxSchemaMock('test');
     $this->assertNotNull($scmock->getSchemaSize(), 'No size.');
   }
-  
+
   /**
    * Tests getPrefixInfo.
    *
    * @cover ::getPrefixInfo
    */
-  public function testBioSchemaPrefixInfo() {
+  public function testTripalDbxSchemaPrefixInfo() {
     $this->allowTestSchemas();
-    $test_schema_base_name = \Drupal::config('tripal_biodb.settings')
+    $test_schema_base_name = \Drupal::config('tripaldbx.settings')
       ->get('test_schema_base_names')['default']
     ;
-    $scmock = $this->getBioSchemaMock($test_schema_base_name);
-    
+    $scmock = $this->getTripalDbxSchemaMock($test_schema_base_name);
+
     // Hack to bypass protected restriction.
     $getPrefixInfo = function($table = 'default', $add_prefix = TRUE) {return $this->getPrefixInfo($table, $add_prefix);};
     $prefix_info = $getPrefixInfo->call($scmock, 'something');
@@ -227,7 +227,7 @@ class BioSchemaTest extends KernelTestBase {
       'Prefix ok.'
     );
   }
-  
+
   /**
    * Test a scenario.
    *
@@ -256,29 +256,29 @@ class BioSchemaTest extends KernelTestBase {
    * @cover ::cloneSchema
    * @cover ::dropSchema
    */
-  public function testBioSchemaScenario1() {
+  public function testTripalDbxSchemaScenario1() {
     $db = \Drupal::database();
     self::$db = self::$db ?? $db;
     $this->allowTestSchemas();
-    $test_schema_base_names = \Drupal::config('tripal_biodb.settings')
+    $test_schema_base_names = \Drupal::config('tripaldbx.settings')
       ->get('test_schema_base_names')
     ;
     $sch_1 = $test_schema_base_names['default'] . mt_rand(10000000, 99999999);
     $sch_2 = $test_schema_base_names['default'] . mt_rand(10000000, 99999999);
-    
+
     // Get abstract mock.
-    $biodb = $this->getMockBuilder(\Drupal\tripal_biodb\Database\BioConnection::class)
+    $tdbx = $this->getMockBuilder(\Drupal\tripal\TripalDBX\TripalDbxConnection::class)
       ->setConstructorArgs([$sch_1])
       ->getMockForAbstractClass()
     ;
-    $scmock = $this->getBioSchemaMock($biodb);
+    $scmock = $this->getTripalDbxSchemaMock($tdbx);
     $schema_name = $scmock->getSchemaName();
     $this->assertEquals($sch_1, $schema_name, 'Schema name set.');
-    
+
     // Check schema does not exist.
     $exists = $scmock->schemaExists();
     $this->assertFalse($exists, 'Schema does not exist.');
-    
+
     // Create schema.
     $scmock->createSchema();
     self::$testSchemas[$sch_1] = TRUE;
@@ -286,13 +286,13 @@ class BioSchemaTest extends KernelTestBase {
     // Check schema exists.
     $exists = $scmock->schemaExists();
     $this->assertTrue($exists, 'Schema exists.');
-    
+
     // Get initial size.
     $init_size = $scmock->getSchemaSize();
     $this->assertLessThan(1000, $init_size, 'New schema empty.');
-    
+
     // Load test data fixture into test schema.
-    $success = $biodb->executeSqlFile(__DIR__ . '/../../../fixtures/test_schema.sql', 'none');
+    $success = $tdbx->executeSqlFile(__DIR__ . '/../../../fixtures/test_schema.sql', 'none');
     $this->assertTrue($success, 'Schema test data loaded.');
 
     // Get new size.
@@ -309,42 +309,42 @@ class BioSchemaTest extends KernelTestBase {
     // https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Core%21Database%21Schema.php/function/Schema%3A%3AtableExists/9.2.x
     $exists = $scmock->tableExists('testtable');
     $this->assertTrue($exists, 'Table "testtable" exists.');
-    
+
     $exists = $scmock->tableExists('testtableabc');
     $this->assertFalse($exists, 'Table "testtableabc" does not exist.');
-    
+
     // https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Core%21Database%21Schema.php/function/Schema%3A%3AfieldExists/9.2.x
     $exists = $scmock->fieldExists('testtable', 'fieldreal');
     $this->assertTrue($exists, 'Field "testtable.fieldreal" exists.');
-    
+
     $exists = $scmock->fieldExists('testtable', 'fieldrealabc');
     $this->assertFalse($exists, 'Field "testtable.fieldrealabc" does not exist.');
-    
+
     // https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Core%21Database%21Schema.php/function/Schema%3A%3AindexExists/9.2.x
     $exists = $scmock->indexExists('testtable', 'testtable_idx1', TRUE);
     $this->assertTrue($exists, 'Index "testtable_idx1" exists.');
-    
+
     $exists = $scmock->indexExists('testtable', 'testtable_idx', TRUE);
     $this->assertFalse($exists, 'Index "testtable_idx" does not exist.');
 
     // Constraint exists.
     $exists = $scmock->constraintExists('testtable', 'testtable_c1', 'unique');
     $this->assertTrue($exists, 'Constraint "testtable_c1" exists.');
-    
+
     $exists = $scmock->constraintExists('testtable', 'testtable_c42', 'unique');
     $this->assertFalse($exists, 'Constraint "testtable_c42" does not exist.');
 
     // Primary key exists.
     $exists = $scmock->primaryKeyExists('testtable', 'id');
     $this->assertTrue($exists, '"testtable.id" is a primary key.');
-    
+
     $exists = $scmock->primaryKeyExists('testtable', 'foreign_id');
     $this->assertFalse($exists, '"testtable.foreign_id" is not a primary key.');
 
     // Foreign key exists.
     $exists = $scmock->foreignKeyConstraintExists('testtable', 'foreign_id');
     $this->assertTrue($exists, '"testtable.foreign_id" has a foreign key constraint.');
-    
+
     $exists = $scmock->foreignKeyConstraintExists('testtable', 'id');
     $this->assertFalse($exists, '"testtable.id" has not a foreign key constraint.');
 
@@ -352,10 +352,10 @@ class BioSchemaTest extends KernelTestBase {
     $exists = $scmock->sequenceExists('testtable', 'id', $sequence_name);
     $this->assertTrue($exists, 'A sequence exists on "testtable.id".');
     $this->assertEquals('testtable_id_seq', $sequence_name, 'Got the sequence name.');
-    
+
     $exists = $scmock->sequenceExists(NULL, NULL, $sequence_name);
     $this->assertTrue($exists, 'The sequence exists.');
-    
+
     $sequence_name .= 'abc';
     $exists = $scmock->sequenceExists(NULL, NULL, $sequence_name);
     $this->assertFalse($exists, 'Sequence does not exist.');
@@ -365,7 +365,7 @@ class BioSchemaTest extends KernelTestBase {
     // Function exists.
     $exists = $scmock->functionExists('dummy', ['bigint']);
     $this->assertTrue($exists, 'Function "dummy(bigint)" exists.');
-    
+
     $exists = $scmock->functionExists('dummy', ['']);
     $this->assertFalse($exists, 'Function "dummy()" does not exist.');
 
@@ -393,7 +393,7 @@ class BioSchemaTest extends KernelTestBase {
     $this->assertFalse($exists, 'Table "new_table" renamed into something else.');
     $exists = $scmock->tableExists('newtable');
     $this->assertTrue($exists, 'Table "newtable" is the new table name.');
-    
+
     // Change field.
     // https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Core%21Database%21Schema.php/function/Schema%3A%3AchangeField/9.2.x
     $scmock->changeField(
@@ -430,7 +430,7 @@ class BioSchemaTest extends KernelTestBase {
     // // https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Core%21Database%21Schema.php/function/Schema%3A%3AdropTable/9.2.x
     $success = $scmock->dropTable('newtable');
     $this->assertTrue($success, 'Table "newtable" dropped.');
-    
+
     // Get tables.
     $tables = $scmock->getTables(['table']);
     $this->assertEquals(2, count($tables), 'Got the right number of tables.');
@@ -564,9 +564,9 @@ on multiple lines.';
     $this->assertEquals($sch_2, $schema_name, 'Schema renamed.');
     self::$testSchemas[$sch_1] = FALSE;
     self::$testSchemas[$sch_2] = TRUE;
-    
+
     // Cloning.
-    $scmock_clone = $this->getBioSchemaMock($sch_1);
+    $scmock_clone = $this->getTripalDbxSchemaMock($sch_1);
     $exists = $scmock_clone->schemaExists();
     $this->assertFalse($exists, 'First schema is now free.');
     $clone_size = $scmock_clone->cloneSchema($sch_2);
@@ -584,5 +584,5 @@ on multiple lines.';
     $exists = $scmock_clone->schemaExists();
     $this->assertFalse($exists, 'First schema removed.');
     self::$testSchemas[$sch_1] = FALSE;
-  }   
+  }
 }

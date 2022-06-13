@@ -59,7 +59,7 @@ class ChadoRenamer extends ChadoTaskBase {
           "Invalid number of output schemas. Two output schema must be specified. The schema to rename should be the first output schema and the new schema name should be specified as the second output schema."
         );
       }
-      $bio_tool = \Drupal::service('tripal_biodb.tool');
+      $tripal_dbx = \Drupal::service('tripal.dbx');
       $old_schema = $this->outputSchemas[0];
       $new_schema = $this->outputSchemas[1];
 
@@ -81,7 +81,7 @@ class ChadoRenamer extends ChadoTaskBase {
         );
       }
       // Check the new name is not reserved.
-      $issue = $bio_tool->isInvalidSchemaName($new_schema->getSchemaName());
+      $issue = $tripal_dbx->isInvalidSchemaName($new_schema->getSchemaName());
       if ($issue) {
         throw new ParameterException($issue);
       }

@@ -26,26 +26,26 @@ class ChadoClonerFunctionalTest extends ChadoTestBase {
    */
   public function testPerformTaskCloner() {
     // Create a temporary schema.
-    $biodb = $this->getTestSchema(ChadoTestBase::INIT_DUMMY);
+    $tripaldbx_db1 = $this->getTestSchema(ChadoTestBase::INIT_DUMMY);
     // Get another temporary schema name.
-    $biodb2 = $this->getTestSchema(ChadoTestBase::SCHEMA_NAME_ONLY);
+    $tripaldbx_db2 = $this->getTestSchema(ChadoTestBase::SCHEMA_NAME_ONLY);
 
     // Test cloner.
     $cloner = \Drupal::service('tripal_chado.cloner');
     $cloner->setParameters([
-      'input_schemas'  => [$biodb->getSchemaName()],
-      'output_schemas' => [$biodb2->getSchemaName()],
+      'input_schemas'  => [$tripaldbx_db1->getSchemaName()],
+      'output_schemas' => [$tripaldbx_db2->getSchemaName()],
     ]);
     $success = $cloner->performTask();
     $this->assertTrue($success, 'Task performed.');
-    
-    $exists = $biodb2->schema()->schemaExists();
+
+    $exists = $tripaldbx_db2->schema()->schemaExists();
     $this->assertTrue($exists, 'Clone schema created.');
 
-    $size = $biodb2->schema()->getSchemaSize();
+    $size = $tripaldbx_db2->schema()->getSchemaSize();
     $this->assertGreaterThan(100, $size, 'Clone schema not empty.');
-    
-    $this->freeTestSchema($biodb2);
-    $this->freeTestSchema($biodb);
+
+    $this->freeTestSchema($tripaldbx_db2);
+    $this->freeTestSchema($tripaldbx_db1);
   }
 }

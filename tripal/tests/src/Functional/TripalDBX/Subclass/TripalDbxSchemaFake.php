@@ -1,13 +1,13 @@
 <?php
 
-namespace Drupal\Tests\tripal_biodb\Functional\Database\Subclass;
+namespace Drupal\Tests\tripal\Functional\TripalDBX\Subclass;
 
-use Drupal\tripal_biodb\Database\BioSchema;
+use Drupal\tripal\TripalDBX\TripalDbxSchema;
 
 /**
  * Fake schema class.
  */
-class BioSchemaFake extends BioSchema {
+class TripalDbxSchemaFake extends TripalDbxSchema {
 
   /**
    * {@inheritdoc}

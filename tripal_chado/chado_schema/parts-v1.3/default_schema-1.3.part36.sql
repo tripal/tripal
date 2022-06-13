@@ -2674,7 +2674,7 @@ CREATE OR REPLACE FUNCTION groupoverlaps(bigint, bigint, varchar) RETURNS setof 
     AND ( g1.srcfeature_id = g2.srcfeature_id OR g2.srcfeature_id IS NULL )
     AND g1.group_id = g2.group_id
     AND g1.srcfeature_id = (SELECT feature_id FROM feature WHERE uniquename = $3)
-    AND boxquery($1, $2) @ boxrange(g1.fmin,g2.fmax)
+    AND boxquery($1, $2) <@ boxrange(g1.fmin,g2.fmax)
 ' LANGUAGE 'sql';
 
 CREATE OR REPLACE FUNCTION groupcontains(bigint, bigint, varchar) RETURNS setof featuregroup AS '
@@ -2699,7 +2699,7 @@ CREATE OR REPLACE FUNCTION groupoverlaps(bigint, bigint) RETURNS setof featuregr
   SELECT *
   FROM featuregroup
   WHERE is_root = 1
-    AND boxquery($1, $2) @ boxrange(fmin,fmax)
+    AND boxquery($1, $2) <@ boxrange(fmin,fmax)
 ' LANGUAGE 'sql';
 
 CREATE OR REPLACE FUNCTION groupoverlaps(_int8, _int8, _varchar) RETURNS setof featuregroup AS '

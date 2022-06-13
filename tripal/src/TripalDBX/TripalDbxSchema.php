@@ -1,24 +1,51 @@
 <?php
 
-namespace Drupal\tripal_biodb\Database;
+namespace Drupal\tripal\TripalDBX;
 
 use Drupal\Core\Database\Driver\pgsql\Schema as PgSchema;
-use Drupal\tripal_biodb\Database\BioConnection;
-use Drupal\tripal_biodb\Exception\SchemaException;
+use Drupal\tripal\TripalDBX\TripalDbxConnection;
+use Drupal\tripal\TripalDBX\Exceptions\SchemaException;
 
 /**
- * Biological schema class.
+ * Tripal DBX API Schema class.
+ *
+ * NOTE: This class should not be instanciated directly but rather it should
+ * be accessed through a TripalDbxConnection object using the schema() method.
+ *
+ * This class provides a Tripal-specific implementation of the Drupal Schema
+ * abstract class. The Drupal PostgreSQL (and other database driver)
+ * implementations of the base Drupal Schema class follow the assumption that
+ * there is a single schema. As such the core Drupal implementations focus on
+ * managing tables within a single schema.
+ *
+ * This implementation extends that table-management functionality to also include
+ * Schema-focused management including creation, cloning, renaming, dropping
+ * and definition export. Additionally, it removes the assumption of a single
+ * schema by allowing the default schema to be set based on a Tripal DBX
+ * connection.
+ *
+ * Here are some useful functions to know that are inherited from Drupal Schema
+ * classes (core + PgSchema implementation):
+ *   - addField(), addIndex(), addPrimaryKey(), addUniqueKey(),
+ *   - createTable(), dropTable()
+ *   - dropField(), dropIndex(), dropPrimaryKey(), dropUniqueKey(),
+ *   - fieldExists(), findPrimaryKeyColumns(),
+ *   - renameTable(), tableExists()
+ *   and more from the documentation.
  *
  * @see https://api.drupal.org/api/drupal/core!lib!Drupal!Core!Database!Driver!pgsql!Schema.php/class/Schema/9.0.x
  * @see https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Core%21Database%21Schema.php/class/Schema/9.0.x
  */
-abstract class BioSchema extends PgSchema {
+abstract class TripalDbxSchema extends PgSchema {
 
   /**
-   * (override) Default schema name.
+   * Default schema name.
    *
-   * Will always be set to something by the constructor (which should be called
-   * by a BioConnection object).
+   * OVERRIDES \Drupal\Core\Database\Schema:$defaultSchema.
+   *
+   * Drupal assumes that the default schema name is public. However, for multiple
+   * schema support, we need to set this dynamically in the constructor and
+   * thus set it to empty here.
    *
    * @var string
    */
@@ -27,16 +54,23 @@ abstract class BioSchema extends PgSchema {
   /**
    * PostgreSQL quoted default schema name.
    *
+   * OVERRIDES \Drupal\Core\Database\Schema:$quotedDefaultSchema.
+   *
+   * Same reasoning as above since this is generated based on the default schema.
+   *
    * @var string
    */
   protected $quotedDefaultSchema = '';
 
   /**
-   * BioDbTool tool.
+   * TripalDbx service object.
    *
-   * @var object \Drupal\tripal_biodb\Database\BioDbTool
+   * This provides in-class access to the non-schema specific Tripal DBX API
+   * methods.
+   *
+   * @var object \Drupal\tripal\TripalDBX\TripalDbx
    */
-  protected $bioTool = NULL;
+  protected $tripalDbxApi = NULL;
 
   /**
    * Retrieve schema details from selected source in the requested format.
@@ -46,50 +80,55 @@ abstract class BioSchema extends PgSchema {
    *   - 'source': either 'database' to extract data from database or 'file' to
    *     get the data from a static YAML file.
    *     Default: 'file'.
-   *   - 'version': version of the biological schema to fetch from a file.
-   *     Ignored fot 'database' source.
+   *   - 'version': version of the Tripal DBX managed schema to fetch from a file.
+   *     Ignored for 'database' source.
    *     Default: implementation specific.
    *   - 'format': return format, either 'SQL' for an array of SQL string,
    *     'Drupal' for Drupal schema API, 'none' to return nothing or anything
    *     else to provide a data structure as returned by
-   *     BioDbTool::parseTableDdl. If the selected source is 'file', the format
+   *     TripalDbx::parseTableDdl. If the selected source is 'file', the format
    *     parameter will be ignored and 'Drupal' format will be used.
-   *     Default: BioDbTool::parseTableDdl data structure structure.
+   *     Default: TripalDbx::parseTableDdl data structure structure.
    *   - 'clear': if not empty, cache will be cleared.
    *
    * @return
    *   An array with details for the current schema version as defined by
    *   $parameters values.
    *
-   * @throws \Drupal\tripal_biodb\Exception\SchemaException
+   * @throws \Drupal\tripal\TripalDBX\Exceptions\SchemaException
    */
   abstract public function getSchemaDef(array $parameters) :array;
 
   /**
    * Constructor.
    *
-   * Overrides default constructor to manage the biological schema name.
-   * The BioSchema object should be instanciated by the BioConnection::schema()
-   * method in order to avoid issues when the default biological schema name is
-   * changed in the BioConnection object which could lead to issues.
-   * If you choose to instanciate a BioSchema object yourself, you are
-   * responsible to not change the biological schema name of the connection
-   * object used to instanciate this BioSchema.
+   * OVERRIDES \Drupal\Core\Database\Schema:__construct().
    *
-   * @param \Drupal\tripal_biodb\Database\BioConnection $connection
-   *   A biological database connection object.
+   * Overrides default constructor to manage the Tripal DBX managed schema name.
    *
-   * @throws \Drupal\tripal_biodb\Exception\SchemaException
+   * The TripalDbxSchema object should be instanciated by the
+   * TripalDbxConnection::schema() method in order to avoid issues when the
+   * default Tripal DBX managed schema name is changed in the TripalDbxConnection
+   * object which could lead to issues.
+   *
+   * If you choose to instanciate a TripalDbxSchema object yourself, you are
+   * responsible to not change the Tripal DBX managed schema name of the connection
+   * object used to instanciate this TripalDbxSchema.
+   *
+   * @param \Drupal\tripal\TripalDBX\TripalDbxConnection $connection
+   *   A Tripal DBX connection object.
+   *
+   * @throws \Drupal\tripal\TripalDBX\Exceptions\SchemaException
    */
   public function __construct(
-    \Drupal\tripal_biodb\Database\BioConnection $connection
+    \Drupal\tripal\TripalDBX\TripalDbxConnection $connection
   ) {
     $schema_name = $connection->getSchemaName();
-    // Get a BioDbTool object.
-    $this->bioTool = \Drupal::service('tripal_biodb.tool');
+    // Get a TripalDbx object.
+    $this->tripalDbxApi = \Drupal::service('tripal.dbx');
     // Make sure the schema name is not empty and valid.
-    if ($schema_issue = $this->bioTool->isInvalidSchemaName($schema_name, TRUE)) {
-      throw new SchemaException("Could not create BioSchema object with the schema name '$schema_name'.\n$schema_issue");
+    if ($schema_issue = $this->tripalDbxApi->isInvalidSchemaName($schema_name, TRUE)) {
+      throw new SchemaException("Could not create TripalDbxSchema object with the schema name '$schema_name'.\n$schema_issue");
     }
     parent::__construct($connection);
 
@@ -108,16 +147,28 @@ abstract class BioSchema extends PgSchema {
   }
 
   /**
-   * {@inheritdoc}
+   * Finds all tables that are like the specified base table name.
+   *
+   * OVERRIDES \Drupal\Core\Database\Schema:findTables().
+   *
+   * NOTE: In Drupal 10 individually prefixed tables will no longer be supported.
+   *  At this point we should re-evaluate if this override is still needed.
+   *
+   * Overrides the PostgreSQL implementation for two reasons:
+   *  1. Switch back to the generic Drupal implementation to prepare for other
+   *     database driver support in the future.
+   *  2. To override where tablePrefix() is called to include the optional
+   *     parameter indicating to use the Tripal DBX API.
+   *
+   * @param string $table_expression
+   *   An SQL expression, for example "cache_%" (without the quotes).
+   * @return array
+   *   Both the keys and the values are the matching tables.
    */
   public function findTables($table_expression) {
 
     // Load all the tables up front in order to take into account per-table
     // prefixes. The actual matching is done at the bottom of the method.
-    $condition = $this
-      ->buildTableNameCondition('%', 'LIKE');
-    $condition
-      ->compile($this->connection, $this);
     $individually_prefixed_tables = $this->connection
       ->getUnprefixedTablesMap();
     $tables = [];
@@ -127,6 +178,10 @@ abstract class BioSchema extends PgSchema {
     // couldn't use \Drupal::database()->select() here because it would prefix
     // information_schema.tables and the query would fail.
     // Don't use {} around information_schema.tables table.
+    $condition = $this
+      ->buildTableNameCondition('%', 'LIKE');
+    $condition
+      ->compile($this->connection, $this);
     $results = $this->connection
       ->query("SELECT table_name AS table_name FROM information_schema.tables WHERE " . (string) $condition, $condition
       ->arguments());
@@ -167,7 +222,20 @@ abstract class BioSchema extends PgSchema {
   }
 
   /**
-   * {@inheritdoc}
+   * Fetch the list of blobs and sequences used on a table.
+   *
+   * OVERRIDES \Drupal\Core\Database\Schema:queryTableInformation().
+   *
+   * Override is required for proper table prefixing. While the exact mechanism
+   * isn't clear, if this function is removed then tests will fail due to
+   * incorrect table prefixing.
+   *
+   * @param string $table_name
+   *   The non-prefixed name of the table.
+   * @return object
+   *    An object with two member variables:
+   *     - 'blob_fields' that lists all the blob fields in the table.
+   *     - 'sequences' that lists the sequences used in that table.
    */
   public function queryTableInformation($table) {
 
@@ -249,8 +317,15 @@ EOD;
   /**
    * Checks if an index exists in the given table.
    *
+   * OVERRIDES \Drupal\Core\Database\Schema:indexExists().
+   *
+   * Our version of this method adds an optional parameter $exact_name to support
+   * exact name matches since many biological data-focused databases will not
+   * follow the Drupal index naming pattern. For example, Chado does not follow
+   * this pattern.
+   *
    * @param $table
-   *   The name of the table in biological schema.
+   *   The name of the table in Tripal DBX managed schema.
    * @param $name
    *   The full name of the index (including the '_idx' part for instance).
    * @param bool $exact_name
@@ -278,10 +353,10 @@ EOD;
    * @return integer
    *   The size in bytes of the schema or 0 if the size is not available.
    *
-   * @throws \Drupal\tripal_biodb\Exception\SchemaException
+   * @throws \Drupal\tripal\TripalDBX\Exceptions\SchemaException
    */
   public function getSchemaSize() :int {
-    return $this->bioTool->getSchemaSize(
+    return $this->tripalDbxApi->getSchemaSize(
       $this->defaultSchema,
       $this->connection
     );
@@ -294,7 +369,7 @@ EOD;
    *   TRUE/FALSE depending upon whether or not the schema exists.
    */
   public function schemaExists() :bool {
-    return $this->bioTool->schemaExists(
+    return $this->tripalDbxApi->schemaExists(
       $this->defaultSchema,
       $this->connection
     );
@@ -305,7 +380,7 @@ EOD;
    *
    * Example:
    * @code
-   * $exists = $bio_schema->functionExists('dummyfunc', ['bigint', 'varchar']);
+   * $exists = $tripaldbx_schema->functionExists('dummyfunc', ['bigint', 'varchar']);
    * @endcode
    *
    * @param string $function_name
@@ -317,7 +392,7 @@ EOD;
    * @return bool
    *   TRUE if the function exists in the schema and FALSE otherwise.
    *
-   * @throws \Drupal\tripal_biodb\Exception\SchemaException
+   * @throws \Drupal\tripal\TripalDBX\Exceptions\SchemaException
    */
   public function functionExists(
     string $function_name,
@@ -399,7 +474,7 @@ EOD;
    * @return bool
    *   TRUE if the seqeuence exists and FALSE if it does not.
    *
-   * @throws \Drupal\tripal_biodb\Exception\SchemaException
+   * @throws \Drupal\tripal\TripalDBX\Exceptions\SchemaException
    */
   public function sequenceExists(
     ?string $table_name = NULL,
@@ -449,7 +524,14 @@ EOD;
   }
 
   /**
-   * (override) Check that the constraint exists.
+   * Check that the constraint exists.
+   *
+   * OVERRIDES \Drupal\Core\Database\Schema:constraintExists().
+   *
+   * Our version of this method adds an optional parameter $type to support
+   * type-specific searching and exact name matches since many biological
+   * data-focused databases will not follow the Drupal naming patterns.
+   * For example, Chado does not follow these patterns.
    *
    * @param string $table
    *   The table the constraint applies to.
@@ -581,9 +663,9 @@ EOD;
    *   An associative array to select other element type to include.
    *   Supported keys are:
    *   'table': include all tables;
-   *   'base': include only base tables (as defined in the original biological
+   *   'base': include only base tables (as defined in the original Tripal Dbx
    *           schema definition);
-   *   'custom': include only custom tables (not part of the original biological
+   *   'custom': include only custom tables (not part of the original Tripal Dbx
    *           schema definition);
    *   'view': include views;
    *   'partition': include partitions;
@@ -700,17 +782,17 @@ EOD;
    *     get the data from a static YAML file or 'tripal' to get the data from
    *     Tripal records.
    *     Default: 'file'.
-   *   - 'version': version of the biological schema to fetch from a file.
+   *   - 'version': version of the Tripal DBX managed schema to fetch from a file.
    *     Ignored fot 'database' source.
    *     Default: implementation specific.
    *   - 'format': return format, either 'sql' for an array of SQL string,
    *     'drupal' for Drupal schema API, 'none' to return nothing or anything
    *     else (like 'default') to provide a data structure as returned by
-   *     BioDbTool::parseTableDdl plus a 'referenced_by' key containing all the
+   *     TripalDbx::parseTableDdl plus a 'referenced_by' key containing all the
    *     referencing tables returned by ::getReferencingTables. If the selected
    *     source is 'file' or 'tripal', the format parameter will be ignored and
    *    'Drupal' format will be used.
-   *     Default: BioDbTool::parseTableDdl data structure structure.
+   *     Default: TripalDbx::parseTableDdl data structure structure.
    *   - 'clear': if not empty, cache will be cleared.
    *
    * @return
@@ -769,11 +851,11 @@ EOD;
         }
         elseif ('drupal' == $format) {
           $table_structures[$cache_key] =
-            $this->bioTool->parseTableDdlToDrupal($table_ddl);
+            $this->tripalDbxApi->parseTableDdlToDrupal($table_ddl);
         }
         else {
           $table_structures[$cache_key] =
-            $this->bioTool->parseTableDdl($table_ddl);
+            $this->tripalDbxApi->parseTableDdl($table_ddl);
           $referencing_tables = $this->getReferencingTables($table);
           $table_structures[$cache_key]['referenced_by'] = $referencing_tables;
         }
@@ -811,7 +893,7 @@ EOD;
     $cache_key = $this->defaultSchema . '/' . $table_name;
     if (!isset($db_ddls[$cache_key])) {
       $schema_name = $this->defaultSchema;
-      $drupal_schema = $this->bioTool->getDrupalSchemaName();
+      $drupal_schema = $this->tripalDbxApi->getDrupalSchemaName();
 
       $sql_query = "
         SELECT
@@ -903,7 +985,7 @@ EOD;
    * @throws \Drupal\Core\Database\DatabaseExceptionWrapper
    */
   public function createSchema() :void {
-    $this->bioTool->createSchema($this->defaultSchema, $this->connection);
+    $this->tripalDbxApi->createSchema($this->defaultSchema, $this->connection);
   }
 
   /**
@@ -935,12 +1017,12 @@ EOD;
     // Clone schema.
     $return_value = 0;
     try {
-      $this->bioTool->cloneSchema(
+      $this->tripalDbxApi->cloneSchema(
         $source_schema,
         $target_schema,
         $this->connection
       );
-      $return_value = $this->bioTool->getSchemaSize(
+      $return_value = $this->tripalDbxApi->getSchemaSize(
         $target_schema,
         $this->connection
       );
@@ -961,7 +1043,7 @@ EOD;
    *   New name to use.
    *
    * @throws \Drupal\Core\Database\DatabaseExceptionWrapper
-   * @throws \Drupal\tripal_biodb\Exception\SchemaException
+   * @throws \Drupal\tripal\TripalDBX\Exceptions\SchemaException
    *   if there is no current schema name.
    */
   public function renameSchema(
@@ -970,7 +1052,7 @@ EOD;
     if (empty($this->defaultSchema)) {
       throw new SchemaException('Unable to rename current schema: no current schema set.');
     }
-    $this->bioTool->renameSchema(
+    $this->tripalDbxApi->renameSchema(
       $this->defaultSchema,
       $new_schema_name,
       $this->connection
@@ -989,7 +1071,7 @@ EOD;
    * @throws \Drupal\Core\Database\DatabaseExceptionWrapper
    */
   public function dropSchema() :void {
-    $this->bioTool->dropSchema($this->defaultSchema, $this->connection);
+    $this->tripalDbxApi->dropSchema($this->defaultSchema, $this->connection);
   }
 
 }
