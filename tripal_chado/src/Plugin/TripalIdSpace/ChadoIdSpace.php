@@ -198,7 +198,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
   /**
    * {@inheritdoc}
    */
-  public function saveTerm($term, $options, $parent = NULL, $relationship = NULL) {
+  public function saveTerm($term, $options) {
     $accession = $term->getAccession();
     
     $fail_if_exists = False;
@@ -216,17 +216,13 @@ class ChadoIdSpace extends TripalIdSpaceBase {
     }
     
     if ($update_parent) {
-      $idSpace_name = $parent->getIdSpace();
-      $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-      $idSpace = $idsmanager->createCollection($idSpace_name, "chado_id_space");
-      $idSpace->saveTerm($parent);
     }
     
     if ($term_exists) {
-      $this->insertTerm($term, $parent, $relationship);
+      $this->insertTerm($term);
     } 
     else {
-      $this->updateTerm($term, $parent, $relationship);
+      $this->updateTerm($term);
     }    
   }
   
@@ -238,14 +234,11 @@ class ChadoIdSpace extends TripalIdSpaceBase {
    *  
    * @param Drupal\tripal\TripalVocabTerms\TripalTerm $term
    *   The term object to update
-   * @param Drupal\tripal\TripalVocabTerms\TripalTerm|NULL $parent
-   *   The term's parent term object.
-   * @param Drupal\tripal\TripalVocabTerms\TripalTerm|NULL $relationship
-   *   The relationship term for the parent and the child.
+   *   
    * @return boolean
    *   True if the insert was successful, false otherwise.
    */
-  protected function insertTerm($term, $parent, $relationship) {
+  protected function insertTerm($term) {
     $definition = $term->getDefinition();
     $accession = $term->getAccession();
     $name = $term->getName();
@@ -298,14 +291,11 @@ class ChadoIdSpace extends TripalIdSpaceBase {
    * 
    * @param Drupal\tripal\TripalVocabTerms\TripalTerm $term
    *   The term object to update
-   * @param Drupal\tripal\TripalVocabTerms\TripalTerm|NULL $parent
-   *   The term's parent term object.
-   * @param Drupal\tripal\TripalVocabTerms\TripalTerm|NULL $relationship
-   *   The relationship term for the parent and the child.
+   *   
    * @return boolean
    *   True if the update was successful, false otherwise.
    */
-  protected function updateTerm($term, $parent, $relationship) {
+  protected function updateTerm($term) {
     $definition = $term->getDefinition();
     $accession = $term->getAccession();
     $name = $term->getName();

@@ -324,16 +324,213 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     //
     // Testing TripalTerms
     //
+    $GO->setURLPrefix($GO_urlprefix);
     
+    // First create a term for the comment property.
+    $rdfs_vocab = $vmanager->createCollection("rdfs", "chado_vocabulary");
+    $rdfs_vocab->setLabel('Resource Description Framework Schema');
+    $rdfs_vocab->setURL('https://www.w3.org/TR/rdf-schema/');
+    $rdfs_id = $idsmanager->createCollection('rdfs', "chado_id_space");
+    $rdfs_id->setDescription('Resource Description Framework Schema	');
+    $rdfs_id->setURLPrefix('http://www.w3.org/2000/01/rdf-schema#{accession}');
+    $rdfs_id->setDefaultVocabulary('rdfs', 'chado_vocabulary');
+    $comment = new TripalTerm();
+    $comment->setName('comment');
+    $comment->setIdSpace('rdfs', 'chado_id_space');
+    $comment->setVocabulary('rdfs', 'chado_vocabulary');
+    $comment->setAccession('comment');    
+    $this->assertTrue($comment->getName() == 'comment', 'The "comment" TripalTerm returned an incorrect name.');
+    $this->assertTrue($comment->getAccession() == 'comment', 'The "comment" TripalTerm returned an incorrect accession.');
+    $this->assertTrue($comment->getTermId() == 'rdfs:comment', 'The "comment" TripalTerm returned an incorrect term ID.');
+    $this->assertTrue($comment->getVocabulary() == 'rdfs', 'The "comment" TripalTerm returned an incorrect vocabulary.');
+    $this->assertTrue($comment->getIdSpace() == 'rdfs', 'The "comment" TripalTerm returned an incorrect ID space.');
+    $this->assertTrue($comment->getURL() == 'http://www.w3.org/2000/01/rdf-schema#comment', 'The "comment" TripalTerm returned an incorrect URL.');
     
-    $term = new TripalTerm(
-      'biological_process',
-      'A biological process represents a specific objective that the organism is genetically programmed to achieve. Biological processes are often described by their outcome or ending state, e.g., the biological process of cell division results in the creation of two daughter cells (a divided cell) from a single parent cell. A biological process is accomplished by a particular set of molecular functions carried out by specific gene products (or macromolecular complexes), often in a highly regulated manner and in a particular temporal sequence.',
-      'GO',
-      '0008150',
-      'biological_process'
-    );
-    $term->save();
+    // Create a parent term using the built-in setters.
+    $parent = new TripalTerm();
+    $parent->setName('biological_process');
+    $parent->setIdSpace('GO', 'chado_id_space');
+    $parent->setVocabulary('biological_process', 'chado_vocabulary');
+    $parent->setAccession('0008150');
+    $parent_definition = 'A biological process represents a specific objective that the organism is ' .
+      'genetically programmed to achieve. Biological processes are often described by their outcome ' .
+      'or ending state, e.g., the biological process of cell division results in the creation of two ' . 
+      'daughter cells (a divided cell) from a single parent cell. A biological process is accomplished ' . 
+      'by a particular set of molecular functions carried out by specific gene products (or ' .
+      'macromolecular complexes), often in a highly regulated manner and in a particular temporal sequence.';
+    $parent->setDefinition($parent_definition);
+    $parent->addAltId('GO', '0000004');
+    $parent->addAltId('GO', '0007582');
+    $parent->addAltId('GO', '0044699');
+    $parent->addSynonym('biological process');
+    $parent->addSynonym('physiological process');
+    $parent->addSynonym('single organism process');
+    $parent->addSynonym('single-organism process');
+    $parent_comment = 'Note that, in addition to forming the root of the biological process ontology, ' . 
+      'this term is recommended for use for the annotation of gene products whose biological process ' .
+      'is unknown. When this term is used for annotation, it indicates that no information was available ' .
+      'about the biological process of the gene product annotated as of the date the annotation was made; ' .
+      'the evidence code \'no data\' (ND), is used to indicate this.';
+    $parent->addProperty($comment, $parent_comment);
+    
+    // Run a suite of tests on the term.
+    $this->assertTrue($parent->getName() == 'biological_process', 'The "biological_process" TripalTerm returned an incorrect name.');
+    $this->assertTrue($parent->getAccession() == '0008150', 'The "biological_process" TripalTerm returned an incorrect accession.');
+    $this->assertTrue($parent->getTermId() == 'GO:0008150', 'The "biological_process" TripalTerm returned an incorrect term ID.');
+    $this->assertTrue($parent->getDefinition() == $parent_definition, 'The "biological process" TripalTerm returned and incorrect definition.');
+    $this->assertTrue($parent->getVocabulary() == 'biological_process', 'The "biological_process" TripalTerm returned an incorrect vocabulary.');
+    $this->assertTrue($parent->getIdSpace() == 'GO', 'The "biological_process" TripalTerm returned an incorrect ID space.');
+    $this->assertTrue($parent->getURL() == 'http://amigo.geneontology.org/amigo/term/GO:0008150', 'The "biological_process" TripalTerm returned an incorrect URL.');
+    $this->assertTrue(in_array('biological process', $parent->getSynonyms()), 'The "biological_process" TripalTerm is missing a synonym.');
+    $this->assertTrue(in_array('physiological process', $parent->getSynonyms()), 'The "biological_process" TripalTerm is missing a synonym.');
+    $this->assertTrue(in_array('single organism process', $parent->getSynonyms()), 'The "biological_process" TripalTerm is missing a synonym.');
+    $this->assertTrue(in_array('single-organism process', $parent->getSynonyms()), 'The "biological_process" TripalTerm is missing a synonym.');
+    $parent->removeSynonym('physiological process');
+    $parent->removeSynonym('single-organism process');
+    $this->assertTrue(in_array('biological process', $parent->getSynonyms()), 'The "biological_process" TripalTerm is missing a synonym.');
+    $this->assertFalse(in_array('physiological process', $parent->getSynonyms()), 'The "biological_process" TripalTerm contains a synonym that should have been removed.');
+    $this->assertTrue(in_array('single organism process', $parent->getSynonyms()), 'The "biological_process" TripalTerm is missing a synonym.');
+    $this->assertFalse(in_array('single-organism process', $parent->getSynonyms()), 'The "biological_process" TripalTerm contains a synonym that should ahve been removed.');
+    $this->assertTrue(in_array('GO:0000004', $parent->getAltIds()), 'The "biological_process" TripalTerm is missing an alternative ID.');
+    $this->assertTrue(in_array('GO:0007582', $parent->getAltIds()), 'The "biological_process" TripalTerm is missing an alternative ID.');
+    $this->assertTrue(in_array('GO:0044699', $parent->getAltIds()), 'The "biological_process" TripalTerm is missing an alternative ID.');
+    $parent->removeAltId('GO', '0007582');
+    $this->assertTrue(in_array('GO:0000004', $parent->getAltIds()), 'The "biological_process" TripalTerm is missing an alternative ID.');
+    $this->assertFalse(in_array('GO:0007582', $parent->getAltIds()), 'The "biological_process" TripalTerm contains an alternative ID that should have been removed.');
+    $this->assertTrue(in_array('GO:0044699', $parent->getAltIds()), 'The "biological_process" TripalTerm is missing an alternative ID.');
+    $properties = $parent->getProperties();
+    $this->assertTrue(array_key_exists('rdfs:comment', $properties), 'The "biological_process" TripalTerm is missing the comment property.');
+    $this->assertTrue($properties['rdfs:comment'][0][1] == $parent_comment, 'The "biological_process" TripalTerm comment property value was not returned correctly.');
+    $parent->removeProperty('rdfs', 'comment', 0);
+    $properties = $parent->getProperties();
+    $this->assertEmpty($properties, 'The "biological_process" TripalTerm should not have any properties');
+    
+    // Recreate the term using the constructor instead of the setters.   
+    $parent = new TripalTerm([
+      'name' => 'biological_process',
+      'idSpace' => ['GO', 'chado_id_space'],
+      'vocabulary' => ['biological_process', 'chado_vocabulary'],
+      'accession' => '0008150',
+      'definition' => $parent_definition,
+      'altIDs' => [
+        ['GO', '0000004'],
+        ['GO', '0007582'],
+        ['GO', '0044699'],
+      ],
+      'synonyms' => [
+        'biological process',
+        'physiological process',
+        'single organism process',
+        'single-organism process',       
+      ],
+      'properties' => [
+        [$comment, $parent_comment],
+      ],
+    ]);
+    
+    // Re-run the same tests above on this recreated term.// Run a suite of tests on the term.
+    $this->assertTrue($parent->getName() == 'biological_process', 'The "biological_process" TripalTerm returned an incorrect name.');
+    $this->assertTrue($parent->getAccession() == '0008150', 'The "biological_process" TripalTerm returned an incorrect accession.');
+    $this->assertTrue($parent->getTermId() == 'GO:0008150', 'The "biological_process" TripalTerm returned an incorrect term ID.');
+    $this->assertTrue($parent->getDefinition() == $parent_definition, 'The "biological process" TripalTerm returned and incorrect definition.');
+    $this->assertTrue($parent->getVocabulary() == 'biological_process', 'The "biological_process" TripalTerm returned an incorrect vocabulary.');
+    $this->assertTrue($parent->getIdSpace() == 'GO', 'The "biological_process" TripalTerm returned an incorrect ID space.');
+    $this->assertTrue($parent->getURL() == 'http://amigo.geneontology.org/amigo/term/GO:0008150', 'The "biological_process" TripalTerm returned an incorrect URL.');
+    $this->assertTrue(in_array('biological process', $parent->getSynonyms()), 'The "biological_process" TripalTerm is missing a synonym.');
+    $this->assertTrue(in_array('physiological process', $parent->getSynonyms()), 'The "biological_process" TripalTerm is missing a synonym.');
+    $this->assertTrue(in_array('single organism process', $parent->getSynonyms()), 'The "biological_process" TripalTerm is missing a synonym.');
+    $this->assertTrue(in_array('single-organism process', $parent->getSynonyms()), 'The "biological_process" TripalTerm is missing a synonym.');
+    $parent->removeSynonym('physiological process');
+    $parent->removeSynonym('single-organism process');
+    $this->assertTrue(in_array('biological process', $parent->getSynonyms()), 'The "biological_process" TripalTerm is missing a synonym.');
+    $this->assertFalse(in_array('physiological process', $parent->getSynonyms()), 'The "biological_process" TripalTerm contains a synonym that should have been removed.');
+    $this->assertTrue(in_array('single organism process', $parent->getSynonyms()), 'The "biological_process" TripalTerm is missing a synonym.');
+    $this->assertFalse(in_array('single-organism process', $parent->getSynonyms()), 'The "biological_process" TripalTerm contains a synonym that should ahve been removed.');
+    $this->assertTrue(in_array('GO:0000004', $parent->getAltIds()), 'The "biological_process" TripalTerm is missing an alternative ID.');
+    $this->assertTrue(in_array('GO:0007582', $parent->getAltIds()), 'The "biological_process" TripalTerm is missing an alternative ID.');
+    $this->assertTrue(in_array('GO:0044699', $parent->getAltIds()), 'The "biological_process" TripalTerm is missing an alternative ID.');
+    $parent->removeAltId('GO', '0007582');
+    $this->assertTrue(in_array('GO:0000004', $parent->getAltIds()), 'The "biological_process" TripalTerm is missing an alternative ID.');
+    $this->assertFalse(in_array('GO:0007582', $parent->getAltIds()), 'The "biological_process" TripalTerm contains an alternative ID that should have been removed.');
+    $this->assertTrue(in_array('GO:0044699', $parent->getAltIds()), 'The "biological_process" TripalTerm is missing an alternative ID.');
+    $properties = $parent->getProperties();
+    $this->assertTrue(array_key_exists('rdfs:comment', $properties), 'The "biological_process" TripalTerm is missing the comment property.');
+    $this->assertTrue($properties['rdfs:comment'][0][1] == $parent_comment, 'The "biological_process" TripalTerm comment property value was not returned correctly.');
+    $parent->removeProperty('rdfs', 'comment', 0);
+    $properties = $parent->getProperties();
+    $this->assertEmpty($properties, 'The "biological_process" TripalTerm should not have any properties');
+    
+    // Next create a relationship type term.
+    $is_a = new TripalTerm();
+    $is_a->setName('is_a');
+    $is_a->setIdSpace('GO', 'chado_id_space');
+    $is_a->setVocabulary('biological_process', 'chado_vocabulary');
+    $is_a->setAccession('is_a');    
+    $is_a->setIsRelationshipType(True);
+    $this->assertTrue($is_a->isRelationshipType(), 'The "is_a" TripalTerm failed to indicate it is a relationship term.');
+    
+    // Next create a child term and set it's parent.
+    $child = new TripalTerm();
+    $child->setName('biological phase');
+    $child->setIdSpace('GO', 'chado_id_space');
+    $child->setVocabulary('biological_process', 'chado_vocabulary');
+    $child->setAccession('0044848');    
+    $child->setDefinition('A distinct period or stage in a biological process or cycle.');
+    $child_comment = 'Note that phases are is_a disjoint from other biological processes. ' . 
+      'happens_during relationships can operate between phases and other biological processes ' . 
+      'e.g. DNA replication happens_during S phase.';
+    $child->addProperty($comment, $child_comment);
+    $child->addParent($parent, $is_a);
+    
+    // Test the parent/child relationship.
+    $parents = $child->getParents();
+    $this->assertTrue(array_key_exists('GO:0008150', $parents), 'The "biological phase" TripalTerm did not return a parent.');
+    $this->assertTrue($parents['GO:0008150'][0]->getTermId() == 'GO:0008150', 'The "biological phase" TripalTerm parent is out of order. The parent term should be first in the tuple.');
+    $this->assertTrue($parents['GO:0008150'][1]->getTermId() == 'GO:is_a', 'The "biological phase" TripalTerm parent is out of order. The relationship term should be second in the tuple.');
+    $child->removeParent('GO', '0008150');
+    $parents = $child->getParents();
+    $this->assertEmpty($parents, 'The "biological phase" TripalTerm should not have any parents after they were removed.');
+    
+    // Recreate the parent relationship using the constructor.
+    $child = new TripalTerm([
+      'name' => 'biological phase',
+      'idSpace' => ['GO', 'chado_id_space'],
+      'vocabulary' => ['biological_process', 'chado_vocabulary'],
+      'definition' => 'A distinct period or stage in a biological process or cycle.',
+      'accession' => '0044848',
+      'properties' => [
+        [$comment, $child_comment]
+      ],
+      'parents' => [
+        [$parent, $is_a]
+      ],
+    ]);
+    
+    // Repeat the tests for the relationships.
+    $parents = $child->getParents();
+    $this->assertTrue(array_key_exists('GO:0008150', $parents), 'The "biological phase" TripalTerm did not return a parent.');
+    $this->assertTrue($parents['GO:0008150'][0]->getTermId() == 'GO:0008150', 'The "biological phase" TripalTerm parent is out of order. The parent term should be first in the tuple.');
+    $this->assertTrue($parents['GO:0008150'][1]->getTermId() == 'GO:is_a', 'The "biological phase" TripalTerm parent is out of order. The relationship term should be second in the tuple.');
+    $child->removeParent('GO', '0008150');
+    $parents = $child->getParents();
+    $this->assertEmpty($parents, 'The "biological phase" TripalTerm should not have any parents after they were removed.');
+    
+    // Make sure the isVald works.
+    $dummy = new TripalTerm();
+    $this->assertFalse($dummy->isValid(), 'The dummy TripalTerm reports it is valid when it is not (Test 1).');
+    $dummy->setName('dummy');
+    $this->assertFalse($dummy->isValid(), 'The dummy TripalTerm reports it is valid when it is not (Test 2).');
+    $dummy->setIdSpace('GO', 'chado_id_space');
+    $this->assertFalse($dummy->isValid(), 'The dummy TripalTerm reports it is valid when it is not (Test 3).');
+    $dummy->setVocabulary('GO', 'chado_vocabulary');
+    $this->assertFalse($dummy->isValid(), 'The dummy TripalTerm reports it is valid when it is not (Test 4).');
+    $dummy->setAccession('dummy');
+    $this->assertTrue($dummy->isValid(), 'The dummy TripalTerm reports it is not valid when it is.');
+       
+    // Test Saving the term
+    // @todo test trying to save when the term is invalid
+    // @todo make sure all of the term attributes are saved in the appropriate tables.
+    
   }
 }
 
