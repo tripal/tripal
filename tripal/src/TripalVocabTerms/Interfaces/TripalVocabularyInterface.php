@@ -9,7 +9,7 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
  * Defines an interface for tripal vocabulary plugins.
  */
 interface TripalVocabularyInterface extends TripalCollectionPluginInterface {
-
+  
   /**
    * Returns list of id space collection names that is contained in this vocabulary.
    *
@@ -70,23 +70,54 @@ interface TripalVocabularyInterface extends TripalCollectionPluginInterface {
    *
    * @param string $url
    *   The URL.
+   *   
+   * @return bool
+   *   True if the value was set or false otherwise.
    */
   public function setURL($url);
-
+  
+  
   /**
-   * Returns the description of this vocabulary.
-   *
-   * @return string
-   *   The description.
+   * Returns the namespace of the vocabulary
+   * 
+   * This should be identical to the name of the collection, and
+   * therefore, there is no setter function.
+   * 
+   * @return string $namespace
+   *   The namespace of the vocabulary.
    */
-  public function getDescription();
-
+  public function getNameSpace();
+  
+  
   /**
-   * Sets the description of this vocabulary to the given description.
+   * Sets the label for the vocabulary.
    *
-   * @param string $description
-   *   The description.
+   * This is the human readable proper name of the vocabulary.
+   *
+   * Note that the name of the collection serves as the namespace of the vocabulary.
+   *
+   * @param string $label
+   *   The name of the vocabulary.
+   *
+   * @return bool
+   *   True on success or false otherwise.
+   *   
+   * @return bool
+   *   True if the value was set or false otherwise.
    */
-  public function setDescription($description);
-
+  public function setLabel($label);
+  
+  
+  /**
+   * Returns the label of the vocabulary.
+   *
+   * This is the human readable proper name of the vocabulary.
+   *
+   * Note that the name of the collection serves as the namespace of the vocabulary.
+   *
+   * @return string $label
+   *   The name of the vocabulary.
+   */
+  public function getLabel();
+  
 }

@@ -17,10 +17,11 @@ use Drupal\tripal_chado\Database\ChadoConnection;
 
 trait ChadoTestTrait  {
    
+   
   /**
-   * Bio database tool instance.
+   * Tripal DBX tool instance.
    */
-  protected $tripal_dbx;
+  protected $tripal_dbx = NULL;
 
   /**
    * Real (Drupal live, not test) config factory.
@@ -60,25 +61,6 @@ trait ChadoTestTrait  {
    */
   protected static $db = NULL;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    
-    parent::setUp();
-    
-    // Init Tripal.
-    $this->createChadoInstallationsTable();
-
-    // Get config.
-    $this->getRealConfig();
-
-    // TripalDbx.
-    $this->initTripalDbx();
-
-    // Allow test schemas.
-    $this->allowTestSchemas();
-  }
 
   /**
    * {@inheritdoc}
@@ -243,13 +225,11 @@ trait ChadoTestTrait  {
         $this->assertTrue($tripaldbx_db->schema()->schemaExists(), 'Test schema created.');
         $success = $tripaldbx_db->executeSqlFile(
           __DIR__ . '/../../../chado_schema/chado-only-1.3.sql',
-          ['chado' => $schema_name]
-        );
+          ['chado' => $schema_name]);
         $this->assertTrue($success, 'Chado schema loaded.');
         $success = $tripaldbx_db->executeSqlFile(
           __DIR__ . '/../../fixtures/fill_chado.sql',
-          'none'
-        );
+          'none');
         $this->assertTrue($success, 'Dummy Chado schema loaded.');
         $this->assertGreaterThan(100, $tripaldbx_db->schema()->getSchemaSize(), 'Test schema not empty.');
         break;
@@ -259,10 +239,14 @@ trait ChadoTestTrait  {
         $this->assertTrue($tripaldbx_db->schema()->schemaExists(), 'Test schema created.');
         $success = $tripaldbx_db->executeSqlFile(
           __DIR__ . '/../../../chado_schema/chado-only-1.3.sql',
-          ['chado' => $schema_name]
-        );
+          ['chado' => $schema_name]);
         $this->assertTrue($success, 'Chado schema loaded.');
         $this->assertGreaterThan(100, $tripaldbx_db->schema()->getSchemaSize(), 'Test schema not empty.');
+        
+        // Add version information to the schema so the tests don't fail.
+        $success = $tripaldbx_db->executeSqlFile(__DIR__ . '/../../fixtures/version.sql',
+            ['chado' => $schema_name]);
+        $this->assertTrue($success, 'Chado version loaded.');
         break;
 
       case static::INIT_DUMMY:
@@ -290,10 +274,14 @@ trait ChadoTestTrait  {
     self::$db = self::$db ?? \Drupal::database();
     self::$testSchemas[$schema_name] = TRUE;
     
-    # Make sure that any other connections to TripalDBX will see this new test schema as 
-    # the default schema.
+    // Make sure that any other connections to TripalDBX will see this new test schema as 
+    // the default schema.
     $config = \Drupal::service('config.factory')->getEditable('tripal_chado.settings');    
     $config->set('default_schema', $schema_name)->save();
+    
+    // As a safety check, make sure that the tripalDBX object is using the test schema.
+    // We don't want to perform tests in a live schema.
+    $this->assertTrue($tripaldbx_db->getSchemaName() == $schema_name, 'TripalDBX is not using the test schema.');
 
     return $tripaldbx_db;
   }
@@ -309,7 +297,7 @@ trait ChadoTestTrait  {
   ) {
     self::$testSchemas[$tripaldbx_db->getSchemaName()] = FALSE;
     try {
-      $tripaldbx_db->schema()->dropSchema();
+      //$tripaldbx_db->schema()->dropSchema();
     }
     catch (\Exception $e) {
       // Ignore issues.

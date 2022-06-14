@@ -65,10 +65,18 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
    *   The new collection or NULL if an error occured.
    */
   public function createCollection($name, $pluginId) {
+    if (!is_string($name)) {
+      return NULL;
+    }
+    
+    $clist = $this->getCollectionList();        
+    if (in_array($name, $clist)) {
+      return NULL;
+    }
     $db = \Drupal::database();
     $collection = $this->createInstance($pluginId, ["collection_name" => $name]);
     if ($collection->isValid()) {
-      $result = $db->insert($this->table)->fields(["name" => $name,"plugin_id" => $pluginId])->execute();
+      $result = $db->insert($this->table)->fields(["name" => $name, "plugin_id" => $pluginId])->execute();
       $collection->create();
       return $collection;
     }
@@ -92,17 +100,23 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
    *   True if the matching collection was removed or false otherwise.
    */
   public function removeCollection($name) {
+    if (!is_string($name)) {
+      return NULL;
+    }
     $db = \Drupal::database();
-    $result = $db->select($this->table,'n')->condition('n.name',$name)->execute();
-    $record = $result->fetch();
+    $result = $db->select($this->table,'n')
+      ->fields('n', ['name', 'plugin_id'])
+      ->condition('n.name', $name)
+      ->execute();
+    $record = $result->fetchObject();
     if (!$record) {
       return FALSE;
     }
-    $result = $db->delete($this->table)->condition('name',$name)->execute();
-    if ($result->rowCount() < 1) {
+    $num_deleted = $db->delete($this->table)->condition('name', $name)->execute();
+    if ($num_deleted < 1) {
       return FALSE;
     }
-    $collection = $this->createInstance($record->plugin_id,["collection_name" => $name]);
+    $collection = $this->createInstance($record->plugin_id, ["collection_name" => $name]);
     $collection->destroy();
     return TRUE;
   }
@@ -116,7 +130,7 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
   public function getCollectionList() {
     $names = [];
     $db = \Drupal::database();
-    $result = $db->select($this->table,'n')->fields('name')->execute();
+    $result = $db->select($this->table, 'n')->fields('n', ['name'])->execute();
     foreach ($result as $record) {
       $names[] = $record->name;
     }
@@ -134,9 +148,15 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
    *   The loaded collection plugin or NULL.
    */
   public function loadCollection($name) {
+    if (!is_string($name)) {
+      return NULL;
+    }    
     $db = \Drupal::database();
-    $result = $db->select($this->table,'n')->condition('n.name',$name)->execute();
-    $first = $result->fetch();
+    $result = $db->select($this->table, 'n')
+      ->condition('n.name', $name)
+      ->fields('n', ['name', 'plugin_id'])
+      ->execute();
+    $first = $result->fetchAssoc();
     if (!$first) {
       return NULL;
     }

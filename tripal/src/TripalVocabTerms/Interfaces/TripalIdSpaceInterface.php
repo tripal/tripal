@@ -65,13 +65,21 @@ interface TripalIdSpaceInterface extends TripalCollectionPluginInterface {
    * @return array
    *   Array of matching Drupal\tripal\TripalVocabTerms\TripalTerm instances.
    */
-  public function getTerms($name,$options);
+  public function getTerms($name, $options);
 
   /**
    * Sets the default vocabulary of this id space to the given vocabulary name.
+   * 
+   * Removes this id space from its previous default vocabulary if one is set
+   * and then adds this id space to its new default vocabulary if the given name
+   * is not NULL. It is still the responsibility of an implementation to
+   * actually save changes to its default vocabulary.
    *
    * @param string name
    *   The vocabulary name.
+   *   
+   * @return bool
+   *   True on success or false otherwise.
    */
   public function setDefaultVocabulary($name);
 
@@ -85,36 +93,36 @@ interface TripalIdSpaceInterface extends TripalCollectionPluginInterface {
   public function getDefaultVocabulary();
 
   /**
-   * Saves the given term to this id space with the given options array and
-   * optional parent. If the given parent is NULL and the given term is new then
-   * it is added as a root term of this id space. If the given parent is NULL,
-   * the given term already exists, and the appropriate option was given to
-   * update the existing term's parent then it is moved to a root term of this
-   * id space.
+   * Saves a term to its ID space data store.
+   * 
+   * If a term is new in the ID space and has no parents then it will
+   * be considered a "root" term for the vocabulary. If the term
+   * has parents, use the `addParents()` function to add them before
+   * calling this function.  If the term is not new and already exists
+   * you only need to provide parents if you need to change the parentage.
+   * If the `updateParent` option is True then all parents of an existing
+   * term will be removed and will be updated to the parents provided.  If
+   * `updateParent` is False and no parents are provided then no change
+   * is made to the parent relationships.   
    *
-   * The given options array has the following recognized keys:
+   * The options array accepts the following recognized keys:
    *
-   * failIfExists(boolean): True to force this method to fail if the given term
-   * already exists else false to update the term if it already exists. The
+   * failIfExists(boolean): True to force this method to fail if this term
+   * already exists else false to update this term if it already exists. The
    * default is false.
    *
-   * updateParent(boolean): True to update The given term's parent to the one
-   * given or false to not update the existing term's parent. If the given term
+   * updateParent(boolean): True to update this term's parent to the one
+   * given or false to not update this existing term's parent. If this term
    * is new this has no effect. The default is false.
-   *
-   * @param Drupal\tripal\TripalVocabTerms\TripalTerm $term
-   *   The term.
    *
    * @param array $options
    *   The options array.
    *
-   * @param Drupal\tripal\TripalVocabTerms\TripalTerm|NULL $parent
-   *   The parent term or NULL.
-   *
    * @return bool
    *   True on success or false otherwise.
    */
-  public function saveTerm($term,$options,$parent = NULL);
+  public function saveTerm($term, $options);
+    
 
   /**
    * Removes the term with the given accession from this id space. All children
@@ -144,7 +152,30 @@ interface TripalIdSpaceInterface extends TripalCollectionPluginInterface {
    *
    * @param string $prefix
    *   The URL prefix.
+   *   
+   * @return bool
+   *   True if the value was set or false otherwise.
    */
   public function setURLPrefix($prefix);
+  
+  
+  /**
+   * Returns the description of this id space.
+   *
+   * @return string
+   *   The description.
+   */
+  public function getDescription();
+  
+  /**
+   * Sets the description of this id space.
+   *
+   * @param string $description
+   *   The description.
+   *   
+   * @return bool
+   *   True if the value was set or false otherwise.
+   */
+  public function setDescription($description);
 
 }
