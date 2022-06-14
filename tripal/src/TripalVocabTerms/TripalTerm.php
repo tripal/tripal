@@ -15,8 +15,7 @@ class TripalTerm {
    * 
    * Use the isValid() function to make sure the term is valid
    * before saving. A term must have the following values set to be 
-   * valid:  name, idSpace, idSpace_plugin, vocabulary, vocabulary_plugin,
-   * accession.
+   * valid:  name, idSpace, vocabulary, and  accession.
    * 
    * The $details argument accepts the following keys and values
    * 
@@ -25,10 +24,8 @@ class TripalTerm {
    * - is_obsolete: (bool) True if the term is obsolete. Default is False.
    * - is_relationship_type: (bool) True if the term is a relationship type. 
    *   Default is False.
-   * - idSpace: (array) a tuple with two values: the ID space and the 
-   *   Drupal plugin ID for the ID space.
-   * - vocabulary: (array) a tuple with the vocabulary name and the 
-   *    Drupal plugin ID for the vocabulary.
+   * - idSpace: (array) the ID space name.
+   * - vocabulary: (array) the vocabulary name.
    * - parents: (array) an array of parents where each element
    *   in the array is a tuple of two values: a TripalTerm for the parent 
    *   and a second TripalTerm for the relationship.
@@ -58,8 +55,6 @@ class TripalTerm {
     $this->is_relationship_type = False;
     $this->idSpace = '';
     $this->vocabulary = '';    
-    $this->idSpace_plugin = NULL;
-    $this->vocabulary_plugin = NULL;    
     $this->parents = [];
     $this->altIds = [];
     $this->synonyms = [];
@@ -70,12 +65,6 @@ class TripalTerm {
     }
     
     // Check for problems in the incoming $details argument.
-    if (array_key_exists('idSpace', $details) and count($details['idSpace']) != 2) {
-      $this->messageLogger->error('TripalTerm::__construct(). You must provide both an idSpace name and the Drupal ID space plugin ID.');         
-    }
-    if (array_key_exists('vocabulary', $details) and count($details['vocabulary']) != 2) {
-      $this->messageLogger->error('TripalTerm::__construct(). You must provide both an vocabulary name and the Drupal vocabulary plugin ID.');
-    }
     if (array_key_exists('is_obsolete', $details) and !is_bool($details['is_obsolete'])) {
       $this->messageLogger->error('TripalTerm::__construct(). The is_obsolete value must be boolean.');
     }
@@ -94,10 +83,10 @@ class TripalTerm {
       $this->setDefinition($details['definition']);
     }
     if (array_key_exists('idSpace', $details)) {
-      $this->setIdSpace($details['idSpace'][0], $details['idSpace'][1]);          
+      $this->setIdSpace($details['idSpace']);          
     }
     if (array_key_exists('vocabulary', $details)) {
-      $this->setVocabulary($details['vocabulary'][0], $details['vocabulary'][1]);
+      $this->setVocabulary($details['vocabulary']);
     }
     if (array_key_exists('synonyms', $details) and is_array($details['synonyms'])) {
       foreach ($details['synonyms'] as $synonym) {
@@ -158,45 +147,32 @@ class TripalTerm {
    *
    * @param string setIdSpace
    *   The name of the ID space.
-   *
-   * @param string $pluginID
-   *   The Drupal plugin ID name for the ID space..
    */
-  public function setIdSpace(string $idSpace, string $pluginId) {
-    // @todo add checks to make sure the $idSpace and $pluginIds ar valid.
-    if (empty($idSpace)) {
-      $this->messageLogger->error('TripalTerm::setIdSpace(). An idSpace must be set.');
-      return;
-    }
-    if (empty($pluginId)) {
-      $this->messageLogger->error('TripalTerm::setIdSpace(). A pluginID must be set.');
+  public function setIdSpace(string $idSpace) {
+    $manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+    $idsp = $manager->loadCollection($idSpace);
+    if (!$idsp) {
+      $this->messageLogger->error('TripalTerm::setIdSpace(). The specified ID space does not exist.');
       return;
     }
     $this->idSpace = $idSpace;
-    $this->idSpace_plugin = $pluginId;
   }
   
   /**
    * Sets the vocabulary for the term.
    * 
    * @param string $vocabulary
-   *   The name of the vocabulary.
-   *   
-   * @param string $pluginID
-   *   The Drupal plugin ID name for the vocabulary. 
+   *   The name of the vocabulary.   
    */
-  public function setVocabulary(string $vocabulary, string $pluginId) {
-    // @todo add checks to make sure the $vocabulary and $pluginIds ar valid.
-    if (empty($vocabulary)) {
-      $this->messageLogger->error('TripalTerm::setVocabulary(). A vocabulary must be set.');
-      return;
-    }
-    if (empty($pluginId)) {
-      $this->messageLogger->error('TripalTerm::setVocabulary(). A pluginID must be set.');
-      return;
-    }
+  public function setVocabulary(string $vocabulary) {
+    
+    $manager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
+    $vocab = $manager->loadCollection($vocabulary);
+    if (!$vocab) {
+      $this->messageLogger->error('TripalTerm::setVocabulary(). The specified vocabulary does not exist.');
+      return;      
+    }    
     $this->vocabulary = $vocabulary;
-    $this->vocabulary_plugin = $pluginId;
   }
   
   /**
@@ -295,7 +271,7 @@ class TripalTerm {
    */
   public function getIdSpaceObject() {
     $manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    return $manager->loadCollection($this->idSpace, $this->idSpace_plugin);
+    return $manager->loadCollection($this->idSpace);
   }
   
   /**
@@ -306,7 +282,7 @@ class TripalTerm {
    */
   public function getVocabularyObject() {
     $manager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
-    return $manager->loadCollection($this->vocabulary, $this->vocabulary_plugin);
+    return $manager->loadCollection($this->vocabulary);
   }
   
   /**
@@ -732,13 +708,6 @@ class TripalTerm {
   private $idSpace;
   
   /**
-   * The plugin ID for the ID space.
-   * 
-   * @var string
-   */
-  private $idSpace_plugin;  
-
-  /**
    * The term accession.
    *
    * @var string
@@ -752,12 +721,6 @@ class TripalTerm {
    */
   private $vocabulary;
   
-  /**
-   * The plugin ID for the vocabulary.
-   *
-   * @var string
-   */
-  private $vocabulary_plugin;
   
   /**
    * An array of alternate IDs for this term. 

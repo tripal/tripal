@@ -426,8 +426,8 @@ class ChadoIdSpace extends TripalIdSpaceBase {
   /**
    * {@inheritdoc}
    */
-  public function setDefaultVocabulary($name, $pluginId) {
-    $retval = parent::setDefaultVocabulary($name, $pluginId);
+  public function setDefaultVocabulary($name) {
+    $retval = parent::setDefaultVocabulary($name);
     if ($retval === True) {
       $this->default_vocabulary = $name;
     }

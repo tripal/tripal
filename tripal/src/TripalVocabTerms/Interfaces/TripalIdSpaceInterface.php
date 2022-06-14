@@ -78,13 +78,10 @@ interface TripalIdSpaceInterface extends TripalCollectionPluginInterface {
    * @param string name
    *   The vocabulary name.
    *   
-   * @param string $pluginId
-   *   The plugin id.
-   *   
    * @return bool
    *   True on success or false otherwise.
    */
-  public function setDefaultVocabulary($name, $pluginId);
+  public function setDefaultVocabulary($name);
 
   /**
    * Returns this id space's default vocabulary name or NULL if no default has

@@ -130,7 +130,7 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
   public function getCollectionList() {
     $names = [];
     $db = \Drupal::database();
-    $result = $db->select($this->table, 'n')->fields('n',['name'])->execute();
+    $result = $db->select($this->table, 'n')->fields('n', ['name'])->execute();
     foreach ($result as $record) {
       $names[] = $record->name;
     }
@@ -156,7 +156,7 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
       ->condition('n.name', $name)
       ->fields('n', ['name', 'plugin_id'])
       ->execute();
-    $first = $result->fetchObject();
+    $first = $result->fetchAssoc();
     if (!$first) {
       return NULL;
     }

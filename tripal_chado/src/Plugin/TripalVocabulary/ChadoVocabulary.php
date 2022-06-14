@@ -182,7 +182,7 @@ class ChadoVocabulary extends TripalVocabularyBase {
     // Get the ID collection for this idSpace and save it for future
     // reference, then add the idSpace to our list.
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    $id = $idsmanager->loadCollection($idSpace, 'chado_id_space');
+    $id = $idsmanager->loadCollection($idSpace);
     if ($id) {      
       $id_spaces = $this->getIdSpacesCache();      
       $id_spaces[] = $idSpace;

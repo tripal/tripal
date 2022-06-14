@@ -184,7 +184,7 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
            
     // Destroy the ID Space and make sure it's gone from Tripal but not Chado.
     $idsmanager->removeCollection($GO_idspace);
-    $GO = $idsmanager->loadCollection($GO_idspace, "chado_id_space");
+    $GO = $idsmanager->loadCollection($GO_idspace);
     $this->assertTrue($GO === NULL, "The ID Space should be removed from Tripal.");
     $db = $this->getDB($GO_idspace);
     $this->assertTrue($db['urlprefix'] == 'http://replace.me/', "The ID Space was removed from Tripal but should not have been removed from Chado.");
@@ -336,8 +336,8 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     $rdfs_id->setDefaultVocabulary('rdfs', 'chado_vocabulary');
     $comment = new TripalTerm();
     $comment->setName('comment');
-    $comment->setIdSpace('rdfs', 'chado_id_space');
-    $comment->setVocabulary('rdfs', 'chado_vocabulary');
+    $comment->setIdSpace('rdfs');
+    $comment->setVocabulary('rdfs');
     $comment->setAccession('comment');    
     $this->assertTrue($comment->getName() == 'comment', 'The "comment" TripalTerm returned an incorrect name.');
     $this->assertTrue($comment->getAccession() == 'comment', 'The "comment" TripalTerm returned an incorrect accession.');
@@ -349,8 +349,8 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     // Create a parent term using the built-in setters.
     $parent = new TripalTerm();
     $parent->setName('biological_process');
-    $parent->setIdSpace('GO', 'chado_id_space');
-    $parent->setVocabulary('biological_process', 'chado_vocabulary');
+    $parent->setIdSpace('GO');
+    $parent->setVocabulary('biological_process');
     $parent->setAccession('0008150');
     $parent_definition = 'A biological process represents a specific objective that the organism is ' .
       'genetically programmed to achieve. Biological processes are often described by their outcome ' .
@@ -408,8 +408,8 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     // Recreate the term using the constructor instead of the setters.   
     $parent = new TripalTerm([
       'name' => 'biological_process',
-      'idSpace' => ['GO', 'chado_id_space'],
-      'vocabulary' => ['biological_process', 'chado_vocabulary'],
+      'idSpace' => 'GO',
+      'vocabulary' => 'biological_process',
       'accession' => '0008150',
       'definition' => $parent_definition,
       'altIDs' => [
@@ -463,8 +463,8 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     // Next create a relationship type term.
     $is_a = new TripalTerm();
     $is_a->setName('is_a');
-    $is_a->setIdSpace('GO', 'chado_id_space');
-    $is_a->setVocabulary('biological_process', 'chado_vocabulary');
+    $is_a->setIdSpace('GO');
+    $is_a->setVocabulary('biological_process');
     $is_a->setAccession('is_a');    
     $is_a->setIsRelationshipType(True);
     $this->assertTrue($is_a->isRelationshipType(), 'The "is_a" TripalTerm failed to indicate it is a relationship term.');
@@ -472,8 +472,8 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     // Next create a child term and set it's parent.
     $child = new TripalTerm();
     $child->setName('biological phase');
-    $child->setIdSpace('GO', 'chado_id_space');
-    $child->setVocabulary('biological_process', 'chado_vocabulary');
+    $child->setIdSpace('GO');
+    $child->setVocabulary('biological_process');
     $child->setAccession('0044848');    
     $child->setDefinition('A distinct period or stage in a biological process or cycle.');
     $child_comment = 'Note that phases are is_a disjoint from other biological processes. ' . 
@@ -494,8 +494,8 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     // Recreate the parent relationship using the constructor.
     $child = new TripalTerm([
       'name' => 'biological phase',
-      'idSpace' => ['GO', 'chado_id_space'],
-      'vocabulary' => ['biological_process', 'chado_vocabulary'],
+      'idSpace' => 'GO',
+      'vocabulary' => 'biological_process',
       'definition' => 'A distinct period or stage in a biological process or cycle.',
       'accession' => '0044848',
       'properties' => [
@@ -520,9 +520,9 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     $this->assertFalse($dummy->isValid(), 'The dummy TripalTerm reports it is valid when it is not (Test 1).');
     $dummy->setName('dummy');
     $this->assertFalse($dummy->isValid(), 'The dummy TripalTerm reports it is valid when it is not (Test 2).');
-    $dummy->setIdSpace('GO', 'chado_id_space');
+    $dummy->setIdSpace('GO');
     $this->assertFalse($dummy->isValid(), 'The dummy TripalTerm reports it is valid when it is not (Test 3).');
-    $dummy->setVocabulary('GO', 'chado_vocabulary');
+    $dummy->setVocabulary('biological_process');
     $this->assertFalse($dummy->isValid(), 'The dummy TripalTerm reports it is valid when it is not (Test 4).');
     $dummy->setAccession('dummy');
     $this->assertTrue($dummy->isValid(), 'The dummy TripalTerm reports it is not valid when it is.');
