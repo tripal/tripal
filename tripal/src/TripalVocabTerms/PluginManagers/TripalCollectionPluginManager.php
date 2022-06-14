@@ -70,7 +70,7 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
     }
     
     $clist = $this->getCollectionList();        
-    if (in_array($name,$clist)) {
+    if (in_array($name, $clist)) {
       return NULL;
     }
     $db = \Drupal::database();
@@ -144,26 +144,23 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
    * @param string $name
    *   The name.
    *
-   * @param string $pluginId
-   *   The plugin id.
-   *   
    * @return Drupal\tripal\TripalVocabTerms\TripalCollectionPluginBase|NULL
    *   The loaded collection plugin or NULL.
    */
-  public function loadCollection($name, $pluginId) {
+  public function loadCollection($name) {
     if (!is_string($name)) {
       return NULL;
     }    
     $db = \Drupal::database();
     $result = $db->select($this->table, 'n')
       ->condition('n.name', $name)
-      ->fields('n', ['name'])
+      ->fields('n', ['name', 'plugin_id'])
       ->execute();
     $first = $result->fetchObject();
     if (!$first) {
       return NULL;
     }
-    $collection = $this->createInstance($pluginId, ["collection_name" => $name]);
+    $collection = $this->createInstance($first["plugin_id"], ["collection_name" => $name]);
     return $collection;
   }
 
