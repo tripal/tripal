@@ -1,14 +1,14 @@
 <?php
 
-namespace Drupal\Tests\tripal_biodb\Functional\Database\Subclass;
+namespace Drupal\Tests\tripal\Functional\TripalDBX\Subclass;
 
-use Drupal\tripal_biodb\Database\BioConnection;
-use Drupal\Tests\tripal_biodb\Functional\Database\Subclass\BioSchemaFake;
+use Drupal\tripal\TripalDBX\TripalDbxConnection;
+use Drupal\Tests\tripal\Functional\TripalDBX\Subclass\TripalDbxSchemaFake;
 
 /**
  * Fake connection class.
  */
-class BioConnectionFake extends BioConnection {
+class TripalDbxConnectionFake extends TripalDbxConnection {
 
   /**
    * {@inheritdoc}
@@ -30,12 +30,12 @@ class BioConnectionFake extends BioConnection {
   /**
    * {@inheritdoc}
    */
-  public function getBioClass($class) :string {
+  public function getTripalDbxClass($class) :string {
     static $classes = [
-      'Schema' => BioSchemaFake::class,
+      'Schema' => TripalDbxSchemaFake::class,
     ];
     if (!array_key_exists($class, $classes)) {
-      throw new ConnectionException("Invalid BioDb class '$class'.");
+      throw new ConnectionException("Invalid Tripal DBX class '$class'.");
     }
     return $classes[$class];
   }

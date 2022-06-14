@@ -2,8 +2,8 @@
 
 namespace Drupal\tripal_chado\Database;
 
-use Drupal\tripal_biodb\Database\BioConnection;
-use Drupal\tripal_biodb\Exception\ConnectionException;
+use Drupal\tripal\TripalDBX\TripalDbxConnection;
+use Drupal\tripal\TripalDBX\Exceptions\ConnectionException;
 use Drupal\tripal_chado\Database\ChadoSchema;
 
 /**
@@ -28,7 +28,7 @@ use Drupal\tripal_chado\Database\ChadoSchema;
  * where the variable $table_name contains the name of the table you want to
  * retireve.  The getTableDef method determines the appropriate version of
  * Chado but it can be forced through the $parameters array.
- * See \Drupal\tripal_chado\Database\BioSchema::getTableDef for details.
+ * See \Drupal\tripal_chado\Database\ChadoSchema::getTableDef for details.
  *
  * Additionally, here are some other examples of how to use this class:
  * @code
@@ -48,7 +48,7 @@ use Drupal\tripal_chado\Database\ChadoSchema;
  * $compliant = $chado->schema()->checkPrimaryKey('organism');
  * @endcode
  */
-class ChadoConnection extends BioConnection {
+class ChadoConnection extends TripalDbxConnection {
 
   /**
    * Reserved schema name of the Chado schema used for testing.
@@ -85,12 +85,12 @@ class ChadoConnection extends BioConnection {
   /**
    * {@inheritdoc}
    */
-  public function getBioClass($class) :string {
+  public function getTripalDbxClass($class) :string {
     static $classes = [
       'Schema' => ChadoSchema::class,
     ];
     if (!array_key_exists($class, $classes)) {
-      throw new ConnectionException("Invalid Bio class '$class'.");
+      throw new ConnectionException("Invalid Tripal DBX class '$class'.");
     }
     return $classes[$class];
   }
@@ -191,7 +191,7 @@ class ChadoConnection extends BioConnection {
         if ($prop_exists) {
           // Get it from chadoprop table.
           // First get a quoted name for query.
-          $quoted_schema_name = $this->bioTool->quoteDbObjectId($schema_name);
+          $quoted_schema_name = $this->tripalDbxApi->quoteDbObjectId($schema_name);
           $sql_query = "
             SELECT value
             FROM $quoted_schema_name.chadoprop cp
@@ -269,7 +269,7 @@ class ChadoConnection extends BioConnection {
    *   "is_test": if it is a test schema, the key of the corresponding prefix
    *     as it is set in the config and FALSE otherwise;
    *   "is_reserved": the value returned by
-   *     Drupal\tripal_biodb\Database\BioDbTool::isSchemaReserved;
+   *     Drupal\tripal\TripalDBX\TripalDbx::isSchemaReserved;
    *   "has_data": TRUE if the schema contains more than just default records;
    *   "size": size of the schema in bytes;
    *   "integration": FALSE if not integrated with Tripal and an array
@@ -282,7 +282,7 @@ class ChadoConnection extends BioConnection {
     // Get test schema prefix. If none set, we use '0' so we can test the prefix
     // and avoid false-positive since no schema name is allowed to start by a
     // number.
-    $test_prefixes = \Drupal::config('tripal_biodb.settings')
+    $test_prefixes = \Drupal::config('tripaldbx.settings')
       ->get('test_schema_base_names', '0')
     ;
     // Get default schema name.
@@ -318,7 +318,7 @@ class ChadoConnection extends BioConnection {
       $version = $this->findVersion($schema->name);
       if ('' !== $version) {
         // Get size.
-        $schema_size = $this->bioTool->getSchemaSize($schema->name);
+        $schema_size = $this->tripalDbxApi->getSchemaSize($schema->name);
         $has_data = (static::EMPTY_CHADO_SIZE < $schema_size);
         // Check for test schema.
         $is_test = FALSE;
@@ -335,13 +335,13 @@ class ChadoConnection extends BioConnection {
           $is_default = TRUE;
         }
         // Add schema to available Chado schema list.
-        $schema_class = $this->getBioClass('Schema');
+        $schema_class = $this->getTripalDbxClass('Schema');
         $chado_schemas[$schema->name] = [
           'schema_name' => $schema->name,
           'version'     => $version,
           'is_default'  => $is_default,
           'is_test'     => $is_test,
-          'is_reserved' => $this->bioTool->isSchemaReserved($schema->name),
+          'is_reserved' => $this->tripalDbxApi->isSchemaReserved($schema->name),
           'has_data'    => $has_data,
           'size'        => $schema_size,
           'integration' => $integration,
@@ -362,7 +362,7 @@ class ChadoConnection extends BioConnection {
    */
   public static function removeAllTestSchemas() :void {
     // Get Chado test schema prefix.
-    $test_schema = \Drupal::config('tripal_biodb.settings')
+    $test_schema = \Drupal::config('tripaldbx.settings')
       ->get('test_schema_base_names', [])['chado']
     ;
     // Remove all matching schemas.

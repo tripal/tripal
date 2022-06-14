@@ -1,17 +1,25 @@
 <?php
 
-namespace Drupal\tripal_biodb\Database;
+namespace Drupal\tripal\TripalDBX;
 
-use Drupal\tripal_biodb\Exception\ConnectionException;
-use Drupal\tripal_biodb\Exception\SchemaException;
+use Drupal\tripal\TripalDBX\Exceptions\ConnectionException;
+use Drupal\tripal\TripalDBX\Exceptions\SchemaException;
 
 /**
- * Biological database tool.
+ * Tripal DBX
  *
- * This class provides static methods into a single location without the use of
- * globals.
+ * This class provides methods which form the Tripal DBX API.
+ * Specifically, this API focuses on extending Drupal to better handle cross
+ * database and cross schema querying.
+ *
+ * This class should be accessed through the tripal.dbx service
+ * and NOT initiated directly. For example,
+ *   $tripaldbx = \Drupal::service('tripal.dbx');
+ *
+ * Additional Note: This class makes use of static member variables/properties
+ * to avoid using global variables.
  */
-class BioDbTool {
+class TripalDbx {
 
   /**
    * Schema name validation regular expression.
@@ -40,6 +48,10 @@ class BioDbTool {
   /**
    * Reserved schema name patterns.
    *
+   * Schema names matching the given pattern will be considered invalid by
+   * ::isInvalidSchemaName and will not be allowed in TripalDbxConnection
+   * or TripalDbxSchema objects.
+   *
    * @var ?array
    */
   protected static $reservedSchemaPatterns;
@@ -49,17 +61,21 @@ class BioDbTool {
    *
    * Use:
    * @code
-   *   $bio_tool = \Drupal::service('tripal_biodb.tool');
-   *   $drupal_schema = $bio_tool->getDrupalSchemaName();
+   *   $tripaldbx = \Drupal::service('tripal.dbx');
+   *   $drupal_schema = $tripaldbx->getDrupalSchemaName();
    * @endcode
    *
    * @return string
    *   The name (non-empty string) of the schema used by Drupal installation.
    */
   public function getDrupalSchemaName() :string {
+
+    // We only need to look this up if it hasn't been set yet.
     if (!isset(static::$drupalSchema)) {
-      // Get Drupal schema name.
+
+      // Get Drupal connection details.
       $connection_options = \Drupal::database()->getConnectionOptions();
+
       // Check if Drupal has been installed in a specific schema other than
       // 'public'. If it is the case, Drupal database configuration 'prefix'
       // parameter will contain the schema name followed by a dot.
@@ -99,8 +115,8 @@ class BioDbTool {
    * Check that the given schema name is a valid schema name.
    *
    * Schema name validation can be altered through the configuration variable
-   * reserved_schema_patterns of tripal_biodb.settings. This configuration
-   * variable contains a list of regex with thier description, used to reserve
+   * reserved_schema_patterns of tripaldbx.settings. This configuration
+   * variable contains a list of regex with their description, used to reserve
    * schema name patterns. For instance, the key '_chado*' with the value
    * 'external (non-Drupal) chado instances' will make this function returns a
    * issue message saying that the pattern is reserved for 'external
@@ -112,8 +128,7 @@ class BioDbTool {
    *   function <module name>_install($is_syncing) {
    *     // Reserves 'myschema' schema in 'reserved_schema_patterns' settings.
    *     $config = \Drupal::service('config.factory')
-   *       ->getEditable('tripal_biodb.settings')
-   *     ;
+   *       ->getEditable('tripaldbx.settings');
    *     $reserved_schema_patterns = $config->get('reserved_schema_patterns') ?? [];
    *     $reserved_schema_patterns['myschema'] = 'my schema';
    *     $config->set('reserved_schema_patterns', $reserved_schema_patterns)->save();
@@ -122,7 +137,7 @@ class BioDbTool {
    *   function <module name>_uninstall() {
    *     // Unreserves 'myschema' schemas in 'reserved_schema_patterns' settings.
    *     $config = \Drupal::service('config.factory')
-   *       ->getEditable('tripal_biodb.settings')
+   *       ->getEditable('tripaldbx.settings')
    *     ;
    *     $reserved_schema_patterns = $config->get('reserved_schema_patterns') ?? [];
    *     unset($reserved_schema_patterns['myschema']);
@@ -133,8 +148,8 @@ class BioDbTool {
    * Use:
    * @code
    *   $schema_name = 'name_to_check';
-   *   $bio_tool = \Drupal::service('tripal_biodb.tool');
-   *   if ($issue = $bio_tool->isInvalidSchemaName($schema_name)) {
+   *   $tripaldbx = \Drupal::service('tripal.dbx');
+   *   if ($issue = $tripaldbx->isInvalidSchemaName($schema_name)) {
    *     throw new \Exception('Invalid schema name: ' . $issue);
    *   }
    * @endcode
@@ -164,26 +179,29 @@ class BioDbTool {
 
     $issue = '';
     // Make sure we have a valid schema name.
+    // -- Check the name is not too long.
     if (63 < strlen($schema_name)) {
       $issue =
         'The schema name is too long and must contain strictly less than 64 characters.'
       ;
     }
+    // -- Check it matches the set regex (i.e. does not contain illegal characters).
     elseif (!preg_match(static::SCHEMA_NAME_REGEXP, $schema_name)) {
       $issue =
         'The schema name must not begin with a number and only contain lower case letters, numbers, underscores and diacritical marks.'
       ;
     }
+    // -- Does not begin with a reserved prefix.
     elseif ((0 === strpos($schema_name, 'pg_')) && !$ignore_reservation) {
       $issue =
         'The schema name must not begin with "pg_" (PostgreSQL reserved prefix).'
       ;
     }
     if (!$ignore_reservation) {
-      // Check reserved patterns.
+      //  -- Check reserved patterns.
       // Note: other reserved patterns should be added by other extensions when
       // they are installed, through config modifications.
-      // See tripal_biodb_install() for an example.
+      // See tripal_install() for an example.
       static::initSchemaReservation($reload_config);
       if ($reserved = static::isSchemaReserved($schema_name)) {
         $pattern = array_key_first($reserved);
@@ -205,10 +223,9 @@ class BioDbTool {
    */
   protected function initSchemaReservation(bool $reload_config = FALSE) :void {
     if ($reload_config || !isset(static::$reservedSchemaPatterns)) {
-      $reserved_schema_patterns = \Drupal::config('tripal_biodb.settings')
+      $reserved_schema_patterns = \Drupal::config('tripaldbx.settings')
         ->get('reserved_schema_patterns')
-        ?? []
-      ;
+        ?? [];
       static::$reservedSchemaPatterns = $reserved_schema_patterns;
     }
   }
@@ -217,7 +234,7 @@ class BioDbTool {
    * Adds a schema name pattern for reservation.
    *
    * Schema names matching the given pattern will be considered invalid by
-   * ::isInvalidSchemaName and will not be allowed in BioConnection or BioSchema
+   * ::isInvalidSchemaName and will not be allowed in TripalDbxConnection or TripalDbxSchema
    * objects.
    *
    * @param string $pat_regex
@@ -234,7 +251,7 @@ class BioDbTool {
    *   The description of the reservation that may be displayed to users when a
    *   schema name is denied.
    *
-   * @throws \Drupal\tripal_biodb\Exception\SchemaException
+   * @throws \Drupal\tripal\TripalDBX\Exceptions\SchemaException
    *   if the pattern is empty or does not contain any valid schema name
    *   character.
    */
@@ -351,7 +368,7 @@ class BioDbTool {
    * @param string $object_id
    *  Object name to quote if needed.
    * @param ?\Drupal\Core\Database\Driver\pgsql\Connection $db
-   *   A biological database connection object.
+   *   A Drupal PostgreSQL or TripalDBX connection object.
    *   If NULL, current Drupal database is used.
    *
    * @return string
@@ -377,8 +394,8 @@ class BioDbTool {
    * Use:
    * @code
    *   $schema_name = 'name_to_test';
-   *   $bio_tool = \Drupal::service('tripal_biodb.tool');
-   *   if ($bio_tool->schemaExists($schema_name)) {
+   *   $tripaldbx = \Drupal::service('tripal.dbx');
+   *   if ($tripaldbx->schemaExists($schema_name)) {
    *     // Schema exists.
    *   }
    * @endcode
@@ -386,7 +403,7 @@ class BioDbTool {
    * @param string $schema_name
    *   Schema name.
    * @param ?\Drupal\Core\Database\Driver\pgsql\Connection $db
-   *   A biological database connection object.
+   *   A Drupal PostgreSQL or TripalDBX connection object.
    *   If NULL, current Drupal database is used.
    *
    * @return bool
@@ -399,8 +416,8 @@ class BioDbTool {
     $db = $db ?? \Drupal::database();
 
     // First make sure we have a valid schema name.
-    $bio_tool = \Drupal::service('tripal_biodb.tool');
-    $issue = $bio_tool->isInvalidSchemaName($schema_name, TRUE);
+    $tripaldbx = \Drupal::service('tripal.dbx');
+    $issue = $tripaldbx->isInvalidSchemaName($schema_name, TRUE);
     if (!empty($issue)) {
       return FALSE;
     }
@@ -429,14 +446,14 @@ class BioDbTool {
    * Use:
    * @code
    *   $schema_name = 'name_to_create';
-   *   $bio_tool = \Drupal::service('tripal_biodb.tool');
-   *   $bio_tool->createSchema($schema_name);
+   *   $tripaldbx = \Drupal::service('tripal.dbx');
+   *   $tripaldbx->createSchema($schema_name);
    * @endcode
    *
    * @param string $schema_name
    *   Name of schema to create.
    * @param ?\Drupal\Core\Database\Driver\pgsql\Connection $db
-   *   A biological database connection object.
+   *   A Drupal PostgreSQL or TripalDBX connection object.
    *   If NULL, current Drupal database is used.
    *
    * @throws \Drupal\Core\Database\DatabaseExceptionWrapper
@@ -446,8 +463,8 @@ class BioDbTool {
     ?\Drupal\Core\Database\Driver\pgsql\Connection $db = NULL
   ) :void {
     $db = $db ?? \Drupal::database();
-    $bio_tool = \Drupal::service('tripal_biodb.tool');
-    $schema_name_quoted = $bio_tool->quoteDbObjectId($schema_name);
+    $tripaldbx = \Drupal::service('tripal.dbx');
+    $schema_name_quoted = $tripaldbx->quoteDbObjectId($schema_name);
     // Create schema.
     $sql_query = "CREATE SCHEMA $schema_name_quoted;";
     $db->query($sql_query);
@@ -461,8 +478,8 @@ class BioDbTool {
    * @code
    *   $source_schema_name = 'source';
    *   $target_schema_name = 'target';
-   *   $bio_tool = \Drupal::service('tripal_biodb.tool');
-   *   $bio_tool->cloneSchema($source_schema_name, $target_schema_name);
+   *   $tripaldbx = \Drupal::service('tripal.dbx');
+   *   $tripaldbx->cloneSchema($source_schema_name, $target_schema_name);
    * @endcode
    *
    * @param string $source_schema
@@ -471,7 +488,7 @@ class BioDbTool {
    *   Destination schema that will be created and filled with a copy of
    *   $source_schema.
    * @param ?\Drupal\Core\Database\Driver\pgsql\Connection $db
-   *   A biological database connection object.
+   *   A Drupal PostgreSQL or TripalDBX connection object.
    *   If NULL, current Drupal database is used.
    *
    * @throws \Drupal\Core\Database\DatabaseExceptionWrapper
@@ -484,8 +501,8 @@ class BioDbTool {
     $db = $db ?? \Drupal::database();
 
     // Clone schema.
-    $bio_tool = \Drupal::service('tripal_biodb.tool');
-    $drupal_schema = $bio_tool->getDrupalSchemaName();
+    $tripaldbx = \Drupal::service('tripal.dbx');
+    $drupal_schema = $tripaldbx->getDrupalSchemaName();
     $sql_query =
       "SELECT $drupal_schema.tripal_clone_schema(:source_schema, :target_schema, TRUE, FALSE);"
     ;
@@ -505,8 +522,8 @@ class BioDbTool {
    * @code
    *   $old_schema_name = 'old';
    *   $new_schema_name = 'new';
-   *   $bio_tool = \Drupal::service('tripal_biodb.tool');
-   *   $bio_tool->renameSchema($old_schema_name, $new_schema_name);
+   *   $tripaldbx = \Drupal::service('tripal.dbx');
+   *   $tripaldbx->renameSchema($old_schema_name, $new_schema_name);
    * @endcode
    *
    * @param string $old_schema_name
@@ -514,7 +531,7 @@ class BioDbTool {
    * @param string $new_schema_name
    *   New name to use.
    * @param ?\Drupal\Core\Database\Driver\pgsql\Connection $db
-   *   A biological database connection object.
+   *   A Drupal PostgreSQL or Tripal DBX connection object.
    *   If NULL, current Drupal database is used.
    *
    * @throws \Drupal\Core\Database\DatabaseExceptionWrapper
@@ -527,9 +544,9 @@ class BioDbTool {
     $db = $db ?? \Drupal::database();
 
     // Quote schema names if needed.
-    $bio_tool = \Drupal::service('tripal_biodb.tool');
-    $old_schema_name_quoted = $bio_tool->quoteDbObjectId($old_schema_name);
-    $new_schema_name_quoted = $bio_tool->quoteDbObjectId($new_schema_name);
+    $tripaldbx = \Drupal::service('tripal.dbx');
+    $old_schema_name_quoted = $tripaldbx->quoteDbObjectId($old_schema_name);
+    $new_schema_name_quoted = $tripaldbx->quoteDbObjectId($new_schema_name);
 
     // Rename schema.
     $sql_query =
@@ -545,8 +562,8 @@ class BioDbTool {
    *
    * @code
    *   $schema_name = 'schema_to_delete';
-   *   $bio_tool = \Drupal::service('tripal_biodb.tool');
-   *   $bio_tool->dropSchema($schema_name);
+   *   $tripaldbx = \Drupal::service('tripal.dbx');
+   *   $tripaldbx->dropSchema($schema_name);
    * @endcode
    *
    * @param ?string $schema_name
@@ -554,7 +571,7 @@ class BioDbTool {
    * @param string $schema_name
    *   Schema name.
    * @param ?\Drupal\Core\Database\Driver\pgsql\Connection $db
-   *   A biological database connection object.
+   *   A Drupal PostgreSQL or Tripal DBX connection object.
    *   If NULL, current Drupal database is used.
    *
    * @throws \Drupal\Core\Database\DatabaseExceptionWrapper
@@ -564,8 +581,8 @@ class BioDbTool {
     ?\Drupal\Core\Database\Driver\pgsql\Connection $db = NULL
   ) :void {
     $db = $db ?? \Drupal::database();
-    $bio_tool = \Drupal::service('tripal_biodb.tool');
-    $schema_name_quoted = $bio_tool->quoteDbObjectId($schema_name);
+    $tripaldbx = \Drupal::service('tripal.dbx');
+    $schema_name_quoted = $tripaldbx->quoteDbObjectId($schema_name);
     // Drop schema.
     $sql_query = "DROP SCHEMA $schema_name_quoted CASCADE;";
     $db->query($sql_query);
@@ -576,20 +593,20 @@ class BioDbTool {
    *
    * @code
    *   $schema_name = 'schema';
-   *   $bio_tool = \Drupal::service('tripal_biodb.tool');
-   *   $schema_size = $bio_tool->getSchemaSize($schema_name);
+   *   $tripaldbx = \Drupal::service('tripal.dbx');
+   *   $schema_size = $tripaldbx->getSchemaSize($schema_name);
    * @endcode
    *
    * @param string $schema_name
    *   Schema name.
    * @param ?\Drupal\Core\Database\Driver\pgsql\Connection $db
-   *   A biological database connection object.
+   *   A Drupal PostgreSQL or Tripal DBX connection object.
    *   If NULL, current Drupal database is used.
    *
    * @return integer
    *   The size in bytes of the schema or 0 if the size is not available.
    *
-   * @throws \Drupal\tripal_biodb\Exception\SchemaException
+   * @throws \Drupal\tripal\TripalDBX\Exceptions\SchemaException
    */
   public function getSchemaSize(
     string $schema_name,
@@ -620,21 +637,21 @@ class BioDbTool {
   }
 
   /**
-   * Returns the size in bytes of a biological database.
+   * Returns the size in bytes of a TripalDBX managed database.
    *
    * @code
-   *   $bio_tool = \Drupal::service('tripal_biodb.tool');
-   *   $db_size = $bio_tool->getDatabaseSize();
+   *   $tripaldbx = \Drupal::service('tripal.dbx');
+   *   $db_size = $tripaldbx->getDatabaseSize();
    * @endcode
    *
    * @param ?\Drupal\Core\Database\Driver\pgsql\Connection $db
-   *   A biological database connection object.
+   *   A Drupal PostgreSQL or Tripal DBX connection object.
    *
    * @return int
    *   The size in bytes of the database or 0 if the size is not available.
    */
   public function getDatabaseSize(
-    ?\Drupal\Core\Database\Driver\pgsql\Connection $db = NULL
+    ?\Drupal\Core\Database\Connection $db = NULL
   ) :int {
     $db = $db ?? \Drupal::database();
     $db_size = 0;
@@ -651,11 +668,55 @@ class BioDbTool {
   }
 
   /**
+   * Run an SQL file.
+   *
+   * @param string $sql_file
+   *   Path to an SQL file.
+   * @param array $replacements
+   *   An array of search-and-replace values used with preg_replace() to replace
+   *   placeholders in the SQL file with replacement values. The 'search' values
+   *   will be searched and replaced with the 'replace' values.
+   *   Default: [] (no replacements).
+   * @param ?\Drupal\Core\Database\Connection $db
+   *   A connection to the database you want to run the SQL file on.
+   */
+  public function runSqlFile(
+    string $sql_file,
+    array $replacements,
+    ?\Drupal\Core\Database\Connection $db = NULL
+  ) {
+
+    // Get the default database.
+    $logger = \Drupal::service('tripal.logger');
+    $db = $db ?? \Drupal::database();
+
+    // Retrieve the SQL file.
+    $sql = file_get_contents($sql_file);
+    if (!$sql) {
+      $message = "Run SQL file failed: unable to read '$sql_file' file content.";
+      $logger->error($message);
+      throw new \Exception($message);
+    }
+
+    // Remove starting comments (not the ones in functions).
+    $replacements['search'][] = '/^--[^\n]*\n(?:\s*\n)*/m';
+    $replacements['replace'][] = '';
+    $sql = preg_replace($replacements['search'], $replacements['replace'], $sql);
+    $x = $db->query(
+      $sql,
+      [],
+      [
+        'allow_delimiter_in_query' => TRUE,
+      ]
+    );
+  }
+
+  /**
    * Turns a table DDL string into a more usable structure.
    *
    * @param string $table_ddl
    *   A string containing table definition as returned by
-   *   \Drupal\tripal_biodb\Database\BioSchema::getTableDdl().
+   *   \Drupal\tripal\TripalDBX\TripalDbxSchema::getTableDdl().
    *
    * @returns array
    *   An associative array with the following structure:
@@ -879,7 +940,7 @@ class BioDbTool {
    *
    * @param string $table_ddl
    *   A string containing table definition as returned by
-   *   \Drupal\tripal_biodb\Database\BioSchema\BioSchema::getTableDdl().
+   *   \Drupal\tripal\TripalDBX\TripalDbxSchema::getTableDdl().
    *
    * @return array
    *   An array with details of the table reflecting what is in database.
@@ -888,8 +949,8 @@ class BioDbTool {
    * @see https://api.drupal.org/api/drupal/core!lib!Drupal!Core!Database!database.api.php/group/schemaapi/9.3.x
    */
   public function parseTableDdlToDrupal(string $table_ddl) :array {
-    $bio_tool = \Drupal::service('tripal_biodb.tool');
-    $table_structure = $bio_tool->parseTableDdl($table_ddl);
+    $tripaldbx = \Drupal::service('tripal.dbx');
+    $table_structure = $tripaldbx->parseTableDdl($table_ddl);
     // Start with the name of the table.
     $table_def = [];
 

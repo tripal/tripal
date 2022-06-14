@@ -5,7 +5,7 @@ namespace Drupal\tripal_chado\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
-use Drupal\tripal_biodb\Database\BioDbTool;
+use Drupal\tripal\TripalDBX\TripalDbx;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\Task\ChadoInstaller;
 
@@ -225,7 +225,7 @@ class ChadoInstallForm extends FormBase {
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
     $values = $form_state->getValues();
-    $bio_tool = \Drupal::service('tripal_biodb.tool');
+    $tripal_dbx = \Drupal::service('tripal.dbx');
 
     // We do not want to allow re-installation of Chado if other
     // Tripal modules are installed. This is because the install files
@@ -241,7 +241,7 @@ class ChadoInstallForm extends FormBase {
     // react.
 
     // Check for schema name issues.
-    $issue = $bio_tool->isInvalidSchemaName($values['schema_name']);
+    $issue = $tripal_dbx->isInvalidSchemaName($values['schema_name']);
     if ($issue) {
       $form_state->setErrorByName(
         'schema_name',
