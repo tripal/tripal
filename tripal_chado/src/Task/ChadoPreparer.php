@@ -205,16 +205,20 @@ class ChadoPreparer extends ChadoTaskBase {
     // tripal_custom_tables table.
     // \Drupal::database()->select
     $db = \Drupal::database();
-    $db->delete('tripal_custom_tables')
-    ->condition('table_name', [
+    $table_names = [
       'analysisfeatureprop',
       'featuremap_dbxref',
       'contactprop',
       'featuremapprop',
       'featureposprop',
       'pubauthor_contact',
-    ])
-    ->execute();
+    ];
+    for ($i=0; $i<count($table_names); $i++) {
+      $table_name = $table_names[$i];
+      $db->delete('tripal_custom_tables')
+      ->condition('table_name', $table_name)
+      ->execute();
+    }
   }
 
   /**
