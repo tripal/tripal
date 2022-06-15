@@ -18,32 +18,11 @@ class ChadoCustomTableForm extends FormBase {
   }
 
 
-/**
- * A Form to Create/Edit a Custom table.
- *
- * @param $form_state
- *   The current state of the form (Form API)
- * @param $table_id
- *   The unique ID of the Custom table to Edit or NULL if creating a new table
- *
- * @return
- *   A form array (Form API)
- *
- */
-  // function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL) {
-    public function buildForm(array $form, FormStateInterface $form_state, $table_id = null) {    
-    // set the breadcrumb
+  /**
+   * A Form to Create/Edit a Custom table.
+   */
+  public function buildForm(array $form, FormStateInterface $form_state, $table_id = null) {     
     
-    $breadcrumb = [];
-    $breadcrumb[] = Link::fromTextAndUrl('Home', Url::fromRoute('<front>'));
-    $breadcrumb[] = Link::fromTextAndUrl('Administration', Url::fromUserInput('/admin'));
-    $breadcrumb[] = Link::fromTextAndUrl('Tripal', Url::fromUserInput('/admin/tripal'));
-    $breadcrumb[] = Link::fromTextAndUrl('Chado Schema', Url::fromUserInput('/admin/tripal/storage/chado'));
-    $breadcrumb[] = Link::fromTextAndUrl('Custom Tables', Url::fromUserInput('/admin/tripal/storage/chado/custom_tables'));
-    // TODO D9
-    // drupal_set_breadcrumb($breadcrumb);
-    
-  
     if (!$table_id) {
       $action = 'Add';
     }
@@ -210,11 +189,8 @@ class ChadoCustomTableForm extends FormBase {
   }
   
   /**
-   * Implements hook_validate().
    * Validate the Create/Edit custom table form.
-   *
    */
-   //function tripal_custom_tables_form_validate($form, &$form_state) {
   public function validateForm(array &$form, FormStateInterface $form_state) { 
     $values = $form_state->getValues();   
     $action = $values['action'];
@@ -226,10 +202,9 @@ class ChadoCustomTableForm extends FormBase {
       $form_state->setErrorByName($values['schema'], t('Schema array field is required.'));
     }
   
-    // make sure the array is valid
+    // Make sure the array is valid.
     $schema_array = [];
     if ($schema) {
-      // $success = preg_match('/^\s*array/', $schema);
       $success = true;
       if (!$success) {
         $form_state->setErrorByName($values['schema'],
@@ -245,15 +220,16 @@ class ChadoCustomTableForm extends FormBase {
           $form_state->setErrorByName('schema', t("The schema array must have key named 'table'"));
         }
   
-        // validate the contents of the array
+        // Validate the contents of the array.
         $error = chado_validate_custom_table_schema($schema_array);
         if ($error) {
           $form_state->setErrorByName('schema', $error);
         }
   
         if ($action == 'Edit') {
-          // see if the table name has changed. If so, then check to make sure
-          // it doesn't already exists. We don't want to drop a table we didn't mean to
+          // See if the table name has changed. If so, then check to make sure
+          // it doesn't already exists. We don't want to drop a table we 
+          // didn't mean to.
           $sql = "SELECT * FROM tripal_custom_tables WHERE table_id = :table_id";
           $results = chado_query($sql, [':table_id' => $table_id]);
           $ct = $results->fetchObject();
@@ -270,14 +246,10 @@ class ChadoCustomTableForm extends FormBase {
   }
   
   /**
-   * Submit the Create/Edit Custom table form
-   * Implements hook_form_submit().
-   *
+   * Submit the Create/Edit Custom table form.
    */
-  // function tripal_custom_tables_form_submit($form, &$form_state) {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $values = $form_state->getValues();
-    $ret = [];
     $action = $values['action'];
     $table_id = $values['table_id'];
     $schema = $values['schema'];
@@ -315,10 +287,7 @@ class ChadoCustomTableForm extends FormBase {
     }
     else {
       drupal_set_message(t("No action performed."));
-    }
-  
-    // drupal_goto("admin/tripal/storage/chado/custom_tables");
-
+    }  
     $response = new RedirectResponse(\Drupal\Core\Url::fromUserInput('/admin/tripal/storage/chado/custom_tables')->toString());
     $response->send();    
   }

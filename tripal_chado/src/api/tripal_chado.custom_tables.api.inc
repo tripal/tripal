@@ -197,10 +197,8 @@ function chado_create_custom_table(string $table, array $schema, bool $skip_if_e
     // Recreate the table if it exists, if it's in the list, and if we aren't 
     // skipping existing ones
     if ($table_exists and is_object($custom_table) and !$skip_if_exists) {
-      $chado->schema()->dropTable($table);
+      $chado->schema()->dropTable($table);     
       $chado->schema()->createTable($table, $schema);
-      // TODO: the old code unset "referring_tables" from $schema,
-      //       is this necessary?
     }
 
     // Add this table to tripal_custom_tables, dropping and re-adding if 
