@@ -115,13 +115,15 @@ interface TripalIdSpaceInterface extends TripalCollectionPluginInterface {
    * given or false to not update this existing term's parent. If this term
    * is new this has no effect. The default is false.
    *
+   * @param TripalTerm $term
+   *   The TripalTerm object to save.
    * @param array $options
    *   The options array.
    *
    * @return bool
    *   True on success or false otherwise.
    */
-  public function saveTerm($term, $options);
+  public function saveTerm(TripalTerm $term, $options);
     
 
   /**

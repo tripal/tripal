@@ -162,23 +162,83 @@ class ChadoIdSpace extends TripalIdSpaceBase {
       return NULL;
     }
     
+    // Get the term record.
     $cvterm = $this->chado->select('1:cvterm', 'CVT')
       ->join('1:dbxterm', 'DBX', 'CVT.dbxref_id = DBX.dbxref_id')
       ->join('1:cv', 'CV', 'CV.cv_id = CVT.cv_id')
       ->join('1:db', 'DB', 'DB.db_id = DBX.db_id')
-      ->fields('CVT', ['cv_id', 'name', 'definition'])
+      ->fields('CVT', ['cvterm_id', 'name', 'definition', 'is_obsolete', 'is_relationship_type'])
       ->condition('DB.name', $this->getName(), '=')
       ->condition('CV.name', $this->getDefaultVocab(), '=')
       ->condition('DBX.accession', $accession, '=')
-      ->execute();
+      ->execute()
+      ->fetchObject();
     if (!$cvterm) {
       return NULL;
     }
+    $term =  new TripalTerm([
+      'name' => $cvterm->name,
+      'definition' => $cvterm->definition,
+      'accession' => $accession,
+      'idSpace' => $this->getName(),
+      'vocabulary' => $this->getDefaultVocabulary()
+    ]);
     
-    $cvterm = $cvterm->fetchObject();
-    $term = new TripalTerm($cvterm->name, $cvterm->definition, 
-        $this->getName(), $accession, $this->getDefaultVocabulary());
-    return $term;
+    // Set the boolean values for the term.
+    if ($cvterm->is_obsolete) {
+      $term->isObsolete(True);
+    }
+    if ($cvterm->is_relationship_type) {
+      $term->isRelationshipType(True);
+    }
+    
+    // Are there synonyms?
+    $synonyms = $this->chado->select('1:cvtermsynonym', 'CVTS')
+      ->fields('CVTS', ['synonym', 'type_id'])
+      ->condition('CVTS.cvterm_id', $cvterm->cvterm_id, '=')
+      ->execute();
+    while ($synonym = $synonyms->fetchObject()) {
+      $term->addSynonym($synonym->synonym);
+    }
+    
+    // Are there alt IDs?
+    $alt_ids = $this->chado->select('1:cvterm_dbxref', 'CVTDBX')
+      ->join('1:dbxref', 'DBX', 'CVTDBX.dbxref_id = DBX.dbxref_id')
+      ->join('1:db', 'DB', 'DB.db_id = DBX.db_id')
+      ->fields('DBX', ['accession'])
+      ->fields('DB', ['name'])
+      ->condition('CVTDBX.cvterm_id', $cvterm->cvterm_id, '=')
+      ->execute();          
+    while ($alt_id = $alt_ids->fetchObject()) {
+      $term->addAltId($alt_id->name, $alt_id->accession);
+    }
+    
+    // Are there properties?
+    $properties = $this->chado->select('1:cvtermprop', 'CVTP')    
+      ->join('1:cvterm', 'CVT', 'CVTP.type_id = CVT.cvterm_id')
+      ->join('1:dbxref', 'DBX', 'CVT.dbxref_id = DBX.dbxref_id')
+      ->join('1:db', 'DB', 'DB.db_id = DBX.db_id')
+      ->join('1:cv', 'CV', 'CV.cv_id = CVT.cv_id')
+      ->fields('CVT', ['name as cvname'])
+      ->fields('CVTP', ['value'])
+      ->fields('DBX', ['accession'])
+      ->fields('DB', ['name as dbname'])
+      ->condition('CVTP.cvterm_id', $cvterm->cvterm_id, '=')
+      ->orderBy('CVTP.type_id', 'ASC')
+      ->orderBy('CVTP.rank', 'ASC')
+      ->execute();
+      while ($property = $properties->fetchObject()) {
+        $prop_term = new TripalTerm([
+          'name' => $property->name,
+          'accession' => $property->accession,
+          'idSpace' => $property->dbname,
+          'vocabulary' => $property->cvname
+        ]);
+        $term->addProperty($prop_term, $property->value);
+      }
+      
+      // Are there parents?
+        
   }
   
   /**
@@ -211,20 +271,93 @@ class ChadoIdSpace extends TripalIdSpaceBase {
     }
     
     $term_exists = $this->getTerm($accession);
-    if (!$term_exists and $fail_if_exists) {
-      return NULL;
+    if (!$term_exists) {
+      $this->insertTerm($term);
     }
+    if ($term_exists and $fail_if_exists) {
+      return False;
+    }
+    if ($term_exists and !$fail_if_exists) {
+      $this->updateTerm($term);
+    }
+    
     
     if ($update_parent) {
-    }
-    
-    if ($term_exists) {
-      $this->insertTerm($term);
-    } 
-    else {
-      $this->updateTerm($term);
-    }    
+    }       
   }
+  
+  /**
+   * Retrieve a record from the Chado cv table.
+   * 
+   * @param TripalTerm $term
+   *   The TripalTerm object to save.
+   *   
+   * @return unknown
+   *   The cv record in object form.
+   */
+  protected function getChadoCV(TripalTerm $term) {
+    return $this->chado->select('1:cv', 'CV')
+      ->fields('CV', ['cv_id', 'name', 'definition'])
+      ->condition('name', $term->getVocabulary(), '=')
+      ->execute()
+      ->fetchObject();    
+  }
+  
+  /**
+   * Retrieve a record from the Chado db table.
+   * 
+   * @param TripalTerm $term
+   *   The TripalTerm object to save. 
+   * @return object
+   *   The db record in object form.
+   */
+  protected function getChadoDB(TripalTerm $term) {
+    return $this->chado->select('1:db', 'DB')
+      ->fields('DB', ['db_id', 'name', 'description'])
+      ->condition('name', $term->getIdSpace(), '=')
+      ->execute()
+      ->fetchObject();    
+  }
+  
+  /**
+   * Retrieve a record from the Chado dbxref table.
+   * 
+   * @param TripalTerm $term
+   *   The TripalTerm object to save. 
+   * @return object
+   *   The dbxref record in object form.
+   */
+  protected function getChadoDBXref(TripalTerm $term) {
+    return $this->chado->select('1:dbxref', 'DBX')
+      ->fields('DBX', ['dbxref_id'])
+      ->condition('db_id', $this->_getChadoDBId($term), '=')
+      ->condition('accession', $term->getAccession(), '=')
+      ->execute()
+      ->fetchObject();
+  }
+  
+  /**
+   * Retrieve a record from the Chado cvterm table. 
+   * 
+   * @param TripalTerm $term
+   *   The TripalTerm object to save.
+   * @return object
+   *   The cvterm record in object form.
+   */
+  protected function getChadoCVTerm(TripalTerm $term) {
+    return $this->chado->select('1:cvterm', 'CVT')
+      ->join('1:dbxterm', 'DBX', 'CVT.dbxref_id = DBX.dbxref_id')
+      ->join('1:cv', 'CV', 'CV.cv_id = CVT.cv_id')
+      ->join('1:db', 'DB', 'DB.db_id = DBX.db_id')
+      ->fields('CVT', ['cv_id', 'name', 'definition', 'cv_id'])
+      ->fields('DBX', ['accession', 'dbxref_id', 'db_id'])
+      ->condition('DB.name', $term->getIdSpace(), '=')
+      ->condition('CV.name', $term->getVocabulary(), '=')
+      ->condition('DBX.accession', $term->getAccession(), '=')
+      ->execute()
+      ->fetchObject();
+  }
+
   
   /**
    * Inserts a new term into Chado.
@@ -238,45 +371,31 @@ class ChadoIdSpace extends TripalIdSpaceBase {
    * @return boolean
    *   True if the insert was successful, false otherwise.
    */
-  protected function insertTerm($term) {
-    $definition = $term->getDefinition();
-    $accession = $term->getAccession();
-    $name = $term->getName();
-    
+  protected function insertTerm(TripalTerm $term) {    
     try {
-      $cv_id = $this->chado->select('1:cv', 'CV')
-        ->fields('CV', ['cv_id'])
-        ->condition('name', $this->getDefaultVocabulary(), '=')
-        ->execute()
-        ->fetchField();
-      $db_id = $this->chado->select('1:db', 'DB')
-        ->fields('DB', ['db_id'])
-        ->condition('name', $this->getName(), '=')
-        ->execute()
-        ->fetchField();
-      $this->chado->insert('1:dbxref')
-        ->fields([
-          'db_id' => $db_id,
-          'accession' => $accession,
-        ])
+      $cv = $this->getChadoCV($term);
+      $dbxref = $this->getChadoDBXref($term);
+      if (!$dbxref) {
+        $db = $this->getChadoDB($term);
+        $this->chado->insert('1:dbxref')
+          ->fields([
+            'db_id' => $db->db_id,
+            'accession' => $term->getAccession(),
+          ])
         ->execute();
-      $dbxref_id = $this->chado->select('1:dbxref', 'DBX')
-        ->fields('DBX', ['dbxref_id'])
-        ->condition('db_id', $db_id, '=')
-        ->condition('accession', $accession, '=')
-        ->execute()
-        ->fetchField();
+        $dbxref = $this->getChadoDBXref($term);
+      }
       $this->chado->insert('1:cvterm')
         ->fields([
-          'cv_id' => $cv_id,
-          'dbxref_id' => $dbxref_id,
-          'name' => $name,
-          'definition' => $definition,
+          'cv_id' => $cv->cv__id,
+          'dbxref_id' => $dbxref->dbxref_id,
+          'name' => $term->getName(),
+          'definition' => $term->getDefinition(),
         ])
         ->execute();
     } 
     catch (Exception $e) {
-      $this->messageLogger->error('ChadoIdSpace: could not insert the cvterm record: @message', 
+      $this->messageLogger->error('ChadoIdSpace::insertTerm(). could not insert the cvterm record: @message', 
           ['@message' => $e->getMessage()]);
       return False;
     }
