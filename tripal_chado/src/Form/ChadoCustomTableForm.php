@@ -42,6 +42,7 @@ class ChadoCustomTableForm extends FormBase {
     $breadcrumb[] = Link::fromTextAndUrl('Custom Tables', Url::fromUserInput('/admin/tripal/storage/chado/custom_tables'));
     // TODO D9
     // drupal_set_breadcrumb($breadcrumb);
+    
   
     if (!$table_id) {
       $action = 'Add';
@@ -49,6 +50,7 @@ class ChadoCustomTableForm extends FormBase {
     else {
       $action = 'Edit';
     }
+    
   
     // get this requested table
     $default_schema = '';
@@ -68,9 +70,11 @@ class ChadoCustomTableForm extends FormBase {
       // set the default values.  If there is a value set in the
       // form_state then let's use that, otherwise, we'll pull
       // the values from the database
-      if (array_key_exists('values', $form_state)) {
-        $default_schema = $form_state['values']['schema'];
-        $default_force_drop = $form_state['values']['force_drop'];
+      if ($form_state->getValue('schema')) {
+        $default_schema = $form_state->getValue('schema');
+      }
+      if ($form_state->getValue('force_drop')) {
+        $default_force_drop = $form_state->getValue('force_drop');
       }
   
       if (!$default_schema) {
@@ -92,10 +96,9 @@ class ChadoCustomTableForm extends FormBase {
     ];
   
     $form['instructions'] = [
-      '#type' => 'fieldset',
+      '#type' => 'details',
       '#title' => 'Instructions',
-      '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
+      '#open' => False,
     ];
     
     $form['instructions']['text'] = [
@@ -115,99 +118,53 @@ class ChadoCustomTableForm extends FormBase {
           '<p>Please note that table names should be all lower-case.</p>'
         ),
     ];
-    
-
-    // // This is the old example using the array() type format
-    // // Kept just in case we ever want to revert back.
-    // array (
-    //   'table' => 'library_stock',
-    //   'fields' => array (
-    //     'library_stock_id' => array(
-    //       'type' => 'serial',
-    //       'not null' => TRUE,
-    //     ),
-    //     'library_id' => array(
-    //       'type' => 'int',
-    //       'not null' => TRUE,
-    //     ),
-    //     'stock_id' => array(
-    //       'type' => 'int',
-    //       'not null' => TRUE,
-    //     ),
-    //   ),
-    //   'primary key' => array(
-    //     'library_stock_id'
-    //   ),
-    //   'unique keys' => array(
-    //     'library_stock_c1' => array(
-    //       'library_id',
-    //       'stock_id'
-    //     ),
-    //   ),
-    //   'foreign keys' => array(
-    //     'library' => array(
-    //       'table' => 'library',
-    //       'columns' => array(
-    //         'library_id' => 'library_id',
-    //       ),
-    //     ),
-    //     'stock' => array(
-    //       'table' => 'stock',
-    //       'columns' => array(
-    //         'stock_id' => 'stock_id',
-    //       ),
-    //     ),
-    //   ),
-    // )
+        
 
     $form['instructions']['example'] = [
       '#type' => 'item',
-      '#markup' => "Example library_stock table: <pre>
-
-      [
-        'table' => 'library_stock',
-        'fields' => [
-          'library_stock_id' => [
-            'type' => 'serial',
-            'not null' => TRUE,
-          ],
-          'library_id' => [
-            'type' => 'int',
-            'not null' => TRUE,
-          ],
-          'stock_id' => [
-            'type' => 'int',
-            'not null' => TRUE,
-          ],
-        ],
-        'primary key' => [
-          'library_stock_id'
-        ],
-        'unique keys' => [
-          'library_stock_c1' => [
-            'library_id',
-            'stock_id'
-          ],
-        ],
-        'foreign keys' => [
-          'library' => [
-            'table' => 'library',
-            'columns' => [
-              'library_id' => 'library_id',
-            ],
-          ],
-          'stock' => [
-            'table' => 'stock',
-            'columns' => [
-              'stock_id' => 'stock_id',
-            ],
-         ],
-        ],
-      ]      
-      </pre>",
+      '#markup' => "Example library_stock table: <pre>[
+  'table' => 'library_stock',
+  'fields' => [
+    'library_stock_id' => [
+      'type' => 'serial',
+      'not null' => TRUE,
+    ],
+    'library_id' => [
+      'type' => 'int',
+      'not null' => TRUE,
+    ],
+    'stock_id' => [
+      'type' => 'int',
+      'not null' => TRUE,
+    ]
+  ],
+  'primary key' => [
+    'library_stock_id'
+  ],
+  'unique keys' => [
+    'library_stock_c1' => [
+      'library_id',
+      'stock_id'
+    ]
+  ],
+  'foreign keys' => [
+    'library' => [
+      'table' => 'library',
+      'columns' => [
+        'library_id' => 'library_id'
+      ],
+    ],
+    'stock' => [
+      'table' => 'stock',
+      'columns' => [
+        'stock_id' => 'stock_id'
+      ]
+    ]
+  ]
+]</pre>",
     ];
   
-    if ($action = 'Add') {
+    if ($action == 'Add') {
       $form['force_drop'] = [
         '#type' => 'value',
         '#value' => $default_force_drop,
@@ -337,17 +294,14 @@ class ChadoCustomTableForm extends FormBase {
   
   
     if (strcmp($action, 'Edit') == 0) {
-      // dpm('Editing');
-      // dpm($table_id);
-      // dpm($schema_arr['table']);
-      // dpm($schema_arr);
-      // dpm($skip_creation);
       $action_result = chado_edit_custom_table($table_id, $schema_arr['table'], $schema_arr, $skip_creation);
       if($action_result) {
-        \Drupal::messenger()->addMessage(t("Custom table has been edited."), 'status');
+        \Drupal::messenger()->addMessage(t("The custom table was succesfully updated."), 'status');
       }
       else {
-        \Drupal::messenger()->addError(t("Error editing the custom table. Please see logs for further details."), 'status');
+        $link = Link::fromTextAndUrl(t('recent logs'), Url::fromUserInput('/admin/reports/dblog'))->toString();
+        \Drupal::messenger()->addError(t("Could not update the custom table. Please see the @logs for further details.",
+            ['@logs' => $link]), 'status');
       }
     }
     elseif (strcmp($action, 'Add') == 0) {

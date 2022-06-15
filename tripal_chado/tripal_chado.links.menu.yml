@@ -28,20 +28,6 @@ tripal_chado.chado_prepare_form:
   parent: tripal_chado.storage
   weight: 31
 
-# tripal_chado.chado_custom_table_form:
-#   route_name: tripal_chado.chado_custom_table_form
-#   title: 'Chado Custom Table'
-#   description: 'Add new Chado Custom Tables to the database'
-#   parent: tripal_chado.storage
-#   weight: 30
-
-# tripal_chado.chado_custom_tables_delete_form:
-#   route_name: tripal_chado.chado_custom_tables_delete_form
-#   title: 'Chado Custom Tables Delete'
-#   description: 'Deletes Chado Custom Tables from the database'
-#   parent: tripal_chado.storage
-#   weight: 30  
-
 tripal_chado.chado_custom_tables:
   route_name: tripal_chado.chado_custom_tables
   title: 'Chado Custom Tables'
