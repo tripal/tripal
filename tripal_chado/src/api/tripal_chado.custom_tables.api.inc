@@ -113,9 +113,10 @@ function chado_edit_custom_table(int $table_id, string $table_name, array $schem
     }
   }
   catch (Exception $e) {
-    $logger->error($e->getMessage());
     $transaction->rollback();
     $transaction_chado->rollback();
+    $logger->error($e->getMessage());
+    \Drupal::messenger()->addError($e->getMessage);    
     return False;
   }
   return True;
@@ -154,9 +155,7 @@ function chado_create_custom_table(string $table, array $schema, bool $skip_if_e
     int $mview_id = NULL, bool $redirect = TRUE) : bool {
   
   $logger = \Drupal::service('tripal.logger');
-  
-  $logger->error("Wassup Yo!");
-  
+    
   // Basic argument checks
   if (!$table) {
     $logger->error('chado_create_custom_table(). Please provide a value for the $table argument to the chado_create_custom_table() function');
@@ -224,6 +223,7 @@ function chado_create_custom_table(string $table, array $schema, bool $skip_if_e
     $transaction->rollback();
     $transaction_chado->rollback();
     $logger->error($e->getMessage());
+    \Drupal::messenger()->addError($e->getMessage());    
     return False;
   }
   return True;
@@ -249,25 +249,25 @@ function chado_create_custom_table(string $table, array $schema, bool $skip_if_e
  */
 function chado_validate_custom_table_schema($schema_array) {
 
-    if (is_array($schema_array) and !array_key_exists('table', $schema_array)) {
-        return "The schema array must have key named 'table'";
+  if (is_array($schema_array) and !array_key_exists('table', $schema_array)) {
+    return "The schema array must have key named 'table'";
+  }
+  
+  if (preg_match('/[ABCDEFGHIJKLMNOPQRSTUVWXYZ]/', $schema_array['table'])) {
+    return "Postgres will automatically change the table name to lower-case. To prevent unwanted side-effects, please rename the table with all lower-case characters.";
+  }
+  
+    // Check index length.
+  if (array_key_exists('indexes', $schema_array)) {
+    foreach ($schema_array['indexes'] as $index_name => $details) {
+      if (strlen($schema_array['table'] . '_' . $index_name) > 60) {
+        return "One ore more index names appear to be too long. For example: '" . $schema_array['table'] . '_' . $index_name .
+        ".'  Index names are created by concatenating the table name with the index name provided " .
+        "in the 'indexes' array of the schema. Please alter any indexes that when combined with the table name are " .
+        "longer than 60 characters.";
+      }
     }
-    
-    if (preg_match('/[ABCDEFGHIJKLMNOPQRSTUVWXYZ]/', $schema_array['table'])) {
-        return "Postgres will automatically change the table name to lower-case. To prevent unwanted side-effects, please rename the table with all lower-case characters.";
-    }
-
-      // Check index length.
-    if (array_key_exists('indexes', $schema_array)) {
-        foreach ($schema_array['indexes'] as $index_name => $details) {
-            if (strlen($schema_array['table'] . '_' . $index_name) > 60) {
-                return "One ore more index names appear to be too long. For example: '" . $schema_array['table'] . '_' . $index_name .
-                ".'  Index names are created by concatenating the table name with the index name provided " .
-                "in the 'indexes' array of the schema. Please alter any indexes that when combined with the table name are " .
-                "longer than 60 characters.";
-            }
-        }
-    }
+  }
 }
 
 /**
@@ -352,6 +352,7 @@ function chado_get_custom_table_names($include_mview = TRUE) : array {
  *   True if the table was sucessfully deleted, False otherwise.
  */
 function chado_delete_custom_table(int $table_id) : bool{
+  $logger = \Drupal::service('tripal.logger');
 
   $public = \Drupal::database();
   $transaction = $public->startTransaction();
@@ -394,10 +395,11 @@ function chado_delete_custom_table(int $table_id) : bool{
       
   } 
   catch (Exception $e) {
-      $transaction->rollback();
-      $transaction_chado->rollback();    
-      \Drupal::logger('tripal_chado')->error($e->getMessage());
-      return False;
+    $transaction->rollback();
+    $transaction_chado->rollback();
+    $logger->error($e->getMessage());
+    \Drupal::logger('tripal_chado')->error($e->getMessage());
+    return False;
   }
   return True;
 }
