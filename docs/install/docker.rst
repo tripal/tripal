@@ -1,7 +1,7 @@
 Tripal Docker
 ================
 
-Tripal Docker is currently focused on Development and Unit Testing. There will be a production focused Tripal Docker soon.
+Tripal Docker is currently focused on Development, Debugging, and Unit Testing. There will be a production focused Tripal Docker soon.
 
 Software Stack
 --------------
@@ -15,6 +15,7 @@ Currently we have the following installed:
  - Drupal Console 1.9.8
  - Drush 10.6.2
  - Drupal 9.1.x-dev downloaded using composer (or as specified by drupalversion argument).
+ - Xdebug 3.0.1
 
 Quickstart
 ----------
@@ -197,3 +198,81 @@ As Tripal 4 is currently under rapid development, this could be due to not using
   docker pull tripalproject/tripaldocker:latest
 
 At this point, you can follow up with the appropriate ``docker run`` command. If your run command mounts the current directory through the ``--volume`` parameter then make sure you are in a copy of the t4d8 repository on the main branch with the most recent changes pulled.
+
+Debugging
+---------
+
+Xdebug: Overview
+^^^^^^^^^^^^^^^^
+There is an optional Xdebug configuration available for use in debugging Tripal 4.
+It is disabled by default. Currently, the Docker ships with three modes available: 
+
+`Develop <https://xdebug.org/docs/develop>`_
+  Adds developer aids to provide "better error messages and obtain more information from PHP's built-in functions".
+
+`Debug <https://xdebug.org/docs/step_debug>`_
+  Adds the ability to interactively walk through the code. 
+
+`Profile <https://xdebug.org/docs/profiler>`_
+  Adds the ability to "find bottlenecks in your script and visualize those with an external tool".
+
+To enable Xdebug, issue the following command:
+
+.. code::
+
+  docker exec --workdir=/var/www/drupal9/web/modules/contrib/tripal t4d8 xdebug_toggle.sh
+  
+This will toggle the Xdebug configuration file and restart Apache. You should use this command to disable Xdebug if it is enabled prior to running PHPUnit Tests as it seriously impacts test run duration (approximately 8 times longer).
+
+
+There is an Xdebug extension available for most modern browsers that will let you dynamically trigger different debugging modes. For instance, profiling should only be used when you want to generate profiling data, as this can be quite compute intensive and may generate large files for a single page load.
+The extension places an interactive Xdebug icon in the URL bar where you can select which mode you'd like to trigger.
+
+Xdebug: Step debugging
+^^^^^^^^^^^^^^^^^^^^^^
+
+Step debugging occurs in your IDE, such as Netbeans, PhpStorm, or Visual Studio Code.
+There will typically already be a debugging functionality built-in to these IDEs, or they can be installed with an extension.
+Visual Studio Code, for example, has a suitable debugging suite by default.
+This documentation will cover Visual Studio Code, but the configuration options should be similar in other IDEs.
+
+The debugging functionality can be found in VS Code on the sidebar, the icon looks like a bug and a triangle.
+A new configuration should be made using PHP. The following options can be used for basic interaction with Xdebug:
+.. code::
+
+  {
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Listen for Xdebug",
+            "type": "php",
+            "request": "launch",
+            "port": 9003,
+            "pathMappings": { "/var/www/drupal9/web/modules/contrib/tripal": "~/Dockers/t4d8" }
+        }
+    ]
+  }
+
+The important parameter here is `pathMappings` which will allow Xdebug and your IDE know which paths on the host and in the Docker VM coorespond to eachother. 
+The first path listed is the one within the Docker and should point to the Tripal directory. The seocnd path is the one on your local host machine where you 
+installed the repo and built the Docker image. If you followed the instructions above, this should be in your user folder under `~/Dockers/t4d8`.
+
+9003 is the default port and should only be changed if 9003 is already in use on your host system.
+
+With this configuration saved, the Play button can be pressed to enable this configuration and have your IDE listen for incoming connections from the Xdebug PHP extension.
+
+More info can be found for VS Code's step debugging facility in `VS Code's documentation <https://code.visualstudio.com/docs/editor/debugging>`_. 
+
+Xdebug: Profiling
+^^^^^^^^^^^^^^^^^
+
+Profiling the code execution can be useful to detect if certain functions are acting as bottlenecks or if functions are being called too many times, such as in an unintended loop.
+The default configuration, when profiling is enabled by selecting it in the Xdebug browser extension, will generate output files in the specified directory.
+
+To view these files, we recommend using Webgrind. It can be launched as a separate Docker image using the following command:
+
+.. code::
+
+  docker run --rm -v ~/Dockers/t4d8/tripaldocker/xdebug_output:/tmp -v ~/Dockers/t4d8:/host -p 8081:80 jokkedk/webgrind:latest
+
+You may need to adjust the paths given in the command above, similar to when setting up the pathMappings for step debugging earlier.
