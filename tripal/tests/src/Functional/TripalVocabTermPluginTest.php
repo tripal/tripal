@@ -30,7 +30,7 @@ class TripalVocabTermPluginTest extends BrowserTestBase {
 
 		// Test the Vocabulary Plugin Manager.
 		// --Ensure we can instantiate the plugin manager.
-		$type = \Drupal::service('plugin.manager.tripal.vocab');
+		$type = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
 		// Note: If the plugin manager is not found you will get a ServiceNotFoundException.
 		$this->assertIsObject($type, 'A vocabulary plugin service object was not returned.');
 
@@ -62,7 +62,7 @@ class TripalVocabTermPluginTest extends BrowserTestBase {
 
 		// Test the Id Space Plugin Manager.
 		// --Ensure we can instantiate the plugin manager.
-		$type = \Drupal::service('plugin.manager.tripal.id_space');
+		$type = \Drupal::service('tripal.collection_plugin_manager.idspace');
 		// Note: If the plugin manager is not found you will get a ServiceNotFoundException.
 		$this->assertIsObject($type, 'An id space plugin service object was not returned.');
 
