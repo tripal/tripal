@@ -66,7 +66,8 @@ RUN pecl install xdebug-3.0.1 \
     && docker-php-ext-enable xdebug \
     && echo "xdebug.mode = coverage" >> /usr/local/etc/php/php.ini \
     && echo "error_reporting=E_ALL" >> /usr/local/etc/php/conf.d/error_reporting.ini \
-    && cp /app/xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+    && cp /app/tripaldocker/default_files/xdebug/xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.dis \
+    && rm /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
 ## install the PHP extensions we need
 RUN set -eux; \
@@ -201,7 +202,8 @@ RUN mv /app/tripaldocker/init_scripts/supervisord.conf /etc/supervisord.conf \
   && mv /app/tripaldocker/default_files/000-default.conf /etc/apache2/sites-available/000-default.conf \
   && echo "\$settings["trusted_host_patterns"] = [ '^localhost$', '^127\.0\.0\.1$' ];" >> /var/www/drupal9/web/sites/default/settings.php \
   && mv /app/tripaldocker/init_scripts/init.sh /usr/bin/init.sh \
-  && chmod +x /usr/bin/init.sh
+  && chmod +x /usr/bin/init.sh \
+  && mv /app/tripaldocker/default_files/xdebug/xdebug_toggle.sh /usr/bin/xdebug_toggle.sh
 
 ## Make global commands.
 RUN ln -s /var/www/drupal9/vendor/drupal/console/bin/drupal /usr/local/bin/ \
