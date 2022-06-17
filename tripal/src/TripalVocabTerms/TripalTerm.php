@@ -32,8 +32,10 @@ class TripalTerm {
    * - altIDs: (array) an array of alternate term IDs where each
    *   element is a tuple of two values: the ID space name and 
    *   the accession of the alternate term.
-   * - synonyms: (array) an array of synonyms where each element is the 
-   *   synonym.
+   * - synonyms: (array)  an array of synonyms where each
+   *   element is the synonym, or a list of typles containng the synonym 
+   *   followed by the a TripalTerm for the synonym type. Usually the synonym
+   *   types are terms with a name of: 'exact', 'broad', 'narrow' or 'related'.
    * - properties:(array) an array of properties where each element is a 
    *   tuple of two values: a TriaplTerm for the property type and a value. 
    *   If the same property is used multiple times with different values,
@@ -59,6 +61,15 @@ class TripalTerm {
     $this->altIds = [];
     $this->synonyms = [];
     $this->properties = [];
+    $this->loaded_attributes = [
+      'definition' => False,
+      'is_obsolete' => False,
+      'is_relationship_type' => False,
+      'properties' => False,
+      'synonyms' => False,
+      'altIds' => False,
+      'parents' => False,
+    ];
     
     if (!is_array($details)) {
       return;
@@ -89,8 +100,17 @@ class TripalTerm {
       $this->setVocabulary($details['vocabulary']);
     }
     if (array_key_exists('synonyms', $details) and is_array($details['synonyms'])) {
-      foreach ($details['synonyms'] as $synonym) {
-        $this->addSynonym($synonym);
+      foreach ($details['synonyms'] as $entry) {
+        if (is_array($entry)) {
+          if (count($entry) != 2) {
+            $this->messageLogger->error('TripalTerm::__construct(). An synonym tuple is not the correct size.');
+            continue;
+          }
+          $this->addSynonym($entry[0], $entry[1]);
+        }
+        else {
+          $this->addSynonym($entry, NULL);
+        }
       }
     }
     if (array_key_exists('altIDs', $details) and is_array($details['altIDs'])) {
@@ -181,6 +201,7 @@ class TripalTerm {
    * @param string $description
    */
   public function setDefinition(string $definition) {
+    $this->loaded_attributes['definition'] = True;
     $this->definition = $definition;
   }
   
@@ -204,7 +225,7 @@ class TripalTerm {
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
     foreach ($idsmanager->getCollectionList() as $name) {
       $idspace = $idsmanager->loadCollection($name);
-      $terms[] = $idspace->getTerms($partial,["exact" => FALSE]);
+      $terms[] = $idspace->getTerms($partial, ["exact" => FALSE]);
     }
 
     return $terms;
@@ -420,7 +441,8 @@ class TripalTerm {
    *   True on success or false otherwise.    
    */
   public function addParent(TripalTerm $parent, TripalTerm $relationship) {
-    $this->parents[$parent->getTermId()] = [$parent, $relationship];    
+    $this->loaded_attributes['parents'] = True;    
+    $this->parents[$parent->getTermId()] = [$parent, $relationship];   
   }
   
   /**
@@ -467,6 +489,7 @@ class TripalTerm {
    *   The accession for the parent term.
    */
   public function addAltId(string $idSpace, string $accession) {
+    $this->loaded_attributes['altIds'] = True;
     $term_id =  $idSpace . ':' . $accession;
     $this->altIds[$term_id] = 1;
   }
@@ -505,12 +528,22 @@ class TripalTerm {
   /**
    * Adds a synonym for this term.
    * 
-   * Some terms may have synonymous names.
+   * Some terms may have synonymous names. The synonym type 
+   * is usually one of the of the following terms: 'exact',
+   * 'broad', 'narrow', or 'related'. 
+   * 
+   * It is highly encouraged to always provide a type for the 
+   * synonym.
+   * 
    * 
    * @param string $synonym
+   *   The synonym.
+   * @param Drupal\tripal\TripalVocabTerms\TripalTerm $type
+   *   An optional Tripal term indicating the type of synonym. 
    */
-  public function addSynonym(string $synonym) {
-    $this->synonyms[$synonym] = 1;
+  public function addSynonym(string $synonym, TripalTerm $type = NULL) {
+    $this->loaded_attributes['synonyms'] = True;
+    $this->synonyms[$synonym] = $type;
   }
 
   /**
@@ -534,10 +567,11 @@ class TripalTerm {
    * Returns the list of synonyms for this term.
    * 
    * @return array
-   *   An array of synonyms.
+   *   An associative array where the keys are the synonyms
+   *   and the values the synonym type TripalTerm.
    */
   public function getSynonyms() : array {
-    return array_keys($this->synonyms);
+    return $this->synonyms;
   }
   
   /**
@@ -547,6 +581,7 @@ class TripalTerm {
    *   True if the term is obsolete, False otherwise.
    */
   public function setIsObsolete(bool $is_obsolete) {
+    $this->loaded_attributes['is_obsolete'] = True;
     $this->is_obsolete = $is_obsolete;
   }
   
@@ -567,6 +602,7 @@ class TripalTerm {
    *   True if the term is a relationship type, False otherwise.
    */
   public function setIsRelationshipType(bool $is_relationship_type) {
+    $this->loaded_attributes['is_relationship_type'] = True;
     $this->is_relationship_type = $is_relationship_type;
   }
   
@@ -597,6 +633,7 @@ class TripalTerm {
    *   True if the property was successfully added, False otherwise.
    */
   public function addProperty(TripalTerm $term, string $value, int $rank = NULL) : bool {
+    $this->loaded_attributes['properties'] = True;
     
     // Get the max rank for this property.
     $term_id = $term->getTermId();
@@ -625,7 +662,7 @@ class TripalTerm {
     }
     
     // Set the property.
-    $this->properties[$term_id][$rank] = [$term, $value];
+    $this->properties[$term_id][$rank] = [$term, $value];    
     return True;
   }
   
@@ -673,6 +710,26 @@ class TripalTerm {
      return False;
   }
   
+  /**
+   * Indicates which attributes are loaded.
+   * 
+   * A term may have any number of attributes that may or may not
+   * be loaded. The array returned by this function will
+   * indicatew which attributes are loaded and which are not. The
+   * array keys are the attribute names and the value is a boolean
+   * indicating if the attribute has been loaded. If all attributes
+   * are true then all all ahve been loaded and the term is complete.
+   * If some attributes are False then the term is not complete.
+   * 
+   * @return array
+   *   An associative array with keys indicating the attributes
+   *   and the value being a boolean where True indicates that the
+   *   attribute is laoded and False otherwise.
+   */
+  public function getLoadedAttributes() {
+    return $this->loaded_attributes;
+  }
+  
   
   
   /**
@@ -685,7 +742,7 @@ class TripalTerm {
    * @var array
    */
   private $parents;  
-
+  
   /**
    * The term name.
    *
@@ -738,7 +795,7 @@ class TripalTerm {
    * An array of synonyms.
    * 
    * For easy lookup, this is an associative array where 
-   * the key is the synonym and the value is 1.
+   * the key is the synonym and the value is the type term..
    * Using the synonym as the key also prevents duplication. 
    * 
    * @var array
@@ -778,5 +835,10 @@ class TripalTerm {
    * An instance of the TripalLogger.
    */
   private $messageLogger = NULL;
-
+  
+  
+  /**
+   * An associative array indicating which attributes of the term are loaded.
+   */
+  private $loaded_attributes;
 }
