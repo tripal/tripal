@@ -204,7 +204,7 @@ trait ChadoTestTrait  {
    * @param int $init_level
    *   One of the constant to select the schema initialization level.
    *
-   * @return \Drupal\tripal_biodb\Database\TripalDbxConnection
+   * @return \Drupal\tripal\TripalDBX\TripalDbxConnection
    *   A bio database connection using the generated schema.
    */
   protected function getTestSchema(int $init_level = 0) {
@@ -289,7 +289,7 @@ trait ChadoTestTrait  {
   /**
    * Removes a Chado test schema and keep track it has been removed correctly.
    *
-   * @param \Drupal\tripal_biodb\Database\TripalDbxConnection $tripaldbx_db
+   * @param \Drupal\tripal\TripalDBX\TripalDbxConnection $tripaldbx_db
    *   A bio database connection using the test schema.
    */
   protected function freeTestSchema(
