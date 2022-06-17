@@ -97,13 +97,13 @@ class TripalVocabTermPluginTest extends BrowserTestBase {
     // --Test creation of a TripalTerm provided the expected input.
     //   NOTE: the use Drupal\tripal\TripalVocabTerms\TripalTerm
     //   at the top of this file allows us to use TripalTerm here.
-    $term = new TripalTerm(
-      'gene',
-      'A region (or regions) that includes all of the sequence elements necessary to encode a functional transcript. A gene may include regulatory regions, transcribed regions and/or other functional sequence regions.',
-      'SO',
-      '0000704',
-      'Sequence Ontology'
-    );
+    $term = new TripalTerm([
+      'name' => 'gene',
+      'definition' => 'A region (or regions) that includes all of the sequence elements necessary to encode a functional transcript. A gene may include regulatory regions, transcribed regions and/or other functional sequence regions.',
+      'idSpace' => 'SO',
+      'accession' => '0000704',
+      'vocabulary' => 'sequence'
+    ]);
     $this->assertIsObject(
       $term,
       'When trying to create a new TripalTerm, an object was not produced.'
