@@ -31,30 +31,50 @@ interface TripalIdSpaceInterface extends TripalCollectionPluginInterface {
    *   The given term or NULL.
    *
    * @return array
-   *   An array of Drupal\tripal\TripalVocabTerms\TripalTerm children objects.
+   *   An array of children terms where each entry is a tuples and the 
+   *   first element of the tuple is a Drupal\tripal\TripalVocabTerms\TripalTerm 
+   *   child object and the second is the a
+   *   Drupal\tripal\TripalVocabTerms\TripalTerm relationship type term.
    */
   public function getChildren($parent = NULL);
 
   /**
-   * Returns the term in this id space with the given accession. If no such term
-   * exists then NULL is returned.
+   * Returns the term in this id space with the given accession. 
+   * 
+   * If no such term exists then NULL is returned.
+   * 
+   * The given options array has the following recognized keys:
+   *
+   * includes(array): A list of attribute names to include with the term
+   *   object. The attribute names can be: 'parents', 'altIds', 'synonyms'
+   *   'properties'. If the key is missing then all attributes will
+   *   be loaded. If present but empty then only basic attributes will
+   *   be loaded (e.g. name, definition, etc.). The purpose of this
+   *   attribute is to save time loading when not all attributes are 
+   *   needed.
    *
    * @param string $accession
    *   The accession.
+   *   
+   * @param array|NULL $options
+   *   The options array.
    *
    * @return Drupal\tripal\TripalVocabTerms\TripalTerm|NULL
    *   The term or NULL.
    */
-  public function getTerm($accession);
+  public function getTerm($accession, $options = []);
 
   /**
-   * Returns the terms in this id space whose names match the given name with
-   * the given options array.
+   * Returns terms whose names match the given arguments.
+   * 
+   * Term can be matched on their name or synonyms.  If the provided $name
+   * argument matches both the name and a synonym of the same term then
+   * both matches will be returned.
    *
    * The given options array has the following recognized keys:
    *
    * exact(boolean): True to only include exact matches else false to include
-   * all substring matches. The default is false.
+   *   all substring matches. The default is false.
    *
    * @param string $name
    *   The name.
@@ -63,9 +83,14 @@ interface TripalIdSpaceInterface extends TripalCollectionPluginInterface {
    *   The options array.
    *
    * @return array
-   *   Array of matching Drupal\tripal\TripalVocabTerms\TripalTerm instances.
+   *   Associative array of matching terms. The first-level key is the full 
+   *   string that matched the provided name. The second-level key is the term ID
+   *   (e.g. GO:0044708) and the value is an the  
+   *   Drupal\tripal\TripalVocabTerms\TripalTerm term. These terms will only have
+   *   these attributes loaded: name, definition, accession, idSpace and
+   *   vocabulary.
    */
-  public function getTerms($name, $options);
+  public function getTerms($name, $options = []);
 
   /**
    * Sets the default vocabulary of this id space to the given vocabulary name.
@@ -115,13 +140,16 @@ interface TripalIdSpaceInterface extends TripalCollectionPluginInterface {
    * given or false to not update this existing term's parent. If this term
    * is new this has no effect. The default is false.
    *
+   * @param TripalTerm $term
+   *   The TripalTerm object to save.
+   *   
    * @param array $options
-   *   The options array.
+   *   An associative array of options.
    *
    * @return bool
    *   True on success or false otherwise.
    */
-  public function saveTerm($term, $options);
+  public function saveTerm(TripalTerm $term, array $options = []);
     
 
   /**

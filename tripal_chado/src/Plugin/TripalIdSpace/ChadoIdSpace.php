@@ -112,7 +112,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
    * This function queries the `db` table of Chado to get the values
    * for the ID space.
    *
-   * @return
+   * @return array
    *   An associative array containing the columns of the `db1 table
    *   of Chado or NULL if the db could not be found.
    */
@@ -123,10 +123,11 @@ class ChadoIdSpace extends TripalIdSpaceBase {
       ->condition('db.name', $this->getName(), '=')
       ->fields('db', ['name', 'url', 'urlprefix', 'description']);
     $result = $query->execute();
-    if ($result) {
-      return $result->fetchAssoc();
+    if (!$result) {
+      return NULL;
     }
-    return NULL;
+    return $result->fetchAssoc();
+    
   }     
   
   /**
@@ -151,41 +152,262 @@ class ChadoIdSpace extends TripalIdSpaceBase {
       return NULL;
     }
     
+    $terms = [];
+    
+    $cvterm = $this->getChadoCVTerm($parent);
+    
+    $query = $this->chado->select('1:cvterm_relationship', 'CVTR');
+    $query->join('1:cvterm', 'CVTSUB', '"CVTR".subject_id = "CVTSUB".cvterm_id');
+    $query->join('1:cvterm', 'CVTTYPE', '"CVTR".type_id = "CVTTYPE".cvterm_id');
+    $query->join('1:dbxref', 'DBXSUB', '"CVTSUB".dbxref_id = "DBXSUB".dbxref_id');
+    $query->join('1:dbxref', 'DBXTYPE', '"CVTTYPE".dbxref_id = "DBXTYPE".dbxref_id');
+    $query->join('1:db', 'DBSUB', '"DBSUB".db_id = "DBXSUB".db_id');
+    $query->join('1:cv', 'CVSUB', '"CVSUB".cv_id = "CVTSUB".cv_id');
+    $query->join('1:db', 'DBTYPE', '"DBTYPE".db_id = "DBXTYPE".db_id');
+    $query->join('1:cv', 'CVTYPE', '"CVTYPE".cv_id = "CVTTYPE".cv_id');
+    $query->fields('CVTSUB', ['name'])
+      ->fields('DBXSUB', ['accession'])
+      ->fields('DBSUB', ['name'])
+      ->fields('CVSUB', ['name'])
+      ->fields('CVTTYPE', ['name'])
+      ->fields('DBXTYPE', ['accession'])
+      ->fields('DBTYPE', ['name'])
+      ->fields('CVTYPE', ['name'])
+      ->condition('CVTR.object_id', $cvterm->cvterm_id, '=');
+    $children = $query->execute();
+    while ($child = $children->fetchObject()) {
+      $child_term = new TripalTerm([
+        'name' => $child->name,
+        'accession' => $child->accession,
+        'idSpace' => $child->DBSUB_name,
+        'vocabulary' => $child->CVSUB_name
+      ]);
+      $type_term = new TripalTerm([
+        'name' => $child->CVTTYPE_name,
+        'accession' => $child->DBXTYPE_accession,
+        'idSpace' => $child->DBTYPE_name,
+        'vocabulary' => $child->CVTYPE_name
+      ]);
+      $terms[] = [$child_term, $type_term];
+    }
+    return $terms;
   }
   
   /**
    * {@inheritdoc}
    */
-  public function getTerm($accession) {
+  public function getTerm($accession, $options = []) {
     
     if (!$this->is_valid) {
       return NULL;
-    }
+    }    
     
-    $cvterm = $this->chado->select('1:cvterm', 'CVT')
-      ->join('1:dbxterm', 'DBX', 'CVT.dbxref_id = DBX.dbxref_id')
-      ->join('1:cv', 'CV', 'CV.cv_id = CVT.cv_id')
-      ->join('1:db', 'DB', 'DB.db_id = DBX.db_id')
-      ->fields('CVT', ['cv_id', 'name', 'definition'])
+    // Get the term record.
+    $query = $this->chado->select('1:cvterm', 'CVT');
+    $query->join('1:dbxref', 'DBX', '"CVT".dbxref_id = "DBX".dbxref_id');
+    $query->join('1:cv', 'CV', '"CV".cv_id = "CVT".cv_id');
+    $query->join('1:db', 'DB', '"DB".db_id = "DBX".db_id');
+    $query->fields('CVT', ['cvterm_id', 'name', 'definition', 'is_obsolete', 'is_relationshiptype'])
       ->condition('DB.name', $this->getName(), '=')
-      ->condition('CV.name', $this->getDefaultVocab(), '=')
-      ->condition('DBX.accession', $accession, '=')
-      ->execute();
+      ->condition('CV.name', $this->getDefaultVocabulary(), '=')
+      ->condition('DBX.accession', $accession, '=');
+    $cvterm = $query->execute()->fetchObject();
     if (!$cvterm) {
       return NULL;
     }
+    $term =  new TripalTerm([
+      'name' => $cvterm->name,
+      'definition' => $cvterm->definition,
+      'accession' => $accession,
+      'idSpace' => $this->getName(),
+      'vocabulary' => $this->getDefaultVocabulary(),
+      'is_obsolete' => $cvterm->is_obsolete == 1 ? True : False,
+      'is_relationship_type' => $cvterm->is_relationshiptype == 1 ? True : False,
+    ]);
     
-    $cvterm = $cvterm->fetchObject();
-    $term = new TripalTerm($cvterm->name, $cvterm->definition, 
-        $this->getName(), $accession, $this->getDefaultVocabulary());
+    // Set the boolean values for the term.
+    if ($cvterm->is_obsolete) {
+      $term->isObsolete(True);
+    }
+    if ($cvterm->is_relationshiptype) {
+      $term->isRelationshipType(True);
+    }
+    
+    // Are there synonyms?
+    if (!array_key_exists('includes', $options) or in_array('synonyms', $options['includes'])) {
+      $query = $this->chado->select('1:cvtermsynonym', 'CVTS');      
+      $query->leftJoin('1:cvterm', 'CVT', '"CVT".cvterm_id = "CVTS".type_id');
+      $query->leftJoin('1:dbxref', 'DBX', '"DBX".dbxref_id = "CVT".dbxref_id');
+      $query->leftJoin('1:cv', 'CV', '"CV".cv_id = "CVT".cv_id');
+      $query->leftJoin('1:db', 'DB', '"DB".db_id = "DBX".db_id');
+      $query->fields('CVTS', ['synonym', 'type_id']);
+      $query->fields('CVT', ['name', 'definition']);
+      $query->fields('DBX', ['accession']);
+      $query->fields('CV', ['name']);
+      $query->fields('DB', ['name']);
+      $query->condition('CVTS.cvterm_id', $cvterm->cvterm_id, '=');
+      $synonyms = $query->execute();
+      while ($synonym = $synonyms->fetchObject()) {
+        $type_term = NULL;
+        if ($synonym->type_id) {
+          $type_term = new TripalTerm([
+            'name' => $synonym->name,
+            'definition' => $synonym->definition,
+            'accession' => $synonym->accession,
+            'idSpace' => $synonym->DB_name,
+            'vocabulary' => $synonym->CV_name,
+          ]);
+        }
+        $term->addSynonym($synonym->synonym, $type_term);
+      }
+    }
+    
+    // Are there alt IDs?
+    if (!array_key_exists('includes', $options) or in_array('altIds', $options['includes'])) {
+      $query = $this->chado->select('1:cvterm_dbxref', 'CVTDBX');
+      $query->join('1:dbxref', 'DBX', '"CVTDBX".dbxref_id = "DBX".dbxref_id');
+      $query->join('1:db', 'DB', '"DB".db_id = "DBX".db_id');
+      $query->fields('DBX', ['accession'])
+        ->fields('DB', ['name'])
+        ->condition('CVTDBX.cvterm_id', $cvterm->cvterm_id, '=');
+      $alt_ids = $query->execute();          
+      while ($alt_id = $alt_ids->fetchObject()) {
+        $term->addAltId($alt_id->name, $alt_id->accession);
+      }
+    }
+    
+    // Are there properties?
+    if (!array_key_exists('includes', $options) or in_array('properties', $options['includes'])) {
+      $query = $this->chado->select('1:cvtermprop', 'CVTP');    
+      $query->join('1:cvterm', 'CVT', '"CVTP".type_id = "CVT".cvterm_id');
+      $query->join('1:dbxref', 'DBX', '"CVT".dbxref_id = "DBX".dbxref_id');
+      $query->join('1:db', 'DB', '"DB".db_id = "DBX".db_id');
+      $query->join('1:cv', 'CV', '"CV".cv_id = "CVT".cv_id');
+      $query->fields('CVT', ["name"])
+        ->fields('CVTP', ['value'])
+        ->fields('DBX', ['accession'])
+        ->fields('DB', ['name'])
+        ->fields('CV', ['name'])
+        ->condition('CVTP.cvterm_id', $cvterm->cvterm_id, '=')
+        ->orderBy('CVTP.type_id', 'ASC')
+        ->orderBy('CVTP.rank', 'ASC');
+      $properties = $query->execute();
+      while ($property = $properties->fetchObject()) {
+        $prop_term = new TripalTerm([
+          'name' => $property->name,
+          'accession' => $property->accession,
+          'idSpace' => $property->DB_name,
+          'vocabulary' => $property->CV_name
+        ]);
+        $term->addProperty($prop_term, $property->value);
+      }
+    }
+      
+    // Are there parents?
+    if (!array_key_exists('includes', $options) or in_array('parents', $options['includes'])) {
+      $query = $this->chado->select('1:cvterm_relationship', 'CVTR');
+      $query->join('1:cvterm', 'CVTOBJ', '"CVTR".object_id = "CVTOBJ".cvterm_id');
+      $query->join('1:cvterm', 'CVTTYPE', '"CVTR".type_id = "CVTTYPE".cvterm_id');
+      $query->join('1:dbxref', 'DBXOBJ', '"CVTOBJ".dbxref_id = "DBXOBJ".dbxref_id');
+      $query->join('1:dbxref', 'DBXTYPE', '"CVTTYPE".dbxref_id = "DBXTYPE".dbxref_id');
+      $query->join('1:db', 'DBOBJ', '"DBOBJ".db_id = "DBXOBJ".db_id');
+      $query->join('1:cv', 'CVOBJ', '"CVOBJ".cv_id = "CVTOBJ".cv_id');
+      $query->join('1:db', 'DBTYPE', '"DBTYPE".db_id = "DBXTYPE".db_id');
+      $query->join('1:cv', 'CVTYPE', '"CVTYPE".cv_id = "CVTTYPE".cv_id');
+      $query->fields('CVTOBJ', ['name'])
+        ->fields('DBXOBJ', ['accession'])
+        ->fields('DBOBJ', ['name'])
+        ->fields('CVOBJ', ['name'])
+        ->fields('CVTTYPE', ['name'])
+        ->fields('DBXTYPE', ['accession'])
+        ->fields('DBTYPE', ['name'])
+        ->fields('CVTYPE', ['name'])
+        ->condition('CVTR.subject_id', $cvterm->cvterm_id, '=');
+      $parents = $query->execute();
+      while ($parent = $parents->fetchObject()) {
+        $parent_term = new TripalTerm([
+          'name' => $parent->name,
+          'accession' => $parent->accession,
+          'idSpace' => $parent->DBOBJ_name,
+          'vocabulary' => $parent->CVOBJ_name
+        ]);
+        $type_term = new TripalTerm([
+          'name' => $parent->CVTTYPE_name,
+          'accession' => $parent->DBXTYPE_accession,
+          'idSpace' => $parent->DBTYPE_name,
+          'vocabulary' => $parent->CVTYPE_name
+        ]);
+        $term->addParent($parent_term, $type_term);    
+      }
+    }    
+    
     return $term;
   }
   
   /**
    * {@inheritdoc}
    */
-  public function getTerms($name, $options){
+  public function getTerms($name, $options = []) {
     
+    // The list of terms to return
+    $terms = [];
+    
+    // Build the query for matching via the `cvterm.name` column.
+    $query1 = $this->chado->select('1:cvterm', 'CVT');
+    $query1->join('1:cv', 'CV', '"CV".cv_id = "CVT".cv_id');    
+    $query1->join('1:dbxref', 'DBX', '"DBX".dbxref_id = "CVT".dbxref_id');
+    $query1->join('1:db', 'DB', '"DB".db_id = "DBX".db_id');
+    $query1->fields('CVT', ['name', 'definition', 'cvterm_id']);
+    $query1->fields('DBX', ['accession']);
+    $query1->fields('CV', ['name']);
+    $query1->condition('DB.name', $this->getName(), '=');    
+    if (array_key_exists('exact', $options) and $options['exact'] === True) {
+      $query1->condition('CVT.name', $name, '=');
+    }
+    else {
+      $query1->condition('CVT.name', $name . '%', 'LIKE');
+    }
+    $results = $query1->execute();
+    while ($cvterm = $results->fetchObject()) {
+      $term = new TripalTerm([
+        'name' => $cvterm->name,
+        'idSpace' => $this->getName(),
+        'vocabulary' => $cvterm->CV_name,
+        'definition' => $cvterm->definition,
+        'accession' => $cvterm->accession
+      ]);
+      $terms[$cvterm->name][$term->getTermId()] = $term;
+    }    
+    
+    // Build the query for matching via the `cvtermsynonym.synonym` column.
+    $query2 = $this->chado->select('1:cvtermsynonym', 'CS');
+    $query2->join('1:cvterm', 'CVT', '"CVT".cvterm_id = "CS".cvterm_id');
+    $query2->join('1:cv', 'CV', '"CV".cv_id = "CVT".cv_id');    
+    $query2->join('1:dbxref', 'DBX', '"DBX".dbxref_id = "CVT".dbxref_id');
+    $query2->join('1:db', 'DB', '"DB".db_id = "DBX".db_id');
+    $query2->fields('CVT', ['name', 'definition', 'cvterm_id']);
+    $query2->fields('DBX', ['accession']);
+    $query2->fields('CV', ['name']);
+    $query2->fields('CS', ['synonym']);
+    $query2->condition('DB.name', $this->getName(), '=');
+    if (array_key_exists('exact', $options) and $options['exact'] === True) {
+      $query2->condition('CS.synonym', $name, '=');
+    }
+    else {
+      $query2->condition('CS.synonym', $name . '%', 'LIKE');
+    }
+    $results = $query2->execute();
+    while ($cvterm = $results->fetchObject()) {
+      $term = new TripalTerm([
+        'name' => $cvterm->name,
+        'idSpace' => $this->getName(),
+        'vocabulary' => $cvterm->CV_name,
+        'definition' => $cvterm->definition,
+        'accession' => $cvterm->accession
+      ]);
+      $terms[$cvterm->synonym][$term->getTermId()] = $term;
+    }        
+    return $terms;
   }  
   
   /**
@@ -198,33 +420,189 @@ class ChadoIdSpace extends TripalIdSpaceBase {
   /**
    * {@inheritdoc}
    */
-  public function saveTerm($term, $options) {
-    $accession = $term->getAccession();
+  public function saveTerm($term, $options = []) {
     
+    // Don't save terms that aren't valid
+    if (!$term->isValid()) {
+      $this->messageLogger->error('ChadoIdSpace::saveTerm(). The term is not valid and cannot be saved.');      
+      return False;
+    }
+    
+    // Make sure the idSpace matches.
+    if ($this->getName() != $term->getIdSpace()) {
+      $this->messageLogger->error('ChadoIdSpace::saveTerm(). The term to save does not have the same ID space as this one.');
+      return False;      
+    }   
+    
+    // Get easy to use boolean variables.
     $fail_if_exists = False;
-    $update_parent = False;
     if (array_key_exists('failIfExists', $options)) {
       $fail_if_exists = $options['failIfExists'];
     }
-    if (array_key_exists('updateParent', $options)) {
-      $update_parent = $options['updateParent'];
+
+    // Does the term exist? If not do an insert, if so, do an update.
+    $cvterm = $this->getChadoCVTerm($term);
+    if (!$cvterm) {
+      if (!$this->insertTerm($term, $options)) {
+        return False;
+      }
     }
+    if ($cvterm and $fail_if_exists) {
+      return False;
+    }
+    if ($cvterm and !$fail_if_exists) {
+      if (!$this->updateTerm($term, $cvterm, $options)) {
+        return False;
+      }
+    }    
     
-    $term_exists = $this->getTerm($accession);
-    if (!$term_exists and $fail_if_exists) {
+    return True;
+  }
+  
+  /**
+   * Retrieve a record from the Chado cv table.
+   * 
+   * @param TripalTerm $term
+   *   The TripalTerm object to save.
+   *   
+   * @return object
+   *   The cv record in object form.
+   */
+  protected function getChadoCV(TripalTerm $term) {
+    
+    $result = $this->chado->select('1:cv', 'CV')
+      ->fields('CV', ['cv_id', 'name', 'definition'])
+      ->condition('name', $term->getVocabulary(), '=')
+      ->execute();
+    if(!$result) {
+      return NULL;
+    }
+    return $result->fetchObject();
+  }
+  
+  /**
+   * Retrieve a record from the Chado db table.
+   * 
+   * @param TripalTerm $term
+   *   The TripalTerm object to save. 
+   * @return object
+   *   The db record in object form.
+   */
+  protected function getChadoDB(TripalTerm $term) {
+    
+    $result = $this->chado->select('1:db', 'DB')
+      ->fields('DB', ['db_id', 'name', 'description'])
+      ->condition('name', $term->getIdSpace(), '=')
+      ->execute();
+    if(!$result) {
+      return NULL;
+    }
+    return $result->fetchObject();
+  }
+  
+  /**
+   * Retrieve a record from the Chado dbxref table.
+   * 
+   * @param TripalTerm $term
+   *   The TripalTerm object to save. 
+   * @return object
+   *   The dbxref record in object form.
+   */
+  protected function getChadoDBXref(TripalTerm $term) {
+    
+    $db = $this->getChadoDB($term);
+    $result = $this->chado->select('1:dbxref', 'DBX')
+      ->fields('DBX', ['dbxref_id', 'db_id', 'accession', 'version' ,'description'])
+      ->condition('db_id', $db->db_id, '=')
+      ->condition('accession', $term->getAccession(), '=')
+      ->execute();
+    if (!$result) {
+      return NULL;     
+    }
+    return $result->fetchObject();
+  }
+  
+  /**
+   * Retreives a record from the Cahdo dbxref table using the term ID.
+   * 
+   * @param string $term_id
+   *   The term ID (e.g. GO:0044708).
+   */
+  protected function getChadoDBXrefbyTermID(string $term_id) {
+    
+    list($db, $accession) = explode(':', $term_id);
+    $query = $this->chado->select('1:dbxref', 'DBX');
+    $query->join('1:db', 'DB', '"DB".db_id = "DBX".db_id');
+    $result = $query->fields('DBX', ['dbxref_id', 'db_id', 'accession', 'version' ,'description'])
+      ->condition('DB.name', $db, '=')
+      ->condition('DBX.accession', $accession, '=')
+      ->execute();
+    if(!$result) {
+      return NULL;
+    }
+    return $result->fetchObject();
+  }
+  
+  /**
+   * Adds a record from the Cahdo dbxref table using the term ID.
+   * 
+   * The database record must already exist.
+   * 
+   * @param string $term_id
+   *   The term ID (e.g. GO:0044708).
+   *   
+   * @return object|NULL
+   *   The dbxref Object.
+   */
+  protected function insertChadoDBxrefbyTermID(string $term_id) {
+    list($db, $accession) = explode(':', $term_id);
+    $result = $this->chado->select('1:db', 'DB')
+      ->fields('DB', ['db_id'])
+      ->condition('name', $db, '=')
+      ->execute();      
+    if (!$result) {
       return NULL;
     }
     
-    if ($update_parent) {
-    }
-    
-    if ($term_exists) {
-      $this->insertTerm($term);
-    } 
-    else {
-      $this->updateTerm($term);
-    }    
+    $db_id = $result->fetchField();
+    $this->chado->insert('1:dbxref')
+      ->fields([
+        'db_id' => $db_id,
+        'accession' => $accession,
+      ])
+      ->execute();
+    return $this->getChadoDBXrefbyTermID($term_id);
   }
+  
+  /**
+   * Retrieve a record from the Chado cvterm table.
+   * 
+   * This function uses the db.name (IdSpace), cv.name (vocabulary)
+   * and dbxref.accession values to uniquely identify a term in Chado.
+   * 
+   * @param TripalTerm $term
+   *   The TripalTerm object to save.
+   * @return object
+   *   The cvterm record in object form.
+   */
+  protected function getChadoCVTerm(TripalTerm $term) {
+   
+    $query = $this->chado->select('1:cvterm', 'CVT');
+    $query->join('1:dbxref', 'DBX', '"DBX".dbxref_id = "CVT".dbxref_id');
+    $query->join('1:cv', 'CV', '"CV".cv_id = "CVT".cv_id');
+    $query->join('1:db', 'DB', '"DB".db_id = "DBX".db_id');   
+    $query->fields('CVT', ['cv_id', 'cvterm_id', 'definition', 'is_obsolete', 'is_relationshiptype'])
+      ->fields('DBX', ['dbxref_id', 'accession'])
+      ->condition('DB.name', $term->getIdSpace(), '=')
+      ->condition('CV.name', $term->getVocabulary(), '=')
+      ->condition('DBX.accession', $term->getAccession(), '=');
+    $result = $query->execute();
+    if (!$result) { 
+      return NULL;
+    }
+    return $result->fetchObject();
+  }
+
   
   /**
    * Inserts a new term into Chado.
@@ -235,51 +613,165 @@ class ChadoIdSpace extends TripalIdSpaceBase {
    * @param Drupal\tripal\TripalVocabTerms\TripalTerm $term
    *   The term object to update
    *   
+   * @param array $options
+   *   The options passed to the saveTerm() function.
+   *   
    * @return boolean
    *   True if the insert was successful, false otherwise.
    */
-  protected function insertTerm($term) {
-    $definition = $term->getDefinition();
-    $accession = $term->getAccession();
-    $name = $term->getName();
+  protected function insertTerm(TripalTerm $term, $options) {    
     
     try {
-      $cv_id = $this->chado->select('1:cv', 'CV')
-        ->fields('CV', ['cv_id'])
-        ->condition('name', $this->getDefaultVocabulary(), '=')
-        ->execute()
-        ->fetchField();
-      $db_id = $this->chado->select('1:db', 'DB')
-        ->fields('DB', ['db_id'])
-        ->condition('name', $this->getName(), '=')
-        ->execute()
-        ->fetchField();
-      $this->chado->insert('1:dbxref')
-        ->fields([
-          'db_id' => $db_id,
-          'accession' => $accession,
-        ])
+      // The CV and DB records should already exist.
+      $cv = $this->getChadoCV($term);
+      $db = $this->getChadoDB($term);
+      
+      // The DBXref may already exist even though the
+      // term does not.  So, check first and if not then 
+      // add it.
+      $dbxref = $this->getChadoDBXref($term);
+      if (!$dbxref) {
+        
+        $this->chado->insert('1:dbxref')
+          ->fields([
+            'db_id' => $db->db_id,
+            'accession' => $term->getAccession(),
+          ])
         ->execute();
-      $dbxref_id = $this->chado->select('1:dbxref', 'DBX')
-        ->fields('DBX', ['dbxref_id'])
-        ->condition('db_id', $db_id, '=')
-        ->condition('accession', $accession, '=')
-        ->execute()
-        ->fetchField();
+        $dbxref = $this->getChadoDBXref($term);
+      }
+      
+      // Add the CVterm record.
       $this->chado->insert('1:cvterm')
         ->fields([
-          'cv_id' => $cv_id,
-          'dbxref_id' => $dbxref_id,
-          'name' => $name,
-          'definition' => $definition,
+          'cv_id' => $cv->cv_id,
+          'dbxref_id' => $dbxref->dbxref_id,
+          'name' => $term->getName(),
+          'definition' => $term->getDefinition(),
+          'is_obsolete' => $term->isObsolete() ? 1 : 0,
+          'is_relationshiptype' => $term->isRelationshipType() ? 1 : 0,
         ])
         ->execute();
+      $cvterm = $this->getChadoCVTerm($term);
+      if (!$cvterm) {
+        return False;
+      }
+      
+      // Now save the term attributes.
+      if (!$this->saveTermAttributes($term, $cvterm, $options)) {
+        return False;
+      }
+      
     } 
     catch (Exception $e) {
-      $this->messageLogger->error('ChadoIdSpace: could not insert the cvterm record: @message', 
+      $this->messageLogger->error('ChadoIdSpace::insertTerm(). could not insert the cvterm record: @message', 
           ['@message' => $e->getMessage()]);
       return False;
     }
+    return True;
+  }
+  
+  /**
+   * 
+   * @param TripalTerm $term
+   * @param object $cvterm
+   * @param array $options
+   * @return bool
+   */
+  protected function saveTermAttributes(TripalTerm $term, object $cvterm, array $options) : bool {
+    
+    $update_parent = False;
+    if (array_key_exists('updateParent', $options)) {
+      $update_parent = $options['updateParent'];
+    }    
+    
+    // Add in synonyms.ount($syns->chado->delete('1:cvtermsynonym')->condition('cvterm_id', $cvterm->cvterm_id)->execute();
+    $this->chado->delete('1:cvtermsynonym')->condition('cvterm_id', $cvterm->cvterm_id)->execute();
+    foreach ($term->getSynonyms() as $synonym => $type_term) {
+      $query = $this->chado->insert('1:cvtermsynonym');
+      if ($type_term) {
+        $type_cvterm = $this->getChadoCVTerm($type_term);
+        $query->fields([
+          'cvterm_id' => $cvterm->cvterm_id,
+          'synonym' => $synonym,
+          'type_id' => $type_cvterm->cvterm_id,
+        ]);
+      }
+      else {
+        $query->fields([
+          'cvterm_id' => $cvterm->cvterm_id,
+          'synonym' => $synonym,
+        ]);        
+      }
+      $query->execute();
+    }
+    
+    // Add in the properties
+    $this->chado->delete('1:cvtermprop')->condition('cvterm_id', $cvterm->cvterm_id)->execute();
+    foreach ($term->getProperties() as $term_id => $properties) {
+      foreach  ($properties as $rank => $tuple) {
+        $type_term = $this->getChadoCVTerm($tuple[0]);
+        if (!$type_term) {
+          return False;
+        }
+        $value = $tuple[1];
+        $this->chado->insert('1:cvtermprop')
+          ->fields([
+            'cvterm_id' => $cvterm->cvterm_id,
+            'type_id' => $type_term->cvterm_id,
+            'value' => $value,
+            'rank' => $rank
+          ])
+          ->execute();
+      }
+    }
+    
+    // Add in the alternate IDs.
+    $this->chado->delete('1:cvterm_dbxref')->condition('cvterm_id', $cvterm->cvterm_id)->execute();
+    foreach ($term->getAltIds() as $term_id) {
+      $alt_dbxref = $this->getChadoDBXrefbyTermID($term_id);
+      if (!$alt_dbxref) {      
+        $alt_dbxref = $this->insertChadoDBxrefbyTermID($term_id);
+        if (!$alt_dbxref) {
+          return False;
+        }
+      }
+      $this->chado->insert('1:cvterm_dbxref')
+        ->fields([
+          'cvterm_id' => $cvterm->cvterm_id,
+          'dbxref_id' => $alt_dbxref->dbxref_id,
+        ])
+        ->execute();
+    }
+    
+    // Add in the parents.
+    $this->chado->delete('1:cvterm_relationship')->condition('subject_id', $cvterm->cvterm_id)->execute();
+    foreach ($term->getParents() as $term_id => $tuple) {
+      $parent_term = $tuple[0];
+      $rel_term = $tuple[1];
+      $parent_term = $this->getChadoCVTerm($parent_term);
+      if (!$parent_term) {
+        return False;
+      }
+      $rel_cvterm = $this->getChadoCVTerm($rel_term);
+      if (!$rel_cvterm) {
+        return False;
+      }
+      $this->chado->insert('1:cvterm_relationship')
+        ->fields([
+          'type_id' => $rel_cvterm->cvterm_id,
+          'subject_id' => $cvterm->cvterm_id,
+          'object_id' => $parent_term->cvterm_id,
+        ])
+        ->execute();
+        
+      // Update the parent if requested to do so.
+      if ($update_parent) {        
+        $parent_idSpace = $parent_term->getIdSpaceObject();
+        $parent_idSpace->saveTerm($parent_term, ['failIfExists' => $options['failIfExists']]);
+      }
+    }
+    
     return True;
   }
   
@@ -291,34 +783,28 @@ class ChadoIdSpace extends TripalIdSpaceBase {
    * 
    * @param Drupal\tripal\TripalVocabTerms\TripalTerm $term
    *   The term object to update
+   * @param object $cvterm
+   *   The record object for the term to update from the Chado cvterm table.
+   * @param array $options
+   *   The options passed to the saveTerm() function.
    *   
    * @return boolean
    *   True if the update was successful, false otherwise.
    */
-  protected function updateTerm($term) {
-    $definition = $term->getDefinition();
-    $accession = $term->getAccession();
-    $name = $term->getName();
-    
+  protected function updateTerm(TripalTerm $term, object &$cvterm, array $options) {
     try {
-      $cv_id = $this->chado->select('1:cv', 'CV')
-        ->fields('CV', ['cv_id'])
-        ->condition('name', $this->getDefaultVocabulary(), '=')
-        ->execute()
-        ->fetchField();
-      $cvterm_id = $this->chado->select('1:cvterm', 'CVT')
-        ->fields('CVT', ['cvterm_id'])
-        ->condition('cv_id', $cv_id, '=')
-        ->condition('name', $name, '=')
-        ->execute()
-        ->fetchField();
-      $this->chado->insert('1:cvterm')
+      $this->chado->update('1:cvterm')
         ->fields([
-          'name' => $name,
-          'definition' => $definition,
+          'name' => $term->getName(),
+          'definition' => $term->getDefinition(),
+          'is_obsolete' => $term->isObsolete() ? 1 : 0,
+          'is_relationshiptype' => $term->isRelationshipType() ? 1 : 0,
         ])
-        ->condition('cvterm_id', $cvterm_id, '=')
+        ->condition('cvterm_id', $cvterm->cvterm_id)
         ->execute();
+      $cvterm = $this->getChadoCVTerm($term);
+        
+      $this->saveTermAttributes($term, $cvterm, $options);
     }
     catch (Exception $e) {
       $this->messageLogger->error('ChadoIdSpace: could not update the cvterm record: @message',
