@@ -5,6 +5,7 @@ namespace Drupal\tripal_chado\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\tripal\TripalDBX;
 
 class ChadoPrepareForm extends FormBase {
 
@@ -32,13 +33,43 @@ class ChadoPrepareForm extends FormBase {
         It will also add some management tables to Drupal and add some default
         content types for biological and ancillary data."),
     ];
-
+    
+    $info[] = 'Tripal Chado Integration now supports <strong>setting the schema
+      name</strong> local Chado instances are installed in. In Tripal v3 and
+      lower, the recommended name for your chado schema was <code>chado</code>
+      and that is still the default. Note: Schema name cannot be changed once
+      set.';
+    $info[] = 'Additionally, you can now install <strong>multiple chado
+      instances</strong>, although this is only recommended as needed. Examples
+      where you may need multiple chado instances: (1) separate testing version of
+      chado, (2) different chado instances for specific user groups (i.e. breeders
+      of different crops), (3) both a public and private chado where Drupal
+      permissions are not sufficient.';
+    $info[] = 'Here you can prepare any of the Chado instances you may have 
+     installed."';
+    
+    $form['advanced'] = [
+      '#type' => 'details',
+      '#title' => 'Advanced Options',
+      '#description' => '<p>' . implode ('</p><p>', $info) . '</p>',
+    ];
+    
+    
+    
+    $chado_schemas = [];
+    $chado = \Drupal::service('tripal_chado.database');
+    foreach ($chado->getAvailableInstances() as $schema_name => $details) {
+      $chado_schemas[$schema_name] = $schema_name;
+    }
+    $default_chado = $chado->getSchemaName();
+    
     $form['advanced']['schema_name'] = [
-      '#type' => 'textfield',
+      '#type' => 'select',
       '#title' => 'Chado Schema Name',
       '#required' => TRUE,
-      '#description' => 'The name of the schema to install chado in.',
-      '#default_value' => 'chado',
+      '#description' => 'Select one of the installed Chado schemas to prepare..',
+      '#options' => $chado_schemas,
+      '#default_value' => $default_chado,
     ];
 
     $form['prepare-button'] = [

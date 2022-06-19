@@ -5,6 +5,7 @@
  */
 
 use Drupal\tripal_chado\api\ChadoSchemaExtended;
+use Drupal\tripal_chado\Database\ChadoConnection;
 
 /**
  * @defgroup tripal_custom_tables_api Chado Custom Tables
@@ -34,16 +35,23 @@ use Drupal\tripal_chado\api\ChadoSchemaExtended;
  * @param bool $skip_if_exists
  *   True if the table should not be changed if it already exists. 
  *   False, to change it regardles.
+ * @param Drupal\tripal_chado\Database\ChadoConnection $chado
+ *   A ChadoConnection instance. If none is proivded then
+ *   the default chado installation is used.
  * @return bool
  *   True if the table was edited succesfully, False otherwise.
  */
-function chado_edit_custom_table(int $table_id, string $table_name, array $schema, bool $skip_if_exists = True) : bool{
+function chado_edit_custom_table(int $table_id, string $table_name, 
+    array $schema, bool $skip_if_exists = True, ChadoConnection $chado = NULL) : bool {
+  
   $logger = \Drupal::service('tripal.logger');
   
   // Get connections to the Drupal tables and to Chado.
   $public = \Drupal::database();
   $transaction = $public->startTransaction();
-  $chado = \Drupal::service('tripal_chado.database');
+  if (!$chado) {
+    $chado = \Drupal::service('tripal_chado.database');
+  }
   $transaction_chado = $chado->startTransaction();
 
   try {
@@ -147,12 +155,25 @@ function chado_edit_custom_table(int $table_id, string $table_name, array $schem
  *   If this custom tabler is a materialized view, the mview ID.
  * @param bool $redirect
  *   If this form should redirect to a new page.
+ * @param Drupal\tripal_chado\Database\ChadoConnection $chado
+ *   A ChadoConnection instance. If none is proivded then
+ *   the default chado installation is used.
  *    
  * @return bool
  *   True if the table was created successfully, False otherwise.
  */
 function chado_create_custom_table(string $table, array $schema, bool $skip_if_exists = TRUE, 
-    int $mview_id = NULL, bool $redirect = TRUE) : bool {
+    int $mview_id = NULL, bool $redirect = TRUE, ChadoConnection $chado = NULL) : bool {
+  
+  // This connection is the default which is 'public' schema
+  $public = \Drupal::database();
+  $transaction = $public->startTransaction();
+  
+  // This database connection is the 'chado' schema
+  if (!$chado) {
+    $chado = \Drupal::service('tripal_chado.database');
+  }
+  $transaction_chado = $chado->startTransaction();
   
   $logger = \Drupal::service('tripal.logger');
     
@@ -169,14 +190,6 @@ function chado_create_custom_table(string $table, array $schema, bool $skip_if_e
     $logger->error('chado_create_custom_table(). Please provide an array for the $schema argument to the chado_create_custom_table() function');
     return FALSE;
   }
-
-  // This connection is the default which is 'public' schema
-  $public = \Drupal::database();
-  $transaction = $public->startTransaction();
-
-  // This database connection is the 'chado' schema
-  $chado = \Drupal::service('tripal_chado.database');
-  $transaction_chado = $chado->startTransaction();
   
   try {
     $table_exists = $chado->schema()->tableExists($table);
@@ -346,17 +359,22 @@ function chado_get_custom_table_names($include_mview = TRUE) : array {
  *
  * @param int $table_id
  *   The numeric custom table ID.
+ * @param Drupal\tripal_chado\Database\ChadoConnection $chado
+ *   A ChadoConnection instance. If none is proivded then
+ *   the default chado installation is used.
  * @return bool
  *   True if the table was sucessfully deleted, False otherwise.
  */
-function chado_delete_custom_table(int $table_id) : bool{
+function chado_delete_custom_table(int $table_id, ChadoConnection $chado = NULL) : bool{
   $logger = \Drupal::service('tripal.logger');
 
   $public = \Drupal::database();
   $transaction = $public->startTransaction();
 
   // This database connection is the 'chado' schema
-  $chado = \Drupal::service('tripal_chado.database');
+  if (!$chado) {
+    $chado = \Drupal::service('tripal_chado.database');
+  }
   $transaction_chado = $chado->startTransaction();
 
   try {

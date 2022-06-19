@@ -25,6 +25,11 @@ use Drupal\tripal\Entity\TripalEntityType;
  * @endcode
  */
 class ChadoPreparer extends ChadoTaskBase {
+  
+  /**
+   * A ChadoConnection Instance.
+   */
+  protected $chado = NULL;
 
   /**
    * Name of the task.
@@ -121,13 +126,16 @@ class ChadoPreparer extends ChadoTaskBase {
       throw new LockException("Unable to acquire all locks for task. See logs for details.");
     }
 
+    // Make sure we use the specified Chado schema.
+    $schema_name = $this->outputSchemas[0]->getSchemaName();    
+    $this->chado = \Drupal::service('tripal_chado.database');
+    $this->chado->setSchemaName($schema_name);
+    
     try
-    {
-      $chado_schema = $this->outputSchemas[0]->getSchemaName();
-
+    {            
       $this->setProgress(0.1);
       $this->logger->notice("Creating Tripal Materialized Views and Custom Tables...");
-      $chado_version = chado_get_version(FALSE, FALSE, $output_schema);
+      $chado_version = $this->chado->getVersion();
       
       if ($chado_version == '1.3') {
         $this->add_vx_x_custom_tables();
@@ -277,7 +285,8 @@ class ChadoPreparer extends ChadoTaskBase {
       ],
     ];
     
-    chado_create_custom_table('tripal_gff_temp', $schema, TRUE, NULL, FALSE);
+    chado_create_custom_table('tripal_gff_temp', $schema, TRUE, NULL, 
+      FALSE, $this->chado);
   }
   
   /**
@@ -317,7 +326,8 @@ class ChadoPreparer extends ChadoTaskBase {
         'tripal_gff_temp_idx0' => ['parent_id'],
       ],
     ];
-    chado_create_custom_table('tripal_gffcds_temp', $schema, TRUE, NULL, FALSE);
+    chado_create_custom_table('tripal_gffcds_temp', $schema, TRUE, NULL, 
+      FALSE, $this->chado);
   }
   
   /**
@@ -352,7 +362,8 @@ class ChadoPreparer extends ChadoTaskBase {
         'tripal_gff_temp_uq0' => ['feature_id'],
       ],
     ];
-    chado_create_custom_table('tripal_gffprotein_temp', $schema, TRUE, NULL, FALSE);
+    chado_create_custom_table('tripal_gffprotein_temp', $schema, TRUE, NULL, 
+      FALSE, $this->chado);
   }
   
   /**
@@ -704,7 +715,7 @@ class ChadoPreparer extends ChadoTaskBase {
     ";
   
     // Create the MView
-    chado_add_mview($mv_name, 'tripal_chado', $schema, $sql, $comment, FALSE);
+    chado_add_mview($mv_name, 'tripal_chado', $schema, $sql, $comment, FALSE, $this->chado);
   }
   
   /**
@@ -758,7 +769,7 @@ class ChadoPreparer extends ChadoTaskBase {
     ";
   
     // Create the MView
-    chado_add_mview($mv_name, 'tripal_chado', $schema, $sql, $comment, FALSE);
+    chado_add_mview($mv_name, 'tripal_chado', $schema, $sql, $comment, FALSE, $this->chado);
   }
   
   
@@ -780,8 +791,7 @@ class ChadoPreparer extends ChadoTaskBase {
   protected function tripal_chado_add_analysisfeatureprop_table() {
     // Create analysisfeatureprop table in chado.  This is needed for Chado
     // version 1.11, the table exists in Chado 1.2.
-    $connection_chado = \Drupal::service('tripal_chado.database');
-    $schema = $connection_chado->schema();
+    $schema = $this->chado->schema();
     if (!$schema->tableExists('analysisfeatureprop')) {
       $sql = "
         CREATE TABLE {analysisfeatureprop} (
@@ -795,7 +805,7 @@ class ChadoPreparer extends ChadoTaskBase {
           CONSTRAINT analysisfeatureprop_type_id_fkey FOREIGN KEY (type_id) REFERENCES {cvterm}(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
         )
       ";
-      $connection_chado->query($sql, []);
+      $this->chado->query($sql);
     }
   }
 

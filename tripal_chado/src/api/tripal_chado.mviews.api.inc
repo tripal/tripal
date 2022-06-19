@@ -5,6 +5,8 @@
  * views in Chado.
  */
 
+use Drupal\tripal_chado\Database\ChadoConnection;
+
 /**
  * @defgroup tripal_mviews_api Chado Materalized Views
  * @ingroup tripal_chado_api
@@ -35,13 +37,22 @@
  *   Optional (default: TRUE). By default this function redirects back to
  *   admin pages. However, when called by Drush we don't want to redirect. This
  *   parameter allows this to be used as a true API function.
- *
+ * @param Drupal\tripal_chado\Database\ChadoConnection $chado
+ *   A ChadoConnection instance. If none is proivded then
+ *   the default chado installation is used.
+ *   
  * @return
  *   TRUE if the materialized view was successfully added, FALSE otherwise.
  *
  * @ingroup tripal_mviews_api
  */
-function chado_add_mview($name, $modulename, $mv_schema, $query, $comment = NULL, $redirect = TRUE) {
+function chado_add_mview($name, $modulename, $mv_schema, $query, 
+    $comment = NULL, $redirect = TRUE, ChadoConnection $chado = NULL) {
+  
+  $public = \Drupal::database();     
+  if (!$chado) {
+    $chado = \Drupal::service('tripal_chado.database');
+  }
 
   if (!array_key_exists('table', $mv_schema)) {
     tripal_report_error('tripal_chado', TRIPAL_ERROR,
@@ -68,7 +79,8 @@ function chado_add_mview($name, $modulename, $mv_schema, $query, $comment = NULL
   }
 
   if (!$mview_id) {
-    $transaction = db_transaction();
+    $transaction_chado = $chado->startTransaction();
+    $transaction = $public->startTransaction(); 
     try {
       // Create a new record.
       $record = new stdClass();
@@ -88,14 +100,17 @@ function chado_add_mview($name, $modulename, $mv_schema, $query, $comment = NULL
       if (drupal_write_record('tripal_mviews', $record)) {
 
         // Drop the table from chado if it exists.
-        if (chado_table_exists($mv_table)) {
+        if (chado_table_exists($mv_table, $chado->getSchemaName())) {
           $sql = 'DROP TABLE {' . $mv_table . '}';
-          chado_query($sql);
+          chado_query($sql, [], [], $chado->getSchemaName());
         }
         // Create the table.
-        chado_create_custom_table($mv_table, $mv_schema, 0, $record->mview_id, $redirect);
+        chado_create_custom_table($mv_table, $mv_schema, 0, $record->mview_id, 
+          $redirect, $chado);
       }
-    } catch (Exception $e) {
+    } 
+    catch (Exception $e) {
+      $transaction_chado->rollback();
       $transaction->rollback();
       watchdog_exception('tripal_chado', $e);
       $error = _drupal_decode_exception($e);
@@ -142,13 +157,23 @@ function chado_add_mview($name, $modulename, $mv_schema, $query, $comment = NULL
  * @param $mv_schema
  *   If using the newer Schema API array to define the materialized view then
  *   this variable should contain the array.
+ * @param Drupal\tripal_chado\Database\ChadoConnection $chado
+ *   A ChadoConnection instance. If none is proivded then
+ *   the default chado installation is used.
  *
  * @ingroup tripal_mviews_api
  */
 function chado_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
-                          $indexed, $query, $special_index, $comment = NULL, $mv_schema = NULL) {
+    $indexed, $query, $special_index, $comment = NULL,
+    $mv_schema = NULL, ChadoConnection $chado = NULL) {
 
-  $transaction = db_transaction();
+  $public = \Drupal::database(); 
+  if (!$chado) {
+    $chado = \Drupal::service('tripal_chado.database');
+  }
+  
+  $transaction_chado = $chado->startTransaction();
+  $transaction = $public->startTransaction(); 
   try {
     // get the table name from the schema array
     $schema_arr = [];
@@ -180,7 +205,7 @@ function chado_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
     $results = db_query($sql, [':mview_id' => $mview_id]);
     $mview = $results->fetchObject();
     if ($mview->mv_schema == $mv_schema and $mview->mv_table == $mv_table) {
-      chado_create_custom_table($mv_table, $schema_arr, 0, $record->mview_id);
+      chado_create_custom_table($mv_table, $schema_arr, 0, $record->mview_id, TRUE, $chado);
       drupal_set_message(t("Materialized view '%name' created", ['%name' => $name]));
     }
     else {
@@ -203,7 +228,9 @@ function chado_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
       }
     }
 
-  } catch (Exception $e) {
+  } 
+  catch (Exception $e) {
+    $transaction_chado->rollback();
     $transaction->rollback();
     watchdog_exception('tripal_chado', $e);
     $error = _drupal_decode_exception($e);
@@ -317,14 +344,22 @@ function chado_get_mviews() {
  *   The action to be taken. One of update or delete.
  * @param $mview_id
  *   The unique ID of the materialized view for the action to be performed on.
- *
+ * @param Drupal\tripal_chado\Database\ChadoConnection $chado
+ *   A ChadoConnection instance. If none is proivded then
+ *   the default chado installation is used.
+ *   
  * @return
  *   TRUE if the deletion was a success, FALSE on error.
  *
  * @ingroup tripal_mviews_api
  */
-function chado_delete_mview($mview_id) {
+function chado_delete_mview($mview_id, ChadoConnection $chado = NULL) {
   global $user;
+  
+  $public = \Drupal::database(); 
+  if (!$chado) {
+    $chado = \Drupal::service('tripal_chado.database');
+  }
 
   if (!$mview_id) {
     tripal_report_error('tripal_chado', TRIPAL_ERROR,
@@ -333,7 +368,8 @@ function chado_delete_mview($mview_id) {
   }
 
   try {
-    $transaction = db_transaction();
+    $transaction_chado = $chado->startTransaction();
+    $transaction = $public->startTransaction(); 
 
     // Get this mview details.
     $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id";
@@ -346,17 +382,17 @@ function chado_delete_mview($mview_id) {
     db_query($sql);
 
     // Does the table already exist?
-    $mview_exists = chado_table_exists($mview->mv_table);
+    $mview_exists = chado_table_exists($mview->mv_table, $chado->getSchemaName());
 
     // Drop the table from chado if it exists.
     if ($mview_exists) {
       $sql = "DROP TABLE {" . $mview->mv_table . "}";
-      $success = chado_query($sql);
+      $success = chado_query($sql, [], [], $chado->getSchemaName());
       if ($success) {
         //unset the variable
         global $databases;
         $default_db = $databases['default']['default']['database'];
-        $chado_schema = chado_get_schema_name('chado');
+        $chado_schema = $chado->getSchemaName();
         if (isset($GLOBALS["chado_tables"][$default_db][$chado_schema][$mview->mv_table])) {
           unset($GLOBALS["chado_tables"][$default_db][$chado_schema][$mview->mv_table]);
         }
@@ -371,7 +407,9 @@ function chado_delete_mview($mview_id) {
     else {
       return TRUE;
     }
-  } catch (Exception $e) {
+  } 
+  catch (Exception $e) {
+    $transaction_chado->rollback();
     $transaction->rollback();
     watchdog_exception('tripal_chado', $e);
     $error = _drupal_decode_exception($e);
@@ -387,28 +425,39 @@ function chado_delete_mview($mview_id) {
  *
  * @param $mview_id
  *   The unique identifier for the materialized view to be updated.
- *
+ *   
+ * @param Drupal\tripal_chado\Database\ChadoConnection $chado
+ *   A ChadoConnection instance. If none is proivded then
+ *   the default chado installation is used.
+ *   
  * @return
  *   True if successful, FALSE otherwise.
  *
  * @ingroup tripal_mviews_api
  */
-function chado_populate_mview($mview_id) {
+function chado_populate_mview($mview_id, ChadoConnection $chado) {
+  
+  $public = \Drupal::database();
+  if (!$chado) {
+    $chado = \Drupal::service('tripal_chado.database');
+  }
+  
   $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id ";
   $results = db_query($sql, [':mview_id' => $mview_id]);
   $mview = $results->fetchObject();
   if ($mview) {
     // Execute the query inside a transaction so that it doesn't destroy 
     // existing data that may leave parts of the site unfunctional.
-    $transaction = db_transaction();
-    $previous_db = chado_set_active('chado');  // use chado database
+    $transaction_chado = $chado->startTransaction();
+    $transaction = $public->startTransaction();    
+     
     try {
-      $success = chado_query("DELETE FROM {" . $mview->mv_table . "}");
-      $success = chado_query("INSERT INTO {" . $mview->mv_table . "} ($mview->query)");
+      $success = chado_query("DELETE FROM {" . $mview->mv_table . "}", [], [], $chado->getSchemaName());
+      $success = chado_query("INSERT INTO {" . $mview->mv_table . "} ($mview->query)", [], [], $chado->getSchemaName());
       // If success get the number of results and update the table record.
       if ($success) {
         $sql = "SELECT count(*) as cnt FROM {" . $mview->mv_table . "}";
-        $results = chado_query($sql);
+        $results = chado_query($sql, [], [], $chado->getSchemaName());
         $count = $results->fetchObject();
         $record = new stdClass();
         $record->mview_id = $mview_id;
@@ -420,10 +469,10 @@ function chado_populate_mview($mview_id) {
       else {
         throw new Exception("ERROR populating the materialized view " . $mview->mv_table . ". See Drupal's recent log entries for details.");
       }
-      chado_set_active($previous_db);
-    } catch (Exception $e) {
+    } 
+    catch (Exception $e) {
+      $transaction_chado->rollback();
       $transaction->rollback();
-      chado_set_active($previous_db);
       // Print and save the error message.
       $record = new stdClass();
       $record->mview_id = $mview_id;
