@@ -128,14 +128,7 @@ class ChadoPreparer extends ChadoTaskBase {
       $this->setProgress(0.1);
       $this->logger->notice("Creating Tripal Materialized Views and Custom Tables...");
       $chado_version = chado_get_version(FALSE, FALSE, $output_schema);
-      if ($chado_version == '1.1') {
-        $this->add_v1_1_custom_tables();
-        $this->add_vx_x_custom_tables();
-      }
-      if ($chado_version == '1.2') {
-        $this->add_v1_2_custom_tables();
-        $this->add_vx_x_custom_tables();
-      }
+      
       if ($chado_version == '1.3') {
         $this->add_vx_x_custom_tables();
         $this->fix_v1_3_custom_tables();
@@ -147,19 +140,19 @@ class ChadoPreparer extends ChadoTaskBase {
 
       $this->setProgress(0.3);
       $this->logger->notice('Populating materialized view cv_root_mview...');
-      // TODO: populate mviews.
+      // POSTPONED: populate mviews. // SEEMS TO BE MVIEW RELATED AND THUS NOT NEEDED FOR TRIPAL LOADERS
       
       $this->setProgress(0.4);
       $this->logger->notice("Making semantic connections for Chado tables/fields...");
-      // $this->populate_chado_semweb_table();
+      // $this->populate_chado_semweb_table(); // WE NEED TO DO THIS
       
       $this->setProgress(0.5);
       $this->logger->notice("Map Chado Controlled vocabularies to Tripal Terms...");
-      // TODO
+      // TODO //  NEXT UP ON THE LIST TO DETERMINE IF WE NEED THIS
       
       $this->setProgress(0.6);
       $this->logger->notice('Populating materialized view db2cv_mview...'); 
-      // TODO     
+      // POSTPONED (mview related)    
 
       $this->setProgress(0.7);
       $this->logger->notice("Creating default content types...");
@@ -191,13 +184,50 @@ class ChadoPreparer extends ChadoTaskBase {
   }
 
 
+
+    /**
+   * Many of the custom tables created for Chado v1.2 are now in Chado v1.3.
+   *
+   * These tables need not be tracked by Tripal anymore as custom tables and
+   * in some cases the Chado version has different columns so we need to
+   * adjust them.
+   */
+  protected function fix_v1_3_custom_tables() {
+    
+    $connection_chado = \Drupal::service('tripal_chado.database');
+
+    // Update the featuremap_dbxref table by adding an is_current field.
+    if (!chado_column_exists('featuremap_dbxref', 'is_current')) {
+      $connection_chado->query("ALTER TABLE {featuremap_dbxref} ADD COLUMN is_current boolean DEFAULT true NOT NULL;");
+    }
+    
+    // Remove the previously managed custom tables from the
+    // tripal_custom_tables table.
+    // \Drupal::database()->select
+    $db = \Drupal::database();
+    $table_names = [
+      'analysisfeatureprop',
+      'featuremap_dbxref',
+      'contactprop',
+      'featuremapprop',
+      'featureposprop',
+      'pubauthor_contact',
+    ];
+    for ($i=0; $i<count($table_names); $i++) {
+      $table_name = $table_names[$i];
+      $db->delete('tripal_custom_tables')
+      ->condition('table_name', $table_name)
+      ->execute();
+    }
+  }
+
   /**
    * Add custom tables for any version of Chado.
    *
    * These are tables that Chado uses to manage the site (i.e. temporary
    * loading tables) and not for primary data storage.
    */
-  protected function tripal_chado_add_vx_x_custom_tables() {
+  protected function add_vx_x_custom_tables() {
     // Add in custom tables.
     $this->tripal_chado_add_tripal_gff_temp_table();
     $this->tripal_chado_add_tripal_gffcds_temp_table();
@@ -205,12 +235,13 @@ class ChadoPreparer extends ChadoTaskBase {
     $this->tripal_chado_add_tripal_obo_temp_table();
 
     // Add in materialized views.
-    $this->tripal_chado_add_organism_stock_count_mview();
-    $this->tripal_chado_add_library_feature_count_mview();
-    $this->tripal_chado_add_organism_feature_count_mview();
-    $this->tripal_chado_add_analysis_organism_mview();
-    $this->tripal_chado_add_cv_root_mview_mview();
-    $this->tripal_chado_add_db2cv_mview_mview();
+    // TODO BUT NOT CRITICAL
+    // $this->tripal_chado_add_organism_stock_count_mview();
+    // $this->tripal_chado_add_library_feature_count_mview();
+    // $this->tripal_chado_add_organism_feature_count_mview();
+    // $this->tripal_chado_add_analysis_organism_mview();
+    // $this->tripal_chado_add_cv_root_mview_mview();
+    // $this->tripal_chado_add_db2cv_mview_mview();
   }  
 
   protected function tripal_chado_add_tripal_gff_temp_table() {
@@ -738,7 +769,7 @@ class ChadoPreparer extends ChadoTaskBase {
    * For Chado v1.2 or greater these tables are not needed as they are part of the
    * schema update.
    */
-  protected function tripal_chado_add_v1_1_custom_tables() {
+  protected function add_v1_1_custom_tables() {
     $this->tripal_chado_add_analysisfeatureprop_table();
   }
 
