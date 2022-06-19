@@ -2,9 +2,9 @@
 
 namespace Drupal\tripal_biodb\Exception;
 
-use Drupal\tripal_biodb\Exception\BioDbException;
+use Drupal\tripal\TripalDBX\Exceptions\TripalDbxException;
 
 /**
  * Exception thrown for lock errors.
  */
-class LockException extends BioDbException {}
+class LockException extends TripalDbxException {}

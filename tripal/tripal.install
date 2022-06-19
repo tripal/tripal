@@ -12,25 +12,20 @@ use \Drupal\Core\Database\Database;
  * @ingroup tripal
  */
 function tripal_install() {
-  // On upgrade from Tv2 to Tv3 we need to add a new field to the tripal_jobs
-  // table it's missing.
-  $schema = Database::getConnection()->schema();
-  if (!$schema->fieldExists('tripal_jobs', 'includes')) {
-    $schema->addField('tripal_jobs', 'includes', [
-      'type' => 'text',
-      'description' => "A serialized array of file paths that should be included prior to executing the job.",
-      'length' => 20,
-      'not null' => FALSE,
-    ]);
-  }
 
-  //$menu = [
-  //  'menu_name' => 'data_search',
-  //  'title' => t('Data Search'),
-  //  'description' => '',
-  //];
-  //menu_save($menu);
+  // Reserves Drupal schema in 'reserved_schema_patterns' settings.
+  $tripaldbx = \Drupal::service('tripal.dbx');
+  $drupal_schema = $tripaldbx->getDrupalSchemaName();
+  $config = \Drupal::service('config.factory')
+    ->getEditable('tripaldbx.settings');
+  $reserved_schema_patterns = $config->get('reserved_schema_patterns') ?? [];
+  $reserved_schema_patterns[$drupal_schema] = 'Drupal installation';
+  $config->set('reserved_schema_patterns', $reserved_schema_patterns)->save();
 
+  // Add the Tripal DBX Cloner functions to the Drupal schema.
+  tripal_install_cloner();
+
+  // Add the Data Search Menu for Tripal specific searches.
   $storage = Drupal::entityTypeManager()->getStorage('menu');
   $menu = $storage->load('data_search');
   if (is_null($menu)) {
@@ -66,37 +61,21 @@ function tripal_add_variables() {
 }
 
 /**
+ * Implements hook_uninstall().
  *
+ * @ingroup tripal
  */
 function tripal_uninstall() {
-  /*
-   // So somehow I was able to uninstall this module without deleting the bundles. This
-   // caused aweful errors because fields weren't deleted so when I re-installed, the code
-   // tried to create fields that were inactive (despite checking if the field exists
-   // before creating). The following code was meant to ensure that all content was deleted
-   // before uninstall so these errors would not occur. Unfortunatly I am now unable to
-   // test this because the Field API module is disabling uninstall of Tripal Chado until
-   // all the content is deleted. Thus ensuring the errors described above don't occur.
-   // But I'm Sure I was able to uninstall with content before...
-   // **I am slowly going crazy; Crazy going slowly am I**
-   // Anyway, I'll leaving the solution code here in case I am able to repeat it in
-   // the future.
-   // @see https://www.drupal.org/node/1262092
-   // @see https://www.drupal.org/node/1861710
 
-   // First delete all TripalEntities.
-   $entity_ids = (new EntityFieldQuery)->entityCondition("entity_type", "TripalEntity")->execute();
-   $entity_ids = reset($entity_ids);
-   entity_delete_multiple("TripalEntity", array_keys($entity_ids));
+  // Remove configuration.
+  // -- Reserves Drupal schema in 'reserved_schema_patterns' settings.
+  $config = \Drupal::service('config.factory')
+    ->getEditable('tripaldbx.settings');
+  $config->delete();
 
-   // Then delete all TripalBundles.
-   $bundle_ids = (new EntityFieldQuery)->entityCondition("entity_type", "TripalBundle")->execute();
-   $bundle_ids = reset($bundle_ids);
-   entity_delete_multiple("TripalBundle", array_keys($bundle_ids));
+  // Remove the Tripal DBX Cloner functions from the Drupal schema.
+  tripal_uninstall_cloner();
 
-   // Finally purge all fields that are no longer used.
-   field_purge_batch(100);
-   */
 }
 
 ///**
@@ -673,5 +652,123 @@ function tripal_update_8401() {
   if ($count) {
     $db->query('ALTER INDEX tripal_admin_notfications____pkey RENAME TO tripal_admin_notifications____pkey;');
     $messenger->addMessage('Renamed index tripal_admin_notfications____pkey to tripal_admin_notifications____pkey.');
+  }
+}
+
+/**
+ * Adds schema cloning functionality.
+ */
+function tripal_install_cloner() {
+  $logger = \Drupal::service('tripal.logger');
+  $db = \Drupal::database();
+
+  $sql_cloner_path =
+    drupal_get_path('module', 'tripal')
+    . '/src/TripalDBX/pg-clone-schema/clone_schema.sql';
+
+  // Replaces "public." in SQL if it is not the default Drupal schema.
+  $tripaldbx = \Drupal::service('tripal.dbx');
+  $drupal_schema = $tripaldbx->getDrupalSchemaName();
+  if (empty($drupal_schema) || ('public' == $drupal_schema)) {
+    $replacements = [];
+    $drupal_schema = 'public';
+  }
+  else {
+    $replacements = [
+      'search' => [
+        '/public\\.tripal_get_table_ddl/',
+        '/public\\.tripal_clone_schema/',
+      ],
+      'replace' => [
+        $drupal_schema . '.tripal_get_table_ddl',
+        $drupal_schema . '.tripal_clone_schema',
+      ],
+    ];
+  }
+
+  $tripaldbx->runSqlFile($sql_cloner_path, $replacements, $db);
+
+  // Check functions were installed.
+  $function_names = ['tripal_get_table_ddl', 'tripal_clone_schema', ];
+  $sql_query = "
+    SELECT COUNT(1) AS \"funcs\"
+    FROM
+      pg_proc p
+      JOIN pg_namespace n ON (
+        n.oid = p.pronamespace
+        AND n.nspname = :schema
+      )
+    WHERE
+      p.proname IN (:function_names[])
+  ";
+  $args = [
+    ':function_names[]' => $function_names,
+    ':schema' => $drupal_schema,
+  ];
+  $result = $db->query($sql_query, $args)->fetch();
+
+  if (!$result || ($result->funcs < 2)) {
+    $message =
+      "Failed to install Tripal SQL cloner functions ($sql_cloner_path).";
+    $logger->error($message);
+    throw new \Exception($message);
+  }
+}
+
+/**
+ * Remove schema cloning functionality.
+ */
+function tripal_uninstall_cloner() {
+  $logger = \Drupal::service('tripal.logger');
+  $db = \Drupal::database();
+
+  $sql_uninstall_cloner_path =
+    drupal_get_path('module', 'tripal')
+    . '/src/TripalDBX/pg-clone-schema/clone_schema_uninstall.sql';
+
+  // Replaces "public." in SQL if it is not the default Drupal schema.
+  $tripaldbx = \Drupal::service('tripal.dbx');
+  $drupal_schema = $tripaldbx->getDrupalSchemaName();
+  if (empty($drupal_schema) || ('public' == $drupal_schema)) {
+    $replacements = [];
+  }
+  else {
+    $replacements = [
+      'search' => [
+        '/public\\.tripal_get_table_ddl/',
+        '/public\\.tripal_clone_schema/',
+      ],
+      'replace' => [
+        $drupal_schema . '.tripal_get_table_ddl',
+        $drupal_schema . '.tripal_clone_schema',
+      ],
+    ];
+  }
+
+  $tripaldbx->runSqlFile($sql_uninstall_cloner_path, $replacements, $db);
+
+  // Check functions were uninstalled.
+  $function_names = ['tripal_get_table_ddl', 'tripal_clone_schema', ];
+  $sql_query = "
+    SELECT COUNT(1) AS \"funcs\"
+    FROM
+      pg_proc p
+      JOIN pg_namespace n ON (
+        n.oid = p.pronamespace
+        AND n.nspname = :schema
+      )
+    WHERE
+      p.proname IN (:function_names[])
+  ";
+  $args = [
+    ':function_names[]' => $function_names,
+    ':schema' => $drupal_schema,
+  ];
+  $result = $db->query($sql_query, $args)->fetch();
+
+  if (!$result || ($result->funcs > 0)) {
+    $message =
+      "Failed to uninstall Tripal SQL cloner functions. You may have to remove them manually using '$sql_uninstall_cloner_path'.";
+    $logger->warning($message);
   }
 }

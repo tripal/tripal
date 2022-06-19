@@ -18,12 +18,12 @@ abstract class ChadoTaskBase extends BioTaskBase {
   /**
    * {@inheritdoc}
    */
-  public function getBioClass($class) {
+  public function getTripalDbxClass($class) {
     static $classes = [
       'Connection' => ChadoConnection::class,
     ];
     if (!array_key_exists($class, $classes)) {
-      throw new ConnectionException("Invalid BioDb class '$class'.");
+      throw new ConnectionException("Invalid Tripal Dbx class '$class'.");
     }
     return $classes[$class];
   }
