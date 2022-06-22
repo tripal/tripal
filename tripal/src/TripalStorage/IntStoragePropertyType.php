@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\tripal4\TripalStorage;
+namespace Drupal\tripal\TripalStorage;
 
 use Drupal\tripal4\Base\StoragePropertyTypeBase;
 
@@ -12,17 +12,17 @@ class IntStoragePropertyType extends StoragePropertyTypeBase {
   /**
    * Constructs a new integer tripal storage property type.
    *
-   * @param string entityId
-   *   The entity id associated with this property type.
+   * @param string entityType
+   *   The entity type associated with this property type.
    *
-   * @param string fieldId
-   *   The field id associated with this property type.
+   * @param string fieldType
+   *   The field type associated with this property type.
    *
-   * @param string fieldKey
-   *   The field key associated with this property type.
+   * @param string key
+   *   The key associated with this property type.
    */
-  public function __construct($entityId,$fieldId,$fieldKey) {
-    parent::__construct($entityId,$fieldId,$fieldKey,"int");
+  public function __construct($entityType,$fieldType,$key) {
+    parent::__construct($entityType,$fieldType,$key,"int");
   }
 
 }

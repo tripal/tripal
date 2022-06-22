@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\tripal4\TripalStorage;
+namespace Drupal\tripal\TripalStorage;
 
 use Drupal\tripal4\Interface\TripalFieldItemInterface
 use Drupal\Core\Entity\ContentEntityBase

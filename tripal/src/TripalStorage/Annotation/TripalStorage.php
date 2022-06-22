@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\tripal4\Annotation;
+namespace Drupal\tripal\TripalStorage\Annotation;
 
 use Drupal\Component\Annotation\Plugin;
 

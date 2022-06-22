@@ -12,20 +12,20 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
   /**
    * Constructs a new tripal storage property type base.
    *
-   * @param string entityId
-   *   The entity id associated with this storage property type base.
+   * @param string entityType
+   *   The entity type associated with this storage property type base.
    *
-   * @param string fieldId
-   *   The field id associated with this storage property type base.
+   * @param string fieldType
+   *   The field type associated with this storage property type base.
    *
-   * @param string fieldKey
-   *   The field key associated with this storage property type base.
+   * @param string key
+   *   The key associated with this storage property type base.
    *
    * @param string id
    *   The id of this storage property type base.
    */
-  public function __construct($entityId,$fieldId,$fieldKey,$id) {
-    parent::__construct($entityId,$fieldId,$fieldKey);
+  public function __construct($entityType,$fieldType,$key,$id) {
+    parent::__construct($entityType,$fieldType,$key);
     $this->id = $id;
   }
 
@@ -47,3 +47,7 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
   private $id;
 
 }
+//Text
+//Boolean
+//Real
+//DateTime

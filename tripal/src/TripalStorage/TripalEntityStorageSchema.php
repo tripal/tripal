@@ -1,5 +1,7 @@
 <?php
 
+namespace Drupal\tripal\TripalStorage;
+
 use \Drupal\tripal4\Base\TripalStorageUpdateException
 
 class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
