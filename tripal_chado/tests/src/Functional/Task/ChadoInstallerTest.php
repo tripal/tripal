@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\tripal_chado\Functional\Task;
 
-use Drupal\Tests\tripal_chado\Functional\ChadoTestBase;
+use Drupal\Tests\tripal_chado\Functional\ChadoTestKernelBase;
 use Drupal\tripal_chado\Task\ChadoInstaller;
 
 
@@ -16,7 +16,7 @@ use Drupal\tripal_chado\Task\ChadoInstaller;
  * @group Tripal Chado Task
  * @group Tripal Chado Installer
  */
-class ChadoInstallerFunctionalTest extends ChadoTestBase {
+class ChadoInstallerFunctionalTest extends ChadoTestKernelBase {
 
   /**
    * Tests task.
@@ -26,7 +26,7 @@ class ChadoInstallerFunctionalTest extends ChadoTestBase {
    */
   public function testPerformTaskInstaller() {
     // Get a temporary schema name.
-    $tripaldbx_db = $this->getTestSchema(ChadoTestBase::SCHEMA_NAME_ONLY);
+    $tripaldbx_db = $this->getTestSchema(ChadoTestKernelBase::SCHEMA_NAME_ONLY);
 
     // Test installer.
     $installer = \Drupal::service('tripal_chado.installer');

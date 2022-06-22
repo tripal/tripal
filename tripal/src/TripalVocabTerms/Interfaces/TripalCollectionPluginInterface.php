@@ -23,4 +23,12 @@ interface TripalCollectionPluginInterface extends PluginInspectionInterface {
    */
   public function destroy();
 
+  /**
+   * Tests if this collection is valid or not.
+   *
+   * @return bool
+   *   True if this collection is valid or false otherwise.
+   */
+  public function isValid();
+
 }

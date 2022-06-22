@@ -6,67 +6,28 @@ use Drupal\tripal\TripalDBX\TripalDbx;
 use Drupal\tripal_chado\Database\ChadoConnection;
 
 /**
- * This is a base class for Chado tests.
+ * This is a PHP Trait for Chado tests.
  *
- * It enables Chado tests schemas and helper functions to efficiently perform
- * tests.
- *
- * Example:
- * @code
- * // Gets a Chado test schema wil dummy data:
- * $tripaldbx_db = $this->getTestSchema(ChadoTestBase::INIT_CHADO_DUMMY);
- * //... do some tests
- * // After all is done, remove the schema properly:
- * $this->freeTestSchema($tripaldbx_db);
- * // Note: if a test fails, the tearDownAfterClass will remove unremoved
- * // schemas.
- * @endcode
+ * It provides the functions and member variables that are 
+ * used for both any test class that needs testing with Chado.
  *
  * @group Tripal
  * @group Tripal Chado
  */
-abstract class ChadoTestBase extends KernelTestBase {
 
+trait ChadoTestTrait  {
+   
+   
   /**
-   * {@inheritdoc}
+   * Tripal DBX tool instance.
    */
-  protected static $modules = ['tripal', 'tripal_biodb', 'tripal_chado'];
-
-  /**
-   * Just get a free test schema name.
-   */
-  public const SCHEMA_NAME_ONLY = 0;
-
-  /**
-   * Create an empty schema.
-   */
-  public const CREATE_SCHEMA = 1;
-
-  /**
-   * Create a schema and initialize it with dummy data.
-   */
-  public const INIT_DUMMY = 2;
-
-  /**
-   * Create a Chado schema with default data.
-   */
-  public const INIT_CHADO_EMPTY = 3;
-
-  /**
-   * Create a Chado schema and initialize it with dummy data.
-   */
-  public const INIT_CHADO_DUMMY = 4;
-
-  /**
-   * Bio database tool instance.
-   */
-  protected $tripal_dbx;
+  protected $tripal_dbx = NULL;
 
   /**
    * Real (Drupal live, not test) config factory.
    */
   protected $realConfigFactory;
-
+  
   /**
    * Base name for test schemas.
    */
@@ -100,24 +61,6 @@ abstract class ChadoTestBase extends KernelTestBase {
    */
   protected static $db = NULL;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp(): void {
-    parent::setUp();
-
-    // Init Tripal.
-    $this->createChadoInstallationsTable();
-
-    // Get config.
-    $this->getRealConfig();
-
-    // TripalDbx.
-    $this->initTripalDbx();
-
-    // Allow test schemas.
-    $this->allowTestSchemas();
-  }
 
   /**
    * {@inheritdoc}
@@ -155,14 +98,14 @@ abstract class ChadoTestBase extends KernelTestBase {
   protected function getRealConfig() {
     // Get original config from Drupal real installation.
     // This is done by getting a connection to the real database first.
-    // Then instanciate a new config factory that will use that database through
+    // Then instantiate a new config factory that will use that database through
     // a new instance of config storage using that database.
     // Get Drupal real database.
     $drupal_db = \Drupal\Core\Database\Database::getConnection(
       'default',
       'simpletest_original_default'
     );
-    // Instanciate a new config storage.
+    // Instantiate a new config storage.
     $config_storage = new \Drupal\Core\Config\DatabaseStorage(
       $drupal_db,
       'config'
@@ -218,39 +161,41 @@ abstract class ChadoTestBase extends KernelTestBase {
    */
   protected function createChadoInstallationsTable() {
     $db = \Drupal::database();
-    $db->schema()->createTable('chado_installations',
-      [
-        'fields' => [
-          'install_id' => [
-            'type' => 'serial',
-            'unsigned' => TRUE,
-            'not null' => TRUE,
+    if (!$db->schema()->tableExists('chado_installations')) {
+      $db->schema()->createTable('chado_installations',
+        [
+          'fields' => [
+            'install_id' => [
+              'type' => 'serial',
+              'unsigned' => TRUE,
+              'not null' => TRUE,
+            ],
+            'schema_name' => [
+              'type' => 'varchar',
+              'length' => 255,
+              'not null' => TRUE,
+            ],
+            'version' => [
+              'type' => 'varchar',
+              'length' => 255,
+              'not null' => TRUE,
+            ],
+            'created' => [
+              'type' => 'varchar',
+              'length' => 255,
+            ],
+            'updated' => [
+              'type' => 'varchar',
+              'length' => 255,
+            ],
           ],
-          'schema_name' => [
-            'type' => 'varchar',
-            'length' => 255,
-            'not null' => TRUE,
+          'indexes' => [
+            'schema_name' => ['schema_name'],
           ],
-          'version' => [
-            'type' => 'varchar',
-            'length' => 255,
-            'not null' => TRUE,
-          ],
-          'created' => [
-            'type' => 'varchar',
-            'length' => 255,
-          ],
-          'updated' => [
-            'type' => 'varchar',
-            'length' => 255,
-          ],
-        ],
-        'indexes' => [
-          'schema_name' => ['schema_name'],
-        ],
-        'primary key' => ['install_id'],
-      ]
-    );
+          'primary key' => ['install_id'],
+        ]
+      );
+    }
   }
 
   /**
@@ -280,13 +225,11 @@ abstract class ChadoTestBase extends KernelTestBase {
         $this->assertTrue($tripaldbx_db->schema()->schemaExists(), 'Test schema created.');
         $success = $tripaldbx_db->executeSqlFile(
           __DIR__ . '/../../../chado_schema/chado-only-1.3.sql',
-          ['chado' => $schema_name]
-        );
+          ['chado' => $schema_name]);
         $this->assertTrue($success, 'Chado schema loaded.');
         $success = $tripaldbx_db->executeSqlFile(
           __DIR__ . '/../../fixtures/fill_chado.sql',
-          'none'
-        );
+          'none');
         $this->assertTrue($success, 'Dummy Chado schema loaded.');
         $this->assertGreaterThan(100, $tripaldbx_db->schema()->getSchemaSize(), 'Test schema not empty.');
         break;
@@ -296,10 +239,14 @@ abstract class ChadoTestBase extends KernelTestBase {
         $this->assertTrue($tripaldbx_db->schema()->schemaExists(), 'Test schema created.');
         $success = $tripaldbx_db->executeSqlFile(
           __DIR__ . '/../../../chado_schema/chado-only-1.3.sql',
-          ['chado' => $schema_name]
-        );
+          ['chado' => $schema_name]);
         $this->assertTrue($success, 'Chado schema loaded.');
         $this->assertGreaterThan(100, $tripaldbx_db->schema()->getSchemaSize(), 'Test schema not empty.');
+        
+        // Add version information to the schema so the tests don't fail.
+        $success = $tripaldbx_db->executeSqlFile(__DIR__ . '/../../fixtures/version.sql',
+            ['chado' => $schema_name]);
+        $this->assertTrue($success, 'Chado version loaded.');
         break;
 
       case static::INIT_DUMMY:
@@ -326,6 +273,15 @@ abstract class ChadoTestBase extends KernelTestBase {
     }
     self::$db = self::$db ?? \Drupal::database();
     self::$testSchemas[$schema_name] = TRUE;
+    
+    // Make sure that any other connections to TripalDBX will see this new test schema as 
+    // the default schema.
+    $config = \Drupal::service('config.factory')->getEditable('tripal_chado.settings');    
+    $config->set('default_schema', $schema_name)->save();
+    
+    // As a safety check, make sure that the tripalDBX object is using the test schema.
+    // We don't want to perform tests in a live schema.
+    $this->assertTrue($tripaldbx_db->getSchemaName() == $schema_name, 'TripalDBX is not using the test schema.');
 
     return $tripaldbx_db;
   }
@@ -341,7 +297,7 @@ abstract class ChadoTestBase extends KernelTestBase {
   ) {
     self::$testSchemas[$tripaldbx_db->getSchemaName()] = FALSE;
     try {
-      $tripaldbx_db->schema()->dropSchema();
+      //$tripaldbx_db->schema()->dropSchema();
     }
     catch (\Exception $e) {
       // Ignore issues.
