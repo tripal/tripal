@@ -26,6 +26,16 @@ interface TripalStoragePluginInterface extends PluginInspectionInterface {
   public function removeTypes($types);
 
   /**
+   * Returns a list of all property types added to this storage plugin type.
+   * WARING! This could be a very expensive call!
+   *
+   * @return array
+   *   Array of all \Drupal\tripal\Base\StoragePropertyTypeBase objects that
+   *   have been added to this storage plugin type.
+   */
+  public function getTypes();
+
+  /**
    * Inserts the given array of new property values to this tripal storage
    * plugin.
    *
