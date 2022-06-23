@@ -14,7 +14,7 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
  *
  * @group Tripal
  * @group Tripal Chado
- * @group Tripal Chado ChadoVocabTerms
+ * @group Tripal Chado ChadoStorage
  */
 class ChadoStorageTest extends ChadoTestBrowserBase {
   
@@ -34,7 +34,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     if (!$result) {
       return [];
     }
-    return $result->fetchAssoc();
+    return $result->fetchObject();
   }
   
   /**
@@ -44,7 +44,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
    */
   protected function createEntityTypeTable($entity_type) {
     $table_def = [
-      'description' => 'The linker table that associates TripalEntities with Chado records for entities of type ' . $bundle->name . '.',
+      'description' => 'The linker table that associates TripalEntities with Chado records for entities of type ' . $entity_type . '.',
       'fields' => [
         'mapping_id' => [
           'type' => 'serial',
@@ -107,32 +107,99 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
       ->execute()
       ->fetchField();
   }
+ 
   
   /**
    * a helper function to add a record to the `chado_bundle` table. 
    */
   protected function addChadoBundleRecord($bundle_id, $data_table, 
-      $type_linker_table, $type_column, $type_id, $type_value, $base_type_id) {
+      $type_linker_table = NULL, $type_column = NULL, $type_id = NULL, 
+      $type_value = NULL, $base_type_id = NULL) {
     
     $public = \Drupal::database();
-    $public->insert('tripal_bundle')
-    ->fields([
-      'bundle_id' => $bundle_id,
-      'data_table' => $data_table,
-      'type_linker_table' => $type_linker_table,
-      'type_column' => $type_column,
-      'type_id' => $type_id,
-      'type_value' => $type_value,
-      'base_type_id' => $base_type_id,
-    ])
-    ->execute();
+    $public->insert('chado_bundle')
+      ->fields([
+        'bundle_id' => $bundle_id,
+        'data_table' => $data_table,
+        'type_linker_table' => $type_linker_table,
+        'type_column' => $type_column,
+        'type_id' => $type_id,
+        'type_value' => $type_value,
+        'base_type_id' => $base_type_id,
+      ])
+      ->execute();
     
     return $public->select('chado_bundle', 'CB')
-      ->fields('CB', ['id'])
-      ->condition('CB.bundle_id', $bundle_id)
+      ->fields('CB')
+      ->condition('CB.bundle_id', $bundle_id, '')
       ->execute()
       ->fetchObject();
     
+  }
+  
+  /**
+   * A helper function to add the TAXRANK:species_subgroup term to Chado.
+   */
+  protected function addTaxRankSubGroupCVTerm() {
+    
+    // First add the vocabulary term for the organism.type_id column.
+    $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+    $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
+    $taxrank = $idsmanager->createCollection('TAXRANK', 'chado_id_space');
+    $vmanager->createCollection('taxonomic_rank', 'chado_vocabulary');
+    $species_group = new TripalTerm([
+      'name' => 'species_group',
+      'idSpace' => 'TAXRANK',
+      'vocabulary' => 'taxonomic_rank',
+      'accession' => '0000010',
+    ]);
+    $taxrank->saveTerm($species_group);
+    return $species_group;
+  }
+  
+  
+  /**
+   * A helper function to add an organism record to Chado.
+   */
+  protected function addOryzaSativaRecord() {
+    
+    // @todo Ask Josh about adding an internalID to the TripalTerm class so I
+    // don't have to do a TripalDBX to get the cvterm_id from it.
+    $cvterm = $this->getCVterm('taxonomic_rank', 'species_group');
+    
+    $this->chado->insert('1:organism')
+      ->fields([
+        'genus' => 'Oryza',
+        'species' => 'sativa',
+        'common_name' => 'rice',
+        'abbreviation' => 'O.sativa',
+        'infraspecific_name' => 'Japonica',
+        'type_id' => $cvterm->cvterm_id,
+      ])
+      ->execute();
+    
+    return $this->chado->select('1:organism', 'O')
+      ->fields('O', ['organism_id'])
+      ->condition('species', 'sativa')
+      ->execute()
+      ->fetchField();
+  }
+  
+  /**
+   * A helper function to add a record to the `chado_bio_data_x` table.
+   * 
+   * @param string $field_type
+   * @param int $organism_id
+   * @param int $entity_id
+   */
+  protected function addChadoBioDataRecord($entity_type, $organism_id, $entity_id) {
+    $public = \Drupal::database();
+    $public->insert('chado_' . $entity_type)
+      ->fields([
+        'entity_id' => $entity_id,
+        'record_id' => $organism_id,
+      ])
+      ->execute();      
   }
   
   /**
@@ -141,7 +208,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
    * @Depends Drupal\tripal_chado\Task\ChadoInstallerTest::testPerformTaskInstaller
    *
    */
-  public function testStorage() {
+  public function testChadoStorage() {
     
     $storage_manager = \Drupal::service('tripal.storage');
     $chado_storage = $storage_manager->createInstance('chado_storage');
@@ -150,14 +217,21 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $entity_type = 'bio_data_1';
     $field_type = 'obi__organism';
     
-    // Create the `bio_data_1` table. 
-    // @todo: swap this out once a valid replaciment for the 
-    // tripal_chado_create_bundle_table() API functions is created in 
-    // Tripal 4.  For now, we just manually create it.
+    // Similate the existence of a Tripal Bundle with the needed Chado records.
+    // @todo: we can should renove the calls to the first four functions below
+    // when the prepare step of the installation is complete so that we have a
+    // test environment with a properly prepared Chado. For now we fake it.
     $this->createEntityTypeTable($entity_type);
     $bundle_id = $this->addTripalBundleRecord($entity_type);
-    $chado_bundle = $this->addChadoBundleRecord($bundle_id, 'organism', NULL, 
-        NULL, NULL, NULL, NULL);
+    $chado_bundle = $this->addChadoBundleRecord($bundle_id, 'organism');
+    $species_group = $this->addTaxRankSubGroupCVTerm();
+    $organism_id = $this->addOryzaSativaRecord();
+    $this->addChadoBioDataRecord($entity_type, $organism_id, $entity_id);
+    
+    
+    //
+    // Test Property Type and Value Creation.
+    //
     
     // Create some properties that will correspond to an entry in the
     // organism table of Chado.    
@@ -169,63 +243,33 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $infra_name_type = new VarCharStoragePropertyType($entity_type, $field_type, 'infraspecific_name', 1024);
     $type_id_type = new IntStoragePropertyType($entity_type, $field_type, 'type_id');    
     //$comment_type = new TextStoragePropertyType($entity_type, $field_type, 'comment');
+        
+    // Add the properties types.
+    $types = [$organism_id_type, $abbreviation_type, $genus_type,
+      $species_type, $common_name_type, $infra_name_type, $type_id_type      
+    ]; # $comment_type   
     
+    $chado_storage->addTypes($types); 
+    
+   
+   
+    // 
+    // Testing Loading of Data.
+    //
     $organism_id_value = new StoragePropertyValue($entity_type, $field_type, 'organism_id', $entity_id);
     $abbreviation_value = new StoragePropertyValue($entity_type, $field_type, 'abbreviation', $entity_id);
-    $genus_value = new StoragePropertyValue($entity_type, $field_type, 'genus', $entity_id);    
+    $genus_value = new StoragePropertyValue($entity_type, $field_type, 'genus', $entity_id);
     $species_value = new StoragePropertyValue($entity_type, $field_type, 'species', $entity_id);
     $common_name_value = new StoragePropertyValue($entity_type, $field_type, 'common_name', $entity_id);
     $infra_name_value = new StoragePropertyValue($entity_type, $field_type, 'infraspecific_name', $entity_id);
     $type_id_value = new StoragePropertyValue($entity_type, $field_type, 'type_id', $entity_id);
-    $comment_value = new StoragePropertyValue($entity_type, $field_type, 'comment', $entity_id);
-
+    //$comment_value = new StoragePropertyValue($entity_type, $field_type, 'comment', $entity_id);
     
-    // Add the properties to be dealt with.
-    $chado_storage->addTypes([$organism_id_type, $abbreviation_type, $genus_type,
-      $species_type, $common_name_type, $infra_name_type, $type_id_type]); # $comment_type
-
-    // 
-    // Testing Loading of Data.
-    //
+    $values = [$organism_id_value, $abbreviation_value, $genus_value, $species_value, 
+      $common_name_value, $infra_name_value, $type_id_value
+    ]; #$comment_value
     
-    // First add the vocabulary term for the organism.type_id column.
-    $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');  
-    $taxrank = $idsmanager->createCollection('TAXRANK', 'chado_id_space');
-    $taxrank_vocab = $vmanager->createCollection('taxonomic_rank', 'chado_vocabulary');
-    $species_group = new TripalTerm([
-      'name' => 'species_group',
-      'idSpace' => 'TAXRANK',
-      'vocabulary' => 'taxonomic_rank',
-      'accession' => '0000010',
-    ]);
-    $idsmanager->saveTerm($species_group);
-    // @todo Ask Josh about adding an internalID to the TripalTerm class so I
-    // don't have to do a TripalDBX to get the cvterm_id from it.
-    $cvterm_id = $this->getCVterm('taxonomic_rank', 'species_group');
-    
-  
-    
-    // Manually add an organism record.
-    $this->chado->insert('1:organism')
-      ->fields([
-        'genus' => 'Oryza',
-        'species' => 'sativa',
-        'common_name' => 'rice',
-        'abbreviation' => 'O.sativa',
-        'infraspecific_name' => 'Japonica',
-        'type_id' => $cvterm_id
-      ])
-      ->execute();
-    
-    $organism_id = $this->chado->select('1:organism', 'O')
-      ->fields('O', ['oranism_id'])
-      ->condition('species', 'sativa')
-      ->execute()
-      ->fetchField();
-    
-     
-    
+    $chado_storage->loadValues($values);
     
      
   }
