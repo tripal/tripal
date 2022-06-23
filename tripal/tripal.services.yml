@@ -12,8 +12,8 @@ services:
     class: Drupal\tripal\Services\TripalLogger
   tripal.dbx:
     class: Drupal\tripal\TripalDBX\TripalDbx
-  plugin.manager.tripalstorage:
-    class: Drupal\tripal\Services\TripalStorageManager
+  tripal.storage:
+    class: Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager
     parent: default_plugin_manager
   tripal.collection_plugin_manager.idspace:
     class: Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager

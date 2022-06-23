@@ -5,7 +5,7 @@ namespace Drupal\tripal_chado\Plugin\TripalVocabulary;
 use Drupal\tripal\TripalVocabTerms\TripalVocabularyBase;
 
 /**
- * Base class for tripal vocabulary plugins.
+ * Chado implementation of the TripalVocabularyBase.
  * 
  *  @TripalVocabulary(
  *    id = "chado_vocabulary",

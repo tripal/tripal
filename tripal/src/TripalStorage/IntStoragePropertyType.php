@@ -2,7 +2,7 @@
 
 namespace Drupal\tripal\TripalStorage;
 
-use Drupal\tripal4\Base\StoragePropertyTypeBase;
+use Drupal\tripal\TripalStorage\StoragePropertyTypeBase;
 
 /**
  * Defines the integer Tripal storage property type.

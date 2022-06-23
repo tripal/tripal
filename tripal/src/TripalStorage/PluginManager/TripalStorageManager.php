@@ -33,7 +33,7 @@ class TripalStorageManager extends DefaultPluginManager {
         "Plugin/TripalStorage"
         ,$namespaces
         ,$module_handler
-        ,'Drupal\tripal\TripalStorage\Interface\TripalStorageInterface'
+        ,'Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface'
         ,'Drupal\tripal\TripalStorage\Annotation\TripalStorage'
     );
     $this->alterInfo("tripal_storage_info");

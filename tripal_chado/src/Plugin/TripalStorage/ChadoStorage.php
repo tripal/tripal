@@ -3,81 +3,107 @@
 namespace Drupal\tripal_chado\Plugin\TripalStorage;
 
 use Drupal\Core\Plugin\PluginBase;
-use Drupal\tripal\Plugin\TripalStorage\TripalStorageInterface;
+use Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface;
 
 /**
- * Provides the default Tripal Storage.
- * This storage uses the Drupal SQL storage exclusively.
+ * Chado implementation of the TripalStorageInterface.
  *
  * @TripalStorage(
- *   id = "chadostorage",
+ *   id = "chado_storage",
  *   label = @Translation("Chado Storage"),
- *   description = @Translation("This storage maps your data to the GMOD Chado schema."),
+ *   description = @Translation("Interfaces with GMOD Chado for field values."),
  * )
  */
 class ChadoStorage extends PluginBase implements TripalStorageInterface {
+  
+  protected $property_types = [];
 
 	/**
 	 * @{inheritdoc}
 	 */
-	public function loadMultipleEntities(array $ids, array &$entities) {
-		// No Return Value.
-	}
-
-	/**
+  public function addTypes($types) {
+    
+    // Index the types by their entity type, field type and key.
+    foreach ($types as $type) {
+      $entity_type = $type->getEntityType();
+      $field_type = $type->getFieldType();
+      $key = $type->getKey();
+      if (!array_key_exists($entity_type, $this->property_types)) {
+        $this->property_types[$entity_type] = [];
+      }
+      if (!array_key_exists($field_type, $this->property_types[$entity_type])) {
+        $this->property_types[$entity_type][$field_type] = [];
+      }
+      if (array_key_exists($key, $this->property_types[$entity_type])) {
+        $logger = \Drupal::service('tripal.logger'); 
+        $logger->error('Cannot add a property type, "@prop", as it already exists', 
+            ['@prop' => $entity_type . '.' . $field_type . '.' . $key]);
+        return False;
+      }
+      $this->property_types[$entity_type][$field_type][$key] = $type;
+    }
+  }
+  
+  /**
+   * @{inheritdoc}
+   */  
+  public function getTypes() {
+    $types = [];
+    foreach ($this->property_types as $entity_type => $field_types) {
+      foreach ($field_types as $field_type => $keys) {
+        $types[] = $this->property_types[$entity_type][$field_type][$key];
+      }
+    }
+    return $types;
+  }
+  
+  /**
 	 * @{inheritdoc}
 	 */
-	public function postEntityLoad(array &$entities) {
-		// No Return Value.
-	}
-
-	/**
-	 * @{inheritdoc}
-	 *
-	 * NOTE: This is where we actually save the record to chado. It is done here
-	 * to ensure that the id is available for saving in the Drupal schema in
-	 * saveEntity(). This maps to the Tripal3 tripal_chado_field_storage_write().
-	 */
-	public function preSaveEntity(&$entity) {
-
-		/*
-		// Get the Tripal Content Type.
-		$bundle = \Drupal\tripal\Entity\TripalEntityType::load($entity->getType());
-		// Then get the Tripal Term and Tripal Vocab.
-		$term = $bundle->getTerm();
-		$vocab = $term->getVocab();
-
-		// Use the Tripal Vocab/Term to get the chado dbxref/cvterm.
-		$term_accession = $term->getAccession();
-		$vocab_name = $vocab->getName();
-		// @debug dpm($vocab_name . ':' . $term_accession, 'term');
-		/* @todo upgrade
-		$dbxref = chado_get_dbxref([
-	    'accession' => $term_accession,
-	    'db_id' => ['name' => $vocab_name],
-	  ]);
-	  $cvterm = chado_get_cvterm(['dbxref_id' => $dbxref->dbxref_id]);
-		*/
-
-		// Get the value for each field in the current entity.
-		foreach ($entity->getFields() as $name => $field) {
-			// @debug dpm($field->getValue(), $name);
-		}
-
-		return FALSE; // Entities not altered.
-	}
-
-	/**
+  public function removeTypes($types) {
+    
+    foreach ($types as $type) {
+      $entity_type = $type->getEntityType();
+      $field_type = $type->getFieldType();
+      $key = $type->getKey();
+      if (!array_key_exists($entity_type, $this->property_types)) {
+        if (!array_key_exists($field_type, $this->property_types[$entity_type])) {
+          if (array_key_exists($key, $this->property_types[$entity_type])) {
+            unset($this->property_types[$entity_type][$field_type][$key]);
+          }
+        }
+      }
+    }
+  }
+  
+  /**
 	 * @{inheritdoc}
 	 */
-	public function saveEntity($id, &$entity) {
-		return FALSE; // Entities not altered.
-	}
-
-	/**
-	 * @{inheritdoc}
-	 */
-	public function postSaveEntity(&$entity, $update) {
-		return FALSE; // Entities not altered.
-	}
+  public function insertValues($values) {
+    
+  }
+  
+  /**
+   * @{inheritdoc}
+   */
+  
+  public function updateValues($values) {
+    
+  }
+  
+  /**
+   * @{inheritdoc}
+   */
+  
+  public function loadValues($values) {
+    
+  }
+  
+  /**
+   * @{inheritdoc}
+   */
+  
+  public function deleteValues($values) {
+    
+  }
 }
