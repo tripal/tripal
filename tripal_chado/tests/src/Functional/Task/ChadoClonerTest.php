@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\tripal_chado\Functional\Task;
 
-use Drupal\Tests\tripal_chado\Functional\ChadoTestBase;
+use Drupal\Tests\tripal_chado\Functional\ChadoTestKernelBase;
 use Drupal\tripal_chado\Task\ChadoCloner;
 
 
@@ -16,7 +16,7 @@ use Drupal\tripal_chado\Task\ChadoCloner;
  * @group Tripal Chado Task
  * @group Tripal Chado Cloner
  */
-class ChadoClonerFunctionalTest extends ChadoTestBase {
+class ChadoClonerFunctionalTest extends ChadoTestKernelBase {
 
   /**
    * Tests task.
@@ -26,9 +26,9 @@ class ChadoClonerFunctionalTest extends ChadoTestBase {
    */
   public function testPerformTaskCloner() {
     // Create a temporary schema.
-    $tripaldbx_db1 = $this->getTestSchema(ChadoTestBase::INIT_DUMMY);
+    $tripaldbx_db1 = $this->getTestSchema(ChadoTestKernelBase::INIT_DUMMY);
     // Get another temporary schema name.
-    $tripaldbx_db2 = $this->getTestSchema(ChadoTestBase::SCHEMA_NAME_ONLY);
+    $tripaldbx_db2 = $this->getTestSchema(ChadoTestKernelBase::SCHEMA_NAME_ONLY);
 
     // Test cloner.
     $cloner = \Drupal::service('tripal_chado.cloner');

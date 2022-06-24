@@ -402,7 +402,7 @@ class ConnectionTest extends KernelTestBase {
    * @cover ::prefixTables
    */
   public function testSchemaNameChangeImpacts() {
-    $drupal_prefix = $this->testhelper_get_drupal_prefix();
+    $drupal_prefix = $this->get_drupal_prefix();
 
     $dbmock = $this->getConnectionMock('first');
     // Manages fake versions. First schema would be 42 and next 806.
@@ -468,7 +468,7 @@ class ConnectionTest extends KernelTestBase {
    * @cover ::addExtraSchema
    */
   public function testAddExtraSchemaNoSchema() {
-    $drupal_prefix = $this->testhelper_get_drupal_prefix();
+    $drupal_prefix = $this->get_drupal_prefix();
     $dbmock = $this->getConnectionMock();
 
     $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
@@ -482,7 +482,7 @@ class ConnectionTest extends KernelTestBase {
    * @cover ::setExtraSchema
    */
   public function testSetExtraSchemaZero() {
-    $drupal_prefix = $this->testhelper_get_drupal_prefix();
+    $drupal_prefix = $this->get_drupal_prefix();
     $dbmock = $this->getConnectionMock();
 
     $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
@@ -496,7 +496,7 @@ class ConnectionTest extends KernelTestBase {
    * @cover ::setExtraSchema
    */
   public function testSetExtraSchemaOne() {
-    $drupal_prefix = $this->testhelper_get_drupal_prefix();
+    $drupal_prefix = $this->get_drupal_prefix();
     $dbmock = $this->getConnectionMock();
 
     $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
@@ -510,7 +510,7 @@ class ConnectionTest extends KernelTestBase {
    * @cover ::prefixTables
    */
   public function testPrefixNoSchema() {
-    $drupal_prefix = $this->testhelper_get_drupal_prefix();
+    $drupal_prefix = $this->get_drupal_prefix();
     $dbmock = $this->getConnectionMock();
 
     $this->markTestSkipped('Currently skipping this test as an exception is not thrown as expected. This is likely due to changes in the Connection::prefixTables() method during migrations to Tripal DBX.');
@@ -541,7 +541,7 @@ class ConnectionTest extends KernelTestBase {
    * @cover ::prefixTables
    */
   public function testPrefixNoExtraSchema() {
-    $drupal_prefix = $this->testhelper_get_drupal_prefix();
+    $drupal_prefix = $this->get_drupal_prefix();
     $test_schema_base_names = \Drupal::config('tripaldbx.settings')
       ->get('test_schema_base_names')
     ;
@@ -597,7 +597,7 @@ class ConnectionTest extends KernelTestBase {
    * @cover ::setExtraSchema
    */
   public function testConnectionScenario1() {
-    $drupal_prefix = $this->testhelper_get_drupal_prefix();
+    $drupal_prefix = $this->get_drupal_prefix();
     $test_schema_base_names = \Drupal::config('tripaldbx.settings')
       ->get('test_schema_base_names')
     ;
@@ -679,7 +679,7 @@ class ConnectionTest extends KernelTestBase {
    * @cover ::clearExtraSchemas
    */
   public function testConnectionScenario2() {
-    $drupal_prefix = $this->testhelper_get_drupal_prefix();
+    $drupal_prefix = $this->get_drupal_prefix();
     $test_schema_base_names = \Drupal::config('tripaldbx.settings')
       ->get('test_schema_base_names')
     ;
@@ -738,7 +738,7 @@ class ConnectionTest extends KernelTestBase {
    * @cover ::setExtraSchema
    */
   public function testConnectionScenario3() {
-    $drupal_prefix = $this->testhelper_get_drupal_prefix();
+    $drupal_prefix = $this->get_drupal_prefix();
     $test_schema_base_names = \Drupal::config('tripaldbx.settings')
       ->get('test_schema_base_names')
     ;
@@ -1006,7 +1006,7 @@ class ConnectionTest extends KernelTestBase {
   /**
    * HELPER: Retrieve the Drupal table prefix for the current site.
    */
-  protected function testhelper_get_drupal_prefix() {
+  protected function get_drupal_prefix() {
     $database_options = \Drupal::database()->getConnectionOptions();
 
     $drupal_prefix = '';

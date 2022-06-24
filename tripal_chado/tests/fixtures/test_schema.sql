@@ -137,3 +137,11 @@ CREATE INDEX featureloc_idx1 ON featureloc USING btree (feature_id);
 CREATE INDEX featureloc_idx2 ON featureloc USING btree (srcfeature_id);
 CREATE INDEX featureloc_idx3 ON featureloc USING btree (srcfeature_id, fmin, fmax);
 COMMENT ON TABLE featureloc IS 'The location of a feature relative to..';
+
+CREATE TABLE chadoprop (
+    chadoprop_id serial,
+    type_id bigint NOT NULL,
+    value text,
+    rank integer DEFAULT 0 NOT NULL
+);
+

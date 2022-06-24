@@ -684,7 +684,7 @@ class TripalJob {
 
 
   /**
-   * DEPRECATD
+   * DEPRECATED
    *
    * Logs a message for the job.
    *
