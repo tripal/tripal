@@ -4,6 +4,7 @@ namespace Drupal\Tests\tripal_chado\Functional;
 
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 
@@ -415,6 +416,11 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
       'column' => 'type_id',
       'base_fk_col' => 'organism_id'      
     ]);
+    $this->addChadoFieldRecord($entity_type, $organism_field_type, 'schema:description', [
+      'table' => 'organism',
+      'column' => 'comment',
+      'base_fk_col' => 'organism_id'
+    ]);
     $this->addChadoFieldRecord($entity_type, $prop_field_type, 'local:note', [
       'table' => 'featureprop',
       'column' => 'value',
@@ -442,6 +448,8 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $species_type = new ChadoVarCharStoragePropertyType($entity_type, $organism_field_type, 'TAXRANK:0000006', 255);
     $common_name_type = new ChadoVarCharStoragePropertyType($entity_type, $organism_field_type, 'NCBITaxon:common_name', 255);
     $infra_name_type = new ChadoVarCharStoragePropertyType($entity_type, $organism_field_type, 'TAXRANK:0000045', 1024);
+    $comment_type = new ChadoTextStoragePropertyType($entity_type, $organism_field_type, 'schema:description');
+    
     $type_id_type = new ChadoIntStoragePropertyType($entity_type, $organism_field_type, 'local:infraspecific_type',);    
     $abbreviation_value = new StoragePropertyValue($entity_type, $organism_field_type, 'local:abbreviation', $entity_id);
     $genus_value = new StoragePropertyValue($entity_type, $organism_field_type, 'TAXRANK:0000005', $entity_id);
@@ -449,10 +457,11 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $common_name_value = new StoragePropertyValue($entity_type, $organism_field_type, 'NCBITaxon:common_name', $entity_id);
     $infra_name_value = new StoragePropertyValue($entity_type, $organism_field_type, 'TAXRANK:0000045', $entity_id);
     $type_id_value = new StoragePropertyValue($entity_type, $organism_field_type, 'local:infraspecific_type', $entity_id);    
-    // @todo add the comment field once the Text property type is impelmented
+    $comment_value = new StoragePropertyValue($entity_type, $organism_field_type, 'schema:description', $entity_id);
     
     // The note field single property with multiple values.
     $note_type = new ChadoIntStoragePropertyType($entity_type, $prop_field_type, 'local:note');
+    $note_type->setCardinality(0);
     $note_value = new StoragePropertyValue($entity_type, $prop_field_type, 'local:note', $entity_id);
     
     // Bad properties.
@@ -480,6 +489,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $this->assertTrue($common_name_type->isValid(), 'The common name property type should be valid.');
     $this->assertTrue($infra_name_type->isValid(), 'The infraspecific name property type should be valid.');
     $this->assertTrue($type_id_type->isValid(), 'The type_id property type should be valid.');
+    $this->assertTrue($comment_type->isValid(), 'The comment property type should be valid.');
     $this->assertTrue($name_type->isValid(), 'The name property type should be valid.');
     $this->assertTrue($note_type->isValid(), 'The note property type should be valid.');
     
@@ -495,6 +505,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $this->assertTrue(empty($common_name_value->getValue()), 'The species property should not have a value.');
     $this->assertTrue(empty($infra_name_value->getValue()), 'The infraspecific name property should not have a value.');
     $this->assertTrue(empty($type_id_value->getValue()), 'The infraspecific type_id property should not have a value.');
+    $this->assertTrue(empty($comment_value->getValue()), 'The comment property should not have a value.');
     $this->assertTrue(empty($name_value->getValue()), 'The name property should not have a value.');
     $this->assertTrue(empty($note_value->getValue()), 'The note property should not have a value.');
     $this->assertTrue(empty($bad_value->getValue()), 'The bad property should not have a value.');
@@ -502,11 +513,11 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     // Add the types and load the values.
     $types = [
       $abbreviation_type, $genus_type, $species_type, $common_name_type, 
-      $infra_name_type, $type_id_type, $bad_type, $name_type, $note_type
+      $infra_name_type, $type_id_type, $comment_type, $bad_type, $name_type, $note_type
     ];    
     $values = [
       $abbreviation_value, $genus_value, $species_value, $common_name_value, 
-      $infra_name_value, $type_id_value, $bad_value, $name_value, $note_value 
+      $infra_name_value, $type_id_value, $comment_value, $bad_value, $name_value, $note_value 
     ];
     $chado_storage->addTypes($types);
     $chado_storage->loadValues($values);
@@ -522,6 +533,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $this->assertTrue($common_name_value->getValue() == 'rice', 'The species common name value was not loaded properly.');
     $this->assertTrue($infra_name_value->getValue() == 'Japonica', 'The infraspecific name value was not loaded properly.');
     $this->assertTrue($type_id_value->getValue() == '2', 'The infraspecific type_id value was not loaded properly.');
+    $this->assertTrue(empty($comment_value), 'The comment value was not loaded properly.');
     
     // Tests loading a property from a linking table where the forkeign key
     // is in the linking table and the property has mutiple values.
@@ -530,7 +542,16 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $this->assertTrue($note_value->getValue()[0] == 'Note 1', 'The note first element is incorrect.');
     $this->assertTrue($note_value->getValue()[1] == 'Note 3', 'The note second element is incorrect.');
     $this->assertTrue($note_value->getValue()[2] == 'Note 2', 'The note third element is incorrect.');
-    $this->assertTrue(empty($bad_value->getValue()), 'The bad property should have no value');   
+    $this->assertTrue(empty($bad_value->getValue()), 'The bad property should have no value');
+    
+    // Test cardinality.
+    $note_type->setCardinality(1);
+    $values = [$note_value];
+    $chado_storage->loadValues($values);
+    $this->assertTrue(empty($note_value->getValue()), 'The note property should not have a value.');
+    $note_type->setCardinality(3);
+    $chado_storage->loadValues($values);
+    $this->assertTrue(count($note_value->getValue()) == 3, 'The note value had the wrong number of elements.');    
   }
 }
 

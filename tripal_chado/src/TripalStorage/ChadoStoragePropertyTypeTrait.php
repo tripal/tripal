@@ -178,9 +178,6 @@ trait ChadoStoragePropertyTypeTrait  {
   /**
    * Indicates if this property type is valid.
    * 
-   * @todo remove this if the `isValid()` function is added to the
-   * StoragePropertyTypeBase class. 
-   * 
    * @return boolean
    */
   public function isValid() {

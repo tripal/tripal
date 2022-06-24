@@ -2,7 +2,7 @@
 
 namespace Drupal\tripal\TripalStorage;
 
-use Drupal\tripal4\Base\StoragePropertyTypeBase;
+use Drupal\tripal\TripalStorage\StoragePropertyTypeBase;
 
 /**
  * Defines the real Tripal storage property type. A real type is any real

@@ -444,12 +444,15 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    */
   protected function populateValues($indexed_values, $results, &$values) {
     
+    $logger = \Drupal::service('tripal.logger');
+    
     foreach ($indexed_values as $entity_type => $entity_ids) {
       foreach ($entity_ids as $entity_id => $field_types) {
         foreach ($field_types as $field_type => $keys) {
           foreach ($keys as $key => $val_index) {
             $skey = $this->sanitizeFieldKey($key);
             $type = $this->property_types[$entity_type][$field_type][$key];
+            $cardinality = $type->getCardinality();
             $chado_table = $type->getTable();
             
             // Get the values from the Chado records for this property.
@@ -460,13 +463,20 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             }
             
             // Set the value for this property.
-            // @todo: check the cardinatlity of a property and make sure we 
-            // don't exceed it.                        
             if (count($vals) == 1) {
               $values[$val_index]->setValue($vals[0]);
             }
             if (count($vals) > 1) {
-              $values[$val_index]->setValue($vals);
+              if ($cardinality == 0 or $cardinality <= count($vals)) {
+                $values[$val_index]->setValue($vals);
+              }
+              else {
+                $logger->error('The property, "@prop" has @n values but only allows @m. Skipping.',[
+                  '@prop' => $entity_type . "." . $field_type . '.' . $key, 
+                  '@n' => count($vals),
+                  '@m' => $cardinality                  
+                ]);
+              }              
             }
           }
         }
