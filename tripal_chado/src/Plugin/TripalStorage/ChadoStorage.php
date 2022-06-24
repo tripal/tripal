@@ -331,8 +331,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
               $query = $chado->select('1:' . $chado_table, 'prop');              
               
               // If the chado table for this property is not the base table then
-              // we need to link to the base table to get the records in this
-              // table that are linked to the record_id for the entity.
+              // we need to link to the base table.
               if ($chado_table != $base_table) {
                 
                 // If the base table links to the chado table, do a join.
