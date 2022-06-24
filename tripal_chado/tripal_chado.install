@@ -144,25 +144,50 @@ function tripal_chado_chado_fields_schema() {
       'entity_type' => [
         'type' => 'varchar',
         'length' => 255,
+        'not null' => TRUE,
       ],
       'field_type' => [
         'type' => 'varchar',
         'length' => 255,
+        'not null' => TRUE,
       ],
       'key' => [
         'type' => 'varchar',
         'length' => 255,
+        'not null' => TRUE,
       ],
-      'chado_table' => [
+      'table' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'column' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'base_fk_col' => [
         'type' => 'varchar',
         'length' => 255,
       ],
-      'chado_column' => [
+      'table_fk_col' => [
         'type' => 'varchar',
         'length' => 255,
+      ],
+      'type_col' => [
+        'type' => 'varchar',
+        'length' => 255,
+      ],
+      'type_id' => [
+        'type' => 'int',
       ],
     ],
     'indexes' => [
+      'chado_fields_idx1' => ['entity_type', 'field_type', 'key'],
+      'chado_fields_idx2' => ['table'],
+    ],
+    'unique keys' => [
+      'chado_fields_unq1' => ['entity_type', 'field_type', 'key'],
     ],
     'primary key' => ['chado_field_id'],
   ];

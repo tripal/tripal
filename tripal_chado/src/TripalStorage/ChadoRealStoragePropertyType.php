@@ -2,12 +2,12 @@
 
 namespace Drupal\tripal_chado\TripalStorage;
 
-use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
+use Drupal\tripal\TripalStorage\RealStoragePropertyType;
 
 /**
  * Defines the variable character Tripal storage property type.
  */
-class ChadoVarCharStoragePropertyType extends VarCharStoragePropertyType {
+class ChadoRealStoragePropertyType extends RealStoragePropertyType {
 
   use ChadoStoragePropertyTypeTrait;
   
@@ -23,8 +23,8 @@ class ChadoVarCharStoragePropertyType extends VarCharStoragePropertyType {
    * @param int size
    *   The maximum size of characters for this type.
    */
-  public function __construct($entityType, $fieldType, $key, $size = 255) {
-    parent::__construct($entityType, $fieldType, $key, $size);
+  public function __construct($entityType, $fieldType, $key) {
+    parent::__construct($entityType, $fieldType, $key);
     $this->setMapping();    
     $this->verifyTableColumn();
   }

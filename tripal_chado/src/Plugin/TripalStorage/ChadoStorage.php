@@ -135,9 +135,15 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
   
   /**
    * @{inheritdoc}
-   */
-  
+   */  
   public function deleteValues($values) {
+    
+  }
+  
+  /**
+   * @{inheritdoc}
+   */
+  public function findValues($match) {
     
   }
   
@@ -312,10 +318,10 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             $type = $this->property_types[$entity_type][$field_type][$key];
             $base_table = $type_mapping->data_table;
             $record_id = $id_mapping->record_id;
-            $chado_table = $type->getChadoTable();
-            $chado_column = $type->getChadoColumn();
-            $base_fk_column = $type->getBaseTableFkColumn();
-            $chado_fk_column = $type->getChadoTableFkColumn();
+            $chado_table = $type->getTable();
+            $chado_column = $type->getColumn();
+            $base_fk_column = $type->getBaseFkColumn();
+            $chado_fk_column = $type->getTableFkColumn();
             
             // If this is the first time we've seen this Chado table then
             // start the query for it.
@@ -404,6 +410,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
   protected function executeSelect($selects) {
     $logger = \Drupal::service('tripal.logger');
     
+    
     $results = [];
     foreach ($selects as $entity_type => $entity_ids) {
       $results[$entity_type] = [];
@@ -443,7 +450,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           foreach ($keys as $key => $val_index) {
             $skey = $this->sanitizeFieldKey($key);
             $type = $this->property_types[$entity_type][$field_type][$key];
-            $chado_table = $type->getChadoTable();
+            $chado_table = $type->getTable();
             
             // Get the values from the Chado records for this property.
             $vals = [];

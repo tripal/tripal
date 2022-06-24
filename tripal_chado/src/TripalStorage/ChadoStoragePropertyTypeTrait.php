@@ -19,19 +19,19 @@ trait ChadoStoragePropertyTypeTrait  {
    * The name of the table in Chado that this property belongs to.
    * @var string
    */
-  private $chado_table = NULL;
+  private $table = NULL;
   
   /**
    * The name of the column in the table of Chado that this property belongs to.
    * @var string
    */
-  private $chado_column = NULL;
+  private $column = NULL;
   
   /** 
   * The name of the foreign key column in the base table that links to the 
   * chado table for this property. 
   */
-  private $base_table_fk_column = NULL;
+  private $base_fk_col = NULL;
   
   /**
    * The name of the foreign key column in the chado table that links to 
@@ -40,14 +40,14 @@ trait ChadoStoragePropertyTypeTrait  {
    * which one. If no value is given then the first foreign key column to 
    * the base table is used.
    */
-  private $chado_table_fk_column = NULL;
+  private $table_fk_col = NULL;
   
   /**
    * The name of the column that limits records by type. This is useful for
    * prop tables where a type_id can be used to limit values.
    * @var string
    */
-  private $type_column = NULL;
+  private $type_col = NULL;
   
   /**
    * The cvterm_id of the type_columns that limits records by type. This is 
@@ -69,16 +69,16 @@ trait ChadoStoragePropertyTypeTrait  {
    *
    * @return string
    */
-  public function getChadoTable() {
-    return $this->chado_table;
+  public function getTable() {
+    return $this->table;
   }
   /**
    * Retrieves the name of the column in the Chado table for this property.
    * 
    * @return string
    */
-  public function getChadoColumn() {
-    return $this->chado_column;
+  public function getColumn() {
+    return $this->column;
   }
   /**
    * Retrieves the name of the column in the Chado table for this property.
@@ -86,7 +86,7 @@ trait ChadoStoragePropertyTypeTrait  {
    * @return string
    */
   public function getTypeColumn() {
-    return $this->type_columns;
+    return $this->type_col;
   }
   /**
    * Retrieves the name of the column in the Chado table for this property.
@@ -101,41 +101,51 @@ trait ChadoStoragePropertyTypeTrait  {
    * Retrieves the foreign key column linking the chado table to the base table.
    * @return string
    */
-  public function getChadoTableFkColumn() {
-    return $this->chado_table_fk_column;
+  public function getTableFkColumn() {
+    return $this->table_fk_col;
   }
   
   /**
    * Retrieves the foreign key column linking the chado table to the base table.
    * @return string
    */
-  public function getBaseTableFkColumn() {
-    return $this->base_table_fk_column;
+  public function getBaseFkColumn() {
+    return $this->base_fk_col;
   }
   
   /**
    * Sets the member variables provided by this trait.
    * @param array $mapping
    */
-  protected function setMapping($mapping) {
-    if (array_key_exists('chado_table', $mapping)) {
-      $this->chado_table = $mapping['chado_table'];
+  protected function setMapping() {
+    
+    $public = \Drupal::database();
+    $logger = \Drupal::service('tripal.logger');
+    
+    $entity_type = $this->getEntityType();
+    $field_type = $this->getFieldType();
+    $key =  $this->getKey();
+    
+    // @todo remove the "1:" prefix once issue #217 is fixed.
+    $result = $public->select('chado_fields', 'cf')
+      ->fields('cf')
+      ->condition('entity_type', $entity_type)
+      ->condition('field_type', $field_type)
+      ->condition('key', $key)
+      ->execute();
+    if (!$result) {
+      $logger->error('The property, "@prop", does not map to Chado',
+          ['@prop' => $entity_type . '.' . $field_type . '.' . $key]);
+      return;
     }
-    if (array_key_exists('chado_column', $mapping)) {
-      $this->chado_column = $mapping['chado_column'];
-    }
-    if (array_key_exists('type_column', $mapping)) {
-      $this->type_column = $mapping['type_column'];
-    }
-    if (array_key_exists('type_id', $mapping)) {
-      $this->type_id = $mapping['type_id'];
-    }
-    if (array_key_exists('base_table_fk_column', $mapping)) {
-      $this->base_table_fk_column = $mapping['base_table_fk_column'];
-    }
-    if (array_key_exists('chado_table_fk_column', $mapping)) {
-      $this->chado_table_fk_column = $mapping['chado_table_fk_column'];
-    }    
+    $mapping = $result->fetchAssoc();
+    
+    $this->table = $mapping['table'];
+    $this->column = $mapping['column'];
+    $this->type_col = $mapping['type_col'];
+    $this->type_id = $mapping['type_id'];
+    $this->base_fk_col = $mapping['base_fk_col'];
+    $this->table_fk_col = $mapping['table_fk_col'];    
   }
   
   /**
@@ -149,17 +159,17 @@ trait ChadoStoragePropertyTypeTrait  {
     $schema = $chado->schema();
     
     // Make sure the Chado table exists.
-    if (!$schema->tableExists($this->chado_table)) {
+    if (!$schema->tableExists($this->table)) {
       $logger->error('The property type, "@type", is invalid because the Chado table, "@table", does not exist.',
-          ['@type' => $this->getEntityType(), '@table' => $this->chado_table]);
+          ['@type' => $this->getEntityType(), '@table' => $this->table]);
       return False;
     }
     
     // Make sure the column in the Chado table exists.
-    $table_def = $schema->getTableDef($this->chado_table, ['format' => 'drupal']);
-    if (!array_key_exists($this->chado_column, $table_def['fields'])) {
+    $table_def = $schema->getTableDef($this->table, ['format' => 'drupal']);
+    if (!array_key_exists($this->column, $table_def['fields'])) {
       $logger->error('The property type, "@type", is invalid because the Chado column, "@column", does not exist.',
-          ['@type' => $this->getEntityType(), '@column' => $this->chado_table . '.' . $this->chado_column]);
+          ['@type' => $this->getEntityType(), '@column' => $this->table . '.' . $this->column]);
       return False;
     }
     $this->is_valid = True;

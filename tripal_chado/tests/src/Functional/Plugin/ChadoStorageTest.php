@@ -274,6 +274,51 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
   }
   
   /**
+   * A helper function for adding a record to the chado_field table.
+   */
+  protected function addChadoFieldRecord($entity_type, $field_type, $key, $mapping) {
+    $table = NULL;
+    $column = NULL;
+    $type_col = NULL;
+    $type_id = NULL;
+    $base_fk_col = NULL;
+    $table_fk_col = NULL;
+    if (array_key_exists('table', $mapping)) {
+      $table = $mapping['table'];
+    }
+    if (array_key_exists('column', $mapping)) {
+      $column = $mapping['column'];
+    }
+    if (array_key_exists('type_col', $mapping)) {
+      $type_col = $mapping['type_col'];
+    }
+    if (array_key_exists('type_id', $mapping)) {
+      $type_id = $mapping['type_id'];
+    }
+    if (array_key_exists('base_fk_col', $mapping)) {
+      $base_fk_col = $mapping['base_fk_col'];
+    }
+    if (array_key_exists('table_fk_col', $mapping)) {
+      $table_fk_col = $mapping['table_fk_col'];
+    }    
+    $public = \Drupal::database();
+    $public->insert('chado_fields')
+      ->fields([
+        'entity_type' => $entity_type,
+        'field_type' => $field_type,
+        'key' => $key,
+        'table' => $table,
+        'column' => $column,
+        'type_col' => $type_col,
+        'type_id' => $type_id,
+        'base_fk_col' => $base_fk_col,
+        'table_fk_col' => $table_fk_col,
+      ])
+      ->execute(); 
+  }
+      
+  
+  /**
    * Tests the ChadoIdSpace Class
    *
    * @Depends Drupal\tripal_chado\Task\ChadoInstallerTest::testPerformTaskInstaller
@@ -334,42 +379,70 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     // Create Properties
     // 
     
+    // First add the records to the chado_fields table that maps each
+    // of the propeties to fields in Chado.
+    $this->addChadoFieldRecord($entity_type, $name_field_type, 'schema:name', [
+      'table' => 'feature',
+      'column' => 'name'      
+    ]);        
+    $this->addChadoFieldRecord($entity_type, $organism_field_type, 'local:abbreviation', [
+      'table' => 'organism',
+      'column' => 'abbreviation',
+      'base_fk_col' => 'organism_id'      
+    ]);
+    $this->addChadoFieldRecord($entity_type, $organism_field_type, 'TAXRANK:0000005', [
+      'table' => 'organism',
+      'column' => 'genus',
+      'base_fk_col' => 'organism_id'
+    ]);
+    $this->addChadoFieldRecord($entity_type, $organism_field_type, 'TAXRANK:0000006', [
+      'table' => 'organism',
+      'column' => 'species',
+      'base_fk_col' => 'organism_id'      
+    ]);
+    $this->addChadoFieldRecord($entity_type, $organism_field_type, 'NCBITaxon:common_name', [
+      'table' => 'organism',
+      'column' => 'common_name',
+      'base_fk_col' => 'organism_id'      
+    ]);
+    $this->addChadoFieldRecord($entity_type, $organism_field_type, 'TAXRANK:0000045', [
+      'table' => 'organism',
+      'column' => 'infraspecific_name',
+      'base_fk_col' => 'organism_id'      
+    ]);
+    $this->addChadoFieldRecord($entity_type, $organism_field_type, 'local:infraspecific_type', [
+      'table' => 'organism',
+      'column' => 'type_id',
+      'base_fk_col' => 'organism_id'      
+    ]);
+    $this->addChadoFieldRecord($entity_type, $prop_field_type, 'local:note', [
+      'table' => 'featureprop',
+      'column' => 'value',
+      'type_col' => 'type_id',
+      'type_id' => $note_term->cvterm_id,
+      'table_fk_col' => 'feature_id'      
+    ]);
+    $this->addChadoFieldRecord($entity_type, $organism_field_type, 'organism_id', [
+      'table' => 'feature2',
+      'column' => 'organism_id'      
+    ]);
+    
     // Note: we won't do any assertions of these constructors because they
     // should be tested in the Tripal module and the Chado implementations
     // just stores Chado table info and if that's broken all the tests
     // below will fail.
     
     // The gene name field single property.
-    $name_type = new ChadoIntStoragePropertyType($entity_type, $name_field_type, 'schema:name', 
-      ['chado_table' => 'feature', 
-       'chado_column' => 'name']);
+    $name_type = new ChadoIntStoragePropertyType($entity_type, $name_field_type, 'schema:name');
     $name_value = new StoragePropertyValue($entity_type, $name_field_type, 'schema:name', $entity_id);
     
     // The organism complex field properties.
-    $abbreviation_type = new ChadoVarCharStoragePropertyType($entity_type, $organism_field_type, 'local:abbreviation', 255, 
-      ['chado_table' => 'organism', 
-       'chado_column' => 'abbreviation', 
-       'base_table_fk_column' => 'organism_id']);
-    $genus_type = new ChadoVarCharStoragePropertyType($entity_type, $organism_field_type, 'TAXRANK:0000005', 255, 
-      ['chado_table' => 'organism', 
-       'chado_column' => 'genus', 
-       'base_table_fk_column' => 'organism_id']);
-    $species_type = new ChadoVarCharStoragePropertyType($entity_type, $organism_field_type, 'TAXRANK:0000006', 255, 
-      ['chado_table' => 'organism', 
-       'chado_column' => 'species', 
-       'base_table_fk_column' => 'organism_id']);
-    $common_name_type = new ChadoVarCharStoragePropertyType($entity_type, $organism_field_type, 'NCBITaxon:common_name', 255, 
-      ['chado_table' => 'organism', 
-       'chado_column' => 'common_name', 
-       'base_table_fk_column' => 'organism_id']);
-    $infra_name_type = new ChadoVarCharStoragePropertyType($entity_type, $organism_field_type, 'TAXRANK:0000045', 1024, 
-      ['chado_table' => 'organism', 
-       'chado_column' => 'infraspecific_name', 
-       'base_table_fk_column' => 'organism_id']);
-    $type_id_type = new ChadoIntStoragePropertyType($entity_type, $organism_field_type, 'local:infraspecific_type', 
-      ['chado_table' => 'organism', 
-       'chado_column' => 'type_id', 
-       'base_table_fk_column' => 'organism_id']);    
+    $abbreviation_type = new ChadoVarCharStoragePropertyType($entity_type, $organism_field_type, 'local:abbreviation');
+    $genus_type = new ChadoVarCharStoragePropertyType($entity_type, $organism_field_type, 'TAXRANK:0000005', 255);
+    $species_type = new ChadoVarCharStoragePropertyType($entity_type, $organism_field_type, 'TAXRANK:0000006', 255);
+    $common_name_type = new ChadoVarCharStoragePropertyType($entity_type, $organism_field_type, 'NCBITaxon:common_name', 255);
+    $infra_name_type = new ChadoVarCharStoragePropertyType($entity_type, $organism_field_type, 'TAXRANK:0000045', 1024);
+    $type_id_type = new ChadoIntStoragePropertyType($entity_type, $organism_field_type, 'local:infraspecific_type',);    
     $abbreviation_value = new StoragePropertyValue($entity_type, $organism_field_type, 'local:abbreviation', $entity_id);
     $genus_value = new StoragePropertyValue($entity_type, $organism_field_type, 'TAXRANK:0000005', $entity_id);
     $species_value = new StoragePropertyValue($entity_type, $organism_field_type, 'TAXRANK:0000006', $entity_id);
@@ -379,24 +452,25 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     // @todo add the comment field once the Text property type is impelmented
     
     // The note field single property with multiple values.
-    $note_type = new ChadoIntStoragePropertyType($entity_type, $prop_field_type, 'local:note', 
-      ['chado_table' => 'featureprop', 
-       'chado_column' => 'value', 
-       'type_column' => 'type_id', 
-       'type_id' => $note_term->cvterm_id,
-     'chado_table_fk_column' => 'feature_id']);
+    $note_type = new ChadoIntStoragePropertyType($entity_type, $prop_field_type, 'local:note');
     $note_value = new StoragePropertyValue($entity_type, $prop_field_type, 'local:note', $entity_id);
     
     // Bad properties.
-    $bad_type = new ChadoIntStoragePropertyType($entity_type, $organism_field_type, 'organism_id', 
-      ['chado_table' => 'feature2', 
-       'chado_column' => 'organism_id']);
+    $bad_type = new ChadoIntStoragePropertyType($entity_type, $organism_field_type, 'organism_id');
     $bad_value = new StoragePropertyValue($entity_type, $organism_field_type, 'organism_id', $entity_id);
     
     
     //
     // Test Property Type and Value Creation.
     //
+    
+    // Test that the Chado table mapping is set in the property types.
+    $this->assertTrue($genus_type->getTable() == 'organism', 'The table mapping is incorrect for the property type.');
+    $this->assertTrue($genus_type->getColumn() == 'genus', 'The column mapping is incorrect for the property type.');
+    $this->assertTrue($genus_type->getBaseFkColumn() == 'organism_id', 'The base FK mapping is incorrect for the property type.');
+    $this->assertTrue($note_type->getTableFkColumn() == 'feature_id', 'The table FK mapping is incorrect for the property type.');
+    $this->assertTrue($note_type->getTypeId() == $note_term->cvterm_id, 'The type ID mapping is incorrect for the property type.');
+    $this->assertTrue($note_type->getTypeColumn() == 'type_id', 'The type column mapping is incorrect for the property type.');
     
     // Test validity of fields.
     $this->assertFalse($bad_type->isValid(), 'The bad property type should be invalid.');
