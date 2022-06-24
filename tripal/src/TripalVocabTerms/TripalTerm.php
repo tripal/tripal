@@ -70,6 +70,7 @@ class TripalTerm {
       'altIds' => False,
       'parents' => False,
     ];
+    $this->internalId = NULL;
     
     if (!is_array($details)) {
       return;
@@ -729,6 +730,25 @@ class TripalTerm {
   public function getLoadedAttributes() {
     return $this->loaded_attributes;
   }
+
+  /**
+   * Sets the internal ID of this term to the given internal ID.
+   *
+   * @param mixed $internalId
+   *   The internal ID.
+   */
+  public function setInternalId($internalId) {
+    $this->internalId = $internalId;
+  }
+
+  /** Gets the internal ID of this term. The default is NULL.
+   *
+   * @return mixed
+   *   The internal ID.
+   */
+  public function getInternalId() {
+    return $this->internalId;
+  }
   
   
   
@@ -841,4 +861,9 @@ class TripalTerm {
    * An associative array indicating which attributes of the term are loaded.
    */
   private $loaded_attributes;
+
+  /**
+   * An internal ID that can be used by specific plugin implementations.
+   */
+  private $internalId;
 }
