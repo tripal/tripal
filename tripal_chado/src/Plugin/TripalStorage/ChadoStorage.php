@@ -151,7 +151,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    * Indexes a values array for easy lookup.
    * 
    * @param array $values
-   *   Array of \Drupal\tripal4\TripalStorage\StoragePropertyValue objects.  
+   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.  
    * @return array
    *   An associative array indexed by enhtityType -> entityId -> 
    *   fieldType -> key with the value being the value.

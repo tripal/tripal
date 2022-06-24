@@ -13,7 +13,7 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    * Adds the given array of new property types to this tripal storage plugin.
    *
    * @param array $types
-   *   Array of \Drupal\tripal4\Base\StoragePropertyTypeBase objects.
+   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyTypeBase objects.
    */
   public function addTypes($types);
 
@@ -21,7 +21,7 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    * Removes the given array of property types from this tripal storage plugin.
    *
    * @param array $types
-   *   Array of \Drupal\tripal4\Base\StoragePropertyTypeBase objects.
+   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyTypeBase objects.
    */
   public function removeTypes($types);
 
@@ -40,7 +40,7 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    * plugin.
    *
    * @param array $values
-   *   Array of \Drupal\tripal4\TripalStorage\StoragePropertyValue objects.
+   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
    */
   public function insertValues($values);
 
@@ -49,7 +49,7 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    * tripal storage plugin.
    *
    * @param array $values
-   *   Array of \Drupal\tripal4\TripalStorage\StoragePropertyValue objects.
+   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
    */
   public function updateValues($values);
 
@@ -58,7 +58,7 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    * storage plugin.
    *
    * @param array $values
-   *   Array of \Drupal\tripal4\TripalStorage\StoragePropertyValue objects.
+   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
    */
   public function loadValues(&$values);
 
@@ -66,7 +66,7 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    * Deletes the given array of property values from this tripal storage plugin.
    *
    * @param array $values
-   *   Array of \Drupal\tripal4\TripalStorage\StoragePropertyValue objects.
+   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
    */
   public function deleteValues($values);
 
