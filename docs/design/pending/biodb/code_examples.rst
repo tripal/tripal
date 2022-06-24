@@ -228,19 +228,19 @@ Status tracking thread (using the same parameters):
   $chado_test_base_name = $test_schema_base_names['chado'];
   
   // Write tests for Chado operations.
-  use Drupal\Tests\tripal_chado\Functional\ChadoTestBase;
-  class MyFunctionalTest extends ChadoTestBase {
+  use Drupal\Tests\tripal_chado\Functional\ChadoTestKernelBase;
+  class MyFunctionalTest extends ChadoTestKernelBase {
     // Get a temporary schema name.
-    $biodb = $this->getTestSchema(ChadoTestBase::SCHEMA_NAME_ONLY);
+    $biodb = $this->getTestSchema(ChadoTestKernelBase::SCHEMA_NAME_ONLY);
 
     // Create a temporary schema with dummy data.
-    $biodb2 = $this->getTestSchema(ChadoTestBase::INIT_DUMMY);
+    $biodb2 = $this->getTestSchema(ChadoTestKernelBase::INIT_DUMMY);
 
     // Create a temporary empty Chado schema with no data.
-    $biodb3 = $this->getTestSchema(ChadoTestBase::INIT_CHADO_EMPTY);
+    $biodb3 = $this->getTestSchema(ChadoTestKernelBase::INIT_CHADO_EMPTY);
 
     // Create a temporary empty Chado schema with some dummy data.
-    $biodb4 = $this->getTestSchema(ChadoTestBase::INIT_CHADO_DUMMY);
+    $biodb4 = $this->getTestSchema(ChadoTestKernelBase::INIT_CHADO_DUMMY);
 
     // ... test stuff ...
 

@@ -148,6 +148,8 @@ function tripal_schema() {
   $schema['tripal_import'] = tripal_tripal_import_schema();
   $schema['tripal_collection'] = tripal_tripal_collection_schema();
   $schema['tripal_collection_bundle'] = tripal_tripal_collection_bundle_schema();
+  $schema['tripal_id_space_collection'] = tripal_tripal_id_space_collection_schema();
+  $schema['tripal_vocabulary_collection'] = tripal_tripal_vocabulary_collection_schema();
 
   // Adds a table for administrative notifications on the dashboard.
   $schema['tripal_admin_notifications'] = tripal_tripal_admin_notifications_schema();
@@ -607,6 +609,46 @@ function tripal_tripal_admin_notifications_schema() {
     'primary key' => [
       0 => 'note_id',
     ],
+  ];
+
+  return $schema;
+}
+
+function tripal_tripal_id_space_collection_schema() {
+  $schema = [
+    'fields' => [
+      'name' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'plugin_id' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ]
+    ],
+    'primary key' => ['name'],
+  ];
+
+  return $schema;
+}
+
+function tripal_tripal_vocabulary_collection_schema() {
+  $schema = [
+    'fields' => [
+      'name' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'plugin_id' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ]
+    ],
+    'primary key' => ['name'],
   ];
 
   return $schema;
