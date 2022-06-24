@@ -27,6 +27,35 @@ trait ChadoStoragePropertyTypeTrait  {
    */
   private $chado_column = NULL;
   
+  /** 
+  * The name of the foreign key column in the base table that links to the 
+  * chado table for this property. 
+  */
+  private $base_table_fk_column = NULL;
+  
+  /**
+   * The name of the foreign key column in the chado table that links to 
+   * the base table. Some tables may link to the base table multiple times 
+   * (e.g. relationship tables) so this argument is needed to distinguish 
+   * which one. If no value is given then the first foreign key column to 
+   * the base table is used.
+   */
+  private $chado_table_fk_column = NULL;
+  
+  /**
+   * The name of the column that limits records by type. This is useful for
+   * prop tables where a type_id can be used to limit values.
+   * @var string
+   */
+  private $type_column = NULL;
+  
+  /**
+   * The cvterm_id of the type_columns that limits records by type. This is 
+   * useful for prop tables where a type_id can be used to limit values.
+   * @var string
+   */
+  private $type_id = NULL;
+  
   /**
    * Indicates if this property type is valid for Chado.
    * 
@@ -50,6 +79,63 @@ trait ChadoStoragePropertyTypeTrait  {
    */
   public function getChadoColumn() {
     return $this->chado_column;
+  }
+  /**
+   * Retrieves the name of the column in the Chado table for this property.
+   *
+   * @return string
+   */
+  public function getTypeColumn() {
+    return $this->type_columns;
+  }
+  /**
+   * Retrieves the name of the column in the Chado table for this property.
+   *
+   * @return string
+   */
+  public function getTypeId() {
+    return $this->type_id;
+  }
+  
+  /**
+   * Retrieves the foreign key column linking the chado table to the base table.
+   * @return string
+   */
+  public function getChadoTableFkColumn() {
+    return $this->chado_table_fk_column;
+  }
+  
+  /**
+   * Retrieves the foreign key column linking the chado table to the base table.
+   * @return string
+   */
+  public function getBaseTableFkColumn() {
+    return $this->base_table_fk_column;
+  }
+  
+  /**
+   * Sets the member variables provided by this trait.
+   * @param array $mapping
+   */
+  protected function setMapping($mapping) {
+    if (array_key_exists('chado_table', $mapping)) {
+      $this->chado_table = $mapping['chado_table'];
+    }
+    if (array_key_exists('chado_column', $mapping)) {
+      $this->chado_column = $mapping['chado_column'];
+    }
+    if (array_key_exists('type_column', $mapping)) {
+      $this->type_column = $mapping['type_column'];
+    }
+    if (array_key_exists('type_id', $mapping)) {
+      $this->type_id = $mapping['type_id'];
+    }
+    if (array_key_exists('base_table_fk_column', $mapping)) {
+      $this->base_table_fk_column = $mapping['base_table_fk_column'];
+    }
+    if (array_key_exists('chado_table_fk_column', $mapping)) {
+      $this->chado_table_fk_column = $mapping['chado_table_fk_column'];
+    }    
   }
   
   /**

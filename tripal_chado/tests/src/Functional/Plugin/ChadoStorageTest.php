@@ -90,14 +90,14 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
    * 
    * @param string $entity_type
    */
-  protected function addTripalBundleRecord($entity_type) {
+  protected function addTripalBundleRecord($entity_type, $cvterm, $label) {
     $public = \Drupal::database();
     $public->insert('tripal_bundle')
       ->fields([
         'type' => 'TripalEntity',
-        'term_id' => 1,
+        'term_id' => $cvterm->cvterm_id,
         'name' => $entity_type,
-        'label' => 'Organism'
+        'label' => $label
       ])
       ->execute();
     
@@ -157,6 +157,26 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     return $species_group;
   }
   
+  /**
+   * A helper function to add the local::note term to Chado.
+   */
+  protected function addLocalNoteCVTerm() {
+    
+    // First add the vocabulary term for the organism.type_id column.
+    $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+    $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
+    $local = $idsmanager->createCollection('local', 'chado_id_space');
+    $vmanager->createCollection('local', 'chado_vocabulary');
+    $note = new TripalTerm([
+      'name' => 'note',
+      'idSpace' => 'local',
+      'vocabulary' => 'local',
+      'accession' => 'note',
+    ]);
+    $local->saveTerm($note);
+    return $note;
+  }
+  
   
   /**
    * A helper function to add an organism record to Chado.
@@ -179,10 +199,61 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
       ->execute();
     
     return $this->chado->select('1:organism', 'O')
-      ->fields('O', ['organism_id'])
+      ->fields('O')
       ->condition('species', 'sativa')
       ->execute()
-      ->fetchField();
+      ->fetchObject();
+  }
+  
+  protected function addSOGeneCVterm() {
+    // First add the vocabulary term for the organism.type_id column.
+    $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+    $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
+    $sequence = $idsmanager->createCollection('SO', 'chado_id_space');
+    $vmanager->createCollection('sequence', 'chado_vocabulary');
+    $gene = new TripalTerm([
+      'name' => 'gene',
+      'idSpace' => 'SO',
+      'vocabulary' => 'sequence',
+      'accession' => '0000704)',
+    ]);
+    $sequence->saveTerm($gene);
+    return $sequence;
+  }
+  
+  /**
+   * A helper function for adding a gene recrod to the feature table.
+   */
+  protected function addFeatureRecord($name, $uniquename, $type, $organism) {
+    
+    $this->chado->insert('1:feature')
+      ->fields([
+        'name' => $name,
+        'uniquename' => $uniquename,
+        'type_id' => $type->cvterm_id,
+        'organism_id' => $organism->organism_id,
+      ])
+      ->execute();
+    
+    return $this->chado->select('1:feature', 'F')
+      ->fields('F')
+      ->condition('name', $name)
+      ->execute()
+      ->fetchObject();
+  }
+  
+  /**
+   * A helper function for adding notes values to the featureprop table.
+   */
+  protected function addFeaturePropRecords($feature, $term, $value, $rank) {
+    $this->chado->insert('1:featureprop')
+      ->fields([
+        'feature_id' => $feature->feature_id,
+        'type_id' => $term->cvterm_id,
+        'value' => $value,
+        'rank' => $rank,
+      ])
+      ->execute();    
   }
   
   /**
@@ -192,12 +263,12 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
    * @param int $organism_id
    * @param int $entity_id
    */
-  protected function addChadoBioDataRecord($entity_type, $organism_id, $entity_id) {
+  protected function addChadoBioDataRecord($entity_type, $entity_id, $record_id) {
     $public = \Drupal::database();
     $public->insert('chado_' . $entity_type)
       ->fields([
         'entity_id' => $entity_id,
-        'record_id' => $organism_id,
+        'record_id' => $record_id,
       ])
       ->execute();      
   }
@@ -212,93 +283,180 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     
     $storage_manager = \Drupal::service('tripal.storage');
     $chado_storage = $storage_manager->createInstance('chado_storage');
-           
+
+    // We'll simulare a "Gene" entity type (bundle).
     $entity_id = 1;
-    $entity_type = 'bio_data_1';
-    $field_type = 'obi__organism';
+    $entity_type = 'bio_data_8';
     
-    // Similate the existence of a Tripal Bundle with the needed Chado records.
-    // @todo: we can should renove the calls to the first four functions below
-    // when the prepare step of the installation is complete so that we have a
-    // test environment with a properly prepared Chado. For now we fake it.
+    // Simularte A field with one property value.
+    $name_field_type  = 'schema__name';
+    
+    // Simulate A field with multiple values for one property.
+    $prop_field_type = 'local__note';
+    
+    // Simluate Acomplex field with multiple properties.
+    $organism_field_type = 'obi__organism';
+
+     
+    // 
+    // Populate Chado with Data for Testing.
+    // 
+        
+    // Add the organism record.
+    $this->addTaxRankSubGroupCVTerm();
+    $organism = $this->addOryzaSativaRecord();
+    
+    // Add the gene record.
+    $this->addSOGeneCVterm();
+    $gene_term = $this->getCVterm('sequence', 'gene');
+    $gene = $this->addFeatureRecord('test_gene_name', 'test_gene_uname', $gene_term, $organism);
+    
+    // Add featureprop notes:
+    $this->addLocalNoteCVTerm();
+    $note_term = $this->getCVterm('local', 'note');    
+    $this->addFeaturePropRecords($gene, $note_term, "Note 1", 0);
+    $this->addFeaturePropRecords($gene, $note_term, "Note 2", 2);
+    $this->addFeaturePropRecords($gene, $note_term, "Note 3", 1);
+    
+    // Create entries in the `tripal_bundle`, `chado_bundle` and
+    // `chado_bio_data_x` tables.
+    // @todo the createEntityTypeTable() creates the chado_bio_data_x table
+    // and it can be removed from this test once those tables are created
+    // by the prepare step. At the time of writing this test that part
+    // isn't yet working.
     $this->createEntityTypeTable($entity_type);
-    $bundle_id = $this->addTripalBundleRecord($entity_type);
-    $chado_bundle = $this->addChadoBundleRecord($bundle_id, 'organism');
-    $species_group = $this->addTaxRankSubGroupCVTerm();
-    $organism_id = $this->addOryzaSativaRecord();
-    $this->addChadoBioDataRecord($entity_type, $organism_id, $entity_id);
+    $bundle_id = $this->addTripalBundleRecord($entity_type, $gene_term, 'Gene');
+    $this->addChadoBundleRecord($bundle_id, 'feature', NULL, 'type_id', $gene_term->cvterm_id);
+    $this->addChadoBioDataRecord($entity_type, $entity_id, $gene->feature_id);
+    
+    
+    //
+    // Create Properties
+    // 
+    
+    // Note: we won't do any assertions of these constructors because they
+    // should be tested in the Tripal module and the Chado implementations
+    // just stores Chado table info and if that's broken all the tests
+    // below will fail.
+    
+    // The gene name field single property.
+    $name_type = new ChadoIntStoragePropertyType($entity_type, $name_field_type, 'schema:name', 
+      ['chado_table' => 'feature', 
+       'chado_column' => 'name']);
+    $name_value = new StoragePropertyValue($entity_type, $name_field_type, 'schema:name', $entity_id);
+    
+    // The organism complex field properties.
+    $abbreviation_type = new ChadoVarCharStoragePropertyType($entity_type, $organism_field_type, 'local:abbreviation', 255, 
+      ['chado_table' => 'organism', 
+       'chado_column' => 'abbreviation', 
+       'base_table_fk_column' => 'organism_id']);
+    $genus_type = new ChadoVarCharStoragePropertyType($entity_type, $organism_field_type, 'TAXRANK:0000005', 255, 
+      ['chado_table' => 'organism', 
+       'chado_column' => 'genus', 
+       'base_table_fk_column' => 'organism_id']);
+    $species_type = new ChadoVarCharStoragePropertyType($entity_type, $organism_field_type, 'TAXRANK:0000006', 255, 
+      ['chado_table' => 'organism', 
+       'chado_column' => 'species', 
+       'base_table_fk_column' => 'organism_id']);
+    $common_name_type = new ChadoVarCharStoragePropertyType($entity_type, $organism_field_type, 'NCBITaxon:common_name', 255, 
+      ['chado_table' => 'organism', 
+       'chado_column' => 'common_name', 
+       'base_table_fk_column' => 'organism_id']);
+    $infra_name_type = new ChadoVarCharStoragePropertyType($entity_type, $organism_field_type, 'TAXRANK:0000045', 1024, 
+      ['chado_table' => 'organism', 
+       'chado_column' => 'infraspecific_name', 
+       'base_table_fk_column' => 'organism_id']);
+    $type_id_type = new ChadoIntStoragePropertyType($entity_type, $organism_field_type, 'local:infraspecific_type', 
+      ['chado_table' => 'organism', 
+       'chado_column' => 'type_id', 
+       'base_table_fk_column' => 'organism_id']);    
+    $abbreviation_value = new StoragePropertyValue($entity_type, $organism_field_type, 'local:abbreviation', $entity_id);
+    $genus_value = new StoragePropertyValue($entity_type, $organism_field_type, 'TAXRANK:0000005', $entity_id);
+    $species_value = new StoragePropertyValue($entity_type, $organism_field_type, 'TAXRANK:0000006', $entity_id);
+    $common_name_value = new StoragePropertyValue($entity_type, $organism_field_type, 'NCBITaxon:common_name', $entity_id);
+    $infra_name_value = new StoragePropertyValue($entity_type, $organism_field_type, 'TAXRANK:0000045', $entity_id);
+    $type_id_value = new StoragePropertyValue($entity_type, $organism_field_type, 'local:infraspecific_type', $entity_id);    
+    // @todo add the comment field once the Text property type is impelmented
+    
+    // The note field single property with multiple values.
+    $note_type = new ChadoIntStoragePropertyType($entity_type, $prop_field_type, 'local:note', 
+      ['chado_table' => 'featureprop', 
+       'chado_column' => 'value', 
+       'type_column' => 'type_id', 
+       'type_id' => $note_term->cvterm_id,
+     'chado_table_fk_column' => 'feature_id']);
+    $note_value = new StoragePropertyValue($entity_type, $prop_field_type, 'local:note', $entity_id);
+    
+    // Bad properties.
+    $bad_type = new ChadoIntStoragePropertyType($entity_type, $organism_field_type, 'organism_id', 
+      ['chado_table' => 'feature2', 
+       'chado_column' => 'organism_id']);
+    $bad_value = new StoragePropertyValue($entity_type, $organism_field_type, 'organism_id', $entity_id);
     
     
     //
     // Test Property Type and Value Creation.
     //
     
-    // Test invalid property types.
-    $bad = new ChadoIntStoragePropertyType($entity_type, $field_type,
-        'organism_id', 'organism2', 'organism_id');
-    $this->assertFalse($bad->isValid(), 'The ChadoIntStoragePropertyType should be invalid when a non-existent Chado table is provided.');
-    $bad = new ChadoIntStoragePropertyType($entity_type, $field_type,
-        'organism_id', 'organism', 'organism_id2');
-    $this->assertFalse($bad->isValid(), 'The ChadoIntStoragePropertyType should be invalid when a non-existent Chado table column is provided.');
-    
-    // Create some properties that will correspond to an entry in the
-    // organism table of Chado.    
-    $organism_id_type = new ChadoIntStoragePropertyType($entity_type, $field_type, 
-        'organism_id', 'organism', 'organism_id');
-    $abbreviation_type = new ChadoVarCharStoragePropertyType($entity_type, $field_type, 
-        'local:abbreviation', 255, 'organism', 'abbreviation');
-    $genus_type = new ChadoVarCharStoragePropertyType($entity_type, $field_type, 
-        'TAXRANK:0000005', 255, 'organism', 'genus');
-    $species_type = new ChadoVarCharStoragePropertyType($entity_type, $field_type, 
-        'TAXRANK:0000006', 255, 'organism', 'species');    
-    $common_name_type = new ChadoVarCharStoragePropertyType($entity_type, $field_type, 
-        'NCBITaxon:common_name', 255, 'organism', 'common_name');
-    $infra_name_type = new ChadoVarCharStoragePropertyType($entity_type, $field_type, 
-        'TAXRANK:0000045', 1024, 'organism', 'infraspecific_name');
-    $type_id_type = new ChadoIntStoragePropertyType($entity_type, $field_type, 
-        'local:infraspecific_type', 'organism', 'type_id');    
-    // @todo add the comment field once the Text property type is impelmented
-    
-    $this->assertTrue($organism_id_type->isValid(), 'The organism_id type should be valid.');
-    $this->assertTrue($abbreviation_type->isValid(), 'The abbreviation type should be valid.');
-    $this->assertTrue($genus_type->isValid(), 'The genus type should be valid.');
-    $this->assertTrue($species_type->isValid(), 'The species type should be valid.');
-    $this->assertTrue($common_name_type->isValid(), 'The common name type should be valid.');
-    $this->assertTrue($infra_name_type->isValid(), 'The infraspecific name type should be valid.');
-    $this->assertTrue($type_id_type->isValid(), 'The type_id should be valid.');
-        
-    // Add the properties types.
-    $types = [$organism_id_type, $abbreviation_type, $genus_type,
-      $species_type, $common_name_type, $infra_name_type, $type_id_type      
-    ];    
-    
-    $chado_storage->addTypes($types); 
+    // Test validity of fields.
+    $this->assertFalse($bad_type->isValid(), 'The bad property type should be invalid.');
+    $this->assertTrue($abbreviation_type->isValid(), 'The abbreviation property type should be valid.');
+    $this->assertTrue($genus_type->isValid(), 'The genus property type should be valid.');
+    $this->assertTrue($species_type->isValid(), 'The species property type should be valid.');
+    $this->assertTrue($common_name_type->isValid(), 'The common name property type should be valid.');
+    $this->assertTrue($infra_name_type->isValid(), 'The infraspecific name property type should be valid.');
+    $this->assertTrue($type_id_type->isValid(), 'The type_id property type should be valid.');
+    $this->assertTrue($name_type->isValid(), 'The name property type should be valid.');
+    $this->assertTrue($note_type->isValid(), 'The note property type should be valid.');
     
    
     // 
-    // Testing Loading of Data.
+    // Testing Loading of Property Values from Chado.
     //
-    $organism_id_value = new StoragePropertyValue($entity_type, $field_type, 'organism_id', $entity_id);
-    $abbreviation_value = new StoragePropertyValue($entity_type, $field_type, 'local:abbreviation', $entity_id);
-    $genus_value = new StoragePropertyValue($entity_type, $field_type, 'TAXRANK:0000005', $entity_id);
-    $species_value = new StoragePropertyValue($entity_type, $field_type, 'TAXRANK:0000006', $entity_id);
-    $common_name_value = new StoragePropertyValue($entity_type, $field_type, 'NCBITaxon:common_name', $entity_id);
-    $infra_name_value = new StoragePropertyValue($entity_type, $field_type, 'TAXRANK:0000045', $entity_id);
-    $type_id_value = new StoragePropertyValue($entity_type, $field_type, 'local:infraspecific_type', $entity_id);
-    // @todo add the comment field once the Text property type is impelmented
     
-    $values = [$organism_id_value, $abbreviation_value, $genus_value, $species_value, 
-      $common_name_value, $infra_name_value, $type_id_value
+    // Make sure the values start as empty.
+    $this->assertTrue(empty($abbreviation_value->getValue()), 'The abbreviation property should not have a value.');
+    $this->assertTrue(empty($genus_value->getValue()), 'The genus property should not have a value.');
+    $this->assertTrue(empty($species_value->getValue()), 'The species property should not have a value.');
+    $this->assertTrue(empty($common_name_value->getValue()), 'The species property should not have a value.');
+    $this->assertTrue(empty($infra_name_value->getValue()), 'The infraspecific name property should not have a value.');
+    $this->assertTrue(empty($type_id_value->getValue()), 'The infraspecific type_id property should not have a value.');
+    $this->assertTrue(empty($name_value->getValue()), 'The name property should not have a value.');
+    $this->assertTrue(empty($note_value->getValue()), 'The note property should not have a value.');
+    $this->assertTrue(empty($bad_value->getValue()), 'The bad property should not have a value.');
+    
+    // Add the types and load the values.
+    $types = [
+      $abbreviation_type, $genus_type, $species_type, $common_name_type, 
+      $infra_name_type, $type_id_type, $bad_type, $name_type, $note_type
+    ];    
+    $values = [
+      $abbreviation_value, $genus_value, $species_value, $common_name_value, 
+      $infra_name_value, $type_id_value, $bad_value, $name_value, $note_value 
     ];
+    $chado_storage->addTypes($types);
+    $chado_storage->loadValues($values);
     
-    $chado_storage->loadValues($values);  
+    // Tests loading a property from a base table with a single value.
+    $this->assertTrue($name_value->getValue() == 'test_gene_name', 'The name value was not loaded properly.');
     
-    print_r([$genus_value->getValue()]);
+    // Tests loading properites each with a single value from a linking table
+    // where the foreign key is in the base table.
+    $this->assertTrue($abbreviation_value->getValue() == 'O.sativa', 'The abbreviation value was not loaded properly.');
     $this->assertTrue($genus_value->getValue() == 'Oryza', 'The genus value was not loaded properly.');
     $this->assertTrue($species_value->getValue() == 'sativa', 'The species value was not loaded properly.');
+    $this->assertTrue($common_name_value->getValue() == 'rice', 'The species common name value was not loaded properly.');
+    $this->assertTrue($infra_name_value->getValue() == 'Japonica', 'The infraspecific name value was not loaded properly.');
+    $this->assertTrue($type_id_value->getValue() == '2', 'The infraspecific type_id value was not loaded properly.');
     
-    
-     
+    // Tests loading a property from a linking table where the forkeign key
+    // is in the linking table and the property has mutiple values.
+    $this->assertTrue(is_array($note_value->getValue()), 'The note value should be an array.');
+    $this->assertTrue(count($note_value->getValue()) == 3, 'The note value had the wrong number of elements.');
+    $this->assertTrue($note_value->getValue()[0] == 'Note 1', 'The note first element is incorrect.');
+    $this->assertTrue($note_value->getValue()[1] == 'Note 3', 'The note second element is incorrect.');
+    $this->assertTrue($note_value->getValue()[2] == 'Note 2', 'The note third element is incorrect.');
+    $this->assertTrue(empty($bad_value->getValue()), 'The bad property should have no value');   
   }
 }
 

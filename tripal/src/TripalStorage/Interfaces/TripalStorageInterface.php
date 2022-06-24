@@ -50,7 +50,7 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    * @param array $values
    *   Array of \Drupal\tripal4\TripalStorage\StoragePropertyValue objects.
    */
-  public function loadValues($values);
+  public function loadValues(&$values);
 
   /**
    * Deletes the given array of property values from this tripal storage plugin.

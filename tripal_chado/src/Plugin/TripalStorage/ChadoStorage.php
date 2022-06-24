@@ -126,11 +126,19 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    * @{inheritdoc}
    */
   
-  public function loadValues($values) {
+  public function loadValues(&$values) {
     $indexed_values = $this->indexValues($values);
     $selects = $this->buildSelect($indexed_values);
     $results = $this->executeSelect($selects);
-    $this->populateValues($indexed_values, $results);
+    $this->populateValues($indexed_values, $results, $values);
+  }
+  
+  /**
+   * @{inheritdoc}
+   */
+  
+  public function deleteValues($values) {
+    
   }
   
   /**
@@ -149,7 +157,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     $indexed_values = [];  
     
     // First, index the properties by entity type, field type and key.
-    foreach ($values as $value) {
+    foreach ($values as $val_index => $value) {
       
       $entity_id = $value->getEntityId();
       $entity_type = $value->getEntityType();
@@ -191,28 +199,26 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       }
       
       // Property value objects that are assigend to an entity type that isn't 
-      // mapped to Chado should be ignored.
+      // mapped to Chado should be ignored. But don't report an error. Some 
+      // fields may not be mapped to a table.
       $type_mapping = $this->getEntityTypeMapping($entity_type);
       if (!$type_mapping) {
-        $logger->error('There is no mapping of entity type, "@type", to Chado. Ignoring property, "@prop".',
-            ['@type' => $entity_type, '@prop' => $entity_type . '.' . $field_type . '.' . $key]);
         continue;
       }
       $this->type_mapping[$entity_type] = $type_mapping;
       
       // Property value objects that don't have an ID mapping to Chado
-      // should be ignored.
+      // should be ignored. But don't report an error. Some
+      // fields may not be mapped to a table.
       $id_mapping = $this->getEntityMapping($entity_type, $entity_id);
       if (!$id_mapping) {
-        $logger->error('There is no known mapping of entity ID, "@id", to Chado. Ignoring property, "@prop".',
-            ['@id' => $entity_id, '@prop' => $entity_type . '.' . $field_type . '.' . $key]);
         continue;
       }
       $this->id_mapping[$entity_type][$entity_id] = $id_mapping;
       
       
       // Index the value.
-      $indexed_values[$entity_type][$entity_id][$field_type][$key] = $value;
+      $indexed_values[$entity_type][$entity_id][$field_type][$key] = $val_index;
     }
     
     return $indexed_values;
@@ -258,6 +264,27 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     return $inserts;
   }
   
+  
+  /**
+   * Builds a set of dynamic update queries for Chado based on the values.
+   *
+   * @param array $indexed_values
+   *   An associative array as returned by the indexValues function.
+   * @return array
+   *   An associative array indexed by entityType -> entityId -> Chado
+   *   table name. The values are Dynamic query object ready for execution.
+   */
+  protected function buildDelete($indexed_values) {
+    
+    $logger = \Drupal::service('tripal.logger');
+    $chado = \Drupal::service('tripal_chado.database');
+    
+    // An array of dynamic query select statements.
+    $inserts = [];
+    
+    return $inserts;
+  }
+  
   /**
    * Builds a set of dynamic select queries for Chado based on the values.
    * 
@@ -279,7 +306,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       foreach ($entity_ids as $entity_id => $field_types) {
         $selects[$entity_type][$entity_id] = [];        
         foreach ($field_types as $field_type => $keys) {          
-          foreach ($keys as $key => $value) {
+          foreach (array_keys($keys) as $key) {
             $type_mapping = $this->type_mapping[$entity_type];
             $id_mapping = $this->id_mapping[$entity_type][$entity_id];
             $type = $this->property_types[$entity_type][$field_type][$key];
@@ -287,31 +314,66 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             $record_id = $id_mapping->record_id;
             $chado_table = $type->getChadoTable();
             $chado_column = $type->getChadoColumn();
+            $base_fk_column = $type->getBaseTableFkColumn();
+            $chado_fk_column = $type->getChadoTableFkColumn();
             
             // If this is the first time we've seen this Chado table then
             // start the query for it.
             if (!array_key_exists($chado_table, $selects[$entity_type][$entity_id])) {
+              
+              $selects[$entity_type][$entity_id][$chado_table] = NULL;
+              
+              // Get the table schema definitions.
               $chado_table_def = $chado->schema()->getTableDef($chado_table, ['format' => 'drupal']);
               $base_table_def = $chado->schema()->getTableDef($base_table, ['format' => 'drupal']);              
               
               // @todo remove the "1:" prefix once issue #217 is fixed.
-              $query = $chado->select('1:' . $chado_table, 'T');              
+              $query = $chado->select('1:' . $chado_table, 'prop');              
               
               // If the chado table for this property is not the base table then
               // we need to link to the base table to get the records in this
               // table that are linked to the record_id for the entity.
-              if ($chado_table != $base_table) {                
-                $base_fk = array_keys($chado_table_def['foreign keys'][$base_table])[0];
-                $query->condition('T.' . $base_fk, $record_id);
+              if ($chado_table != $base_table) {
+                
+                // If the base table links to the chado table, do a join.
+                if (!empty($base_fk_column)) {
+                  
+                  // If the requested linker column is missing in the base table
+                  // then we can't find a value.
+                  if (!array_key_exists($base_fk_column, $base_table_def['fields'])) {
+                    continue;
+                  }
+                  $chado_table_pkey = $chado_table_def['primary key'];
+                  $base_table_pkey = $base_table_def['primary key'];
+                  // @todo remove the "1:" prefix once issue #217 is fixed.
+                  $query->join('1:' . $base_table, 'base', 'base.' . $base_fk_column . ' = ' . 'prop.' . $chado_table_pkey);
+                  $query->condition('base.' . $base_table_pkey, $record_id);
+                }
+                // Else, the chado table links to the base table.
+                else {         
+                  
+                  // If there is no FK column between this table and the base
+                  // table then we can't find any values for it.
+                  if (!array_key_exists($base_table, $chado_table_def['foreign keys'])) {
+                    continue;
+                  }
+                  
+                  // If no FK column was specified then use the first one found.
+                  if (!$chado_fk_column) {
+                    $chado_fk_column = array_keys($chado_table_def['foreign keys'][$base_table]['columns'])[0];
+                  }
+                  $query->condition('prop.' . $chado_fk_column, $record_id);
+                }                
               }
+              // Else, the base table and the chado table are the same.
               else {
-                $pkey = $base_table_def['primary key'];
-                $query->condition('T.' . $pkey, $record_id);
+                $base_table_pkey = $base_table_def['primary key'];
+                $query->condition('prop.' . $base_table_pkey, $record_id);
               }
               
               // If the table has a rank column then order by rank.
               if (array_key_exists('rank', $chado_table_def['fields'])) {
-                $query->orderBy('T.rank', 'ASC');
+                $query->orderBy('prop.rank', 'ASC');
               }
                
               // Store the query so we can add to it.
@@ -319,8 +381,10 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             }
             
             // Add the field for this property to the query.
-            $query = $selects[$entity_type][$entity_id][$chado_table];
-            $query->addField('T', $chado_column, $this->sanitizeFieldKey($key));
+            $query = $selects[$entity_type][$entity_id][$chado_table];            
+            if (!is_null($query) and array_key_exists($chado_column, $chado_table_def['fields'])) {              
+              $query->addField('prop', $chado_column, $this->sanitizeFieldKey($key));
+            }
           }
         }
       }
@@ -336,7 +400,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    *   An array of select queries as returned by the buildSelect function.
    * @return array
    *   An associative array indexed by entityType -> entityId -> Chado 
-   *   table name. The value is the query results object.
+   *   table name. The value is an array of results as returned by fetchAssoc().
    */
   protected function executeSelect($selects) {
     $logger = \Drupal::service('tripal.logger');
@@ -347,14 +411,19 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       foreach ($entity_ids as $entity_id => $chado_tables) {
         $results[$entity_type][$entity_id] = [];
         foreach ($chado_tables as $chado_table => $query) {
+          $results[$entity_type][$entity_id][$chado_table] = [];
+          if (is_null($query)) {
+            continue;
+          }
           $result = $query->execute();
-          if (!$result) {
-            $results[$entity_type][$entity_id][$chado_table] = NULL;
+          if (!$result) {            
             $logger->error('Problem executing select query for Chado table, "@table", on entity ID, "@id".',
                 ['@table' => $chado_table, '@id' => $entity_id]);
             continue;
           }
-          $results[$entity_type][$entity_id][$chado_table] = $result;
+          while ($record = $result->fetchAssoc()) {
+            $results[$entity_type][$entity_id][$chado_table][] = $record;
+          }
         }
       }
     }
@@ -367,28 +436,31 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    * @param array $results
    *   An array of query results as returned by executeSelect
    */
-  protected function populateValues($indexed_values, $results) {
+  protected function populateValues($indexed_values, $results, &$values) {
     
     foreach ($indexed_values as $entity_type => $entity_ids) {
       foreach ($entity_ids as $entity_id => $field_types) {
         foreach ($field_types as $field_type => $keys) {
-          foreach ($keys as $key => $value) {
+          foreach ($keys as $key => $val_index) {
             $skey = $this->sanitizeFieldKey($key);
             $type = $this->property_types[$entity_type][$field_type][$key];
             $chado_table = $type->getChadoTable();
-            $values = [];
-            $result = $results[$entity_type][$entity_id][$chado_table];
-            while ($record = $result->fetchAssoc()) {
-              $values[] = $record[$skey];
+            
+            // Get the values from the Chado records for this property.
+            $vals = [];
+            $records = $results[$entity_type][$entity_id][$chado_table];
+            foreach ($records as $record) {
+              $vals[] = $record[$skey];
             }
             
-            // @todo: check the cardinatlity of a property and make sure we don't
-            // exceed it.                        
-            if (count($values) == 1) {
-              $value->setValue($values[0]);
+            // Set the value for this property.
+            // @todo: check the cardinatlity of a property and make sure we 
+            // don't exceed it.                        
+            if (count($vals) == 1) {
+              $values[$val_index]->setValue($vals[0]);
             }
-            if (count($values) > 1) {
-              $value->setValue($values);
+            if (count($vals) > 1) {
+              $values[$val_index]->setValue($vals);
             }
           }
         }
@@ -487,43 +559,5 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       return NULL;
     }
    return $result->fetchObject();    
-  }
-  
-  /**
-   * @{inheritdoc}
-   */
-  
-  public function deleteValues($values) {
-    
-  }
+  } 
 }
-/* // Get the base record as the starting point.
- // @todo remove the "1:" prefix once issue #217 is fixed.
- $query = $chado->select("1:" . $data_table, 'B');
- $query->fields('B', [$pkey]);
- $query->condition("B." . $pkey, $id_mapping->record_id);
- 
- // If this entity type needs a type to distinguish it then add that in.
- if (!empty($type_table)) {
- $type_table_def = $chado->schema()->getTableDef($type_table, ['format' => 'drupal']);
- $linker_col = array_keys($type_table_def['foreign keys'][$data_table])[0];
- $query->join($type_table , 'L', 'B.' . $pkey . ' = ' .  'L.' . $linker_col);
- if (!empty($type_column)) {
- if (!empty($type_id)) {
- $query->addCondition('L.' . $type_column, $type_id, '=');
- }
- // For prop tables there could be a value that is needed to match.
- if (!empty($type_value)) {
- $query->addCondition('L.value', $type_value, '=');
- }
- }
- }
- // If a type_id is set but not a type_table then the table has a
- // type_id column.
- else {
- if (!empty($type_id)) {
- $query->addCondition('B.type_id', $type_id, '=');
- }
- }
- 
- $selects[$entity_id][$data_table] = $query; */
