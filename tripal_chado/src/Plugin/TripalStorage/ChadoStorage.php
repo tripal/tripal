@@ -463,14 +463,19 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             }
             
             // Set the value for this property.
+            if (count($vals) == 0) {
+              $values[$val_index]->setValue(NULL);
+            }
             if (count($vals) == 1) {
               $values[$val_index]->setValue($vals[0]);
             }
             if (count($vals) > 1) {
-              if ($cardinality == 0 or $cardinality <= count($vals)) {
+              
+              if ($cardinality == 0 or count($vals) <= $cardinality) {
                 $values[$val_index]->setValue($vals);
               }
               else {
+                $values[$val_index]->setValue(NULL);
                 $logger->error('The property, "@prop" has @n values but only allows @m. Skipping.',[
                   '@prop' => $entity_type . "." . $field_type . '.' . $key, 
                   '@n' => count($vals),

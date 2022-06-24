@@ -20,25 +20,6 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
 class ChadoStorageTest extends ChadoTestBrowserBase {
   
   /**
-   * A helper function to retrieve a Chado cvterm record.
-   *
-   * @param string $cvname
-   * @param string $cvterm_name
-   */
-  protected function getCVterm($cvname, $cvterm_name) {
-    $query = $this->chado->select('1:cvterm', 'CVT');
-    $query->join('1:cv', 'CV', '"CV".cv_id = "CVT".cv_id');
-    $query->fields('CVT', ['cv_id', 'name', 'cvterm_id', 'definition', 'is_obsolete', 'is_relationshiptype'])
-      ->condition('CVT.name', $cvterm_name, '=')
-      ->condition('CV.name', $cvname, '=');
-    $result = $query->execute();
-    if (!$result) {
-      return [];
-    }
-    return $result->fetchObject();
-  }
-  
-  /**
    * A helper function to create the `bio_data_x` table.
    * 
    * @param string $entity_type
@@ -96,7 +77,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $public->insert('tripal_bundle')
       ->fields([
         'type' => 'TripalEntity',
-        'term_id' => $cvterm->cvterm_id,
+        'term_id' => $cvterm->getInternalId(),
         'name' => $entity_type,
         'label' => $label
       ])
@@ -182,11 +163,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
   /**
    * A helper function to add an organism record to Chado.
    */
-  protected function addOryzaSativaRecord() {
-    
-    // @todo Ask Josh about adding an internalID to the TripalTerm class so I
-    // don't have to do a TripalDBX to get the cvterm_id from it.
-    $cvterm = $this->getCVterm('taxonomic_rank', 'species_group');
+  protected function addOryzaSativaRecord($type_term) {
     
     $this->chado->insert('1:organism')
       ->fields([
@@ -195,7 +172,8 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
         'common_name' => 'rice',
         'abbreviation' => 'O.sativa',
         'infraspecific_name' => 'Japonica',
-        'type_id' => $cvterm->cvterm_id,
+        'type_id' => $type_term->getInternalId(),
+        'comment' => 'This is rice'
       ])
       ->execute();
     
@@ -206,6 +184,10 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
       ->fetchObject();
   }
   
+  /**
+   * A helper function to add the SO:0000704 (gene) term.
+   * @return unknown
+   */
   protected function addSOGeneCVterm() {
     // First add the vocabulary term for the organism.type_id column.
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
@@ -219,7 +201,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
       'accession' => '0000704)',
     ]);
     $sequence->saveTerm($gene);
-    return $sequence;
+    return $gene;
   }
   
   /**
@@ -231,7 +213,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
       ->fields([
         'name' => $name,
         'uniquename' => $uniquename,
-        'type_id' => $type->cvterm_id,
+        'type_id' => $type->getInternalId(),
         'organism_id' => $organism->organism_id,
       ])
       ->execute();
@@ -250,7 +232,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $this->chado->insert('1:featureprop')
       ->fields([
         'feature_id' => $feature->feature_id,
-        'type_id' => $term->cvterm_id,
+        'type_id' => $term->getInternalId(),
         'value' => $value,
         'rank' => $rank,
       ])
@@ -349,17 +331,15 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     // 
         
     // Add the organism record.
-    $this->addTaxRankSubGroupCVTerm();
-    $organism = $this->addOryzaSativaRecord();
+    $type_term = $this->addTaxRankSubGroupCVTerm();
+    $organism = $this->addOryzaSativaRecord($type_term);
     
     // Add the gene record.
-    $this->addSOGeneCVterm();
-    $gene_term = $this->getCVterm('sequence', 'gene');
+    $gene_term = $this->addSOGeneCVterm();
     $gene = $this->addFeatureRecord('test_gene_name', 'test_gene_uname', $gene_term, $organism);
     
     // Add featureprop notes:
-    $this->addLocalNoteCVTerm();
-    $note_term = $this->getCVterm('local', 'note');    
+    $note_term = $this->addLocalNoteCVTerm();   
     $this->addFeaturePropRecords($gene, $note_term, "Note 1", 0);
     $this->addFeaturePropRecords($gene, $note_term, "Note 2", 2);
     $this->addFeaturePropRecords($gene, $note_term, "Note 3", 1);
@@ -372,7 +352,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     // isn't yet working.
     $this->createEntityTypeTable($entity_type);
     $bundle_id = $this->addTripalBundleRecord($entity_type, $gene_term, 'Gene');
-    $this->addChadoBundleRecord($bundle_id, 'feature', NULL, 'type_id', $gene_term->cvterm_id);
+    $this->addChadoBundleRecord($bundle_id, 'feature', NULL, 'type_id', $gene_term->getInternalID());
     $this->addChadoBioDataRecord($entity_type, $entity_id, $gene->feature_id);
     
     
@@ -425,7 +405,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
       'table' => 'featureprop',
       'column' => 'value',
       'type_col' => 'type_id',
-      'type_id' => $note_term->cvterm_id,
+      'type_id' => $note_term->getInternalId(),
       'table_fk_col' => 'feature_id'      
     ]);
     $this->addChadoFieldRecord($entity_type, $organism_field_type, 'organism_id', [
@@ -478,7 +458,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $this->assertTrue($genus_type->getColumn() == 'genus', 'The column mapping is incorrect for the property type.');
     $this->assertTrue($genus_type->getBaseFkColumn() == 'organism_id', 'The base FK mapping is incorrect for the property type.');
     $this->assertTrue($note_type->getTableFkColumn() == 'feature_id', 'The table FK mapping is incorrect for the property type.');
-    $this->assertTrue($note_type->getTypeId() == $note_term->cvterm_id, 'The type ID mapping is incorrect for the property type.');
+    $this->assertTrue($note_type->getTypeId() == $note_term->getInternalId(), 'The type ID mapping is incorrect for the property type.');
     $this->assertTrue($note_type->getTypeColumn() == 'type_id', 'The type column mapping is incorrect for the property type.');
     
     // Test validity of fields.
@@ -533,7 +513,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $this->assertTrue($common_name_value->getValue() == 'rice', 'The species common name value was not loaded properly.');
     $this->assertTrue($infra_name_value->getValue() == 'Japonica', 'The infraspecific name value was not loaded properly.');
     $this->assertTrue($type_id_value->getValue() == '2', 'The infraspecific type_id value was not loaded properly.');
-    $this->assertTrue(empty($comment_value), 'The comment value was not loaded properly.');
+    $this->assertTrue($comment_value->getValue() == 'This is rice', 'The comment value was not loaded properly.');
     
     // Tests loading a property from a linking table where the forkeign key
     // is in the linking table and the property has mutiple values.
