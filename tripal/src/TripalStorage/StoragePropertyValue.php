@@ -46,7 +46,7 @@ class StoragePropertyValue extends StoragePropertyBase {
   /**
    * Returns the value of this storage property value.
    *
-   * @return ?
+   * @return mixed
    *   The value.
    */
   public function getValue() {
@@ -56,7 +56,7 @@ class StoragePropertyValue extends StoragePropertyBase {
   /**
    * Sets the value of this storage property value to the given value.
    *
-   * @param ? $value
+   * @param mixed $value
    *   The value.
    */
   public function setValue($value) {

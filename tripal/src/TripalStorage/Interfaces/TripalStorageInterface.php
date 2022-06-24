@@ -69,4 +69,17 @@ interface TripalStoragePluginInterface extends PluginInspectionInterface {
    *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
    */
   public function deleteValues($values);
+
+  /**
+   * Finds and returns all property values stored in this storage plugin
+   * implementation that matches the given match argument.
+   *
+   * @param mixed $match
+   *   The value that is matched.
+   *
+   * @return array
+   *   Array of all \Drupal\tripal\TripalStorage\StoragePropertyValue objects
+   *   that match.
+   */
+  public function findValues($match);
 }
