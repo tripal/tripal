@@ -27,6 +27,12 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
   public function __construct($entityType,$fieldType,$key,$id) {
     parent::__construct($entityType,$fieldType,$key);
     $this->id = $id;
+    $this->cardinality = TRUE;
+    $this->searchability = TRUE;
+    $this->operations = array("eq","ne","contains","starts");
+    $this->sortable = TRUE;
+    $this->readOnly_ = FALSE;
+    $this->required = FALSE;
   }
 
   /**
@@ -80,7 +86,7 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
   }
 
   /**
-   * Sets the operations.
+   * Sets the supported operations.
    *
    * Valid operations are (eq,ne,contains,starts).
    *
@@ -92,7 +98,7 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
   }
 
   /**
-   * Gets the operations.
+   * Gets the supported operations.
    *
    * @return bool
    *   The operations.
@@ -167,5 +173,47 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
    * @var string
    */
   private $id;
+
+  /**
+   * The cardinality of this storage property type base.
+   *
+   * @var bool
+   */
+  private $cardinality;
+
+  /**
+   * The searchability of this storage property type base.
+   *
+   * @var bool
+   */
+  private $searchability;
+
+  /**
+   * The supported operations of this storage property type base.
+   *
+   * @var array
+   */
+  private $operations;
+
+  /**
+   * The sortable property of this storage property type base.
+   *
+   * @var bool
+   */
+  private $sortable;
+
+  /**
+   * The read only property of this storage property type base.
+   *
+   * @var bool
+   */
+  private $readOnly_;
+
+  /**
+   * The required of this storage property type base.
+   *
+   * @var bool
+   */
+  private $required;
 
 }
