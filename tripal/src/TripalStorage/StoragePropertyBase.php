@@ -20,7 +20,7 @@ class StoragePropertyBase {
    *   The key associated with this storage property base object.
    */
   public function __construct($entityType,$fieldType,$key) {
-    $this->entityTypeId = $entityType;
+    $this->entityType = $entityType;
     $this->fieldType = $fieldType;
     $this->key_ = $key;
   }

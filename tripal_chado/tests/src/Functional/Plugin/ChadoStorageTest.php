@@ -2,8 +2,8 @@
 
 namespace Drupal\Tests\tripal_chado\Functional;
 
-use Drupal\tripal\TripalStorage\IntStoragePropertyType;
-use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 
@@ -233,43 +233,70 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     // Test Property Type and Value Creation.
     //
     
+    // Test invalid property types.
+    $bad = new ChadoIntStoragePropertyType($entity_type, $field_type,
+        'organism_id', 'organism2', 'organism_id');
+    $this->assertFalse($bad->isValid(), 'The ChadoIntStoragePropertyType should be invalid when a non-existent Chado table is provided.');
+    $bad = new ChadoIntStoragePropertyType($entity_type, $field_type,
+        'organism_id', 'organism', 'organism_id2');
+    $this->assertFalse($bad->isValid(), 'The ChadoIntStoragePropertyType should be invalid when a non-existent Chado table column is provided.');
+    
     // Create some properties that will correspond to an entry in the
     // organism table of Chado.    
-    $organism_id_type = new IntStoragePropertyType($entity_type, $field_type, 'organism_id');
-    $abbreviation_type = new VarCharStoragePropertyType($entity_type, $field_type, 'abbreviation', 255);
-    $genus_type = new VarCharStoragePropertyType($entity_type, $field_type, 'genus', 255);
-    $species_type = new VarCharStoragePropertyType($entity_type, $field_type, 'species', 255);    
-    $common_name_type = new VarCharStoragePropertyType($entity_type, $field_type, 'common_name', 255);
-    $infra_name_type = new VarCharStoragePropertyType($entity_type, $field_type, 'infraspecific_name', 1024);
-    $type_id_type = new IntStoragePropertyType($entity_type, $field_type, 'type_id');    
-    //$comment_type = new TextStoragePropertyType($entity_type, $field_type, 'comment');
+    $organism_id_type = new ChadoIntStoragePropertyType($entity_type, $field_type, 
+        'organism_id', 'organism', 'organism_id');
+    $abbreviation_type = new ChadoVarCharStoragePropertyType($entity_type, $field_type, 
+        'local:abbreviation', 255, 'organism', 'abbreviation');
+    $genus_type = new ChadoVarCharStoragePropertyType($entity_type, $field_type, 
+        'TAXRANK:0000005', 255, 'organism', 'genus');
+    $species_type = new ChadoVarCharStoragePropertyType($entity_type, $field_type, 
+        'TAXRANK:0000006', 255, 'organism', 'species');    
+    $common_name_type = new ChadoVarCharStoragePropertyType($entity_type, $field_type, 
+        'NCBITaxon:common_name', 255, 'organism', 'common_name');
+    $infra_name_type = new ChadoVarCharStoragePropertyType($entity_type, $field_type, 
+        'TAXRANK:0000045', 1024, 'organism', 'infraspecific_name');
+    $type_id_type = new ChadoIntStoragePropertyType($entity_type, $field_type, 
+        'local:infraspecific_type', 'organism', 'type_id');    
+    // @todo add the comment field once the Text property type is impelmented
+    
+    $this->assertTrue($organism_id_type->isValid(), 'The organism_id type should be valid.');
+    $this->assertTrue($abbreviation_type->isValid(), 'The abbreviation type should be valid.');
+    $this->assertTrue($genus_type->isValid(), 'The genus type should be valid.');
+    $this->assertTrue($species_type->isValid(), 'The species type should be valid.');
+    $this->assertTrue($common_name_type->isValid(), 'The common name type should be valid.');
+    $this->assertTrue($infra_name_type->isValid(), 'The infraspecific name type should be valid.');
+    $this->assertTrue($type_id_type->isValid(), 'The type_id should be valid.');
         
     // Add the properties types.
     $types = [$organism_id_type, $abbreviation_type, $genus_type,
       $species_type, $common_name_type, $infra_name_type, $type_id_type      
-    ]; # $comment_type   
+    ];    
     
     $chado_storage->addTypes($types); 
     
-   
    
     // 
     // Testing Loading of Data.
     //
     $organism_id_value = new StoragePropertyValue($entity_type, $field_type, 'organism_id', $entity_id);
-    $abbreviation_value = new StoragePropertyValue($entity_type, $field_type, 'abbreviation', $entity_id);
-    $genus_value = new StoragePropertyValue($entity_type, $field_type, 'genus', $entity_id);
-    $species_value = new StoragePropertyValue($entity_type, $field_type, 'species', $entity_id);
-    $common_name_value = new StoragePropertyValue($entity_type, $field_type, 'common_name', $entity_id);
-    $infra_name_value = new StoragePropertyValue($entity_type, $field_type, 'infraspecific_name', $entity_id);
-    $type_id_value = new StoragePropertyValue($entity_type, $field_type, 'type_id', $entity_id);
-    //$comment_value = new StoragePropertyValue($entity_type, $field_type, 'comment', $entity_id);
+    $abbreviation_value = new StoragePropertyValue($entity_type, $field_type, 'local:abbreviation', $entity_id);
+    $genus_value = new StoragePropertyValue($entity_type, $field_type, 'TAXRANK:0000005', $entity_id);
+    $species_value = new StoragePropertyValue($entity_type, $field_type, 'TAXRANK:0000006', $entity_id);
+    $common_name_value = new StoragePropertyValue($entity_type, $field_type, 'NCBITaxon:common_name', $entity_id);
+    $infra_name_value = new StoragePropertyValue($entity_type, $field_type, 'TAXRANK:0000045', $entity_id);
+    $type_id_value = new StoragePropertyValue($entity_type, $field_type, 'local:infraspecific_type', $entity_id);
+    // @todo add the comment field once the Text property type is impelmented
     
     $values = [$organism_id_value, $abbreviation_value, $genus_value, $species_value, 
       $common_name_value, $infra_name_value, $type_id_value
-    ]; #$comment_value
+    ];
     
-    $chado_storage->loadValues($values);
+    $chado_storage->loadValues($values);  
+    
+    print_r([$genus_value->getValue()]);
+    $this->assertTrue($genus_value->getValue() == 'Oryza', 'The genus value was not loaded properly.');
+    $this->assertTrue($species_value->getValue() == 'sativa', 'The species value was not loaded properly.');
+    
     
      
   }
