@@ -1,8 +1,8 @@
 <?php
 
-namespace Drupal\tripal4\TripalStorage;
+namespace Drupal\tripal\TripalStorage;
 
-use Drupal\tripal4\TripalStorage\StoragePropertyBase;
+use Drupal\tripal\TripalStorage\StoragePropertyBase;
 
 /**
  * Defines the Tripal storage property value.
@@ -12,14 +12,14 @@ class StoragePropertyValue extends StoragePropertyBase {
   /**
    * Constructs a new tripal storage property value.
    *
-   * @param string entityTypeId
-   *   The entity type id associated with this storage property value.
+   * @param string entityType
+   *   The entity type associated with this storage property value.
    *
-   * @param string fieldId
-   *   The field id associated with this storage property value.
+   * @param string fieldType
+   *   The field type associated with this storage property value.
    *
-   * @param string fieldKey
-   *   The field key associated with this storage property value.
+   * @param string key
+   *   The key associated with this storage property value.
    *
    * @param string entityId
    *   The entity id associated with this storage property value.
@@ -27,8 +27,8 @@ class StoragePropertyValue extends StoragePropertyBase {
    * @param ? $value
    *   An optional initial value for this storage property value.
    */
-  public function __construct($entityTypeId,$fieldTypeId,$fieldKey,$entityId,$value = Null) {
-    parent::__construct($entityId,$fieldId,$fieldKey);
+  public function __construct($entityType,$fieldType,$key,$entityId,$value = Null) {
+    parent::__construct($entityType,$fieldType,$key);
     $this->entityId = $entityId;
     $this->value = $value;
   }
@@ -46,7 +46,7 @@ class StoragePropertyValue extends StoragePropertyBase {
   /**
    * Returns the value of this storage property value.
    *
-   * @return ?
+   * @return mixed
    *   The value.
    */
   public function getValue() {
@@ -56,7 +56,7 @@ class StoragePropertyValue extends StoragePropertyBase {
   /**
    * Sets the value of this storage property value to the given value.
    *
-   * @param ? $value
+   * @param mixed $value
    *   The value.
    */
   public function setValue($value) {

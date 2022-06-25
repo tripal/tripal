@@ -5,12 +5,13 @@ namespace Drupal\tripal\TripalStorage;
 use Drupal\tripal\TripalStorage\StoragePropertyTypeBase;
 
 /**
- * Defines the integer Tripal storage property type.
+ * Defines the real Tripal storage property type. A real type is any real
+ * floating point number.
  */
-class IntStoragePropertyType extends StoragePropertyTypeBase {
+class RealStoragePropertyType extends StoragePropertyTypeBase {
 
   /**
-   * Constructs a new integer tripal storage property type.
+   * Constructs a new real tripal storage property type.
    *
    * @param string entityType
    *   The entity type associated with this property type.
@@ -22,7 +23,7 @@ class IntStoragePropertyType extends StoragePropertyTypeBase {
    *   The key associated with this property type.
    */
   public function __construct($entityType,$fieldType,$key) {
-    parent::__construct($entityType,$fieldType,$key,"int");
+    parent::__construct($entityType,$fieldType,$key,"real");
   }
 
 }

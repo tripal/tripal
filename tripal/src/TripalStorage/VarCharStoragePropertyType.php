@@ -12,20 +12,20 @@ class VarCharStoragePropertyType extends StoragePropertyTypeBase {
   /**
    * Constructs a new variable character tripal storage property type.
    *
-   * @param string entityId
-   *   The entity id associated with this property type.
+   * @param string entityType
+   *   The entity type associated with this property type.
    *
-   * @param string fieldId
-   *   The field id associated with this property type.
+   * @param string fieldType
+   *   The field type associated with this property type.
    *
-   * @param string fieldKey
-   *   The field key associated with this property type.
+   * @param string key
+   *   The key associated with this property type.
    *
    * @param int size
    *   The maximum size of characters for this type.
    */
-  public function __construct($entityId,$fieldId,$fieldKey,$size = 255) {
-    parent::__construct($entityId,$fieldId,$fieldKey,"varchar");
+  public function __construct($entityType,$fieldType,$key,$size = 255) {
+    parent::__construct($entityType,$fieldType,$key,"varchar");
     $this->maxCharacterSize = $size;
   }
 

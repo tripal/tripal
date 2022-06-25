@@ -10,70 +10,70 @@ class StoragePropertyBase {
   /**
    * Constructs a new Tripal storage property base object.
    *
-   * @param string entityTypeId
-   *   The entity type id associated with this storage property base object.
+   * @param string entityType
+   *   The entity type associated with this storage property base object.
    *
-   * @param string fieldId
-   *   The field id associated with this storage property base object.
+   * @param string fieldType
+   *   The field type associated with this storage property base object.
    *
-   * @param string fieldKey
-   *   The field key associated with this storage property base object.
+   * @param string key
+   *   The key associated with this storage property base object.
    */
-  public function __construct($entityTypeId,$fieldId,$fieldKey) {
-    $this->entityTypeId = $entityTypeId;
-    $this->fieldId = $fieldId;
-    $this->fieldKey = $fieldKey;
+  public function __construct($entityType,$fieldType,$key) {
+    $this->entityType = $entityType;
+    $this->fieldType = $fieldType;
+    $this->key_ = $key;
   }
 
   /**
-   * Returns the entity type id associated with this storage property base
+   * Returns the entity type associated with this storage property base
    * object.
    *
    * @return string
-   *   The entity type id.
+   *   The entity type.
    */
-  public function getEntityTypeId() {
-    return $this->entityTypeId;
+  public function getEntityType() {
+    return $this->entityType;
   }
 
   /**
-   * Returns the field id associated with this storage property base object.
+   * Returns the field type associated with this storage property base object.
    *
    * @return string
-   *   The field id.
+   *   The field type.
    */
-  public function getFieldId() {
-    return $this->fieldId;
+  public function getFieldType() {
+    return $this->fieldType;
   }
 
   /**
-   * Returns the field key associated with this storage property base object.
+   * Returns the key associated with this storage property base object.
    *
    * @return string
-   *   The field key.
+   *   The key.
    */
-  public function getFieldKey() {
-    return $this->fieldKey;
+  public function getKey() {
+    return $this->key_;
   }
 
   /**
-   * The entity type id associated with this storage property base object.
+   * The entity type associated with this storage property base object.
    *
    * @var string
    */
-  private $entityTypeId;
+  private $entityType;
 
   /**
-   * The field id associated with this storage property base object.
+   * The field type associated with this storage property base object.
    *
    * @var string
    */
-  private $fieldId;
+  private $fieldType;
 
   /**
    * The field key associated with this storage property base object.
    *
    * @var string
    */
-  private $fieldKey;
+  private $key_;
 }

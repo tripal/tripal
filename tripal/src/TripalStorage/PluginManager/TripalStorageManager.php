@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\tripal4\Plugin;
+namespace Drupal\tripal\TripalStorage\PluginManager;
 
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\Core\Cache\CacheBackendInterface;
@@ -14,8 +14,6 @@ class TripalStorageManager extends DefaultPluginManager {
   /**
    * Constructs a new tripal storage manager.
    *
-   * @param string $subdir
-   *   The plugin's subdirectory, for example Plugin/views/filter.
    * @param \Traversable $namespaces
    *   An object that implements \Traversable which contains the root paths
    *   keyed by the corresponding namespace to look for plugin implementations.
@@ -27,17 +25,16 @@ class TripalStorageManager extends DefaultPluginManager {
    *   The name of the annotation that contains the plugin definition.
    */
   public function __construct(
-      ,\Traversable $namespaces
+      \Traversable $namespaces
       ,CacheBackendInterface $cache_backend
       ,ModuleHandlerInterface $module_handler
   ) {
     parent::__construct(
         "Plugin/TripalStorage"
-        $subdir
         ,$namespaces
         ,$module_handler
-        ,'Drupal\tripal4\Interface\TripalStorageInterface'
-        ,'Drupal\tripal4\Annotation\TripalStorage'
+        ,'Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface'
+        ,'Drupal\tripal\TripalStorage\Annotation\TripalStorage'
     );
     $this->alterInfo("tripal_storage_info");
     $this->setCacheBackend($cache_backend,"tripal_storage_plugins");

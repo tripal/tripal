@@ -1,5 +1,6 @@
 <?php
 
+namespace Drupal\tripal\TripalStorage;
 
 class TripalStorageUpdateException extends \Exception {
 
