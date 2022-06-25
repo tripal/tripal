@@ -202,11 +202,9 @@ class ChadoPreparer extends ChadoTaskBase {
    */
   protected function fix_v1_3_custom_tables() {
     
-    $connection_chado = \Drupal::service('tripal_chado.database');
-
     // Update the featuremap_dbxref table by adding an is_current field.
     if (!chado_column_exists('featuremap_dbxref', 'is_current')) {
-      $connection_chado->query("ALTER TABLE {featuremap_dbxref} ADD COLUMN is_current boolean DEFAULT true NOT NULL;");
+      $this->chado->query("ALTER TABLE {featuremap_dbxref} ADD COLUMN is_current boolean DEFAULT true NOT NULL;");
     }
     
     // Remove the previously managed custom tables from the
@@ -385,11 +383,11 @@ class ChadoPreparer extends ChadoTaskBase {
           CONSTRAINT tripal_obo_temp_uq0 UNIQUE (id)
         );
       ";
-      chado_query($sql);
+      $this->chado->query($sql);
       $sql = "CREATE INDEX tripal_obo_temp_idx0 ON {tripal_obo_temp} USING btree (id)";
-      chado_query($sql);
+      $this->chado->query($sql);
       $sql = "CREATE INDEX tripal_obo_temp_idx1 ON {tripal_obo_temp} USING btree (type)";
-      chado_query($sql);
+      $this->chado->query($sql);
     }
   }
   
