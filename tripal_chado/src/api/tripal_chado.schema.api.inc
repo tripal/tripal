@@ -628,8 +628,7 @@ function chado_get_cvterm_mapping($params) {
   }
 
   if ($cvterm) {
-    $db = \Drupal::database();
-    $result = $db->select('chado_cvterm_mapping', 'tcm')
+    $result = db_select('chado_cvterm_mapping', 'tcm')
       ->fields('tcm')
       ->condition('cvterm_id', $cvterm->cvterm_id)
       ->execute();

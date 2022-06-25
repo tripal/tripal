@@ -246,8 +246,7 @@ function chado_get_organism_image_url($organism) {
   // Look in the file_usage table of Drupal for the image file. This
   // is the current way for handling uploaded images. It allows the file to
   // keep it's proper name and extension.
-  $db = \Drupal::database();
-  $fid = $db->select('file_usage', 'fu')
+  $fid = db_select('file_usage', 'fu')
     ->fields('fu', ['fid'])
     ->condition('module', 'tripal_organism')
     ->condition('type', 'organism_image')
@@ -255,7 +254,7 @@ function chado_get_organism_image_url($organism) {
     ->execute()
     ->fetchField();
   if ($fid) {
-    $file = \Drupal\file\Entity\File::load($fid);
+    $file = file_load($fid);
     return file_create_url($file->uri);
   }
 
