@@ -1902,7 +1902,8 @@ class GFF3Importer extends TripalImporter {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    $sql = "SELECT uniquename, name, type_id, organism_id, feature_id FROM {feature} WHERE uniquename in (:uniquenames)";
+    // $sql = "SELECT uniquename, name, type_id, organism_id, feature_id FROM {feature} WHERE uniquename in (:uniquenames)";
+    $sql = "SELECT uniquename, name, type_id, organism_id, feature_id FROM {feature} WHERE uniquename in ";
     $i = 0;
     $total = 0;
     $batch_num = 1;
@@ -1918,8 +1919,18 @@ class GFF3Importer extends TripalImporter {
 
       // If we've reached the size of the batch then let's do the select.
       if ($i == $batch_size or $total == $num_features) {
-        if (count($names) > 0) {
-          $args = [':uniquenames' => $names];
+        $names_counter = count($names);
+        if ($names_counter > 0) {
+          $args = [];
+          $sql .= '(';
+          for ($z = 0; $z < $names_counter; $z++) {
+            $sql .= ":uniquename_" . $z . ',';
+            $args[':uniquename_' . $z] = $names[$z];
+          }
+          $sql = rtrim($sql, ',');
+          $sql .= ')';
+          // $names = implode(', ', $names);
+          // $args = [':uniquenames' => $names];
           $results = chado_query($sql, $args);
           while ($f = $results->fetchObject()) {
             if (array_key_exists($f->uniquename, $this->features)) {
@@ -1963,13 +1974,20 @@ class GFF3Importer extends TripalImporter {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    $sql1 = "DELETE from {featureprop} WHERE feature_id IN (:feature_ids)";
-    $sql2 = "DELETE from {featureloc} WHERE feature_id IN (:feature_ids)";
-    $sql3 = "DELETE from {feature_cvterm} WHERE feature_id IN (:feature_ids)";
-    $sql4 = "DELETE from {feature_dbxref} WHERE feature_id IN (:feature_ids)";
-    $sql5 = "DELETE from {feature_synonym} WHERE feature_id IN (:feature_ids)";
-    $sql6 = "DELETE from {feature_relationship} WHERE subject_id IN (:feature_ids)";
-    $sql7 = "DELETE from {analysisfeature} WHERE feature_id IN (:feature_ids)";
+    // $sql1 = "DELETE from {featureprop} WHERE feature_id IN (:feature_ids)";
+    // $sql2 = "DELETE from {featureloc} WHERE feature_id IN (:feature_ids)";
+    // $sql3 = "DELETE from {feature_cvterm} WHERE feature_id IN (:feature_ids)";
+    // $sql4 = "DELETE from {feature_dbxref} WHERE feature_id IN (:feature_ids)";
+    // $sql5 = "DELETE from {feature_synonym} WHERE feature_id IN (:feature_ids)";
+    // $sql6 = "DELETE from {feature_relationship} WHERE subject_id IN (:feature_ids)";
+    // $sql7 = "DELETE from {analysisfeature} WHERE feature_id IN (:feature_ids)";
+    $sql1 = "DELETE from {featureprop} WHERE feature_id IN ";
+    $sql2 = "DELETE from {featureloc} WHERE feature_id IN ";
+    $sql3 = "DELETE from {feature_cvterm} WHERE feature_id IN ";
+    $sql4 = "DELETE from {feature_dbxref} WHERE feature_id IN ";
+    $sql5 = "DELETE from {feature_synonym} WHERE feature_id IN ";
+    $sql6 = "DELETE from {feature_relationship} WHERE subject_id IN ";
+    $sql7 = "DELETE from {analysisfeature} WHERE feature_id IN ";
     $i = 0;
     $total = 0;
     $batch_num = 1;
@@ -1988,8 +2006,44 @@ class GFF3Importer extends TripalImporter {
 
       // If we've reached the size of the batch then let's do the insert.
       if ($i == $batch_size or $total == $num_features) {
-        if (count($feature_ids) > 0) {
-          $args = [':feature_ids' => $feature_ids];
+        $feature_ids_counter = count($feature_ids);
+        if ($feature_ids_counter > 0) {
+          // $feature_ids = implode(', ', $feature_ids);
+          // $args = [':feature_ids' => $feature_ids];
+
+          $sql1 .= '(';
+          $sql2 .= '(';
+          $sql3 .= '(';
+          $sql4 .= '(';
+          $sql5 .= '(';
+          $sql6 .= '(';
+          $sql7 .= '(';
+          for ($z = 0; $z < $feature_ids_counter; $z++) {
+            $sql1 .= ":feature_id_" . $z . ',';
+            $sql2 .= ":feature_id_" . $z . ',';
+            $sql3 .= ":feature_id_" . $z . ',';
+            $sql4 .= ":feature_id_" . $z . ',';
+            $sql5 .= ":feature_id_" . $z . ',';
+            $sql6 .= ":feature_id_" . $z . ',';
+            $sql7 .= ":feature_id_" . $z . ',';
+            $args[':feature_id_' . $z] = $feature_ids[$z];
+          }
+          $sql1 = rtrim($sql1, ',');
+          $sql2 = rtrim($sql2, ',');
+          $sql3 = rtrim($sql3, ',');
+          $sql4 = rtrim($sql4, ',');
+          $sql5 = rtrim($sql5, ',');
+          $sql6 = rtrim($sql6, ',');
+          $sql7 = rtrim($sql7, ',');
+          $sql1 .= ')';
+          $sql2 .= ')';
+          $sql3 .= ')';
+          $sql4 .= ')';
+          $sql5 .= ')';
+          $sql6 .= ')';
+          $sql7 .= ')';
+
+
           chado_query($sql1, $args);
           chado_query($sql2, $args);
           chado_query($sql3, $args);
@@ -2278,6 +2332,7 @@ class GFF3Importer extends TripalImporter {
       // If we've reached the size of the batch then let's do the select.
       if ($i == $batch_size or $total == $num_landmarks) {
         if (count($names) > 0) {
+          $names = implode(', ', $names);
           $args = [':landmarks' => $names];
           $results = chado_query($sql, $args);
           while ($f = $results->fetchObject()) {
