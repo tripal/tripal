@@ -4,6 +4,7 @@ namespace Drupal\tripal_chado\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Drupal\tripal\TripalDBX\TripalDbx;
 use Drupal\tripal_chado\Database\ChadoConnection;
@@ -181,11 +182,13 @@ class ChadoManagerForm extends FormBase {
       return $order;
     });
 
+    $default_chado = '';
     foreach ($instances as $schema_name => $details) {
       // Schema name.
-      $schema_name = $details['schema_name']
-        . ($details['is_default'] ? $this->t(' (default)') : '')
-      ;
+      $schema_name = $details['schema_name'];
+      if ($details['is_default']) {
+        $default_chado = $schema_name;
+      }
       // Version.
       $version = $details['version'];
       // Integration.
@@ -294,7 +297,7 @@ class ChadoManagerForm extends FormBase {
       }
 
       $rows[$schema_name] = [
-        $schema_name,
+        $schema_name . ($default_chado == $schema_name ? $this->t(' (default)') : ''),
         $version,
         $details['has_data'] ? $this->t('Yes') : $this->t('No'),
         $integrated,
@@ -308,19 +311,14 @@ class ChadoManagerForm extends FormBase {
       $form['existing_instances'] = [
         '#type' => 'table',
         '#multiple' => FALSE,
-        '#caption' => 'Existing Chado instances',
         '#header' => ['Schema Name', 'Chado Version', 'Has data', 'In Tripal', 'Created', 'Updated', 'Operations'],
         '#rows' => $rows,
       ];
     }
     else {
-      $form['existing_instances'] = [
-        '#type' => 'item',
-        '#markup' => '<div class="messages messages--status">
-            <h2>No Chado schema found.</h2>
-            <p>Please install a new Chado schema using the Chado installation form.</p>
-          </div>',
-      ];
+      \Drupal::messenger()->addError(t('No Chado installations are found. @install.', [
+          '@install' => Link::fromTextAndUrl('Please install a new Chado schema', Url::fromUri('internal:/admin/tripal/storage/chado/install'))->toString(),
+      ]));
     }
 
     // Table buttons cannot submit the form without a submit button.
@@ -329,7 +327,6 @@ class ChadoManagerForm extends FormBase {
       '#type' => 'submit',
       '#name' => 'action',
       '#value' => t('Refresh'),
-      // '#attributes' => ['style' => 'display:none;'],
     ];
 
     $form['#prefix'] = '<div id="tripal_chado_manage_form">';
