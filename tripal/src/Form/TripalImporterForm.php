@@ -23,160 +23,110 @@ class TripalImporterForm implements FormInterface {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $class = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, $plugin_id = NULL) {
+
+    if (!$plugin_id) {
+      return $form;
+    }
+
     $user = \Drupal::currentUser();
 
-    // Let us do a basic check to make sure CHADO is installed since we need it
-    // for even the most basic form generation - particularly for analysis
 
-    // REMOVE THIS / CHECK CODE TO MAKE SURE THE CODE MAKES SENSE COMPARED
-    // TO THE OLD CODE DRUPAL 7 tripal.importer.inc
-    $sql = "SELECT * FROM {analysis} ORDER BY name";
-    $hasChado = true;
-    try {
-      chado_query($sql);
-    }
-    catch(\Exception $ex) {
-      $hasChado = false;
-    }
+    // Load the specific importer from the plugin_id
+    $importer_manager = \Drupal::service('tripal.importer');
+    $importer = $importer_manager->createInstance($plugin_id);
+    $importer_def = $importer_manager->getDefinitions()[$plugin_id];
 
-    if($hasChado) {
-      // Load the specific importer from the class
-      tripal_load_include_importer_class($class);
+    $form['#title'] = $importer_def['label'];
 
-      
-      $form['importer_class'] = [
-        '#type' => 'value',
-        '#value' => $class,
-      ];
-      
-      if ((array_key_exists('file_upload', $class::$methods) and $class::$methods['file_upload'] == TRUE) or
-          (array_key_exists('file_local', $class::$methods) and $class::$methods['file_local'] == TRUE) or
-          (array_key_exists('file_remote', $class::$methods) and $class::$methods['file_remote'] == TRUE)) {
-        $form['file'] = [
+    $form['importer_plugin_id'] = [
+      '#type' => 'value',
+      '#value' => $plugin_id,
+    ];
+
+    if ((array_key_exists('file_upload', $importer_def) and $importer_def['file_upload'] == TRUE) or
+        (array_key_exists('file_local', $importer_def) and $importer_def['file_local'] == TRUE) or
+        (array_key_exists('file_remote', $importer_def) and $importer_def['file_remote'] == TRUE)) {
+      $form['file'] = [
         '#type' => 'fieldset',
-        '#title' => t($class::$upload_title),
-        '#description' => t($class::$upload_description),
+        '#title' => $importer_def['upload_title'],
+        '#description' => $importer_def['upload_description'],
         '#weight' => -15,
-        ];
-      }
-      
-      if (array_key_exists('file_upload', $class::$methods) and $class::$methods['file_upload'] == TRUE) {
-        // $existing_files = tripal_get_user_uploads($user->uid, $class::$file_types);
-        $existing_files = tripal_get_user_uploads($user->id(), $class::$file_types);
-        if (count($existing_files) > 0) {
-          $fids = [0 => '--Select a file--'];
-          foreach ($existing_files as $fid => $file) {
-            //$fids[$fid] = $file->filename . ' (' . tripal_format_bytes($file->filesize) . ') '; // old
-            $fids[$fid] = $file->getFilename() . ' (' . tripal_format_bytes($file->getSize()) . ') ';
-          }
-          $form['file']['file_upload_existing'] = [
-            '#type' => 'select',
-            '#title' => t('Existing Files'),
-            '#description' => t('You may select a file that is already uploaded.'),
-            '#options' => $fids,
-          ];
-        }
-        $form['file']['file_upload'] = [
-          '#type' => 'html5_file',
-          '#title' => '',
-          '#description' => 'Remember to click the "Upload" button below to send ' .
-              'your file to the server.  This interface is capable of uploading very ' .
-              'large files.  If you are disconnected you can return, reload the file and it ' .
-              'will resume where it left off.  Once the file is uploaded the "Upload ' .
-              'Progress" will indicate "Complete".  If the file is already present on the server ' .
-              'then the status will quickly update to "Complete".',
-          '#usage_type' => 'tripal_importer',
-          '#usage_id' => 0,
-          '#allowed_types' => $class::$file_types,
-          '#cardinality' => $class::$cardinality,
-        ];
-      }
-      
-      if (array_key_exists('file_local', $class::$methods) and $class::$methods['file_local'] == TRUE) {
-        $form['file']['file_local'] = [
-          '#title' => t('Server path'),
-          '#type' => 'textfield',
-          '#maxlength' => 5120,
-          '#description' => t('If the file is local to the Tripal server please provide the full path here.'),
-        ];
-      }
-      
-      if (array_key_exists('file_remote', $class::$methods) and $class::$methods['file_remote'] == TRUE) {
-          $form['file']['file_remote'] = [
-            '#title' => t('Remote path'),
-            '#type' => 'textfield',
-            '#maxlength' => 5102,
-            '#description' => t('If the file is available via a remote URL please provide the full URL here.  The file will be downloaded when the importer job is executed.'),
-          ];
-      }
-
-      if ($class::$use_analysis) {
-        // get the list of analyses
-        $sql = "SELECT * FROM {analysis} ORDER BY name";
-        $org_rset = chado_query($sql);
-        $analyses = [];
-        $analyses[''] = '';
-        while ($analysis = $org_rset->fetchObject()) {
-          $analyses[$analysis->analysis_id] = "$analysis->name ($analysis->program $analysis->programversion, $analysis->sourcename)";
-        }
-        $form['analysis_id'] = [
-          '#title' => t('Analysis'),
-          '#type' => 'select',
-          '#description' => t('Choose the analysis to which the uploaded data will be associated. ' .
-              'Why specify an analysis for a data load?  All data comes from some place, even if ' .
-              'downloaded from a website. By specifying analysis details for all data imports it ' .
-              'provides provenance and helps end user to reproduce the data set if needed. At ' .
-              'a minimum it indicates the source of the data.'),
-          '#required' => $class::$require_analysis,
-          '#options' => $analyses,
-          '#weight' => -14,
-        ];
-      }
-      
-      // Retrieve the forms from the custom TripalImporter class
-      // for this loader.
-      $importer = new $class();
-      $element = [];
-      
-      $element_form = $importer->form($element, $form_state);
-
-      // Quick check to make sure we had an array returned so array_merge() works.
-      if (!is_array($element_form)) {
-        $element_form = array();
-      }
-      
-      // Merge the custom form with our default one.
-      // This way, the custom TripalImporter can use the #weight property
-      // to change the order of their elements in reference to the default ones.
-      $form = array_merge($form, $element_form);
-
-      $form['button'] = [
-        '#type' => 'submit',
-        '#value' => t($class::$button_text),
-        '#weight' => 10,
       ];
-      
-      return $form;
-    }    
-    else {
-      global $base_url;
-      $form['error'] = array(
-        '#markup' => '<p>We could not detect CHADO. You must install it
-          in order to perform imports.<br /> 
-          <h3>CHADO Installation Instructions</h3>
-          You can install CHADO by visiting
-          <a href="'. $base_url .'/admin/tripal/storage/chado/install">here</a>.
-          <br /> 
-          This will create a job which you can then execute by visiting
-           <a href="' . $base_url . '/admin/tripal/tripal_jobs">here</a> and 
-           ensuring you select <b>Execute</b> under the <b>Actions</b> dropdown 
-           element for the Chado install job.<br />
-          </p>'
-      );
-      return $form;
     }
-  }  
+
+    if (array_key_exists('file_upload', $importer_def) and $importer_def['file_upload'] == TRUE) {
+      $existing_files = tripal_get_user_uploads($user->id(), $importer_def['file_types']);
+      if (count($existing_files) > 0) {
+        $fids = [0 => '--Select a file--'];
+        foreach ($existing_files as $fid => $file) {
+          $fids[$fid] = $file->getFilename() . ' (' . tripal_format_bytes($file->getSize()) . ') ';
+        }
+        $form['file']['file_upload_existing'] = [
+          '#type' => 'select',
+          '#title' => t('Existing Files'),
+          '#description' => t('You may select a file that is already uploaded.'),
+          '#options' => $fids,
+        ];
+      }
+      $form['file']['file_upload'] = [
+        '#type' => 'html5_file',
+        '#title' => '',
+        '#description' => 'Remember to click the "Upload" button below to send ' .
+            'your file to the server.  This interface is capable of uploading very ' .
+            'large files.  If you are disconnected you can return, reload the file and it ' .
+            'will resume where it left off.  Once the file is uploaded the "Upload ' .
+            'Progress" will indicate "Complete".  If the file is already present on the server ' .
+            'then the status will quickly update to "Complete".',
+        '#usage_type' => 'tripal_importer',
+        '#usage_id' => 0,
+        '#allowed_types' => $importer_def['file_types'],
+        '#cardinality' => $importer_def['cardinality'],
+      ];
+    }
+
+    if (array_key_exists('file_local', $importer_def) and $importer_def['file_local'] == TRUE) {
+      $form['file']['file_local'] = [
+        '#title' => t('Server path'),
+        '#type' => 'textfield',
+        '#maxlength' => 5120,
+        '#description' => t('If the file is local to the Tripal server please provide the full path here.'),
+      ];
+    }
+
+    if (array_key_exists('file_remote', $importer_def) and $importer_def['file_remote'] == TRUE) {
+        $form['file']['file_remote'] = [
+          '#title' => t('Remote path'),
+          '#type' => 'textfield',
+          '#maxlength' => 5102,
+          '#description' => t('If the file is available via a remote URL please provide the full URL here.  The file will be downloaded when the importer job is executed.'),
+        ];
+    }
+
+    // Add the analysis form element if needed. Each importer should add this
+    // appropriate for the data store it uses.
+    if ($importer_def['use_analysis']) {
+      $analysis_form = $importer->addAnalysis($form, $form_state);
+      if (is_array($analysis_form)) {
+        $form = array_merge($form, $analysis_form);
+      }
+    }
+
+    // Add the importer custom form elements
+    $importer_form = $importer->form($form, $form_state);
+    if (is_array($importer_form)) {
+      $form = array_merge($form, $importer_form);
+    }
+
+
+    $form['button'] = [
+      '#type' => 'submit',
+      '#value' => $importer_def['button_text'],
+      '#weight' => 10,
+    ];
+
+    return $form;
+  }
 
   /**
    * {@inheritdoc}
@@ -187,8 +137,11 @@ class TripalImporterForm implements FormInterface {
     //$run_args = $form_state['values'];
     $form_values = $form_state->getValues();
     $run_args = $form_values;
-    $class = $form_values['importer_class'];
-    tripal_load_include_importer_class($class);
+    $plugin_id = $form_values['importer_plugin_id'];
+
+    $importer_manager = \Drupal::service('tripal.importer');
+    $importer = $importer_manager->createInstance($plugin_id);
+    $importer_def = $importer_manager->getDefinitions()[$plugin_id];
 
     // Remove the file_local and file_upload args. We'll add in a new
     // full file path and the fid instead.
@@ -207,16 +160,16 @@ class TripalImporterForm implements FormInterface {
     $file_existing = NULL;
 
     // Get the form values for the file.
-    if (array_key_exists('file_local', $class::$methods) and $class::$methods['file_local'] == TRUE) {
+    if (array_key_exists('file_local', $importer_def) and $importer_def['file_local'] == TRUE) {
       $file_local = trim($form_values['file_local']);
     }
-    if (array_key_exists('file_upload', $class::$methods) and $class::$methods['file_upload'] == TRUE) {
+    if (array_key_exists('file_upload', $importer_def) and $importer_def['file_upload'] == TRUE) {
       $file_upload = trim($form_values['file_upload']);
       if (array_key_exists('file_upload_existing', $form_values) and $form_values['file_upload_existing']) {
         $file_existing = trim($form_values['file_upload_existing']);
       }
     }
-    if (array_key_exists('file_remote', $class::$methods) and $class::$methods['file_remote'] == TRUE) {
+    if (array_key_exists('file_remote', $importer_def) and $importer_def['file_remote'] == TRUE) {
       $file_remote = trim($form_values['file_remote']);
     }
 
@@ -239,7 +192,6 @@ class TripalImporterForm implements FormInterface {
     }
     try {
       // Now allow the loader to do its own submit if needed.
-      $importer = new $class();
       $importer->formSubmit($form, $form_state);
       // If the formSubmit made changes to the $form_state we need to update the
       // $run_args info.
@@ -258,17 +210,20 @@ class TripalImporterForm implements FormInterface {
 
     } catch (Exception $e) {
         \Drupal::messenger()->addMessage('Cannot submit import: ' . $e->getMessage(), 'error');
-    }  
+    }
   }
 
     /**
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
+
     // Convert the validation code into the D8/9 equivalent
     $form_values = $form_state->getValues();
-    $class = $form_values['importer_class'];
-    tripal_load_include_importer_class($class);
+    $plugin_id = $form_values['importer_plugin_id'];
+    $importer_manager = \Drupal::service('tripal.importer');
+    $importer = $importer_manager->createInstance($plugin_id);
+    $importer_def = $importer_manager->getDefinitions()[$plugin_id];
 
     $file_local = NULL;
     $file_upload = NULL;
@@ -276,7 +231,7 @@ class TripalImporterForm implements FormInterface {
     $file_existing = NULL;
 
     // Get the form values for the file.
-    if (array_key_exists('file_local', $class::$methods) and $class::$methods['file_local'] == TRUE) {
+    if (array_key_exists('file_local', $importer_def) and $importer_def['file_local'] == TRUE) {
       $file_local = trim($form_values['file_local']);
       // If the file is local make sure it exists on the local filesystem.
       if ($file_local) {
@@ -294,26 +249,22 @@ class TripalImporterForm implements FormInterface {
         }
       }
     }
-    if (array_key_exists('file_upload', $class::$methods) and $class::$methods['file_upload'] == TRUE) {
+    if (array_key_exists('file_upload', $importer_def) and $importer_def['file_upload'] == TRUE) {
       $file_upload = trim($form_values['file_upload']);
       if (array_key_exists('file_upload_existing', $form_values) and $form_values['file_upload_existing']) {
         $file_existing = $form_values['file_upload_existing'];
       }
     }
-    if (array_key_exists('file_remote', $class::$methods) and $class::$methods['file_remote'] == TRUE) {
+    if (array_key_exists('file_remote', $importer_def) and $importer_def['file_remote'] == TRUE) {
       $file_remote = trim($form_values['file_remote']);
     }
 
     // The user must provide at least an uploaded file or a local file path.
-    if ($class::$file_required == TRUE and !$file_upload and !$file_local and !$file_remote and !$file_existing) {
+    if ($importer_def['file_required'] == TRUE and !$file_upload and !$file_local and !$file_remote and !$file_existing) {
       $form_state->setErrorByName('file_local', t("You must provide a file."));
     }
 
     // Now allow the loader to do validation of it's form additions.
-    $importer = new $class();
-    $importer->formValidate($form, $form_state);    
-
-
+    $importer->formValidate($form, $form_state);
   }
-
 }

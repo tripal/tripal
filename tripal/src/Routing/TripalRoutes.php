@@ -11,53 +11,23 @@ class TripalRoutes {
   /**
    * {@inheritdoc}
    */
-  public function dataLoaders() {
+  public function importerRoutes() {
     $routes = [];
-    $default_module_path = $file_path = \Drupal::service('extension.list.module')->getPath('tripal');
 
-    $importers = \tripal_get_importers();
-    foreach ($importers as $class_name) {
-      tripal_load_include_importer_class($class_name);
-      if (class_exists($class_name)) {
-        $machine_name = $class_name::$machine_name;
-        $name = $class_name::$name;
-        $menu_path = 'admin/tripal/loaders/' . $machine_name;
-        $callback = $class_name::$callback;
-        $callback_path = $class_name::$callback_path;
-        $callback_module = $class_name::$callback_module;
-        $page_args = [];
-        if ($class_name::$menu_path) {
-          $menu_path = $class_name::$menu_path;
-        }
-        if (!$callback) {
-          $callback = 'drupal_get_form';
-          $page_args = ['tripal_get_importer_form', $class_name];
-        }
-        if (!$callback_path) {
-          $callback_path = 'includes/tripal.importer.inc';
-        }
-        $file_path = $default_module_path;
-        if ($callback_path and $callback_module) {
-          $file_path = \Drupal::service('extension.list.module')->getPath($callback_module);
-        }
-
-        $routes[$menu_path] = new Route(
-          // Path to attach this route to:
-          $menu_path,
-          // Route defaults:
-          [
-            '_form' => '\Drupal\tripal\Form\TripalImporterForm',
-            '_title' => $class_name::$name
-          ],
-          // Route requirements:
-          [
-            '_permission' => 'allow tripal importer ' . $machine_name,
-          ]
-        );
-      }
+    // Add routes for the TripalImporter Plugins.
+    $importer_manager = \Drupal::service('tripal.importer');
+    $importer_defs = $importer_manager->getDefinitions();
+    foreach ($importer_defs as $plugin_id => $def) {
+      $menu_path = array_key_exists('menu_path', $def) ? $def['menu_path'] : 'admin/tripal/loaders/' . $plugin_id . '_form';
+      $defaults = [
+        '_title' => $def['label']->getUntranslatedString()
+      ];
+      $requirements  = [
+        '_permission' => 'allow tripal importer ' . $plugin_id
+      ];
+      $options = [];
+      $routes[$menu_path] = new Route($menu_path, $defaults, $requirements, $options);
     }
     return $routes;
   }
-
-
 }

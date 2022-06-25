@@ -1,48 +1,35 @@
 <?php
-use Drupal\Core\Form\FormInterface;
-use Drupal\Core\Form\FormStateInterface;
 
-class GFF3Importer extends TripalImporter {
-  /**
-   * The name of this loader.  This name will be presented to the site
-   * user.
-   */
-  public static $name = 'Chado GFF3 File Loader';
+namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
-  /**
-   * The machine name for this loader. This name will be used to construct
-   * the URL for the loader.
-   */
-  public static $machine_name = 'chado_gff3_loader';
+use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 
-  /**
-   * A brief description for this loader.  This description will be
-   * presented to the site user.
-   */
-  public static $description = 'Import a GFF3 file into Chado';
+/**
+ * GFF3 Importer implementation of the TripalImporterBase.
+ *
+ *  @TripalImporter(
+ *    id = "chado_gff3_loader",
+ *    label = @Translation("Chado GFF3 File Loader"),
+ *    description = @Translation("Import a GFF3 file into Chado."),
+ *    file_types = {"gff", "gff3"},
+ *    upload_description = @Translation("GFF3 File"),
+ *    upload_title = @Translation("FASTA Upload"),
+ *    use_analysis = True,
+ *    require_analysis = True,
+ *    button_text = @Translation("Import GFF3 file"),
+ *    file_upload = True,
+ *    file_load = True,
+ *    file_remote = True,
+ *    file_required = True,
+ *    cardinality = 1,
+ *    menu_path = "",
+ *    callback = "",
+ *    callback_module = "",
+ *    callback_path = "",
+ *  )
+ */
+class GFF3Importer extends ChadoImporterBase {
 
-  /**
-   * An array containing the extensions of allowed file types.
-   */
-  public static $file_types = ['gff', 'gff3'];
-
-
-  /**
-   * Provides information to the user about the file upload.  Typically this
-   * may include a description of the file types allowed.
-   */
-  public static $upload_description = 'Please provide the GFF3 file.';
-
-  /**
-   * The title that should appear above the upload button.
-   */
-  public static $upload_title = 'GFF3 File';
-
-  /**
-   * Text that should appear on the button at the bottom of the importer
-   * form.
-   */
-  public static $button_text = 'Import GFF3 file';
 
   /**
    * A handle to a temporary file for caching the GFF features. This allows for
@@ -441,7 +428,7 @@ class GFF3Importer extends TripalImporter {
   /**
    * @see TripalImporter::formValidate()
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) { 
+  public function validateForm(array &$form, FormStateInterface $form_state) {
     $form_values = $form_state->getValues();
 
     $organism_id = $form_values['organism_id'];
@@ -3068,5 +3055,5 @@ class GFF3Importer extends TripalImporter {
         $args = [];
       }
     }
-  }  
+  }
 }

@@ -1,12 +1,12 @@
 <?php
- 
+
 namespace Drupal\tripal\Plugin\Derivative;
- 
+
 use Drupal\Component\Plugin\Derivative\DeriverBase;
 use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
- 
+
 /**
  * Derivative class that provides the menu links for the TripalImporters.
  */
@@ -16,7 +16,7 @@ class TripalImporterLink extends DeriverBase implements ContainerDeriverInterfac
    * @var EntityTypeManagerInterface $entityTypeManager.
    */
   protected $entityTypeManager;
- 
+
   /**
    * Creates a TripalImporterLink instance.
    *
@@ -26,7 +26,7 @@ class TripalImporterLink extends DeriverBase implements ContainerDeriverInterfac
   public function __construct($base_plugin_id, EntityTypeManagerInterface $entity_type_manager) {
     $this->entityTypeManager = $entity_type_manager;
   }
- 
+
   /**
    * {@inheritdoc}
    */
@@ -36,25 +36,24 @@ class TripalImporterLink extends DeriverBase implements ContainerDeriverInterfac
       $container->get('entity_type.manager')
     );
   }
- 
+
   /**
    * {@inheritdoc}
    */
   public function getDerivativeDefinitions($base_plugin_definition) {
     $links = [];
- 
-    $importers = \tripal_get_importers();
-    foreach($importers as $class_name) {
-        $importer_object = new $class_name;
-        $links[$class_name] = [
-            'title' => $importer_object::$name,
-            'description' => $importer_object::$description,
-            'route_name' => 'tripal.data_loaders_tripalimporter',
-            'route_parameters' => ['class' => $class_name]
-        ] + $base_plugin_definition;
-        unset($importer_object);
+
+    $importer_manager = \Drupal::service('tripal.importer');
+    $importer_defs = $importer_manager->getDefinitions();
+
+    foreach ($importer_defs as $plugin_id => $def) {
+      $links[$plugin_id] = [
+        'title' => $def['label'],
+        'description' => $def['description'],
+        'route_name' => 'tripal.data_loaders_tripalimporter',
+        'route_parameters' => ['plugin_id' => $plugin_id]
+      ] + $base_plugin_definition;
     }
- 
     return $links;
   }
 }

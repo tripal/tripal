@@ -57,8 +57,37 @@ function tripal_chado_schema() {
   $schema['chado_tripalvocab'] = tripal_chado_chado_vocab();
   $schema['chado_tripalvocabspace'] = tripal_chado_chado_vocabidspace();
   $schema['chado_tripalterm'] = tripal_chado_chado_term();
+  
+  $schema['tripal_cv_obo'] = tripal_chado_tripal_cv_obo_schema();
 
   return $schema;
+}
+
+/**
+ * Table definition for the tripal_cv_obo table used by the OBO loader.
+ */
+function tripal_chado_tripal_cv_obo_schema() {
+  return [
+    'fields' => [
+      'obo_id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ],
+      'name' => [
+        'type' => 'varchar',
+        'length' => 255
+      ],
+      'path'  => [
+        'type' => 'varchar',
+        'length' => 1024
+      ],
+    ],
+    'indexes' => [
+      'tripal_cv_obo_idx1' => ['obo_id'],
+    ],
+    'primary key' => ['obo_id'],
+  ];
 }
 
 /**

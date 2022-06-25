@@ -1,74 +1,37 @@
 <?php
-use Drupal\Core\Form\FormInterface;
-use Drupal\Core\Form\FormStateInterface;
 
-class FASTAImporter extends TripalImporter {
+namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
-  /**
-   * The name of this loader.  This name will be presented to the site
-   * user.
-   */
-  public static $name = 'Chado FASTA Loader';
+use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 
-  /**
-   * The machine name for this loader. This name will be used to construct
-   * the URL for the loader.
-   */
-  public static $machine_name = 'chado_fasta_loader';
-
-  /**
-   * A brief description for this loader.  This description will be
-   * presented to the site user.
-   */
-  public static $description = 'Load sequences from a multi-FASTA file into Chado';
-
-  /**
-   * An array containing the extensions of allowed file types.
-   */
-  public static $file_types = [
-    'fasta',
-    'txt',
-    'fa',
-    'aa',
-    'pep',
-    'nuc',
-    'faa',
-    'fna',
-  ];
-
+/**
+ * FASTA Importer implementation of the TripalImporterBase.
+ *
+ *  @TripalImporter(
+ *    id = "chado_fasta_loader",
+ *    label = @Translation("Chado FASTA Loader"),
+ *    description = @Translation("Load sequences from a multi-FASTA file into Chado."),
+ *    file_types = {"fasta", "txt", "fa", "aa", "pep", "nuc", "faa", "fna"},
+ *    upload_description = @Translation("Please provide the FASTA file. The file must have a .fasta extension."),
+ *    upload_title = @Translation("FASTA Upload"),
+ *    use_analysis = True,
+ *    require_analysis = True,
+ *    button_text = @Translation("Import FASTA file"),
+ *    file_upload = True,
+ *    file_load = True,
+ *    file_remote = True,
+ *    file_required = False,
+ *    cardinality = 1,
+ *    menu_path = "",
+ *    callback = "",
+ *    callback_module = "",
+ *    callback_path = "",
+ *  )
+ */
+class FASTAImporter extends ChadoImporterBase {
 
   /**
-   * Provides information to the user about the file upload.  Typically this
-   * may include a description of the file types allowed.
-   */
-  public static $upload_description = 'Please provide the FASTA file. The file must have a .fasta extension.';
-
-  /**
-   * The title that should appear above the file upload section.
-   */
-  public static $upload_title = 'FASTA Upload';
-
-  /**
-   * Text that should appear on the button at the bottom of the importer
-   * form.
-   */
-  public static $button_text = 'Import FASTA file';
-
-
-  /**
-   * Indicates the methods that the file uploader will support.
-   */
-  public static $methods = [
-    // Allow the user to upload a file to the server.
-    'file_upload' => TRUE,
-    // Allow the user to provide the path on the Tripal server for the file.
-    'file_local' => TRUE,
-    // Allow the user to provide a remote URL for the file.
-    'file_remote' => TRUE,
-  ];
-
-  /**
-   * @see TripalImporter::form()
+   * {@inheritdoc}
    */
   public function form($form, &$form_state) {
 
@@ -273,9 +236,16 @@ class FASTAImporter extends TripalImporter {
   }
 
   /**
-   * @see TripalImporter::formValidate()
+   * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function formSubmit($form, &$form_state) {
+
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function formValidate($form, &$form_state) {
     $form_values = $form_state->getValues();
 
     $organism_id = $form_values['organism_id'];
@@ -377,7 +347,7 @@ class FASTAImporter extends TripalImporter {
   }
 
   /**
-   * @see TripalImporter::run()
+   * {@inheritdoc}
    */
   public function run() {
     $arguments = $this->arguments['run_args'];
@@ -423,41 +393,49 @@ class FASTAImporter extends TripalImporter {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function postRun() {
+
+  }
+
+  /**
    * Load a fasta file.
    *
-   * @param $file_path
+   * @param string $file_path
    *   The full path to the fasta file to load.
-   * @param $organism_id
+   * @param int $organism_id
    *   The organism_id of the organism these features are from.
-   * @param $type
+   * @param string $type
    *   The type of features contained in the fasta file.
-   * @param $re_name
+   * @param string $re_name
    *   The regular expression to extract the feature.name from the fasta header.
-   * @param $re_uname
+   * @param string $re_uname
    *   The regular expression to extract the feature.uniquename from the fasta
    *   header.
-   * @param $re_accession
+   * @param string $re_accession
    *   The regular expression to extract the accession of the feature.dbxref_id.
-   * @param $db_id
+   * @param int $db_id
    *   The database ID of the above accession.
-   * @param $rel_type
+   * @param string $rel_type
    *   The type of relationship when creating a feature_relationship between
    *   this feature (object) and an extracted subject.
-   * @param $re_subject
+   * @param string $re_subject
    *   The regular expression to extract the uniquename of the feature to be
    *   the subject of the above specified relationship.
-   * @param $parent_type
+   * @param string $parent_type
    *   The type of the parent feature.
-   * @param $method
+   * @param string $method
    *   The method of feature adding. (ie: 'Insert only', 'Update only',
    *   'Insert and update').
-   * @param $analysis_id
+   * @param int $analysis_id
    *   The analysis_id to associate the features in this fasta file with.
-   * @param $match_type
+   * @param string $match_type
    *  Whether to match existing features based on the 'Name' or 'Unique name'.
    */
-  private function loadFasta($file_path, $organism_id, $type, $re_name, $re_uname, $re_accession,
-                             $db_id, $rel_type, $re_subject, $parent_type, $method, $analysis_id, $match_type) {
+  private function loadFasta($file_path, $organism_id, $type, $re_name,
+      $re_uname, $re_accession, $db_id, $rel_type, $re_subject, $parent_type,
+      $method, $analysis_id, $match_type) {
 
     // First get the type for this sequence.
     $cvtermsql = "
@@ -698,7 +676,7 @@ class FASTAImporter extends TripalImporter {
       if (count($results) > 1) {
         // $this->logMessage("Multiple features exist with the name '!name' of type '!type' for the organism.  skipping",
         //   ['!name' => $name, '!type' => $cvterm->name], TRIPAL_ERROR);
-        $this->logger->error("Multiple features exist with the name '$name' of type '" . 
+        $this->logger->error("Multiple features exist with the name '$name' of type '" .
           $cvterm->name . "' for the organism.  skipping");
         return 0;
       }
@@ -719,8 +697,8 @@ class FASTAImporter extends TripalImporter {
       if (count($results) > 1) {
         // $this->logMessage("Multiple features exist with the name '!name' of type '!type' for the organism.  skipping",
         //   ['!name' => $name, '!type' => $cvterm->name], TRIPAL_WARNING);
-        $this->logger->error("Multiple features exist with the name '$name' of type '" . 
-          $cvterm->name . "' for the organism.  skipping");        
+        $this->logger->error("Multiple features exist with the name '$name' of type '" .
+          $cvterm->name . "' for the organism.  skipping");
         return 0;
       }
       if (count($results) == 1) {
@@ -735,8 +713,8 @@ class FASTAImporter extends TripalImporter {
         //     '!uname' => $uname,
         //     '!type' => drupal_strtolower($match_type),
         //   ], TRIPAL_WARNING);
-        $this->logger->error("Feature already exists '$name' ('$uname') while matching on " . 
-          mb_strtolower($match_type) . ". Skipping insert.");       
+        $this->logger->error("Feature already exists '$name' ('$uname') while matching on " .
+          mb_strtolower($match_type) . ". Skipping insert.");
         return 0;
       }
     }
@@ -765,7 +743,7 @@ class FASTAImporter extends TripalImporter {
         //   '!name' => $name,
         //   '!uname' => $uname,
         // ], TRIPAL_ERROR);
-        $this->logger->error("Failed to insert feature '$name ($uname)'");        
+        $this->logger->error("Failed to insert feature '$name ($uname)'");
         return 0;
       }
 
@@ -785,7 +763,7 @@ class FASTAImporter extends TripalImporter {
         //   '!name' => $name,
         //   '!uname' => $uname,
         // ], TRIPAL_ERRORR);
-        $this->logger->error("Failed to retreive newly inserted feature '$name ($uname)'"); 
+        $this->logger->error("Failed to retreive newly inserted feature '$name ($uname)'");
         return 0;
       }
 
@@ -797,7 +775,7 @@ class FASTAImporter extends TripalImporter {
     if (!isset($feature) and (strcmp($method, 'Update only') == 0 or strcmp($method, 'Insert and update') == 0)) {
       // $this->logMessage("Failed to find feature '!name' ('!uname') while matching on " . drupal_strtolower($match_type) . ".",
       //   ['!name' => $name, '!uname' => $uname], TRIPAL_ERROR);
-      $this->logger->error("Failed to find feature '$name' ('$uname') while matching on " . mb_strtolower($match_type) . "."); 
+      $this->logger->error("Failed to find feature '$name' ('$uname') while matching on " . mb_strtolower($match_type) . ".");
       return 0;
     }
 
@@ -832,7 +810,7 @@ class FASTAImporter extends TripalImporter {
 
               $this->logger->error("Cannot update the feature '$name' with a uniquename of '$uname' and type of '" . $cvterm->name. "' " .
                 "as it conflicts with an existing feature with the same uniquename and type.");
-              
+
             return 0;
           }
 

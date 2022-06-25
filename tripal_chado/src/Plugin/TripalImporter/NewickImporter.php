@@ -1,59 +1,34 @@
 <?php
 
-class NewickImporter extends TripalImporter {
+namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
-  /**
-   * The name of this loader.  This name will be presented to the site
-   * user.
-   */
-  public static $name = 'Newick Tree Loader';
+use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 
-  /**
-   * The machine name for this loader. This name will be used to construct
-   * the URL for the loader.
-   */
-  public static $machine_name = 'chado_newick_loader';
-
-  /**
-   * A brief description for this loader.  This description will be
-   * presented to the site user.
-   */
-  public static $description = 'Load Newick formatted phylogenetic trees.';
-
-  /**
-   * An array containing the extensions of allowed file types.
-   */
-  public static $file_types = ['tree', 'txt'];
-
-  /**
-   * Provides information to the user about the file upload.  Typically this
-   * may include a description of the file types allowed.
-   */
-  public static $upload_description = 'Please provide the Newick formatted tree file (one tree per file only).  The file must have a .txt or .tree extension.';
-
-  /**
-   * The title that should appear above the file upload section.
-   */
-  public static $upload_title = 'Newick Upload';
-
-  /**
-   * Text that should appear on the button at the bottom of the importer
-   * form.
-   */
-  public static $button_text = 'Import Newick file';
-
-
-  /**
-   * Indicates the methods that the file uploader will support.
-   */
-  public static $methods = [
-    // Allow the user to upload a file to the server.
-    'file_upload' => TRUE,
-    // Allow the user to provide the path on the Tripal server for the file.
-    'file_local' => TRUE,
-    // Allow the user to provide a remote URL for the file.
-    'file_remote' => TRUE,
-  ];
+/**
+ * Newick Importer implementation of the TripalImporterBase.
+ *
+ *  @TripalImporter(
+ *    id = "chado_newick_loader",
+ *    label = @Translation("Newick Tree Importer"),
+ *    description = @Translation("Load Newick formatted phylogenetic trees."),
+ *    file_types = {"tree", "txt"},
+ *    upload_description = @Translation("Please provide the Newick formatted tree file (one tree per file only).  The file must have a .txt or .tree extension."),
+ *    upload_title = @Translation("Newick Upload"),
+ *    use_analysis = True,
+ *    require_analysis = True,
+ *    button_text = @Translation("Import Newick file"),
+ *    file_upload = True,
+ *    file_load = True,
+ *    file_remote = True,
+ *    file_required = True,
+ *    cardinality = 1,
+ *    menu_path = "",
+ *    callback = "",
+ *    callback_module = "",
+ *    callback_path = "",
+ *  )
+ */
+class NewickImporter extends ChadoImporterBase {
 
   /**
    * @see TripalImporter::form()
@@ -112,7 +87,7 @@ class NewickImporter extends TripalImporter {
     $cv_id = $so_cv->cv_id;
     if (!$so_cv) {
       \Drupal::messenger()->addMessage('The Sequence Ontolgoy does not appear to be imported.
-      Please import the Sequence Ontology before adding a tree.');  
+      Please import the Sequence Ontology before adding a tree.');
     }
 
     $form['leaf_type'] = [
