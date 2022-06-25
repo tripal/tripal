@@ -27,7 +27,7 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
   public function __construct($entityType,$fieldType,$key,$id) {
     parent::__construct($entityType,$fieldType,$key);
     $this->id = $id;
-    $this->cardinality = TRUE;
+    $this->cardinality = 1;
     $this->searchability = TRUE;
     $this->operations = array("eq","ne","contains","starts");
     $this->sortable = TRUE;
@@ -48,10 +48,10 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
   /**
    * Sets the cardinality.
    *
-   * @param bool $cardinality
-   *   The cardinality.
+   * @param int $cardinality
+   *   The cardinality. A value of 0 indicates unlimited values.
    */
-  public function setCardinality($cardinality) {
+  public function setCardinality(int $cardinality) {
     $this->cardinality = $cardinality;
   }
 

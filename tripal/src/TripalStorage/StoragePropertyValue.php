@@ -2,7 +2,7 @@
 
 namespace Drupal\tripal\TripalStorage;
 
-use Drupal\tripal4\TripalStorage\StoragePropertyBase;
+use Drupal\tripal\TripalStorage\StoragePropertyBase;
 
 /**
  * Defines the Tripal storage property value.
