@@ -1,11 +1,11 @@
 <?php
 
-namespace Drupal\tripal4\TripalStorage;
+namespace Drupal\tripal\TripalStorage;
 
-use Drupal\tripal4\Interface\TripalFieldItemInterface
-use Drupal\Core\Entity\ContentEntityBase
-use Drupal\Core\Entity\ContentEntityInterface
-use Drupal\Core\Entity\EntityStorageInterface
+use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
+use Drupal\Core\Entity\ContentEntityBase;
+use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\EntityStorageInterface;
 
 /**
  * TODO

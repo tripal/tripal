@@ -225,6 +225,9 @@ class ChadoIdSpace extends TripalIdSpaceBase {
       'is_relationship_type' => $cvterm->is_relationshiptype == 1 ? True : False,
     ]);
     
+    // Set the internal ID.
+    $term->setInternalId($cvterm->cvterm_id);
+    
     // Set the boolean values for the term.
     if ($cvterm->is_obsolete) {
       $term->isObsolete(True);
@@ -454,7 +457,11 @@ class ChadoIdSpace extends TripalIdSpaceBase {
       if (!$this->updateTerm($term, $cvterm, $options)) {
         return False;
       }
-    }    
+    }
+    
+    // Set the internal ID.
+    $cvterm = $this->getChadoCVTerm($term);
+    $term->setInternalId($cvterm->cvterm_id);
     
     return True;
   }

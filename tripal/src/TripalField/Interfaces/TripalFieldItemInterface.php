@@ -21,7 +21,7 @@ interface TripalFieldItemInterface extends FieldItemInterface {
    *   The entity type id of this field's entity.
    *
    * @return array
-   *   Array of \Drupal\tripal4\Base\StoragePropertyTypeBase property types.
+   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyTypeBase property types.
    */
   public static function tripalTypes($entityTypeId);
 
@@ -29,7 +29,7 @@ interface TripalFieldItemInterface extends FieldItemInterface {
    * Returns an empty template array of all property values this field uses for loading and saving.
    *
    * @return array
-   *   Array of \Drupal\tripal4\TripalStorage\StoragePropertyValue property value templates.
+   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue property value templates.
    */
   public function tripalValuesTemplate();
 
@@ -37,9 +37,9 @@ interface TripalFieldItemInterface extends FieldItemInterface {
    * Loads the values from the given array of properties to the given entity.
    *
    * @param array $properties
-   *   Array of \Drupal\tripal4\TripalStorage\StoragePropertyValue objects.
+   *   Array of \Drupal\tripal\TripalStorage\\StoragePropertyValue objects.
    *
-   * @param \Drupal\tripal4\Base\TripalEntityBase $entity
+   * @param \Drupal\tripal\TripalStorage\TripalEntityBase $entity
    *   The entity.
    */
   public function tripalLoad($properties,$entity);
@@ -48,9 +48,9 @@ interface TripalFieldItemInterface extends FieldItemInterface {
    * Saves the values to the given array of properties from the given entity.
    *
    * @param array $properties
-   *   Array of \Drupal\tripal4\TripalStorage\StoragePropertyValue objects.
+   *   Array of \Drupal\tripal\TripalStorage\\StoragePropertyValue objects.
    *
-   * @param \Drupal\tripal4\Base\TripalEntityBase $entity
+   * @param \Drupal\tripal\TripalStorage\TripalEntityBase $entity
    *   The entity.
    */
   public function tripalSave($properties,$entity);
@@ -58,7 +58,7 @@ interface TripalFieldItemInterface extends FieldItemInterface {
   /**
    * Clears all field values from the given entity that is associated with this field.
    *
-   * @param \Drupal\tripal4\Base\TripalEntityBase $entity
+   * @param \Drupal\tripal\TripalStorage\TripalEntityBase $entity
    *   The entity.
    */
   public function tripalClear($entity);

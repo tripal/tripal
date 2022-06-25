@@ -5,12 +5,13 @@ namespace Drupal\tripal\TripalStorage;
 use Drupal\tripal\TripalStorage\StoragePropertyTypeBase;
 
 /**
- * Defines the integer Tripal storage property type.
+ * Defines the text Tripal storage property type. A text type is a string with
+ * unlimited length.
  */
-class IntStoragePropertyType extends StoragePropertyTypeBase {
+class TextStoragePropertyType extends StoragePropertyTypeBase {
 
   /**
-   * Constructs a new integer tripal storage property type.
+   * Constructs a new text tripal storage property type.
    *
    * @param string entityType
    *   The entity type associated with this property type.
@@ -22,7 +23,7 @@ class IntStoragePropertyType extends StoragePropertyTypeBase {
    *   The key associated with this property type.
    */
   public function __construct($entityType,$fieldType,$key) {
-    parent::__construct($entityType,$fieldType,$key,"int");
+    parent::__construct($entityType,$fieldType,$key,"text");
   }
 
 }
