@@ -4,6 +4,7 @@ namespace Drupal\tripal_chado\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Drupal\tripal\TripalDBX\TripalDbx;
 use Drupal\tripal_chado\Database\ChadoConnection;
@@ -30,28 +31,16 @@ class ChadoInstallForm extends FormBase {
 
     $form['msg-top'] = [
       '#type' => 'item',
-      '#markup' => 'Chado is a relational database schema that underlies many
-        GMOD installations. It is capable of representing many of the general
-        classes of data frequently encountered in modern biology such as sequence,
-        sequence comparisons, phenotypes, genotypes, ontologies, publications,
-        and phylogeny. It has been designed to handle complex representations of
-        biological knowledge and should be considered one of the most
-        sophisticated relational schemas currently available in molecular
-        biology.',
-      '#prefix' => '<blockquote>',
-      '#suffix' => $this->t('- <a href="@url">GMOD Chado Documentation</a></blockquote>',
-        ['@url' => Url::fromUri('https://chado.readthedocs.io/en/rtd/')->toString()]),
+      '#markup' => t('@chado is a relational database schema for storing molecular
+        biological and ancillary data. It is used in many tools. Tripal 
+        uses Chado as a datastore for biological content.  If Chado is not installed
+        then click the button below to install it.  You may also use the advanced
+        options to use a specific PostgreSQL schema name for Chado or 
+        install multiple Chado instances if desired.', [
+          '@chado' => Link::fromTextAndUrl('Chado', Url::fromUri('https://chado.readthedocs.io/en/rtd/'))->toString(), 
+        ]),
     ];
-
-    $form['msg-warning'] = [
-      '#type' => 'item',
-      '#markup' => 'Please note: if Chado is already installed it will
-            be removed and recreated and all data will be lost. If this is
-            desired or if this is the first time Chado has been installed
-            you can ignore this issue.',
-      // @todo:use CSS class "color-warning".
-    ];
-
+    
     // Now that we support multiple chado instances, we need to list all the
     // currently installed ones here since they may be different versions.
     $rows = [];
@@ -98,24 +87,33 @@ class ChadoInstallForm extends FormBase {
       }
       return $order;
     });
-    foreach ($instances as $schema_name => $details) {
+    
+    // Get the default Chado instance.
+    $default_chado = NULL;
+    if ($chado->schema()->schemaExists()) {
+      $default_chado =$chado->getSchemaName();
+    }
+    
+    // Determine if the default Chado is integrated with Tripal.
+    $default_integrated = False;
+    $none_integrated = True;
+    if ($default_chado && $instances[$default_chado]['integration']) {
+      $default_integrated = True;
+    }
+    
+    // Build the table of Chado installations.
+    foreach ($instances as $schema_name => $details) {  
+      
       // Integrated schemas and non-integrated have different informations.
       if ($details['integration']) {
-        // @todo: row style should highlight it is integrated.
-        // @todo: add a "check" sign in front of default Chado schema.
+        $none_integrated = False;
         $rows[] = [
-          $details['integration']['schema_name'],
+          $details['integration']['schema_name'] . ($default_chado == $schema_name ? ' (default)' : ''),
           $details['integration']['version'],
-          // @todo: use CSS class ".system-status-counter__status-icon--checked"
           $details['has_data'] ? $this->t('Yes') : $this->t('No'),
-          // @todo: use CSS class ".system-status-counter__status-icon--checked"
           $this->t('Yes'),
-          \Drupal::service('date.formatter')->format(
-            $details['integration']['created']
-          ),
-          \Drupal::service('date.formatter')->format(
-            $details['integration']['updated']
-          ),
+          \Drupal::service('date.formatter')->format($details['integration']['created']),
+          \Drupal::service('date.formatter')->format($details['integration']['updated']),
         ];
       }
       else {
@@ -130,83 +128,59 @@ class ChadoInstallForm extends FormBase {
         ];
       }
     }
-    if (!empty($rows)) {
-      $form['existing_instances'] = [
-        '#type' => 'table',
-        '#caption' => 'Existing Chado instances',
-        '#header' => ['Schema Name', 'Chado Version', 'Has data', 'In Tripal', 'Created', 'Updated'],
-        '#rows' => $rows,
-      ];
-      // Check if a default Chado instance is integrated.
-      if ($chado->schema()->schemaExists()
-          && $instances[$chado->getSchemaName()]['integration']) {
-        $form['current_version'] = [
-          '#type' => 'item',
-          '#markup' => '<div class="messages messages--status">
-              <p>Chado is installed in "'
-              . $chado->getSchemaName()
-              . '" (default Chado schema).</p>
-            </div>',
-        ];
-      }
-      // Check if a schema is integrated but not set as default.
-      elseif ($instances[$rows[0][0]]['integration']) {
-        $form['current_version'] = [
-          '#type' => 'item',
-          '#markup' => '<div class="messages messages--warning">
-              <h2>Chado is installed but no default shcema was set</h2>
-              <p>Please select a default Chado schema using the Chado management menu.</p>
-            </div>',
-        ];
-      }
-      else {
-        $form['current_version'] = [
-          '#type' => 'item',
-          '#markup' => '<div class="messages messages--warning">
-              <h2>Chado not integrated with Tripal</h2>
-              <p>Please integrate an existing Chado schema into Tripal using the Chado management menu or install a new default Chado instance. We recommend you use or upgrade to the most recent version of Chado.</p>
-            </div>',
-        ];
-      }
+    
+    $form['existing_instances'] = [
+      '#type' => 'table',
+      '#header' => ['Schema Name', 'Chado Version', 'Has data', 'In Tripal', 'Created', 'Updated'],
+      '#rows' => $rows,
+      '#empty' => 'There are no instances of Chado available.  Please submit this form to install Chado.'
+    ];
+    
+    if (count($rows) > 0 and empty($default_chado)) {
+      \Drupal::messenger()->addWarning(t('Chado is installed but no default 
+        schema was set. Please @select or install a new default Chado instance.', 
+          ['@select' => Link::fromTextAndUrl('select a default Chado schema',
+              Url::fromUri('internal:/admin/tripal/storage/chado/manager'))->toString()],
+      ));
     }
-    else {
-      $form['current_version'] = [
-        '#type' => 'item',
-        '#markup' => '<div class="messages messages--warning">
-            <h2>Chado Not Installed</h2>
-            <p>Please install a new Chado schema. We recommend you choose the most recent version of Chado.</p>
-          </div>',
-      ];
+    if (count($rows) > 0 and $none_integrated) {
+      \Drupal::messenger()->addWarning(t('There is no Chado installation that
+        has been integratred with Tripal. Please @integrate it into Tripal.',
+          ['@integrate' => Link::fromTextAndUrl('add', 
+              Url::fromUri('internal:/admin/tripal/storage/chado/manager'))->toString()],
+          ));
+    }
+    if (count($rows) > 0 and $default_chado and !$default_integrated) {
+      \Drupal::messenger()->addWarning(t('The default Chado schema is not 
+        integrated with Tripal. Please @integrate it into Tripal.',
+          ['@integrate' => Link::fromTextAndUrl('add', 
+              Url::fromUri('internal:/admin/tripal/storage/chado/manager'))->toString()],
+      ));
     }
 
-    // Add some information to admin regarding chado installation.
-    $info[] = 'Tripal Chado Integration now supports <strong>setting the schema
-      name</strong> local Chado instances are installed in. In Tripal v3 and
-      lower, the recommended name for your chado schema was <code>chado</code>
-      and that is still the default. Note: Schema name cannot be changed once
-      set.';
-    $info[] = 'Additionally, you can now install <strong>multiple chado
-    instances</strong>, although this is only recommended as needed. Examples
-    where you may need multiple chado instances: (1) separate testing version of
-    chado, (2) different chado instances for specific user groups (i.e. breeders
-    of different crops), (3) both a public and private chado where Drupal
-    permissions are not sufficient.';
-    $info[] = 'To install multiple chado instances, submit this form once for
-    each chado instance indicating a different schema name each time.
-    <strong>Each chado instance must have a unique name.</strong>';
+    if (count($rows) == 0) {
+      \Drupal::messenger()->addWarning('Chado is not installed.');
+    }
+    
     $form['advanced'] = [
       '#type' => 'details',
       '#title' => 'Advanced Options',
-      '#description' => '<p>' . implode ('</p><p>', $info) . '</p>',
     ];
 
     // Allow the admin to set the chado schema name.
     $form['advanced']['schema_name'] = [
       '#type' => 'textfield',
-      '#title' => 'Chado Schema Name',
+      '#title' => t('Chado Schema Name'),
       '#required' => TRUE,
-      '#description' => 'The name of the schema to install chado in.',
       '#default_value' => 'chado',
+      '#description' => t('By default, the PostgreSQL schema name for Chado
+        is "chado".  Change this if you perfer a different name.
+        Additionally, you may install multiple instances of Chado by submitting
+        this form once for each Chado instance and providing a unique schema 
+        name each time. Examples cases when you may want multiple chado 
+        instances are for a separate testing version, if different chado 
+        instances are needed for different user groups (e.g., breeders of 
+        different crops) or both a public and private chado).'),
     ];
 
     $form['button'] = [
