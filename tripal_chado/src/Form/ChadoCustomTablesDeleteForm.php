@@ -82,7 +82,7 @@ class ChadoCustomTablesDeleteForm extends FormBase {
     else {
       \Drupal::messenger()->addMessage(t("No action performed."));
     }
-    // drupal_goto("admin/tripal/storage/chado/custom_tables/view");
+    // drupal_goto("admin/tripal/storage/chado/custom_tables");
     $response = new RedirectResponse(\Drupal\Core\Url::fromUserInput('/admin/tripal/storage/chado/custom_tables')->toString());
     $response->send();
   }  

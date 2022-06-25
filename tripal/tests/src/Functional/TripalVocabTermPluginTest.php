@@ -30,7 +30,7 @@ class TripalVocabTermPluginTest extends BrowserTestBase {
 
 		// Test the Vocabulary Plugin Manager.
 		// --Ensure we can instantiate the plugin manager.
-		$type = \Drupal::service('plugin.manager.tripal.vocab');
+		$type = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
 		// Note: If the plugin manager is not found you will get a ServiceNotFoundException.
 		$this->assertIsObject($type, 'A vocabulary plugin service object was not returned.');
 
@@ -62,7 +62,7 @@ class TripalVocabTermPluginTest extends BrowserTestBase {
 
 		// Test the Id Space Plugin Manager.
 		// --Ensure we can instantiate the plugin manager.
-		$type = \Drupal::service('plugin.manager.tripal.id_space');
+		$type = \Drupal::service('tripal.collection_plugin_manager.idspace');
 		// Note: If the plugin manager is not found you will get a ServiceNotFoundException.
 		$this->assertIsObject($type, 'An id space plugin service object was not returned.');
 
@@ -97,13 +97,13 @@ class TripalVocabTermPluginTest extends BrowserTestBase {
     // --Test creation of a TripalTerm provided the expected input.
     //   NOTE: the use Drupal\tripal\TripalVocabTerms\TripalTerm
     //   at the top of this file allows us to use TripalTerm here.
-    $term = new TripalTerm(
-      'gene',
-      'A region (or regions) that includes all of the sequence elements necessary to encode a functional transcript. A gene may include regulatory regions, transcribed regions and/or other functional sequence regions.',
-      'SO',
-      '0000704',
-      'Sequence Ontology'
-    );
+    $term = new TripalTerm([
+      'name' => 'gene',
+      'definition' => 'A region (or regions) that includes all of the sequence elements necessary to encode a functional transcript. A gene may include regulatory regions, transcribed regions and/or other functional sequence regions.',
+      'idSpace' => 'SO',
+      'accession' => '0000704',
+      'vocabulary' => 'sequence'
+    ]);
     $this->assertIsObject(
       $term,
       'When trying to create a new TripalTerm, an object was not produced.'

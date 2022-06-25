@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\tripal_chado\Functional\Task;
 
-use Drupal\Tests\tripal_chado\Functional\ChadoTestBase;
+use Drupal\Tests\tripal_chado\Functional\ChadoTestKernelBase;
 use Drupal\tripal_chado\Task\ChadoRemover;
 
 
@@ -16,7 +16,7 @@ use Drupal\tripal_chado\Task\ChadoRemover;
  * @group Tripal Chado Task
  * @group Tripal Chado Remover
  */
-class ChadoRemoverFunctionalTest extends ChadoTestBase {
+class ChadoRemoverFunctionalTest extends ChadoTestKernelBase {
 
   /**
    * Tests task.
@@ -26,17 +26,17 @@ class ChadoRemoverFunctionalTest extends ChadoTestBase {
    */
   public function testPerformTaskRemover() {
     // Create a temporary schema.
-    $biodb = $this->getTestSchema(ChadoTestBase::CREATE_SCHEMA);
+    $tripaldbx_db = $this->getTestSchema(ChadoTestKernelBase::CREATE_SCHEMA);
 
     // Test remover.
     $remover = \Drupal::service('tripal_chado.remover');
     $remover->setParameters([
-      'output_schemas'  => [$biodb->getSchemaName()],
+      'output_schemas'  => [$tripaldbx_db->getSchemaName()],
     ]);
     $success = $remover->performTask();
     $this->assertTrue($success, 'Task performed.');
-    $this->assertFalse($biodb->schema()->schemaExists(), 'Schema removed.');
+    $this->assertFalse($tripaldbx_db->schema()->schemaExists(), 'Schema removed.');
     // Already dropped but we need to let know the "garbage schema collector".
-    $this->freeTestSchema($biodb);
+    $this->freeTestSchema($tripaldbx_db);
   }
 }

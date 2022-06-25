@@ -26,11 +26,11 @@ tripal_chado.chado_prepare_form:
   title: 'Prepare Chado'
   description: 'Prepares Drupal to use Chado.'
   parent: tripal_chado.storage
-  weight: 21
+  weight: 31
 
-tripal_chado.custom_tables:
-  route_name: tripal_chado.custom_tables
+tripal_chado.chado_custom_tables:
+  route_name: tripal_chado.chado_custom_tables
   title: 'Chado Custom Tables'
-  description: 'Manage custom tables that are added to Chado database.'
+  description: 'Manage existing Chado Custom Tables'
   parent: tripal_chado.storage
   weight: 30  

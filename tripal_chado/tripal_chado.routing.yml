@@ -30,34 +30,35 @@ tripal_chado.chado_prepare_form:
   requirements:
     _permission: 'administer tripal'
 
-tripal_chado.custom_table_form_create:
-  path: 'admin/tripal/storage/chado/custom_tables/create'
+tripal_chado.chado_custom_table_form:
+  path: 'admin/tripal/storage/chado/chado_custom_table'
   defaults:
     _form: '\Drupal\tripal_chado\Form\ChadoCustomTableForm'
     _title: 'Chado Custom Table'
   requirements:
     _permission: 'administer tripal'
 
-tripal_chado.custom_table_form_edit:
-  path: 'admin/tripal/storage/chado/custom_tables/edit/{table_id}'
+
+tripal_chado.chado_custom_table_form_edit:
+  path: 'admin/tripal/storage/chado/chado_custom_table/{table_id}'
   defaults:
     _form: '\Drupal\tripal_chado\Form\ChadoCustomTableForm'
     _title: 'Chado Custom Table'
   requirements:
     _permission: 'administer tripal' 
 
-tripal_chado.custom_tables_delete_form:
-  path: 'admin/tripal/storage/chado/custom_tables/delete/{table_id}'
+tripal_chado.chado_custom_tables_delete_form:
+  path: 'admin/tripal/storage/chado/custom_table_delete/{table_id}'
   defaults:
     _form: '\Drupal\tripal_chado\Form\ChadoCustomTablesDeleteForm'
     _title: 'Chado Custom Tables Delete'
   requirements:
     _permission: 'administer tripal'
 
-tripal_chado.custom_tables:
+tripal_chado.chado_custom_tables:
   path: 'admin/tripal/storage/chado/custom_tables'
   defaults:
-    _controller: '\Drupal\tripal_chado\Controller\ChadoCustomTablesController::customTables'
+    _controller: '\Drupal\tripal_chado\Controller\ChadoCustomTablesController::admin_custom_tables'
     _title: 'Chado Custom Tables'
   requirements:
     _permission: 'administer tripal'

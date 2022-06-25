@@ -5,6 +5,7 @@ namespace Drupal\tripal\TripalVocabTerms\PluginManagers;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use \RuntimeException;
 
 /**
  * Provides a tripal collection plugin manager.
@@ -61,10 +62,27 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
    *   The plugin id.
    *
    * @return Drupal\tripal\TripalVocabTerms\TripalCollectionPluginBase
-   *   The new collection.
+   *   The new collection or NULL if an error occured.
    */
-  public function createCollection($name,$pluginId) {
-    // TODO
+  public function createCollection($name, $pluginId) {
+    if (!is_string($name)) {
+      return NULL;
+    }
+    
+    $clist = $this->getCollectionList();        
+    if (in_array($name, $clist)) {
+      return NULL;
+    }
+    $db = \Drupal::database();
+    $collection = $this->createInstance($pluginId, ["collection_name" => $name]);
+    if ($collection->isValid()) {
+      $result = $db->insert($this->table)->fields(["name" => $name, "plugin_id" => $pluginId])->execute();
+      $collection->create();
+      return $collection;
+    }
+    else {
+      return NULL;
+    }
   }
 
   /**
@@ -82,7 +100,25 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
    *   True if the matching collection was removed or false otherwise.
    */
   public function removeCollection($name) {
-    // TODO
+    if (!is_string($name)) {
+      return NULL;
+    }
+    $db = \Drupal::database();
+    $result = $db->select($this->table,'n')
+      ->fields('n', ['name', 'plugin_id'])
+      ->condition('n.name', $name)
+      ->execute();
+    $record = $result->fetchObject();
+    if (!$record) {
+      return FALSE;
+    }
+    $num_deleted = $db->delete($this->table)->condition('name', $name)->execute();
+    if ($num_deleted < 1) {
+      return FALSE;
+    }
+    $collection = $this->createInstance($record->plugin_id, ["collection_name" => $name]);
+    $collection->destroy();
+    return TRUE;
   }
 
   /**
@@ -92,7 +128,13 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
    *   Collection names.
    */
   public function getCollectionList() {
-    // TODO
+    $names = [];
+    $db = \Drupal::database();
+    $result = $db->select($this->table, 'n')->fields('n', ['name'])->execute();
+    foreach ($result as $record) {
+      $names[] = $record->name;
+    }
+    return $names;
   }
 
   /**
@@ -106,7 +148,20 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
    *   The loaded collection plugin or NULL.
    */
   public function loadCollection($name) {
-    // TODO
+    if (!is_string($name)) {
+      return NULL;
+    }    
+    $db = \Drupal::database();
+    $result = $db->select($this->table, 'n')
+      ->condition('n.name', $name)
+      ->fields('n', ['name', 'plugin_id'])
+      ->execute();
+    $first = $result->fetchAssoc();
+    if (!$first) {
+      return NULL;
+    }
+    $collection = $this->createInstance($first["plugin_id"], ["collection_name" => $name]);
+    return $collection;
   }
 
   /**
@@ -114,6 +169,6 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
    *
    * @var string
    */
-  private $collectionTable;
+  private $table;
 
 }

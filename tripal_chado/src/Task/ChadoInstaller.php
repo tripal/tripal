@@ -103,7 +103,7 @@ class ChadoInstaller extends ChadoTaskBase {
           "Invalid number of output schemas. Only one output schema must be specified."
         );
       }
-      $bio_tool = \Drupal::service('tripal_biodb.tool');
+      $tripal_dbx = \Drupal::service('tripal.dbx');
       $output_schema = $this->outputSchemas[0];
 
       // Note: schema names have already been validated through BioConnection.
@@ -116,7 +116,7 @@ class ChadoInstaller extends ChadoTaskBase {
         );
       }
       // Check name is not reserved.
-      $issue = $bio_tool->isInvalidSchemaName($output_schema->getSchemaName());
+      $issue = $tripal_dbx->isInvalidSchemaName($output_schema->getSchemaName());
       if ($issue) {
         throw new ParameterException($issue);
       }
@@ -174,7 +174,7 @@ class ChadoInstaller extends ChadoTaskBase {
     try
     {
       $target_schema = $this->outputSchemas[0];
-      $bio_tool = \Drupal::service('tripal_biodb.tool');
+      $tripal_dbx = \Drupal::service('tripal.dbx');
 
       // Save task initial data for later progress computation.
       // @todo: We should use one single SQL file.
@@ -189,14 +189,14 @@ class ChadoInstaller extends ChadoTaskBase {
       // that the schema must not exist already.
       // @todo: The Chado SQL file should use 'IF NOT EXISTS' everywhere
       // possible to avoid touching those schemas.
-      if ($bio_tool->schemaExists('genetic_code')) {
-        $bio_tool->dropSchema('genetic_code');
+      if ($tripal_dbx->schemaExists('genetic_code')) {
+        $tripal_dbx->dropSchema('genetic_code');
       }
-      if ($bio_tool->schemaExists('so')) {
-        $bio_tool->dropSchema('so');
+      if ($tripal_dbx->schemaExists('so')) {
+        $tripal_dbx->dropSchema('so');
       }
-      if ($bio_tool->schemaExists('frange')) {
-        $bio_tool->dropSchema('frange');
+      if ($tripal_dbx->schemaExists('frange')) {
+        $tripal_dbx->dropSchema('frange');
       }
 
       // 2) Create the schema.

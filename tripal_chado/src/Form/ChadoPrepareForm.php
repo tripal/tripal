@@ -5,6 +5,7 @@ namespace Drupal\tripal_chado\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\tripal\TripalDBX;
 
 class ChadoPrepareForm extends FormBase {
 
@@ -32,13 +33,27 @@ class ChadoPrepareForm extends FormBase {
         It will also add some management tables to Drupal and add some default
         content types for biological and ancillary data."),
     ];
-
+        
+    $form['advanced'] = [
+      '#type' => 'details',
+      '#title' => 'Advanced Options',
+    ];   
+    
+    
+    $chado_schemas = [];
+    $chado = \Drupal::service('tripal_chado.database');
+    foreach ($chado->getAvailableInstances() as $schema_name => $details) {
+      $chado_schemas[$schema_name] = $schema_name;
+    }
+    $default_chado = $chado->getSchemaName();
+    
     $form['advanced']['schema_name'] = [
-      '#type' => 'textfield',
+      '#type' => 'select',
       '#title' => 'Chado Schema Name',
       '#required' => TRUE,
-      '#description' => 'The name of the schema to install chado in.',
-      '#default_value' => 'chado',
+      '#description' => 'Select one of the installed Chado schemas to prepare..',
+      '#options' => $chado_schemas,
+      '#default_value' => $default_chado,
     ];
 
     $form['prepare-button'] = [

@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\tripal_chado\Functional\Task;
 
-use Drupal\Tests\tripal_chado\Functional\ChadoTestBase;
+use Drupal\Tests\tripal_chado\Functional\ChadoTestKernelBase;
 use Drupal\tripal_chado\Task\ChadoUpgrader;
 
 /**
@@ -15,7 +15,7 @@ use Drupal\tripal_chado\Task\ChadoUpgrader;
  * @group Tripal Chado Task
  * @group Tripal Chado Upgrader
  */
-class ChadoUpgraderFunctionalTest extends ChadoTestBase {
+class ChadoUpgraderFunctionalTest extends ChadoTestKernelBase {
 
   /**
    * Tests task.
@@ -25,11 +25,11 @@ class ChadoUpgraderFunctionalTest extends ChadoTestBase {
    */
   public function testPerformTaskUpgrader() {
     // Create a temporary schema.
-    $biodb = $this->getTestSchema(ChadoTestBase::INIT_DUMMY);
+    $tripaldbx_db = $this->getTestSchema(ChadoTestKernelBase::INIT_DUMMY);
     // Test upgrader.
     $upgrader = \Drupal::service('tripal_chado.upgrader');
     $upgrader->setParameters([
-      'output_schemas'  => [$biodb->getSchemaName()],
+      'output_schemas'  => [$tripaldbx_db->getSchemaName()],
       'cleanup'  => TRUE,
       // 'filename'  => '/tmp/upgrade_test.sql',
     ]);
@@ -40,11 +40,11 @@ class ChadoUpgraderFunctionalTest extends ChadoTestBase {
     // missing during the upgrade process.
     $success = $upgrader->performTask();
     $this->assertTrue($success, 'Task performed.');
-    $this->assertTrue($biodb->schema()->fieldExists('feature', 'md5checksum'), 'Missing column added.');
-    $this->assertFalse($biodb->schema()->fieldExists('feature', 'testsum'), 'Extra column removed.');
-    $this->assertTrue($biodb->schema()->tableExists('analysis'), 'Missing table added.');
+    $this->assertTrue($tripaldbx_db->schema()->fieldExists('feature', 'md5checksum'), 'Missing column added.');
+    $this->assertFalse($tripaldbx_db->schema()->fieldExists('feature', 'testsum'), 'Extra column removed.');
+    $this->assertTrue($tripaldbx_db->schema()->tableExists('analysis'), 'Missing table added.');
     // @todo: test column types int --> bigint
     // @todo: test indexes
-    $this->freeTestSchema($biodb);
+    $this->freeTestSchema($tripaldbx_db);
   }
 }

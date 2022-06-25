@@ -5,17 +5,19 @@ services:
     tags:
       - { name: access_check, applies_to: _tripal_access_check }
   tripal.bulkPgSchemaInstaller:
-      class: Drupal\tripal\Services\bulkPgSchemaInstaller
+    class: Drupal\tripal\Services\bulkPgSchemaInstaller
   tripal.job:
-      class: Drupal\tripal\Services\Tripaljob
+    class: Drupal\tripal\Services\Tripaljob
   tripal.logger:
-      class: Drupal\tripal\Services\TripalLogger
+    class: Drupal\tripal\Services\TripalLogger
+  tripal.dbx:
+    class: Drupal\tripal\TripalDBX\TripalDbx
   plugin.manager.tripalstorage:
-      class: Drupal\tripal\Services\TripalStorageManager
-      parent: default_plugin_manager
-  plugin.manager.tripal.vocab:
-    class: Drupal\tripal\TripalVocabTerms\PluginManagers\TripalVocabularyManager
+    class: Drupal\tripal\Services\TripalStorageManager
     parent: default_plugin_manager
-  plugin.manager.tripal.id_space:
+  tripal.collection_plugin_manager.idspace:
     class: Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager
+    parent: default_plugin_manager
+  tripal.collection_plugin_manager.vocabulary:
+    class: Drupal\tripal\TripalVocabTerms\PluginManagers\TripalVocabularyManager
     parent: default_plugin_manager

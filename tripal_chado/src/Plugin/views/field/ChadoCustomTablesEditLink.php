@@ -73,7 +73,7 @@ class ChadoCustomTablesEditLink extends FieldPluginBase {
     // Return the text, so the code never thinks the value is empty.
     $table_id = $values->table_id;
     $str = "wth";
-    $url = Url::fromUserInput('/admin/tripal/storage/chado/custom_tables/edit/' . $table_id)->toString();
+    $url = Url::fromUserInput('/admin/tripal/storage/chado/chado_custom_table/' . $table_id)->toString();
     $html = '<a href="' .  $url . '">Edit</a>';
     $markup = new Markup();
 

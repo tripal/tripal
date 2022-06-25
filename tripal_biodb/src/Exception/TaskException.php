@@ -2,9 +2,9 @@
 
 namespace Drupal\tripal_biodb\Exception;
 
-use Drupal\tripal_biodb\Exception\BioDbException;
+use Drupal\tripal\TripalDBX\Exceptions\TripalDbxException;
 
 /**
  * Exception thrown for biological schema task errors.
  */
-class TaskException extends BioDbException {}
+class TaskException extends TripalDbxException {}

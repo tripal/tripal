@@ -242,25 +242,31 @@ class ChadoSchema {
 
     $schema = $this->getSchemaDetails();
 
+    $table_arr =  FALSE;    
     if (isset($schema[$table])) {
       $table_arr = $schema[$table];
     }
     else {
-      $table_arr =  FALSE;
       // Try to check if it's a custom table
       $table_arr = $this->getCustomTableSchema($table);
-      // print_r($table_arr);
       if($table_arr == FALSE) {
-        $table_arr = FALSE; //TODO: Should this return false so below is not processed?
+        return NULL;
       }      
     }
 
     // Ensure all the parts are set.
-    if (!isset($table_arr['primary key'])) { $table_arr['primary key'] = []; }
-    if (!isset($table_arr['unique keys'])) { $table_arr['unique keys'] = []; }
-    if (!isset($table_arr['foreign keys'])) { $table_arr['foreign keys'] = []; }
-    if (!isset($table_arr['referring_tables'])) { $table_arr['referring_tables'] = []; }
-
+    if (!isset($table_arr['primary key'])) { 
+      $table_arr['primary key'] = []; 
+    }
+    if (!isset($table_arr['unique keys'])) { 
+      $table_arr['unique keys'] = []; 
+    }
+    if (!isset($table_arr['foreign keys'])) { 
+      $table_arr['foreign keys'] = []; 
+    }
+    if (!isset($table_arr['referring_tables'])) { 
+      $table_arr['referring_tables'] = []; 
+    }
 
     // Ensures consistency regardless of the number of columns of the pkey.
     $table_arr['primary key'] = (array) $table_arr['primary key'];
@@ -280,12 +286,6 @@ class ChadoSchema {
     // Ensure foreign key array is present for consistency.
     if (!isset($table_arr['foreign keys'])) {
       $table_arr['foreign keys'] = [];
-    }
-
-    // if the table_arr is empty then maybe this is a custom table
-    if (!is_array($table_arr) or count($table_arr) == 0) {
-      // $table_arr = $this->getCustomTableSchema($table);
-      return FALSE;
     }
 
     return $table_arr;

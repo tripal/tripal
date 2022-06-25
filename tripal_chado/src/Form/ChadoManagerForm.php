@@ -4,8 +4,9 @@ namespace Drupal\tripal_chado\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Link;
 use Drupal\Core\Url;
-use Drupal\tripal_biodb\Database\BioDbTool;
+use Drupal\tripal\TripalDBX\TripalDbx;
 use Drupal\tripal_chado\Database\ChadoConnection;
 use Drupal\tripal_chado\Task\ChadoInstaller;
 
@@ -79,14 +80,14 @@ class ChadoManagerForm extends FormBase {
         case static::CLONE_TASK:
           $form = $this->buildCloneForm($form, $form_state);
           break;
-        
+
         case static::UPGRADE_TASK:
           $form = $this->buildUpgradeForm($form, $form_state);
           break;
 
         case static::DROP_TASK:
           $form_state->set(
-            'confirm_message', 
+            'confirm_message',
             $this->t(
               "Are you sure you want to remove schema '@schema_name'? This operation cannot be undone. We recommand you backup your data first.",
               [
@@ -96,7 +97,7 @@ class ChadoManagerForm extends FormBase {
           );
           $form = $this->buildConfirmForm($form, $form_state);
           break;
-        
+
         case static::INTEGRATE_TASK:
         case static::SET_DEFAULT_TASK:
         default:
@@ -108,7 +109,7 @@ class ChadoManagerForm extends FormBase {
     }
     return $form;
   }
-  
+
   /**
    * Builds default form with Chado instance table.
    *
@@ -119,7 +120,7 @@ class ChadoManagerForm extends FormBase {
    */
   public function buildMainForm(array $form, FormStateInterface $form_state) {
 
-    $bio_tool = \Drupal::service('tripal_biodb.tool');
+    $tripal_dbx = \Drupal::service('tripal.dbx');
     $chado = new ChadoConnection();
 
     // Now that we support multiple chado instances, we need to list all the
@@ -181,11 +182,13 @@ class ChadoManagerForm extends FormBase {
       return $order;
     });
 
+    $default_chado = '';
     foreach ($instances as $schema_name => $details) {
       // Schema name.
-      $schema_name = $details['schema_name']
-        . ($details['is_default'] ? $this->t(' (default)') : '')
-      ;
+      $schema_name = $details['schema_name'];
+      if ($details['is_default']) {
+        $default_chado = $schema_name;
+      }
       // Version.
       $version = $details['version'];
       // Integration.
@@ -218,7 +221,7 @@ class ChadoManagerForm extends FormBase {
       // Set available operations.
       $operations = [];
       // Check if renamable, dropable.
-      if (!$bio_tool->isSchemaReserved($schema_name)) {
+      if (!$tripal_dbx->isSchemaReserved($schema_name)) {
         // Rename.
         $operations['rename_button'] = [
           '#type' => 'button',
@@ -294,7 +297,7 @@ class ChadoManagerForm extends FormBase {
       }
 
       $rows[$schema_name] = [
-        $schema_name,
+        $schema_name . ($default_chado == $schema_name ? $this->t(' (default)') : ''),
         $version,
         $details['has_data'] ? $this->t('Yes') : $this->t('No'),
         $integrated,
@@ -308,19 +311,14 @@ class ChadoManagerForm extends FormBase {
       $form['existing_instances'] = [
         '#type' => 'table',
         '#multiple' => FALSE,
-        '#caption' => 'Existing Chado instances',
         '#header' => ['Schema Name', 'Chado Version', 'Has data', 'In Tripal', 'Created', 'Updated', 'Operations'],
         '#rows' => $rows,
       ];
     }
     else {
-      $form['existing_instances'] = [
-        '#type' => 'item',
-        '#markup' => '<div class="messages messages--status">
-            <h2>No Chado schema found.</h2>
-            <p>Please install a new Chado schema using the Chado installation form.</p>
-          </div>',
-      ];
+      \Drupal::messenger()->addError(t('No Chado installations are found. @install.', [
+          '@install' => Link::fromTextAndUrl('Please install a new Chado schema', Url::fromUri('internal:/admin/tripal/storage/chado/install'))->toString(),
+      ]));
     }
 
     // Table buttons cannot submit the form without a submit button.
@@ -329,7 +327,6 @@ class ChadoManagerForm extends FormBase {
       '#type' => 'submit',
       '#name' => 'action',
       '#value' => t('Refresh'),
-      // '#attributes' => ['style' => 'display:none;'],
     ];
 
     $form['#prefix'] = '<div id="tripal_chado_manage_form">';
@@ -361,11 +358,11 @@ class ChadoManagerForm extends FormBase {
       case static::SET_DEFAULT_TASK:
         $this->setDefaultSchema($schema_name);
         break;
-      
+
       case static::INTEGRATE_TASK:
         $this->integrateSchema($schema_name);
         break;
-      
+
       case static::DROP_TASK:
         if ($confirm) {
           $this->dropSchema($schema_name);
@@ -397,7 +394,7 @@ class ChadoManagerForm extends FormBase {
       ->setValues([])
       ->setRebuild(TRUE);
   }
-  
+
   /**
    * Validates forms that create a new schema.
    *
@@ -409,19 +406,19 @@ class ChadoManagerForm extends FormBase {
   public function validateNewSchemaForm(array &$form, FormStateInterface $form_state) {
     $old_schema_name = $form_state->getValue('chado_schema');
     $new_schema_name = $form_state->getValue('new_schema_name');
-    $bio_tool = \Drupal::service('tripal_biodb.tool');
-    
+    $tripal_dbx = \Drupal::service('tripal.dbx');
+
     // Check new schame name is valid.
-    $issue = $bio_tool->isInvalidSchemaName($new_schema_name);
+    $issue = $tripal_dbx->isInvalidSchemaName($new_schema_name);
     if ($issue) {
       $form_state->setErrorByName(
         'new_schema_name',
         $issue
       );
     }
-    
+
     // Make sure new schema does not exist.
-    if ($bio_tool->schemaExists($new_schema_name)) {
+    if ($tripal_dbx->schemaExists($new_schema_name)) {
       $form_state->setErrorByName(
         'new_schema_name',
         $this->t(
@@ -469,7 +466,7 @@ class ChadoManagerForm extends FormBase {
     try {
       $success = $task->performTask();
     }
-    catch (\Drupal\tripal_biodb\Exception\BioDbException $e) {
+    catch (\Drupal\tripal\TripalDBX\Exceptions\TripalDbxException $e) {
       $success = FALSE;
     }
     if (!$success) {

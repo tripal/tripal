@@ -53,7 +53,7 @@ class TripalLogger {
   }
 
   /**
-   * Set the name of the module that should be used for loggin.
+   * Set the name of the module that should be used for logging.
    *
    * @param $module
    *   The module name.
@@ -286,11 +286,11 @@ class TripalLogger {
    */
   public function error($message, $context = [], $options=[]) {
     if ($this->isSuppressed()) return;
-
+    
     $message = 'ERROR: ' . $message;
     $this->log2Job($message, $context);
 
-    if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
+    if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {     
       $this->logger->error($message);
     }
 

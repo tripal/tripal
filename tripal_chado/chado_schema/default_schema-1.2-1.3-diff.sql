@@ -2057,7 +2057,7 @@ CREATE OR REPLACE FUNCTION groupoverlaps(bigint, bigint) RETURNS SETOF featuregr
   SELECT *
   FROM featuregroup
   WHERE is_root = 1
-    AND boxquery($1, $2) @ boxrange(fmin,fmax)
+    AND boxquery($1, $2) <@ boxrange(fmin,fmax)
 $_$;
 
 --
@@ -2110,7 +2110,7 @@ CREATE OR REPLACE FUNCTION groupoverlaps(bigint, bigint, character varying) RETU
     AND ( g1.srcfeature_id = g2.srcfeature_id OR g2.srcfeature_id IS NULL )
     AND g1.group_id = g2.group_id
     AND g1.srcfeature_id = (SELECT feature_id FROM feature WHERE uniquename = $3)
-    AND boxquery($1, $2) @ boxrange(g1.fmin,g2.fmax)
+    AND boxquery($1, $2) <@ boxrange(g1.fmin,g2.fmax)
 $_$;
   
 --
@@ -2420,7 +2420,7 @@ CREATE INDEX binloc_boxrange_src ON featureloc USING RTREE (boxrange(srcfeature_
 DROP FUNCTION IF EXISTS featureloc_slice(integer, integer);
 CREATE OR REPLACE FUNCTION featureloc_slice(bigint, bigint) RETURNS SETOF featureloc
     LANGUAGE sql
-    AS $_$SELECT * from featureloc where boxquery($1, $2) @ boxrange(fmin,fmax)$_$;
+    AS $_$SELECT * from featureloc where boxquery($1, $2) <@ boxrange(fmin,fmax)$_$;
 
 --
 -- Name: featureloc_slice(integer, bigint, bigint); Type: FUNCTION; Schema: public; Owner: chado
@@ -2430,7 +2430,7 @@ CREATE OR REPLACE FUNCTION featureloc_slice(integer, bigint, bigint) RETURNS SET
     LANGUAGE sql
     AS $_$SELECT * 
    FROM featureloc 
-   WHERE boxquery($2, $3) @ boxrange(fmin,fmax)
+   WHERE boxquery($2, $3) <@ boxrange(fmin,fmax)
    AND srcfeature_id = $1 $_$;
 
 --
@@ -2451,7 +2451,7 @@ CREATE OR REPLACE FUNCTION featureloc_slice(character varying, bigint, bigint) R
     AS $_$SELECT featureloc.* 
    FROM featureloc 
    INNER JOIN feature AS srcf ON (srcf.feature_id = featureloc.srcfeature_id)
-   WHERE boxquery($2, $3) @ boxrange(fmin,fmax)
+   WHERE boxquery($2, $3) <@ boxrange(fmin,fmax)
    AND srcf.name = $1 $_$;
 
 --

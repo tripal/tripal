@@ -84,7 +84,7 @@ class ChadoUpgrader extends ChadoTaskBase {
     ?\Drupal\Core\State\StateInterface $state = NULL
   ) {
     parent::__construct($database, $logger, $locker, $state);
-    $this->bioTool = \Drupal::service('tripal_biodb.tool');
+    $this->tripalDbxApi = \Drupal::service('tripal.dbx');
   }
 
   /**
@@ -361,7 +361,7 @@ class ChadoUpgrader extends ChadoTaskBase {
 
       try {
         // Get Drupal schema name.
-        $drupal_schema = $this->bioTool->getDrupalSchemaName();
+        $drupal_schema = $this->tripalDbxApi->getDrupalSchemaName();
         if ($this->parameters['fh']) {
           // Make sure we will work on the given schema when using SQL file.
           $sql_query =
