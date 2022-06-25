@@ -41,12 +41,6 @@ class ChadoInstallForm extends FormBase {
         ]),
     ];
     
-    $form['msg-warning'] = [
-      '#type' => 'item',
-      '#markup' => '',
-      // @todo:use CSS class "color-warning".
-    ];
-
     // Now that we support multiple chado instances, we need to list all the
     // currently installed ones here since they may be different versions.
     $rows = [];
