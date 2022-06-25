@@ -80,8 +80,8 @@ function chado_edit_custom_table(int $table_id, string $table_name,
 
     // If the user changed the table name, we want to drop the old one and force
     // creation of the new one.
-    if ($custom_table->table_name != $table_name) {
-      throw new Exception('You cannot rename the table without specifying specifying to re-create (or not skip if it exists).');
+    if ($custom_table->table_name != $table_name and $skip_if_exists) {
+      throw new Exception('You cannot rename the table without specifying specifying to re-create it.');
     }
 
     // Does the table exist? If not throw an error.  
@@ -124,7 +124,7 @@ function chado_edit_custom_table(int $table_id, string $table_name,
     $transaction->rollback();
     $transaction_chado->rollback();
     $logger->error($e->getMessage());
-    \Drupal::messenger()->addError($e->getMessage);    
+    \Drupal::messenger()->addError($e->getMessage());    
     return False;
   }
   return True;
