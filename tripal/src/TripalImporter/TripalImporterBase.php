@@ -164,7 +164,6 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    *   This argument is optional if the loader does not use the built-in
    *   file loader.
    *
-   * @throws Exception
    */
   public function create($run_args, $file_details = []) {
 
@@ -235,7 +234,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
 
       // Validate the $file_details argument.
       if ($has_file == 0 and $this->plugin_definition['file_required'] == TRUE) {
-        throw new Exception("Must provide a proper file identifier for the \$file_details argument.");
+        throw new \Exception("Must provide a proper file identifier for the \$file_details argument.");
       }
 
       // Store the arguments in the class and serialize for table insertion.
@@ -249,15 +248,15 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
 
       $this->import_id = $import_id;
     }
-    catch (Exception $e) {
-      throw new Exception('Cannot create importer: ' . $e->getMessage());
+    catch (\Exception $e) {
+      throw new \Exception('Cannot create importer: ' . $e->getMessage());
     }
   }
 
   /**
    * Loads an existing import record into this object.
    *
-   * @param $import_id
+   * @param int $import_id
    *   The ID of the import record.
    */
   public function load($import_id) {
@@ -269,11 +268,11 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
       ->fetchObject();
 
     if (!$import) {
-      throw new Exception('Cannot find an importer that matches the given import ID.');
+      throw new \Exception('Cannot find an importer that matches the given import ID.');
     }
 
     if ($import->class != $this->plugin_id) {
-      throw new Exception('The importer specified by the given ID does not match this importer class.');
+      throw new \Exception('The importer specified by the given ID does not match this importer class.');
     }
 
     //$this->arguments = unserialize($import->arguments);
@@ -286,7 +285,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
   /**
    * Submits the importer for execution as a job.
    *
-   * @return
+   * @return int
    *   The ID of the newly submitted job.
    */
   public function submitJob() {
@@ -294,7 +293,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
     $uid = $user->id();
 
     if (!$this->import_id) {
-      throw new Exception('Cannot submit an importer job without an import record. Please run create() first.');
+      throw new \Exception('Cannot submit an importer job without an import record. Please run create() first.');
     }
 
     // Add a job to run the importer.
@@ -306,8 +305,8 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
 
       return $job_id;
     }
-    catch (Exception $e) {
-      throw new Exception('Cannot create importer job: ' . $e->getMessage());
+    catch (\Exception $e) {
+      throw new \Exception('Cannot create importer job: ' . $e->getMessage());
     }
   }
 
@@ -345,7 +344,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
           $url_fh = fopen($file_remote, "r");
           $tmp_fh = fopen($temp, "w");
           if (!$url_fh) {
-            throw new Exception(t("Unable to download the remote file at %url. Could a firewall be blocking outgoing connections?",
+            throw new \Exception(t("Unable to download the remote file at %url. Could a firewall be blocking outgoing connections?",
               ['%url', $file_remote]));
           }
 
@@ -367,7 +366,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
           $gzfile = gzopen($this->arguments['files'][$i]['file_path'], 'rb');
           $out_file = fopen($new_file_path, 'wb');
           if (!$out_file) {
-            throw new Exception("Cannot uncompress file: new temporary file, '$new_file_path', cannot be created.");
+            throw new \Exception("Cannot uncompress file: new temporary file, '$new_file_path', cannot be created.");
           }
 
           // Keep repeating until the end of the input file
@@ -388,8 +387,8 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
         }
       }
     }
-    catch (Exception $e) {
-      throw new Exception('Cannot prepare the importer: ' . $e->getMessage());
+    catch (\Exception $e) {
+      throw new \Exception('Cannot prepare the importer: ' . $e->getMessage());
     }
   }
 
@@ -411,8 +410,8 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
         }
       }
     }
-    catch (Exception $e) {
-      throw new Exception('Cannot prepare the importer: ' . $e->getMessage());
+    catch (\Exception $e) {
+      throw new \Exception('Cannot prepare the importer: ' . $e->getMessage());
     }
   }
 
@@ -422,7 +421,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    * This should typically be called near the beginning of the loading process
    * to indicate the number of items that must be processed.
    *
-   * @param $total_items
+   * @param int $total_items
    *   The total number of items to process.
    */
   protected function setTotalItems($total_items) {
@@ -432,7 +431,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
   /**
    * Adds to the count of the total number of items that have been handled.
    *
-   * @param $num_handled
+   * @param int $num_handled
    */
   protected function addItemsHandled($num_handled) {
     $items_handled = $this->num_handled = $this->num_handled + $num_handled;
@@ -448,7 +447,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    * the interval specified then the progress is reported to the user.  If
    * this loader is associated with a job then the job progress is also updated.
    *
-   * @param $total_handled
+   * @param int $total_handled
    *   The total number of items that have been processed.
    */
   protected function setItemsHandled($total_handled) {

@@ -172,11 +172,6 @@ class OBOImporter extends ChadoImporterBase {
       $obos[$obo->obo_id] = $obo->name;
     }
 
-    $obo_id = '';
-    if (array_key_exists('values', $form_state)) {
-      $obo_id = $form_state->getValue('obo_id');
-    }
-
 
     $form['instructions']['info'] = [
       '#type' => 'item',
@@ -203,13 +198,19 @@ class OBOImporter extends ChadoImporterBase {
         already been loaded to retrieve any new updates.'),
     ];
 
+    $obo_id = $form_state->getValue('obo_id');
     $form['obo_existing']['obo_id'] = [
       '#title' => t('Ontology OBO File Reference'),
       '#type' => 'select',
       '#options' => $obos,
+      '#default_value' => $obo_id,
       '#ajax' => [
-        'callback' => 'tripal_cv_obo_form_ajax_callback',
+        'callback' =>  '::formAjaxCallback',
+        'event' => 'change',
         'wrapper' => 'obo-existing-fieldset',
+        'progress' => [
+          'type' => 'throbber',
+        ],
       ],
       '#description' => t('Select a vocabulary to import.'),
     ];
@@ -239,11 +240,6 @@ class OBOImporter extends ChadoImporterBase {
           $uobo_file = preg_replace('/\{.*?\}/', $modpath, $uobo_file);
         }
       }
-      // We don't want the previous value to remain. We want the new default to
-      // show up, so remove the input values
-      unset($form_state['input']['uobo_name']);
-      unset($form_state['input']['uobo_url']);
-      unset($form_state['input']['uobo_file']);
 
       $form['obo_existing']['uobo_name'] = [
         '#type' => 'textfield',
@@ -339,6 +335,7 @@ class OBOImporter extends ChadoImporterBase {
     // If the user requested to alter the details then do that.
 
     if ($form_state->getTriggeringElement()['#name'] == 'update_obo_details') {
+
       $form_state->setRebuild(True);
       $success = $this->public->update('tripal_cv_obo')
         ->fields([
@@ -2438,9 +2435,9 @@ class OBOImporter extends ChadoImporterBase {
     $squery->fields('CVTDBX');
     $squery->condition('CVTDBX.cvterm_id', $cvterm_id);
     $squery->condition('CVTDBX.dbxref_id', $dbxref_id);
-    $result = $squery->execute();
-    if ($result) {
-      return $result->fetchObject();
+    $cvterm_dbxref = $squery->execute()->fetchObject();
+    if ($cvterm_dbxref) {
+      return $cvterm_dbxref;
     }
 
     $query = $this->chado->insert('cvterm_dbxref');
@@ -2747,14 +2744,14 @@ class OBOImporter extends ChadoImporterBase {
   /**
    * Ajax callback for the OBOImporter::form() function.
    */
-  private function tripal_cv_obo_form_ajax_callback($form, $form_state) {
+  public function formAjaxCallback($form, $form_state) {
     return $form['obo_existing'];
   }
 
   /**
    * Ajax callback for the OBOImporter::form() function.
    */
-  private function tripal_cv_obo_form_ajax_update_callback($form, $form_state) {
+  public function formAjaxUpdateCallback($form, $form_state) {
 
     $form_values = $form_state->getValues();
     $obo_id = $form_values['obo_id'];
