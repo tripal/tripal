@@ -51,7 +51,7 @@ abstract class ChadoImporterBase extends TripalImporterBase {
         'specifying analysis details for all data imports it provides ' .
         'provenance and helps end user to reproduce the data set if needed. ' .
         'At a minimum it indicates the source of the data.'),
-      '#required' =>  $this->plugin_definition['require_analysis'] ? True : False,
+      '#required' =>  $this->plugin_definition['require_analysis'],
       '#options' => $analyses,
     ];
 

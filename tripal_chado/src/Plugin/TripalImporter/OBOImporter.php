@@ -3,6 +3,8 @@
 namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
+use Drupal\tripal\TripalVocabTerms\TripalTerm;
+use Drupal\Core\File\FileSystem;
 
 /**
  * OBO Importer implementation of the TripalImporterBase.
@@ -155,17 +157,14 @@ class OBOImporter extends ChadoImporterBase {
   private $term_names = [];
 
 
-
-
   /**
    * {@inheritdoc}
    */
   public function form($form, &$form_state) {
 
     // get a list of db from chado for user to choose
-    $sql = "SELECT * FROM tripal_cv_obo ORDER BY name";
-    $connection = \Drupal::database();
-    $results = $connection->query($sql);
+    $sql = "SELECT * FROM {tripal_cv_obo} ORDER BY name";
+    $results = $this->public->query($sql);
 
     $obos = [];
     $obos[] = 'Select a Vocabulary';
@@ -173,11 +172,10 @@ class OBOImporter extends ChadoImporterBase {
       $obos[$obo->obo_id] = $obo->name;
     }
 
-    $form_values = $form_state->getValues();
     $obo_id = '';
-
-    $obo_id = array_key_exists('obo_id', $form_values) ? $form_values['obo_id'] : '';
-
+    if (array_key_exists('values', $form_state)) {
+      $obo_id = $form_state->getValue('obo_id');
+    }
 
 
     $form['instructions']['info'] = [
@@ -189,7 +187,6 @@ class OBOImporter extends ChadoImporterBase {
         loaded (as when new updates to that vocabulary are available) or load a new
         vocabulary.'),
     ];
-
 
     $form['obo_existing'] = [
       '#type' => 'fieldset',
@@ -211,25 +208,20 @@ class OBOImporter extends ChadoImporterBase {
       '#type' => 'select',
       '#options' => $obos,
       '#ajax' => [
-        'callback' => 'OBOImporter::tripal_cv_obo_form_ajax_callback',
+        'callback' => 'tripal_cv_obo_form_ajax_callback',
         'wrapper' => 'obo-existing-fieldset',
       ],
       '#description' => t('Select a vocabulary to import.'),
     ];
 
-
-
     // If the user has selected an OBO ID then get the form elements for
     // updating.
     if ($obo_id) {
-
-      // $this->logger->info('OBO Importer Form - OBO_ID seems to exist:' . $obo_id);
-
       $uobo_name = '';
       $uobo_url = '';
       $uobo_file = '';
 
-      $vocab = $connection->select('tripal_cv_obo', 't')
+      $vocab = $this->public->select('tripal_cv_obo', 't')
         ->fields('t', ['name', 'path'])
         ->condition('obo_id', $obo_id)
         ->execute()
@@ -243,17 +235,15 @@ class OBOImporter extends ChadoImporterBase {
         $uobo_file = trim($vocab->path);
         $matches = [];
         if (preg_match('/\{(.*?)\}/', $uobo_file, $matches)) {
-          $modpath = \Drupal::service('extension.list.module')->getPath($matches[1]);
+          $modpath = drupal_get_path('module', $matches[1]);
           $uobo_file = preg_replace('/\{.*?\}/', $modpath, $uobo_file);
         }
       }
       // We don't want the previous value to remain. We want the new default to
       // show up, so remove the input values
-      $form_user_input = $form_state->getUserInput();
-      unset($form_user_input['uobo_name']);
-      unset($form_user_input['uobo_url']);
-      unset($form_user_input['uobo_file']);
-      $form_state->setUserInput($form_user_input);
+      unset($form_state['input']['uobo_name']);
+      unset($form_state['input']['uobo_url']);
+      unset($form_state['input']['uobo_file']);
 
       $form['obo_existing']['uobo_name'] = [
         '#type' => 'textfield',
@@ -283,21 +273,10 @@ class OBOImporter extends ChadoImporterBase {
           must be accessible to the web server on which this Drupal instance is running.'),
         '#default_value' => $uobo_file,
       ];
-
       $form['obo_existing']['update_obo_details'] = [
-        // '#type' => 'submit',
-        '#type' => 'button',
+        '#type' => 'submit',
         '#value' => 'Update Ontology Details',
         '#name' => 'update_obo_details',
-        '#ajax' => [
-          'callback' => 'OBOImporter::tripal_cv_obo_form_ajax_update_callback',
-          'wrapper' => 'obo-existing-fieldset',
-        ],
-      ];
-
-      $form['obo_existing']['update_obo_details_results'] = [
-        '#type' => 'item',
-        '#markup' => '<span id="update_obo_details_results"></span>'
       ];
     }
 
@@ -348,23 +327,20 @@ class OBOImporter extends ChadoImporterBase {
    * {@inheritdoc}
    */
   public function formSubmit($form, &$form_state) {
-    $form_values = $form_state->getValues();
-    $obo_id = $form_values['obo_id'];
-    $obo_name = trim($form_values['obo_name']);
-    $obo_url = trim($form_values['obo_url']);
-    $obo_file = trim($form_values['obo_file']);
-    $uobo_name = array_key_exists('uobo_name', $form_values) ? trim($form_values['uobo_name']) : '';
-    $uobo_url = array_key_exists('uobo_url', $form_values) ? trim($form_values['uobo_url']) : '';
-    $uobo_file = array_key_exists('uobo_file', $form_values) ? trim($form_values['uobo_file']) : '';
 
-    // $this->logger->info('formSubmit form_values:' . var_export($form_state->getValues(), true));
-    // $this->logger->info('formSubmit userInput:' . var_export($form_state->getUserInput(), true));
-    // $this->logger->info('formSubmit button:' . var_export($form_state->getTriggeringElement(), true));
+    $obo_id = $form_state->getValue('obo_id');
+    $obo_name = trim($form_state->getValue('obo_name'));
+    $obo_url = trim($form_state->getValue('obo_url'));
+    $obo_file = trim($form_state->getValue('obo_file'));
+    $uobo_name = trim($form_state->getValue('uobo_name'));
+    $uobo_url = trim($form_state->getValue('uobo_url'));
+    $uobo_file = trim($form_state->getValue('uobo_file'));
+
     // If the user requested to alter the details then do that.
+
     if ($form_state->getTriggeringElement()['#name'] == 'update_obo_details') {
-      $form_values['rebuild'] = TRUE;
-      $connection = \Drupal::database();
-      $success = $connection->update('tripal_cv_obo')
+      $form_state->setRebuild(True);
+      $success = $this->public->update('tripal_cv_obo')
         ->fields([
           'name' => $uobo_name,
           'path' => $uobo_url ? $uobo_url : $uobo_file,
@@ -372,17 +348,15 @@ class OBOImporter extends ChadoImporterBase {
         ->condition('obo_id', $obo_id)
         ->execute();
       if ($success) {
-        // drupal_set_message(t("The vocabulary !vocab has been updated.", ['!vocab' => $uobo_name]));
-        $this->messenger->addMessage("The vocabulary $uobo_name has been updated.", 'custom');
+        \Drupal::messenger()->addMessage(t("The vocabulary !vocab has been updated.", ['!vocab' => $uobo_name]));
       }
       else {
-        // drupal_set_message(t("The vocabulary !vocab could not be updated.", ['!vocab' => $uobo_name]), 'error');
-        $this->messenger->addError("The vocabulary $uobo_name could not be updated.");
+        \Drupal::messenger()->addError(t("The vocabulary !vocab could not be updated.", ['!vocab' => $uobo_name]));
       }
+
     }
     elseif (!empty($obo_name)) {
-      $connection = \Drupal::database();
-      $obo_id = $connection->insert('tripal_cv_obo')
+      $obo_id = $this->public->insert('tripal_cv_obo')
         ->fields([
           'name' => $obo_name,
           'path' => $obo_url ? $obo_url : $obo_file,
@@ -390,16 +364,14 @@ class OBOImporter extends ChadoImporterBase {
         ->execute();
 
       // Add the obo_id to the form_state values.
-      $form_values['obo_id'] = $obo_id;
+      $form_state->setValue('obo_id', $obo_id);
 
       if ($obo_id) {
-        // drupal_set_message(t("The vocabulary !vocab has been added.", ['!vocab' => $obo_name]));
-        $this->messenger->addMessage("The vocabulary $obo_name has been added.", 'custom');
+        \Drupal::messenger()->addMessage(t("The vocabulary !vocab has been added.", ['!vocab' => $obo_name]));
       }
       else {
         $form_state['rebuild'] = TRUE;
-        // drupal_set_message(t("The vocabulary !vocab could not be added.", ['!vocab' => $obo_name]), 'error');
-        $this->messenger->addError("The vocabulary $obo_name could not be added.");
+        \Drupal::messenger()->addError(t("The vocabulary !vocab could not be added.", ['!vocab' => $obo_name]));
       }
     }
   }
@@ -408,22 +380,21 @@ class OBOImporter extends ChadoImporterBase {
    * {@inheritdoc}
    */
   public function formValidate($form, &$form_state) {
-    $connection = \Drupal::database();
-    $form_values = $form_state->getValues();
-    $obo_id = $form_values['obo_id'];
-    $obo_name = trim($form_values['obo_name']);
-    $obo_url = trim($form_values['obo_url']);
-    $obo_file = trim($form_values['obo_file']);
-    $uobo_name = array_key_exists('uobo_name', $form_values) ? trim($form_values['uobo_name']) : '';
-    $uobo_url = array_key_exists('uobo_url', $form_values) ? trim($form_values['uobo_url']) : '';
-    $uobo_file = array_key_exists('uobo_file', $form_values) ? trim($form_values['uobo_file']) : '';
 
-    $this->logger->info('validateForm form_state:' . var_export($form_state, true));
+    $obo_id = $form_state->getValue('obo_id');
+    $obo_name = trim($form_state->getValue('obo_name'));
+    $obo_url = trim($form_state->getValue('obo_url'));
+    $obo_file = trim($form_state->getValue('obo_file'));
+    $uobo_name = trim($form_state->getValue('uobo_name'));
+    $uobo_url = trim($form_state->getValue('uobo_url'));
+    $uobo_file = trim($form_state->getValue('uobo_file'));
+
     // Make sure if the name is changed it doesn't conflict with another OBO.
-    if ($form_state['clicked_button']['#name'] == 'update_obo_details' or
-      $form_state['clicked_button']['#name'] == 'update_load_obo') {
+    if ($form_state->getTriggeringElement()['#name'] == 'update_obo_details'  or
+        $form_state->getTriggeringElement()['#name'] == 'update_load_obo') {
+
       // Get the current record
-      $vocab = $connection->select('tripal_cv_obo', 't')
+      $vocab = $this->public->select('tripal_cv_obo', 't')
         ->fields('t', ['obo_id', 'name', 'path'])
         ->condition('name', $uobo_name)
         ->execute()
@@ -445,9 +416,9 @@ class OBOImporter extends ChadoImporterBase {
         form_set_error('uobo_url', 'Please provide only a URL or a path for the vocabulary, but not both.');
       }
     }
-    if ($form_state['clicked_button']['#name'] == 'add_new_obo') {
+    if ($form_state->getTriggeringElement()['#name'] == 'add_new_obo') {
       // Get the current record
-      $vocab = $connection->select('tripal_cv_obo', 't')
+      $vocab = $this->public->select('tripal_cv_obo', 't')
         ->fields('t', ['obo_id', 'name', 'path'])
         ->condition('name', $obo_name)
         ->execute()
@@ -472,85 +443,272 @@ class OBOImporter extends ChadoImporterBase {
   }
 
   /**
+   * Retrieve a Chado cvterm record using cvterm ID.
+   *
+   * @param int $cvterm_id
+   *   The  CV term Id.
+   * @return object
+   *   A CVterm object
+   */
+  private function getChadoCvtermById($cvterm_id) {
+
+    $query = $this->chado->select('cvterm', 'CVT');
+    $query->fields('CVT');
+    $query->condition('CVT.cvterm_id', $cvterm_id);
+    $result = $query->execute();
+    $cvterm = NULL;
+    if ($result) {
+      $cvterm = $result->fetchObject();
+    }
+    return $cvterm;
+  }
+
+  /**
+   * Retrieve a Chado cvterm record using the full accession.
+   *
+   * @param string $idSpace
+   *   The databaes name
+   * @param string $accession
+   *   The CV term accession.
+   * @return object
+   *   A CVterm object
+   */
+  private function getChadoCvtermByAccession($idSpace, $accession) {
+
+    $query = $this->chado->select('cvterm', 'CVT');
+    $query->join('dbxref', 'DBX', '"DBX".dbxref_id = "CVT".dbxref_id');
+    $query->join('db', 'DB', '"DB".db_id = "DBX".db_id');
+    $query->fields('CVT');
+    $query->condition('DB.name', $idSpace, '=');
+    $query->condition('DBX.accession', $accession, '=');
+    $result = $query->execute();
+    return $result ? $result->fetchObject() : NULL;
+  }
+
+  /**
+   * Retrieve a Chado cvterm record using the cv and term name.
+
+   * @param int $cv_id
+   *   The ID of the cv record to which the term belongs.
+   * @param string $name
+   *   The name of the term.
+   * @return object
+   *   A CVterm object
+   */
+  private function getChadoCvtermByName($cv_id, $name) {
+    $query = $this->chado->select('cvterm', 'CVT');
+    $query->fields('CVT');
+    $query->condition('cv_id', $cv_id);
+    $query->condition('name', $name);
+    $result = $query->execute();
+    return $result ? $result->fetchObject() : NULL;
+  }
+
+  /**
+   * Retrieve a Chado cvterm record using the dbxref.
+   *
+   * @param int $dbxref_id
+   * @return object
+   *   A CVterm object
+   */
+  private function getChadoCvtermByDbxref($dbxref_id) {
+    $query = $this->chado->select('cvterm', 'CVT');
+    $query->fields('CVT');
+    $query->condition('CVT.dbxref_id', $dbxref_id);
+    $result = $query->execute();
+    return $result ? $result->fetchObject() : NULL;
+  }
+
+  /**
+   * Retreives a dbxref record using the db_id and accession.
+   *
+   * @param int $db_id
+   *   The ID of the database record for the term.
+   * @param string $accession
+   *   The term accession
+   * @return object
+   *   An dbxref object.
+   */
+  private function getChadoDBXrefByAccession($db_id, $accession) {
+    $query = $this->chado->select('dbxref', 'DBX');
+    $query->fields('DBX');
+    $query->condition('DBX.db_id', $db_id);
+    $query->condition('DBX.accession', $accession);
+    $result = $query->execute();
+    return $result ? $result->fetchObject() : NULL;
+  }
+
+  /**
+   * Retreives a dbxref record using the dbxref_id.
+   *
+   * @param int $dbxref_id
+   *   The ID of the dbxref record.
+   * @return object
+   *   An dbxref object.
+   */
+  private function getChadoDBXrefById($dbxref_id) {
+    $query = $this->chado->select('dbxref', 'DBX');
+    $query->fields('DBX');
+    $query->condition('DBX.dbxref_id', $dbxref_id);
+    $result = $query->execute();
+    return $result ? $result->fetchObject() : NULL;
+  }
+
+  /**
+   * Gets a record from the `db` table of Chado using the anme.
+   *
+   * @param string $name
+   *   The databae name.
+   * @return object
+   *   A DB record object.
+   */
+  private function getChadoDbByName($name) {
+    $query = $this->chado->select('db', 'db');
+    $query->fields('db');
+    $query->condition('name', $name);
+    $result = $query->execute();
+    return $result ? $result->fetchObject() : NULL;
+  }
+  /**
+   * Gets a record from the `db` table of Chado using the Id.
+   *
+   * @param string $name
+   *   The databae name.
+   * @return object
+   *   A DB record object.
+   */
+  private function getChadoDbById($db_id) {
+    $query = $this->chado->select('db', 'db');
+    $query->fields('db');
+    $query->condition('db_id', $db_id);
+    $result = $query->execute();
+    return $result ? $result->fetchObject() : NULL;
+  }
+
+  /**
+   * Gets a record from the `cv` table of Chado by name.
+   *
+   * @param string $name
+   *   The vocabulary name.
+   * @return object
+   *   A CV record object.
+   */
+  private function getChadoCvByName($name) {
+    $query = $this->chado->select('cv', 'cv');
+    $query->fields('cv');
+    $query->condition('name', $name);
+    $result = $query->execute();
+    return $result ? $result->fetchObject() : NULL;
+  }
+
+  /**
+   * Gets a record from the `cv` table of Chado by the Id.
+   *
+   * @param int $cv_id
+   *   The vocabulary name.
+   * @return object
+   *   A CV record object.
+   */
+  private function getChadoCvById($cv_id) {
+    $query = $this->chado->select('cv', 'cv');
+    $query->fields('cv');
+    $query->condition('cv_id', $cv_id);
+    $result = $query->execute();
+    return $result ? $result->fetchObject() : NULL;
+  }
+
+  /**
+   * Gets a controlled vocabulary IDspace object.
+   *
+   * @param string $name
+   *   The name of the IdSpace
+   *
+   * @return \Drupal\tripal\TripalVocabTerms\TripalIdSpaceBase
+   */
+  private function getIdSpace($name) {
+    $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+    $idSpace = $idsmanager->loadCollection($name, 'chado_id_space');
+    if (!$idSpace) {
+      $idSpace = $idsmanager->createCollection($name, 'chado_id_space');
+    }
+    return $idSpace;
+  }
+
+  /**
+   * Gets a controlled voabulary object.
+   *
+   * @param string $name
+   *   The name of the vocabulary
+   *
+   * @return \Drupal\tripal\TripalVocabTerms\TripalVocabularyBase
+   */
+  private function getVocabulary($name) {
+    $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
+    $vocabulary = $vmanager->loadCollection($name, 'chado_vocabulary');
+    if (!$vocabulary) {
+      $vocabulary = $vmanager->createCollection($name, 'chado_vocabulary');
+    }
+    return $vocabulary;
+  }
+
+
+
+  /**
    * {@inheritdoc}
    */
   public function run() {
-    $connection = \Drupal::database();
+
     $arguments = $this->arguments['run_args'];
     $obo_id = $arguments['obo_id'];
 
     // Make sure the $obo_id is valid
-    $obo = $connection->select('tripal_cv_obo', 'tco')
+    $obo = $this->public->select('tripal_cv_obo', 'tco')
       ->fields('tco')
       ->condition('obo_id', $obo_id)
       ->execute()
       ->fetchObject();
     if (!$obo) {
-      throw new Exception("Invalid OBO ID provided: '$obo_id'.");
+      throw new \Exception("Invalid OBO ID provided: '$obo_id'.");
     }
 
     // Get the list of all CVs so we can save on lookups later
     $sql = "SELECT * FROM {cv} CV";
-    $cvs = chado_query($sql);
+    $cvs = $this->chado->query($sql);
     while ($cv = $cvs->fetchObject()) {
       $this->all_cvs[$cv->name] = $cv;
     }
 
     // Get the list of all DBs so we can save on lookups later
     $sql = "SELECT * FROM {db} DB";
-    $dbs = chado_query($sql);
+    $dbs = $this->chado->query($sql);
     while ($db = $dbs->fetchObject()) {
       $this->all_dbs[$db->name] = $db;
     }
 
     // Get the 'Subgroup' term that we will use for adding subsets.
-    $term = chado_get_cvterm(['id' => 'NCIT:C25693']);
+    $term = $this->getChadoCVtermByAccession('NCIT', 'C25693');
     $this->used_terms['NCIT:C25693'] = $term->cvterm_id;
 
     // Get the 'Comment' term that we will use for adding comments.
-    $term = chado_get_cvterm(['id' => 'rdfs:comment']);
+    $term = $this->getChadoCVtermByAccession('rdfs', 'comment');
     $this->used_terms['rdfs:comment'] = $term->cvterm_id;
 
     // Make sure we have a 'synonym_type' vocabulary.
-    $syn_cv = new \Drupal\tripal_chado\Services\ChadoRecord('cv');
-    $syn_cv->setValues(['name' => 'synonym_type']);
-    $syn_cv->save();
-    $this->all_cvs['synonym_type'] = (object) $syn_cv->getValues();
-
-
-    // Make sure we have a 'synonym_type' database.
-    $syn_db = new \Drupal\tripal_chado\Services\ChadoRecord('db');
-    $syn_db->setValues(['name' => 'synonym_type']);
-    $syn_db->save();
-    $this->all_dbs['synonym_type'] = (object) $syn_db->getValues();
-
+    $syn_cv = $this->getVocabulary('synonym_type');
+    $syn_db = $this->getIdSpace('synonym_type');
+    $this->all_cvs['synonym_type'] = $this->getChadoCvByName('synonym_type');
+    $this->all_dbs['synonym_type'] = $this->getChadoDbByName('synonym_type');
 
     // Make sure the synonym types exists in the 'synonym_type' vocabulary.
     foreach (array_keys($this->syn_types) as $syn_type) {
-      $syn_dbxref = new \Drupal\tripal_chado\Services\ChadoRecord('dbxref');
-      $syn_dbxref->setValues([
-        'accession' => $syn_type,
-        'db_id' => $syn_db->getID(),
-      ]);
-      $syn_dbxref->save();
-
-      $syn_term = new \Drupal\tripal_chado\Services\ChadoRecord('cvterm');
-      $syn_term->setValues([
+      $syn_term = new TripalTerm([
         'name' => $syn_type,
-        'cv_id' => $syn_cv->getID(),
+        'accession' => $syn_type,
+        'idSpace' => 'synonym_type',
+        'vocabulary' => 'synonym_type',
       ]);
-      if (!$syn_term->find()) {
-        $syn_term->setValues([
-          'name' => $syn_type,
-          'definition' => '',
-          'is_obsolete' => 0,
-          'cv_id' => $syn_cv->getID(),
-          'is_relationshiptype' => 0,
-          'dbxref_id' => $syn_dbxref->getID(),
-        ]);
-        $syn_term->insert();
-      }
-      $this->syn_types[$syn_type] = (object) $syn_term->getValues();
+      $syn_db->saveTerm($syn_term);
+      $this->syn_types[$syn_type] = $this->getChadoCVtermByAccession('synonym_type', $syn_type);
     }
 
     // Run the importer!
@@ -562,60 +720,57 @@ class OBOImporter extends ChadoImporterBase {
    */
   public function postRun() {
 
-    // Clear the cached terms
-    // TODO: Convert this to deal with new Drupal 9 cache system
-    // Help Reference: https://www.drupal.org/node/1272696
-    // cache_clear_all('tripal_chado:term:*', 'cache', TRUE);
-
     // Update the cv_root_mview materialized view.
-    $this->logMessage("Updating the cv_root_mview materialized view...");
 
-    // $mview_id = tripal_get_mview_id('cv_root_mview'); // OLD Deprecated
-    // tripal_populate_mview($mview_id); // OLD Deprecated
 
-    $mview_id = chado_get_mview_id('cv_root_mview');
-    chado_populate_mview($mview_id);
+    // @todo: uncomment these functions once the materialized views are working
+//    $this->logger->notice("Updating the cv_root_mview materialized view...");
+//     $mview_id = tripal_get_mview_id('cv_root_mview');
+//     tripal_populate_mview($mview_id);
 
-    $this->logMessage("Updating the db2cv_mview materialized view...");
-    // $mview_id = tripal_get_mview_id('db2cv_mview'); // OLD Deprecated
-    // tripal_populate_mview($mview_id); // OLD Deprecated
-    $mview_id = chado_get_mview_id('db2cv_mview');
-    chado_populate_mview($mview_id);
+//     $this->logger->notice("Updating the db2cv_mview materialized view...");
+//     $mview_id = tripal_get_mview_id('db2cv_mview');
+//     tripal_populate_mview($mview_id);
 
-    // Update the cvtermpath table for each newly added CV.
-    $this->logMessage("Updating cvtermpath table. This may take a while...");
-    foreach ($this->obo_namespaces as $namespace => $cv_id) {
-      $this->logMessage("- Loading paths for vocabulary: @vocab", ['@vocab' => $namespace]);
-      chado_update_cvtermpath($cv_id, $this->job);
-    }
+    // @todo: uncomment these functions once the chado_update_cvtermpath
+    // replacement is present.
+
+//     // Update the cvtermpath table for each newly added CV.
+//     $this->logger->notice("Updating cvtermpath table. This may take a while...");
+//     foreach ($this->obo_namespaces as $namespace => $cv_id) {
+//       $this->logger->notice("- Loading paths for vocabulary: @vocab", ['@vocab' => $namespace]);
+//       chado_update_cvtermpath($cv_id, $this->job);
+//     }
   }
 
   /**
-   * A wrapper function for importing the user specified OBO file into Chado by
-   * specifying the obo_id of the OBO. It requires that the file be in OBO v1.2
-   * compatible format. This function is typically executed via the Tripal
-   * jobs
-   * management after a user submits a job via the Load Ontologies form.
+   * Imports an OBO by specifying a tripal_cv_obo ID.
+   *
+   * It requires that the file be in OBO v1.2 compatible format.
    *
    * @param object $obo
-   *   An obo object from the tripal_cv_obo file that specifies which OBO file
-   *   to import
+   *   An object containing the record from the tripal_cv_obo table.
    *
    * @ingroup tripal_obo_loader
    */
-
   private function loadOBO_v1_2_id($obo) {
+
     // Convert the module name to the real path if present
+    $matches = [];
     if (preg_match("/\{(.*?)\}/", $obo->path, $matches)) {
       $module = $matches[1];
-      $path = \Drupal\Core\File\FileSystem::realpath(\Drupal::service('extension.list.module')->getPath($module));
+      $path = \Drupal::service('file_system')
+        ->realpath(\Drupal::service('module_handler')
+        ->getModule($module)
+        ->getPath());
+
       $obo->path = preg_replace("/\{.*?\}/", $path, $obo->path);
     }
 
     // if the reference is for a remote URL then run the URL processing function
     if (preg_match("/^https:\/\//", $obo->path) or
-      preg_match("/^http:\/\//", $obo->path) or
-      preg_match("/^ftp:\/\//", $obo->path)) {
+        preg_match("/^http:\/\//", $obo->path) or
+        preg_match("/^ftp:\/\//", $obo->path)) {
       $this->loadOBO_v1_2_url($obo->name, $obo->path, 0);
     }
     // if the reference is for a local file then run the file processing function
@@ -632,19 +787,14 @@ class OBOImporter extends ChadoImporterBase {
           $this->loadOBO_v1_2_file($obo->name, $obo->path, 0);
         }
         else {
-          print "ERROR: could not find OBO file: '$obo->path'\n";
-          exit;
+          $this->logger->error( "Could not find OBO file: '$obo->path'");
         }
       }
     }
   }
 
   /**
-   * A wrapper function for importing the user specified OBO file into Chado by
-   * specifying the filename and path of the OBO. It requires that the file be
-   * in OBO v1.2 compatible format. This function is typically executed via
-   * the Tripal jobs management after a user submits a job via the Load
-   * Ontologies form.
+   * Imports an OBO by specifying a local file.
    *
    * @param string $obo_name
    *   The name of the OBO (typically the ontology or controlled vocabulary
@@ -661,16 +811,11 @@ class OBOImporter extends ChadoImporterBase {
     if ($is_new) {
       tripal_insert_obo($obo_name, $file);
     }
-
-    $success = $this->loadOBO_v1_2($file, $obo_name);
+    $this->loadOBO_v1_2($file, $obo_name);
   }
 
   /**
-   * A wrapper function for importing the user specified OBO file into Chado by
-   * specifying the remote URL of the OBO. It requires that the file be in OBO
-   * v1.2 compatible format.  This function is typically executed via the
-   * Tripal jobs management after a user submits a job via the Load Ontologies
-   * form.
+   * Imports an OBO by specfying a remote URL.
    *
    * @param string $obo_name
    *   The name of the OBO (typically the ontology or controlled vocabulary
@@ -687,14 +832,14 @@ class OBOImporter extends ChadoImporterBase {
 
     // first download the OBO
     $temp = tempnam(sys_get_temp_dir(), 'obo_');
-    print "Downloading URL $url, saving to $temp\n";
+    $this->logger->notice("Downloading URL $url, saving to $temp");
     $url_fh = fopen($url, "r");
     $obo_fh = fopen($temp, "w");
     if (!$url_fh) {
-      throw new Exception("Unable to download the remote OBO file at $url. Could a firewall be blocking outgoing connections? " .
-        " if you are unable to download the file you may manually download the OBO file and use the web interface to " .
-        " specify the location of the file on your server.");
-
+      throw new \Exception("Unable to download the remote OBO file at $url. " .
+        "Could a firewall be blocking outgoing connections? If you are unable " .
+        "to download the file you may manually download the OBO file and use " .
+        "the web interface to specify the location of the file on your server.");
     }
     while (!feof($url_fh)) {
       fwrite($obo_fh, fread($url_fh, 255), 255);
@@ -714,46 +859,46 @@ class OBOImporter extends ChadoImporterBase {
   }
 
   /**
-   * Imports a given OBO file into Chado.  This function is usually called by
-   * one of three wrapper functions:  loadOBO_v1_2_id,
-   * loadOBO_v1_2_file or tripal_cv_load_obo_v1_2_url. But, it can
-   * be called directly if the full path to an OBO file is available on the
-   * file system.
+   * Imports the OBO.
+   *
+   * This function should not be called directly. Instead it is called by
+   * loadOBO_v1_2_url, loadOBO_v1_2_file or loadOBO_v1_2_id.
    *
    * @param string $file
-   *   The full path to the OBO file on the file system
+   *   The full path to the OBO file on the file system.
    *
    * @ingroup tripal_obo_loader
    */
   private function loadOBO_v1_2($file, $obo_name) {
     $header = [];
-    $ret = [];
 
     // Empty the temp table.
     $this->clearTermStanzaCache();
 
     // Parse the obo file.
-    $this->logMessage("Step 1: Preloading File $file...");
+    $this->logger->notice("Step 1: Preloading File $file...");
     $this->parse($file, $header);
 
     // Cache the relationships of terms.
-    $this->logMessage("Step 2: Examining relationships...");
+    $this->logger->notice("Step 2: Examining relationships...");
     $this->cacheRelationships();
 
     // Add any typedefs to the vocabulary first.
-    $this->logMessage("Step 3: Loading type defs...");
+    $this->logger->notice("Step 3: Loading type defs...");
     $this->processTypeDefs();
 
     // Next add terms to the vocabulary.
-    $this->logMessage("Step 4: Loading terms...");
+    $this->logger->notice("Step 4: Loading terms...");
     $this->processTerms();
 
     // Empty the term cache.
-    $this->logMessage("Step 5: Cleanup...");
+    $this->logger->notice("Step 5: Cleanup...");
     $this->clearTermStanzaCache();
   }
 
   /**
+   * Process the type definitions in the OBO.
+   *
    * OBO files are divided into a typedefs terms section and vocabulary terms
    * section. This function loads the typedef terms from the OBO.
    *
@@ -769,9 +914,6 @@ class OBOImporter extends ChadoImporterBase {
 
     $i = 1;
     foreach ($typedefs as $t) {
-
-      // TODO: it would be better if we had a term iterator so that we
-      // don't have to distinguish here between the table vs memory cache type.
       if ($this->cache_type == 'table') {
         $stanza = unserialize(base64_decode($t->stanza));
       }
@@ -787,11 +929,10 @@ class OBOImporter extends ChadoImporterBase {
   }
 
   /**
-   * This function loads all of the [Term] terms from the OBO.
+   * Process the terms in the OBO.
    */
   private function processTerms() {
     $i = 0;
-    $external = FALSE;
 
     $terms = $this->getCachedTermStanzas('Term');
     $count = $this->getCacheSize('Term');
@@ -801,8 +942,6 @@ class OBOImporter extends ChadoImporterBase {
 
     // Iterate through the terms.
     foreach ($terms as $t) {
-      // TODO: it would be better if we had a term iterator so that we
-      // don't have to distinguish here between the table vs memory cache type.
       if ($this->cache_type == 'table') {
         $term = unserialize(base64_decode($t->stanza));
       }
@@ -826,6 +965,8 @@ class OBOImporter extends ChadoImporterBase {
    * 'default-namespace' in their headers, so we have to do our best to
    * work out what these two should be.
    *
+   * @param array $header
+   *   The OBO header.
    */
   private function setDefaults($header) {
     $short_name = '';
@@ -875,7 +1016,7 @@ class OBOImporter extends ChadoImporterBase {
       // First see if we've seen this ontology before and get it's currently
       // loaded database.
       $sql = "SELECT dbname FROM {db2cv_mview} WHERE cvname = :cvname";
-      $short_name = chado_query($sql, [':cvname' => $namespace])->fetchField();
+      $short_name = $this->chado->query($sql, [':cvname' => $namespace])->fetchField();
 
       if (!$short_name and array_key_exists('namespace-id-rule', $header)) {
         $matches = [];
@@ -903,30 +1044,30 @@ class OBOImporter extends ChadoImporterBase {
 
     // If we can't find the namespace or the short_name then bust.
     if (!$namespace and !$short_name) {
-      throw new ErrorException('Cannot determine the namespace or ontology prefix from this OBO file. It is missing both the "default-namespace" or a compatible "ontology" header.');
+      throw new \Exception('Cannot determine the namespace or ontology " .
+        "prefix from this OBO file. It is missing both the "default-namespace " .
+        "or a compatible "ontology" header.');
     }
 
     // Set the defaults.
     $this->default_namespace = $namespace;
     $this->default_db = $short_name;
-    $this->addDB($this->default_db);
-    $cv = $this->addCV($this->default_namespace);
+    $this->insertChadoDb($this->default_db);
+    $cv = $this->insertChadoCv($this->default_namespace);
     $this->obo_namespaces[$namespace] = $cv->cv_id;
     $this->idspaces = $idspaces;
 
     // Add a new database for each idspace.
     foreach ($idspaces as $shortname => $idspace) {
-      $this->addDB($shortname, $idspace['url'], $idspace['description']);
+      $this->insertChadoDb($shortname, $idspace['url'], $idspace['description']);
     }
   }
 
   /**
-   * This function searches EBI to find the ontology details for this OBO.
+   * Searches EBI to find the ontology details.
    *
    * @param string $ontology
    *   The ontology name from the OBO headers.
-   *
-   * @throws Exception
    */
   private function findEBIOntologyNamespace($ontology) {
 
@@ -949,8 +1090,9 @@ class OBOImporter extends ChadoImporterBase {
       }
 
       return $namespace;
-    } catch (Exception $e) {
-      watchdog_exception('Cannot find the namespace for this ontology.', $e);
+    }
+    catch (\Exception $e) {
+      $this->logger->error($e->getMessage());
       throw $e;
     }
   }
@@ -962,9 +1104,6 @@ class OBOImporter extends ChadoImporterBase {
    *   The namespace for ontology.
    */
   private function findEBIOntologyPrefix($namespace) {
-
-    // NOTE: this code is not yet completed.. It's not clear it will
-    // actually work.
 
     $options = [];
     $page = 1;
@@ -981,11 +1120,11 @@ class OBOImporter extends ChadoImporterBase {
   }
 
   /**
-   * A helper function to get details about a foreign term.
+   * Gets details about a foreign term.
    *
    * A foreign term is one that does not belong to the ontology.
    *
-   * @param string $id
+   * @param int $id
    *   A term array that contains these keys at a minimum: id, name,
    *   definition, subset, namespace, is_obsolete.
    */
@@ -994,14 +1133,14 @@ class OBOImporter extends ChadoImporterBase {
     // Warn the user if we're looking up terms in EBI as this will slow the
     // loader if there are many lookups.
     if ($this->ebi_warned == FALSE) {
-      $this->logMessage(
+      $this->logger->warning(t(
         "A term that belongs to another ontology is used within this " .
         "vocabulary.  Therefore a lookup will be performed with the EBI Ontology " .
         "Lookup Service to retrieve the information for this term. " .
         "Please note, that vocabularies with many non-local terms " .
         "require remote lookups and these lookups can dramatically " .
         "increase loading time. ",
-        ['!vocab' => $this->default_namespace], TRIPAL_WARNING);
+        ['!vocab' => $this->default_namespace]));
       $this->ebi_warned = TRUE;
 
       // This ontology may have multiple remote terms and that takes a while
@@ -1010,7 +1149,7 @@ class OBOImporter extends ChadoImporterBase {
       $this->setInterval(1);
     }
 
-    $this->logMessage("Performing EBI OLS Lookup for: !id", ['!id' => $id]);
+    $this->logger->notice(t("Performing EBI OLS Lookup for: !id", ['!id' => $id]));
 
     // Get the short name and accession for the term.
     $pair = explode(":", $id, 2);
@@ -1020,68 +1159,90 @@ class OBOImporter extends ChadoImporterBase {
     // First get the ontology so we can build an IRI for the term
     $base_iri = '';
     $ontologyID = '';
+    $iri = '';
+    $type ='';
     if (array_key_exists($short_name, $this->baseIRIs)) {
       list($ontologyID, $base_iri) = $this->baseIRIs[$short_name];
     }
     else {
-      $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $short_name;
-      $response = drupal_http_request($full_url, []);
-      if (!$response) {
-        throw new Exception(t('Did not get a response from EBI OLS trying to lookup ontology: !ontology',
-          ['!ontology' => $short_name]));
+      $ontology_results =  $this->oboEbiLookup($id, 'query');
+      // If results were received but the number of results is 0, do a query-non-local lookup.
+      if ($ontology_results['response']['numFound'] == 0) {
+        $ontology_results =  $this->oboEbiLookup($id, 'query-non-local');
       }
-      $ontology_results = drupal_json_decode($response->data);
+      if (!$ontology_results) {
+        throw new \Exception(t('Did not get a response from EBI OLS trying to lookup ontology: !id',
+          ['!id' => $id]));
+      }
       if ($ontology_results['error']) {
-
-        $this->logMessage(t('Cannot find the ontology via an EBI OLS lookup: !short_name. \n' .
-          'We tried to access: !url' .
-          'EBI Reported: !message. ' .
-          'Consider finding the OBO file for this ontology and manually loading it first.',
-          [
-            '!message' => $ontology_results['message'],
-            '!short_name' => $short_name,
-            '!url' => $full_url,
-          ]), TRIPAL_WARNING);
+        $message = t('Cannot find the ontology via an EBI OLS lookup: !short_name. ' .
+          'EBI Reported: !message. Consider finding the OBO file for this ' .
+          ' ontology and manually loading it first.', ['!message' => $ontology_results['message'],
+            '!short_name' => $short_name]);
+        $this->logger->warning($message);
       }
-      //What should happen with this stuff?
-      $base_iri = $ontology_results['config']['baseUris'][0];
-      $ontologyID = $ontology_results['ontologyId'];
-      $this->baseIRIs[$short_name] = [$ontologyID, $base_iri];
+      // The following foreach code works but, I am not sure that
+      // I am retrieving each query result from the json associative
+      // array with the correct style
+      foreach ($ontology_results['response']['docs'] as $each ) {
+        $obo_id = $each['obo_id'];
+        $defining_ontology = $each['is_defining_ontology'];
+        // First result should have defining_ontology=true, but if
+        // it doesn't, use the first result with obo_id=$id
+        if ($defining_ontology == 'false' and $obo_id != $id) {
+          continue;
+        }
+        $iri = urlencode(urlencode($each['iri']));
+        $ontologyID = $each['ontology_name'];
+        // Type should be 'property' or 'class' in the response
+        $type = $each['type'];
+      }
     }
 
     // Next get the term.
-    $iri = urlencode(urlencode($base_iri . $accession));
-    $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontologyID . '/terms/' . $iri;
-    $response = drupal_http_request($full_url, []);
-    if (!$response) {
-      throw new Exception(t('Did not get a response from EBI OLS trying to lookup term: !id',
-        ['!id' => $id]));
+    $query = $type;
+    if ($type == 'class') {
+      $query = 'term';
     }
-    $results = drupal_json_decode($response->data);
+    $results =  $this->oboEbiLookup($id, $query);
     if (!$results) {
-      $this->logMessage('Error: no data with !url.  The response was: !response', [
-        '!url' => $full_url,
-        '!response' => $response,
-      ]);
-
-      return FALSE;
+      $query = 'query-non-local';
+      $ontology_results = $this->oboEbiLookup($id, $query);
+      if ($ontology_results) {
+        foreach ($ontology_results['response']['docs'] as $each ){
+          $obo_id = $each['obo_id'];
+          $defining_ontology = $each['is_defining_ontology'];
+          if ( !$defining_ontology and $obo_id != $id ) {
+            continue;
+          }
+          $found_iri = urlencode(urlencode($each['iri']));
+          $ontology = $each['ontology_name'];
+          // Type should be 'property' or 'class' in the response
+          $type = $each['type'];
+          $results = $this->oboEbiLookup($id, $type, $found_iri, $ontology);
+          // if this term is the defining_ontology and we have the correct ID,
+          // we dont need more, get it and stop
+          break;
+        }
+      }
+    }
+    if (!$results) {
+      $message = t('Did not get a response from EBI OLS trying to lookup: !type !id',
+          ['!type'=> $type, '!id' => $id]);
+      $this->logger->error($message);
+      throw new \Exception($message);
     }
 
     // If EBI sent an error message then throw an error.
     if ($results['error']) {
-      $this->logMessage('Cannot find the term via an EBI OLS lookup: !term. ' .
-        'We tried to access: "!url" ' .
-        'EBI Reported: !message. Consider finding the OBO file for this ontology and manually loading it first.',
-        [
-          '!message' => $results['message'],
-          '!term' => $id,
-          '!url' => $full_url,
-        ], TRIPAL_WARNING);
-
+      $message = t('Cannot find the term via an EBI OLS lookup: !term. EBI ' .
+        'Reported: !message. Consider finding the OBO file for this ontology ' .
+         'and manually loading it first.', ['!message' => $results['message'], '!term' => $id]);
+      $this->logger->error($message);
       return FALSE;
     }
 
-    // TODO: what do we do if the term is not defined by this ontology?
+    // What do we do if the term is not defined by this ontology?
     if ($results['is_defining_ontology'] != 1) {
 
     }
@@ -1111,14 +1272,14 @@ class OBOImporter extends ChadoImporterBase {
     if (array_key_exists('term_replaced_by', $results) and isset($results['term_replaced_by'])) {
       $replaced_by = $results['term_replaced_by'];
       $replaced_by = preg_replace('/_/', ':', $replaced_by);
-      $this->logMessage("The term, !term, is replaced by, !replaced",
-        ['!term' => $id, '!replaced' => $replaced_by]);
+      $this->logger->notice(t("The term, !term, is replaced by, !replaced",
+        ['!term' => $id, '!replaced' => $replaced_by]));
 
       // Before we try to look for the replacement term, let's try to find it.
       // in our list of cached terms.
       if (array_key_exists($replaced_by, $this->termStanzaCache['ids'])) {
-        $this->logMessage("Found term, !replaced in the term cache.",
-          ['!term' => $id, '!replaced' => $replaced_by]);
+        $this->logger->notice(t("Found term, !replaced in the term cache.",
+          ['!term' => $id, '!replaced' => $replaced_by]));
         return $this->termStanzaCache['ids'][$id];
       }
 
@@ -1126,8 +1287,8 @@ class OBOImporter extends ChadoImporterBase {
       $rpair = explode(":", $replaced_by, 2);
       $found = $this->lookupTerm($rpair[0], $rpair[1]);
       if ($found) {
-        $this->logMessage("Found term, !replaced in the local data store.",
-          ['!term' => $id, '!replaced' => $replaced_by]);
+        $this->logger->notice(t("Found term, !replaced in the local data store.",
+          ['!term' => $id, '!replaced' => $replaced_by]));
         return $found;
       }
 
@@ -1150,6 +1311,7 @@ class OBOImporter extends ChadoImporterBase {
    *   An OBO stanza array as returned by getCachedTermStanza().
    * @param bool $is_relationship
    *   Set to TRUE if this term is a relationship term.
+   *
    * @return int
    *   The cvterm ID.
    */
@@ -1168,7 +1330,6 @@ class OBOImporter extends ChadoImporterBase {
     $name = $stanza['name'][0];
     $cvname = $stanza['namespace'][0];
     $dbname = $stanza['db_name'][0];
-    $namespace = $stanza['namespace'][0];
 
     // Does this term ID have both a short name and accession? If so, then
     // separate out these components, otherwise we will use the id as both
@@ -1203,112 +1364,98 @@ class OBOImporter extends ChadoImporterBase {
     // Is this term borrowed from another ontology?
     $is_borrowed = $this->isTermBorrowed($stanza);
 
-    // Will hold the cvterm ChadoRecord object.
+    // Will hold the cvterm object.
     $cvterm = NULL;
 
     // Get the CV and DB objects.
     $cv = $this->all_cvs[$cvname];
     $db = $this->all_dbs[$dbname];
 
-    // If this is set to TRUE then we should insert the term.
-    $do_cvterm_insert = TRUE;
+    try {
 
-    // We need to locate terms using their dbxref. This is because term names
-    // can sometimes change, so we don't want to look up the term by it's name.
-    // the unique ID which is in the accession will never change.
-    $dbxref = new \Drupal\tripal_chado\Services\ChadoRecord('dbxref');
-    $dbxref->setValues([
-      'db_id' => $db->db_id,
-      'accession' => $accession,
-    ]);
-    if ($dbxref->find()) {
+      // If this is set to TRUE then we should insert the term.
+      $do_cvterm_insert = TRUE;
 
-      // Does this accession already have a cvterm it's associated with? Then
-      // we need to make we will update the name. Names change but accessions
-      // always refer to the same term.
-      $dbx_cvterm = new \Drupal\tripal_chado\Services\ChadoRecord('cvterm');
-      $dbx_cvterm->setValues(['dbxref_id' => $dbxref->getID()]);
-      if ($dbx_cvterm->find()) {
-        $do_cvterm_insert = FALSE;
-        $cvterm = $dbx_cvterm;
+      // We need to locate terms using their dbxref. This is because term names
+      // can sometimes change, so we don't want to look up the term by it's name.
+      // the unique ID which is in the accession will never change.
+      $dbxref = $this->getChadoDBXrefByAccession($db->db_id, $accession);
+      if ($dbxref) {
 
-        // We don't want to do any updates for borrowed terms. Just leave them
-        // as they are.
-        if (!$is_borrowed) {
+        // Get the cvterm that is associated with this dbxref.
+        $cvterm = $this->getChadoCvtermByDbxref($dbxref->dbxref_id);
+        if ($cvterm) {
+          $do_cvterm_insert = FALSE;
 
-          // Let's make sure we don't have a conflict in term naming
-          // if we change the name of this term.
-          $this->fixTermMismatch($stanza, $dbxref, $cv, $name);
+          // We don't want to do any updates for borrowed terms. Just leave them
+          // as they are.
+          if (!$is_borrowed) {
 
-          // Now update this cvterm record.
-          $cvterm->setValue('name', $name);
-          $cvterm->setValue('definition', $definition);
-          $cvterm->setValue('is_obsolete', $is_obsolete);
-          $cvterm->setValue('is_relationshiptype', $is_relationshiptype);
+            // Let's make sure we don't have a conflict in term naming
+            // if we change the name of this term.
+            $this->fixTermMismatch($stanza, $dbxref, $cv, $name);
 
-          try {
-            $cvterm->update();
-          } catch (Exception $e) {
-            $this->logMessage('Could not update the term, "!term", with name, "!name" for vocabulary, "!vocab". ERROR: !error.',
-              [
-                '!term' => $id,
-                '!name' => $name,
-                '!vocab' => $cv->name,
-                '!error' => $e->getMessage(),
-              ],
-              TRIPAL_ERROR);
-            throw $e;
+            // Now update this cvterm record.
+            $query = $this->chado->update('cvterm');
+            $query->fields([
+              'name' => $name,
+              'definition' => $definition,
+              'is_obsolete' => $is_obsolete,
+              'is_relationshiptype' => $is_relationshiptype,
+            ]);
+            $query->condition('cvterm_id', $cvterm->cvterm_id);
+            $success = $query->execute();
+            if (!$success) {
+              $message = t('Could not update the term, "@term", with name, ' .
+                '"@name" for vocabulary, "@vocab": @error.', [
+                '@term' => $id, '@name' => $name, '@vocab' => $cv->name]);
+              throw new \Exception($message);
+            }
           }
         }
       }
-    }
-    // The dbxref doesn't exist, so let's add it.
-    else {
-      $dbxref->insert();
-    }
-
-    // Add the cvterm if we didn't do an update.
-    if ($do_cvterm_insert) {
-
-      // Before updating the term let's check to see if it already exists
-      // and make corrections.
-      $cvterm = new \Drupal\tripal_chado\Services\ChadoRecord('cvterm');
-      $cvterm->setValue('cv_id', $cv->cv_id);
-      $cvterm->setValue('name', $name);
-      if ($cvterm->find()) {
-        $fixed = $this->fixTermMismatch($stanza, $dbxref, $cv, $name);
+      // The dbxref doesn't exist, so let's add it.
+      else {
+        $dbxref = $this->insertChadoDbxref($db->db_id, $accession);
       }
 
-      // The term doesn't exist, so let's just do our insert.
-      $cvterm->setValues([
-        'cv_id' => $cv->cv_id,
-        'name' => $name,
-        'definition' => $definition,
-        'dbxref_id' => $dbxref->getID(),
-        'is_relationshiptype' => $is_relationshiptype,
-        'is_obsolete' => $is_obsolete,
-        'dbxref_id' => $dbxref->getValue('dbxref_id'),
-      ]);
 
-      // If the insert fails lets catch the error so we can
-      // give a more informative message.
-      try {
-        $cvterm->insert();
-      } catch (Exception $e) {
-        $this->logMessage('Could not insert the term, "!term", with name, "!name" for vocabulary, "!vocab". ERROR: !error.',
-          [
-            '!term' => $id,
-            '!name' => $name,
-            '!vocab' => $cv->name,
-            '!error' => $e->getMessage(),
-          ],
-          TRIPAL_ERROR);
-        throw $e;
+      // Add the cvterm if we didn't do an update.
+      if ($do_cvterm_insert) {
+
+        // Before updating the term let's check to see if it already exists
+        // and if it does we need to fix the other term.
+        $cvterm = $this->getChadoCVtermByName($cv->cv_id, $name);
+        if ($cvterm) {
+          $this->fixTermMismatch($stanza, $dbxref, $cv, $name);
+        }
+
+        // Now insert.
+        $query = $this->chado->insert('cvterm');
+        $query->fields([
+          'cv_id' => $cv->cv_id,
+          'name' => $name,
+          'definition' => $definition,
+          'dbxref_id' => $dbxref->dbxref_id,
+          'is_relationshiptype' => $is_relationshiptype,
+          'is_obsolete' => $is_obsolete,
+        ]);
+        $success = $query->execute();
+        if (!$success) {
+          $message = t('Could not insert the cvterm, "@term"', [
+            '@term' => $name]);
+          throw new \Exception($message);
+        }
+        $cvterm = $this->getChadoCVtermByName($cv->cv_id, $name);
       }
+    }
+    catch (\Exception $e) {
+      $this->logger->error($e->getMessage());
+      throw $e;
     }
 
     // Save the cvterm_id for this term so we don't look it up again.
-    $cvterm_id = $cvterm->getID();
+    $cvterm_id = $cvterm->cvterm_id;
     $this->used_terms[$id] = $cvterm_id;
 
     // Return the cvterm_id.
@@ -1322,8 +1469,10 @@ class OBOImporter extends ChadoImporterBase {
    * or insert it we must check to make sure no other terms have that name. If
    * they do we must make a correction.
    *
+   * @param array $stanza
+   *   The term stanza from the OBO file.
    * @param object $dbxref
-   *   The ChadoRecord object containing the dbxref record for the term
+   *   The dbxref object containing the dbxref record for the term
    *   to be inserted/updated.
    * @param object $cv
    *   The cvterm object.
@@ -1335,35 +1484,28 @@ class OBOImporter extends ChadoImporterBase {
    */
   public function fixTermMismatch($stanza, $dbxref, $cv, $name) {
 
-    $id = $stanza['id'][0];
     $name = $stanza['name'][0];
 
     // First get the record for any potential conflicting term.
-    $sql = "
-      SELECT cvterm_id
-      FROM {cvterm}
-      WHERE name = :name and cv_id = :cv_id and dbxref_id != :dbxref_id
-    ";
-    $args = [
-      ':name' => $name,
-      ':cv_id' => $cv->cv_id,
-      ':dbxref_id' => $dbxref->getID(),
-    ];
-    $results = chado_query($sql, $args);
-    while ($conflict_id = $results->fetchField()) {
-      $check_cvterm = new \Drupal\tripal_chado\Services\ChadoRecord('cvterm', $conflict_id);
+    $query = $this->chado->select('cvterm', 'CVT');
+    $query->fields('CVT');
+    $query->condition('CVT.name', $name);
+    $query->condition('CVT.cv_id', $cv->cv_id);
+    $query->condition('CVT.dbxref_id', $dbxref->dbxref_id);
+    $results = $query->execute();
+    while ($check_cvterm = $results->fetchObject()) {
 
       // If the dbxref of this matched term is the same as the current term
       // then it is the same term and there is no conflict.
-      if ($dbxref->getID() == $check_cvterm->getValue('dbxref_id')) {
+      if ($dbxref->dbxref_id == $check_cvterm->dbxref_id) {
         return FALSE;
       }
 
       // At this point, we have a cvterm with the same name and vocabulary
       // but with a different dbxref. First let's get that other accession.
-      $check_dbxref = new \Drupal\tripal_chado\Services\ChadoRecord('dbxref', $check_cvterm->getValue('dbxref_id'));
-      $check_db = new \Drupal\tripal_chado\Services\ChadoRecord('db', $check_dbxref->getValue('db_id'));
-      $check_accession = $check_db->getValue('name') . ':' . $check_dbxref->getValue('accession');
+      $check_dbxref = $this->getChadoDBXrefById($check_cvterm->dbxref_id);
+      $check_db = $this->getChadoDbById($check_dbxref->db_id);
+      $check_accession = $check_db->name . ':' . $check_dbxref->accession;
 
       // Case 1:  The other term that currently has the same name is
       // missing in the OBO file (i.e. no stanza).  So, that means that this
@@ -1377,9 +1519,13 @@ class OBOImporter extends ChadoImporterBase {
       $check_stanza = $this->getCachedTermStanza($check_accession);
       if (!$check_stanza) {
         $new_name = $check_cvterm->getValue('name') . ' (' . $check_accession . ')';
-        $check_cvterm->setValue('name', $new_name);
-        $check_cvterm->setValue('is_obsolete', '1');
-        $check_cvterm->update();
+        $query = $this->chado->update('cvterm');
+        $query->fields([
+          'name' => $new_name,
+          'is_obsolete' => '1',
+        ]);
+        $query->condition('cvterm_id', $check_cvterm->cvterm_id);
+        $query->execute();
         return TRUE;
       }
       // Case 2:  The conflicting term is in the OBO file (ie. has a stanza) and
@@ -1387,9 +1533,13 @@ class OBOImporter extends ChadoImporterBase {
       // to the name to avoid the conflict.
       else {
         if (array_key_exists('is_obsolete', $check_stanza) and ($check_stanza['is_obsolete'][0] == 'true') and (!array_key_exists('is_obsolete', $stanza) or ($stanza['is_obsolete'][0] != 'true'))) {
-          $new_name = $check_cvterm->getValue('name') . ' (obsolete)';
-          $check_cvterm->setValue('name', $new_name);
-          $check_cvterm->update();
+          $new_name = $check_cvterm->name . ' (obsolete)';
+          $query = $this->chado->update('cvterm');
+          $query->fields([
+            'name' => $new_name,
+          ]);
+          $query->condition('cvterm_id', $check_cvterm->cvterm_id);
+          $query->execute();
           return TRUE;
         }
         // Case 3:  The conflicting term is in the OBO file (ie. has a stanza).
@@ -1400,15 +1550,19 @@ class OBOImporter extends ChadoImporterBase {
         // GO:0030242 changed names and one was renamed to the previous
         // name of the other.
         else {
-          $new_name = $check_cvterm->getValue('name') . ' (' . $check_accession . ')';
-          $check_cvterm->setValue('name', $new_name);
-          $check_cvterm->update();
+          $new_name = $check_cvterm->name . ' (' . $check_accession . ')';
+          $query = $this->chado->update('cvterm');
+          $query->fields([
+            'name' => $new_name,
+          ]);
+          $query->condition('cvterm_id', $check_cvterm->cvterm_id);
+          $query->execute();
           return TRUE;
         }
       }
     }
 
-    // We have no conflict so it's save to update or insert.
+    // We have no conflict so it's safe to update or insert.
     return FALSE;
   }
 
@@ -1416,10 +1570,9 @@ class OBOImporter extends ChadoImporterBase {
    * Uses the provided term array to add/update information to Chado about the
    * term including the term, dbxref, synonyms, properties, and relationships.
    *
-   * @param arra y$stanza
+   * @param array $stanza
    *   An array representing the cvterm.
-   *
-   * @param bool $is_relationship
+   * @param bool is_relationship
    *   Set to 1 if this term is a relationship term
    *
    * @ingroup tripal_obo_loader
@@ -1448,7 +1601,7 @@ class OBOImporter extends ChadoImporterBase {
       DELETE FROM {cvterm_relationship}
       WHERE subject_id = :cvterm_id
     ";
-    chado_query($sql, [':cvterm_id' => $cvterm_id]);
+    $this->chado->query($sql, [':cvterm_id' => $cvterm_id]);
 
     // If this is an obsolete term then clear out the relationships where
     // this term is the object.
@@ -1457,32 +1610,32 @@ class OBOImporter extends ChadoImporterBase {
         DELETE FROM {cvterm_relationship}
         WHERE object_id = :cvterm_id
       ";
-      chado_query($sql, [':cvterm_id' => $cvterm_id]);
+      $this->chado->query($sql, [':cvterm_id' => $cvterm_id]);
     }
 
     $sql = "
       DELETE FROM {cvtermprop}
       WHERE cvterm_id = :cvterm_id
     ";
-    chado_query($sql, [':cvterm_id' => $cvterm_id]);
+    $this->chado->query($sql, [':cvterm_id' => $cvterm_id]);
 
     $sql = "
       DELETE FROM {cvterm_dbxref}
       WHERE cvterm_id = :cvterm_id
     ";
-    chado_query($sql, [':cvterm_id' => $cvterm_id]);
+    $this->chado->query($sql, [':cvterm_id' => $cvterm_id]);
 
     $sql = "
       DELETE FROM {cvtermsynonym} CVTSYN
       WHERE cvterm_id = :cvterm_id
     ";
-    chado_query($sql, [':cvterm_id' => $cvterm_id]);
+    $this->chado->query($sql, [':cvterm_id' => $cvterm_id]);
 
     // We should never have the problem where we don't have a cvterm_id. The
-    // saveTerm() function should always return on.  But if for some unknown
+    // saveTerm() function should always return one.  But if for some unknown
     // reason we don't have one then fail.
     if (!$cvterm_id) {
-      throw new Exception(t('Missing cvterm after saving term: !term',
+      throw new \Exception(t('Missing cvterm after saving term: !term',
         ['!term' => print_r($stanza, TRUE)]));
     }
 
@@ -1619,12 +1772,14 @@ class OBOImporter extends ChadoImporterBase {
   /**
    * Adds a cvterm relationship
    *
+   * @param string $id
+   *   The Term ID (e.g. SO:0000704)
    * @param int $cvterm_id
    *   A cvterm_id of the term to which the relationship will be added.
    * @param int $rel_id
-   *   The relationship term ID
+   *   The relationship type Id ID
    * @param int $obj_id
-   *   The relationship object term ID.
+   *   The cvterm_id for the object of the relationship.
    *
    * @ingroup tripal_obo_loader
    */
@@ -1635,43 +1790,23 @@ class OBOImporter extends ChadoImporterBase {
     // an exception if we can't find them.
     $rel_stanza = $this->getCachedTermStanza($rel_id);
     if (!$rel_stanza) {
-      throw new Exception(t('Cannot add relationship: "!source !rel !object". ' .
+      throw new \Exception(t('Cannot add relationship: "!subject !rel !object". ' .
         'The term, !rel, is not in the term cache.',
-        ['!source' => $id, '!rel' => $rel_id, '!name' => $obj_id]));
+        ['!subject' => $id, '!rel' => $rel_id, '!name' => $obj_id]));
     }
     $rel_cvterm_id = $this->saveTerm($rel_stanza, TRUE);
 
     // Make sure the object term exists in the cache.
     $obj_stanza = $this->getCachedTermStanza($obj_id);
     if (!$obj_stanza) {
-      throw new Exception(t('Cannot add relationship: "!source !rel !object". ' .
+      throw new \Exception(t('Cannot add relationship: "!source !rel !object". ' .
         'The term, !object, is not in the term cache.',
         ['!source' => $id, '!rel' => $rel_id, '!object' => $obj_id]));
     }
     $obj_cvterm_id = $this->saveTerm($obj_stanza);
 
     // Add the cvterm_relationship.
-    $cvterm_relationship = new \Drupal\tripal_chado\Services\ChadoRecord('cvterm_relationship');
-    $cvterm_relationship->setValues([
-      'type_id' => $rel_cvterm_id,
-      'subject_id' => $cvterm_id,
-      'object_id' => $obj_cvterm_id,
-    ]);
-
-    // If the insert fails then catch the error and generate a more meaningful
-    // message that helps with debugging.
-    try {
-      $cvterm_relationship->insert();
-    } catch (Exception $e) {
-      throw new Exception(t('Cannot add relationship: "!source !rel !object". ' .
-        'ERROR: !error.',
-        [
-          '!source' => $id,
-          '!rel' => $rel_id,
-          '!object' => $obj_id,
-          '!error' => $e->getMessage(),
-        ]));
-    }
+    $this->insertChadoCvtermRelationship($cvterm_id, $rel_cvterm_id, $obj_cvterm_id);
   }
 
   /**
@@ -1719,26 +1854,19 @@ class OBOImporter extends ChadoImporterBase {
     $db = $this->all_dbs[$short_name];
 
     // Check if the dbxref exists.
-    $dbxref = new \Drupal\tripal_chado\Services\ChadoRecord('dbxref');
-    $dbxref->setValues([
-      'db_id' => $db->db_id,
-      'accession' => $accession,
-    ]);
-    if (!$dbxref->find()) {
+    $dbxref = $this->getChadoDBXrefByAccession($db->db_id, $accession);
+    if (!$dbxref) {
       return NULL;
     }
 
     // If the dbxref exists then see if it has a corresponding cvterm.
-    $cvterm = new \Drupal\tripal_chado\Services\ChadoRecord('cvterm');
-    $cvterm->setValues(['dbxref_id' => $dbxref->getID()]);
-    if (!$cvterm->find()) {
+    $cvterm = $this->getChadoCvtermByDbxref($dbxref->dbxref_id);
+    if (!$cvterm) {
       return NULL;
     }
 
     // Get the CV for this term.
-    $cv = new \Drupal\tripal_chado\Services\ChadoRecord('cv');
-    $cv->setValues(['cv_id' => $cvterm->getValue('cv_id')]);
-    $cv->find();
+    $cv = $this->getChadoCvById($cvterm->cv_id);
 
     // Create a new stanza using the values of this cvterm.
     $stanza = [];
@@ -1758,17 +1886,17 @@ class OBOImporter extends ChadoImporterBase {
    *
    * @param array $stanza
    *   The stanza from the OBO file for the term.
-   *
-   * @throws Exception
+   * @param string $type
+   *   The term type (e.g. Typedef, Term)
    */
   private function cacheTermStanza($stanza, $type) {
 
     // Make sure we have defaults.
     if (!$this->default_namespace) {
-      throw new Exception('Cannot cache terms without a default CV.' . print_r($stanza, TRUE));
+      throw new \Exception('Cannot cache terms without a default CV.' . print_r($stanza, TRUE));
     }
     if (!$this->default_db) {
-      throw new Exception('Cannot cache terms without a default DB.' . print_r($stanza, TRUE));
+      throw new \Exception('Cannot cache terms without a default DB.' . print_r($stanza, TRUE));
     }
 
     $id = $stanza['id'][0];
@@ -1807,8 +1935,8 @@ class OBOImporter extends ChadoImporterBase {
           }
 
           // Make sure the DBs and CVs exist and are added to our cache.
-          $this->addDB($stanza['db_name'][0]);
-          $this->addCV($stanza['namespace'][0]);
+          $this->insertChadoDb($stanza['db_name'][0]);
+          $this->insertChadoCv($stanza['namespace'][0]);
         }
       }
       // If the term belongs to this OBO then let's set the 'db_name'.
@@ -1821,7 +1949,7 @@ class OBOImporter extends ChadoImporterBase {
 
       // Make sure the db for this term is added to Chado. If it already is
       // then this function won't re-add it.
-      $this->addDB($short_name);
+      $this->insertChadoDb($short_name);
     }
     // If there is no DB short name prefix for the id.
     else {
@@ -1879,7 +2007,7 @@ class OBOImporter extends ChadoImporterBase {
       ];
       $success = chado_insert_record('tripal_obo_temp', $values);
       if (!$success) {
-        throw new Exception("Cannot insert stanza into temporary table.");
+        throw new \Exception("Cannot insert stanza into temporary table.");
       }
       return;
     }
@@ -1899,7 +2027,7 @@ class OBOImporter extends ChadoImporterBase {
    * Returns the size of a given term type from the cache.
    *
    * @param string $type
-   *   The term type: Typedef, Term, etc.
+   *   The term type (e.g. Typedef, Term)
    */
   private function getCacheSize($type) {
     if ($this->cache_type == 'table') {
@@ -1908,7 +2036,7 @@ class OBOImporter extends ChadoImporterBase {
         FROM {tripal_obo_temp}
         WHERE type = :type
       ";
-      $result = chado_query($sql, [':type' => $type])->fetchObject();
+      $result = $this->chado->query($sql, [':type' => $type])->fetchObject();
       return $result->num_terms;
     }
     return $this->termStanzaCache['count'][$type];
@@ -1921,11 +2049,12 @@ class OBOImporter extends ChadoImporterBase {
    * returns an iterable Database handle.
    *
    * @param string $type
+   *   The term type (e.g. Typedef, Term)
    */
   private function getCachedTermStanzas($type) {
     if ($this->cache_type == 'table') {
       $sql = "SELECT id FROM {tripal_obo_temp} WHERE type = 'Typedef' ";
-      $typedefs = chado_query($sql);
+      $typedefs = $this->chado->query($sql);
       return $typedefs;
     }
     return $this->termStanzaCache['types'][$type];
@@ -1937,7 +2066,7 @@ class OBOImporter extends ChadoImporterBase {
   private function clearTermStanzaCache() {
     if ($this->cache_type == 'table') {
       $sql = "DELETE FROM {tripal_obo_temp}";
-      chado_query($sql);
+      $this->chado->query($sql);
       return;
     }
     $this->termStanzaCache = [
@@ -1958,7 +2087,8 @@ class OBOImporter extends ChadoImporterBase {
   /**
    * Adds the synonyms to a term
    *
-   * @param int $id
+   * @param string $id
+   *   The Term ID (e.g. SO:0000704).
    * @param int $cvterm_id
    *   The cvterm_id of the term to which the synonym will be added.
    * @param string $synonym
@@ -1983,7 +2113,7 @@ class OBOImporter extends ChadoImporterBase {
     }
     $syn_type_term = $this->syn_types[$syn_type];
     if (!$syn_type_term) {
-      throw new Exception(t('Cannot find synonym type: !type', ['!type' => $syn_type]));
+      throw new \Exception(t('Cannot find synonym type: !type', ['!type' => $syn_type]));
     }
 
     // The synonym can only be 255 chars in the cvtermsynonym table.
@@ -1992,33 +2122,7 @@ class OBOImporter extends ChadoImporterBase {
       $def = substr($def, 0, 252) . "...";
     }
 
-    // Now save the new synonym.
-    $cvtermsynonym = new \Drupal\tripal_chado\Services\ChadoRecord('cvtermsynonym');
-    $cvtermsynonym->setValues([
-      'cvterm_id' => $cvterm_id,
-      'synonym' => $def,
-    ]);
-
-    // If the insert fails then catch the error and generate a more meaningful
-    // message that helps with debugging.
-    try {
-      // The unique constraint for the cvterm_synonym table is with the
-      // cvterm_id and the synonym. It does not include the type_id.
-      // The CHEBI contains terms with the same synonym but with different
-      // types. For example:
-      // synonym: "2-chloro-N-(2-chloroethyl)-N-methylethanamine hydrochloride" EXACT IUPAC_NAME [IUPAC]
-      // synonym: "2-chloro-N-(2-chloroethyl)-N-methylethanamine hydrochloride" RELATED [ChemIDplus]
-      // In this case on the first one is added.
-      // @todo: This is a deficiency with Chado that should be corrected.
-      if (!$cvtermsynonym->find()) {
-        $cvtermsynonym->setValue('type_id', $syn_type_term->cvterm_id);
-        $cvtermsynonym->insert();
-      }
-    } catch (Exception $e) {
-      throw new Exception(t('Cannot add synonym, "!synonym" to term: !id. ' .
-        'ERROR: !error.',
-        ['!synonym' => $def, '!id' => $id, '!error' => $e->getMessage()]));
-    }
+    $this->insertChadoCvtermSynonym($cvterm_id, $def);
   }
 
   /**
@@ -2038,7 +2142,6 @@ class OBOImporter extends ChadoImporterBase {
     // Holds the full stanza for the term.
     $stanza = [];
     // Holds the default database for the term.
-    $db_short_name = '';
     $line_num = 0;
     $num_read = 0;
     // The type of term:  Typedef or Term (inside the [] brackets]
@@ -2161,17 +2264,12 @@ class OBOImporter extends ChadoImporterBase {
     }
 
     // Make sure there are CV records for all namespaces.
-    /*
-    // OLD
     $message = t('Found the following namespaces: !namespaces.',
       ['!namespaces' => implode(', ', array_keys($this->obo_namespaces))]);
-    */
-    $message = 'Found the following namespaces: ' .
-      implode(', ', array_keys($this->obo_namespaces));
-    foreach ($this->obo_namespaces as $namespace => $cv_id) {
-      $this->addCV($namespace);
+    foreach ($this->obo_namespaces as $namespace => $cv->cv_id) {
+      $this->insertChadoCv($namespace);
     }
-    $this->logMessage($message);
+    $this->logger->notice($message->getUntranslatedString());
   }
 
   /**
@@ -2192,8 +2290,6 @@ class OBOImporter extends ChadoImporterBase {
     $i = 1;
     foreach ($terms as $t) {
 
-      // TODO: it would be better if we had a term iterator so that we
-      // don't have to distinguish here between the table vs memory cache type.
       if ($this->cache_type == 'table') {
         $stanza = unserialize(base64_decode($t->stanza));
       }
@@ -2247,101 +2343,231 @@ class OBOImporter extends ChadoImporterBase {
   /**
    * Adds a property to the cvterm indicating it belongs to a subset.
    *
+   * @param string id
+   *   The Term ID (e.g. SO:0000704)
    * @param int $cvterm_id
    *   The cvterm_id of the term to which the subset will be added.
    * @param string $subset
    *   The name of the subset.
    */
   private function addSubset($id, $cvterm_id, $subset) {
-    $cvtermprop = new \Drupal\tripal_chado\Services\ChadoRecord('cvtermprop');
-    $cvtermprop->setValues([
-      'cvterm_id' => $cvterm_id,
-      'type_id' => $this->used_terms['NCIT:C25693'],
-      'value' => $subset,
-    ]);
-
-    // If the insert fails then catch the error and generate a more meaningful
-    // message that helps with debugging.
-    try {
-      $cvtermprop->insert();
-    } catch (Exception $e) {
-      throw new Exception(t('Cannot add subset, "!subset" to term: !id. ' .
-        'ERROR: !error.',
-        ['!subset' => $subset, '!id' => $id, '!error' => $e->getMessage()]));
-    }
+    $type_id = $this->used_terms['NCIT:C25693'];
+    $this->insertChadoCvtermProp($cvterm_id, $type_id, $subset);
   }
 
   /**
-   * Adds a database to Chado if it doesn't exist.
+   * Inserts a database to Chado if it doesn't exist.
    *
    * @param string $dbname
    *   The name of the database to add.
    * @param string $url
+   *   The DB URL.
    * @param string $description
-   *
-   * @return object
-   *   A Chado database object.
+   *   The DB description
+   * @return object|NULL
+   *   The newly inserted DB object.
    */
-  private function addDB($dbname, $url = '',  $description = '') {
+  private function insertChadoDb($dbname, $url = '',  $description = '') {
+
     // Add the database if it doesn't exist.
-    $db = NULL;
     if (array_key_exists($dbname, $this->all_dbs)) {
-      $db = $this->all_dbs[$dbname];
+      return $this->all_dbs[$dbname];
     }
-    else {
-      // If it's not in the cache we can assume it doesn't exist and insert.
-      $db = new \Drupal\tripal_chado\Services\ChadoRecord('db');
-      $values = ['name' => $dbname];
-      if ($url) {
-        $values['url'] = $url;
-      }
-      if ($description) {
-        $values['description'] = $description;
-      }
-      $db->setValues($values);
-      $db->insert();
-      $db = (object) $db->getValues();
-      $this->all_dbs[$dbname] = $db;
+    $query = $this->chado->insert('db');
+    $query->fields([
+      'name' => $dbname,
+      'url' => $url,
+      'description' => $description
+    ]);
+    $success = $query->execute();
+    if (!$success) {
+      $message = t('Could not add database: !db', ['!db' => $dbname]);
+      throw new \Exception($message);
     }
+    $db = $this->getChadoDbByName($dbname);
+    $this->all_dbs[$dbname] = $db;
     return $db;
   }
 
+
   /**
-   * Adds a vocabulary to Chado if it doesn't exist.
+   * Insert a Dbxref recrod to the database.
+   *
+   * @param int $db_id
+   *   The dbxref Id.
+   * @param string $accession
+   *   The term accession.
+   * @param object|NULL
+   *   The newly inserted dbxref object.
+   */
+  private function insertChadoDbxref($db_id, $accession) {
+
+    $dbxref = $this->getChadoDBXrefByAccession($db_id, $accession);
+    if ($dbxref) {
+      return $dbxref;
+    }
+
+    // Add the database if it doesn't exist.
+    $query = $this->chado->insert('dbxref');
+    $query->fields([
+      'db_id' => $db_id,
+      'accession' => $accession,
+    ]);
+    $success = $query->execute();
+    if (!$success) {
+      $message = t('Could not add dbxref: !acc', ['!acc' => $accession]);
+      throw new \Exception($message);
+    }
+    $dbxref = $this->getChadoDBXrefByAccession($db_id, $accession);
+    return $dbxref;
+  }
+
+  /**
+   * Inserts a record into the cvterm_dbxref table of Chado.
+   *
+   * @param int $cvterm_id
+   *   The cvterm ID.
+   * @param int $dbxref_id
+   *   The dbxref ID.
+   * @param object.
+   *   The newly inserted cvterm_dbxref object.
+   */
+  private function insertChadoCvtermDbxref($cvterm_id, $dbxref_id) {
+
+    $squery = $this->chado->select('cvterm_dbxref', 'CVTDBX');
+    $squery->fields('CVTDBX');
+    $squery->condition('CVTDBX.cvterm_id', $cvterm_id);
+    $squery->condition('CVTDBX.dbxref_id', $dbxref_id);
+    $result = $squery->execute();
+    if ($result) {
+      return $result->fetchObject();
+    }
+
+    $query = $this->chado->insert('cvterm_dbxref');
+    $query->fields([
+      'cvterm_id' => $cvterm_id,
+      'dbxref_id' => $dbxref_id,
+    ]);
+    $success = $query->execute();
+    if (!$success) {
+      $message = t('Could not add cvterm_dbxref');
+      throw new \Exception($message);
+    }
+    return $squery->execute()->fetchObject();
+  }
+
+  /**
+   * Inserts a record into the `cvtermsynonym` table.
+   *
+   * @param int $cvterm_id
+   *   The ID of the cvterm.
+   * @param string $synonym
+   *   The synonym.
+   * @return object
+   *   The newly inserted cvtermsynonym object.
+   */
+  private function insertChadoCvtermSynonym($cvterm_id, $synonym) {
+
+    $query = $this->chado->insert('cvtermsynonym');
+    $query->fields([
+      'cvterm_id' => $cvterm_id,
+      'synonym' => $synonym,
+    ]);
+    $success = $query->execute();
+    if (!$success) {
+      $message = t('Could not add cvtermsynonym: !synonym', ['!synonym', $synonym]);
+      throw new \Exception($message);
+    }
+  }
+
+  /**
+   * Inserts a new record into the chadoprop table.
+   *
+   * @param int $cvterm_id
+   *   The ID of the cvterm this property belongs to.
+   * @param int $type_id
+   *   The CVterm Id of the type.
+   * @param string $value
+   *   The property value to add.
+   * @param int $rank
+   *   The rank of the property value
+   */
+  private function insertChadoCvtermProp($cvterm_id, $type_id, $value, $rank = 0) {
+
+    $query = $this->chado->insert('cvtermprop');
+    $query->fields([
+      'cvterm_id' => $cvterm_id,
+      'type_id' => $type_id,
+      'value' => $value,
+      'rank' => $rank,
+    ]);
+    $success = $query->execute();
+    if (!$success) {
+      $message = t('Could not add cvtermprop: !value', ['!value' => $value]);
+      throw new \Exception($message);
+    }
+  }
+
+  /**
+   * Inserts a record into the cvterm_relationship table.
+   *
+   * @param int $subject_id
+   *   The cvterm ID for the subject.
+   * @param int $type_id
+   *   The cvterm ID for the relationship type.
+   * @param int $object_id
+   *   The cvterm ID for the object.
+   */
+  private function insertChadoCvtermRelationship($subject_id, $type_id, $object_id) {
+
+    $query = $this->chado->insert('cvterm_relationship');
+    $query->fields([
+      'subject_id' => $subject_id,
+      'type_id' => $type_id,
+      'object_id' => $object_id,
+    ]);
+    $success = $query->execute();
+    if (!$success) {
+      $message = t('Could not add cvterm_relationship');
+      throw new \Exception($message);
+    }
+  }
+
+  /**
+   * Inserts a vocabulary to Chado if it doesn't exist.
    *
    * @param string $cvname
    *   The name of the vocabulary to add.
    *
-   * @return object
-   *   A Chado cv object.
+   * @return object|NULL
+   *   The newly inserted CV object..
    */
-  private function addCV($cvname) {
-    // TODO: we need to get the description and title from EBI for these
-    // ontology so that we can put something in the proper fields when
-    // adding a new CV or DB.
+  private function insertChadoCv($cvname) {
 
     // Add the CV record if it doesn't exist.
-    $cv = NULL;
     if (array_key_exists($cvname, $this->all_cvs)) {
-      $cv = $this->all_cvs[$cvname];
+      return $this->all_cvs[$cvname];
     }
-    else {
-      // If it's not in the cache we can assume it doesn't exist and insert.
-      $cv = new \Drupal\tripal_chado\Services\ChadoRecord('cv');
-      $cv->setValues(['name' => $cvname]);
-      $cv->insert();
-      $cv = (object) $cv->getValues();
-      $this->all_cvs[$cvname] = $cv;
-      $this->obo_namespaces[$cvname] = $cv->cv_id;
+
+    $query = $this->chado->insert('cv');
+    $query->fields(['name' => $cvname]);
+    $success = $query->execute();
+    if (!$success) {
+      $message = t('Could not add vocabulary: !cv', ['!cv' => $cvname]);
+      throw new \Exception($message);
     }
+    $cv = $this->getChadoCvByName($cvname);
+    $this->all_cvs[$cvname] = $cv;
+    $this->obo_namespaces[$cvname] = $cv->cv_id;
 
     return $cv;
   }
 
   /**
    * Indicates if the term belongs to this OBO or if it was borrowed
-
-   * @param array $stanza
+   * .
+   *
+   * @param $stanza
    */
   private function isTermBorrowed($stanza) {
     $namespace = $stanza['namespace'][0];
@@ -2354,6 +2580,8 @@ class OBOImporter extends ChadoImporterBase {
   /**
    * Adds an alternative ID
    *
+   * @param string $id
+   *   The Term ID (e.g. SO:0000704).
    * @param int $cvterm_id
    *   The cvterm_id of the term to which the synonym will be added.
    * @param int $alt_id
@@ -2376,34 +2604,16 @@ class OBOImporter extends ChadoImporterBase {
       return;
     }
 
-    // Add the database if it doesn't exist.
-    $db = $this->addDB($dbname);
-    $db_id = $db->db_id;
-
-    // Now add the dbxref if it doesn't already exist
-    $dbxref = new \Drupal\tripal_chado\Services\ChadoRecord('dbxref');
-    $dbxref->setValues([
-      'db_id' => $db_id,
-      'accession' => $accession,
-    ]);
-    if (!$dbxref->find()) {
-      $dbxref->insert();
-    }
-
-    // Now add the cvterm_dbxref record.
-    $cvterm_dbxref = new \Drupal\tripal_chado\Services\ChadoRecord('cvterm_dbxref');
-    $cvterm_dbxref->setValues([
-      'cvterm_id' => $cvterm_id,
-      'dbxref_id' => $dbxref->getID(),
-    ]);
-    if (!$cvterm_dbxref->find()) {
-      $cvterm_dbxref->insert();
-    }
+    $db = $this->insertChadoDb($dbname);
+    $dbxref = $this->insertChadoDbxref($db->db_id, $accession);
+    $this->insertChadoCvtermDbxref($cvterm_id, $dbxref->dbxref_id);
   }
 
   /**
    * Adds a database reference to a cvterm
    *
+   * @param string $id
+   *   The Term ID (e.g. SO:0000704).
    * @param int $cvterm_id
    *   The cvterm_id of the term to which the synonym will be added.
    * @param string $xref
@@ -2415,11 +2625,11 @@ class OBOImporter extends ChadoImporterBase {
 
     $dbname = preg_replace('/^(.+?):.*$/', '$1', $xref);
     $accession = preg_replace('/^.+?:\s*(.*?)(\{.+$|\[.+$|\s.+$|\".+$|$)/', '$1', $xref);
-    $description = preg_replace('/^.+?\"(.+?)\".*?$/', '$1', $xref);
-    $dbxrefs = preg_replace('/^.+?\[(.+?)\].*?$/', '$1', $xref);
+    //$description = preg_replace('/^.+?\"(.+?)\".*?$/', '$1', $xref);
+    //$dbxrefs = preg_replace('/^.+?\[(.+?)\].*?$/', '$1', $xref);
 
     if (!$accession) {
-      throw new Exception("Cannot add an xref without an accession: '$xref'");
+      throw new \Exception("Cannot add an xref without an accession: '$xref'");
     }
 
     // If the xref is a database link then skip those for now.
@@ -2427,85 +2637,67 @@ class OBOImporter extends ChadoImporterBase {
       return;
     }
 
-    // Add the database if it doesn't exist.
-    $db = $this->addDB($dbname);
-    $db_id = $db->db_id;
-
-    // Now add the dbxref if it doesn't already exist
-    $dbxref = new \Drupal\tripal_chado\Services\ChadoRecord('dbxref');
-    $dbxref->setValues([
-      'db_id' => $db_id,
-      'accession' => $accession,
-    ]);
-    if (!$dbxref->find()) {
-      $dbxref->insert();
-    }
-
-    // Now add the cvterm_dbxref record.
-    $cvterm_dbxref = new \Drupal\tripal_chado\Services\ChadoRecord('cvterm_dbxref');
-    $cvterm_dbxref->setValues([
-      'cvterm_id' => $cvterm_id,
-      'dbxref_id' => $dbxref->getID(),
-    ]);
-    if (!$cvterm_dbxref->find()) {
-      $cvterm_dbxref->insert();
-    }
+    $db = $this->insertChadoDb($dbname);
+    $dbxref = $this->insertChadoDbxref($db->db_id, $accession);
+    $this->insertChadoCvtermDbxref($cvterm_id, $dbxref->dbxref_id);
   }
 
   /**
    * Adds a comment to a cvterm.
    *
+   * @param string $id
+   *   The Term ID (e.g. SO:0000704).
    * @param int $cvterm_id
    *   A cvterm_id of the term to which properties will be added
    * @param string $comment
    *   The comment to add to the cvterm.
-   * @param int rank
+   * @param int $rank
    *   The rank of the comment
    *
    * @ingroup tripal_obo_loader
    */
   private function addComment($id, $cvterm_id, $comment, $rank) {
 
-    // Get the comment type id.
     $comment_type_id = $this->used_terms['rdfs:comment'];
-
-    // Add the comment as a property of the cvterm.
-    $cvtermprop = new \Drupal\tripal_chado\Services\ChadoRecord('cvtermprop');
-    $cvtermprop->setValues([
-      'cvterm_id' => $cvterm_id,
-      'type_id' => $comment_type_id,
-      'value' => $comment,
-      'rank' => $rank,
-    ]);
-
-    // If the insert fails then catch the error and generate a more meaningful
-    // message that helps with debugging.
-    try {
-      $cvtermprop->insert();
-    } catch (Exception $e) {
-      throw new Exception(t('Cannot add comment, "!comment" to term: !id. ' .
-        'ERROR: !error.',
-        ['!comment' => $comment, '!id' => $id, '!error' => $e->getMessage()]));
-    }
+    $this->insertChadoCvtermProp($cvterm_id, $comment_type_id, $comment, $rank);
   }
 
   /**
    * API call to Ontology Lookup Service provided by
    * https://www.ebi.ac.uk/ols/docs/api#resources-terms
    *
-   * @param string accession
+   * @param accession
    *   Accession term for query
-   * @param string type_of_search
+   * @param type_of_search
    *   Either ontology, term, query, or query-non-local
    *
    * @ingroup tripal_obo_loader
    */
-  private function oboEbiLookup($accession, $type_of_search) {
-    //Grab just the ontology from the $accession.
+  private function oboEbiLookup($accession, $type_of_search, $found_iri = NULL, $found_ontology = NULL) {
+    // Grab just the ontology from the $accession.
     $parts = explode(':', $accession);
     $ontology = strtolower($parts[0]);
     $ontology = preg_replace('/\s+/', '', $ontology);
-    if ($type_of_search == 'ontology') {
+    if ($found_iri) {
+      // When we cannot grab the ontology from the accession or the IRI cannot
+      // be automatically formed we need to use the ontology and the IRI
+      // found in the previous query.
+      $ontology = $found_ontology;
+      $type = '';
+      if ($type_of_search == 'property') {
+        $type = 'properties';
+      }
+      elseif ( $type_of_search == 'class') {
+        $type = 'terms';
+      }
+      $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontology . '/' . $type . '/' . $found_iri;
+      $options = [];
+      $response = drupal_http_request($full_url, $options);
+      if (!empty($response)) {
+        $response = drupal_json_decode($response->data);
+      }
+    }
+    elseif ($type_of_search == 'ontology') {
       $options = [];
       $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontology;
       $response = drupal_http_request($full_url, $options);
@@ -2514,10 +2706,20 @@ class OBOImporter extends ChadoImporterBase {
       }
     }
     elseif ($type_of_search == 'term') {
-      //The IRI of the terms, this value must be double URL encoded
+      // The IRI of the terms, this value must be double URL encoded
       $iri = urlencode(urlencode("http://purl.obolibrary.org/obo/" . str_replace(':', '_', $accession)));
       $options = [];
       $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontology . '/' . 'terms/' . $iri;
+      $response = drupal_http_request($full_url, $options);
+      if (!empty($response)) {
+        $response = drupal_json_decode($response->data);
+      }
+    }
+    elseif ($type_of_search == 'property') {
+      // The IRI of the terms, this value must be double URL encoded
+      $iri = urlencode(urlencode("http://purl.obolibrary.org/obo/" . str_replace(':', '_', $accession)));
+      $options = [];
+      $full_url = 'http://www.ebi.ac.uk/ols/api/ontologies/' . $ontology . '/' . 'properties/' . $iri;
       $response = drupal_http_request($full_url, $options);
       if (!empty($response)) {
         $response = drupal_json_decode($response->data);
@@ -2545,34 +2747,27 @@ class OBOImporter extends ChadoImporterBase {
   /**
    * Ajax callback for the OBOImporter::form() function.
    */
-  static function tripal_cv_obo_form_ajax_callback($form, $form_state) {
-    // $logger = \Drupal::service('tripal.logger');
-    // $logger->info('$form[obo_existing]:' . var_export($form, true));
+  private function tripal_cv_obo_form_ajax_callback($form, $form_state) {
     return $form['obo_existing'];
   }
 
   /**
    * Ajax callback for the OBOImporter::form() function.
    */
-  static function tripal_cv_obo_form_ajax_update_callback($form, $form_state) {
-    $logger = \Drupal::service('tripal.logger');
+  private function tripal_cv_obo_form_ajax_update_callback($form, $form_state) {
 
     $form_values = $form_state->getValues();
     $obo_id = $form_values['obo_id'];
-    $obo_name = trim($form_values['obo_name']);
-    $obo_url = trim($form_values['obo_url']);
-    $obo_file = trim($form_values['obo_file']);
-    $uobo_name = array_key_exists('uobo_name', $form_values) ? trim($form_values['uobo_name']) : '';
-    $uobo_url = array_key_exists('uobo_url', $form_values) ? trim($form_values['uobo_url']) : '';
-    $uobo_file = array_key_exists('uobo_file', $form_values) ? trim($form_values['uobo_file']) : '';
-    $connection = \Drupal::database();
-    $success = $connection->update('tripal_cv_obo')
-    ->fields([
-      'name' => $uobo_name,
-      'path' => $uobo_url ? $uobo_url : $uobo_file,
-    ])
-    ->condition('obo_id', $obo_id)
-    ->execute();
+    $uobo_name = $form_state->getValue('uobo_name');
+    $uobo_url = $form_state->getValue('uobo_url');
+    $uobo_file = $form_state->getValue('uobo_file');
+    $success = $this->public->update('tripal_cv_obo')
+      ->fields([
+        'name' => $uobo_name,
+        'path' => $uobo_url ? $uobo_url : $uobo_file,
+      ])
+      ->condition('obo_id', $obo_id)
+      ->execute();
     if ($success) {
       $form['obo_existing']['update_obo_details_results'] = [
         '#type' => 'item',
@@ -2582,8 +2777,7 @@ class OBOImporter extends ChadoImporterBase {
       // Refresh the OBO select list
       // get a list of db from chado for user to choose
       $sql = "SELECT * FROM tripal_cv_obo ORDER BY name";
-      $connection = \Drupal::database();
-      $results = $connection->query($sql);
+      $results = $this->public->query($sql);
 
       $obos = [];
       $obos[] = 'Select a Vocabulary';
@@ -2597,23 +2791,14 @@ class OBOImporter extends ChadoImporterBase {
       $form['obo_existing']['uobo_name']['#value'] = $form_values['uobo_name'];
       $form['obo_existing']['uobo_url']['#value'] = $form_values['uobo_url'];
       $form['obo_existing']['uobo_file']['#value'] = $form_values['uobo_file'];
-
-      // drupal_set_message(t("The vocabulary !vocab has been updated.", ['!vocab' => $uobo_name]));
-      // $logger->info("The vocabulary $uobo_name has been updated.");
     }
     else {
       $form['obo_existing']['update_obo_details_results'] = [
         '#type' => 'item',
         '#markup' => '<span style="color: red" id="update_obo_details_results">Updated was unsuccessful!</span>'
       ];
-      // $logger->info("The vocabulary $uobo_name could not be updated.");
     }
 
     return $form['obo_existing'];;
   }
-
 }
-
-
-
-

@@ -4,7 +4,8 @@ namespace Drupal\tripal\TripalImporter;
 
 use Drupal\tripal\TripalImporter\Interfaces\TripalImporterInterface;
 use Drupal\Component\Plugin\PluginBase;
-
+use Drupal\file\Entity\File;
+use Drupal\user\Entity\User;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -134,53 +135,16 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
     $this->public = \Drupal::database();
   }
 
-  /**
-   * Instantiates a new TripalImporter object using the import record ID.
-   *
-   * This function will automatically instantiate the correct TripalImporter
-   * child class that is appropriate for the provided ID.
-   *
-   * @param $import_id
-   *   The ID of the import recrod.
-   *
-   * @return
-   *   An TripalImporter object of the appropriate child class.
-   */
-  static public function byID($import_id) {
-
-    // Get the importer.
-    $import = $this->public->select('tripal_import', 'ti')
-      ->fields('ti')
-      ->condition('ti.import_id', $import_id)
-      ->execute()
-      ->fetchObject();
-
-    if (!$import) {
-      throw new Exception('Cannot find an importer that matches the given import ID.');
-    }
-
-    $class = $import->class;
-    tripal_load_include_importer_class($class);
-    if (class_exists($class)) {
-      $loader = new $class();
-      $loader->load($import_id);
-      return $loader;
-    }
-    else {
-      throw new Exception('Cannot find the matching class for this import record.');
-    }
-  }
-
-  /**
+   /**
    * Associate this importer with the Tripal job that is running it.
    *
    * Associating an import with a job will allow the importer to log messages
    * to the job log.
    *
-   * @param TripalJob $job
+   * @param \Drupal\tripal\Services\TripalJob $job
    *   An instance of a TripalJob.
    */
-  public function setJob(Drupal\tripal\Services\TripalJob $job) {
+  public function setJob($job) {
     $this->job = $job;
     $this->logger->setJob($job);
   }
@@ -188,11 +152,11 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
   /**
    * Creates a new importer record.
    *
-   * @param $run_args
+   * @param array $run_args
    *   An associative array of the arguments needed to run the importer. Each
    *   importer will have its own defined set of arguments.
    *
-   * @param $file_details
+   * @param array $file_details
    *   An associative array with one of the following keys:
    *   -fid: provides the Drupal managed File ID for the file.
    *   -file_local: provides the full path to the file on the server.
@@ -205,14 +169,13 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
   public function create($run_args, $file_details = []) {
 
     // global $user;
-    $user = \Drupal\user\Entity\User::load(\Drupal::currentUser()->id());
-    $class = get_called_class();
+    $user = User::load(\Drupal::currentUser()->id());
 
     try {
       // Build the values for the tripal_importer table insert.
       $values = [
         'uid' => $user->get('uid')->value,
-        'class' => $class,
+        'class' => $this->plugin_id,
         'submit_date' => time(),
       ];
 
@@ -244,9 +207,8 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
         if (preg_match('/\|/', $file_details['fid'])) {
           $fids = explode('|', $file_details['fid']);
           foreach ($fids as $fid) {
-            $file = \Drupal\file\Entity\File::load($fid);
+            $file = File::load($fid);
             $arguments['files'][] = [
-              // 'file_path' => drupal_realpath($file->uri), // old
               'file_path' => \Drupal::service('file_system')->realpath($file->getFileUri()),
               'fid' => $fid,
             ];
@@ -256,9 +218,8 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
         // Handle a single file.
         else {
           $fid = $file_details['fid'];
-          $file = \Drupal\file\Entity\File::load($fid);
+          $file = File::load($fid);
           $arguments['files'][] = [
-            // 'file_path' => drupal_realpath($file->uri), // old
             'file_path' => \Drupal::service('file_system')->realpath($file->getFileUri()),
             'fid' => $fid,
           ];
@@ -266,7 +227,6 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
 
           // For backwards compatibility add the old 'file' element.
           $arguments['file'] = [
-            // 'file_path' => drupal_realpath($file->uri), // old
             'file_path' => \Drupal::service('file_system')->realpath($file->getFileUri()),
             'fid' => $fid,
           ];
@@ -274,20 +234,13 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
       }
 
       // Validate the $file_details argument.
-      if ($has_file == 0 and $class::$file_required == TRUE) {
+      if ($has_file == 0 and $this->plugin_definition['file_required'] == TRUE) {
         throw new Exception("Must provide a proper file identifier for the \$file_details argument.");
       }
 
       // Store the arguments in the class and serialize for table insertion.
       $this->arguments = $arguments;
-      //$values['arguments'] = serialize($arguments); //old serialize arguments
       $values['arguments'] = base64_encode(serialize($arguments));
-
-      // Temporary debug code
-      // $logger = \Drupal::service('tripal.logger');
-      $this->logger->notice(
-        "arguments:\n" . print_r($arguments, true) . "\n\n"
-      );
 
       // Insert the importer record.
       $import_id = $this->public->insert('tripal_import')
@@ -308,8 +261,6 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    *   The ID of the import record.
    */
   public function load($import_id) {
-    $class = get_called_class();
-
     // Get the importer.
     $import = $this->public->select('tripal_import', 'ti')
       ->fields('ti')
@@ -321,7 +272,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
       throw new Exception('Cannot find an importer that matches the given import ID.');
     }
 
-    if ($import->class != $class) {
+    if ($import->class != $this->plugin_id) {
       throw new Exception('The importer specified by the given ID does not match this importer class.');
     }
 
@@ -342,8 +293,6 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
     $user = \Drupal::currentUser();
     $uid = $user->id();
 
-    $class = get_called_class();
-
     if (!$this->import_id) {
       throw new Exception('Cannot submit an importer job without an import record. Please run create() first.');
     }
@@ -352,7 +301,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
     try {
       $args = [$this->import_id];
       $includes = [];
-      $job_id = tripal_add_job($class::$button_text, 'tripal',
+      $job_id = tripal_add_job($this->plugin_definition['button_text'], 'tripal',
         'tripal_run_importer', $args, $uid, 10, $includes);
 
       return $job_id;
@@ -369,10 +318,9 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    * the import file is ready to go.
    */
   public function prepareFiles() {
-    $class = get_called_class();
 
     // If no file is required then just indicate that all is good to go.
-    if ($class::$file_required == FALSE) {
+    if ($this->plugin_definition['file_required'] == FALSE) {
       $this->is_prepared = TRUE;
       return;
     }
@@ -465,56 +413,6 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
     }
     catch (Exception $e) {
       throw new Exception('Cannot prepare the importer: ' . $e->getMessage());
-    }
-  }
-
-  /**
-   * Logs a message for the importer.
-   *
-   * There is no distinction between status messages and error logs.  Any
-   * message that is intended for the user to review the status of the loading
-   * can be provided here.  If this importer is associated with a job then
-   * the logging is passed on to the job for storage.
-   *
-   * Messages that are are of severity TRIPAL_CRITICAL or TRIPAL_ERROR
-   * are also logged to the watchdog.
-   *
-   * @param $message
-   *   The message to store in the log. Keep $message translatable by not
-   *   concatenating dynamic values into it! Variables in the message should
-   *   be added by using placeholder strings alongside the variables argument
-   *   to declare the value of the placeholders. See t() for documentation on
-   *   how $message and $variables interact.
-   * @param $variables
-   *   Array of variables to replace in the message on display or NULL if
-   *   message is already translated or not possible to translate.
-   * @param $severity
-   *   The severity of the message; one of the following values:
-   *     - TRIPAL_CRITICAL: Critical conditions.
-   *     - TRIPAL_ERROR: Error conditions.
-   *     - TRIPAL_WARNING: Warning conditions.
-   *     - TRIPAL_NOTICE: Normal but significant conditions.
-   *     - TRIPAL_INFO: (default) Informational messages.
-   *     - TRIPAL_DEBUG: Debug-level messages.
-   */
-  public function logMessage($message, $variables = [], $severity = TRIPAL_INFO) {
-    // Generate a translated message.
-    $tmessage = t($message, $variables);
-
-    // If we have a job then pass along the messaging to the job.
-    if ($this->job) {
-      // $this->job->logMessage($message, $variables, $severity);
-      $this->job->log($message);
-    }
-    // If we don't have a job then just use the drpual_set_message.
-    else {
-      // Report this message to watchdog or set a message.
-      if ($severity == TRIPAL_CRITICAL or $severity == TRIPAL_ERROR) {
-        \Drupal::messenger()->addMessage($tmessage);
-      }
-      if ($severity == TRIPAL_WARNING) {
-        \Drupal::messenger()->addMessage($tmessage);
-      }
     }
   }
 
