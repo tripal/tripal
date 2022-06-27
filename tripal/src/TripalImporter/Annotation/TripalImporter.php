@@ -29,7 +29,6 @@ class TripalImporter extends Plugin {
    */
   public $label;
 
-
   /**
    * A brief description for this loader.
    *
