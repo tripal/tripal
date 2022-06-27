@@ -427,7 +427,7 @@ class OBOImporter extends ChadoImporterBase {
         \Drupal::messenger()->addMessage(t("The vocabulary @vocab has been updated.", ['@vocab' => $uobo_name]));
       }
       else {
-        \Drupal::messenger()->addError(t("The vocabulary !vocab could not be updated.", ['@vocab' => $uobo_name]));
+        \Drupal::messenger()->addError(t("The vocabulary @vocab could not be updated.", ['@vocab' => $uobo_name]));
       }
 
     }
@@ -459,7 +459,7 @@ class OBOImporter extends ChadoImporterBase {
       }
       else {
         $form_state['rebuild'] = TRUE;
-        \Drupal::messenger()->addError(t("The vocabulary !vocab could not be added.", ['!vocab' => $obo_name]));
+        \Drupal::messenger()->addError(t("The vocabulary @vocab could not be added.", ['@vocab' => $obo_name]));
       }
     }
   }
@@ -1242,8 +1242,7 @@ class OBOImporter extends ChadoImporterBase {
         "Lookup Service to retrieve the information for this term. " .
         "Please note, that vocabularies with many non-local terms " .
         "require remote lookups and these lookups can dramatically " .
-        "increase loading time. ",
-        ['!vocab' => $this->default_namespace]));
+        "increase loading time. "));
       $this->ebi_warned = TRUE;
 
       // This ontology may have multiple remote terms and that takes a while
@@ -1252,7 +1251,7 @@ class OBOImporter extends ChadoImporterBase {
       $this->setInterval(1);
     }
 
-    $this->logger->notice(t("Performing EBI OLS Lookup for: !id", ['!id' => $id]));
+    $this->logger->notice(t("Performing EBI OLS Lookup for: @id", ['@id' => $id]));
 
     // Get the short name and accession for the term.
     $pair = explode(":", $id, 2);
@@ -1278,10 +1277,10 @@ class OBOImporter extends ChadoImporterBase {
           ['!id' => $id]));
       }
       if ($ontology_results['error']) {
-        $message = t('Cannot find the ontology via an EBI OLS lookup: !short_name. ' .
-          'EBI Reported: !message. Consider finding the OBO file for this ' .
-          ' ontology and manually loading it first.', ['!message' => $ontology_results['message'],
-            '!short_name' => $short_name]);
+        $message = t('Cannot find the ontology via an EBI OLS lookup: @short_name. ' .
+          'EBI Reported: @message. Consider finding the OBO file for this ' .
+          ' ontology and manually loading it first.', ['@message' => $ontology_results['message'],
+            '@short_name' => $short_name]);
         $this->logger->warning($message);
       }
       // The following foreach code works but, I am not sure that
@@ -1315,7 +1314,7 @@ class OBOImporter extends ChadoImporterBase {
         foreach ($ontology_results['response']['docs'] as $each ){
           $obo_id = $each['obo_id'];
           $defining_ontology = $each['is_defining_ontology'];
-          if ( !$defining_ontology and $obo_id != $id ) {
+          if (!$defining_ontology and $obo_id != $id ) {
             continue;
           }
           $found_iri = urlencode(urlencode($each['iri']));
@@ -1330,17 +1329,17 @@ class OBOImporter extends ChadoImporterBase {
       }
     }
     if (!$results) {
-      $message = t('Did not get a response from EBI OLS trying to lookup: !type !id',
-          ['!type'=> $type, '!id' => $id]);
+      $message = t('Did not get a response from EBI OLS trying to lookup: @type @id',
+          ['@type'=> $type, '@id' => $id]);
       $this->logger->error($message);
       throw new \Exception($message);
     }
 
     // If EBI sent an error message then throw an error.
     if ($results['error']) {
-      $message = t('Cannot find the term via an EBI OLS lookup: !term. EBI ' .
-        'Reported: !message. Consider finding the OBO file for this ontology ' .
-         'and manually loading it first.', ['!message' => $results['message'], '!term' => $id]);
+      $message = t('Cannot find the term via an EBI OLS lookup: @term. EBI ' .
+        'Reported: @message. Consider finding the OBO file for this ontology ' .
+         'and manually loading it first.', ['@message' => $results['message'], '@term' => $id]);
       $this->logger->error($message);
       return FALSE;
     }
@@ -1352,7 +1351,7 @@ class OBOImporter extends ChadoImporterBase {
 
     // Make an OBO stanza array as if this term were in the OBO file and
     // return it.
-    $this->logMessage("Found !term in EBI OLS.", ['!term' => $id]);
+    $this->logMessage("Found @term in EBI OLS.", ['@term' => $id]);
     $stanza = [];
     $stanza['id'][0] = $id;
     $stanza['name'][0] = $results['label'];
@@ -1375,14 +1374,14 @@ class OBOImporter extends ChadoImporterBase {
     if (array_key_exists('term_replaced_by', $results) and isset($results['term_replaced_by'])) {
       $replaced_by = $results['term_replaced_by'];
       $replaced_by = preg_replace('/_/', ':', $replaced_by);
-      $this->logger->notice(t("The term, !term, is replaced by, !replaced",
-        ['!term' => $id, '!replaced' => $replaced_by]));
+      $this->logger->notice(t("The term, @term, is replaced by, @replaced",
+        ['@term' => $id, '@replaced' => $replaced_by]));
 
       // Before we try to look for the replacement term, let's try to find it.
       // in our list of cached terms.
       if (array_key_exists($replaced_by, $this->termStanzaCache['ids'])) {
-        $this->logger->notice(t("Found term, !replaced in the term cache.",
-          ['!term' => $id, '!replaced' => $replaced_by]));
+        $this->logger->notice(t("Found term, @replaced in the term cache.",
+          ['@term' => $id, '!replaced' => $replaced_by]));
         return $this->termStanzaCache['ids'][$id];
       }
 
@@ -1390,8 +1389,8 @@ class OBOImporter extends ChadoImporterBase {
       $rpair = explode(":", $replaced_by, 2);
       $found = $this->lookupTerm($rpair[0], $rpair[1]);
       if ($found) {
-        $this->logger->notice(t("Found term, !replaced in the local data store.",
-          ['!term' => $id, '!replaced' => $replaced_by]));
+        $this->logger->notice(t("Found term, @replaced in the local data store.",
+          ['@term' => $id, '@replaced' => $replaced_by]));
         return $found;
       }
 
@@ -1742,8 +1741,8 @@ class OBOImporter extends ChadoImporterBase {
     // saveTerm() function should always return one.  But if for some unknown
     // reason we don't have one then fail.
     if (!$cvterm_id) {
-      throw new \Exception(t('Missing cvterm after saving term: !term',
-        ['!term' => print_r($stanza, TRUE)]));
+      throw new \Exception(t('Missing cvterm after saving term: @term',
+        ['@term' => print_r($stanza, TRUE)]));
     }
 
     //
@@ -1897,18 +1896,18 @@ class OBOImporter extends ChadoImporterBase {
     // an exception if we can't find them.
     $rel_stanza = $this->getCachedTermStanza($rel_id);
     if (!$rel_stanza) {
-      throw new \Exception(t('Cannot add relationship: "!subject !rel !object". ' .
-        'The term, !rel, is not in the term cache.',
-        ['!subject' => $id, '!rel' => $rel_id, '!name' => $obj_id]));
+      throw new \Exception(t('Cannot add relationship: "@subject @rel @object". ' .
+        'The term, @rel, is not in the term cache.',
+        ['@subject' => $id, '@rel' => $rel_id, '@name' => $obj_id]));
     }
     $rel_cvterm_id = $this->saveTerm($rel_stanza, TRUE);
 
     // Make sure the object term exists in the cache.
     $obj_stanza = $this->getCachedTermStanza($obj_id);
     if (!$obj_stanza) {
-      throw new \Exception(t('Cannot add relationship: "!source !rel !object". ' .
-        'The term, !object, is not in the term cache.',
-        ['!source' => $id, '!rel' => $rel_id, '!object' => $obj_id]));
+      throw new \Exception(t('Cannot add relationship: "@source @rel @object". ' .
+        'The term, @object, is not in the term cache.',
+        ['@source' => $id, '@rel' => $rel_id, '@object' => $obj_id]));
     }
     $obj_cvterm_id = $this->saveTerm($obj_stanza);
 
@@ -2223,7 +2222,7 @@ class OBOImporter extends ChadoImporterBase {
     }
     $syn_type_term = $this->syn_types[$syn_type];
     if (!$syn_type_term) {
-      throw new \Exception(t('Cannot find synonym type: !type', ['!type' => $syn_type]));
+      throw new \Exception(t('Cannot find synonym type: @type', ['@type' => $syn_type]));
     }
 
     // The synonym can only be 255 chars in the cvtermsynonym table.
@@ -2374,8 +2373,8 @@ class OBOImporter extends ChadoImporterBase {
     }
 
     // Make sure there are CV records for all namespaces.
-    $message = t('Found the following namespaces: !namespaces.',
-      ['!namespaces' => implode(', ', array_keys($this->obo_namespaces))]);
+    $message = t('Found the following namespaces: @namespaces.',
+      ['@namespaces' => implode(', ', array_keys($this->obo_namespaces))]);
     foreach ($this->obo_namespaces as $namespace => $cv->cv_id) {
       $this->insertChadoCv($namespace);
     }
@@ -2492,7 +2491,7 @@ class OBOImporter extends ChadoImporterBase {
     ]);
     $success = $query->execute();
     if (!$success) {
-      $message = t('Could not add database: !db', ['!db' => $dbname]);
+      $message = t('Could not add database: @db', ['@db' => $dbname]);
       throw new \Exception($message);
     }
     $db = $this->getChadoDbByName($dbname);
@@ -2527,7 +2526,7 @@ class OBOImporter extends ChadoImporterBase {
     ]);
     $success = $query->execute();
     if (!$success) {
-      $message = t('Could not add dbxref: !acc', ['!acc' => $accession]);
+      $message = t('Could not add dbxref: @acc', ['@acc' => $accession]);
       throw new \Exception($message);
     }
     $dbxref = $this->getChadoDBXrefByAccession($db_id, $accession);
@@ -2589,7 +2588,7 @@ class OBOImporter extends ChadoImporterBase {
     ]);
     $success = $query->execute();
     if (!$success) {
-      $message = t('Could not add cvtermsynonym: !synonym', ['!synonym', $synonym]);
+      $message = t('Could not add cvtermsynonym: @synonym', ['@synonym', $synonym]);
       throw new \Exception($message);
     }
   }
@@ -2618,7 +2617,7 @@ class OBOImporter extends ChadoImporterBase {
     ]);
     $success = $query->execute();
     if (!$success) {
-      $message = t('Could not add cvtermprop: !value', ['!value' => $value]);
+      $message = t('Could not add cvtermprop: @value', ['@value' => $value]);
       throw new \Exception($message);
     }
   }
@@ -2670,7 +2669,7 @@ class OBOImporter extends ChadoImporterBase {
     $query->fields(['name' => $cvname]);
     $success = $query->execute();
     if (!$success) {
-      $message = t('Could not add vocabulary: !cv', ['!cv' => $cvname]);
+      $message = t('Could not add vocabulary: @cv', ['@cv' => $cvname]);
       throw new \Exception($message);
     }
     $cv = $this->getChadoCvByName($cvname);
@@ -2717,7 +2716,7 @@ class OBOImporter extends ChadoImporterBase {
     }
 
     if (!$accession) {
-      $this->logMessage("Cannot add an Alt ID without an accession: '!alt_id'", ['!alt_id' => $alt_id]);
+      $this->logMessage("Cannot add an Alt ID without an accession: '@alt_id'", ['@alt_id' => $alt_id]);
       return;
     }
 
