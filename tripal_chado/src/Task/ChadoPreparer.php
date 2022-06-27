@@ -903,7 +903,7 @@ class ChadoPreparer extends ChadoTaskBase {
 
     // NCIT
     $ncit_vocab = $this->getVocabulary('ncit');
-    $ncit_vocab->setLabel('NCI Thesaurus OBO Edition.');
+    $ncit_vocab->setLabel('NCI Thesaurus OBO Edition');
     $ncit_vocab->setUrl('http://purl.obolibrary.org/obo/ncit.owl');
     $ncit_idspace = $this->getIdSpace('NCIT');
     $ncit_idspace->setDescription('The NCIt is a reference terminology that includes broad coverage of the cancer domain, including cancer related diseases, findings and abnormalities. NCIt OBO Edition releases should be considered experimental.');
@@ -920,7 +920,7 @@ class ChadoPreparer extends ChadoTaskBase {
 
     // RDFS
     $rdfs_vocab = $this->getVocabulary('rdfs');
-    $rdfs_vocab->setLabel('Resource Description Framework Schema.');
+    $rdfs_vocab->setLabel('Resource Description Framework Schema');
     $rdfs_vocab->setUrl('https://www.w3.org/TR/rdf-schema/');
     $rdfs_idspace = $this->getIdSpace('rdfs');
     $rdfs_idspace->setDescription('Resource Description Framework Schema');
@@ -976,7 +976,7 @@ class ChadoPreparer extends ChadoTaskBase {
     $sequence_vocab->setLabel('The Sequence Ontology');
     $sequence_vocab->setURL('http://www.sequenceontology.org');
     $SO_idspace = $this->getIdSpace('SO');
-    $SO_idspace->setDescription("The Sequence Ontology.");
+    $SO_idspace->setDescription("The Sequence Ontology");
     $SO_idspace->setURLPrefix("http://www.sequenceontology.org/browser/current_svn/term/{db}:{accession}");
     $SO_idspace->setDefaultVocabulary('sequence');
     $ontologies[] = [

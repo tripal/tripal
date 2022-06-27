@@ -84,13 +84,6 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
   protected $reported;
 
   /**
-   * A database connection object to the public Drupal schema.
-   *
-   * @var object
-   */
-  protected $public;
-
-  /**
    * The ID of this plugin.
    *
    * @var string
@@ -131,8 +124,6 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
     // Initialize messenger
     $this->messenger = \Drupal::messenger();
 
-    // Initialize the connection to the Drupal public schema.
-    $this->public = \Drupal::database();
   }
 
    /**
@@ -242,7 +233,8 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
       $values['arguments'] = base64_encode(serialize($arguments));
 
       // Insert the importer record.
-      $import_id = $this->public->insert('tripal_import')
+      $public = \Drupal::database();
+      $import_id = $public->insert('tripal_import')
         ->fields($values)
         ->execute();
 
@@ -260,8 +252,9 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    *   The ID of the import record.
    */
   public function load($import_id) {
+    $public = \Drupal::database();
     // Get the importer.
-    $import = $this->public->select('tripal_import', 'ti')
+    $import = $public->select('tripal_import', 'ti')
       ->fields('ti')
       ->condition('ti.import_id', $import_id)
       ->execute()

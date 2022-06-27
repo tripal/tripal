@@ -9,12 +9,6 @@ use Drupal\tripal\TripalImporter\TripalImporterBase;
  */
 abstract class ChadoImporterBase extends TripalImporterBase {
 
-  /**
-   * A databaes connection object to the Chado schema.
-   * @var mixed
-   */
-  protected $chado = NULL;
-
 
   /**
    * {@inheritdoc}
@@ -23,7 +17,6 @@ abstract class ChadoImporterBase extends TripalImporterBase {
   public function __construct(array $configuration, $plugin_id, $plugin_definition) {
     parent::__construct($configuration,$plugin_id,$plugin_definition);
 
-    $this->chado = \Drupal::service('tripal_chado.database');
   }
 
   /**
@@ -31,8 +24,10 @@ abstract class ChadoImporterBase extends TripalImporterBase {
    */
   public function addAnalysis($form, &$form_state) {
 
+    $chado = \Drupal::service('tripal_chado.database');
+
     // Get the list of analyses.
-    $query = $this->chado->select('analysis', 'A');
+    $query = $chado->select('analysis', 'A');
     $query->fields('A', ['analysis_id', 'name']);
     $query->orderBy('A.name');
     $analyses = [];

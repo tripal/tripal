@@ -4,8 +4,9 @@ namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
-use Drupal\Core\File\FileSystem;
-
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\InvokeCommand;
+use Drupal\Core\Ajax\ReplaceCommand;
 /**
  * OBO Importer implementation of the TripalImporterBase.
  *
@@ -162,17 +163,6 @@ class OBOImporter extends ChadoImporterBase {
    */
   public function form($form, &$form_state) {
 
-    // get a list of db from chado for user to choose
-    $sql = "SELECT * FROM {tripal_cv_obo} ORDER BY name";
-    $results = $this->public->query($sql);
-
-    $obos = [];
-    $obos[] = 'Select a Vocabulary';
-    foreach ($results as $obo) {
-      $obos[$obo->obo_id] = $obo->name;
-    }
-
-
     $form['instructions']['info'] = [
       '#type' => 'item',
       '#markup' => t('This page allows you to load vocabularies and ontologies
@@ -182,6 +172,39 @@ class OBOImporter extends ChadoImporterBase {
         loaded (as when new updates to that vocabulary are available) or load a new
         vocabulary.'),
     ];
+
+    // Add form elements for an existing OBO.
+    $this->formExistingOBOElements($form, $form_state);
+
+    // Add form elements for inserting a new OBO.
+    $this->formNewOBOElements($form, $form_state);
+
+    return $form;
+  }
+
+  /**
+   * Adds the fields for selecing an OBO.
+   *
+   * @param array $form
+   *   The form array.
+   * @param \Drupal\Core\Form\FormStateInterface  $form_state
+   *   The form state object.
+   */
+  private function formExistingOBOElements(&$form, &$form_state) {
+
+    $obo_id = $form_state->getValue('obo_id');
+
+    $public = \Drupal::database();
+
+    // get a list of db from chado for user to choose
+    $sql = "SELECT * FROM {tripal_cv_obo} ORDER BY name";
+    $results = $public->query($sql);
+
+    $obos = [];
+    $obos[] = 'Select a Vocabulary';
+    foreach ($results as $obo) {
+      $obos[$obo->obo_id] = $obo->name;
+    }
 
     $form['obo_existing'] = [
       '#type' => 'fieldset',
@@ -198,83 +221,117 @@ class OBOImporter extends ChadoImporterBase {
         already been loaded to retrieve any new updates.'),
     ];
 
-    $obo_id = $form_state->getValue('obo_id');
     $form['obo_existing']['obo_id'] = [
       '#title' => t('Ontology OBO File Reference'),
       '#type' => 'select',
       '#options' => $obos,
       '#default_value' => $obo_id,
       '#ajax' => [
-        'callback' =>  '::formAjaxCallback',
-        'event' => 'change',
+        'callback' =>  [$this, 'formAjaxCallback'],
         'wrapper' => 'obo-existing-fieldset',
-        'progress' => [
-          'type' => 'throbber',
-        ],
       ],
       '#description' => t('Select a vocabulary to import.'),
     ];
 
-    // If the user has selected an OBO ID then get the form elements for
-    // updating.
+    // Add the fields for updaing the OBO details
     if ($obo_id) {
-      $uobo_name = '';
-      $uobo_url = '';
-      $uobo_file = '';
-
-      $vocab = $this->public->select('tripal_cv_obo', 't')
-        ->fields('t', ['name', 'path'])
-        ->condition('obo_id', $obo_id)
-        ->execute()
-        ->fetchObject();
-
-      $uobo_name = $vocab->name;
-      if (preg_match('/^http/', $vocab->path)) {
-        $uobo_url = $vocab->path;
-      }
-      else {
-        $uobo_file = trim($vocab->path);
-        $matches = [];
-        if (preg_match('/\{(.*?)\}/', $uobo_file, $matches)) {
-          $modpath = drupal_get_path('module', $matches[1]);
-          $uobo_file = preg_replace('/\{.*?\}/', $modpath, $uobo_file);
-        }
-      }
-
-      $form['obo_existing']['uobo_name'] = [
-        '#type' => 'textfield',
-        '#title' => t('Vocabulary Name'),
-        '#description' => t('Please provide a name for this vocabulary. After upload, this name will appear in the drop down
-                             list above for use again later.'),
-        '#default_value' => $uobo_name,
-      ];
-
-      $form['obo_existing']['uobo_url'] = [
-        '#type' => 'textfield',
-        '#title' => t('Remote URL'),
-        '#description' => t('Please enter a URL for the online OBO file. The file will be downloaded and parsed.
-                             (e.g. https://raw.githubusercontent.com/oborel/obo-relations/master/ro.obo)'),
-        '#default_value' => $uobo_url,
-      ];
-
-      $form['obo_existing']['uobo_file'] = [
-        '#type' => 'textfield',
-        '#title' => t('Local File'),
-        '#description' => t('Please enter the file system path for an OBO
-          definition file. If entering a path relative to
-          the Drupal installation you may use a relative path that excludes the
-          Drupal installation directory (e.g. sites/default/files/xyz.obo). Note
-          that Drupal relative paths have no preceeding slash.
-          Otherwise, please provide the full path on the filesystem. The path
-          must be accessible to the web server on which this Drupal instance is running.'),
-        '#default_value' => $uobo_file,
-      ];
-      $form['obo_existing']['update_obo_details'] = [
-        '#type' => 'submit',
-        '#value' => 'Update Ontology Details',
-        '#name' => 'update_obo_details',
-      ];
+      $this->formEditOBOElements($form, $form_state, $obo_id);
     }
+  }
+  /**
+   * Adds fields to the form for updating the OBO.
+   *
+   * @param array $form
+   *   The form array.
+   * @param \Drupal\Core\Form\FormStateInterface  $form_state
+   *   The form state object.
+   * @param int $obo_id
+   *   The ID of the OBO.
+   */
+  private function formEditOBOElements(&$form, &$form_state, $obo_id) {
+
+    $public = \Drupal::database();
+
+    $uobo_name = '';
+    $uobo_url = '';
+    $uobo_file = '';
+
+    $query = $public->select('tripal_cv_obo', 't');
+    $query->fields('t', ['name', 'path']);
+    $query->condition('obo_id', $obo_id);
+    $result = $query->execute();
+    $vocab = $result->fetchObject();
+
+    // If the name is a URL then keep it as is.
+    $uobo_name = $vocab->name;
+    if (preg_match('/^http/', $vocab->path)) {
+      $uobo_url = $vocab->path;
+    }
+    // If the name is a local file then fix the path.
+    else {
+      $uobo_file = trim($vocab->path);
+      $matches = [];
+      if (preg_match('/\{(.*?)\}/', $uobo_file, $matches)) {
+        $modpath = \Drupal::service('file_system')
+          ->realpath(\Drupal::service('module_handler')
+          ->getModule($matches[1])
+          ->getPath());
+        $uobo_file = preg_replace('/\{.*?\}/', $modpath, $uobo_file);
+      }
+    }
+
+    $form['obo_existing']['uobo_name'] = [
+      '#type' => 'textfield',
+      '#title' => t('Vocabulary Name'),
+      '#description' => t('Please provide a name for this vocabulary. After ' .
+        'upload, this name will appear in the drop down list above for use again later.'),
+      '#default_value' => $uobo_name,
+      '#id' => 'edit-uobo-name'
+    ];
+
+    $form['obo_existing']['uobo_url'] = [
+      '#type' => 'textfield',
+      '#title' => t('Remote URL'),
+      '#description' => t('Please enter a URL for the online OBO file. The file '.
+        'will be downloaded and parsed. (e.g. https://raw.githubusercontent.com/oborel/obo-relations/master/ro.obo)'),
+      '#default_value' => $uobo_url,
+      '#id' => 'edit-uobo-url'
+    ];
+
+    $form['obo_existing']['uobo_file'] = [
+      '#type' => 'textfield',
+      '#title' => t('Local File'),
+      '#description' => t('Please enter the file system path for an OBO ' .
+        'definition file. If entering a path relative to ' .
+        'the Drupal installation you may use a relative path that excludes the ' .
+        'Drupal installation directory (e.g. sites/default/files/xyz.obo). Note ' .
+        'that Drupal relative paths have no preceeding slash. ' .
+        'Otherwise, please provide the full path on the filesystem. The path ' .
+        'must be accessible to the web server on which this Drupal instance is running.'),
+      '#default_value' => $uobo_file,
+      '#id' => 'edit-uobo-file'
+    ];
+    $form['obo_existing']['update_obo'] = [
+      '#type' => 'submit',
+      '#value' => 'Update Ontology Details',
+      '#name' => 'update_obo',
+    ];
+    $form['obo_existing']['delete_obo'] = [
+      '#type' => 'submit',
+      '#value' => 'Delete Ontology',
+      '#name' => 'delete_obo',
+    ];
+  }
+
+  /**
+   * Adds fields to the form for inserting a new OBO.
+   *
+   * @param array $form
+   *   The form array.
+   * @param \Drupal\Core\Form\FormStateInterface  $form_state
+   *   The form state object.
+   */
+  private function formNewOBOElements(&$form, &$form_state) {
 
     $form['obo_new'] = [
       '#type' => 'fieldset',
@@ -284,45 +341,67 @@ class OBOImporter extends ChadoImporterBase {
     ];
 
     $form['obo_new']['path_instructions'] = [
-      '#value' => t('Provide the name and path for the OBO file. If the vocabulary OBO file
-                     is stored local to the server provide a file name. If the vocabulary is stored remotely,
-                     provide a URL. Only provide a URL or a local file, not both.'),
+      '#value' => t('Provide the name and path for the OBO file. If the vocabulary OBO file ' .
+        'is stored local to the server provide a file name. If the vocabulary is stored remotely, ' .
+        'provide a URL. Only provide a URL or a local file, not both.'),
     ];
 
     $form['obo_new']['obo_name'] = [
       '#type' => 'textfield',
       '#title' => t('New Vocabulary Name'),
-      '#description' => t('Please provide a name for this vocabulary. After upload, this name will appear in the drop down
-                           list above for use again later. Additionally, if a default namespace is not provided in the OBO
-                           header this name will be used as the default_namespace.'),
+      '#description' => t('Please provide a name for this vocabulary. After upload, this name will appear in the drop down ' .
+        'list above for use again later. Additionally, if a default namespace is not provided in the OBO ' .
+        'header this name will be used as the default_namespace.'),
     ];
 
     $form['obo_new']['obo_url'] = [
       '#type' => 'textfield',
       '#title' => t('Remote URL'),
-      '#description' => t('Please enter a URL for the online OBO file.  The file will be downloaded and parsed.
-                           (e.g. https://raw.githubusercontent.com/oborel/obo-relations/master/ro.obo)'),
+      '#description' => t('Please enter a URL for the online OBO file.  The file will be downloaded and parsed. ' .
+                          '(e.g. https://raw.githubusercontent.com/oborel/obo-relations/master/ro.obo)'),
     ];
 
     $form['obo_new']['obo_file'] = [
       '#type' => 'textfield',
       '#title' => t('Local File'),
-      '#description' => t('Please enter the file system path for an OBO
-          definition file. If entering a path relative to
-          the Drupal installation you may use a relative path that excludes the
-          Drupal installation directory (e.g. sites/default/files/xyz.obo). Note
-          that Drupal relative paths have no preceeding slash.
-          Otherwise, please provide the full path on the filesystem.  The path
-          must be accessible to the web server on which this Drupal instance is running.'),
+      '#description' => t('Please enter the file system path for an OBO ' .
+        'definition file. If entering a path relative to ' .
+        'the Drupal installation you may use a relative path that excludes the ' .
+        'Drupal installation directory (e.g. sites/default/files/xyz.obo). Note ' .
+        'that Drupal relative paths have no preceeding slash. ' .
+        'Otherwise, please provide the full path on the filesystem.  The path ' .
+        'must be accessible to the web server on which this Drupal instance is running.'),
     ];
+  }
 
-    return $form;
+  /**
+   * Ajax callback for the OBOImporter::form() function.
+   *
+   * @param array $form
+   *   The form array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   */
+  public function formAjaxCallback($form, &$form_state) {
+
+    $uobo_name = $form['obo_existing']['uobo_name']['#default_value'];
+    $uobo_url = $form['obo_existing']['uobo_url']['#default_value'];
+    $uobo_file = $form['obo_existing']['uobo_file']['#default_value'];
+
+    $response = new AjaxResponse();
+    $response->addCommand(new ReplaceCommand('#obo-existing-fieldset', $form['obo_existing']));
+    $response->addCommand(new InvokeCommand('#edit-uobo-name', 'val', [$uobo_name]));
+    $response->addCommand(new InvokeCommand('#edit-uobo-url', 'val', [$uobo_url]));
+    $response->addCommand(new InvokeCommand('#edit-uobo-file', 'val', [$uobo_file]));
+
+    return $response;
   }
 
   /**
    * {@inheritdoc}
    */
   public function formSubmit($form, &$form_state) {
+    $public = \Drupal::database();
 
     $obo_id = $form_state->getValue('obo_id');
     $obo_name = trim($form_state->getValue('obo_name'));
@@ -334,26 +413,38 @@ class OBOImporter extends ChadoImporterBase {
 
     // If the user requested to alter the details then do that.
 
-    if ($form_state->getTriggeringElement()['#name'] == 'update_obo_details') {
+    if ($form_state->getTriggeringElement()['#name'] == 'update_obo') {
 
       $form_state->setRebuild(True);
-      $success = $this->public->update('tripal_cv_obo')
-        ->fields([
-          'name' => $uobo_name,
-          'path' => $uobo_url ? $uobo_url : $uobo_file,
-        ])
-        ->condition('obo_id', $obo_id)
-        ->execute();
+      $query = $public->update('tripal_cv_obo');
+      $query->fields([
+        'name' => $uobo_name,
+        'path' => $uobo_url ? $uobo_url : $uobo_file,
+      ]);
+      $query->condition('obo_id', $obo_id);
+      $success = $query->execute();
       if ($success) {
-        \Drupal::messenger()->addMessage(t("The vocabulary !vocab has been updated.", ['!vocab' => $uobo_name]));
+        \Drupal::messenger()->addMessage(t("The vocabulary @vocab has been updated.", ['@vocab' => $uobo_name]));
       }
       else {
-        \Drupal::messenger()->addError(t("The vocabulary !vocab could not be updated.", ['!vocab' => $uobo_name]));
+        \Drupal::messenger()->addError(t("The vocabulary !vocab could not be updated.", ['@vocab' => $uobo_name]));
       }
 
     }
+    elseif ($form_state->getTriggeringElement()['#name'] == 'delete_obo') {
+      $form_state->setRebuild(True);
+      $query = $public->delete('tripal_cv_obo');
+      $query->condition('obo_id', $obo_id);
+      $success = $query->execute();
+      if ($success) {
+        \Drupal::messenger()->addMessage(t("The vocabulary @vocab has been deleted.", ['@vocab' => $uobo_name]));
+      }
+      else {
+        \Drupal::messenger()->addError(t("The vocabulary @vocab could not be deleted.", ['@vocab' => $uobo_name]));
+      }
+    }
     elseif (!empty($obo_name)) {
-      $obo_id = $this->public->insert('tripal_cv_obo')
+      $obo_id = $public->insert('tripal_cv_obo')
         ->fields([
           'name' => $obo_name,
           'path' => $obo_url ? $obo_url : $obo_file,
@@ -364,7 +455,7 @@ class OBOImporter extends ChadoImporterBase {
       $form_state->setValue('obo_id', $obo_id);
 
       if ($obo_id) {
-        \Drupal::messenger()->addMessage(t("The vocabulary !vocab has been added.", ['!vocab' => $obo_name]));
+        \Drupal::messenger()->addMessage(t("The vocabulary @vocab has been added.", ['@vocab' => $obo_name]));
       }
       else {
         $form_state['rebuild'] = TRUE;
@@ -377,6 +468,7 @@ class OBOImporter extends ChadoImporterBase {
    * {@inheritdoc}
    */
   public function formValidate($form, &$form_state) {
+    $public = \Drupal::database();
 
     $obo_id = $form_state->getValue('obo_id');
     $obo_name = trim($form_state->getValue('obo_name'));
@@ -391,50 +483,52 @@ class OBOImporter extends ChadoImporterBase {
         $form_state->getTriggeringElement()['#name'] == 'update_load_obo') {
 
       // Get the current record
-      $vocab = $this->public->select('tripal_cv_obo', 't')
+      $vocab = $public->select('tripal_cv_obo', 't')
         ->fields('t', ['obo_id', 'name', 'path'])
         ->condition('name', $uobo_name)
         ->execute()
         ->fetchObject();
       if ($vocab and $vocab->obo_id != $obo_id) {
-        form_set_error('uobo_name', 'The vocabulary name must be different from existing vocabularies');
+        $form_state->setErrorByName('uobo_name', t('The vocabulary name must be different from existing vocabularies'));
       }
       // Make sure the file exists. First check if it is a relative path
       $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $uobo_file;
       if (!file_exists($dfile)) {
         if (!file_exists($uobo_file)) {
-          form_set_error('uobo_file', t('The specified path, !path, does not exist or cannot be read.'), ['!path' => $dfile]);
+          $form_state->setErrorByName('uobo_file',
+              t('The specified path, @path, does not exist or cannot be read.'), ['@path' => $dfile]);
         }
       }
       if (!$uobo_url and !$uobo_file) {
-        form_set_error('uobo_url', 'Please provide a URL or a path for the vocabulary.');
+        $form_state->setErrorByName('uobo_url', t('Please provide a URL or a path for the vocabulary.'));
       }
       if ($uobo_url and $uobo_file) {
-        form_set_error('uobo_url', 'Please provide only a URL or a path for the vocabulary, but not both.');
+        $form_state->setErrorByName('uobo_url', t('Please provide only a URL or a path for the vocabulary, but not both.'));
       }
     }
     if ($form_state->getTriggeringElement()['#name'] == 'add_new_obo') {
       // Get the current record
-      $vocab = $this->public->select('tripal_cv_obo', 't')
+      $vocab = $public->select('tripal_cv_obo', 't')
         ->fields('t', ['obo_id', 'name', 'path'])
         ->condition('name', $obo_name)
         ->execute()
         ->fetchObject();
       if ($vocab) {
-        form_set_error('obo_name', 'The vocabulary name must be different from existing vocabularies');
+        $form_state->setErrorByName('obo_name', t('The vocabulary name must be different from existing vocabularies'));
       }
       // Make sure the file exists. First check if it is a relative path
       $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $obo_file;
       if (!file_exists($dfile)) {
         if (!file_exists($obo_file)) {
-          form_set_error('obo_file', t('The specified path, !path, does not exist or cannot be read.'), ['!path' => $dfile]);
+          $form_state->setErrorByName('obo_file',
+              t('The specified path, @path, does not exist or cannot be read.'), ['@path' => $dfile]);
         }
       }
       if (!$obo_url and !$obo_file) {
-        form_set_error('obo_url', 'Please provide a URL or a path for the vocabulary.');
+        $form_state->setErrorByName('obo_url', t('Please provide a URL or a path for the vocabulary.'));
       }
       if ($obo_url and $obo_file) {
-        form_set_error('obo_url', 'Please provide only a URL or a path for the vocabulary, but not both.');
+        $form_state->setErrorByName('obo_url', t('Please provide only a URL or a path for the vocabulary, but not both.'));
       }
     }
   }
@@ -448,8 +542,9 @@ class OBOImporter extends ChadoImporterBase {
    *   A CVterm object
    */
   private function getChadoCvtermById($cvterm_id) {
+    $chado = \Drupal::service('tripal_chado.database');
 
-    $query = $this->chado->select('cvterm', 'CVT');
+    $query = $chado->select('cvterm', 'CVT');
     $query->fields('CVT');
     $query->condition('CVT.cvterm_id', $cvterm_id);
     $result = $query->execute();
@@ -471,8 +566,9 @@ class OBOImporter extends ChadoImporterBase {
    *   A CVterm object
    */
   private function getChadoCvtermByAccession($idSpace, $accession) {
+    $chado = \Drupal::service('tripal_chado.database');
 
-    $query = $this->chado->select('cvterm', 'CVT');
+    $query = $chado->select('cvterm', 'CVT');
     $query->join('dbxref', 'DBX', '"DBX".dbxref_id = "CVT".dbxref_id');
     $query->join('db', 'DB', '"DB".db_id = "DBX".db_id');
     $query->fields('CVT');
@@ -493,7 +589,8 @@ class OBOImporter extends ChadoImporterBase {
    *   A CVterm object
    */
   private function getChadoCvtermByName($cv_id, $name) {
-    $query = $this->chado->select('cvterm', 'CVT');
+    $chado = \Drupal::service('tripal_chado.database');
+    $query = $chado->select('cvterm', 'CVT');
     $query->fields('CVT');
     $query->condition('cv_id', $cv_id);
     $query->condition('name', $name);
@@ -509,7 +606,8 @@ class OBOImporter extends ChadoImporterBase {
    *   A CVterm object
    */
   private function getChadoCvtermByDbxref($dbxref_id) {
-    $query = $this->chado->select('cvterm', 'CVT');
+    $chado = \Drupal::service('tripal_chado.database');
+    $query = $chado->select('cvterm', 'CVT');
     $query->fields('CVT');
     $query->condition('CVT.dbxref_id', $dbxref_id);
     $result = $query->execute();
@@ -527,7 +625,8 @@ class OBOImporter extends ChadoImporterBase {
    *   An dbxref object.
    */
   private function getChadoDBXrefByAccession($db_id, $accession) {
-    $query = $this->chado->select('dbxref', 'DBX');
+    $chado = \Drupal::service('tripal_chado.database');
+    $query = $chado->select('dbxref', 'DBX');
     $query->fields('DBX');
     $query->condition('DBX.db_id', $db_id);
     $query->condition('DBX.accession', $accession);
@@ -544,7 +643,8 @@ class OBOImporter extends ChadoImporterBase {
    *   An dbxref object.
    */
   private function getChadoDBXrefById($dbxref_id) {
-    $query = $this->chado->select('dbxref', 'DBX');
+    $chado = \Drupal::service('tripal_chado.database');
+    $query = $chado->select('dbxref', 'DBX');
     $query->fields('DBX');
     $query->condition('DBX.dbxref_id', $dbxref_id);
     $result = $query->execute();
@@ -560,7 +660,8 @@ class OBOImporter extends ChadoImporterBase {
    *   A DB record object.
    */
   private function getChadoDbByName($name) {
-    $query = $this->chado->select('db', 'db');
+    $chado = \Drupal::service('tripal_chado.database');
+    $query = $chado->select('db', 'db');
     $query->fields('db');
     $query->condition('name', $name);
     $result = $query->execute();
@@ -575,7 +676,8 @@ class OBOImporter extends ChadoImporterBase {
    *   A DB record object.
    */
   private function getChadoDbById($db_id) {
-    $query = $this->chado->select('db', 'db');
+    $chado = \Drupal::service('tripal_chado.database');
+    $query = $chado->select('db', 'db');
     $query->fields('db');
     $query->condition('db_id', $db_id);
     $result = $query->execute();
@@ -591,7 +693,8 @@ class OBOImporter extends ChadoImporterBase {
    *   A CV record object.
    */
   private function getChadoCvByName($name) {
-    $query = $this->chado->select('cv', 'cv');
+    $chado = \Drupal::service('tripal_chado.database');
+    $query = $chado->select('cv', 'cv');
     $query->fields('cv');
     $query->condition('name', $name);
     $result = $query->execute();
@@ -607,7 +710,8 @@ class OBOImporter extends ChadoImporterBase {
    *   A CV record object.
    */
   private function getChadoCvById($cv_id) {
-    $query = $this->chado->select('cv', 'cv');
+    $chado = \Drupal::service('tripal_chado.database');
+    $query = $chado->select('cv', 'cv');
     $query->fields('cv');
     $query->condition('cv_id', $cv_id);
     $result = $query->execute();
@@ -654,12 +758,14 @@ class OBOImporter extends ChadoImporterBase {
    * {@inheritdoc}
    */
   public function run() {
+    $public = \Drupal::database();
+    $chado = \Drupal::service('tripal_chado.database');
 
     $arguments = $this->arguments['run_args'];
     $obo_id = $arguments['obo_id'];
 
     // Make sure the $obo_id is valid
-    $obo = $this->public->select('tripal_cv_obo', 'tco')
+    $obo = $public->select('tripal_cv_obo', 'tco')
       ->fields('tco')
       ->condition('obo_id', $obo_id)
       ->execute()
@@ -670,14 +776,14 @@ class OBOImporter extends ChadoImporterBase {
 
     // Get the list of all CVs so we can save on lookups later
     $sql = "SELECT * FROM {cv} CV";
-    $cvs = $this->chado->query($sql);
+    $cvs = $chado->query($sql);
     while ($cv = $cvs->fetchObject()) {
       $this->all_cvs[$cv->name] = $cv;
     }
 
     // Get the list of all DBs so we can save on lookups later
     $sql = "SELECT * FROM {db} DB";
-    $dbs = $this->chado->query($sql);
+    $dbs = $chado->query($sql);
     while ($db = $dbs->fetchObject()) {
       $this->all_dbs[$db->name] = $db;
     }
@@ -1013,7 +1119,7 @@ class OBOImporter extends ChadoImporterBase {
       // First see if we've seen this ontology before and get it's currently
       // loaded database.
       $sql = "SELECT dbname FROM {db2cv_mview} WHERE cvname = :cvname";
-      $short_name = $this->chado->query($sql, [':cvname' => $namespace])->fetchField();
+      $short_name = $chado->query($sql, [':cvname' => $namespace])->fetchField();
 
       if (!$short_name and array_key_exists('namespace-id-rule', $header)) {
         $matches = [];
@@ -1313,6 +1419,7 @@ class OBOImporter extends ChadoImporterBase {
    *   The cvterm ID.
    */
   private function saveTerm($stanza, $is_relationship = FALSE) {
+    $chado = \Drupal::service('tripal_chado.database');
 
     // Get the term ID.
     $id = $stanza['id'][0];
@@ -1393,7 +1500,7 @@ class OBOImporter extends ChadoImporterBase {
             $this->fixTermMismatch($stanza, $dbxref, $cv, $name);
 
             // Now update this cvterm record.
-            $query = $this->chado->update('cvterm');
+            $query = $chado->update('cvterm');
             $query->fields([
               'name' => $name,
               'definition' => $definition,
@@ -1428,7 +1535,7 @@ class OBOImporter extends ChadoImporterBase {
         }
 
         // Now insert.
-        $query = $this->chado->insert('cvterm');
+        $query = $chado->insert('cvterm');
         $query->fields([
           'cv_id' => $cv->cv_id,
           'name' => $name,
@@ -1480,11 +1587,12 @@ class OBOImporter extends ChadoImporterBase {
    *   Returns TRUE if a conflict was found and corrected.
    */
   public function fixTermMismatch($stanza, $dbxref, $cv, $name) {
+    $chado = \Drupal::service('tripal_chado.database');
 
     $name = $stanza['name'][0];
 
     // First get the record for any potential conflicting term.
-    $query = $this->chado->select('cvterm', 'CVT');
+    $query = $chado->select('cvterm', 'CVT');
     $query->fields('CVT');
     $query->condition('CVT.name', $name);
     $query->condition('CVT.cv_id', $cv->cv_id);
@@ -1516,7 +1624,7 @@ class OBOImporter extends ChadoImporterBase {
       $check_stanza = $this->getCachedTermStanza($check_accession);
       if (!$check_stanza) {
         $new_name = $check_cvterm->getValue('name') . ' (' . $check_accession . ')';
-        $query = $this->chado->update('cvterm');
+        $query = $chado->update('cvterm');
         $query->fields([
           'name' => $new_name,
           'is_obsolete' => '1',
@@ -1531,7 +1639,7 @@ class OBOImporter extends ChadoImporterBase {
       else {
         if (array_key_exists('is_obsolete', $check_stanza) and ($check_stanza['is_obsolete'][0] == 'true') and (!array_key_exists('is_obsolete', $stanza) or ($stanza['is_obsolete'][0] != 'true'))) {
           $new_name = $check_cvterm->name . ' (obsolete)';
-          $query = $this->chado->update('cvterm');
+          $query = $chado->update('cvterm');
           $query->fields([
             'name' => $new_name,
           ]);
@@ -1548,7 +1656,7 @@ class OBOImporter extends ChadoImporterBase {
         // name of the other.
         else {
           $new_name = $check_cvterm->name . ' (' . $check_accession . ')';
-          $query = $this->chado->update('cvterm');
+          $query = $chado->update('cvterm');
           $query->fields([
             'name' => $new_name,
           ]);
@@ -1576,6 +1684,8 @@ class OBOImporter extends ChadoImporterBase {
    */
   private function processTerm($stanza, $is_relationship = 0) {
 
+    $chado = \Drupal::service('tripal_chado.database');
+
     //
     // First things first--save the term.
     //
@@ -1598,7 +1708,7 @@ class OBOImporter extends ChadoImporterBase {
       DELETE FROM {cvterm_relationship}
       WHERE subject_id = :cvterm_id
     ";
-    $this->chado->query($sql, [':cvterm_id' => $cvterm_id]);
+    $chado->query($sql, [':cvterm_id' => $cvterm_id]);
 
     // If this is an obsolete term then clear out the relationships where
     // this term is the object.
@@ -1607,26 +1717,26 @@ class OBOImporter extends ChadoImporterBase {
         DELETE FROM {cvterm_relationship}
         WHERE object_id = :cvterm_id
       ";
-      $this->chado->query($sql, [':cvterm_id' => $cvterm_id]);
+      $chado->query($sql, [':cvterm_id' => $cvterm_id]);
     }
 
     $sql = "
       DELETE FROM {cvtermprop}
       WHERE cvterm_id = :cvterm_id
     ";
-    $this->chado->query($sql, [':cvterm_id' => $cvterm_id]);
+    $chado->query($sql, [':cvterm_id' => $cvterm_id]);
 
     $sql = "
       DELETE FROM {cvterm_dbxref}
       WHERE cvterm_id = :cvterm_id
     ";
-    $this->chado->query($sql, [':cvterm_id' => $cvterm_id]);
+    $chado->query($sql, [':cvterm_id' => $cvterm_id]);
 
     $sql = "
       DELETE FROM {cvtermsynonym} CVTSYN
       WHERE cvterm_id = :cvterm_id
     ";
-    $this->chado->query($sql, [':cvterm_id' => $cvterm_id]);
+    $chado->query($sql, [':cvterm_id' => $cvterm_id]);
 
     // We should never have the problem where we don't have a cvterm_id. The
     // saveTerm() function should always return one.  But if for some unknown
@@ -2027,13 +2137,14 @@ class OBOImporter extends ChadoImporterBase {
    *   The term type (e.g. Typedef, Term)
    */
   private function getCacheSize($type) {
+    $chado = \Drupal::service('tripal_chado.database');
     if ($this->cache_type == 'table') {
       $sql = "
         SELECT count(*) as num_terms
         FROM {tripal_obo_temp}
         WHERE type = :type
       ";
-      $result = $this->chado->query($sql, [':type' => $type])->fetchObject();
+      $result = $chado->query($sql, [':type' => $type])->fetchObject();
       return $result->num_terms;
     }
     return $this->termStanzaCache['count'][$type];
@@ -2049,9 +2160,10 @@ class OBOImporter extends ChadoImporterBase {
    *   The term type (e.g. Typedef, Term)
    */
   private function getCachedTermStanzas($type) {
+    $chado = \Drupal::service('tripal_chado.database');
     if ($this->cache_type == 'table') {
       $sql = "SELECT id FROM {tripal_obo_temp} WHERE type = 'Typedef' ";
-      $typedefs = $this->chado->query($sql);
+      $typedefs = $chado->query($sql);
       return $typedefs;
     }
     return $this->termStanzaCache['types'][$type];
@@ -2061,9 +2173,10 @@ class OBOImporter extends ChadoImporterBase {
    * Clear's the term cache.
    */
   private function clearTermStanzaCache() {
+    $chado = \Drupal::service('tripal_chado.database');
     if ($this->cache_type == 'table') {
       $sql = "DELETE FROM {tripal_obo_temp}";
-      $this->chado->query($sql);
+      $chado->query($sql);
       return;
     }
     $this->termStanzaCache = [
@@ -2365,12 +2478,13 @@ class OBOImporter extends ChadoImporterBase {
    *   The newly inserted DB object.
    */
   private function insertChadoDb($dbname, $url = '',  $description = '') {
+    $chado = \Drupal::service('tripal_chado.database');
 
     // Add the database if it doesn't exist.
     if (array_key_exists($dbname, $this->all_dbs)) {
       return $this->all_dbs[$dbname];
     }
-    $query = $this->chado->insert('db');
+    $query = $chado->insert('db');
     $query->fields([
       'name' => $dbname,
       'url' => $url,
@@ -2398,6 +2512,7 @@ class OBOImporter extends ChadoImporterBase {
    *   The newly inserted dbxref object.
    */
   private function insertChadoDbxref($db_id, $accession) {
+    $chado = \Drupal::service('tripal_chado.database');
 
     $dbxref = $this->getChadoDBXrefByAccession($db_id, $accession);
     if ($dbxref) {
@@ -2405,7 +2520,7 @@ class OBOImporter extends ChadoImporterBase {
     }
 
     // Add the database if it doesn't exist.
-    $query = $this->chado->insert('dbxref');
+    $query = $chado->insert('dbxref');
     $query->fields([
       'db_id' => $db_id,
       'accession' => $accession,
@@ -2430,8 +2545,9 @@ class OBOImporter extends ChadoImporterBase {
    *   The newly inserted cvterm_dbxref object.
    */
   private function insertChadoCvtermDbxref($cvterm_id, $dbxref_id) {
+    $chado = \Drupal::service('tripal_chado.database');
 
-    $squery = $this->chado->select('cvterm_dbxref', 'CVTDBX');
+    $squery = $chado->select('cvterm_dbxref', 'CVTDBX');
     $squery->fields('CVTDBX');
     $squery->condition('CVTDBX.cvterm_id', $cvterm_id);
     $squery->condition('CVTDBX.dbxref_id', $dbxref_id);
@@ -2440,7 +2556,7 @@ class OBOImporter extends ChadoImporterBase {
       return $cvterm_dbxref;
     }
 
-    $query = $this->chado->insert('cvterm_dbxref');
+    $query = $chado->insert('cvterm_dbxref');
     $query->fields([
       'cvterm_id' => $cvterm_id,
       'dbxref_id' => $dbxref_id,
@@ -2464,8 +2580,9 @@ class OBOImporter extends ChadoImporterBase {
    *   The newly inserted cvtermsynonym object.
    */
   private function insertChadoCvtermSynonym($cvterm_id, $synonym) {
+    $chado = \Drupal::service('tripal_chado.database');
 
-    $query = $this->chado->insert('cvtermsynonym');
+    $query = $chado->insert('cvtermsynonym');
     $query->fields([
       'cvterm_id' => $cvterm_id,
       'synonym' => $synonym,
@@ -2490,8 +2607,9 @@ class OBOImporter extends ChadoImporterBase {
    *   The rank of the property value
    */
   private function insertChadoCvtermProp($cvterm_id, $type_id, $value, $rank = 0) {
+    $chado = \Drupal::service('tripal_chado.database');
 
-    $query = $this->chado->insert('cvtermprop');
+    $query = $chado->insert('cvtermprop');
     $query->fields([
       'cvterm_id' => $cvterm_id,
       'type_id' => $type_id,
@@ -2516,8 +2634,9 @@ class OBOImporter extends ChadoImporterBase {
    *   The cvterm ID for the object.
    */
   private function insertChadoCvtermRelationship($subject_id, $type_id, $object_id) {
+    $chado = \Drupal::service('tripal_chado.database');
 
-    $query = $this->chado->insert('cvterm_relationship');
+    $query = $chado->insert('cvterm_relationship');
     $query->fields([
       'subject_id' => $subject_id,
       'type_id' => $type_id,
@@ -2540,13 +2659,14 @@ class OBOImporter extends ChadoImporterBase {
    *   The newly inserted CV object..
    */
   private function insertChadoCv($cvname) {
+    $chado = \Drupal::service('tripal_chado.database');
 
     // Add the CV record if it doesn't exist.
     if (array_key_exists($cvname, $this->all_cvs)) {
       return $this->all_cvs[$cvname];
     }
 
-    $query = $this->chado->insert('cv');
+    $query = $chado->insert('cv');
     $query->fields(['name' => $cvname]);
     $success = $query->execute();
     if (!$success) {
@@ -2739,63 +2859,5 @@ class OBOImporter extends ChadoImporterBase {
       }
     }
     return $response;
-  }
-
-  /**
-   * Ajax callback for the OBOImporter::form() function.
-   */
-  public function formAjaxCallback($form, $form_state) {
-    return $form['obo_existing'];
-  }
-
-  /**
-   * Ajax callback for the OBOImporter::form() function.
-   */
-  public function formAjaxUpdateCallback($form, $form_state) {
-
-    $form_values = $form_state->getValues();
-    $obo_id = $form_values['obo_id'];
-    $uobo_name = $form_state->getValue('uobo_name');
-    $uobo_url = $form_state->getValue('uobo_url');
-    $uobo_file = $form_state->getValue('uobo_file');
-    $success = $this->public->update('tripal_cv_obo')
-      ->fields([
-        'name' => $uobo_name,
-        'path' => $uobo_url ? $uobo_url : $uobo_file,
-      ])
-      ->condition('obo_id', $obo_id)
-      ->execute();
-    if ($success) {
-      $form['obo_existing']['update_obo_details_results'] = [
-        '#type' => 'item',
-        '#markup' => '<span style="color: green" id="update_obo_details_results">Updated successfully!</span>'
-      ];
-
-      // Refresh the OBO select list
-      // get a list of db from chado for user to choose
-      $sql = "SELECT * FROM tripal_cv_obo ORDER BY name";
-      $results = $this->public->query($sql);
-
-      $obos = [];
-      $obos[] = 'Select a Vocabulary';
-      foreach ($results as $obo) {
-        $obos[$obo->obo_id] = $obo->name;
-      }
-
-      $form['obo_existing']['obo_id']['#options'] = $obos;
-
-      // Make sure the obo_existing fields stay the same
-      $form['obo_existing']['uobo_name']['#value'] = $form_values['uobo_name'];
-      $form['obo_existing']['uobo_url']['#value'] = $form_values['uobo_url'];
-      $form['obo_existing']['uobo_file']['#value'] = $form_values['uobo_file'];
-    }
-    else {
-      $form['obo_existing']['update_obo_details_results'] = [
-        '#type' => 'item',
-        '#markup' => '<span style="color: red" id="update_obo_details_results">Updated was unsuccessful!</span>'
-      ];
-    }
-
-    return $form['obo_existing'];;
   }
 }

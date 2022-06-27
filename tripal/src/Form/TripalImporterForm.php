@@ -208,7 +208,8 @@ class TripalImporterForm implements FormInterface {
       $importer->create($run_args, $file_details);
       $importer->submitJob();
 
-    } catch (Exception $e) {
+    }
+    catch (\Exception $e) {
         \Drupal::messenger()->addMessage('Cannot submit import: ' . $e->getMessage(), 'error');
     }
   }
