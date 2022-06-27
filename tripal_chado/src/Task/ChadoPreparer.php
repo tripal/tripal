@@ -904,11 +904,12 @@ class ChadoPreparer extends ChadoTaskBase {
     // NCIT
     $ncit_vocab = $this->getVocabulary('ncit');
     $ncit_vocab->setLabel('NCI Thesaurus OBO Edition');
-    $ncit_vocab->setUrl('http://purl.obolibrary.org/obo/ncit.owl');
     $ncit_idspace = $this->getIdSpace('NCIT');
     $ncit_idspace->setDescription('The NCIt is a reference terminology that includes broad coverage of the cancer domain, including cancer related diseases, findings and abnormalities. NCIt OBO Edition releases should be considered experimental.');
     $ncit_idspace->setUrlPrefix('http://purl.obolibrary.org/obo/{db}_{accession}');
     $ncit_idspace->setDefaultVocabulary('ncit');
+    $ncit_vocab->addIdSpace('NCIT');
+    $ncit_vocab->setUrl('http://purl.obolibrary.org/obo/ncit.owl');
     $ncit__subgroup = new TripalTerm([
       'name' => 'Subgroup',
       'idSpace' => 'NCIT',
@@ -921,11 +922,12 @@ class ChadoPreparer extends ChadoTaskBase {
     // RDFS
     $rdfs_vocab = $this->getVocabulary('rdfs');
     $rdfs_vocab->setLabel('Resource Description Framework Schema');
-    $rdfs_vocab->setUrl('https://www.w3.org/TR/rdf-schema/');
     $rdfs_idspace = $this->getIdSpace('rdfs');
     $rdfs_idspace->setDescription('Resource Description Framework Schema');
     $rdfs_idspace->setUrlPrefix('http://www.w3.org/2000/01/rdf-schema#{accession}');
     $rdfs_idspace->setDefaultVocabulary('rdfs');
+    $rdfs_vocab->addIdSpace('rdfs');
+    $rdfs_vocab->setUrl('https://www.w3.org/TR/rdf-schema/');
     $rdfs__comment = new TripalTerm([
       'name' => 'comment',
       'accession' => 'comment',
@@ -938,11 +940,12 @@ class ChadoPreparer extends ChadoTaskBase {
     // RO
     $rel_vocab = $this->getVocabulary('ro');
     $rel_vocab->setLabel('Relationship Ontology (legacy)');
-    $rel_vocab->setUrl('cv/lookup/RO');
     $RO_idspace = $this->getIdSpace('RO');
     $RO_idspace->setDescription('Relationship Ontology (legacy)');
     $RO_idspace->setURLPrefix("cv/lookup/RO/{accession}	");
     $RO_idspace->setDefaultVocabulary('ro');
+    $rel_vocab->addIdSpace('RO');
+    $rel_vocab->setUrl('cv/lookup/RO');
     $ontologies[] = [
       'vocabulary' => $rel_vocab,
       'idSpace' => $RO_idspace,
@@ -957,13 +960,16 @@ class ChadoPreparer extends ChadoTaskBase {
     $cc_vocab->setLabel('Gene Ontology Cellular Component Vocabulary');
     $bp_vocab->setLabel('Gene Ontology Biological Process Vocabulary');
     $mf_vocab->setLabel('Gene Ontology Molecular Function Vocabulary');
-    $cc_vocab->setURL('http://geneontology.org/');
-    $bp_vocab->setURL('http://geneontology.org/');
-    $mf_vocab->setURL('http://geneontology.org/');
     $GO_idspace = $this->getIdSpace('GO');
     $GO_idspace->setDescription("The Gene Ontology (GO) knowledgebase is the world’s largest source of information on the functions of genes");
     $GO_idspace->setURLPrefix("http://amigo.geneontology.org/amigo/term/{db}:{accession}");
     $GO_idspace->setDefaultVocabulary('cellular_component');
+    $cc_vocab->addIdSpace('GO');
+    $bp_vocab->addIdSpace('GO');
+    $mf_vocab->addIdSpace('GO');
+    $cc_vocab->setURL('http://geneontology.org/');
+    $bp_vocab->setURL('http://geneontology.org/');
+    $mf_vocab->setURL('http://geneontology.org/');
     $ontologies[] = [
       'vocabulary' => $cc_vocab,
       'idSpace' => $GO_idspace,
@@ -974,11 +980,12 @@ class ChadoPreparer extends ChadoTaskBase {
     // SO
     $sequence_vocab = $this->getVocabulary('sequence');
     $sequence_vocab->setLabel('The Sequence Ontology');
-    $sequence_vocab->setURL('http://www.sequenceontology.org');
     $SO_idspace = $this->getIdSpace('SO');
     $SO_idspace->setDescription("The Sequence Ontology");
     $SO_idspace->setURLPrefix("http://www.sequenceontology.org/browser/current_svn/term/{db}:{accession}");
     $SO_idspace->setDefaultVocabulary('sequence');
+    $sequence_vocab->addIdSpace('SO');
+    $sequence_vocab->setURL('http://www.sequenceontology.org');
     $ontologies[] = [
       'vocabulary' => $sequence_vocab,
       'idSpace' => $SO_idspace,
@@ -989,11 +996,13 @@ class ChadoPreparer extends ChadoTaskBase {
     // TAXRANK
     $taxrank_vocab = $this->getVocabulary('taxonomic_rank');
     $taxrank_vocab->setLabel('Taxonomic Rank');
-    $taxrank_vocab->setURL('http://www.obofoundry.org/ontology/taxrank.html');
     $TAXRANK_idspace = $this->getIdSpace('TAXRANK');
     $TAXRANK_idspace->setDescription("A vocabulary of taxonomic ranks (species, family, phylum, etc)");
     $TAXRANK_idspace->setURLPrefix("http://purl.obolibrary.org/obo/{db}_{accession}");
     $TAXRANK_idspace->setDefaultVocabulary('taxonomic_rank');
+    $taxrank_vocab->addIdSpace('TAXRANK');
+    $taxrank_vocab->setURL('http://www.obofoundry.org/ontology/taxrank.html');
+
     $ontologies[] = [
       'vocabulary' => $taxrank_vocab,
       'idSpace' => $TAXRANK_idspace,
@@ -1004,11 +1013,12 @@ class ChadoPreparer extends ChadoTaskBase {
     // TContact
     $tcontact_vocab = $this->getVocabulary('tripal_contact');
     $tcontact_vocab->setLabel('Tripal Contact Ontology');
-    $tcontact_vocab->setURL('cv/lookup/TCONTACT');
     $tcontact_idspace = $this->getIdSpace('TCONTACT');
     $tcontact_idspace->setDescription("Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology an be identified.");
     $tcontact_idspace->setURLPrefix("cv/lookup/TCONTACT/{accession}	");
     $tcontact_idspace->setDefaultVocabulary('tripal_contact');
+    $tcontact_vocab->addIdSpace('TCONTACT');
+    $tcontact_vocab->setURL('cv/lookup/TCONTACT');
     $ontologies[] = [
       'vocabulary' => $tcontact_vocab,
       'idSpace' => $tcontact_idspace,
@@ -1019,11 +1029,12 @@ class ChadoPreparer extends ChadoTaskBase {
     // TPub
     $tpub_vocab = $this->getVocabulary('tripal_pub');
     $tpub_vocab->setLabel('Tripal Publication Ontology');
-    $tpub_vocab->setURL('cv/lookup/TPUB');
     $tpub_idspace = $this->getIdSpace('TPUB');
     $tpub_idspace->setDescription("Tripal Publication Ontology. A temporary ontology until a more formal appropriate ontology an be identified.");
     $tpub_idspace->setURLPrefix("cv/lookup/TPUB/{accession}	");
     $tpub_idspace->setDefaultVocabulary('tripal_pub');
+    $tpub_vocab->addIdSpace('TPUB');
+    $tpub_vocab->setURL('cv/lookup/TPUB');
     $ontologies[] = [
       'vocabulary' => $tpub_vocab,
       'idSpace' => $tpub_idspace,
