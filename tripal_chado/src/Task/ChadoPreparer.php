@@ -156,8 +156,7 @@ class ChadoPreparer extends ChadoTaskBase {
       $this->setProgress(0.2);
       $this->logger->notice("Loading ontologies...");
       $this->addOntologies();
-      $this->logger->notice('!!!! Uncomment the importOntologies() function !!!');
-      //$this->importOntologies();
+      $this->importOntologies();
 
       $this->setProgress(0.3);
       $this->logger->notice('Populating materialized view cv_root_mview...');
