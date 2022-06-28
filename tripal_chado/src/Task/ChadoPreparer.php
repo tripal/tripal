@@ -179,9 +179,9 @@ class ChadoPreparer extends ChadoTaskBase {
       $this->logger->notice("Creating default content types...");
       $this->createGeneralContentTypes();
       $this->createGenomicContentTypes();
-      //$this->createGeneticContentTypes();
-      //$this->createGermplasmContentTypes();
-      //$this->createExpressionContentTypes();
+      $this->createGeneticContentTypes();
+      $this->createGermplasmContentTypes();
+      $this->createExpressionContentTypes();
 
       $this->setProgress(1);
       $task_success = TRUE;
@@ -1012,22 +1012,6 @@ class ChadoPreparer extends ChadoTaskBase {
       'definition' => 'Any extent of continuous biological sequence.',
     ]));
     //chado_associate_semweb_term(NULL, 'feature_id', $term);
-
-    $idspace->saveTerm(new TripalTerm([
-      'accession' => '0000704',
-      'name' => 'gene',
-      'idSpace' => 'SO',
-      'vocabulary' => 'sequence',
-      'definition' => '',
-    ]));
-
-    $idspace->saveTerm(new TripalTerm([
-      'accession' => '0000234',
-      'name' => 'mRNA',
-      'idSpace' => 'SO',
-      'vocabulary' => 'sequence',
-      'definition' => '',
-    ]));
   }
 
   /**
@@ -3466,77 +3450,35 @@ class ChadoPreparer extends ChadoTaskBase {
    */
   private function createGeneticContentTypes() {
 
-    // The 'Genetic Map' entity type. bio_data_16
-    $terms['map'] =[
-      'accession' => '1278',
-      'vocabulary' => [
-        'idspace' => 'data',
-      ],
-    ];
-    $types['map']= [
-      'id' => 16,
-      'name' => 'bio_data_16',
+    $this->createContentType([
       'label' => 'Genetic Map',
+      'term' => $this->getTerm('data', '1278', 'EDAM'),
       'category' => 'Genetic',
-    ];
+    ]);
 
-    // The 'QTL' entity type. bio_data_17
-    $terms['qtl'] =[
-      'accession' => '0000771',
-      'vocabulary' => [
-        'idspace' => 'SO',
-      ],
-    ];
-    $types['qtl']= [
-      'id' => 17,
-      'name' => 'bio_data_17',
+    $this->createContentType([
       'label' => 'QTL',
+      'term' => $this->getTerm('SO', '0000771'),
       'category' => 'Genetic',
-    ];
+    ]);
 
-    // The 'Sequence Variant' entity type. bio_data_18
-    $terms['variant'] =[
-      'accession' => '0001060',
-      'vocabulary' => [
-        'idspace' => 'SO',
-      ],
-    ];
-    $types['variant']= [
-      'id' => 18,
-      'name' => 'bio_data_18',
+    $this->createContentType([
       'label' => 'Sequence Variant',
+      'term' => $this->getTerm('SO', '0001060'),
       'category' => 'Genetic',
-    ];
+    ]);
 
-    // The 'Genetic Marker' entity type. bio_data_19
-    $terms['marker'] =[
-      'accession' => '0001645',
-      'vocabulary' => [
-        'idspace' => 'SO',
-      ],
-    ];
-    $types['marker']= [
-      'id' => 19,
-      'name' => 'bio_data_19',
+    $this->createContentType([
       'label' => 'Genetic Marker',
+      'term' => $this->getTerm('SO', '0001645'),
       'category' => 'Genetic',
-    ];
+    ]);
 
-    // The 'Heritable Phenotypic Marker' entity type. bio_data_20
-    $terms['hpn'] =[
-      'accession' => '0001500',
-      'vocabulary' => [
-        'idspace' => 'SO',
-      ],
-    ];
-    $types['hpn']= [
-      'id' => 20,
-      'name' => 'bio_data_20',
+    $this->createContentType([
       'label' => 'Heritable Phenotypic Marker',
+      'term' => $this->getTerm('SO', '0001500'),
       'category' => 'Genetic',
-    ];
-
-    $this->createGivenContentTypes($types, $terms);
+    ]);
   }
 
   /**
@@ -3544,78 +3486,35 @@ class ChadoPreparer extends ChadoTaskBase {
    */
   private function createGermplasmContentTypes() {
 
-    // The 'Phenotypic Trait' entity type. bio_data_28
-    $terms['trait'] =[
-      'accession' => 'C85496',
-      'vocabulary' => [
-        'idspace' => 'NCIT',
-      ],
-    ];
-    $types['trait']= [
-      'id' => 28,
-      'name' => 'bio_data_28',
+    $this->createContentType([
       'label' => 'Phenotypic Trait',
+      'term' => $this->getTerm('NCIT', 'C85496'),
       'category' => 'Germplasm',
-    ];
+    ]);
 
-    // The 'Germplasm Accession' entity type. bio_data_21
-    $terms['accession'] = [
-      'accession' => '0000044',
-      'vocabulary' => [
-        'namespace' => 'germplasm_ontology',
-        'idspace' => 'CO_010',
-      ],
-    ];
-    $types['accession'] = [
-      'id' => 21,
-      'name' => 'bio_data_21',
+    $this->createContentType([
       'label' => 'Germplasm Accession',
+      'term' => $this->getTerm('CO_010', '0000044'),
       'category' => 'Germplasm',
-    ];
+    ]);
 
-    // The 'Breeding Cross' entity type. bio_data_22
-    $terms['cross'] =[
-      'accession' => '0000255',
-      'vocabulary' => [
-        'idspace' => 'CO_010',
-      ],
-    ];
-    $types['cross']= [
-      'id' => 22,
-      'name' => 'bio_data_22',
+    $this->createContentType([
       'label' => 'Breeding Cross',
+      'term' => $this->getTerm('CO_010', '0000255'),
       'category' => 'Germplasm',
-    ];
+    ]);
 
-    // The 'Germplasm Variety' entity type. bio_data_23
-    $terms['variety'] =[
-      'accession' => '0000029',
-      'vocabulary' => [
-        'idspace' => 'CO_010',
-      ],
-    ];
-    $types['variety']= [
-      'id' => 23,
-      'name' => 'bio_data_23',
+    $this->createContentType([
       'label' => 'Germplasm Variety',
+      'term' => $this->getTerm('CO_010', '0000029'),
       'category' => 'Germplasm',
-    ];
+    ]);
 
-    // The 'Recombinant Inbred Line' entity type. bio_data_24
-    $terms['ril'] =[
-      'accession' => '0000162',
-      'vocabulary' => [
-        'idspace' => 'CO_010',
-      ],
-    ];
-    $types['ril']= [
-      'id' => 24,
-      'name' => 'bio_data_24',
+    $this->createContentType([
       'label' => 'Recombinant Inbred Line',
+      'term' => $this->getTerm('CO_010', '0000162'),
       'category' => 'Germplasm',
-    ];
-
-    $this->createGivenContentTypes($types, $terms);
+    ]);
   }
 
   /**
@@ -3623,48 +3522,22 @@ class ChadoPreparer extends ChadoTaskBase {
    */
   private function createExpressionContentTypes() {
 
-    // The 'biological sample' entity type. bio_data_25
-    $terms['sample'] =[
-      'accession' => '00195',
-      'vocabulary' => [
-        'idspace' => 'sep',
-      ],
-    ];
-    $types['sample']= [
-      'id' => 25,
-      'name' => 'bio_data_25',
+    $this->createContentType([
       'label' => 'Biological Sample',
+      'term' => $this->getTerm('sep', '00195'),
       'category' => 'Expression',
-    ];
+    ]);
 
-    // The 'Assay' entity type. bio_data_26
-    $terms['assay'] =[
-      'accession' => '0000070',
-      'vocabulary' => [
-        'idspace' => 'OBI',
-      ],
-    ];
-    $types['assay']= [
-      'id' => 26,
-      'name' => 'bio_data_26',
+    $this->createContentType([
       'label' => 'Assay',
+      'term' => $this->getTerm('OBI', '0000070'),
       'category' => 'Expression',
-    ];
+    ]);
 
-    // The 'Array Design' entity type. bio_data_27
-    $terms['design'] =[
-      'accession' => '0000269',
-      'vocabulary' => [
-        'idspace' => 'EFO',
-      ],
-    ];
-    $types['design']= [
-      'id' => 27,
-      'name' => 'bio_data_27',
+    $this->createContentType([
       'label' => 'Array Design',
+      'term' => $this->getTerm('EFO', '0000269'),
       'category' => 'Expression',
-    ];
-
-    $this->createGivenContentTypes($types, $terms);
+    ]);
   }
 }
