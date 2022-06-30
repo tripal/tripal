@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\tripal_chado\Functional\Task;
 
-use Drupal\Tests\tripal_chado\Functional\ChadoTestBase;
+use Drupal\Tests\tripal_chado\Functional\ChadoTestKernelBase;
 use Drupal\tripal_chado\Task\ChadoRenamer;
 
 
@@ -16,7 +16,7 @@ use Drupal\tripal_chado\Task\ChadoRenamer;
  * @group Tripal Chado Task
  * @group Tripal Chado Renamer
  */
-class ChadoRenamerFunctionalTest extends ChadoTestBase {
+class ChadoRenamerFunctionalTest extends ChadoTestKernelBase {
 
   /**
    * Tests task.
@@ -26,9 +26,9 @@ class ChadoRenamerFunctionalTest extends ChadoTestBase {
    */
   public function testPerformTaskRenamer() {
     // Create a temporary schema.
-    $tripaldbx_db1 = $this->getTestSchema(ChadoTestBase::CREATE_SCHEMA);
+    $tripaldbx_db1 = $this->getTestSchema(ChadoTestKernelBase::CREATE_SCHEMA);
     // Get another temporary schema name.
-    $tripaldbx_db2 = $this->getTestSchema(ChadoTestBase::SCHEMA_NAME_ONLY);
+    $tripaldbx_db2 = $this->getTestSchema(ChadoTestKernelBase::SCHEMA_NAME_ONLY);
 
     // Test renamer.
     $renamer = \Drupal::service('tripal_chado.renamer');

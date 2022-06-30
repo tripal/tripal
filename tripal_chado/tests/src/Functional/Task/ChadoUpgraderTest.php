@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\tripal_chado\Functional\Task;
 
-use Drupal\Tests\tripal_chado\Functional\ChadoTestBase;
+use Drupal\Tests\tripal_chado\Functional\ChadoTestKernelBase;
 use Drupal\tripal_chado\Task\ChadoUpgrader;
 
 /**
@@ -15,7 +15,7 @@ use Drupal\tripal_chado\Task\ChadoUpgrader;
  * @group Tripal Chado Task
  * @group Tripal Chado Upgrader
  */
-class ChadoUpgraderFunctionalTest extends ChadoTestBase {
+class ChadoUpgraderFunctionalTest extends ChadoTestKernelBase {
 
   /**
    * Tests task.
@@ -25,7 +25,7 @@ class ChadoUpgraderFunctionalTest extends ChadoTestBase {
    */
   public function testPerformTaskUpgrader() {
     // Create a temporary schema.
-    $tripaldbx_db = $this->getTestSchema(ChadoTestBase::INIT_DUMMY);
+    $tripaldbx_db = $this->getTestSchema(ChadoTestKernelBase::INIT_DUMMY);
     // Test upgrader.
     $upgrader = \Drupal::service('tripal_chado.upgrader');
     $upgrader->setParameters([

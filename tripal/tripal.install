@@ -148,12 +148,63 @@ function tripal_schema() {
   $schema['tripal_import'] = tripal_tripal_import_schema();
   $schema['tripal_collection'] = tripal_tripal_collection_schema();
   $schema['tripal_collection_bundle'] = tripal_tripal_collection_bundle_schema();
+  $schema['tripal_id_space_collection'] = tripal_tripal_id_space_collection_schema();
+  $schema['tripal_vocabulary_collection'] = tripal_tripal_vocabulary_collection_schema();
+  
+  $schema['tripal_bundle'] = tripal_tripal_bundle_schema();
 
   // Adds a table for administrative notifications on the dashboard.
   $schema['tripal_admin_notifications'] = tripal_tripal_admin_notifications_schema();
   return $schema;
 }
 
+function tripal_tripal_bundle_schema() {
+  return [
+    'description' => 'Stores information about defined tripal data types.',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique numeric ID.',
+      ],
+      'type' => [
+        'description' => 'The type of entity (e.g. TripalEntity).',
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'term_id' => [
+        'description' => 'The term_id for the type of entity. This term_id corresponds to a TripalTerm record.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ],
+      'name' => [
+        'description' => 'The name of the bundle. This should be an official vocabulary ID (e.g. SO, RO, GO) followed by an underscore and the term accession.',
+        'type' => 'varchar',
+        'length' => 1024,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'label' => [
+        'description' => 'The human-readable name of this bundle.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+    ],
+    'indexes' => [
+      'name' => ['name'],
+      'term_id' => ['term_id'],
+      'label' => ['label'],
+    ],
+    'primary key' => ['id'],
+    'unique keys' => [
+      'name' => ['name'],
+    ],
+  ];
+}
 /**
  * Returns the Drupal Schema API array for the tripal_jobs table.
  */
@@ -607,6 +658,46 @@ function tripal_tripal_admin_notifications_schema() {
     'primary key' => [
       0 => 'note_id',
     ],
+  ];
+
+  return $schema;
+}
+
+function tripal_tripal_id_space_collection_schema() {
+  $schema = [
+    'fields' => [
+      'name' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'plugin_id' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ]
+    ],
+    'primary key' => ['name'],
+  ];
+
+  return $schema;
+}
+
+function tripal_tripal_vocabulary_collection_schema() {
+  $schema = [
+    'fields' => [
+      'name' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'plugin_id' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ]
+    ],
+    'primary key' => ['name'],
   ];
 
   return $schema;
