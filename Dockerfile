@@ -161,7 +161,7 @@ RUN export COMPOSER_MEMORY_LIMIT=-1 && export COMPOSER_NO_INTERACTION=1 \
   && composer config --no-plugins allow-plugins.drupal/core-project-message true \
   && composer config --no-plugins allow-plugins.drupal/console-extend-plugin true \
   && rm composer.lock \
-  && composer require --dev ${composerpackages}
+  && composer require --dev drupal/core:${drupalversion} ${composerpackages}
 
 ## Set files directory permissions
 RUN mkdir /var/www/drupal9/web/sites/default/files \
