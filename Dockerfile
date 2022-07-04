@@ -45,7 +45,8 @@ RUN    /etc/init.d/postgresql start &&\
     && psql --command="CREATE USER drupaladmin WITH PASSWORD 'drupal9developmentonlylocal'" \
     && psql --command="ALTER USER drupaladmin WITH LOGIN" \
     && psql --command="ALTER USER drupaladmin WITH CREATEDB" \
-    && psql --command="CREATE DATABASE sitedb WITH OWNER drupaladmin"
+    && psql --command="CREATE DATABASE sitedb WITH OWNER drupaladmin" \
+    && service postgresql stop
 
 ## Now back to the root user.
 USER root
@@ -151,11 +152,15 @@ RUN chmod a+x /app/tripaldocker/init_scripts/composer-init.sh \
 
 ## Use composer to install Drupal.
 WORKDIR /var/www
-ARG composerpackages="drupal/core-dev:${drupalversion} drush/drush drupal/console:~1.0"
-RUN export COMPOSER_MEMORY_LIMIT=-1 \
-  && composer create-project drupal/recommended-project:${drupalversion} drupal9 --stability dev --no-interaction \
+ARG composerpackages="drupal/core-dev:${drupalversion} drush/drush drupal/console:~1.0 phpspec/prophecy-phpunit"
+RUN export COMPOSER_MEMORY_LIMIT=-1 && export COMPOSER_NO_INTERACTION=1 \
+  && composer create-project drupal/recommended-project:${drupalversion} --stability dev --no-install drupal9 \
   && cd drupal9 \
-  && if [[ ${drupalversion} =~ ^9\.\[1-9] ]]; then composerpackages+=' phpspec/prophecy-phpunit'; fi \
+  && composer config --no-plugins allow-plugins.composer/installers true \
+  && composer config --no-plugins allow-plugins.drupal/core-composer-scaffold true \
+  && composer config --no-plugins allow-plugins.drupal/core-project-message true \
+  && composer config --no-plugins allow-plugins.drupal/console-extend-plugin true \
+  && rm composer.lock \
   && composer require --dev ${composerpackages}
 
 ## Set files directory permissions
