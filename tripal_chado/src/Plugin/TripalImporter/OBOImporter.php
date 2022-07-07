@@ -207,10 +207,11 @@ class OBOImporter extends ChadoImporterBase {
     }
 
     $form['obo_existing'] = [
-      '#type' => 'fieldset',
+      '#type' => 'details',
       '#title' => t('Use a Saved Ontology OBO Reference'),
       '#prefix' => '<span id="obo-existing-fieldset">',
       '#suffix' => '</span>',
+      '#open' => TRUE,
     ];
 
     $form['obo_existing']['existing_instructions'] = [
@@ -334,10 +335,9 @@ class OBOImporter extends ChadoImporterBase {
   private function formNewOBOElements(&$form, &$form_state) {
 
     $form['obo_new'] = [
-      '#type' => 'fieldset',
+      '#type' => 'details',
       '#title' => t('Add a New Ontology OBO Reference'),
-      '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
+      '#open' => FALSE,
     ];
 
     $form['obo_new']['path_instructions'] = [
