@@ -160,7 +160,7 @@ RUN export COMPOSER_MEMORY_LIMIT=-1 && export COMPOSER_NO_INTERACTION=1 \
   && composer config --no-plugins allow-plugins.drupal/core-composer-scaffold true \
   && composer config --no-plugins allow-plugins.drupal/core-project-message true \
   && composer config --no-plugins allow-plugins.drupal/console-extend-plugin true \
-+  && composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true \
+  && composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true \
   && rm composer.lock \
   && composer require --dev drupal/core:${drupalversion} ${composerpackages}
 
