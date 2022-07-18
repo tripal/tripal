@@ -30,7 +30,7 @@ class ChadoPreparer extends ChadoTaskBase {
   /**
    * A connection to the Chado database.
    *
-   * @var object
+   * @var \Drupal\tripal\TripalDBX\TripalDbxConnection
    */
   protected $chado = NULL;
 
