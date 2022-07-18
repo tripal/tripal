@@ -6,10 +6,10 @@ use Drupal\Tests\BrowserTestBase;
 use Drupal\Core\Url;
 
 /**
- * Tests the basic functions of Tripal Content.
+ * Tests the base functionality for importers.
  *
- * @group Tripal
- * @group Tripal Content
+ * Cannot test actually implemented importers as those
+ * require database specific implementations.
  */
 class TripalImporterTest extends BrowserTestBase {
   protected $defaultTheme = 'stable';
