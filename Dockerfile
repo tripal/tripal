@@ -192,9 +192,9 @@ RUN service apache2 start \
   && mkdir -p /var/www/drupal9/web/modules/contrib \
   && cp -R /app /var/www/drupal9/web/modules/contrib/tripal \
   && composer require drupal/devel drupal/devel_php \
-  # && vendor/bin/drush en devel tripal ${modules} -y \
-  # && vendor/bin/drush trp-install-chado --schema-name=${chadoschema} \
-  # && vendor/bin/drush trp-prep-chado --schema-name=${chadoschema} \
+  && vendor/bin/drush en devel tripal ${modules} -y \
+  && vendor/bin/drush trp-install-chado --schema-name=${chadoschema} \
+  && vendor/bin/drush trp-prep-chado --schema-name=${chadoschema} \
   && service apache2 stop \
   && service postgresql stop
 
