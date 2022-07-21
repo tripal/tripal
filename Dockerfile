@@ -1,4 +1,4 @@
-FROM php:7.3-apache-buster
+FROM php:8.0-apache-bullseye
 
 ## Base of this image is from Official DockerHub PHP image.
 ## Heavily influenced by https://github.com/statonlab/docker-containers
@@ -14,9 +14,9 @@ LABEL drupal.version=${drupalversion}
 LABEL drupal.stability="development"
 LABEL tripal.version="4.x-dev"
 LABEL tripal.stability="development"
-LABEL os.version="buster"
-LABEL php.version="7.3"
-LABEL postgresql.version="11"
+LABEL os.version="bullseye"
+LABEL php.version="8.0"
+LABEL postgresql.version="13"
 
 COPY . /app
 
@@ -29,12 +29,12 @@ RUN chmod -R +x /app && apt-get update 1> ~/aptget.update.log \
 ## See https://stackoverflow.com/questions/51033689/how-to-fix-error-on-postgres-install-ubuntu
 RUN mkdir -p /usr/share/man/man1 && mkdir -p /usr/share/man/man7
 
-## Install PostgreSQL 11
+## Install PostgreSQL 13
 RUN DEBIAN_FRONTEND=noninteractive apt-get update \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y postgresql-11 postgresql-client-11 postgresql-contrib-11
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y postgresql-13 postgresql-client-13 postgresql-contrib-13
 
 ## Run the rest of the commands as the ``postgres`` user
-## created by the ``postgres-11`` package when it was installed.
+## created by the ``postgres-13`` package when it was installed.
 USER postgres
 
 ## Create a PostgreSQL role named ``docker`` with ``docker`` as the password and
@@ -53,11 +53,11 @@ USER root
 
 ## Adjust PostgreSQL configuration so that remote connections to the
 ## database are possible.
-RUN mv /app/tripaldocker/default_files/postgresql/pg_hba.conf /etc/postgresql/11/main/pg_hba.conf
+RUN mv /app/tripaldocker/default_files/postgresql/pg_hba.conf /etc/postgresql/13/main/pg_hba.conf
 
-## And add ``listen_addresses`` to ``/etc/postgresql/11/main/postgresql.conf``
-RUN echo "listen_addresses='*'" >> /etc/postgresql/11/main/postgresql.conf \
-  && echo "max_locks_per_transaction = 1024" >> /etc/postgresql/11/main/postgresql.conf
+## And add ``listen_addresses`` to ``/etc/postgresql/13/main/postgresql.conf``
+RUN echo "listen_addresses='*'" >> /etc/postgresql/13/main/postgresql.conf \
+  && echo "max_locks_per_transaction = 1024" >> /etc/postgresql/13/main/postgresql.conf
 
 ########## PHP EXTENSIONS #####################################################
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
@@ -84,15 +84,12 @@ RUN set -eux; \
 		libfreetype6-dev \
 		libjpeg-dev \
 		libpng-dev \
+    libwebp-dev \
 		libpq-dev \
 		libzip-dev \
 	; \
 	\
-	docker-php-ext-configure gd \
-		--with-freetype-dir=/usr \
-		--with-jpeg-dir=/usr \
-		--with-png-dir=/usr \
-	; \
+	docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg --with-webp; \
 	\
 	docker-php-ext-install -j "$(nproc)" \
 		gd \
@@ -194,10 +191,10 @@ RUN service apache2 start \
   && sleep 30 \
   && mkdir -p /var/www/drupal9/web/modules/contrib \
   && cp -R /app /var/www/drupal9/web/modules/contrib/tripal \
-  && composer require drupal/devel \
-  && vendor/bin/drush en devel tripal ${modules} -y \
-  && vendor/bin/drush trp-install-chado --schema-name=${chadoschema} \
-  && vendor/bin/drush trp-prep-chado --schema-name=${chadoschema} \
+  && composer require drupal/devel drupal/devel_php \
+  # && vendor/bin/drush en devel tripal ${modules} -y \
+  # && vendor/bin/drush trp-install-chado --schema-name=${chadoschema} \
+  # && vendor/bin/drush trp-prep-chado --schema-name=${chadoschema} \
   && service apache2 stop \
   && service postgresql stop
 
