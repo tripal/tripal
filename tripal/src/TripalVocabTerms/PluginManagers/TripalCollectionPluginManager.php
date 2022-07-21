@@ -68,8 +68,8 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
     if (!is_string($name)) {
       return NULL;
     }
-    
-    $clist = $this->getCollectionList();        
+
+    $clist = $this->getCollectionList();
     if (in_array($name, $clist)) {
       return NULL;
     }
@@ -77,7 +77,9 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
     $collection = $this->createInstance($pluginId, ["collection_name" => $name]);
     if ($collection->isValid()) {
       $result = $db->insert($this->table)->fields(["name" => $name, "plugin_id" => $pluginId])->execute();
-      $collection->create();
+      if ($collection->recordExists() == False) {
+        $collection->create();
+      }
       return $collection;
     }
     else {
@@ -117,7 +119,9 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
       return FALSE;
     }
     $collection = $this->createInstance($record->plugin_id, ["collection_name" => $name]);
-    $collection->destroy();
+    if ($collection->recordExists() == True) {
+      $collection->destroy();
+    }
     return TRUE;
   }
 
@@ -150,7 +154,7 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
   public function loadCollection($name) {
     if (!is_string($name)) {
       return NULL;
-    }    
+    }
     $db = \Drupal::database();
     $result = $db->select($this->table, 'n')
       ->condition('n.name', $name)
@@ -161,6 +165,11 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
       return NULL;
     }
     $collection = $this->createInstance($first["plugin_id"], ["collection_name" => $name]);
+
+    if ($collection->isValid() and $collection->recordExists() == False) {
+      $collection->create();
+    }
+
     return $collection;
   }
 
