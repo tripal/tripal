@@ -3236,11 +3236,12 @@ class ChadoPreparer extends ChadoTaskBase {
     // Iterate through each ontology and install them with the OBO Importer.
     foreach ($ontologies as $ontology) {
       $obo_id = $this->insertOntologyRecord($ontology);
+      $schema_name = $this->outputSchemas[0]->getSchemaName();
       if ($ontology['auto_load']) {
         $this->logger->notice("Importing " . $ontology['idSpace']->getDescription());
         $importer_manager = \Drupal::service('tripal.importer');
         $obo_importer = $importer_manager->createInstance('chado_obo_loader');
-        $obo_importer->create(['obo_id' => $obo_id]);
+        $obo_importer->create(['obo_id' => $obo_id, 'schema_name' => $schema_name]);
         $obo_importer->run();
         $obo_importer->postRun();
       }
