@@ -16,24 +16,39 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
 class ChadoIdSpace extends TripalIdSpaceBase {
 
   /**
+   * Holds the default vacabulary name.
+   *
+   * @var string
+   */
+  protected $default_vocabulary = NULL;
+
+  /**
    * Holds the TripalDBX instance for accessing Chado.
+   *
+   * @var \Drupal\tripal\TripalDBX\TripalDbxConnection
    */
   protected $chado = NULL;
 
 
   /**
    * The definition for the `db` table of Chado.
+   *
+   * @var array
    */
   protected $db_def = NULL;
 
 
   /**
    * An instance of the TripalLogger.
+   *
+   * @var \Drupal\tripal\Services\TripalLogger
    */
   protected $messageLogger = NULL;
 
   /**
    * A simple boolean to prevent Chado queries if the ID space isn't valid.
+   *
+   * @var bool
    */
   protected $is_valid = False;
 
@@ -52,9 +67,6 @@ class ChadoIdSpace extends TripalIdSpaceBase {
 
     // Get the chado definition for the `db` table.
     $this->db_def = $this->chado->schema()->getTableDef('db', ['Source' => 'file']);
-
-    // Check the name to make sure it's valid.
-    $this->isValid();
   }
 
 
@@ -75,6 +87,17 @@ class ChadoIdSpace extends TripalIdSpaceBase {
     $this->is_valid = True;
 
     return $this->is_valid;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function recordExists() {
+    $db = $this->loadIdSpace();
+    if ($db and $db['name'] == $this->getName()) {
+      return True;
+    }
+    return False;
   }
 
 

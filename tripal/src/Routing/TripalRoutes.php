@@ -23,7 +23,7 @@ class TripalRoutes {
         '_title' => $def['label']->getUntranslatedString()
       ];
       $requirements  = [
-        '_permission' => 'allow tripal importer ' . $plugin_id
+        '_permission' => 'use ' . $plugin_id . ' importer'
       ];
       $options = [];
       $routes[$menu_path] = new Route($menu_path, $defaults, $requirements, $options);

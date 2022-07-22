@@ -30,7 +30,7 @@ class ChadoPreparer extends ChadoTaskBase {
   /**
    * A connection to the Chado database.
    *
-   * @var object
+   * @var \Drupal\tripal\TripalDBX\TripalDbxConnection
    */
   protected $chado = NULL;
 
@@ -3247,9 +3247,6 @@ class ChadoPreparer extends ChadoTaskBase {
     }
   }
 
-
-
-
   /**
    * A helper function for inserting OBO recrods into the `tripal_cv_obo` table.
    *
@@ -3339,8 +3336,6 @@ class ChadoPreparer extends ChadoTaskBase {
           ['@type' => $details['label']]) . print_r($details));
     }
   }
-
-
 
   /**
    * Creates the "General" category of content types.

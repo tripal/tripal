@@ -15,26 +15,36 @@ use Drupal\tripal\TripalVocabTerms\TripalVocabularyBase;
 class ChadoVocabulary extends TripalVocabularyBase {
   /**
    * Holds an instance of a BioDB connection to Chado.
+   *
+   * @var \Drupal\tripal\TripalDBX\TripalDbxConnection
    */
   protected $chado = NULL;
 
   /**
    * The definition for the `db` table of Chado.
+   *
+   * @var array
    */
   protected $db_def = NULL;
 
   /**
    * The definition for the `cv` table of Chado.
+   *
+   * @var array
    */
   protected $cv_def = NULL;
 
   /**
    * An instance of the TripalLogger.
+   *
+   * @var \Drupal\tripal\Services\TripalLogger
    */
   protected $messageLogger = NULL;
 
   /**
    * A simple boolean to prevent Chado queries if the vocabulary isn't valid.
+   *
+   * @var bool
    */
   protected $is_valid = False;
 
@@ -72,6 +82,17 @@ class ChadoVocabulary extends TripalVocabularyBase {
     $this->is_valid = True;
 
     return $this->is_valid;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function recordExists() {
+   $cv = $this->loadVocab();
+   if ($cv and $cv['name'] == $this->getName()) {
+      return True;
+    }
+    return False;
   }
 
   /**
@@ -135,6 +156,17 @@ class ChadoVocabulary extends TripalVocabularyBase {
   }
 
   /**
+   * Returns the IDSpace cache ID.
+   *
+   * @return string
+   */
+  protected function getIdSpaceCacheID() {
+    $idSpace = $this->getName();
+    $chado_schema = $this->chado->getSchemaName();
+    return 'chado_vocabulary_' . $chado_schema . '_' . $idSpace . '_id_spaces';
+  }
+
+  /**
    * Sets the ID spaces for this vocabulary in the Drupal cache.
    *
    * The current way to map CV's to DB's is to use the `cv2db`
@@ -147,7 +179,7 @@ class ChadoVocabulary extends TripalVocabularyBase {
    *   An array containing the names of the ID spaces.
    */
   protected function setIdSpacesCache($id_spaces) {
-    $cid = 'chado_vocabulary_' . $this->getName() . '_id_spaces';
+    $cid = $this->getIdSpaceCacheID();
     \Drupal::cache()->set($cid, $id_spaces);
   }
 
@@ -165,7 +197,7 @@ class ChadoVocabulary extends TripalVocabularyBase {
    *   An array of ID Space names.
    */
   protected function getIdSpacesCache() {
-    $cid = 'chado_vocabulary_' . $this->getName() . '_id_spaces';
+    $cid = $this->getIdSpaceCacheID();
     $id_spaces = [];
     if ($cache = \Drupal::cache()->get($cid)) {
       $id_spaces = $cache->data;

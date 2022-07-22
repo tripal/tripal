@@ -1,7 +1,6 @@
 administer tripal:
   title: 'Administer Tripal'
-  description: 'Bypass Tripal access control'
-  restrict access: true
+  description: 'Used to access the administration pages for Tripal.'
 
 upload files:
   title: 'Upload Files'
@@ -40,4 +39,3 @@ allow tripal import:
 
 permission_callbacks:
   - Drupal\tripal\Controller\TripalImporterPermissionsController::permissions
-

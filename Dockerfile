@@ -45,7 +45,8 @@ RUN    /etc/init.d/postgresql start &&\
     && psql --command="CREATE USER drupaladmin WITH PASSWORD 'drupal9developmentonlylocal'" \
     && psql --command="ALTER USER drupaladmin WITH LOGIN" \
     && psql --command="ALTER USER drupaladmin WITH CREATEDB" \
-    && psql --command="CREATE DATABASE sitedb WITH OWNER drupaladmin"
+    && psql --command="CREATE DATABASE sitedb WITH OWNER drupaladmin" \
+    && service postgresql stop
 
 ## Now back to the root user.
 USER root
@@ -60,10 +61,15 @@ RUN echo "listen_addresses='*'" >> /etc/postgresql/11/main/postgresql.conf \
 
 ########## PHP EXTENSIONS #####################################################
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
+
 ## Xdebug
 RUN pecl install xdebug-3.0.1 \
     && docker-php-ext-enable xdebug \
-    && echo "xdebug.mode = coverage" >> /usr/local/etc/php/php.ini
+    && echo "xdebug.mode = coverage" >> /usr/local/etc/php/php.ini \
+    && echo "error_reporting=E_ALL" >> /usr/local/etc/php/conf.d/error_reporting.ini \
+    && cp /app/tripaldocker/default_files/xdebug/xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.dis \
+    && rm /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+
 ## install the PHP extensions we need
 RUN set -eux; \
 	\
@@ -146,12 +152,17 @@ RUN chmod a+x /app/tripaldocker/init_scripts/composer-init.sh \
 
 ## Use composer to install Drupal.
 WORKDIR /var/www
-ARG composerpackages="drupal/core-dev:${drupalversion} drush/drush drupal/console:~1.0"
-RUN export COMPOSER_MEMORY_LIMIT=-1 \
-  && composer create-project drupal/recommended-project:${drupalversion} drupal9 --stability dev --no-interaction \
+ARG composerpackages="drupal/core-dev:${drupalversion} drush/drush drupal/console:~1.0 phpspec/prophecy-phpunit"
+RUN export COMPOSER_MEMORY_LIMIT=-1 && export COMPOSER_NO_INTERACTION=1 \
+  && composer create-project drupal/recommended-project:${drupalversion} --stability dev --no-install drupal9 \
   && cd drupal9 \
-  && if [[ ${drupalversion} =~ ^9\.\[1-9] ]]; then composerpackages+=' phpspec/prophecy-phpunit'; fi \
-  && composer require --dev ${composerpackages}
+  && composer config --no-plugins allow-plugins.composer/installers true \
+  && composer config --no-plugins allow-plugins.drupal/core-composer-scaffold true \
+  && composer config --no-plugins allow-plugins.drupal/core-project-message true \
+  && composer config --no-plugins allow-plugins.drupal/console-extend-plugin true \
+  && composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true \
+  && rm composer.lock \
+  && composer require --dev drupal/core:${drupalversion} ${composerpackages}
 
 ## Set files directory permissions
 RUN mkdir /var/www/drupal9/web/sites/default/files \
@@ -197,7 +208,8 @@ RUN mv /app/tripaldocker/init_scripts/supervisord.conf /etc/supervisord.conf \
   && mv /app/tripaldocker/default_files/000-default.conf /etc/apache2/sites-available/000-default.conf \
   && echo "\$settings["trusted_host_patterns"] = [ '^localhost$', '^127\.0\.0\.1$' ];" >> /var/www/drupal9/web/sites/default/settings.php \
   && mv /app/tripaldocker/init_scripts/init.sh /usr/bin/init.sh \
-  && chmod +x /usr/bin/init.sh
+  && chmod +x /usr/bin/init.sh \
+  && mv /app/tripaldocker/default_files/xdebug/xdebug_toggle.sh /usr/bin/xdebug_toggle.sh
 
 ## Make global commands.
 RUN ln -s /var/www/drupal9/vendor/drupal/console/bin/drupal /usr/local/bin/ \
@@ -207,7 +219,7 @@ RUN ln -s /var/www/drupal9/vendor/drupal/console/bin/drupal /usr/local/bin/ \
 ## Set the working directory to DRUPAL_ROOT
 WORKDIR /var/www/drupal9/web
 
-## Expose http and psql port
-EXPOSE 80 5432
+## Expose http, xdebug and psql port
+EXPOSE 80 5432 9003
 
 ENTRYPOINT ["init.sh"]

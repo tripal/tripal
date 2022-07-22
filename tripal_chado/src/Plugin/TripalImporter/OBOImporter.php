@@ -163,6 +163,9 @@ class OBOImporter extends ChadoImporterBase {
    */
   public function form($form, &$form_state) {
 
+    // Always call the parent form to ensure Chado is handled properly.
+    $form = parent::form($form, $form_state);
+
     $form['instructions']['info'] = [
       '#type' => 'item',
       '#markup' => t('This page allows you to load vocabularies and ontologies
@@ -207,10 +210,11 @@ class OBOImporter extends ChadoImporterBase {
     }
 
     $form['obo_existing'] = [
-      '#type' => 'fieldset',
+      '#type' => 'details',
       '#title' => t('Use a Saved Ontology OBO Reference'),
       '#prefix' => '<span id="obo-existing-fieldset">',
       '#suffix' => '</span>',
+      '#open' => TRUE,
     ];
 
     $form['obo_existing']['existing_instructions'] = [
@@ -334,10 +338,9 @@ class OBOImporter extends ChadoImporterBase {
   private function formNewOBOElements(&$form, &$form_state) {
 
     $form['obo_new'] = [
-      '#type' => 'fieldset',
+      '#type' => 'details',
       '#title' => t('Add a New Ontology OBO Reference'),
-      '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
+      '#open' => FALSE,
     ];
 
     $form['obo_new']['path_instructions'] = [
@@ -542,7 +545,7 @@ class OBOImporter extends ChadoImporterBase {
    *   A CVterm object
    */
   private function getChadoCvtermById($cvterm_id) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
 
     $query = $chado->select('cvterm', 'CVT');
     $query->fields('CVT');
@@ -566,7 +569,7 @@ class OBOImporter extends ChadoImporterBase {
    *   A CVterm object
    */
   private function getChadoCvtermByAccession($idSpace, $accession) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
 
     $query = $chado->select('cvterm', 'CVT');
     $query->join('dbxref', 'DBX', '"DBX".dbxref_id = "CVT".dbxref_id');
@@ -589,7 +592,7 @@ class OBOImporter extends ChadoImporterBase {
    *   A CVterm object
    */
   private function getChadoCvtermByName($cv_id, $name) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     $query = $chado->select('cvterm', 'CVT');
     $query->fields('CVT');
     $query->condition('cv_id', $cv_id);
@@ -606,7 +609,7 @@ class OBOImporter extends ChadoImporterBase {
    *   A CVterm object
    */
   private function getChadoCvtermByDbxref($dbxref_id) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     $query = $chado->select('cvterm', 'CVT');
     $query->fields('CVT');
     $query->condition('CVT.dbxref_id', $dbxref_id);
@@ -625,7 +628,7 @@ class OBOImporter extends ChadoImporterBase {
    *   An dbxref object.
    */
   private function getChadoDBXrefByAccession($db_id, $accession) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     $query = $chado->select('dbxref', 'DBX');
     $query->fields('DBX');
     $query->condition('DBX.db_id', $db_id);
@@ -643,7 +646,7 @@ class OBOImporter extends ChadoImporterBase {
    *   An dbxref object.
    */
   private function getChadoDBXrefById($dbxref_id) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     $query = $chado->select('dbxref', 'DBX');
     $query->fields('DBX');
     $query->condition('DBX.dbxref_id', $dbxref_id);
@@ -660,7 +663,7 @@ class OBOImporter extends ChadoImporterBase {
    *   A DB record object.
    */
   private function getChadoDbByName($name) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     $query = $chado->select('db', 'db');
     $query->fields('db');
     $query->condition('name', $name);
@@ -676,7 +679,7 @@ class OBOImporter extends ChadoImporterBase {
    *   A DB record object.
    */
   private function getChadoDbById($db_id) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     $query = $chado->select('db', 'db');
     $query->fields('db');
     $query->condition('db_id', $db_id);
@@ -693,7 +696,7 @@ class OBOImporter extends ChadoImporterBase {
    *   A CV record object.
    */
   private function getChadoCvByName($name) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     $query = $chado->select('cv', 'cv');
     $query->fields('cv');
     $query->condition('name', $name);
@@ -710,7 +713,7 @@ class OBOImporter extends ChadoImporterBase {
    *   A CV record object.
    */
   private function getChadoCvById($cv_id) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     $query = $chado->select('cv', 'cv');
     $query->fields('cv');
     $query->condition('cv_id', $cv_id);
@@ -759,7 +762,7 @@ class OBOImporter extends ChadoImporterBase {
    */
   public function run() {
     $public = \Drupal::database();
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
 
     $arguments = $this->arguments['run_args'];
     $obo_id = $arguments['obo_id'];
@@ -977,6 +980,8 @@ class OBOImporter extends ChadoImporterBase {
 
     // Empty the temp table.
     $this->clearTermStanzaCache();
+
+    $this->logger->notice("Importing into schema: " . $this->chado_schema_main);
 
     // Parse the obo file.
     $this->logger->notice("Step 1: Preloading File $file...");
@@ -1418,7 +1423,7 @@ class OBOImporter extends ChadoImporterBase {
    *   The cvterm ID.
    */
   private function saveTerm($stanza, $is_relationship = FALSE) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
 
     // Get the term ID.
     $id = $stanza['id'][0];
@@ -1586,7 +1591,7 @@ class OBOImporter extends ChadoImporterBase {
    *   Returns TRUE if a conflict was found and corrected.
    */
   public function fixTermMismatch($stanza, $dbxref, $cv, $name) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
 
     $name = $stanza['name'][0];
 
@@ -1683,7 +1688,7 @@ class OBOImporter extends ChadoImporterBase {
    */
   private function processTerm($stanza, $is_relationship = 0) {
 
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
 
     //
     // First things first--save the term.
@@ -2136,7 +2141,7 @@ class OBOImporter extends ChadoImporterBase {
    *   The term type (e.g. Typedef, Term)
    */
   private function getCacheSize($type) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     if ($this->cache_type == 'table') {
       $sql = "
         SELECT count(*) as num_terms
@@ -2159,7 +2164,7 @@ class OBOImporter extends ChadoImporterBase {
    *   The term type (e.g. Typedef, Term)
    */
   private function getCachedTermStanzas($type) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     if ($this->cache_type == 'table') {
       $sql = "SELECT id FROM {tripal_obo_temp} WHERE type = 'Typedef' ";
       $typedefs = $chado->query($sql);
@@ -2172,7 +2177,7 @@ class OBOImporter extends ChadoImporterBase {
    * Clear's the term cache.
    */
   private function clearTermStanzaCache() {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     if ($this->cache_type == 'table') {
       $sql = "DELETE FROM {tripal_obo_temp}";
       $chado->query($sql);
@@ -2477,7 +2482,7 @@ class OBOImporter extends ChadoImporterBase {
    *   The newly inserted DB object.
    */
   private function insertChadoDb($dbname, $url = '',  $description = '') {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
 
     // Add the database if it doesn't exist.
     if (array_key_exists($dbname, $this->all_dbs)) {
@@ -2511,7 +2516,7 @@ class OBOImporter extends ChadoImporterBase {
    *   The newly inserted dbxref object.
    */
   private function insertChadoDbxref($db_id, $accession) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
 
     $dbxref = $this->getChadoDBXrefByAccession($db_id, $accession);
     if ($dbxref) {
@@ -2544,7 +2549,7 @@ class OBOImporter extends ChadoImporterBase {
    *   The newly inserted cvterm_dbxref object.
    */
   private function insertChadoCvtermDbxref($cvterm_id, $dbxref_id) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
 
     $squery = $chado->select('cvterm_dbxref', 'CVTDBX');
     $squery->fields('CVTDBX');
@@ -2579,7 +2584,7 @@ class OBOImporter extends ChadoImporterBase {
    *   The newly inserted cvtermsynonym object.
    */
   private function insertChadoCvtermSynonym($cvterm_id, $synonym) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
 
     $query = $chado->insert('cvtermsynonym');
     $query->fields([
@@ -2606,7 +2611,7 @@ class OBOImporter extends ChadoImporterBase {
    *   The rank of the property value
    */
   private function insertChadoCvtermProp($cvterm_id, $type_id, $value, $rank = 0) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
 
     $query = $chado->insert('cvtermprop');
     $query->fields([
@@ -2633,7 +2638,7 @@ class OBOImporter extends ChadoImporterBase {
    *   The cvterm ID for the object.
    */
   private function insertChadoCvtermRelationship($subject_id, $type_id, $object_id) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
 
     $query = $chado->insert('cvterm_relationship');
     $query->fields([
@@ -2658,7 +2663,7 @@ class OBOImporter extends ChadoImporterBase {
    *   The newly inserted CV object..
    */
   private function insertChadoCv($cvname) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
 
     // Add the CV record if it doesn't exist.
     if (array_key_exists($cvname, $this->all_cvs)) {
