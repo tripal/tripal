@@ -352,7 +352,7 @@ function tripal_feature_color_sequence($sequence, $parts, $defline) {
       }
     }
 
-    $newseq .= $sequence{$i};
+    $newseq .= $sequence[$i];
     $seqcount++;
     if ($seqcount % 50 == 0) {
       $newseq .= "\n";
