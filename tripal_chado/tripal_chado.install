@@ -52,12 +52,13 @@ function tripal_chado_schema() {
 
   $schema['chado_installations'] = tripal_chado_chado_installations_schema();
   $schema['tripal_custom_tables'] = tripal_chado_tripal_custom_tables_schema();
+  $schema['tripal_mviews'] = tripal_chado_tripal_mviews_schema();
 
   // Add tables to integrate the independant Tripal Vocabularies to Chado terms.
   $schema['chado_tripalvocab'] = tripal_chado_chado_vocab();
   $schema['chado_tripalvocabspace'] = tripal_chado_chado_vocabidspace();
   $schema['chado_tripalterm'] = tripal_chado_chado_term();
-  
+
   // Add tables supporting the Tripal Storage.
   $schema['chado_bundle'] = tripal_chado_chado_bundle_schema();
   $schema['chado_fields'] = tripal_chado_chado_fields_schema();
@@ -361,6 +362,58 @@ function tripal_chado_chado_term() {
 }
 
 /**
+ * Describes the tripal_mviews table.
+ */
+function tripal_chado_tripal_mviews_schema() {
+  return array(
+    'fields' => array(
+      'mview_id' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+      'table_id' => array(
+        'type' => 'int',
+        'not null' => True,
+        'description' => 'The custom table ID'
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE
+      ),
+      'query' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => TRUE
+      ),
+      'last_update' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+        'description' => 'UNIX integer time'
+      ),
+      'status' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => FALSE
+      ),
+      'comment' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => FALSE
+      ),
+    ),
+    'indexes' => array(
+      'mview_id' => array('mview_id')
+    ),
+    'unique keys' => array(
+      'table_id' => array('table_id'),
+    ),
+    'primary key' => array('mview_id'),
+  );
+}
+
+/**
  * Describes the Tripal Custom Tables (tripal_custom_tables) table.
  * This keeps track of tables created by Tripal and stored in chado.
  */
@@ -381,10 +434,12 @@ function tripal_chado_tripal_custom_tables_schema() {
         'type' => 'text',
         'not null' => TRUE
       ),
-      'mview_id' => array(
-        'type' => 'int',
-        'not null' => FALSE
-      )
+      'chado' => array(
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'description' => 'The name of the Chado schema where this table exists.'
+      ),
     ),
     'indexes' => array(
       'table_id' => array('table_id'),
