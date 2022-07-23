@@ -15,7 +15,7 @@ class ChadoCustomTablesController extends ControllerBase {
      *
      */
     public function __construct() {
-  
+
     }
 
   /**
@@ -44,8 +44,6 @@ class ChadoCustomTablesController extends ControllerBase {
         '#markup' => 'You do not have access to view this page.',
       ];
     }
-  }    
+  }
 
 }
-
-?>

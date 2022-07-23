@@ -21,16 +21,15 @@ class ChadoCustomTableForm extends FormBase {
   /**
    * A Form to Create/Edit a Custom table.
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $table_id = null) {     
-    
+  public function buildForm(array $form, FormStateInterface $form_state, $table_id = null) {
+
     if (!$table_id) {
       $action = 'Add';
     }
     else {
       $action = 'Edit';
     }
-    
-  
+
     // get this requested table
     $default_schema = '';
     $default_force_drop = 0;
@@ -38,14 +37,14 @@ class ChadoCustomTableForm extends FormBase {
       $sql = "SELECT * FROM tripal_custom_tables WHERE table_id = :table_id ";
       $results = chado_query($sql, [':table_id' => $table_id]);
       $custom_table = $results->fetchObject();
-  
+
       // if this is a materialized view then don't allow editing with this function
       if (property_exists($custom_table, 'mview_id') and $custom_table->mview_id) {
         drupal_set_message("This custom table is a materialized view. Please use the " . Link::fromTextAndUrl('Materialized View', Url::fromUserInput('/admin/tripal/storage/chado/mviews')) . " interface to edit it.", 'error');
         drupal_goto("admin/tripal/storage/chado/custom_tables");
         return [];
       }
-  
+
       // set the default values.  If there is a value set in the
       // form_state then let's use that, otherwise, we'll pull
       // the values from the database
@@ -55,31 +54,31 @@ class ChadoCustomTableForm extends FormBase {
       if ($form_state->getValue('force_drop')) {
         $default_force_drop = $form_state->getValue('force_drop');
       }
-  
+
       if (!$default_schema) {
         $default_schema = var_export(unserialize($custom_table->schema), 1);
         $default_schema = preg_replace('/=>\s+\n\s+array/', '=> array', $default_schema);
       }
     }
-  
-    
+
+
     // Build the form
     $form['action'] = [
       '#type' => 'value',
       '#value' => $action,
     ];
-  
+
     $form['table_id'] = [
       '#type' => 'value',
       '#value' => $table_id,
     ];
-  
+
     $form['instructions'] = [
       '#type' => 'details',
       '#title' => 'Instructions',
       '#open' => False,
     ];
-    
+
     $form['instructions']['text'] = [
       '#type' => 'item',
       '#markup' => '<p>' . t('At times it is necessary to add a custom table
@@ -97,7 +96,7 @@ class ChadoCustomTableForm extends FormBase {
           '<p>Please note that table names should be all lower-case.</p>'
         ),
     ];
-        
+
 
     $form['instructions']['example'] = [
       '#type' => 'item',
@@ -142,7 +141,7 @@ class ChadoCustomTableForm extends FormBase {
   ]
 ]</pre>",
     ];
-  
+
     if ($action == 'Add') {
       $form['force_drop'] = [
         '#type' => 'value',
@@ -165,43 +164,43 @@ class ChadoCustomTableForm extends FormBase {
       '#default_value' => $default_schema,
       '#rows' => 25,
     ];
-  
+
     if ($action == 'Edit') {
       $value = 'Save';
     }
     if ($action == 'Add') {
       $value = 'Add';
     }
-  
+
     $form['submit'] = [
       '#type' => 'submit',
       '#value' => t($value),
       '#executes_submit_callback' => TRUE,
     ];
-    
+
     $form['cancel'] = [
       '#type' => 'markup',
       '#markup' => Link::fromTextAndUrl('Cancel', Url::fromUserInput('/admin/tripal/storage/chado/custom_tables'))->toString(),
     ];
-  
-    
+
+
     return $form;
   }
-  
+
   /**
    * Validate the Create/Edit custom table form.
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) { 
-    $values = $form_state->getValues();   
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    $values = $form_state->getValues();
     $action = $values['action'];
     $table_id = $values['table_id'];
     $schema = $values['schema'];
     $force_drop = $values['force_drop'];
-  
+
     if (!$schema) {
       $form_state->setErrorByName($values['schema'], t('Schema array field is required.'));
     }
-  
+
     // Make sure the array is valid.
     $schema_array = [];
     if ($schema) {
@@ -219,16 +218,16 @@ class ChadoCustomTableForm extends FormBase {
         if (is_array($schema_array) and !array_key_exists('table', $schema_array)) {
           $form_state->setErrorByName('schema', t("The schema array must have key named 'table'"));
         }
-  
+
         // Validate the contents of the array.
         $error = chado_validate_custom_table_schema($schema_array);
         if ($error) {
           $form_state->setErrorByName('schema', $error);
         }
-  
+
         if ($action == 'Edit') {
           // See if the table name has changed. If so, then check to make sure
-          // it doesn't already exists. We don't want to drop a table we 
+          // it doesn't already exists. We don't want to drop a table we
           // didn't mean to.
           $sql = "SELECT * FROM tripal_custom_tables WHERE table_id = :table_id";
           $results = chado_query($sql, [':table_id' => $table_id]);
@@ -244,7 +243,7 @@ class ChadoCustomTableForm extends FormBase {
       }
     }
   }
-  
+
   /**
    * Submit the Create/Edit Custom table form.
    */
@@ -254,17 +253,17 @@ class ChadoCustomTableForm extends FormBase {
     $table_id = $values['table_id'];
     $schema = $values['schema'];
     $force_drop = $values['force_drop'];
-  
+
     $skip_creation = 1;
     if ($force_drop) {
       $skip_creation = 0;
     }
-  
+
     // convert the schema into a PHP array
     $schema_arr = [];
     eval("\$schema_arr = $schema;");
-  
-  
+
+
     if (strcmp($action, 'Edit') == 0) {
       $action_result = chado_edit_custom_table($table_id, $schema_arr['table'], $schema_arr, $skip_creation);
       if($action_result) {
@@ -287,11 +286,11 @@ class ChadoCustomTableForm extends FormBase {
     }
     else {
       drupal_set_message(t("No action performed."));
-    }  
+    }
     $response = new RedirectResponse(\Drupal\Core\Url::fromUserInput('/admin/tripal/storage/chado/custom_tables')->toString());
-    $response->send();    
+    $response->send();
   }
-  
+
 }
 
 

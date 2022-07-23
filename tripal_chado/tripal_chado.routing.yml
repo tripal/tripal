@@ -38,7 +38,6 @@ tripal_chado.chado_custom_table_form:
   requirements:
     _permission: 'administer tripal'
 
-
 tripal_chado.chado_custom_table_form_edit:
   path: 'admin/tripal/storage/chado/chado_custom_table/{table_id}'
   defaults:
@@ -60,5 +59,14 @@ tripal_chado.chado_custom_tables:
   defaults:
     _controller: '\Drupal\tripal_chado\Controller\ChadoCustomTablesController::admin_custom_tables'
     _title: 'Chado Custom Tables'
+  requirements:
+    _permission: 'administer tripal'
+    
+    
+tripal_chado.chado_mviews:
+  path: 'admin/tripal/storage/chado/mviews'
+  defaults:
+    _controller: '\Drupal\tripal_chado\Controller\ChadoMviewsController::admin_mviews'
+    _title: 'Chado Materialized Views'
   requirements:
     _permission: 'administer tripal'
