@@ -40,7 +40,7 @@ class ChadoCustomTableForm extends FormBase {
 
     // If this is an edit then set the form detafauls differently.
     if (strcmp($action, 'Edit') == 0) {
-      $custom_table = ChadoCustomTable::loadCustomTable($table_id);
+      $custom_table = ChadoCustomTable::load($table_id);
 
       // Get the default table schema.
       $default_table_schema = var_export($custom_table->tableSchema(), 1);
@@ -248,7 +248,7 @@ class ChadoCustomTableForm extends FormBase {
       }
     }
     if ($action == 'Edit') {
-      $custom_table = ChadoCustomTable::loadMView($table_id);
+      $custom_table = ChadoCustomTable::load($table_id);
       if (in_array($schema_arr['table'], $all_custom_tables and $custom_table->tableName() != $schema_arr['table'])) {
         $form_state->setErrorByName($values['table_schema'],
             t("The table name already exists, please choose a different name."));
@@ -280,7 +280,7 @@ class ChadoCustomTableForm extends FormBase {
     $custom_table->init($schema_arr['table'], $chado_schema);
 
     if (strcmp($action, 'Edit') == 0) {
-      $custom_table = ChadoCustomTable::loadCustomTable($table_id);
+      $custom_table = ChadoCustomTable::load($table_id);
       $success = False;
       if ($skip_creation) {
         $success = $custom_table->fixTableSchema($schema_arr);

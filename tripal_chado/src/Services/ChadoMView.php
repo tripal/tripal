@@ -283,7 +283,7 @@ class ChadoMView extends ChadoCustomTable {
    * @return \Drupal\tripal_chado\Services\ChadoMview.
    *   A ChadoMview object or NULL if not found.
    */
-  static public function loadMView(int $mview_id) {
+  static public function load(int $mview_id) {
     $public = \Drupal::database();
     $query = $public->select('tripal_mviews','tm');
     $query->join('tripal_custom_tables', 'tct', 'tct.table_id = tm.table_id');

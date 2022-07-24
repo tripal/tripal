@@ -9,7 +9,7 @@ use Drupal\Core\Url;
 use Drupal\Core\Link;
 use Drupal\tripal_chado\Services\ChadoMView;
 
-class ChadoMviewsDeleteForm extends FormBase {
+class ChadoMviewDeleteForm extends FormBase {
 
   /**
    * {@inheritdoc}
@@ -25,7 +25,7 @@ class ChadoMviewsDeleteForm extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state, $mview_id = null) {
 
-    $mview = ChadoMView::loadMview($mview_id);
+    $mview = ChadoMView::load($mview_id);
 
     $form = [];
     $form['mview_id'] = [
@@ -62,7 +62,7 @@ class ChadoMviewsDeleteForm extends FormBase {
     $mview_id = $values['mview_id'];
 
     if (strcmp($action, 'Delete') == 0) {
-      $mview = ChadoMView::loadMview($mview_id);
+      $mview = ChadoMView::load($mview_id);
       $success = $mview->destroy();
       if($success == TRUE) {
         \Drupal::messenger()->addMessage(t("The materialized view was successfully deleted"));

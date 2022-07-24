@@ -25,7 +25,7 @@ class ChadoCustomTablesDeleteForm extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state, $table_id = null) {
 
-    $custom_table = ChadoCustomTable::loadCustomTable($table_id);
+    $custom_table = ChadoCustomTable::load($table_id);
 
     $form = [];
     $form['table_id'] = [
@@ -62,7 +62,7 @@ class ChadoCustomTablesDeleteForm extends FormBase {
     $table_id = $values['table_id'];
 
     if (strcmp($action, 'Delete') == 0) {
-      $custom_table = ChadoCustomTable::loadCustomTable($table_id);
+      $custom_table = ChadoCustomTable::load($table_id);
       $success = $custom_table->destroy();
       if($success == TRUE) {
         \Drupal::messenger()->addMessage(t("Custom table successfully deleted"));

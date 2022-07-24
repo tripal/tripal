@@ -53,7 +53,7 @@ function chado_edit_custom_table(int $table_id, string $table_name,
 
   $logger = \Drupal::service('tripal.logger');
 
-  $custom_table = ChadoCustomTable::loadCustomTable($table_id);
+  $custom_table = ChadoCustomTable::load($table_id);
   if (!$custom_table) {
     $logger->error('Cannot find a custom table in this instance of Chado that matches the provided ID.');
     return False;
@@ -255,7 +255,7 @@ function chado_delete_custom_table(int $table_id) : bool {
     return FALSE;
   }
 
-  $custom_table = ChadoCustomTable::loadCustomTable($table_id);
+  $custom_table = ChadoCustomTable::load($table_id);
   if (!$custom_table) {
     $logger->error('Cannot find a custom table in this instance of Chado that matches the provided ID.');
     return False;

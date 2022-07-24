@@ -80,11 +80,19 @@ tripal_chado.chado_mviews_form_edit:
   requirements:
     _permission: 'manage chado materialized views' 
 
-tripal_chado.chado_cmviews_delete_form:
+tripal_chado.chado_mviews_delete_form:
   path: 'admin/tripal/storage/chado/mview_delete/{mview_id}'
   defaults:
-    _form: '\Drupal\tripal_chado\Form\ChadoMviewsDeleteForm'
+    _form: '\Drupal\tripal_chado\Form\ChadoMviewDeleteForm'
     _title: 'Delete a Materialized View'
+  requirements:
+    _permission: 'manage chado materialized views'
+    
+tripal_chado.chado_mviews_populate_form:
+  path: 'admin/tripal/storage/chado/mview_populate/{mview_id}'
+  defaults:
+    _form: '\Drupal\tripal_chado\Form\ChadoMviewPopulateForm'
+    _title: 'Populate a Materialized View'
   requirements:
     _permission: 'manage chado materialized views'
     

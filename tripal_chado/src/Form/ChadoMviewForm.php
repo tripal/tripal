@@ -43,7 +43,7 @@ class ChadoMviewForm extends FormBase {
 
     // If this is an edit then set the form detafauls differently.
     if (strcmp($action, 'Edit') == 0) {
-      $mview = ChadoMView::loadMView($mview_id);
+      $mview = ChadoMView::load($mview_id);
 
       // set the default values.  If there is a value set in the
       // form_state then let's use that, otherwise, we'll pull
@@ -303,7 +303,7 @@ SELECT
       }
     }
     if ($action == 'Edit') {
-      $mview = ChadoMView::loadMView($mview_id);
+      $mview = ChadoMView::load($mview_id);
       if (in_array($schema_arr['table'], $all_mviews and $mview->tableName() != $schema_arr['table'])) {
         $form_state->setErrorByName($values['table_schema'],
             t("The table name already exists, please choose a different name."));
@@ -334,7 +334,7 @@ SELECT
     eval("\$schema_arr = $table_schema;");
 
     if (strcmp($action, 'Edit') == 0) {
-      $mview = ChadoMView::loadMView($mview_id);
+      $mview = ChadoMView::load($mview_id);
       $mview->setComment($comment);
       $mview->setSqlQuery($sql_query);
       $success = False;

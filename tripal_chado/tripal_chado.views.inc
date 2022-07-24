@@ -286,6 +286,14 @@ function tripal_chado_views_data_mviews(&$data) {
     ],
   );
 
+  $data['tripal_mviews']['mview_populate_link'] = array(
+    'title' => t('Populate MView'),
+    'help' => t('Clickable link to populate a materialized view'),
+    'field' => [
+      'id' => 'chado_mviews_populate_link'
+    ],
+  );
+
   $data['tripal_mviews']['mview_delete_link'] = array(
     'title' => t('Delete MView'),
     'help' => t('Clickable link to delete a materialied view'),

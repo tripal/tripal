@@ -477,7 +477,7 @@ class ChadoCustomTable {
    * @return \Drupal\tripal_chado\Services\ChadoCustomTable.
    *   A ChadoCustomTable object or NULL if not found.
    */
-  static public function loadCustomTable(int $table_id) {
+  static public function load(int $table_id) {
     $public = \Drupal::database();
 
     $query = $public->select('tripal_custom_tables','tct');
