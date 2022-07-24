@@ -290,12 +290,10 @@ class ChadoMView extends ChadoCustomTable {
     $query->fields('tct', ['table_name']);
     $query->fields('tct', ['chado']);
     $query->condition('tm.mview_id', $mview_id);
-    $results = $query->execute();
-    if (!$results) {
+    $record = $query->execute()->fetchAssoc();
+    if (!$record) {
       return NULL;
     }
-    $record = $results->fetchAssoc();
-
     $mview = \Drupal::service('tripal_chado.materialized_view');
     $mview->init($record['table_name'], $record['chado']);
     return $mview;
@@ -319,7 +317,7 @@ class ChadoMView extends ChadoCustomTable {
    */
   public function destroy() {
     $logger = \Drupal::service('tripal.logger');
-    if (!$this->table_id) {
+    if (!$this->tableId()) {
       $logger->error('Cannot destroy the materialized view. Please, first run the init() function.');
       return False;
     }

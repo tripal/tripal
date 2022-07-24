@@ -519,7 +519,7 @@ display:
         options:
           perm: 'manage chado custom tables'
       cache:
-        type: tag
+        type: none
         options: {  }
       empty:
         area_text_custom:

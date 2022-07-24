@@ -71,9 +71,9 @@ class ChadoMviewsDeleteLink extends FieldPluginBase {
    */
   public function render(ResultRow $values) {
     // Return the text, so the code never thinks the value is empty.
-    $table_id = $values->table_id;
+    $mview_id = $values->mview_id;
     $str = "wth";
-    $url = Url::fromUserInput('/admin/tripal/storage/chado/mview_delete/' . $table_id)->toString();
+    $url = Url::fromUserInput('/admin/tripal/storage/chado/mview_delete/' . $mview_id)->toString();
     $html = '<a href="' .  $url . '">Delete</a>';
     $markup = new Markup();
 

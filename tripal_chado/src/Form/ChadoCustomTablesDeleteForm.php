@@ -62,12 +62,13 @@ class ChadoCustomTablesDeleteForm extends FormBase {
     $table_id = $values['table_id'];
 
     if (strcmp($action, 'Delete') == 0) {
-      $result = chado_delete_custom_table($table_id);
-      if($result == TRUE) {
+      $custom_table = ChadoCustomTable::loadCustomTable($table_id);
+      $success = $custom_table->destroy();
+      if($success == TRUE) {
         \Drupal::messenger()->addMessage(t("Custom table successfully deleted"));
       }
       else {
-        \Drupal::messenger()->addMessage(t("An error occurred when trying to delete custom table. Check the report logs."));
+        \Drupal::messenger()->addError(t("An error occurred when trying to delete custom table. Check the report logs."));
       }
     }
     else {
