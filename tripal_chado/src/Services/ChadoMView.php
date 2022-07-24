@@ -30,13 +30,16 @@ class ChadoMView extends ChadoCustomTable {
    *
    * @param string $table_name
    *   The name of the custom table.
+   * @param string $chado_schema
+   *   Optional. The chado schema where the custom table will live. If no
+   *   schema is specified then the default schema is used.
    */
-  public function init($table_name) {
+  public function init($table_name, string $chado_schema = NULL) {
 
     if (!$table_name) {
       throw new \Exception('ChadoMView::init(). Please provide a value for the $table_name argument');
     }
-    parent::init($table_name);
+    parent::init($table_name, $chado_schema);
 
     $this->setMviewId();
 
@@ -204,7 +207,7 @@ class ChadoMView extends ChadoCustomTable {
     }
 
     $public = \Drupal::database();
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChado();
     $transaction_chado = $chado->startTransaction();
     $transaction = $public->startTransaction();
 
@@ -225,22 +228,21 @@ class ChadoMView extends ChadoCustomTable {
   /**
    * Retrieve a list of all materialized views.
    *
-   * This function will only return the views in the current
-   * default Chado instance.
+   * @param string $chado_schema
+   *   Optional. The chado schema from which to retrieve materialized views. If
+   *   no schema is specified then the default schema is used.
    *
    * @return array
    *  An array of table names.
    */
-  static public function allMViews() {
+  static public function allMViews(string $chado_schema = NULL) {
     $mviews = [];
 
     $public = \Drupal::database();
-    $chado = \Drupal::service('tripal_chado.database');
-
     $query = $public->select('tripal_mviews','tm');
     $query->fields('tm', ['name']);
     $query->join('tripal_custom_tables', 'ct', 'tm.table_id = ct.table_id');
-    $query->condition('ct.chado', $chado->getSchemaName());
+    $query->condition('ct.chado', $chado_schema);
     $query->orderBy('tm.name');
     $results = $query->execute();
     while ($name = $results->fetchField()) {
@@ -256,17 +258,19 @@ class ChadoMView extends ChadoCustomTable {
    *
    * @param string $table_name
    *
+   * @param string $chado_schema
+   *   Optional. The chado schema from which to retrieve materialized views. If
+   *   no schema is specified then the default schema is used.
+   *
    * @return int
    *   The materialized view ID if it exists.
    */
-  static public function findMviewId(string $table_name) {
+  static public function findMviewId(string $table_name, string $chado_schema = NULL) {
     $public = \Drupal::database();
-    $chado = \Drupal::service('tripal_chado.database');
-
     $query = $public->select('tripal_mviews','tm');
     $query->fields('tm', ['mview_id']);
     $query->join('tripal_custom_tables', 'ct', 'tm.table_id = ct.table_id');
-    $query->condition('ct.chado', $chado->getSchemaName());
+    $query->condition('ct.chado', $chado_schema);
     $query->condition('tm.name', $table_name);
     return $query->execute()->fetchField();
   }
@@ -278,17 +282,19 @@ class ChadoMView extends ChadoCustomTable {
    *
    * @param int $mview_id
    *
+   * @param string $chado_schema
+   *   Optional. The chado schema from which to retrieve materialized views. If
+   *   no schema is specified then the default schema is used.
+   *
    * @return string
    *   The materialized view table name if it exists.
    */
-  static public function findMviewName(int $mview_id) {
+  static public function findMviewName(int $mview_id, string $chado_schema = NULL) {
     $public = \Drupal::database();
-    $chado = \Drupal::service('tripal_chado.database');
-
     $query = $public->select('tripal_mviews','tm');
     $query->fields('tm', ['name']);
     $query->join('tripal_custom_tables', 'ct', 'tm.table_id = ct.table_id');
-    $query->condition('ct.chado', $chado->getSchemaName());
+    $query->condition('ct.chado', $chado_schema);
     $query->condition('tm.mview_id', $mview_id);
     return $query->execute()->fetchField();
   }

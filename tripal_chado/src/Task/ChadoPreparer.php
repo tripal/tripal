@@ -144,16 +144,18 @@ class ChadoPreparer extends ChadoTaskBase {
 
     try
     {
-      $this->setProgress(0.1);
-      $this->logger->notice("Creating Tripal Materialized Views and Custom Tables...");
       $chado_version = $this->chado->getVersion();
       if ($chado_version != '1.3') {
         throw new TaskException("Cannot prepare. Currently only Chado v1.3 is supported.");
       }
-      $this->createCustomTables();
-      $this->createMViews();
-      return TRUE;
 
+      $this->setProgress(0.1);
+      $this->logger->notice("Creating Tripal Custom Tables...");
+      $this->createCustomTables();
+
+      $this->setProgress(0.15);
+      $this->logger->notice("Creating Tripal Materialized Views...");
+      $this->createMViews();
 
       $this->setProgress(0.2);
       $this->logger->notice("Loading ontologies...");
@@ -261,8 +263,9 @@ class ChadoPreparer extends ChadoTaskBase {
     ];
 
     $custom_table = \Drupal::service('tripal_chado.custom_table');
-    $custom_table->init('tripal_gff_temp');
+    $custom_table->init('tripal_gff_temp', $this->chado->getSchemaName());
     $custom_table->setTableSchema($schema);
+    $custom_table->setHidden(True);
 
     //chado_create_custom_table('tripal_gff_temp', $schema, TRUE, NULL,
     //  FALSE, $this->chado);
@@ -309,8 +312,9 @@ class ChadoPreparer extends ChadoTaskBase {
     ];
 
     $custom_table = \Drupal::service('tripal_chado.custom_table');
-    $custom_table->init('tripal_gffcds_temp');
+    $custom_table->init('tripal_gffcds_temp', $this->chado->getSchemaName());
     $custom_table->setTableSchema($schema);
+    $custom_table->setHidden(True);
 
     //chado_create_custom_table('tripal_gffcds_temp', $schema, TRUE, NULL,
     //  FALSE, $this->chado);
@@ -352,8 +356,9 @@ class ChadoPreparer extends ChadoTaskBase {
     ];
 
     $custom_table = \Drupal::service('tripal_chado.custom_table');
-    $custom_table->init('tripal_gffprotein_temp');
+    $custom_table->init('tripal_gffprotein_temp', $this->chado->getSchemaName());
     $custom_table->setTableSchema($schema);
+    $custom_table->setHidden(True);
 
     //chado_create_custom_table('tripal_gffprotein_temp', $schema, TRUE, NULL,
     //  FALSE, $this->chado);
@@ -365,26 +370,37 @@ class ChadoPreparer extends ChadoTaskBase {
    * This table is used by the OBO Importer.
    */
   function createCustomTable_tripal_obo_temp() {
-    // the tripal_obo_temp table is used for temporary housing of records when loading OBO files
-    // we create it here using plain SQL because we want it to be in the chado schema but we
-    // do not want to use the Tripal Custom Table API because we don't want it to appear in the
-    // list of custom tables.  It needs to be available for the Tripal Chado API so we create it
-    // here and then define it in the tripal_cv/api/tripal_cv.schema.api.inc
-    if (!chado_table_exists('tripal_obo_temp')) {
-      $sql = "
-        CREATE TABLE {tripal_obo_temp} (
-          id character varying(255) NOT NULL,
-          stanza text NOT NULL,
-          type character varying(50) NOT NULL,
-          CONSTRAINT tripal_obo_temp_uq0 UNIQUE (id)
-        );
-      ";
-      $this->chado->query($sql);
-      $sql = "CREATE INDEX tripal_obo_temp_idx0 ON {tripal_obo_temp} USING btree (id)";
-      $this->chado->query($sql);
-      $sql = "CREATE INDEX tripal_obo_temp_idx1 ON {tripal_obo_temp} USING btree (type)";
-      $this->chado->query($sql);
-    }
+    $schema = [
+      'table' => 'tripal_obo_temp',
+      'fields' => [
+        'id' => [
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+        ],
+        'stanza' => [
+          'type' => 'text',
+          'not null' => TRUE,
+        ],
+        'type' => [
+          'type' => 'varchar',
+          'length' => 50,
+          'not null' => TRUE,
+        ],
+      ],
+      'indexes' => [
+        'tripal_obo_temp_idx0' => ['id'],
+        'tripal_obo_temp_idx1' => ['type'],
+      ],
+      'unique keys' => [
+        'tripal_obo_temp0' => ['id'],
+      ],
+    ];
+
+    $custom_table = \Drupal::service('tripal_chado.custom_table');
+    $custom_table->init('tripal_obo_temp', $this->chado->getSchemaName());
+    $custom_table->setTableSchema($schema);
+    $custom_table->setHidden(True);
   }
 
   /**
@@ -468,7 +484,7 @@ class ChadoPreparer extends ChadoTaskBase {
     ";
 
     $mview = \Drupal::service('tripal_chado.materialized_view');
-    $mview->init($view_name);
+    $mview->init($view_name, $this->chado->getSchemaName());
     $mview->setTableSchema($schema);
     $mview->setSqlQuery($sql);
     $mview->setComment($comment);
@@ -527,7 +543,7 @@ class ChadoPreparer extends ChadoTaskBase {
     ";
 
     $mview = \Drupal::service('tripal_chado.materialized_view');
-    $mview->init($view_name);
+    $mview->init($view_name, $this->chado->getSchemaName());
     $mview->setTableSchema($schema);
     $mview->setSqlQuery($sql);
     $mview->setComment($comment);
@@ -602,7 +618,7 @@ class ChadoPreparer extends ChadoTaskBase {
     ";
 
     $mview = \Drupal::service('tripal_chado.materialized_view');
-    $mview->init($view_name);
+    $mview->init($view_name, $this->chado->getSchemaName());
     $mview->setTableSchema($schema);
     $mview->setSqlQuery($sql);
     $mview->setComment($comment);
@@ -666,7 +682,7 @@ class ChadoPreparer extends ChadoTaskBase {
     ";
 
     $mview = \Drupal::service('tripal_chado.materialized_view');
-    $mview->init($view_name);
+    $mview->init($view_name, $this->chado->getSchemaName());
     $mview->setTableSchema($schema);
     $mview->setSqlQuery($sql);
     $mview->setComment($comment);
@@ -729,10 +745,11 @@ class ChadoPreparer extends ChadoTaskBase {
     ";
 
     $mview = \Drupal::service('tripal_chado.materialized_view');
-    $mview->init($view_name);
+    $mview->init($view_name, $this->chado->getSchemaName());
     $mview->setTableSchema($schema);
     $mview->setSqlQuery($sql);
     $mview->setComment($comment);
+    $mview->setHidden(True);
   }
 
   /**
@@ -786,10 +803,11 @@ class ChadoPreparer extends ChadoTaskBase {
     ";
 
     $mview = \Drupal::service('tripal_chado.materialized_view');
-    $mview->init($view_name);
+    $mview->init($view_name, $this->chado->getSchemaName());
     $mview->setTableSchema($schema);
     $mview->setSqlQuery($sql);
     $mview->setComment($comment);
+    $mview->setHidden(True);
   }
 
 

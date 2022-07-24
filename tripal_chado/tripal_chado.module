@@ -54,10 +54,10 @@ function tripal_chado_rebuild() {
   }
 
   // The chado_materialized_views view.
-//   $view = $storage->load('chado_materialized_views');
-//   if (!$view) {
-//     $config = $fileStorage->read('config/install/views.view.chado_materialized_views');
-//     $view = $storage->create($config);
-//     $view->save();
-//   }
+  $view = $storage->load('chado_materialized_views');
+  if (!$view) {
+    $config = $fileStorage->read('config/install/views.view.chado_materialized_views');
+    $view = $storage->create($config);
+    $view->save();
+  }
 }

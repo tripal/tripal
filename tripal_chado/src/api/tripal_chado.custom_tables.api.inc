@@ -21,6 +21,13 @@ use Drupal\tripal_chado\Services\ChadoMView;
 /**
  * Edits a known custom table in the chado database.
  *
+ * @deprecated
+ *
+ * Please use the new "tripal_chado.custom_table" service instead.
+ *
+ * WARNING This function only supports editing of custom tables in the
+ * default Chado schema.
+ *
  * "Known" custom tables are tables that exist in the
  * tripal_custom_tables already. If it is not in
  * tripal_custom_tables, or the specified table does not exist,
@@ -46,8 +53,8 @@ function chado_edit_custom_table(int $table_id, string $table_name,
 
   $logger = \Drupal::service('tripal.logger');
 
-  $orig_table_name = ChadoCustomTable::findTableName($table_id);
-  if (!$orig_table_name) {
+  $custom_table = ChadoCustomTable::loadCustomTable($table_id);
+  if (!$custom_table) {
     $logger->error('Cannot find a custom table in this instance of Chado that matches the provided ID.');
     return False;
   }
@@ -60,18 +67,16 @@ function chado_edit_custom_table(int $table_id, string $table_name,
   }
 
   // If the table name was not changed.
-  if ($orig_table_name == $table_name) {
+  if ($custom_table->tableName() == $table_name) {
     chado_create_custom_table($table_name, $schema, $skip_if_exists);
   }
   // If the table name changed.
   else {
-    $custom_table = \Drupal::service('tripal_chado.custom_table');
-    $custom_table->init($orig_table_name);
     $custom_table->destory();
     chado_create_custom_table($table_name, $schema);
   }
 
-  return $success;
+  return True;
 }
 
 /**
@@ -81,9 +86,9 @@ function chado_edit_custom_table(int $table_id, string $table_name,
  *
  * Please use the new "tripal_chado.custom_table" service instead.
  *
- * This function only supports creation of custom tables in the default Chado
- * schema. Also, for Tripal v4 the $redirect and $mview_id arguments no longer
- * have meaning.
+ * WARNING This function only supports creation of custom tables in the default
+ * Chado schema. Also, for Tripal v4 the $redirect and $mview_id arguments no
+ * longer have meaning.
  *
  * This function is simply a wrapper for built-in database functionality
  * provided by Drupal, but ensures the table is created
@@ -119,13 +124,14 @@ function chado_edit_custom_table(int $table_id, string $table_name,
 function chado_create_custom_table(string $table, array $schema, bool $skip_if_exists = TRUE,
     int $mview_id = NULL, bool $redirect = TRUE) {
 
+  $chado = \Drupal::service('tripal_chado.database');
   $table_exists = $chado->schema()->tableExists($table);
   $custom_tables = ChadoCustomTable::allCustomTables();
   $custom_table = \Drupal::service('tripal_chado.custom_table');
   $custom_table->init($table);
 
   // Validate the provided schema before we continue.
-  $errors = $custom_table->validateTableSchema($schema);
+  $errors = ChadoCustomTable::validateTableSchema($schema);
   if (!empty($errors)) {
     return False;
   }
@@ -139,7 +145,7 @@ function chado_create_custom_table(string $table, array $schema, bool $skip_if_e
   // Recreate the table if it exists, if it's in the list, and if we aren't
   // skipping existing ones
   if ($table_exists and in_array($table, $custom_tables) and !$skip_if_exists) {
-    $errors = $custom_table->validateTableSchema($schema);
+    $errors = ChadoCustomTable::validateTableSchema($schema);
     if (!empty($errors)) {
       return False;
     }
@@ -158,7 +164,7 @@ function chado_create_custom_table(string $table, array $schema, bool $skip_if_e
  * \Drupal\tripal_chado\Service\ChadoCustomTable::validateTableSchema()
  * function instead.
  *
- * This function can be used in a form validate function or whenver a
+ * This function can be used in a form validate function or whenever a
  * schema is provided by a user and needs validation.
  *
  * @param array $schema_array
@@ -203,6 +209,9 @@ function chado_get_custom_table_id(string $table_name) : int {
  * \Drupal\tripal_chado\Services\ChadoCustomTable::allCustomTables() function
  * instead.
  *
+ * WARNING: This function only supports geting custom tables in the default
+ * Chado schema.
+ *
  * @param boolean $include_mview
  *   True if the list of custom tables should include
  *   materialized views.
@@ -228,6 +237,9 @@ function chado_get_custom_table_names($include_mview = TRUE) : array {
  *
  * Please use the new "tripal_chado.custom_table" service instead.
  *
+ * WARNING: This function only supports deleting custom tables in the
+ * default Chado schema.
+ *
  * @param int $table_id
  *   The numeric custom table ID.
  * @return bool
@@ -243,20 +255,18 @@ function chado_delete_custom_table(int $table_id) : bool {
     return FALSE;
   }
 
-  $table_name = ChadoCustomTable::findTableName($table_id);
-  if (!$table_name) {
+  $custom_table = ChadoCustomTable::loadCustomTable($table_id);
+  if (!$custom_table) {
     $logger->error('Cannot find a custom table in this instance of Chado that matches the provided ID.');
     return False;
   }
 
-  $is_mview = ChadoMView::findMviewId($table_name);
+  $is_mview = ChadoMView::findMviewId($custom_table->tableName());
   if ($is_mview) {
     $logger->error('Cannot delete this custom table as it is a materialized view. '.
         'Use the materialized view API instead.');
     return False;
   }
 
-  $custom_table = \Drupal::service('tripal_chado.custom_table');
-  $custom_table->init($table_name);
   return $custom_table->destroy();
 }

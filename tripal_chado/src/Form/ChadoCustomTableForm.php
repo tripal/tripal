@@ -7,6 +7,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Link;
+use Drupal\tripal_chado\Services\ChadoCustomTable;
 
 class ChadoCustomTableForm extends FormBase {
 
@@ -23,6 +24,8 @@ class ChadoCustomTableForm extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state, $table_id = null) {
 
+    $chado = \Drupal::service('tripal_chado.database');
+
     if (!$table_id) {
       $action = 'Add';
     }
@@ -30,35 +33,35 @@ class ChadoCustomTableForm extends FormBase {
       $action = 'Edit';
     }
 
-    // get this requested table
-    $default_schema = '';
+    // Set form defaults.
+    $default_table_schema = '';
     $default_force_drop = 0;
-    if (strcmp($action, 'Edit') == 0) {
-      $sql = "SELECT * FROM tripal_custom_tables WHERE table_id = :table_id ";
-      $results = chado_query($sql, [':table_id' => $table_id]);
-      $custom_table = $results->fetchObject();
+    $default_chado_schema = $chado->getSchemaName();
 
-      // if this is a materialized view then don't allow editing with this function
-      if (property_exists($custom_table, 'mview_id') and $custom_table->mview_id) {
-        drupal_set_message("This custom table is a materialized view. Please use the " . Link::fromTextAndUrl('Materialized View', Url::fromUserInput('/admin/tripal/storage/chado/mviews')) . " interface to edit it.", 'error');
-        drupal_goto("admin/tripal/storage/chado/custom_tables");
-        return [];
-      }
+    // If this is an edit then set the form detafauls differently.
+    if (strcmp($action, 'Edit') == 0) {
+      $custom_table = ChadoCustomTable::loadCustomTable($table_id);
 
       // set the default values.  If there is a value set in the
       // form_state then let's use that, otherwise, we'll pull
       // the values from the database
-      if ($form_state->getValue('schema')) {
-        $default_schema = $form_state->getValue('schema');
+      if ($form_state->getValue('table_schema')) {
+        $default_table_schema = $form_state->getValue('table_schema');
       }
       if ($form_state->getValue('force_drop')) {
         $default_force_drop = $form_state->getValue('force_drop');
       }
-
-      if (!$default_schema) {
-        $default_schema = var_export(unserialize($custom_table->schema), 1);
-        $default_schema = preg_replace('/=>\s+\n\s+array/', '=> array', $default_schema);
+      if (!$default_table_schema) {
+        $default_table_schema = var_export($custom_table->tableSchema(), 1);
+        $default_table_schema = preg_replace('/=>\s+\n\s+array/', '=> array', $default_table_schema);
       }
+      if ($form_state->getValue('chado_schema')) {
+        $default_chado_schema = $form_state->getValue('chado_schema');
+      }
+      else {
+        $default_chado_schema = $custom_table->chadoSchema();
+      }
+
     }
 
 
@@ -156,12 +159,34 @@ class ChadoCustomTableForm extends FormBase {
         '#default_value' => $default_force_drop,
       ];
     }
-    $form['schema'] = [
+
+    if ($action == 'Add') {
+      $chado_schemas = [];
+      foreach ($chado->getAvailableInstances() as $schema_name => $details) {
+        $chado_schemas[$schema_name] = $schema_name;
+      }
+      $form['chado_schema'] = [
+        '#type' => 'select',
+        '#title' => 'Chado Schema Name',
+        '#required' => TRUE,
+        '#description' => 'Select one of the installed Chado schemas to prepare..',
+        '#options' => $chado_schemas,
+        '#default_value' => $default_chado_schema,
+      ];
+    }
+    else {
+      $form['chado_schema'] = [
+        '#type' => 'value',
+        '#value' => $default_chado_schema,
+      ];
+    }
+
+    $form['table_schema'] = [
       '#type' => 'textarea',
       '#title' => t('Schema Array'),
       '#description' => t('Please enter the ' . Link::fromTextAndUrl('Drupal Schema API', Url::fromUri('https://api.drupal.org/api/drupal/includes!database!schema.inc/group/schemaapi/7', ['attributes' => ['target' => '_blank']]))->toString() . ' compatible array that defines the table.'),
       '#required' => FALSE,
-      '#default_value' => $default_schema,
+      '#default_value' => $default_table_schema,
       '#rows' => 25,
     ];
 
@@ -194,23 +219,24 @@ class ChadoCustomTableForm extends FormBase {
     $values = $form_state->getValues();
     $action = $values['action'];
     $table_id = $values['table_id'];
-    $schema = $values['schema'];
+    $chado_schema = $values['chado_schema'];
+    $table_schema = $values['table_schema'];
     $force_drop = $values['force_drop'];
 
-    if (!$schema) {
-      $form_state->setErrorByName($values['schema'], t('Schema array field is required.'));
+    if (!$table_schema) {
+      $form_state->setErrorByName($values['table_schema'], t('Schema array field is required.'));
     }
 
     // Make sure the array is valid.
     $schema_array = [];
-    if ($schema) {
+    if ($table_schema) {
       $success = true;
       if (!$success) {
-        $form_state->setErrorByName($values['schema'],
+        $form_state->setErrorByName($values['table_schema'],
           t("The schema array should begin with the word 'array'."));
       }
       else {
-        $success = eval("\$schema_array = $schema;");
+        $success = eval("\$schema_array = $table_schema;");
         if ($success === FALSE) {
           $error = error_get_last();
           $form_state->setErrorByName('schema', t("The schema array is improperly formatted. Parse Error : " . $error["message"]));
@@ -235,7 +261,7 @@ class ChadoCustomTableForm extends FormBase {
           if ($ct->table_name != $schema_array['table']) {
             $exists = chado_table_exists($schema_array['table']);
             if ($exists) {
-              $form_state->setErrorByName($values['schema'],
+              $form_state->setErrorByName($values['table_schema'],
                 t("The table name already exists, please choose a different name."));
             }
           }
@@ -250,8 +276,8 @@ class ChadoCustomTableForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $values = $form_state->getValues();
     $action = $values['action'];
-    $table_id = $values['table_id'];
-    $schema = $values['schema'];
+    $chado_schema = $values['chado_schema'];
+    $table_schema = $values['table_schema'];
     $force_drop = $values['force_drop'];
 
     $skip_creation = 1;
@@ -261,12 +287,20 @@ class ChadoCustomTableForm extends FormBase {
 
     // convert the schema into a PHP array
     $schema_arr = [];
-    eval("\$schema_arr = $schema;");
+    eval("\$schema_arr = $table_schema;");
 
+    $custom_table = \Drupal::service('tripal_chado.custom_table');
+    $custom_table->init($schema_arr['table'], $chado_schema);
 
     if (strcmp($action, 'Edit') == 0) {
-      $action_result = chado_edit_custom_table($table_id, $schema_arr['table'], $schema_arr, $skip_creation);
-      if($action_result) {
+      $success = False;
+      if ($skip_creation) {
+        $success = $custom_table->fixTableSchema($schema_arr);
+      }
+      else {
+        $success = $custom_table->setTableSchema($schema_arr, True);
+      }
+      if ($success) {
         \Drupal::messenger()->addMessage(t("The custom table was succesfully updated."), 'status');
       }
       else {
@@ -276,8 +310,8 @@ class ChadoCustomTableForm extends FormBase {
       }
     }
     elseif (strcmp($action, 'Add') == 0) {
-      $action_result = chado_create_custom_table($schema_arr['table'], $schema_arr, $skip_creation, NULL, FALSE);
-      if($action_result) {
+      $success = $custom_table->setTableSchema($schema_arr);
+      if ($success) {
         \Drupal::messenger()->addMessage(t("Custom table has been added."), 'status');
       }
       else {
@@ -287,6 +321,7 @@ class ChadoCustomTableForm extends FormBase {
     else {
       drupal_set_message(t("No action performed."));
     }
+
     $response = new RedirectResponse(\Drupal\Core\Url::fromUserInput('/admin/tripal/storage/chado/custom_tables')->toString());
     $response->send();
   }

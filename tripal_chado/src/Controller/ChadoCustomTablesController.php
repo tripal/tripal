@@ -4,6 +4,8 @@ namespace Drupal\tripal_chado\Controller;
 
 use Drupal\Core\Breadcrumb\Breadcrumb;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Link;
+use Drupal\Core\Url;
 
 /**
  * Controller routines for the Tripal Module
@@ -34,7 +36,7 @@ class ChadoCustomTablesController extends ControllerBase {
 
 
 
-    $view = \Drupal\views\Views::getView('admin_chado_custom_tables');
+    $view = \Drupal\views\Views::getView('chado_custom_tables');
     $view->setDisplay('default');
     if ($view->access('default')) {
       return $view->render();

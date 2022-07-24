@@ -4,6 +4,8 @@ namespace Drupal\tripal_chado\Controller;
 
 use Drupal\Core\Breadcrumb\Breadcrumb;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Link;
+use Drupal\Core\Url;
 
 /**
  * Controller routines for the Tripal Module
@@ -33,8 +35,7 @@ class ChadoMviewsController extends ControllerBase {
         Url::fromUri('internal:/admin/tripal')));
 
 
-
-    $view = \Drupal\views\Views::getView('admin_mviews_tables');
+    $view = \Drupal\views\Views::getView('chado_materialized_views');
     $view->setDisplay('default');
     if ($view->access('default')) {
       return $view->render();

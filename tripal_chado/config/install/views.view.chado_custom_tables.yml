@@ -430,7 +430,7 @@ display:
           admin_label: ''
           plugin_id: text_custom
           empty: true
-          content: 'There are no custom tables created as yet'
+          content: 'There are currently no custom tables.'
           tokenize: false
       sorts:
         table_name:
@@ -546,8 +546,116 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
+        hidden:
+          id: hidden
+          table: tripal_custom_tables
+          field: hidden
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: string
+          operator: '='
+          value: '0'
+          group: 1
+          exposed: false
+          expose:
+            operator_id: ''
+            label: ''
+            description: ''
+            use_operator: false
+            operator: ''
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: ''
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            placeholder: ''
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
       style:
         type: table
+        options:
+          grouping: {  }
+          row_class: ''
+          default_row_class: true
+          columns:
+            table_id: table_id
+            table_name: table_name
+            chado: chado
+            edit_link: edit_link
+            delete_link: delete_link
+            dropbutton: dropbutton
+            mview_id: mview_id
+          default: '-1'
+          info:
+            table_id:
+              sortable: false
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            table_name:
+              sortable: false
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            chado:
+              sortable: false
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            edit_link:
+              sortable: false
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            delete_link:
+              sortable: false
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            dropbutton:
+              sortable: false
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            mview_id:
+              sortable: false
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+          override: true
+          sticky: false
+          summary: ''
+          empty_table: true
+          caption: ''
+          description: ''
       row:
         type: fields
       query:
@@ -578,7 +686,7 @@ display:
           admin_label: ''
           plugin_id: text_custom
           empty: true
-          content: '<a class="button button-action button--primary button--small" href="[site:url]admin/tripal/storage/chado/chado_custom_table">Add new chado custom table</a>'
+          content: '<a class="button button-action button--primary button--small" href="[site:url]admin/tripal/storage/chado/chado_custom_table">Add Custom Table</a>'
           tokenize: false
       footer: {  }
       display_extenders: {  }

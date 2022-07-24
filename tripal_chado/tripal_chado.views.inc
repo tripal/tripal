@@ -81,6 +81,26 @@ function tripal_chado_views_data_custom_tables(&$data) {
     ],
   ];
 
+  $data['tripal_custom_tables']['hidden'] = [
+    'title' => t('Hidden'),
+    'help' => t('Indicates if the table is hidden from end-users.'),
+    'field' => [
+      'id' => 'boolean',
+    ],
+    'sort' => [
+      'id' => 'standard'
+    ],
+    'filter' => [
+      'id' => 'string',
+      'label' => t('Is Hidden'),
+      'type' => 'yes-no',
+      'use_equal' => TRUE,
+    ],
+    'argument' => [
+      'id' => 'string',
+    ],
+  ];
+
   $data['tripal_custom_tables']['chado'] = [
     'title' => t('Chado Schema'),
     'help' => t('The Chado schema in which the table is present.'),
@@ -128,7 +148,7 @@ function tripal_chado_views_data_mviews(&$data) {
   $data['tripal_mviews']['table']['group'] = t('Chado Materialized Views');
   $data['tripal_mviews']['table']['provider'] = 'tripal';
   $data['tripal_mviews']['table']['base'] = [
-    'field' => 'mview_id',
+    'field' => 'table_id',
     'title' => t('Tripal Materialized views'),
     'help' => t('Provides information about materialized views in Chado.'),
     'weight' => 10,

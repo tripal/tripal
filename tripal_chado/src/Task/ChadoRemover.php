@@ -6,6 +6,9 @@ use Drupal\tripal_chado\Task\ChadoTaskBase;
 use Drupal\tripal_biodb\Exception\TaskException;
 use Drupal\tripal_biodb\Exception\LockException;
 use Drupal\tripal_biodb\Exception\ParameterException;
+use Drupal\tripal_chado\Services\ChadoCustomTable;
+use Drupal\tripal_chado\Services\ChadoMViews;
+use Drupal\tripal_chado\Services\ChadoMView;
 
 /**
  * Chado remover.
@@ -121,6 +124,24 @@ class ChadoRemover extends ChadoTaskBase {
     {
       $this->state->set(static::STATE_KEY_DATA_PREFIX . $this->id, ['progress' => 0.1]);
       $old_schema = $this->outputSchemas[0];
+
+      // Remove any materialized views in this schema.
+      $all_mviews = ChadoMView::allMViews($old_schema);
+      foreach ($all_mviews as $table_name) {
+        $mview = \Drupal::service('tripal_chado.materialized_view');
+        $mview->init($table_name, $old_schema);
+        $mview->destroy();
+      }
+
+      // Remove any custom tables in this schema.
+      $all_custom_tables = ChadoCustomTable::allCustomTables($old_schema);
+      foreach ($all_custom_tables as $table_name) {
+        $custom_table = \Drupal::service('tripal_chado.custom_table');
+        $custom_table->init($table_name, $old_schema);
+        $custom_table->destroy();
+      }
+
+      // Drop the schema.
       $old_schema->schema()->dropSchema();
 
       $this->state->set(static::STATE_KEY_DATA_PREFIX . $this->id, ['progress' => 0.5]);
@@ -137,6 +158,7 @@ class ChadoRemover extends ChadoTaskBase {
 
       // Cleanup state API.
       $this->state->delete(static::STATE_KEY_DATA_PREFIX . $this->id);
+
     }
     catch (\Exception $e) {
       $this->logger->error($e->getMessage());

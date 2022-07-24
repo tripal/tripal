@@ -6,6 +6,7 @@
  */
 
 use Drupal\tripal_chado\Database\ChadoConnection;
+use \Drupal\tripal_chado\Services\ChadoCustomTable;
 use \Drupal\tripal_chado\Services\ChadoMView;
 
 /**
@@ -60,7 +61,7 @@ function chado_add_mview($name, $modulename, $mv_schema, $query,
   $mview = \Drupal::service('tripal_chado.materialized_view');
   $mv_table = $mv_schema['table'];
   $mview->init($mv_table);
-  $errors = $mview->validateTableSchema($mv_schema);
+  $errors = ChadoCustomTable::validateTableSchema($mv_schema);
   if (!empty($errors)) {
     return False;
   }
@@ -117,7 +118,7 @@ function chado_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
     $mview = \Drupal::service('tripal_chado.materialized_view');
     $mv_table = $mv_schema['table'];
     $mview->init($mv_table);
-    $errors = $mview->validateTableSchema($mv_schema);
+    $errors = ChadoCustomTable::validateTableSchema($mv_schema);
     if (!empty($errors)) {
       return False;
     }

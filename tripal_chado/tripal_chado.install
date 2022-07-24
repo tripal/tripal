@@ -434,6 +434,12 @@ function tripal_chado_tripal_custom_tables_schema() {
         'type' => 'text',
         'not null' => TRUE
       ),
+      'hidden' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'default' => 0,
+        'description' => 'Set to true if this custom table is not for end-users to manage, but for the Tripal module.'
+      ),
       'chado' => array(
         'type' => 'varchar',
         'length' => 64,

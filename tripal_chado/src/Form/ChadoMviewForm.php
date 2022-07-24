@@ -156,6 +156,23 @@ class ChadoMviewForm extends FormBase {
         '#default_value' => $default_force_drop,
       ];
     }
+
+    $chado_schemas = [];
+    $chado = \Drupal::service('tripal_chado.database');
+    foreach ($chado->getAvailableInstances() as $schema_name => $details) {
+      $chado_schemas[$schema_name] = $schema_name;
+    }
+    $default_chado = $chado->getSchemaName();
+
+    $form['schema_name'] = [
+      '#type' => 'select',
+      '#title' => 'Chado Schema Name',
+      '#required' => TRUE,
+      '#description' => 'Select one of the installed Chado schemas to prepare..',
+      '#options' => $chado_schemas,
+      '#default_value' => $default_chado,
+    ];
+
     $form['schema'] = [
       '#type' => 'textarea',
       '#title' => t('Schema Array'),
