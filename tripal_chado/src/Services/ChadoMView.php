@@ -164,6 +164,26 @@ class ChadoMView extends ChadoCustomTable {
   }
 
   /**
+   * Sets the last update for the materialized view.
+   *
+   *
+   * @param int $timestamp
+   *   The UNIX timestamp.
+   *
+   * @return bool
+   *   True if successful. False otherwise.
+   */
+  public function setLastUpdate(int $timestamp) {
+
+    $logger = \Drupal::service('tripal.logger');
+    if (!$this->tableId()) {
+      $logger->error('Cannot set the comment for the materialized view. Please, first run the init() function.');
+      return False;
+    }
+    return $this->setTableValue('last_update', $timestamp);
+  }
+
+  /**
    * Sets the comment for the materialized view.
    *
    * The comment should describe to others the puporse of the table and
@@ -213,8 +233,12 @@ class ChadoMView extends ChadoCustomTable {
 
     try {
       $chado->query("DELETE FROM {" . $this->tableName() . "}");
-      $num_rows = $chado->query("INSERT INTO {" . $this->tableName() . "} ($this->sqlQuery())");
+      $sql_query = $this->sqlQuery();
+      $chado->query("INSERT INTO {" . $this->tableName() . "} ($sql_query)");
+      $results = $chado->query("SELECT COUNT(*) as num_rows FROM {" . $this->tableName() . "}");
+      $num_rows = $results->fetchField();
       $this->setStatus("Populated with " . $num_rows . " rows");
+      $this->setLastUpdate(time());
     }
     catch (Exception $e) {
       $transaction_chado->rollback();
