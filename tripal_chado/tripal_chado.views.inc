@@ -148,7 +148,7 @@ function tripal_chado_views_data_mviews(&$data) {
   $data['tripal_mviews']['table']['group'] = t('Chado Materialized Views');
   $data['tripal_mviews']['table']['provider'] = 'tripal';
   $data['tripal_mviews']['table']['base'] = [
-    'field' => 'table_id',
+    'field' => 'mview_id',
     'title' => t('Tripal Materialized views'),
     'help' => t('Provides information about materialized views in Chado.'),
     'weight' => 10,

@@ -7,6 +7,8 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Link;
+use Drupal\tripal_chado\Services\ChadoCustomTable;
+use Drupal\tripal_chado\Services\ChadoMView;
 
 class ChadoMviewForm extends FormBase {
 
@@ -21,43 +23,58 @@ class ChadoMviewForm extends FormBase {
   /**
    * A Form to Create/Edit a Custom table.
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $table_id = null) {
+  public function buildForm(array $form, FormStateInterface $form_state, $mview_id = null) {
 
-    if (!$table_id) {
+    $chado = \Drupal::service('tripal_chado.database');
+
+    if (!$mview_id) {
       $action = 'Add';
     }
     else {
       $action = 'Edit';
     }
 
-    // get this requested table
-    $default_schema = '';
+    // Set form defaults.
+    $default_table_schema = '';
     $default_force_drop = 0;
-    if (strcmp($action, 'Edit') == 0) {
-      $sql = "SELECT * FROM tripal_custom_tables WHERE table_id = :table_id ";
-      $results = chado_query($sql, [':table_id' => $table_id]);
-      $custom_table = $results->fetchObject();
+    $default_comment = '';
+    $default_sql_query = '';
+    $default_chado_schema = $chado->getSchemaName();
 
-      // if this is a materialized view then don't allow editing with this function
-      if (property_exists($custom_table, 'mview_id') and $custom_table->mview_id) {
-        drupal_set_message("This custom table is a materialized view. Please use the " . Link::fromTextAndUrl('Materialized View', Url::fromUserInput('/admin/tripal/storage/chado/mviews')) . " interface to edit it.", 'error');
-        drupal_goto("admin/tripal/storage/chado/custom_tables");
-        return [];
-      }
+    // If this is an edit then set the form detafauls differently.
+    if (strcmp($action, 'Edit') == 0) {
+      $mview = ChadoMView::loadMView($mview_id);
 
       // set the default values.  If there is a value set in the
       // form_state then let's use that, otherwise, we'll pull
       // the values from the database
-      if ($form_state->getValue('schema')) {
-        $default_schema = $form_state->getValue('schema');
+      $default_table_schema = var_export($mview->tableSchema(), 1);
+      $default_table_schema = preg_replace('/=>\s+\n\s+array/', '=> array', $default_table_schema);
+      if ($form_state->getValue('table_schema')) {
+        $default_table_schema = $form_state->getValue('table_schema');
       }
+
+      // Get the default comment value.
+      $default_comment = $mview->comment();
+      if ($form_state->getValue('comment')) {
+        $default_comment = $form_state->getValue('comment');
+      }
+
+      // Get the default SQL Query value.
+      $default_sql_query = $mview->sqlQuery();
+      if ($form_state->getValue('sql_query')) {
+        $default_sql_query = $form_state->getValue('sql_query');
+      }
+
+      // Get the default force drop value.
       if ($form_state->getValue('force_drop')) {
         $default_force_drop = $form_state->getValue('force_drop');
       }
 
-      if (!$default_schema) {
-        $default_schema = var_export(unserialize($custom_table->schema), 1);
-        $default_schema = preg_replace('/=>\s+\n\s+array/', '=> array', $default_schema);
+      // Get the default Chado value.
+      $default_chado_schema = $mview->chadoSchema();
+      if ($form_state->getValue('chado_schema')) {
+        $default_chado_schema = $form_state->getValue('chado_schema');
       }
     }
 
@@ -68,9 +85,9 @@ class ChadoMviewForm extends FormBase {
       '#value' => $action,
     ];
 
-    $form['table_id'] = [
+    $form['mview_id'] = [
       '#type' => 'value',
-      '#value' => $table_id,
+      '#value' => $mview_id,
     ];
 
     $form['instructions'] = [
@@ -81,65 +98,81 @@ class ChadoMviewForm extends FormBase {
 
     $form['instructions']['text'] = [
       '#type' => 'item',
-      '#markup' => '<p>' . t('At times it is necessary to add a custom table
-         to the Chado schema. These are not offically sanctioned tables but may
-         be necessary for local data requirements. Avoid creating custom tables
-         when possible as other GMOD tools may not recognize these tables nor
-         the data in them.  Linker tables or property tables are often a good
-         candidate for a custom table. For example a table to link stocks and
-         libraries (e.g. library_stock). Try to model linker or propery tables
-         after existing tables.  If the table already exists it will not be
-         modified.  To force dropping and recreation of the table
-         click the checkbox below.  Tables are defined using the ' .
-         Link::fromTextAndUrl('Drupal Schema API', Url::fromUri('https://api.drupal.org/api/drupal/includes!database!schema.inc/group/schemaapi/7',
-            ['attributes' => ['target' => '_blank']]))->toString() . '</p>' .
-          '<p>Please note that table names should be all lower-case.</p>'
-        ),
+      '#markup' => '<p>' . t('Materialized views are used to help speed data
+      querying, particularly for searching.  A materialized view is essentially
+      a database table that is pre-populated with the desired data to search on.
+      Rows in the materialized view are typically a combination of data from
+      multiple tables with indexes on searchable columns. The table structure
+      for materialized views is defined using the ' .
+      Link::fromTextAndUrl('Drupal Schema API', Url::fromUri('https://api.drupal.org/api/drupal/includes!database!schema.inc/group/schemaapi/7',
+          ['attributes' => ['target' => '_blank']]))->toString() . '</p>' .
+      'Additionally, an SQL statement should be provided that populates the table with data. ' .
+      '<p>Please note that table names should be all lower-case.</p>'),
     ];
 
 
     $form['instructions']['example'] = [
       '#type' => 'item',
-      '#markup' => "Example library_stock table: <pre>[
-  'table' => 'library_stock',
+      '#markup' => "Example Schema API definition for a materialized view: <pre>
+[
+  'description' => 'Stores the type and number of features per organism',
+  'table' => 'organism_feature_count',
   'fields' => [
-    'library_stock_id' => [
-      'type' => 'serial',
-      'not null' => TRUE,
-    ],
-    'library_id' => [
+    'organism_id' => [
       'type' => 'int',
-      'not null' => TRUE,
+      'not null' => true,
     ],
-    'stock_id' => [
+    'genus' => [
+      'type' => 'varchar',
+      'length' => '255',
+      'not null' => true,
+    ],
+    'species' => [
+      'type' => 'varchar',
+      'length' => '255',
+      'not null' => true,
+    ],
+    'common_name' => [
+      'type' => 'varchar',
+      'length' => '255',
+      'not null' => false,
+    ],
+    'num_features' => [
       'type' => 'int',
-      'not null' => TRUE,
-    ]
-  ],
-  'primary key' => [
-    'library_stock_id'
-  ],
-  'unique keys' => [
-    'library_stock_c1' => [
-      'library_id',
-      'stock_id'
-    ]
-  ],
-  'foreign keys' => [
-    'library' => [
-      'table' => 'library',
-      'columns' => [
-        'library_id' => 'library_id'
-      ],
+      'not null' => true,
     ],
-    'stock' => [
-      'table' => 'stock',
-      'columns' => [
-        'stock_id' => 'stock_id'
-      ]
-    ]
-  ]
-]</pre>",
+    'cvterm_id' => [
+      'type' => 'int',
+      'not null' => true,
+    ],
+    'feature_type' => [
+      'type' => 'varchar',
+      'length' => '255',
+      'not null' => true,
+    ],
+  ],
+  'indexes' => [
+    'organism_id_idx'  => ['organism_id'],
+    'cvterm_id_idx'    => ['cvterm_id'],
+    'feature_type_idx' => ['feature_type'],
+  ],
+]
+</pre>",
+    ];
+
+    $form['instructions']['example_sql'] = [
+      '#type' => 'item',
+      '#markup' => "An example SQL statement to populate the table: <pre>
+SELECT
+    O.organism_id, O.genus, O.species, O.common_name,
+    count(F.feature_id) as num_features,
+    CVT.cvterm_id, CVT.name as feature_type
+ FROM organism O
+    INNER JOIN feature F ON O.Organism_id = F.organism_id
+    INNER JOIN cvterm CVT ON F.type_id = CVT.cvterm_id
+ GROUP BY
+    O.Organism_id, O.genus, O.species, O.common_name, CVT.cvterm_id, CVT.name
+</pre>",
     ];
 
     if ($action == 'Add') {
@@ -157,30 +190,61 @@ class ChadoMviewForm extends FormBase {
       ];
     }
 
-    $chado_schemas = [];
-    $chado = \Drupal::service('tripal_chado.database');
-    foreach ($chado->getAvailableInstances() as $schema_name => $details) {
-      $chado_schemas[$schema_name] = $schema_name;
+    if ($action == 'Add') {
+      $chado_schemas = [];
+      foreach ($chado->getAvailableInstances() as $schema_name => $details) {
+        $chado_schemas[$schema_name] = $schema_name;
+      }
+      $form['chado_schema'] = [
+        '#type' => 'select',
+        '#title' => 'Chado Schema Name',
+        '#required' => TRUE,
+        '#description' => 'Select one of the installed Chado schemas to prepare..',
+        '#options' => $chado_schemas,
+        '#default_value' => $default_chado_schema,
+      ];
     }
-    $default_chado = $chado->getSchemaName();
+    else {
+      $form['chado_schema'] = [
+        '#type' => 'value',
+        '#value' => $default_chado_schema,
+      ];
+      $form['chado_schema_item'] = [
+        '#type' => 'item',
+        '#title' => 'Chado Schema Name',
+        '#markup' => $default_chado_schema
+      ];
+    }
 
-    $form['schema_name'] = [
-      '#type' => 'select',
-      '#title' => 'Chado Schema Name',
-      '#required' => TRUE,
-      '#description' => 'Select one of the installed Chado schemas to prepare..',
-      '#options' => $chado_schemas,
-      '#default_value' => $default_chado,
-    ];
-
-    $form['schema'] = [
+    $form['table_schema'] = [
       '#type' => 'textarea',
       '#title' => t('Schema Array'),
       '#description' => t('Please enter the ' . Link::fromTextAndUrl('Drupal Schema API', Url::fromUri('https://api.drupal.org/api/drupal/includes!database!schema.inc/group/schemaapi/7', ['attributes' => ['target' => '_blank']]))->toString() . ' compatible array that defines the table.'),
-      '#required' => FALSE,
-      '#default_value' => $default_schema,
+      '#required' => TRUE,
+      '#default_value' => $default_table_schema,
       '#rows' => 25,
     ];
+
+    $form['sql_query'] = [
+      '#type' => 'textarea',
+      '#title' => t('SQL Query'),
+      '#description' => t('Please enter the SQL statement used to populate the table.'),
+      '#required' => TRUE,
+      '#default_value' => $default_sql_query,
+      '#rows' => 25,
+      '#attributes' => [
+        'style' => "font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;",
+      ],
+    ];
+
+    $form['comment'] = [
+      '#type' => 'textarea',
+      '#title' => t('Description'),
+      '#description' => t('Please provide a description of the purpose for this materialized view.'),
+      '#required' => FALSE,
+      '#default_value' => $default_comment,
+    ];
+
 
     if ($action == 'Edit') {
       $value = 'Save';
@@ -197,7 +261,7 @@ class ChadoMviewForm extends FormBase {
 
     $form['cancel'] = [
       '#type' => 'markup',
-      '#markup' => Link::fromTextAndUrl('Cancel', Url::fromUserInput('/admin/tripal/storage/chado/custom_tables'))->toString(),
+      '#markup' => Link::fromTextAndUrl('Cancel', Url::fromUserInput('/admin/tripal/storage/chado/mviews'))->toString(),
     ];
 
 
@@ -210,53 +274,39 @@ class ChadoMviewForm extends FormBase {
   public function validateForm(array &$form, FormStateInterface $form_state) {
     $values = $form_state->getValues();
     $action = $values['action'];
-    $table_id = $values['table_id'];
-    $schema = $values['schema'];
-    $force_drop = $values['force_drop'];
+    $mview_id = $values['mview_id'];
+    $chado_schema = $values['chado_schema'];
+    $table_schema = $values['table_schema'];
 
-    if (!$schema) {
-      $form_state->setErrorByName($values['schema'], t('Schema array field is required.'));
+    // Validate the contents of the table schema array.
+    try {
+      $schema_arr = [];
+      eval("\$schema_arr = $table_schema;");
+    }
+    catch (ParseError $e) {
+      $form_state->setErrorByName('schema', 'A parse error occured. Please check the syntax of your Schema Array to ensure it is a valid PHP array.');
+    }
+    $errors = ChadoCustomTable::validateTableSchema($schema_arr);
+    foreach ($errors as $error) {
+      $form_state->setErrorByName('schema', $error);
+    }
+    if (!empty($errors)) {
+      return;
     }
 
-    // Make sure the array is valid.
-    $schema_array = [];
-    if ($schema) {
-      $success = true;
-      if (!$success) {
-        $form_state->setErrorByName($values['schema'],
-          t("The schema array should begin with the word 'array'."));
+    // Check the table name to make sure it's unique.
+    $all_mviews = ChadoMView::allMViews($chado_schema);
+    if ($action == 'Add') {
+      if (in_array($schema_arr['table'], $all_mviews)) {
+        $form_state->setErrorByName($values['table_schema'],
+            t("The table name already exists, please choose a different name."));
       }
-      else {
-        $success = eval("\$schema_array = $schema;");
-        if ($success === FALSE) {
-          $error = error_get_last();
-          $form_state->setErrorByName('schema', t("The schema array is improperly formatted. Parse Error : " . $error["message"]));
-        }
-        if (is_array($schema_array) and !array_key_exists('table', $schema_array)) {
-          $form_state->setErrorByName('schema', t("The schema array must have key named 'table'"));
-        }
-
-        // Validate the contents of the array.
-        $error = chado_validate_custom_table_schema($schema_array);
-        if ($error) {
-          $form_state->setErrorByName('schema', $error);
-        }
-
-        if ($action == 'Edit') {
-          // See if the table name has changed. If so, then check to make sure
-          // it doesn't already exists. We don't want to drop a table we
-          // didn't mean to.
-          $sql = "SELECT * FROM tripal_custom_tables WHERE table_id = :table_id";
-          $results = chado_query($sql, [':table_id' => $table_id]);
-          $ct = $results->fetchObject();
-          if ($ct->table_name != $schema_array['table']) {
-            $exists = chado_table_exists($schema_array['table']);
-            if ($exists) {
-              $form_state->setErrorByName($values['schema'],
-                t("The table name already exists, please choose a different name."));
-            }
-          }
-        }
+    }
+    if ($action == 'Edit') {
+      $mview = ChadoMView::loadMView($mview_id);
+      if (in_array($schema_arr['table'], $all_mviews and $mview->tableName() != $schema_arr['table'])) {
+        $form_state->setErrorByName($values['table_schema'],
+            t("The table name already exists, please choose a different name."));
       }
     }
   }
@@ -267,9 +317,12 @@ class ChadoMviewForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $values = $form_state->getValues();
     $action = $values['action'];
-    $table_id = $values['table_id'];
-    $schema = $values['schema'];
+    $mview_id = $values['mview_id'];
+    $chado_schema = $values['chado_schema'];
+    $table_schema = $values['table_schema'];
     $force_drop = $values['force_drop'];
+    $comment = $values['comment'];
+    $sql_query = $values['sql_query'];
 
     $skip_creation = 1;
     if ($force_drop) {
@@ -278,33 +331,46 @@ class ChadoMviewForm extends FormBase {
 
     // convert the schema into a PHP array
     $schema_arr = [];
-    eval("\$schema_arr = $schema;");
-
+    eval("\$schema_arr = $table_schema;");
 
     if (strcmp($action, 'Edit') == 0) {
-      $action_result = chado_edit_custom_table($table_id, $schema_arr['table'], $schema_arr, $skip_creation);
-      if($action_result) {
-        \Drupal::messenger()->addMessage(t("The custom table was succesfully updated."), 'status');
+      $mview = ChadoMView::loadMView($mview_id);
+      $mview->setComment($comment);
+      $mview->setSqlQuery($sql_query);
+      $success = False;
+      if ($skip_creation) {
+        $success = $mview->fixTableSchema($schema_arr);
+      }
+      else {
+        $success = $mview->setTableSchema($schema_arr, True);
+      }
+      if ($success) {
+        \Drupal::messenger()->addMessage(t("The materialized view was succesfully updated."), 'status');
       }
       else {
         $link = Link::fromTextAndUrl(t('recent logs'), Url::fromUserInput('/admin/reports/dblog'))->toString();
-        \Drupal::messenger()->addError(t("Could not update the custom table. Please see the @logs for further details.",
+        \Drupal::messenger()->addError(t("Could not update the materialized view. Please see the @logs for further details.",
             ['@logs' => $link]), 'status');
       }
     }
     elseif (strcmp($action, 'Add') == 0) {
-      $action_result = chado_create_custom_table($schema_arr['table'], $schema_arr, $skip_creation, NULL, FALSE);
-      if($action_result) {
-        \Drupal::messenger()->addMessage(t("Custom table has been added."), 'status');
+      $mview = \Drupal::service('tripal_chado.materialized_view');
+      $mview->init($schema_arr['table'], $chado_schema);
+      $mview->setComment($comment);
+      $mview->setSqlQuery($sql_query);
+      $success = $mview->setTableSchema($schema_arr);
+      if ($success) {
+        \Drupal::messenger()->addMessage(t("The materialized view has been added."), 'status');
       }
       else {
-        \Drupal::messenger()->addError(t("Custom table could not be created. Please see logs for further details."), 'status');
+        \Drupal::messenger()->addError(t("The materialized view could not be created. Please see logs for further details."), 'status');
       }
     }
     else {
       drupal_set_message(t("No action performed."));
     }
-    $response = new RedirectResponse(\Drupal\Core\Url::fromUserInput('/admin/tripal/storage/chado/custom_tables')->toString());
+
+    $response = new RedirectResponse(\Drupal\Core\Url::fromUserInput('/admin/tripal/storage/chado/mviews')->toString());
     $response->send();
   }
 

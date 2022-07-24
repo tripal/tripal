@@ -34,39 +34,64 @@ tripal_chado.chado_custom_table_form:
   path: 'admin/tripal/storage/chado/chado_custom_table'
   defaults:
     _form: '\Drupal\tripal_chado\Form\ChadoCustomTableForm'
-    _title: 'Chado Custom Table'
+    _title: 'Add a Custom Table'
   requirements:
-    _permission: 'administer tripal'
+    _permission: 'manage chado custom tables'
 
 tripal_chado.chado_custom_table_form_edit:
   path: 'admin/tripal/storage/chado/chado_custom_table/{table_id}'
   defaults:
     _form: '\Drupal\tripal_chado\Form\ChadoCustomTableForm'
-    _title: 'Chado Custom Table'
+    _title: 'Edit a Custom Table'
   requirements:
-    _permission: 'administer tripal' 
+    _permission: 'manage chado custom tables' 
 
 tripal_chado.chado_custom_tables_delete_form:
   path: 'admin/tripal/storage/chado/custom_table_delete/{table_id}'
   defaults:
     _form: '\Drupal\tripal_chado\Form\ChadoCustomTablesDeleteForm'
-    _title: 'Chado Custom Tables Delete'
+    _title: 'Delete a Custom Table'
   requirements:
-    _permission: 'administer tripal'
+    _permission: 'manage chado custom tables'
 
 tripal_chado.chado_custom_tables:
   path: 'admin/tripal/storage/chado/custom_tables'
   defaults:
     _controller: '\Drupal\tripal_chado\Controller\ChadoCustomTablesController::admin_custom_tables'
-    _title: 'Chado Custom Tables'
+    _title: 'Custom Tables'
   requirements:
-    _permission: 'administer tripal'
+    _permission: 'manage chado custom tables'
     
+
+
+tripal_chado.chado_mviews_form:
+  path: 'admin/tripal/storage/chado/mview'
+  defaults:
+    _form: '\Drupal\tripal_chado\Form\ChadoMviewForm'
+    _title: 'Add a Materialized View'
+  requirements:
+    _permission: 'manage chado materialized views'
+
+tripal_chado.chado_mviews_form_edit:
+  path: 'admin/tripal/storage/chado/mview/{mview_id}'
+  defaults:
+    _form: '\Drupal\tripal_chado\Form\ChadoMviewForm'
+    _title: 'Edit a Materialized View'
+  requirements:
+    _permission: 'manage chado materialized views' 
+
+tripal_chado.chado_cmviews_delete_form:
+  path: 'admin/tripal/storage/chado/mview_delete/{mview_id}'
+  defaults:
+    _form: '\Drupal\tripal_chado\Form\ChadoMviewsDeleteForm'
+    _title: 'Delete a Materialized View'
+  requirements:
+    _permission: 'manage chado materialized views'
     
 tripal_chado.chado_mviews:
   path: 'admin/tripal/storage/chado/mviews'
   defaults:
     _controller: '\Drupal\tripal_chado\Controller\ChadoMviewsController::admin_mviews'
-    _title: 'Chado Materialized Views'
+    _title: 'Materialized Views'
   requirements:
-    _permission: 'administer tripal'
+    _permission: 'manage chado materialized views'

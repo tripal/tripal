@@ -632,7 +632,7 @@ class ChadoPreparer extends ChadoTaskBase {
    */
   function createMView_analysis_organism() {
     $view_name = 'analysis_organism';
-    $comment = t('This view is for associating an organism (via it\'s associated features) to an analysis.');
+    $comment = 'This view is for associating an organism (via it\'s associated features) to an analysis.';
 
     // the schema array for describing this view
     $schema = [

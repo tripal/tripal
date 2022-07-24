@@ -276,27 +276,29 @@ class ChadoMView extends ChadoCustomTable {
   }
 
   /**
-   * Finds the name of the mview whose name matches the given ID
-   *
-   * Only searches within the default Chado schema.
+   * Loads the materialize view whose name matches the given ID.
    *
    * @param int $mview_id
-   *
-   * @param string $chado_schema
-   *   Optional. The chado schema from which to retrieve materialized views. If
-   *   no schema is specified then the default schema is used.
-   *
-   * @return string
-   *   The materialized view table name if it exists.
+   *   The ID of the materialized view.
+   * @return \Drupal\tripal_chado\Services\ChadoMview.
+   *   A ChadoMview object or NULL if not found.
    */
-  static public function findMviewName(int $mview_id, string $chado_schema = NULL) {
+  static public function loadMView(int $mview_id) {
     $public = \Drupal::database();
     $query = $public->select('tripal_mviews','tm');
-    $query->fields('tm', ['name']);
-    $query->join('tripal_custom_tables', 'ct', 'tm.table_id = ct.table_id');
-    $query->condition('ct.chado', $chado_schema);
+    $query->join('tripal_custom_tables', 'tct', 'tct.table_id = tm.table_id');
+    $query->fields('tct', ['table_name']);
+    $query->fields('tct', ['chado']);
     $query->condition('tm.mview_id', $mview_id);
-    return $query->execute()->fetchField();
+    $results = $query->execute();
+    if (!$results) {
+      return NULL;
+    }
+    $record = $results->fetchAssoc();
+
+    $mview = \Drupal::service('tripal_chado.materialized_view');
+    $mview->init($record['table_name'], $record['chado']);
+    return $mview;
   }
 
   /**

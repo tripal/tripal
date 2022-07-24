@@ -5,6 +5,7 @@ dependencies:
   module:
     - tripal
     - tripal_chado
+    - user
 id: chado_custom_tables
 label: 'Chado Custom Tables'
 module: views
@@ -415,8 +416,9 @@ display:
           sort_asc_label: Asc
           sort_desc_label: Desc
       access:
-        type: none
-        options: {  }
+        type: perm
+        options:
+          perm: 'manage chado materialized views'
       cache:
         type: none
         options: {  }
@@ -696,6 +698,7 @@ display:
         - 'languages:language_interface'
         - url
         - url.query_args
+        - user.permissions
       tags: {  }
   page_1:
     id: page_1
@@ -711,4 +714,5 @@ display:
         - 'languages:language_interface'
         - url
         - url.query_args
+        - user.permissions
       tags: {  }

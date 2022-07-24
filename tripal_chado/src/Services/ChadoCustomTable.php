@@ -473,7 +473,7 @@ class ChadoCustomTable {
    * Loads the custom table whose name matches the given ID.
    *
    * @param int $table_id
-   *   The ID of the table to find the name for.
+   *   The ID of the custom table.
    * @return \Drupal\tripal_chado\Services\ChadoCustomTable.
    *   A ChadoCustomTable object or NULL if not found.
    */

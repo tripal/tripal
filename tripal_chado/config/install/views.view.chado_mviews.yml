@@ -1,17 +1,18 @@
-uuid: 214e01d3-37b6-43e7-a033-da92345dbeae
+uuid: 269dad74-f311-4367-ac39-1ebfefdc5df3
 langcode: en
 status: true
 dependencies:
   module:
     - tripal
     - tripal_chado
+    - user
 id: chado_materialized_views
 label: 'Chado Materialized Views'
 module: views
 description: ''
 tag: ''
 base_table: tripal_mviews
-base_field: table_id
+base_field: mview_id
 display:
   default:
     id: default
@@ -75,15 +76,15 @@ display:
           set_precision: false
           precision: 0
           decimal: .
-          separator: ','
+          separator: ''
           format_plural: false
           format_plural_string: !!binary MQNAY291bnQ=
           prefix: ''
           suffix: ''
-        table_name:
-          id: table_name
-          table: tripal_custom_tables
-          field: table_name
+        name:
+          id: name
+          table: tripal_mviews
+          field: name
           relationship: none
           group_type: group
           admin_label: ''
@@ -178,57 +179,8 @@ display:
           hide_empty: false
           empty_zero: false
           hide_alter_empty: true
-        status:
-          id: status
-          table: tripal_mviews
-          field: status
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: standard
-          label: Status
-          exclude: false
-          alter:
-            alter_text: false
-            text: ''
-            make_link: false
-            path: ''
-            absolute: false
-            external: false
-            replace_spaces: false
-            path_case: none
-            trim_whitespace: false
-            alt: ''
-            rel: ''
-            link_class: ''
-            prefix: ''
-            suffix: ''
-            target: ''
-            nl2br: false
-            max_length: 0
-            word_boundary: true
-            ellipsis: true
-            more_link: false
-            more_link_text: ''
-            more_link_path: ''
-            strip_tags: false
-            trim: false
-            preserve_tags: ''
-            html: false
-          element_type: ''
-          element_class: ''
-          element_label_type: ''
-          element_label_class: ''
-          element_label_colon: true
-          element_wrapper_type: ''
-          element_wrapper_class: ''
-          element_default_classes: true
-          empty: 'Not yet populated.'
-          hide_empty: false
-          empty_zero: false
-          hide_alter_empty: true
-        last_update_1:
-          id: last_update_1
+        last_update:
+          id: last_update
           table: tripal_mviews
           field: last_update
           relationship: none
@@ -279,10 +231,59 @@ display:
           date_format: fallback
           custom_date_format: ''
           timezone: ''
-        last_update:
-          id: last_update
+        status:
+          id: status
           table: tripal_mviews
-          field: last_update
+          field: status
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: standard
+          label: Status
+          exclude: false
+          alter:
+            alter_text: false
+            text: ''
+            make_link: false
+            path: ''
+            absolute: false
+            external: false
+            replace_spaces: false
+            path_case: none
+            trim_whitespace: false
+            alt: ''
+            rel: ''
+            link_class: ''
+            prefix: ''
+            suffix: ''
+            target: ''
+            nl2br: false
+            max_length: 0
+            word_boundary: true
+            ellipsis: true
+            more_link: false
+            more_link_text: ''
+            more_link_path: ''
+            strip_tags: false
+            trim: false
+            preserve_tags: ''
+            html: false
+          element_type: ''
+          element_class: ''
+          element_label_type: ''
+          element_label_class: ''
+          element_label_colon: true
+          element_wrapper_type: ''
+          element_wrapper_class: ''
+          element_default_classes: true
+          empty: ''
+          hide_empty: false
+          empty_zero: false
+          hide_alter_empty: true
+        comment:
+          id: comment
+          table: tripal_mviews
+          field: comment
           relationship: none
           group_type: group
           admin_label: ''
@@ -434,7 +435,7 @@ display:
           group_type: group
           admin_label: ''
           plugin_id: dropbutton
-          label: Actions
+          label: Action
           exclude: false
           alter:
             alter_text: false
@@ -480,11 +481,11 @@ display:
             mview_edit_link: mview_edit_link
             mview_delete_link: mview_delete_link
             mview_id: '0'
-            table_name: '0'
+            name: '0'
             chado: '0'
-            status: '0'
-            last_update_1: '0'
             last_update: '0'
+            status: '0'
+            comment: '0'
       pager:
         type: mini
         options:
@@ -514,12 +515,24 @@ display:
           sort_asc_label: Asc
           sort_desc_label: Desc
       access:
-        type: none
-        options: {  }
+        type: perm
+        options:
+          perm: 'manage chado custom tables'
       cache:
         type: tag
         options: {  }
-      empty: {  }
+      empty:
+        area_text_custom:
+          id: area_text_custom
+          table: views
+          field: area_text_custom
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: text_custom
+          empty: true
+          content: 'There are currently no materialized views'
+          tokenize: false
       sorts:
         table_name:
           id: table_name
@@ -549,6 +562,45 @@ display:
           exposed: false
       arguments: {  }
       filters:
+        hidden:
+          id: hidden
+          table: tripal_custom_tables
+          field: hidden
+          relationship: none
+          group_type: group
+          admin_label: ''
+          plugin_id: string
+          operator: '='
+          value: '0'
+          group: 1
+          exposed: false
+          expose:
+            operator_id: ''
+            label: ''
+            description: ''
+            use_operator: false
+            operator: ''
+            operator_limit_selection: false
+            operator_list: {  }
+            identifier: ''
+            required: false
+            remember: false
+            multiple: false
+            remember_roles:
+              authenticated: authenticated
+            placeholder: ''
+          is_grouped: false
+          group_info:
+            label: ''
+            description: ''
+            identifier: ''
+            optional: true
+            widget: select
+            multiple: false
+            remember: false
+            default_group: All
+            default_group_multiple: {  }
+            group_items: {  }
         name:
           id: name
           table: tripal_mviews
@@ -591,47 +643,93 @@ display:
             default_group: All
             default_group_multiple: {  }
             group_items: {  }
-        hidden:
-          id: hidden
-          table: tripal_custom_tables
-          field: hidden
-          relationship: none
-          group_type: group
-          admin_label: ''
-          plugin_id: string
-          operator: '='
-          value: '0'
-          group: 1
-          exposed: false
-          expose:
-            operator_id: ''
-            label: ''
-            description: ''
-            use_operator: false
-            operator: ''
-            operator_limit_selection: false
-            operator_list: {  }
-            identifier: ''
-            required: false
-            remember: false
-            multiple: false
-            remember_roles:
-              authenticated: authenticated
-            placeholder: ''
-          is_grouped: false
-          group_info:
-            label: ''
-            description: ''
-            identifier: ''
-            optional: true
-            widget: select
-            multiple: false
-            remember: false
-            default_group: All
-            default_group_multiple: {  }
-            group_items: {  }
       style:
         type: table
+        options:
+          grouping: {  }
+          row_class: ''
+          default_row_class: true
+          columns:
+            mview_id: mview_id
+            name: name
+            chado: chado
+            last_update: last_update
+            status: status
+            comment: comment
+            mview_edit_link: mview_edit_link
+            mview_delete_link: mview_delete_link
+            dropbutton: dropbutton
+          default: '-1'
+          info:
+            mview_id:
+              sortable: false
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            name:
+              sortable: false
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            chado:
+              sortable: false
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            last_update:
+              sortable: false
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            status:
+              sortable: false
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            comment:
+              sortable: false
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            mview_edit_link:
+              sortable: false
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            mview_delete_link:
+              sortable: false
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+            dropbutton:
+              sortable: false
+              default_sort_order: asc
+              align: ''
+              separator: ''
+              empty_column: false
+              responsive: ''
+          override: true
+          sticky: false
+          summary: ''
+          empty_table: true
+          caption: ''
+          description: ''
       row:
         type: fields
       query:
@@ -653,7 +751,7 @@ display:
           admin_label: ''
           plugin_id: text_custom
           empty: false
-          content: '<a class="button button-action button--primary button--small" href="[site:url]admin/tripal/storage/chado/chado_mview">Add Materialized View</a>'
+          content: '<a class="button button-action button--primary button--small" href="[site:url]admin/tripal/storage/chado/mview">Add Materilaized View</a>'
           tokenize: false
       footer: {  }
       display_extenders: {  }
@@ -663,6 +761,7 @@ display:
         - 'languages:language_interface'
         - url
         - url.query_args
+        - user.permissions
       tags: {  }
   page_1:
     id: page_1
@@ -671,11 +770,12 @@ display:
     position: 1
     display_options:
       display_extenders: {  }
-      path: chado-materialized-views
+      path: admin/tripal/storage/chado/mviews
     cache_metadata:
       max-age: -1
       contexts:
         - 'languages:language_interface'
         - url
         - url.query_args
+        - user.permissions
       tags: {  }
