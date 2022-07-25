@@ -827,20 +827,17 @@ class OBOImporter extends ChadoImporterBase {
   public function postRun() {
 
     // Update the cv_root_mview materialized view.
+    $this->logger->notice("Updating the cv_root_mview materialized view...");
+    $mview = \Drupal::service('tripal_chado.materialized_view');
+    $mview->init('cv_root_mview', $this->chado_schema_main);
+    $mview->populate();
 
+    $this->logger->notice("Updating the db2cv_mview materialized view...");
+    $mview = \Drupal::service('tripal_chado.materialized_view');
+    $mview->init('db2cv_mview', $this->chado_schema_main);
+    $mview->populate();
 
-    // @todo: uncomment these functions once the materialized views are working
-//    $this->logger->notice("Updating the cv_root_mview materialized view...");
-//     $mview_id = tripal_get_mview_id('cv_root_mview');
-//     tripal_populate_mview($mview_id);
-
-//     $this->logger->notice("Updating the db2cv_mview materialized view...");
-//     $mview_id = tripal_get_mview_id('db2cv_mview');
-//     tripal_populate_mview($mview_id);
-
-    // @todo: uncomment these functions once the chado_update_cvtermpath
-    // replacement is present.
-
+    // @todo uncomment this when the chado_update_cvtermpath() function is ported.
 //     // Update the cvtermpath table for each newly added CV.
 //     $this->logger->notice("Updating cvtermpath table. This may take a while...");
 //     foreach ($this->obo_namespaces as $namespace => $cv_id) {

@@ -38,6 +38,11 @@ function tripal_chado_views_data_custom_tables(&$data) {
       'field' => 'table_id',
     ]
   ];
+  $data['tripal_custom_tables']['table']['join']['tripal_mviews'] = [
+    'left_table' => 'tripal_mviews',
+    'left_field' => 'table_id',
+    'field' => 'table_id',
+  ];
 
   // Table ID
   $data['tripal_custom_tables']['table_id'] = [
@@ -58,8 +63,8 @@ function tripal_chado_views_data_custom_tables(&$data) {
     'relationship' => [
       'id' => 'standard',
       'base' => 'tripal_mviews',
-      'base_field' => 'table_id',
-      'label' => t('Any mviews for this table.'),
+      'base field' => 'table_id',
+      'label' => t('Materialized Views.'),
     ],
   ];
 

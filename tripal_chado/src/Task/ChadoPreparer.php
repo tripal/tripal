@@ -164,19 +164,19 @@ class ChadoPreparer extends ChadoTaskBase {
 
       $this->setProgress(0.3);
       $this->logger->notice('Populating materialized view cv_root_mview...');
-      // POSTPONED: populate mviews. // SEEMS TO BE MVIEW RELATED AND THUS NOT NEEDED FOR TRIPAL LOADERS
+      $this->populateMView_cv_root_mview();
 
       $this->setProgress(0.4);
+      $this->logger->notice('Populating materialized view db2cv_mview...');
+      $this->populateMView_db2cv_mview();
+
+      $this->setProgress(0.5);
       $this->logger->notice("Making semantic connections for Chado tables/fields...");
       // $this->populate_chado_semweb_table(); // WE NEED TO DO THIS
 
-      $this->setProgress(0.5);
+      $this->setProgress(0.6);
       $this->logger->notice("Map Chado Controlled vocabularies to Tripal Terms...");
       // TODO //  NEXT UP ON THE LIST TO DETERMINE IF WE NEED THIS
-
-      $this->setProgress(0.6);
-      $this->logger->notice('Populating materialized view db2cv_mview...');
-      // POSTPONED (mview related)
 
       $this->setProgress(0.7);
       $this->logger->notice("Creating default content types...");
@@ -422,7 +422,7 @@ class ChadoPreparer extends ChadoTaskBase {
    *
    * @ingroup tripal_stock
    */
-  function createMView_organism_stock_count() {
+  private function createMView_organism_stock_count() {
     $view_name = 'organism_stock_count';
     $comment = 'Stores the type and number of stocks per organism';
     $schema = [
@@ -490,14 +490,13 @@ class ChadoPreparer extends ChadoTaskBase {
     $mview->setComment($comment);
   }
 
-
   /**
    * Adds a materialized view keeping track of the type of features associated
    * with each library
    *
    * @ingroup tripal_library
    */
-  function createMView_library_feature_count() {
+  private function createMView_library_feature_count() {
     $view_name = 'library_feature_count';
     $comment = 'Provides count of feature by type that are associated with all libraries';
 
@@ -555,7 +554,7 @@ class ChadoPreparer extends ChadoTaskBase {
    *
    * @ingroup tripal_feature
    */
-  function createMView_organism_feature_count() {
+  private function createMView_organism_feature_count() {
     $view_name = 'organism_feature_count';
     $comment = 'Stores the type and number of features per organism';
 
@@ -630,7 +629,7 @@ class ChadoPreparer extends ChadoTaskBase {
    * associated features.
    *
    */
-  function createMView_analysis_organism() {
+  private function createMView_analysis_organism() {
     $view_name = 'analysis_organism';
     $comment = 'This view is for associating an organism (via it\'s associated features) to an analysis.';
 
@@ -694,7 +693,7 @@ class ChadoPreparer extends ChadoTaskBase {
    * This is needed for viewing cv trees
    *
    */
-  function createMView_db2cv_mview() {
+  private function createMView_db2cv_mview() {
     $view_name = 'db2cv_mview';
     $comment = 'A table for quick lookup of the vocabularies and the databases they are associated with.';
     $schema = [
@@ -758,7 +757,7 @@ class ChadoPreparer extends ChadoTaskBase {
    * This is needed for viewing cv trees
    *
    */
-  function createMView_cv_root_mview() {
+  private function createMView_cv_root_mview() {
     $view_name = 'cv_root_mview';
     $comment = 'A list of the root terms for all controlled vocabularies. This is needed for viewing CV trees';
     $schema = [
@@ -808,6 +807,24 @@ class ChadoPreparer extends ChadoTaskBase {
     $mview->setSqlQuery($sql);
     $mview->setComment($comment);
     $mview->setHidden(True);
+  }
+
+  /**
+   * Populates the cv_root_mview materialized view.
+   */
+  private function populateMView_cv_root_mview() {
+    $mview = \Drupal::service('tripal_chado.materialized_view');
+    $mview->init('cv_root_mview', $this->chado->getSchemaName());
+    $mview->populate();
+  }
+
+  /**
+   * Populates the db2cv materialized view.
+   */
+  private function populateMView_db2cv_mview() {
+    $mview = \Drupal::service('tripal_chado.materialized_view');
+    $mview->init('db2cv_mview', $this->chado->getSchemaName());
+    $mview->populate();
   }
 
 

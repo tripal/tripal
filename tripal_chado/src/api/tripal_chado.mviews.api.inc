@@ -115,16 +115,16 @@ function chado_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
       return FALSE;
     }
 
-    $mview = \Drupal::service('tripal_chado.materialized_view');
-    $mv_table = $mv_schema['table'];
-    $mview->init($mv_table);
     $errors = ChadoCustomTable::validateTableSchema($mv_schema);
     if (!empty($errors)) {
       return False;
     }
-    $mview->setTableSchema($mv_schema, True);
-    $mview->setSqlQuery($query);
-    $mview->setComment($comment);
+    $mview = ChadoCustomTable::load($mview_id);
+    $success = $mview->setTableSchema($mv_schema, True);
+    if ($success) {
+      $mview->setSqlQuery($query);
+      $mview->setComment($comment);
+    }
 
     return True;
 }

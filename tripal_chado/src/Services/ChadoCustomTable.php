@@ -202,49 +202,6 @@ class ChadoCustomTable {
   }
 
   /**
-   * Corrects a schema definition for a custom table.
-   *
-   * In the rare case where a custom table exists but the schema definition
-   * is not correct (this can happen if a custom table was added outside
-   * of Tripal), then the setTableSchema() function should not be used
-   * as it will not update the schema or will recreate the table (if $force is
-   * True). This function simply replaces what Tripal thinks the table schema
-   * is.
-   *
-   * WARNING: providing a table schema that does not match the underlying
-   * custom table design will create unknown problems.
-   *
-   * @param array $table_schema
-   *   The Drupal table schema array defining the table.
-   * @return boolean
-   *   Returns True if the schema was updated. False otherwise.
-   */
-  public function fixTableSchema($table_schema) {
-
-    $logger = \Drupal::service('tripal.logger');
-    if (!$this->table_id) {
-      $logger->error('Cannot fix the custom table schema. Please, first run the init() function.');
-      return False;
-    }
-
-    $public = \Drupal::database();
-    $chado = $this->getChado();
-
-    // Don't set the schema if it's not valid.
-    $errors = ChadoCustomTable::validateTableSchema($table_schema);
-    if (!empty($errors)) {
-      return False;
-    }
-
-    $update = $public->update('tripal_custom_tables');
-    $update->fields(['schema' => serialize($table_schema)]);
-    $update->condition('table_id', $this->table_id);
-    $update->condition('chado', $chado->getSchemaName());
-    $update->execute();
-    return True;
-  }
-
-  /**
    * Sets the table schema.
    *
    * When setting the table schema, the table will be created in the Chado
@@ -255,9 +212,9 @@ class ChadoCustomTable {
    * of tables that may have data.
    *
    * If a mistake was made in the schema definition and it needs correction
-   * use the fixTableSchema() function. This will adjust the schema but
-   * will not drop and recreate the table.
-   *
+   * make sure the $force argument is set to False. But be careful. If the
+   * schema does not properly match the table problems may occur when using
+   * the table later.
    *
    * @param array $schema
    *   The Drupal table schema array defining the table.
@@ -275,33 +232,78 @@ class ChadoCustomTable {
       return False;
     }
 
+    $public = \Drupal::database();
     $chado = $this->getChado();
+    $transaction_chado = $chado->startTransaction();
+    try {
 
-    // Don't set the schema if it's not valid.
-    $errors = ChadoCustomTable::validateTableSchema($table_schema);
-    if (!empty($errors)) {
-      return False;
-    }
-
-    // If the table already exists then we're doing an update.
-    $success = False;
-    $table_exists = $chado->schema()->tableExists($this->table_name);
-    if (!$table_exists) {
-      $success = $this->createCustomTable($table_schema);
-    }
-    else {
-      if ($force === True) {
-        $success = $this->editCustomTable($table_schema);
+      // Don't set the schema if it's not valid.
+      $errors = ChadoCustomTable::validateTableSchema($table_schema);
+      if (!empty($errors)) {
+        return False;
       }
-    }
 
-    // If the create or update were successful then we want to set the
-    // schema for the table. The fixTableSchema function already does this
-    // so we'll call it rather than recode that.
-    if (!$success) {
+      // If the table name is the same and the user isn't forcing any changes then
+      // create the table if it doesn't exist. If it does exist then leave the
+      // table as is and the function will later update the saved schema.
+      if ($force == False and $this->table_name == $table_schema['table']) {
+        $table_exists = $chado->schema()->tableExists($this->table_name);
+        if (!$table_exists) {
+          $chado->schema()->createTable($this->table_name, $table_schema);
+        }
+      }
+
+      // If the table name is the same and the user is forcing a change then
+      // create the table if it doesn't exist. If it does exist then drop it
+      // and recreate it.
+      if ($force == True and $this->table_name == $table_schema['table']) {
+        if ($chado->schema()->tableExists($this->table_name)) {
+          $chado->schema()->dropTable($this->table_name);
+        }
+        $chado->schema()->createTable($this->table_name, $table_schema);
+      }
+
+      // If the table name is different in the provided schema but the user is not
+      // forcing a change then this shouldn't be allowed. We don't want to update
+      // the saved schema with a table name mistmatch.
+      if ($force == False and $this->table_name != $table_schema['table']) {
+        $logger->error('Cannot change the name of the table in the schema without forcing it..');
+        return False;
+      }
+
+      // If the table name is different and the force argument is true, then the
+      // user is requesting a rename of the table. Make sure the name isn't
+      // already taken. If not, then drop the old table and create the new one.
+      if ($force == True and $this->table_name != $table_schema['table']) {
+
+        // First check if the new table exists and if so return False.
+        if ($chado->schema()->tableExists($table_schema['table'])) {
+          $logger->error('Cannot rename the table as another table exists with the same name.');
+          return False;
+        }
+
+        // Second, if the original table exists then delete it.
+        if ($chado->schema()->tableExists($this->table_name)) {
+          $chado->schema()->dropTable($this->table_name);
+        }
+        $chado->schema()->createTable($table_schema['table'], $table_schema);
+      }
+
+      $update = $public->update('tripal_custom_tables');
+      $update->fields([
+        'table_name' => $table_schema['table'],
+        'schema' => serialize($table_schema)
+      ]);
+      $update->condition('table_id', $this->table_id);
+      $update->condition('chado', $chado->getSchemaName());
+      $update->execute();
+    }
+    catch (Exception $e) {
+      $transaction_chado->rollback();
+      $logger->error($e->getMessage());
       return False;
     }
-    return $this->fixTableSchema($table_schema);
+    return True;
   }
 
   /**
@@ -360,67 +362,6 @@ class ChadoCustomTable {
       }
     }
     return $messages;
-  }
-
-  /**
-   * Creates the custom table in Chado.
-   *
-   * @param array $table_schema
-   *   The Drupal table schema array defining the table.
-   * @return bool
-   *   True if successful. False otherwise.
-   */
-  private function createCustomTable($table_schema) {
-
-    $chado = $this->getChado();
-    $logger = \Drupal::service('tripal.logger');
-
-    $table_exists = $chado->schema()->tableExists($this->table_name);
-    if ($table_exists) {
-      return False;
-    }
-
-    $transaction_chado = $chado->startTransaction();
-    try {
-      $chado->schema()->createTable($this->table_name, $table_schema);
-    }
-    catch (Exception $e) {
-      $transaction_chado->rollback();
-      $logger->error($e->getMessage());
-      return False;
-    }
-    return True;
-  }
-
-  /**
-   * Edits the custom table in Chado.
-   *
-   * @param array $table_schema
-   *   The Drupal table schema array defining the table.
-   * @return bool
-   *   True if successful. False otherwise.
-   */
-  private function editCustomTable($table_schema) {
-
-    $chado = $this->getChado();
-    $logger = \Drupal::service('tripal.logger');
-
-    $table_exists = $chado->schema()->tableExists($this->table_name);
-    if (!$table_exists) {
-      return False;
-    }
-
-    $transaction_chado = $chado->startTransaction();
-    try {
-      $chado->schema()->dropTable($this->table_name);
-      $chado->schema()->createTable($this->table_name, $table_schema);
-    }
-    catch (Exception $e) {
-      $transaction_chado->rollback();
-      $logger->error($e->getMessage());
-      return False;
-    }
-    return True;
   }
 
   /**

@@ -126,18 +126,18 @@ class ChadoRemover extends ChadoTaskBase {
       $old_schema = $this->outputSchemas[0];
 
       // Remove any materialized views in this schema.
-      $all_mviews = ChadoMView::allMViews($old_schema);
+      $all_mviews = ChadoMView::allMViews($old_schema->getSchemaName());
       foreach ($all_mviews as $table_name) {
         $mview = \Drupal::service('tripal_chado.materialized_view');
-        $mview->init($table_name, $old_schema);
+        $mview->init($table_name, $old_schema->getSchemaName());
         $mview->destroy();
       }
 
       // Remove any custom tables in this schema.
-      $all_custom_tables = ChadoCustomTable::allCustomTables($old_schema);
+      $all_custom_tables = ChadoCustomTable::allCustomTables($old_schema->getSchemaName());
       foreach ($all_custom_tables as $table_name) {
         $custom_table = \Drupal::service('tripal_chado.custom_table');
-        $custom_table->init($table_name, $old_schema);
+        $custom_table->init($table_name, $old_schema->getSchemaName());
         $custom_table->destroy();
       }
 

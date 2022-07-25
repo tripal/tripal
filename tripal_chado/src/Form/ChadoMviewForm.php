@@ -290,25 +290,6 @@ SELECT
     foreach ($errors as $error) {
       $form_state->setErrorByName('schema', $error);
     }
-    if (!empty($errors)) {
-      return;
-    }
-
-    // Check the table name to make sure it's unique.
-    $all_mviews = ChadoMView::allMViews($chado_schema);
-    if ($action == 'Add') {
-      if (in_array($schema_arr['table'], $all_mviews)) {
-        $form_state->setErrorByName($values['table_schema'],
-            t("The table name already exists, please choose a different name."));
-      }
-    }
-    if ($action == 'Edit') {
-      $mview = ChadoMView::load($mview_id);
-      if (in_array($schema_arr['table'], $all_mviews and $mview->tableName() != $schema_arr['table'])) {
-        $form_state->setErrorByName($values['table_schema'],
-            t("The table name already exists, please choose a different name."));
-      }
-    }
   }
 
   /**
@@ -324,11 +305,6 @@ SELECT
     $comment = $values['comment'];
     $sql_query = $values['sql_query'];
 
-    $skip_creation = 1;
-    if ($force_drop) {
-      $skip_creation = 0;
-    }
-
     // convert the schema into a PHP array
     $schema_arr = [];
     eval("\$schema_arr = $table_schema;");
@@ -337,13 +313,7 @@ SELECT
       $mview = ChadoMView::load($mview_id);
       $mview->setComment($comment);
       $mview->setSqlQuery($sql_query);
-      $success = False;
-      if ($skip_creation) {
-        $success = $mview->fixTableSchema($schema_arr);
-      }
-      else {
-        $success = $mview->setTableSchema($schema_arr, True);
-      }
+      $success = $mview->setTableSchema($schema_arr, $force_drop);
       if ($success) {
         \Drupal::messenger()->addMessage(t("The materialized view was succesfully updated."), 'status');
       }

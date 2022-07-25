@@ -107,6 +107,18 @@ class ChadoMView extends ChadoCustomTable {
   }
 
   /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal_chado\Services\ChadoCustomTable::setTableSchema()
+   */
+  public function setTableSchema($table_schema, $force = False) {
+    $success = parent::setTableSchema($table_schema, $force);
+    if ($success) {
+      $this->setTableValue('name', $table_schema['table']);
+    }
+    return $success;
+  }
+
+  /**
    * Sets the query used to populate the materialized view.
    *
    * @param string $query
