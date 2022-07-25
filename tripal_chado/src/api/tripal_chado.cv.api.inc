@@ -485,7 +485,7 @@ function chado_insert_cvterm($term, $options = [], $schema_name = 'chado') {
   if (isset($options['update_existing'])) {
     $update = $options['update_existing'];
   }
- 
+
   $name = $id; // default value
   if (array_key_exists('name', $term)) {
     $name = $term['name'];
@@ -538,7 +538,7 @@ function chado_insert_cvterm($term, $options = [], $schema_name = 'chado') {
     $cv = new stdClass();
     $cv->cv_id = $row_cv->cv_id;
   }
-  
+
   // If CV does not exist
   if (!$cv) {
     $cv = chado_insert_cv($cvname, '', [], $schema_name);
@@ -911,7 +911,7 @@ function chado_autocomplete_cvterm($cv_id, $string = '') {
  *
  * @ingroup tripal_chado_cv_api
  */
-function chado_associate_cvterm($basetable, $record_id, $cvterm, $options = [], $schema_name) {
+function chado_associate_cvterm($basetable, $record_id, $cvterm, $options, $schema_name) {
   $linking_table = $basetable . '_cvterm';
   $foreignkey_name = $basetable . '_id';
 

@@ -162,7 +162,8 @@ class Register implements FormInterface {
       $default_num_funding = max(count($funding_values), 1);
     }
     $num_funding = $form_state->getValue(['funding', 'num'], $default_num_funding);
-    if ($form_state->getTriggeringElement()['#name'] == 'add_funding') {
+    $triggeringElement = $form_state->getTriggeringElement();
+    if (!empty($triggeringElement) && ($triggeringElement['#name'] == 'add_funding')) {
       $num_funding++;
     }
     $form_state->setValue(['funding', 'num'], $num_funding);
