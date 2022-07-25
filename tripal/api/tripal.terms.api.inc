@@ -570,7 +570,7 @@ function tripal_get_vocabularies() {
  * The form elements should work with a flat form (no #tree set for the form)
  * or with a form in a TripalField.
  *
- * Use the tripal_get_term_lookup_form_result() function to retreive the
+ * Use the tripal_get_term_lookup_form_result() function to retrieve the
  * result in a form submit or validate.
  *
  * @param $form
@@ -700,7 +700,7 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
     $options_descriptions = [];
     $default_value = NULL;
     foreach ($terms as $term) {
-      // Save the user a click by setting the default value as 1 if there's
+      // Save the user a click by setting the default value if there's
       // only one matching term.
       if ($num_terms == 0 and count($terms) == 1) {
         $default_value = $num_terms;
@@ -812,7 +812,7 @@ function tripal_get_term_lookup_form_result($form, $form_state, $field_name = ''
   if ($field_name) {
     if (array_key_exists('term_match' . $delta, $form_state['values'][$field_name]['und'][$delta]) and
       array_key_exists('terms_list' . $delta, $form_state['values'][$field_name]['und'][$delta]['term_match' . $delta])) {
-      $values = $form_state['values'][$field_name]['und'][$delta]['term_match' . $delta]['terms_list' . $delta];
+      $values[] = $form_state['values'][$field_name]['und'][$delta]['term_match' . $delta]['terms_list' . $delta];
     }
   }
   else {
