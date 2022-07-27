@@ -457,11 +457,15 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   public function preSave(EntityStorageInterface $storage) {
     parent::preSave($storage);
 
+    $entity_type = $this->getEntityType();
+    $bundle = $this->bundle();
+    $base_field_defs = TripalEntity::baseFieldDefinitions($entity_type);
+
     // Build all storage operations that will be done, saving the tripal
     // fields that will be saved and clearing them from each entity.
     $storageOps = array();
     // Specifically, for each field...
-    foreach ($this->bundleFieldDefinitions() as $fieldDefinition) {
+    foreach ($this->bundleFieldDefinitions($entity_type, $bundle, $base_field_defs) as $fieldDefinition) {
       // Retrieve its Field Instance class.
       $field = \Drupal::service("plugin.manager.field.field_type").getInstance($fieldDefinition->getType());
       // If it is a TripalField then...
@@ -500,13 +504,18 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   public static function postLoad(EntityStorageInterface $storage, array &$entities) {
     parent::postLoad($storage, $entities);
 
+
     // Build the storage operations that will be done and entity references
     $storageOps = array();
     $entityRefs = array();
     // For each entity to be loaded, check each field so we can...
     foreach ($entities as $entity) {
       $hasTripalFields = FALSE;
-      foreach ($entity->bundleFieldDefinitions() as $fieldDefinition) {
+      $entity_type = $entity->getEntityType();
+      $bundle = $entity->bundle();
+      $base_field_defs = TripalEntity::baseFieldDefinitions($entity_type);
+
+      foreach ($entity->bundleFieldDefinitions($entity_type, $bundle, $base_field_defs) as $fieldDefinition) {
         $field = \Drupal::service("plugin.manager.field.field_type").getInstance($fieldDefinition->getType());
         // compile a list of TripalField values grouped by TripalStorage implementations.
         if ($field instanceof TripalFieldItemInterface) {
