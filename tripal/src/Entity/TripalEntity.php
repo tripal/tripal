@@ -459,9 +459,9 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
     // Build all storage operations that will be done, saving the tripal
     // fields that will be saved and clearing them from each entity.
-    $storageOps = array()
+    $storageOps = array();
     // Specifically, for each field...
-    foreach($this->bundleFieldDefinitions() as $fieldDefinition) {
+    foreach ($this->bundleFieldDefinitions() as $fieldDefinition) {
       // Retrieve its Field Instance class.
       $field = \Drupal::service("plugin.manager.field.field_type").getInstance($fieldDefinition->getType());
       // If it is a TripalField then...
@@ -532,7 +532,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     }
 
     // Load all properties from their respective storage plugins
-    $loaded = array()
+    $loaded = array();
     foreach ($storageOps as $tsid => $properties) {
       $tripalStorage = \Drupal::service("plugin.manager.tripal.storage")->getInstance($tsid);
       $tripalStorage->loadValues($properties);
