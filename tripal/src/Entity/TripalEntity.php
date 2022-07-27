@@ -22,6 +22,7 @@ use Drupal\Core\Entity\ContentEntityInterface;
  *   bundle_label = @Translation("Tripal Content type"),
  *   handlers = {
  *     "schema" = "Drupal\tripal\Entity\TripalEntityStorageSchema",
+ *     "storage" = "Drupal\Core\Entity\Sql\SqlContentEntityStorage",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\tripal\ListBuilders\TripalEntityListBuilder",
  *     "views_data" = "Drupal\tripal\Entity\TripalEntityViewsData",
