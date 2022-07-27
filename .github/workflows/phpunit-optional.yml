@@ -15,8 +15,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - drupalversion: '9.1.x-dev'
-            label: 'Backwards Compatibility'
+          # - drupalversion: '9.1.x-dev'
+          #   label: 'Backwards Compatibility'
           - drupalversion: '9.4.x-dev'
             label: 'Future Version'
     # Give the builds names so we can tell them apart

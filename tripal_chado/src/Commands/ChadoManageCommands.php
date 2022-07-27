@@ -98,9 +98,9 @@ class ChadoManageCommands extends DrushCommands {
     }
     else {
       throw new \Exception(dt(
-        'Unable to prepare Crupal + Chado in {schema}',
+        'Unable to prepare Drupal + Chado in @schema',
         [
-          'schema' => $options['schema-name'],
+          '@schema' => $options['schema-name'],
         ]
       ));
     }

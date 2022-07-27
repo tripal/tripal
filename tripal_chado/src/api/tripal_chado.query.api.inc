@@ -1754,6 +1754,7 @@ function chado_query($sql, $args = [], $options = [], $chado_schema_name = NULL)
 
   // Check if Chado is within the same database as Drupal (i.e. local).
   $is_local = chado_is_local(FALSE, $chado_schema_name);
+
   // Validation:
   // -- SQL should be a string.
   if (!is_string($sql)) {
@@ -1812,7 +1813,7 @@ function chado_query($sql, $args = [], $options = [], $chado_schema_name = NULL)
     $matches = [];
     if (preg_match_all('/\{(.*?)\}/', $sql, $matches)) {
       $matches = $matches[1];
-      $chado_tables = array_unique(array_keys(chado_get_table_names(TRUE)));
+      $chado_tables = chado_get_table_names(TRUE);
       foreach ($matches as $match) {
         if (in_array(strtolower($match), $chado_tables)) {
           $sql = preg_replace("/\{$match\}/", $chado_schema_name . '.' . $match, $sql);
@@ -1848,9 +1849,11 @@ function chado_query($sql, $args = [], $options = [], $chado_schema_name = NULL)
     // tables with featureloc must automaticaly have the chado schema set as
     // active to find.
     if (preg_match('/' . $chado_schema_name . '.featureloc/i', $sql) or preg_match('/' . $chado_schema_name . '.feature/i', $sql)) {
-      $previous_db = chado_set_active('chado');
+      $previous_db = chado_set_active($chado_schema_name);
       try {
-        $results = \Drupal::database()->query($sql, $args, $options);
+        $connection = \Drupal::service('tripal_chado.database');
+        $connection->setSchemaName($chado_schema_name);
+        $results = $connection->query($sql, $args, $options);
         chado_set_active($previous_db);
       } catch (Exception $e) {
         chado_set_active($previous_db);
@@ -1860,7 +1863,9 @@ function chado_query($sql, $args = [], $options = [], $chado_schema_name = NULL)
     // For all other tables we should have everything in scope so just run the
     // query.
     else {
-      $results = \Drupal::database()->query($sql, $args, $options);
+      $connection = \Drupal::service('tripal_chado.database');
+      $connection->setSchemaName($chado_schema_name);
+      $results = $connection->query($sql, $args, $options);
     }
   }
   // Check for any cross schema joins (ie: both drupal and chado tables
@@ -1877,8 +1882,10 @@ function chado_query($sql, $args = [], $options = [], $chado_schema_name = NULL)
     // switch to another database.
     else {
       $previous_db = chado_set_active('chado', $chado_schema_name);
-      $results = \Drupal::database()->query($sql, $args, $options);
-      chado_set_active($previous_db, $chado_schema_name);    
+      $connection = \Drupal::service('tripal_chado.database');
+      $connection->setSchemaName($chado_schema_name);
+      $results = $connection->query($sql, $args, $options);
+      chado_set_active($previous_db, $chado_schema_name);
     }
   }
 
