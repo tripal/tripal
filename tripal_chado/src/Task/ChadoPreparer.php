@@ -155,7 +155,7 @@ class ChadoPreparer extends ChadoTaskBase {
 
       $this->setProgress(0.15);
       $this->logger->notice("Creating Tripal Materialized Views...");
-      $this->createMViews();
+      $this->createMviews();
 
       $this->setProgress(0.2);
       $this->logger->notice("Loading ontologies...");
@@ -164,11 +164,11 @@ class ChadoPreparer extends ChadoTaskBase {
 
       $this->setProgress(0.3);
       $this->logger->notice('Populating materialized view cv_root_mview...');
-      $this->populateMView_cv_root_mview();
+      $this->populateMview_cv_root_mview();
 
       $this->setProgress(0.4);
       $this->logger->notice('Populating materialized view db2cv_mview...');
-      $this->populateMView_db2cv_mview();
+      $this->populateMview_db2cv_mview();
 
       $this->setProgress(0.5);
       $this->logger->notice("Making semantic connections for Chado tables/fields...");
@@ -262,8 +262,8 @@ class ChadoPreparer extends ChadoTaskBase {
       ],
     ];
 
-    $custom_table = \Drupal::service('tripal_chado.custom_table');
-    $custom_table->init('tripal_gff_temp', $this->chado->getSchemaName());
+    $custom_tables = \Drupal::service('tripal_chado.custom_tables');
+    $custom_table = $custom_tables->create('tripal_gff_temp', $this->chado->getSchemaName());
     $custom_table->setTableSchema($schema);
     $custom_table->setHidden(True);
 
@@ -311,8 +311,8 @@ class ChadoPreparer extends ChadoTaskBase {
       ],
     ];
 
-    $custom_table = \Drupal::service('tripal_chado.custom_table');
-    $custom_table->init('tripal_gffcds_temp', $this->chado->getSchemaName());
+    $custom_tables = \Drupal::service('tripal_chado.custom_tables');
+    $custom_table = $custom_tables->create('tripal_gffcds_temp', $this->chado->getSchemaName());
     $custom_table->setTableSchema($schema);
     $custom_table->setHidden(True);
 
@@ -355,8 +355,8 @@ class ChadoPreparer extends ChadoTaskBase {
       ],
     ];
 
-    $custom_table = \Drupal::service('tripal_chado.custom_table');
-    $custom_table->init('tripal_gffprotein_temp', $this->chado->getSchemaName());
+    $custom_tables = \Drupal::service('tripal_chado.custom_tables');
+    $custom_table = $custom_tables->create('tripal_gffprotein_temp', $this->chado->getSchemaName());
     $custom_table->setTableSchema($schema);
     $custom_table->setHidden(True);
 
@@ -397,8 +397,8 @@ class ChadoPreparer extends ChadoTaskBase {
       ],
     ];
 
-    $custom_table = \Drupal::service('tripal_chado.custom_table');
-    $custom_table->init('tripal_obo_temp', $this->chado->getSchemaName());
+    $custom_tables = \Drupal::service('tripal_chado.custom_tables');
+    $custom_table = $custom_tables->create('tripal_obo_temp', $this->chado->getSchemaName());
     $custom_table->setTableSchema($schema);
     $custom_table->setHidden(True);
   }
@@ -406,13 +406,13 @@ class ChadoPreparer extends ChadoTaskBase {
   /**
    * Creates the materialized views used by this module.
    */
-  protected function createMViews() {
-    $this->createMView_organism_stock_count();
-    $this->createMView_library_feature_count();
-    $this->createMView_organism_feature_count();
-    $this->createMView_analysis_organism();
-    $this->createMView_cv_root_mview();
-    $this->createMView_db2cv_mview();
+  protected function createMviews() {
+    $this->createMview_organism_stock_count();
+    $this->createMview_library_feature_count();
+    $this->createMview_organism_feature_count();
+    $this->createMview_analysis_organism();
+    $this->createMview_cv_root_mview();
+    $this->createMview_db2cv_mview();
   }
 
 
@@ -422,7 +422,7 @@ class ChadoPreparer extends ChadoTaskBase {
    *
    * @ingroup tripal_stock
    */
-  private function createMView_organism_stock_count() {
+  private function createMview_organism_stock_count() {
     $view_name = 'organism_stock_count';
     $comment = 'Stores the type and number of stocks per organism';
     $schema = [
@@ -483,8 +483,8 @@ class ChadoPreparer extends ChadoTaskBase {
           O.Organism_id, O.genus, O.species, O.common_name, CVT.cvterm_id, CVT.name
     ";
 
-    $mview = \Drupal::service('tripal_chado.materialized_view');
-    $mview->init($view_name, $this->chado->getSchemaName());
+    $mviews = \Drupal::service('tripal_chado.materialized_views');
+    $mview = $mviews->create($view_name, $this->chado->getSchemaName());
     $mview->setTableSchema($schema);
     $mview->setSqlQuery($sql);
     $mview->setComment($comment);
@@ -496,7 +496,7 @@ class ChadoPreparer extends ChadoTaskBase {
    *
    * @ingroup tripal_library
    */
-  private function createMView_library_feature_count() {
+  private function createMview_library_feature_count() {
     $view_name = 'library_feature_count';
     $comment = 'Provides count of feature by type that are associated with all libraries';
 
@@ -541,8 +541,8 @@ class ChadoPreparer extends ChadoTaskBase {
       GROUP BY L.library_id, L.name, CVT.name
     ";
 
-    $mview = \Drupal::service('tripal_chado.materialized_view');
-    $mview->init($view_name, $this->chado->getSchemaName());
+    $mviews = \Drupal::service('tripal_chado.materialized_views');
+    $mview = $mviews->create($view_name, $this->chado->getSchemaName());
     $mview->setTableSchema($schema);
     $mview->setSqlQuery($sql);
     $mview->setComment($comment);
@@ -554,7 +554,7 @@ class ChadoPreparer extends ChadoTaskBase {
    *
    * @ingroup tripal_feature
    */
-  private function createMView_organism_feature_count() {
+  private function createMview_organism_feature_count() {
     $view_name = 'organism_feature_count';
     $comment = 'Stores the type and number of features per organism';
 
@@ -616,8 +616,8 @@ class ChadoPreparer extends ChadoTaskBase {
           O.Organism_id, O.genus, O.species, O.common_name, CVT.cvterm_id, CVT.name
     ";
 
-    $mview = \Drupal::service('tripal_chado.materialized_view');
-    $mview->init($view_name, $this->chado->getSchemaName());
+    $mviews = \Drupal::service('tripal_chado.materialized_views');
+    $mview = $mviews->create($view_name, $this->chado->getSchemaName());
     $mview->setTableSchema($schema);
     $mview->setSqlQuery($sql);
     $mview->setComment($comment);
@@ -629,7 +629,7 @@ class ChadoPreparer extends ChadoTaskBase {
    * associated features.
    *
    */
-  private function createMView_analysis_organism() {
+  private function createMview_analysis_organism() {
     $view_name = 'analysis_organism';
     $comment = 'This view is for associating an organism (via it\'s associated features) to an analysis.';
 
@@ -680,8 +680,8 @@ class ChadoPreparer extends ChadoTaskBase {
         INNER JOIN organism O ON O.organism_id = F.organism_id
     ";
 
-    $mview = \Drupal::service('tripal_chado.materialized_view');
-    $mview->init($view_name, $this->chado->getSchemaName());
+    $mviews = \Drupal::service('tripal_chado.materialized_views');
+    $mview = $mviews->create($view_name, $this->chado->getSchemaName());
     $mview->setTableSchema($schema);
     $mview->setSqlQuery($sql);
     $mview->setComment($comment);
@@ -693,7 +693,7 @@ class ChadoPreparer extends ChadoTaskBase {
    * This is needed for viewing cv trees
    *
    */
-  private function createMView_db2cv_mview() {
+  private function createMview_db2cv_mview() {
     $view_name = 'db2cv_mview';
     $comment = 'A table for quick lookup of the vocabularies and the databases they are associated with.';
     $schema = [
@@ -743,8 +743,8 @@ class ChadoPreparer extends ChadoTaskBase {
       ORDER BY DB.name
     ";
 
-    $mview = \Drupal::service('tripal_chado.materialized_view');
-    $mview->init($view_name, $this->chado->getSchemaName());
+    $mviews = \Drupal::service('tripal_chado.materialized_views');
+    $mview = $mviews->create($view_name, $this->chado->getSchemaName());
     $mview->setTableSchema($schema);
     $mview->setSqlQuery($sql);
     $mview->setComment($comment);
@@ -757,7 +757,7 @@ class ChadoPreparer extends ChadoTaskBase {
    * This is needed for viewing cv trees
    *
    */
-  private function createMView_cv_root_mview() {
+  private function createMview_cv_root_mview() {
     $view_name = 'cv_root_mview';
     $comment = 'A list of the root terms for all controlled vocabularies. This is needed for viewing CV trees';
     $schema = [
@@ -801,8 +801,8 @@ class ChadoPreparer extends ChadoTaskBase {
         CVT.is_relationshiptype = 0 and CVT.is_obsolete = 0
     ";
 
-    $mview = \Drupal::service('tripal_chado.materialized_view');
-    $mview->init($view_name, $this->chado->getSchemaName());
+    $mviews = \Drupal::service('tripal_chado.materialized_views');
+    $mview = $mviews->create($view_name, $this->chado->getSchemaName());
     $mview->setTableSchema($schema);
     $mview->setSqlQuery($sql);
     $mview->setComment($comment);
@@ -812,18 +812,18 @@ class ChadoPreparer extends ChadoTaskBase {
   /**
    * Populates the cv_root_mview materialized view.
    */
-  private function populateMView_cv_root_mview() {
-    $mview = \Drupal::service('tripal_chado.materialized_view');
-    $mview->init('cv_root_mview', $this->chado->getSchemaName());
+  private function populateMview_cv_root_mview() {
+    $mviews = \Drupal::service('tripal_chado.materialized_views');
+    $mview = $mviews->loadByName('cv_root_mview', $this->chado->getSchemaName());
     $mview->populate();
   }
 
   /**
    * Populates the db2cv materialized view.
    */
-  private function populateMView_db2cv_mview() {
-    $mview = \Drupal::service('tripal_chado.materialized_view');
-    $mview->init('db2cv_mview', $this->chado->getSchemaName());
+  private function populateMview_db2cv_mview() {
+    $mviews = \Drupal::service('tripal_chado.materialized_views');
+    $mview = $mviews->loadByName('db2cv_mview', $this->chado->getSchemaName());
     $mview->populate();
   }
 

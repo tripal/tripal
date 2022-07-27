@@ -6,8 +6,8 @@
  */
 
 use Drupal\tripal_chado\Database\ChadoConnection;
-use \Drupal\tripal_chado\Services\ChadoCustomTable;
-use \Drupal\tripal_chado\Services\ChadoMView;
+use \Drupal\tripal_chado\ChadoCustomTables\ChadoCustomTable;
+use \Drupal\tripal_chado\ChaodCustomTables\ChadoMview;
 
 /**
  * @defgroup tripal_mviews_api Chado Materalized Views
@@ -58,9 +58,8 @@ function chado_add_mview($name, $modulename, $mv_schema, $query,
     return FALSE;
   }
 
-  $mview = \Drupal::service('tripal_chado.materialized_view');
-  $mv_table = $mv_schema['table'];
-  $mview->init($mv_table);
+  $mviews = \Drupal::service('tripal_chado.materialized_views');
+  $mview = $mviews->create($mv_schema['table']);
   $errors = ChadoCustomTable::validateTableSchema($mv_schema);
   if (!empty($errors)) {
     return False;
@@ -119,7 +118,9 @@ function chado_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
     if (!empty($errors)) {
       return False;
     }
-    $mview = ChadoCustomTable::load($mview_id);
+
+    $mviews = \Drupal::service('tripal_chado.materialized_views');
+    $mview = $mviews->loadById($mview_id);
     $success = $mview->setTableSchema($mv_schema, True);
     if ($success) {
       $mview->setSqlQuery($query);
@@ -134,8 +135,13 @@ function chado_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
  *
  * @deprecated
  *
- * Plase use the \Drupal\tripal_chado\Services\ChadoMView::findMviewId()
- * function instead.
+ * Please use the findByName() function of the Materialized Views Manager
+ * Service instead. For example:
+ *
+ * @code
+ *   $mviews = \Drupal::service('tripal_chado.materialized_views');
+ *   $mview_id = $mviews->findByName($table_name);
+ * @endcode
  *
  * @param $view_name
  *   The name of the materialized view.
@@ -146,7 +152,8 @@ function chado_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
  * @ingroup tripal_mviews_api
  */
 function chado_get_mview_id($view_name) {
-  return ChadoMview::findMviewId($view_name);
+  $mviews = \Drupal::service('tripal_chado.materialized_views');
+  return $mviews->findByName($view_name);
 }
 
 /**
@@ -154,8 +161,13 @@ function chado_get_mview_id($view_name) {
  *
  * @deprecated
  *
- * Please use the \Drupal\tripal_chado\Services\ChadoMView::allMViews()
- * function instead.
+ * Please use the getAllTables() function of the Materialized Views Manager
+ * Service instead. For example:
+ *
+ * @code
+ *   $mviews = \Drupal::service('tripal_chado.materialized_views');
+ *   $all_mviews = $mviews->getTables();
+ * @endcode
  *
  * @returns
  *   An associative array where the key and value pairs are the table names.
@@ -163,7 +175,13 @@ function chado_get_mview_id($view_name) {
  * @ingroup tripal_mviews_api
  */
 function chado_get_mview_table_names() {
-  return ChadoMView::allMViews();
+  $mviews = \Drupal::service('tripal_chado.materialized_views');
+  $all_mviews = $mviews->getTables();
+  $tables = [];
+  foreach ($all_mviews as $mview_id => $table_name) {
+    $tables[] = $table_name;
+  }
+  return $tables;
 }
 
 /**
@@ -183,9 +201,10 @@ function chado_refresh_mview($mview_id) {
     return FALSE;
   }
 
-  $mview = ChadoMview::load($mview_id);
+  $mviews = \Drupal::service('tripal_chado.materialized_views');
+  $mview = $mviews->loadById($mview_id);
   $args = ["$mview_id"];
-  tripal_add_job("Populate materialized view '$mview->tableName()'", 'tripal_chado',
+  tripal_add_job("Populate materialized view '" . $mview->getTableName() . "'", 'tripal_chado',
     'chado_populate_mview', $args, $current_user->id());
 }
 
@@ -193,6 +212,14 @@ function chado_refresh_mview($mview_id) {
  * Retrieves the list of materialized view IDs and their names.
  *
  * @deprecated
+ *
+ * Please use the getAllTables() function of the Materialized Views Manager
+ * Service instead. For example:
+ *
+ * @code
+ *   $mviews = \Drupal::service('tripal_chado.materialized_views');
+ *   $all_mviews = $mviews->getTables();
+ * @endcode
  *
  * @return array
  *   An array of arrays with the following properties:  mview_id, name.
@@ -202,9 +229,9 @@ function chado_refresh_mview($mview_id) {
 function chado_get_mviews() {
   $mviews = [];
 
-  $mview_tables =  ChadoMView::allMViews();
-  foreach ($mview_tables as $table_name) {
-    $mview_id = ChadoMView::findMviewId($table_name);
+  $mviews = \Drupal::service('tripal_chado.materialized_views');
+  $all_mviews = $mviews->getTables();
+  foreach ($all_mviews as $mview_id => $table_name) {
     $mviews[] = (object) [
       'mview_id' => $mview_id,
       'name' => $table_name,
@@ -236,7 +263,8 @@ function chado_delete_mview($mview_id) {
     return FALSE;
   }
 
-  $mview = ChadoMView::load($mview_id);
+  $mviews = \Drupal::service('tripal_chado.materialized_views');
+  $mview = $mviews->loadById($mview_id);
   if (!$mview) {
     $logger->error('Cannot find a materialized view in this instance of Chado that matches the provided ID.');
     return False;
@@ -263,7 +291,8 @@ function chado_populate_mview($mview_id) {
     return FALSE;
   }
 
-  $mview = ChadoMView::load($mview_id);
+  $mviews = \Drupal::service('tripal_chado.materialized_views');
+  $mview = $mviews->loadById($mview_id);
   if (!$mview) {
     $logger->error('Cannot find a materialized view in this instance of Chado that matches the provided ID.');
     return False;

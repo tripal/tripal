@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\tripal_chado\Services;
+namespace Drupal\tripal_chado\ChadoCustomTables;
 
 class ChadoCustomTable {
 
@@ -25,29 +25,6 @@ class ChadoCustomTable {
    */
   private $chado_schema;
 
-
-  /**
-   * Instantiates a new ChadoCustomTable object.
-   */
-  public function __construct() {
-    $this->table_name = NULL;
-    $this->table_id = NULL;
-    $this->chado_schema = NULL;
-  }
-
-  /**
-   * Returns a ChadoConnection object with the correct schema set.
-   *
-   * @return \Drupal\tripal_chado\Database\ChadoConnection
-   */
-  protected function getChado() {
-    $chado = \Drupal::service('tripal_chado.database');
-    if ($this->chado_schema) {
-      $chado->setSchemaName($this->chado_schema);
-    }
-    return $chado;
-  }
-
   /**
    * Initializes the service object with a table name.
    *
@@ -61,9 +38,13 @@ class ChadoCustomTable {
    *   Optional. The chado schema where the custom table will live. If no
    *   schema is specified then the default schema is used.
    */
-  public function init($table_name, string $chado_schema = NULL) {
+  public function __construct($table_name, string $chado_schema = NULL) {
+    $this->table_name = NULL;
+    $this->table_id = NULL;
+    $this->chado_schema = NULL;
+
     if (!$table_name) {
-      throw new \Exception('ChadoCustomTable::init(). Please provide a value for the $table_name argument');
+      throw new \Exception('Please provide a value for the $table_name argument');
     }
 
     $this->table_name = $table_name;
@@ -91,6 +72,22 @@ class ChadoCustomTable {
   }
 
   /**
+   * Returns a ChadoConnection object with the correct schema set.
+   *
+   * This is just a helpder function for this class to make sure the
+   * Chado schema is set as requested anytime the object is needec.
+   *
+   * @return \Drupal\tripal_chado\Database\ChadoConnection
+   */
+  protected function getChado() {
+    $chado = \Drupal::service('tripal_chado.database');
+    if ($this->chado_schema) {
+      $chado->setSchemaName($this->chado_schema);
+    }
+    return $chado;
+  }
+
+  /**
    * Sets the private table_id member variable.
    */
   private function setTableId() {
@@ -111,7 +108,7 @@ class ChadoCustomTable {
    *
    * @return integer
    */
-  public function tableId() {
+  public function getTableId() {
     return $this->table_id;
   }
 
@@ -120,7 +117,7 @@ class ChadoCustomTable {
    *
    * @return string
    */
-  public function tableName() {
+  public function getTableName() {
     return $this->table_name;
   }
 
@@ -129,7 +126,7 @@ class ChadoCustomTable {
    *
    * @return string
    */
-  public function chadoSchema() {
+  public function getChadoSchema() {
     return $this->chado_schema;
   }
 
@@ -183,7 +180,7 @@ class ChadoCustomTable {
    *
    * @return array
    */
-  public function tableSchema() {
+  public function getTableSchema() {
     $logger = \Drupal::service('tripal.logger');
     if (!$this->table_id) {
       $logger->error('Cannot get the the custom table schema. Please, first run the init() function.');
@@ -362,76 +359,6 @@ class ChadoCustomTable {
       }
     }
     return $messages;
-  }
-
-  /**
-   * Retrieve a list of all Chado custom table names.
-   *
-   * @param string $chado_schema
-   *   Optional. The chado schema from which to retrieve custom tables. If no
-   *   schema is specified then the default schema is used.
-   *
-   * @return array
-   *  An array of table names.
-   */
-  static public function allCustomTables($chado_schema = NULL) {
-    $tables = [];
-
-    $public = \Drupal::database();
-    $query = $public->select('tripal_custom_tables','tct');
-    $query->fields('tct', ['table_name']);
-    $query->condition('tct.chado', $chado_schema);
-    $query->orderBy('table_name');
-    $results = $query->execute();
-    while ($table_name = $results->fetchField()) {
-      $tables[] = $table_name;
-    }
-    return $tables;
-  }
-
-  /**
-   * Finds the Id of the custom table that matches the given name.
-   *
-   * @param string $table_name
-   *   The name of the table to find the ID for.
-   * @param string $chado_schema
-   *   Optional. The chado schema from which to find a custom tables. If no
-   *   schema is specified then the default schema is used.
-   *
-   * @return int
-   *   The custom table ID if it exists.
-   */
-  static public function findCustomTableId(string $table_name, string $chado_schema = NULL) {
-    $public = \Drupal::database();
-    $query = $public->select('tripal_custom_tables','tct');
-    $query->fields('tct', ['table_id']);
-    $query->condition('tct.chado', $chado_schema);
-    $query->condition('tct.table_name', $table_name);
-    return $query->execute()->fetchField();
-  }
-
-  /**
-   * Loads the custom table whose name matches the given ID.
-   *
-   * @param int $table_id
-   *   The ID of the custom table.
-   * @return \Drupal\tripal_chado\Services\ChadoCustomTable.
-   *   A ChadoCustomTable object or NULL if not found.
-   */
-  static public function load(int $table_id) {
-    $public = \Drupal::database();
-
-    $query = $public->select('tripal_custom_tables','tct');
-    $query->fields('tct', ['table_name', 'chado']);
-    $query->condition('tct.table_id', $table_id);
-    $record = $query->execute()->fetchAssoc();
-    if (!$record) {
-      return NULL;
-    }
-
-    $custom_table = \Drupal::service('tripal_chado.custom_table');
-    $custom_table->init($record['table_name'], $record['chado']);
-    return $custom_table;
   }
 
   /**

@@ -7,7 +7,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Link;
-use Drupal\tripal_chado\Services\ChadoMView;
+use Drupal\tripal_chado\Services\ChadoMview;
 
 class ChadoMviewDeleteForm extends FormBase {
 
@@ -25,7 +25,8 @@ class ChadoMviewDeleteForm extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state, $mview_id = null) {
 
-    $mview = ChadoMView::load($mview_id);
+    $mviews = \Drupal::service('tripal_chado.materialized_views');
+    $mview = $mviews->loadById($mview_id);
 
     $form = [];
     $form['mview_id'] = [
@@ -35,8 +36,8 @@ class ChadoMviewDeleteForm extends FormBase {
 
     $form['sure'] = [
       '#type' => 'markup',
-      '#markup' => '<p>Are you sure you want to delete the "' . $mview->tableName() .
-      '" materialized view in the "' . $mview->chadoSchema() . '" schema?</p>',
+      '#markup' => '<p>Are you sure you want to delete the "' . $mview->getTableName() .
+      '" materialized view in the "' . $mview->getChadoSchema() . '" schema?</p>',
     ];
     $form['submit'] = [
       '#type' => 'submit',
@@ -62,7 +63,8 @@ class ChadoMviewDeleteForm extends FormBase {
     $mview_id = $values['mview_id'];
 
     if (strcmp($action, 'Delete') == 0) {
-      $mview = ChadoMView::load($mview_id);
+      $mviews = \Drupal::service('tripal_chado.materialized_views');
+      $mview = $mviews->loadById($mview_id);
       $success = $mview->destroy();
       if($success == TRUE) {
         \Drupal::messenger()->addMessage(t("The materialized view was successfully deleted"));

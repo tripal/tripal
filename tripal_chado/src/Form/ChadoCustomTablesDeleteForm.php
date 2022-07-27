@@ -25,7 +25,8 @@ class ChadoCustomTablesDeleteForm extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state, $table_id = null) {
 
-    $custom_table = ChadoCustomTable::load($table_id);
+    $custom_tables = \Drupal::service('tripal_chado.custom_tables');
+    $custom_table = $custom_tables->loadById($table_id);
 
     $form = [];
     $form['table_id'] = [
@@ -35,8 +36,8 @@ class ChadoCustomTablesDeleteForm extends FormBase {
 
     $form['sure'] = [
       '#type' => 'markup',
-      '#markup' => '<p>Are you sure you want to delete the "' . $custom_table->tableName() .
-        '" custom table in the "' . $custom_table->chadoSchema() . '" schema?</p>',
+      '#markup' => '<p>Are you sure you want to delete the "' . $custom_table->getTableName() .
+        '" custom table in the "' . $custom_table->getChadoSchema() . '" schema?</p>',
     ];
     $form['submit'] = [
       '#type' => 'submit',
@@ -62,7 +63,8 @@ class ChadoCustomTablesDeleteForm extends FormBase {
     $table_id = $values['table_id'];
 
     if (strcmp($action, 'Delete') == 0) {
-      $custom_table = ChadoCustomTable::load($table_id);
+      $custom_tables = \Drupal::service('tripal_chado.custom_tables');
+      $custom_table = $custom_tables->loadById($table_id);
       $success = $custom_table->destroy();
       if($success == TRUE) {
         \Drupal::messenger()->addMessage(t("Custom table successfully deleted"));

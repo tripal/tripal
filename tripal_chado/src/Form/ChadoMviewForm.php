@@ -7,8 +7,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Link;
-use Drupal\tripal_chado\Services\ChadoCustomTable;
-use Drupal\tripal_chado\Services\ChadoMView;
+use Drupal\tripal_chado\ChadoCustomTables\ChadoCustomTable;
 
 class ChadoMviewForm extends FormBase {
 
@@ -43,12 +42,13 @@ class ChadoMviewForm extends FormBase {
 
     // If this is an edit then set the form detafauls differently.
     if (strcmp($action, 'Edit') == 0) {
-      $mview = ChadoMView::load($mview_id);
+      $mviews = \Drupal::service('tripal_chado.materialized_views');
+      $mview = $mviews->loadById($mview_id);
 
       // set the default values.  If there is a value set in the
       // form_state then let's use that, otherwise, we'll pull
       // the values from the database
-      $default_table_schema = var_export($mview->tableSchema(), 1);
+      $default_table_schema = var_export($mview->getTableSchema(), 1);
       $default_table_schema = preg_replace('/=>\s+\n\s+array/', '=> array', $default_table_schema);
       if ($form_state->getValue('table_schema')) {
         $default_table_schema = $form_state->getValue('table_schema');
@@ -61,7 +61,7 @@ class ChadoMviewForm extends FormBase {
       }
 
       // Get the default SQL Query value.
-      $default_sql_query = $mview->sqlQuery();
+      $default_sql_query = $mview->getSqlQuery();
       if ($form_state->getValue('sql_query')) {
         $default_sql_query = $form_state->getValue('sql_query');
       }
@@ -72,7 +72,7 @@ class ChadoMviewForm extends FormBase {
       }
 
       // Get the default Chado value.
-      $default_chado_schema = $mview->chadoSchema();
+      $default_chado_schema = $mview->getChadoSchema();
       if ($form_state->getValue('chado_schema')) {
         $default_chado_schema = $form_state->getValue('chado_schema');
       }
@@ -305,12 +305,14 @@ SELECT
     $comment = $values['comment'];
     $sql_query = $values['sql_query'];
 
+    $mviews = \Drupal::service('tripal_chado.materialized_views');
+
     // convert the schema into a PHP array
     $schema_arr = [];
     eval("\$schema_arr = $table_schema;");
 
     if (strcmp($action, 'Edit') == 0) {
-      $mview = ChadoMView::load($mview_id);
+      $mview = $mviews->loadById($mview_id);
       $mview->setComment($comment);
       $mview->setSqlQuery($sql_query);
       $success = $mview->setTableSchema($schema_arr, $force_drop);
@@ -324,8 +326,7 @@ SELECT
       }
     }
     elseif (strcmp($action, 'Add') == 0) {
-      $mview = \Drupal::service('tripal_chado.materialized_view');
-      $mview->init($schema_arr['table'], $chado_schema);
+      $mview = $mviews->create($schema_arr['table'], $chado_schema);
       $mview->setComment($comment);
       $mview->setSqlQuery($sql_query);
       $success = $mview->setTableSchema($schema_arr);

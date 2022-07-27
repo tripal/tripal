@@ -7,8 +7,8 @@ use Drupal\tripal_biodb\Exception\TaskException;
 use Drupal\tripal_biodb\Exception\LockException;
 use Drupal\tripal_biodb\Exception\ParameterException;
 use Drupal\tripal_chado\Services\ChadoCustomTable;
-use Drupal\tripal_chado\Services\ChadoMViews;
-use Drupal\tripal_chado\Services\ChadoMView;
+use Drupal\tripal_chado\Services\ChadoMviews;
+use Drupal\tripal_chado\Services\ChadoMview;
 
 /**
  * Chado remover.
@@ -126,18 +126,19 @@ class ChadoRemover extends ChadoTaskBase {
       $old_schema = $this->outputSchemas[0];
 
       // Remove any materialized views in this schema.
-      $all_mviews = ChadoMView::allMViews($old_schema->getSchemaName());
+      $mviews = \Drupal::service('tripal_chado.materialized_views');
+      $all_mviews = $mviews->getTables($old_schema->getSchemaName());
       foreach ($all_mviews as $table_name) {
-        $mview = \Drupal::service('tripal_chado.materialized_view');
-        $mview->init($table_name, $old_schema->getSchemaName());
+        $mviews = \Drupal::service('tripal_chado.materialized_views');
+        $mview = $mviews->create($table_name, $old_schema->getSchemaName());
         $mview->destroy();
       }
 
       // Remove any custom tables in this schema.
-      $all_custom_tables = ChadoCustomTable::allCustomTables($old_schema->getSchemaName());
-      foreach ($all_custom_tables as $table_name) {
-        $custom_table = \Drupal::service('tripal_chado.custom_table');
-        $custom_table->init($table_name, $old_schema->getSchemaName());
+      $custom_tables = \Drupal::service('tripal_chado.custom_tables');
+      $all_custom_tables = $custom_tables->getTables($old_schema->getSchemaName());
+      foreach ($all_custom_tables as $table_id => $table_name) {
+        $custom_table = $custom_tables->loadById($table_id);
         $custom_table->destroy();
       }
 

@@ -160,9 +160,9 @@ function tripal_chado_views_data_mviews(&$data) {
   ];
 
 
-  // MView ID
+  // Mview ID
   $data['tripal_mviews']['mview_id'] = [
-    'title' => t('MView ID'),
+    'title' => t('Materialized View ID'),
     'help' => t('The materialized view primary key.'),
     'field' => [
       'id' => 'numeric',
@@ -284,7 +284,7 @@ function tripal_chado_views_data_mviews(&$data) {
   ];
 
   $data['tripal_mviews']['mview_edit_link'] = array(
-    'title' => t('Edit MView'),
+    'title' => t('Edit Materialized View'),
     'help' => t('Clickable link to edit a materialized view'),
     'field' => [
       'id' => 'chado_mviews_edit_link'
@@ -292,7 +292,7 @@ function tripal_chado_views_data_mviews(&$data) {
   );
 
   $data['tripal_mviews']['mview_populate_link'] = array(
-    'title' => t('Populate MView'),
+    'title' => t('Populate Materialized View'),
     'help' => t('Clickable link to populate a materialized view'),
     'field' => [
       'id' => 'chado_mviews_populate_link'
@@ -300,7 +300,7 @@ function tripal_chado_views_data_mviews(&$data) {
   );
 
   $data['tripal_mviews']['mview_delete_link'] = array(
-    'title' => t('Delete MView'),
+    'title' => t('Delete Materialized View'),
     'help' => t('Clickable link to delete a materialied view'),
     'field' => [
       'id' => 'chado_mviews_delete_link'

@@ -7,7 +7,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Link;
-use Drupal\tripal_chado\Services\ChadoMView;
+use Drupal\tripal_chado\Services\ChadoMview;
 
 class ChadoMviewPopulateForm extends FormBase {
 
@@ -25,7 +25,8 @@ class ChadoMviewPopulateForm extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state, $mview_id = null) {
 
-    $mview = ChadoMView::load($mview_id);
+    $mviews = \Drupal::service('tripal_chado.materialized_views');
+    $mview = $mviews->loadById($mview_id);
 
     $form = [];
     $form['mview_id'] = [
@@ -35,8 +36,8 @@ class ChadoMviewPopulateForm extends FormBase {
 
     $form['sure'] = [
       '#type' => 'markup',
-      '#markup' => '<p>Please confirm you want to populate the "' . $mview->tableName() .
-      '" materialized view in the "' . $mview->chadoSchema() . '" schema?</p>',
+      '#markup' => '<p>Please confirm you want to populate the "' . $mview->getTableName() .
+      '" materialized view in the "' . $mview->getChadoSchema() . '" schema?</p>',
     ];
     $form['submit'] = [
       '#type' => 'submit',
@@ -62,10 +63,11 @@ class ChadoMviewPopulateForm extends FormBase {
     $mview_id = $values['mview_id'];
 
     if (strcmp($action, 'Populate') == 0) {
-      $mview = ChadoMView::load($mview_id);
+      $mviews = \Drupal::service('tripal_chado.materialized_views');
+      $mview = $mviews->loadById($mview_id);
       $current_user = \Drupal::currentUser();
       $args = [$mview_id];
-      tripal_add_job("Populate materialized view '$mview->tableName()'", 'tripal_chado',
+      tripal_add_job("Populate materialized view '$mview->getTableName()'", 'tripal_chado',
           'chado_populate_mview', $args, $current_user->id());
     }
     else {
