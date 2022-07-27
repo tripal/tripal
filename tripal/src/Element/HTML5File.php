@@ -194,7 +194,7 @@ class HTML5File extends FormElement {
   /**
    * {@inheritdoc}
    */
-  public static function valueCallback(&$element, $input = FALSE, FormStateInterface $form_state) {
+  public static function valueCallback(&$element, $input, FormStateInterface $form_state) {
     if ($input) {
       if (is_array($input)) {
         $name = HTML5File::getBaseKey($element);

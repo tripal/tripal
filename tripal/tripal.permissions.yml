@@ -1,7 +1,6 @@
 administer tripal:
   title: 'Administer Tripal'
-  description: 'Bypass Tripal access control'
-  restrict access: true
+  description: 'Used to access the administration pages for Tripal.'
 
 upload files:
   title: 'Upload Files'
@@ -32,3 +31,11 @@ view published tripal content entities:
 
 view unpublished tripal content entities:
   title: 'View unpublished Tripal Content'
+
+allow tripal import:
+  title: 'Allow access to Tripal Importer Admin Listing'
+  description: 'Allow access to execute importer'
+  restrict access: true
+
+permission_callbacks:
+  - Drupal\tripal\Controller\TripalImporterPermissionsController::permissions

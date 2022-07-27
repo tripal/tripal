@@ -7,6 +7,7 @@ use Drupal\tripal_biodb\Exception\TaskException;
 use Drupal\tripal_biodb\Exception\LockException;
 use Drupal\tripal_biodb\Exception\ParameterException;
 use Drupal\tripal\Entity\TripalEntityType;
+use Drupal\tripal\TripalVocabTerms\TripalTerm;
 
 /**
  * Chado preparer.
@@ -25,11 +26,20 @@ use Drupal\tripal\Entity\TripalEntityType;
  * @endcode
  */
 class ChadoPreparer extends ChadoTaskBase {
-  
+
   /**
-   * A ChadoConnection Instance.
+   * A connection to the Chado database.
+   *
+   * @var \Drupal\tripal\TripalDBX\TripalDbxConnection
    */
   protected $chado = NULL;
+
+  /**
+   * A connection to the public Drupal database.
+   *
+   * @var object
+   */
+  protected $public = NULL;
 
   /**
    * Name of the task.
@@ -127,16 +137,17 @@ class ChadoPreparer extends ChadoTaskBase {
     }
 
     // Make sure we use the specified Chado schema.
-    $schema_name = $this->outputSchemas[0]->getSchemaName();    
+    $schema_name = $this->outputSchemas[0]->getSchemaName();
     $this->chado = \Drupal::service('tripal_chado.database');
     $this->chado->setSchemaName($schema_name);
-    
+    $this->public = \Drupal::database();
+
     try
-    {            
+    {
       $this->setProgress(0.1);
       $this->logger->notice("Creating Tripal Materialized Views and Custom Tables...");
       $chado_version = $this->chado->getVersion();
-      
+
       if ($chado_version == '1.3') {
         $this->add_vx_x_custom_tables();
         $this->fix_v1_3_custom_tables();
@@ -149,18 +160,18 @@ class ChadoPreparer extends ChadoTaskBase {
       $this->setProgress(0.3);
       $this->logger->notice('Populating materialized view cv_root_mview...');
       // POSTPONED: populate mviews. // SEEMS TO BE MVIEW RELATED AND THUS NOT NEEDED FOR TRIPAL LOADERS
-      
+
       $this->setProgress(0.4);
       $this->logger->notice("Making semantic connections for Chado tables/fields...");
       // $this->populate_chado_semweb_table(); // WE NEED TO DO THIS
-      
+
       $this->setProgress(0.5);
       $this->logger->notice("Map Chado Controlled vocabularies to Tripal Terms...");
       // TODO //  NEXT UP ON THE LIST TO DETERMINE IF WE NEED THIS
-      
+
       $this->setProgress(0.6);
-      $this->logger->notice('Populating materialized view db2cv_mview...'); 
-      // POSTPONED (mview related)    
+      $this->logger->notice('Populating materialized view db2cv_mview...');
+      // POSTPONED (mview related)
 
       $this->setProgress(0.7);
       $this->logger->notice("Creating default content types...");
@@ -201,12 +212,12 @@ class ChadoPreparer extends ChadoTaskBase {
    * adjust them.
    */
   protected function fix_v1_3_custom_tables() {
-    
+
     // Update the featuremap_dbxref table by adding an is_current field.
     if (!chado_column_exists('featuremap_dbxref', 'is_current')) {
       $this->chado->query("ALTER TABLE {featuremap_dbxref} ADD COLUMN is_current boolean DEFAULT true NOT NULL;");
     }
-    
+
     // Remove the previously managed custom tables from the
     // tripal_custom_tables table.
     // \Drupal::database()->select
@@ -248,7 +259,7 @@ class ChadoPreparer extends ChadoTaskBase {
     // $this->tripal_chado_add_analysis_organism_mview();
     // $this->tripal_chado_add_cv_root_mview_mview();
     // $this->tripal_chado_add_db2cv_mview_mview();
-  }  
+  }
 
   protected function tripal_chado_add_tripal_gff_temp_table() {
     $schema = [
@@ -282,11 +293,11 @@ class ChadoPreparer extends ChadoTaskBase {
         'tripal_gff_temp_uq1' => ['uniquename', 'organism_id', 'type_name'],
       ],
     ];
-    
-    chado_create_custom_table('tripal_gff_temp', $schema, TRUE, NULL, 
+
+    chado_create_custom_table('tripal_gff_temp', $schema, TRUE, NULL,
       FALSE, $this->chado);
   }
-  
+
   /**
    *
    */
@@ -324,10 +335,10 @@ class ChadoPreparer extends ChadoTaskBase {
         'tripal_gff_temp_idx0' => ['parent_id'],
       ],
     ];
-    chado_create_custom_table('tripal_gffcds_temp', $schema, TRUE, NULL, 
+    chado_create_custom_table('tripal_gffcds_temp', $schema, TRUE, NULL,
       FALSE, $this->chado);
   }
-  
+
   /**
    *
    */
@@ -360,10 +371,10 @@ class ChadoPreparer extends ChadoTaskBase {
         'tripal_gff_temp_uq0' => ['feature_id'],
       ],
     ];
-    chado_create_custom_table('tripal_gffprotein_temp', $schema, TRUE, NULL, 
+    chado_create_custom_table('tripal_gffprotein_temp', $schema, TRUE, NULL,
       FALSE, $this->chado);
   }
-  
+
   /**
    * Creates a temporary table to store obo details while loading an obo file
    *
@@ -390,8 +401,8 @@ class ChadoPreparer extends ChadoTaskBase {
       $this->chado->query($sql);
     }
   }
-  
-  
+
+
   /**
    * Creates a materialized view that stores the type & number of stocks per
    * organism
@@ -401,7 +412,7 @@ class ChadoPreparer extends ChadoTaskBase {
   function tripal_chado_add_organism_stock_count_mview() {
     $view_name = 'organism_stock_count';
     $comment = 'Stores the type and number of stocks per organism';
-  
+
     $schema = [
       'description' => $comment,
       'table' => $view_name,
@@ -447,7 +458,7 @@ class ChadoPreparer extends ChadoTaskBase {
         'organism_stock_count_idx3' => ['stock_type'],
       ],
     ];
-  
+
     $sql = "
       SELECT
           O.organism_id, O.genus, O.species, O.common_name,
@@ -459,11 +470,11 @@ class ChadoPreparer extends ChadoTaskBase {
        GROUP BY
           O.Organism_id, O.genus, O.species, O.common_name, CVT.cvterm_id, CVT.name
     ";
-  
+
     chado_add_mview($view_name, 'tripal_stock', $schema, $sql, $comment, FALSE);
   }
-  
-  
+
+
   /**
    * Adds a materialized view keeping track of the type of features associated
    * with each library
@@ -473,7 +484,7 @@ class ChadoPreparer extends ChadoTaskBase {
   function tripal_chado_add_library_feature_count_mview() {
     $view_name = 'library_feature_count';
     $comment = 'Provides count of feature by type that are associated with all libraries';
-  
+
     $schema = [
       'table' => $view_name,
       'description' => $comment,
@@ -502,7 +513,7 @@ class ChadoPreparer extends ChadoTaskBase {
         'library_feature_count_idx1' => ['library_id'],
       ],
     ];
-  
+
     $sql = "
       SELECT
         L.library_id, L.name,
@@ -514,16 +525,16 @@ class ChadoPreparer extends ChadoTaskBase {
         INNER JOIN cvterm CVT          ON F.type_id     = CVT.cvterm_id
       GROUP BY L.library_id, L.name, CVT.name
     ";
-  
+
     chado_add_mview($view_name, 'tripal_library', $schema, $sql, $comment, FALSE);
   }
-  
-  
+
+
   /**
    *
    */
-  
-  
+
+
   /**
    * Creates a materialized view that stores the type & number of features per
    * organism
@@ -533,7 +544,7 @@ class ChadoPreparer extends ChadoTaskBase {
   function tripal_chado_add_organism_feature_count_mview() {
     $view_name = 'organism_feature_count';
     $comment = 'Stores the type and number of features per organism';
-  
+
     $schema = [
       'description' => $comment,
       'table' => $view_name,
@@ -579,7 +590,7 @@ class ChadoPreparer extends ChadoTaskBase {
         'organism_feature_count_idx3' => ['feature_type'],
       ],
     ];
-  
+
     $sql = "
       SELECT
           O.organism_id, O.genus, O.species, O.common_name,
@@ -591,11 +602,11 @@ class ChadoPreparer extends ChadoTaskBase {
        GROUP BY
           O.Organism_id, O.genus, O.species, O.common_name, CVT.cvterm_id, CVT.name
     ";
-  
+
     chado_add_mview($view_name, 'tripal_feature', $schema, $sql, $comment, FALSE);
   }
-  
-  
+
+
   /**
    * Creates a view showing the link between an organism & it's analysis through
    * associated features.
@@ -604,7 +615,7 @@ class ChadoPreparer extends ChadoTaskBase {
   function tripal_chado_add_analysis_organism_mview() {
     $view_name = 'analysis_organism';
     $comment = t('This view is for associating an organism (via it\'s associated features) to an analysis.');
-  
+
     // this is the SQL used to identify the organism to which an analsysis
     // has been used.  This is obtained though the analysisfeature -> feature -> organism
     // joins
@@ -615,7 +626,7 @@ class ChadoPreparer extends ChadoTaskBase {
         INNER JOIN feature F          ON AF.feature_id = F.feature_id
         INNER JOIN organism O         ON O.organism_id = F.organism_id
     ";
-  
+
     // the schema array for describing this view
     $schema = [
       'table' => $view_name,
@@ -651,11 +662,11 @@ class ChadoPreparer extends ChadoTaskBase {
         ],
       ],
     ];
-  
+
     // add the view
     chado_add_mview($view_name, 'tripal_analysis', $schema, $sql, $comment, FALSE);
   }
-  
+
   /**
    * Add a materialized view that maps cv to db records.
    *
@@ -699,7 +710,7 @@ class ChadoPreparer extends ChadoTaskBase {
         'dbname_idx' => ['db_id'],
       ],
     ];
-  
+
     $sql = "
       SELECT DISTINCT CV.cv_id, CV.name as cvname, DB.db_id, DB.name as dbname,
         COUNT(CVT.cvterm_id) as num_terms
@@ -711,11 +722,11 @@ class ChadoPreparer extends ChadoTaskBase {
       GROUP BY CV.cv_id, CV.name, DB.db_id, DB.name
       ORDER BY DB.name
     ";
-  
+
     // Create the MView
     chado_add_mview($mv_name, 'tripal_chado', $schema, $sql, $comment, FALSE, $this->chado);
   }
-  
+
   /**
    * Add a materialized view of root terms for all chado cvs.
    *
@@ -755,22 +766,22 @@ class ChadoPreparer extends ChadoTaskBase {
         'cv_root_mview_indx2' => ['cv_id'],
       ],
     ];
-  
+
     $sql = "
       SELECT DISTINCT CVT.name, CVT.cvterm_id, CV.cv_id, CV.name
       FROM cvterm CVT
         LEFT JOIN cvterm_relationship CVTR ON CVT.cvterm_id = CVTR.subject_id
         INNER JOIN cvterm_relationship CVTR2 ON CVT.cvterm_id = CVTR2.object_id
       INNER JOIN cv CV on CV.cv_id = CVT.cv_id
-      WHERE CVTR.subject_id is NULL and 
+      WHERE CVTR.subject_id is NULL and
         CVT.is_relationshiptype = 0 and CVT.is_obsolete = 0
     ";
-  
+
     // Create the MView
     chado_add_mview($mv_name, 'tripal_chado', $schema, $sql, $comment, FALSE, $this->chado);
   }
-  
-  
+
+
 
   /**
    * For Chado v1.1 Tripal provides some new custom tables.
@@ -850,44 +861,243 @@ class ChadoPreparer extends ChadoTaskBase {
   }
 
   /**
+   * Gets a controlled vocabulary IDspace object.
+   *
+   * @param string $name
+   *   The name of the IdSpace
+   *
+   * @return \Drupal\tripal\TripalVocabTerms\TripalIdSpaceBase
+   */
+  private function getIdSpace($name) {
+    $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+    $idSpace = $idsmanager->loadCollection($name, 'chado_id_space');
+    if (!$idSpace) {
+      $idSpace = $idsmanager->createCollection($name, 'chado_id_space');
+    }
+    return $idSpace;
+  }
+
+  /**
+   * Gets a controlled voabulary object.
+   *
+   * @param string $name
+   *   The name of the vocabulary
+   *
+   * @return \Drupal\tripal\TripalVocabTerms\TripalVocabularyBase
+   */
+  private function getVocabulary($name) {
+    $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
+    $vocabulary = $vmanager->loadCollection($name, 'chado_vocabulary');
+    if (!$vocabulary) {
+      $vocabulary = $vmanager->createCollection($name, 'chado_vocabulary');
+    }
+    return $vocabulary;
+  }
+
+  /**
    * Loads ontologies necessary for creation of default Tripal content types.
    */
   protected function loadOntologies() {
 
-    /*
-     This currently cannot be implementated as the vocabulary API is being
-     re-done. As such, this method is a placeholder.
+    $ontologies = [];
 
-     See https://github.com/tripal/tripal/blob/7.x-3.x/tripal_chado/includes/setup/tripal_chado.setup.inc
-     for the Tripal 3 implementation of this method.
+    // NCIT
+    $ncit_vocab = $this->getVocabulary('ncit');
+    $ncit_vocab->setLabel('NCI Thesaurus OBO Edition');
+    $ncit_idspace = $this->getIdSpace('NCIT');
+    $ncit_idspace->setDescription('The NCIt is a reference terminology that includes broad coverage of the cancer domain, including cancer related diseases, findings and abnormalities. NCIt OBO Edition releases should be considered experimental.');
+    $ncit_idspace->setUrlPrefix('http://purl.obolibrary.org/obo/{db}_{accession}');
+    $ncit_idspace->setDefaultVocabulary('ncit');
+    $ncit_vocab->addIdSpace('NCIT');
+    $ncit_vocab->setUrl('http://purl.obolibrary.org/obo/ncit.owl');
+    $ncit__subgroup = new TripalTerm([
+      'name' => 'Subgroup',
+      'idSpace' => 'NCIT',
+      'vocabulary' => 'ncit',
+      'accession' => 'C25693',
+      'definition' => 'A subdivision of a larger group with members often exhibiting similar characteristics. [ NCI ]',
+    ]);
+    $ncit_idspace->saveTerm($ncit__subgroup);
 
-     Vocabularies to be added individually:
-     - NCIT: NCI Thesaurus OBO Edition
-     - rdfs: Resource Description Framework Schema
+    // RDFS
+    $rdfs_vocab = $this->getVocabulary('rdfs');
+    $rdfs_vocab->setLabel('Resource Description Framework Schema');
+    $rdfs_idspace = $this->getIdSpace('rdfs');
+    $rdfs_idspace->setDescription('Resource Description Framework Schema');
+    $rdfs_idspace->setUrlPrefix('http://www.w3.org/2000/01/rdf-schema#{accession}');
+    $rdfs_idspace->setDefaultVocabulary('rdfs');
+    $rdfs_vocab->addIdSpace('rdfs');
+    $rdfs_vocab->setUrl('https://www.w3.org/TR/rdf-schema/');
+    $rdfs__comment = new TripalTerm([
+      'name' => 'comment',
+      'accession' => 'comment',
+      'idSpace' => 'rdfs',
+      'vocabulary' => 'rdfs',
+      'definition' => 'A human-readable description of a resource\'s name.',
+    ]);
+    $rdfs_idspace->saveTerm($rdfs__comment);
 
-     Terms to be added individually:
-     - Subgroup (NCIT:C25693)
-     - rdfs:comment
+    // RO
+    $rel_vocab = $this->getVocabulary('ro');
+    $rel_vocab->setLabel('Relationship Ontology (legacy)');
+    $RO_idspace = $this->getIdSpace('RO');
+    $RO_idspace->setDescription('Relationship Ontology (legacy)');
+    $RO_idspace->setURLPrefix("cv/lookup/RO/{accession}	");
+    $RO_idspace->setDefaultVocabulary('ro');
+    $rel_vocab->addIdSpace('RO');
+    $rel_vocab->setUrl('cv/lookup/RO');
+    $ontologies[] = [
+      'vocabulary' => $rel_vocab,
+      'idSpace' => $RO_idspace,
+      'path' => '{tripal_chado}/files/legacy_ro.obo',
+      'auto_load' => FALSE,
+    ];
 
-     Ontologies to be imported by the OBO Loader:
-     - Legacy Relationship Ontology: {tripal_chado}/files/legacy_ro.obo
-     - Gene Ontology: http://purl.obolibrary.org/obo/go.obo
-     - Taxonomic Rank: http://purl.obolibrary.org/obo/taxrank.obo
-     - Tripal Contact: {tripal_chado}/files/tcontact.obo
-     - Tripal Publication: {tripal_chado}/files/tpub.obo
-     - Sequence Ontology: http://purl.obolibrary.org/obo/so.obo
-     - Crop Ontology Germplasm: https://raw.githubusercontent.com/UofS-Pulse-Binfo/kp_entities/master/ontologies/CO_010.obo
-     - EDAM Ontology: http://edamontology.org/EDAM.obo
+    // GO
+    $cc_vocab = $this->getVocabulary('cellular_component');
+    $bp_vocab = $this->getVocabulary('biological_process');
+    $mf_vocab = $this->getVocabulary('molecular_function');
+    $cc_vocab->setLabel('Gene Ontology Cellular Component Vocabulary');
+    $bp_vocab->setLabel('Gene Ontology Biological Process Vocabulary');
+    $mf_vocab->setLabel('Gene Ontology Molecular Function Vocabulary');
+    $GO_idspace = $this->getIdSpace('GO');
+    $GO_idspace->setDescription("The Gene Ontology (GO) knowledgebase is the world’s largest source of information on the functions of genes");
+    $GO_idspace->setURLPrefix("http://amigo.geneontology.org/amigo/term/{db}:{accession}");
+    $GO_idspace->setDefaultVocabulary('cellular_component');
+    $cc_vocab->addIdSpace('GO');
+    $bp_vocab->addIdSpace('GO');
+    $mf_vocab->addIdSpace('GO');
+    $cc_vocab->setURL('http://geneontology.org/');
+    $bp_vocab->setURL('http://geneontology.org/');
+    $mf_vocab->setURL('http://geneontology.org/');
+    $ontologies[] = [
+      'vocabulary' => $cc_vocab,
+      'idSpace' => $GO_idspace,
+      'path' => 'http://purl.obolibrary.org/obo/go.obo',
+      'auto_load' => FALSE,
+    ];
 
-     NOTE: Regarding CO_010 (crop ontology of germplasm), for some reason this
-     has been removed from the original crop ontology website. As such, I've linked
-     here to a file which loads and is correct. We use 4 terms from this ontology
-     for our content types so we may want to consider alternatives.
-     One such alternative may be MCPD: http://agroportal.lirmm.fr/ontologies/CO_020
+    // SO
+    $sequence_vocab = $this->getVocabulary('sequence');
+    $sequence_vocab->setLabel('The Sequence Ontology');
+    $SO_idspace = $this->getIdSpace('SO');
+    $SO_idspace->setDescription("The Sequence Ontology");
+    $SO_idspace->setURLPrefix("http://www.sequenceontology.org/browser/current_svn/term/{db}:{accession}");
+    $SO_idspace->setDefaultVocabulary('sequence');
+    $sequence_vocab->addIdSpace('SO');
+    $sequence_vocab->setURL('http://www.sequenceontology.org');
+    $ontologies[] = [
+      'vocabulary' => $sequence_vocab,
+      'idSpace' => $SO_idspace,
+      'path' => 'http://purl.obolibrary.org/obo/so.obo',
+      'auto_load' => TRUE,
+    ];
 
-    */
+    // TAXRANK
+    $taxrank_vocab = $this->getVocabulary('taxonomic_rank');
+    $taxrank_vocab->setLabel('Taxonomic Rank');
+    $TAXRANK_idspace = $this->getIdSpace('TAXRANK');
+    $TAXRANK_idspace->setDescription("A vocabulary of taxonomic ranks (species, family, phylum, etc)");
+    $TAXRANK_idspace->setURLPrefix("http://purl.obolibrary.org/obo/{db}_{accession}");
+    $TAXRANK_idspace->setDefaultVocabulary('taxonomic_rank');
+    $taxrank_vocab->addIdSpace('TAXRANK');
+    $taxrank_vocab->setURL('http://www.obofoundry.org/ontology/taxrank.html');
 
-    $this->logger->warning("\tWaiting on completion of the Vocabulary API and Data Loaders.");
+    $ontologies[] = [
+      'vocabulary' => $taxrank_vocab,
+      'idSpace' => $TAXRANK_idspace,
+      'path' => 'http://purl.obolibrary.org/obo/taxrank.obo',
+      'auto_load' => TRUE,
+    ];
+
+    // TContact
+    $tcontact_vocab = $this->getVocabulary('tripal_contact');
+    $tcontact_vocab->setLabel('Tripal Contact Ontology');
+    $tcontact_idspace = $this->getIdSpace('TCONTACT');
+    $tcontact_idspace->setDescription("Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology an be identified.");
+    $tcontact_idspace->setURLPrefix("cv/lookup/TCONTACT/{accession}	");
+    $tcontact_idspace->setDefaultVocabulary('tripal_contact');
+    $tcontact_vocab->addIdSpace('TCONTACT');
+    $tcontact_vocab->setURL('cv/lookup/TCONTACT');
+    $ontologies[] = [
+      'vocabulary' => $tcontact_vocab,
+      'idSpace' => $tcontact_idspace,
+      'path' => '{tripal_chado}/files/tcontact.obo',
+      'auto_load' => TRUE,
+    ];
+
+    // TPub
+    $tpub_vocab = $this->getVocabulary('tripal_pub');
+    $tpub_vocab->setLabel('Tripal Publication Ontology');
+    $tpub_idspace = $this->getIdSpace('TPUB');
+    $tpub_idspace->setDescription("Tripal Publication Ontology. A temporary ontology until a more formal appropriate ontology an be identified.");
+    $tpub_idspace->setURLPrefix("cv/lookup/TPUB/{accession}	");
+    $tpub_idspace->setDefaultVocabulary('tripal_pub');
+    $tpub_vocab->addIdSpace('TPUB');
+    $tpub_vocab->setURL('cv/lookup/TPUB');
+    $ontologies[] = [
+      'vocabulary' => $tpub_vocab,
+      'idSpace' => $tpub_idspace,
+      'path' => '{tripal_chado}/files/tpub.obo',
+      'auto_load' => TRUE,
+    ];
+
+    // Iterate through each ontology and install them with the OBO Importer.
+    $schema_name = $this->chado->getSchemaName();
+    foreach ($ontologies as $ontology) {
+      $obo_id = $this->addOntologyRecord($ontology);
+      if ($ontology['auto_load']) {
+         $this->logger->notice("  Importing " . $ontology['idSpace']->getDescription());
+         $importer_manager = \Drupal::service('tripal.importer');
+         $obo_importer = $importer_manager->createInstance('chado_obo_loader');
+         $obo_importer->create(['obo_id' => $obo_id, 'schema_name' => $schema_name]);
+         $obo_importer->run();
+         $obo_importer->postRun();
+      }
+    }
+  }
+
+  /**
+   * A helper function for inserting OBO recrods into the `tripal_cv_obo` table.
+   *
+   * @param array $obo
+   *   An associative array with elements needed for each record.
+   * @return int
+   *   The Id of the inserted OBO record.
+   */
+  private function addOntologyRecord($ontology) {
+
+    $name = $ontology['idSpace']->getDescription();
+
+    // Make sure an OBO with the same name doesn't already exist.
+    $obo_id = $this->public->select('tripal_cv_obo', 'tco')
+      ->fields('tco', ['obo_id'])
+      ->condition('name', $name)
+      ->execute()
+      ->fetchField();
+
+    if ($obo_id) {
+      $this->public->update('tripal_cv_obo')
+        ->fields([
+          'path' => $ontology['path'],
+        ])
+        ->condition('name', $name)
+        ->execute();
+    }
+    else {
+      $this->public->insert('tripal_cv_obo')
+        ->fields([
+          'name' => $name,
+          'path' => $ontology['path'],
+        ])
+        ->execute();
+    }
+
+    return $this->public->select('tripal_cv_obo', 'tco')
+      ->fields('tco', ['obo_id'])
+      ->condition('name', $name)
+      ->execute()
+      ->fetchField();
   }
 
   /**

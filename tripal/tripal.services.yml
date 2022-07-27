@@ -21,3 +21,6 @@ services:
   tripal.collection_plugin_manager.vocabulary:
     class: Drupal\tripal\TripalVocabTerms\PluginManagers\TripalVocabularyManager
     parent: default_plugin_manager
+  tripal.importer:
+    class: Drupal\tripal\TripalImporter\PluginManagers\TripalImporterManager
+    parent: default_plugin_manager

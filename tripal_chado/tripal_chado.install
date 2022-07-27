@@ -61,10 +61,41 @@ function tripal_chado_schema() {
   // Add tables supporting the Tripal Storage.
   $schema['chado_bundle'] = tripal_chado_chado_bundle_schema();
   $schema['chado_fields'] = tripal_chado_chado_fields_schema();
+  $schema['tripal_cv_obo'] = tripal_chado_tripal_cv_obo_schema();
 
   return $schema;
 }
 
+/**
+ * Table definition for the tripal_cv_obo table used by the OBO loader.
+ */
+function tripal_chado_tripal_cv_obo_schema() {
+  return [
+    'fields' => [
+      'obo_id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ],
+      'name' => [
+        'type' => 'varchar',
+        'length' => 255
+      ],
+      'path'  => [
+        'type' => 'varchar',
+        'length' => 1024
+      ],
+    ],
+    'indexes' => [
+      'tripal_cv_obo_idx1' => ['obo_id'],
+    ],
+    'primary key' => ['obo_id'],
+  ];
+}
+
+/**
+ * Returns the Drupal Schema API array for the chado_bundle table.
+ */
 function tripal_chado_chado_bundle_schema() {
   // @todo: do we want to continue to call this the `tripal_bundle` table?
   return [
@@ -129,6 +160,7 @@ function tripal_chado_chado_bundle_schema() {
     'primary key' => ['chado_bundle_id'],
   ];
 }
+
 /**
  * Returns the Drupal Schema API array for the chado_fields table.
  */
@@ -192,7 +224,6 @@ function tripal_chado_chado_fields_schema() {
     'primary key' => ['chado_field_id'],
   ];
 }
-
 /**
  * Returns the Drupal Schema API array for the chado_installations table.
  */

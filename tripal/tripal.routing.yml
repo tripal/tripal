@@ -223,13 +223,22 @@ tripal.cv_lookup_term_children:
 tripal.data_loaders:
   path: 'admin/tripal/loaders'
   defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalDataLoaders'
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
     _title: 'Data Loaders'
   requirements:
     _permission: 'administer tripal'
+#route_callbacks:
+#  - '\Drupal\tripal\Routing\TripalRoutes::importerRoutes'
 
-route_callbacks:
-  - '\Drupal\tripal\Routing\TripalRoutes::dataLoaders'
+
+
+tripal.data_loaders_tripalimporter:
+  path: 'admin/tripal/loaders/{plugin_id}'
+  defaults:
+    _form: '\Drupal\tripal\Form\TripalImporterForm'
+    _title: 'Tripal Importer'
+  requirements:
+    _permission: 'allow tripal import'
 
 # AJAX callback to upload files.
 tripal.upload:
