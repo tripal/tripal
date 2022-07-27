@@ -693,18 +693,13 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
     // tripal module.
     $terms = chado_generate_var('cvterm', $match, ['return_array' => TRUE]);
     $num_terms = 0;
+    $term_element_name = NULL;
 
     // Let the user select from any matching terms. Sometimes there may be
     // more than one that matches.
     $options = [];
     $options_descriptions = [];
-    $default_value = NULL;
     foreach ($terms as $term) {
-      // Save the user a click by setting the default value if there's
-      // only one matching term.
-      if ($num_terms == 0 and count($terms) == 1) {
-        $default_value = $num_terms;
-      }
       $term_element_name = 'term-' . $term->cvterm_id . '-' . $delta;
       $term = chado_expand_var($term, 'field', 'cv.definition');
       $definition = property_exists($term, 'definition') ? $term->definition : '';
@@ -730,11 +725,6 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
     // more than one that match.
     foreach ($termsyn as $synonym) {
       $term = $synonym->cvterm_id;
-      // Save the user a click by setting the default value as 1 if there's
-      // only one matching term.
-      if ($num_terms == 0 and count($terms) == 1) {
-        $default_value = $num_terms;
-      }
       $term_element_name = 'term-' . $term->cvterm_id . '-' . $delta;
       $definition = property_exists($term, 'definition') ? $term->definition : '';
       $options[$term_element_name] = $term->name;
@@ -754,8 +744,11 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
     // Add the options and their individual descriptions, and set default value.
     $form['term_match' . $delta]['terms_list' . $delta]['#options'] = $options;
     $form['term_match' . $delta]['terms_list' . $delta]['#options_descriptions'] = $options_descriptions;
-    if (!is_null($default_value)) {
-      $form['term_match' . $delta]['terms_list' . $delta]['#default_value'] = $default_value;
+
+    // Save the user a click by setting the default value if there's
+    // only one matching term among both terms and synonyms.
+    if ($num_terms == 1) {
+      $form['term_match' . $delta]['terms_list' . $delta][$term_element_name]['#default_value'] = TRUE;
     }
 
     if ($num_terms == 0) {
