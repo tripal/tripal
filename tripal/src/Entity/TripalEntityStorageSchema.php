@@ -12,7 +12,7 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
 
     // This is where we create the types each field describes in the
     // associated TripalStorage instance.
-    $storageOps = array()
+    $storageOps = array();
     foreach ($field_storage_definitions as $storageDefinition) {
       $field = \Drupal::service("plugin.manager.field.field_type").getInstance($storageDefinition->getType());
       if ($field instanceof TripalFieldItemInterface) {
@@ -56,7 +56,7 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
   public function onEntityTypeDelete(EntityTypeInterface $entity_type) {
 
     // build remove storage operations
-    $storageOps = array()
+    $storageOps = array();
     foreach ($this->fieldStorageDefinitions() as $storageDefinition) {
       $field = \Drupal::service("plugin.manager.field.field_type").getInstance($storageDefinition->getType());
       if ($field instanceof TripalFieldItemInterface) {
@@ -97,8 +97,8 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
     }
 
     // build storage add and update operations
-    $storageAdd = array()
-    $storageUpdate = array()
+    $storageAdd = array();
+    $storageUpdate = array();
     // For each of the new field types...
     foreach ($newTypes as $name => $field) {
       if ($field instanceof TripalFieldItemInterface) {
@@ -141,7 +141,7 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
     }
 
     // Build storage remove operations.
-    $storageRemove = array()
+    $storageRemove = array();
     foreach ($oldTypes as $name => $field) {
       if ($field instanceof TripalFieldItemInterface) {
         // Case 3: The old field no longer exists for this entity.
