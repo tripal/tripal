@@ -2349,7 +2349,7 @@ function tripal_chado_semweb_edit_form($form, &$form_state, $table = NULL, $colu
     $default_value = NULL;
 
     foreach ($terms as $term) {
-      // Save the user a click by setting the default value as 1 if there's
+      // Save the user a click by setting the default value if there's
       // only one matching term.
       if ($num_terms == 0 and count($terms) == 1) {
         $default_value = $num_terms;
