@@ -38,19 +38,19 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
   public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
     $properties = [];
 
-    foreach (get_called_class()::tripalTypes($field_definition->getTargetEntityTypeId()) as $type) {
+    foreach (get_called_class()::tripalTypes($field_definition) as $type) {
       if ($type instanceof IntStoragePropertyType) {
-        $properties[$type->getFieldKey()] = DataDefinition::create("integer");
+        $properties[$type->getKey()] = DataDefinition::create("integer");
       }
       else if ($type instanceof VarCharStoragePropertyType) {
-        $properties[$type->getFieldKey()] = DataDefinition::create("string");
+        $properties[$type->getKey()] = DataDefinition::create("string");
       }
       else {
         throw new RuntimeException("Unknown Tripal Property Type class.");
       }
     }
 
-    if (empty(properties)) {
+    if (empty($properties)) {
       throw new RuntimeException("Cannot return empty array.");
     }
 
@@ -62,27 +62,26 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    */
   public static function schema(FieldStorageDefinitionInterface $field_definition) {
     $schema = [];
-
-    foreach (get_called_class()::tripalTypes($field_definition->getTargetEntityTypeId()) as $type) {
+    foreach (get_called_class()::tripalTypes($field_definition) as $type) {
       if ($type instanceof IntStoragePropertyType) {
         $column = [
           "type" => "int"
         ];
-        $schema["columns"][$type->getFieldKey()] = $column;
+        $schema["columns"][$type->getKey()] = $column;
       }
       else if ($type instanceof VarCharStoragePropertyType) {
         $column = [
           "type" => "varchar"
           ,"length" => $type->getMaxCharacterSize()
         ];
-        $schema["columns"][$type->getFieldKey()] = $column;
+        $schema["columns"][$type->getKey()] = $column;
       }
       else {
         throw new RuntimeException("Unknown Tripal Property Type class.");
       }
     }
 
-    if (empty(properties)) {
+    if (empty($schema)) {
       throw new RuntimeException("Cannot return empty array.");
     }
 

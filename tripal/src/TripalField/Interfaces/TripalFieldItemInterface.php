@@ -3,6 +3,7 @@
 namespace Drupal\tripal\TripalField\Interfaces;
 
 use Drupal\Core\Field\FieldItemInterface;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 
 interface TripalFieldItemInterface extends FieldItemInterface {
 
@@ -16,14 +17,14 @@ interface TripalFieldItemInterface extends FieldItemInterface {
 
   /**
    * Returns the property types required by this field.
-   * 
-   * @param string $entityId
+   *
+   * @param FieldStorageDefinitionInterface $field_definition
    *   The entity type id of this field's entity.
    *
    * @return array
    *   Array of \Drupal\tripal\TripalStorage\StoragePropertyTypeBase property types.
    */
-  public static function tripalTypes($entityTypeId);
+  public static function tripalTypes(FieldStorageDefinitionInterface $field_definition);
 
   /**
    * Returns an empty template array of all property values this field uses for loading and saving.
@@ -42,7 +43,7 @@ interface TripalFieldItemInterface extends FieldItemInterface {
    * @param \Drupal\tripal\TripalStorage\TripalEntityBase $entity
    *   The entity.
    */
-  public function tripalLoad($properties,$entity);
+  public function tripalLoad($properties, $entity);
 
   /**
    * Saves the values to the given array of properties from the given entity.
@@ -53,7 +54,7 @@ interface TripalFieldItemInterface extends FieldItemInterface {
    * @param \Drupal\tripal\TripalStorage\TripalEntityBase $entity
    *   The entity.
    */
-  public function tripalSave($properties,$entity);
+  public function tripalSave($properties, $entity);
 
   /**
    * Clears all field values from the given entity that is associated with this field.
