@@ -577,6 +577,9 @@ function tripal_get_vocabularies() {
  *   The form (or $widget form).
  * @param $form_state
  *   The form state.
+ * @param $default_name
+ *   The name of a cv term to present as default selection, and optional
+ *   cvterm_id appended using format "termname [id: 1234]".
  * @param $title
  *   The title to give to the field set.
  * @param $description
@@ -629,6 +632,15 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
   }
   if ($field_name and array_key_exists('input', $form_state) and array_key_exists($field_name, $form_state['input'])) {
     $term_name = $form_state['input'][$field_name]['und'][$delta]['term_match' . $delta]['term_name' . $delta];
+  }
+
+  // More than one cv term may have identical names, so optionally allow specifying
+  // the cvterm_id using the same mechanism as the relationship field
+  // e.g. "termname" can be disambiguated by "termname [id: 1234]"
+  $type_id = NULL;
+  if ($term_name and preg_match('/(.*) \[id: (\d+)\]/', $term_name, $matches)) {
+    $term_name = $matches[1];
+    $type_id = $matches[2];
   }
 
   if (!$description) {
@@ -709,9 +721,9 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
         '<br><b>Term ID: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
         '<br><b>Definition:</b>  ' . $definition;
 
-      if (array_key_exists('values', $form_state) and array_key_exists($term_element_name, $form_state['values']) and
-        $form_state['values'][$term_element_name] == 1) {
-        $default_value = $num_terms;
+      // If editing and a term was chosen previously, select that radio button as the default.
+      if ($type_id and $type_id == $term->cvterm_id) {
+        $form['term_match' . $delta]['terms_list' . $delta][$term_element_name]['#default_value'] = TRUE;
       }
       $num_terms++;
     }
@@ -734,19 +746,19 @@ function tripal_get_term_lookup_form(&$form, &$form_state, $default_name = '',
         '<br><b>Definition:</b>  ' . $definition .
         '<br><b>Synonym:</b> ' . $synonym->synonym;
 
-      if (array_key_exists('values', $form_state) and array_key_exists($term_element_name, $form_state['values']) and
-        $form_state['values'][$term_element_name] == 1) {
-        $default_value = $num_terms;
+      // If editing and a term was chosen previously, select that radio button as the default.
+      if ($type_id and $type_id == $term->cvterm_id) {
+        $form['term_match' . $delta]['terms_list' . $delta][$term_element_name]['#default_value'] = TRUE;
       }
       $num_terms++;
     }
 
-    // Add the options and their individual descriptions, and set default value.
+    // Add the options and their individual descriptions.
     $form['term_match' . $delta]['terms_list' . $delta]['#options'] = $options;
     $form['term_match' . $delta]['terms_list' . $delta]['#options_descriptions'] = $options_descriptions;
 
-    // Save the user a click by setting the default value if there's
-    // only one matching term among both terms and synonyms.
+    // Save the user a click by setting the default value if
+    // there is only one matching term among both terms and synonyms.
     if ($num_terms == 1) {
       $form['term_match' . $delta]['terms_list' . $delta][$term_element_name]['#default_value'] = TRUE;
     }
