@@ -1,6 +1,10 @@
 <?php
 
-use Drupal\tripal\TripalStorage\TripalStorageUpdateException
+use Drupal\tripal\TripalStorage\TripalStorageUpdateException;
+use Drupal\Core\Entity\Sql\SqlContentEntityStorageSchema;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
+
 
 class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
 
@@ -8,11 +12,14 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
    * {@inheritdoc}
    */
   public function onFieldableEntityTypeCreate(EntityTypeInterface $entity_type, array $field_storage_definitions) {
+    print_r(['HELLO!!!!']);
+
     parent::onFieldableEntityTypeCreate($entity_type,$field_storage_definitions);
+
 
     // This is where we create the types each field describes in the
     // associated TripalStorage instance.
-    $storageOps = array();
+    $storageOps = [];
     foreach ($field_storage_definitions as $storageDefinition) {
       $field = \Drupal::service("plugin.manager.field.field_type").getInstance($storageDefinition->getType());
       if ($field instanceof TripalFieldItemInterface) {
@@ -33,7 +40,7 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
         // We're basically just compiling all field property types with the
         // same storage for the entire entity here.
         if (array_key_exists($tsid,$storageOps)) {
-          $storageOps[$tsid] = array_merge($storageOps[$tsid],$types);
+          $storageOps[$tsid] = array_merge($storageOps[$tsid], $types);
         }
         else {
           $storageOps[$tsid] = $types;
@@ -56,14 +63,14 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
   public function onEntityTypeDelete(EntityTypeInterface $entity_type) {
 
     // build remove storage operations
-    $storageOps = array();
+    $storageOps = [];
     foreach ($this->fieldStorageDefinitions() as $storageDefinition) {
       $field = \Drupal::service("plugin.manager.field.field_type").getInstance($storageDefinition->getType());
       if ($field instanceof TripalFieldItemInterface) {
         $types = $field->tripalTypes();
         $tsid = $field->tripalStorageId();
-        if (array_key_exists($tsid,$storageOps)) {
-          $storageOps[$tsid] = array_merge($storageOps[$tsid],$types);
+        if (array_key_exists($tsid, $storageOps)) {
+          $storageOps[$tsid] = array_merge($storageOps[$tsid], $types);
         }
         else {
           $storageOps[$tsid] = $types;
@@ -85,26 +92,26 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
     parent::onFieldableEntityTypeUpdate($entity_type,$original,$field_storage_definitions,$original_field_storage_definitions,$sandbox);
 
     // build associate array of old fields
-    $oldTypes = array()
+    $oldTypes = [];
     foreach ($original_field_storage_definitions as $storageDefinition) {
         $oldTypes[$storageDefinition->getMainPropertyName()] = \Drupal::service("plugin.manager.field.field_type").getInstance($storageDefinition->getType());;
     }
 
     // build associate array of new fields
-    $newTypes = array()
+    $newTypes = [];
     foreach ($field_storage_definitions as $storageDefinition) {
         $newTypes[$storageDefinition->getMainPropertyName()] = \Drupal::service("plugin.manager.field.field_type").getInstance($storageDefinition->getType());;
     }
 
     // build storage add and update operations
-    $storageAdd = array();
-    $storageUpdate = array();
+    $storageAdd = [];
+    $storageUpdate = [];
     // For each of the new field types...
     foreach ($newTypes as $name => $field) {
       if ($field instanceof TripalFieldItemInterface) {
         $types = $field->tripalTypes();
         $tsid = $field->tripalStorageId();
-        if (array_key_exists($name,$oldTypes)) {
+        if (array_key_exists($name, $oldTypes)) {
           // Case 1a: the new field already existed but the storage has changed.
           //   - this involves migrating of data from one storage to another
           //     which can be an error prone process leading to data loss.
@@ -121,17 +128,17 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
           //   - we will want to update the key-value information.
           $otypes = $oldTypes[$name]->tripalTypes();
           if (array_key_exists($tsid,$storageUpdate)) {
-            $storageUpdate[$tsid] = array_push($storageUpdate[$tsid],array($types,$otypes);
+            $storageUpdate[$tsid] = array_push($storageUpdate[$tsid], [$types,$otypes]);
           }
           else {
-            $storageOps[$tsid] = array(array($types,$otypes));
+            $storageUpdate[$tsid] = [[$types, $otypes]];
           }
         }
         // Case 2: the new field did not exist before.
         //   - we will need to add the new field to it's new storage.
         else {
-          if (array_key_exists($tsid,$storageAdd)) {
-            $storageAdd[$tsid] = array_merge($storageAdd[$tsid],$types);
+          if (array_key_exists($tsid, $storageAdd)) {
+            $storageAdd[$tsid] = array_merge($storageAdd[$tsid], $types);
           }
           else {
             $storageAdd[$tsid] = $types;
@@ -141,7 +148,7 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
     }
 
     // Build storage remove operations.
-    $storageRemove = array();
+    $storageRemove = [];
     foreach ($oldTypes as $name => $field) {
       if ($field instanceof TripalFieldItemInterface) {
         // Case 3: The old field no longer exists for this entity.
@@ -150,7 +157,7 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
         if (!array_key_exists($name,$newTypes)) {
           $types = $field->tripalTypes();
           $tsid = $field->tripalStorageId();
-          if array_key_exists($tsid,$storageRemove) {
+          if (array_key_exists($tsid, $storageRemove)) {
             $storageRemove[$tsid] = array_merge($storageRemove[$tsid],$types);
           }
           else {
@@ -169,7 +176,7 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
     // iterate through all storage plugins and update types
     foreach ($storageUpdate as $tsid => $types) {
       $tripalStorage = \Drupal::service("plugin.manager.tripal.storage")->getInstance($tsid);
-      $tripalStorage->UpdateTypes($types[0],$types[1]);
+      $tripalStorage->UpdateTypes($types[0], $types[1]);
     }
 
     // iterate through all storage plugins and add new types
