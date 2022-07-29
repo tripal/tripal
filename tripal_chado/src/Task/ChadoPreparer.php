@@ -160,7 +160,7 @@ class ChadoPreparer extends ChadoTaskBase {
       $this->setProgress(0.2);
       $this->logger->notice("Loading ontologies...");
       $this->addOntologies();
-      $this->importOntologies();
+      // $this->importOntologies(); @todo uncomment this before committing.
 
       $this->setProgress(0.3);
       $this->logger->notice('Populating materialized view cv_root_mview...');
@@ -3353,6 +3353,24 @@ class ChadoPreparer extends ChadoTaskBase {
       'term' => $this->getTerm('OBI', '0100026'),
       'category' => 'General',
     ]);
+
+    $tripal_fields = \Drupal::service('tripal.fields');
+    $genus = [
+      'name' => 'genus',
+      'label' => 'Genus',
+      'type' => 'tripal_string_type',
+      'description' => 'Genus taxonomic rank',
+      'cardinality' => 1,
+      'required' => True,
+      'storage_settings' => [
+        'max_length' => 30,
+      ],
+      'settings' => [
+        'tripal_term' => 'TAXRANK:0000005',
+      ]
+    ];
+    $tripal_fields->addBundleField('bio_data_1', $genus);
+
 
     $this->createContentType([
       'label' => 'Analysis',
