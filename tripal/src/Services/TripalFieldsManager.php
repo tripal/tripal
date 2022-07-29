@@ -37,7 +37,7 @@ class TripalFieldsManager {
       $new_defs['name'] = $field_def['name'];
     }
     $new_defs['label'] = $new_defs['name'];
-    if (!array_key_exists('label', $field_def) and !empty($field_def['label'])) {
+    if (array_key_exists('label', $field_def) and !empty($field_def['label'])) {
       $new_defs['label'] = $field_def['label'];
     }
     $new_defs['type'] = 'tripal_string_type';
@@ -85,8 +85,12 @@ class TripalFieldsManager {
     }
 
     // Field Settings
+    // Available settings include: "name", "label", "termIdSpace",
+    // "termAccession", "help_text", "category", "title_format",
+    // "url_format", "hide_empty_field", "ajax_field".
     // Get the defaults for the storage setting for this field type.
-    $new_defs['settings']['tripal_term'] = '';
+    $new_defs['settings']['termIdSpace'] = '';
+    $new_defs['settings']['termAccession'] = '';
     $default_storage_settings = $field_type_def['class']::defaultFieldSettings();
     $new_defs['settings'] = [];
     foreach ($default_storage_settings as $setting_name => $value) {
@@ -98,6 +102,39 @@ class TripalFieldsManager {
       foreach ($field_def['settings'] as $setting_name => $value) {
         if (array_key_exists($setting_name, $new_defs['settings'])) {
           $new_defs['settings'][$setting_name] = $value;
+        }
+      }
+    }
+
+    // View Display Settings
+    // Available view settings: label, weight @todo add more
+    // Available form settings: 'region' @todo add more
+    $new_defs['display']['view']['default'] = [
+      'label' => 'above',
+      'weight' => 10
+    ];
+    $new_defs['display']['view']['teaser'] = [
+      'label' => 'hidden',
+    ];
+    $new_defs['display']['form']['default'] = [
+      'region' => 'content',
+    ];
+
+    if (array_key_exists('display', $field_def)) {
+      foreach ($field_def['display'] as $display_type => $view_modes) {
+        foreach ($view_modes as  $view_mode => $mode_config) {
+          foreach ($mode_config as $setting_name => $value) {
+            // Maake sure the lable is an allowed value.
+            if ($setting_name == 'label') {
+              if (in_array($value, ['above', 'inline', 'hidden', 'visually_hidden'])) {
+                $new_defs['display'][$display_type][$view_mode][$setting_name] = $value;
+              }
+            }
+            // Copy all other values as is.
+            else {
+              $new_defs['display'][$display_type][$view_mode][$setting_name] = $value;
+            }
+          }
         }
       }
     }
@@ -186,12 +223,23 @@ class TripalFieldsManager {
         $field->setTranslatable($field_def['translatable']);
         $field->setSettings($field_def['settings']);
         $field->save();
+
+        $entity_display = \Drupal::service('entity_display.repository');
+        $view_modes = $entity_display->getViewModeOptionsByBundle('tripal_entity', $bundle);
+        foreach (array_keys($view_modes) as $view_mode) {
+          \Drupal::service('entity_display.repository')
+            ->getViewDisplay('tripal_entity', $bundle, $view_mode)
+            ->setComponent($field_def['name'], $field_def['display']['view'][$view_mode])
+            ->save();
+        }
+        $from_modes = $entity_display->getFormModeOptionsByBundle('tripal_entity', $bundle);
+        foreach (array_keys($from_modes) as $form_mode) {
+          \Drupal::service('entity_display.repository')
+            ->getFormDisplay('tripal_entity', $bundle, $form_mode)
+            ->setComponent($field_def['name'], $field_def['display']['form'][$form_mode])
+            ->save();
+        }
       }
-
-
-      // Finally set display options
-      // @todo add these.
-
     }
     catch (\Exception $e) {
       $logger->error(t('Error adding field @field_name to @bundle:<br>@error', [

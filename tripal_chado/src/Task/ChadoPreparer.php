@@ -3356,18 +3356,19 @@ class ChadoPreparer extends ChadoTaskBase {
 
     $tripal_fields = \Drupal::service('tripal.fields');
     $genus = [
-      'name' => 'genus',
+      'name' => 'taxrank__genus',
       'label' => 'Genus',
       'type' => 'tripal_string_type',
-      'description' => 'Genus taxonomic rank',
+      'description' => 'The organism genus name',
       'cardinality' => 1,
       'required' => True,
       'storage_settings' => [
         'max_length' => 30,
       ],
       'settings' => [
-        'tripal_term' => 'TAXRANK:0000005',
-      ]
+        'termIdSpace' => 'TAXRANK',
+        'termAccession' => '0000005',
+      ],
     ];
     $tripal_fields->addBundleField('bio_data_1', $genus);
 

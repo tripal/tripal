@@ -21,7 +21,8 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    */
   public static function defaultFieldSettings() {
     return [
-      'tripal_term' => ''
+      'termIdSpace' => '',
+      'termAccession' => ''
     ] + parent::defaultFieldSettings();
   }
 
@@ -31,13 +32,21 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
   public function fieldSettingsForm(array $form, FormStateInterface $form_state) {
     $elements = [];
 
-    $tripal_term = $this->getSetting('tripal_term');
-    list($idSpace_name, $accession) = explode(':', $tripal_term);
+    $termIdSpace = $this->getSetting('termIdSpace');
+    $termAccession = $this->getSetting('termAccession');
 
     $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    $idSpace = $idSpace_manager->loadCollection($idSpace_name);
-    $term = $idSpace->getTerm($accession);
+    $idSpace = $idSpace_manager->loadCollection($termIdSpace);
+    $term = $idSpace->getTerm($termAccession);
     $vocabulary = $term->getVocabularyObject();
+
+    $elements["vocabulary_term"] = [
+      "#type" => "textfield",
+      "#title" => $this->t("Vocabulary Term"),
+      "#required" => TRUE,
+      "#description" => $this->t("The vocabulary term."),
+      '#default_value' => $term->getName()
+    ];
 
     // Construct a table for the vocabulary information.
     $headers = [];
@@ -48,7 +57,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
         'header' => TRUE,
         'width' => '20%',
       ],
-      $vocabulary->getName() . ' (' . $idSpace_name. ') ' . $idSpace->getDescription(),
+      $vocabulary->getName() . ' (' . $termIdSpace. ') ' . $idSpace->getDescription(),
     ];
     $rows[] = [
       [
@@ -56,7 +65,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
         'header' => TRUE,
         'width' => '20%',
       ],
-      $idSpace_name . ':' . $accession,
+      $termIdSpace . ':' . $termAccession,
     ];
     $rows[] = [
       [
@@ -74,59 +83,13 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       ],
       $term->getDefinition(),
     ];
-//     $table = [
-//       'header' => $headers,
-//       'rows' => $rows,
-//       'attributes' => [],
-//       'sticky' => FALSE,
-//       'caption' => '',
-//       'colgroups' => [],
-//       'empty' => '',
-//     ];
-
-    $description = t('All fields attached to a Tripal-based content type must
-        be associated with a controlled vocabulary term.  Please use caution
-        when changing the term for this field as other sites may expect this term
-        when querying web services.');
-//     if (array_key_exists('term_fixed', $instance['settings']) and $instance['settings']['term_fixed']) {
-//       $description = t('All fields attached to a Tripal-based content type must
-//         be associated with a controlled vocabulary term. This field mapping is
-//         required and cannot be changed');
-//     }
-//     $element['term_vocabulary'] = [
-//       '#type' => 'value',
-//       '#value' => $vocabulary,
-//     ];
-//     $element['term_name'] = [
-//       '#type' => 'value',
-//       '#value' => $term_name,
-//     ];
-//     $element['term_accession'] = [
-//       '#type' => 'value',
-//       '#value' => $accession,
-//     ];
     $elements['field_term'] = [
       '#type' => 'table',
       '#header'=> $headers,
       '#rows' => $rows,
-      '#empty' => t('There is no term associated with this field.'),
-      '#title' => 'Controlled Vocabulary Term',
-      '#description' => $description,
-//      '#prefix' => '<div id = "tripal-field-term-fieldset">',
-//      '#suffix' => '</div>',
-    ];
-//     $element['field_term']['details'] = [
-//       '#type' => 'item',
-//       '#title' => 'Current Term',
-//       '#markup' => theme_table($table),
-//     ];
-
-    $elements["vocabulary_term"] = [
-      "#type" => "textfield",
-      "#title" => $this->t("Vocabulary Term"),
-      "#required" => TRUE,
-      "#description" => $this->t("The vocabulary term."),
-      '#default_value' => $term->getName()
+      '#empty' => $this->t('There is no term associated with this field.'),
+      '#caption' => $this->t('The currently selected term'),
+      '#sticky' => False
     ];
 
     return $elements + parent::fieldSettingsForm($form,$form_state);
