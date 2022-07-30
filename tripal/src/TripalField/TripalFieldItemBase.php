@@ -40,28 +40,63 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $term = $idSpace->getTerm($termAccession);
     $vocabulary = $term->getVocabularyObject();
 
-    $elements["vocabulary_term"] = [
-      "#type" => "textfield",
-      "#title" => $this->t("Vocabulary Term"),
-      "#required" => TRUE,
-      "#description" => $this->t("The vocabulary term."),
-      '#default_value' => $term->getName()
+    $elements['field_term_fs'] = [
+      '#type' => 'details',
+      '#title' => $this->t("Controlled Vocbulary Term"),
+      '#description' => $this->t("All fields attached to a Tripal-based content " .
+          "type must be associated with a controlled vocabulary term. " .
+          "Use caution when changing the term. It should accurately represent " .
+          "the type of data stored in this field.  Using terms that are developed ".
+          "by the community (e.g. Sequence Ontology, etc.) ensures that the ".
+          "data on your site is discoverable and interoperable."),
+      '#open' => False,
     ];
-
     // Construct a table for the vocabulary information.
-    $headers = [];
+    $headers = ['Term Property', 'Value'];
     $rows = [];
     $rows[] = [
       [
-        'data' => 'Vocabulary',
+        'data' => 'Vocabulary Name',
         'header' => TRUE,
         'width' => '20%',
       ],
-      $vocabulary->getName() . ' (' . $termIdSpace. ') ' . $idSpace->getDescription(),
+      $vocabulary->getName(),
     ];
     $rows[] = [
       [
-        'data' => 'Term',
+        'data' => 'Vocabulary Description',
+        'header' => TRUE,
+        'width' => '20%',
+      ],
+      $vocabulary->getLabel(),
+    ];
+    $rows[] = [
+      [
+        'data' => 'Term ID Space',
+        'header' => TRUE,
+        'width' => '20%',
+      ],
+      $vocabulary->getName(),
+    ];
+    $rows[] = [
+      [
+        'data' => 'Term ID Space Description',
+        'header' => TRUE,
+        'width' => '20%',
+      ],
+      $idSpace->getDescription(),
+    ];
+    $rows[] = [
+      [
+        'data' => 'Term Accession',
+        'header' => TRUE,
+        'width' => '20%',
+      ],
+      $termAccession,
+    ];
+    $rows[] = [
+      [
+        'data' => 'Term ID',
         'header' => TRUE,
         'width' => '20%',
       ],
@@ -69,7 +104,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     ];
     $rows[] = [
       [
-        'data' => 'Name',
+        'data' => 'Term Name',
         'header' => TRUE,
         'width' => '20%',
       ],
@@ -77,19 +112,35 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     ];
     $rows[] = [
       [
-        'data' => 'Definition',
+        'data' => 'Term Definition',
         'header' => TRUE,
         'width' => '20%',
       ],
       $term->getDefinition(),
     ];
-    $elements['field_term'] = [
+    $elements['field_term_fs']['table_label'] = [
+      '#type' => 'item',
+      '#title' => $this->t('The Current Term'),
+      '#description' => $this->t("Terms belong to a vocabulary (e.g. Sequence "  .
+         "Ontology) and are identified with a unique accession which is often  " .
+         "numeric but may not be (e.g. gene accession is 0000704 in the Sequence " .
+         "Ontology). Term IDs are prefixed with an ID Space (e.g. SO). The " .
+         "ID Space and the accession will uniquely identify a term (e.g. SO:0000704).")
+    ];
+    $elements['field_term_fs']['field_term'] = [
       '#type' => 'table',
       '#header'=> $headers,
       '#rows' => $rows,
       '#empty' => $this->t('There is no term associated with this field.'),
-      '#caption' => $this->t('The currently selected term'),
       '#sticky' => False
+    ];
+
+    $elements['field_term_fs']["vocabulary_term"] = [
+      "#type" => "textfield",
+      "#title" => $this->t("Change the Term"),
+      "#required" => TRUE,
+      "#description" => $this->t("Enter a vocabulary term name. A set of matching candidates will be provided to choose from."),
+      '#default_value' => $term->getName()
     ];
 
     return $elements + parent::fieldSettingsForm($form,$form_state);
@@ -134,8 +185,8 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       }
       else if ($type instanceof VarCharStoragePropertyType) {
         $column = [
-          "type" => "varchar"
-          ,"length" => $type->getMaxCharacterSize()
+          "type" => "varchar",
+          "length" => $type->getMaxCharacterSize()
         ];
         $schema["columns"][$type->getKey()] = $column;
       }
@@ -147,7 +198,6 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     if (empty($schema)) {
       throw new RuntimeException("Cannot return empty array.");
     }
-
     return $schema;
   }
 

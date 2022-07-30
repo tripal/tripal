@@ -33,13 +33,13 @@ class TripalRDFSTypeItem extends TripalFieldItemBase {
    */
   public function tripalValuesTemplate() {
     $entity = $this->getEntity();
-    return [StoragePropertyValue($entity->getEntityTypeId(),$this->id,"type",$entity->id())];
+    return [new StoragePropertyValue($entity->getEntityTypeId(),$this->id,"type",$entity->id())];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function tripalLoad($properties,$entity) {
+  public function tripalLoad($properties, $entity) {
     foreach ($properties as $property) {
       if ($property->getFieldKey() == "type") {
         $entity->tripalRDFSType = $property->value();
@@ -50,7 +50,7 @@ class TripalRDFSTypeItem extends TripalFieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public function tripalSave($properties,$entity) {
+  public function tripalSave($properties, $entity) {
     foreach ($properties as $property) {
       if ($property->getFieldKey() == "type") {
         $property->setValue($entity->tripalRDFSType);

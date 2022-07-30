@@ -27,9 +27,9 @@ class DefaultTripalStringTypeFormatter extends TripalFormatterBase {
     $elements = [];
 
     foreach($items as $delta => $item) {
-        $elements[$delta] = [
-          "#markup" => $item->get("type")
-        ];
+      $elements[$delta] = [
+        "#markup" => $item->get("value")->getString(),
+      ];
     }
 
     return $elements;

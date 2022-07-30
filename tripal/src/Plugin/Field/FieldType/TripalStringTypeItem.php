@@ -3,13 +3,14 @@
 namespace Drupal\tripal\Plugin\Field\FieldType;
 
 use Drupal\tripal\TripalField\TripalFieldItemBase;
-use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
+use Drupal\tripal\TripalStorage\IntStoragePropertyType;
+use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\core\Form\FormStateInterface;
 use Drupal\core\Field\FieldDefinitionInterface;
 
 /**
- * Plugin implementation of Tripal RDFS content type.
+ * Plugin implementation of Tripal string field type.
  *
  * @FieldType(
  *   id = "tripal_string_type",
@@ -60,8 +61,9 @@ class TripalStringTypeItem extends TripalFieldItemBase {
    * {@inheritdoc}
    */
   public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
-    $random = new Random();
-    $values['value'] = $random->word(mt_rand(1, $field_definition->getSetting('max_length')));
+    $values = [];
+    //$random = new Random();
+    //$values['value'] = $random->word(mt_rand(1, $field_definition->getSetting('max_length')));
     return $values;
   }
 
@@ -95,7 +97,9 @@ class TripalStringTypeItem extends TripalFieldItemBase {
   public static function tripalTypes($field_definition) {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
     $max_length = $field_definition->getSetting('max_length');
-    return [new VarCharStoragePropertyType($entity_type_id, self::$id, "type", $max_length)];
+    return [
+      new VarCharStoragePropertyType($entity_type_id, self::$id, "value", $max_length),
+    ];
   }
 
   /**
@@ -103,35 +107,38 @@ class TripalStringTypeItem extends TripalFieldItemBase {
    */
   public function tripalValuesTemplate() {
     $entity = $this->getEntity();
-    return [StoragePropertyValue($entity->getEntityTypeId(), self::$id, "type", $entity->id())];
+    $entity_type_id = $entity->getEntityTypeId();
+    return [
+      new StoragePropertyValue($entity_type_id, self::$id, "value", $entity->id()),
+    ];
   }
 
   /**
    * {@inheritdoc}
    */
   public function tripalLoad($properties, $entity) {
-    foreach ($properties as $property) {
-      if ($property->getKey() == "type") {
-        $entity->blah = $property->value();
-      }
-    }
+//     foreach ($properties as $property) {
+//       if ($property->getKey() == "value") {
+//         $entity->blah = $property->value();
+//       }
+//     }
   }
 
   /**
    * {@inheritdoc}
    */
   public function tripalSave($properties,$entity) {
-    foreach ($properties as $property) {
-      if ($property->getKey() == "type") {
-        $property->setValue($entity->blah);
-      }
-    }
+//     foreach ($properties as $property) {
+//       if ($property->getKey() == "value") {
+//         $property->setValue($entity->blah);
+//       }
+//     }
   }
 
   /**
    * {@inheritdoc}
    */
   public function tripalClear($entity) {
-    $entity->blah = "";
+    //$entity->blah = "";
   }
 }

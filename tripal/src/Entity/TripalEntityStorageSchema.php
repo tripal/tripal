@@ -12,10 +12,7 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
    * {@inheritdoc}
    */
   public function onFieldableEntityTypeCreate(EntityTypeInterface $entity_type, array $field_storage_definitions) {
-    print_r(['HELLO!!!!']);
-
     parent::onFieldableEntityTypeCreate($entity_type,$field_storage_definitions);
-
 
     // This is where we create the types each field describes in the
     // associated TripalStorage instance.
@@ -61,7 +58,6 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
    * {@inheritdoc}
    */
   public function onEntityTypeDelete(EntityTypeInterface $entity_type) {
-
     // build remove storage operations
     $storageOps = [];
     foreach ($this->fieldStorageDefinitions() as $storageDefinition) {
@@ -90,7 +86,6 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
    */
   public function onFieldableEntityTypeUpdate(EntityTypeInterface $entity_type, EntityTypeInterface $original, array $field_storage_definitions, array $original_field_storage_definitions, array &$sandbox = NULL) {
     parent::onFieldableEntityTypeUpdate($entity_type,$original,$field_storage_definitions,$original_field_storage_definitions,$sandbox);
-
     // build associate array of old fields
     $oldTypes = [];
     foreach ($original_field_storage_definitions as $storageDefinition) {

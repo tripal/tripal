@@ -3363,7 +3363,7 @@ class ChadoPreparer extends ChadoTaskBase {
       'cardinality' => 1,
       'required' => True,
       'storage_settings' => [
-        'max_length' => 30,
+        'max_length' => 255,
       ],
       'settings' => [
         'termIdSpace' => 'TAXRANK',
