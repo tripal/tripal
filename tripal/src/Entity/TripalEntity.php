@@ -9,7 +9,6 @@ use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\user\UserInterface;
 use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
-use Drupal\Core\Entity\ContentEntityInterface;
 
 /**
  * Defines the Tripal Content entity.
@@ -456,45 +455,43 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    */
   public function preSave(EntityStorageInterface $storage) {
     parent::preSave($storage);
-
-    $entity_type = $this->getEntityType();
-    $bundle = $this->bundle();
-    $base_field_defs = TripalEntity::baseFieldDefinitions($entity_type);
+    dpm('TripalEntity::preSave()');
+    dpm($this);
 
     // Build all storage operations that will be done, saving the tripal
     // fields that will be saved and clearing them from each entity.
     $storageOps = array();
+
+    $fields = $this->getFields();
+
     // Specifically, for each field...
-    foreach ($this->bundleFieldDefinitions($entity_type, $bundle, $base_field_defs) as $fieldDefinition) {
-      // Retrieve its Field Instance class.
-      $field = \Drupal::service("plugin.manager.field.field_type").getInstance($fieldDefinition->getType());
-      // If it is a TripalField then...
-      if ($field instanceof TripalFieldItemInterface) {
-        // Get empty template list of property values this field uses
-        $props = $field->tripalValuesTemplate();
-        // Retrieve the biological data to be saved...
-        $field->tripalSave($props,$this);
-        // Now we clear the biological data from the Drupal field values to ensure
-        // this data is not duplicated.
-        $field->tripalClear($this);
-        // Finally based on the Tripal storage, we add this data to an array
-        // for bulk save of the biological data to the appropriate database (e.g. Chado).
-        $tsid = $field->tripalStorageId();
-        if (array_key_exists($tsid,$storageOps)) {
-          $storageOps[$tsid] = array_merge($storageOps[$tsid],$props);
-        }
-        else {
-          $storageOps[$tsid] = $props;
+    foreach ($fields as $field_name => $items) {
+      foreach($items as $delta => $item) {
+
+        // If it is a TripalField then...
+        if ($item instanceof TripalFieldItemInterface) {
+          $delta = $item->getName();
+          // Get empty template list of property values this field uses
+          $props = $item->tripalValuesTemplate();
+          // Retrieve the biological data to be saved...
+          $item->tripalSave($item, $field_name, $props, $this);
+          // Now we clear the biological data from the Drupal field values to ensure
+          // this data is not duplicated.
+          $item->tripalClear($item, $this);
+          // Finally based on the Tripal storage, we add this data to an array
+          // for bulk save of the biological data to the appropriate database (e.g. Chado).
+          $tsid = $item->tripalStorageId();
+          $storageOps[$tsid][$field_name][$delta] = $props;
         }
       }
     }
-
+    dpm($storageOps);
     // Save all properties to their respective storage plugins.
     // This is where the biological data is actually saved to the database
     // using the appropriate TripalStorage plugin.
     foreach ($storageOps as $tsid => $properties) {
-      $tripalStorage = \Drupal::service("plugin.manager.tripal.storage")->getInstance($tsid);
-      $tripalStorage->saveValues($properties);
+      $tripalStorage = \Drupal::service("tripal.storage")->getInstance(['plugin_id' => $tsid]);
+      $tripalStorage->insertValues($properties);
     }
   }
 
@@ -543,7 +540,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     // Load all properties from their respective storage plugins
     $loaded = array();
     foreach ($storageOps as $tsid => $properties) {
-      $tripalStorage = \Drupal::service("plugin.manager.tripal.storage")->getInstance($tsid);
+      $tripalStorage = \Drupal::service("tripal.storage")->getInstance($tsid);
       $tripalStorage->loadValues($properties);
       $loaded = array_merge($loaded,$properties);
     }

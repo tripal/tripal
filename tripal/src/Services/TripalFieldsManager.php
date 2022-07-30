@@ -71,6 +71,7 @@ class TripalFieldsManager {
     $field_type_def = $field_types->getDefinition($new_defs['type']);
     $default_storage_settings = $field_type_def['class']::defaultStorageSettings();
     $new_defs['storage_settings'] = [];
+    $new_defs['storage_settings']['storage_plugin_id'] = '';
     foreach ($default_storage_settings as $setting_name => $value) {
       $new_defs['storage_settings'][$setting_name] = $value;
     }
@@ -152,11 +153,24 @@ class TripalFieldsManager {
     $logger = \Drupal::service('tripal.logger');
 
     if (!array_key_exists('name', $field_def)) {
-      $logger->error('Cannot add to an entity type without providing a field name.');
+      $logger->error('The field is missing the "name" property.');
       return False;
     }
     if (!array_key_exists('type', $field_def)) {
-      $logger->error('Cannot add to an entity type without providing a field type.');
+      $logger->error('The field is missing the "type" property.');
+      return False;
+    }
+    if (!array_key_exists('storage_settings', $field_def)) {
+      $logger->error('The field is missing the "storage_settings" property');
+      return False;
+    }
+    if (!array_key_exists('storage_plugin_id', $field_def['storage_settings'])) {
+      $logger->error('The field is missing the "storage_plugin_id" of the "settings" property');
+      return False;
+    }
+    if (empty($field_def['storage_settings']['storage_plugin_id'])) {
+      // @todo verify the name of the plugin is a real plugin.
+      $logger->error('You must set the "storage_plugin_id" property.');
       return False;
     }
     return True;
@@ -189,7 +203,7 @@ class TripalFieldsManager {
       return False;
     }
     $field_def = $this->setFieldDefDefaults($field_def);
-    print_r($field_def);
+    dpm($field_def);
     $field_id = 'tripal_entity' . '.' . $bundle . '.' . $field_def['name'];
 
     try {

@@ -49,7 +49,7 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
     // for each one. This will also save this information at the TripalStorage
     // layer.
     foreach ($storageOps as $tsid => $types) {
-      $tripalStorage = \Drupal::service("plugin.manager.tripal.storage")->getInstance($tsid);
+      $tripalStorage = \Drupal::service("tripal.storage")->getInstance($tsid);
       $tripalStorage->addTypes($types);
     }
   }
@@ -76,7 +76,7 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
 
     // iterate through all storage plugins and remove property types
     foreach ($storageOps as $tsid => $types) {
-      $tripalStorage = \Drupal::service("plugin.manager.tripal.storage")->getInstance($tsid);
+      $tripalStorage = \Drupal::service("tripal.storage")->getInstance($tsid);
       $tripalStorage->removeTypes($types);
     }
   }
@@ -164,19 +164,19 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
 
     // iterate through all storage plugins and remove old types
     foreach ($storageRemove as $tsid => $types) {
-      $tripalStorage = \Drupal::service("plugin.manager.tripal.storage")->getInstance($tsid);
+      $tripalStorage = \Drupal::service("tripal.storage")->getInstance($tsid);
       $tripalStorage->RemoveTypes($types);
     }
 
     // iterate through all storage plugins and update types
     foreach ($storageUpdate as $tsid => $types) {
-      $tripalStorage = \Drupal::service("plugin.manager.tripal.storage")->getInstance($tsid);
+      $tripalStorage = \Drupal::service("tripal.storage")->getInstance($tsid);
       $tripalStorage->UpdateTypes($types[0], $types[1]);
     }
 
     // iterate through all storage plugins and add new types
     foreach ($storageAdd as $tsid => $types) {
-      $tripalStorage = \Drupal::service("plugin.manager.tripal.storage")->getInstance($tsid);
+      $tripalStorage = \Drupal::service("tripal.storage")->getInstance($tsid);
       $tripalStorage->addTypes($types);
     }
   }

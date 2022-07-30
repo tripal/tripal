@@ -17,6 +17,7 @@ class TripalEntityBase extends ContentEntityBase {
    */
   public function preSave(EntityStorageInterface $storage) {
     parent::preSave($storage);
+    dpm('TripalEntityBase::preSave');
 
     // Build all storage operations that will be done, saving the tripal
     // fields that will be saved and clearing them from each entity.
@@ -50,7 +51,7 @@ class TripalEntityBase extends ContentEntityBase {
     // This is where the biological data is actually saved to the database
     // using the appropriate TripalStorage plugin.
     foreach ($storageOps as $tsid => $properties) {
-      $tripalStorage = \Drupal::service("plugin.manager.tripal.storage")->getInstance($tsid);
+      $tripalStorage = \Drupal::service("tripal.storage")->getInstance($tsid);
       $tripalStorage->saveValues($properties);
     }
   }
@@ -95,7 +96,7 @@ class TripalEntityBase extends ContentEntityBase {
     // Load all properties from their respective storage plugins
     $loaded = [];
     foreach ($storageOps as $tsid => $properties) {
-      $tripalStorage = \Drupal::service("plugin.manager.tripal.storage")->getInstance($tsid);
+      $tripalStorage = \Drupal::service("tripal.storage")->getInstance($tsid);
       $tripalStorage->loadValues($properties);
       $loaded = array_merge($loaded,$properties);
     }

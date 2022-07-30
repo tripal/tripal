@@ -20,10 +20,21 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    * {@inheritdoc}
    */
   public static function defaultFieldSettings() {
-    return [
+    $settings = [
       'termIdSpace' => '',
       'termAccession' => ''
-    ] + parent::defaultFieldSettings();
+    ];
+    return $settings + parent::defaultFieldSettings();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultStorageSettings() {
+    $settings = [
+      'storage_plugin_id' => '',
+    ];
+    return $settings + parent::defaultStorageSettings();
   }
 
   /**
@@ -211,9 +222,10 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $elements["storage_plugin_id"] = [
       "#type" => "textfield",
       "#title" => $this->t("Tripal Storage Plugin ID."),
+      '#default_value' => $this->getSetting('storage_plugin_id'),
       "#required" => TRUE,
       "#description" => $this->t(""),
-      "#disabled" => $has_data
+      "#disabled" => TRUE
     ];
 
     return $elements + parent::storageSettingsForm($form,$form_state,$has_data);
@@ -224,5 +236,16 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    */
   public function tripalStorageId() {
     return $this->getSetting("storage_plugin_id");
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function tripalSave($field_item, $field_name, $properties, $entity) {
+    foreach ($properties as $property) {
+      $prop_key = $property->getKey();
+      $value =  $entity->get($field_name)->get($field_item->getName())->getValue()[$prop_key];
+      $property->setValue($value);
+    }
   }
 }

@@ -3364,6 +3364,9 @@ class ChadoPreparer extends ChadoTaskBase {
       'required' => True,
       'storage_settings' => [
         'max_length' => 255,
+        'storage_plugin_id' => 'chado_storage',
+        'chado_table' => 'organism',
+        'chado_column' => 'genus'
       ],
       'settings' => [
         'termIdSpace' => 'TAXRANK',

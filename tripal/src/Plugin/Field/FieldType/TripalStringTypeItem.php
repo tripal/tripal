@@ -28,24 +28,26 @@ class TripalStringTypeItem extends TripalFieldItemBase {
    * {@inheritdoc}
    */
   public static function defaultFieldSettings() {
-    return [] + parent::defaultFieldSettings();
+    $settings = [];
+    return $settings + parent::defaultFieldSettings();
   }
 
   /**
    * {@inheritdoc}
    */
   public static function defaultStorageSettings() {
-    return [
+    $settings = [
       'max_length' => 255,
-    ] + parent::defaultStorageSettings();
+    ];
+    return $settings + parent::defaultStorageSettings();
   }
 
   /**
    * {@inheritdoc}
    */
   public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
-    $element = [];
-    $element['max_length'] = [
+    $elements = [];
+    $elements['max_length'] = [
       '#type' => 'number',
       '#title' => t('Maximum length'),
       '#default_value' => $this->getSetting('max_length'),
@@ -54,7 +56,7 @@ class TripalStringTypeItem extends TripalFieldItemBase {
       '#min' => 1,
       '#disabled' => $has_data,
     ];
-    return $element;
+    return $elements + parent::storageSettingsForm($form,$form_state,$has_data);
   }
 
   /**
@@ -116,7 +118,8 @@ class TripalStringTypeItem extends TripalFieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public function tripalLoad($properties, $entity) {
+  public function tripalLoad($field_item, $field_name, $properties, $entity) {
+    dpm('tripalLoad');
 //     foreach ($properties as $property) {
 //       if ($property->getKey() == "value") {
 //         $entity->blah = $property->value();
@@ -124,21 +127,12 @@ class TripalStringTypeItem extends TripalFieldItemBase {
 //     }
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function tripalSave($properties,$entity) {
-//     foreach ($properties as $property) {
-//       if ($property->getKey() == "value") {
-//         $property->setValue($entity->blah);
-//       }
-//     }
-  }
+
 
   /**
    * {@inheritdoc}
    */
-  public function tripalClear($entity) {
+  public function tripalClear($field_name, $entity) {
     //$entity->blah = "";
   }
 }
