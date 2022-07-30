@@ -3372,8 +3372,38 @@ class ChadoPreparer extends ChadoTaskBase {
         'termIdSpace' => 'TAXRANK',
         'termAccession' => '0000005',
       ],
+      'display' => [
+        'view' => [
+          'weight' => 10,
+        ]
+      ],
     ];
     $tripal_fields->addBundleField('bio_data_1', $genus);
+
+    $species = [
+      'name' => 'taxrank__species',
+      'label' => 'Species',
+      'type' => 'tripal_string_type',
+      'description' => 'The organism species name',
+      'cardinality' => 1,
+      'required' => True,
+      'storage_settings' => [
+        'max_length' => 255,
+        'storage_plugin_id' => 'chado_storage',
+        'chado_table' => 'organism',
+        'chado_column' => 'species'
+      ],
+      'settings' => [
+        'termIdSpace' => 'TAXRANK',
+        'termAccession' => '0000006',
+      ],
+      'display' => [
+        'view' => [
+          'weight' => 11,
+        ]
+      ],
+    ];
+    $tripal_fields->addBundleField('bio_data_1', $species);
 
 
     $this->createContentType([

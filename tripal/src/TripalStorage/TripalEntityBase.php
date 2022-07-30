@@ -17,7 +17,6 @@ class TripalEntityBase extends ContentEntityBase {
    */
   public function preSave(EntityStorageInterface $storage) {
     parent::preSave($storage);
-    dpm('TripalEntityBase::preSave');
 
     // Build all storage operations that will be done, saving the tripal
     // fields that will be saved and clearing them from each entity.

@@ -455,12 +455,11 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    */
   public function preSave(EntityStorageInterface $storage) {
     parent::preSave($storage);
-    dpm('TripalEntity::preSave()');
-    dpm($this);
 
     // Build all storage operations that will be done, saving the tripal
     // fields that will be saved and clearing them from each entity.
     $storageOps = array();
+    $storageTypes = array();
 
     $fields = $this->getFields();
 
@@ -470,6 +469,14 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
         // If it is a TripalField then...
         if ($item instanceof TripalFieldItemInterface) {
+
+          $tsid = $item->tripalStorageId();
+
+          $prop_types = get_class($item)::tripalTypes($item->getFieldDefinition());
+          foreach ($prop_types as $prop_type) {
+            $storageTypes[$tsid][$field_name][$prop_type->getKey()] = $prop_type;
+          }
+
           $delta = $item->getName();
           // Get empty template list of property values this field uses
           $props = $item->tripalValuesTemplate();
@@ -480,18 +487,24 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           $item->tripalClear($item, $this);
           // Finally based on the Tripal storage, we add this data to an array
           // for bulk save of the biological data to the appropriate database (e.g. Chado).
-          $tsid = $item->tripalStorageId();
           $storageOps[$tsid][$field_name][$delta] = $props;
         }
       }
     }
-    dpm($storageOps);
+    dpm($storageTypes);
+
     // Save all properties to their respective storage plugins.
     // This is where the biological data is actually saved to the database
     // using the appropriate TripalStorage plugin.
     foreach ($storageOps as $tsid => $properties) {
       $tripalStorage = \Drupal::service("tripal.storage")->getInstance(['plugin_id' => $tsid]);
-      $tripalStorage->insertValues($properties);
+      $tripalStorage->addTypes($storageTypes[$tsid]);
+      if ($this->isDefaultRevision() and $this->isNewRevision()) {
+        $tripalStorage->insertValues($properties);
+      }
+      else {
+        $tripalStorage->updateValues($properties);
+      }
     }
   }
 

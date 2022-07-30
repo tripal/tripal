@@ -119,7 +119,6 @@ class TripalStringTypeItem extends TripalFieldItemBase {
    * {@inheritdoc}
    */
   public function tripalLoad($field_item, $field_name, $properties, $entity) {
-    dpm('tripalLoad');
 //     foreach ($properties as $property) {
 //       if ($property->getKey() == "value") {
 //         $entity->blah = $property->value();

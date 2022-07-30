@@ -51,23 +51,25 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
   public function addTypes($types) {
 
     // Index the types by their entity type, field type and key.
-    foreach ($types as $type) {
-      $entity_type = $type->getEntityType();
-      $field_type = $type->getFieldType();
-      $key = $type->getKey();
-      if (!array_key_exists($entity_type, $this->property_types)) {
-        $this->property_types[$entity_type] = [];
+    foreach ($types as $field_name => $prop_types) {
+      foreach ($prop_types as $type) {
+        $entity_type = $type->getEntityType();
+        $key = $type->getKey();
+
+        if (!array_key_exists($entity_type, $this->property_types)) {
+          $this->property_types[$entity_type] = [];
+        }
+        if (!array_key_exists($field_name, $this->property_types[$entity_type])) {
+          $this->property_types[$entity_type][$field_name] = [];
+        }
+        if (array_key_exists($key, $this->property_types[$entity_type])) {
+          $logger = \Drupal::service('tripal.logger');
+          $logger->error('Cannot add a property type, "@prop", as it already exists',
+              ['@prop' => $entity_type . '.' . $field_name . '.' . $key]);
+          return False;
+        }
+        $this->property_types[$entity_type][$field_name][$key] = $type;
       }
-      if (!array_key_exists($field_type, $this->property_types[$entity_type])) {
-        $this->property_types[$entity_type][$field_type] = [];
-      }
-      if (array_key_exists($key, $this->property_types[$entity_type])) {
-        $logger = \Drupal::service('tripal.logger');
-        $logger->error('Cannot add a property type, "@prop", as it already exists',
-            ['@prop' => $entity_type . '.' . $field_type . '.' . $key]);
-        return False;
-      }
-      $this->property_types[$entity_type][$field_type][$key] = $type;
     }
   }
 
@@ -110,7 +112,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
 	 */
   public function insertValues($values) {
     $indexed_values = $this->indexValues($values);
-
   }
 
   /**
@@ -119,6 +120,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
 
   public function updateValues($values) {
     $indexed_values = $this->indexValues($values);
+    dpm($indexed_values);
 
   }
 
@@ -171,7 +173,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           $entity_type = $value->getEntityType();
           $field_type = $value->getFieldType();
           $key = $value->getKey();
-          continue;
+
 
           // Build the index structure
           if (!array_key_exists($entity_type, $indexed_values)) {
@@ -180,12 +182,15 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           if (!array_key_exists($entity_id, $indexed_values[$entity_type])) {
             $indexed_values[$entity_type][$entity_id] = [];
           }
-          if (!array_key_exists($field_type, $indexed_values[$entity_type][$entity_id])) {
-            $indexed_values[$entity_type][$entity_id][$field_type] = [];
+          if (!array_key_exists($field_name, $indexed_values[$entity_type][$entity_id])) {
+            $indexed_values[$entity_type][$entity_id][$field_name] = [];
           }
-          if (array_key_exists($key, $indexed_values[$entity_type][$entity_id][$field_type])) {
+          if (!array_key_exists($delta, $indexed_values[$entity_type][$entity_id][$field_name])) {
+            $indexed_values[$entity_type][$entity_id][$field_name][$delta] = [];
+          }
+          if (array_key_exists($key, $indexed_values[$entity_type][$entity_id][$field_name][$delta])) {
             $logger->error('Cannot get values for a duplicate property, "@prop".',
-                ['@prop' => $entity_type . '.' . $field_type . '.' . $key]);
+                ['@prop' => $entity_type . '.' . $field_name . '.' . $key]);
             return False;
           }
 
@@ -202,8 +207,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           // Ignore property value for types that aren't valid.
           $type = $this->property_types[$entity_type][$field_type][$key];
           if (!$type->isValid()) {
-            $logger->error('The value, @key, has an invalid type. Ignoring it.',
-                ['@key' => $entity_type . '.' . $field_type . '.' . $key]);
+            $logger->error(t('The value, @key, has an invalid type. Ignoring it.',
+                ['@key' => $entity_type . '.' . $field_type . '.' . $key]));
             continue;
           }
 
@@ -227,7 +232,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
 
 
           // Index the value.
-          $indexed_values[$entity_type][$entity_id][$field_type][$key] = $val_index;
+          $indexed_values[$entity_type][$entity_id][$field_name][$delta][$key] = $value->getValue();
         }
       }
     }
