@@ -41,26 +41,43 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    *
    * @param array $values
    *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
+   *
    */
   public function insertValues($values);
 
   /**
-   * Updates the given array of property values that already exist to this
-   * tripal storage plugin.
+   * Updates values in the field data store.
    *
    * @param array $values
-   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
+   *   Associative array 5-levels deep. The 1st level is the field name. The
+   *   2nd level is the delta value. The 3rd level is a field key name. The
+   *   4th level must contain the following three keys/value pairs
+   *   - "value": a \Drupal\tripal\TripalStorage\StoragePropertyValue object
+   *   - "type": a\Drupal\tripal\TripalStorage\StoragePropertyType object
+   *   - "definition": a \Drupal\Field\Entity\FieldConfig object
+   *   When the function returns, any values retreived from the data store
+   *   will be set in the StoragePropertyValue object.
+   *
+   * @return bool
+   *   True if successful. False otherwise.
    */
-  public function updateValues($values);
+  public function updateValues($values) : bool;
 
   /**
-   * Loads the values of the given array of property values from this tripal
-   * storage plugin.
+   * Loads the values of the field data store.
    *
    * @param array $values
-   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
+   *   Associative array 5-levels deep. The 1st level is the field name. The
+   *   2nd level is the delta value. The 3rd level is a field key name. The
+   *   4th level must contain the following three keys/value pairs
+   *   - "value": a \Drupal\tripal\TripalStorage\StoragePropertyValue object
+   *   - "type": a\Drupal\tripal\TripalStorage\StoragePropertyType object
+   *   - "definition": a \Drupal\Field\Entity\FieldConfig object
+   *
+   * @return bool
+   *   True if successful. False otherwise.
    */
-  public function loadValues(&$values);
+  public function loadValues(&$values) : bool;
 
   /**
    * Deletes the given array of property values from this tripal storage plugin.

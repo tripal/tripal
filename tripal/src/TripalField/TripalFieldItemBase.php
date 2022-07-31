@@ -8,6 +8,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\tripal\TripalStorage\IntStoragePropertyType;
 use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
+use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\Core\TypedData\DataDefinition;
 use \RuntimeException;
 
@@ -33,8 +34,31 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
   public static function defaultStorageSettings() {
     $settings = [
       'storage_plugin_id' => '',
+      'storage_plugin_settings' => [],
     ];
     return $settings + parent::defaultStorageSettings();
+  }
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultTripalTypes($entity_type_id, $field_type) {
+    return [
+      // The record Id can be used by the Tripal storage plugin to
+      // assocaite the values this field provides with a record in the
+      // data store.
+      new IntStoragePropertyType($entity_type_id, $field_type, "record_id"),
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultTripalValuesTemplate($entity_type_id, $field_type, $entity_id) {
+    return [
+      new StoragePropertyValue($entity_type_id, $field_type, "record_id", $entity_id),
+    ];
   }
 
   /**
@@ -224,10 +248,42 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       "#title" => $this->t("Tripal Storage Plugin ID."),
       '#default_value' => $this->getSetting('storage_plugin_id'),
       "#required" => TRUE,
-      "#description" => $this->t(""),
+      "#description" => $this->t("The plugin ID of the storage backend."),
       "#disabled" => TRUE
     ];
 
+
+    // Construct a table for the vocabulary information.
+    $headers = ['Storage Property', 'Value'];
+    $settings = $this->getSetting('storage_plugin_settings');
+    $rows = [];
+    foreach ($settings as $setting_name => $setting_value) {
+      $rows[] = [
+        [
+          'data' => $setting_name,
+          'header' => TRUE,
+          'width' => '20%',
+        ],
+        $setting_value,
+      ];
+    }
+    $elements['settings_fs'] = [
+      '#type' => 'details',
+      '#title' => $this->t("Storage Settings"),
+      '#description' => $this->t("The following storage settings apply for this field."),
+      '#open' => False,
+    ];
+    $elements['settings_fs']['table_label'] = [
+      '#type' => 'item',
+      '#title' => $this->t('Current Settings'),
+    ];
+    $elements['settings_fs']['settings_table'] = [
+      '#type' => 'table',
+      '#header'=> $headers,
+      '#rows' => $rows,
+      '#empty' => $this->t('There are no settings.'),
+      '#sticky' => False
+    ];
     return $elements + parent::storageSettingsForm($form,$form_state,$has_data);
   }
 
@@ -244,8 +300,11 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
   public function tripalSave($field_item, $field_name, $properties, $entity) {
     foreach ($properties as $property) {
       $prop_key = $property->getKey();
-      $value =  $entity->get($field_name)->get($field_item->getName())->getValue()[$prop_key];
-      $property->setValue($value);
+      $prop_values = $entity->get($field_name)->get($field_item->getName())->getValue();
+      if (array_key_exists($prop_key, $prop_values)) {
+        $value =  $prop_values[$prop_key];
+        $property->setValue($value);
+      }
     }
   }
 }

@@ -3365,8 +3365,10 @@ class ChadoPreparer extends ChadoTaskBase {
       'storage_settings' => [
         'max_length' => 255,
         'storage_plugin_id' => 'chado_storage',
-        'chado_table' => 'organism',
-        'chado_column' => 'genus'
+        'storage_plugin_settings' => [
+          'chado_table' => 'organism',
+          'chado_column' => 'genus'
+        ]
       ],
       'settings' => [
         'termIdSpace' => 'TAXRANK',
@@ -3390,8 +3392,10 @@ class ChadoPreparer extends ChadoTaskBase {
       'storage_settings' => [
         'max_length' => 255,
         'storage_plugin_id' => 'chado_storage',
-        'chado_table' => 'organism',
-        'chado_column' => 'species'
+        'storage_plugin_settings' => [
+          'chado_table' => 'organism',
+          'chado_column' => 'species'
+        ]
       ],
       'settings' => [
         'termIdSpace' => 'TAXRANK',

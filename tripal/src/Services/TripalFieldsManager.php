@@ -72,6 +72,7 @@ class TripalFieldsManager {
     $default_storage_settings = $field_type_def['class']::defaultStorageSettings();
     $new_defs['storage_settings'] = [];
     $new_defs['storage_settings']['storage_plugin_id'] = '';
+    $new_defs['storage_settings']['storage_plugin_settings'] = [];
     foreach ($default_storage_settings as $setting_name => $value) {
       $new_defs['storage_settings'][$setting_name] = $value;
     }
@@ -203,7 +204,6 @@ class TripalFieldsManager {
       return False;
     }
     $field_def = $this->setFieldDefDefaults($field_def);
-    dpm($field_def);
     $field_id = 'tripal_entity' . '.' . $bundle . '.' . $field_def['name'];
 
     try {

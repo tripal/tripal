@@ -27,6 +27,45 @@ interface TripalFieldItemInterface extends FieldItemInterface {
   public static function tripalTypes(FieldStorageDefinitionInterface $field_definition);
 
   /**
+   * Allows child field items to add default types.
+   *
+   * This function should be called in the tripalTypes implementation of
+   * any child class to ensure that default types needed for all Tripal fields
+   * get added.
+   *
+   * @param string $entity_type_id
+   *   The entity type id of this field's entity.
+   *
+   * @param string $field_type
+   *   The name of the field to which default types are needed..
+   *
+   * @return array
+   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyTypeBase property types.
+   */
+  public static function defaultTripalTypes($entity_type_id, $field_type);
+
+  /**
+   * Allows child field items to add default values to the template..
+   *
+   * This function should be called in the tripalValuesTemplate implementation
+   * of any child class to ensure that default types needed for all Tripal
+   * fields are known.
+   *
+   * @param string $entity_type_id
+   *   The entity type id of this field's entity.
+   *
+   * @param string $field_type
+   *   The name of the field to which default types are needed.
+   *
+   * @param string $entity_id
+   *   The Id of the entity that the value belongs to.
+   *
+   * @return array
+   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyTypeBase property types.
+   */
+  public static function defaultTripalValuesTemplate($entity_type_id, $field_type, $entity_id);
+
+  /**
    * Returns an empty template array of all property values this field uses for loading and saving.
    *
    * @return array
