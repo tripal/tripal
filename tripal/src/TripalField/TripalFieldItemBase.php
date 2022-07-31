@@ -298,13 +298,38 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    * {@inheritdoc}
    */
   public function tripalSave($field_item, $field_name, $properties, $entity) {
+    $delta = $field_item->getName();
     foreach ($properties as $property) {
       $prop_key = $property->getKey();
-      $prop_values = $entity->get($field_name)->get($field_item->getName())->getValue();
-      if (array_key_exists($prop_key, $prop_values)) {
-        $value =  $prop_values[$prop_key];
-        $property->setValue($value);
+      $value = $entity->get($field_name)->get($delta)->get($prop_key)->getValue();
+      $property->setValue($value);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function tripalLoad($field_item, $field_name, $properties, $entity) {
+    $delta = $field_item->getName();
+    foreach ($properties as $property) {
+      $prop_key = $property->getKey();
+      $entity->get($field_name)->get($delta)->get($prop_key)->setValue($property->getValue(), False);
+    }
+  }
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public function tripalClear($field_item, $field_name, $properties, $entity) {
+    $delta = $field_item->getName();
+    foreach ($properties as $property) {
+      $prop_key = $property->getKey();
+      // Never clear out the record_id we need this to map to Chado records.
+      if ($prop_key == 'record_id') {
+        continue;
       }
+      $entity->get($field_name)->get($delta)->get($prop_key)->setValue('', False);
     }
   }
 }

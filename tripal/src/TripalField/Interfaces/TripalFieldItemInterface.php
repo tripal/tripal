@@ -76,8 +76,9 @@ interface TripalFieldItemInterface extends FieldItemInterface {
   /**
    * Loads the values from the given array of properties to the given entity.
    *
+   *
    * @param \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface $field_item
-   *   The field item to load property values for.
+   *   The field item for which properties should be saved.
    *
    * @param string $field_name
    *   The name of the field.
@@ -108,13 +109,22 @@ interface TripalFieldItemInterface extends FieldItemInterface {
   public function tripalSave($field_item, $field_name, $properties, $entity);
 
   /**
-   * Clears all field values from the given entity that is associated with this field.
+   * Clears all field values from the given entity.
+   *
+   * This is to prevent Drupal from storing field values when they are
+   * being stored in the Tripal field storage backend.
+   *
+   * @param \Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface $field_item
+   *   The field item for which properties should be saved.
    *
    * @param string $field_name
    *   The name of the field.
    *
+   * @param array $properties
+   *   Array of \Drupal\tripal\TripalStorage\\StoragePropertyValue objects.
+   *
    * @param \Drupal\tripal\TripalStorage\TripalEntityBase $entity
    *   The entity.
    */
-  public function tripalClear($field_name, $entity);
+  public function tripalClear($field_item, $field_name, $properties, $entity);
 }

@@ -3409,6 +3409,33 @@ class ChadoPreparer extends ChadoTaskBase {
     ];
     $tripal_fields->addBundleField('bio_data_1', $species);
 
+    $species = [
+      'name' => 'local__abbreviation',
+      'label' => 'Abbreviation',
+      'type' => 'tripal_string_type',
+      'description' => 'Abbreviation of the taxonomic name',
+      'cardinality' => 1,
+      'required' => False,
+      'storage_settings' => [
+        'max_length' => 255,
+        'storage_plugin_id' => 'chado_storage',
+        'storage_plugin_settings' => [
+          'chado_table' => 'organism',
+          'chado_column' => 'abbreviation'
+        ]
+      ],
+      'settings' => [
+        'termIdSpace' => 'local',
+        'termAccession' => 'abbreviation',
+      ],
+      'display' => [
+        'view' => [
+          'weight' => 12,
+        ]
+      ],
+    ];
+    $tripal_fields->addBundleField('bio_data_1', $species);
+
 
     $this->createContentType([
       'label' => 'Analysis',

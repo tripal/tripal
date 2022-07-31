@@ -121,24 +121,4 @@ class TripalStringTypeItem extends TripalFieldItemBase {
     $values = array_merge($values, $default_values);
     return $values;
   }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function tripalLoad($field_item, $field_name, $properties, $entity) {
-//     foreach ($properties as $property) {
-//       if ($property->getKey() == "value") {
-//         $entity->blah = $property->value();
-//       }
-//     }
-  }
-
-
-
-  /**
-   * {@inheritdoc}
-   */
-  public function tripalClear($field_name, $entity) {
-    //$entity->blah = "";
-  }
 }

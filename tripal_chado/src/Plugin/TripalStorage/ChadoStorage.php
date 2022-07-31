@@ -111,7 +111,45 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
   /**
 	 * @{inheritdoc}
 	 */
-  public function insertValues($values) {
+  public function insertValues(&$values) : bool {
+    $chado = \Drupal::service('tripal_chado.database');
+    $logger = \Drupal::service('tripal.logger');
+    $records = $this->buildChadoRecords($values);
+
+    $transaction_chado = $chado->startTransaction();
+    try {
+      foreach ($records as $chado_table => $deltas) {
+        foreach ($deltas as $delta => $record) {
+
+          // Insert the record.
+          $insert = $chado->insert($chado_table);
+          $insert->fields($record['fields']);
+          $record_id = $insert->execute();
+          if (!$record_id) {
+            throw new \Exception($this->t('Failed to insert a record in the Chado "@table" table. Record: @record',
+                ['@table' => $chado_table, '@record' => print_r($record, True)]));
+          }
+
+          // Update the record array to include the record id.
+          $chado = \Drupal::service('tripal_chado.database');
+          $schema = $chado->schema();
+          $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
+          $pkey = $table_def['primary key'];
+          $records[$chado_table][$delta]['conditions'][$pkey] = $record_id;
+        }
+      }
+      $this->setRecordIds($values, $records);
+    }
+    catch (\Exception $e) {
+      $transaction_chado->rollback();
+      $logger->error($e->getMessage());
+      return False;
+    }
+
+    // Now set the record Ids of the properties.
+
+
+    return True;
   }
 
   /**
@@ -195,7 +233,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             }
           }
           if ($num_conditions == 0) {
-            throw new \Exception($this->t('Cannot update record in the Chado "@table" table due to unset conditions. Record: @record',
+            throw new \Exception($this->t('Cannot select record in the Chado "@table" table due to unset conditions. Record: @record',
               ['@table' => $chado_table, '@record' => print_r($record, True)]));
           }
           $results = $select->execute();
@@ -220,8 +258,9 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
   /**
    * @{inheritdoc}
    */
-  public function deleteValues($values) {
+  public function deleteValues($values) : bool {
 
+    return False;
   }
 
   /**
@@ -230,41 +269,63 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
   public function findValues($match) {
 
   }
-
   /**
-   * Sets the property values using the recrods returned from Chado.
-   * @param array $values
-   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.  *
-   * @param array $records
-   *   The set of Chado records.
-   */
-  protected function setPropValues(&$values, $records) {
-    $logger = \Drupal::service('tripal.logger');
+   * Sets the record_id properties after an insert.
+   *
+  * @param array $values
+  *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
+  *
+  * @param array $records
+  *   The set of Chado records.
+  */
+  protected function setRecordIds(&$values, $records) {
 
     // Iterate through the value objects.
     foreach ($values as $field_name => $deltas) {
       foreach ($deltas as $delta => $keys) {
         foreach ($keys as $key => $info) {
           $definition = $info['definition'];
-          $prop_type = $info['type'];
-          $prop_value = $info['value'];
-          $entity_id = $prop_value->getEntityId();
-          $entity_type = $prop_value->getEntityType();
-          $field_type = $prop_value->getFieldType();
           $settings = $definition->getSettings();
+          $chado_table = $settings['storage_plugin_settings']['chado_table'];
 
-          if (!array_key_exists('chado_table', $settings['storage_plugin_settings'])) {
-            $logger->error($this->t('Cannot save record in Chado. The field, "@field", is missing the "chado_table setting',
-                ['@field' => $field_type]));
+          if ($key != 'record_id') {
             continue;
           }
-          if (!array_key_exists('chado_column', $settings['storage_plugin_settings'])) {
-            $logger->error($this->t('Cannot save record in Chado. The field, "@field", is missing the "chado_column setting',
-                ['@field' => $field_type]));
-            continue;
-          }
+
+          $chado = \Drupal::service('tripal_chado.database');
+          $schema = $chado->schema();
+          $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
+          $pkey = $table_def['primary key'];
+
+          $record_id = $records[$chado_table][$delta]['conditions'][$pkey];
+          $values[$field_name][$delta][$key]['value']->setValue($record_id);
+        }
+      }
+    }
+  }
+
+  /**
+   * Sets the property values using the recrods returned from Chado.
+   *
+   * @param array $values
+   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
+   * @param array $records
+   *   The set of Chado records.
+   */
+  protected function setPropValues(&$values, $records) {
+
+    // Iterate through the value objects.
+    foreach ($values as $field_name => $deltas) {
+      foreach ($deltas as $delta => $keys) {
+        foreach ($keys as $key => $info) {
+          $definition = $info['definition'];
+          $prop_value = $info['value'];
+          $settings = $definition->getSettings();
           $chado_table = $settings['storage_plugin_settings']['chado_table'];
           $chado_column = $settings['storage_plugin_settings']['chado_column'];
+          if ($key == 'record_id') {
+            continue;
+          }
 
           if (array_key_exists($chado_table, $records)) {
             if (array_key_exists($chado_column, $records[$chado_table][$delta])) {
@@ -295,22 +356,18 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       foreach ($deltas as $delta => $keys) {
         foreach ($keys as $key => $info) {
           $definition = $info['definition'];
-          $prop_type = $info['type'];
           $prop_value = $info['value'];
-          $entity_id = $prop_value->getEntityId();
-          $entity_type = $prop_value->getEntityType();
           $field_type = $prop_value->getFieldType();
-          $value = $prop_value->getValue();
           $settings = $definition->getSettings();
 
           if (!array_key_exists('chado_table', $settings['storage_plugin_settings'])) {
             $logger->error($this->t('Cannot save record in Chado. The field, "@field", is missing the "chado_table setting',
-                ['@field' => $field_type]));
+              ['@field' => $field_type]));
             continue;
           }
           if (!array_key_exists('chado_column', $settings['storage_plugin_settings'])) {
             $logger->error($this->t('Cannot save record in Chado. The field, "@field", is missing the "chado_column setting',
-                ['@field' => $field_type]));
+              ['@field' => $field_type]));
             continue;
           }
           $chado_table = $settings['storage_plugin_settings']['chado_table'];
