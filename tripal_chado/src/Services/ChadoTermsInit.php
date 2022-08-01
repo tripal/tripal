@@ -51,10 +51,16 @@ class ChadoTermsInit{
   }
 
   /**
+   * Maps terms to the Chado tables and columns.
+   *
+   */
+  public function mapTerms() {
+
+  }
+
+  /**
    * Installs the module's default terms into Chado.
    *
-   * @param \Drupal\tripal\TripalDBX\TripalDbxConnection $chado
-   *  The Chado instance into which the terms should be installed.
    */
   public function installTerms() {
     $logger = \Drupal::service('tripal.logger');
