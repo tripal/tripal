@@ -66,4 +66,33 @@ tripal_chado.terms_init:
                   type: string
                   label: 'Term Definition'
                   nullable: true
-        
+tripal_chado.terms_mapping:
+  type: config_object
+  mapping:
+    tables:
+      type: sequence
+      label: "Chado Tables"
+      sequence:
+        type: mapping
+        mapping:
+            name:
+              type: string
+              label: "Table Name"
+            columns:
+              type: sequence
+              label: "Table Columns"
+              sequence:
+                type: mapping
+                mapping:
+                  name: 
+                    type: string
+                    label: "Column Name"
+                    nullable: false
+                  term_id:
+                    type: string
+                    label: "Term ID"
+                    nullable: false
+                  term_name:
+                    type: string
+                    label: "Term Name"
+                    nullable: false
