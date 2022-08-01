@@ -159,8 +159,11 @@ class ChadoPreparer extends ChadoTaskBase {
 
       $this->setProgress(0.2);
       $this->logger->notice("Loading ontologies...");
-      $this->addOntologies();
-      $this->importOntologies();
+      $terms_setup = \Drupal::service('tripal_chado.terms_init');
+      $terms_setup->installTerms();
+
+      //$this->importOntologies();
+      return True;
 
       $this->setProgress(0.3);
       $this->logger->notice('Populating materialized view cv_root_mview...');
@@ -1528,22 +1531,22 @@ class ChadoPreparer extends ChadoTaskBase {
     $data_idspace = $this->getIdSpace('data');
     $data_idspace->setDescription("Bioinformatics operations, data types, formats, identifiers and topics.");
     $data_idspace->setURLPrefix("http://edamontology.org/{db}_{accession}");
-    $data_idspace->setDefaultVocabulary('foaf');
+    $data_idspace->setDefaultVocabulary('EDAM');
 
     $format_idspace = $this->getIdSpace('format');
     $format_idspace->setDescription('A defined way or layout of representing and structuring data in a computer file, blob, string, message, or elsewhere. The main focus in EDAM lies on formats as means of structuring data exchanged between different tools or resources.');
     $format_idspace->setURLPrefix("http://edamontology.org/{db}_{accession}");
-    $format_idspace->setDefaultVocabulary('foaf');
+    $format_idspace->setDefaultVocabulary('EDAM');
 
     $operation_idspace = $this->getIdSpace('operation');
     $operation_idspace->setDescription('A function that processes a set of inputs and results in a set of outputs, or associates arguments (inputs) with values (outputs). Special cases are: a) An operation that consumes no input (has no input arguments).');
     $operation_idspace->setURLPrefix("http://edamontology.org/{db}_{accession}");
-    $operation_idspace->setDefaultVocabulary('foaf');
+    $operation_idspace->setDefaultVocabulary('EDAM');
 
     $topic_idspace = $this->getIdSpace('topic');
     $topic_idspace->setDescription('A category denoting a rather broad domain or field of interest, of study, application, work, data, or technology. Topics have no clearly defined borders between each other.');
     $topic_idspace->setURLPrefix("http://edamontology.org/{db}_{accession}");
-    $topic_idspace->setDefaultVocabulary('foaf');
+    $topic_idspace->setDefaultVocabulary('EDAM');
 
     $vocab->addIdSpace('data');
     $vocab->addIdSpace('format');
@@ -3155,45 +3158,6 @@ class ChadoPreparer extends ChadoTaskBase {
       'description' => '',
     ]));
     //chado_associate_semweb_term('organism', 'common_name', $term);
-  }
-
-  /**
-   * Loads default vocabularies and term.
-   *
-   * These are only what is necessary for creation of default Tripal content
-   * types.
-   */
-  public function addOntologies() {
-
-    $this->addOntologyCO010();
-    $this->addOntologyDC();
-    $this->addOntologyEDAM();
-    $this->addOntologyEFO();
-    $this->addOntologyERO();
-    $this->addOntologyFOAF();
-    $this->addOntologyGO();
-    $this->addOntologyHydra();
-    $this->addOntologyIAO();
-    $this->addOntologyLocal();
-    $this->addOntologyNCBITaxon();
-    $this->addOntologyNCIT();
-    $this->addOntologyNull();
-    $this->addOntologyOBCS();
-    $this->addOntologyOBI();
-    $this->addOntologyOGI();
-    $this->addOntologyPMID();
-    $this->addOntologyRDF();
-    $this->addOntologyRDFS();
-    $this->addOntologyRO();
-    $this->addOntologySBO();
-    $this->addOntologySchema();
-    $this->addOntologySEP();
-    $this->addOntologySIO();
-    $this->addOntologySO();
-    $this->addOntologyTaxRank();
-    $this->addOntologyTContact();
-    $this->addOntologyTPub();
-    $this->addOntologyUO();
   }
 
   /**

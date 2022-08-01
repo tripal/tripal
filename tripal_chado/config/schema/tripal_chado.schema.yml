@@ -4,3 +4,66 @@ tripal_chado.settings:
     default_schema:
       type: string
       label: 'Default Chado schema name'
+tripal_chado.terms_init:
+  type: config_object
+  mapping:
+    vocabularies:
+      type: sequence
+      label: "Vocabularies"
+      sequence: 
+        type: mapping
+        mapping:
+          name:
+            type: string
+            label: 'Vocbulary Name'
+            nullable: false
+          label:
+            type: string
+            label: 'Vocbulary Label'
+            nullable: false
+          url:
+            type: string
+            label: 'Vocbulary URL'
+            nullable: false
+          idSpaces:
+            type: sequence
+            lable: "IdSpaces used in this vocabulary"
+            sequence:
+              type: mapping
+              mapping:
+                name:
+                  type: string
+                  label: "IdSpace Name"
+                  nullable: false
+                description:
+                  type: string
+                  label: "IdSpace Description"
+                  nullable: true
+                urlPrefix:
+                  type: string
+                  label: "IdSpace Term URL"
+                  nullable: true
+                isBorrowed:
+                  type: boolean
+                  label: "Is Borrowed from Another Vocabulary"
+                  nullable: true
+                
+          terms:
+            type: sequence
+            label: 'Terms'
+            sequence:
+              type: mapping
+              mapping: 
+                id:
+                  type: string
+                  label: 'Term ID'
+                  nullable: false
+                name:
+                  type: string
+                  label: 'Term Name'
+                  nullable: false
+                description:
+                  type: string
+                  label: 'Term Definition'
+                  nullable: true
+        
