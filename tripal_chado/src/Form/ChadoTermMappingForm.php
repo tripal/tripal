@@ -38,7 +38,8 @@ class ChadoTermMappingForm extends EntityForm {
 
 
     $chado_tables = $this->entity->getTableNames();
-    $chado_table = $form_state->hasValue('chado_table') ? $form_state->getValue('chado_table') : $chado_tables[0];
+    $chado_table = $form_state->hasValue('chado_table') ? $form_state->getValue('chado_table') : 0;
+    $table_name = $chado_tables[$chado_table];
 
     $form['chado_table'] = [
       '#type' => 'select',
@@ -48,69 +49,76 @@ class ChadoTermMappingForm extends EntityForm {
       '#default_value' => $chado_table,
       '#ajax' => [
         'callback' =>  [$this, 'formAjaxCallback'],
-        'wrapper' => 'obo-existing-fieldset',
+        'wrapper' => 'chado-terms-table',
       ],
     ];
 
-    if ($chado_table) {
-      $chado = \Drupal::service('tripal_chado.database');
-      $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-      $schema = $chado->schema();
-      $schema_def = $schema->getTableDef($chado_table, ['format' => 'Drupal']);
-      $pk = $schema_def['primary key'][0];
-      $columns = $schema_def['fields'];
-      $header = [
-        'Column',
-        'Term',
-        [
-          'data' => 'Name',
-          'nowrap' => TRUE,
-        ],
-        'Term Definition',
-        'Vocabulary',
-        'Action',
-      ];
-      $rows = [];
-      foreach ($columns AS $column => $detail) {
-        // Do not show column if it's the primary key or default cv
-        if ($column == $pk) {
-          continue;
-        }
+    $chado = \Drupal::service('tripal_chado.database');
+    $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+    $schema = $chado->schema();
+    $schema_def = $schema->getTableDef($table_name, ['format' => 'Drupal']);
+    $pk = $schema_def['primary key'][0];
+    $columns = $schema_def['fields'];
+    $header = [
+      'Column',
+      'Term',
+      [
+        'data' => 'Name',
+        'nowrap' => TRUE,
+      ],
+      'Term Definition',
+      'Vocabulary',
+      'Action',
+    ];
+    $rows = [];
+    foreach ($columns AS $column => $detail) {
+      // Do not show column if it's the primary key or default cv
+      if ($column == $pk) {
+        continue;
+      }
 
-        $term_id = $this->entity->getColumnTermId($chado_table, $column);
+      $term_id = $this->entity->getColumnTermId($table_name, $column);
 
-        $term_name = '';
-        $term_desc = '';
-        $term_desc = '';
-        $vocab_name = '';
-        if (!empty($term_id)) {
-          list($idSpace_name, $accession) = explode(':', $term_id);
-          /**
-           * @var \Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface $idspace
-           */
-          $idSpace = $idSpace_manager->loadCollection($idSpace_name);
-          if ($idSpace) {
-            $term = $idSpace->getTerm($accession);
+      $term_name = '';
+      $term_desc = '';
+      $term_desc = '';
+      $vocab_name = '';
+      if (!empty($term_id)) {
+        list($idSpace_name, $accession) = explode(':', $term_id);
+        /**
+         * @var \Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface $idspace
+         */
+        $idSpace = $idSpace_manager->loadCollection($idSpace_name);
+        if ($idSpace) {
+          $term = $idSpace->getTerm($accession);
+          if ($term) {
             $term_name = $term->getName();
             $term_desc = $term->getDefinition();
             $vocab  = $term->getVocabularyObject();
             $vocab_name = $vocab->getName();
           }
+          else {
+            $messenger = \Drupal::messenger();
+            $messenger->addWarning($this->t('The term, @term, has been assigned to column, @column, but has not been added to Tripal.',
+                ['@term' => $term_id, '@column' => $column]));
+          }
         }
-        $rows[] = [
-          $column,
-          $term_id,
-          $term_name,
-          $term_desc,
-          $vocab_name,
-        ];
       }
-      $form['term_table'] = [
-        '#type' => 'table',
-        '#header' => $header,
-        '#rows' => $rows,
+      $rows[] = [
+        $column,
+        $term_id,
+        $term_name,
+        $term_desc,
+        $vocab_name,
       ];
     }
+    $form['term_table'] = [
+      '#type' => 'table',
+      '#header' => $header,
+      '#rows' => $rows,
+      '#prefix' => '<div id="chado-terms-table">',
+      '#suffix' => '</div>',
+    ];
 
     // You will need additional form elements for your custom properties.
     return $form;
@@ -137,6 +145,7 @@ class ChadoTermMappingForm extends EntityForm {
 //     $response->addCommand(new InvokeCommand('#edit-uobo-file', 'val', [$uobo_file]));
 
 //     return $response;
+    return $form['term_table'];
   }
 
   /**
