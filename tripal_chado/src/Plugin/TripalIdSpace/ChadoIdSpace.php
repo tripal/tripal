@@ -233,7 +233,6 @@ class ChadoIdSpace extends TripalIdSpaceBase {
     $query->join('1:db', 'DB', '"DB".db_id = "DBX".db_id');
     $query->fields('CVT', ['cvterm_id', 'name', 'definition', 'is_obsolete', 'is_relationshiptype'])
       ->condition('DB.name', $this->getName(), '=')
-      ->condition('CV.name', $this->getDefaultVocabulary(), '=')
       ->condition('DBX.accession', $accession, '=');
     $cvterm = $query->execute()->fetchObject();
     if (!$cvterm) {

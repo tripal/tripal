@@ -21,8 +21,18 @@ class ChadoTermMappingDeleteForm extends EntityConfirmFormBase {
   /**
    * {@inheritdoc}
    */
+  public function getDescription() {
+    return $this->t('You are deleting an entire configuration that maps tables ' .
+        'in Chado controlled vocabulary terms. This may cause serious issues with ' .
+        'content not displaying correctly. However, rebuild the cache to re-import ' .
+        'the default settings of this configuration.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getCancelUrl() {
-    return new Url('entity.example.collection');
+    return new Url('entity.chado_term_mapping.collection');
   }
 
   /**

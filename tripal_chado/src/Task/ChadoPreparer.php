@@ -161,9 +161,7 @@ class ChadoPreparer extends ChadoTaskBase {
       $this->logger->notice("Loading ontologies...");
       $terms_setup = \Drupal::service('tripal_chado.terms_init');
       $terms_setup->installTerms();
-
-      //$this->importOntologies();
-      return True;
+      $this->importOntologies();
 
       $this->setProgress(0.3);
       $this->logger->notice('Populating materialized view cv_root_mview...');

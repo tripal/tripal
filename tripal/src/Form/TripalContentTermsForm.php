@@ -34,23 +34,10 @@ class TripalContentTermsForm extends EntityForm {
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
 
-    $example = $this->entity;
-
     $form['label'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Label'),
-      '#maxlength' => 255,
-      '#default_value' => $example->label(),
-      '#description' => $this->t("Label for the Example."),
-      '#required' => TRUE,
-    ];
-    $form['id'] = [
-      '#type' => 'machine_name',
-      '#default_value' => $example->id(),
-      '#machine_name' => [
-        'exists' => [$this, 'exist'],
-      ],
-      '#disabled' => !$example->isNew(),
+      '#type' => 'item',
+      '#title' => 'Conten Term Configuration',
+      '#markup' => $this->entity->label(),
     ];
 
     // You will need additional form elements for your custom properties.
@@ -75,7 +62,7 @@ class TripalContentTermsForm extends EntityForm {
       ]));
     }
 
-    $form_state->setRedirect('entity.example.collection');
+    $form_state->setRedirect('entity.tripal_content_terms.collection');
   }
 
   /**

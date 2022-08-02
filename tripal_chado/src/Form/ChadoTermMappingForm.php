@@ -36,11 +36,24 @@ class ChadoTermMappingForm extends EntityForm {
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
 
-
     $chado_tables = $this->entity->getTableNames();
     $chado_table = $form_state->hasValue('chado_table') ? $form_state->getValue('chado_table') : 0;
     $table_name = $chado_tables[$chado_table];
 
+    $form['id'] = [
+      '#type' => 'item',
+      '#title' => 'Term Mapping Configuration',
+      '#markup' => $this->entity->label(),
+    ];
+    $form['instructions'] = [
+      '#type' => 'item',
+      '#title' => 'Instructions',
+      '#markup' => $this->t('The following drop down contains the list of tables ' .
+          'that are configured using this mapping configuration. By default the ' .
+          '"Core Chado Term Mapping" should provie configurations for all Chado tables ' .
+          'and custom tables provided by Tripal. Extension modules will contain mappings ' .
+          'for their own additions'),
+    ];
     $form['chado_table'] = [
       '#type' => 'select',
       '#title' => 'Chado Table',
@@ -50,6 +63,7 @@ class ChadoTermMappingForm extends EntityForm {
       '#ajax' => [
         'callback' =>  [$this, 'formAjaxCallback'],
         'wrapper' => 'chado-terms-table',
+        'effect' => 'fade'
       ],
     ];
 
@@ -60,14 +74,13 @@ class ChadoTermMappingForm extends EntityForm {
     $pk = $schema_def['primary key'][0];
     $columns = $schema_def['fields'];
     $header = [
-      'Column',
+      'Chado Column',
       'Term',
       [
         'data' => 'Name',
         'nowrap' => TRUE,
       ],
       'Term Definition',
-      'Vocabulary',
       'Action',
     ];
     $rows = [];
@@ -77,25 +90,21 @@ class ChadoTermMappingForm extends EntityForm {
         continue;
       }
 
-      $term_id = $this->entity->getColumnTermId($table_name, $column);
 
       $term_name = '';
       $term_desc = '';
       $term_desc = '';
-      $vocab_name = '';
+      $buttons = '';
+
+      $term_id = $this->entity->getColumnTermId($table_name, $column);
       if (!empty($term_id)) {
         list($idSpace_name, $accession) = explode(':', $term_id);
-        /**
-         * @var \Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface $idspace
-         */
         $idSpace = $idSpace_manager->loadCollection($idSpace_name);
         if ($idSpace) {
           $term = $idSpace->getTerm($accession);
           if ($term) {
             $term_name = $term->getName();
             $term_desc = $term->getDefinition();
-            $vocab  = $term->getVocabularyObject();
-            $vocab_name = $vocab->getName();
           }
           else {
             $messenger = \Drupal::messenger();
@@ -109,7 +118,7 @@ class ChadoTermMappingForm extends EntityForm {
         $term_id,
         $term_name,
         $term_desc,
-        $vocab_name,
+        $buttons
       ];
     }
     $form['term_table'] = [
