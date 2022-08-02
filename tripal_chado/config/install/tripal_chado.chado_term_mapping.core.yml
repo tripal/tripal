@@ -1,3 +1,6 @@
+id: tripal_chado.chado_term_mapping.core
+label: 'Core Chado Term Mapping'
+description: 'Core mapping of terms to Chado table columns.'
 tables:
     -   name: 'acquisition'
         columns:

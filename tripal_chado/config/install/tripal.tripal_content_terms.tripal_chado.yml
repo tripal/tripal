@@ -1,3 +1,6 @@
+id: 'tripal.tripal_content_terms.tripal_chado'
+label: 'Chado Managed Terms'
+description: 'Terms for Content Types and Chado Fields' 
 vocabularies:
     -   name: 'germplasm_ontology'   
         label: 'GCP germplasm ontology'

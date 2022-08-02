@@ -63,10 +63,9 @@ class ChadoTermsInit{
    *
    */
   public function installTerms() {
-    $logger = \Drupal::service('tripal.logger');
-    $config = \Drupal::config('tripal_chado.terms_init');
+    $config_factory = \Drupal::service('config.factory');
+    $config = $config_factory->get('tripal.tripal_content_terms.tripal.tripal_content_terms.tripal_chado');
     $vocabs = $config->get('vocabularies');
-
     foreach ($vocabs as $vocab_info) {
 
       // Step 1: Create the Vocabulary.

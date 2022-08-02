@@ -22,3 +22,9 @@ tripal.content_bio_data_field_check:
   title: 'Check for new fields'
   appears_on:
     - entity.tripal_entity.field_ui_fields
+
+tripal.tripal_content_terms.add_form:
+  route_name: 'tripal.tripal_content_terms.add_form'
+  title: 'Add term'
+  appears_on:
+    - tripal.tripal_content_terms.collection
