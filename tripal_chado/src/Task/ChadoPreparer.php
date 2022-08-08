@@ -3294,6 +3294,12 @@ class ChadoPreparer extends ChadoTaskBase {
   /**
    * Create a new Content Type.
    *
+   * @param array $details
+   *   Describes the content type you would like to create.
+   *   Should contain the following:
+   *    - label: the human-readable label to be used for the content type.
+   *    - category: a human-readable category to group like content types together.
+   *    - term: a tripal term object which should be associated with the content type.
    */
   private function createContentType($details) {
 
