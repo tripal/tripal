@@ -1523,7 +1523,7 @@ class ChadoPreparer extends ChadoTaskBase {
     $data_idspace = $this->getIdSpace('data');
     $data_idspace->setDescription("Bioinformatics operations, data types, formats, identifiers and topics.");
     $data_idspace->setURLPrefix("http://edamontology.org/{db}_{accession}");
-    $data_idspace->setDefaultVocabulary('foaf');
+    $data_idspace->setDefaultVocabulary('EDAM');
 
     $format_idspace = $this->getIdSpace('format');
     $format_idspace->setDescription('A defined way or layout of representing and structuring data in a computer file, blob, string, message, or elsewhere. The main focus in EDAM lies on formats as means of structuring data exchanged between different tools or resources.');
