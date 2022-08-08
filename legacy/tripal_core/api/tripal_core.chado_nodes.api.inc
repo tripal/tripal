@@ -406,7 +406,7 @@ function chado_add_node_form_subtable_ajax_update($form, &$form_state) {
  *   the
  * // value must be an array of column names in
  * // base table. The values from these columns will
- * // be retreived, contentated with a space delimeter
+ * // be retrieved, concatenated with a space delimeter
  * // and provided in a list of checkboxes
  * // for the user to choose which to sync.
  * ),

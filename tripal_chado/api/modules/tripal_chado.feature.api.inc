@@ -131,7 +131,7 @@ function chado_reverse_compliment_sequence($sequence) {
  *    - upstream: the number of upstream bases included in the sequence
  *    - downstream: the number of downstream bases included in the
  *      sequence
- *    - defline: the definintion line used to create a FASTA sequence
+ *    - defline: the definition line used to create a FASTA sequence
  *    - residues: the residues
  *    - featureloc_id: the featureloc_id if the sequences is from an
  *        alignment
@@ -175,8 +175,8 @@ function chado_get_feature_sequences($feature, $options) {
     return [];
   }
 
-  // If a relationship was specified then retreive and the sequences that
-  // have the given relationship and the recurse to extract the appropriate
+  // If a relationship was specified then retrieve the sequences that
+  // have the given relationship and then recurse to extract the appropriate
   // sequence.
   if ($rel_part == "object" or $rel_part == "subject") {
     if ($rel_part == "subject") {
@@ -245,8 +245,8 @@ function chado_get_feature_sequences($feature, $options) {
 
   // Prepare the queries we're going to use later during the render phase
   // This SQL statement uses conditionals in the select clause to handle
-  // cases cases where the alignment is in the reverse direction and when
-  // the upstream and downstream extensions go beyond the lenght of the
+  // cases where the alignment is in the reverse direction and when
+  // the upstream and downstream extensions go beyond the length of the
   // parent sequence.
   $parent_sql = '
     SELECT featureloc_id, srcname, srcfeature_id, strand, srctypename, typename,
@@ -558,7 +558,7 @@ function chado_get_feature_sequences($feature, $options) {
       $residues = wordwrap($residues, $num_bases_per_line, "\r\n", TRUE);
     }
 
-    // Get the definintion line for this feature.
+    // Get the definition line for this feature.
     $defline = chado_get_fasta_defline($f, '', NULL, '', $length);
 
     // Add to the sequence array.
@@ -625,7 +625,7 @@ function chado_get_feature_sequences($feature, $options) {
  *         the sequence (e.g. from an aggregated sequence)
  *      'upstream'      => the number of upstream bases in the sequence
  *      'downstream'    => the number of downstream bases in the sequence
- *      'defline'       => the definintion line used to create a FASTA sequence
+ *      'defline'       => the definition line used to create a FASTA sequence
  *      'residues'      => the residues
  *      'featureloc_id' => the featureloc_id if from an alignment
  *

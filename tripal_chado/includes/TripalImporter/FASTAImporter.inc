@@ -745,7 +745,7 @@ class FASTAImporter extends TripalImporter {
         $feature = $results[0];
       }
       else {
-        $this->logMessage("Failed to retreive newly inserted feature '!name (!uname)'", [
+        $this->logMessage("Failed to retrieve newly inserted feature '!name (!uname)'", [
           '!name' => $name,
           '!uname' => $uname,
         ], TRIPAL_ERRORR);
@@ -877,7 +877,7 @@ class FASTAImporter extends TripalImporter {
           $dbxref = $results[0];
         }
         else {
-          $this->logMessage("Failed to retreive newly inserted dbxref '!name (!uname)'",
+          $this->logMessage("Failed to retrieve newly inserted dbxref '!name (!uname)'",
             ['!name' => $name, '!uname' => $uname], TRIPAL_ERROR);
           return 0;
         }
@@ -886,7 +886,7 @@ class FASTAImporter extends TripalImporter {
         $dbxref = $results[0];
       }
 
-      // check to see if the feature dbxref record exists if not, then add it
+      // Check to see if the feature dbxref record exists. If not, then add it.
       $values = [
         'feature_id' => $feature->feature_id,
         'dbxref_id' => $dbxref->dbxref_id,
@@ -902,7 +902,7 @@ class FASTAImporter extends TripalImporter {
       }
     }
 
-    // now add in the relationship if one exists. If not, then add it
+    // Now add in the relationship if one exists.
     if ($rel_type) {
       $values = [
         'organism_id' => $organism_id,
@@ -917,7 +917,7 @@ class FASTAImporter extends TripalImporter {
       }
       $parent_feature = $results[0];
 
-      // check to see if the relationship already exists if not then add it
+      // Check to see if the relationship already exists. If not, then add it.
       $values = [
         'subject_id' => $feature->feature_id,
         'object_id' => $parent_feature->feature_id,

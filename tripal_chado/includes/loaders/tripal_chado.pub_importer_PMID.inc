@@ -291,7 +291,7 @@ function tripal_pub_PMID_search_init($search_str, $retmax) {
  *
  * @return
  *  An array containing the total_records in the dataaset, the search string
- *  and an array of the publications that were retreived.
+ *  and an array of the publications that were retrieved.
  *
  * @ingroup tripal_pub
  */
@@ -683,7 +683,7 @@ function tripal_pub_PMID_parse_abstract($xml, &$pub) {
       $pub['Abstract'] = $abstract;
       return;
     }
-    // the abstract text can be just a singe paragraph or be broken into multiple
+    // the abstract text can be just a single paragraph or be broken into multiple
     // abstract texts for structured abstracts.  Here we will just combine then
     // into a single element in the order that they arrive in HTML format
     if ($xml->nodeType == XMLReader::ELEMENT) {

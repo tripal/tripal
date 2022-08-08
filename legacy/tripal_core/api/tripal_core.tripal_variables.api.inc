@@ -83,7 +83,7 @@ function tripal_add_node_variable($nid, $name, $value, $rank = 0) {
  * @param $name
  *   Optional.  The name of the variable.
  * @param $rank
- *   Optional.  The rank of the variable to retreive.
+ *   Optional.  The rank of the variable to retrieve.
  *
  * @return
  *   An array of variable objects.
@@ -120,7 +120,7 @@ function tripal_get_node_variables($nid, $name = '', $rank = '') {
  * @param $name
  *   Optional.  The name of the variable.
  * @param $rank
- *   Optional.  The rank of the variable to retreive.
+ *   Optional.  The rank of the variable to retrieve.
  *
  * @return
  *   Return TRUE if deletion is successful, FALSE otherwise.

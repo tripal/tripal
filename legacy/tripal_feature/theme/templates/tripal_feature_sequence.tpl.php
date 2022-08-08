@@ -117,14 +117,14 @@ if ($residues or count($featureloc_sequences) > 0) {
   }
 
   /* ADD IN ALIGNMENT SEQUENCES FOR THIS FEATURE
-   * For retreiving the sequence from an alignment we would typically make a call to
+   * For retrieving the sequence from an alignment we would typically make a call to
    * chado_expand_var function.  For example, to retrieve all
    * of the featurelocs in order to get the sequences needed for this template, the
    * following function call would be made:
    *
    *   $feature = chado_expand_var($feature,'table','featureloc');
    *
-   * Then all of the sequences would need to be retreived from the alignments and
+   * Then all of the sequences would need to be retrieved from the alignments and
    * formatted for display below.  However, to simplify this template, this has already
    * been done by the tripal_feature module and the sequences are made available in
    * the variable:

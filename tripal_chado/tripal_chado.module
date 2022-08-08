@@ -389,7 +389,7 @@ function tripal_chado_menu() {
 
   $items['admin/tripal/loaders/pub'] = array(
     'title' => t('Chado Bulk Publication Importer Callback'),
-    'description' => t('Create and modify importers that can connect to and retreive publications from remote databases.'),
+    'description' => t('Create and modify importers that can connect to and retrieve publications from remote databases.'),
     'page callback' => 'tripal_pub_importers_list',
     'access arguments' => array('use chado_pub_bulk importer'),
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
