@@ -1538,7 +1538,7 @@ class ChadoPreparer extends ChadoTaskBase {
     $topic_idspace = $this->getIdSpace('topic');
     $topic_idspace->setDescription('A category denoting a rather broad domain or field of interest, of study, application, work, data, or technology. Topics have no clearly defined borders between each other.');
     $topic_idspace->setURLPrefix("http://edamontology.org/{db}_{accession}");
-    $topic_idspace->setDefaultVocabulary('foaf');
+    $topic_idspace->setDefaultVocabulary('EDAM');
 
     $vocab->addIdSpace('data');
     $vocab->addIdSpace('format');
