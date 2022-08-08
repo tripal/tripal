@@ -1533,7 +1533,7 @@ class ChadoPreparer extends ChadoTaskBase {
     $operation_idspace = $this->getIdSpace('operation');
     $operation_idspace->setDescription('A function that processes a set of inputs and results in a set of outputs, or associates arguments (inputs) with values (outputs). Special cases are: a) An operation that consumes no input (has no input arguments).');
     $operation_idspace->setURLPrefix("http://edamontology.org/{db}_{accession}");
-    $operation_idspace->setDefaultVocabulary('foaf');
+    $operation_idspace->setDefaultVocabulary('EDAM');
 
     $topic_idspace = $this->getIdSpace('topic');
     $topic_idspace->setDescription('A category denoting a rather broad domain or field of interest, of study, application, work, data, or technology. Topics have no clearly defined borders between each other.');
