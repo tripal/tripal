@@ -1528,7 +1528,7 @@ class ChadoPreparer extends ChadoTaskBase {
     $format_idspace = $this->getIdSpace('format');
     $format_idspace->setDescription('A defined way or layout of representing and structuring data in a computer file, blob, string, message, or elsewhere. The main focus in EDAM lies on formats as means of structuring data exchanged between different tools or resources.');
     $format_idspace->setURLPrefix("http://edamontology.org/{db}_{accession}");
-    $format_idspace->setDefaultVocabulary('foaf');
+    $format_idspace->setDefaultVocabulary('EDAM');
 
     $operation_idspace = $this->getIdSpace('operation');
     $operation_idspace->setDescription('A function that processes a set of inputs and results in a set of outputs, or associates arguments (inputs) with values (outputs). Special cases are: a) An operation that consumes no input (has no input arguments).');
