@@ -859,10 +859,16 @@ function tripal_add_page() {
       if (!array_key_exists($machine_name . '_fieldset', $content)) {
         $content[$machine_name . '_fieldset'] = $fieldsets[$machine_name . '_fieldset'];
       }
+      if ($bundle->term) {
+        $description = tripal_get_bundle_variable('description', $bundle->id, $bundle->term->definition);
+      }
+      else {
+        $description = tripal_get_bundle_variable('description', $bundle->id, '');
+      }
       $content[$machine_name . '_fieldset'][$bundle->name] = [
         '#type' => 'item',
         '#markup' => l($bundle->label, 'bio_data/add/' . $bundle->id),
-        '#description' => $bundle->term->definition,
+        '#description' => $description,
       ];
     }
   }

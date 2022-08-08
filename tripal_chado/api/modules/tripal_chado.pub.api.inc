@@ -44,7 +44,7 @@
  * be returned.
  *
  * @return
- *   If a singe publication is retreived using the identifiers, then a
+ *   If a single publication is retrieved using the identifiers, then a
  *   publication array will be returned.  The array is of the same format
  *   returned by the chado_generate_var() function. Otherwise, FALSE will be
  *   returned.
@@ -324,7 +324,7 @@ function chado_autocomplete_pub($string = '') {
 
 
 /**
- * Imports a singe publication specified by a remote database cross reference.
+ * Imports a single publication specified by a remote database cross reference.
  *
  * @param $pub_dbxref
  *   The unique database ID for the record to update.  This value must

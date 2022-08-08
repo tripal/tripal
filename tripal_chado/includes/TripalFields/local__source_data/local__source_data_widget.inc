@@ -82,7 +82,7 @@ class local__source_data_widget extends ChadoFieldWidget {
     $widget['source_data']['sourceuri'] = [
       '#type' => 'textfield',
       '#title' => 'Data Source URI',
-      '#description' => 'The URI (e.g. web URL) where the source data can be retreived.',
+      '#description' => 'The URI (e.g. web URL) where the source data can be retrieved.',
       '#default_value' => $sourceuri,
     ];
 

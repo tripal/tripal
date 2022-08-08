@@ -150,7 +150,7 @@ function chado_analysis_form($node, &$form_state) {
     '#markup' => t('When adding any type of data it is good to associate it with
         an analysis so that site visitors can identify the source of the data including
         necessary materials and methods.  The fields below imply that all analyses
-        are derived from some software package. But, data can also be derived via retreival
+        are derived from some software package. But, data can also be derived via retrieval
         from an external source or an analysis pipeline with multipel software components.
         In these cases, provide values for the fields below that best makes sense
      '),

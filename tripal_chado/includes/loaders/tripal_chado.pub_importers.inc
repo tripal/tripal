@@ -1593,7 +1593,7 @@ function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
     if (trim($authors->value)) {
       $pub_array['Authors'] = $authors->value;
     }
-    // if there is no 'Author's property then try to retreive authors from the pubauthor table
+    // if there is no 'Authors' property then try to retrieve authors from the pubauthor table
     else {
       $sql = "
       SELECT string_agg(surname || ' ' || givennames, ', ')
