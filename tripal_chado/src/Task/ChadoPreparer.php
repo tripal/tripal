@@ -3333,7 +3333,7 @@ class ChadoPreparer extends ChadoTaskBase {
       \Drupal::cache()->set($cid, $next_index);
     }
     else {
-      $this->logger->error(t('Creation of content type, "@type", failed. The provided provided were: ',
+      $this->logger->error(t('Creation of content type, "@type", failed. The provided details were: ',
           ['@type' => $details['label']]) . print_r($details));
     }
   }
