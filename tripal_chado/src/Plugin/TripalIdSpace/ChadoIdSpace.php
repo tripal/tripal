@@ -441,7 +441,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
    * {@inheritdoc}
    */
   public function getDefaultVocabulary(){
-    return $this->default_vocabulary;
+    return $this->getDefaultVocabCache();
   }
 
   /**
@@ -451,13 +451,15 @@ class ChadoIdSpace extends TripalIdSpaceBase {
 
     // Don't save terms that aren't valid
     if (!$term->isValid()) {
-      $this->messageLogger->error('ChadoIdSpace::saveTerm(). The term is not valid and cannot be saved.');
+      $this->messageLogger->error(t('ChadoIdSpace::saveTerm(). The term, "@term" is not valid and cannot be saved.',
+          ['@term' => $term->getIdSpace() . ':' . $term->getAccession()]));
       return False;
     }
 
     // Make sure the idSpace matches.
     if ($this->getName() != $term->getIdSpace()) {
-      $this->messageLogger->error('ChadoIdSpace::saveTerm(). The term to save does not have the same ID space as this one.');
+      $this->messageLogger->error(t('ChadoIdSpace::saveTerm(). The term, "@term", does not have the same ID space as this one.',
+          ['@term' => $term->getIdSpace() . ':' . $term->getAccession()]));
       return False;
     }
 
@@ -941,6 +943,32 @@ class ChadoIdSpace extends TripalIdSpaceBase {
   }
 
   /**
+   * Retrieves from the Drupal cache the default vocabulary for this space..
+   *
+   * @return string
+   *   The deffault vocabulary name.
+   */
+  protected function getDefaultVocabCache() {
+    $cid = 'chado_id_space_' . $this->getName() . '_default_vocab';
+    $default_vocab = '';
+    if ($cache = \Drupal::cache()->get($cid)) {
+      $default_vocab = $cache->data;
+    }
+    return $default_vocab;
+  }
+
+  /**
+   * Sets in the Drupal cache the default vocabulary.
+   *
+   * @param string $vocabulary
+   *   The default vocabulary name.
+   */
+  protected function setDefaultVocabCache($vocabulary) {
+    $cid = 'chado_id_space_' . $this->getName() . '_default_vocab';
+    \Drupal::cache()->set($cid, $vocabulary);
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function setDefaultVocabulary($name) {
@@ -948,6 +976,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
     if ($retval === True) {
       $this->default_vocabulary = $name;
     }
+    $this->setDefaultVocabCache($name);
     return $retval;
   }
 }

@@ -319,10 +319,8 @@ class ChadoVocabulary extends TripalVocabularyBase {
         ->condition('name', $name, '=')
         ->execute();
       if ($num_updated != 1) {
-        $this->messageLogger->error('ChadoVocabulary: The URL could not be updated for the vocabulary, "@vocab" for IDspace: "@idspace".',
-          ['@vocab' => $this->getName(),
-           '@idspace' => $name,
-          ]);
+        $this->messageLogger->error(t('ChadoVocabulary: The URL could not be updated for the vocabulary, "@vocab.',
+          ['@vocab' => $this->getName()]));
         return False;
       }
     }
