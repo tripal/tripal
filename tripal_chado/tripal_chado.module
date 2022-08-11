@@ -10,6 +10,7 @@ use Drupal\Core\Config\FileStorage;
 
 require_once 'src/api/tripal_chado.schema.api.inc';
 require_once 'src/api/tripal_chado.custom_tables.api.inc';
+require_once 'src/api/tripal_chado.mviews.api.inc';
 require_once 'src/api/tripal_chado.query.api.inc';
 require_once 'src/api/tripal_chado.variables.api.inc';
 require_once 'src/api/tripal_chado.organism.api.inc';
@@ -39,19 +40,24 @@ function tripal_chado_help($route_name, RouteMatchInterface $route_match) {
 function tripal_chado_rebuild() {
 
   //
-  // Make sure the Tripal Jobs view is present. If not then add it.
+  // Make sure the Views are present.
   //
-
-  // First get the config file.
+  $storage = \Drupal::entityTypeManager()->getStorage('view');
   $dir = drupal_get_path('module', 'tripal_chado');
   $fileStorage = new FileStorage($dir);
-  $config = $fileStorage->read('config/install/views.view.chado_custom_tables');
 
-  // Next load the storage system for views entieis and check if the view
-  // already exists. If it does then don't reload it.
-  $storage = \Drupal::entityTypeManager()->getStorage('view');
+  // The chado_custom_tables view.
   $view = $storage->load('chado_custom_tables');
   if (!$view) {
+    $config = $fileStorage->read('config/install/views.view.chado_custom_tables');
+    $view = $storage->create($config);
+    $view->save();
+  }
+
+  // The chado_materialized_views view.
+  $view = $storage->load('chado_materialized_views');
+  if (!$view) {
+    $config = $fileStorage->read('config/install/views.view.chado_mviews');
     $view = $storage->create($config);
     $view->save();
   }

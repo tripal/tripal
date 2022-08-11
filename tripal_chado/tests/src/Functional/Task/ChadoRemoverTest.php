@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\tripal_chado\Functional\Task;
 
-use Drupal\Tests\tripal_chado\Functional\ChadoTestKernelBase;
+use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 use Drupal\tripal_chado\Task\ChadoRemover;
 
 
@@ -16,7 +16,7 @@ use Drupal\tripal_chado\Task\ChadoRemover;
  * @group Tripal Chado Task
  * @group Tripal Chado Remover
  */
-class ChadoRemoverFunctionalTest extends ChadoTestKernelBase {
+class ChadoRemoverFunctionalTest extends ChadoTestBrowserBase {
 
   /**
    * Tests task.
@@ -26,7 +26,7 @@ class ChadoRemoverFunctionalTest extends ChadoTestKernelBase {
    */
   public function testPerformTaskRemover() {
     // Create a temporary schema.
-    $tripaldbx_db = $this->getTestSchema(ChadoTestKernelBase::CREATE_SCHEMA);
+    $tripaldbx_db = $this->getTestSchema(ChadoTestBrowserBase::CREATE_SCHEMA);
 
     // Test remover.
     $remover = \Drupal::service('tripal_chado.remover');

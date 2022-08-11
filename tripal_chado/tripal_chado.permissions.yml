@@ -1,0 +1,9 @@
+manage chado custom tables:
+  title: 'Manage Custom Tables in Chado.'
+  description: 'Provides creation, editing and deleting of custom tables in a Chado schema'
+  restrict access: true
+  
+manage chado materialized views:
+  title: 'Manage Materialized Views in Chado'
+  description: 'AProvides creation, editing and deleting of materialized views in a Chado schema'
+  restrict access: true
