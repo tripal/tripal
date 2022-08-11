@@ -36,7 +36,7 @@ class TripalContentTermsForm extends EntityForm {
 
     $form['label'] = [
       '#type' => 'item',
-      '#title' => 'Conten Term Configuration',
+      '#title' => 'Content Term Configuration',
       '#markup' => $this->entity->label(),
     ];
 

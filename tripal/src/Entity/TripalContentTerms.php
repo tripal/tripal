@@ -19,6 +19,7 @@ use Drupal\tripal\TripalContentTermsInterface;
  *       "delete" = "Drupal\tripal\Form\TripalContentTermsDeleteForm",
  *     }
  *   },
+ *   config_prefix = "tripal_content_terms",
  *   admin_permission = "administer tripal",
  *   entity_keys = {
  *     "id" = "id",

@@ -1,8 +1,8 @@
-id: 'tripal.tripal_content_terms.tripal_chado'
+id: 'chado_content_terms'
 label: 'Chado Managed Terms'
-description: 'Terms for Content Types and Chado Fields' 
+description: 'Terms for Content Types and Chado Fields'
 vocabularies:
-    -   name: 'germplasm_ontology'   
+    -   name: 'germplasm_ontology'
         label: 'GCP germplasm ontology'
         url: 'http://www.cropontology.org/get-ontology/CO_010'
         idSpaces:
@@ -17,8 +17,8 @@ vocabularies:
             -   id: 'CO_010:0000029'
                 name: 'cultivar'
             -   id: 'CO_010:0000162'
-                name: '414 inbred line'                
-    
+                name: '414 inbred line'
+
     -   name: 'dc'
         label: 'DCMI Metadata Terms'
         url: 'http://purl.org/dc/dcmitype/'
@@ -30,7 +30,7 @@ vocabularies:
             -   id: 'dc:Service'
                 name: 'Service'
                 description: 'A system that provides one or more functions.'
-    
+
     -   name: 'EDAM'
         label: 'Bioscientific data analysis ontology'
         url: 'http://edamontology.org/page'
@@ -38,7 +38,7 @@ vocabularies:
             -   name: 'data'
                 description: "Bioinformatics operations, data types, formats, identifiers and topics."
                 urlPrefix: "http://edamontology.org/{db}_{accession}"
-            -   name: 'format' 
+            -   name: 'format'
                 description: 'A defined way or layout of representing and structuring data in a computer file, blob, string, message, or elsewhere. The main focus in EDAM lies on formats as means of structuring data exchanged between different tools or resources.'
                 urlPrefix: "http://edamontology.org/{db}_{accession}"
             -   name: 'operation'
@@ -46,7 +46,7 @@ vocabularies:
                 urlPrefix: "http://edamontology.org/{db}_{accession}"
             -   name: 'topic'
                 description: 'A category denoting a rather broad domain or field of interest, of study, application, work, data, or technology. Topics have no clearly defined borders between each other.'
-                urlPrefix: "http://edamontology.org/{db}_{accession}"        
+                urlPrefix: "http://edamontology.org/{db}_{accession}"
         terms:
             -   id: 'data:1249'
                 name: 'Sequence length'
@@ -126,7 +126,7 @@ vocabularies:
             -   id: 'operation:2945'
                 name: 'Analysis'
                 description: 'Apply analytical methods to existing data of a specific type.'
-    
+
     -   name: 'efo'
         label: 'The Experimental Factor Ontology (EFO) provides a systematic description of many experimental variables available in EBI databases, and for external projects such as the NHGRI GWAS catalogue. It combines parts of several biological ontologies, such as anatomy, disease and chemical compounds. The scope of EFO is to support the annotation, analysis and visualization of data handled by many groups at the EBI and as the core ontology for OpenTargets.org'
         url: 'http://www.ebi.ac.uk/efo/efo.owl'
@@ -150,7 +150,7 @@ vocabularies:
             -   id: 'EFO:0000269'
                 name: 'array design'
                 description: 'An instrument design which describes the design of the array.'
-    
+
     -   name: 'ero'
         label: 'The Eagle-I Research Resource Ontology models research resources such instruments. protocols, reagents, animal models and biospecimens. It has been developed in the context of the eagle-i project (http://eagle-i.net/).'
         url: 'http://purl.bioontology.org/ontology/ERO'
@@ -165,7 +165,7 @@ vocabularies:
             -   id: 'ERO:0000387'
                 name: 'data acquisition'
                 description: 'A technique that samples real world physical conditions and conversion of the resulting samples into digital numeric values that can be manipulated by a computer.'
-    
+
     -   name: 'OBCS'
         label: 'Ontology of Biological and Clinical Statistics'
         url: 'https://github.com/obcs/obcs'
@@ -177,7 +177,7 @@ vocabularies:
             -   id: 'OBCS:0000117'
                 name: 'rank order'
                 description: 'A data item that represents an arrangement according to a rank, i.e., the position of a particular case relative to other cases on a defined scale.'
-    
+
     -   name: 'obi'
         label: 'Ontology for Biomedical Investigation. The Ontology for Biomedical Investigations (OBI) is build in a collaborative, international effort and will serve as a resource for annotating biomedical investigations, including the study design, protocols and instrumentation used, the data generated and the types of analysis performed on the data. This ontology arose from the Functional Genomics Investigation Ontology (FuGO) and will contain both terms that are common to all biomedical investigations, including functional genomics investigations and those that are more domain specific'
         url: 'http://obi-ontology.org/page/Main_Page'
@@ -192,7 +192,7 @@ vocabularies:
             -   id: 'OBI:0000070'
                 name: 'assay'
                 description: 'A planned process with the objective to produce information about the material entity that is the evaluant, by physically examining it or its proxies.'
-    
+
     -   name: 'ogi'
         label: 'Ontology for Biomedical Investigation. The Ontology for Biomedical Investigations (OBI) is build in a collaborative, international effort and will serve as a resource for annotating biomedical investigations, including the study design, protocols and instrumentation used, the data generated and the types of analysis performed on the data. This ontology arose from the Functional Genomics Investigation Ontology (FuGO) and will contain both terms that are common to all biomedical investigations, including functional genomics investigations and those that are more domain specific'
         url: 'http://purl.bioontology.org/ontology/OGI'
@@ -204,7 +204,7 @@ vocabularies:
             -   id: 'OGI:0000021'
                 name: 'location on map'
                 description: ''
-                
+
     -   name: 'IAO'
         label: 'Information Artifact Ontology'
         url: 'https://github.com/information-artifact-ontology/IAO/'
@@ -222,15 +222,15 @@ vocabularies:
             -   id: 'IAO:0000064'
                 name: 'algorithm'
                 description: 'An algorithm is a set of instructions for performing a paticular calculation.'
-    
+
     -   name: 'null'
         label: 'No vocabulary'
         url: 'cv/lookup/null'
         idSpaces:
             -   name: 'null'
                 description: 'No database'
-                urlPrefix: 'cv/lookup/{db}/{accession}' 
-                   
+                urlPrefix: 'cv/lookup/{db}/{accession}'
+
     -   name: 'local'
         label: 'Locally created terms'
         url: 'cv/lookup/local'
@@ -344,7 +344,7 @@ vocabularies:
             -   id: 'local:Genome Project'
                 name: 'Genome Project'
                 description: 'A project for whole genome analysis that can include assembly and annotation.'
-       
+
     -   name: 'organism_property'
         label: 'A local vocabulary that contains locally defined properties for organisms'
         url: 'cv/lookup/local'
@@ -376,23 +376,23 @@ vocabularies:
                 name: 'equivalent_name'
             -   id: 'local:anamorph'
                 name: 'anamorph'
-            
+
     -   name: 'analysis_property'
         label: 'A local vocabulary that contains locally defined properties for analyses'
         url: 'cv/lookup/local'
         idSpaces:
-            -   name: 'local'      
+            -   name: 'local'
         terms:
             -   id: 'local:Analysis Type'
                 name: 'Analysis Type'
                 description: 'The type of analysis that was performed.'
-        
+
     -   name: 'tripal_phylogeny'
         label: 'Terms used by the Tripal phylotree module for phylogenetic and taxonomic trees'
         url: 'cv/lookup/local'
         idSpaces:
             -   name: 'local'
-        terms:            
+        terms:
             -   id: 'local:phylo_leaf'
                 name: 'phylo_leaf'
                 description: 'A leaf node in a phylogenetic tree.'
@@ -405,49 +405,49 @@ vocabularies:
             -   id: 'local:taxonomy'
                 name: 'taxonomy'
                 description: 'Deprecated: A term used to indicate if a phylotree is a taxonomic tree'
-    
-        
+
+
     -   name: 'feature_relationship'
         label: 'A local vocabulary that contains types of relationships between features'
         url: 'cv/lookup/local'
         idSpaces:
-            -   name: 'local'  
-                
+            -   name: 'local'
+
     -   name: 'feature_property'
         label: 'A local vocabulary that contains properties for genomic features'
         url: 'cv/lookup/local'
         idSpaces:
-            -   name: 'local'  
-                
+            -   name: 'local'
+
     -   name: 'contact_property'
         label: 'A local vocabulary that contains properties for contacts. This can be used if the tripal_contact vocabulary (which is default for contacts in Tripal) is not desired.'
         url: 'cv/lookup/local'
         idSpaces:
-            -   name: 'local'  
-                
+            -   name: 'local'
+
     -   name: 'contact_type'
         label: 'A local vocabulary that contains types of contacts. This can be used if the tripal_contact vocabulary (which is default for contacts in Tripal) is not desired.'
         url: 'cv/lookup/local'
         idSpaces:
-            -   name: 'local'  
-                
+            -   name: 'local'
+
     -   name: 'tripal_contact'
         label: 'A local vocabulary that contains a heirarchical set of terms for describing a contact. It is intended to be used as the default vocabularies in Tripal for contact types and contact properties.'
         url: 'cv/lookup/local'
         idSpaces:
-            -   name: 'local'  
-                
+            -   name: 'local'
+
     -   name: 'contact_relationship'
         label: 'A local vocabulary that contains types of relationships between contacts.'
         url: 'cv/lookup/local'
         idSpaces:
-            -   name: 'local'  
-                
+            -   name: 'local'
+
     -   name: 'featuremap_units'
         label: 'A local vocabulary that contains map unit types for the unittype_id column of the featuremap table.'
         url: 'cv/lookup/local'
         idSpaces:
-            -   name: 'local'      
+            -   name: 'local'
         terms:
             -   id: 'local:cM'
                 name: 'cM'
@@ -459,17 +459,17 @@ vocabularies:
                 name: 'bin_unit'
                 description: 'The bin unit'
             -   id: 'local:marker_order'
-                name: 'marker_order'        
+                name: 'marker_order'
                 description: 'Units simply to define marker order.'
             -   id: 'local:undefined'
                 name: 'undefined'
                 description: 'A catch-all for an undefined unit type'
-            
+
     -   name: 'featurepos_property'
         label: 'A local vocabulary that contains terms map properties.'
         url: 'cv/lookup/local'
         idSpaces:
-            -   name: 'local'      
+            -   name: 'local'
         terms:
             -   id: 'local:start'
                 name: 'start'
@@ -477,12 +477,12 @@ vocabularies:
             -   id: 'local:stop'
                 name: 'stop'
                 description: 'The end coordinate for a map feature'
-        
+
     -   name: 'featuremap_property'
         label: 'A local vocabulary that contains positional types for the feature positions.'
         url: 'cv/lookup/local'
         idSpaces:
-            -   name: 'local'    
+            -   name: 'local'
         terms:
             -   id: 'local:Map Dbxref'
                 name: 'Map Dbxref'
@@ -508,7 +508,7 @@ vocabularies:
             -   id: 'local:Software'
                 name: 'Software'
                 description: 'The software used to construct the map.'
-        
+
     -   name: 'library_property'
         label: 'A local vocabulary that contains properties for libraries.'
         url: 'cv/lookup/local'
@@ -521,7 +521,7 @@ vocabularies:
             -   id: 'local:library_description'
                 name: 'Library Description'
                 description: 'Description of a library'
-        
+
     -   name: 'library_type'
         label: 'A local vocabulary that contains terms for types of libraries (e.g. BAC, cDNA, FOSMID, etc).'
         url: 'cv/lookup/local'
@@ -546,12 +546,12 @@ vocabularies:
             -   id: 'local:genomic_library'
                 name: 'genomic_library'
                 description: 'Genomic Library'
-        
+
     -   name: 'project_property'
         label: 'A local vocabulary that contains properties for projects.'
         url: 'cv/lookup/local'
         idSpaces:
-            -   name: 'local'    
+            -   name: 'local'
         terms:
             -   id: 'local:Project Description'
                 name: 'Project Description'
@@ -559,70 +559,70 @@ vocabularies:
             -   id: 'local:Project Type'
                 name: 'Project Type'
                 description: 'A type of project'
-        
+
     -   name: 'study_property'
         label: 'A local vocabulary that contains properties for studies.'
         url: 'cv/lookup/local'
         idSpaces:
-            -   name: 'local' 
+            -   name: 'local'
         terms:
             -   id: 'local:Study Type'
                 name: 'Study Type'
                 description: 'A type of study'
-        
+
     -   name: 'project_relationship'
         label: 'A local vocabulary that contains Types of relationships between projects'
         url: 'cv/lookup/local'
         idSpaces:
-            -   name: 'local'      
-        
+            -   name: 'local'
+
     -   name: 'tripal_pub'
         label: 'A local vocabulary that contains a heirarchical set of terms for describing a publication. It is intended to be used as the default vocabularies in Tripal for publication types and contact properties.'
         url: 'cv/lookup/local'
         idSpaces:
-            -   name: 'local'      
-        
+            -   name: 'local'
+
     -   name: 'pub_type'
         label: 'A local vocabulary that contains types of publications. This can be used if the tripal_pub vocabulary (which is default for publications in Tripal) is not desired.'
         url: 'cv/lookup/local'
         idSpaces:
-            -   name: 'local'      
-    
+            -   name: 'local'
+
     -   name: 'pub_property'
         label: 'A local vocabulary that contains properties for publications. This can be used if the tripal_pub vocabulary (which is default for publications in Tripal) is not desired.'
         url: 'cv/lookup/local'
         idSpaces:
-            -   name: 'local'      
-    
+            -   name: 'local'
+
     -   name: 'pub_relationship'
         label: 'A local vocabulary that contains types of relationships between publications.'
         url: 'cv/lookup/local'
         idSpaces:
-            -   name: 'local'      
-    
+            -   name: 'local'
+
     -   name: 'stock_relationship'
         label: 'A local vocabulary that contains types of relationships between stocks.'
         url: 'cv/lookup/local'
         idSpaces:
-            -   name: 'local'      
-    
+            -   name: 'local'
+
     -   name: 'stock_property'
         label: 'A local vocabulary that contains properties for stocks.'
         url: 'cv/lookup/local'
         idSpaces:
-            -   name: 'local'      
-    
+            -   name: 'local'
+
     -   name: 'stock_type'
         label: 'A local vocabulary that contains a list of types for stocks.'
         url: 'cv/lookup/local'
         idSpaces:
-            -   name: 'local'      
-    
+            -   name: 'local'
+
     -   name: 'tripal_analysis'
         label: 'A local vocabulary that contains terms used for analyses.'
         url: 'cv/lookup/local'
         idSpaces:
-            -   name: 'local'          
+            -   name: 'local'
         terms:
             -   id: 'local:analysis_date'
                 name: 'analysis_date'
@@ -630,12 +630,12 @@ vocabularies:
             -   id: 'local:analysis_short_name'
                 name: 'analysis_short_name'
                 description: 'A computer legible (no spaces or special characters) abbreviation for the analysis.'
-    
+
     -   name: 'nd_experiment_types'
         label: "A local vocabulary that contains terms used for the Natural Diverisity module's experiment types."
         url: 'cv/lookup/local'
-        idSpaces: 
-            -   name: 'local'                
+        idSpaces:
+            -   name: 'local'
         terms:
             -   id: 'local:Genotyping'
                 name: 'Genotyping'
@@ -643,7 +643,7 @@ vocabularies:
             -   id: 'local:Phenotyping'
                 name: 'Phenotyping'
                 description: 'An experiment where phenotypes of individuals are identified.'
-    
+
     -   name: 'nd_geolocation_property'
         label: "A local vocabulary that contains terms used for the Natural Diverisity module's geolocation property."
         url: 'cv/lookup/local'
@@ -653,7 +653,7 @@ vocabularies:
             -   id: 'local:Location'
                 name: 'Location'
                 description: 'The name of the location.'
-    
+
     -   name: 'sbo'
         label: 'Systems Biology.  Terms commonly used in Systems Biology, and in particular in computational modeling.'
         url: 'http://www.ebi.ac.uk/sbo/main/'
@@ -671,7 +671,7 @@ vocabularies:
             -   id: 'SBO:0000374'
                 name: 'relationship'
                 description: 'Connectedness between entities and/or interactions representing their relatedness or influence.'
-    
+
     -   name: 'swo'
         label: 'Bioinformatics operations, data types, formats, identifiers and topics'
         url: 'http://purl.obolibrary.org/obo/swo'
@@ -683,15 +683,15 @@ vocabularies:
             -   id: 'SWO:0000001'
                 name: 'software'
                 description: "Computer software, or generally just software, is any set of machine-readable instructions (most often in the form of a computer program) that conform to a given syntax (sometimes referred to as a language) that is interpretable by a given processor and that directs a computer's processor to perform specific operations."
-    
+
     -   name: 'PMID'
         label: 'PubMed.'
         url: 'http://www.ncbi.nlm.nih.gov/pubmed'
         idSpaces:
             -   name: 'PMID'
                 description: "PubMed"
-                urlPrefix: "http://www.ncbi.nlm.nih.gov/pubmed/{accession}"    
-    
+                urlPrefix: "http://www.ncbi.nlm.nih.gov/pubmed/{accession}"
+
     -   name: 'uo'
         label: 'Units of Measurement Ontology'
         url: 'http://purl.obolibrary.org/obo/uo'
@@ -703,14 +703,14 @@ vocabularies:
             -   id: 'UO:0000000'
                 name: 'unit'
                 description: 'A unit of measurement is a standardized quantity of a physical quality.'
-    
+
     -   name: 'ncit'
         label: 'NCI Thesaurus OBO Edition'
         url: 'http://purl.obolibrary.org/obo/ncit.owl'
         idSpaces:
             -   name: 'NCIT'
                 description: 'The NCIt is a reference terminology that includes broad coverage of the cancer domain, including cancer related diseases, findings and abnormalities. NCIt OBO Edition releases should be considered experimental.'
-                urlPrefix: 'http://purl.obolibrary.org/obo/{db}_{accession}'    
+                urlPrefix: 'http://purl.obolibrary.org/obo/{db}_{accession}'
         terms:
             -   id: 'NCIT:C25164'
                 name: 'Date'
@@ -772,7 +772,7 @@ vocabularies:
             -   id: 'NCIT:C25693'
                 name: 'Subgroup'
                 description: 'A subdivision of a larger group with members often exhibiting similar characteristics. [ NCI ]'
-    
+
     -   name: 'ncbitaxon'
         label: 'NCBI organismal classification. An ontology representation of the NCBI organismal taxonomy'
         url: 'http://www.berkeleybop.org/ontologies/ncbitaxon/'
@@ -783,8 +783,8 @@ vocabularies:
         terms:
             -   id: 'NCBITaxon:common_name'
                 name: 'common name'
-                
-                
+
+
     -   name: 'rdfs'
         label: 'Resource Description Framework Schema'
         url: 'https://www.w3.org/TR/rdf-schema/'
@@ -802,7 +802,7 @@ vocabularies:
             -   id: 'rdfs:label'
                 name: 'label'
                 description: "A human-readable version of a resource's name."
-    
+
     -   name: 'ro'
         label: 'Relationship Ontology (legacy)'
         url: 'cv/lookup/RO'
@@ -810,7 +810,7 @@ vocabularies:
             -   name: 'RO'
                 description: 'Relationship Ontology (legacy)'
                 urlPrefix: "cv/lookup/RO/{accession}    "
-    
+
     -   name: 'cellular_component'
         label: 'Gene Ontology Cellular Component Vocabulary'
         url: 'http://geneontology.org/'
@@ -818,20 +818,20 @@ vocabularies:
             -   name: 'GO'
                 description: "The Gene Ontology (GO) knowledgebase is the world’s largest source of information on the functions of genes"
                 urlPrefix: "http://amigo.geneontology.org/amigo/term/{db}:{accession}"
-    
+
     -   name: 'biological_process'
         label: 'Gene Ontology Biological Process Vocabulary'
-        url: 'http://geneontology.org/'    
+        url: 'http://geneontology.org/'
         idSpaces:
             -   name: 'GO'
-    
+
     -   name: 'molecular_function'
         label: 'Gene Ontology Molecular Function Vocabulary'
-        url: 'http://geneontology.org/'    
+        url: 'http://geneontology.org/'
         idSpaces:
             -   name: 'GO'
-    
-    
+
+
     -   name: 'sequence'
         label: 'The Sequence Ontology'
         url: 'http://www.sequenceontology.org'
@@ -843,7 +843,7 @@ vocabularies:
             -   id: 'SO:0000110'
                 name: 'sequence_feature'
                 description: 'Any extent of continuous biological sequence.'
-    
+
     -   name: 'taxonomic_rank'
         label: 'Taxonomic Rank'
         url: 'http://www.obofoundry.org/ontology/taxrank.html'
@@ -858,15 +858,15 @@ vocabularies:
                 name: 'species'
             -   id: 'TAXRANK:0000045'
                 name: 'infraspecies'
-    
+
     -   name: 'tripal_contact'
         label: 'Tripal Contact Ontology'
-        url: 'cv/lookup/TCONTACT'    
+        url: 'cv/lookup/TCONTACT'
         idSpaces:
             -   name: 'TCONTACT'
                 description: "Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology an be identified."
                 urlPrefix: "cv/lookup/TCONTACT/{accession}  "
-    
+
     -   name: 'tripal_pub'
         label: 'Tripal Publication Ontology'
         url: 'cv/lookup/TPUB'
@@ -877,7 +877,7 @@ vocabularies:
         terms:
             -   id: 'TPUB:0000002'
                 name: 'Publication'
-      
+
     -   name: 'foaf'
         label: 'Friend of a Friend. A dictionary of people-related terms that can be used in structured data).'
         url: 'http://www.foaf-project.org/'
@@ -885,7 +885,7 @@ vocabularies:
             -   name: 'foaf'
                 description: "Friend of a Friend"
                 urlPrefix: "http://xmlns.com/foaf/spec/#"
-    
+
     -   name: 'hydra'
         label: 'A Vocabulary for Hypermedia-Driven Web APIs.'
         url: 'http://www.w3.org/ns/hydra/core'
@@ -912,7 +912,7 @@ vocabularies:
             -   id: 'hydra:PartialCollectionView'
                 name: 'PartialCollectionView'
                 description: 'A PartialCollectionView describes a partial view of a Collection. Multiple PartialCollectionViews can be connected with the the next/previous properties to allow a client to retrieve all members of the collection.'
-    
+
     -   name: 'rdf'
         label: 'Resource Description Framework'
         url: 'http://www.w3.org/1999/02/22-rdf-syntax-ns'
@@ -920,8 +920,8 @@ vocabularies:
             -   name: 'rdf'
                 description: "Resource Description Framework"
                 urlPrefix: "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-    
-    
+
+
     -   name: 'schema'
         label: 'Schema.org. Schema.org is sponsored by Google, Microsoft, Yahoo and Yandex. The vocabularies are developed by an open community process.'
         url: 'https://schema.org/'
@@ -954,7 +954,7 @@ vocabularies:
             -   id: 'schema:ItemPage'
                 name: 'ItemPage'
                 description: 'A page devoted to a single item, such as a particular product or hotel.'
-    
+
     -   name: 'sep'
         label: 'A structured controlled vocabulary for the annotation of sample processing and separation techniques in scientific experiments.'
         url: 'http://psidev.info/index.php?q=node/312'
@@ -969,7 +969,7 @@ vocabularies:
             -   id: 'sep:00101'
                 name: 'protocol'
                 description: 'A protocol is a process which is a parameterizable description of a process.'
-    
+
     -   name: 'SIO'
         label: 'The Semanticscience Integrated Ontology (SIO) provides a simple, integrated ontology of types and relations for rich description of objects, processes and their attributes.'
         url: 'http://sio.semanticscience.org/'

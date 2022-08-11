@@ -83,9 +83,9 @@ function tripal_chado_rebuild_chado_term_mappings() {
   }
 
   $storage = \Drupal::entityTypeManager()->getStorage('tripal_content_terms');
-  $mapping = $storage->load('tripal.tripal_content_terms.tripal_chado');
+  $mapping = $storage->load('tripal.tripal_content_terms.chado_content_terms');
   if (!$mapping) {
-    $config = $fileStorage->read('config/install/tripal.tripal_content_terms.tripal_chado');
+    $config = $fileStorage->read('config/install/tripal.tripal_content_terms.chado_content_terms');
     $mapping = $storage->create($config);
     $mapping->save();
   }
