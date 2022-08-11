@@ -6,7 +6,7 @@ dependencies:
     - tripal
     - tripal_chado
     - user
-id: chado_materialized_views
+id: chado_mviews
 label: 'Chado Materialized Views'
 module: views
 description: ''
