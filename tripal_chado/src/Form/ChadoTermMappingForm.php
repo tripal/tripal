@@ -9,12 +9,12 @@ use Drupal\Core\Messenger\MessengerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Form handler for the Example add and edit forms.
+ * Form handler for the Chado Term Mapping Configuration entity add and edit forms.
  */
 class ChadoTermMappingForm extends EntityForm {
 
   /**
-   * Constructs an ExampleForm object.
+   * Constructs an ChadoTermMappingForm object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entityTypeManager.
@@ -161,17 +161,17 @@ class ChadoTermMappingForm extends EntityForm {
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
-    $example = $this->entity;
-    $status = $example->save();
+    $entity = $this->entity;
+    $status = $entity->save();
 
     if ($status === SAVED_NEW) {
       $this->messenger()->addMessage($this->t('The %label mapping created.', [
-        '%label' => $example->label(),
+        '%label' => $entity->label(),
       ]));
     }
     else {
       $this->messenger()->addMessage($this->t('The %label mapping updated.', [
-        '%label' => $example->label(),
+        '%label' => $entity->label(),
       ]));
     }
 
@@ -179,7 +179,7 @@ class ChadoTermMappingForm extends EntityForm {
   }
 
   /**
-   * Helper function to check whether an Example configuration entity exists.
+   * Helper function to check whether a Chado Term Mapping configuration entity exists.
    */
   public function exist($id) {
     $entity = $this->entityTypeManager->getStorage('chado_term_mapping')->getQuery()

@@ -1,5 +1,5 @@
 <?php
-namespace Drupal\tripal_chado;
+namespace Drupal\tripal_chado\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
 

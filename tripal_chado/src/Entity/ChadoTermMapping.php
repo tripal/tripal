@@ -3,16 +3,16 @@
 namespace Drupal\tripal_chado\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
-use Drupal\tripal_chado\ChadoTermMappingInterface;
+use Drupal\tripal_chado\Entity\ChadoTermMappingInterface;
 
 /**
- * Defines the Example entity.
+ * Defines the Chado Term Mapping Configuration entity.
  *
  * @ConfigEntityType(
  *   id = "chado_term_mapping",
  *   label = @Translation("Chado Term Mapping"),
  *   handlers = {
- *     "list_builder" = "Drupal\tripal_chado\Controller\ChadoTermMappingListBuilder",
+ *     "list_builder" = "Drupal\tripal_chado\ListBuilders\ChadoTermMappingListBuilder",
  *     "form" = {
  *       "add" = "Drupal\tripal_chado\Form\ChadoTermMappingForm",
  *       "edit" = "Drupal\tripal_chado\Form\ChadoTermMappingForm",

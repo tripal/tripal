@@ -1,12 +1,12 @@
 <?php
 
-namespace Drupal\tripal_chado\Controller;
+namespace Drupal\tripal_chado\ListBuilders;
 
 use Drupal\Core\Config\Entity\ConfigEntityListBuilder;
 use Drupal\Core\Entity\EntityInterface;
 
 /**
- * Provides a listing of Example.
+ * Provides a listing of Chado Term Mapping config entities.
  */
 class ChadoTermMappingListBuilder extends ConfigEntityListBuilder {
 
