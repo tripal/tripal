@@ -386,9 +386,6 @@ display:
           admin_label: ''
           plugin_id: standard
           order: ASC
-          expose:
-            label: ''
-            field_identifier: ''
           exposed: false
         chado:
           id: chado
@@ -399,9 +396,6 @@ display:
           admin_label: ''
           plugin_id: standard
           order: ASC
-          expose:
-            label: ''
-            field_identifier: ''
           exposed: false
       arguments: {  }
       filters:
