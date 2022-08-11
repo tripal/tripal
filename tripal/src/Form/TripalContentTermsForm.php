@@ -48,8 +48,12 @@ class TripalContentTermsForm extends EntityForm {
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
-    $example = $this->entity;
-    $status = $example->save();
+
+    $this->messenger()->addMessage($this->t('There are no changes to save.'));
+
+    /*
+    $entity = $this->entity;
+    $status = $entity->save();
 
     if ($status === SAVED_NEW) {
       $this->messenger()->addMessage($this->t('The %label Example created.', [
@@ -63,6 +67,7 @@ class TripalContentTermsForm extends EntityForm {
     }
 
     $form_state->setRedirect('entity.tripal_content_terms.collection');
+    */
   }
 
   /**

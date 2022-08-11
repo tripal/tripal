@@ -50,9 +50,9 @@ class ChadoTermMappingForm extends EntityForm {
       '#title' => 'Instructions',
       '#markup' => $this->t('The following drop down contains the list of tables ' .
           'that are configured using this mapping configuration. By default the ' .
-          '"Core Chado Term Mapping" should provie configurations for all Chado tables ' .
+          '"Core Chado Term Mapping" should provide configurations for all Chado tables ' .
           'and custom tables provided by Tripal. Extension modules will contain mappings ' .
-          'for their own additions'),
+          'for their own additions.'),
     ];
     $form['chado_table'] = [
       '#type' => 'select',
@@ -66,6 +66,7 @@ class ChadoTermMappingForm extends EntityForm {
         'effect' => 'fade'
       ],
     ];
+
 
     $chado = \Drupal::service('tripal_chado.database');
     $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
@@ -121,6 +122,7 @@ class ChadoTermMappingForm extends EntityForm {
         $buttons
       ];
     }
+
     $form['term_table'] = [
       '#type' => 'table',
       '#header' => $header,
@@ -161,6 +163,10 @@ class ChadoTermMappingForm extends EntityForm {
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
+
+    $this->messenger()->addMessage($this->t('There are no changes to save.'));
+
+    /*
     $entity = $this->entity;
     $status = $entity->save();
 
@@ -174,6 +180,7 @@ class ChadoTermMappingForm extends EntityForm {
         '%label' => $entity->label(),
       ]));
     }
+    */
 
     $form_state->setRedirect('entity.chado_term_mapping.collection');
   }
