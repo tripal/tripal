@@ -75,9 +75,9 @@ function tripal_chado_rebuild_chado_term_mappings() {
   $dir = drupal_get_path('module', 'tripal_chado');
   $fileStorage = new FileStorage($dir);
 
-  $mapping = $storage->load('tripal_chado.chado_term_mapping.core');
+  $mapping = $storage->load('tripal_chado.chado_term_mapping.core_mapping');
   if (!$mapping) {
-    $config = $fileStorage->read('config/install/tripal_chado.chado_term_mapping.core');
+    $config = $fileStorage->read('config/install/tripal_chado.chado_term_mapping.core_mapping');
     $mapping = $storage->create($config);
     $mapping->save();
   }

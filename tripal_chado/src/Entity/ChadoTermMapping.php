@@ -19,6 +19,7 @@ use Drupal\tripal_chado\ChadoTermMappingInterface;
  *       "delete" = "Drupal\tripal_chado\Form\ChadoTermMappingDeleteForm",
  *     }
  *   },
+ *   config_prefix = "chado_term_mapping",
  *   admin_permission = "administer tripal",
  *   entity_keys = {
  *     "id" = "id",

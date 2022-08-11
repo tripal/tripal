@@ -1,4 +1,4 @@
-id: tripal_chado.chado_term_mapping.core
+id: 'core_mapping'
 label: 'Core Chado Term Mapping'
 description: 'Core mapping of terms to Chado table columns.'
 tables:
@@ -799,7 +799,7 @@ tables:
             -   name: 'version'
                 term_id: 'IAO:0000129'
                 term_name: 'version number'
-    
+
     -   name: 'dbxrefprop'
         columns:
             -   name: 'dbxref_id'
@@ -1041,7 +1041,7 @@ tables:
             -   name: 'dbxref_id'
                 term_id: 'data:2091'
                 term_name: 'Accession'
-                
+
     -   name: 'feature_cvtermprop'
         columns:
             -   name: 'rank'
