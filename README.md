@@ -17,6 +17,14 @@
 
 This project acts as the home of Tripal 4 development. Once Tripal 4 is stable, it will be merged back into the [Core Tripal Repository](https://github.com/tripal/tripal).
 
+## Compatibility
+
+**Current Target Version: 9.4.x**
+
+| Drupal                     | 9.2.x                                                                                                                                                                    | 9.3.x                                                                                                                                                                    | 9.4.x                                                                                                                                                                    | 9.5.x                                                                                                                                                                    | 10.0.x |
+|----------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------|
+| **PHP 8.0** <br> **PostgreSQL 13** | [![PHPUnit](https://github.com/tripal/t4d8/actions/workflows/phpunit-php8-D9-2x.yml/badge.svg)](https://github.com/tripal/t4d8/actions/workflows/phpunit-php8-D9-2x.yml) | [![PHPUnit](https://github.com/tripal/t4d8/actions/workflows/phpunit-php8-D9-3x.yml/badge.svg)](https://github.com/tripal/t4d8/actions/workflows/phpunit-php8-D9-3x.yml) | [![PHPUnit](https://github.com/tripal/t4d8/actions/workflows/phpunit-php8-D9-4x.yml/badge.svg)](https://github.com/tripal/t4d8/actions/workflows/phpunit-php8-D9-4x.yml) | [![PHPUnit](https://github.com/tripal/t4d8/actions/workflows/phpunit-php8-D9-5x.yml/badge.svg)](https://github.com/tripal/t4d8/actions/workflows/phpunit-php8-D9-5x.yml) |        |
+
 ## Current Timeline
 
 ### Required for Tripal 4.alpha1 Release
