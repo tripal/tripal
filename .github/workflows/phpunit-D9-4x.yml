@@ -1,5 +1,5 @@
 
-name: PHPUnit - Drupal 9.4.x
+name: PHPUnit
 
 on: [push]
 
@@ -8,6 +8,7 @@ env:
 
 jobs:
   run-tests:
+    name: "Drupal $DRUPALVER"
     runs-on: ubuntu-latest
     steps:
       # Check out the repo
