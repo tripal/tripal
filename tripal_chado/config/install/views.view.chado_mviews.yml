@@ -6,7 +6,7 @@ dependencies:
     - tripal
     - tripal_chado
     - user
-id: chado_materialized_views
+id: chado_mviews
 label: 'Chado Materialized Views'
 module: views
 description: ''
@@ -593,9 +593,6 @@ display:
           admin_label: ''
           plugin_id: standard
           order: ASC
-          expose:
-            label: ''
-            field_identifier: ''
           exposed: false
         chado:
           id: chado
@@ -606,9 +603,6 @@ display:
           admin_label: ''
           plugin_id: standard
           order: ASC
-          expose:
-            label: ''
-            field_identifier: ''
           exposed: false
       arguments: {  }
       filters:

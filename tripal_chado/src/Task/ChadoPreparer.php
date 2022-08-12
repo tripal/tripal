@@ -956,7 +956,6 @@ class ChadoPreparer extends ChadoTaskBase {
       'vocabulary' => 'rdfs',
       'definition' => 'A human-readable version of a resource\'s name.',
     ]));
-
   }
 
   /**
@@ -1528,22 +1527,22 @@ class ChadoPreparer extends ChadoTaskBase {
     $data_idspace = $this->getIdSpace('data');
     $data_idspace->setDescription("Bioinformatics operations, data types, formats, identifiers and topics.");
     $data_idspace->setURLPrefix("http://edamontology.org/{db}_{accession}");
-    $data_idspace->setDefaultVocabulary('foaf');
+    $data_idspace->setDefaultVocabulary('EDAM');
 
     $format_idspace = $this->getIdSpace('format');
     $format_idspace->setDescription('A defined way or layout of representing and structuring data in a computer file, blob, string, message, or elsewhere. The main focus in EDAM lies on formats as means of structuring data exchanged between different tools or resources.');
     $format_idspace->setURLPrefix("http://edamontology.org/{db}_{accession}");
-    $format_idspace->setDefaultVocabulary('foaf');
+    $format_idspace->setDefaultVocabulary('EDAM');
 
     $operation_idspace = $this->getIdSpace('operation');
     $operation_idspace->setDescription('A function that processes a set of inputs and results in a set of outputs, or associates arguments (inputs) with values (outputs). Special cases are: a) An operation that consumes no input (has no input arguments).');
     $operation_idspace->setURLPrefix("http://edamontology.org/{db}_{accession}");
-    $operation_idspace->setDefaultVocabulary('foaf');
+    $operation_idspace->setDefaultVocabulary('EDAM');
 
     $topic_idspace = $this->getIdSpace('topic');
     $topic_idspace->setDescription('A category denoting a rather broad domain or field of interest, of study, application, work, data, or technology. Topics have no clearly defined borders between each other.');
     $topic_idspace->setURLPrefix("http://edamontology.org/{db}_{accession}");
-    $topic_idspace->setDefaultVocabulary('foaf');
+    $topic_idspace->setDefaultVocabulary('EDAM');
 
     $vocab->addIdSpace('data');
     $vocab->addIdSpace('format');
@@ -3299,6 +3298,12 @@ class ChadoPreparer extends ChadoTaskBase {
   /**
    * Create a new Content Type.
    *
+   * @param array $details
+   *   Describes the content type you would like to create.
+   *   Should contain the following:
+   *    - label: the human-readable label to be used for the content type.
+   *    - category: a human-readable category to group like content types together.
+   *    - term: a tripal term object which should be associated with the content type.
    */
   private function createContentType($details) {
 
@@ -3338,7 +3343,7 @@ class ChadoPreparer extends ChadoTaskBase {
       \Drupal::cache()->set($cid, $next_index);
     }
     else {
-      $this->logger->error(t('Creation of content type, "@type", failed. The provided provided were: ',
+      $this->logger->error(t('Creation of content type, "@type", failed. The provided details were: ',
           ['@type' => $details['label']]) . print_r($details));
     }
   }
