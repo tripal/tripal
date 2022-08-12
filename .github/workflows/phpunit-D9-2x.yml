@@ -1,25 +1,14 @@
-# Run some PHPUnit tests
-name: PHPUnit-Tests
 
-# When do we want the tests to run?
+name: PHPUnit - Drupal 9.2.x
+
 on: [push]
 
-# Define jobs that are part of the workflow
+env:
+  DRUPALVER: 9.2.x-dev
+
 jobs:
-  # Job 1: 'build'
   run-tests:
-    # Runner type
     runs-on: ubuntu-latest
-    # Drupal Targets
-    strategy:
-      fail-fast: false
-      matrix:
-        drupalversion: ['9.2.x-dev', '9.3.x-dev']
-
-    # Give the builds names so we can tell them apart
-    name: PHPUnit Drupal ${{ matrix.drupalversion }} -- REQUIRED
-
-    # Steps in the sequence
     steps:
       # Check out the repo
       - name: Checkout Repository
@@ -28,7 +17,9 @@ jobs:
       # to ensure we have not broken the install/build process.
       - name: Build the Docker
         run: |
-          docker build --tag=tripaldocker:localdocker --build-arg drupalversion='${{ matrix.drupalversion }}' --build-arg chadoschema='testchado' ./
+          docker build --tag=tripaldocker:localdocker \
+            --build-arg drupalversion='$DRUPALVER' \
+            --build-arg chadoschema='testchado' ./
       # Just spin up docker the good ol' fashion way.
       - name: Spin up Local Docker
         run: |
@@ -37,9 +28,6 @@ jobs:
             tripaldocker:localdocker
           docker exec tripaldocker service postgresql restart
       # Runs the PHPUnit tests.
-      # https://github.com/mheap/phpunit-github-actions-printer is used
-      # to report PHPUnit fails in a meaningful way to github in PRs.
-      # Stopped using mheap due to warning w/ phpunit8->9
       - name: Run PHPUnit Tests
         env:
           SIMPLETEST_BASE_URL: "http://localhost"
