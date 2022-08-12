@@ -337,6 +337,9 @@ class TripalDbx {
       // Adds regex wildcard
       $reserved_pattern = preg_replace('/(?<!\.)\*/', '.*', $reserved_pattern);
       if (preg_match("/^$reserved_pattern\$/", $schema_name)) {
+        if ($reserved === FALSE) {
+          $reserved = [];
+        }
         $reserved[$reserved_pattern] = $description;
       }
     }

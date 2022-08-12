@@ -31,7 +31,7 @@ class bulkPgSchemaInstallerTest extends BrowserTestBase {
 			"Unable to initialize the tripal.bulkPgSchemaInstaller service.");
 		$this->assertIsObject($service->getDrupalConnection(),
 			"Unable to initialize Drupal database connection");
-		$this->assertIsResource($service->getPgConnection(),
+		$this->assertIsObject($service->getPgConnection(),
 			"Unable to initialize postgresql-specific database connection");
 		$this->assertIsObject($service->getLogger(),
 			"Unable to initialize the message/error logger.");

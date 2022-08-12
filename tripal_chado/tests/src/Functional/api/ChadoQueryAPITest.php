@@ -43,7 +43,7 @@ class ChadoQueryAPITest extends BrowserTestBase {
     $check_schema = "SELECT true FROM pg_namespace WHERE nspname = :schema";
     $exists = $connection->query($check_schema, [':schema' => $this::$schemaName])
       ->fetchField();
-    $this->assertTrue($exists, 'Cannot check chado schema api without chado.
+    $this->assertEquals(1, $exists, 'Cannot check chado schema api without chado.
       Please ensure chado is installed in the schema named "testchado".');
 
 		// --------------
@@ -137,7 +137,7 @@ class ChadoQueryAPITest extends BrowserTestBase {
     $check_schema = "SELECT true FROM pg_namespace WHERE nspname = :schema";
     $exists = $connection->query($check_schema, [':schema' => $this::$schemaName])
       ->fetchField();
-    $this->assertTrue($exists, 'Cannot check chado schema api without chado.
+    $this->assertEquals(1, $exists, 'Cannot check chado schema api without chado.
       Please ensure chado is installed in the schema named "testchado".');
 
     // INSERT.
