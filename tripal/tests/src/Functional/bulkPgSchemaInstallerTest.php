@@ -72,7 +72,7 @@ class bulkPgSchemaInstallerTest extends BrowserTestBase {
 		foreach (['regions', 'countries', 'locations', 'castles', 'knights', 'ancestors'] as $table) {
 			$result = \Drupal::database()->query($sql,
 				[':schema' => $schema_name, ':table' => $table])->fetchField();
-			$this->assertTrue($result, "Table ($table) did not exist when it should have.");
+			$this->assertEquals(1, $result, "Table ($table) did not exist when it should have.");
 		}
 		// Check data exists.
 		// -- regions.
