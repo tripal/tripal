@@ -159,8 +159,9 @@ class ChadoPreparer extends ChadoTaskBase {
 
       $this->setProgress(0.2);
       $this->logger->notice("Loading ontologies...");
-      $this->addOntologies();
-      // $this->importOntologies(); @todo uncomment this before committing.
+      $terms_setup = \Drupal::service('tripal_chado.terms_init');
+      $terms_setup->installTerms();
+      $this->importOntologies();
 
       $this->setProgress(0.3);
       $this->logger->notice('Populating materialized view cv_root_mview...');
@@ -3358,89 +3359,6 @@ class ChadoPreparer extends ChadoTaskBase {
       'term' => $this->getTerm('OBI', '0100026'),
       'category' => 'General',
     ]);
-
-    $tripal_fields = \Drupal::service('tripal.fields');
-    $genus = [
-      'name' => 'taxrank__genus',
-      'label' => 'Genus',
-      'type' => 'tripal_string_type',
-      'description' => 'The organism genus name',
-      'cardinality' => 1,
-      'required' => True,
-      'storage_settings' => [
-        'max_length' => 255,
-        'storage_plugin_id' => 'chado_storage',
-        'storage_plugin_settings' => [
-          'chado_table' => 'organism',
-          'chado_column' => 'genus'
-        ]
-      ],
-      'settings' => [
-        'termIdSpace' => 'TAXRANK',
-        'termAccession' => '0000005',
-      ],
-      'display' => [
-        'view' => [
-          'weight' => 10,
-        ]
-      ],
-    ];
-    $tripal_fields->addBundleField('bio_data_1', $genus);
-
-    $species = [
-      'name' => 'taxrank__species',
-      'label' => 'Species',
-      'type' => 'tripal_string_type',
-      'description' => 'The organism species name',
-      'cardinality' => 1,
-      'required' => True,
-      'storage_settings' => [
-        'max_length' => 255,
-        'storage_plugin_id' => 'chado_storage',
-        'storage_plugin_settings' => [
-          'chado_table' => 'organism',
-          'chado_column' => 'species'
-        ]
-      ],
-      'settings' => [
-        'termIdSpace' => 'TAXRANK',
-        'termAccession' => '0000006',
-      ],
-      'display' => [
-        'view' => [
-          'weight' => 11,
-        ]
-      ],
-    ];
-    $tripal_fields->addBundleField('bio_data_1', $species);
-
-    $species = [
-      'name' => 'local__abbreviation',
-      'label' => 'Abbreviation',
-      'type' => 'tripal_string_type',
-      'description' => 'Abbreviation of the taxonomic name',
-      'cardinality' => 1,
-      'required' => False,
-      'storage_settings' => [
-        'max_length' => 255,
-        'storage_plugin_id' => 'chado_storage',
-        'storage_plugin_settings' => [
-          'chado_table' => 'organism',
-          'chado_column' => 'abbreviation'
-        ]
-      ],
-      'settings' => [
-        'termIdSpace' => 'local',
-        'termAccession' => 'abbreviation',
-      ],
-      'display' => [
-        'view' => [
-          'weight' => 12,
-        ]
-      ],
-    ];
-    $tripal_fields->addBundleField('bio_data_1', $species);
-
 
     $this->createContentType([
       'label' => 'Analysis',
