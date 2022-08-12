@@ -31,7 +31,7 @@ class bulkPgSchemaInstallerTest extends BrowserTestBase {
 			"Unable to initialize the tripal.bulkPgSchemaInstaller service.");
 		$this->assertIsObject($service->getDrupalConnection(),
 			"Unable to initialize Drupal database connection");
-		$this->assertIsObject($service->getPgConnection(),
+		$this->assertNotFalse($service->getPgConnection(),
 			"Unable to initialize postgresql-specific database connection");
 		$this->assertIsObject($service->getLogger(),
 			"Unable to initialize the message/error logger.");
@@ -61,7 +61,7 @@ class bulkPgSchemaInstallerTest extends BrowserTestBase {
 	  ";
 	  $query = \Drupal::database()->query($checksql, [':nspname' => $schema_name]);
 	  $schema_exists = $query->fetchField();
-		$this->assertTrue($schema_exists, "Unable to find newly created schema $schema_name.");
+		$this->assertEquals(1, $schema_exists, "Unable to find newly created schema $schema_name.");
 
 		// Test applying SQL to a schema.
 		$sql_file = \Drupal::service('extension.list.module')->getPath('tripal') . '/tests/fixtures/smallTestSchema.sql';
