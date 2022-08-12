@@ -107,7 +107,7 @@ interface TripalEntityTypeInterface extends ConfigEntityInterface {
   /**
    * Gets the Tripal Entity Type CV Term Object based off its CV Term ID Space and Accession.
    *
-   * @return Drupal\tripal\TripalVocabTerms\Term
+   * @return \Drupal\tripal\TripalVocabTerms\TripalTerm
    *   The Tripal Controlled Vocabulary Term Object.
    */
   public function getTerm();
