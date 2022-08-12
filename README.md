@@ -17,17 +17,17 @@
 
 This project acts as the home of Tripal 4 development. Once Tripal 4 is stable, it will be merged back into the [Core Tripal Repository](https://github.com/tripal/tripal).
 
-## Current Timeline (Functionality rather then date based)
+## Current Timeline
 
 ### Required for Tripal 4.alpha1 Release
 
-- Testing on 9.5.x + 10.0.x w/ target 9.4.x (#257)
-- Make Tripal DBX more stable (#217, #218)
-- Ensure Content Type is using Terms fully (#256)
-- Automated creation of fields for Chado (#258)
-- Create at least one complex field: organism (#259)
+- Testing on 9.5.x + 10.0.x w/ target 9.4.x ([#257](https://github.com/tripal/t4d8/issues/257))
+- Make Tripal DBX more stable ([#217](https://github.com/tripal/t4d8/issues/217), [#218](https://github.com/tripal/t4d8/issues/218))
+- Ensure Content Type is using Terms fully ([#256](https://github.com/tripal/t4d8/issues/256))
+- Automated creation of fields for Chado ([#258](https://github.com/tripal/t4d8/issues/258))
+- Create at least one complex field: organism ([#259](https://github.com/tripal/t4d8/issues/259))
 - Documentation + Tutorials for upgrading + creating fields
-- Finish implementing Chado Storage (#236, #237, #238, #239)
+- Finish implementing Chado Storage ([#236](https://github.com/tripal/t4d8/issues/236), [#237](https://github.com/tripal/t4d8/issues/237), [#238](https://github.com/tripal/t4d8/issues/238), [#239](https://github.com/tripal/t4d8/issues/239))
 - Merge the t4d8 repository back into the tripal repository
 
 ### Required for Tripal 4.alpha2 Release
@@ -36,7 +36,7 @@ This project acts as the home of Tripal 4 development. Once Tripal 4 is stable, 
 - GFF3 Importer
 - Drush generator/updator for fields
 - Update existing core fields
-- Finish Chado Vocabs/ID Spaces/Terms (#242, #243)
+- Finish Chado Vocabs/ID Spaces/Terms ([#242](https://github.com/tripal/t4d8/issues/242), [#243](https://github.com/tripal/t4d8/issues/243))
 - Legacy API
 
 ### Required for Tripal 4.alpha3 Release
