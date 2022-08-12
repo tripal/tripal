@@ -4,11 +4,11 @@ name: PHPUnit
 on: [push]
 
 env:
-  DRUPALVER: 9.5.x-dev
+  DRUPALVER: 9.2.x-dev
 
 jobs:
   run-tests:
-    name: "Drupal $DRUPALVER"
+    name: "Drupal 9.2.x-dev (PHP 8.0)"
     runs-on: ubuntu-latest
     steps:
       # Check out the repo
