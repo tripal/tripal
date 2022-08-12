@@ -923,7 +923,6 @@ class ChadoPreparer extends ChadoTaskBase {
     return $id->getTerm($accession);
   }
 
-
   /**
    * Imports ontologies into Chado.
    */
