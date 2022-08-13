@@ -590,7 +590,8 @@ class TripalContentService_v0_1 extends TripalWebService {
           $item_entity = tripal_load_entity($item_etype, [$item_eid]);
           $item_entity = reset($item_entity);
           $bundle = tripal_load_bundle_entity(['name' => $item_entity->bundle]);
-          $items['@id'] = $this->getServicePath() . '/' . urlencode($bundle->label) . '/' . $item_eid;
+          $label = preg_replace('/[^\w]/', '_', $bundle->label);
+          $items['@id'] = $this->getServicePath() . '/' . urlencode($label) . '/' . $item_eid;
           $items['@type'] = $bundle->accession;
         }
         unset($items['entity']);

@@ -243,7 +243,7 @@ class ChadoSchema {
    *  include linker tables (which link two or more base tables), property
    * tables, and relationship tables.  These provide additional information
    * about primary data records and are therefore not base tables.  This
-   * function retreives only the list of tables that are considered 'base'
+   * function retrieves only the list of tables that are considered 'base'
    * tables.
    *
    * @return

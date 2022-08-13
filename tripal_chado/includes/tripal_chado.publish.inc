@@ -57,7 +57,7 @@ function tripal_chado_publish_form($form, &$form_state) {
         $field = field_info_field($field_name);
         $instance = field_info_instance('TripalEntity', $field_name, $bundle_name);
 
-        // Exclude data fields from the publish form.
+        // Exclude date fields from the publish form.
         // We do this because the lack of default causes errors.
         if ($field['type'] == 'datetime'){
           continue;

@@ -27,7 +27,7 @@
  * from the default vocabulary in the drop down.
  *
  * This function uses the Chado table and field name (e.g. 'type_id') to
- * retreive the vocabulary assgined.
+ * retrieve the vocabulary assgined.
  *
  * @param $table
  *   The name of the table that contains a field with a foreign key
@@ -91,7 +91,7 @@ function tripal_get_default_cv_table($cv_id) {
 /**
  * Create an options array to be used in a form element
  * which provides a list of all chado cvterms. Unlike the
- * tripal_get_cvterm_select_option, this function retreives the cvterms using
+ * tripal_get_cvterm_select_option, this function retrieves the cvterms using
  * the default vocabulary set for a given table and field.  It will also
  * notify the administrative user if a default vocabulary is missing for the
  * field and if the vocabulary is empty.

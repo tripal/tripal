@@ -113,7 +113,7 @@ class so__cds extends ChadoField {
         if ($cds_sequence[0]['residues']) {
           $entity->{$field_name}['und'][$num_seqs++] = [
             'value' => $cds_sequence[0]['residues'],
-            // This field was incorrelctly listed as a field in the featureprop
+            // This field was incorrectly listed as a field in the featureprop
             // table, but really it is a derived field. So, we have to do this
             // hacky fix to get around the problem.
             'chado-featureprop__featureprop_id' => NULL,

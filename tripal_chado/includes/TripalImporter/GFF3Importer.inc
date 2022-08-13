@@ -260,7 +260,7 @@ class GFF3Importer extends TripalImporter {
   private $features = [];
 
   /**
-   * An associatiave array containing the pointers to the FASTA sequences
+   * An associative array containing the pointers to the FASTA sequences
    * in the GFF file. We don't want to load these into memory as they
    * may be too big!
    */
