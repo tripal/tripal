@@ -1036,52 +1036,57 @@ class ChadoPreparer extends ChadoTaskBase {
    */
   private function createContentType($details) {
 
-    // Get the next bio_data_x index number.
-    $cid = 'chado_bio_data_index';
-    $next_index = \Drupal::cache()->get($cid, 0)->data + 1;
-    $bundle = 'bio_data_' . $next_index;
-    $details['id'] = $next_index;
-    $details['name'] = $bundle;
+    $entityType = NULL;
+    $bundle = '';
 
     $term = $details['term'];
     if (!array_key_exists('term', $details) or !$details['term']) {
       $this->logger->error(t('Creation of content type, "@type", failed. No term provided.',
           ['@type' => $details['label']]));
-      return;
+      return NULL;
     }
     if (!$term->isValid()) {
       $this->logger->error(t('Creation of content type, "@type", failed. The provided term, "@term", was not valid.',
           ['@type' => $details['label'], '@term' => $term->getTermId()]));
-      return;
+      return NULL;
     }
 
     // Check if the type already exists.
-    $entityType = \Drupal::entityTypeManager()
+    $entityTypes = \Drupal::entityTypeManager()
       ->getStorage('tripal_entity_type')
       ->loadByProperties(['label' => $details['label']]);
-    if ($entityType) {
+    if (!empty($entityTypes)) {
       $this->logger->notice(t('Skipping content type, "@type", as it already exists.',
           ['@type' => $details['label']]));
-      return;
-    }
-
-    $entityType = TripalEntityType::create($details);
-    if (is_object($entityType)) {
-      $entityType->save();
-      $this->logger->notice(t('Content type, "@type", created..',
-          ['@type' => $details['label']]));
-      \Drupal::cache()->set($cid, $next_index);
+      $bundle = array_pop(array_keys($entityTypes));
+      $entityType = $entityTypes[$bundle];
     }
     else {
-      $this->logger->error(t('Creation of content type, "@type", failed. The provided details were: ',
-          ['@type' => $details['label']]) . print_r($details));
+      // Get the next bio_data_x index number.
+      $cid = 'chado_bio_data_index';
+      $next_index = \Drupal::cache()->get($cid, 0)->data + 1;
+      $bundle = 'bio_data_' . $next_index;
+      $details['id'] = $next_index;
+      $details['name'] = $bundle;
+
+      $entityType = TripalEntityType::create($details);
+      if (is_object($entityType)) {
+        $entityType->save();
+        $this->logger->notice(t('Content type, "@type", created..',
+            ['@type' => $details['label']]));
+        \Drupal::cache()->set($cid, $next_index);
+      }
+      else {
+        $this->logger->error(t('Creation of content type, "@type", failed. The provided details were: ',
+            ['@type' => $details['label']]) . print_r($details));
+      }
     }
 
     // Create the default view mode for this new content type.
     $storage = \Drupal::entityTypeManager()->getStorage('entity_view_display');
     $view_display = $storage->load('tripal_entity.' . $bundle . '.default');
     if (!$view_display) {
-      $details = [
+      $view_details = [
         'langcode' => 'en',
         'status' => True,
         'dependencies' => [
@@ -1093,7 +1098,7 @@ class ChadoPreparer extends ChadoTaskBase {
         'content' => [],
         'hidden' => [],
       ];
-      $view_display = $storage->create($details, 'entity_view_display');
+      $view_display = $storage->create($view_details, 'entity_view_display');
       if (!$view_display->save()) {
         $this->logger->error(t('Creation of content type, "@type", default view mode failed. The provided details were: ',
             ['@type' => $details['label']]) . print_r($details));
@@ -1104,7 +1109,7 @@ class ChadoPreparer extends ChadoTaskBase {
     $storage = \Drupal::entityTypeManager()->getStorage('entity_form_display');
     $form_display = $storage->load('tripal_entity.' . $bundle . '.default');
     if (!$form_display) {
-      $details = [
+      $form_details = [
         'langcode' => 'en',
         'status' => True,
         'dependencies' => [
@@ -1116,10 +1121,114 @@ class ChadoPreparer extends ChadoTaskBase {
         'content' => [],
         'hidden' => [],
       ];
-      $form_display = $storage->create($details, 'entity_view_display');
+      $form_display = $storage->create($form_details, 'entity_view_display');
       if (!$form_display->save()) {
         $this->logger->error(t('Creation of content type, "@type", default form mode failed. The provided details were: ',
             ['@type' => $details['label']]) . print_r($details));
+      }
+    }
+    return $entityType;
+  }
+
+  /**
+   * Automatically adds single-valued fields for base tables.
+   *
+   * @param TripalEntityType $entityType
+   * @param string $chado_table
+   */
+  private function addBaseTableSVFields(TripalEntityType $entityType, string $chado_table) {
+
+    // We need the idSpace manager object.
+    $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+
+    // Get the Chado table information.
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+    $schema_def = $schema->getTableDef($chado_table, ['format' => 'Drupal']);
+    $pk = $schema_def['primary key'];
+    if (is_array($pk)) {
+      $pk = $pk[0];
+    }
+    $columns = $schema_def['fields'];
+
+    // Get the term to table mapping information for the core chado mapping.
+    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
+    $mapping = $storage->load('core_mapping');
+
+    $weight = 10;
+    foreach ($columns AS $column => $detail) {
+      // Do not add afield for the primary key
+      if ($column == $pk) {
+        continue;
+      }
+
+      $term_id = $mapping->getColumnTermId($chado_table, $column);
+      list($idSpace_name, $accession) = explode(':', $term_id);
+      $idSpace = $idSpace_manager->loadCollection($idSpace_name);
+      if ($idSpace) {
+        $term = $idSpace->getTerm($accession);
+
+        // Use the same method as Tripal v3 for creating field names.
+        $field_name = strtolower($idSpace_name . '__' . preg_replace('/[^\w]/', '_', $term->getName()));
+        $field_name = substr($field_name, 0, 32);
+
+        $field_type = '';
+        $storage_settings = [];
+        if (strtolower($detail['type']) == 'character varying') {
+          $field_type = 'tripal_string_type';
+          $storage_settings['max_length'] = $detail['size'];
+        }
+        // @todo handle all the different database column types.
+
+        // If we don't have a suported field type then just skip this
+        // columns
+        if (!$field_type) {
+          continue;
+        }
+
+        $field = [
+          'name' => $field_name,
+          'label' => ucwords($term->getName()),
+          'type' => $field_type,
+          'description' => $term->getDefinition(),
+          'cardinality' => 1,
+          'required' => True,
+          'storage_settings' => [
+            'storage_plugin_id' => 'chado_storage',
+            'storage_plugin_settings' => [
+              'chado_table' => $chado_table,
+              'chado_column' => $column
+            ],
+          ],
+          'settings' => [
+            'termIdSpace' => $idSpace_name,
+            'termAccession' => $term->getAccession(),
+          ],
+          'display' => [
+            'view' => [
+              'default' => [
+                'region' => 'content',
+                'label' => 'above',
+                'weight' => $weight,
+              ],
+            ],
+            'form' => [
+              'default' => [
+                'region' => 'content',
+                'weight' => $weight,
+              ],
+            ],
+          ],
+        ];
+
+        // Now add in any additional storage settings
+        foreach ($storage_settings as $key => $value) {
+          $field['storage_settings'][$key] = $value;
+        }
+
+        $tripal_fields = \Drupal::service('tripal.fields');
+        $tripal_fields->addBundleField($entityType->getName(), $field);
+        $weight = $weight + 5;
       }
     }
   }
@@ -1129,111 +1238,55 @@ class ChadoPreparer extends ChadoTaskBase {
    */
   private function createGeneralContentTypes() {
 
-    $this->createContentType([
+    $entity_type = $this->createContentType([
       'label' => 'Organism',
       'term' => $this->getTerm('OBI', '0100026'),
       'category' => 'General',
     ]);
+    $this->addBaseTableSVFields($entity_type, 'organism');
 
-    $tripal_fields = \Drupal::service('tripal.fields');
-    $genus = [
-      'name' => 'taxrank__genus',
-      'label' => 'Genus',
-      'type' => 'tripal_string_type',
-      'description' => 'The organism genus name',
-      'cardinality' => 1,
-      'required' => True,
-      'storage_settings' => [
-        'max_length' => 255,
-        'storage_plugin_id' => 'chado_storage',
-        'chado_table' => 'organism',
-        'chado_column' => 'genus'
-      ],
-      'settings' => [
-        'termIdSpace' => 'TAXRANK',
-        'termAccession' => '0000005',
-      ],
-      'display' => [
-        'view' => [
-          'default' => [
-            'region' => 'content',
-            'label' => 'above',
-            'weight' => 10,
-          ],
-          'teaser' => [
-
-          ],
-        ],
-      ],
-    ];
-    $tripal_fields->addBundleField('bio_data_1', $genus);
-
-    $species = [
-      'name' => 'taxrank__species',
-      'label' => 'Species',
-      'type' => 'tripal_string_type',
-      'description' => 'The organism species name',
-      'cardinality' => 1,
-      'required' => True,
-      'storage_settings' => [
-        'max_length' => 255,
-        'storage_plugin_id' => 'chado_storage',
-        'chado_table' => 'organism',
-        'chado_column' => 'species'
-      ],
-      'settings' => [
-        'termIdSpace' => 'TAXRANK',
-        'termAccession' => '0000006',
-      ],
-      'display' => [
-        'view' => [
-          'default' => [
-            'region' => 'content',
-            'label' => 'above',
-            'weight' => 11,
-          ],
-          'teaser' => [
-          ],
-        ]
-      ],
-    ];
-    $tripal_fields->addBundleField('bio_data_1', $species);
-
-    $this->createContentType([
+    $entity_type = $this->createContentType([
       'label' => 'Analysis',
       'term' => $this->getTerm('operation', '2945', 'EDAM'),
       'category' => 'General',
     ]);
+    $this->addBaseTableSVFields($entity_type, 'analysis');
 
-    $this->createContentType([
+    $entity_type = $this->createContentType([
       'label' => 'Project',
       'term' => $this->getTerm('NCIT', 'C47885'),
       'category' => 'General',
     ]);
+    $this->addBaseTableSVFields($entity_type, 'project');
 
-    $this->createContentType([
+    $entity_type = $this->createContentType([
       'label' => 'Study',
       'term' => $this->getTerm('SIO', '001066'),
       'category' => 'General',
     ]);
+    $this->addBaseTableSVFields($entity_type, 'study');
 
-    $this->createContentType([
+    $entity_type = $this->createContentType([
       'label' => 'Contact',
       'term' => $this->getTerm('local', 'contact'),
       'category' => 'General',
     ]);
+    $this->addBaseTableSVFields($entity_type, 'contact');
 
-    $this->createContentType([
+    $entity_type = $this->createContentType([
       'label' => 'Publication',
       'term' => $this->getTerm('TPUB', '0000002'),
       'category' => 'General',
     ]);
+    // @todo we need to handle the pub table specially.
+    //$this->addBaseTableSVFields($entity_type, 'pub');
 
-    $this->createContentType([
+    $entity_type = $this->createContentType([
       'label' => 'Protocol',
       'term' => $this->getTerm('sep', '00101'),
       'category' => 'General',
     ]);
+    $this->addBaseTableSVFields($entity_type, 'protocol');
   }
 
   /**
@@ -1241,53 +1294,61 @@ class ChadoPreparer extends ChadoTaskBase {
    */
   private function createGenomicContentTypes() {
 
-    $this->createContentType([
+    $entity_type = $this->createContentType([
       'label' => 'Gene',
       'term' => $this->getTerm('SO', '0000704'),
       'category' => 'Genomic',
     ]);
+    $this->addBaseTableSVFields($entity_type, 'feature');
 
-    $this->createContentType([
+    $entity_type = $this->createContentType([
       'label' => 'mRNA',
       'term' => $this->getTerm('SO', '0000234'),
       'category' => 'Genomic',
     ]);
+    $this->addBaseTableSVFields($entity_type, 'feature');
 
-    $this->createContentType([
+    $entity_type = $this->createContentType([
       'label' => 'Phylogenetic Tree',
       'term' => $this->getTerm('data', '0872', 'EDAM'),
       'category' => 'Genomic',
     ]);
+    $this->addBaseTableSVFields($entity_type, 'phylotree');
 
-    $this->createContentType([
+    $entity_type = $this->createContentType([
       'label' => 'Physical Map',
       'term' => $this->getTerm('data', '1280', 'EDAM'),
       'category' => 'Genomic',
     ]);
+    $this->addBaseTableSVFields($entity_type, 'featuremap');
 
-    $this->createContentType([
+    $entity_type = $this->createContentType([
       'label' => 'DNA Library',
       'term' => $this->getTerm('NCIT', 'C16223'),
       'category' => 'Genomic',
     ]);
+    $this->addBaseTableSVFields($entity_type, 'library');
 
-    $this->createContentType([
+    $entity_type = $this->createContentType([
       'label' => 'Genome Assembly',
       'term' => $this->getTerm('operation', '0525', 'EDAM'),
       'category' => 'Genomic',
     ]);
+    $this->addBaseTableSVFields($entity_type, 'analysis');
 
-    $this->createContentType([
+    $entity_type = $this->createContentType([
       'label' => 'Genome Annotation',
       'term' => $this->getTerm('operation', '0362', 'EDAM'),
       'category' => 'Genomic',
     ]);
+    $this->addBaseTableSVFields($entity_type, 'analysis');
 
-    $this->createContentType([
+    $entity_type = $this->createContentType([
       'label' => 'Genome Project',
       'term' => $this->getTerm('local', 'Genome Project'),
       'category' => 'Genomic',
     ]);
+    $this->addBaseTableSVFields($entity_type, 'project');
   }
 
   /**
@@ -1295,35 +1356,40 @@ class ChadoPreparer extends ChadoTaskBase {
    */
   private function createGeneticContentTypes() {
 
-    $this->createContentType([
+    $entity_type = $this->createContentType([
       'label' => 'Genetic Map',
       'term' => $this->getTerm('data', '1278', 'EDAM'),
       'category' => 'Genetic',
     ]);
+    $this->addBaseTableSVFields($entity_type, 'featuremap');
 
-    $this->createContentType([
+    $entity_type = $this->createContentType([
       'label' => 'QTL',
       'term' => $this->getTerm('SO', '0000771'),
       'category' => 'Genetic',
     ]);
+    $this->addBaseTableSVFields($entity_type, 'feature');
 
-    $this->createContentType([
+    $entity_type = $this->createContentType([
       'label' => 'Sequence Variant',
       'term' => $this->getTerm('SO', '0001060'),
       'category' => 'Genetic',
     ]);
+    $this->addBaseTableSVFields($entity_type, 'feature');
 
-    $this->createContentType([
+    $entity_type = $this->createContentType([
       'label' => 'Genetic Marker',
       'term' => $this->getTerm('SO', '0001645'),
       'category' => 'Genetic',
     ]);
+    $this->addBaseTableSVFields($entity_type, 'feature');
 
-    $this->createContentType([
+    $entity_type = $this->createContentType([
       'label' => 'Heritable Phenotypic Marker',
       'term' => $this->getTerm('SO', '0001500'),
       'category' => 'Genetic',
     ]);
+    $this->addBaseTableSVFields($entity_type, 'feature');
   }
 
   /**
@@ -1331,35 +1397,42 @@ class ChadoPreparer extends ChadoTaskBase {
    */
   private function createGermplasmContentTypes() {
 
-    $this->createContentType([
-      'label' => 'Phenotypic Trait',
-      'term' => $this->getTerm('NCIT', 'C85496'),
-      'category' => 'Germplasm',
-    ]);
+    // @todo this is commented out in Tripal v3 so
+    // leaving it as such here too.
+//     $entity_type = $this->createContentType([
+//       'label' => 'Phenotypic Trait',
+//       'term' => $this->getTerm('NCIT', 'C85496'),
+//       'category' => 'Germplasm',
+//     ]);
+//     $this->addBaseTableSVFields($entity_type, 'cvterm');
 
-    $this->createContentType([
+    $entity_type = $this->createContentType([
       'label' => 'Germplasm Accession',
       'term' => $this->getTerm('CO_010', '0000044'),
       'category' => 'Germplasm',
     ]);
+    $this->addBaseTableSVFields($entity_type, 'stock');
 
-    $this->createContentType([
+    $entity_type = $this->createContentType([
       'label' => 'Breeding Cross',
       'term' => $this->getTerm('CO_010', '0000255'),
       'category' => 'Germplasm',
     ]);
+    $this->addBaseTableSVFields($entity_type, 'stock');
 
-    $this->createContentType([
+    $entity_type = $this->createContentType([
       'label' => 'Germplasm Variety',
       'term' => $this->getTerm('CO_010', '0000029'),
       'category' => 'Germplasm',
     ]);
+    $this->addBaseTableSVFields($entity_type, 'stock');
 
-    $this->createContentType([
+    $entity_type = $this->createContentType([
       'label' => 'Recombinant Inbred Line',
       'term' => $this->getTerm('CO_010', '0000162'),
       'category' => 'Germplasm',
     ]);
+    $this->addBaseTableSVFields($entity_type, 'stock');
   }
 
   /**
@@ -1367,22 +1440,25 @@ class ChadoPreparer extends ChadoTaskBase {
    */
   private function createExpressionContentTypes() {
 
-    $this->createContentType([
+    $entity_type = $this->createContentType([
       'label' => 'Biological Sample',
       'term' => $this->getTerm('sep', '00195'),
       'category' => 'Expression',
     ]);
+    $this->addBaseTableSVFields($entity_type, 'biomaterial');
 
-    $this->createContentType([
+    $entity_type = $this->createContentType([
       'label' => 'Assay',
       'term' => $this->getTerm('OBI', '0000070'),
       'category' => 'Expression',
     ]);
+    $this->addBaseTableSVFields($entity_type, 'assaty');
 
-    $this->createContentType([
+    $entity_type = $this->createContentType([
       'label' => 'Array Design',
       'term' => $this->getTerm('EFO', '0000269'),
       'category' => 'Expression',
     ]);
+    $this->addBaseTableSVFields($entity_type, 'arraydesign');
   }
 }

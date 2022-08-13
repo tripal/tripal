@@ -60,8 +60,6 @@ function tripal_chado_schema() {
   $schema['chado_tripalterm'] = tripal_chado_chado_term();
 
   // Add tables supporting the Tripal Storage.
-  $schema['chado_bundle'] = tripal_chado_chado_bundle_schema();
-  $schema['chado_fields'] = tripal_chado_chado_fields_schema();
   $schema['tripal_cv_obo'] = tripal_chado_tripal_cv_obo_schema();
 
   return $schema;

@@ -145,10 +145,17 @@ class TripalFieldsManager {
   }
 
   /**
+   * Validates a field definition array.
+   *
+   * This function can be used to check a field definition prior to adding
+   * the field to a bundle.  It is also called automatically prior to adding
+   * a new field to a content type.
    *
    * @param array $field_def
-   * @param bool $set_defaults
+       A field definition array to which any default values should
+   *   be added.
    * @return bool
+   *   True if the array passes validation checks. False otherwise.
    */
   public function validateFieldDef(array $field_def) : bool {
     $logger = \Drupal::service('tripal.logger');
@@ -190,9 +197,82 @@ class TripalFieldsManager {
    *   - label: (string) The default label for the field.
    *   - idSpace: (string) The name of the ID space for this field.
    *   - term: (string) The controlled vocabulary term accession for this field.
-   *   - required:  (bool) True if the field is required. False otherwise. If not
-   *     set then defaults to False.
+   *   - required:  (bool) True if the field is required. False otherwise. If
+   *     not set then defaults to False.
    *   - cardinality: (int) Set to -1 for unlimited or any number.
+   *   - storage_settings: (array) An array of settings specific to storage
+   *     of the the field by the storage back-end. It must contain the following
+   *     keys:
+   *     - storage_plugin_id: the name of the storage plugin
+   *     (e.g. 'chado_storage').
+   *     - storage_plugin_setings: an array of any settings that the storage
+   *       plugin expects for the field..
+   *   - settings: (array) Any other settings needed for the field. Every
+   *     field can have different settings.
+   *   - display: Provides details for display of the field. By default it
+   *     should provide the following keys:
+   *     - view: an array of settings for the "view" display.  The keys of this
+   *       array should be the names of the available view modes. By deafult it
+   *       should always provide a 'default' key.  Each display mode can
+   *       then have the following key/value pairs:
+   *       - weight: indicates the weight (or position) of the field in the
+   *         display.
+   *       - region: the name of the region where the field should be placed. By
+   *         default there are two regions: 'content' or 'hidden'.  If the field
+   *         should not be visible by default use 'hidden'.
+   *       - label:  indicates where on the page the field label should be
+   *         placed in relationship to the value. Valid values include 'above',
+   *         'inline' or 'hidden'.
+   *     - form: an array of settings for the "form" display.  The keys of this
+   *       array should be the names of the available form modes. By deafult it
+   *       should always provide a 'default' key.  Each display mode can
+   *       then have the following key/value pairs:
+   *       - weight: indicates the weight (or position) of the field in the
+   *         display.
+   *       - region: the name of the region where the field should be placed. By
+   *         default there are two regions: 'content' or 'hidden'.  If the field
+   *         should not be visible by default use 'hidden'.
+   *
+   * An example field defintion:
+   *
+   * @code
+   * $species = [
+   *   'name' => 'taxrank__species',
+   *   'label' => 'Species',
+   *   'type' => 'tripal_string_type',
+   *   'description' => 'The organism species name',
+   *   'cardinality' => 1,
+   *   'required' => True,
+   *   'storage_settings' => [
+   *     'max_length' => 255,
+   *     'storage_plugin_id' => 'chado_storage',
+   *     'storage_plugin_settings' => [
+   *       'chado_table' => 'organism',
+   *       'chado_column' => 'species'
+   *     ],
+   *   ],
+   *   'settings' => [
+   *     'termIdSpace' => 'TAXRANK',
+   *     'termAccession' => '0000006',
+   *   ],
+   *   'display' => [
+   *     'view' => [
+   *       'default' => [
+   *         'region' => 'content',
+   *         'label' => 'above',
+   *         'weight' => 11,
+   *       ],
+   *     ],
+   *     'form' => [
+   *       'default' => [
+   *         'region' => 'content',
+   *         'weight' => 11,
+   *       ],
+   *     ],
+   *   ],
+   * ];
+   * $tripal_fields->addBundleField('bio_data_1', $species);
+   * @endcode
    *
    * @return bool
    *   True if the field was added successfully. False otherwise.
@@ -238,12 +318,9 @@ class TripalFieldsManager {
         $field->setSettings($field_def['settings']);
         $field->save();
 
-        /**
-         * @var \Drupal\Core\Entity\EntityDisplayRepository $entity_display
-         */
+        // Add field to the default display modes.
         $entity_display = \Drupal::service('entity_display.repository');
         $view_modes = $entity_display->getViewModeOptionsByBundle('tripal_entity', $bundle);
-//        dpm($view_modes);
         foreach (array_keys($view_modes) as $view_mode) {
           \Drupal::service('entity_display.repository')
             ->getViewDisplay('tripal_entity', $bundle, $view_mode)
