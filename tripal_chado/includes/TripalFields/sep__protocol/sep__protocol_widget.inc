@@ -40,7 +40,7 @@ class sep__protocol_widget extends ChadoFieldWidget {
 
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.
-    if (count($items) > 0 and array_key_exists($delta, $items)) {
+    if (count($items) > 0 and array_key_exists($delta, $items) and $items[$delta]['value']) {
       $protocol_name = array_key_exists($protocol_name_term, $items[$delta]['value']) ? $items[$delta]['value'][$protocol_name_term] : $protocol_name;
     }
 
