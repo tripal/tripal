@@ -2,7 +2,8 @@
 
 namespace Drupal\tripal_chado\Task;
 
-use Drupal\tripal_chado\Task\ChadoTaskBase;
+use Drupal\Core\Config\Entity\ConfigEntityStorage;
+use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\tripal_biodb\Exception\TaskException;
 use Drupal\tripal_biodb\Exception\LockException;
 use Drupal\tripal_biodb\Exception\ParameterException;
@@ -161,7 +162,7 @@ class ChadoPreparer extends ChadoTaskBase {
       $this->logger->notice("Loading ontologies...");
       $terms_setup = \Drupal::service('tripal_chado.terms_init');
       $terms_setup->installTerms();
-      $this->importOntologies();
+      // $this->importOntologies(); @todo uncomment before PR
 
       $this->setProgress(0.3);
       $this->logger->notice('Populating materialized view cv_root_mview...');
@@ -1038,8 +1039,9 @@ class ChadoPreparer extends ChadoTaskBase {
     // Get the next bio_data_x index number.
     $cid = 'chado_bio_data_index';
     $next_index = \Drupal::cache()->get($cid, 0)->data + 1;
+    $bundle = 'bio_data_' . $next_index;
     $details['id'] = $next_index;
-    $details['name'] = 'bio_data_' . $next_index;
+    $details['name'] = $bundle;
 
     $term = $details['term'];
     if (!array_key_exists('term', $details) or !$details['term']) {
@@ -1074,6 +1076,52 @@ class ChadoPreparer extends ChadoTaskBase {
       $this->logger->error(t('Creation of content type, "@type", failed. The provided details were: ',
           ['@type' => $details['label']]) . print_r($details));
     }
+
+    // Create the default view mode for this new content type.
+    $storage = \Drupal::entityTypeManager()->getStorage('entity_view_display');
+    $view_display = $storage->load('tripal_entity.' . $bundle . '.default');
+    if (!$view_display) {
+      $details = [
+        'langcode' => 'en',
+        'status' => True,
+        'dependencies' => [
+          'module' => ['tripal']
+        ],
+        'targetEntityType' => 'tripal_entity',
+        'bundle' => $bundle,
+        'mode' => 'default',
+        'content' => [],
+        'hidden' => [],
+      ];
+      $view_display = $storage->create($details, 'entity_view_display');
+      if (!$view_display->save()) {
+        $this->logger->error(t('Creation of content type, "@type", default view mode failed. The provided details were: ',
+            ['@type' => $details['label']]) . print_r($details));
+      }
+    }
+
+    // Create the default form mode for this new content type.
+    $storage = \Drupal::entityTypeManager()->getStorage('entity_form_display');
+    $form_display = $storage->load('tripal_entity.' . $bundle . '.default');
+    if (!$form_display) {
+      $details = [
+        'langcode' => 'en',
+        'status' => True,
+        'dependencies' => [
+          'module' => ['tripal']
+        ],
+        'targetEntityType' => 'tripal_entity',
+        'bundle' => $bundle,
+        'mode' => 'default',
+        'content' => [],
+        'hidden' => [],
+      ];
+      $form_display = $storage->create($details, 'entity_view_display');
+      if (!$form_display->save()) {
+        $this->logger->error(t('Creation of content type, "@type", default form mode failed. The provided details were: ',
+            ['@type' => $details['label']]) . print_r($details));
+      }
+    }
   }
 
   /**
@@ -1086,6 +1134,70 @@ class ChadoPreparer extends ChadoTaskBase {
       'term' => $this->getTerm('OBI', '0100026'),
       'category' => 'General',
     ]);
+
+    $tripal_fields = \Drupal::service('tripal.fields');
+    $genus = [
+      'name' => 'taxrank__genus',
+      'label' => 'Genus',
+      'type' => 'tripal_string_type',
+      'description' => 'The organism genus name',
+      'cardinality' => 1,
+      'required' => True,
+      'storage_settings' => [
+        'max_length' => 255,
+        'storage_plugin_id' => 'chado_storage',
+        'chado_table' => 'organism',
+        'chado_column' => 'genus'
+      ],
+      'settings' => [
+        'termIdSpace' => 'TAXRANK',
+        'termAccession' => '0000005',
+      ],
+      'display' => [
+        'view' => [
+          'default' => [
+            'region' => 'content',
+            'label' => 'above',
+            'weight' => 10,
+          ],
+          'teaser' => [
+
+          ],
+        ],
+      ],
+    ];
+    $tripal_fields->addBundleField('bio_data_1', $genus);
+
+    $species = [
+      'name' => 'taxrank__species',
+      'label' => 'Species',
+      'type' => 'tripal_string_type',
+      'description' => 'The organism species name',
+      'cardinality' => 1,
+      'required' => True,
+      'storage_settings' => [
+        'max_length' => 255,
+        'storage_plugin_id' => 'chado_storage',
+        'chado_table' => 'organism',
+        'chado_column' => 'species'
+      ],
+      'settings' => [
+        'termIdSpace' => 'TAXRANK',
+        'termAccession' => '0000006',
+      ],
+      'display' => [
+        'view' => [
+          'default' => [
+            'region' => 'content',
+            'label' => 'above',
+            'weight' => 11,
+          ],
+          'teaser' => [
+          ],
+        ]
+      ],
+    ];
+    $tripal_fields->addBundleField('bio_data_1', $species);
 
     $this->createContentType([
       'label' => 'Analysis',

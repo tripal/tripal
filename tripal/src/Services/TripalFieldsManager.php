@@ -126,7 +126,7 @@ class TripalFieldsManager {
       foreach ($field_def['display'] as $display_type => $view_modes) {
         foreach ($view_modes as  $view_mode => $mode_config) {
           foreach ($mode_config as $setting_name => $value) {
-            // Maake sure the lable is an allowed value.
+            // Maake sure the label is an allowed value.
             if ($setting_name == 'label') {
               if (in_array($value, ['above', 'inline', 'hidden', 'visually_hidden'])) {
                 $new_defs['display'][$display_type][$view_mode][$setting_name] = $value;
@@ -238,8 +238,12 @@ class TripalFieldsManager {
         $field->setSettings($field_def['settings']);
         $field->save();
 
+        /**
+         * @var \Drupal\Core\Entity\EntityDisplayRepository $entity_display
+         */
         $entity_display = \Drupal::service('entity_display.repository');
         $view_modes = $entity_display->getViewModeOptionsByBundle('tripal_entity', $bundle);
+//        dpm($view_modes);
         foreach (array_keys($view_modes) as $view_mode) {
           \Drupal::service('entity_display.repository')
             ->getViewDisplay('tripal_entity', $bundle, $view_mode)
