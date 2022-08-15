@@ -6,7 +6,7 @@ FROM php:8.0-apache-bullseye
 MAINTAINER Lacey-Anne Sanderson <laceyannesanderson@gmail.com>
 
 ARG drupalversion='9.3.x-dev'
-ARG modules='tripal tripal_biodb tripal_chado'
+ARG modules='devel devel_php'
 ARG chadoschema='chado'
 
 # Label docker image
@@ -150,7 +150,8 @@ RUN chmod a+x /app/tripaldocker/init_scripts/composer-init.sh \
 
 ## Use composer to install Drupal.
 WORKDIR /var/www
-ARG composerpackages="drupal/core-dev:${drupalversion} drush/drush phpspec/prophecy-phpunit"
+ARG requiredcomposerpackages="drupal/core:${drupalversion} drupal/core-dev:${drupalversion} drush/drush phpspec/prophecy-phpunit"
+ARG composerpackages="drupal/devel drupal/devel_php"
 RUN export COMPOSER_MEMORY_LIMIT=-1 && export COMPOSER_NO_INTERACTION=1 \
   && composer create-project drupal/recommended-project:${drupalversion} --stability dev --no-install drupal9 \
   && cd drupal9 \
@@ -159,7 +160,7 @@ RUN export COMPOSER_MEMORY_LIMIT=-1 && export COMPOSER_NO_INTERACTION=1 \
   && composer config --no-plugins allow-plugins.drupal/core-project-message true \
   && composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true \
   && rm composer.lock \
-  && composer require --dev drupal/core:${drupalversion} ${composerpackages}
+  && composer require --dev ${requiredcomposerpackages} ${composerpackages}
 
 ## Set files directory permissions
 RUN mkdir /var/www/drupal9/web/sites/default/files \
@@ -191,8 +192,7 @@ RUN service apache2 start \
   && sleep 30 \
   && mkdir -p /var/www/drupal9/web/modules/contrib \
   && cp -R /app /var/www/drupal9/web/modules/contrib/tripal \
-  && composer require drupal/devel drupal/devel_php \
-  && vendor/bin/drush en devel tripal ${modules} -y \
+  && vendor/bin/drush en tripal tripal_biodb tripal_chado ${modules} -y \
   && vendor/bin/drush trp-install-chado --schema-name=${chadoschema} \
   && vendor/bin/drush trp-prep-chado --schema-name=${chadoschema} \
   && service apache2 stop \
