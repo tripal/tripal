@@ -42,7 +42,7 @@ class chadoInstallerTest extends BrowserTestBase {
     $check_schema = "SELECT true FROM pg_namespace WHERE nspname = :schema";
     $exists = $connection->query($check_schema, [':schema' => $chado_schema])
       ->fetchField();
-    $this->assertTrue($exists, 'The schema we just installed was not in the database.');
+    $this->assertEquals(1, $exists, 'The schema we just installed was not in the database.');
 
     // Next check that the schema is not empty.
     $num_tables_sql = "SELECT count(*) FROM information_schema.tables
