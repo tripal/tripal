@@ -46,7 +46,7 @@ RUN    /etc/init.d/postgresql start &&\
     && psql --command="ALTER USER drupaladmin WITH LOGIN" \
     && psql --command="ALTER USER drupaladmin WITH CREATEDB" \
     && psql --command="CREATE DATABASE sitedb WITH OWNER drupaladmin" \
-    && psql --command="CREATE EXTENSION pg_trgm" \
+    && psql sitedb --command="CREATE EXTENSION pg_trgm" \
     && service postgresql stop
 
 ## Now back to the root user.
