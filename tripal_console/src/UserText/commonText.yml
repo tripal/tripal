@@ -1,9 +1,0 @@
-option-help:
-  module: 'The machine name of the module to generate the content in.'
-  field:
-    formatter-class: 'The class name for the field formatter (e.g. OBIOrganismDefaultFormatter)'
-    formatter-label: 'The label for the field formatter (e.g. Organism Simple String)'
-    formatter-id: 'The machine name for the field formatter (e.g. obi__organism_default_formatter)'
-    widget-class: 'The class name for the field widget (e.g. OBIOrganismDefaultFormatter)'
-    widget-label: 'The label for the field widget (e.g. Organism: Select List)'
-    widget-id: 'The machine name for the field widget (e.g. obi__organism_default_widget)'
