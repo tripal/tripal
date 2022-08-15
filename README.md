@@ -1,9 +1,6 @@
-![PHPUnit-Tests](https://github.com/tripal/t4d8/workflows/PHPUnit-Tests/badge.svg)
-
-
 ![alt tag](https://raw.githubusercontent.com/tripal/tripal/7.x-3.x/tripal/theme/images/tripal_logo.png)
 
-# Tripal 4 Drupal 9
+# Tripal 4 (Drupal 9 + 10)
 
                    _   _                 _____                 _                                  _   
          /\       | | (_)               |  __ \               | |                                | |  
