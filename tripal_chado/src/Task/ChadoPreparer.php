@@ -1064,7 +1064,11 @@ class ChadoPreparer extends ChadoTaskBase {
     else {
       // Get the next bio_data_x index number.
       $cid = 'chado_bio_data_index';
-      $next_index = \Drupal::cache()->get($cid, 0)->data + 1;
+      $cached_val = \Drupal::cache()->get($cid, 0);
+      if ($cached_val != 0) {
+        $cached_val = $cached_val->data;
+      }
+      $next_index = $cached_val + 1;
       $bundle = 'bio_data_' . $next_index;
       $details['id'] = $next_index;
       $details['name'] = $bundle;
