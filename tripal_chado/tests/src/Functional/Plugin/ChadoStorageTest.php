@@ -43,7 +43,6 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     // Simluate Acomplex field with multiple properties.
     $organism_field_type = 'obi__organism';
 
-
     //
     // Populate Chado with Data for Testing.
     //
@@ -61,18 +60,6 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $this->addFeaturePropRecords($gene, $note_term, "Note 1", 0);
     $this->addFeaturePropRecords($gene, $note_term, "Note 2", 2);
     $this->addFeaturePropRecords($gene, $note_term, "Note 3", 1);
-
-    // Create entries in the `tripal_bundle`, `chado_bundle` and
-    // `chado_bio_data_x` tables.
-    // @todo the createEntityTypeTable() creates the chado_bio_data_x table
-    // and it can be removed from this test once those tables are created
-    // by the prepare step. At the time of writing this test that part
-    // isn't yet working.
-    $this->createEntityTypeTable($entity_type);
-    $bundle_id = $this->addTripalBundleRecord($entity_type, $gene_term, 'Gene');
-    $this->addChadoBundleRecord($bundle_id, 'feature', NULL, 'type_id', $gene_term->getInternalID());
-    $this->addChadoBioDataRecord($entity_type, $entity_id, $gene->feature_id);
-
 
     //
     // Create Properties
@@ -269,106 +256,6 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
   }
 
   /**
-   * A helper function to create the `bio_data_x` table.
-   *
-   * @param string $entity_type
-   */
-  protected function createEntityTypeTable($entity_type) {
-    $table_def = [
-      'description' => 'The linker table that associates TripalEntities with Chado records for entities of type ' . $entity_type . '.',
-      'fields' => [
-        'mapping_id' => [
-          'type' => 'serial',
-          'not null' => TRUE,
-        ],
-        'entity_id' => [
-          'description' => 'The unique entity id.',
-          'type' => 'int',
-          'not null' => TRUE,
-        ],
-        'record_id' => [
-          'description' => 'The unique numerical identifier for the record that this entity is associated with (e.g. feature_id, stock_id, library_id, etc.).',
-          'type' => 'int',
-          'not null' => TRUE,
-        ],
-        'nid' => [
-          'description' => 'Optional. For linking nid to the entity when migrating Tripal v2 content',
-          'type' => 'int',
-        ],
-      ],
-      'primary key' => [
-        'mapping_id',
-      ],
-      'indexes' => [
-        'record_id' => ['record_id'],
-        'entity_id' => ['entity_id'],
-        'nid' => ['nid'],
-      ],
-      'unique keys' => [
-        'table_record' => ['record_id'],
-        'entity_id' => ['entity_id'],
-      ],
-    ];
-    $public = \Drupal::database();
-    $public->schema()->createTable('chado_' . $entity_type, $table_def);
-  }
-
-  /**
-   * A helper function to add a recrod to the `tripal_bundle` table.
-   *
-   * A bundle_id is needed for the `chado_bundle` table that maps
-   * entity types to chado tables.
-   *
-   * @param string $entity_type
-   */
-  protected function addTripalBundleRecord($entity_type, $cvterm, $label) {
-    $public = \Drupal::database();
-    $public->insert('tripal_bundle')
-      ->fields([
-        'type' => 'TripalEntity',
-        'term_id' => $cvterm->getInternalId(),
-        'name' => $entity_type,
-        'label' => $label
-      ])
-      ->execute();
-
-    return $public->select('tripal_bundle', 'TB')
-      ->fields('TB', ['id'])
-      ->condition('TB.name', $entity_type)
-      ->execute()
-      ->fetchField();
-  }
-
-
-  /**
-   * a helper function to add a record to the `chado_bundle` table.
-   */
-  protected function addChadoBundleRecord($bundle_id, $data_table,
-      $type_linker_table = NULL, $type_column = NULL, $type_id = NULL,
-      $type_value = NULL, $base_type_id = NULL) {
-
-    $public = \Drupal::database();
-    $public->insert('chado_bundle')
-      ->fields([
-        'bundle_id' => $bundle_id,
-        'data_table' => $data_table,
-        'type_linker_table' => $type_linker_table,
-        'type_column' => $type_column,
-        'type_id' => $type_id,
-        'type_value' => $type_value,
-        'base_type_id' => $base_type_id,
-      ])
-      ->execute();
-
-    return $public->select('chado_bundle', 'CB')
-      ->fields('CB')
-      ->condition('CB.bundle_id', $bundle_id, '')
-      ->execute()
-      ->fetchObject();
-
-  }
-
-  /**
    * A helper function to add the TAXRANK:species_subgroup term to Chado.
    */
   protected function addTaxRankSubGroupCVTerm() {
@@ -484,23 +371,6 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
         'type_id' => $term->getInternalId(),
         'value' => $value,
         'rank' => $rank,
-      ])
-      ->execute();
-  }
-
-  /**
-   * A helper function to add a record to the `chado_bio_data_x` table.
-   *
-   * @param string $field_type
-   * @param int $organism_id
-   * @param int $entity_id
-   */
-  protected function addChadoBioDataRecord($entity_type, $entity_id, $record_id) {
-    $public = \Drupal::database();
-    $public->insert('chado_' . $entity_type)
-      ->fields([
-        'entity_id' => $entity_id,
-        'record_id' => $record_id,
       ])
       ->execute();
   }
