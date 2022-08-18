@@ -1184,6 +1184,16 @@ class ChadoPreparer extends ChadoTaskBase {
         }
         // @todo handle all the different database column types.
 
+        // Is the field required? Ensure we match the database.
+        $is_required = FALSE;
+        if (isset($detail['not null']) && $detail['not null'] == 1) {
+          $is_required = TRUE;
+        }
+
+        // Can the database support multiple cardinality?
+        // @todo currently we're not automatically determining this.
+        $cardinality = 1;
+
         // If we don't have a suported field type then just skip this
         // columns
         if (!$field_type) {
@@ -1195,13 +1205,17 @@ class ChadoPreparer extends ChadoTaskBase {
           'label' => ucwords($term->getName()),
           'type' => $field_type,
           'description' => $term->getDefinition(),
-          'cardinality' => 1,
-          'required' => True,
+          // these are defaults that the admin can set through the UI.
+          'cardinality' => $cardinality,
+          'required' => $is_required,
           'storage_settings' => [
             'storage_plugin_id' => 'chado_storage',
             'storage_plugin_settings' => [
               'chado_table' => $chado_table,
-              'chado_column' => $column
+              'chado_column' => $column,
+              // these are specific to the database.
+              'cardinality' => $cardinality,
+              'required' => $is_required,
             ],
           ],
           'settings' => [
