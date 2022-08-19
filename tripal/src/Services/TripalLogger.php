@@ -115,7 +115,7 @@ class TripalLogger {
       $message_str = $prefix . trim($message_str);
     }
 
-    print $message_str . "\n";
+    // @debug print $message_str . "\n";
     error_log($message_str);
   }
 
