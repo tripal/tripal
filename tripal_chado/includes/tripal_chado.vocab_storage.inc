@@ -106,7 +106,7 @@ function tripal_chado_vocab_get_vocabulary($vocabulary) {
     // Only output this error to people who are admins
     global $user;
     // Is the user even logged in? If so, are they admin?
-    if (!$user->uid && array_search('administrator', $user->roles)) { 
+    if ($user->uid && array_search('administrator', $user->roles)) { 
       drupal_set_message("Could not find details about the vocabulary: $vocabulary. Note: " .
         "if this vocabulary does exist, try re-populating the db2cv_mview materialized " .
         "view at Admin > Tripal > Data Storage > Chado > Materialized views.");
