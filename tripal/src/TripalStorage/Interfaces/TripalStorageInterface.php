@@ -42,9 +42,11 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    * value objects.
    *
    * @param array $values
-   *   Associative array 5-levels deep. The 1st level is the field name. The
-   *   2nd level is the delta value. The 3rd level is a field key name. The
-   *   4th level must contain the following three keys/value pairs
+   *   Associative array 5-levels deep.
+   *   The 1st level is the field name (e.g. obi__organism).
+   *   The 2nd level is the delta value (e.g. 0).
+   *   The 3rd level is a field key name (i.e. record_id + value).
+   *   The 4th level must contain the following three keys/value pairs
    *   - "value": a \Drupal\tripal\TripalStorage\StoragePropertyValue object
    *   - "type": a\Drupal\tripal\TripalStorage\StoragePropertyType object
    *   - "definition": a \Drupal\Field\Entity\FieldConfig object
@@ -60,9 +62,11 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    * Updates values in the field data store.
    *
    * @param array $values
-   *   Associative array 5-levels deep. The 1st level is the field name. The
-   *   2nd level is the delta value. The 3rd level is a field key name. The
-   *   4th level must contain the following three keys/value pairs
+   *   Associative array 5-levels deep.
+   *   The 1st level is the field name (e.g. obi__organism).
+   *   The 2nd level is the delta value (e.g. 0).
+   *   The 3rd level is a field key name (i.e. record_id + value).
+   *   The 4th level must contain the following three keys/value pairs
    *   - "value": a \Drupal\tripal\TripalStorage\StoragePropertyValue object
    *   - "type": a\Drupal\tripal\TripalStorage\StoragePropertyType object
    *   - "definition": a \Drupal\Field\Entity\FieldConfig object
@@ -78,9 +82,11 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    * Loads the values of the field data store.
    *
    * @param array $values
-   *   Associative array 5-levels deep. The 1st level is the field name. The
-   *   2nd level is the delta value. The 3rd level is a field key name. The
-   *   4th level must contain the following three keys/value pairs
+   *   Associative array 5-levels deep.
+   *   The 1st level is the field name (e.g. obi__organism).
+   *   The 2nd level is the delta value (e.g. 0).
+   *   The 3rd level is a field key name (i.e. record_id + value).
+   *   The 4th level must contain the following three keys/value pairs
    *   - "value": a \Drupal\tripal\TripalStorage\StoragePropertyValue object
    *   - "type": a\Drupal\tripal\TripalStorage\StoragePropertyType object
    *   - "definition": a \Drupal\Field\Entity\FieldConfig object

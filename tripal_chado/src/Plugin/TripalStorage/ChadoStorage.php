@@ -227,7 +227,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
               ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
           }
 
-          $select = $chado->select($chado_table, 'ct');
+          $select = $chado->select('1:' . $chado_table, 'ct');
           $select->fields('ct', array_keys($record['fields']));
           $num_conditions = 0;
           foreach ($record['conditions'] as $chado_column => $value) {
@@ -347,9 +347,11 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    * Indexes a values array for easy lookup.
    *
    * @param array $values
-   *   Associative array 5-levels deep. The 1st level is the field name. The
-   *   2nd level is the delta value. The 3rd level is a field key name. The
-   *   4th level must contain the following three keys/value pairs
+   *   Associative array 5-levels deep.
+   *   The 1st level is the field name (e.g. ncbitaxon__common_name).
+   *   The 2nd level is the delta value (e.g. 0).
+   *   The 3rd level is a field key name (i.e. record_id and value).
+   *   The 4th level must contain the following three keys/value pairs
    *   - "value": a \Drupal\tripal\TripalStorage\StoragePropertyValue object
    *   - "type": a\Drupal\tripal\TripalStorage\StoragePropertyType object
    *   - "definition": a \Drupal\Field\Entity\FieldConfig object
@@ -363,14 +365,19 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     $records = [];
     $logger = \Drupal::service('tripal.logger');
 
+    // @debug dpm(array_keys($values), '1st level: field names');
+
     // Iterate through the value objects.
     foreach ($values as $field_name => $deltas) {
+      // @debug dpm(array_keys($deltas), "2nd level: deltas ($field_name)");
       foreach ($deltas as $delta => $keys) {
+        // @debug dpm(array_keys($keys), "3rd level: field key name ($delta)");
         foreach ($keys as $key => $info) {
+          // @debug dpm(array_keys($info), "4th level: info key-value pairs ($key)");
 
           if (!array_key_exists('definition', $info) OR !is_object($info['definition'])) {
-            $logger->error($this->t('Cannot save record in Chado. The field, "@field", is missing the field definition (i.e. FieldConfig object).',
-              ['@field' => $field_name]));
+            $logger->error($this->t('Cannot save record in Chado. The field, "@field", is missing the field definition (i.e. FieldConfig object). There should be a "definition" key in this array: @var',
+              ['@field' => $field_name, '@var' => print_r($info, TRUE)]));
             continue;
           }
           if (!array_key_exists('value', $info) OR !is_object($info['value'])) {
@@ -378,6 +385,10 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
               ['@field' => $field_name]));
             continue;
           }
+
+          // @debug ksm($info['definition'], "$key: DEFINITION");
+          // @debug ksm($info['type'], "$key: TYPE");
+          // @debug ksm($info['value'], "$key: VALUES");
 
           $definition = $info['definition'];
           $prop_value = $info['value'];
