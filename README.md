@@ -34,7 +34,7 @@ This project acts as the home of Tripal 4 development. Once Tripal 4 is stable, 
 - Make Tripal DBX more stable ([#217](https://github.com/tripal/t4d8/issues/217), [#218](https://github.com/tripal/t4d8/issues/218))
 - Ensure Content Type is using Terms fully ([#256](https://github.com/tripal/t4d8/issues/256))
 - Automated creation of fields for Chado ([#258](https://github.com/tripal/t4d8/issues/258))
-- Create at least one complex field: organism ([#259](https://github.com/tripal/t4d8/issues/259))
+- Create at least two complex fields: organism + properties ([#259](https://github.com/tripal/t4d8/issues/259), [#265](https://github.com/tripal/t4d8/issues/265))
 - Documentation + Tutorials for upgrading + creating fields
 - Finish implementing Chado Storage ([#236](https://github.com/tripal/t4d8/issues/236), [#237](https://github.com/tripal/t4d8/issues/237), [#238](https://github.com/tripal/t4d8/issues/238), [#239](https://github.com/tripal/t4d8/issues/239))
 - Merge the t4d8 repository back into the tripal repository
