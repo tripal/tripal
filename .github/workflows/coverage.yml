@@ -2,11 +2,7 @@
 name: Test Coverage on Drupal 9.4.x-dev
 
 # When do we want the tests to run?
-on:
-  push:
-    branches:
-      - 9.x-4.x
-      - 4v40g-0-test-code-coverage
+on: [push]
 
 # Define jobs that are part of the workflow
 jobs:
