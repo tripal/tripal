@@ -949,7 +949,7 @@ class GFF3Importer extends TripalImporter {
     $ret['stop'] = $fmax;
 
     // Landmark (seqid) validation checks based on GFF3 specifications
-    preg_match('/[a-zA-Z0-9\.:\^\*\$@!\+_\?-\|]*/', $ret['landmark'], $matches);
+    preg_match('/[a-zA-Z0-9\.:\^\*\$@!\+_\?\-\|]*/', $ret['landmark'], $matches);
     if ($matches[0] != $ret['landmark']) {
       throw new Exception(t("Landmark/seqid !landmark contains invalid
         characters. Only characters included in this regular expression is
