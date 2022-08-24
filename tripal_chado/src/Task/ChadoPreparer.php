@@ -1182,6 +1182,9 @@ class ChadoPreparer extends ChadoTaskBase {
           $field_type = 'tripal_string_type';
           $storage_settings['max_length'] = $detail['size'];
         }
+        if (strtolower($detail['type']) == 'text') {
+          $field_type = 'tripal_text_type';
+        }
         // @todo handle all the different database column types.
 
         // Is the field required? Ensure we match the database.
