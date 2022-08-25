@@ -165,7 +165,7 @@ abstract class TripalDbxSchema extends PgSchema {
    * @return array
    *   Both the keys and the values are the matching tables.
    */
-  public function findTables($table_expression) {
+  public function findTables(string $table_expression) {
 
     // Load all the tables up front in order to take into account per-table
     // prefixes. The actual matching is done at the bottom of the method.

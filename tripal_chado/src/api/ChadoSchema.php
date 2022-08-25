@@ -242,7 +242,7 @@ class ChadoSchema {
 
     $schema = $this->getSchemaDetails();
 
-    $table_arr =  FALSE;    
+    $table_arr =  FALSE;
     if (isset($schema[$table])) {
       $table_arr = $schema[$table];
     }
@@ -251,21 +251,21 @@ class ChadoSchema {
       $table_arr = $this->getCustomTableSchema($table);
       if($table_arr == FALSE) {
         return NULL;
-      }      
+      }
     }
 
     // Ensure all the parts are set.
-    if (!isset($table_arr['primary key'])) { 
-      $table_arr['primary key'] = []; 
+    if (!isset($table_arr['primary key'])) {
+      $table_arr['primary key'] = [];
     }
-    if (!isset($table_arr['unique keys'])) { 
-      $table_arr['unique keys'] = []; 
+    if (!isset($table_arr['unique keys'])) {
+      $table_arr['unique keys'] = [];
     }
-    if (!isset($table_arr['foreign keys'])) { 
-      $table_arr['foreign keys'] = []; 
+    if (!isset($table_arr['foreign keys'])) {
+      $table_arr['foreign keys'] = [];
     }
-    if (!isset($table_arr['referring_tables'])) { 
-      $table_arr['referring_tables'] = []; 
+    if (!isset($table_arr['referring_tables'])) {
+      $table_arr['referring_tables'] = [];
     }
 
     // Ensures consistency regardless of the number of columns of the pkey.
@@ -692,7 +692,9 @@ class ChadoSchema {
         [':table' => $prefixed_table, ':column' => $column])->fetchField();
 
       // Remove prefixed table from sequence name
-      $sequence_name = str_replace($this->schema_name . '.', '', $sequence_name);
+      if (!empty($sequence_name)) {
+        $sequence_name = str_replace($this->schema_name . '.', '', $sequence_name);
+      }
     }
 
     // Get the default database and chado schema.
@@ -983,7 +985,7 @@ class ChadoSchema {
       }
     }
     return $statements;
-  }   
+  }
 
   function createFieldSql($name, $spec) {
 
@@ -1018,7 +1020,7 @@ class ChadoSchema {
       $sql .= " default {$default}";
     }
     return $sql;
-  }  
+  }
 
 
   function processField($field) {
@@ -1098,5 +1100,5 @@ class ChadoSchema {
       $saveIdentifier = $identifierName;
     }
     return $saveIdentifier;
-  }  
-}   
+  }
+}
