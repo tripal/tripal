@@ -76,12 +76,14 @@ class ChadoIdSpace extends TripalIdSpaceBase {
   public function isValid() {
 
     // Make sure the name of this ID Space does not exceeed the allowed size in Chado.
-    if (strlen($this->getName()) > $this->db_def['fields']['name']['size']) {
+    $name = $this->getName();
+
+    if (!empty($name) AND (strlen($name) > $this->db_def['fields']['name']['size'])) {
       $this->messageLogger->error('ChadoIdSpace: The IdSpace name must not be longer than @size characters. ' +
           'The value provided was: @value',
           ['@size' => $this->db_def['fields']['name']['size'],
            '@value' => $this->getName()]);
-          return;
+      return;
     }
 
     $this->is_valid = True;

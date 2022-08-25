@@ -192,12 +192,14 @@ abstract class TripalDbxSchema extends PgSchema {
     foreach ($results as $table) {
 
       // Take into account tables that have an individual prefix.
+      $prefix_length = 0;
       if (isset($individually_prefixed_tables[$table->table_name])) {
-        $prefix_length = strlen($this->connection
-          ->tablePrefix($individually_prefixed_tables[$table->table_name], TRUE));
-      }
-      else {
-        $prefix_length = 0;
+        $prefix = $this->connection
+          ->tablePrefix($individually_prefixed_tables[$table->table_name], TRUE);
+
+        if (!empty($prefix)) {
+          $prefix_length = strlen($prefix);
+        }
       }
 
       // Remove the prefix from the returned tables.
