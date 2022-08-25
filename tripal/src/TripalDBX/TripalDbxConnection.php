@@ -901,7 +901,7 @@ abstract class TripalDbxConnection extends PgConnection {
     // Then replace schema prefixes (specied in settings).
     $i = 1;
     while (array_key_exists("$i", $this->prefixes)
-      AND ($this->prefixes[$i] !=== NULL)) {
+      AND ($this->prefixes[$i] !== NULL)) {
 
       $this->prefixSearch[] = '{' . $i . ':';
       $this->prefixReplace[] =
@@ -921,7 +921,7 @@ abstract class TripalDbxConnection extends PgConnection {
     // 'other_db.'. In this instance we need to quote the identifiers correctly.
     // For example, "other_db"."PREFIX_table_name".
     if (array_key_exists("default", $this->prefixes)
-      AND ($this->prefixes['default'] !=== NULL)) {
+      AND ($this->prefixes['default'] !== NULL)) {
 
       $this->prefixReplace[] =
         $start_quote
@@ -963,7 +963,7 @@ abstract class TripalDbxConnection extends PgConnection {
     // 'other_db.'. In this instance we need to quote the identifiers correctly.
     // For example, "other_db"."PREFIX_table_name".
     if (array_key_exists("default", $this->prefixes)
-      AND ($this->prefixes['default'] !=== NULL)) {
+      AND ($this->prefixes['default'] !== NULL)) {
 
       $this->prefixReplace[] =
         $start_quote
