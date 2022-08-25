@@ -165,7 +165,11 @@ abstract class TripalDbxSchema extends PgSchema {
    * @return array
    *   Both the keys and the values are the matching tables.
    */
-  public function findTables(string $table_expression) {
+  public function findTables($table_expression) {
+
+    if ($table_expression === NULL) {
+      return [];
+    }
 
     // Load all the tables up front in order to take into account per-table
     // prefixes. The actual matching is done at the bottom of the method.
@@ -497,12 +501,12 @@ EOD;
         ->query(
           'SELECT pg_get_serial_sequence(:schema_table, :column);',
           [':schema_table' => $prefixed_table, ':column' => $column_name]
-        )
-        ->fetchField()
-      ;
+        )->fetchField();
 
       // Remove prefixed table from sequence name.
-      $sequence_name = str_replace($schema_name . '.', '', $sequence_name);
+      if ($sequence_name !== NULL) {
+        $sequence_name = str_replace($schema_name . '.', '', $sequence_name);
+      }
     }
 
     $sql_query = "
