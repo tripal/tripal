@@ -471,6 +471,16 @@ class ChadoSchema {
     $default_db = $this->default_db;
     $chado_schema = $this->schema_name;
 
+    // Ensure they gave us a table.
+    if (empty($table)) {
+      tripal_report_error(
+        'ChadoSchema',
+        TRIPAL_WARNING,
+        'You must pass in a table name when calling checkTableExists().'
+      );
+      return NULL;
+    }
+
     // If we've already lookup up this table then don't do it again, as
     // we don't need to keep querying the database for the same tables.
     if (array_key_exists("chado_tables", $GLOBALS) and
@@ -526,6 +536,25 @@ class ChadoSchema {
     // Get the default database and chado schema.
     $default_db = $this->default_db;
     $chado_schema = $this->schema_name;
+
+    // Ensure they gave us a table.
+    if (empty($table)) {
+      tripal_report_error(
+        'ChadoSchema',
+        TRIPAL_WARNING,
+        'You must pass in a table name when calling checkColumnExists().'
+      );
+      return NULL;
+    }
+    // Ensure they gave us a column.
+    if (empty($column)) {
+      tripal_report_error(
+        'ChadoSchema',
+        TRIPAL_WARNING,
+        'You must pass in a column name when calling checkColumnExists().'
+      );
+      return NULL;
+    }
 
     // @upgrade $cached_obj = cache_get('chado_table_columns', 'cache');
     // if ($cached_obj) {
@@ -686,6 +715,25 @@ class ChadoSchema {
    */
   public function checkSequenceExists($table, $column, $sequence_name = NULL) {
 
+    // Ensure they gave us a table.
+    if (empty($table)) {
+      tripal_report_error(
+        'ChadoSchema',
+        TRIPAL_WARNING,
+        'You must pass in a table name when calling checkSequenceExists().'
+      );
+      return FALSE;
+    }
+    // Ensure they gave us a table.
+    if (empty($column)) {
+      tripal_report_error(
+        'ChadoSchema',
+        TRIPAL_WARNING,
+        'You must pass in a column name when calling checkSequenceExists().'
+      );
+      return FALSE;
+    }
+
     $prefixed_table = $this->schema_name . '.' . $table;
     if ($sequence_name === NULL) {
       $sequence_name = $this->connection->query('SELECT pg_get_serial_sequence(:table, :column);',
@@ -694,6 +742,15 @@ class ChadoSchema {
       // Remove prefixed table from sequence name
       if (!empty($sequence_name)) {
         $sequence_name = str_replace($this->schema_name . '.', '', $sequence_name);
+      }
+      else {
+        tripal_report_error(
+          'ChadoSchema',
+          TRIPAL_WARNING,
+          'Unable to determine the sequence name when given @table.@column.',
+          ['@table' => $table, '@column' => $column]
+        );
+        return NULL;
       }
     }
 
@@ -856,6 +913,23 @@ class ChadoSchema {
    * @param bool $no_suffix
    */
   function checkIndexExists($table, $name, $no_suffix = FALSE) {
+
+    if (empty($table)) {
+      tripal_report_error(
+        'ChadoSchema',
+        TRIPAL_NOTICE,
+        'You must provide the table name when calling checkIndexExists().'
+      );
+      return NULL;
+    }
+    if (empty($column)) {
+      tripal_report_error(
+        'ChadoSchema',
+        TRIPAL_NOTICE,
+        'You must provide the name of the index when calling checkIndexExists().'
+      );
+      return NULL;
+    }
 
     if ($no_suffix) {
       $indexname = strtolower($table . '_' . $name);
@@ -1030,7 +1104,7 @@ class ChadoSchema {
 
     // Set the correct database-engine specific datatype.
     // In case one is already provided, force it to lowercase.
-    if (isset($field['pgsql_type'])) {
+    if (isset($field['pgsql_type']) AND ($field['pgsql_type'] !== NULL)) {
       $field['pgsql_type'] = mb_strtolower($field['pgsql_type']);
     }
     else {
