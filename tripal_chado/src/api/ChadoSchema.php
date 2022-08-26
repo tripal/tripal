@@ -715,42 +715,36 @@ class ChadoSchema {
    */
   public function checkSequenceExists($table, $column, $sequence_name = NULL) {
 
-    // Ensure they gave us a table.
-    if (empty($table)) {
-      tripal_report_error(
-        'ChadoSchema',
-        TRIPAL_WARNING,
-        'You must pass in a table name when calling checkSequenceExists().'
-      );
-      return FALSE;
-    }
-    // Ensure they gave us a table.
-    if (empty($column)) {
-      tripal_report_error(
-        'ChadoSchema',
-        TRIPAL_WARNING,
-        'You must pass in a column name when calling checkSequenceExists().'
-      );
-      return FALSE;
-    }
-
-    $prefixed_table = $this->schema_name . '.' . $table;
     if ($sequence_name === NULL) {
+
+      // Ensure they gave us a table.
+      if (empty($table)) {
+        tripal_report_error(
+          'ChadoSchema',
+          TRIPAL_WARNING,
+          'You must pass in a table name when calling checkSequenceExists().'
+        );
+        return NULL;
+      }
+      // Ensure they gave us a table.
+      if (empty($column)) {
+        tripal_report_error(
+          'ChadoSchema',
+          TRIPAL_WARNING,
+          'You must pass in a column name when calling checkSequenceExists().'
+        );
+        return NULL;
+      }
+
+      $prefixed_table = $this->schema_name . '.' . $table;
       $sequence_name = $this->connection->query('SELECT pg_get_serial_sequence(:table, :column);',
         [':table' => $prefixed_table, ':column' => $column])->fetchField();
-
       // Remove prefixed table from sequence name
       if (!empty($sequence_name)) {
         $sequence_name = str_replace($this->schema_name . '.', '', $sequence_name);
       }
       else {
-        tripal_report_error(
-          'ChadoSchema',
-          TRIPAL_WARNING,
-          'Unable to determine the sequence name when given @table.@column.',
-          ['@table' => $table, '@column' => $column]
-        );
-        return NULL;
+        return FALSE;
       }
     }
 
@@ -922,7 +916,7 @@ class ChadoSchema {
       );
       return NULL;
     }
-    if (empty($column)) {
+    if (empty($name)) {
       tripal_report_error(
         'ChadoSchema',
         TRIPAL_NOTICE,
