@@ -1,6 +1,6 @@
 <?php
 
-use Drupal\tripal\TripalStorage\TripalStorageUpdateException
+use Drupal\tripal\TripalStorage\TripalStorageUpdateException;
 
 class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
 
@@ -12,7 +12,7 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
 
     // This is where we create the types each field describes in the
     // associated TripalStorage instance.
-    $storageOps = array()
+    $storageOps = [];
     foreach ($field_storage_definitions as $storageDefinition) {
       $field = \Drupal::service("plugin.manager.field.field_type").getInstance($storageDefinition->getType());
       if ($field instanceof TripalFieldItemInterface) {
@@ -56,7 +56,7 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
   public function onEntityTypeDelete(EntityTypeInterface $entity_type) {
 
     // build remove storage operations
-    $storageOps = array()
+    $storageOps = [];
     foreach ($this->fieldStorageDefinitions() as $storageDefinition) {
       $field = \Drupal::service("plugin.manager.field.field_type").getInstance($storageDefinition->getType());
       if ($field instanceof TripalFieldItemInterface) {
@@ -85,20 +85,20 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
     parent::onFieldableEntityTypeUpdate($entity_type,$original,$field_storage_definitions,$original_field_storage_definitions,$sandbox);
 
     // build associate array of old fields
-    $oldTypes = array()
+    $oldTypes = [];
     foreach ($original_field_storage_definitions as $storageDefinition) {
         $oldTypes[$storageDefinition->getMainPropertyName()] = \Drupal::service("plugin.manager.field.field_type").getInstance($storageDefinition->getType());;
     }
 
     // build associate array of new fields
-    $newTypes = array()
+    $newTypes = [];
     foreach ($field_storage_definitions as $storageDefinition) {
         $newTypes[$storageDefinition->getMainPropertyName()] = \Drupal::service("plugin.manager.field.field_type").getInstance($storageDefinition->getType());;
     }
 
     // build storage add and update operations
-    $storageAdd = array()
-    $storageUpdate = array()
+    $storageAdd = [];
+    $storageUpdate = [];
     // For each of the new field types...
     foreach ($newTypes as $name => $field) {
       if ($field instanceof TripalFieldItemInterface) {
@@ -121,10 +121,10 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
           //   - we will want to update the key-value information.
           $otypes = $oldTypes[$name]->tripalTypes();
           if (array_key_exists($tsid,$storageUpdate)) {
-            $storageUpdate[$tsid] = array_push($storageUpdate[$tsid],array($types,$otypes);
+            $storageUpdate[$tsid] = array_push($storageUpdate[$tsid],[$types,$otypes]);
           }
           else {
-            $storageOps[$tsid] = array(array($types,$otypes));
+            $storageOps[$tsid] = [[$types,$otypes]];
           }
         }
         // Case 2: the new field did not exist before.
@@ -141,7 +141,7 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
     }
 
     // Build storage remove operations.
-    $storageRemove = array()
+    $storageRemove = [];
     foreach ($oldTypes as $name => $field) {
       if ($field instanceof TripalFieldItemInterface) {
         // Case 3: The old field no longer exists for this entity.
@@ -150,7 +150,7 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
         if (!array_key_exists($name,$newTypes)) {
           $types = $field->tripalTypes();
           $tsid = $field->tripalStorageId();
-          if array_key_exists($tsid,$storageRemove) {
+          if (array_key_exists($tsid,$storageRemove)) {
             $storageRemove[$tsid] = array_merge($storageRemove[$tsid],$types);
           }
           else {

@@ -2,11 +2,7 @@
 name: Test Coverage on Drupal 9.4.x-dev
 
 # When do we want the tests to run?
-on:
-  push:
-    branches:
-      - 9.x-4.x
-      - 4v40g-0-test-code-coverage
+on: [push]
 
 # Define jobs that are part of the workflow
 jobs:
@@ -24,7 +20,10 @@ jobs:
       # to ensure we have not broken the install/build process.
       - name: Build the Docker
         run: |
-          docker build --tag=tripaldocker:localdocker --build-arg drupalversion='9.4.x-dev' ./
+          docker build --tag=tripaldocker:localdocker \
+            --build-arg drupalversion="9.4.x-dev" \
+            --build-arg chadoschema='testchado' ./ \
+            --file tripaldocker/Dockerfile-php8.1-pgsql13
       # Just spin up docker the good ol' fashion way.
       - name: Spin up Local Docker
         run: |
@@ -32,14 +31,6 @@ jobs:
             --volume=`pwd`:/var/www/drupal9/web/modules/contrib/tripal \
             tripaldocker:localdocker
           docker exec tripaldocker service postgresql restart
-      # Now prepare the new docker container for running tests.
-      # We specifically do not have a `chado` named schema to test that
-      # an assumption hasn't been made here.
-      - name: Prep Local Docker for Tests
-        run: |
-          docker exec tripaldocker drush cr
-          docker exec tripaldocker drush trp-drop-chado --schema-name=chado
-          docker exec tripaldocker drush trp-prep-tests
       # Ensure we have the variables we need.
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v3.x

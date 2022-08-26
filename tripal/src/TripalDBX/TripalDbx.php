@@ -179,6 +179,10 @@ class TripalDbx {
 
     $issue = '';
     // Make sure we have a valid schema name.
+    // -- Check that we were even given a schema name.
+    if (empty($schema_name)) {
+      $issue = 'No schema name was provided.';
+    }
     // -- Check the name is not too long.
     if (63 < strlen($schema_name)) {
       $issue =

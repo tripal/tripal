@@ -76,12 +76,14 @@ class ChadoIdSpace extends TripalIdSpaceBase {
   public function isValid() {
 
     // Make sure the name of this ID Space does not exceeed the allowed size in Chado.
-    if (strlen($this->getName()) > $this->db_def['fields']['name']['size']) {
+    $name = $this->getName();
+
+    if (!empty($name) AND (strlen($name) > $this->db_def['fields']['name']['size'])) {
       $this->messageLogger->error('ChadoIdSpace: The IdSpace name must not be longer than @size characters. ' +
           'The value provided was: @value',
           ['@size' => $this->db_def['fields']['name']['size'],
            '@value' => $this->getName()]);
-          return;
+      return;
     }
 
     $this->is_valid = True;
@@ -876,11 +878,15 @@ class ChadoIdSpace extends TripalIdSpaceBase {
     }
 
     // Make sure the URL prefix is good.
-    if (strlen($this->getURLPrefix()) > $this->db_def['fields']['urlprefix']['size']) {
+    if (empty($prefix)) {
+      $this->messageLogger->error('ChadoIdSpace: No URL prefix for the vocabulary ID Space was provided when setURLPrefix() was called.');
+      return False;
+    }
+    if (strlen($prefix) > $this->db_def['fields']['urlprefix']['size']) {
       $this->messageLogger->error('ChadoIdSpace: The URL prefix for the vocabulary ID Space must not be longer than @size characters. ' +
           'The value provided was: @value',
           ['@size' => $this->db_def['fields']['urlprefix']['size'],
-            '@value' => $this->getName()]);
+            '@value' => $prefix]);
       return False;
     }
 
@@ -921,11 +927,17 @@ class ChadoIdSpace extends TripalIdSpaceBase {
 
 
     // Make sure the description is not too long.
-    if (strlen($this->getDescription()) > $this->db_def['fields']['description']['size']) {
+    if (empty($description)) {
+      $this->messageLogger->error('ChadoIdSpace: You must provide a description when calling setDescription().',
+          ['@size' => $this->db_def['fields']['description']['size'],
+           '@value' => $description]);
+      return False;
+    }
+    if (strlen($description) > $this->db_def['fields']['description']['size']) {
       $this->messageLogger->error('ChadoIdSpace: The description for the vocabulary ID space must not be longer than @size characters. ' +
           'The value provided was: @value',
           ['@size' => $this->db_def['fields']['description']['size'],
-           '@value' => $this->getName()]);
+           '@value' => $description]);
       return False;
     }
 

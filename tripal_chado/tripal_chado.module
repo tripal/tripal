@@ -43,7 +43,7 @@ function tripal_chado_rebuild() {
   // Make sure the Views are present.
   //
   $storage = \Drupal::entityTypeManager()->getStorage('view');
-  $dir = drupal_get_path('module', 'tripal_chado');
+  $dir = \Drupal::service('extension.list.module')->getPath('tripal_chado');
   $fileStorage = new FileStorage($dir);
 
   // The chado_custom_tables view.

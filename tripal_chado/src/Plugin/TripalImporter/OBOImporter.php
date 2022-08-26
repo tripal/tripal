@@ -2229,7 +2229,7 @@ class OBOImporter extends ChadoImporterBase {
 
     // The synonym can only be 255 chars in the cvtermsynonym table.
     // to prevent failing we have to truncate.
-    if (strlen($def) > 255) {
+    if (!empty($def) AND (strlen($def) > 255)) {
       $def = substr($def, 0, 252) . "...";
     }
 
