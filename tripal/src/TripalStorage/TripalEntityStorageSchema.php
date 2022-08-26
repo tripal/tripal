@@ -150,7 +150,7 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
         if (!array_key_exists($name,$newTypes)) {
           $types = $field->tripalTypes();
           $tsid = $field->tripalStorageId();
-          if array_key_exists($tsid,$storageRemove) {
+          if (array_key_exists($tsid,$storageRemove)) {
             $storageRemove[$tsid] = array_merge($storageRemove[$tsid],$types);
           }
           else {
