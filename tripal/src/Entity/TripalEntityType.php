@@ -29,7 +29,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
  *     },
  *   },
  *   config_prefix = "bio_data",
- *   admin_permission = "administer tripal content types",
+ *   admin_permission = "manage tripal content types",
  *   bundle_of = "tripal_entity",
  *   entity_keys = {
  *     "id" = "name",

@@ -1,19 +1,37 @@
 administer tripal:
   title: 'Administer Tripal'
-  description: 'Used to access the administration pages for Tripal.'
+  description: 'Allow the user to access administrative pages of Tripal. This includes management of jobs, the storage systems, extensions and the controlled vocabularies.'
 
+##
+# HTML 5 File Form Element
+##
 upload files:
   title: 'Upload Files'
   description: "Allows the user to upload files using Tripal's HTML5 loader."
 
+make files permanent:
+  title: 'Make Files Permanent'
+  description: 'Allows the user to make files they have access to permanent. Files that are permanent will not expire and will not be cleaned up.'
+
 ##
-# Tripal Content Entities.
+# Tripal Content.
 ##
-administer tripal content types:
-  title: 'Administer Tripal Content Types'
-  description: 'Create, edit, delete tripal content types and perform additional administrative tasks across all tripal content types.'
+access tripal content overview:
+  title: 'Access the Tripal Content overview page'
+
+manage tripal content types:
+  title: 'Manage Tripal content types'
+  description: 'Manage Tripal content types'
   restrict access: true
 
+publish tripal content:
+  title: 'Publish Tripal content types'
+  description: 'Allows the user to publish Tripal content for online access.'
+  restrict access: true
+
+##
+# These should all be per content type.
+##
 add tripal content entities:
   title: 'Create new Tripal Content'
 
@@ -23,8 +41,7 @@ edit tripal content entities:
 delete tripal content entities:
   title: 'Delete Tripal Content'
 
-access tripal content overview:
-  title: 'Access the Tripal Content overview page'
+
 
 view published tripal content entities:
   title: 'View published Tripal Content'
