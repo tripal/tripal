@@ -55,7 +55,7 @@ function tripal_chado_rebuild() {
   }
 
   // The chado_materialized_views view.
-  $view = $storage->load('chado_materialized_views');
+  $view = $storage->load('chado_mviews');
   if (!$view) {
     $config = $fileStorage->read('config/install/views.view.chado_mviews');
     $view = $storage->create($config);
