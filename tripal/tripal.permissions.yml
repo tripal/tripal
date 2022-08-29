@@ -1,6 +1,11 @@
+
+##
+# Core Tripal Permissions.
+##
 administer tripal:
   title: 'Administer Tripal'
   description: 'Allow the user to access administrative pages of Tripal. This includes management of jobs, the storage systems, extensions and the controlled vocabularies.'
+  restrict access: true
 
 ##
 # HTML 5 File Form Element
@@ -14,23 +19,32 @@ make files permanent:
   description: 'Allows the user to make files they have access to permanent. Files that are permanent will not expire and will not be cleaned up.'
 
 ##
-# Tripal Content.
+# Tripal Content and Tripal Content Types.
+#
+# Additional permissions are dynamic.
+# @see Drupal\tripal\AccessTripalEntityAccessControlHandler
 ##
+administer tripal content:
+  title: 'Administer Tripal Content'
+  description: 'Allows users to access the Tripal Content listing and add, edit, delete Tripal content of any type.'
+  restrict access: true
+
 access tripal content overview:
-  title: 'Access the Tripal Content overview page'
+  title: 'Access Tripal Content listing'
+  description: 'Allows the user to access the Tripal content listing.'
 
 manage tripal content types:
   title: 'Manage Tripal content types'
-  description: 'Manage Tripal content types'
+  description: 'Allows users to access the Tripal Content Types listing and add, edit or delete items listed.'
   restrict access: true
 
 publish tripal content:
-  title: 'Publish Tripal content types'
-  description: 'Allows the user to publish Tripal content for online access.'
-  restrict access: true
+  title: 'Publish Tripal Content'
+  description: 'Allows the user to publish Tripal content of all Tripal Content Types for online access.'
 
 ##
 # These should all be per content type.
+# @todo See Issue #270 (https://github.com/tripal/t4d8/issues/270)
 ##
 add tripal content entities:
   title: 'Create new Tripal Content'
@@ -41,18 +55,27 @@ edit tripal content entities:
 delete tripal content entities:
   title: 'Delete Tripal Content'
 
-
-
 view published tripal content entities:
   title: 'View published Tripal Content'
 
 view unpublished tripal content entities:
   title: 'View unpublished Tripal Content'
 
+##
+# The core Trpal Importers permissions.
+#
+# Additional permissions are dynamic.
+# @see TripalImporterPermissionsController:permissions()
+##
 allow tripal import:
-  title: 'Allow access to Tripal Importer Admin Listing'
-  description: 'Allow access to execute importer'
-  restrict access: true
+  title: 'Access Tripal Importer Admin Listing'
+  description: 'Allow access to the listing of importers available through Tripal.'
 
+##
+# Callbacks for Dynamic permissions.
+#
+# The following class methods provide additional permissions that depend on
+# runtime conditions or site-specific content types + importers.
+##
 permission_callbacks:
   - Drupal\tripal\Controller\TripalImporterPermissionsController::permissions
