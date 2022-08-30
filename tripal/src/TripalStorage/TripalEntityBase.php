@@ -62,8 +62,8 @@ class TripalEntityBase extends ContentEntityBase {
     parent::postLoad($storage, $entities);
 
     // Build the storage operations that will be done and entity references
-    $storageOps = array();
-    $entityRefs = array();
+    $storageOps = [];
+    $entityRefs = [];
     // For each entity to be loaded, check each field so we can...
     foreach ($entities as $entity) {
       $hasTripalFields = FALSE;
