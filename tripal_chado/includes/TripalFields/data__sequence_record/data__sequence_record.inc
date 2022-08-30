@@ -208,7 +208,7 @@ class data__sequence_record extends ChadoField {
         INNER JOIN {cvterm} CVT on SF.type_id = CVT.cvterm_id
       WHERE FR.object_id = :feature_id
     ";
-    $subtypes = chado_query($sql, [':feature_id' => $feature->feature_id])->fetchCol('name');
+    $subtypes = chado_query($sql, [':feature_id' => $feature->feature_id])->fetchCol();
 
     $exon = 'exon';
     if (!in_array('exon', $subtypes) and in_array('CDS', $subtypes)) {
