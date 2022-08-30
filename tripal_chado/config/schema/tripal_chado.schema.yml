@@ -4,3 +4,44 @@ tripal_chado.settings:
     default_schema:
       type: string
       label: 'Default Chado schema name'
+tripal_chado.chado_term_mapping.*:
+  type: config_entity
+  mapping:
+    id:
+      type: string
+      label: 'ID'
+      nullable: false
+    label:
+      type: label
+      label: 'Label'
+      nullable: false
+    description:
+      type: string
+      label: 'Description'
+    tables:
+      type: sequence
+      label: "Chado Tables"
+      sequence:
+        type: mapping
+        mapping:
+            name:
+              type: string
+              label: "Table Name"
+            columns:
+              type: sequence
+              label: "Table Columns"
+              sequence:
+                type: mapping
+                mapping:
+                  name: 
+                    type: string
+                    label: "Column Name"
+                    nullable: false
+                  term_id:
+                    type: string
+                    label: "Term ID"
+                    nullable: false
+                  term_name:
+                    type: string
+                    label: "Term Name"
+                    nullable: false

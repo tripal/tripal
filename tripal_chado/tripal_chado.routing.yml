@@ -103,3 +103,36 @@ tripal_chado.chado_mviews:
     _title: 'Materialized Views'
   requirements:
     _permission: 'manage chado materialized views'
+    
+    
+entity.chado_term_mapping.collection:
+  path: 'admin/tripal/storage/chado/terms'
+  defaults:
+    _entity_list: 'chado_term_mapping'
+    _title: 'Chado Term Mapping'
+  requirements:
+    _permission: 'administer tripal'
+
+entity.chado_term_mapping.add_form:
+  path: 'admin/tripal/storage/chado/terms/add'
+  defaults:
+    _entity_form: 'chado_term_mapping.add'
+    _title: 'Add Mapping'
+  requirements:
+    _permission: 'administer tripal'
+
+entity.chado_term_mapping.edit_form:
+  path: 'admin/tripal/storage/chado/terms/{chado_term_mapping}'
+  defaults:
+    _entity_form: 'chado_term_mapping.edit'
+    _title: 'Edit Mapping'
+  requirements:
+    _permission: 'administer tripal'
+
+entity.chado_term_mapping.delete_form:
+  path: 'admin/tripal/storage/chado/terms/{chado_term_mapping}/delete'
+  defaults:
+    _entity_form: 'chado_term_mapping.delete'
+    _title: 'Delete Mapping'
+  requirements:
+    _permission: 'administer tripal'
