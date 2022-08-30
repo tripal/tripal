@@ -179,6 +179,10 @@ class TripalDbx {
 
     $issue = '';
     // Make sure we have a valid schema name.
+    // -- Check that we were even given a schema name.
+    if (empty($schema_name)) {
+      $issue = 'No schema name was provided.';
+    }
     // -- Check the name is not too long.
     if (63 < strlen($schema_name)) {
       $issue =
@@ -337,6 +341,9 @@ class TripalDbx {
       // Adds regex wildcard
       $reserved_pattern = preg_replace('/(?<!\.)\*/', '.*', $reserved_pattern);
       if (preg_match("/^$reserved_pattern\$/", $schema_name)) {
+        if ($reserved === FALSE) {
+          $reserved = [];
+        }
         $reserved[$reserved_pattern] = $description;
       }
     }

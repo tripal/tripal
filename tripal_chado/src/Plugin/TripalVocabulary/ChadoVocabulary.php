@@ -72,7 +72,8 @@ class ChadoVocabulary extends TripalVocabularyBase {
   public function isValid() {
 
     // Make sure the name of this collection does not exceeed the allowed size in Chado.
-    if (strlen($this->getName()) > $this->cv_def['fields']['name']['size']) {
+    $name = $this->getName();
+    if (!empty($name) AND (strlen($name) > $this->cv_def['fields']['name']['size'])) {
       $this->messageLogger->error('ChadoVocabulary: The vocabulary name must not be longer than @size characters. ' +
           'The value provided was: @value',
           ['@size' => $this->cv_def['fields']['name']['size'],
