@@ -7,18 +7,18 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Plugin implementation of default Tripal text type widget.
+ * Plugin implementation of default Tripal integer type widget.
  *
  * @FieldWidget(
- *   id = "default_tripal_text_type_widget",
- *   label = @Translation("Tripal Text Widget"),
- *   description = @Translation("The default text type widget."),
+ *   id = "default_tripal_integer_type_widget",
+ *   label = @Translation("Tripal Integer Widget"),
+ *   description = @Translation("The default integer type widget."),
  *   field_types = {
- *     "tripal_text_type"
+ *     "tripal_integer_type"
  *   }
  * )
  */
-class TripalTextTypeWidget extends TripalWidgetBase {
+class TripalIntegerTypeWidget extends TripalWidgetBase {
 
 
   /**
@@ -26,7 +26,7 @@ class TripalTextTypeWidget extends TripalWidgetBase {
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
     $element['value'] = $element + [
-      '#type' => 'textarea',
+      '#type' => 'textfield',
       '#default_value' => $items[$delta]->value ?? '',
       '#placeholder' => $this->getSetting('placeholder'),
       '#attributes' => ['class' => ['js-text-full', 'text-full']],

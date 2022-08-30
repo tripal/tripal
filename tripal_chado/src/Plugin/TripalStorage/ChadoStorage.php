@@ -407,6 +407,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           }
           $chado_table = $settings['storage_plugin_settings']['chado_table'];
           $chado_column = $settings['storage_plugin_settings']['chado_column'];
+          $value = $prop_value->getValue();
 
           if ($key == 'record_id') {
             $chado = \Drupal::service('tripal_chado.database');
@@ -415,8 +416,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             $pkey = $table_def['primary key'];
             $records[$chado_table][$delta]['conditions'][$pkey] = $prop_value->getValue();
           }
-          else {
-            $records[$chado_table][$delta]['fields'][$chado_column] = $prop_value->getValue();
+          if ($key == 'value' and !empty($value)) {
+            $records[$chado_table][$delta]['fields'][$chado_column] = $value;
           }
         }
       }
