@@ -36,39 +36,76 @@ interface TripalStorageInterface extends PluginInspectionInterface {
   public function getTypes();
 
   /**
-   * Inserts the given array of new property values to this tripal storage
-   * plugin.
+   * Inserts values in the field data store.
+   *
+   * The record Ids of the inserted records will be set in the property
+   * value objects.
    *
    * @param array $values
-   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
+   *   Associative array 5-levels deep.
+   *   The 1st level is the field name (e.g. obi__organism).
+   *   The 2nd level is the delta value (e.g. 0).
+   *   The 3rd level is a field key name (i.e. record_id + value).
+   *   The 4th level must contain the following three keys/value pairs
+   *   - "value": a \Drupal\tripal\TripalStorage\StoragePropertyValue object
+   *   - "type": a\Drupal\tripal\TripalStorage\StoragePropertyType object
+   *   - "definition": a \Drupal\Field\Entity\FieldConfig object
+   *   When the function returns, any values retreived from the data store
+   *   will be set in the StoragePropertyValue object.
+   *
+   * @return bool
+   *   True if successful. False otherwise.
    */
-  public function insertValues($values);
+  public function insertValues(&$values) : bool;
 
   /**
-   * Updates the given array of property values that already exist to this
-   * tripal storage plugin.
+   * Updates values in the field data store.
    *
    * @param array $values
-   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
+   *   Associative array 5-levels deep.
+   *   The 1st level is the field name (e.g. obi__organism).
+   *   The 2nd level is the delta value (e.g. 0).
+   *   The 3rd level is a field key name (i.e. record_id + value).
+   *   The 4th level must contain the following three keys/value pairs
+   *   - "value": a \Drupal\tripal\TripalStorage\StoragePropertyValue object
+   *   - "type": a\Drupal\tripal\TripalStorage\StoragePropertyType object
+   *   - "definition": a \Drupal\Field\Entity\FieldConfig object
+   *   When the function returns, any values retreived from the data store
+   *   will be set in the StoragePropertyValue object.
+   *
+   * @return bool
+   *   True if successful. False otherwise.
    */
-  public function updateValues($values);
+  public function updateValues($values) : bool;
 
   /**
-   * Loads the values of the given array of property values from this tripal
-   * storage plugin.
+   * Loads the values of the field data store.
    *
    * @param array $values
-   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
+   *   Associative array 5-levels deep.
+   *   The 1st level is the field name (e.g. obi__organism).
+   *   The 2nd level is the delta value (e.g. 0).
+   *   The 3rd level is a field key name (i.e. record_id + value).
+   *   The 4th level must contain the following three keys/value pairs
+   *   - "value": a \Drupal\tripal\TripalStorage\StoragePropertyValue object
+   *   - "type": a\Drupal\tripal\TripalStorage\StoragePropertyType object
+   *   - "definition": a \Drupal\Field\Entity\FieldConfig object
+   *
+   * @return bool
+   *   True if successful. False otherwise.
    */
-  public function loadValues(&$values);
+  public function loadValues(&$values) : bool;
 
   /**
    * Deletes the given array of property values from this tripal storage plugin.
    *
    * @param array $values
    *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
+   *
+   * @return bool
+   *   True if successful. False otherwise.
    */
-  public function deleteValues($values);
+  public function deleteValues($values) : bool;
 
   /**
    * Finds and returns all property values stored in this storage plugin

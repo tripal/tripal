@@ -115,6 +115,7 @@ class TripalLogger {
       $message_str = $prefix . trim($message_str);
     }
 
+    // @debug print $message_str . "\n";
     error_log($message_str);
   }
 
@@ -286,11 +287,11 @@ class TripalLogger {
    */
   public function error($message, $context = [], $options=[]) {
     if ($this->isSuppressed()) return;
-    
+
     $message = 'ERROR: ' . $message;
     $this->log2Job($message, $context);
 
-    if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {     
+    if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
       $this->logger->error($message);
     }
 

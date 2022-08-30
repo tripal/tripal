@@ -51,14 +51,6 @@ class ChadoTermsInit{
   }
 
   /**
-   * Maps terms to the Chado tables and columns.
-   *
-   */
-  public function mapTerms() {
-
-  }
-
-  /**
    * Installs the module's default terms into Chado.
    *
    */

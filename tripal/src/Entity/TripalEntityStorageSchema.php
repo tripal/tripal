@@ -1,6 +1,10 @@
 <?php
 
 use Drupal\tripal\TripalStorage\TripalStorageUpdateException;
+use Drupal\Core\Entity\Sql\SqlContentEntityStorageSchema;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
+
 
 class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
 
@@ -33,7 +37,7 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
         // We're basically just compiling all field property types with the
         // same storage for the entire entity here.
         if (array_key_exists($tsid,$storageOps)) {
-          $storageOps[$tsid] = array_merge($storageOps[$tsid],$types);
+          $storageOps[$tsid] = array_merge($storageOps[$tsid], $types);
         }
         else {
           $storageOps[$tsid] = $types;
@@ -45,7 +49,7 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
     // for each one. This will also save this information at the TripalStorage
     // layer.
     foreach ($storageOps as $tsid => $types) {
-      $tripalStorage = \Drupal::service("plugin.manager.tripal.storage")->getInstance($tsid);
+      $tripalStorage = \Drupal::service("tripal.storage")->getInstance($tsid);
       $tripalStorage->addTypes($types);
     }
   }
@@ -62,8 +66,8 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
       if ($field instanceof TripalFieldItemInterface) {
         $types = $field->tripalTypes();
         $tsid = $field->tripalStorageId();
-        if (array_key_exists($tsid,$storageOps)) {
-          $storageOps[$tsid] = array_merge($storageOps[$tsid],$types);
+        if (array_key_exists($tsid, $storageOps)) {
+          $storageOps[$tsid] = array_merge($storageOps[$tsid], $types);
         }
         else {
           $storageOps[$tsid] = $types;
@@ -73,7 +77,7 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
 
     // iterate through all storage plugins and remove property types
     foreach ($storageOps as $tsid => $types) {
-      $tripalStorage = \Drupal::service("plugin.manager.tripal.storage")->getInstance($tsid);
+      $tripalStorage = \Drupal::service("tripal.storage")->getInstance($tsid);
       $tripalStorage->removeTypes($types);
     }
   }
@@ -121,17 +125,17 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
           //   - we will want to update the key-value information.
           $otypes = $oldTypes[$name]->tripalTypes();
           if (array_key_exists($tsid,$storageUpdate)) {
-            $storageUpdate[$tsid] = array_push($storageUpdate[$tsid],[$types,$otypes]);
+            $storageUpdate[$tsid] = array_push($storageUpdate[$tsid], [$types,$otypes]);
           }
           else {
-            $storageOps[$tsid] = [[$types,$otypes]];
+            $storageUpdate[$tsid] = [[$types, $otypes]];
           }
         }
         // Case 2: the new field did not exist before.
         //   - we will need to add the new field to it's new storage.
         else {
-          if (array_key_exists($tsid,$storageAdd)) {
-            $storageAdd[$tsid] = array_merge($storageAdd[$tsid],$types);
+          if (array_key_exists($tsid, $storageAdd)) {
+            $storageAdd[$tsid] = array_merge($storageAdd[$tsid], $types);
           }
           else {
             $storageAdd[$tsid] = $types;
@@ -150,7 +154,7 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
         if (!array_key_exists($name,$newTypes)) {
           $types = $field->tripalTypes();
           $tsid = $field->tripalStorageId();
-          if (array_key_exists($tsid,$storageRemove)) {
+          if (array_key_exists($tsid, $storageRemove)) {
             $storageRemove[$tsid] = array_merge($storageRemove[$tsid],$types);
           }
           else {
@@ -162,19 +166,19 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
 
     // iterate through all storage plugins and remove old types
     foreach ($storageRemove as $tsid => $types) {
-      $tripalStorage = \Drupal::service("plugin.manager.tripal.storage")->getInstance($tsid);
+      $tripalStorage = \Drupal::service("tripal.storage")->getInstance($tsid);
       $tripalStorage->RemoveTypes($types);
     }
 
     // iterate through all storage plugins and update types
     foreach ($storageUpdate as $tsid => $types) {
-      $tripalStorage = \Drupal::service("plugin.manager.tripal.storage")->getInstance($tsid);
-      $tripalStorage->UpdateTypes($types[0],$types[1]);
+      $tripalStorage = \Drupal::service("tripal.storage")->getInstance($tsid);
+      $tripalStorage->UpdateTypes($types[0], $types[1]);
     }
 
     // iterate through all storage plugins and add new types
     foreach ($storageAdd as $tsid => $types) {
-      $tripalStorage = \Drupal::service("plugin.manager.tripal.storage")->getInstance($tsid);
+      $tripalStorage = \Drupal::service("tripal.storage")->getInstance($tsid);
       $tripalStorage->addTypes($types);
     }
   }
