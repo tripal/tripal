@@ -326,6 +326,8 @@ class GFF3Importer extends ChadoImporterBase {
    * @see TripalImporter::form()
    */
   public function form($form, &$form_state) {
+    // Always call the parent form to ensure Chado is handled properly.
+    $form = parent::form($form, $form_state);
 
     // get the list of organisms
     $sql = "SELECT * FROM {organism} ORDER BY genus, species";
@@ -433,12 +435,12 @@ class GFF3Importer extends ChadoImporterBase {
     ];
 
     // Advanced Options
-    $form['advanced'] = [
-      '#type' => 'fieldset',
-      '#title' => t('Additional Options'),
-      '#collapsible' => TRUE,
-      '#collapsed' => FALSE,
-    ];
+    // $form['advanced'] = [
+    //   '#type' => 'fieldset',
+    //   '#title' => t('Additional Options'),
+    //   '#collapsible' => TRUE,
+    //   '#collapsed' => FALSE,
+    // ];
 
     $form['advanced']['create_organism'] = [
       '#type' => 'checkbox',
