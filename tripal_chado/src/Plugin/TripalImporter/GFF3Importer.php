@@ -20,7 +20,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *    use_analysis = False,
  *    require_analysis = True,
  *    button_text = @Translation("Import GFF3 file"),
- *    file_upload = False,
+ *    file_upload = True,
  *    file_load = False,
  *    file_remote = False,
  *    file_required = False,
@@ -432,13 +432,14 @@ class GFF3Importer extends ChadoImporterBase {
        GFF file take precedence over those specified above."),
     ];
 
-    // Advanced Options
+    Advanced Options
     $form['advanced'] = [
       '#type' => 'fieldset',
       '#title' => t('Additional Options'),
       '#collapsible' => TRUE,
       '#collapsed' => FALSE,
     ];
+
     $form['advanced']['create_organism'] = [
       '#type' => 'checkbox',
       '#title' => t('Create organism'),
