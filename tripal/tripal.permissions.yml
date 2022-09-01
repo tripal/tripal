@@ -11,12 +11,20 @@ administer tripal:
 # HTML 5 File Form Element
 ##
 upload files:
-  title: 'Upload Files'
+  title: 'Upload Tripal Data Files'
   description: "Allows the user to upload files using Tripal's HTML5 loader."
 
 make files permanent:
-  title: 'Make Files Permanent'
+  title: 'Make Tripal Data Files Permanent'
   description: 'Allows the user to make files they have access to permanent. Files that are permanent will not expire and will not be cleaned up.'
+
+manage tripal files:
+  title: "Manage Own Tripal Data Files"
+  description: 'Allows users to manage their own data files uploaded via Tripal.'
+
+manage tripal data collections:
+  title: "Manage Own Tripal Data Collections"
+  description: 'Allows users to manage their own Tripal data collections.'
 
 ##
 # Tripal Content and Tripal Content Types.

@@ -263,29 +263,44 @@ tripal.upload.chunk:
 
 # tripal_user_collections_delete_form
 tripal.data_collections_delete:
-  path: 'user/{uid}/data-collections/{collection_id}/delete'
+  path: 'user/{user}/data-collections/{collection_id}/delete'
   defaults:
     _controller: '\Drupal\tripal\Form\TripalDataCollectionsDelete'
     _title: 'Delete a Collections'
+  options:
+    parameters:
+      user:
+        type: entity:user
   requirements:
-    _tripal_access_check: 'TRUE'
+    _permission: 'manage tripal data collections'
+    _tripal_own_content_access_check: 'TRUE'
 
 tripal.data_collections_view:
-  path: 'user/{uid}/data-collections/{collection_id}/view'
+  path: 'user/{user}/data-collections/{collection_id}/view'
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalController::tripalDataCollectionsView'
     _title: 'View a Collections'
+  options:
+    parameters:
+      user:
+        type: entity:user
   requirements:
-    _tripal_access_check: 'TRUE'
+    _permission: 'manage tripal data collections'
+    _tripal_own_content_access_check: 'TRUE'
 
 # tripal_user_collections_generate_file_form
 tripal.data_collections_generate:
-  path: 'user/{uid}/data-collections/generate/{collection_id}'
+  path: 'user/{user}/data-collections/generate/{collection_id}'
   defaults:
     _controller: '\Drupal\tripal\Form\TripalDataCollectionsGenerate'
     _title: 'Generate a file for download of a Collections'
+  options:
+    parameters:
+      user:
+        type: entity:user
   requirements:
-    _tripal_access_check: 'TRUE'
+    _permission: 'manage tripal data collections'
+    _tripal_own_content_access_check: 'TRUE'
 
 ##
 # User File Management.
@@ -376,38 +391,63 @@ tripal.user_files:
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalController::tripalUserFiles'
     _title: 'Files'
+  options:
+    parameters:
+      user:
+        type: entity:user
   requirements:
-    _tripal_access_check: 'TRUE'
+    _permission: 'manage tripal files'
+    _tripal_own_content_access_check: 'TRUE'
 
 tripal.user_files_details:
-  path: 'user/{uid}/files/{file_id}'
+  path: 'user/{user}/files/{file_id}'
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalController::tripalUserFileDetails'
     _title: 'File Details'
+  options:
+    parameters:
+      user:
+        type: entity:user
   requirements:
-    _tripal_access_check: 'TRUE'
+    _permission: 'manage tripal files'
+    _tripal_own_content_access_check: 'TRUE'
 
 tripal.user_files_renew:
-  path: 'user/{uid}/files/{file_id}/renew'
+  path: 'user/{user}/files/{file_id}/renew'
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalController::tripalUserFileRenew'
     _title: 'File Renew'
+  options:
+    parameters:
+      user:
+        type: entity:user
   requirements:
-    _tripal_access_check: 'TRUE'
+    _permission: 'manage tripal files'
+    _tripal_own_content_access_check: 'TRUE'
 
 tripal.user_files_download:
-  path: 'user/{uid}/files/{file_id}/download'
+  path: 'user/{user}/files/{file_id}/download'
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalController::tripalUserFileDownload'
     _title: 'File Download'
+  options:
+    parameters:
+      user:
+        type: entity:user
   requirements:
-    _tripal_access_check: 'TRUE'
+    _permission: 'manage tripal files'
+    _tripal_own_content_access_check: 'TRUE'
 
 #tripal_delete_file_form
 tripal.user_files_delete:
-  path: 'user/{uid}/files/{file_id}/delete'
+  path: 'user/{user}/files/{file_id}/delete'
   defaults:
     _controller: '\Drupal\tripal\Form\TripalUserFileDelete'
     _title: 'Delete File'
+  options:
+    parameters:
+      user:
+        type: entity:user
   requirements:
-    _tripal_access_check: 'TRUE'
+    _permission: 'manage tripal files'
+    _tripal_own_content_access_check: 'TRUE'
