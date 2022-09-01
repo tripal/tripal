@@ -1,3 +1,12 @@
+
+tripal.content_bio_data_unpublish:
+  route_name: tripal.content_bio_data_unpublish
+  description: 'Unpublish content that has no associated records in the data store.'
+  title: 'Unpublish Orphaned Content'
+  weight: 100
+  appears_on:
+    - entity.tripal_entity.collection
+
 ##
 # Tripal Content Entity.
 ##

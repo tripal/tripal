@@ -37,13 +37,6 @@ tripal.admin_register:
   parent: tripal.admin
   weight: 1
 
-tripal.content_bio_data_unpublish:
-  route_name: tripal.content_bio_data_unpublish
-  description: 'Unpublish content that has no associated records in the data store.'
-  title: 'Unpublish Orphaned Content'
-  parent: tripal.admin
-  weight: 20
-
 tripal.storage:
   route_name: tripal.storage
   title: 'Data Storage'
@@ -76,7 +69,7 @@ tripal.data_loaders_tripalimporterlink:
   class: Drupal\tripal\Plugin\Menu\TripalImporterLink
   deriver: Drupal\tripal\Plugin\Derivative\TripalImporterLink
   parent: tripal.data_loaders
-  weight: 10  
+  weight: 10
 
 tripal.data_collections:
   route_name: tripal.data_collections
