@@ -7,7 +7,30 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
-
+/**
+ * GFF3 Importer implementation of the TripalImporterBase.
+ *
+ *  @TripalImporter(
+ *    id = "chado_gff3_loader",
+ *    label = @Translation("Chado GFF3 File Loader"),
+ *    description = @Translation("Import a GFF3 file into Chado"),
+ *    file_types = {"gff","gff3"},
+ *    upload_description = @Translation("Please provide the GFF3 file."),
+ *    upload_title = @Translation("GFF3 File"),
+ *    use_analysis = False,
+ *    require_analysis = True,
+ *    button_text = @Translation("Import GFF3 file"),
+ *    file_upload = False,
+ *    file_load = False,
+ *    file_remote = False,
+ *    file_required = False,
+ *    cardinality = 1,
+ *    menu_path = "",
+ *    callback = "",
+ *    callback_module = "",
+ *    callback_path = "",
+ *  )
+ */
 class GFF3Importer extends ChadoImporterBase {
   /**
    * The name of this loader.  This name will be presented to the site
