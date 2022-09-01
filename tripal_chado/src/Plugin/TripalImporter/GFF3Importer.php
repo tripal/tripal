@@ -432,7 +432,7 @@ class GFF3Importer extends ChadoImporterBase {
        GFF file take precedence over those specified above."),
     ];
 
-    Advanced Options
+    // Advanced Options
     $form['advanced'] = [
       '#type' => 'fieldset',
       '#title' => t('Additional Options'),
