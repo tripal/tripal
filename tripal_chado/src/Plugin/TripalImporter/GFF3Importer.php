@@ -343,6 +343,7 @@ class GFF3Importer extends ChadoImporterBase {
       '#required' => TRUE,
       '#options' => $organisms,
     ];
+
     $form['landmark_type'] = [
       '#title' => t('Landmark Type'),
       '#type' => 'textfield',
@@ -358,6 +359,7 @@ class GFF3Importer extends ChadoImporterBase {
       '#collapsible' => TRUE,
       '#collapsed' => FALSE,
     ];
+
     $form['proteins']['skip_protein'] = [
       '#type' => 'checkbox',
       '#title' => t('Skip automatic protein creation'),
@@ -403,7 +405,7 @@ class GFF3Importer extends ChadoImporterBase {
     ];
     $form['targets']['target_organism_id'] = [
       '#title' => t('Target Organism'),
-      '#type' => t('select'),
+      '#type' => 'select',
       '#description' => t("Optional. Choose the organism to which target sequences belong.
         Select this only if target sequences belong to a different organism than the
         one specified above. And only choose an organism here if all of the target sequences
@@ -414,7 +416,7 @@ class GFF3Importer extends ChadoImporterBase {
     ];
     $form['targets']['target_type'] = [
       '#title' => t('Target Type'),
-      '#type' => t('textfield'),
+      '#type' => 'textfield',
       '#description' => t("Optional. If the unique name for a target sequence is not unique (e.g. a protein
        and an mRNA have the same name) then you must specify the type for all targets in the GFF file. If
        the targets are of different types then the type must be specified using the 'target_type=type' attribute
@@ -458,7 +460,7 @@ class GFF3Importer extends ChadoImporterBase {
 
     $form['advanced']['alt_id_attr'] = [
       '#title' => t('ID Attribute'),
-      '#type' => t('textfield'),
+      '#type' => 'textfield',
       '#description' => t("Optional. Sometimes lines in the GFF file are missing the
       required ID attribute that specifies the unique name of the feature, but there
       may be another attribute that can uniquely identify the feature.  If so,
