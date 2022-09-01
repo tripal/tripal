@@ -3050,5 +3050,19 @@ class GFF3Importer extends ChadoImporterBase {
         $args = [];
       }
     }
+  }
+  
+  /**
+   * {@inheritdoc}
+   */
+  public function postRun() {
+
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function formSubmit($form, &$form_state) {
+
   }  
 }
