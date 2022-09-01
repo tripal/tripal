@@ -435,14 +435,14 @@ class GFF3Importer extends ChadoImporterBase {
     ];
 
     // Advanced Options
-    // $form['advanced'] = [
-    //   '#type' => 'fieldset',
-    //   '#title' => t('Additional Options'),
-    //   '#collapsible' => TRUE,
-    //   '#collapsed' => FALSE,
-    // ];
+    $form['additional_options'] = [
+      '#type' => 'fieldset',
+      '#title' => t('Additional Options'),
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+    ];
 
-    $form['advanced']['create_organism'] = [
+    $form['additional_options']['create_organism'] = [
       '#type' => 'checkbox',
       '#title' => t('Create organism'),
       '#required' => FALSE,
@@ -453,7 +453,7 @@ class GFF3Importer extends ChadoImporterBase {
        Otherwise lines with an organism attribute where the organism is not present in the database will be skipped.'),
     ];
 
-    $form['advanced']['line_number'] = [
+    $form['additional_options']['line_number'] = [
       '#type' => 'textfield',
       '#title' => t('Start Line Number'),
       '#description' => t('Enter the line number in the GFF file where you would like to begin processing.  The
@@ -461,7 +461,7 @@ class GFF3Importer extends ChadoImporterBase {
       '#size' => 10,
     ];
 
-    $form['advanced']['alt_id_attr'] = [
+    $form['additional_options']['alt_id_attr'] = [
       '#title' => t('ID Attribute'),
       '#type' => 'textfield',
       '#description' => t("Optional. Sometimes lines in the GFF file are missing the
@@ -469,9 +469,6 @@ class GFF3Importer extends ChadoImporterBase {
       may be another attribute that can uniquely identify the feature.  If so,
       you may specify the name of the attribute to use for the name."),
     ];
-
-
-
 
     return $form;
   }
