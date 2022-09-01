@@ -1,9 +1,9 @@
 services:
-  tripal.access_checker:
-    class: Drupal\tripal\Access\CustomAccessCheck
+  tripal.own_content_access_checker:
+    class: Drupal\tripal\Access\TripalAccessOwnContentCheck
     arguments: ['@current_user']
     tags:
-      - { name: access_check, applies_to: _tripal_access_check }
+      - { name: access_check, applies_to: _tripal_own_content_access_check }
   tripal.bulkPgSchemaInstaller:
     class: Drupal\tripal\Services\bulkPgSchemaInstaller
   tripal.job:
