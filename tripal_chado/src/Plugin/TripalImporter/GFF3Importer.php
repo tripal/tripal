@@ -17,7 +17,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *    file_types = {"gff","gff3"},
  *    upload_description = @Translation("Please provide the GFF3 file."),
  *    upload_title = @Translation("GFF3 File"),
- *    use_analysis = False,
+ *    use_analysis = True,
  *    require_analysis = True,
  *    button_text = @Translation("Import GFF3 file"),
  *    file_upload = True,
