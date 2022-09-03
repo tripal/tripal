@@ -1,7 +1,9 @@
+
 ##
-# Base Tripal Admin Menu.
+# Tripal Admin Menu.
 ##
 
+# Base Tripal Admin Route.
 tripal.admin:
   path: 'admin/tripal'
   defaults:
@@ -19,10 +21,7 @@ tripal.admin_register:
   requirements:
     _permission: 'administer tripal'
 
-##
-# Tripal Extensions.
-##
-
+# Tripal Storage.
 tripal.storage:
   path: 'admin/tripal/storage'
   defaults:
@@ -31,6 +30,7 @@ tripal.storage:
   requirements:
     _permission: 'administer tripal'
 
+# Tripal Extensions.
 tripal.extension:
   path: 'admin/tripal/extension'
   defaults:
@@ -43,48 +43,53 @@ tripal.extension:
 # Jobs Management
 ##
 
+# Job Listing.
 tripal.jobs:
   path: 'admin/tripal/tripal_jobs'
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalJobController::tripalJobs'
     _title: 'Jobs'
   requirements:
-    _permission: 'administer tripal'
+    _permission: 'manage tripal jobs'
 
+# Cancel Job page.
 tripal.jobs_cancel:
   path: 'admin/tripal/tripal_jobs/cancel/{id}'
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalJobController::tripalJobsCancel'
     _title: 'Cancel a pending job'
   requirements:
-    _permission: 'administer tripal'
+    _permission: 'manage tripal jobs'
 
+# Re-run Job page.
 tripal.jobs_rerun:
   path: 'admin/tripal/tripal_jobs/rerun/{id}'
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalJobController::tripalJobsRerun'
     _title: 'Re-run an existing job'
   requirements:
-    _permission: 'administer tripal'
+    _permission: 'manage tripal jobs'
 
+# View Job Details page.
 tripal.jobs_view:
   path: 'admin/tripal/tripal_jobs/view/{id}'
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalJobController::tripalJobsView'
     _title: 'Job details.'
   requirements:
-    _permission: 'administer tripal'
+    _permission: 'manage tripal jobs'
 
-tripal.jobs_execute:
-  path: 'admin/tripal/tripal_jobs/execute/{id}'
-  defaults:
-    _controller: '\Drupal\tripal\Controller\TripalJobController::tripalJobsExecute'
-    _title: 'Execute an existing job'
-  requirements:
-    _permission: 'administer tripal'
+# Execute Job through UI page.
+# tripal.jobs_execute:
+#   path: 'admin/tripal/tripal_jobs/execute/{id}'
+#   defaults:
+#     _controller: '\Drupal\tripal\Controller\TripalJobController::tripalJobsExecute'
+#     _title: 'Execute an existing job'
+#   requirements:
+#    _permission: 'administer tripal'
 
 ##
-# Dashboard.
+# Tripal Dashboard.
 ##
 
 # Legacy Tripal Dashboard
@@ -96,7 +101,7 @@ tripal.dashboard:
   requirements:
     _permission: 'administer tripal'
 
-# Dashboard Action Item callbacks
+# Dashboard Action Item callbacks.
 tripal.dashboard_disable_notification:
   path: 'admin/disable/notification/{id}'
   defaults:
@@ -104,7 +109,6 @@ tripal.dashboard_disable_notification:
     _title: 'Disable Notifications'
   requirements:
     _permission: 'administer tripal'
-
 tripal.dashboard_admin_notification_field:
   path: 'admin/import/field/{field_name_note}/{bundle_id}/{module}/{field_or_instance}'
   defaults:
@@ -198,7 +202,6 @@ tripal.cv_lookup:
     _title: 'Controlled Vocabularies'
   requirements:
     _permission: 'administer tripal'
-
 tripal.cv_lookup_term:
   path: 'cv/lookup/{vocabulary}/{accession}'
   defaults:
@@ -206,7 +209,6 @@ tripal.cv_lookup_term:
     _title: 'Vocabulary Term Lookup'
   requirements:
     _permission: 'access content'
-
 tripal.cv_lookup_term_children:
   path: 'cv/lookup/{vocabulary}/{accession}/children'
   defaults:
@@ -220,6 +222,7 @@ tripal.cv_lookup_term_children:
 # Data Loaders.
 ##
 
+# Importer Listing.
 tripal.data_loaders:
   path: 'admin/tripal/loaders'
   defaults:
@@ -227,11 +230,8 @@ tripal.data_loaders:
     _title: 'Data Loaders'
   requirements:
     _permission: 'administer tripal'
-#route_callbacks:
-#  - '\Drupal\tripal\Routing\TripalRoutes::importerRoutes'
 
-
-
+# Importer Form.
 tripal.data_loaders_tripalimporter:
   path: 'admin/tripal/loaders/{plugin_id}'
   defaults:
@@ -240,7 +240,7 @@ tripal.data_loaders_tripalimporter:
   requirements:
     _permission: 'allow tripal import'
 
-# AJAX callback to upload files.
+# AJAX callbacks to upload files.
 tripal.upload:
   path: 'tripal/upload/{type}/{filename}/{action}'
   defaults:
@@ -248,7 +248,6 @@ tripal.upload:
     _title: 'Upload Files'
   requirements:
     _permission: 'upload files'
-
 tripal.upload.chunk:
   path: 'tripal/upload/{type}/{filename}/{action}/{chunk}'
   defaults:
@@ -261,7 +260,16 @@ tripal.upload.chunk:
 # Data Collections.
 ##
 
-# tripal_user_collections_delete_form
+# List User Data Collections.
+tripal.data_collections:
+  path: 'admin/tripal/data-collections'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalDataCollections'
+    _title: 'Data Collections'
+  requirements:
+    _permission: 'administer tripal'
+
+# Delete User Data Collection Form.
 tripal.data_collections_delete:
   path: 'user/{user}/data-collections/{collection_id}/delete'
   defaults:
@@ -275,6 +283,7 @@ tripal.data_collections_delete:
     _permission: 'manage tripal data collections'
     _tripal_own_content_access_check: 'TRUE'
 
+# View User Data Collection.
 tripal.data_collections_view:
   path: 'user/{user}/data-collections/{collection_id}/view'
   defaults:
@@ -288,7 +297,7 @@ tripal.data_collections_view:
     _permission: 'manage tripal data collections'
     _tripal_own_content_access_check: 'TRUE'
 
-# tripal_user_collections_generate_file_form
+# Generate User Data Collection.
 tripal.data_collections_generate:
   path: 'user/{user}/data-collections/generate/{collection_id}'
   defaults:
@@ -303,18 +312,10 @@ tripal.data_collections_generate:
     _tripal_own_content_access_check: 'TRUE'
 
 ##
-# User File Management.
+# Administer User File Management.
 ##
 
-tripal.data_collections:
-  path: 'admin/tripal/data-collections'
-  defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalDataCollections'
-    _title: 'Data Collections'
-  requirements:
-    _permission: 'administer tripal'
-
-# tripal_admin_manage_files_form
+# List File Management Actions.
 tripal.files:
   path: 'admin/tripal/files'
   defaults:
@@ -323,6 +324,7 @@ tripal.files:
   requirements:
     _permission: 'administer tripal'
 
+# Manage File Usage.
 tripal.files_file_usage:
   path: 'admin/tripal/files/manage'
   defaults:
@@ -331,7 +333,7 @@ tripal.files_file_usage:
   requirements:
     _permission: 'administer tripal'
 
-# tripal_admin_add_custom_form
+# Add File Usage Quota for User.
 tripal.files_quota_add:
   path: 'admin/tripal/files/quota/add'
   defaults:
@@ -340,6 +342,7 @@ tripal.files_quota_add:
   requirements:
     _permission: 'administer tripal'
 
+# View File Usage.
 tripal.files_usage:
   path: 'admin/tripal/files/usage'
   defaults:
@@ -348,7 +351,7 @@ tripal.files_usage:
   requirements:
     _permission: 'administer tripal'
 
-# tripal_admin_manage_quota_form
+# View User File Usage Quotas.
 tripal.files_quota:
   path: 'admin/tripal/files/quota'
   defaults:
@@ -357,7 +360,7 @@ tripal.files_quota:
   requirements:
     _permission: 'administer tripal'
 
-# tripal_admin_remove_quota_form
+# Remove File Usage Quota.
 tripal.files_quota_remove:
   path: 'admin/tripal/files/quota/remove/{uid}'
   defaults:
@@ -367,7 +370,7 @@ tripal.files_quota_remove:
     _permission: 'administer tripal'
 
 
-# tripal_admin_edit_quota_form
+# Edit File Usage Quota.
 tripal.files_quota_user_edit:
   path: 'admin/tripal/files/quota/edit/{uid}'
   defaults:
@@ -376,7 +379,7 @@ tripal.files_quota_user_edit:
   requirements:
     _permission: 'administer tripal'
 
-# tripal_users_autocomplete
+# Autocomplete Callback: Existing users for file usage form.
 tripal.files_quota_user_autocomplete:
   path: 'admin/tripal/files/quota/user/autocomplete'
   defaults:
@@ -385,7 +388,11 @@ tripal.files_quota_user_autocomplete:
   requirements:
     _permission: 'administer tripal'
 
-# User Files
+##
+# User File Management.
+##
+
+# User File listing.
 tripal.user_files:
   path: 'user/{user}/files'
   defaults:
@@ -399,6 +406,7 @@ tripal.user_files:
     _permission: 'manage tripal files'
     _tripal_own_content_access_check: 'TRUE'
 
+# File Details.
 tripal.user_files_details:
   path: 'user/{user}/files/{file_id}'
   defaults:
@@ -412,6 +420,7 @@ tripal.user_files_details:
     _permission: 'manage tripal files'
     _tripal_own_content_access_check: 'TRUE'
 
+# Renew file.
 tripal.user_files_renew:
   path: 'user/{user}/files/{file_id}/renew'
   defaults:
@@ -425,6 +434,7 @@ tripal.user_files_renew:
     _permission: 'manage tripal files'
     _tripal_own_content_access_check: 'TRUE'
 
+# Download File.
 tripal.user_files_download:
   path: 'user/{user}/files/{file_id}/download'
   defaults:
@@ -438,7 +448,7 @@ tripal.user_files_download:
     _permission: 'manage tripal files'
     _tripal_own_content_access_check: 'TRUE'
 
-#tripal_delete_file_form
+# Delete File.
 tripal.user_files_delete:
   path: 'user/{user}/files/{file_id}/delete'
   defaults:
@@ -452,6 +462,11 @@ tripal.user_files_delete:
     _permission: 'manage tripal files'
     _tripal_own_content_access_check: 'TRUE'
 
+##
+# Tripal Term Storage Configurations.
+##
+
+# Term Configuration listing.
 entity.tripal_content_terms.collection:
   path: '/admin/tripal/config/terms'
   defaults:
@@ -460,6 +475,7 @@ entity.tripal_content_terms.collection:
   requirements:
     _permission: 'administer tripal'
 
+# Add Term Configuration.
 entity.tripal_content_terms.add_form:
   path: '/admin/tripal/config/terms/add'
   defaults:
@@ -468,6 +484,7 @@ entity.tripal_content_terms.add_form:
   requirements:
     _permission: 'administer tripal'
 
+# Edit Term Configuration.
 entity.tripal_content_terms.edit_form:
   path: '/admin/tripal/config/terms/{tripal_content_terms}'
   defaults:
@@ -476,6 +493,7 @@ entity.tripal_content_terms.edit_form:
   requirements:
     _permission: 'administer tripal'
 
+# Delete Term Configuration.
 entity.tripal_content_terms.delete_form:
   path: '/admin/tripal/config/terms/{tripal_content_terms}/delete'
   defaults:

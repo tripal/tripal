@@ -8,6 +8,13 @@ administer tripal:
   restrict access: true
 
 ##
+# Tripal Jobs.
+##
+manage tripal jobs:
+  title: "Manage Tripal Jobs"
+  description: "Allows the user to access the job management pages."
+
+##
 # HTML 5 File Form Element
 ##
 upload files:
