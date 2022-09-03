@@ -238,7 +238,7 @@ class TripalJobController extends ControllerBase{
         ],
         [
           ['header' => TRUE, 'data' => 'Submitting User'],
-          $submitter->getUsername()
+          $submitter->getDisplayName()
         ],
         [
           ['header' => TRUE, 'data' => 'Arguments'],
