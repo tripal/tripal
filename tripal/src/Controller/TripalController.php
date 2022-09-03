@@ -181,8 +181,11 @@ class TripalController extends ControllerBase{
       return [];
     }
 
-    $output .= \Drupal::service('renderer')->render($note_block->build());
-    $output .= \Drupal::service('renderer')->render($bar_chart_block->build());
+    $built_note_block = $note_block->build();
+    $output .= \Drupal::service('renderer')->render($built_note_block);
+
+    $built_bar_chart_block = $bar_chart_block->build();
+    $output .= \Drupal::service('renderer')->render($built_bar_chart_block);
 
     return [
       '#markup' => $output,
