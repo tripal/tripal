@@ -67,23 +67,50 @@ interface TripalEntityTypeInterface extends ConfigEntityInterface {
   public function setLabel($label);
 
   /**
-   * Gets the Tripal Entity Type CVTerm.
+   * Gets the Tripal Entity Type CV Term ID Space.
    *
-   * @return object
-   *   The Tripal Controlled Vocabulary Term describing this Tripal Entity Type.
+   * @return string
+   *   The Tripal Controlled Vocabulary Term ID Space.
    */
-  public function getTerm();
+  public function getTermIdSpace();
 
   /**
-   * Sets the Tripal Entity Type CV Term.
+   * Sets the Tripal Entity Type CV Term ID Space.
    *
-   * @param object $term
-   *   The Tripal Controlled Vocabulary Term
+   * @param string $termIdSpace
+   *   The new Tripal Controlled Vocabulary Term ID Space
    *
    * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
    *   The called Tripal Entity Type entity.
    */
-  public function setTerm($term);
+  public function setTermIdSpace($termIdSpace);
+
+  /**
+   * Gets the Tripal Entity Type CV Term Accession.
+   *
+   * @return string
+   *   The Tripal Controlled Vocabulary Term Accession.
+   */
+  public function getTermAccession();
+
+  /**
+   * Sets the Tripal Entity Type CV Term Accession.
+   *
+   * @param string $termIdSpace
+   *   The new Tripal Controlled Vocabulary Term Accession
+   *
+   * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
+   *   The called Tripal Entity Type entity.
+   */
+  public function setTermAccession($termAccession);
+
+  /**
+   * Gets the Tripal Entity Type CV Term Object based off its CV Term ID Space and Accession.
+   *
+   * @return \Drupal\tripal\TripalVocabTerms\TripalTerm
+   *   The Tripal Controlled Vocabulary Term Object.
+   */
+  public function getTerm();
 
   /**
    * Gets help text for admin for this Tripal Entity Type.

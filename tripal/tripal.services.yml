@@ -24,3 +24,5 @@ services:
   tripal.importer:
     class: Drupal\tripal\TripalImporter\PluginManagers\TripalImporterManager
     parent: default_plugin_manager
+  tripal.fields:
+    class: Drupal\tripal\Services\TripalFieldsManager

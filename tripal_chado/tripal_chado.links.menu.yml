@@ -34,6 +34,13 @@ tripal_chado.chado_manager_form:
   description: 'Manages Chado schemas (clone, upgrade, rename, remove) and their integration with Tripal.'
   parent: tripal_chado.storage
   weight: 50
+
+entity.chado_term_mapping.collection:
+  title: 'Chado Term Mapping'
+  parent: tripal_chado.storage
+  description: 'Configure how terms are mapped to columns in Chado'
+  route_name: entity.chado_term_mapping.collection
+  weight: 50
   
 tripal_chado.chado_prepare_form:
   route_name: tripal_chado.chado_prepare_form
@@ -41,3 +48,4 @@ tripal_chado.chado_prepare_form:
   description: 'Prepares Drupal to use Chado.'
   parent: tripal_chado.storage
   weight: 60
+  

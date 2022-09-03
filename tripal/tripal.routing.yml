@@ -451,3 +451,35 @@ tripal.user_files_delete:
   requirements:
     _permission: 'manage tripal files'
     _tripal_own_content_access_check: 'TRUE'
+
+entity.tripal_content_terms.collection:
+  path: '/admin/tripal/config/terms'
+  defaults:
+    _entity_list: 'tripal_content_terms'
+    _title: 'Tripal Content Terms Configuration'
+  requirements:
+    _permission: 'administer tripal'
+
+entity.tripal_content_terms.add_form:
+  path: '/admin/tripal/config/terms/add'
+  defaults:
+    _entity_form: 'tripal_content_terms.add'
+    _title: 'Add Term'
+  requirements:
+    _permission: 'administer tripal'
+
+entity.tripal_content_terms.edit_form:
+  path: '/admin/tripal/config/terms/{tripal_content_terms}'
+  defaults:
+    _entity_form: 'tripal_content_terms.edit'
+    _title: 'Edit Term'
+  requirements:
+    _permission: 'administer tripal'
+
+entity.tripal_content_terms.delete_form:
+  path: '/admin/tripal/config/terms/{tripal_content_terms}/delete'
+  defaults:
+    _entity_form: 'tripal_content_terms.delete'
+    _title: 'Delete Term'
+  requirements:
+    _permission: 'administer tripal'

@@ -84,6 +84,12 @@ tripal.files:
   title: 'User File Management'
   parent: tripal.admin
   weight: 80
+  
+entity.tripal_content_terms.collection:
+  route_name: entity.tripal_content_terms.collection
+  title: 'Tripal Content Terms'
+  parent: tripal.admin
+  description: 'Configure controlled vocabulary terms used for Tripal content'
 
 tripal.files_file_usage:
   route_name: tripal.files_file_usage

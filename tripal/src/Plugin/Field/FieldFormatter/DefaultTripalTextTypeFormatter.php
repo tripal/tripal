@@ -7,18 +7,18 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Plugin implementation of default Tripal RDFS content type formatter.
+ * Plugin implementation of default Tripal string type formatter.
  *
  * @FieldFormatter(
- *   id = "default_tripal_rdfs_type_formatter",
- *   label = @Translation("Default Content Type Formatter"),
- *   description = @Translation("The default resource content type formatter."),
+ *   id = "default_tripal_text_type_formatter",
+ *   label = @Translation("Default Text Type Formatter"),
+ *   description = @Translation("The default text type formatter."),
  *   field_types = {
- *     "tripal_rdfs_type"
+ *     "tripal_string_type"
  *   }
  * )
  */
-class DefaultTripalRDFSTypeFormatter extends TripalFormatterBase {
+class DefaultTripalTextTypeFormatter extends TripalFormatterBase {
 
   /**
    * {@inheritdoc}
@@ -27,9 +27,9 @@ class DefaultTripalRDFSTypeFormatter extends TripalFormatterBase {
     $elements = [];
 
     foreach($items as $delta => $item) {
-        $elements[$delta] = [
-          "#markup" => $item->get("type")
-        ];
+      $elements[$delta] = [
+        "#markup" => $item->get("value")->getString(),
+      ];
     }
 
     return $elements;
