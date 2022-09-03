@@ -478,18 +478,20 @@ class GFF3Importer extends ChadoImporterBase {
    */
   public function formValidate($form, &$form_state) {
 
-    $organism_id = $form_state['values']['organism_id'];
-    $target_organism_id = $form_state['values']['target_organism_id'];
-    $target_type = trim($form_state['values']['target_type']);
-    $create_target = $form_state['values']['create_target'];
-    $create_organism = $form_state['values']['create_organism'];
+    $form_state_values = $form_state->getValues();
+
+    $organism_id = $form_state_values['organism_id'];
+    $target_organism_id = $form_state_values['target_organism_id'];
+    $target_type = trim($form_state_values['target_type']);
+    $create_target = $form_state_values['create_target'];
+    $create_organism = $form_state_values['create_organism'];
     $refresh = 0; //$form_state['values']['refresh'];
     $remove = 0; //$form_state['values']['remove'];
-    $line_number = trim($form_state['values']['line_number']);
-    $landmark_type = trim($form_state['values']['landmark_type']);
-    $alt_id_attr = trim($form_state['values']['alt_id_attr']);
-    $re_mrna = trim($form_state['values']['re_mrna']);
-    $re_protein = trim($form_state['values']['re_protein']);
+    $line_number = trim($form_state_values['line_number']);
+    $landmark_type = trim($form_state_values['landmark_type']);
+    $alt_id_attr = trim($form_state_values['alt_id_attr']);
+    $re_mrna = trim($form_state_values['re_mrna']);
+    $re_protein = trim($form_state_values['re_protein']);
 
 
     if ($line_number and !is_numeric($line_number) or $line_number < 0) {
@@ -550,7 +552,8 @@ class GFF3Importer extends ChadoImporterBase {
     }
 
     // Open the GFF3 file.
-    $this->logMessage("Opening !gff_file", ['!gff_file' => $this->gff_file]);
+    $this->logger->notice("Opening @gff_file", ['@gff_file' => $this->gff_file]);
+    // $this->logMessage("Opening !gff_file", ['!gff_file' => $this->gff_file]);
     $this->gff_file_h = fopen($this->gff_file, 'r');
     if (!$this->gff_file_h) {
       throw new Exception(t("Cannot open file: !file", ['!file' => $this->gff_file]));
@@ -619,7 +622,9 @@ class GFF3Importer extends ChadoImporterBase {
     $this->openCacheFile();
     // Load the GFF3.
     try {
-      $this->logMessage("Step  1 of 27: Caching GFF3 file...                             ");
+      
+      $this->logger->notice("Step  1 of 27: Caching GFF3 file...                             ");
+      // $this->logMessage("Step  1 of 27: Caching GFF3 file...                             ");
       $this->parseGFF3();
 
       // Prep the database for necessary records.
@@ -627,93 +632,124 @@ class GFF3Importer extends ChadoImporterBase {
       $this->prepNullPub();
       $this->prepDBs();
 
-      $this->logMessage("Step  2 of 27: Find existing landmarks...                         ");
+      $this->logger->notice("Step  2 of 27: Find existing landmarks...                         ");
+      // $this->logMessage("Step  2 of 27: Find existing landmarks...                         ");
       $this->findLandmarks();
 
-      $this->logMessage("Step  3 of 27: Insert new landmarks (if needed)...                ");
+      $this->logger->notice("Step  3 of 27: Insert new landmarks (if needed)...                ");
+      // $this->logMessage("Step  3 of 27: Insert new landmarks (if needed)...                ");
       $this->insertLandmarks();
 
       if (!$this->skip_protein) {
-        $this->logMessage("Step  4 of 27: Find missing proteins...                           ");
+        $this->logger->notice("Step  4 of 27: Find missing proteins...                           ");
+        // $this->logMessage("Step  4 of 27: Find missing proteins...                           ");
         $this->findMissingProteins();
 
-        $this->logMessage("Step  5 of 27: Add missing proteins to list of features...        ");
+        $this->logger->notice("Step  5 of 27: Add missing proteins to list of features...        ");
+        // $this->logMessage("Step  5 of 27: Add missing proteins to list of features...        ");
         $this->addMissingProteins();
       }
       else {
-        $this->logMessage("Step  4 of 27: Find missing proteins (Skipped)...                ");
-        $this->logMessage("Step  5 of 27: Add missing proteins to list of features (Skipped)...");
+        $this->logger->notice("Step  4 of 27: Find missing proteins (Skipped)...                ");
+        // $this->logMessage("Step  4 of 27: Find missing proteins (Skipped)...                ");
+        $this->logger->notice("Step  5 of 27: Add missing proteins to list of features (Skipped)...");
+        // $this->logMessage("Step  5 of 27: Add missing proteins to list of features (Skipped)...");
       }
 
-      $this->logMessage("Step  6 of 27: Find existing features...                          ");
+      $this->logger->notice("Step  6 of 27: Find existing features...                          ");
+      // $this->logMessage("Step  6 of 27: Find existing features...                          ");
       $this->findFeatures();
 
-      $this->logMessage("Step  7 of 27: Clear attributes of existing features...            ");
+      $this->logger->notice("Step  7 of 27: Clear attributes of existing features...            ");
+      // $this->logMessage("Step  7 of 27: Clear attributes of existing features...            ");
       $this->deleteFeatureData();
 
-      $this->logMessage("Step  8 of 27: Processing !num_features features...               ",
-          ['!num_features' => number_format(count(array_keys($this->features)))]);
+      $this->logger->notice("Step  8 of 27: Processing @num_features features...               ",
+      ['@num_features' => number_format(count(array_keys($this->features)))]);
+      // $this->logMessage("Step  8 of 27: Processing !num_features features...               ",
+      //     ['!num_features' => number_format(count(array_keys($this->features)))]);
       $this->insertFeatures();
-      $this->logMessage("Step  9 of 27: Processing !num_features feature Names to update...               ",
-          ['!num_features' =>  number_format(count(array_keys($this->update_names)))]);
+      $this->logger->notice("Step  9 of 27: Processing @num_features feature Names to update...               ",
+      ['@num_features' =>  number_format(count(array_keys($this->update_names)))]);
+      // $this->logMessage("Step  9 of 27: Processing !num_features feature Names to update...               ",
+      //     ['!num_features' =>  number_format(count(array_keys($this->update_names)))]);
       $this->updateFeatureNames();
 
-      $this->logMessage("Step  10 of 27: Get new feature IDs...                             ");
+      $this->logger->notice("Step  10 of 27: Get new feature IDs...                             ");
+      // $this->logMessage("Step  10 of 27: Get new feature IDs...                             ");
       $this->findFeatures();
 
-      $this->logMessage("Step 11 of 27: Insert locations...                               ");
+      $this->logger->notice("Step 11 of 27: Insert locations...                               ");
+      // $this->logMessage("Step 11 of 27: Insert locations...                               ");
       $this->insertFeatureLocs();
 
-      $this->logMessage("Step 12 of 27: Associate parents and children...                 ");
+      $this->logger->notice("Step 12 of 27: Associate parents and children...                 ");
+      // $this->logMessage("Step 12 of 27: Associate parents and children...                 ");
       $this->associateChildren();
 
-      $this->logMessage("Step 13 of 27: Calculate child ranks...                          ");
+      $this->logger->notice("Step 13 of 27: Calculate child ranks...                          ");
+      // $this->logMessage("Step 13 of 27: Calculate child ranks...                          ");
       $this->calculateChildRanks();
 
-      $this->logMessage("Step 14 of 27: Add child-parent relationships...                 ");
+      $this->logger->notice("Step 14 of 27: Add child-parent relationships...                 ");
+      // $this->logMessage("Step 14 of 27: Add child-parent relationships...                 ");
       $this->insertFeatureParents();
 
-      $this->logMessage("Step 15 of 27: Insert properties...                               ");
+      $this->logger->notice("Step 15 of 27: Insert properties...                               ");
+      // $this->logMessage("Step 15 of 27: Insert properties...                               ");
       $this->insertFeatureProps();
 
-      $this->logMessage("Step 16 of 27: Find synonyms (aliases)...                         ");
+      $this->logger->notice("Step 16 of 27: Find synonyms (aliases)...                         ");
+      // $this->logMessage("Step 16 of 27: Find synonyms (aliases)...                         ");
       $this->findSynonyms();
 
-      $this->logMessage("Step 17 of 27: Insert new synonyms (aliases)...                  ");
+      $this->logger->notice("Step 17 of 27: Insert new synonyms (aliases)...                  ");
+      // $this->logMessage("Step 17 of 27: Insert new synonyms (aliases)...                  ");
       $this->insertSynonyms();
 
-      $this->logMessage("Step 18 of 27: Insert feature synonyms (aliases)...              ");
+      $this->logger->notice("Step 18 of 27: Insert feature synonyms (aliases)...              ");
+      // $this->logMessage("Step 18 of 27: Insert feature synonyms (aliases)...              ");
       $this->insertFeatureSynonyms();
 
-      $this->logMessage("Step 19 of 27: Find cross references...                          ");
+      $this->logger->notice("Step 19 of 27: Find cross references...                          ");
+      // $this->logMessage("Step 19 of 27: Find cross references...                          ");
       $this->findDbxrefs();
 
-      $this->logMessage("Step 20 of 27: Insert new cross references...                    ");
+      $this->logger->notice("Step 20 of 27: Insert new cross references...                    ");
+      // $this->logMessage("Step 20 of 27: Insert new cross references...                    ");
       $this->insertDbxrefs();
 
-      $this->logMessage("Step 21 of 27: Get new cross references IDs...                   ");
+      $this->logger->notice("Step 21 of 27: Get new cross references IDs...                   ");
+      // $this->logMessage("Step 21 of 27: Get new cross references IDs...                   ");
       $this->findDbxrefs();
 
-      $this->logMessage("Step 22 of 27: Insert feature cross references...                ");
+      $this->logger->notice("Step 22 of 27: Insert feature cross references...                ");
+      // $this->logMessage("Step 22 of 27: Insert feature cross references...                ");
       $this->insertFeatureDbxrefs();
 
-      $this->logMessage("Step 23 of 27: Insert feature ontology terms...                  ");
+      $this->logger->notice("Step 23 of 27: Insert feature ontology terms...                  ");
+      // $this->logMessage("Step 23 of 27: Insert feature ontology terms...                  ");
       $this->insertFeatureCVterms();
 
-      $this->logMessage("Step 24 of 27: Insert 'derives_from' relationships...            ");
+      $this->logger->notice("Step 24 of 27: Insert 'derives_from' relationships...            ");
+      // $this->logMessage("Step 24 of 27: Insert 'derives_from' relationships...            ");
       $this->insertFeatureDerivesFrom();
 
-      $this->logMessage("Step 25 of 27: Insert Targets...                                 ");
+      $this->logger->notice("Step 25 of 27: Insert Targets...                                 ");
+      // $this->logMessage("Step 25 of 27: Insert Targets...                                 ");
       $this->insertFeatureTargets();
 
-      $this->logMessage("Step 26 of 27: Associate features with analysis....              ");
+      $this->logger->notice("Step 26 of 27: Associate features with analysis....              ");
+      // $this->logMessage("Step 26 of 27: Associate features with analysis....              ");
       $this->insertFeatureAnalysis();
 
       if (!empty($this->residue_index)) {
-        $this->logMessage("Step 27 of 27: Adding sequences data...                        ");
+        $this->logger->notice("Step 27 of 27: Adding sequences data...                        ");
+        // $this->logMessage("Step 27 of 27: Adding sequences data...                        ");
         $this->insertFeatureSeqs();
       }
-      $this->logMessage("Step 27 of 27: Adding sequences data (Skipped: none available)...");
+      $this->logger->notice("Step 27 of 27: Adding sequences data (Skipped: none available)...");
+      // $this->logMessage("Step 27 of 27: Adding sequences data (Skipped: none available)...");
     }
     // On exception, catch the error, clean up the cache file and rethrow
     catch (Exception $e) {
@@ -809,7 +845,8 @@ class GFF3Importer extends ChadoImporterBase {
           'skip_validation' => TRUE,
       ));
       if (!$success) {
-        $this->logMessage("Failed to add the synonyms type vocabulary.", [], TRIPAL_WARNING);
+        $this->logger->warning("Failed to add the synonyms type vocabulary.");
+        // $this->logMessage("Failed to add the synonyms type vocabulary.", [], TRIPAL_WARNING);
         return 0;
       }
       // now that we've added the cv we need to get the record
@@ -841,7 +878,8 @@ class GFF3Importer extends ChadoImporterBase {
       ];
       $syntype = chado_insert_cvterm($term, ['update_existing' => TRUE]);
       if (!$syntype) {
-        $this->logMessage("Cannot add synonym type: internal:$type.", [], TRIPAL_WARNING);
+        $this->logger->warning("Cannot add synonym type: internal:$type.");
+        // $this->logMessage("Cannot add synonym type: internal:$type.", [], TRIPAL_WARNING);
         return 0;
       }
     }
@@ -872,7 +910,8 @@ class GFF3Importer extends ChadoImporterBase {
       ";
       $status = chado_query($psql);
       if (!$status) {
-        $this->logMessage("Cannot prepare statement 'ins_pub_uniquename_typeid.", [], TRIPAL_WARNING);
+        $this->logger->warning("Cannot prepare statement 'ins_pub_uniquename_typeid.");
+        // $this->logMessage("Cannot prepare statement 'ins_pub_uniquename_typeid.", [], TRIPAL_WARNING);
         return 0;
       }
 
@@ -882,7 +921,8 @@ class GFF3Importer extends ChadoImporterBase {
           ':type_id' => 'null',
       ])->fetchObject();
       if (!$result) {
-        $this->logMessage("Cannot add null publication needed for setup of alias.", [], TRIPAL_WARNING);
+        $this->logger->warning("Cannot add null publication needed for setup of alias.");
+        // $this->logMessage("Cannot add null publication needed for setup of alias.", [], TRIPAL_WARNING);
         return 0;
       }
       $result = chado_select_record('pub', ['*'], $select);
@@ -930,7 +970,8 @@ class GFF3Importer extends ChadoImporterBase {
           $db = chado_select_record('db', ['db_id'], $values);
         }
         else {
-          $this->logMessage("Cannot find or add the database $dbname.", [], TRIPAL_WARNING);
+          $this->logger->warning("Cannot find or add the database $dbname.");
+          // $this->logMessage("Cannot find or add the database $dbname.", [], TRIPAL_WARNING);
           return 0;
         }
       }
@@ -1312,8 +1353,10 @@ class GFF3Importer extends ChadoImporterBase {
       // or landmark name.
       if (!(array_key_exists($uniquename, $this->features) and $this->features[$uniquename]) and
           !(array_key_exists($uniquename, $this->landmarks) and $this->landmarks[$uniquename])) {
-        $this->logMessage('Assigning Sequence: cannot find a feature with a unique name of: "!uname". Please ensure the sequence names in the ##FASTA section use the same name as the ID in the feature in the GFF file. ',
-          ['!uname' => $uniquename], TRIPAL_WARNING);
+        $this->logger->warning('Assigning Sequence: cannot find a feature with a unique name of: "@uname". Please ensure the sequence names in the ##FASTA section use the same name as the ID in the feature in the GFF file. ',
+        ['@uname' => $uniquename]);
+        // $this->logMessage('Assigning Sequence: cannot find a feature with a unique name of: "!uname". Please ensure the sequence names in the ##FASTA section use the same name as the ID in the feature in the GFF file. ',
+        //   ['!uname' => $uniquename], TRIPAL_WARNING);
         $count++;
         continue;
       }
@@ -1592,7 +1635,8 @@ class GFF3Importer extends ChadoImporterBase {
     // proteins. Proteins that have actual lines in the GFF will still be
     // created.
     if ($this->skip_protein) {
-      $this->logMessage('  Skipping creation of non-specified proteins...            ');
+      $this->logger->notice('  Skipping creation of non-specified proteins...            ');
+      // $this->logMessage('  Skipping creation of non-specified proteins...            ');
       return;
     }
 
@@ -1747,8 +1791,10 @@ class GFF3Importer extends ChadoImporterBase {
   private function openCacheFile() {
     $temp_file = drupal_tempnam('temporary://', "TripalGFF3Import_");
     $this->gff_cache_file_name = drupal_realpath($temp_file);
-    $this->logMessage("Opening temporary cache file: !cfile",
-        ['!cfile' => $this->gff_cache_file_name]);
+    $this->logger->notice("Opening temporary cache file: @cfile",
+    ['@cfile' => $this->gff_cache_file_name]);
+    // $this->logMessage("Opening temporary cache file: !cfile",
+    //     ['!cfile' => $this->gff_cache_file_name]);
     $this->gff_cache_file = fopen($this->gff_cache_file_name, "r+");
   }
 
@@ -1757,8 +1803,10 @@ class GFF3Importer extends ChadoImporterBase {
    */
   private function closeCacheFile() {
     fclose($this->gff_cache_file);
-    $this->logMessage("Removing temporary cache file: !cfile",
-        ['!cfile' => $this->gff_cache_file_name]);
+    $this->logger->notice("Removing temporary cache file: @cfile",
+    ['@cfile' => $this->gff_cache_file_name]);
+    // $this->logMessage("Removing temporary cache file: !cfile",
+    //     ['!cfile' => $this->gff_cache_file_name]);
     unlink($this->gff_cache_file_name);
   }
 
