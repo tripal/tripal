@@ -152,7 +152,7 @@ entity.tripal_entity.add_page:
   options:
     _admin_route: 'TRUE'
   requirements:
-    _permission: 'administer tripal'
+    _permission: 'add tripal content entities+administer tripal content'
 
 # tripal_unpublish_orphans_form
 tripal.content_bio_data_unpublish:
@@ -162,7 +162,7 @@ tripal.content_bio_data_unpublish:
     _title: 'Unpublish Orphaned Content'
     _description: 'Unpublish content that has no associated records in the data store.'
   requirements:
-    _permission: 'administer tripal'
+    _permission: 'publish tripal content+administer tripal content'
 
 # Bio Data Ajax Callbacks
 tripal.content_bio_data_field_attach:

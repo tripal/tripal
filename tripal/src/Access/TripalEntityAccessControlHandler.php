@@ -18,13 +18,15 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
    * {@inheritdoc}
    */
   protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
-    /** @var \Drupal\tripal\Entity\TripalEntityInterface $entity */
+
+    // Ensure that the Tripal Content Admin permission bypasses the following permissions.
+    if ($account->hasPermission('administer tripal content')) {
+      return AccessResult::allowed();
+    }
+
     switch ($operation) {
       case 'view':
-        if (!$entity->isPublished()) {
-          return AccessResult::allowedIfHasPermission($account, 'view unpublished tripal content entities');
-        }
-        return AccessResult::allowedIfHasPermission($account, 'view published tripal content entities');
+        return AccessResult::allowedIfHasPermission($account, 'view tripal content entities');
 
       case 'update':
         return AccessResult::allowedIfHasPermission($account, 'edit tripal content entities');
@@ -41,6 +43,12 @@ class TripalEntityAccessControlHandler extends EntityAccessControlHandler {
    * {@inheritdoc}
    */
   protected function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = NULL) {
+
+    // Ensure that the Tripal Content Admin permission bypasses the following permissions.
+    if ($account->hasPermission('administer tripal content')) {
+      return AccessResult::allowed();
+    }
+
     return AccessResult::allowedIfHasPermission($account, 'add tripal content entities');
   }
 

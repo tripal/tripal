@@ -21,6 +21,115 @@ class TripalPermissionsTest extends BrowserTestBase {
   protected static $modules = ['tripal', 'block', 'field_ui'];
 
   /**
+   * Tests permissions around Tripal content pages.
+	 *
+	 * Permissions to test:
+	 *  - administer tripal content: Allows users to access the Tripal Content listing and add, edit, delete Tripal content of any type.
+	 *  - access tripal content overview: Allows the user to access the Tripal content listing.
+	 *  - publish tripal content: Allows the user to publish Tripal content of all Tripal Content Types for online access.
+	 *  - add tripal content entities: Create new Tripal Content
+	 *  - edit tripal content entities: Edit Tripal Content
+	 *  - delete tripal content entities: Delete Tripal Content
+	 *  - view published tripal content entities: View published Tripal Content
+	 *  - view unpublished tripal content entities: View unpublished Tripal Content
+   *
+   * @group Tripal Permissions
+	 * @group Tripal Content
+   * @group wip
+   */
+  public function testTripalContentPages() {
+    $assert = $this->assertSession();
+
+		// Create a Content Type + Entity for this test.
+		// -- Content Type.
+		$values = [];
+	  $values['id'] = random_int(1,500);
+		$values['name'] = 'bio_data_' . $values['id'];
+		$values['label'] = 'Freddyopolis-' . uniqid();
+		$values['category'] = 'Testing';
+		$content_type_obj = \Drupal\tripal\Entity\TripalEntityType::create($values);
+    $this->assertIsObject($content_type_obj, "Unable to create a test content type.");
+		$content_type_obj->save();
+		$content_type = $values['name'];
+		// -- Content Entity.
+		$values = [];
+		$values['title'] = 'Mini Fredicity ' . uniqid();
+		$values['type'] = $content_type;
+		$entity = \Drupal\tripal\Entity\TripalEntity::create($values);
+    $this->assertIsObject($content_type_obj, "Unable to create a test entity.");
+		$entity->save();
+		$entity_id = $entity->id();
+
+		// The URLs to check.
+    $urls = [
+			'canonical' => 'bio_data/' . $entity_id,
+		  'add-page' => 'bio_data/add',
+		  'add-form' => 'bio_data/add/' . $content_type,
+		  'edit-form' => 'bio_data/' . $entity_id . '/edit',
+		  'delete-form' => 'bio_data/' . $entity_id . '/delete',
+		  'collection' => 'admin/content/bio_data',
+			//'publish-content' => '',
+			'unpublish-content' => 'admin/content/bio_data/unpublish',
+    ];
+
+		// Keys in the array are pages which that permission SHOULD be able to access.
+		// It's assumed url keys not in the array should return 403 access denied
+		// for that permission.
+		$permissions_mapping = [
+			'access tripal content overview' => ['collection'],
+			'publish tripal content' => ['publish-content', 'unpublish-content'],
+			'add tripal content entities' => ['add-page', 'add-form'],
+			'edit tripal content entities' => ['edit-form'],
+			'delete tripal content entities' => ['delete-form'],
+			'view tripal content entities' => ['canonical'],
+  		'administer tripal content' => ['canonical', 'add-page', 'add-form', 'edit-form', 'delete-form', 'collection', 'publish-content', 'unpublish-content'],
+		];
+
+		// Create users for the tests.
+		// -- Create a user that has no extra permissions.
+		$userAuthenticatedOnly = $this->drupalCreateUser();
+		// -- Create a user with only the specified permission.
+		$userPriviledged = [];
+		foreach ($permissions_mapping as $permission => $pages) {
+			$userPriviledged[$permission] = $this->drupalCreateUser([$permission]);
+			$this->assertTrue($userPriviledged[$permission]->hasPermission($permission), "The priviledged user should have the '$permission' permission assigned to it.");
+		}
+
+    // First check all the URLs with no user logged in.
+    // This checks the anonymous user cannot access these pages.
+    foreach ($urls as $title => $path) {
+      $html = $this->drupalGet($path);
+      $assert->statusCodeEquals(403, "The anonymous user should not be able to access any content pages including: $title ($path).");
+    }
+
+    // Next check all the URLs with the authenticated, unpriviledged user.
+    // This checks generic authenticated users cannot access these pages.
+    $this->drupalLogin($userAuthenticatedOnly);
+    foreach ($urls as $title => $path) {
+      $html = $this->drupalGet($path);
+      $assert->statusCodeEquals(403, "The unpriviledged user should not be able to access any content pages including: $title ($path).");
+    }
+
+    // Finally use the permissions mapping to check each permission.
+    // Keys in the array are pages which that permission SHOULD be able to access.
+    // It's assumed url keys not in the array should return 403 access denied
+    // for that permission.
+    foreach ($permissions_mapping as $permission => $pages_200) {
+      $this->drupalLogin($userPriviledged[$permission]);
+      foreach ($urls as $title => $path) {
+        $html = $this->drupalGet($path);
+        $expected_code = (array_search($title, $pages_200) === FALSE) ? 403 : 200;
+        $msg_part = ($expected_code === 200) ? 'should have permission to' : 'should be denied access to';
+
+        $status_code = $this->getSession()->getStatusCode();
+        $this->assertEquals($expected_code, $status_code, "The user with only '$permission' permission $msg_part $title ($path).");
+      }
+    }
+
+
+  }
+
+  /**
    * Test all the base Tripal admin paths.
    *
    * @group Tripal Permissions

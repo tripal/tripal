@@ -63,11 +63,8 @@ edit tripal content entities:
 delete tripal content entities:
   title: 'Delete Tripal Content'
 
-view published tripal content entities:
-  title: 'View published Tripal Content'
-
-view unpublished tripal content entities:
-  title: 'View unpublished Tripal Content'
+view tripal content entities:
+  title: 'View Tripal Content'
 
 ##
 # The core Trpal Importers permissions.

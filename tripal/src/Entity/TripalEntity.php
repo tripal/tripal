@@ -110,13 +110,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * {@inheritdoc}
    */
   public function label() {
-    $title = $this->title->getValue();
-    if ($title) {
-      return $title[0]['value'];
-    }
-    else {
-      return '';
-    }
+    return $this->getTitle();
   }
 
   /**
