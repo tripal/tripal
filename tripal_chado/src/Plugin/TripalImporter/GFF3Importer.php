@@ -7,6 +7,8 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
+// use Symfony\Component\Filesystem\Filesystem;
+
 /**
  * GFF3 Importer implementation of the TripalImporterBase.
  *
@@ -326,12 +328,13 @@ class GFF3Importer extends ChadoImporterBase {
    * @see TripalImporter::form()
    */
   public function form($form, &$form_state) {
+    $chado = $this->getChadoConnection();
     // Always call the parent form to ensure Chado is handled properly.
     $form = parent::form($form, $form_state);
 
     // get the list of organisms
     $sql = "SELECT * FROM {organism} ORDER BY genus, species";
-    $org_rset = chado_query($sql);
+    $org_rset = $chado->query($sql);
     $organisms = [];
     $organisms[''] = '';
     while ($organism = $org_rset->fetchObject()) {
@@ -522,6 +525,9 @@ class GFF3Importer extends ChadoImporterBase {
    * @see TripalImporter::run()
    */
   public function run() {
+    $public = \Drupal::database();
+    $chado = $this->getChadoConnection();
+
     $arguments = $this->arguments['run_args'];
     $this->gff_file = $this->arguments['files'][0]['file_path'];
 
@@ -560,45 +566,117 @@ class GFF3Importer extends ChadoImporterBase {
     }
 
     // Get the feature property CV object
-    $this->feature_prop_cv = new ChadoRecord('cv');
-    $this->feature_prop_cv->setValues(['name' => 'feature_property']);
-    $num_found = $this->feature_prop_cv->find();
+    // $this->feature_prop_cv = new ChadoRecord('cv');
+    // $this->feature_prop_cv->setValues(['name' => 'feature_property']);
+    // $num_found = $this->feature_prop_cv->find();
+
+    $this->feature_prop_cv = $chado->select('cv')
+    ->fields('cv')
+    ->condition('name', 'feature_property')
+    ->execute()
+    ->fetchObject();
+
+    $num_found = $chado->select('cv')
+    ->fields('cv')
+    ->condition('name', 'feature_property') 
+    ->countQuery()
+    ->execute()
+    ->fetchField();
+
+
     if ($num_found == 0) {
       throw new Exception(t("Cannot find the 'feature_property' ontology'", []));
     }
 
     // Get the sequence CV object.
-    $this->feature_cv = new ChadoRecord('cv');
-    $this->feature_cv->setValues(['name' => 'sequence']);
-    $num_found = $this->feature_cv->find();
+    // $this->feature_cv = new ChadoRecord('cv');
+    // $this->feature_cv->setValues(['name' => 'sequence']);
+    // $num_found = $this->feature_cv->find();
+    $this->feature_cv = $chado->select('cv')
+    ->fields('cv')
+    ->condition('name', 'sequence')
+    ->execute()
+    ->fetchObject();
+
+    $num_found = $chado->select('cv')
+    ->fields('cv')
+    ->condition('name', 'sequence')
+    ->countQuery()
+    ->execute()
+    ->fetchField();
+
     if ($num_found == 0) {
       throw new Exception(t("Cannot find the 'sequence' ontology'", []));
     }
 
     // Get the organism object.
-    $this->organism = new ChadoRecord('organism');
-    $this->organism->setValues(['organism_id' => $this->organism_id]);
-    $num_found = $this->organism->find();
+    // $this->organism = new ChadoRecord('organism');
+    // $this->organism->setValues(['organism_id' => $this->organism_id]);
+    // $num_found = $this->organism->find();
+    
+    $this->organism = $chado->select('organism','o')
+    ->fields('o')
+    ->condition('organism_id', $this->organism_id)
+    ->execute()
+    ->fetchObject();
+
+    $num_found = $chado->select('organism','o')
+    ->fields('o')
+    ->condition('organism_id', $this->organism_id)
+    ->countQuery()
+    ->execute()
+    ->fetchField();
+
     if ($num_found == 0) {
       throw new Exception(t("Cannot find the specified organism for this GFF3 file."));
     }
 
     // Get the analysis object.
-    $this->analysis = new ChadoRecord('analysis');
-    $this->analysis->setValues(['analysis_id' => $this->analysis_id]);
-    $num_found = $this->analysis->find();
+    // $this->analysis = new ChadoRecord('analysis');
+    // $this->analysis->setValues(['analysis_id' => $this->analysis_id]);
+    // $num_found = $this->analysis->find();
+    $this->analysis = $chado->select('analysis','a')
+    ->fields('a')
+    ->condition('analysis_id', $this->analysis_id)
+    ->execute()
+    ->fetchObject();
+
+    $num_found = $chado->select('analysis','a')
+    ->fields('a')
+    ->condition('analysis_id', $this->analysis_id)
+    ->countQuery()
+    ->execute()
+    ->fetchField();
+
     if ($num_found == 0) {
       throw new Exception(t("Cannot find the specified organism for this GFF3 file."));
     }
 
     // If a landmark type was provided then get that object.
     if ($this->landmark_type) {
-      $this->landmark_cvterm = new ChadoRecord('cvterm');
-      $this->landmark_cvterm->setValues([
-          'cv_id' => $this->feature_cv->getValue('cv_id'),
-          'name' => $this->landmark_type,
-      ]);
-      $num_found = $this->landmark_cvterm->find();
+      // $this->landmark_cvterm = new ChadoRecord('cvterm');
+      // $this->landmark_cvterm->setValues([
+      //     'cv_id' => $this->feature_cv->getValue('cv_id'),
+      //     'name' => $this->landmark_type,
+      // ]);
+      // $num_found = $this->landmark_cvterm->find();
+      
+      $this->landmark_cvterm = $chado->select('cvterm', 'c')
+      ->fields('c')
+      ->condition('cv_id', $this->feature_cv->cv_id)
+      ->condition('name', $this->landmark_type)
+      ->execute()
+      ->fetchObject();
+
+      
+      $num_found = $chado->select('cvterm', 'c')
+      ->fields('c')
+      ->condition('cv_id', $this->feature_cv->cv_id)
+      ->condition('name', $this->landmark_type)
+      ->countQuery()
+      ->execute()
+      ->fetchField();      
+
       if ($num_found == 0) {
         throw new Exception(t('Cannot find landmark feature type \'%landmark_type\'.', ['%landmark_type' => $this->landmark_type]));
       }
@@ -606,16 +684,33 @@ class GFF3Importer extends ChadoImporterBase {
 
     // If a target type is provided then get the ID.
     if ($this->target_type) {
-      $target_type = new ChadoRecord('cvterm');
-      $target_type->setValues([
-        'name' => $this->target_type,
-        'cv_id' => $this->feature_cv->getID()
-      ]);
-      $num_found = $target_type->find();
+      // $target_type = new ChadoRecord('cvterm');
+      // $target_type->setValues([
+      //   'name' => $this->target_type,
+      //   'cv_id' => $this->feature_cv->fetchObject()->cv_id
+      // ]);
+      // $num_found = $target_type->find();
+      $target_type = $chado->select('cvterm','c')
+      ->fields('c')
+      ->condition('name', $this->target_type)
+      ->condition('cv_id', $this->feature_cv->cv_id)
+      ->execute()
+      ->fetchObject();
+      
+
+      $num_found = $chado->select('cvterm','c')
+      ->fields('c')
+      ->condition('name', $this->target_type)
+      ->condition('cv_id', $this->feature_cv->cv_id)
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+
       if ($num_found == 0) {
         throw new Exception(t("Cannot find the specified target type, !type.", ['!type' => $this->target_type]));
       }
-      $this->target_type_id = $target_type->getID();
+      // $this->target_type_id = $target_type->getID();
+      $this->target_type_id = $target_type->cvterm_id;
     }
 
     // Create the cache file for storing parsed GFF entries.
@@ -772,6 +867,7 @@ class GFF3Importer extends ChadoImporterBase {
    * @ingroup gff3_loader
    */
   private function getTypeID($type, $is_prop_type) {
+    $chado = $this->getChadoConnection();
 
     $cv = $this->feature_cv;
     if ($is_prop_type) {
@@ -794,8 +890,13 @@ class GFF3Importer extends ChadoImporterBase {
       WHERE CVT.cv_id = :cv_id and
        (lower(CVT.name) = lower(:name) or lower(CVTS.synonym) = lower(:synonym))
     ";
-    $result = chado_query($sel_cvterm_sql, [
-      ':cv_id' => $cv->getValue('cv_id'),
+    // $result = chado_query($sel_cvterm_sql, [
+    //   ':cv_id' => $cv->getValue('cv_id'),
+    //   ':name' => $type,
+    //   ':synonym' => $type,
+    // ]);
+    $result = $chado->query($sel_cvterm_sql, [
+      ':cv_id' => $cv->cv_id,
       ':name' => $type,
       ':synonym' => $type,
     ]);
@@ -808,7 +909,7 @@ class GFF3Importer extends ChadoImporterBase {
         'id' => "local:$type",
         'name' => $type,
         'is_obsolete' => 0,
-        'cv_name' => $cv->getValue('name'),
+        'cv_name' => $cv->name,
         'db_name' => 'local',
         'is_relationship' => FALSE,
       ];
@@ -893,7 +994,7 @@ class GFF3Importer extends ChadoImporterBase {
    * Makes sure there is a null publication in the database.
    */
   private function prepNullPub(){
-
+    $chado = $this->getChadoConnection();
     // Check to see if we have a NULL publication in the pub table.  If not,
     // then add one.
     $select = ['uniquename' => 'null'];
@@ -908,7 +1009,7 @@ class GFF3Importer extends ChadoImporterBase {
              INNER JOIN {db} DB      ON DB.db_id      = DBX.db_id
            WHERE CVT.name = :type_id))
       ";
-      $status = chado_query($psql);
+      $status = $chado->query($psql);
       if (!$status) {
         $this->logger->warning("Cannot prepare statement 'ins_pub_uniquename_typeid.");
         // $this->logMessage("Cannot prepare statement 'ins_pub_uniquename_typeid.", [], TRIPAL_WARNING);
@@ -916,7 +1017,7 @@ class GFF3Importer extends ChadoImporterBase {
       }
 
       // Insert the null pub.
-      $result = chado_query($pub_sql, [
+      $result = $chado->query($pub_sql, [
           ':uname' => 'null',
           ':type_id' => 'null',
       ])->fetchObject();
@@ -1325,7 +1426,8 @@ class GFF3Importer extends ChadoImporterBase {
     while ($line = fgets($this->gff_file_h)) {
 
       $this->current_line++;
-      $this->addItemsHandled(drupal_strlen($line));
+      // $this->addItemsHandled(drupal_strlen($line));
+      $this->addItemsHandled(mb_strlen($line));
 
       // Get the ID and the current file pointer and store that for later.
       if (preg_match('/^>/', $line)) {
@@ -1430,7 +1532,7 @@ class GFF3Importer extends ChadoImporterBase {
       throw new Exception(t("The landmark '%landmark' has more than one entry for this organism (%species). Did you provide a landmark type? If not, try resubmitting and providing a type." .
         "Cannot continue", [
           '%landmark' => $landmark_name,
-          '%species' => $this->organism->getValues('genus') . " " . $this->organism->getValues('species'),
+          '%species' => $this->organism->genus . " " . $this->organism->species,
         ]));
     }
 
@@ -1466,19 +1568,33 @@ class GFF3Importer extends ChadoImporterBase {
    * Loads a single landmark by name.
    */
   private function insertLandmark($name) {
-    $feature = new ChadoRecord('feature');
+    $chado = $this->getChadoConnection();
     $residues = '';
-    $feature->setValues([
-      'organism_id' => $this->organism->getValue('organism_id'),
+    // $feature = new ChadoRecord('feature');
+    // $feature->setValues([
+    //   'organism_id' => $this->organism->execute()->fetchObject()->organism_id,
+    //   'uniquename' => $name,
+    //   'name' => $name,
+    //   'type_id' => $this->landmark_cvterm->execute()->fetchObject()->cvterm_id,
+    //   'md5checksum' => md5($residues),
+    //   'is_analysis' => FALSE,
+    //   'is_obsolete' => FALSE,
+    // ]);
+    // $feature->insert();
+    // $feature = $this->chado->select('feature');
+    $insert_id = $chado->insert('feature')
+    ->fields([
+      'organism_id' => $this->organism->organism_id,
       'uniquename' => $name,
       'name' => $name,
-      'type_id' => $this->landmark_cvterm->getValue('cvterm_id'),
+      'type_id' => $this->landmark_cvterm->cvterm_id,
       'md5checksum' => md5($residues),
-      'is_analysis' => FALSE,
-      'is_obsolete' => FALSE,
-    ]);
-    $feature->insert();
-    $this->landmarks[$name] = $feature->getID();
+      'is_analysis' => 0,
+      'is_obsolete' => 0,
+    ])
+    ->execute();
+    // $this->landmarks[$name] = $feature->getID();
+    $this->landmarks[$name] = $insert_id;
   }
 
   /**
@@ -1496,7 +1612,8 @@ class GFF3Importer extends ChadoImporterBase {
 
     while ($line = fgets($this->gff_file_h)) {
       $this->current_line++;
-      $this->addItemsHandled(drupal_strlen($line));
+      // $this->addItemsHandled(drupal_strlen($line));
+      $this->addItemsHandled(mb_strlen($line));
 
       $line = trim($line);
 
@@ -1789,8 +1906,11 @@ class GFF3Importer extends ChadoImporterBase {
    * Opens the cache file for read/write access.
    */
   private function openCacheFile() {
-    $temp_file = drupal_tempnam('temporary://', "TripalGFF3Import_");
-    $this->gff_cache_file_name = drupal_realpath($temp_file);
+    // $temp_file = drupal_tempnam('temporary://', "TripalGFF3Import_");
+    $temp_file = \Drupal::service('file_system')->tempnam('temporary://', "TripalGFF3Import_");
+    // $this->gff_cache_file_name = drupal_realpath($temp_file);
+    $this->gff_cache_file_name = \Drupal::service('file_system')->realpath($temp_file);
+    
     $this->logger->notice("Opening temporary cache file: @cfile",
     ['@cfile' => $this->gff_cache_file_name]);
     // $this->logMessage("Opening temporary cache file: !cfile",
@@ -1869,6 +1989,7 @@ class GFF3Importer extends ChadoImporterBase {
    * Imports the feature records into Chado.
    */
   private function insertFeatures() {
+    $chado = $this->getChadoConnection();
     $batch_size = 1000;
     $num_features = count(array_keys($this->features));
     $num_batches = (int) ($num_features / $batch_size) + 1;
@@ -1903,7 +2024,7 @@ class GFF3Importer extends ChadoImporterBase {
         $args[":uniquename_$i"] = $uniquename;
         $args[":name_$i"] = $feature['name'];
         $args[":type_id_$i"] = $type_id;
-        $args[":organism_id_$i"] = $feature['organism'] ? $feature['organism'] : $this->organism->getID();
+        $args[":organism_id_$i"] = $feature['organism'] ? $feature['organism'] : $this->organism->organism_id;
         $args[":residues_$i"] = $residues;
         $args[":md5checksum_$i"] = $residues ? md5($residues) : '';
         $args[":seqlen_$i"] = strlen($residues);
@@ -1914,7 +2035,7 @@ class GFF3Importer extends ChadoImporterBase {
         if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
-          chado_query($sql, $args);
+          $chado->query($sql, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -1932,6 +2053,7 @@ class GFF3Importer extends ChadoImporterBase {
    * UPDATES the name of feature records in Chado.
    */
   private function updateFeatureNames() {
+    $chado = $this->getChadoConnection();
     $batch_size = 1000;
     $num_features = count(array_keys($this->update_names));
     $num_batches = (int) ($num_features / $batch_size) + 1;
@@ -1965,7 +2087,7 @@ class GFF3Importer extends ChadoImporterBase {
         if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql . $fin_sql;
-          chado_query($sql, $args);
+          $chado->query($sql, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -1982,6 +2104,7 @@ class GFF3Importer extends ChadoImporterBase {
    * Check if the features exist in the database.
    */
   private function findFeatures() {
+    $chado = $this->getChadoConnection();
     $batch_size = 1000;
     $num_features = count(array_keys($this->features));
     $num_batches = (int) ($num_features / $batch_size) + 1;
@@ -1989,7 +2112,7 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    $sql = "SELECT uniquename, name, type_id, organism_id, feature_id FROM {feature} WHERE uniquename in (:uniquenames)";
+    $sql = "SELECT uniquename, name, type_id, organism_id, feature_id FROM {feature} WHERE uniquename in (:uniquenames[])";
     $i = 0;
     $total = 0;
     $batch_num = 1;
@@ -2006,14 +2129,14 @@ class GFF3Importer extends ChadoImporterBase {
       // If we've reached the size of the batch then let's do the select.
       if ($i == $batch_size or $total == $num_features) {
         if (count($names) > 0) {
-          $args = [':uniquenames' => $names];
-          $results = chado_query($sql, $args);
+          $args = [':uniquenames[]' => $names];
+          $results = $chado->query($sql, $args);
           while ($f = $results->fetchObject()) {
             if (array_key_exists($f->uniquename, $this->features)) {
               $matched_findex = $this->features[$f->uniquename]['findex'];
               $matched_feature = $this->getCachedFeature($matched_findex);
               $matched_type_id = $this->feature_cvterm_lookup[$matched_feature['type']];
-              $matched_organism_id = $this->organism->getID();
+              $matched_organism_id = $this->organism->organism_id;
               if ($matched_feature['organism']) {
                 $matched_organism_id = $matched_feature['organism'];
               }
@@ -2043,6 +2166,7 @@ class GFF3Importer extends ChadoImporterBase {
    * Deletes all anciallary data about a feature so we can re-insert it.
    */
   private function deleteFeatureData() {
+    $chado = $this->getChadoConnection();
     $batch_size = 1000;
     $num_features = count(array_keys($this->features));
     $num_batches = (int) ($num_features / $batch_size) + 1;
@@ -2050,13 +2174,13 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    $sql1 = "DELETE from {featureprop} WHERE feature_id IN (:feature_ids)";
-    $sql2 = "DELETE from {featureloc} WHERE feature_id IN (:feature_ids)";
-    $sql3 = "DELETE from {feature_cvterm} WHERE feature_id IN (:feature_ids)";
-    $sql4 = "DELETE from {feature_dbxref} WHERE feature_id IN (:feature_ids)";
-    $sql5 = "DELETE from {feature_synonym} WHERE feature_id IN (:feature_ids)";
-    $sql6 = "DELETE from {feature_relationship} WHERE subject_id IN (:feature_ids)";
-    $sql7 = "DELETE from {analysisfeature} WHERE feature_id IN (:feature_ids)";
+    $sql1 = "DELETE from {featureprop} WHERE feature_id IN (:feature_ids[])";
+    $sql2 = "DELETE from {featureloc} WHERE feature_id IN (:feature_ids[])";
+    $sql3 = "DELETE from {feature_cvterm} WHERE feature_id IN (:feature_ids[])";
+    $sql4 = "DELETE from {feature_dbxref} WHERE feature_id IN (:feature_ids[])";
+    $sql5 = "DELETE from {feature_synonym} WHERE feature_id IN (:feature_ids[])";
+    $sql6 = "DELETE from {feature_relationship} WHERE subject_id IN (:feature_ids[])";
+    $sql7 = "DELETE from {analysisfeature} WHERE feature_id IN (:feature_ids[])";
     $i = 0;
     $total = 0;
     $batch_num = 1;
@@ -2076,14 +2200,14 @@ class GFF3Importer extends ChadoImporterBase {
       // If we've reached the size of the batch then let's do the insert.
       if ($i == $batch_size or $total == $num_features) {
         if (count($feature_ids) > 0) {
-          $args = [':feature_ids' => $feature_ids];
-          chado_query($sql1, $args);
-          chado_query($sql2, $args);
-          chado_query($sql3, $args);
-          chado_query($sql4, $args);
-          chado_query($sql5, $args);
-          chado_query($sql6, $args);
-          chado_query($sql7, $args);
+          $args = [':feature_ids[]' => $feature_ids];
+          $chado->query($sql1, $args);
+          $chado->query($sql2, $args);
+          $chado->query($sql3, $args);
+          $chado->query($sql4, $args);
+          $chado->query($sql5, $args);
+          $chado->query($sql6, $args);
+          $chado->query($sql7, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -2099,6 +2223,7 @@ class GFF3Importer extends ChadoImporterBase {
    *
    */
   private function insertFeatureProps(){
+    $chado = $this->getChadoConnection();
     $batch_size = 100;
     $num_features = count(array_keys($this->features));
     $num_batches = (int) ($num_features / $batch_size) + 1;
@@ -2142,7 +2267,7 @@ class GFF3Importer extends ChadoImporterBase {
         if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
-          chado_query($sql, $args);
+          $chado->query($sql, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -2159,6 +2284,7 @@ class GFF3Importer extends ChadoImporterBase {
    *
    */
   private function insertFeatureParents(){
+    $chado = $this->getChadoConnection();
     $batch_size = 100;
     $num_parents = count(array_keys($this->parent_lookup));
     $num_batches = (int) ($num_parents / $batch_size) + 1;
@@ -2209,7 +2335,7 @@ class GFF3Importer extends ChadoImporterBase {
         if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
-          chado_query($sql, $args);
+          $chado->query($sql, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -2227,7 +2353,7 @@ class GFF3Importer extends ChadoImporterBase {
    *
    */
   private function findDbxrefs() {
-
+    $chado = $this->getChadoConnection();
     $batch_size = 1000;
     $num_dbxrefs = count(array_keys($this->dbxref_lookup));
     $num_batches = (int) ($num_dbxrefs / $batch_size) + 1;
@@ -2260,7 +2386,7 @@ class GFF3Importer extends ChadoImporterBase {
       if ($i == $batch_size or $total == $num_dbxrefs) {
         $sql = rtrim($sql, " OR\n");
         $sql = $init_sql . $sql;
-        $results = chado_query($sql, $args);
+        $results = $chado->query($sql, $args);
         while ($dbxref = $results->fetchObject()) {
           $index = $dbxref->name . ':' . $dbxref->accession;
           $this->dbxref_lookup[$index]['dbxref_id'] = $dbxref->dbxref_id;
@@ -2340,6 +2466,7 @@ class GFF3Importer extends ChadoImporterBase {
    *
    */
   private function findLandmarks() {
+    $chado = $this->getChadoConnection();
     $batch_size = 1000;
     $num_landmarks = count(array_keys($this->landmarks));
     $num_batches = (int) ($num_landmarks / $batch_size) + 1;
@@ -2347,7 +2474,7 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    $sql = "SELECT name, uniquename, feature_id FROM {feature} WHERE uniquename in (:landmarks)";
+    $sql = "SELECT name, uniquename, feature_id FROM {feature} WHERE uniquename in (:landmarks[])";
     $i = 0;
     $total = 0;
     $batch_num = 1;
@@ -2365,8 +2492,9 @@ class GFF3Importer extends ChadoImporterBase {
       // If we've reached the size of the batch then let's do the select.
       if ($i == $batch_size or $total == $num_landmarks) {
         if (count($names) > 0) {
-          $args = [':landmarks' => $names];
-          $results = chado_query($sql, $args);
+          $args = [':landmarks[]' => $names];
+          // $results = chado_query($sql, $args);
+          $results = $chado->query($sql, $args);
           while ($f = $results->fetchObject()) {
             $this->landmarks[$f->uniquename] = $f->feature_id;
           }
@@ -2386,7 +2514,7 @@ class GFF3Importer extends ChadoImporterBase {
    *
    */
   private function insertDbxrefs() {
-
+    $chado = $this->getChadoConnection();
     $batch_size = 1000;
     $num_dbxrefs = count(array_keys($this->dbxref_lookup));
     $num_batches = (int) ($num_dbxrefs / $batch_size) + 1;
@@ -2418,7 +2546,7 @@ class GFF3Importer extends ChadoImporterBase {
         if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
-          chado_query($sql, $args);
+          $chado->query($sql, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -2436,6 +2564,7 @@ class GFF3Importer extends ChadoImporterBase {
    *
    */
   private function insertFeatureDbxrefs() {
+    $chado = $this->getChadoConnection();
     $batch_size = 100;
     $num_features = count(array_keys($this->features));
     $num_batches = (int) ($num_features / $batch_size) + 1;
@@ -2475,7 +2604,7 @@ class GFF3Importer extends ChadoImporterBase {
         if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
-          chado_query($sql, $args);
+          $chado->query($sql, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -2493,6 +2622,7 @@ class GFF3Importer extends ChadoImporterBase {
    *
    */
   private function insertFeatureCVterms() {
+    $chado = $this->getChadoConnection();
     $batch_size = 100;
     $num_features = count(array_keys($this->features));
     $num_batches = (int) ($num_features / $batch_size) + 1;
@@ -2535,7 +2665,7 @@ class GFF3Importer extends ChadoImporterBase {
         if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
-          chado_query($sql, $args);
+          $chado->query($sql, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -2556,6 +2686,7 @@ class GFF3Importer extends ChadoImporterBase {
    * should either exist or was added if desired by the end-user.
    */
   private function insertFeatureTargets() {
+    $chado = $this->getChadoConnection();
     $batch_size = 1000;
     $num_features = count(array_keys($this->features));
     $num_batches = (int) ($num_features / $batch_size) + 1;
@@ -2609,7 +2740,7 @@ class GFF3Importer extends ChadoImporterBase {
         if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
-          chado_query($sql, $args);
+          $chado->query($sql, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -2626,6 +2757,7 @@ class GFF3Importer extends ChadoImporterBase {
    *
    */
   private function insertFeatureDerivesFrom() {
+    $chado = $this->getChadoConnection();
     $batch_size = 100;
     $num_features = count(array_keys($this->features));
     $num_batches = (int) ($num_features / $batch_size) + 1;
@@ -2665,7 +2797,7 @@ class GFF3Importer extends ChadoImporterBase {
         if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
-          chado_query($sql, $args);
+          $chado->query($sql, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -2683,6 +2815,7 @@ class GFF3Importer extends ChadoImporterBase {
    *
    */
   private function insertFeatureLocs() {
+    $chado = $this->getChadoConnection();
     $batch_size = 1000;
     $num_features = count(array_keys($this->features));
     $num_batches = (int) ($num_features / $batch_size) + 1;
@@ -2726,7 +2859,7 @@ class GFF3Importer extends ChadoImporterBase {
         if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
-          chado_query($sql, $args);
+          $chado->query($sql, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -2750,16 +2883,29 @@ class GFF3Importer extends ChadoImporterBase {
 
     // Get the organism object.
     list($genus, $species) = explode(':', $organism_attr, 2);
-    $organism = new ChadoRecord('organism');
-    $organism->setValues([
-      'genus' => $genus,
-      'species' => $species
-    ]);
-    $num_found = $organism->find();
+    // $organism = new ChadoRecord('organism');
+    // $organism->setValues([
+    //   'genus' => $genus,
+    //   'species' => $species
+    // ]);
+    $organism = $chado->select('organism','o')
+    ->fields('o')
+    ->condition('genus', $genus)
+    ->condition('species', $species)
+    ->execute()
+    ->fetchObject();
+
+    $num_found = $chado->select('organism','o')
+    ->fields('o')
+    ->condition('genus', $genus)
+    ->condition('species', $species)
+    ->execute()
+    ->countQuery()
+    ->fetchField();
 
     if ($num_found == 1){
-      $this->organism_lookup[$organism_attr] = $organism->getID();
-      return $organism->getID();
+      $this->organism_lookup[$organism_attr] = $organism->organism_id;
+      return $organism->organism_id;
     }
 
     if ($num_found > 1) {
@@ -2768,10 +2914,15 @@ class GFF3Importer extends ChadoImporterBase {
     }
 
     if ($this->create_organism) {
+      // $organism->insert();
+      // $this->organism_lookup[$organism_attr] = $organism->execute()->fetchObject()->organism_id;
+      // $gff_feature['organism'] = $organism->execute()->fetchObject()->organism_id;
+      // return $organism->getID();
+      // TODO
       $organism->insert();
-      $this->organism_lookup[$organism_attr] = $organism->getID();
-      $gff_feature['organism'] = $organism->getID();
-      return $organism->getID();
+      $this->organism_lookup[$organism_attr] = $organism->organism_id;
+      $gff_feature['organism'] = $organism->organism_id;
+      return $organism->getID();      
     }
     return NULL;
   }
@@ -2780,6 +2931,7 @@ class GFF3Importer extends ChadoImporterBase {
    *
    */
   private function findSynonyms() {
+    $chado = $this->getChadoConnection();
     $batch_size = 1000;
     $num_features = count(array_keys($this->features));
     $num_batches = (int) ($num_features / $batch_size) + 1;
@@ -2827,7 +2979,7 @@ class GFF3Importer extends ChadoImporterBase {
         if (count($args) > 0) {
           $sql = rtrim($sql, " OR\n");
           $sql = $init_sql . $sql;
-          $results = chado_query($sql, $args);
+          $results = $chado->query($sql, $args);
           while ($synonym = $results->fetchObject()) {
             $this->synonym_lookup[$synonym->name] = $synonym->synonym_id;
           }
@@ -2849,6 +3001,7 @@ class GFF3Importer extends ChadoImporterBase {
    *
    */
   private function insertSynonyms() {
+    $chado = $this->getChadoConnection();
     $batch_size = 1000;
     $num_synonyms = count(array_keys($this->synonym_lookup));
     $num_batches = (int) ($num_synonyms / $batch_size) + 1;
@@ -2878,7 +3031,7 @@ class GFF3Importer extends ChadoImporterBase {
         if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
-          chado_query($sql, $args);
+          $chado->query($sql, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -2898,6 +3051,7 @@ class GFF3Importer extends ChadoImporterBase {
    *
    */
   private function insertFeatureSynonyms(){
+    $chado = $this->getChadoConnection();
     $batch_size = 1000;
     $num_features = count(array_keys($this->features));
     $num_batches = (int) ($num_features / $batch_size) + 1;
@@ -2937,7 +3091,7 @@ class GFF3Importer extends ChadoImporterBase {
         if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
-          chado_query($sql, $args);
+          $chado->query($sql, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
@@ -3051,6 +3205,7 @@ class GFF3Importer extends ChadoImporterBase {
    *
    */
   private function insertFeatureAnalysis() {
+    $chado = $this->getChadoConnection();
     $batch_size = 1000;
     $num_features = count(array_keys($this->features));
     $num_batches = (int) ($num_features / $batch_size) + 1;
@@ -3075,7 +3230,7 @@ class GFF3Importer extends ChadoImporterBase {
       if (!$feature['skipped']) {
         $sql .= "(:feature_id_$i, :analysis_id_$i, :significance_$i),\n";
         $args[":feature_id_$i"] = $feature_id;
-        $args[":analysis_id_$i"] = $this->analysis->getID();
+        $args[":analysis_id_$i"] = $this->analysis->analysis_id;
         if (strcmp($feature['score'], '.') != 0) {
           $args[":significance_$i"] = $feature['score'];
         }
@@ -3089,7 +3244,7 @@ class GFF3Importer extends ChadoImporterBase {
         if (count($args) > 0) {
           $sql = rtrim($sql, ",\n");
           $sql = $init_sql . $sql;
-          chado_query($sql, $args);
+          $chado->query($sql, $args);
         }
         $this->setItemsHandled($batch_num);
         $batch_num++;
