@@ -58,6 +58,7 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
    * {@inheritdoc}
    */
   public function onEntityTypeDelete(EntityTypeInterface $entity_type) {
+
     // build remove storage operations
     $storageOps = [];
     foreach ($this->fieldStorageDefinitions() as $storageDefinition) {
@@ -86,6 +87,7 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
    */
   public function onFieldableEntityTypeUpdate(EntityTypeInterface $entity_type, EntityTypeInterface $original, array $field_storage_definitions, array $original_field_storage_definitions, array &$sandbox = NULL) {
     parent::onFieldableEntityTypeUpdate($entity_type,$original,$field_storage_definitions,$original_field_storage_definitions,$sandbox);
+
     // build associate array of old fields
     $oldTypes = [];
     foreach ($original_field_storage_definitions as $storageDefinition) {
@@ -106,7 +108,7 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
       if ($field instanceof TripalFieldItemInterface) {
         $types = $field->tripalTypes();
         $tsid = $field->tripalStorageId();
-        if (array_key_exists($name, $oldTypes)) {
+        if (array_key_exists($name,$oldTypes)) {
           // Case 1a: the new field already existed but the storage has changed.
           //   - this involves migrating of data from one storage to another
           //     which can be an error prone process leading to data loss.
