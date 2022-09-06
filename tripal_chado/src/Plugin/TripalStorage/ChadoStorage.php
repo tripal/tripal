@@ -364,7 +364,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
 
     $records = [];
     $logger = \Drupal::service('tripal.logger');
-
     // @debug dpm(array_keys($values), '1st level: field names');
 
     // Iterate through the value objects.
@@ -392,33 +391,55 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
 
           $definition = $info['definition'];
           $prop_value = $info['value'];
+          $prop_type = $info['type'];
           $field_type = $prop_value->getFieldType();
-          $settings = $definition->getSettings();
+          $field_settings = $definition->getSettings();
+          $type_storage_settings = $prop_type->getStorageSettings();
 
-          if (!array_key_exists('chado_table', $settings['storage_plugin_settings'])) {
+          if (!array_key_exists('chado_table', $field_settings['storage_plugin_settings'])) {
             $logger->error($this->t('Cannot save record in Chado. The field, "@field", is missing the "chado_table setting',
               ['@field' => $field_type]));
             continue;
           }
-          if (!array_key_exists('chado_column', $settings['storage_plugin_settings'])) {
+          if (!array_key_exists('chado_column', $field_settings['storage_plugin_settings'])) {
             $logger->error($this->t('Cannot save record in Chado. The field, "@field", is missing the "chado_column setting',
               ['@field' => $field_type]));
             continue;
           }
-          $chado_table = $settings['storage_plugin_settings']['chado_table'];
-          $chado_column = $settings['storage_plugin_settings']['chado_column'];
+          $chado_table = $field_settings['storage_plugin_settings']['chado_table'];
+          $chado_column = $field_settings['storage_plugin_settings']['chado_column'];
           $value = $prop_value->getValue();
+          $chado = \Drupal::service('tripal_chado.database');
+          $schema = $chado->schema();
+          $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
+          $pkey = $table_def['primary key'];
 
           if ($key == 'record_id') {
-            $chado = \Drupal::service('tripal_chado.database');
-            $schema = $chado->schema();
-            $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
-            $pkey = $table_def['primary key'];
             $records[$chado_table][$delta]['conditions'][$pkey] = $prop_value->getValue();
           }
-          if ($key == 'value' and !empty($value)) {
+          if ($key == 'value') {
             $records[$chado_table][$delta]['fields'][$chado_column] = $value;
           }
+
+//           // If the property has some instructions for Chado then handle those.
+//           foreach ($type_storage_settings as $action_key => $action_value) {
+//             // If the instruction is to 'expand' then we are going to follow
+//             // foreign keys and add some connected value.
+//             if ($action_key == 'expand') {
+//               $joins = explode(',', $action_value);
+//               $curr_table_def = $table_def;
+//               foreach ($joins as $join_col) {
+//                 foreach ($table_def['foreign keys'] as $fk_table => $fk_details) {
+//                   if (in_array($join_col, array_keys($fk_details['columns']))) {
+//                     $fk_column = $fk_details['columns'][$join_col];
+//                     $records[$fk_table][$delta]['fields'][$join_col] = $value;
+//                     $records[$fk_table][$delta]['fields'][$fk_column] = '';
+//                     $curr_table_def = $schema->getTableDef($fk_table, ['format' => 'drupal']);
+//                   }
+//                 }
+//               }
+//             }
+//           }
         }
       }
     }

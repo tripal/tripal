@@ -25,10 +25,24 @@ class obi__organism_formatter extends TripalFormatterBase {
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = [];
+    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
+    $mapping = $storage->load('core_mapping');
 
     foreach($items as $delta => $item) {
+      //dpm($item);
+      $label_term = 'rdfs:label';
+      $genus_term = $mapping->getColumnTermId('organism', 'genus');
+      $species_term = $mapping->getColumnTermId('organism', 'species');
+      $iftype_term = $mapping->getColumnTermId('organism', 'type_id');
+      $ifname_term = $mapping->getColumnTermId('organism', 'infraspecific_name');
+      $genus = $item->get(preg_replace('/[^\w]/', '_', $genus_term))->getString();
+      $species = $item->get(preg_replace('/[^\w]/', '_', $species_term))->getString();
+
+      // @todo: we need full support of organism names, including the
+      // infraspecific type, and name. We should be showing the label term
+      // instead.
       $elements[$delta] = [
-        "#markup" => $item->get("value")->getString(),
+        "#markup" => $item->get('value')->getString(),
       ];
     }
 

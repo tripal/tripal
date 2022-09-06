@@ -55,8 +55,6 @@ class obi__organism extends TripalFieldItemBase {
    */
   public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
     $values = [];
-    //$random = new Random();
-    //$values['value'] = $random->word(mt_rand(1, $field_definition->getSetting('max_length')));
     return $values;
   }
 
@@ -82,17 +80,23 @@ class obi__organism extends TripalFieldItemBase {
     $mapping = $storage->load('core_mapping');
     $label_term = 'rdfs:label';
     $genus_term = $mapping->getColumnTermId('organism', 'genus');
-    $species_term = $mapping->getColumnTermId('organism', 'genus');
-    $iftype_term = $mapping->getColumnTermId('organism', 'genus');
-    $ifname_term = $mapping->getColumnTermId('organism', 'genus');
+    $species_term = $mapping->getColumnTermId('organism', 'species');
+    $iftype_term = $mapping->getColumnTermId('organism', 'type_id');
+    $ifname_term = $mapping->getColumnTermId('organism', 'infraspecific_name');
 
-    // Create the poperty types.
+    // Create the property types.
     $value = new IntStoragePropertyType($entity_type_id, self::$id, 'value');
-    $label = new VarCharStoragePropertyType($entity_type_id, self::$id, $label_term, $label_len);
-    $genus = new VarCharStoragePropertyType($entity_type_id, self::$id, $genus_term, $genus_len);
-    $species = new VarCharStoragePropertyType($entity_type_id, self::$id, $species_term, $species_len);
-    $ifname = new VarCharStoragePropertyType($entity_type_id, self::$id, $ifname_term, $ifname_len);
-    $iftype = new IntStoragePropertyType($entity_type_id, self::$id, $iftype_term);
+    $label = new VarCharStoragePropertyType($entity_type_id, self::$id, $label_term, $label_len,
+      // @todo make sure these patterns follow typical token names.
+      ['replace' => '<i>[organism_id,genus] [organism_id,species]</i> [organism_id,type_id,name] [organism_id,infraspecific_name']);
+    $genus = new VarCharStoragePropertyType($entity_type_id, self::$id, $genus_term, $genus_len,
+      ['expand' => 'organism_id,genus']);
+    $species = new VarCharStoragePropertyType($entity_type_id, self::$id, $species_term, $species_len,
+      ['expand' => 'organism_id,species']);
+    $ifname = new VarCharStoragePropertyType($entity_type_id, self::$id, $ifname_term, $ifname_len,
+      ['expand' => 'organism_id,infraspecific_name']);
+    $iftype = new IntStoragePropertyType($entity_type_id, self::$id, $iftype_term,
+      ['expand' => 'organism_id,type_id,name']);
 
     // Return the list of property types.
     $types = [$value, $label, $genus, $species, $ifname, $iftype];
@@ -115,9 +119,9 @@ class obi__organism extends TripalFieldItemBase {
     $mapping = $storage->load('core_mapping');
     $label_term = 'rdfs:label';
     $genus_term = $mapping->getColumnTermId('organism', 'genus');
-    $species_term = $mapping->getColumnTermId('organism', 'genus');
-    $iftype_term = $mapping->getColumnTermId('organism', 'genus');
-    $ifname_term = $mapping->getColumnTermId('organism', 'genus');
+    $species_term = $mapping->getColumnTermId('organism', 'species');
+    $iftype_term = $mapping->getColumnTermId('organism', 'type_id');
+    $ifname_term = $mapping->getColumnTermId('organism', 'infraspecific_name');
 
     // Build the values array.
     $values = [
