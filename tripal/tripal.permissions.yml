@@ -25,6 +25,10 @@ make files permanent:
   title: 'Make Tripal Data Files Permanent'
   description: 'Allows the user to make files they have access to permanent. Files that are permanent will not expire and will not be cleaned up.'
 
+admin tripal files:
+  title: "Administer Tripal Managed Files"
+  description: "Allows the user to administer file upload maximum size, user quotas and file expiration dates."
+
 manage tripal files:
   title: "Manage Own Tripal Data Files"
   description: 'Allows users to manage their own data files uploaded via Tripal.'

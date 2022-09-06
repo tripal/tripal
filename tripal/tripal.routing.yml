@@ -322,7 +322,7 @@ tripal.files:
     _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
     _title: 'Tripal Managed Files'
   requirements:
-    _permission: 'administer tripal'
+    _permission: 'administer tripal+admin tripal files'
 
 # Manage File Usage.
 tripal.files_file_usage:
@@ -331,7 +331,7 @@ tripal.files_file_usage:
     _form: '\Drupal\tripal\Form\TripalAdminManageFilesForm'
     _title: 'Manage File Upload Size'
   requirements:
-    _permission: 'administer tripal'
+    _permission: 'admin tripal files'
 
 # Add File Usage Quota for User.
 tripal.files_quota_add:
@@ -340,7 +340,7 @@ tripal.files_quota_add:
     _form: '\Drupal\tripal\Form\TripalAdminManageQuotaForm'
     _title: 'Add Custom User Quota'
   requirements:
-    _permission: 'administer tripal'
+    _permission: 'admin tripal files'
 
 # View File Usage.
 tripal.files_usage:
@@ -349,7 +349,7 @@ tripal.files_usage:
     _controller: '\Drupal\tripal\Controller\TripalController::tripalFilesUsage'
     _title: 'File Usage Reports'
   requirements:
-    _permission: 'administer tripal'
+    _permission: 'admin tripal files'
 
 # View User File Usage Quotas.
 tripal.files_quota:
@@ -358,7 +358,7 @@ tripal.files_quota:
     _form: '\Drupal\tripal\Form\TripalFileQuota'
     _title: 'Disk Usage Quotas'
   requirements:
-    _permission: 'administer tripal'
+    _permission: 'admin tripal files'
 
 # Remove File Usage Quota.
 tripal.files_quota_remove:
@@ -367,7 +367,7 @@ tripal.files_quota_remove:
     _form: '\Drupal\tripal\Form\TripalAdminRemoveQuota'
     _title: 'Remove custom user quota'
   requirements:
-    _permission: 'administer tripal'
+    _permission: 'admin tripal files'
 
 
 # Edit File Usage Quota.
@@ -377,7 +377,7 @@ tripal.files_quota_user_edit:
     _form: '\Drupal\tripal\Form\TripalFileQuotaCustomEdit'
     _title: 'Edit Custom Quota'
   requirements:
-    _permission: 'administer tripal'
+    _permission: 'admin tripal files'
 
 # Autocomplete Callback: Existing users for file usage form.
 tripal.files_quota_user_autocomplete:
@@ -386,7 +386,7 @@ tripal.files_quota_user_autocomplete:
     _controller: '\Drupal\tripal\Controller\TripalFileQuotaUserAutocomplete::index'
     _title: 'Autocomplete for existing users'
   requirements:
-    _permission: 'administer tripal'
+    _permission: 'admin tripal files'
 
 ##
 # User File Management.

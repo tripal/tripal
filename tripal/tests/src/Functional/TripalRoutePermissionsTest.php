@@ -328,9 +328,51 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    * @group Tripal Data Files
    */
   public function testAdminTripalDataFilesPages() {
-    $this->markTestIncomplete(
-      'This test has not been implemented yet.'
-    );
+    $session = $this->getSession();
+
+    // The URLs to check.
+    $urls = [
+      'Tripal Managed Files' => 'admin/tripal/files',
+      'Manage File Upload Size' => 'admin/tripal/files/manage',
+      'Add Custom User Quota' => 'admin/tripal/files/quota/add',
+      'File Usage Reports' => 'admin/tripal/files/usage',
+      'Disk Usage Quotas' => 'admin/tripal/files/quota',
+    ];
+
+    $permission = 'admin tripal files';
+
+    // The users for testing.
+    $userAuthenticatedOnly = $this->drupalCreateUser();
+    $userTripalAdmin = $this->drupalCreateUser([$permission]);
+
+    // First check all the URLs with no user logged in.
+    // This checks the anonymous user cannot access these pages.
+    foreach ($urls as $title => $path) {
+      $html = $this->drupalGet($path);
+      $status_code = $session->getStatusCode();
+      $this->assertEquals(403, $status_code, "The anonymous user should not be able to access this admin page: $title.");
+    }
+
+    // Next check all the URLs with the authenticated, unpriviledged user.
+    // This checks generic authenticated users cannot access these pages.
+    $this->drupalLogin($userAuthenticatedOnly);
+    $this->assertFalse($userAuthenticatedOnly->hasPermission($permission), "The unpriviledged user should not have the '$permission' permission.");
+    foreach ($urls as $title => $path) {
+      $html = $this->drupalGet($path);
+      $status_code = $session->getStatusCode();
+      $this->assertEquals(403, $status_code, "The unpriviledged user should not be able to access this admin page: $title.");
+    }
+
+    // Finally check all URLs with the authenticated, priviledged user.
+    // This checks priviledged users can access these pages.
+    $this->drupalLogin($userTripalAdmin);
+    $this->assertTrue($this->drupalUserIsLoggedIn($userTripalAdmin), "The priviledged user should be logged in.");
+    $this->assertTrue($userTripalAdmin->hasPermission($permission), "The priviledged user should have the '$permission' permission.");
+    foreach ($urls as $title => $path) {
+      $html = $this->drupalGet($path);
+      $status_code = $session->getStatusCode();
+      $this->assertEquals(200, $status_code, "The priviledged user should be able to access this admin page: $title which should be at '$path'.");
+    }
   }
 
   /**
