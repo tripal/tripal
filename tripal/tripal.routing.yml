@@ -50,7 +50,7 @@ tripal.jobs:
     _controller: '\Drupal\tripal\Controller\TripalJobController::tripalJobs'
     _title: 'Jobs'
   requirements:
-    _permission: 'manage tripal jobs'
+    _permission: 'manage tripal jobs+administer tripal'
 
 # Cancel Job page.
 tripal.jobs_cancel:
@@ -201,7 +201,7 @@ tripal.cv_lookup:
     _controller: '\Drupal\tripal\Controller\TripalController::tripalCvLookup'
     _title: 'Controlled Vocabularies'
   requirements:
-    _permission: 'administer tripal'
+    _permission: 'access content'
 tripal.cv_lookup_term:
   path: 'cv/lookup/{vocabulary}/{accession}'
   defaults:
@@ -229,7 +229,7 @@ tripal.data_loaders:
     _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
     _title: 'Data Loaders'
   requirements:
-    _permission: 'administer tripal'
+    _permission: 'administer tripal+allow tripal import'
 
 # Importer Form.
 tripal.data_loaders_tripalimporter:
@@ -247,14 +247,14 @@ tripal.upload:
     _controller: '\Drupal\tripal\Controller\TripalController::tripalFileUpload'
     _title: 'Upload Files'
   requirements:
-    _permission: 'upload files'
+    _permission: 'upload files+allow tripal import'
 tripal.upload.chunk:
   path: 'tripal/upload/{type}/{filename}/{action}/{chunk}'
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalController::tripalFileUpload'
     _title: 'Upload File Chunk'
   requirements:
-    _permission: 'upload files'
+    _permission: 'upload files+allow tripal import'
 
 ##
 # Data Collections.

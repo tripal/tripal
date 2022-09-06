@@ -3,8 +3,8 @@
 # Core Tripal Permissions.
 ##
 administer tripal:
-  title: 'Administer Tripal'
-  description: 'Allow the user to access administrative pages of Tripal. This includes management of jobs, the storage systems, extensions and the controlled vocabularies.'
+  title: 'View Tripal Administration Pages'
+  description: 'Allow the user to access administrative pages of Tripal. This includes the menus and listings (e.g. jobs, storage systems, extensions) but not management of the various subsystems as they have their own permissions.'
   restrict access: true
 
 ##
