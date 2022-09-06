@@ -306,14 +306,14 @@ class GFF3Importer extends ChadoImporterBase {
 
 
   /**
-   * A controlled vocabulary ChadoRecord object. This is the CV that will be
+   * A controlled vocabulary results object. This is the CV that will be
    * used to for feature properties.
    */
   private $feature_prop_cv = NULL;
 
 
   /**
-   * A controlled vocabulary ChadoRecord object. This is the CV that will be
+   * A controlled vocabulary results object. This is the CV that will be
    * used to for feature properties.
    */
   private $feature_cv = NULL;
