@@ -123,7 +123,7 @@ class GFF3Importer extends ChadoImporterBase {
   private $analysis_id = NULL;
 
   /**
-   * The analysis ChadoRecord object that corresponds to the $analysis_id value.
+   * The analysis results object that corresponds to the $analysis_id value.
    */
   private $analysis = NULL;
 
@@ -197,7 +197,7 @@ class GFF3Importer extends ChadoImporterBase {
   private $landmark_type = '';
 
   /**
-   * The ChadoRecord object for the landmark type cvterm.
+   * The results object for the landmark type cvterm.
    */
   private $landmark_cvterm = NULL;
 
