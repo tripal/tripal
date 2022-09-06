@@ -230,7 +230,6 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    */
   public function testTripalContentPages() {
     $session = $this->getSession();
-    $assert = $this->assertSession();
 
     // Create a Content Type + Entity for this test.
     // -- Content Type.
@@ -291,7 +290,8 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
     // This checks the anonymous user cannot access these pages.
     foreach ($urls as $title => $path) {
       $html = $this->drupalGet($path);
-      $assert->statusCodeEquals(403, "The anonymous user should not be able to access any content pages including: $title ($path).");
+      $status_code = $session->getStatusCode();
+      $this->assertEquals(403, $status_code, "The anonymous user should not be able to access any content pages including: $title ($path).");
     }
 
     // Next check all the URLs with the authenticated, unpriviledged user.
@@ -299,7 +299,8 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
     $this->drupalLogin($userAuthenticatedOnly);
     foreach ($urls as $title => $path) {
       $html = $this->drupalGet($path);
-      $assert->statusCodeEquals(403, "The unpriviledged user should not be able to access any content pages including: $title ($path).");
+      $status_code = $session->getStatusCode();
+      $this->assertEquals(403, $status_code, "The unpriviledged user should not be able to access any content pages including: $title ($path).");
     }
 
     // Finally use the permissions mapping to check each permission.
