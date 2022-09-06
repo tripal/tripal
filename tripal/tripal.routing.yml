@@ -320,7 +320,7 @@ tripal.files:
   path: 'admin/tripal/files'
   defaults:
     _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
-    _title: 'Tripal'
+    _title: 'Tripal Managed Files'
   requirements:
     _permission: 'administer tripal'
 
@@ -329,7 +329,7 @@ tripal.files_file_usage:
   path: 'admin/tripal/files/manage'
   defaults:
     _form: '\Drupal\tripal\Form\TripalAdminManageFilesForm'
-    _title: 'Manage Usage'
+    _title: 'Manage File Upload Size'
   requirements:
     _permission: 'administer tripal'
 
@@ -338,7 +338,7 @@ tripal.files_quota_add:
   path: 'admin/tripal/files/quota/add'
   defaults:
     _form: '\Drupal\tripal\Form\TripalAdminManageQuotaForm'
-    _title: 'Add Custom Quota'
+    _title: 'Add Custom User Quota'
   requirements:
     _permission: 'administer tripal'
 
@@ -347,7 +347,7 @@ tripal.files_usage:
   path: 'admin/tripal/files/usage'
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalController::tripalFilesUsage'
-    _title: 'File Usage'
+    _title: 'File Usage Reports'
   requirements:
     _permission: 'administer tripal'
 
@@ -356,7 +356,7 @@ tripal.files_quota:
   path: 'admin/tripal/files/quota'
   defaults:
     _form: '\Drupal\tripal\Form\TripalFileQuota'
-    _title: 'User Quotas'
+    _title: 'Disk Usage Quotas'
   requirements:
     _permission: 'administer tripal'
 
@@ -501,3 +501,16 @@ entity.tripal_content_terms.delete_form:
     _title: 'Delete Term'
   requirements:
     _permission: 'administer tripal'
+
+##
+# Tripal Content Term Config entity.
+##
+
+# entity.tripal_content_terms.collection:
+#   path: '/admin/tripal/config/terms'
+# entity.tripal_content_terms.add_form:
+#   path: '/admin/tripal/config/terms/add'
+# entity.tripal_content_terms.edit_form:
+#   path: '/admin/tripal/config/terms/{tripal_content_terms}'
+# entity.tripal_content_terms.delete_form:
+#   path: '/admin/tripal/config/terms/{tripal_content_terms}/delete'
