@@ -1509,6 +1509,7 @@ class GFF3Importer extends ChadoImporterBase {
    *   $skip_on_missing is TRUE.
    */
   private function findLandmark($landmark_name) {
+    $chado = $this->getChadoConnection();
 
     // Before performing a database query check to see if
     // this landmark is already in our lookup list.
@@ -1516,14 +1517,42 @@ class GFF3Importer extends ChadoImporterBase {
       return $this->landmarks[$landmark_name];
     }
 
-    $landmark = new ChadoRecord('feature');
-    $landmark->setValues([
-      'organism_id' => $this->organism_id,
-      'uniquename' => $landmark_name,
-    ]);
-    if ($landmark_type) {
-      $landmark->setValue('type_id', $landmark_type->getValue('cvterm_id'));
+    // $landmark = new ChadoRecord('feature');
+    // $landmark->setValues([
+    //   'organism_id' => $this->organism_id,
+    //   'uniquename' => $landmark_name,
+    // ]);
+    // if ($landmark_type) {
+    //   $landmark->setValue('type_id', $landmark_type->getValue('cvterm_id'));
+    // }
+
+
+    $landmark_count = $chado->select('feature')
+    ->fields('feature')
+    ->condition('organism_id', $this->organism_id)
+    ->condition('uniquename', $landmark_name);
+
+    if($landmark_type) {
+      $landmark_count->condition('type_id', $landmark_type->getValue('cvterm_id'));
     }
+
+    $landmark_count->countQuery()
+    ->execute()
+    ->fetchField();
+
+    $landmark = $chado->select('feature')
+    ->fields('feature')
+    ->condition('organism_id', $this->organism_id)
+    ->condition('uniquename', $landmark_name);
+
+    if($landmark_type) {
+      $landmark->condition('type_id', $landmark_type->getValue('cvterm_id'));
+    }
+
+    $landmark->execute()
+    ->fetchObject();
+
+
     $num_found = $landmark->find();
     if ($num_found == 0) {
       return NULL;
@@ -1537,7 +1566,8 @@ class GFF3Importer extends ChadoImporterBase {
     }
 
     // The landmark was found, remember it
-    $this->landmarks[$landmark_name] = $landmark->getID();
+    // $this->landmarks[$landmark_name] = $landmark->getID();
+    $this->landmarks[$landmark_name] = $landmark->feature_id;
 
     return $landmark;
   }
