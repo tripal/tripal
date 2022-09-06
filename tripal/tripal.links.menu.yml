@@ -44,13 +44,13 @@ tripal.admin:
 # -- Tripal Registration link.
 tripal.admin_register:
   route_name: tripal.admin_register
-  title: 'Tripal Registration'
+  title: 'Registration'
   description: "Please register your Tripal website with tripal.info here. This gives the developers important information that allows us to continue to secure funding for maintenance and expansion while still respecting your privacy. This information will not be shared publicly (see page for full data usage statement) and no information about your site is shared unless you opt-in here."
   parent: tripal.admin
   weight: -100
 
 # -- Tripal Jobs Admin link.
-tripal.jobs
+tripal.jobs:
   route_name: tripal.jobs
   description: "Provides tools for managing jobs submitted to Tripal.  In some cases, long-running tasks are too slow to complete within a single browser session.  The Tripal jobs system allows long-running tasks to be submitted to a queue that can be executed manually by the site admin or automatically using extension modules (e.g. Tripal Daemon)."
   title: 'Jobs'
