@@ -18,7 +18,7 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
   // protected $htmlOutputEnabled = TRUE;
   protected $defaultTheme = 'stable';
 
-  protected static $modules = ['tripal', 'block', 'field_ui'];
+  protected static $modules = ['tripal', 'file'];
 
   /**
    * Test all the base Tripal admin paths.

@@ -14,7 +14,7 @@ use Drupal\Core\Url;
 class TripalContentTest extends BrowserTestBase {
     protected $defaultTheme = 'stable';
 
-    protected static $modules = ['tripal', 'block', 'field_ui'];
+    protected static $modules = ['tripal'];
 
   /**
    * Basic tests for Tripal Content Types.
