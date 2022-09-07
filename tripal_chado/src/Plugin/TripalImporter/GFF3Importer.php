@@ -57,7 +57,6 @@ class GFF3Importer extends ChadoImporterBase {
    */
   public static $file_types = ['gff', 'gff3'];
 
-
   /**
    * Provides information to the user about the file upload.  Typically this
    * may include a description of the file types allowed.
@@ -110,7 +109,6 @@ class GFF3Importer extends ChadoImporterBase {
    * The organism ChadoRecord object that corresponds to the $organism_id value.
    */
   private $organism = NULL;
-
 
   /**
    * An array of organism records for quick lookup.
@@ -357,7 +355,6 @@ class GFF3Importer extends ChadoImporterBase {
        the landmark features (first column of the GFF3 file) are not already in the database.."),
     ];
 
-
     $form['proteins'] = [
       '#type' => 'fieldset',
       '#title' => t('Proteins'),
@@ -372,6 +369,7 @@ class GFF3Importer extends ChadoImporterBase {
       '#description' => t('The GFF loader will automatically create a protein feature for each transcript in the GFF file if a protein feature is missing in the GFF file. Check this box to disable this functionality. Protein features that are specifically present in the GFF will always be created.'),
       '#default_value' => 0,
     ];
+
     $form['proteins']['re_mrna'] = [
       '#type' => 'textfield',
       '#title' => t('Optional. Regular expression for the mRNA name'),
@@ -382,6 +380,7 @@ class GFF3Importer extends ChadoImporterBase {
        mRNA with a unique name finishing by -RX (e.g. SPECIES0000001-RA),
        the regular expression would be, "^(.*?)-R([A-Z]+)$". Elements surrounded by parentheses are captured as backreferences and can be used for replacement.' ),
     ];
+
     $form['proteins']['re_protein'] = [
       '#type' => 'textfield',
       '#title' => t('Optional. Replacement string for the protein name'),
@@ -396,6 +395,7 @@ class GFF3Importer extends ChadoImporterBase {
       '#collapsible' => TRUE,
       '#collapsed' => FALSE,
     ];
+
     $form['targets']['adesc'] = [
       '#markup' => t("When alignments are represented in the GFF file (e.g. such as
        alignments of cDNA sequences to a whole genome, or blast matches), they are
@@ -408,6 +408,7 @@ class GFF3Importer extends ChadoImporterBase {
        set in the GFF file using the 'target_organism' and 'target_type' attributes, or for the
        type if a more specific type name is given (e.g. cDNA_match or EST_match)."),
     ];
+
     $form['targets']['target_organism_id'] = [
       '#title' => t('Target Organism'),
       '#type' => 'select',
@@ -419,6 +420,7 @@ class GFF3Importer extends ChadoImporterBase {
         attribute in the GFF file."),
       '#options' => $organisms,
     ];
+
     $form['targets']['target_type'] = [
       '#title' => t('Target Type'),
       '#type' => 'textfield',
@@ -428,6 +430,7 @@ class GFF3Importer extends ChadoImporterBase {
        in the GFF file. This must be a valid Sequence Ontology (SO) term. If the matches in the GFF3 file
        use specific match types (e.g. cDNA_match, EST_match, etc.) then this can be left blank. "),
     ];
+
     $form['targets']['create_target'] = [
       '#type' => 'checkbox',
       '#title' => t('Create Target'),
@@ -483,16 +486,19 @@ class GFF3Importer extends ChadoImporterBase {
 
     $form_state_values = $form_state->getValues();
 
-    $organism_id = $form_state_values['organism_id'];
-    $target_organism_id = $form_state_values['target_organism_id'];
-    $target_type = trim($form_state_values['target_type']);
-    $create_target = $form_state_values['create_target'];
-    $create_organism = $form_state_values['create_organism'];
-    $refresh = 0; //$form_state['values']['refresh'];
-    $remove = 0; //$form_state['values']['remove'];
+    // UNUSED VARIABLES DETECTED BY IDE (Rish 09/12/2022)
+    // $organism_id = $form_state_values['organism_id'];
+    // $target_organism_id = $form_state_values['target_organism_id'];
+    // $target_type = trim($form_state_values['target_type']);
+    // $create_target = $form_state_values['create_target'];
+    // $create_organism = $form_state_values['create_organism'];
+    // $refresh = 0; //$form_state['values']['refresh'];
+    // $remove = 0; //$form_state['values']['remove'];
+    // $landmark_type = trim($form_state_values['landmark_type']);
+    // $alt_id_attr = trim($form_state_values['alt_id_attr']);
+
     $line_number = trim($form_state_values['line_number']);
-    $landmark_type = trim($form_state_values['landmark_type']);
-    $alt_id_attr = trim($form_state_values['alt_id_attr']);
+
     $re_mrna = trim($form_state_values['re_mrna']);
     $re_protein = trim($form_state_values['re_protein']);
 
@@ -506,8 +512,7 @@ class GFF3Importer extends ChadoImporterBase {
     }
 
     // check the regular expression to make sure it is valid
-    set_error_handler(function () {
-    }, E_WARNING);
+    set_error_handler(function () {}, E_WARNING);
     $result_re = preg_match("/" . $re_mrna . "/", NULL);
     $result = preg_replace("/" . $re_mrna . "/", $re_protein, NULL);
     restore_error_handler();
@@ -525,7 +530,6 @@ class GFF3Importer extends ChadoImporterBase {
    * @see TripalImporter::run()
    */
   public function run() {
-    $public = \Drupal::database();
     $chado = $this->getChadoConnection();
 
     $arguments = $this->arguments['run_args'];
@@ -569,7 +573,6 @@ class GFF3Importer extends ChadoImporterBase {
     // $this->feature_prop_cv = new ChadoRecord('cv');
     // $this->feature_prop_cv->setValues(['name' => 'feature_property']);
     // $num_found = $this->feature_prop_cv->find();
-
     $this->feature_prop_cv = $chado->select('cv')
     ->fields('cv')
     ->condition('name', 'feature_property')
@@ -613,7 +616,6 @@ class GFF3Importer extends ChadoImporterBase {
     // $this->organism = new ChadoRecord('organism');
     // $this->organism->setValues(['organism_id' => $this->organism_id]);
     // $num_found = $this->organism->find();
-    
     $this->organism = $chado->select('organism','o')
     ->fields('o')
     ->condition('organism_id', $this->organism_id)
@@ -853,7 +855,6 @@ class GFF3Importer extends ChadoImporterBase {
     }
 
   }
-
 
   /**
    * Load a controlled vocabulary term.
@@ -1631,10 +1632,8 @@ class GFF3Importer extends ChadoImporterBase {
    *
    */
   private function parseGFF3() {
-
     $filesize = filesize($this->gff_file);
     $this->setTotalItems($filesize);
-
 
     // Holds a unique list of cvterms for later lookup.
     $feature_cvterms = [];
@@ -1819,7 +1818,6 @@ class GFF3Importer extends ChadoImporterBase {
   private function addMissingProteins() {
     $this->setItemsHandled(0);
     $this->setTotalItems(count(array_keys($this->proteins)));
-
 
     // Second, iterate through the protein list and for any parents that
     // don't already have a protein we need to create one.
@@ -2096,7 +2094,6 @@ class GFF3Importer extends ChadoImporterBase {
 
     $fin_sql = ") as tmp (name,feature_id) where {feature}.feature_id::text=tmp.feature_id\n";
 
-
     $i = 0;
     $total = 0;
     $batch_num = 1;
@@ -2128,7 +2125,6 @@ class GFF3Importer extends ChadoImporterBase {
       }
     }
   }
-
 
   /**
    * Check if the features exist in the database.
@@ -2192,6 +2188,7 @@ class GFF3Importer extends ChadoImporterBase {
       }
     }
   }
+
   /**
    * Deletes all anciallary data about a feature so we can re-insert it.
    */
@@ -2310,6 +2307,7 @@ class GFF3Importer extends ChadoImporterBase {
       }
     }
   }
+
   /**
    *
    */
@@ -2492,6 +2490,7 @@ class GFF3Importer extends ChadoImporterBase {
       $this->setItemsHandled($j);
     }
   }
+  
   /**
    *
    */
@@ -2948,11 +2947,12 @@ class GFF3Importer extends ChadoImporterBase {
       // $this->organism_lookup[$organism_attr] = $organism->execute()->fetchObject()->organism_id;
       // $gff_feature['organism'] = $organism->execute()->fetchObject()->organism_id;
       // return $organism->getID();
-      // TODO
-      $organism->insert();
-      $this->organism_lookup[$organism_attr] = $organism->organism_id;
-      $gff_feature['organism'] = $organism->organism_id;
-      return $organism->getID();      
+      $organism_insert_id = $chado->insert('organism')->fields(
+        (array) $organism
+      )->execute();
+      $this->organism_lookup[$organism_attr] = $organism_insert_id;
+      $gff_feature['organism']  = $organism_insert_id;
+      return $organism_insert_id;
     }
     return NULL;
   }
