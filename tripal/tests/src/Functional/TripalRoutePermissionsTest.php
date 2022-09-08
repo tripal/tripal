@@ -3,6 +3,7 @@
 namespace Drupal\Tests\tripal\Functional;
 
 use Drupal\Tests\BrowserTestBase;
+use Drupal\file\Entity\File;
 use Drupal\user\Entity\Role;
 use Drupal\Core\Url;
 
@@ -382,9 +383,75 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
    * @group Tripal Data Files
    */
   public function testTripalDataFilesPages() {
-    $this->markTestIncomplete(
-      'This test has not been implemented yet.'
-    );
+    $session = $this->getSession();
+
+    $permission = 'manage tripal files';
+
+    // The users for testing.
+    $userAuthenticatedOnly = $this->drupalCreateUser();
+    $userTripalwFile = $this->drupalCreateUser([$permission]);
+    $uid = $userTripalwFile->id();
+    $userTripalwithoutFile = $this->drupalCreateUser([$permission]);
+
+    // The file for testing.
+    $uri = 'public://Файл для тестирования' . uniqid() . '.testing.txt';
+    $contents = "file_put_contents() doesn't seem to appreciate empty strings so let's put in some data.";
+    file_put_contents($uri, $contents);
+    $file = File::create([
+      'uri' => $uri,
+      'uid' => $uid,
+    ]);
+    $file->save();
+    $file_id = $file->id();
+
+    // The URLs to check.
+    $urls = [
+      'Files' => 'user/' . $uid . '/files',
+      'File Details' => 'user/' . $uid . '/files/' . $file_id . '',
+      'Renew File' => 'user/' . $uid . '/files/' . $file_id . '/renew',
+      'Download File' => 'user/' . $uid . '/files/' . $file_id . '/download',
+      'Delete File' => 'user/' . $uid . '/files/' . $file_id . '/delete',
+    ];
+
+    // First check all the URLs with no user logged in.
+    // This checks the anonymous user cannot access these pages.
+    foreach ($urls as $title => $path) {
+      $html = $this->drupalGet($path);
+      $status_code = $session->getStatusCode();
+      $this->assertEquals(403, $status_code, "The anonymous user should not be able to access this page: $title.");
+    }
+
+    // Next check all the URLs with the authenticated, unpriviledged user.
+    // This checks generic authenticated users cannot access these pages.
+    $this->drupalLogin($userAuthenticatedOnly);
+    $this->assertFalse($userAuthenticatedOnly->hasPermission($permission), "The unpriviledged user should not have the '$permission' permission.");
+    foreach ($urls as $title => $path) {
+      $html = $this->drupalGet($path);
+      $status_code = $session->getStatusCode();
+      $this->assertEquals(403, $status_code, "The unpriviledged user should not be able to access this page: $title.");
+    }
+
+    // Then check all the URLs with a priviledged user different from the one in the URLs.
+    // This checks only the user who owns the file/profile can access the pages.
+    $this->drupalLogin($userTripalwithoutFile);
+    $this->assertTrue($this->drupalUserIsLoggedIn($userTripalwithoutFile), "The unrelated priviledged user should be logged in.");
+    $this->assertTrue($userTripalwithoutFile->hasPermission($permission), "The unrelated riviledged user should have the '$permission' permission.");
+    foreach ($urls as $title => $path) {
+      $html = $this->drupalGet($path);
+      $status_code = $session->getStatusCode();
+      $this->assertEquals(403, $status_code, "The unrelated priviledged user should not be able to access this page: $title which should be at '$path'.");
+    }
+
+    // Finally check all URLs with the authenticated, priviledged user.
+    // This checks priviledged users can access these pages.
+    $this->drupalLogin($userTripalwFile);
+    $this->assertTrue($this->drupalUserIsLoggedIn($userTripalwFile), "The priviledged user who owns the file should be logged in.");
+    $this->assertTrue($userTripalwFile->hasPermission($permission), "The priviledged user who owns the file should have the '$permission' permission.");
+    foreach ($urls as $title => $path) {
+      $html = $this->drupalGet($path);
+      $status_code = $session->getStatusCode();
+      $this->assertEquals(200, $status_code, "The priviledged user who owns the file should be able to access this page: $title which should be at '$path'.");
+    }
   }
 
   /**

@@ -408,7 +408,7 @@ tripal.user_files:
 
 # File Details.
 tripal.user_files_details:
-  path: 'user/{user}/files/{file_id}'
+  path: 'user/{user}/files/{file}'
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalController::tripalUserFileDetails'
     _title: 'File Details'
@@ -416,48 +416,56 @@ tripal.user_files_details:
     parameters:
       user:
         type: entity:user
+      file:
+        type: entity:file
   requirements:
     _permission: 'manage tripal files'
     _tripal_own_content_access_check: 'TRUE'
 
 # Renew file.
 tripal.user_files_renew:
-  path: 'user/{user}/files/{file_id}/renew'
+  path: 'user/{user}/files/{file}/renew'
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalController::tripalUserFileRenew'
-    _title: 'File Renew'
+    _title: 'Renew File'
   options:
     parameters:
       user:
         type: entity:user
+      file:
+        type: entity:file
   requirements:
     _permission: 'manage tripal files'
     _tripal_own_content_access_check: 'TRUE'
 
 # Download File.
 tripal.user_files_download:
-  path: 'user/{user}/files/{file_id}/download'
+  path: 'user/{user}/files/{file}/download'
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalController::tripalUserFileDownload'
-    _title: 'File Download'
+    _title: 'Download File'
   options:
     parameters:
       user:
         type: entity:user
+      file:
+        type: entity:file
   requirements:
     _permission: 'manage tripal files'
     _tripal_own_content_access_check: 'TRUE'
 
 # Delete File.
 tripal.user_files_delete:
-  path: 'user/{user}/files/{file_id}/delete'
+  path: 'user/{user}/files/{file}/delete'
   defaults:
-    _controller: '\Drupal\tripal\Form\TripalUserFileDelete'
+    _controller: '\Drupal\tripal\Controller\TripalController::tripalUserFileDelete'
     _title: 'Delete File'
   options:
     parameters:
       user:
         type: entity:user
+      file:
+        type: entity:file
   requirements:
     _permission: 'manage tripal files'
     _tripal_own_content_access_check: 'TRUE'
