@@ -168,11 +168,6 @@ class TripalJobController extends ControllerBase{
         'url' => Url::fromUri("internal:/admin/tripal/tripal_jobs/cancel/" . $id,
             ['query' => ['destination' => Url::fromUri('internal:/admin/tripal/tripal_jobs/view/' . $id)->toString()]])
       ];
-      $links['execute'] = [
-        'title' => t('Execute this job'),
-        'url' => Url::fromUri("internal:/admin/tripal/tripal_jobs/execute/" . $id,
-            ['query' => ['destination' => Url::fromUri('internal:/admin/tripal/tripal_jobs/view/' . $id)->toString()]])
-      ];
     }
 
     // Get the submitter info.
