@@ -116,6 +116,7 @@ function tripal_expire_collections() {
   $query->fields('tc', ['collection_id']);
   $query->where("((($ctime - create_date) / 60) / 60) / 24 >= $max_days");
   $results = $query->execute();
+  $collections = [];
   while ($collection_id = $results->fetchField()) {
     $collection = new TripalEntityCollection();
     $collection->load($collection_id);
