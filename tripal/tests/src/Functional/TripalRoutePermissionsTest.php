@@ -19,7 +19,7 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
   // protected $htmlOutputEnabled = TRUE;
   protected $defaultTheme = 'stable';
 
-  protected static $modules = ['tripal', 'file'];
+  protected static $modules = ['tripal', 'file', 'field_ui'];
 
   /**
    * Test all the base Tripal admin paths.
@@ -254,27 +254,38 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
 
     // The URLs to check.
     $urls = [
-      'canonical' => 'bio_data/' . $entity_id,
-      'add-page' => 'bio_data/add',
-      'add-form' => 'bio_data/add/' . $content_type,
-      'edit-form' => 'bio_data/' . $entity_id . '/edit',
-      'delete-form' => 'bio_data/' . $entity_id . '/delete',
-      'collection' => 'admin/content/bio_data',
+      'entity-canonical' => 'bio_data/' . $entity_id,
+      'entity-add-page' => 'bio_data/add',
+      'entity-add-form' => 'bio_data/add/' . $content_type,
+      'entity-edit-form' => 'bio_data/' . $entity_id . '/edit',
+      'entity-delete-form' => 'bio_data/' . $entity_id . '/delete',
+      'entity-collection' => 'admin/content/bio_data',
       //'publish-content' => '',
       'unpublish-content' => 'admin/content/bio_data/unpublish',
+      'entitytype-add-form' => 'admin/structure/bio_data/add',
+      'entitytype-edit-form' => 'admin/structure/bio_data/manage/' . $content_type,
+      'entitytype-delete-form' => 'admin/structure/bio_data/manage/' . $content_type . '/delete',
+      'entitytype-manage-fields' => 'admin/structure/bio_data/manage/' . $content_type . '/fields',
+      'entitytype-manage-form' => 'admin/structure/bio_data/manage/' . $content_type . '/form-display',
+      'entitytype-manage-display' => 'admin/structure/bio_data/manage/' . $content_type . '/display',
+      'entitytype-collection' => 'admin/structure/bio_data',
     ];
 
     // Keys in the array are pages which that permission SHOULD be able to access.
     // It's assumed url keys not in the array should return 403 access denied
     // for that permission.
     $permissions_mapping = [
-      'access tripal content overview' => ['collection'],
+      'access tripal content overview' => ['entity-collection'],
       'publish tripal content' => ['publish-content', 'unpublish-content'],
-      'add tripal content entities' => ['add-page', 'add-form'],
-      'edit tripal content entities' => ['edit-form'],
-      'delete tripal content entities' => ['delete-form'],
-      'view tripal content entities' => ['canonical'],
-      'administer tripal content' => ['canonical', 'add-page', 'add-form', 'edit-form', 'delete-form', 'collection', 'publish-content', 'unpublish-content'],
+      'add tripal content entities' => ['entity-add-form'],
+      'edit tripal content entities' => ['entity-edit-form'],
+      'delete tripal content entities' => ['entity-delete-form'],
+      'view tripal content entities' => ['entity-canonical'],
+      'administer tripal content' => ['entity-canonical', 'entity-add-page', 'entity-add-form', 'entity-edit-form', 'entity-delete-form', 'entity-collection', 'publish-content', 'unpublish-content'],
+      'manage tripal content types' => ['entitytype-add-form', 'entitytype-edit-form', 'entitytype-delete-form', 'entitytype-collection'],
+      'administer tripal_entity fields' => ['entitytype-manage-fields'],
+      'administer tripal_entity form display' => ['entitytype-manage-form'],
+      'administer tripal_entity display' => ['entitytype-manage-display'],
     ];
 
     // Create users for the tests.

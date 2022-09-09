@@ -25,7 +25,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
  *       "delete" = "Drupal\tripal\Form\TripalEntityTypeDeleteForm"
  *     },
  *     "route_provider" = {
- *       "html" = "Drupal\tripal\TripalEntityTypeHtmlRouteProvider",
+ *       "html" = "Drupal\tripal\Routing\TripalEntityTypeHtmlRouteProvider",
  *     },
  *   },
  *   config_prefix = "bio_data",

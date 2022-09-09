@@ -156,7 +156,7 @@ entity.tripal_entity.add_page:
   options:
     _admin_route: 'TRUE'
   requirements:
-    _permission: 'add tripal content entities+administer tripal content'
+    _permission: 'administer tripal content'
 
 # tripal_unpublish_orphans_form
 tripal.content_bio_data_unpublish:
