@@ -28,8 +28,10 @@ class TripalTextTypeItem extends TripalFieldItemBase {
    */
   public static function tripalTypes($field_definition) {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
+    $settings = $field_definition->getSetting('storage_plugin_settings');
+    $value_settings = $settings['property_settings']['value'];
     $types = [
-      new TextStoragePropertyType($entity_type_id, self::$id, "value"),
+      new TextStoragePropertyType($entity_type_id, self::$id, "value", $value_settings),
     ];
     $default_types = TripalFieldItemBase::defaultTripalTypes($entity_type_id, self::$id);
     $types = array_merge($types, $default_types);

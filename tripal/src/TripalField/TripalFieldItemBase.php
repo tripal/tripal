@@ -274,7 +274,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
           'header' => TRUE,
           'width' => '20%',
         ],
-        $setting_value,
+        json_encode($setting_value),
       ];
     }
     $elements['settings_fs'] = [

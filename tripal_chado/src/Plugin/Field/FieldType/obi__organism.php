@@ -84,19 +84,46 @@ class obi__organism extends TripalFieldItemBase {
     $iftype_term = $mapping->getColumnTermId('organism', 'type_id');
     $ifname_term = $mapping->getColumnTermId('organism', 'infraspecific_name');
 
+    // Indicate the action to perform for each property.
+    $settings = $field_definition->getSetting('storage_plugin_settings');
+    $base_table = $settings['base_table'];
+    $value_settings = $settings['property_settings']['value'];
+    $label_settings = [
+      'action' => 'replace',
+      // @todo: we should probably change this to a function so that we have
+      // better control over how these labels are created. There are functions
+      // in Tripal v3 to do this.
+      'template' => "<i>[$genus_term] [$species_term]</i> [$iftype_term] [$ifname_term]",
+    ];
+    $genus_settings = [
+      'action' => 'join',
+      'path' => $base_table . '.organism_id>organism.organism_id',
+      'chado_column' => 'genus'
+    ];
+    $species_settings = [
+      'action' => 'join',
+      'path' => $base_table . '.organism_id>organism.organism_id',
+      'chado_column' => 'species'
+    ];
+    $iftype_settings = [
+      'action' => 'join',
+      'path' => $base_table . '.organism_id>organism.organism_id;organism.type_id>cvterm.cvterm_id',
+      'chado_column' => 'name',
+      'as' => 'infraspecific_type_name'
+    ];
+    $ifname_settings = [
+      'action' => 'join',
+      'path' => $base_table . '.organism_id>organism.organism_id',
+      'chado_column' => 'infraspecific_name',
+    ];
+
     // Create the property types.
-    $value = new IntStoragePropertyType($entity_type_id, self::$id, 'value');
-    $label = new VarCharStoragePropertyType($entity_type_id, self::$id, $label_term, $label_len,
-      // @todo make sure these patterns follow typical token names.
-      ['replace' => '<i>[organism_id,genus] [organism_id,species]</i> [organism_id,type_id,name] [organism_id,infraspecific_name']);
-    $genus = new VarCharStoragePropertyType($entity_type_id, self::$id, $genus_term, $genus_len,
-      ['expand' => 'organism_id,genus']);
-    $species = new VarCharStoragePropertyType($entity_type_id, self::$id, $species_term, $species_len,
-      ['expand' => 'organism_id,species']);
-    $ifname = new VarCharStoragePropertyType($entity_type_id, self::$id, $ifname_term, $ifname_len,
-      ['expand' => 'organism_id,infraspecific_name']);
-    $iftype = new IntStoragePropertyType($entity_type_id, self::$id, $iftype_term,
-      ['expand' => 'organism_id,type_id,name']);
+    $value = new IntStoragePropertyType($entity_type_id, self::$id, 'value', $value_settings);
+    $label = new VarCharStoragePropertyType($entity_type_id, self::$id, $label_term, $label_len, $label_settings);
+    $genus = new VarCharStoragePropertyType($entity_type_id, self::$id, $genus_term, $genus_len, $genus_settings);
+    $species = new VarCharStoragePropertyType($entity_type_id, self::$id, $species_term, $species_len, $species_settings);
+    $ifname = new VarCharStoragePropertyType($entity_type_id, self::$id, $ifname_term, $ifname_len, $ifname_settings);
+    $iftype = new IntStoragePropertyType($entity_type_id, self::$id, $iftype_term, $iftype_settings);
 
     // Return the list of property types.
     $types = [$value, $label, $genus, $species, $ifname, $iftype];
@@ -104,6 +131,7 @@ class obi__organism extends TripalFieldItemBase {
     $types = array_merge($types, $default_types);
     return $types;
   }
+
 
   /**
    * {@inheritdoc}

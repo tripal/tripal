@@ -1219,17 +1219,19 @@ class ChadoPreparer extends ChadoTaskBase {
           'label' => ucwords($term->getName()),
           'type' => $field_type,
           'description' => $term->getDefinition(),
-          // these are defaults that the admin can set through the UI.
           'cardinality' => $cardinality,
           'required' => $is_required,
           'storage_settings' => [
             'storage_plugin_id' => 'chado_storage',
             'storage_plugin_settings' => [
-              'chado_table' => $chado_table,
-              'chado_column' => $column,
-              // these are specific to the database.
-              'cardinality' => $cardinality,
-              'required' => $is_required,
+              'base_table' => $chado_table,
+              'property_settings' => [
+                'value' => [
+                  'action' => 'store',
+                  'chado_table' => $chado_table,
+                  'chado_column' => $column,
+                ]
+              ],
             ],
           ],
           'settings' => [
@@ -1258,6 +1260,9 @@ class ChadoPreparer extends ChadoTaskBase {
           $field['storage_settings'][$key] = $value;
         }
 
+        /**
+         * @var \Drupal\tripal\Services\TripalFieldsManager $tripal_fields
+         */
         $tripal_fields = \Drupal::service('tripal.fields');
         $tripal_fields->addBundleField($entityType->getName(), $field);
         $weight = $weight + 5;
@@ -1266,7 +1271,7 @@ class ChadoPreparer extends ChadoTaskBase {
   }
 
   /**
-   * Automatically adds complex value fields for base tables.
+   * Automatically adds the organism complex value fields for base tables.
    *
    * @param TripalEntityType $entityType
    * @param string $chado_table
@@ -1316,16 +1321,19 @@ class ChadoPreparer extends ChadoTaskBase {
           'label' => ucwords($term->getName()),
           'type' => $field_type,
           'description' => $term->getDefinition(),
-          // these are defaults that the admin can set through the UI.
           'cardinality' => 1,
           'required' => $is_required,
           'storage_settings' => [
             'storage_plugin_id' => 'chado_storage',
             'storage_plugin_settings' => [
-             'chado_table' => $chado_table,
-             'chado_column' => $org_id_col,
-             'cardinality' => 1,
-             'required' => $is_required,
+              'base_table' => $chado_table,
+              'property_settings' => [
+                'value' => [
+                  'action' => 'store',
+                  'chado_table' => $chado_table,
+                  'chado_column' => $org_id_col,
+                ],
+              ],
             ],
           ],
           'settings' => [
@@ -1398,16 +1406,19 @@ class ChadoPreparer extends ChadoTaskBase {
           'label' => ucwords($term->getName()),
           'type' => $field_type,
           'description' => $term->getDefinition(),
-          // these are defaults that the admin can set through the UI.
           'cardinality' => 1,
           'required' => $is_required,
           'storage_settings' => [
             'storage_plugin_id' => 'chado_storage',
             'storage_plugin_settings' => [
-              'chado_table' => $chado_table,
-              'chado_column' => 'type_id',
-              'cardinality' => 1,
-              'required' => $is_required,
+              'base_table' => $chado_table,
+              'property_settings' => [
+                'value' => [
+                  'action' => 'store',
+                  'chado_table' => $chado_table,
+                  'chado_column' => 'type_id',
+                ],
+              ],
             ],
           ],
           'settings' => [

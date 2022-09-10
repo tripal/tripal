@@ -72,7 +72,15 @@ class TripalFieldsManager {
     $default_storage_settings = $field_type_def['class']::defaultStorageSettings();
     $new_defs['storage_settings'] = [];
     $new_defs['storage_settings']['storage_plugin_id'] = '';
-    $new_defs['storage_settings']['storage_plugin_settings'] = [];
+    $new_defs['storage_settings']['storage_plugin_settings'] = [
+      // The properties should be specific to the storage back-end so no
+      // defaults are set.
+      'property_settings' => [],
+      // Copy the cardinality and required values for Drupal into the storage
+      // settings for the Tripal field.
+      'cardinality' => $new_defs['cardinality'],
+      'required' => $new_defs['required']
+    ];
     foreach ($default_storage_settings as $setting_name => $value) {
       $new_defs['storage_settings'][$setting_name] = $value;
     }
@@ -201,10 +209,9 @@ class TripalFieldsManager {
    *     not set then defaults to False.
    *   - cardinality: (int) Set to -1 for unlimited or any number.
    *   - storage_settings: (array) An array of settings specific to storage
-   *     of the the field by the storage back-end. It must contain the following
-   *     keys:
+   *     by the storage back-end. It must contain the following keys:
    *     - storage_plugin_id: the name of the storage plugin
-   *     (e.g. 'chado_storage').
+   *       (e.g. 'chado_storage').
    *     - storage_plugin_setings: an array of any settings that the storage
    *       plugin expects for the field..
    *   - settings: (array) Any other settings needed for the field. Every
@@ -247,8 +254,8 @@ class TripalFieldsManager {
    *     'max_length' => 255,
    *     'storage_plugin_id' => 'chado_storage',
    *     'storage_plugin_settings' => [
-   *       'chado_table' => 'organism',
-   *       'chado_column' => 'species'
+   *       // This setting is specific to the Chado Storage Backend.
+   *       'value' => ['store' => 'organism.species']
    *     ],
    *   ],
    *   'settings' => [
