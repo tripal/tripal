@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tripal\Functional;
+namespace Drupal\Tests\tripal\Functional\Entity;
 
 use Drupal\Tests\BrowserTestBase;
 use Drupal\Core\Url;
@@ -18,8 +18,6 @@ class TripalContentTest extends BrowserTestBase {
 
   /**
    * Basic tests for Tripal Content Types.
-   *
-   * @group tripal_content
    */
   public function testTripalEmptyContentTypes() {
     $assert = $this->assertSession();
