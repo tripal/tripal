@@ -915,6 +915,7 @@ class GFF3Importer extends ChadoImporterBase {
         'db_name' => 'local',
         'is_relationship' => FALSE,
       ];
+      // @todo convert api call
       $cvterm = (object) chado_insert_cvterm($term, ['update_existing' => FALSE]);
       $cvterm_match = $cvterm;
     }
@@ -2819,6 +2820,12 @@ class GFF3Importer extends ChadoImporterBase {
       // If the feature is not skipped
       if (!$feature['skipped'] and $feature['derives_from']) {
         $object_id = $this->features[$feature['derives_from']]['feature_id'];
+        if (!$object_id) {
+          $this->logger->warning("Skipping 'derives_from' relationship for feature @feature_name. " . 
+            "Could not find the derives_from feature: @derives_from.", 
+            ['@feature_name' => $feature['uniquename'], '@derives_from' => $feature['derives_from']]);
+          continue;
+        }
         $sql .= "(:subject_id_$i, :object_id_$i, :type_id_$i, 0),\n";
         $args[":subject_id_$i"] = $feature_id;
         $args[":object_id_$i"] = $object_id;
