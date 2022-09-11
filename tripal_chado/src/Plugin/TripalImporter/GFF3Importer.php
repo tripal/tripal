@@ -885,7 +885,7 @@ class GFF3Importer extends ChadoImporterBase {
     }
 
     $sel_cvterm_sql = "
-      SELECT CVT.cvterm_id
+      SELECT CVT.cvterm_id, CVTS.synonym
       FROM {cvterm} CVT
         LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
       WHERE CVT.cv_id = :cv_id and
@@ -901,7 +901,7 @@ class GFF3Importer extends ChadoImporterBase {
       ':name' => $type,
       ':synonym' => $type,
     ]);
-    $cvterm_id = $result->fetchField();
+    $cvterm_id = $result->fetchObject();
 
     // If the term couldn't be found and it's a property term then insert it
     // as a local term.
@@ -919,12 +919,14 @@ class GFF3Importer extends ChadoImporterBase {
     }
 
     if ($is_prop_type) {
-      $this->featureprop_cvterm_lookup[strtolower($cvterm->name)] = $cvterm_id;
-      $this->featureprop_cvterm_lookup[strtolower($type)] = $cvterm_id;
+      $this->featureprop_cvterm_lookup[strtolower($type)] = $cvterm_id->cvterm_id;
+      $this->featureprop_cvterm_lookup[strtolower($cvterm->synonym)] = $cvterm_id->cvterm_id;
+      // $this->featureprop_cvterm_lookup[strtolower($type)] = $cvterm_id->cvterm_id;
     }
     else {
-      $this->feature_cvterm_lookup[strtolower($cvterm->name)] = $cvterm_id;
-      $this->feature_cvterm_lookup[strtolower($type)] = $cvterm_id;
+      $this->feature_cvterm_lookup[strtolower($type)] = $cvterm_id->cvterm_id;
+      $this->feature_cvterm_lookup[strtolower($cvterm_id->synonym)] = $cvterm_id->cvterm_id;
+      // $this->feature_cvterm_lookup[strtolower($type)] = $cvterm_id->cvterm_id;
     }
     return $cvterm_id;
   }
