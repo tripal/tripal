@@ -901,13 +901,12 @@ class GFF3Importer extends ChadoImporterBase {
       ':name' => $type,
       ':synonym' => $type,
     ]);
-    $cvterm_id = $result->fetchObject();
-    print_r($cvterm_id);
+    $cvterm_match = $result->fetchObject();
     
 
     // If the term couldn't be found and it's a property term then insert it
     // as a local term.
-    if (!$cvterm_id) {
+    if (!$cvterm_match) {
       $term = [
         'id' => "local:$type",
         'name' => $type,
@@ -917,24 +916,18 @@ class GFF3Importer extends ChadoImporterBase {
         'is_relationship' => FALSE,
       ];
       $cvterm = (object) chado_insert_cvterm($term, ['update_existing' => FALSE]);
-      // $cvterm_id = $cvterm->cvterm_id;
-      $cvterm_id = $cvterm;
+      $cvterm_match = $cvterm;
     }
 
-    print_r('L 924 is_prop_type:' . $is_prop_type . "\n");
     if ($is_prop_type) {
-      $this->featureprop_cvterm_lookup[strtolower($type)] = $cvterm_id->cvterm_id;
-      $this->featureprop_cvterm_lookup[strtolower($cvterm_id->name)] = $cvterm_id->cvterm_id;
-      // $this->featureprop_cvterm_lookup[strtolower($type)] = $cvterm_id->cvterm_id;
+      $this->featureprop_cvterm_lookup[strtolower($type)] = $cvterm_match->cvterm_id;
+      $this->featureprop_cvterm_lookup[strtolower($cvterm_match->name)] = $cvterm_match->cvterm_id;
     }
     else {
-      print_r("Added to feature_cvterm_lookup array: " . $type . " and " . $cvterm_id->synonym . "\n");
-      $this->feature_cvterm_lookup[strtolower($type)] = $cvterm_id->cvterm_id;
-      $this->feature_cvterm_lookup[strtolower($cvterm_id->name)] = $cvterm_id->cvterm_id;
-      // $this->feature_cvterm_lookup[strtolower($type)] = $cvterm_id->cvterm_id;
+      $this->feature_cvterm_lookup[strtolower($type)] = $cvterm_match->cvterm_id;
+      $this->feature_cvterm_lookup[strtolower($cvterm_match->name)] = $cvterm_match->cvterm_id;
     }
-    print_r('cvterm_id:' . $cvterm_id->cvterm_id . "\n");
-    return $cvterm_id->cvterm_id;
+    return $cvterm_match->cvterm_id;
   }
 
   /**
