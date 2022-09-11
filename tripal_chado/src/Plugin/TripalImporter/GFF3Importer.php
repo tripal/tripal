@@ -885,7 +885,7 @@ class GFF3Importer extends ChadoImporterBase {
     }
 
     $sel_cvterm_sql = "
-      SELECT CVT.cvterm_id, CVTS.synonym
+      SELECT CVT.cvterm_id, CVT.name, CVTS.synonym
       FROM {cvterm} CVT
         LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
       WHERE CVT.cv_id = :cv_id and
@@ -902,6 +902,8 @@ class GFF3Importer extends ChadoImporterBase {
       ':synonym' => $type,
     ]);
     $cvterm_id = $result->fetchObject();
+    print_r($cvterm_id);
+    
 
     // If the term couldn't be found and it's a property term then insert it
     // as a local term.
@@ -915,20 +917,24 @@ class GFF3Importer extends ChadoImporterBase {
         'is_relationship' => FALSE,
       ];
       $cvterm = (object) chado_insert_cvterm($term, ['update_existing' => FALSE]);
-      $cvterm_id = $cvterm->cvterm_id;
+      // $cvterm_id = $cvterm->cvterm_id;
+      $cvterm_id = $cvterm;
     }
 
+    print_r('L 924 is_prop_type:' . $is_prop_type . "\n");
     if ($is_prop_type) {
       $this->featureprop_cvterm_lookup[strtolower($type)] = $cvterm_id->cvterm_id;
-      $this->featureprop_cvterm_lookup[strtolower($cvterm->synonym)] = $cvterm_id->cvterm_id;
+      $this->featureprop_cvterm_lookup[strtolower($cvterm_id->name)] = $cvterm_id->cvterm_id;
       // $this->featureprop_cvterm_lookup[strtolower($type)] = $cvterm_id->cvterm_id;
     }
     else {
+      print_r("Added to feature_cvterm_lookup array: " . $type . " and " . $cvterm_id->synonym . "\n");
       $this->feature_cvterm_lookup[strtolower($type)] = $cvterm_id->cvterm_id;
-      $this->feature_cvterm_lookup[strtolower($cvterm_id->synonym)] = $cvterm_id->cvterm_id;
+      $this->feature_cvterm_lookup[strtolower($cvterm_id->name)] = $cvterm_id->cvterm_id;
       // $this->feature_cvterm_lookup[strtolower($type)] = $cvterm_id->cvterm_id;
     }
-    return $cvterm_id;
+    print_r('cvterm_id:' . $cvterm_id->cvterm_id . "\n");
+    return $cvterm_id->cvterm_id;
   }
 
   /**
@@ -2048,7 +2054,10 @@ class GFF3Importer extends ChadoImporterBase {
       // Only do an insert if this feature doesn't already exist in the databse.
       if (!$feature_id and !$feature['skipped']) {
         $residues = '';
+        
         $type_id = $this->feature_cvterm_lookup[$feature['type']];
+        print_r('type_id insertFeatures:' . $type_id . "\n");
+        print_r('for feature[type]:' . $feature['type'] . "\n\n");
         $sql .= "(:uniquename_$i, :name_$i, :type_id_$i, :organism_id_$i, :residues_$i, " .
                " :md5checksum_$i, :seqlen_$i, FALSE, FALSE),\n";
         $args[":uniquename_$i"] = $uniquename;
