@@ -1361,6 +1361,7 @@ class ChadoPreparer extends ChadoTaskBase {
       }
     }
   }
+
   /**
    * Automatically adds complex value fields for base tables.
    *
