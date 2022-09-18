@@ -35,7 +35,9 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
   public static function defaultStorageSettings() {
     $settings = [
       'storage_plugin_id' => '',
-      'storage_plugin_settings' => [],
+      'storage_plugin_settings' => [
+        'property_settings' => [],
+      ],
     ];
     return $settings + parent::defaultStorageSettings();
   }
@@ -176,9 +178,22 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $vocabulary = NULL;
     $termIdSpace = $this->getSetting('termIdSpace');
     $termAccession = $this->getSetting('termAccession');
+
+    $default_vocabulary_term = '';
+    $vocabulary_term = $form_state->getValue(['settings', 'field_term_fs', 'vocabulary_term']);
+    if ($vocabulary_term) {
+      $default_vocabulary_term = $vocabulary_term;
+    }
+    else {
+      $vocabulary_term = $form_state->getUserInput(['settings', 'field_term_fs', 'vocabulary_term']);
+      $default_vocabulary_term = $vocabulary_term;
+    }
+
     if (!$termIdSpace or !$termAccession) {
-      \Drupal::messenger()->addWarning(t("The field is missing an assigned controlled vocabulary term. Please set one",
-          ['@idSpace' => $termIdSpace]));
+      if (!$default_vocabulary_term) {
+        \Drupal::messenger()->addWarning(t("The field is missing an assigned controlled vocabulary term. Please set one",
+            ['@idSpace' => $termIdSpace]));
+      }
       $is_open = TRUE;
     }
     if ($termIdSpace) {
@@ -196,13 +211,14 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
               ['@term' => $termIdSpace . ':' . $termAccession]));
           $is_open = TRUE;
         }
-        if (!$term) {
+        else {
           $vocabulary = $term->getVocabularyObject();
           if (!$vocabulary) {
             \Drupal::messenger()->addWarning(t("The term assigned to this field (@term) does not specify a vocabulary.",
                 ['@term' => $termIdSpace . ':' . $termAccession]));
             $is_open = TRUE;
           }
+          $default_vocabulary_term = !$default_vocabulary_term ? $term->getName()  . ' (' . $term->getIdSpace() . ':' . $term->getAccession() . ')' : '';
         }
       }
     }
@@ -219,22 +235,52 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       '#open' => $is_open,
     ];
 
+    $element_title = "Set the Term";
     if ($term and $idSpace and $vocabulary) {
       $this->buildVocabularyTermTable($elements, $term, $idSpace, $vocabulary);
+      $element_title = "Change the Term";
     }
 
     $elements['field_term_fs']["vocabulary_term"] = [
       "#type" => "textfield",
-      "#title" => $this->t("Set the Term"),
+      "#title" => $this->t($element_title),
       "#required" => TRUE,
-      "#description" => $this->t("Enter a vocabulary term name. A set of matching candidates will be provided to choose from."),
-      '#default_value' => $term ?  $term->getName() : '',
+      "#description" => $this->t("Enter a vocabulary term name. A set of matching " .
+        "candidates will be provided to choose from. You may find the multiple matching terms " .
+        "from different vocabularies. The full accession for each term is provided " .
+        "to help choose. Only the top 10 best matches are shown at a time."),
+      '#default_value' => $default_vocabulary_term,
       '#autocomplete_route_name' => 'tripal.cvterm_autocomplete',
-      '#autocomplete_route_parameters' => array('count' => 5),
+      '#autocomplete_route_parameters' => array('count' => 10),
+      '#element_validate' => [[static::class, 'fieldSettingsFormValidate']],
     ];
-
     return $elements + parent::fieldSettingsForm($form, $form_state);
   }
+
+  /**
+   * Form element validation handler
+   *
+   * @param array $form
+   *   The form where the settings form is being included in.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state of the (entire) configuration form.
+   */
+  public static function fieldSettingsFormValidate(array $form, FormStateInterface $form_state) {
+    $settings = $form_state->getValue('settings');
+    $term_str = $settings['field_term_fs']['vocabulary_term'];
+    $matches = [];
+    if (preg_match('/(.+?)\((.+?):(.+?)\)/', $term_str, $matches)) {
+      $idSpace_name = $matches[2];
+      $accession = $matches[3];
+      $form_state->setValue(['settings','termIdSpace'], $idSpace_name);
+      $form_state->setValue(['settings','termAccession'], $accession);
+    }
+    else {
+      $form_state->setErrorByName('field_term_fs][vocabulary_term',
+          'Please provide a valid term. It must have the ID space and accession in parenthesis.');
+    }
+  }
+
 
   /**
    * {@inheritdoc}
@@ -316,6 +362,12 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       "#disabled" => TRUE
     ];
 
+//     $storage_settings = $this->getSetting('storage_plugin_settings');
+//     $elements['storage_plugin_settings']['property_settings'] = [
+//       '#type' => "value",
+//       '#value' => array_key_exists('property_settings', $storage_settings) ? $storage_settings['property_settings'] : [],
+//     ];
+
 
     // Construct a table for the vocabulary information.
     $headers = ['Storage Property', 'Value'];
@@ -395,5 +447,22 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       }
       $entity->get($field_name)->get($delta)->get($prop_key)->setValue('', False);
     }
+  }
+
+  /**
+   * Santizies a property key.
+   *
+   * Property keys are often controlled vocabulary IDs, which is the IdSpace
+   * and accession separated by a colon. The colon is not supported by the
+   * storage backend and must be converted to an underscore. This
+   * function performs that task
+   *
+   * @param string $key
+   *
+   * @return string
+   *   A santizied string.
+   */
+  public function sanitizeKey($key) {
+    return preg_replace('/[^\w]/', '_', $key);
   }
 }

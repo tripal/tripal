@@ -966,7 +966,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
       $default_vocab = $cache->data;
     }
     else {
-      // If we couldn't find the cache'd vocabulary name then
+      // If we couldn't find the cached vocabulary name then
       // we should do a lookup. The cache must have been cleared.
       // We'll pick the first entered cv record as the default.
       $chado = \Drupal::service('tripal_chado.database');

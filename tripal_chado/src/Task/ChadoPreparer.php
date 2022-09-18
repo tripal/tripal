@@ -1391,7 +1391,8 @@ class ChadoPreparer extends ChadoTaskBase {
         $term = $idSpace->getTerm($accession);
 
         // Use the same method as Tripal v3 for creating field names.
-        $field_name = strtolower($idSpace_name . '__' . preg_replace('/[^\w]/', '_', $term->getName()));
+
+        $field_name = strtolower($entityType->getName() . '_' . $idSpace_name . '_' . preg_replace('/[^\w]/', '_', $accession));
         $field_name = substr($field_name, 0, 32);
         $field_type = 'tripal_integer_type';
 

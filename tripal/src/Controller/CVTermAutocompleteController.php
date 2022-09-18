@@ -18,16 +18,17 @@ class CVTermAutocompleteController extends ControllerBase {
 
     $idmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
     $idSpaces = $idmanager->getCollectionList();
-    foreach ($idSpaces as $name) {
-      $idSpace = $idmanager->loadCollection($name);
+    foreach ($idSpaces as $idSpace_name) {
+      $idSpace = $idmanager->loadCollection($idSpace_name);
       $terms = $idSpace->getTerms($string);
       foreach ($terms as $term_name => $term_ids) {
         foreach ($term_ids as $term_id => $term) {
-          $response[] = $term_name . ' (' . $term->getIdSpace() . ':' . $term->getAccession() . ')';
+          $response[] =  $term_name . ' (' . $idSpace_name . ':' . $term->getAccession() . ')';
         }
       }
     }
     sort($response);
+    $response = array_slice($response, 0, $count);
 
     return new JsonResponse($response);
   }

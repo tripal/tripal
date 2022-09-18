@@ -76,7 +76,7 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    * @return bool
    *   True if successful. False otherwise.
    */
-  public function updateValues($values) : bool;
+  public function updateValues(&$values) : bool;
 
   /**
    * Loads the values of the field data store.

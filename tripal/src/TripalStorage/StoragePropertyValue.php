@@ -27,7 +27,10 @@ class StoragePropertyValue extends StoragePropertyBase {
    * @param ? $value
    *   An optional initial value for this storage property value.
    */
-  public function __construct($entityType,$fieldType,$key,$entityId,$value = Null) {
+  public function __construct($entityType,$fieldType,$key,$entityId,$value = NUll) {
+    if (!$key) {
+      throw new \Exception('Cannot create a StoragePropertyValue object without a key.');
+    }
     parent::__construct($entityType,$fieldType,$key);
     $this->entityId = $entityId;
     $this->value = $value;

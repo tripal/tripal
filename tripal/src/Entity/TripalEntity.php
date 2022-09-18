@@ -520,32 +520,37 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           throw new \Exception("Cannot insert the entity. See the recent logs for more details.");
         }
         $values[$tsid] = $tsid_values;
-
-        // Insert Step 2: Update the record IDs in the entity.
-        foreach ($fields as $field_name => $items) {
-          foreach($items as $item) {
-
-            // If it is not a TripalField then skip it.
-            if (! $item instanceof TripalFieldItemInterface) {
-              continue;
-            }
-
-            $delta = $item->getName();
-            $tsid = $item->tripalStorageId();
-
-            if (!array_key_exists('record_id', $values[$tsid][$field_name][$delta])) {
-              continue;
-            }
-            $properties = [];
-            $properties[] = $values[$tsid][$field_name][$delta]['record_id']['value'];
-            $item->tripalLoad($item, $field_name, $properties, $this);
-          }
-        }
       }
       else {
         $success = $tripal_storages[$tsid]->updateValues($tsid_values);
         if (!$success) {
           throw new \Exception("Cannot update the entity. See the recent logs for more details.");
+        }
+      }
+    }
+    // Next update the record IDs in the entity.
+    foreach ($fields as $field_name => $items) {
+      foreach($items as $item) {
+
+        // If it is not a TripalField then skip it.
+        if (! $item instanceof TripalFieldItemInterface) {
+          continue;
+        }
+
+        $delta = $item->getName();
+        $tsid = $item->tripalStorageId();
+
+        if (!array_key_exists('record_id', $values[$tsid][$field_name][$delta])) {
+          continue;
+        }
+        $record_id = $values[$tsid][$field_name][$delta]['record_id']['value'];
+        if ($record_id == -1) {
+
+        }
+        else {
+          $properties = [];
+          $properties[] = $record_id;
+          $item->tripalLoad($item, $field_name, $properties, $this);
         }
       }
     }
