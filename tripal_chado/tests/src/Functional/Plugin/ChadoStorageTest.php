@@ -30,8 +30,26 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $chado_storage = $storage_manager->createInstance('chado_storage');
 
     // All Chado storage testing requires an entity.
-    // Luckily we do not need to fully mock one.
-    // Specifically we are using a "Gene" entity type (bundle).
+    // -- Content Type.
+    $values = [];
+    $values['id'] = random_int(1,500);
+    $values['name'] = 'bio_data_' . $values['id'];
+    $values['label'] = 'Freddyopolis-' . uniqid();
+    $values['category'] = 'Testing';
+    $content_type_obj = \Drupal\tripal\Entity\TripalEntityType::create($values);
+    $this->assertIsObject($content_type_obj, "Unable to create a test content type.");
+    $content_type_obj->save();
+    $entity_type = $values['name'];
+    // -- Content Entity.
+    $values = [];
+    $values['title'] = 'Mini Fredicity ' . uniqid();
+    $values['type'] = $content_type;
+    $entity = \Drupal\tripal\Entity\TripalEntity::create($values);
+    $this->assertIsObject($content_type_obj, "Unable to create a test entity.");
+    $entity->save();
+    $entity_id = $entity->id();
+
+    // Specifically we are mocking our example based on a "Gene" entity type (bundle).
     // Stored in the feature Chado table:
     //    name: test_gene_name, uniquename: test_gene_uname, type: gene (SO:0000704)
     //    organism) genus: Oryza, species: sativa, common_name: rice,
@@ -42,8 +60,6 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     //      - type: note (local:note), value: "Note 2", rank: 2
     //      - type: note (local:note), value: "Note 3", rank: 1
     // The Gene entity type has 3 fields: Gene Name, Notes, Organism.
-    $entity_id = 1;
-    $entity_type = 'bio_data_8';
     // Add the organism record.
     $type_term = $this->addTaxRankSubGroupCVTerm();
     $organism = $this->addOryzaSativaRecord($type_term);
