@@ -63,7 +63,6 @@ class chado_linker__prop extends ChadoFieldItemBase {
 
     // Indicate the action to perform for each property.
     $value_settings = $settings['property_settings']['value'];
-    $value_settings['delete_on_empty'] = TRUE;
     $rec_id_settings = [
       'chado_table' => $chado_table,
       'chado_column' => $pk_col,

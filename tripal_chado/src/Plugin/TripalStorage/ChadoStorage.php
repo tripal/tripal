@@ -114,46 +114,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
   }
 
   /**
-   * A helper function for deleting records.
-   */
-  private function deleteRecords(&$records) {
-    $chado = \Drupal::service('tripal_chado.database');
-    $schema = $chado->schema();
-
-    foreach ($records as $chado_table => $deltas) {
-      foreach ($deltas as $delta => $record) {
-
-        if (!array_key_exists('conditions', $record)) {
-          throw new \Exception($this->t('Cannot delete the record in the Chado "@table" table due to missing conditions. Record: @record',
-              ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
-        }
-
-        $delete = $chado->delete($chado_table);
-        $delete->fields($record['fields']);
-        foreach ($record['conditions'] as $chado_column => $value) {
-          if (!empty($value)) {
-            $delete->condition($chado_column, $value);
-          }
-        }
-        $rows_affected = $delete->execute();
-        if ($rows_affected == 0) {
-          throw new \Exception($this->t('Failed to delete record in the Chado "@table" table. Record: @record',
-              ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
-        }
-        if ($rows_affected > 1) {
-          throw new \Exception($this->t('Incorrectly tried to delete multiple records in the Chado "@table" table. Record: @record',
-              ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
-        }
-
-        // Update the record array to include the record id.
-        $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
-        $pkey = $table_def['primary key'];
-        $records[$chado_table][$delta]['conditions'][$pkey] = -1;
-      }
-    }
-  }
-
-  /**
    * A helper function for inserting records.
    */
   private function insertRecords(&$records) {
@@ -223,14 +183,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           if (!array_key_exists('conditions', $record)) {
             throw new \Exception($this->t('Cannot update record in the Chado "@table" table due to missing conditions. Record: @record',
               ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
-          }
-
-          if (array_key_exists('delete_me', $record)) {
-//             $delete_records = [];
-//             $delete_records[$chado_table][$delta] = $record;
-//             $this->deleteRecords($delete_records);
-//             $this->setRecordIds($values, $delete_records);
-//             continue;
           }
 
           $update = $chado->update($chado_table);
@@ -622,15 +574,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             else {
               $records[$chado_table][$delta]['fields'][$chado_column] = $value;
             }
-
-            // When the record is a linked record we allowe deleting of the
-            // linked recrod when a specific property is empty.
-            $delete_on_empty = array_key_exists('delete_on_empty', $prop_storage_settings) ? $prop_storage_settings['delete_on_empty'] : FALSE;
-            if ($chado_table != $base_table and $delete_on_empty and empty($value)) {
-              $records[$chado_table][$delta]['delete_me'] = TRUE;
-            }
-
-
           }
           if ($action == 'join') {
             $path = $prop_storage_settings['path'];
