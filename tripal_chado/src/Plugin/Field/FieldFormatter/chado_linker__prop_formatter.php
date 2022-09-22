@@ -27,8 +27,6 @@ class chado_linker__prop_formatter extends TripalFormatterBase {
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = [];
 
-
-
     $list = [];
     foreach($items as $delta => $item) {
       $value = $item->get('value')->getString();
@@ -41,7 +39,7 @@ class chado_linker__prop_formatter extends TripalFormatterBase {
 
     // Also need to make sure to not return markup if the field is empty.
     if (empty($list)) {
-      return;
+      return $elements;
     }
 
     // If more than one value has been found display all values in an unordered
@@ -53,14 +51,13 @@ class chado_linker__prop_formatter extends TripalFormatterBase {
         '#items' => $list,
         '#wrapper_attributes' => ['class' => 'container'],
       ];
-    }
-    else {
-      $elements[0] = [
-        '#type' => 'markup',
-        "#markup" => $list[0]
-      ];
+      return $elements;
     }
 
+    $elements[0] = [
+      '#type' => 'markup',
+      "#markup" => $list[0]
+    ];
     return $elements;
   }
 }

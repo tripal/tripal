@@ -25,6 +25,9 @@ class chado_linker__prop_widget extends TripalWidgetBase {
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
 
+    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
+    $mapping = $storage->load('core_mapping');
+
     // Get the field settings.
     $field_definition = $items[$delta]->getFieldDefinition();
     $field_settings = $field_definition->getSettings();
@@ -52,16 +55,17 @@ class chado_linker__prop_widget extends TripalWidgetBase {
 
     // Set the property type_id value.  The user shouldn't edit this. It's
     // built into the field.
-    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
-    $mapping = $storage->load('core_mapping');
-    $type_term = $this->sanitizeKey($mapping->getColumnTermId($chado_table, 'type_id'));
-    $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    $idSpace = $idSpace_manager->loadCollection($field_settings['termIdSpace']);
-    $term = $idSpace->getTerm($field_settings['termAccession']);
-    $element[$type_term] = [
-      '#type' => 'value',
-      '#value' => $term->getInternalId(),
-    ];
+    if ($field_settings['termIdSpace'] and $field_settings['termAccession']) {
+      $type_term = $this->sanitizeKey($mapping->getColumnTermId($chado_table, 'type_id'));
+      $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+      $idSpace = $idSpace_manager->loadCollection($field_settings['termIdSpace']);
+
+      $term = $idSpace->getTerm($field_settings['termAccession']);
+      $element[$type_term] = [
+        '#type' => 'value',
+        '#value' => $term->getInternalId(),
+      ];
+    }
 
     // @todo: set the rank according to the delta, which can change if the
     // user moves the values  around.
