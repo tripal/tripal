@@ -11,9 +11,27 @@ tripal.bio_data.*:
     label:
       type: label
       label: 'Label'
-    term_id:
-      type: integer
-      label: 'Term ID'
+    termIdSpace:
+      type: string
+      label: 'Term ID Space'
+    termAccession:
+      type: string
+      label: 'Term Accession'
     help_text:
       type: text
       label: 'Help Text'
+    category:
+      type: string
+      label: 'Category'
+    title_format:
+      type: string
+      label: 'Title Format'
+    url_format:
+      type: string
+      label: 'URL Format'
+    hide_empty_field:
+      type: boolean
+      label: 'Hide Empty Fields'
+    ajax_field:
+      type: boolean
+      label: 'AJAX Field Loading'
