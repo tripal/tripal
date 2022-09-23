@@ -450,7 +450,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             continue;
           }
 
-          // @debug ksm($info['definition'], "$key: DEFINITION");
+          // @debug ksm($info['definition']); //, "$key: DEFINITION");
           // @debug ksm($info['type'], "$key: TYPE");
           // @debug ksm($info['value'], "$key: VALUES");
           $definition = $info['definition'];
