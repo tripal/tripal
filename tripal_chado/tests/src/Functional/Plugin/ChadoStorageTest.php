@@ -20,6 +20,11 @@ use Drupal\Tests\tripal_chado\Functional\MockClass\FieldConfigMock;
 class ChadoStorageTest extends ChadoTestBrowserBase {
 
   /**
+   * {@inheritdoc}
+   */
+  protected static $modules = ['tripal', 'field_ui'];
+
+  /**
    * Tests the ChadoIdSpace Class
    *
    * @Depends Drupal\tripal_chado\Task\ChadoInstallerTest::testPerformTaskInstaller
@@ -30,24 +35,10 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $chado_storage = $storage_manager->createInstance('chado_storage');
 
     // All Chado storage testing requires an entity.
-    // -- Content Type.
-    $values = [];
-    $values['id'] = random_int(1,500);
-    $values['name'] = 'bio_data_' . $values['id'];
-    $values['label'] = 'Freddyopolis-' . uniqid();
-    $values['category'] = 'Testing';
-    $content_type_obj = \Drupal\tripal\Entity\TripalEntityType::create($values);
-    $this->assertIsObject($content_type_obj, "Unable to create a test content type.");
-    $content_type_obj->save();
-    $entity_type = $values['name'];
-    // -- Content Entity.
-    $values = [];
-    $values['title'] = 'Mini Fredicity ' . uniqid();
-    $values['type'] = $content_type;
-    $entity = \Drupal\tripal\Entity\TripalEntity::create($values);
-    $this->assertIsObject($content_type_obj, "Unable to create a test entity.");
-    $entity->save();
-    $entity_id = $entity->id();
+    $content_entity = $this->createTripalContent();
+    $content_entity_id = $content_entity->id();
+    $content_type = $content_entity->getType();
+    $content_type_obj = \Drupal\tripal\Entity\TripalEntityType::load($content_type);
 
     // Specifically we are mocking our example based on a "Gene" entity type (bundle).
     // Stored in the feature Chado table:
@@ -84,41 +75,73 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     // -- Single value + single property field
     // Stored in feature.name; Term: schema:name.
     // Value: test_gene_name
-    $field_type  = 'schema__name';
+    $field_name  = 'schema__name';
+    $field_type = 'tripal_string_type';
     $field_term_string = 'schema:name';
     $chado_table = 'feature';
     $chado_column = 'name';
+    $cardinality = 1;
+    $is_required = TRUE;
+    $term = $this->createTripalTerm([
+      'vocab_name' => 'Schema',
+      'id_space_name' => 'schema',
+      'term' => [
+        'accession' => 'name',
+        'name' => 'name',
+      ],
+    ]);
 
     // Testing the Property Type + Value class creation
     // + prepping for future tests.
     // NOTE: You need to set the value = feature_id when creating the record_id StoragePropertyValue.
-    $recordId_propertyType = new ChadoIntStoragePropertyType($entity_type, $field_type, 'record_id');
-    $recordId_propertyValue = new StoragePropertyValue($entity_type, $field_type, 'record_id', $entity_id, $feature_id);
-    $value_propertyType = new ChadoVarCharStoragePropertyType($entity_type, $field_type, 'value');
-    $value_propertyValue = new StoragePropertyValue($entity_type, $field_type, 'value', $entity_id);
-    $this->assertIsObject($recordId_propertyType, "Unable to create record_id ChadoIntStoragePropertyType: $field_type, record_id");
-    $this->assertIsObject($recordId_propertyValue, "Unable to create record_id StoragePropertyValue: $field_type, record_id, $entity_id");
-    $this->assertIsObject($value_propertyType, "Unable to create value ChadoIntStoragePropertyType: $field_type, value");
-    $this->assertIsObject($value_propertyValue, "Unable to create value StoragePropertyValue: $field_type, value, $entity_id");
+    $recordId_propertyType = new ChadoIntStoragePropertyType($content_type, $field_name, 'record_id');
+    $recordId_propertyValue = new StoragePropertyValue($content_type, $field_name, 'record_id', $content_entity_id, $feature_id);
+    $value_propertyType = new ChadoVarCharStoragePropertyType($content_type, $field_name, 'value');
+    $value_propertyValue = new StoragePropertyValue($content_type, $field_name, 'value', $content_entity_id);
+    $this->assertIsObject($recordId_propertyType, "Unable to create record_id ChadoIntStoragePropertyType: $field_name, record_id");
+    $this->assertIsObject($recordId_propertyValue, "Unable to create record_id StoragePropertyValue: $field_name, record_id, $content_entity_id");
+    $this->assertIsObject($value_propertyType, "Unable to create value ChadoIntStoragePropertyType: $field_name, value");
+    $this->assertIsObject($value_propertyValue, "Unable to create value StoragePropertyValue: $field_name, value, $content_entity_id");
 
     // Make sure the values start empty.
-    $this->assertEquals($feature_id, $recordId_propertyValue->getValue(), "The $field_type record_id property should be the feature_id.");
-    $this->assertTrue(empty($value_propertyValue->getValue()), "The $field_type value property should not have a value.");
+    $this->assertEquals($feature_id, $recordId_propertyValue->getValue(), "The $field_name record_id property should be the feature_id.");
+    $this->assertTrue(empty($value_propertyValue->getValue()), "The $field_name value property should not have a value.");
 
     // Now test ChadoStorage->addTypes()
     // param array $types = Array of \Drupal\tripal\TripalStorage\StoragePropertyTypeBase objects.
     $chado_storage->addTypes([$recordId_propertyType, $value_propertyType]);
     $retrieved_types = $chado_storage->getTypes();
-    $this->assertIsArray($retrieved_types, "Unable to retrieve the PropertyTypes after adding $field_type.");
-    $this->assertCount(2, $retrieved_types, "Did not revieve the expected number of PropertyTypes after adding $field_type.");
+    $this->assertIsArray($retrieved_types, "Unable to retrieve the PropertyTypes after adding $field_name.");
+    $this->assertCount(2, $retrieved_types, "Did not revieve the expected number of PropertyTypes after adding $field_name.");
 
     // We also need FieldConfig classes for loading values.
-    // We'll use a mock class here + set the chado mapping manually.
-    $fieldconfig = new FieldConfigMock(['field_name' => $field_type, 'entity_type' => $entity_type]);
-    $fieldconfig->setMockChadoMapping($chado_table, $chado_column);
+    // We're going to create a TripalField and see if that works.
+    $field_values = [];
+    $field_values['field_name'] = $field_name;
+    $field_values['field_type'] = $field_type;
+    $field_values['is_required'] = $is_required;
+    $field_values['term'] = $term;
+    $field_values['storage_settings'] = [
+      'storage_plugin_id' => 'chado_storage',
+      'storage_plugin_settings' => [
+        'base_table' => $chado_table,
+        'property_settings' => [
+          'value' => [
+            'action' => 'store',
+            'chado_table' => $chado_table,
+            'chado_column' => $chado_column,
+          ]
+        ],
+      ],
+    ];
+    $field = $this->createTripalField($content_type, $field_values);
+    // $fieldconfig = new FieldConfigMock(['field_name' => $field_name, 'entity_type' => $content_type]);
+    // $fieldconfig->setMockChadoMapping($chado_table, $chado_column);
+    $fieldconfig = $field;
 
     // Next we actually load the values.
-    $values[$field_type] = [
+    /**
+    $values[$field_name] = [
       0 => [
         'value'=> [
           'value' => $value_propertyValue,
@@ -133,10 +156,11 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
       ],
     ];
     $success = $chado_storage->loadValues($values);
-    $this->assertTrue($success, "Loading values after adding $field_type was not success (i.e. did not return TRUE).");
+    $this->assertTrue($success, "Loading values after adding $field_name was not success (i.e. did not return TRUE).");
 
     // Then we test that the values are now in the types that we passed in.
     $this->assertEquals('test_gene_name', $values['schema__name'][0]['value']['value']->getValue(), 'The gene name value was not loaded properly.');
+    */
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // -- Multi-value single property field
@@ -145,7 +169,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     //   - type: note (local:note), value: "Note 1", rank: 0
     //   - type: note (local:note), value: "Note 2", rank: 2
     //   - type: note (local:note), value: "Note 3", rank: 1
-    $field_type = 'local__note';
+    $field_name = 'local__note';
     $field_term_string = 'local:note';
     $chado_table = 'featureprop';
     $chado_column = 'value';
@@ -158,7 +182,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     // Value: genus: Oryza, species: sativa, common_name: rice,
     //   abbreviation: O.sativa, infraspecific_name: Japonica,
     //   type: species_group (TAXRANK:0000010), comment: 'This is rice'
-    $field_type = 'obi__organism';
+    $field_name = 'obi__organism';
     $field_term_string = 'obi:organism';
     $chado_table = 'feature';
     $chado_column = 'organism_id';
