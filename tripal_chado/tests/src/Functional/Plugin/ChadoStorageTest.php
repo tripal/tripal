@@ -34,6 +34,9 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $storage_manager = \Drupal::service('tripal.storage');
     $chado_storage = $storage_manager->createInstance('chado_storage');
 
+    // Ensure we see all logging in tests.
+    \Drupal::state()->set('is_a_test_environment', TRUE);
+
     // All Chado storage testing requires an entity.
     $content_entity = $this->createTripalContent();
     $content_entity_id = $content_entity->id();

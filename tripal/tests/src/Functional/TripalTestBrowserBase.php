@@ -31,7 +31,8 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
 	 */
 	protected function setUp(): void {
 		parent::setUp();
-		\Drupal::state()->set('is_a_test_environment', TRUE);
+		// Not ready to add this to all tests just yet.
+		// \Drupal::state()->set('is_a_test_environment', TRUE);
 	}
 
 	/**
