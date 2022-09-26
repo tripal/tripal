@@ -7,7 +7,6 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
-// use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * GFF3 Importer implementation of the TripalImporterBase.
@@ -563,16 +562,12 @@ class GFF3Importer extends ChadoImporterBase {
 
     // Open the GFF3 file.
     $this->logger->notice("Opening @gff_file", ['@gff_file' => $this->gff_file]);
-    // $this->logMessage("Opening !gff_file", ['!gff_file' => $this->gff_file]);
     $this->gff_file_h = fopen($this->gff_file, 'r');
     if (!$this->gff_file_h) {
       throw new \Exception(t("Cannot open file: !file", ['!file' => $this->gff_file]));
     }
 
     // Get the feature property CV object
-    // $this->feature_prop_cv = new ChadoRecord('cv');
-    // $this->feature_prop_cv->setValues(['name' => 'feature_property']);
-    // $num_found = $this->feature_prop_cv->find();
     $this->feature_prop_cv = $chado->select('cv')
     ->fields('cv')
     ->condition('name', 'feature_property')
@@ -592,9 +587,6 @@ class GFF3Importer extends ChadoImporterBase {
     }
 
     // Get the sequence CV object.
-    // $this->feature_cv = new ChadoRecord('cv');
-    // $this->feature_cv->setValues(['name' => 'sequence']);
-    // $num_found = $this->feature_cv->find();
     $this->feature_cv = $chado->select('cv')
     ->fields('cv')
     ->condition('name', 'sequence')
@@ -613,9 +605,6 @@ class GFF3Importer extends ChadoImporterBase {
     }
 
     // Get the organism object.
-    // $this->organism = new ChadoRecord('organism');
-    // $this->organism->setValues(['organism_id' => $this->organism_id]);
-    // $num_found = $this->organism->find();
     $this->organism = $chado->select('organism','o')
     ->fields('o')
     ->condition('organism_id', $this->organism_id)
@@ -634,9 +623,6 @@ class GFF3Importer extends ChadoImporterBase {
     }
 
     // Get the analysis object.
-    // $this->analysis = new ChadoRecord('analysis');
-    // $this->analysis->setValues(['analysis_id' => $this->analysis_id]);
-    // $num_found = $this->analysis->find();
     $this->analysis = $chado->select('analysis','a')
     ->fields('a')
     ->condition('analysis_id', $this->analysis_id)
@@ -656,13 +642,6 @@ class GFF3Importer extends ChadoImporterBase {
 
     // If a landmark type was provided then get that object.
     if ($this->landmark_type) {
-      // $this->landmark_cvterm = new ChadoRecord('cvterm');
-      // $this->landmark_cvterm->setValues([
-      //     'cv_id' => $this->feature_cv->getValue('cv_id'),
-      //     'name' => $this->landmark_type,
-      // ]);
-      // $num_found = $this->landmark_cvterm->find();
-      
       $this->landmark_cvterm = $chado->select('cvterm', 'c')
       ->fields('c')
       ->condition('cv_id', $this->feature_cv->cv_id)
@@ -686,12 +665,7 @@ class GFF3Importer extends ChadoImporterBase {
 
     // If a target type is provided then get the ID.
     if ($this->target_type) {
-      // $target_type = new ChadoRecord('cvterm');
-      // $target_type->setValues([
-      //   'name' => $this->target_type,
-      //   'cv_id' => $this->feature_cv->fetchObject()->cv_id
-      // ]);
-      // $num_found = $target_type->find();
+      
       $target_type = $chado->select('cvterm','c')
       ->fields('c')
       ->condition('name', $this->target_type)
@@ -711,7 +685,6 @@ class GFF3Importer extends ChadoImporterBase {
       if ($num_found == 0) {
         throw new \Exception(t("Cannot find the specified target type, !type.", ['!type' => $this->target_type]));
       }
-      // $this->target_type_id = $target_type->getID();
       $this->target_type_id = $target_type->cvterm_id;
     }
 
@@ -721,7 +694,6 @@ class GFF3Importer extends ChadoImporterBase {
     try {
       
       $this->logger->notice("Step  1 of 27: Caching GFF3 file...                             ");
-      // $this->logMessage("Step  1 of 27: Caching GFF3 file...                             ");
       $this->parseGFF3();
 
       // Prep the database for necessary records.
@@ -730,123 +702,94 @@ class GFF3Importer extends ChadoImporterBase {
       $this->prepDBs();
 
       $this->logger->notice("Step  2 of 27: Find existing landmarks...                         ");
-      // $this->logMessage("Step  2 of 27: Find existing landmarks...                         ");
       $this->findLandmarks();
 
       $this->logger->notice("Step  3 of 27: Insert new landmarks (if needed)...                ");
-      // $this->logMessage("Step  3 of 27: Insert new landmarks (if needed)...                ");
       $this->insertLandmarks();
 
       if (!$this->skip_protein) {
         $this->logger->notice("Step  4 of 27: Find missing proteins...                           ");
-        // $this->logMessage("Step  4 of 27: Find missing proteins...                           ");
         $this->findMissingProteins();
 
         $this->logger->notice("Step  5 of 27: Add missing proteins to list of features...        ");
-        // $this->logMessage("Step  5 of 27: Add missing proteins to list of features...        ");
         $this->addMissingProteins();
       }
       else {
         $this->logger->notice("Step  4 of 27: Find missing proteins (Skipped)...                ");
-        // $this->logMessage("Step  4 of 27: Find missing proteins (Skipped)...                ");
         $this->logger->notice("Step  5 of 27: Add missing proteins to list of features (Skipped)...");
-        // $this->logMessage("Step  5 of 27: Add missing proteins to list of features (Skipped)...");
       }
 
       $this->logger->notice("Step  6 of 27: Find existing features...                          ");
-      // $this->logMessage("Step  6 of 27: Find existing features...                          ");
       $this->findFeatures();
 
       $this->logger->notice("Step  7 of 27: Clear attributes of existing features...            ");
-      // $this->logMessage("Step  7 of 27: Clear attributes of existing features...            ");
       $this->deleteFeatureData();
 
       $this->logger->notice("Step  8 of 27: Processing @num_features features...               ",
       ['@num_features' => number_format(count(array_keys($this->features)))]);
-      // $this->logMessage("Step  8 of 27: Processing !num_features features...               ",
-      //     ['!num_features' => number_format(count(array_keys($this->features)))]);
+
       $this->insertFeatures();
       $this->logger->notice("Step  9 of 27: Processing @num_features feature Names to update...               ",
       ['@num_features' =>  number_format(count(array_keys($this->update_names)))]);
-      // $this->logMessage("Step  9 of 27: Processing !num_features feature Names to update...               ",
-      //     ['!num_features' =>  number_format(count(array_keys($this->update_names)))]);
+
       $this->updateFeatureNames();
 
       $this->logger->notice("Step  10 of 27: Get new feature IDs...                             ");
-      // $this->logMessage("Step  10 of 27: Get new feature IDs...                             ");
       $this->findFeatures();
 
       $this->logger->notice("Step 11 of 27: Insert locations...                               ");
-      // $this->logMessage("Step 11 of 27: Insert locations...                               ");
       $this->insertFeatureLocs();
 
       $this->logger->notice("Step 12 of 27: Associate parents and children...                 ");
-      // $this->logMessage("Step 12 of 27: Associate parents and children...                 ");
       $this->associateChildren();
 
       $this->logger->notice("Step 13 of 27: Calculate child ranks...                          ");
-      // $this->logMessage("Step 13 of 27: Calculate child ranks...                          ");
       $this->calculateChildRanks();
 
       $this->logger->notice("Step 14 of 27: Add child-parent relationships...                 ");
-      // $this->logMessage("Step 14 of 27: Add child-parent relationships...                 ");
       $this->insertFeatureParents();
 
       $this->logger->notice("Step 15 of 27: Insert properties...                               ");
-      // $this->logMessage("Step 15 of 27: Insert properties...                               ");
       $this->insertFeatureProps();
 
       $this->logger->notice("Step 16 of 27: Find synonyms (aliases)...                         ");
-      // $this->logMessage("Step 16 of 27: Find synonyms (aliases)...                         ");
       $this->findSynonyms();
 
       $this->logger->notice("Step 17 of 27: Insert new synonyms (aliases)...                  ");
-      // $this->logMessage("Step 17 of 27: Insert new synonyms (aliases)...                  ");
       $this->insertSynonyms();
 
       $this->logger->notice("Step 18 of 27: Insert feature synonyms (aliases)...              ");
-      // $this->logMessage("Step 18 of 27: Insert feature synonyms (aliases)...              ");
       $this->insertFeatureSynonyms();
 
       $this->logger->notice("Step 19 of 27: Find cross references...                          ");
-      // $this->logMessage("Step 19 of 27: Find cross references...                          ");
       $this->findDbxrefs();
 
       $this->logger->notice("Step 20 of 27: Insert new cross references...                    ");
-      // $this->logMessage("Step 20 of 27: Insert new cross references...                    ");
       $this->insertDbxrefs();
 
       $this->logger->notice("Step 21 of 27: Get new cross references IDs...                   ");
-      // $this->logMessage("Step 21 of 27: Get new cross references IDs...                   ");
       $this->findDbxrefs();
 
       $this->logger->notice("Step 22 of 27: Insert feature cross references...                ");
-      // $this->logMessage("Step 22 of 27: Insert feature cross references...                ");
       $this->insertFeatureDbxrefs();
 
       $this->logger->notice("Step 23 of 27: Insert feature ontology terms...                  ");
-      // $this->logMessage("Step 23 of 27: Insert feature ontology terms...                  ");
       $this->insertFeatureCVterms();
 
       $this->logger->notice("Step 24 of 27: Insert 'derives_from' relationships...            ");
-      // $this->logMessage("Step 24 of 27: Insert 'derives_from' relationships...            ");
       $this->insertFeatureDerivesFrom();
 
       $this->logger->notice("Step 25 of 27: Insert Targets...                                 ");
-      // $this->logMessage("Step 25 of 27: Insert Targets...                                 ");
       $this->insertFeatureTargets();
 
       $this->logger->notice("Step 26 of 27: Associate features with analysis....              ");
-      // $this->logMessage("Step 26 of 27: Associate features with analysis....              ");
       $this->insertFeatureAnalysis();
 
       if (!empty($this->residue_index)) {
         $this->logger->notice("Step 27 of 27: Adding sequences data...                        ");
-        // $this->logMessage("Step 27 of 27: Adding sequences data...                        ");
         $this->insertFeatureSeqs();
       }
       $this->logger->notice("Step 27 of 27: Adding sequences data (Skipped: none available)...");
-      // $this->logMessage("Step 27 of 27: Adding sequences data (Skipped: none available)...");
     }
     // On exception, catch the error, clean up the cache file and rethrow
     catch (\Exception $e) {
@@ -891,11 +834,7 @@ class GFF3Importer extends ChadoImporterBase {
       WHERE CVT.cv_id = :cv_id and
        (lower(CVT.name) = lower(:name) or lower(CVTS.synonym) = lower(:synonym))
     ";
-    // $result = chado_query($sel_cvterm_sql, [
-    //   ':cv_id' => $cv->getValue('cv_id'),
-    //   ':name' => $type,
-    //   ':synonym' => $type,
-    // ]);
+
     $result = $chado->query($sel_cvterm_sql, [
       ':cv_id' => $cv->cv_id,
       ':name' => $type,
@@ -950,7 +889,6 @@ class GFF3Importer extends ChadoImporterBase {
       ));
       if (!$success) {
         $this->logger->warning("Failed to add the synonyms type vocabulary.");
-        // $this->logMessage("Failed to add the synonyms type vocabulary.", [], TRIPAL_WARNING);
         return 0;
       }
       // now that we've added the cv we need to get the record
@@ -983,7 +921,6 @@ class GFF3Importer extends ChadoImporterBase {
       $syntype = chado_insert_cvterm($term, ['update_existing' => TRUE]);
       if (!$syntype) {
         $this->logger->warning("Cannot add synonym type: internal:$type.");
-        // $this->logMessage("Cannot add synonym type: internal:$type.", [], TRIPAL_WARNING);
         return 0;
       }
     }
@@ -1015,7 +952,6 @@ class GFF3Importer extends ChadoImporterBase {
       $status = $chado->query($psql);
       if (!$status) {
         $this->logger->warning("Cannot prepare statement 'ins_pub_uniquename_typeid.");
-        // $this->logMessage("Cannot prepare statement 'ins_pub_uniquename_typeid.", [], TRIPAL_WARNING);
         return 0;
       }
 
@@ -1026,7 +962,6 @@ class GFF3Importer extends ChadoImporterBase {
       ])->fetchObject();
       if (!$result) {
         $this->logger->warning("Cannot add null publication needed for setup of alias.");
-        // $this->logMessage("Cannot add null publication needed for setup of alias.", [], TRIPAL_WARNING);
         return 0;
       }
       $result = chado_select_record('pub', ['*'], $select);
@@ -1075,7 +1010,6 @@ class GFF3Importer extends ChadoImporterBase {
         }
         else {
           $this->logger->warning("Cannot find or add the database $dbname.");
-          // $this->logMessage("Cannot find or add the database $dbname.", [], TRIPAL_WARNING);
           return 0;
         }
       }
@@ -1429,7 +1363,6 @@ class GFF3Importer extends ChadoImporterBase {
     while ($line = fgets($this->gff_file_h)) {
 
       $this->current_line++;
-      // $this->addItemsHandled(drupal_strlen($line));
       $this->addItemsHandled(mb_strlen($line));
 
       // Get the ID and the current file pointer and store that for later.
@@ -1460,8 +1393,6 @@ class GFF3Importer extends ChadoImporterBase {
           !(array_key_exists($uniquename, $this->landmarks) and $this->landmarks[$uniquename])) {
         $this->logger->warning('Assigning Sequence: cannot find a feature with a unique name of: "@uname". Please ensure the sequence names in the ##FASTA section use the same name as the ID in the feature in the GFF file. ',
         ['@uname' => $uniquename]);
-        // $this->logMessage('Assigning Sequence: cannot find a feature with a unique name of: "!uname". Please ensure the sequence names in the ##FASTA section use the same name as the ID in the feature in the GFF file. ',
-        //   ['!uname' => $uniquename], TRIPAL_WARNING);
         $count++;
         continue;
       }
@@ -1520,16 +1451,6 @@ class GFF3Importer extends ChadoImporterBase {
       return $this->landmarks[$landmark_name];
     }
 
-    // $landmark = new ChadoRecord('feature');
-    // $landmark->setValues([
-    //   'organism_id' => $this->organism_id,
-    //   'uniquename' => $landmark_name,
-    // ]);
-    // if ($landmark_type) {
-    //   $landmark->setValue('type_id', $landmark_type->getValue('cvterm_id'));
-    // }
-
-
     $landmark_count = $chado->select('feature')
     ->fields('feature')
     ->condition('organism_id', $this->organism_id)
@@ -1569,7 +1490,6 @@ class GFF3Importer extends ChadoImporterBase {
     }
 
     // The landmark was found, remember it
-    // $this->landmarks[$landmark_name] = $landmark->getID();
     $this->landmarks[$landmark_name] = $landmark->feature_id;
 
     return $landmark;
@@ -1603,18 +1523,6 @@ class GFF3Importer extends ChadoImporterBase {
   private function insertLandmark($name) {
     $chado = $this->getChadoConnection();
     $residues = '';
-    // $feature = new ChadoRecord('feature');
-    // $feature->setValues([
-    //   'organism_id' => $this->organism->execute()->fetchObject()->organism_id,
-    //   'uniquename' => $name,
-    //   'name' => $name,
-    //   'type_id' => $this->landmark_cvterm->execute()->fetchObject()->cvterm_id,
-    //   'md5checksum' => md5($residues),
-    //   'is_analysis' => FALSE,
-    //   'is_obsolete' => FALSE,
-    // ]);
-    // $feature->insert();
-    // $feature = $this->chado->select('feature');
     $insert_id = $chado->insert('feature')
     ->fields([
       'organism_id' => $this->organism->organism_id,
@@ -1626,7 +1534,6 @@ class GFF3Importer extends ChadoImporterBase {
       'is_obsolete' => 0,
     ])
     ->execute();
-    // $this->landmarks[$name] = $feature->getID();
     $this->landmarks[$name] = $insert_id;
   }
 
@@ -1643,7 +1550,6 @@ class GFF3Importer extends ChadoImporterBase {
 
     while ($line = fgets($this->gff_file_h)) {
       $this->current_line++;
-      // $this->addItemsHandled(drupal_strlen($line));
       $this->addItemsHandled(mb_strlen($line));
 
       $line = trim($line);
@@ -1784,7 +1690,6 @@ class GFF3Importer extends ChadoImporterBase {
     // created.
     if ($this->skip_protein) {
       $this->logger->notice('  Skipping creation of non-specified proteins...            ');
-      // $this->logMessage('  Skipping creation of non-specified proteins...            ');
       return;
     }
 
@@ -1936,15 +1841,11 @@ class GFF3Importer extends ChadoImporterBase {
    * Opens the cache file for read/write access.
    */
   private function openCacheFile() {
-    // $temp_file = drupal_tempnam('temporary://', "TripalGFF3Import_");
     $temp_file = \Drupal::service('file_system')->tempnam('temporary://', "TripalGFF3Import_");
-    // $this->gff_cache_file_name = drupal_realpath($temp_file);
     $this->gff_cache_file_name = \Drupal::service('file_system')->realpath($temp_file);
     
     $this->logger->notice("Opening temporary cache file: @cfile",
     ['@cfile' => $this->gff_cache_file_name]);
-    // $this->logMessage("Opening temporary cache file: !cfile",
-    //     ['!cfile' => $this->gff_cache_file_name]);
     $this->gff_cache_file = fopen($this->gff_cache_file_name, "r+");
   }
 
@@ -1955,8 +1856,6 @@ class GFF3Importer extends ChadoImporterBase {
     fclose($this->gff_cache_file);
     $this->logger->notice("Removing temporary cache file: @cfile",
     ['@cfile' => $this->gff_cache_file_name]);
-    // $this->logMessage("Removing temporary cache file: !cfile",
-    //     ['!cfile' => $this->gff_cache_file_name]);
     unlink($this->gff_cache_file_name);
   }
 
@@ -2954,10 +2853,6 @@ class GFF3Importer extends ChadoImporterBase {
     }
 
     if ($this->create_organism) {
-      // $organism->insert();
-      // $this->organism_lookup[$organism_attr] = $organism->execute()->fetchObject()->organism_id;
-      // $gff_feature['organism'] = $organism->execute()->fetchObject()->organism_id;
-      // return $organism->getID();
       $organism_insert_id = $chado->insert('organism')->fields(
         (array) $organism
       )->execute();
