@@ -665,7 +665,7 @@ class GFF3Importer extends ChadoImporterBase {
 
     // If a target type is provided then get the ID.
     if ($this->target_type) {
-      
+
       $target_type = $chado->select('cvterm','c')
       ->fields('c')
       ->condition('name', $this->target_type)
@@ -1949,8 +1949,6 @@ class GFF3Importer extends ChadoImporterBase {
         $residues = '';
         
         $type_id = $this->feature_cvterm_lookup[$feature['type']];
-        print_r('type_id insertFeatures:' . $type_id . "\n");
-        print_r('for feature[type]:' . $feature['type'] . "\n\n");
         $sql .= "(:uniquename_$i, :name_$i, :type_id_$i, :organism_id_$i, :residues_$i, " .
                " :md5checksum_$i, :seqlen_$i, FALSE, FALSE),\n";
         $args[":uniquename_$i"] = $uniquename;
