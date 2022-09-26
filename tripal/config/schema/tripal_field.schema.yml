@@ -1,0 +1,11 @@
+field.storage.tripal_entity.*:
+  settings:
+    storage_plugin_id:
+      type: string
+      label: 'Storage Plugin Machine Name'
+    storage_plugin_settings:
+      type: mapping
+      label: 'Storage-specific Settings'
+    max_length:
+      type: integer
+      label: 'Maximum length'
