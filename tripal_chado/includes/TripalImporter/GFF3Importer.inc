@@ -298,14 +298,7 @@ class GFF3Importer extends TripalImporter {
   public function form($form, &$form_state) {
 
     // get the list of organisms
-    $sql = "SELECT * FROM {organism} ORDER BY genus, species";
-    $org_rset = chado_query($sql);
-    $organisms = [];
-    $organisms[''] = '';
-    while ($organism = $org_rset->fetchObject()) {
-      $organisms[$organism->organism_id] = "$organism->genus $organism->species ($organism->common_name)";
-    }
-
+    $organisms = chado_get_organism_select_options(FALSE);
     $form['organism_id'] = [
       '#title' => t('Existing Organism'),
       '#type' => 'select',
