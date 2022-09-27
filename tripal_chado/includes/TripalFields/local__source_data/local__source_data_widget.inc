@@ -20,6 +20,7 @@ class local__source_data_widget extends ChadoFieldWidget {
     $field_type = $this->field['type'];
     $field_table = $this->instance['settings']['chado_table'];
     $field_column = $this->instance['settings']['chado_column'];
+    $schema = chado_get_schema($field_table);
 
     // Get the field defaults.
     $sourcename = '';
@@ -72,18 +73,21 @@ class local__source_data_widget extends ChadoFieldWidget {
       '#description' => 'The name of the source where data was obtained for this analysis.',
       '#default_value' => $sourcename,
       '#required' => $element['#required'],
+      '#maxlength' => $schema['fields']['sourcename']['length'],
     ];
     $widget['source_data']['sourceversion'] = [
       '#type' => 'textfield',
       '#title' => 'Data Source Version',
       '#description' => 'The version number of the data source (if applicable).',
       '#default_value' => $sourceversion,
+      '#maxlength' => $schema['fields']['sourceversion']['length'],
     ];
     $widget['source_data']['sourceuri'] = [
       '#type' => 'textfield',
       '#title' => 'Data Source URI',
       '#description' => 'The URI (e.g. web URL) where the source data can be retrieved.',
       '#default_value' => $sourceuri,
+      '#maxlength' => 8192,  // length in table is unlimited, but need something here. In T4 will be a textarea
     ];
 
   }
