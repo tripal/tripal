@@ -102,7 +102,7 @@ class local__source_data_widget extends ChadoFieldWidget {
 
     $source_name = $form_state['values'][$field_name]['und'][$delta]['source_data']['sourcename'];
     $sourceversion = $form_state['values'][$field_name]['und'][$delta]['source_data']['sourceversion'];
-    $sourceuri = $form_state['values'][$field_name]['und'][$delta]['source_data']['sourceuri'];
+    $sourceuri = preg_replace('/[\r\n]/', '', $form_state['values'][$field_name]['und'][$delta]['source_data']['sourceuri']);
 
     // Set the value so the form element won't be ignored.
     $form_state['values'][$field_name]['und'][$delta]['value'] = $source_name;
