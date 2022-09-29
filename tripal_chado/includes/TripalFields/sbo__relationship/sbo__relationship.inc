@@ -1126,7 +1126,7 @@ class sbo__relationship extends ChadoField {
       $object_id = $matches[1];
       $values = [$fkey_rcolumn => $object_id];
       $object = chado_select_record($base_table, [$fkey_rcolumn], $values);
-      if (count($subject) == 0 AND $chado_record_id) {
+      if (count($object) == 0 AND $chado_record_id) {
         $errors[] = [
           'error' => 'sbo__relationship',
           'message' => t("The object record cannot be found using the specified id (e.g. [id: xx])."),
@@ -1139,7 +1139,7 @@ class sbo__relationship extends ChadoField {
       // constructor for the current field. There may be more then one name field
       // (e.g. organism: genus + species) so we want to check both.
       $sql = 'SELECT ' . $fkey_rcolumn . ' FROM {' . $base_table . '} WHERE ' . implode('||', $this->base_name_columns) . '=:keyword';
-      $object = chado_query($sql, [':keyword' => $object_name]);
+      $object = chado_query($sql, [':keyword' => $object_name])->fetchAll();
       if (count($object) == 0) {
         $errors[] = [
           'error' => 'sbo__relationship',

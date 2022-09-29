@@ -666,9 +666,10 @@ function theme_sbo__relationship_instance_settings($variables) {
 }
 
 /**
- * An Ajax callback for the relationshp widget.
+ * An Ajax callback for the relationship widget.
  */
 function sbo__relationship_widget_form_ajax_callback(&$form, $form_state) {
+
   // Get the triggering element
   $form_element_name = $form_state['triggering_element']['#name'];
   preg_match('/(.+?)\[(.+?)\]\[(.+?)\]/', $form_element_name, $matches);
@@ -687,7 +688,7 @@ function sbo__relationship_widget_form_ajax_callback(&$form, $form_state) {
 }
 
 /**
- * An Ajax callback for the relationshp instance setting form.
+ * An Ajax callback for the relationship instance setting form.
  */
 function sbo__relationship_instance_settings_form_ajax_callback(&$form, &$form_state) {
   $acpath = $form['instance']['settings']['relationships']['option2_parent']['#autocomplete_path'];
