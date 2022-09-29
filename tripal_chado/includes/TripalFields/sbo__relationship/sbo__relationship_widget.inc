@@ -669,7 +669,6 @@ function theme_sbo__relationship_instance_settings($variables) {
  * An Ajax callback for the relationship widget.
  */
 function sbo__relationship_widget_form_ajax_callback(&$form, $form_state) {
-
   // Get the triggering element
   $form_element_name = $form_state['triggering_element']['#name'];
   preg_match('/(.+?)\[(.+?)\]\[(.+?)\]/', $form_element_name, $matches);
