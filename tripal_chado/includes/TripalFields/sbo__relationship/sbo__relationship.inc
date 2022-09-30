@@ -1143,7 +1143,10 @@ class sbo__relationship extends ChadoField {
       if (count($object) == 0) {
         $errors[] = [
           'error' => 'sbo__relationship',
-          'message' => t("The object record cannot be found. Please check spelling."),
+          'message' => t("The object record cannot be found. Please check spelling."
+// Temporary commit for debugging the testing error
+." sql=\"$sql\" keyword=\"$object_name\""
+),
           'element' => 'object',
         ];
       }
