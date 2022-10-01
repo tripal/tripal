@@ -621,7 +621,7 @@ class sbo__relationship extends ChadoField {
     $bpkey = $bschema['primary key'][0];
     $operator = $condition['operator'];
 
-    // Bulid the list of expected elements that will be provided.
+    // Build the list of expected elements that will be provided.
     $field_term_id = $this->getFieldTermID();
     $rel_subject = $field_term_id . ',local:relationship_subject';
     $rel_subject_type = $rel_subject . ',' . 'rdfs:type';
@@ -979,7 +979,7 @@ class sbo__relationship extends ChadoField {
       $chado_record_id = $entity->chado_record_id;
     }
 
-    // Validate each releationship.
+    // Validate each relationship.
     foreach ($items as $delta => $item) {
       $item_errors = $this->validateItem($item, $chado_record_id);
       if (!empty($item_errors)) {
@@ -1126,7 +1126,7 @@ class sbo__relationship extends ChadoField {
       $object_id = $matches[1];
       $values = [$fkey_rcolumn => $object_id];
       $object = chado_select_record($base_table, [$fkey_rcolumn], $values);
-      if (count($object) == 0 AND $chado_record_id) {
+      if (count($object) == 0) {
         $errors[] = [
           'error' => 'sbo__relationship',
           'message' => t("The object record cannot be found using the specified id (e.g. [id: xx])."),
@@ -1140,13 +1140,10 @@ class sbo__relationship extends ChadoField {
       // (e.g. organism: genus + species) so we want to check both.
       $sql = 'SELECT ' . $fkey_rcolumn . ' FROM {' . $base_table . '} WHERE ' . implode('||', $this->base_name_columns) . '=:keyword';
       $object = chado_query($sql, [':keyword' => $object_name])->fetchAll();
-      if (count($object) == 0) {
+      if (count($object) == 0 AND $chado_record_id) {
         $errors[] = [
           'error' => 'sbo__relationship',
-          'message' => t("The object record cannot be found. Please check spelling."
-// Temporary commit for debugging the testing error
-." sql=\"$sql\" keyword=\"$object_name\""
-),
+          'message' => t("The object record cannot be found. Please check spelling."),
           'element' => 'object',
         ];
       }
