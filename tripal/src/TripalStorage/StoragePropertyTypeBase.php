@@ -23,9 +23,12 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
    *
    * @param string id
    *   The id of this storage property type base.
+   *
+   * @param array storage_settings
+   *   An array of settings required for this property by the storage backend.
    */
-  public function __construct($entityType,$fieldType,$key,$id) {
-    parent::__construct($entityType,$fieldType,$key);
+  public function __construct($entityType, $fieldType, $key, $id, $storage_settings = []) {
+    parent::__construct($entityType, $fieldType, $key);
     $this->id = $id;
     $this->cardinality = 1;
     $this->searchability = TRUE;
@@ -33,6 +36,7 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
     $this->sortable = TRUE;
     $this->readOnly_ = FALSE;
     $this->required = FALSE;
+    $this->storage_settings = $storage_settings;
   }
 
   /**
@@ -216,6 +220,15 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
   }
 
   /**
+   * Gets the storage settings for this property type.
+   *
+   * @return array
+   */
+  public function getStorageSettings() {
+    return $this->storage_settings;
+  }
+
+  /**
    * The id of this storage property type base.
    *
    * @var string
@@ -287,5 +300,12 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
    * @var bool
    */
   private $required;
+
+  /**
+   * An array of elements required for this property by the storage backend.
+   *
+   * @var array
+   */
+  private $storage_settings;
 
 }

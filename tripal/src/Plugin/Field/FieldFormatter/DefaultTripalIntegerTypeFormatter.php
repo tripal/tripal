@@ -7,18 +7,18 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Plugin implementation of default Tripal text type formatter.
+ * Plugin implementation of default Tripal integer type formatter.
  *
  * @FieldFormatter(
- *   id = "default_tripal_text_type_formatter",
- *   label = @Translation("Default Text Type Formatter"),
- *   description = @Translation("The default text type formatter."),
+ *   id = "default_tripal_integer_type_formatter",
+ *   label = @Translation("Default Integer Type Formatter"),
+ *   description = @Translation("The default integer type formatter."),
  *   field_types = {
- *     "tripal_text_type"
+ *     "tripal_integer_type"
  *   }
  * )
  */
-class DefaultTripalTextTypeFormatter extends TripalFormatterBase {
+class DefaultTripalIntegerTypeFormatter extends TripalFormatterBase {
 
   /**
    * {@inheritdoc}
@@ -28,7 +28,7 @@ class DefaultTripalTextTypeFormatter extends TripalFormatterBase {
 
     foreach($items as $delta => $item) {
       $elements[$delta] = [
-        "#markup" => $item->get("value")->getString(),
+        "#markup" => $item->get("value")->getValue(),
       ];
     }
 
