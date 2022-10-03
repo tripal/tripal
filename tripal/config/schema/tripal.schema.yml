@@ -87,26 +87,3 @@ field.storage.tripal_entity.*:
         max_length:
           type: integer
           label: 'Storage Maximum length'
-        storage_plugin_settings:
-          type: mapping
-          label: 'Tripal Storage-specific Settings'
-
-# field.storage.tripal_entity.schema__name:
-#   settings:
-#     storage_plugin_id:
-#       type: string
-#       label: 'Tripal Storage Plugin Machine Name'
-#     max_length:
-#       type: integer
-#       label: 'Storage Maximum length'
-
-# field.storage_settings.schema__name:
-#   type: mapping
-#   label: 'schema:name field sorage settings'
-#   mapping:
-#     storage_plugin_id:
-#       type: string
-#       label: 'Tripal Storage Plugin Machine Name'
-#     max_length:
-#       type: integer
-#       label: 'Storage Maximum length'
