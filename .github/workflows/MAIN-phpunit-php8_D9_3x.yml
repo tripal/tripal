@@ -1,14 +1,16 @@
 
-name: PHPUnit
-
-on: [push]
+name: PHPUnit on Drupal 9.3.x-dev (PHP 8.0)
+on:
+  push:
+    branches:
+      - 9.x-4.x
 
 env:
   DRUPALVER: 9.3.x-dev
 
 jobs:
   run-tests:
-    name: "Drupal 9.3.x-dev (PHP 8.1)"
+    name: "Drupal 9.3.x-dev (PHP 8.0)"
     runs-on: ubuntu-latest
     steps:
       # Check out the repo
@@ -21,7 +23,7 @@ jobs:
           docker build --tag=tripaldocker:localdocker \
             --build-arg drupalversion="$DRUPALVER" \
             --build-arg chadoschema='testchado' ./ \
-            --file tripaldocker/Dockerfile-php8.1-pgsql13
+            --file tripaldocker/Dockerfile-php8-pgsql13
       # Just spin up docker the good ol' fashion way.
       - name: Spin up Local Docker
         run: |
