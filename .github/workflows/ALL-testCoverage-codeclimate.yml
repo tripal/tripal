@@ -1,7 +1,5 @@
 # Run some PHPUnit tests
 name: Test Coverage on Drupal 9.4.x-dev
-
-# When do we want the tests to run?
 on: [push]
 
 # Define jobs that are part of the workflow

@@ -1,7 +1,9 @@
 
-name: PHPUnit
-
-on: [push]
+name: PHPUnit on Drupal 10.0.x-dev (PHP 8.1)
+on:
+  push:
+    branches:
+      - 9.x-4.x
 
 env:
   DRUPALVER: 10.0.x-dev
