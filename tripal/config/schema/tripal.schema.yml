@@ -87,3 +87,16 @@ field.storage.tripal_entity.*:
         max_length:
           type: integer
           label: 'Storage Maximum length'
+
+field.field.tripal_entity.*.*:
+  type: field.field.*.*.*
+  mapping:
+    settings:
+      type: field.settings
+      mapping:
+        termIdSpace:
+          type: string
+          label: 'Term ID Space'
+        termAccession:
+          type: string
+          label: 'Term Accession'
