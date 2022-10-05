@@ -294,7 +294,7 @@ class TripalFieldsManager {
     $field_def = $this->setFieldDefDefaults($field_def);
     $field_id = 'tripal_entity' . '.' . $bundle . '.' . $field_def['name'];
 
-    # try {
+    try {
 
       // Check if field storage exists for this field. If not, add it..
       $field_storage = FieldStorageConfig::loadByName('tripal_entity', $field_def['name']);
@@ -343,15 +343,15 @@ class TripalFieldsManager {
             ->save();
         }
       }
-    # }
-    # catch (\Exception $e) {
-    #   $logger->error(t('Error adding field @field_name to @bundle:<br>@error', [
-    #     '@field_name' => $field_def['name'],
-    #     '@bundle' => $bundle,
-    #     '@error' => $e->getMessage(),
-    #   ]));
-    #   return False;
-    # }
+     }
+     catch (\Exception $e) {
+       $logger->error(t('Error adding field @field_name to @bundle:<br>@error', [
+         '@field_name' => $field_def['name'],
+         '@bundle' => $bundle,
+         '@error' => $e->getMessage(),
+       ]));
+       return False;
+     }
     return True;
   }
 }
