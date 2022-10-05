@@ -67,5 +67,5 @@ Tripal MapViewer module displays map data stored in Chado. MapViewer provides in
 
 The interface can be integrated into Tripal map page and hyperlinked to/from any Tripal page that are displayed in maps (marker, QTL, heritable morphological marker and/or gene). MapViewer also provides a genome comparison view with JBrowse integration and Dot plot and Correspondence Matrix support. The admin page allows site developers some flexibility in the display pattern.
 
-`Documentation <https://gitlab.com/mainlabwsu/tripal_map/blob/master/README.md>`__
+`Documentation <https://gitlab.com/mainlabwsu/tripal_map/-/blob/7.x-2.x/README.md>`__
 `Repository <https://gitlab.com/mainlabwsu/tripal_map>`__
