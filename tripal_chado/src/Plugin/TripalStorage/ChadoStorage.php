@@ -239,7 +239,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
               $ralias = $jinfo['on']['right_alias'];
               $lcol = $jinfo['on']['left_col'];
               $rcol = $jinfo['on']['right_col'];
-              $select->leftJoin($rtable, $ralias, $lalias . '.' .  $lcol . '=' .  $ralias . '.' . $rcol);
+              $select->leftJoin('1:' . $rtable, $ralias, $lalias . '.' .  $lcol . '=' .  $ralias . '.' . $rcol);
               foreach ($jinfo['columns'] as $column) {
                 $sel_col = $column[0];
                 $sel_col_as = $column[1];
