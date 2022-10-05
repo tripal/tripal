@@ -9,7 +9,6 @@ use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Drupal\Tests\tripal_chado\Functional\MockClass\FieldConfigMock;
 
-
 /**
  * Tests for the ChadoCVTerm classes
  *
@@ -79,27 +78,34 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     // Stored in feature.name; Term: schema:name.
     // Value: test_gene_name
     $field_name  = 'schema__name';
+    $field_label = 'Gene Name';
     $field_type = 'tripal_string_type';
     $field_term_string = 'schema:name';
     $chado_table = 'feature';
     $chado_column = 'name';
     $cardinality = 1;
     $is_required = TRUE;
-    $term = $this->createTripalTerm([
-      'vocab_name' => 'Schema',
-      'id_space_name' => 'schema',
-      'term' => [
-        'accession' => 'name',
-        'name' => 'name',
+    $propsettings = [
+      'action' => 'store',
+      'chado_table' => $chado_table,
+      'chado_column' => $chado_column,
+    ];
+    $storage_settings = [
+      'storage_plugin_id' => 'chado_storage',
+      'storage_plugin_settings' => [
+        'base_table' => $chado_table,
+        'property_settings' => [
+          'value' => $propsettings,
+        ],
       ],
-    ]);
+    ];
 
     // Testing the Property Type + Value class creation
     // + prepping for future tests.
     // NOTE: You need to set the value = feature_id when creating the record_id StoragePropertyValue.
-    $recordId_propertyType = new ChadoIntStoragePropertyType($content_type, $field_name, 'record_id');
+    $recordId_propertyType = new ChadoIntStoragePropertyType($content_type, $field_name, 'record_id', $propsettings);
     $recordId_propertyValue = new StoragePropertyValue($content_type, $field_name, 'record_id', $content_entity_id, $feature_id);
-    $value_propertyType = new ChadoVarCharStoragePropertyType($content_type, $field_name, 'value');
+    $value_propertyType = new ChadoVarCharStoragePropertyType($content_type, $field_name, 'value', 255, $propsettings);
     $value_propertyValue = new StoragePropertyValue($content_type, $field_name, 'value', $content_entity_id);
     $this->assertIsObject($recordId_propertyType, "Unable to create record_id ChadoIntStoragePropertyType: $field_name, record_id");
     $this->assertIsObject($recordId_propertyValue, "Unable to create record_id StoragePropertyValue: $field_name, record_id, $content_entity_id");
@@ -119,31 +125,10 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
 
     // We also need FieldConfig classes for loading values.
     // We're going to create a TripalField and see if that works.
-    $field_values = [];
-    $field_values['field_name'] = $field_name;
-    $field_values['field_type'] = $field_type;
-    $field_values['is_required'] = $is_required;
-    $field_values['term'] = $term;
-    $field_values['storage_settings'] = [
-      'storage_plugin_id' => 'chado_storage',
-      'storage_plugin_settings' => [
-        'base_table' => $chado_table,
-        'property_settings' => [
-          'value' => [
-            'action' => 'store',
-            'chado_table' => $chado_table,
-            'chado_column' => $chado_column,
-          ]
-        ],
-      ],
-    ];
-    $field = $this->createTripalField($content_type, $field_values);
-    // $fieldconfig = new FieldConfigMock(['field_name' => $field_name, 'entity_type' => $content_type]);
-    // $fieldconfig->setMockChadoMapping($chado_table, $chado_column);
-    $fieldconfig = $field;
+    $fieldconfig = new FieldConfigMock(['field_name' => $field_name, 'entity_type' => $content_type]);
+    $fieldconfig->setMock(['label' => $field_label, 'settings' => $storage_settings]);
 
     // Next we actually load the values.
-    /**
     $values[$field_name] = [
       0 => [
         'value'=> [
@@ -163,7 +148,6 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
 
     // Then we test that the values are now in the types that we passed in.
     $this->assertEquals('test_gene_name', $values['schema__name'][0]['value']['value']->getValue(), 'The gene name value was not loaded properly.');
-    */
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // -- Multi-value single property field
