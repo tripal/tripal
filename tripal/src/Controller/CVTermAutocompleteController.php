@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class CVTermAutocompleteController extends ControllerBase {
 
-  public function handleAutocomplete(int $count = 5, Request $request) {
+  public function handleAutocomplete(Request $request, int $count = 5) {
 
     $string = $request->query->get('q');
     $response = [];
