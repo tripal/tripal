@@ -23,14 +23,6 @@ class ChadoIdSpace extends TripalIdSpaceBase {
   protected $default_vocabulary = NULL;
 
   /**
-   * Holds the TripalDBX instance for accessing Chado.
-   *
-   * @var \Drupal\tripal\TripalDBX\TripalDbxConnection
-   */
-  protected $chado = NULL;
-
-
-  /**
    * The definition for the `db` table of Chado.
    *
    * @var array
@@ -63,10 +55,10 @@ class ChadoIdSpace extends TripalIdSpaceBase {
     $this->messageLogger = \Drupal::service('tripal.logger');
 
     // Instantiate a TripalDBX connection for Chado.
-    $this->chado = \Drupal::service('tripal_chado.database');
+    $chado = \Drupal::service('tripal_chado.database');
 
     // Get the chado definition for the `db` table.
-    $this->db_def = $this->chado->schema()->getTableDef('db', ['Source' => 'file']);
+    $this->db_def = $chado->schema()->getTableDef('db', ['Source' => 'file']);
   }
 
 
@@ -108,13 +100,16 @@ class ChadoIdSpace extends TripalIdSpaceBase {
    */
   public function create() {
 
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     // Check if the record already exists in the database, if it
     // doesn't then insert it.  We don't yet have the description,
     // URL prefix, etc but that's okay, the name is all that is
     // required to create a record in the `db` table.
     $db = $this->loadIdSpace();
     if (!$db) {
-      $query = $this->chado->insert('1:db')
+      $query = $chado->insert('1:db')
         ->fields(['name' => $this->getName()]);
       $query->execute();
     }
@@ -144,8 +139,11 @@ class ChadoIdSpace extends TripalIdSpaceBase {
    */
   protected function loadIdSpace() {
 
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     // Get the Chado `db` record for this ID space.
-    $query = $this->chado->select('1:db', 'db')
+    $query = $chado->select('1:db', 'db')
       ->condition('db.name', $this->getName(), '=')
       ->fields('db', ['name', 'url', 'urlprefix', 'description']);
     $result = $query->execute();
@@ -173,6 +171,9 @@ class ChadoIdSpace extends TripalIdSpaceBase {
    */
   public function getChildren($parent = NULL){
 
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     // Don't get values for an ID space that isn't valid.
     if (!$this->is_valid) {
       return NULL;
@@ -182,7 +183,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
 
     $cvterm = $this->getChadoCVTerm($parent);
 
-    $query = $this->chado->select('1:cvterm_relationship', 'CVTR');
+    $query = $chado->select('1:cvterm_relationship', 'CVTR');
     $query->join('1:cvterm', 'CVTSUB', '"CVTR".subject_id = "CVTSUB".cvterm_id');
     $query->join('1:cvterm', 'CVTTYPE', '"CVTR".type_id = "CVTTYPE".cvterm_id');
     $query->join('1:dbxref', 'DBXSUB', '"CVTSUB".dbxref_id = "DBXSUB".dbxref_id');
@@ -228,8 +229,11 @@ class ChadoIdSpace extends TripalIdSpaceBase {
       return NULL;
     }
 
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     // Get the term record.
-    $query = $this->chado->select('1:cvterm', 'CVT');
+    $query = $chado->select('1:cvterm', 'CVT');
     $query->join('1:dbxref', 'DBX', '"CVT".dbxref_id = "DBX".dbxref_id');
     $query->join('1:cv', 'CV', '"CV".cv_id = "CVT".cv_id');
     $query->join('1:db', 'DB', '"DB".db_id = "DBX".db_id');
@@ -263,7 +267,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
 
     // Are there synonyms?
     if (!array_key_exists('includes', $options) or in_array('synonyms', $options['includes'])) {
-      $query = $this->chado->select('1:cvtermsynonym', 'CVTS');
+      $query = $chado->select('1:cvtermsynonym', 'CVTS');
       $query->leftJoin('1:cvterm', 'CVT', '"CVT".cvterm_id = "CVTS".type_id');
       $query->leftJoin('1:dbxref', 'DBX', '"DBX".dbxref_id = "CVT".dbxref_id');
       $query->leftJoin('1:cv', 'CV', '"CV".cv_id = "CVT".cv_id');
@@ -292,7 +296,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
 
     // Are there alt IDs?
     if (!array_key_exists('includes', $options) or in_array('altIds', $options['includes'])) {
-      $query = $this->chado->select('1:cvterm_dbxref', 'CVTDBX');
+      $query = $chado->select('1:cvterm_dbxref', 'CVTDBX');
       $query->join('1:dbxref', 'DBX', '"CVTDBX".dbxref_id = "DBX".dbxref_id');
       $query->join('1:db', 'DB', '"DB".db_id = "DBX".db_id');
       $query->fields('DBX', ['accession'])
@@ -306,7 +310,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
 
     // Are there properties?
     if (!array_key_exists('includes', $options) or in_array('properties', $options['includes'])) {
-      $query = $this->chado->select('1:cvtermprop', 'CVTP');
+      $query = $chado->select('1:cvtermprop', 'CVTP');
       $query->join('1:cvterm', 'CVT', '"CVTP".type_id = "CVT".cvterm_id');
       $query->join('1:dbxref', 'DBX', '"CVT".dbxref_id = "DBX".dbxref_id');
       $query->join('1:db', 'DB', '"DB".db_id = "DBX".db_id');
@@ -333,7 +337,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
 
     // Are there parents?
     if (!array_key_exists('includes', $options) or in_array('parents', $options['includes'])) {
-      $query = $this->chado->select('1:cvterm_relationship', 'CVTR');
+      $query = $chado->select('1:cvterm_relationship', 'CVTR');
       $query->join('1:cvterm', 'CVTOBJ', '"CVTR".object_id = "CVTOBJ".cvterm_id');
       $query->join('1:cvterm', 'CVTTYPE', '"CVTR".type_id = "CVTTYPE".cvterm_id');
       $query->join('1:dbxref', 'DBXOBJ', '"CVTOBJ".dbxref_id = "DBXOBJ".dbxref_id');
@@ -377,11 +381,14 @@ class ChadoIdSpace extends TripalIdSpaceBase {
    */
   public function getTerms($name, $options = []) {
 
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     // The list of terms to return
     $terms = [];
 
     // Build the query for matching via the `cvterm.name` column.
-    $query1 = $this->chado->select('1:cvterm', 'CVT');
+    $query1 = $chado->select('1:cvterm', 'CVT');
     $query1->join('1:cv', 'CV', '"CV".cv_id = "CVT".cv_id');
     $query1->join('1:dbxref', 'DBX', '"DBX".dbxref_id = "CVT".dbxref_id');
     $query1->join('1:db', 'DB', '"DB".db_id = "DBX".db_id');
@@ -408,7 +415,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
     }
 
     // Build the query for matching via the `cvtermsynonym.synonym` column.
-    $query2 = $this->chado->select('1:cvtermsynonym', 'CS');
+    $query2 = $chado->select('1:cvtermsynonym', 'CS');
     $query2->join('1:cvterm', 'CVT', '"CVT".cvterm_id = "CS".cvterm_id');
     $query2->join('1:cv', 'CV', '"CV".cv_id = "CVT".cv_id');
     $query2->join('1:dbxref', 'DBX', '"DBX".dbxref_id = "CVT".dbxref_id');
@@ -504,7 +511,10 @@ class ChadoIdSpace extends TripalIdSpaceBase {
    */
   protected function getChadoCV(TripalTerm $term) {
 
-    $result = $this->chado->select('1:cv', 'CV')
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
+    $result = $chado->select('1:cv', 'CV')
       ->fields('CV', ['cv_id', 'name', 'definition'])
       ->condition('name', $term->getVocabulary(), '=')
       ->execute();
@@ -524,7 +534,10 @@ class ChadoIdSpace extends TripalIdSpaceBase {
    */
   protected function getChadoDB(TripalTerm $term) {
 
-    $result = $this->chado->select('1:db', 'DB')
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
+    $result = $chado->select('1:db', 'DB')
       ->fields('DB', ['db_id', 'name', 'description'])
       ->condition('name', $term->getIdSpace(), '=')
       ->execute();
@@ -544,8 +557,11 @@ class ChadoIdSpace extends TripalIdSpaceBase {
    */
   protected function getChadoDBXref(TripalTerm $term) {
 
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     $db = $this->getChadoDB($term);
-    $result = $this->chado->select('1:dbxref', 'DBX')
+    $result = $chado->select('1:dbxref', 'DBX')
       ->fields('DBX', ['dbxref_id', 'db_id', 'accession', 'version' ,'description'])
       ->condition('db_id', $db->db_id, '=')
       ->condition('accession', $term->getAccession(), '=')
@@ -564,8 +580,11 @@ class ChadoIdSpace extends TripalIdSpaceBase {
    */
   protected function getChadoDBXrefbyTermID(string $term_id) {
 
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     list($db, $accession) = explode(':', $term_id);
-    $query = $this->chado->select('1:dbxref', 'DBX');
+    $query = $chado->select('1:dbxref', 'DBX');
     $query->join('1:db', 'DB', '"DB".db_id = "DBX".db_id');
     $result = $query->fields('DBX', ['dbxref_id', 'db_id', 'accession', 'version' ,'description'])
       ->condition('DB.name', $db, '=')
@@ -589,8 +608,12 @@ class ChadoIdSpace extends TripalIdSpaceBase {
    *   The dbxref Object.
    */
   protected function insertChadoDBxrefbyTermID(string $term_id) {
+
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     list($db, $accession) = explode(':', $term_id);
-    $result = $this->chado->select('1:db', 'DB')
+    $result = $chado->select('1:db', 'DB')
       ->fields('DB', ['db_id'])
       ->condition('name', $db, '=')
       ->execute();
@@ -599,7 +622,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
     }
 
     $db_id = $result->fetchField();
-    $this->chado->insert('1:dbxref')
+    $chado->insert('1:dbxref')
       ->fields([
         'db_id' => $db_id,
         'accession' => $accession,
@@ -621,7 +644,10 @@ class ChadoIdSpace extends TripalIdSpaceBase {
    */
   protected function getChadoCVTerm(TripalTerm $term) {
 
-    $query = $this->chado->select('1:cvterm', 'CVT');
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
+    $query = $chado->select('1:cvterm', 'CVT');
     $query->join('1:dbxref', 'DBX', '"DBX".dbxref_id = "CVT".dbxref_id');
     $query->join('1:cv', 'CV', '"CV".cv_id = "CVT".cv_id');
     $query->join('1:db', 'DB', '"DB".db_id = "DBX".db_id');
@@ -655,6 +681,9 @@ class ChadoIdSpace extends TripalIdSpaceBase {
    */
   protected function insertTerm(TripalTerm $term, $options) {
 
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     try {
       // The CV and DB records should already exist.
       $cv = $this->getChadoCV($term);
@@ -666,7 +695,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
       $dbxref = $this->getChadoDBXref($term);
       if (!$dbxref) {
 
-        $this->chado->insert('1:dbxref')
+        $chado->insert('1:dbxref')
           ->fields([
             'db_id' => $db->db_id,
             'accession' => $term->getAccession(),
@@ -676,7 +705,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
       }
 
       // Add the CVterm record.
-      $this->chado->insert('1:cvterm')
+      $chado->insert('1:cvterm')
         ->fields([
           'cv_id' => $cv->cv_id,
           'dbxref_id' => $dbxref->dbxref_id,
@@ -719,10 +748,13 @@ class ChadoIdSpace extends TripalIdSpaceBase {
       $update_parent = $options['updateParent'];
     }
 
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     // Add in synonyms.ount($syns->chado->delete('1:cvtermsynonym')->condition('cvterm_id', $cvterm->cvterm_id)->execute();
-    $this->chado->delete('1:cvtermsynonym')->condition('cvterm_id', $cvterm->cvterm_id)->execute();
+    $chado->delete('1:cvtermsynonym')->condition('cvterm_id', $cvterm->cvterm_id)->execute();
     foreach ($term->getSynonyms() as $synonym => $type_term) {
-      $query = $this->chado->insert('1:cvtermsynonym');
+      $query = $chado->insert('1:cvtermsynonym');
       if ($type_term) {
         $type_cvterm = $this->getChadoCVTerm($type_term);
         $query->fields([
@@ -741,7 +773,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
     }
 
     // Add in the properties
-    $this->chado->delete('1:cvtermprop')->condition('cvterm_id', $cvterm->cvterm_id)->execute();
+    $chado->delete('1:cvtermprop')->condition('cvterm_id', $cvterm->cvterm_id)->execute();
     foreach ($term->getProperties() as $term_id => $properties) {
       foreach  ($properties as $rank => $tuple) {
         $type_term = $this->getChadoCVTerm($tuple[0]);
@@ -749,7 +781,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
           return False;
         }
         $value = $tuple[1];
-        $this->chado->insert('1:cvtermprop')
+        $chado->insert('1:cvtermprop')
           ->fields([
             'cvterm_id' => $cvterm->cvterm_id,
             'type_id' => $type_term->cvterm_id,
@@ -761,7 +793,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
     }
 
     // Add in the alternate IDs.
-    $this->chado->delete('1:cvterm_dbxref')->condition('cvterm_id', $cvterm->cvterm_id)->execute();
+    $chado->delete('1:cvterm_dbxref')->condition('cvterm_id', $cvterm->cvterm_id)->execute();
     foreach ($term->getAltIds() as $term_id) {
       $alt_dbxref = $this->getChadoDBXrefbyTermID($term_id);
       if (!$alt_dbxref) {
@@ -770,7 +802,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
           return False;
         }
       }
-      $this->chado->insert('1:cvterm_dbxref')
+      $chado->insert('1:cvterm_dbxref')
         ->fields([
           'cvterm_id' => $cvterm->cvterm_id,
           'dbxref_id' => $alt_dbxref->dbxref_id,
@@ -779,7 +811,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
     }
 
     // Add in the parents.
-    $this->chado->delete('1:cvterm_relationship')->condition('subject_id', $cvterm->cvterm_id)->execute();
+    $chado->delete('1:cvterm_relationship')->condition('subject_id', $cvterm->cvterm_id)->execute();
     foreach ($term->getParents() as $term_id => $tuple) {
       $parent_term = $tuple[0];
       $rel_term = $tuple[1];
@@ -791,7 +823,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
       if (!$rel_cvterm) {
         return False;
       }
-      $this->chado->insert('1:cvterm_relationship')
+      $chado->insert('1:cvterm_relationship')
         ->fields([
           'type_id' => $rel_cvterm->cvterm_id,
           'subject_id' => $cvterm->cvterm_id,
@@ -826,8 +858,12 @@ class ChadoIdSpace extends TripalIdSpaceBase {
    *   True if the update was successful, false otherwise.
    */
   protected function updateTerm(TripalTerm $term, object &$cvterm, array $options) {
+
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     try {
-      $this->chado->update('1:cvterm')
+      $chado->update('1:cvterm')
         ->fields([
           'name' => $term->getName(),
           'definition' => $term->getDefinition(),
@@ -889,8 +925,11 @@ class ChadoIdSpace extends TripalIdSpaceBase {
       return False;
     }
 
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     // Update the record in the Chado `db` table.
-    $query = $this->chado->update('1:db')
+    $query = $chado->update('1:db')
       ->fields(['urlprefix' => $prefix])
       ->condition('name', $this->getName(), '=');
     $num_updated = $query->execute();
@@ -940,8 +979,11 @@ class ChadoIdSpace extends TripalIdSpaceBase {
       return False;
     }
 
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     // Update the record in the Chado `db` table.
-    $query = $this->chado->update('1:db')
+    $query = $chado->update('1:db')
        ->fields(['description' => $description])
        ->condition('name', $this->getName(), '=');
     $num_updated = $query->execute();

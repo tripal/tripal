@@ -3,8 +3,8 @@
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
-use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
-use Drupal\tripal\TripalStorage\IntStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\core\Form\FormStateInterface;
 use Drupal\core\Field\FieldDefinitionInterface;
@@ -94,12 +94,12 @@ class obi__organism extends ChadoFieldItemBase {
     ];
 
     // Create the property types.
-    $value = new IntStoragePropertyType($entity_type_id, self::$id, 'value', $value_settings);
-    $label = new VarCharStoragePropertyType($entity_type_id, self::$id, $label_term, $label_len, $label_settings);
-    $genus = new VarCharStoragePropertyType($entity_type_id, self::$id, $genus_term, $genus_len, $genus_settings);
-    $species = new VarCharStoragePropertyType($entity_type_id, self::$id, $species_term, $species_len, $species_settings);
-    $ifname = new VarCharStoragePropertyType($entity_type_id, self::$id, $ifname_term, $ifname_len, $ifname_settings);
-    $iftype = new IntStoragePropertyType($entity_type_id, self::$id, $iftype_term, $iftype_settings);
+    $value = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'value', $value_settings);
+    $label = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, $label_term, $label_len, $label_settings);
+    $genus = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, $genus_term, $genus_len, $genus_settings);
+    $species = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, $species_term, $species_len, $species_settings);
+    $ifname = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, $ifname_term, $ifname_len, $ifname_settings);
+    $iftype = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $iftype_term, $iftype_settings);
 
     // Return the list of property types.
     $types = [$value, $label, $genus, $species, $ifname, $iftype];
@@ -137,6 +137,7 @@ class obi__organism extends ChadoFieldItemBase {
       new StoragePropertyValue($entity_type_id, self::$id, $ifname_term, $entity_id),
     ];
     $default_values = ChadoFieldItemBase::defaultTripalValuesTemplate($entity_type_id, self::$id, $entity_id);
+
     $values = array_merge($values, $default_values);
     return $values;
   }

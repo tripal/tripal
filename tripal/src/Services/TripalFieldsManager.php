@@ -69,7 +69,8 @@ class TripalFieldsManager {
     // Get the defaults for the storage setting for this field type.
     $field_types = \Drupal::service('plugin.manager.field.field_type');
     $field_type_def = $field_types->getDefinition($new_defs['type']);
-    $default_storage_settings = $field_type_def['class']::defaultStorageSettings();
+    $field_class = $field_type_def['class'];
+    $default_storage_settings = $field_class::defaultStorageSettings();
     $new_defs['storage_settings'] = [];
     $new_defs['storage_settings']['storage_plugin_id'] = '';
     $new_defs['storage_settings']['storage_plugin_settings'] = [
@@ -101,7 +102,7 @@ class TripalFieldsManager {
     // Get the defaults for the storage setting for this field type.
     $new_defs['settings']['termIdSpace'] = '';
     $new_defs['settings']['termAccession'] = '';
-    $default_storage_settings = $field_type_def['class']::defaultFieldSettings();
+    $default_storage_settings = $field_class::defaultFieldSettings();
     $new_defs['settings'] = [];
     foreach ($default_storage_settings as $setting_name => $value) {
       $new_defs['settings'][$setting_name] = $value;
@@ -305,7 +306,7 @@ class TripalFieldsManager {
           'cardinality' => $field_def['cardinality'],
           'revisionable' => $field_def['revisionable'],
           'provider' => 'tripal',
-          'settings' => $field_def['storage_settings']
+          'settings' => $field_def['storage_settings'],
         ]);
         $field_storage->save();
       }
@@ -342,15 +343,15 @@ class TripalFieldsManager {
             ->save();
         }
       }
-    }
-    catch (\Exception $e) {
-      $logger->error(t('Error adding field @field_name to @bundle:<br>@error', [
-        '@field_name' => $field_def['name'],
-        '@bundle' => $bundle,
-        '@error' => $e->getMessage(),
-      ]));
-      return False;
-    }
+     }
+     catch (\Exception $e) {
+       $logger->error(t('Error adding field @field_name to @bundle:<br>@error', [
+         '@field_name' => $field_def['name'],
+         '@bundle' => $bundle,
+         '@error' => $e->getMessage(),
+       ]));
+       return False;
+     }
     return True;
   }
 }

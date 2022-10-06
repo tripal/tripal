@@ -36,6 +36,7 @@ class obi__organism_widget extends TripalWidgetBase {
     $query->orderBy('genus');
     $query->orderBy('species');
     $results = $query->execute();
+
     $organisms[] = '-- Select --';
     while ($organism = $results->fetchObject()) {
       $org_name = $organism->genus . ' ' . $organism->species;
