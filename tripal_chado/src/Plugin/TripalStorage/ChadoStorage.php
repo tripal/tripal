@@ -620,55 +620,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     return ['base_tables' => $base_record_ids, 'records' => $records];
   }
 
-
-  /**
-   *
-   * @param array $records
-   * @param string $base_table
-   * @param int $delta
-   * @param string $path
-   */
-  protected function addChadoRecordJoins(array &$records, string $chado_column, string $as,
-      int $delta, array $path_arr, $parent_table = NULL, $depth = 0) {
-
-    // Get the left column and the right table join infor.
-    list($left, $right) = explode(">", array_shift($path_arr));
-    list($left_table, $left_col) = explode(".", $left);
-    list($right_table, $right_col) = explode(".", $right);
-
-    // We want all joins to be with the parent table record.
-    $parent_table = !$parent_table ? $left_table : $parent_table;
-    $lalias = $depth == 0 ? 'ct' : 'j' . ($depth - 1);
-    $ralias = 'j' . $depth;
-    $chado = \Drupal::service('tripal_chado.database');
-    $schema = $chado->schema();
-    $ltable_def = $schema->getTableDef($left_table, ['format' => 'drupal']);
-    $rtable_def = $schema->getTableDef($right_table, ['format' => 'drupal']);
-
-    // @todo check the requested join is valid.
-
-    // Add the join.
-    $records[$parent_table][$delta]['joins'][$right_table]['on'] = [
-      'left_table' => $left_table,
-      'left_col' => $left_col,
-      'right_table' => $right_table,
-      'right_col' => $right_col,
-      'left_alias' => $lalias,
-      'right_alias' => $ralias,
-    ];
-
-    // We're done recursing if we only have two elements left in the path
-    if (count($path_arr)== 0) {
-      $records[$parent_table][$delta]['joins'][$right_table]['columns'][] = [$chado_column, $as];
-      return;
-    }
-
-    // Add the right table back onto the path as the new left table and recurse.
-    $depth++;
-    $this->addChadoRecordJoins($records, $chado_column, $as, $delta, $path_arr, $parent_table, $depth);
-  }
-
-
   /**
    *
    * @param array $records
