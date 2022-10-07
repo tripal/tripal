@@ -4,8 +4,8 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
-use Drupal\tripal\TripalStorage\IntStoragePropertyType;
-use Drupal\tripal\TripalStorage\TextStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\core\Field\FieldStorageDefinitionInterface;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\Core\Form\FormStateInterface;
@@ -84,10 +84,10 @@ class chado_linker__prop extends ChadoFieldItemBase {
     ];
 
     // Create the property types.
-    $value = new TextStoragePropertyType($entity_type_id, self::$id, 'value', $value_settings);
-    $rank = new IntStoragePropertyType($entity_type_id, self::$id, $rank_term,  $rank_settings);
-    $type_id = new IntStoragePropertyType($entity_type_id, self::$id, $type_term,  $type_settings);
-    $fk_id = new IntStoragePropertyType($entity_type_id, self::$id, $fk_term,  $fk_id_settings);
+    $value = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'value', $value_settings);
+    $rank = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $rank_term,  $rank_settings);
+    $type_id = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $type_term,  $type_settings);
+    $fk_id = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $fk_term,  $fk_id_settings);
 
     // All Tripal fields have a record_id property and if the chado_table is
     // not specified then it defaults to the base table. We need to store the
