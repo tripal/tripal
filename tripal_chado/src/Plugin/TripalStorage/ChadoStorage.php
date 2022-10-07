@@ -462,7 +462,12 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           }
         }
       }
-      $values[$field_name][$delta][$key]['value']->setValue(trim($value));
+      if ($value !== NULL && is_string($value)) {
+        $values[$field_name][$delta][$key]['value']->setValue(trim($value));
+      }
+      else {
+        $values[$field_name][$delta][$key]['value']->setValue($value);
+      }
     }
   }
 
@@ -576,7 +581,10 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           // in the Chado table for the field.
           if ($action == 'store') {
             $chado_column = $prop_storage_settings['chado_column'];
-            $value = trim($prop_value->getValue());
+            $value = $prop_value->getValue();
+            if (is_string($value)) {
+              $value = trim($value);
+            }
             // If this column is the foreign key column to the base table then
             // we need to replace it with the record ID. But we can't gurantee
             // that fields come in order to get that beforehand. So we'll leave
