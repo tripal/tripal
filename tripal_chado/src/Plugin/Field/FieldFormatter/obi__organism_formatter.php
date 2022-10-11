@@ -1,24 +1,24 @@
 <?php
 
-namespace Drupal\tripal\Plugin\Field\FieldFormatter;
+namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
 use Drupal\tripal\TripalField\TripalFormatterBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Plugin implementation of default Tripal text type formatter.
+ * Plugin implementation of default Tripal string type formatter.
  *
  * @FieldFormatter(
- *   id = "default_tripal_text_type_formatter",
- *   label = @Translation("Default Text Type Formatter"),
- *   description = @Translation("The default text type formatter."),
+ *   id = "obi__organism_formatter",
+ *   label = @Translation("Chado Organism Reference Formatter"),
+ *   description = @Translation("A chado organism reference formatter"),
  *   field_types = {
- *     "tripal_text_type"
+ *     "obi__organism"
  *   }
  * )
  */
-class DefaultTripalTextTypeFormatter extends TripalFormatterBase {
+class obi__organism_formatter extends TripalFormatterBase {
 
   /**
    * {@inheritdoc}
@@ -28,7 +28,7 @@ class DefaultTripalTextTypeFormatter extends TripalFormatterBase {
 
     foreach($items as $delta => $item) {
       $elements[$delta] = [
-        "#markup" => $item->get("value")->getString(),
+        "#markup" => $item->get('rdfs_label')->getString()
       ];
     }
 

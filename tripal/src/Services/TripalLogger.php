@@ -115,7 +115,14 @@ class TripalLogger {
       $message_str = $prefix . trim($message_str);
     }
 
-    // @debug print $message_str . "\n";
+    // In test environements, we are not seeing these messages.
+    // To fix this, we set a global variable in the TripalTestBrowserBase
+    // which we will use here to detect if we should print directly to the terminal.
+    $is_a_test_environment = \Drupal::state()->get('is_a_test_environment', FALSE);
+    if ($is_a_test_environment === TRUE) {
+      print "\n    [TRIPAL LOGGER] " . $this->messageString($message, $context) . "\n";
+    }
+
     error_log($message_str);
   }
 

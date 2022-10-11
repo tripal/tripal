@@ -13,12 +13,6 @@ use Drupal\tripal\TripalVocabTerms\TripalVocabularyBase;
  *  )
  */
 class ChadoVocabulary extends TripalVocabularyBase {
-  /**
-   * Holds an instance of a BioDB connection to Chado.
-   *
-   * @var \Drupal\tripal\TripalDBX\TripalDbxConnection
-   */
-  protected $chado = NULL;
 
   /**
    * The definition for the `db` table of Chado.
@@ -58,11 +52,11 @@ class ChadoVocabulary extends TripalVocabularyBase {
     $this->messageLogger = \Drupal::service('tripal.logger');
 
     // Instantiate a TripalDBX connection for Chado.
-    $this->chado = \Drupal::service('tripal_chado.database');
+    $chado = \Drupal::service('tripal_chado.database');
 
     // Get the chado definition for the `cv` and `db` tables.
-    $this->db_def = $this->chado->schema()->getTableDef('db', ['Source' => 'file']);
-    $this->cv_def = $this->chado->schema()->getTableDef('cv', ['Source' => 'file']);
+    $this->db_def = $chado->schema()->getTableDef('db', ['Source' => 'file']);
+    $this->cv_def = $chado->schema()->getTableDef('cv', ['Source' => 'file']);
   }
 
 
@@ -101,13 +95,16 @@ class ChadoVocabulary extends TripalVocabularyBase {
    */
   public function create(){
 
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     // Check if the record already exists in the database, if it
     // doesn't then insert it.  We don't yet have the definition,
     // but that's okay, the name is all that isrequired to create
     // a record in the `cv` table.
     $vocab = $this->loadVocab();
     if (!$vocab) {
-      $query = $this->chado->insert('1:cv')
+      $query = $chado->insert('1:cv')
         ->fields(['name' => $this->getName()]);
       $query->execute();
     }
@@ -138,8 +135,11 @@ class ChadoVocabulary extends TripalVocabularyBase {
    */
   protected function loadVocab() {
 
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     // Get the Chado `db` record for this ID space.
-    $query = $this->chado->select('1:cv', 'cv')
+    $query = $chado->select('1:cv', 'cv')
       ->condition('cv.name', $this->getName(), '=')
       ->fields('cv', ['name', 'definition']);
     $result = $query->execute();
@@ -162,8 +162,12 @@ class ChadoVocabulary extends TripalVocabularyBase {
    * @return string
    */
   protected function getIdSpaceCacheID() {
+
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     $idSpace = $this->getName();
-    $chado_schema = $this->chado->getSchemaName();
+    $chado_schema = $chado->getSchemaName();
     return 'chado_vocabulary_' . $chado_schema . '_' . $idSpace . '_id_spaces';
   }
 
@@ -268,10 +272,13 @@ class ChadoVocabulary extends TripalVocabularyBase {
       return NULL;
     }
 
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     // All of the ID spaces for the vocabulary should
     // have the same URL, so only query the first corresponding
     // `db` record to get the URL.
-    $db = $this->chado->select('1:db', 'db')
+    $db = $chado->select('1:db', 'db')
       ->fields('db', ['url'])
       ->condition('db.name', $id_spaces[0], '=')
       ->execute();
@@ -313,9 +320,12 @@ class ChadoVocabulary extends TripalVocabularyBase {
       return False;
     }
 
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     // Update the record in the Chado `db` table for the URL for all ID spaces.
     foreach ($id_spaces as $name) {
-      $num_updated = $this->chado->update('1:db')
+      $num_updated = $chado->update('1:db')
         ->fields(['url' => $url])
         ->condition('name', $name, '=')
         ->execute();
@@ -355,8 +365,11 @@ class ChadoVocabulary extends TripalVocabularyBase {
     // because the Chado column where this goes (cv.definition) is an
     // unlimited text field.
 
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     // Update the record in the Chado `cv` table.
-    $query = $this->chado->update('1:cv')
+    $query = $chado->update('1:cv')
       ->fields(['definition' => $label])
       ->condition('name', $this->getName(), '=');
     $num_updated = $query->execute();

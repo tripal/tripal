@@ -1,14 +1,16 @@
 
-name: PHPUnit
-
-on: [push]
+name: PHPUnit on Drupal 9.5.x-dev (PHP 8.0)
+on:
+  push:
+    branches:
+      - 9.x-4.x
 
 env:
-  DRUPALVER: 9.2.x-dev
+  DRUPALVER: 9.5.x-dev
 
 jobs:
   run-tests:
-    name: "Drupal 9.2.x-dev (PHP 8.0)"
+    name: "Drupal 9.5.x-dev (PHP 8.0)"
     runs-on: ubuntu-latest
     steps:
       # Check out the repo

@@ -77,7 +77,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    *
    * @param array $values
    *   - *title: the title of the entity.
-   *   - *uid: the user_id of the user who authored the content.
+   *   - *user_id: the user_id of the user who authored the content.
    *   - *type: the type of tripal entity this is (e.g. bio_data_1)
    *   - status: whether the entity is published or not (boolean)
    *   - created: the unix timestamp for when this content was created.

@@ -19,9 +19,13 @@ class StoragePropertyBase {
    * @param string key
    *   The key associated with this storage property base object.
    */
-  public function __construct($entityType,$fieldType,$key) {
+  public function __construct($entityType, $fieldType, $key) {
     $this->entityType = $entityType;
     $this->fieldType = $fieldType;
+
+    // Drupal doesn't allow non alphanumeric characters in the key, so
+    // remove any.
+    $key = preg_replace('/[^\w]/', '_', $key);
     $this->key_ = $key;
   }
 

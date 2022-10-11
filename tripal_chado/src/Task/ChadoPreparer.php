@@ -1172,8 +1172,7 @@ class ChadoPreparer extends ChadoTaskBase {
       if ($idSpace) {
         $term = $idSpace->getTerm($accession);
 
-        // Use the same method as Tripal v3 for creating field names.
-        $field_name = strtolower($idSpace_name . '__' . preg_replace('/[^\w]/', '_', $term->getName()));
+        $field_name = strtolower($entityType->getName() . '_' . $idSpace_name . '_' . preg_replace('/[^\w]/', '_', $accession));
         $field_name = substr($field_name, 0, 32);
 
         $field_type = '';
@@ -1184,6 +1183,18 @@ class ChadoPreparer extends ChadoTaskBase {
         }
         if (strtolower($detail['type']) == 'text') {
           $field_type = 'tripal_text_type';
+        }
+        if (strtolower($detail['type']) == 'bigint' or strtolower($detail['type']) == 'int') {
+          // Make sure it's not a foreign key. If so, this will most likely be a complex field.
+          $is_fk = FALSE;
+          foreach ($schema_def['foreign keys'] as $fktable => $fkdetails) {
+            if (array_key_exists($column, $fkdetails['columns'])) {
+              $is_fk = TRUE;
+            }
+          }
+          if (!$is_fk) {
+            $field_type = 'tripal_integer_type';
+          }
         }
         // @todo handle all the different database column types.
 
@@ -1208,17 +1219,19 @@ class ChadoPreparer extends ChadoTaskBase {
           'label' => ucwords($term->getName()),
           'type' => $field_type,
           'description' => $term->getDefinition(),
-          // these are defaults that the admin can set through the UI.
           'cardinality' => $cardinality,
           'required' => $is_required,
           'storage_settings' => [
             'storage_plugin_id' => 'chado_storage',
             'storage_plugin_settings' => [
-              'chado_table' => $chado_table,
-              'chado_column' => $column,
-              // these are specific to the database.
-              'cardinality' => $cardinality,
-              'required' => $is_required,
+              'base_table' => $chado_table,
+              'property_settings' => [
+                'value' => [
+                  'action' => 'store',
+                  'chado_table' => $chado_table,
+                  'chado_column' => $column,
+                ]
+              ],
             ],
           ],
           'settings' => [
@@ -1247,12 +1260,214 @@ class ChadoPreparer extends ChadoTaskBase {
           $field['storage_settings'][$key] = $value;
         }
 
+        /**
+         * @var \Drupal\tripal\Services\TripalFieldsManager $tripal_fields
+         */
         $tripal_fields = \Drupal::service('tripal.fields');
         $tripal_fields->addBundleField($entityType->getName(), $field);
         $weight = $weight + 5;
       }
     }
   }
+
+  /**
+   * Automatically adds the organism complex value fields for base tables.
+   *
+   * @param TripalEntityType $entityType
+   * @param string $chado_table
+   */
+  private function addOrganismField(TripalEntityType $entityType, string $chado_table) {
+
+    // We need the idSpace manager object.
+    $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+
+    // Get the Chado table information.
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+    $schema_def = $schema->getTableDef($chado_table, ['format' => 'Drupal']);
+
+    // Get the term to table mapping information for the core chado mapping.
+    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
+    $mapping = $storage->load('core_mapping');
+
+    $weight = 10;
+    // This is only for organism foreign keys so no need to add if it's the organism table.
+    if ($chado_table == 'organism') {
+      return;
+    }
+
+    // Now check for the foreign key.
+    if (array_key_exists('organism_id', $schema_def['fields'])) {
+      $org_id_col = 'organism_id';
+    } elseif (array_key_exists('taxon_id', $schema_def['fields'])){
+      $org_id_col = 'taxon_id';
+    }
+    else {
+      // there is no foreign key to the organism table for this chado table.
+      return;
+    }
+
+    // Now retrieve the term mapped to this chado column.
+    $term_id = $mapping->getColumnTermId($chado_table, $org_id_col);
+    list($idSpace_name, $accession) = explode(':', $term_id);
+    $idSpace = $idSpace_manager->loadCollection($idSpace_name);
+    if (!is_object($idSpace)) {
+      // Unable to find the term we need.
+      // No error was originally returned here but we may want to consider adding one.
+      return;
+    }
+
+    $term = $idSpace->getTerm($accession);
+
+    // Use the same method as Tripal v3 for creating field names.
+    $field_name = strtolower($entityType->getName() . '_' . $idSpace_name . '_' . preg_replace('/[^\w]/', '_', $accession));
+    $field_name = substr($field_name, 0, 32);
+    $field_type = 'obi__organism';
+
+    // Is the field required? Ensure we match the database.
+    $is_required = FALSE;
+    if (array_key_exists('not null', $schema_def['fields'][$org_id_col]) and
+        $schema_def['fields'][$org_id_col]['not null'] == TRUE) {
+      $is_required = TRUE;
+    }
+
+    $field = [
+      'name' => $field_name,
+      'label' => ucwords($term->getName()),
+      'type' => $field_type,
+      'description' => $term->getDefinition(),
+      'cardinality' => 1,
+      'required' => $is_required,
+      'storage_settings' => [
+        'storage_plugin_id' => 'chado_storage',
+        'storage_plugin_settings' => [
+          'base_table' => $chado_table,
+          'property_settings' => [
+            'value' => [
+              'action' => 'store',
+              'chado_table' => $chado_table,
+              'chado_column' => $org_id_col,
+            ],
+          ],
+        ],
+      ],
+      'settings' => [
+       'termIdSpace' => $idSpace_name,
+       'termAccession' => $term->getAccession(),
+      ],
+      'display' => [
+       'view' => [
+         'default' => [
+           'region' => 'content',
+           'label' => 'above',
+           'weight' => $weight,
+         ],
+       ],
+       'form' => [
+         'default' => [
+           'region' => 'content',
+           'weight' => $weight,
+         ],
+       ],
+      ],
+    ];
+    $tripal_fields = \Drupal::service('tripal.fields');
+    $tripal_fields->addBundleField($entityType->getName(), $field);
+  }
+
+  /**
+   * Automatically adds complex value fields for base tables.
+   *
+   * @param TripalEntityType $entityType
+   * @param string $chado_table
+   */
+  private function addTypeField(TripalEntityType $entityType, string $chado_table) {
+
+    // We need the idSpace manager object.
+    $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+
+    // Get the Chado table information.
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+    $schema_def = $schema->getTableDef($chado_table, ['format' => 'Drupal']);
+
+    // Get the term to table mapping information for the core chado mapping.
+    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
+    $mapping = $storage->load('core_mapping');
+
+    $weight = 10;
+    // We won't add a type field if there isn't a type_id.
+    if (!array_key_exists('type_id', $schema_def['fields'])) {
+      return;
+    }
+
+    $term_id = $mapping->getColumnTermId($chado_table, 'type_id');
+    list($idSpace_name, $accession) = explode(':', $term_id);
+    $idSpace = $idSpace_manager->loadCollection($idSpace_name);
+    if (!is_object($idSpace)) {
+      // Unable to find the term we need.
+      // No error was originally returned here but we may want to consider adding one.
+      return;
+    }
+
+    $term = $idSpace->getTerm($accession);
+
+    // Use the same method as Tripal v3 for creating field names.
+    $field_name = strtolower($idSpace_name . '__' . preg_replace('/[^\w]/', '_', $term->getName()));
+    $field_name = substr($field_name, 0, 32);
+    $field_type = 'tripal_integer_type';
+
+    // Is the field required? Ensure we match the database.
+    $is_required = FALSE;
+    if (array_key_exists('not null', $schema_def['fields']['type_id']) and
+        $schema_def['fields']['type_id']['not null'] == TRUE) {
+      $is_required = TRUE;
+    }
+
+    $field = [
+      'name' => $field_name,
+      'label' => ucwords($term->getName()),
+      'type' => $field_type,
+      'description' => $term->getDefinition(),
+      'cardinality' => 1,
+      'required' => $is_required,
+      'storage_settings' => [
+        'storage_plugin_id' => 'chado_storage',
+        'storage_plugin_settings' => [
+          'base_table' => $chado_table,
+          'property_settings' => [
+            'value' => [
+              'action' => 'store',
+              'chado_table' => $chado_table,
+              'chado_column' => 'type_id',
+            ],
+          ],
+        ],
+      ],
+      'settings' => [
+        'termIdSpace' => $idSpace_name,
+        'termAccession' => $term->getAccession(),
+      ],
+      'display' => [
+        'view' => [
+          'default' => [
+            'region' => 'content',
+            'label' => 'above',
+            'weight' => $weight,
+          ],
+        ],
+        'form' => [
+          'default' => [
+            'region' => 'content',
+            'weight' => $weight,
+          ],
+        ],
+      ],
+    ];
+    $tripal_fields = \Drupal::service('tripal.fields');
+    $tripal_fields->addBundleField($entityType->getName(), $field);
+  }
+
 
   /**
    * Creates the "General" category of content types.
@@ -1321,6 +1536,8 @@ class ChadoPreparer extends ChadoTaskBase {
       'category' => 'Genomic',
     ]);
     $this->addBaseTableSVFields($entity_type, 'feature');
+    $this->addOrganismField($entity_type, 'feature');
+    $this->addTypeField($entity_type, 'feature');
 
     $entity_type = $this->createContentType([
       'label' => 'mRNA',

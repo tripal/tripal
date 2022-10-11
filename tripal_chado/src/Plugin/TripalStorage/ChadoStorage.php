@@ -119,7 +119,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
   public function insertValues(&$values) : bool {
     $chado = \Drupal::service('tripal_chado.database');
     $logger = \Drupal::service('tripal.logger');
-    $records = $this->buildChadoRecords($values);
+    $records = $this->buildChadoRecords($values, TRUE);
 
     $transaction_chado = $chado->startTransaction();
     try {
@@ -163,7 +163,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
   public function updateValues($values) : bool {
     $chado = \Drupal::service('tripal_chado.database');
     $logger = \Drupal::service('tripal.logger');
-    $records = $this->buildChadoRecords($values);
+    $records = $this->buildChadoRecords($values, TRUE);
 
     $transaction_chado = $chado->startTransaction();
     try {
@@ -215,7 +215,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
   public function loadValues(&$values) : bool {
     $chado = \Drupal::service('tripal_chado.database');
     $logger = \Drupal::service('tripal.logger');
-    $records = $this->buildChadoRecords($values);
+    $records = $this->buildChadoRecords($values, FALSE);
 
     $transaction_chado = $chado->startTransaction();
     try {
@@ -227,12 +227,33 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
               ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
           }
 
+          // Select the fields in the chado table.
           $select = $chado->select('1:' . $chado_table, 'ct');
           $select->fields('ct', array_keys($record['fields']));
+
+          // Add in any joins.
+          if (array_key_exists('joins', $record)) {
+            $j_index = 0;
+            foreach ($record['joins'] as $rtable => $jinfo) {
+              $lalias = $jinfo['on']['left_alias'];
+              $ralias = $jinfo['on']['right_alias'];
+              $lcol = $jinfo['on']['left_col'];
+              $rcol = $jinfo['on']['right_col'];
+              $select->leftJoin('1:' . $rtable, $ralias, $lalias . '.' .  $lcol . '=' .  $ralias . '.' . $rcol);
+              foreach ($jinfo['columns'] as $column) {
+                $sel_col = $column[0];
+                $sel_col_as = $column[1];
+                $select->addField($ralias, $sel_col, $sel_col_as);
+              }
+              $j_index++;
+            }
+          }
+
+          // Add the select condition
           $num_conditions = 0;
           foreach ($record['conditions'] as $chado_column => $value) {
             if (!empty($value)) {
-              $select->condition($chado_column, $value);
+              $select->condition('ct.'.$chado_column, $value);
               $num_conditions++;
             }
           }
@@ -240,6 +261,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             throw new \Exception($this->t('Cannot select record in the Chado "@table" table due to unset conditions. Record: @record',
               ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
           }
+
+          // Execute the query.
           $results = $select->execute();
           if (!$results) {
             throw new \Exception($this->t('Failed to select record in the Chado "@table" table. Record: @record',
@@ -249,7 +272,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
         }
       }
       $this->setPropValues($values, $records);
-
     }
     catch (\Exception $e) {
       $transaction_chado->rollback();
@@ -290,20 +312,18 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       foreach ($deltas as $delta => $keys) {
         foreach ($keys as $key => $info) {
           $definition = $info['definition'];
-          $settings = $definition->getSettings();
-          $chado_table = $settings['storage_plugin_settings']['chado_table'];
-
-          if ($key != 'record_id') {
-            continue;
-          }
-
+          $field_settings = $definition->getSettings();
+          $storage_settings = $field_settings['storage_plugin_settings'];
+          $base_table = $storage_settings['base_table'];
           $chado = \Drupal::service('tripal_chado.database');
           $schema = $chado->schema();
-          $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
-          $pkey = $table_def['primary key'];
+          $base_table_def = $schema->getTableDef($base_table, ['format' => 'drupal']);
+          $base_pkey = $base_table_def['primary key'];
 
-          $record_id = $records[$chado_table][$delta]['conditions'][$pkey];
-          $values[$field_name][$delta][$key]['value']->setValue($record_id);
+          if ($key == 'record_id') {
+            $record_id = $records[$base_table][$delta]['conditions'][$base_pkey];
+            $values[$field_name][$delta][$key]['value']->setValue($record_id);
+          }
         }
       }
     }
@@ -319,27 +339,69 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    */
   protected function setPropValues(&$values, $records) {
 
+    $replace = [];
+
     // Iterate through the value objects.
     foreach ($values as $field_name => $deltas) {
       foreach ($deltas as $delta => $keys) {
         foreach ($keys as $key => $info) {
-          $definition = $info['definition'];
-          $prop_value = $info['value'];
-          $settings = $definition->getSettings();
-          $chado_table = $settings['storage_plugin_settings']['chado_table'];
-          $chado_column = $settings['storage_plugin_settings']['chado_column'];
           if ($key == 'record_id') {
             continue;
           }
 
-          if (array_key_exists($chado_table, $records)) {
-            if (array_key_exists($chado_column, $records[$chado_table][$delta])) {
-              $value = $records[$chado_table][$delta][$chado_column];
-              $values[$field_name][$delta][$key]['value']->setValue($value);
+          $prop_type = $info['type'];
+          $prop_storage_settings = $prop_type->getStorageSettings();
+          $action = $prop_storage_settings['action'];
+
+          // Get the values of properties that can be stored.
+          if ($action == 'store') {
+            $chado_table = $prop_storage_settings['chado_table'];
+            $chado_column = $prop_storage_settings['chado_column'];
+            if (array_key_exists($chado_table, $records)) {
+              if (array_key_exists($chado_column, $records[$chado_table][$delta])) {
+                $value = $records[$chado_table][$delta][$chado_column];
+                $values[$field_name][$delta][$key]['value']->setValue($value);
+              }
             }
+          }
+
+          // Get the values of properties that have values added by a join.
+          if ($action == 'join') {
+            $chado_column = $prop_storage_settings['chado_column'];
+            $as = array_key_exists('as', $prop_storage_settings) ? $prop_storage_settings['as'] : $chado_column;
+            $value = $records[$chado_table][$delta][$as];
+            $values[$field_name][$delta][$key]['value']->setValue($value);
+          }
+
+          if ($action == 'replace') {
+            $replace[] = [$field_name, $delta, $key, $info];
           }
         }
       }
+    }
+
+    // Now that we have all stored and loaded values set, let's do any
+    // replacements.
+    foreach ($replace as $item) {
+      $field_name = $item[0];
+      $delta = $item[1];
+      $key = $item[2];
+      $info = $item[3];
+      $prop_type = $info['type'];
+      $prop_storage_settings = $prop_type->getStorageSettings();
+      $value = $prop_storage_settings['template'];
+
+      $matches = [];
+      if (preg_match_all('/\[(.+?\:.+?)\]/', $value, $matches)) {
+        foreach ($matches[1] as $match) {
+          $match_clean = preg_replace('/:/', '_', $match);
+          if (array_key_exists($match_clean, $values[$field_name][$delta])) {
+            $match_value = $values[$field_name][$delta][$match_clean]['value']->getValue();
+            $value = preg_replace("/\[$match\]/", $match_value, $value);
+          }
+        }
+      }
+      $values[$field_name][$delta][$key]['value']->setValue(trim($value));
     }
   }
 
@@ -357,14 +419,16 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    *   - "definition": a \Drupal\Field\Entity\FieldConfig object
    *   When the function returns, any values retreived from the data store
    *   will be set in the StoragePropertyValue object.
+   * @param bool $is_store
+   *   Set to TRUE if we are building the record array for an insert or an
+   *   update.
    * @return array
    *   An associative array.
    */
-  protected function buildChadoRecords($values) {
+  protected function buildChadoRecords($values, bool $is_store) {
 
     $records = [];
     $logger = \Drupal::service('tripal.logger');
-
     // @debug dpm(array_keys($values), '1st level: field names');
 
     // Iterate through the value objects.
@@ -386,41 +450,119 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             continue;
           }
 
-          // @debug ksm($info['definition'], "$key: DEFINITION");
+          // @debug ksm($info['definition']); //, "$key: DEFINITION");
           // @debug ksm($info['type'], "$key: TYPE");
           // @debug ksm($info['value'], "$key: VALUES");
-
           $definition = $info['definition'];
+          $prop_type = $info['type'];
           $prop_value = $info['value'];
-          $field_type = $prop_value->getFieldType();
-          $settings = $definition->getSettings();
+          $field_label = $definition->getLabel();
+          $field_settings = $definition->getSettings();
+          $field_storage_settings = $field_settings['storage_plugin_settings'];
+          $prop_storage_settings = $prop_type->getStorageSettings();
 
-          if (!array_key_exists('chado_table', $settings['storage_plugin_settings'])) {
-            $logger->error($this->t('Cannot save record in Chado. The field, "@field", is missing the "chado_table setting',
-              ['@field' => $field_type]));
+          // Check that the chado table is set.
+          if (!array_key_exists('base_table', $field_storage_settings)) {
+            $logger->error($this->t('Cannot store the property, @field.@prop, in Chado. The field is missing the chado base table name.',
+                ['@field' => $field_name, '@prop' => $key]));
             continue;
           }
-          if (!array_key_exists('chado_column', $settings['storage_plugin_settings'])) {
-            $logger->error($this->t('Cannot save record in Chado. The field, "@field", is missing the "chado_column setting',
-              ['@field' => $field_type]));
-            continue;
-          }
-          $chado_table = $settings['storage_plugin_settings']['chado_table'];
-          $chado_column = $settings['storage_plugin_settings']['chado_column'];
 
+          // Get the base table definitions.
+          $base_table = $field_storage_settings['base_table'];
+          $chado = \Drupal::service('tripal_chado.database');
+          $schema = $chado->schema();
+          $base_table_def = $schema->getTableDef($base_table, ['format' => 'drupal']);
+          $base_pkey = $base_table_def['primary key'];
+
+          // If this is the record ID property then set the value in the
+          // record array and continue.
           if ($key == 'record_id') {
-            $chado = \Drupal::service('tripal_chado.database');
-            $schema = $chado->schema();
-            $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
-            $pkey = $table_def['primary key'];
-            $records[$chado_table][$delta]['conditions'][$pkey] = $prop_value->getValue();
+            $records[$base_table][$delta]['conditions'][$base_pkey] = $prop_value->getValue();
+            continue;
           }
-          else {
-            $records[$chado_table][$delta]['fields'][$chado_column] = $prop_value->getValue();
+
+          if (!array_key_exists('action', $prop_storage_settings)) {
+            $logger->error($this->t('Cannot store the property, @field.@prop ("@label"), in Chado. The property is missing an action in the property settings: @settings',
+                ['@field' => $field_name, '@prop' => $key,
+                 '@label' => $field_label, '@settings' => print_r($prop_storage_settings, TRUE)]));
+            continue;
+          }
+          $action = $prop_storage_settings['action'];
+
+          // An action of "store" means that this value can be loaded/stored
+          // in the Chado table for the field.
+          if ($action == 'store') {
+              $chado_table = $prop_storage_settings['chado_table'];
+              $chado_column = $prop_storage_settings['chado_column'];
+              $value = $prop_value->getValue();
+              $records[$chado_table][$delta]['fields'][$chado_column] = $value;
+          }
+          if ($action == 'join') {
+            $path = $prop_storage_settings['path'];
+            $chado_column = $prop_storage_settings['chado_column'];
+            $as = array_key_exists('as', $prop_storage_settings) ? $prop_storage_settings['as'] : $chado_column;
+            $path_arr = explode(";", $path);
+            $this->addChadoRecordJoins($records, $chado_column, $as, $delta, $path_arr);
+          }
+          if ($action == 'replace') {
+            // Do nothing here for properties that need replacement.
+          }
+          if ($action == 'function') {
+            // Do nothing here for properties that require post-processing
+            // with a function.
           }
         }
       }
     }
     return $records;
+  }
+
+
+  /**
+   *
+   * @param array $records
+   * @param string $base_table
+   * @param int $delta
+   * @param string $path
+   */
+  protected function addChadoRecordJoins(array &$records, string $chado_column, string $as,
+      int $delta, array $path_arr, $parent_table = NULL, $depth = 0) {
+
+    // Get the left column and the right table join infor.
+    list($left, $right) = explode(">", array_shift($path_arr));
+    list($left_table, $left_col) = explode(".", $left);
+    list($right_table, $right_col) = explode(".", $right);
+
+    // We want all joins to be with the parent table record.
+    $parent_table = !$parent_table ? $left_table : $parent_table;
+    $lalias = $depth == 0 ? 'ct' : 'j' . ($depth - 1);
+    $ralias = 'j' . $depth;
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+    $ltable_def = $schema->getTableDef($left_table, ['format' => 'drupal']);
+    $rtable_def = $schema->getTableDef($right_table, ['format' => 'drupal']);
+
+    // @todo check the requested join is valid.
+
+    // Add the join.
+    $records[$parent_table][$delta]['joins'][$right_table]['on'] = [
+      'left_table' => $left_table,
+      'left_col' => $left_col,
+      'right_table' => $right_table,
+      'right_col' => $right_col,
+      'left_alias' => $lalias,
+      'right_alias' => $ralias,
+    ];
+
+    // We're done recursing if we only have two elements left in the path
+    if (count($path_arr)== 0) {
+      $records[$parent_table][$delta]['joins'][$right_table]['columns'][] = [$chado_column, $as];
+      return;
+    }
+
+    // Add the right table back onto the path as the new left table and recurse.
+    $depth++;
+    $this->addChadoRecordJoins($records, $chado_column, $as, $delta, $path_arr, $parent_table, $depth);
   }
 }

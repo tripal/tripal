@@ -23,9 +23,12 @@ class VarCharStoragePropertyType extends StoragePropertyTypeBase {
    *
    * @param int size
    *   The maximum size of characters for this type.
+   *
+   * @param array storage_settings
+   *   An array of settings required for this property by the storage backend.*
    */
-  public function __construct($entityType,$fieldType,$key,$size = 255) {
-    parent::__construct($entityType,$fieldType,$key,"varchar");
+  public function __construct($entityType, $fieldType, $key, $size = 255, $storage_settings = []) {
+    parent::__construct($entityType, $fieldType, $key, "varchar", $storage_settings);
     $this->maxCharacterSize = $size;
   }
 
