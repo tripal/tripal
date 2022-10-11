@@ -325,7 +325,7 @@ class GFF3Importer extends ChadoImporterBase {
    * @see TripalImporter::form()
    */
   public function form($form, &$form_state) {
-    $chado = $this->getChadoConnection();
+    $chado = \Drupal::service('tripal_chado.database');
     // Always call the parent form to ensure Chado is handled properly.
     $form = parent::form($form, $form_state);
 
