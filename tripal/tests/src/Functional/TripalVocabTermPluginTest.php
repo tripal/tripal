@@ -19,7 +19,7 @@ class TripalVocabTermPluginTest extends BrowserTestBase {
   // protected $htmlOutputEnabled = TRUE;
   protected $defaultTheme = 'stable';
 
-  protected static $modules = ['tripal', 'block', 'field_ui'];
+  protected static $modules = ['tripal'];
 
 	/**
    * Basic tests for Tripal Vocabulary Plugin.

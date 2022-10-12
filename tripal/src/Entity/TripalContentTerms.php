@@ -11,6 +11,13 @@ use Drupal\tripal\TripalContentTermsInterface;
  * @ConfigEntityType(
  *   id = "tripal_content_terms",
  *   label = @Translation("Tripal Content Terms"),
+ *   label_collection = @Translation("Tripal Content Terms"),
+ *   label_singular = @Translation("Tripal Content Term"),
+ *   label_plural = @Translation("Tripal Content Terms"),
+ *   label_count = @PluralTranslation(
+ *     singular = "@count Tripal content term",
+ *     plural = "@count Tripal content terms",
+ *   ),
  *   handlers = {
  *     "list_builder" = "Drupal\tripal\Controller\TripalContentTermsListBuilder",
  *     "form" = {
@@ -31,6 +38,7 @@ use Drupal\tripal\TripalContentTermsInterface;
  *     "vocabularies"
  *   },
  *   links = {
+ *     "add-form" = "/admin/tripal/config/terms/add",
  *     "edit-form" = "/admin/tripal/config/terms/{config}",
  *     "delete-form" = "/admin/tripal/config/terms/{config}/delete",
  *   }

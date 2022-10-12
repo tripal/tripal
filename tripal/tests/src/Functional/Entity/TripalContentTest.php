@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tripal\Functional;
+namespace Drupal\Tests\tripal\Functional\Entity;
 
 use Drupal\Tests\BrowserTestBase;
 use Drupal\Core\Url;
@@ -14,20 +14,18 @@ use Drupal\Core\Url;
 class TripalContentTest extends BrowserTestBase {
     protected $defaultTheme = 'stable';
 
-    protected static $modules = ['tripal', 'block', 'field_ui'];
+    protected static $modules = ['tripal'];
 
   /**
    * Basic tests for Tripal Content Types.
-   *
-   * @group tripal_content
    */
   public function testTripalEmptyContentTypes() {
     $assert = $this->assertSession();
 
     $web_user = $this->drupalCreateUser([
       'administer tripal',
-      'administer tripal content types',
-      'access tripal content overview',
+      'manage tripal content types',
+      'administer tripal content',
     ]);
 
     $urls = [
