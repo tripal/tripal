@@ -1,18 +1,18 @@
 <?php
 
-namespace Drupal\tripal;
+namespace Drupal\tripal\Routing;
 
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Routing\AdminHtmlRouteProvider;
 use Symfony\Component\Routing\Route;
 
 /**
- * Provides routes for Tripal Content type entities.
+ * Provides routes for Tripal Content entities.
  *
  * @see Drupal\Core\Entity\Routing\AdminHtmlRouteProvider
  * @see Drupal\Core\Entity\Routing\DefaultHtmlRouteProvider
  */
-class TripalEntityTypeHtmlRouteProvider extends AdminHtmlRouteProvider {
+class TripalEntityHtmlRouteProvider extends AdminHtmlRouteProvider {
 
   /**
    * {@inheritdoc}
@@ -45,15 +45,12 @@ class TripalEntityTypeHtmlRouteProvider extends AdminHtmlRouteProvider {
       $route
         ->setDefaults([
           '_entity_list' => $entity_type_id,
-          // Make sure this is not a TranslatableMarkup object as the
-          // TitleResolver translates this string again.
-          '_title' => (string) $entity_type->getLabel(),
+          '_title' => "{$entity_type->getLabel()} list",
         ])
-        ->setRequirement('_permission', $entity_type->getAdminPermission())
+        ->setRequirement('_permission', 'access tripal content overview+administer tripal content')
         ->setOption('_admin_route', TRUE);
 
       return $route;
     }
   }
-
 }

@@ -1,23 +1,26 @@
 ##
 # Tripal Content Entity.
 ##
+
+# -- Provides a task link for Tripal content at the top of the Drupal content page.
 tripal.tripal_entity.collection:
   title: 'Tripal Content'
   route_name: entity.tripal_entity.collection
-  description: 'List Tripal Content entities'
   base_route: system.admin_content
 
-# Tripal Content routing definition
+# -- Provides a View task link on each Tripal content page.
 entity.tripal_entity.canonical:
   route_name: entity.tripal_entity.canonical
   base_route: entity.tripal_entity.canonical
   title: View
 
+# -- Provides an Edit task link on each Tripal content page.
 entity.tripal_entity.edit_form:
   route_name: entity.tripal_entity.edit_form
   base_route: entity.tripal_entity.canonical
   title: Edit
 
+# -- Provides a Delete task link on each Tripal content page.
 entity.tripal_entity.delete_form:
   route_name:  entity.tripal_entity.delete_form
   base_route:  entity.tripal_entity.canonical
@@ -28,35 +31,28 @@ entity.tripal_entity.delete_form:
 # Tripal Files
 ##
 
+# -- Provides a task link on in the Tripal Managed Files Admin for managing upload size.
 tripal.files_file_usage:
   route_name: tripal.files_file_usage
-  description: 'Set system'
-  title: 'Manage Usage'
+  title: 'Manage File Upload Size'
   base_route: tripal.files
   weight: 80
 
+# -- Provides a task link on in the Tripal Managed Files Admin for managing user quotas.
 tripal.files_quota:
   route_name: tripal.files_quota
-  description: 'Set default quota, expiration date, and custom quotas'
-  title: 'User Quotas'
+  title: 'Disk Usage Quotas'
   base_route: tripal.files
   weight: 90
 
+# -- Provides a task link on in the Tripal Managed Files Admin for reporting file usage.
 tripal.files_usage:
   route_name: tripal.files_usage
-  description: 'Set default quota, expiration date, and custom quotas'
-  title: 'File Usage'
+  title: 'File Usage Reports'
   base_route: tripal.files
   weight: 100
 
-tripal.files_quota_add:
-  route_name: tripal.files_quota_add
-  description: 'Gives the user a new quota and expiration date'
-  title: 'Add Custom Quota'
-  base_route: tripal.files
-  weight: 110
-
-# Tripal files tab on user page.
+# -- Provides a Tripal files tab on each user profile page for viewing their own files.
 tripal.user_files:
   route_name: tripal.user_files
   base_route: entity.user.canonical
