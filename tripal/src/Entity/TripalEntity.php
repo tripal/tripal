@@ -36,11 +36,10 @@ use Drupal\field\Entity\FieldConfig;
  *     },
  *     "access" = "Drupal\tripal\Access\TripalEntityAccessControlHandler",
  *     "route_provider" = {
- *       "html" = "Drupal\tripal\TripalEntityHtmlRouteProvider",
+ *       "html" = "Drupal\tripal\Routing\TripalEntityHtmlRouteProvider",
  *     },
  *   },
  *   base_table = "tripal_entity",
- *   admin_permission = "access tripal content overview",
  *   entity_keys = {
  *     "id" = "id",
  *     "bundle" = "type",
@@ -114,13 +113,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * {@inheritdoc}
    */
   public function label() {
-    $title = $this->title->getValue();
-    if ($title) {
-      return $title[0]['value'];
-    }
-    else {
-      return '';
-    }
+    return $this->getTitle();
   }
 
   /**
