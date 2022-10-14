@@ -1447,33 +1447,17 @@ class GFF3Importer extends ChadoImporterBase {
       return $this->landmarks[$landmark_name];
     }
 
-    $landmark_count = $chado->select('feature')
+    $landmark_select = $chado->select('feature')
       ->fields('feature')
       ->condition('organism_id', $this->organism_id)
       ->condition('uniquename', $landmark_name);
 
     if($landmark_type) {
-      $landmark_count->condition('type_id', $landmark_type->getValue('cvterm_id'));
+      $landmark_select->condition('type_id', $landmark_type->getValue('cvterm_id'));
     }
 
-    $landmark_count->countQuery()
-      ->execute()
-      ->fetchField();
-
-    $landmark = $chado->select('feature')
-      ->fields('feature')
-      ->condition('organism_id', $this->organism_id)
-      ->condition('uniquename', $landmark_name);
-
-    if($landmark_type) {
-      $landmark->condition('type_id', $landmark_type->getValue('cvterm_id'));
-    }
-
-    $landmark->execute()
-    ->fetchObject();
-
-
-    $num_found = $landmark->find();
+    // Make sure we only match on one landmark.
+    $num_found = $landmark_select->countQuery()->execute()->fetchField();
     if ($num_found == 0) {
       return NULL;
     }
@@ -1486,6 +1470,7 @@ class GFF3Importer extends ChadoImporterBase {
     }
 
     // The landmark was found, remember it
+    $landmark = $landmark_select->execute()->fetchObject();
     $this->landmarks[$landmark_name] = $landmark->feature_id;
 
     return $landmark;
@@ -1502,10 +1487,9 @@ class GFF3Importer extends ChadoImporterBase {
       $rid = $region_matches[1];
       $landmark = $this->findLandmark($rid);
       if (!$landmark) {
-        $rstart = $region_matches[2];
-        $rend = $region_matches[3];
         if (!$this->landmark_type) {
-          throw new \Exception(t('The landmark, !landmark, cannot be added becuase no landmark type was provided. Please redo the importer job and specify a landmark type.',
+          throw new \Exception(t('The landmark, !landmark, cannot be added becuase no landmark ' .
+              'type was provided. Please redo the importer job and specify a landmark type.',
               ['!landmark' => $rid]));
         }
         $this->insertLandmark($rid);
@@ -2804,7 +2788,7 @@ class GFF3Importer extends ChadoImporterBase {
    * Finds an organism from an organism attribute value.
    */
   private function findOrganism($organism_attr, $line_num) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
 
     if (array_key_exists($organism_attr, $this->organism_lookup)) {
       return $this->organism_lookup[$organism_attr];
@@ -2812,22 +2796,16 @@ class GFF3Importer extends ChadoImporterBase {
 
     // Get the organism object.
     list($genus, $species) = explode(':', $organism_attr, 2);
-    $organism = $chado->select('organism','o')
-      ->fields('o')
-      ->condition('genus', $genus)
-      ->condition('species', $species)
-      ->execute()
-      ->fetchObject();
+    $organism_select = $chado->select('organism','o');
+    $organism_select->fields('o');
+    $organism_select->condition('genus', $genus);
+    $organism_select->condition('species', $species);
 
-    $num_found = $chado->select('organism','o')
-      ->fields('o')
-      ->condition('genus', $genus)
-      ->condition('species', $species)
-      ->execute()
-      ->countQuery()
-      ->fetchField();
+    $organism_count = $organism_select->countQuery();
+    $num_found = $organism_count->execute()->fetchField();
 
     if ($num_found == 1){
+      $organism = $organism_select->execute()->fetchObject();
       $this->organism_lookup[$organism_attr] = $organism->organism_id;
       return $organism->organism_id;
     }
@@ -2838,12 +2816,14 @@ class GFF3Importer extends ChadoImporterBase {
     }
 
     if ($this->create_organism) {
-      $organism_insert_id = $chado->insert('organism')->fields(
-        (array) $organism
-      )->execute();
-      $this->organism_lookup[$organism_attr] = $organism_insert_id;
-      $gff_feature['organism']  = $organism_insert_id;
-      return $organism_insert_id;
+      $organism_insert = $chado->insert('organism');
+      $organism_insert->fields([
+        'genus' => $genus,
+        'species' => $species
+      ]);
+      $organism_id = $organism_insert->execute();
+      $this->organism_lookup[$organism_attr] = $organism_id;
+      return $organism_id;
     }
     return NULL;
   }
