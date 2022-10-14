@@ -351,6 +351,8 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    */
   public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
     $elements = [];
+    $settings = $this->getSetting('storage_plugin_settings');
+
 
     // turn into selection
     $elements["storage_plugin_id"] = [
@@ -362,16 +364,49 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       "#disabled" => TRUE
     ];
 
-//     $storage_settings = $this->getSetting('storage_plugin_settings');
-//     $elements['storage_plugin_settings']['property_settings'] = [
-//       '#type' => "value",
-//       '#value' => array_key_exists('property_settings', $storage_settings) ? $storage_settings['property_settings'] : [],
-//     ];
+    // Make a fieldset for each property settings.
+    if (array_key_exists('property_settings', $settings)) {
+      $property_settings = $settings['property_settings'];
+      $property_elements = [];
+      foreach ($property_settings as $key => $propset_values) {
 
+        $prop_rows = [];
+        foreach ($propset_values as $propkey => $propval) {
+          if ($propval === FALSE) {
+            $propval = "False";
+          }
+          if ($propval === TRUE) {
+            $propval = "True";
+          }
+          $prop_rows[] = [
+            [
+              'data' => $propkey,
+              'header' => TRUE,
+              'width' => '20%'
+            ],
+            $propval
+          ];
+        }
+        $prop_element = [
+          '#type' => 'details',
+          '#title' => $key,
+          '#open' => False,
+          'prop_settings_table' => [
+            '#type' => 'table',
+            '#header'=> [],
+            '#rows' => $prop_rows,
+            '#empty' => $this->t('There are no settings.'),
+            '#sticky' => False
+          ],
+        ];
+        $property_elements[$key] = $prop_element;
+      }
+      $renderer = \Drupal::service('renderer');
+      $settings['property_settings'] = $renderer->render($property_elements);;
+    }
 
     // Construct a table for the vocabulary information.
     $headers = ['Storage Property', 'Value'];
-    $settings = $this->getSetting('storage_plugin_settings');
     $rows = [];
     foreach ($settings as $setting_name => $setting_value) {
       $rows[] = [
@@ -380,7 +415,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
           'header' => TRUE,
           'width' => '20%',
         ],
-        json_encode($setting_value),
+        $setting_value,
       ];
     }
     $elements['settings_fs'] = [

@@ -114,30 +114,33 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
   }
 
   /**
-   * A helper function for inserting records.
+   * Inserts a single record in a Chado table.
+   * @param array $records
+   * @param string $chado_table
+   * @param integer $delta
+   * @param array $record
+   * @throws \Exception
+   * @return integer
    */
-  private function insertRecords(&$records) {
+  private function insertChadoRecord(&$records, $chado_table, $delta, $record) {
+
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
+    $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
+    $pkey = $table_def['primary key'];
 
-    foreach ($records as $chado_table => $deltas) {
-      foreach ($deltas as $delta => $record) {
-
-        // Insert the record.
-        $insert = $chado->insert($chado_table);
-        $insert->fields($record['fields']);
-        $record_id = $insert->execute();
-        if (!$record_id) {
-          throw new \Exception($this->t('Failed to insert a record in the Chado "@table" table. Record: @record',
-              ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
-        }
-
-        // Update the record array to include the record id.
-        $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
-        $pkey = $table_def['primary key'];
-        $records[$chado_table][$delta]['conditions'][$pkey] = $record_id;
-      }
+    // Insert the record.
+    $insert = $chado->insert($chado_table);
+    $insert->fields($record['fields']);
+    $record_id = $insert->execute();
+    if (!$record_id) {
+      throw new \Exception($this->t('Failed to insert a record in the Chado "@table" table. Record: @record',
+          ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
     }
+
+    // Update the record array to include the record id.
+    $records[$chado_table][$delta]['conditions'][$pkey] = $record_id;
+    return $record_id;
   }
 
   /**
@@ -146,13 +149,55 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
   public function insertValues(&$values) : bool {
     $chado = \Drupal::service('tripal_chado.database');
     $logger = \Drupal::service('tripal.logger');
+    $schema = $chado->schema();
 
     $build = $this->buildChadoRecords($values, TRUE);
     $records = $build['records'];
 
     $transaction_chado = $chado->startTransaction();
     try {
-      $this->insertRecords($records);
+
+      // First: Insert the base table records first.
+      foreach ($build['base_tables'] as $base_table => $record_id) {
+        foreach ($records[$base_table] as $delta => $record) {
+          $record_id = $this->insertChadoRecord($records, $base_table, $delta, $record);
+          $build['base_tables'][$base_table] = $record_id;
+        }
+      }
+
+      // Second: Insert non base table records.
+      foreach ($records as $chado_table => $deltas) {
+        foreach ($deltas as $delta => $record) {
+
+          // Skip base table records.
+          if (in_array($chado_table, array_keys($build['base_tables']))) {
+            continue;
+          }
+
+          // Don't insert any records if any of the columns have field that
+          // are marked as "delete if empty".
+          if (array_key_exists('delete_if_empty', $record)) {
+            $skip_record = FALSE;
+            foreach ($record['delete_if_empty'] as $del_key) {
+              if ($record['fields'][$del_key] == '') {
+                $skip_record = TRUE;
+              }
+            }
+            if ($skip_record) {
+              continue;
+            }
+          }
+
+          // Replace linking fields with values
+          foreach ($record['fields'] as $column => $val) {
+            if (is_array($val) and $val[0] == 'REPLACE_BASE_RECORD_ID') {
+              $base_table = $val[1];
+              $record['fields'][$column] = $build['base_tables'][$base_table];
+            }
+          }
+          $this->insertChadoRecord($records, $chado_table, $delta, $record);
+        }
+      }
       $this->setRecordIds($values, $records);
     }
     catch (\Exception $e) {
@@ -164,6 +209,83 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     // Now set the record Ids of the properties.
     return TRUE;
   }
+
+
+  /**
+   * Indicates if the record has any valid conditions.
+   *
+   * For the record to have valid conditions it must first have at least
+   * one condition, and the value on which that condition relies is not empty.
+   *
+   * @param array $records
+   * @return boolean
+   */
+  private function hasValidConditions($record) {
+    $num_conditions = 0;
+    foreach ($record['conditions'] as $chado_column => $cond_value) {
+      if (!empty($cond_value)) {
+        $num_conditions++;
+      }
+    }
+    if ($num_conditions == 0) {
+      return FALSE;
+    }
+    return TRUE;
+  }
+
+  /**
+   * Indicates if we should keep this record for inserts/updates.
+   *
+   * @param array $record
+   * @return boolean
+   */
+  private function isEmptyRecord($record) {
+    if (array_key_exists('delete_if_empty', $record)) {
+      foreach ($record['delete_if_empty'] as $del_key) {
+        if ($record['fields'][$del_key] == '') { // @todo use the `empty_value` setting instead of hardcoding the ''
+          return TRUE;
+        }
+      }
+    }
+    return FALSE;
+  }
+
+
+
+  /**
+   * Updates a single record in a Chado table.
+   *
+   * @param array $base_tables
+   * @param string $chado_table
+   * @param integer $delta
+   * @param array $record
+   * @throws \Exception
+   */
+  private function updateChadoRecord(&$records, $chado_table, $delta, $record) {
+    $chado = \Drupal::service('tripal_chado.database');
+
+    // Don't update if we don't have any conditions set.
+    if (!$this->hasValidConditions($record)) {
+      throw new \Exception($this->t('Cannot update record in the Chado "@table" table due to unset conditions. Record: @record',
+          ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+    }
+
+    $update = $chado->update($chado_table);
+    $update->fields($record['fields']);
+    foreach ($record['conditions'] as $chado_column => $cond_value) {
+      $update->condition($chado_column, $cond_value);
+    }
+    $rows_affected = $update->execute();
+    if ($rows_affected == 0) {
+      throw new \Exception($this->t('Failed to update record in the Chado "@table" table. Record: @record',
+          ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+    }
+    if ($rows_affected > 1) {
+      throw new \Exception($this->t('Incorrectly tried to update multiple records in the Chado "@table" table. Record: @record',
+          ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+    }
+  }
+
 
   /**
    * @{inheritdoc}
@@ -186,43 +308,26 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
               ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
           }
 
-          $update = $chado->update($chado_table);
-          $update->fields($record['fields']);
-          $num_conditions = 0;
-          foreach ($record['conditions'] as $chado_column => $value) {
-            if (!empty($value)) {
-              $update->condition($chado_column, $value);
-              $num_conditions++;
-            }
-          }
-          if ($num_conditions == 0) {
-            // If this is table is a base table and we have no conditions then
-            // we cannot update. We must fail.  But if this is not the base
-            // table then we should be adding a new record to a linking table.
-            if (in_array($chado_table, $base_tables)) {
-              throw new \Exception($this->t('Cannot update record in the Chado "@table" table due to unset conditions. Record: @record',
-                  ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
-            }
-            else {
-              $insert_records = [];
-              $insert_records[$chado_table][$delta] = $record;
-              $this->insertRecords($insert_records);
-              $this->setRecordIds($values, $insert_records);
-              continue;
-            }
+          // If this is the base table then do an update.
+          if (in_array($chado_table, array_keys($base_tables))) {
+            $this->updateChadoRecord($records, $chado_table, $delta, $record);
+            continue;
           }
 
-          $rows_affected = $update->execute();
-          if ($rows_affected == 0) {
-            throw new \Exception($this->t('Failed to update record in the Chado "@table" table. Record: @record',
-              ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+          // For non base table records we may be inserting, updating, or
+          // deleting depending on the context.
+          if (!$this->hasValidConditions($record)) {
+            $this->insertChadoRecord($records, $chado_table, $delta, $record);
+            continue;
           }
-          if ($rows_affected > 1) {
-            throw new \Exception($this->t('Incorrectly tried to update multiple records in the Chado "@table" table. Record: @record',
-              ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+          if ($this->isEmptyRecord($record)) {
+            $this->deleteChadoRecord($records, $chado_table, $delta, $record);
+            continue;
           }
+          $this->updateChadoRecord($records, $chado_table, $delta, $record);
         }
       }
+      $this->setRecordIds($values, $records);
     }
     catch (\Exception $e) {
       $transaction_chado->rollback();
@@ -230,6 +335,71 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       return FALSE;
     }
     return TRUE;
+  }
+
+  /**
+   * Selects a single record from Chado.
+   *
+   * @param array $records
+   * @param string $chado_table
+   * @param integer $delta
+   * @param array $record
+   *
+   * @throws \Exception
+   */
+  public function selectChadoRecord(&$records, $base_tables, $chado_table, $delta, $record) {
+    $chado = \Drupal::service('tripal_chado.database');
+
+    if (!array_key_exists('conditions', $record)) {
+      throw new \Exception($this->t('Cannot select record in the Chado "@table" table due to missing conditions. Record: @record',
+          ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+    }
+
+    // If we are selecting on the base table and we don't have a proper
+    // condition then throw and error.
+    if (!$this->hasValidConditions($record)) {
+      throw new \Exception($this->t('Cannot select record in the Chado "@table" table due to unset conditions. Record: @record',
+          ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+    }
+
+    // Select the fields in the chado table.
+    $select = $chado->select($chado_table, 'ct');
+    $select->fields('ct', array_keys($record['fields']));
+
+    // Add in any joins.
+    if (array_key_exists('joins', $record)) {
+      $j_index = 0;
+      foreach ($record['joins'] as $rtable => $jinfo) {
+        $lalias = $jinfo['on']['left_alias'];
+        $ralias = $jinfo['on']['right_alias'];
+        $lcol = $jinfo['on']['left_col'];
+        $rcol = $jinfo['on']['right_col'];
+
+        $select->leftJoin('1:' . $rtable, $ralias, $lalias . '.' .  $lcol . '=' .  $ralias . '.' . $rcol);
+
+        foreach ($jinfo['columns'] as $column) {
+          $sel_col = $column[0];
+          $sel_col_as = $column[1];
+          $select->addField($ralias, $sel_col, $sel_col_as);
+        }
+        $j_index++;
+      }
+    }
+
+    // Add the select condition
+    foreach ($record['conditions'] as $chado_column => $value) {
+      if (!empty($value)) {
+        $select->condition('ct.'.$chado_column, $value);
+      }
+    }
+
+    // Execute the query.
+    $results = $select->execute();
+    if (!$results) {
+      throw new \Exception($this->t('Failed to select record in the Chado "@table" table. Record: @record',
+          ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+    }
+    $records[$chado_table][$delta] = $results->fetchAssoc();
   }
 
   /**
@@ -247,62 +417,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     try {
       foreach ($records as $chado_table => $deltas) {
         foreach ($deltas as $delta => $record) {
-
-          if (!array_key_exists('conditions', $record)) {
-            throw new \Exception($this->t('Cannot select record in the Chado "@table" table due to missing conditions. Record: @record',
-              ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
-          }
-
-          // Select the fields in the chado table.
-          $select = $chado->select('1:' . $chado_table, 'ct');
-          $select->fields('ct', array_keys($record['fields']));
-
-          // Add in any joins.
-          if (array_key_exists('joins', $record)) {
-            $j_index = 0;
-            foreach ($record['joins'] as $rtable => $jinfo) {
-              $lalias = $jinfo['on']['left_alias'];
-              $ralias = $jinfo['on']['right_alias'];
-              $lcol = $jinfo['on']['left_col'];
-              $rcol = $jinfo['on']['right_col'];
-
-              $select->leftJoin('1:' . $rtable, $ralias, $lalias . '.' .  $lcol . '=' .  $ralias . '.' . $rcol);
-
-              foreach ($jinfo['columns'] as $column) {
-                $sel_col = $column[0];
-                $sel_col_as = $column[1];
-                $select->addField($ralias, $sel_col, $sel_col_as);
-              }
-              $j_index++;
-            }
-          }
-
-          // Add the select condition
-          $num_conditions = 0;
-          foreach ($record['conditions'] as $chado_column => $value) {
-            if (!empty($value)) {
-              $select->condition('ct.'.$chado_column, $value);
-              $num_conditions++;
-            }
-          }
-          if ($num_conditions == 0) {
-            // If this is the base table and there is no condiiton for selecting
-            // then throw an error. For all other tables don't try to query
-            // if we're missing the conditino.
-            if (in_array($chado_table, $base_tables)) {
-              throw new \Exception($this->t('Cannot select record in the Chado "@table" table due to unset conditions. Record: @record',
-                ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
-            }
-            continue;
-          }
-
-          // Execute the query.
-          $results = $select->execute();
-          if (!$results) {
-            throw new \Exception($this->t('Failed to select record in the Chado "@table" table. Record: @record',
-              ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
-          }
-          $records[$chado_table][$delta] = $results->fetchAssoc();
+          $this->selectChadoRecord($records, $base_tables, $chado_table, $delta, $record);
         }
       }
       $this->setPropValues($values, $records);
@@ -314,6 +429,45 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     }
 
     return TRUE;
+  }
+
+  /**
+   * Deletes a single record in a Chado table.
+   *
+   * @param array $base_tables
+   * @param string $chado_table
+   * @param integer $delta
+   * @param array $record
+   * @throws \Exception
+   */
+  private function deleteChadoRecord(&$records, $chado_table, $delta, $record) {
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+    $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
+    $pkey = $table_def['primary key'];
+
+    // Don't delete if we don't have any conditions set.
+    if (!$this->hasValidConditions($record)) {
+      throw new \Exception($this->t('Cannot update record in the Chado "@table" table due to unset conditions. Record: @record',
+          ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+    }
+
+    $delete = $chado->delete($chado_table);
+    foreach ($record['conditions'] as $chado_column => $cond_value) {
+      $delete->condition($chado_column, $cond_value);
+    }
+    $rows_affected = $delete->execute();
+    if ($rows_affected == 0) {
+      throw new \Exception($this->t('Failed to delete a record in the Chado "@table" table. Record: @record',
+          ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+    }
+    if ($rows_affected > 1) {
+      throw new \Exception($this->t('Incorrectly tried to delete multiple records in the Chado "@table" table. Record: @record',
+          ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+    }
+
+    // Unset the record Id for this deleted record.
+    $records[$chado_table][$delta]['conditions'][$pkey] = 0;
   }
 
   /**
@@ -330,6 +484,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
   public function findValues($match) {
 
   }
+
 
   /**
    * Sets the record_id properties after an insert.
@@ -507,7 +662,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
         // @debug dpm(array_keys($keys), "3rd level: field key name ($delta)");
         foreach ($keys as $key => $info) {
 
-            // @debug dpm(array_keys($info), "4th level: info key-value pairs ($key)");
+          // @debug dpm(array_keys($info), "4th level: info key-value pairs ($key)");
           if (!array_key_exists('definition', $info) OR !is_object($info['definition'])) {
             $logger->error($this->t('Cannot save record in Chado. The field, "@field", is missing the field definition (i.e. FieldConfig object). There should be a "definition" key in this array: @var',
               ['@field' => $field_name, '@var' => print_r($info, TRUE)]));
@@ -544,7 +699,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           $base_pkey = $base_table_def['primary key'];
 
           // Get the Chado table. Use the base table if one is not provided.
-          // Single value fields won't ever have a chado table specified.
           $chado_table = $base_table;
           $chado_table_def = $base_table_def;
           $pkey = $base_pkey;
@@ -558,7 +712,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             }
           }
 
-          // If this is the record ID then keep track of it.
+          // If this is the record ID then keep track of it. This will only
+          // be present if we're performing a load or update.
           if ($key == 'record_id') {
             $record_id = $prop_value->getValue();
             $records[$chado_table][$delta]['conditions'][$pkey] = $record_id;
@@ -587,13 +742,20 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             }
             // If this column is the foreign key column to the base table then
             // we need to replace it with the record ID. But we can't gurantee
-            // that fields come in order to get that beforehand. So we'll leave
-            // a reminder token to replace it when we're all done.
+            // that fields come in order. So we'll leave a reminder token to
+            // replace it later.
             if ($fk_col == $chado_column) {
               $records[$chado_table][$delta]['fields'][$chado_column] = ['REPLACE_BASE_RECORD_ID', $base_table];
             }
             else {
               $records[$chado_table][$delta]['fields'][$chado_column] = $value;
+            }
+
+            // If this field should not allow an empty value that means this
+            // entire record should be removed on an update and not inserted.
+            $delete_if_empty = array_key_exists('delete_if_empty',$prop_storage_settings) ? $prop_storage_settings['delete_if_empty'] : FALSE;
+            if ($delete_if_empty) {
+              $records[$chado_table][$delta]['delete_if_empty'][] = $key;
             }
           }
           if ($action == 'join') {
@@ -619,13 +781,22 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       foreach ($deltas as $delta => $info) {
         foreach ($info['fields'] as $chado_column => $val) {
           if (is_array($val) and $val[0] == 'REPLACE_BASE_RECORD_ID') {
-            $records[$table_name][$delta]['fields'][$chado_column] = $base_record_ids[$val[1]];
+
+            // If the base record ID is 0 then this is an insert and we
+            // don't yet have the base record ID.  So, leave in the message
+            // to replace the ID so we can do so later.
+            if ($base_record_ids[$val[1]] !== 0) {
+              $records[$table_name][$delta]['fields'][$chado_column] = $base_record_ids[$val[1]];
+            }
           }
         }
       }
     }
 
-    return ['base_tables' => $base_record_ids, 'records' => $records];
+    return [
+      'base_tables' => $base_record_ids,
+      'records' => $records
+    ];
   }
 
   /**

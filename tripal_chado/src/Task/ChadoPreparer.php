@@ -162,7 +162,7 @@ class ChadoPreparer extends ChadoTaskBase {
       $this->logger->notice("Loading ontologies...");
       $terms_setup = \Drupal::service('tripal_chado.terms_init');
       $terms_setup->installTerms();
-      // $this->importOntologies(); @todo uncomment before PR
+      $this->importOntologies();
 
       $this->setProgress(0.3);
       $this->logger->notice('Populating materialized view cv_root_mview...');
@@ -1178,11 +1178,11 @@ class ChadoPreparer extends ChadoTaskBase {
         $field_type = '';
         $storage_settings = [];
         if (strtolower($detail['type']) == 'character varying') {
-          $field_type = 'tripal_string_type';
+          $field_type = 'chado_string_type';
           $storage_settings['max_length'] = $detail['size'];
         }
         if (strtolower($detail['type']) == 'text') {
-          $field_type = 'tripal_text_type';
+          $field_type = 'chado_text_type';
         }
         if (strtolower($detail['type']) == 'bigint' or strtolower($detail['type']) == 'int') {
           // Make sure it's not a foreign key. If so, this will most likely be a complex field.
@@ -1193,7 +1193,7 @@ class ChadoPreparer extends ChadoTaskBase {
             }
           }
           if (!$is_fk) {
-            $field_type = 'tripal_integer_type';
+            $field_type = 'chado_integer_type';
           }
         }
         // @todo handle all the different database column types.
@@ -1417,7 +1417,7 @@ class ChadoPreparer extends ChadoTaskBase {
     // Use the same method as Tripal v3 for creating field names.
     $field_name = strtolower($idSpace_name . '__' . preg_replace('/[^\w]/', '_', $term->getName()));
     $field_name = substr($field_name, 0, 32);
-    $field_type = 'tripal_integer_type';
+    $field_type = 'chado_integer_type';
 
     // Is the field required? Ensure we match the database.
     $is_required = FALSE;

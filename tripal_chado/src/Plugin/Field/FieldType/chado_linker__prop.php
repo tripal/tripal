@@ -183,6 +183,8 @@ class chado_linker__prop extends ChadoFieldItemBase {
       $form_state->setValue(['settings','storage_plugin_settings','property_settings','value','action'], 'store');
       $form_state->setValue(['settings','storage_plugin_settings','property_settings','value','chado_table'], $prop_table);
       $form_state->setValue(['settings','storage_plugin_settings','property_settings','value','chado_column'], 'value');
+      $form_state->setValue(['settings','storage_plugin_settings','property_settings','value','delete_if_empty'], TRUE);
+      $form_state->setValue(['settings','storage_plugin_settings','property_settings','value','empty_value'], '');
     }
     else {
       $form_state->setErrorByName('storage_plugin_settings][base_table',

@@ -53,7 +53,9 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
     $elements['storage_plugin_settings']['base_table'] = [
       '#type' => 'select',
       '#title' => t('Chado Base Table'),
-      '#description' => t('Select the base table in Chado to which this property belongs. For example. If this property is meant to store a feature property then the base table should be "feature".'),
+      '#description' => t('Select the base table in Chado to which this property belongs. ' .
+        'For example. If this property is meant to store a feature property then the base ' .
+        'table should be "feature".'),
       '#options' => $base_tables,
       '#default_value' => $default_base_table,
       '#required' => TRUE,

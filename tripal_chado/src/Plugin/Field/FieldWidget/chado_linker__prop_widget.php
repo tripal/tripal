@@ -67,8 +67,6 @@ class chado_linker__prop_widget extends TripalWidgetBase {
       ];
     }
 
-    // @todo: set the rank according to the delta, which can change if the
-    // user moves the values  around.
     $rank_term = $this->sanitizeKey($mapping->getColumnTermId($chado_table, 'rank'));
     $element[$rank_term] = [
       '#type' => 'value',
@@ -84,5 +82,37 @@ class chado_linker__prop_widget extends TripalWidgetBase {
     ];
 
     return $element + parent::formElement($items, $delta, $element, $form, $form_state);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
+    $mapping = $storage->load('core_mapping');
+
+    $storage_settings = $this->getFieldSetting('storage_plugin_settings');
+    $chado_table = $storage_settings['property_settings']['value']['chado_table'];
+    $rank_term = $this->sanitizeKey($mapping->getColumnTermId($chado_table, 'rank'));
+
+    // Remove any empty values that aren't mapped to a record id.
+    foreach ($values as $val_key => $value) {
+      if ($value['value'] == '' and $value['record_id'] == 0) {
+        unset($values[$val_key]);
+      }
+    }
+
+    // Reset the weights
+    $i = 0;
+    foreach ($values as $val_key => $value) {
+      if ($value['value'] == '') {
+        continue;
+      }
+      $values[$val_key]['_weight'] = $i;
+      $values[$val_key][$rank_term] = $i;
+      $i++;
+    }
+
+    return $values;
   }
 }
