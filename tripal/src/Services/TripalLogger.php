@@ -115,6 +115,14 @@ class TripalLogger {
       $message_str = $prefix . trim($message_str);
     }
 
+    // In test environements, we are not seeing these messages.
+    // To fix this, we set a global variable in the TripalTestBrowserBase
+    // which we will use here to detect if we should print directly to the terminal.
+    $is_a_test_environment = \Drupal::state()->get('is_a_test_environment', FALSE);
+    if ($is_a_test_environment === TRUE) {
+      print "\n    [TRIPAL LOGGER] " . $this->messageString($message, $context) . "\n";
+    }
+
     error_log($message_str);
   }
 
@@ -286,11 +294,11 @@ class TripalLogger {
    */
   public function error($message, $context = [], $options=[]) {
     if ($this->isSuppressed()) return;
-    
+
     $message = 'ERROR: ' . $message;
     $this->log2Job($message, $context);
 
-    if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {     
+    if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
       $this->logger->error($message);
     }
 

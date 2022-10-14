@@ -37,6 +37,14 @@ class TripalStorageManager extends DefaultPluginManager {
         ,'Drupal\tripal\TripalStorage\Annotation\TripalStorage'
     );
     $this->alterInfo("tripal_storage_info");
-    $this->setCacheBackend($cache_backend,"tripal_storage_plugins");
+    $this->setCacheBackend($cache_backend, "tripal_storage_plugins");
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getInstance(array $options) {
+    $plugin_id = $options['plugin_id'];
+    return $this->createInstance($plugin_id, $options);
   }
 }

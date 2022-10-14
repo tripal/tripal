@@ -23,9 +23,12 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
    *
    * @param string id
    *   The id of this storage property type base.
+   *
+   * @param array storage_settings
+   *   An array of settings required for this property by the storage backend.
    */
-  public function __construct($entityType,$fieldType,$key,$id) {
-    parent::__construct($entityType,$fieldType,$key);
+  public function __construct($entityType, $fieldType, $key, $id, $storage_settings = []) {
+    parent::__construct($entityType, $fieldType, $key);
     $this->id = $id;
     $this->cardinality = 1;
     $this->searchability = TRUE;
@@ -33,6 +36,7 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
     $this->sortable = TRUE;
     $this->readOnly_ = FALSE;
     $this->required = FALSE;
+    $this->storage_settings = $storage_settings;
   }
 
   /**
@@ -48,6 +52,10 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
   /**
    * Sets the cardinality.
    *
+   * NOTE: Currently this is not being used but was part of the original design.
+   *  We are leaving this here for now + intend to go back and discuss
+   *  with Josh.
+   *
    * @param int $cardinality
    *   The cardinality. A value of 0 indicates unlimited values.
    */
@@ -57,6 +65,10 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
 
   /**
    * Gets the cardinality.
+   *
+   * NOTE: Currently this is not being used but was part of the original design.
+   *  We are leaving this here for now + intend to go back and discuss
+   *  with Josh.
    *
    * @return bool
    *   The cardinality.
@@ -68,6 +80,10 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
   /**
    * Sets the searchability.
    *
+   * NOTE: Currently this is not being used but was part of the original design.
+   *  We are leaving this here for now + intend to go back and discuss
+   *  with Josh.
+   *
    * @param bool $searchability
    *   The searchability.
    */
@@ -78,6 +94,10 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
   /**
    * Gets the searchability.
    *
+   * NOTE: Currently this is not being used but was part of the original design.
+   *  We are leaving this here for now + intend to go back and discuss
+   *  with Josh.
+   *
    * @return bool
    *   The searchability.
    */
@@ -87,6 +107,10 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
 
   /**
    * Sets the supported operations.
+   *
+   * NOTE: Currently this is not being used but was part of the original design.
+   *  We are leaving this here for now + intend to go back and discuss
+   *  with Josh.
    *
    * Valid operations are (eq,ne,contains,starts).
    *
@@ -100,6 +124,10 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
   /**
    * Gets the supported operations.
    *
+   * NOTE: Currently this is not being used but was part of the original design.
+   *  We are leaving this here for now + intend to go back and discuss
+   *  with Josh.
+   *
    * @return bool
    *   The operations.
    */
@@ -109,6 +137,10 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
 
   /**
    * Sets the sortable property.
+   *
+   * NOTE: Currently this is not being used but was part of the original design.
+   *  We are leaving this here for now + intend to go back and discuss
+   *  with Josh.
    *
    * @param bool $sortable
    *   The sortable property.
@@ -120,6 +152,10 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
   /**
    * Gets the sortable property.
    *
+   * NOTE: Currently this is not being used but was part of the original design.
+   *  We are leaving this here for now + intend to go back and discuss
+   *  with Josh.
+   *
    * @return bool
    *   The sortable property.
    */
@@ -129,6 +165,10 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
 
   /**
    * Sets the read only property.
+   *
+   * NOTE: Currently this is not being used but was part of the original design.
+   *  We are leaving this here for now + intend to go back and discuss
+   *  with Josh.
    *
    * @param bool $readOnly
    *   The read only property.
@@ -140,6 +180,10 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
   /**
    * Gets the read only property.
    *
+   * NOTE: Currently this is not being used but was part of the original design.
+   *  We are leaving this here for now + intend to go back and discuss
+   *  with Josh.
+   *
    * @return bool
    *   The read only property.
    */
@@ -149,6 +193,10 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
 
   /**
    * Sets the required property.
+   *
+   * NOTE: Currently this is not being used but was part of the original design.
+   *  We are leaving this here for now + intend to go back and discuss
+   *  with Josh.
    *
    * @param bool $required
    *   The required property.
@@ -160,11 +208,24 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
   /**
    * Gets the required property.
    *
+   * NOTE: Currently this is not being used but was part of the original design.
+   *  We are leaving this here for now + intend to go back and discuss
+   *  with Josh.
+   *
    * @return bool
    *   The required property.
    */
   public function getRequired() {
     return $this->required;
+  }
+
+  /**
+   * Gets the storage settings for this property type.
+   *
+   * @return array
+   */
+  public function getStorageSettings() {
+    return $this->storage_settings;
   }
 
   /**
@@ -177,12 +238,20 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
   /**
    * The cardinality of this storage property type base.
    *
+   * NOTE: Currently this is not being used but was part of the original design.
+   *  We are leaving this here for now + intend to go back and discuss
+   *  with Josh.
+   *
    * @var bool
    */
   private $cardinality;
 
   /**
    * The searchability of this storage property type base.
+   *
+   * NOTE: Currently this is not being used but was part of the original design.
+   *  We are leaving this here for now + intend to go back and discuss
+   *  with Josh.
    *
    * @var bool
    */
@@ -191,12 +260,20 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
   /**
    * The supported operations of this storage property type base.
    *
+   * NOTE: Currently this is not being used but was part of the original design.
+   *  We are leaving this here for now + intend to go back and discuss
+   *  with Josh.
+   *
    * @var array
    */
   private $operations;
 
   /**
    * The sortable property of this storage property type base.
+   *
+   * NOTE: Currently this is not being used but was part of the original design.
+   *  We are leaving this here for now + intend to go back and discuss
+   *  with Josh.
    *
    * @var bool
    */
@@ -205,6 +282,10 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
   /**
    * The read only property of this storage property type base.
    *
+   * NOTE: Currently this is not being used but was part of the original design.
+   *  We are leaving this here for now + intend to go back and discuss
+   *  with Josh.
+   *
    * @var bool
    */
   private $readOnly_;
@@ -212,8 +293,19 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
   /**
    * The required of this storage property type base.
    *
+   * NOTE: Currently this is not being used but was part of the original design.
+   *  We are leaving this here for now + intend to go back and discuss
+   *  with Josh.
+   *
    * @var bool
    */
   private $required;
+
+  /**
+   * An array of elements required for this property by the storage backend.
+   *
+   * @var array
+   */
+  private $storage_settings;
 
 }

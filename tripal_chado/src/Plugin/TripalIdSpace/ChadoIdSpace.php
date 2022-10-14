@@ -7,105 +7,126 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
 
 /**
  * Chado Implementation of TripalIdSpaceBase
- * 
+ *
  *  @TripalIdSpace(
  *    id = "chado_id_space",
  *    label = @Translation("Vocabulary IDSpace in Chado"),
  *  )
  */
 class ChadoIdSpace extends TripalIdSpaceBase {
-  
-  protected $default_vocabulary = NULL;
-  
+
   /**
-   * Holds the TripalDBX instance for accessing Chado.
+   * Holds the default vacabulary name.
+   *
+   * @var string
    */
-  protected $chado = NULL;
-    
-  
+  protected $default_vocabulary = NULL;
+
   /**
    * The definition for the `db` table of Chado.
+   *
+   * @var array
    */
   protected $db_def = NULL;
-  
-  
+
+
   /**
    * An instance of the TripalLogger.
+   *
+   * @var \Drupal\tripal\Services\TripalLogger
    */
   protected $messageLogger = NULL;
-  
+
   /**
    * A simple boolean to prevent Chado queries if the ID space isn't valid.
+   *
+   * @var bool
    */
   protected $is_valid = False;
-  
-  
+
+
   /**
    * {@inheritdoc}
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    
+
     // Instantiate the TripalLogger
     $this->messageLogger = \Drupal::service('tripal.logger');
-    
+
     // Instantiate a TripalDBX connection for Chado.
-    $this->chado = \Drupal::service('tripal_chado.database');
-    
+    $chado = \Drupal::service('tripal_chado.database');
+
     // Get the chado definition for the `db` table.
-    $this->db_def = $this->chado->schema()->getTableDef('db', ['Source' => 'file']);
+    $this->db_def = $chado->schema()->getTableDef('db', ['Source' => 'file']);
   }
-  
-  
+
+
   /**
    * {@inheritdoc}
    */
-  public function isValid() {    
-    
+  public function isValid() {
+
     // Make sure the name of this ID Space does not exceeed the allowed size in Chado.
-    if (strlen($this->getName()) > $this->db_def['fields']['name']['size']) {
+    $name = $this->getName();
+
+    if (!empty($name) AND (strlen($name) > $this->db_def['fields']['name']['size'])) {
       $this->messageLogger->error('ChadoIdSpace: The IdSpace name must not be longer than @size characters. ' +
           'The value provided was: @value',
           ['@size' => $this->db_def['fields']['name']['size'],
            '@value' => $this->getName()]);
-          return;
+      return;
     }
-    
+
     $this->is_valid = True;
-    
+
     return $this->is_valid;
   }
-  
-  
+
+  /**
+   * {@inheritdoc}
+   */
+  public function recordExists() {
+    $db = $this->loadIdSpace();
+    if ($db and $db['name'] == $this->getName()) {
+      return True;
+    }
+    return False;
+  }
+
+
   /**
    * {@inheritdoc}
    */
   public function create() {
-    
+
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     // Check if the record already exists in the database, if it
     // doesn't then insert it.  We don't yet have the description,
     // URL prefix, etc but that's okay, the name is all that is
     // required to create a record in the `db` table.
     $db = $this->loadIdSpace();
     if (!$db) {
-      $query = $this->chado->insert('1:db')
+      $query = $chado->insert('1:db')
         ->fields(['name' => $this->getName()]);
       $query->execute();
     }
   }
-  
+
   /**
    * {@inheritdoc}
    */
   public function destroy(){
     // The destroy function is meant to delete the ID space.
-    // But, because CVs and DBs are so critical to almost all 
-    // data in Chado we don't want to remove the records.  
-    // Let's let the collection be deleted as far as 
+    // But, because CVs and DBs are so critical to almost all
+    // data in Chado we don't want to remove the records.
+    // Let's let the collection be deleted as far as
     // Tripal is concerned but leave the record in Chado.
     // So, do nothing here.
-  }  
-  
+  }
+
   /**
    * Loads an ID Space record from Chado.
    *
@@ -117,9 +138,12 @@ class ChadoIdSpace extends TripalIdSpaceBase {
    *   of Chado or NULL if the db could not be found.
    */
   protected function loadIdSpace() {
-    
-    // Get the Chado `db` record for this ID space.    
-    $query = $this->chado->select('1:db', 'db')
+
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
+    // Get the Chado `db` record for this ID space.
+    $query = $chado->select('1:db', 'db')
       ->condition('db.name', $this->getName(), '=')
       ->fields('db', ['name', 'url', 'urlprefix', 'description']);
     $result = $query->execute();
@@ -127,36 +151,39 @@ class ChadoIdSpace extends TripalIdSpaceBase {
       return NULL;
     }
     return $result->fetchAssoc();
-    
-  }     
-  
+
+  }
+
   /**
    * {@inheritdoc}
    */
   public function getParent($child){
-    
+
     // Don't get values for an ID space that isn't valid.
     if (!$this->is_valid) {
       return NULL;
     }
-    
+
   }
-  
+
   /**
    * {@inheritdoc}
    */
   public function getChildren($parent = NULL){
-    
+
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     // Don't get values for an ID space that isn't valid.
     if (!$this->is_valid) {
       return NULL;
     }
-    
+
     $terms = [];
-    
+
     $cvterm = $this->getChadoCVTerm($parent);
-    
-    $query = $this->chado->select('1:cvterm_relationship', 'CVTR');
+
+    $query = $chado->select('1:cvterm_relationship', 'CVTR');
     $query->join('1:cvterm', 'CVTSUB', '"CVTR".subject_id = "CVTSUB".cvterm_id');
     $query->join('1:cvterm', 'CVTTYPE', '"CVTR".type_id = "CVTTYPE".cvterm_id');
     $query->join('1:dbxref', 'DBXSUB', '"CVTSUB".dbxref_id = "DBXSUB".dbxref_id');
@@ -192,24 +219,26 @@ class ChadoIdSpace extends TripalIdSpaceBase {
     }
     return $terms;
   }
-  
+
   /**
    * {@inheritdoc}
    */
   public function getTerm($accession, $options = []) {
-    
+
     if (!$this->is_valid) {
       return NULL;
-    }    
-    
+    }
+
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     // Get the term record.
-    $query = $this->chado->select('1:cvterm', 'CVT');
+    $query = $chado->select('1:cvterm', 'CVT');
     $query->join('1:dbxref', 'DBX', '"CVT".dbxref_id = "DBX".dbxref_id');
     $query->join('1:cv', 'CV', '"CV".cv_id = "CVT".cv_id');
     $query->join('1:db', 'DB', '"DB".db_id = "DBX".db_id');
     $query->fields('CVT', ['cvterm_id', 'name', 'definition', 'is_obsolete', 'is_relationshiptype'])
       ->condition('DB.name', $this->getName(), '=')
-      ->condition('CV.name', $this->getDefaultVocabulary(), '=')
       ->condition('DBX.accession', $accession, '=');
     $cvterm = $query->execute()->fetchObject();
     if (!$cvterm) {
@@ -224,10 +253,10 @@ class ChadoIdSpace extends TripalIdSpaceBase {
       'is_obsolete' => $cvterm->is_obsolete == 1 ? True : False,
       'is_relationship_type' => $cvterm->is_relationshiptype == 1 ? True : False,
     ]);
-    
+
     // Set the internal ID.
     $term->setInternalId($cvterm->cvterm_id);
-    
+
     // Set the boolean values for the term.
     if ($cvterm->is_obsolete) {
       $term->isObsolete(True);
@@ -235,10 +264,10 @@ class ChadoIdSpace extends TripalIdSpaceBase {
     if ($cvterm->is_relationshiptype) {
       $term->isRelationshipType(True);
     }
-    
+
     // Are there synonyms?
     if (!array_key_exists('includes', $options) or in_array('synonyms', $options['includes'])) {
-      $query = $this->chado->select('1:cvtermsynonym', 'CVTS');      
+      $query = $chado->select('1:cvtermsynonym', 'CVTS');
       $query->leftJoin('1:cvterm', 'CVT', '"CVT".cvterm_id = "CVTS".type_id');
       $query->leftJoin('1:dbxref', 'DBX', '"DBX".dbxref_id = "CVT".dbxref_id');
       $query->leftJoin('1:cv', 'CV', '"CV".cv_id = "CVT".cv_id');
@@ -264,24 +293,24 @@ class ChadoIdSpace extends TripalIdSpaceBase {
         $term->addSynonym($synonym->synonym, $type_term);
       }
     }
-    
+
     // Are there alt IDs?
     if (!array_key_exists('includes', $options) or in_array('altIds', $options['includes'])) {
-      $query = $this->chado->select('1:cvterm_dbxref', 'CVTDBX');
+      $query = $chado->select('1:cvterm_dbxref', 'CVTDBX');
       $query->join('1:dbxref', 'DBX', '"CVTDBX".dbxref_id = "DBX".dbxref_id');
       $query->join('1:db', 'DB', '"DB".db_id = "DBX".db_id');
       $query->fields('DBX', ['accession'])
         ->fields('DB', ['name'])
         ->condition('CVTDBX.cvterm_id', $cvterm->cvterm_id, '=');
-      $alt_ids = $query->execute();          
+      $alt_ids = $query->execute();
       while ($alt_id = $alt_ids->fetchObject()) {
         $term->addAltId($alt_id->name, $alt_id->accession);
       }
     }
-    
+
     // Are there properties?
     if (!array_key_exists('includes', $options) or in_array('properties', $options['includes'])) {
-      $query = $this->chado->select('1:cvtermprop', 'CVTP');    
+      $query = $chado->select('1:cvtermprop', 'CVTP');
       $query->join('1:cvterm', 'CVT', '"CVTP".type_id = "CVT".cvterm_id');
       $query->join('1:dbxref', 'DBX', '"CVT".dbxref_id = "DBX".dbxref_id');
       $query->join('1:db', 'DB', '"DB".db_id = "DBX".db_id');
@@ -305,10 +334,10 @@ class ChadoIdSpace extends TripalIdSpaceBase {
         $term->addProperty($prop_term, $property->value);
       }
     }
-      
+
     // Are there parents?
     if (!array_key_exists('includes', $options) or in_array('parents', $options['includes'])) {
-      $query = $this->chado->select('1:cvterm_relationship', 'CVTR');
+      $query = $chado->select('1:cvterm_relationship', 'CVTR');
       $query->join('1:cvterm', 'CVTOBJ', '"CVTR".object_id = "CVTOBJ".cvterm_id');
       $query->join('1:cvterm', 'CVTTYPE', '"CVTR".type_id = "CVTTYPE".cvterm_id');
       $query->join('1:dbxref', 'DBXOBJ', '"CVTOBJ".dbxref_id = "DBXOBJ".dbxref_id');
@@ -340,30 +369,33 @@ class ChadoIdSpace extends TripalIdSpaceBase {
           'idSpace' => $parent->DBTYPE_name,
           'vocabulary' => $parent->CVTYPE_name
         ]);
-        $term->addParent($parent_term, $type_term);    
+        $term->addParent($parent_term, $type_term);
       }
-    }    
-    
+    }
+
     return $term;
   }
-  
+
   /**
    * {@inheritdoc}
    */
   public function getTerms($name, $options = []) {
-    
+
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     // The list of terms to return
     $terms = [];
-    
+
     // Build the query for matching via the `cvterm.name` column.
-    $query1 = $this->chado->select('1:cvterm', 'CVT');
-    $query1->join('1:cv', 'CV', '"CV".cv_id = "CVT".cv_id');    
+    $query1 = $chado->select('1:cvterm', 'CVT');
+    $query1->join('1:cv', 'CV', '"CV".cv_id = "CVT".cv_id');
     $query1->join('1:dbxref', 'DBX', '"DBX".dbxref_id = "CVT".dbxref_id');
     $query1->join('1:db', 'DB', '"DB".db_id = "DBX".db_id');
     $query1->fields('CVT', ['name', 'definition', 'cvterm_id']);
     $query1->fields('DBX', ['accession']);
     $query1->fields('CV', ['name']);
-    $query1->condition('DB.name', $this->getName(), '=');    
+    $query1->condition('DB.name', $this->getName(), '=');
     if (array_key_exists('exact', $options) and $options['exact'] === True) {
       $query1->condition('CVT.name', $name, '=');
     }
@@ -380,12 +412,12 @@ class ChadoIdSpace extends TripalIdSpaceBase {
         'accession' => $cvterm->accession
       ]);
       $terms[$cvterm->name][$term->getTermId()] = $term;
-    }    
-    
+    }
+
     // Build the query for matching via the `cvtermsynonym.synonym` column.
-    $query2 = $this->chado->select('1:cvtermsynonym', 'CS');
+    $query2 = $chado->select('1:cvtermsynonym', 'CS');
     $query2->join('1:cvterm', 'CVT', '"CVT".cvterm_id = "CS".cvterm_id');
-    $query2->join('1:cv', 'CV', '"CV".cv_id = "CVT".cv_id');    
+    $query2->join('1:cv', 'CV', '"CV".cv_id = "CVT".cv_id');
     $query2->join('1:dbxref', 'DBX', '"DBX".dbxref_id = "CVT".dbxref_id');
     $query2->join('1:db', 'DB', '"DB".db_id = "DBX".db_id');
     $query2->fields('CVT', ['name', 'definition', 'cvterm_id']);
@@ -409,34 +441,36 @@ class ChadoIdSpace extends TripalIdSpaceBase {
         'accession' => $cvterm->accession
       ]);
       $terms[$cvterm->synonym][$term->getTermId()] = $term;
-    }        
+    }
     return $terms;
-  }  
-  
+  }
+
   /**
    * {@inheritdoc}
    */
   public function getDefaultVocabulary(){
-    return $this->default_vocabulary;    
+    return $this->getDefaultVocabCache();
   }
-    
+
   /**
    * {@inheritdoc}
    */
   public function saveTerm($term, $options = []) {
-    
+
     // Don't save terms that aren't valid
     if (!$term->isValid()) {
-      $this->messageLogger->error('ChadoIdSpace::saveTerm(). The term is not valid and cannot be saved.');      
+      $this->messageLogger->error(t('ChadoIdSpace::saveTerm(). The term, "@term" is not valid and cannot be saved.',
+          ['@term' => $term->getIdSpace() . ':' . $term->getAccession()]));
       return False;
     }
-    
+
     // Make sure the idSpace matches.
     if ($this->getName() != $term->getIdSpace()) {
-      $this->messageLogger->error('ChadoIdSpace::saveTerm(). The term to save does not have the same ID space as this one.');
-      return False;      
-    }   
-    
+      $this->messageLogger->error(t('ChadoIdSpace::saveTerm(). The term, "@term", does not have the same ID space as this one.',
+          ['@term' => $term->getIdSpace() . ':' . $term->getAccession()]));
+      return False;
+    }
+
     // Get easy to use boolean variables.
     $fail_if_exists = False;
     if (array_key_exists('failIfExists', $options)) {
@@ -458,26 +492,29 @@ class ChadoIdSpace extends TripalIdSpaceBase {
         return False;
       }
     }
-    
+
     // Set the internal ID.
     $cvterm = $this->getChadoCVTerm($term);
     $term->setInternalId($cvterm->cvterm_id);
-    
+
     return True;
   }
-  
+
   /**
    * Retrieve a record from the Chado cv table.
-   * 
+   *
    * @param TripalTerm $term
    *   The TripalTerm object to save.
-   *   
+   *
    * @return object
    *   The cv record in object form.
    */
   protected function getChadoCV(TripalTerm $term) {
-    
-    $result = $this->chado->select('1:cv', 'CV')
+
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
+    $result = $chado->select('1:cv', 'CV')
       ->fields('CV', ['cv_id', 'name', 'definition'])
       ->condition('name', $term->getVocabulary(), '=')
       ->execute();
@@ -486,18 +523,21 @@ class ChadoIdSpace extends TripalIdSpaceBase {
     }
     return $result->fetchObject();
   }
-  
+
   /**
    * Retrieve a record from the Chado db table.
-   * 
+   *
    * @param TripalTerm $term
-   *   The TripalTerm object to save. 
+   *   The TripalTerm object to save.
    * @return object
    *   The db record in object form.
    */
   protected function getChadoDB(TripalTerm $term) {
-    
-    $result = $this->chado->select('1:db', 'DB')
+
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
+    $result = $chado->select('1:db', 'DB')
       ->fields('DB', ['db_id', 'name', 'description'])
       ->condition('name', $term->getIdSpace(), '=')
       ->execute();
@@ -506,39 +546,45 @@ class ChadoIdSpace extends TripalIdSpaceBase {
     }
     return $result->fetchObject();
   }
-  
+
   /**
    * Retrieve a record from the Chado dbxref table.
-   * 
+   *
    * @param TripalTerm $term
-   *   The TripalTerm object to save. 
+   *   The TripalTerm object to save.
    * @return object
    *   The dbxref record in object form.
    */
   protected function getChadoDBXref(TripalTerm $term) {
-    
+
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     $db = $this->getChadoDB($term);
-    $result = $this->chado->select('1:dbxref', 'DBX')
+    $result = $chado->select('1:dbxref', 'DBX')
       ->fields('DBX', ['dbxref_id', 'db_id', 'accession', 'version' ,'description'])
       ->condition('db_id', $db->db_id, '=')
       ->condition('accession', $term->getAccession(), '=')
       ->execute();
     if (!$result) {
-      return NULL;     
+      return NULL;
     }
     return $result->fetchObject();
   }
-  
+
   /**
    * Retreives a record from the Cahdo dbxref table using the term ID.
-   * 
+   *
    * @param string $term_id
    *   The term ID (e.g. GO:0044708).
    */
   protected function getChadoDBXrefbyTermID(string $term_id) {
-    
+
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     list($db, $accession) = explode(':', $term_id);
-    $query = $this->chado->select('1:dbxref', 'DBX');
+    $query = $chado->select('1:dbxref', 'DBX');
     $query->join('1:db', 'DB', '"DB".db_id = "DBX".db_id');
     $result = $query->fields('DBX', ['dbxref_id', 'db_id', 'accession', 'version' ,'description'])
       ->condition('DB.name', $db, '=')
@@ -549,30 +595,34 @@ class ChadoIdSpace extends TripalIdSpaceBase {
     }
     return $result->fetchObject();
   }
-  
+
   /**
    * Adds a record from the Cahdo dbxref table using the term ID.
-   * 
+   *
    * The database record must already exist.
-   * 
+   *
    * @param string $term_id
    *   The term ID (e.g. GO:0044708).
-   *   
+   *
    * @return object|NULL
    *   The dbxref Object.
    */
   protected function insertChadoDBxrefbyTermID(string $term_id) {
+
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     list($db, $accession) = explode(':', $term_id);
-    $result = $this->chado->select('1:db', 'DB')
+    $result = $chado->select('1:db', 'DB')
       ->fields('DB', ['db_id'])
       ->condition('name', $db, '=')
-      ->execute();      
+      ->execute();
     if (!$result) {
       return NULL;
     }
-    
+
     $db_id = $result->fetchField();
-    $this->chado->insert('1:dbxref')
+    $chado->insert('1:dbxref')
       ->fields([
         'db_id' => $db_id,
         'accession' => $accession,
@@ -580,66 +630,72 @@ class ChadoIdSpace extends TripalIdSpaceBase {
       ->execute();
     return $this->getChadoDBXrefbyTermID($term_id);
   }
-  
+
   /**
    * Retrieve a record from the Chado cvterm table.
-   * 
+   *
    * This function uses the db.name (IdSpace), cv.name (vocabulary)
    * and dbxref.accession values to uniquely identify a term in Chado.
-   * 
+   *
    * @param TripalTerm $term
    *   The TripalTerm object to save.
    * @return object
    *   The cvterm record in object form.
    */
   protected function getChadoCVTerm(TripalTerm $term) {
-   
-    $query = $this->chado->select('1:cvterm', 'CVT');
+
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
+    $query = $chado->select('1:cvterm', 'CVT');
     $query->join('1:dbxref', 'DBX', '"DBX".dbxref_id = "CVT".dbxref_id');
     $query->join('1:cv', 'CV', '"CV".cv_id = "CVT".cv_id');
-    $query->join('1:db', 'DB', '"DB".db_id = "DBX".db_id');   
+    $query->join('1:db', 'DB', '"DB".db_id = "DBX".db_id');
     $query->fields('CVT', ['cv_id', 'cvterm_id', 'definition', 'is_obsolete', 'is_relationshiptype'])
       ->fields('DBX', ['dbxref_id', 'accession'])
       ->condition('DB.name', $term->getIdSpace(), '=')
       ->condition('CV.name', $term->getVocabulary(), '=')
       ->condition('DBX.accession', $term->getAccession(), '=');
     $result = $query->execute();
-    if (!$result) { 
+    if (!$result) {
       return NULL;
     }
     return $result->fetchObject();
   }
 
-  
+
   /**
    * Inserts a new term into Chado.
-   * 
-   * The term should be checked that it does not exist 
+   *
+   * The term should be checked that it does not exist
    * prior to calling this function.
-   *  
+   *
    * @param Drupal\tripal\TripalVocabTerms\TripalTerm $term
    *   The term object to update
-   *   
+   *
    * @param array $options
    *   The options passed to the saveTerm() function.
-   *   
+   *
    * @return boolean
    *   True if the insert was successful, false otherwise.
    */
-  protected function insertTerm(TripalTerm $term, $options) {    
-    
+  protected function insertTerm(TripalTerm $term, $options) {
+
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     try {
       // The CV and DB records should already exist.
       $cv = $this->getChadoCV($term);
       $db = $this->getChadoDB($term);
-      
+
       // The DBXref may already exist even though the
-      // term does not.  So, check first and if not then 
+      // term does not.  So, check first and if not then
       // add it.
       $dbxref = $this->getChadoDBXref($term);
       if (!$dbxref) {
-        
-        $this->chado->insert('1:dbxref')
+
+        $chado->insert('1:dbxref')
           ->fields([
             'db_id' => $db->db_id,
             'accession' => $term->getAccession(),
@@ -647,9 +703,9 @@ class ChadoIdSpace extends TripalIdSpaceBase {
         ->execute();
         $dbxref = $this->getChadoDBXref($term);
       }
-      
+
       // Add the CVterm record.
-      $this->chado->insert('1:cvterm')
+      $chado->insert('1:cvterm')
         ->fields([
           'cv_id' => $cv->cv_id,
           'dbxref_id' => $dbxref->dbxref_id,
@@ -663,39 +719,42 @@ class ChadoIdSpace extends TripalIdSpaceBase {
       if (!$cvterm) {
         return False;
       }
-      
+
       // Now save the term attributes.
       if (!$this->saveTermAttributes($term, $cvterm, $options)) {
         return False;
       }
-      
-    } 
+
+    }
     catch (Exception $e) {
-      $this->messageLogger->error('ChadoIdSpace::insertTerm(). could not insert the cvterm record: @message', 
+      $this->messageLogger->error('ChadoIdSpace::insertTerm(). could not insert the cvterm record: @message',
           ['@message' => $e->getMessage()]);
       return False;
     }
     return True;
   }
-  
+
   /**
-   * 
+   *
    * @param TripalTerm $term
    * @param object $cvterm
    * @param array $options
    * @return bool
    */
   protected function saveTermAttributes(TripalTerm $term, object $cvterm, array $options) : bool {
-    
+
     $update_parent = False;
     if (array_key_exists('updateParent', $options)) {
       $update_parent = $options['updateParent'];
-    }    
-    
+    }
+
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     // Add in synonyms.ount($syns->chado->delete('1:cvtermsynonym')->condition('cvterm_id', $cvterm->cvterm_id)->execute();
-    $this->chado->delete('1:cvtermsynonym')->condition('cvterm_id', $cvterm->cvterm_id)->execute();
+    $chado->delete('1:cvtermsynonym')->condition('cvterm_id', $cvterm->cvterm_id)->execute();
     foreach ($term->getSynonyms() as $synonym => $type_term) {
-      $query = $this->chado->insert('1:cvtermsynonym');
+      $query = $chado->insert('1:cvtermsynonym');
       if ($type_term) {
         $type_cvterm = $this->getChadoCVTerm($type_term);
         $query->fields([
@@ -708,13 +767,13 @@ class ChadoIdSpace extends TripalIdSpaceBase {
         $query->fields([
           'cvterm_id' => $cvterm->cvterm_id,
           'synonym' => $synonym,
-        ]);        
+        ]);
       }
       $query->execute();
     }
-    
+
     // Add in the properties
-    $this->chado->delete('1:cvtermprop')->condition('cvterm_id', $cvterm->cvterm_id)->execute();
+    $chado->delete('1:cvtermprop')->condition('cvterm_id', $cvterm->cvterm_id)->execute();
     foreach ($term->getProperties() as $term_id => $properties) {
       foreach  ($properties as $rank => $tuple) {
         $type_term = $this->getChadoCVTerm($tuple[0]);
@@ -722,7 +781,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
           return False;
         }
         $value = $tuple[1];
-        $this->chado->insert('1:cvtermprop')
+        $chado->insert('1:cvtermprop')
           ->fields([
             'cvterm_id' => $cvterm->cvterm_id,
             'type_id' => $type_term->cvterm_id,
@@ -732,27 +791,27 @@ class ChadoIdSpace extends TripalIdSpaceBase {
           ->execute();
       }
     }
-    
+
     // Add in the alternate IDs.
-    $this->chado->delete('1:cvterm_dbxref')->condition('cvterm_id', $cvterm->cvterm_id)->execute();
+    $chado->delete('1:cvterm_dbxref')->condition('cvterm_id', $cvterm->cvterm_id)->execute();
     foreach ($term->getAltIds() as $term_id) {
       $alt_dbxref = $this->getChadoDBXrefbyTermID($term_id);
-      if (!$alt_dbxref) {      
+      if (!$alt_dbxref) {
         $alt_dbxref = $this->insertChadoDBxrefbyTermID($term_id);
         if (!$alt_dbxref) {
           return False;
         }
       }
-      $this->chado->insert('1:cvterm_dbxref')
+      $chado->insert('1:cvterm_dbxref')
         ->fields([
           'cvterm_id' => $cvterm->cvterm_id,
           'dbxref_id' => $alt_dbxref->dbxref_id,
         ])
         ->execute();
     }
-    
+
     // Add in the parents.
-    $this->chado->delete('1:cvterm_relationship')->condition('subject_id', $cvterm->cvterm_id)->execute();
+    $chado->delete('1:cvterm_relationship')->condition('subject_id', $cvterm->cvterm_id)->execute();
     foreach ($term->getParents() as $term_id => $tuple) {
       $parent_term = $tuple[0];
       $rel_term = $tuple[1];
@@ -764,43 +823,47 @@ class ChadoIdSpace extends TripalIdSpaceBase {
       if (!$rel_cvterm) {
         return False;
       }
-      $this->chado->insert('1:cvterm_relationship')
+      $chado->insert('1:cvterm_relationship')
         ->fields([
           'type_id' => $rel_cvterm->cvterm_id,
           'subject_id' => $cvterm->cvterm_id,
           'object_id' => $parent_term->cvterm_id,
         ])
         ->execute();
-        
+
       // Update the parent if requested to do so.
-      if ($update_parent) {        
+      if ($update_parent) {
         $parent_idSpace = $parent_term->getIdSpaceObject();
         $parent_idSpace->saveTerm($parent_term, ['failIfExists' => $options['failIfExists']]);
       }
     }
-    
+
     return True;
   }
-  
+
   /**
    * Updates an existing term in Chado.
-   * 
-   * The term should be checked that it already exists 
+   *
+   * The term should be checked that it already exists
    * prior to execution of this function.
-   * 
+   *
    * @param Drupal\tripal\TripalVocabTerms\TripalTerm $term
    *   The term object to update
    * @param object $cvterm
    *   The record object for the term to update from the Chado cvterm table.
    * @param array $options
    *   The options passed to the saveTerm() function.
-   *   
+   *
    * @return boolean
    *   True if the update was successful, false otherwise.
    */
   protected function updateTerm(TripalTerm $term, object &$cvterm, array $options) {
+
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     try {
-      $this->chado->update('1:cvterm')
+      $chado->update('1:cvterm')
         ->fields([
           'name' => $term->getName(),
           'definition' => $term->getDefinition(),
@@ -810,7 +873,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
         ->condition('cvterm_id', $cvterm->cvterm_id)
         ->execute();
       $cvterm = $this->getChadoCVTerm($term);
-        
+
       $this->saveTermAttributes($term, $cvterm, $options);
     }
     catch (Exception $e) {
@@ -820,14 +883,14 @@ class ChadoIdSpace extends TripalIdSpaceBase {
     }
     return True;
   }
-  
+
   /**
    * {@inheritdoc}
    */
   public function removeTerm($accession) {
-    
+
   }
-  
+
   /**
    * {@inheritdoc}
    */
@@ -836,30 +899,37 @@ class ChadoIdSpace extends TripalIdSpaceBase {
     if (!$db) {
       return NULL;
     }
-    return $db['urlprefix'];    
+    return $db['urlprefix'];
   }
-  
+
   /**
    * {@inheritdoc}
    */
   public function setURLPrefix($prefix) {
-    
+
     // Don't set a value for an ID space that isn't valid.
     if (!$this->is_valid) {
       return False;
     }
-    
+
     // Make sure the URL prefix is good.
-    if (strlen($this->getURLPrefix()) > $this->db_def['fields']['urlprefix']['size']) {
+    if (empty($prefix)) {
+      $this->messageLogger->error('ChadoIdSpace: No URL prefix for the vocabulary ID Space was provided when setURLPrefix() was called.');
+      return False;
+    }
+    if (strlen($prefix) > $this->db_def['fields']['urlprefix']['size']) {
       $this->messageLogger->error('ChadoIdSpace: The URL prefix for the vocabulary ID Space must not be longer than @size characters. ' +
           'The value provided was: @value',
           ['@size' => $this->db_def['fields']['urlprefix']['size'],
-            '@value' => $this->getName()]);
+            '@value' => $prefix]);
       return False;
     }
-    
+
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     // Update the record in the Chado `db` table.
-    $query = $this->chado->update('1:db')
+    $query = $chado->update('1:db')
       ->fields(['urlprefix' => $prefix])
       ->condition('name', $this->getName(), '=');
     $num_updated = $query->execute();
@@ -869,53 +939,88 @@ class ChadoIdSpace extends TripalIdSpaceBase {
     }
     return True;
   }
-  
-  
+
+
   /**
    * {@inheritdoc}
    */
-  public function getDescription() {  
+  public function getDescription() {
     $db = $this->loadIdSpace();
     if (!$db) {
       return NULL;
     }
     return $db['description'];
-    
+
   }
-  
+
   /**
    * {@inheritdoc}
    */
   public function setDescription($description) {
-    
+
     // Don't set a value for an ID space that isn't valid.
     if (!$this->is_valid) {
       return False;
     }
-    
+
 
     // Make sure the description is not too long.
-    if (strlen($this->getDescription()) > $this->db_def['fields']['description']['size']) {
+    if (empty($description)) {
+      $this->messageLogger->error('ChadoIdSpace: You must provide a description when calling setDescription().',
+          ['@size' => $this->db_def['fields']['description']['size'],
+           '@value' => $description]);
+      return False;
+    }
+    if (strlen($description) > $this->db_def['fields']['description']['size']) {
       $this->messageLogger->error('ChadoIdSpace: The description for the vocabulary ID space must not be longer than @size characters. ' +
           'The value provided was: @value',
           ['@size' => $this->db_def['fields']['description']['size'],
-           '@value' => $this->getName()]);
+           '@value' => $description]);
       return False;
     }
-    
+
+    // Instantiate a TripalDBX connection for Chado.
+    $chado = \Drupal::service('tripal_chado.database');
+
     // Update the record in the Chado `db` table.
-    $query = $this->chado->update('1:db')
+    $query = $chado->update('1:db')
        ->fields(['description' => $description])
        ->condition('name', $this->getName(), '=');
     $num_updated = $query->execute();
     if ($num_updated != 1) {
       $this->messageLogger->error('ChadoIdSpace: The description could not be updated for the vocabulary ID Space.');
-      return False;      
+      return False;
     }
     return True;
 
   }
-  
+
+  /**
+   * Retrieves from the Drupal cache the default vocabulary for this space..
+   *
+   * @return string
+   *   The deffault vocabulary name.
+   */
+  protected function getDefaultVocabCache() {
+    $cid = 'chado_id_space_' . $this->getName() . '_default_vocab';
+    $default_vocab = '';
+    if ($cache = \Drupal::cache()->get($cid)) {
+      $default_vocab = $cache->data;
+    }
+    return $default_vocab;
+  }
+
+  /**
+   * Sets in the Drupal cache the default vocabulary.
+   *
+   * @param string $vocabulary
+   *   The default vocabulary name.
+   */
+  protected function setDefaultVocabCache($vocabulary) {
+    $cid = 'chado_id_space_' . $this->getName() . '_default_vocab';
+    \Drupal::cache()->set($cid, $vocabulary);
+  }
+
   /**
    * {@inheritdoc}
    */
@@ -924,6 +1029,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
     if ($retval === True) {
       $this->default_vocabulary = $name;
     }
+    $this->setDefaultVocabCache($name);
     return $retval;
   }
 }

@@ -10,18 +10,6 @@ function tripal_views_data() {
   // Job Management System.
   tripal_views_data_jobs($data);
 
-//   // Add all TripalEntity bundles.
-//   tripal_views_data_tripal_bundles($data);
-//   // Add all the TripalFields for each bundle.
-//   tripal_views_data_fields($data);
-
-//   $data['views']['tripal_area_collections'] = [
-//     'title' => t('Tripal Content Data Collections'),
-//     'help' => t('Save Tripal content search results into a data collection for downloading or use with other tools.'),
-//     'area' => [
-//       'handler' => 'tripal_views_handler_area_collections',
-//     ],
-//   ];
   return $data;
 }
 

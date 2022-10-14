@@ -1,5 +1,0 @@
-name: 'Tripal Console'
-type: module
-description: 'Provides Drupal Console commands for Tripal development and administration.'
-core: 8.x
-package: 'Tripal'

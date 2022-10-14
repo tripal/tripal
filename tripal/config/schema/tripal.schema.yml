@@ -1,0 +1,102 @@
+tripal.tripal_content_terms.*:
+  type: config_entity
+  label: 'Tripal Content Terms'
+  mapping:
+    id:
+      type: string
+      label: 'ID'
+      nullable: false
+    label:
+      type: label
+      label: 'Label'
+      nullable: false
+    description:
+      type: string
+      label: 'Description'
+    vocabularies:
+      type: sequence
+      label: 'Vocabularies'
+      sequence:
+        type: mapping
+        mapping:
+          name:
+            type: string
+            label: 'Vocbulary Name'
+            nullable: false
+          label:
+            type: string
+            label: 'Vocbulary Label'
+            nullable: false
+          url:
+            type: string
+            label: 'Vocbulary URL'
+            nullable: false
+          idSpaces:
+            type: sequence
+            lable: 'IdSpaces used in this vocabulary'
+            sequence:
+              type: mapping
+              mapping:
+                name:
+                  type: string
+                  label: 'IdSpace Name'
+                  nullable: false
+                description:
+                  type: string
+                  label: 'IdSpace Description'
+                  nullable: true
+                urlPrefix:
+                  type: string
+                  label: 'IdSpace Term URL'
+                  nullable: true
+                isBorrowed:
+                  type: boolean
+                  label: 'Is Borrowed from Another Vocabulary'
+                  nullable: true
+
+          terms:
+            type: sequence
+            label: 'Terms'
+            sequence:
+              type: mapping
+              mapping:
+                id:
+                  type: string
+                  label: 'Term ID'
+                  nullable: false
+                name:
+                  type: string
+                  label: 'Term Name'
+                  nullable: false
+                description:
+                  type: string
+                  label: 'Term Definition'
+                  nullable: true
+
+field.storage.tripal_entity.*:
+  type: field.storage.*.*
+  label: 'Tripal Entity Field Storage'
+  mapping:
+    settings:
+      type: field.storage_settings.*
+      label: 'Tripal Field Storage Settings'
+      mapping:
+        storage_plugin_id:
+          type: string
+          label: 'Tripal Storage Plugin Machine Name'
+        max_length:
+          type: integer
+          label: 'Storage Maximum length'
+
+field.field.tripal_entity.*.*:
+  type: field.field.*.*.*
+  mapping:
+    settings:
+      type: field.settings
+      mapping:
+        termIdSpace:
+          type: string
+          label: 'Term ID Space'
+        termAccession:
+          type: string
+          label: 'Term Accession'

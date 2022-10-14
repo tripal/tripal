@@ -167,6 +167,10 @@ abstract class TripalDbxSchema extends PgSchema {
    */
   public function findTables($table_expression) {
 
+    if ($table_expression === NULL) {
+      return [];
+    }
+
     // Load all the tables up front in order to take into account per-table
     // prefixes. The actual matching is done at the bottom of the method.
     $individually_prefixed_tables = $this->connection
@@ -188,12 +192,14 @@ abstract class TripalDbxSchema extends PgSchema {
     foreach ($results as $table) {
 
       // Take into account tables that have an individual prefix.
+      $prefix_length = 0;
       if (isset($individually_prefixed_tables[$table->table_name])) {
-        $prefix_length = strlen($this->connection
-          ->tablePrefix($individually_prefixed_tables[$table->table_name], TRUE));
-      }
-      else {
-        $prefix_length = 0;
+        $prefix = $this->connection
+          ->tablePrefix($individually_prefixed_tables[$table->table_name], TRUE);
+
+        if (!empty($prefix)) {
+          $prefix_length = strlen($prefix);
+        }
       }
 
       // Remove the prefix from the returned tables.
@@ -497,12 +503,12 @@ EOD;
         ->query(
           'SELECT pg_get_serial_sequence(:schema_table, :column);',
           [':schema_table' => $prefixed_table, ':column' => $column_name]
-        )
-        ->fetchField()
-      ;
+        )->fetchField();
 
       // Remove prefixed table from sequence name.
-      $sequence_name = str_replace($schema_name . '.', '', $sequence_name);
+      if ($sequence_name !== NULL) {
+        $sequence_name = str_replace($schema_name . '.', '', $sequence_name);
+      }
     }
 
     $sql_query = "

@@ -1,0 +1,65 @@
+# Run some PHPUnit tests
+name: Test Coverage on Drupal 9.4.x-dev
+on: [push]
+
+# Define jobs that are part of the workflow
+jobs:
+  # Job 1: 'build'
+  run-tests:
+    # Runner type
+    runs-on: ubuntu-latest
+    name: Test Coverage
+
+    steps:
+      # Check out the repo
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      # Here we fully  build a docker using the current checked out code
+      # to ensure we have not broken the install/build process.
+      - name: Build the Docker
+        run: |
+          docker build --tag=tripaldocker:localdocker \
+            --build-arg drupalversion="9.4.x-dev" \
+            --build-arg chadoschema='testchado' ./ \
+            --file tripaldocker/Dockerfile-php8.1-pgsql13
+      # Just spin up docker the good ol' fashion way.
+      - name: Spin up Local Docker
+        run: |
+          docker run --publish=80:80 --name=tripaldocker -tid \
+            --volume=`pwd`:/var/www/drupal9/web/modules/contrib/tripal \
+            tripaldocker:localdocker
+          docker exec tripaldocker service postgresql restart
+      # Ensure we have the variables we need.
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v3.x
+      # Prepare for code coverage.
+      - name: Prepare for Code Coverage
+        run: |
+          curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+          docker cp cc-test-reporter tripaldocker:/var/www/drupal9/web/modules/contrib/tripal
+          docker exec tripaldocker chmod a+x /var/www/drupal9/web/modules/contrib/tripal/cc-test-reporter
+          docker exec --workdir=/var/www/drupal9/web/modules/contrib/tripal tripaldocker ./cc-test-reporter before-build --debug
+      # Runs the PHPUnit tests.
+      # https://github.com/mheap/phpunit-github-actions-printer is used
+      # to report PHPUnit fails in a meaningful way to github in PRs.
+      # Stopped using mheap due to warning w/ phpunit8->9
+      - name: Run Tests for Coverage
+        env:
+          SIMPLETEST_BASE_URL: "http://localhost"
+          SIMPLETEST_DB: "pgsql://drupaladmin:drupal9developmentonlylocal@localhost/sitedb"
+          BROWSER_OUTPUT_DIRECTORY: "/var/www/drupal9/web/sites/default/files/simpletest"
+        run: |
+          docker exec tripaldocker service postgresql restart
+          docker exec -e SIMPLETEST_BASE_URL=$SIMPLETEST_BASE_URL \
+              -e SIMPLETEST_DB=$SIMPLETEST_DB \
+              -e BROWSER_OUTPUT_DIRECTORY=$BROWSER_OUTPUT_DIRECTORY \
+              --workdir=/var/www/drupal9/web/modules/contrib/tripal \
+            tripaldocker phpunit --coverage-text \
+              --coverage-clover /var/www/drupal9/web/modules/contrib/tripal/clover.xml
+          docker exec tripaldocker ls /var/www/drupal9/web/modules/contrib/tripal
+      - name: Publish code coverage to Code Climate
+        run: |
+          docker exec --workdir=/var/www/drupal9/web/modules/contrib/tripal \
+            tripaldocker ./cc-test-reporter after-build clover.xml \
+            --id 37bfc0a7ce6928f7f4be8da9168c5fb65bd49e0a81c082baa08e2747121bec16 \
+            --debug -t clover -p /var/www/drupal9/web/modules/contrib/tripal

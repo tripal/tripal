@@ -1,7 +1,7 @@
 name: 'Tripal Chado'
 type: module
 description: 'Chado integration for Tripal.'
-core_version_requirement: ^8.8 || ^9
+core_version_requirement: ^9.2 || ^10
 package: 'Tripal'
 dependencies:
   - tripal:tripal

@@ -1,24 +1,44 @@
+
 ##
-# Tripal Content Entity.
+# Tripal Content + Content Type Related Actions.
 ##
 
-# Add Content link on the Content Listing page.
+# -- Add Content link on the Content Listing page.
 entity.tripal_entity.add_page:
   route_name: 'entity.tripal_entity.add_page'
   title: 'Add Tripal Content'
   appears_on:
     - entity.tripal_entity.collection
 
-# Add Content Type link on the Type Listing page.
+# -- Remove orphaned content (i.e missing non-drupal record) link on Content Listing page.
+tripal.content_bio_data_unpublish:
+  route_name: tripal.content_bio_data_unpublish
+  title: 'Unpublish Orphaned Content'
+  weight: 100
+  appears_on:
+    - entity.tripal_entity.collection
+
+# -- Add Content Type link on the Type Listing page.
 entity.tripal_entity_type.add_form:
   route_name: 'entity.tripal_entity_type.add_form'
   title: 'Add Tripal Content type'
   appears_on:
     - entity.tripal_entity_type.collection
 
-# Check for new fields link on the Manage Fields page.
+# -- Check for new fields link on the Manage Fields page.
 tripal.content_bio_data_field_check:
   route_name: 'tripal.content_bio_data_field_check'
   title: 'Check for new fields'
   appears_on:
     - entity.tripal_entity.field_ui_fields
+
+##
+# Tripal Controlled Vocabularies / Ontology Terms.
+##
+
+# -- Adds a link to the add form on Tripal Content Term admin listing.
+entity.tripal_content_terms.add_form:
+  route_name: 'entity.tripal_content_terms.add_form'
+  title: 'Add Term Configuration'
+  appears_on:
+    - entity.tripal_content_terms.collection

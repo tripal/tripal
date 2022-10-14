@@ -490,7 +490,8 @@ function chado_get_table_names($include_custom = NULL, $chado_schema = NULL) {
 
   // Create a new ChadoSchema instance and use it to get the table names.
   $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema(NULL, $chado_schema);
-  return $chado_schema->getTableNames($include_custom);
+  $tables = $chado_schema->getTableNames($include_custom);
+  return array_combine($tables, $tables);
 }
 
 /**

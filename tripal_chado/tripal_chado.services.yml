@@ -3,6 +3,12 @@ services:
   tripal_chado.database:
     class: Drupal\tripal_chado\Database\ChadoConnection
     arguments: ['']
+  tripal_chado.custom_tables:
+    class: Drupal\tripal_chado\Services\ChadoCustomTableManager
+  tripal_chado.materialized_views:
+    class: Drupal\tripal_chado\Services\ChadoMviewsManager
+  tripal_chado.terms_init:
+    class: Drupal\tripal_chado\Services\ChadoTermsInit
   tripal_chado.cloner:
     class: Drupal\tripal_chado\Task\ChadoCloner
   tripal_chado.installer:

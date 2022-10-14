@@ -1,0 +1,41 @@
+name: Build and Publish Docker image
+on:
+  push:
+    branches:
+      - 9.x-4.x
+      - 4v40g-0-test-docker-build
+
+jobs:
+  push_to_registry:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        drupalversion: ['9.2.x-dev', '9.3.x-dev', '9.4.x-dev', '9.5.x-dev']
+    continue-on-error: true
+    name: Docker Build (drupal${{ matrix.drupalversion }})
+    steps:
+      - uses: actions/checkout@v2
+        name: Check out code
+      - uses: mr-smithers-excellent/docker-build-push@v5
+        name: Build & push Docker image
+        with:
+          image: tripalproject/tripaldocker
+          tags: drupal${{ matrix.drupalversion }}
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          buildArgs: "drupalversion=${{ matrix.drupalversion }}"
+          labels: 'tripal.branch=9.x-4.x,drupal.version.label="${{ matrix.label }}"'
+      - name: Build latest using 9.4.x-dev
+        id: docker_build_latest
+        uses: docker/build-push-action@v2
+        if: ${{ matrix.drupalversion == '9.4.x-dev' }}
+        with:
+          image: tripalproject/tripaldocker
+          tags: latest
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          buildArgs: "drupalversion=${{ matrix.drupalversion }}"
+          labels: 'tripal.branch=9.x-4.x,drupal.version.label="${{ matrix.label }}"'

@@ -52,15 +52,14 @@ function tripal_chado_schema() {
 
   $schema['chado_installations'] = tripal_chado_chado_installations_schema();
   $schema['tripal_custom_tables'] = tripal_chado_tripal_custom_tables_schema();
+  $schema['tripal_mviews'] = tripal_chado_tripal_mviews_schema();
 
   // Add tables to integrate the independant Tripal Vocabularies to Chado terms.
   $schema['chado_tripalvocab'] = tripal_chado_chado_vocab();
   $schema['chado_tripalvocabspace'] = tripal_chado_chado_vocabidspace();
   $schema['chado_tripalterm'] = tripal_chado_chado_term();
-  
+
   // Add tables supporting the Tripal Storage.
-  $schema['chado_bundle'] = tripal_chado_chado_bundle_schema();
-  $schema['chado_fields'] = tripal_chado_chado_fields_schema();
   $schema['tripal_cv_obo'] = tripal_chado_tripal_cv_obo_schema();
 
   return $schema;
@@ -93,137 +92,6 @@ function tripal_chado_tripal_cv_obo_schema() {
   ];
 }
 
-/**
- * Returns the Drupal Schema API array for the chado_bundle table.
- */
-function tripal_chado_chado_bundle_schema() {
-  // @todo: do we want to continue to call this the `tripal_bundle` table?
-  return [
-    'description' => 'Describes how a bundle maps data to Chado',
-    'fields' => [
-      'chado_bundle_id' => [
-        'description' => 'The primary identifier for this table.',
-        'type' => 'serial',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-      ],
-      'bundle_id' => [
-        'description' => 'The unique entity id.',
-        'type' => 'int',
-        'not null' => TRUE,
-      ],
-      'data_table' => [
-        'description' => 'The table in Chado that this term services (e.g. feature, stock, library, etc.)',
-        'type' => 'varchar',
-        'length' => 128,
-        'not null' => TRUE,
-        'default' => '',
-      ],
-      'type_linker_table' => [
-        'description' => 'If a linker table (e.g. cvterm/prop) is needed to uniquely identify a content type then that table name is provided here.',
-        'type' => 'varchar',
-        'length' => 128,
-        'not null' => FALSE,
-        'default' => '',
-      ],
-      'type_column' => [
-        'description' => 'The column in the data table or linker table that distinguishes the data type. This must be in a foreign key relationship to the cvterm table.',
-        'type' => 'varchar',
-        'length' => 128,
-        'not null' => FALSE,
-        'default' => '',
-      ],
-      'type_id' => [
-        'description' => 'If a type_column is set then this is the cvterm_id of the data type that this bundle maps to.',
-        'size' => 'big',
-        'type' => 'int',
-      ],
-      'type_value' => [
-        'description' => 'If a property table is used for a linker, then the value that should be matched to identify this content type is stored here.',
-        'type' => 'text',
-        'not null' => FALSE,
-        'default' => '',
-      ],
-      'base_type_id' => [
-        'description' => 'If a property table is used for a linker, and if the base table requires a type_id then this is the type that should be used on insert of new records in the base table.',
-        'size' => 'big',
-        'type' => 'int',
-      ]
-    ],
-    'indexes' => [
-      'bundle_id' => ['bundle_id'],
-      'data_table' => ['data_table'],
-    ],
-    'unique keys' => [
-      'record' => ['bundle_id'],
-    ],
-    'primary key' => ['chado_bundle_id'],
-  ];
-}
-
-/**
- * Returns the Drupal Schema API array for the chado_fields table.
- */
-function tripal_chado_chado_fields_schema() {
-  return [
-    'description' => 'Maps Drupal fields to the tables and columns in Chado',
-    'fields' => [
-      'chado_field_id' => [
-        'type' => 'serial',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-      ],
-      'entity_type' => [
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-      ],
-      'field_type' => [
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-      ],
-      'key' => [
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-      ],
-      'table' => [
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-      ],
-      'column' => [
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-      ],
-      'base_fk_col' => [
-        'type' => 'varchar',
-        'length' => 255,
-      ],
-      'table_fk_col' => [
-        'type' => 'varchar',
-        'length' => 255,
-      ],
-      'type_col' => [
-        'type' => 'varchar',
-        'length' => 255,
-      ],
-      'type_id' => [
-        'type' => 'int',
-      ],
-    ],
-    'indexes' => [
-      'chado_fields_idx1' => ['entity_type', 'field_type', 'key'],
-      'chado_fields_idx2' => ['table'],
-    ],
-    'unique keys' => [
-      'chado_fields_unq1' => ['entity_type', 'field_type', 'key'],
-    ],
-    'primary key' => ['chado_field_id'],
-  ];
-}
 /**
  * Returns the Drupal Schema API array for the chado_installations table.
  */
@@ -361,6 +229,58 @@ function tripal_chado_chado_term() {
 }
 
 /**
+ * Describes the tripal_mviews table.
+ */
+function tripal_chado_tripal_mviews_schema() {
+  return array(
+    'fields' => array(
+      'mview_id' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+      'table_id' => array(
+        'type' => 'int',
+        'not null' => True,
+        'description' => 'The custom table ID'
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE
+      ),
+      'query' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => TRUE
+      ),
+      'last_update' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+        'description' => 'UNIX integer time'
+      ),
+      'status' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => FALSE
+      ),
+      'comment' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => FALSE
+      ),
+    ),
+    'indexes' => array(
+      'mview_id' => array('mview_id')
+    ),
+    'unique keys' => array(
+      'table_id' => array('table_id'),
+    ),
+    'primary key' => array('mview_id'),
+  );
+}
+
+/**
  * Describes the Tripal Custom Tables (tripal_custom_tables) table.
  * This keeps track of tables created by Tripal and stored in chado.
  */
@@ -381,10 +301,18 @@ function tripal_chado_tripal_custom_tables_schema() {
         'type' => 'text',
         'not null' => TRUE
       ),
-      'mview_id' => array(
+      'hidden' => array(
         'type' => 'int',
-        'not null' => FALSE
-      )
+        'size' => 'tiny',
+        'default' => 0,
+        'description' => 'Set to true if this custom table is not for end-users to manage, but for the Tripal module.'
+      ),
+      'chado' => array(
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'description' => 'The name of the Chado schema where this table exists.'
+      ),
     ),
     'indexes' => array(
       'table_id' => array('table_id'),

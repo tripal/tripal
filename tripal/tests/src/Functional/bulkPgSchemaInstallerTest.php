@@ -16,7 +16,7 @@ class bulkPgSchemaInstallerTest extends BrowserTestBase {
   // protected $htmlOutputEnabled = TRUE;
   protected $defaultTheme = 'stable';
 
-  protected static $modules = ['tripal', 'block', 'field_ui'];
+  protected static $modules = ['tripal'];
 
 	/**
 	 * Tests the contructor of bulkPgSchemaInstaller.
@@ -31,7 +31,7 @@ class bulkPgSchemaInstallerTest extends BrowserTestBase {
 			"Unable to initialize the tripal.bulkPgSchemaInstaller service.");
 		$this->assertIsObject($service->getDrupalConnection(),
 			"Unable to initialize Drupal database connection");
-		$this->assertIsResource($service->getPgConnection(),
+		$this->assertNotFalse($service->getPgConnection(),
 			"Unable to initialize postgresql-specific database connection");
 		$this->assertIsObject($service->getLogger(),
 			"Unable to initialize the message/error logger.");
@@ -61,7 +61,7 @@ class bulkPgSchemaInstallerTest extends BrowserTestBase {
 	  ";
 	  $query = \Drupal::database()->query($checksql, [':nspname' => $schema_name]);
 	  $schema_exists = $query->fetchField();
-		$this->assertTrue($schema_exists, "Unable to find newly created schema $schema_name.");
+		$this->assertEquals(1, $schema_exists, "Unable to find newly created schema $schema_name.");
 
 		// Test applying SQL to a schema.
 		$sql_file = \Drupal::service('extension.list.module')->getPath('tripal') . '/tests/fixtures/smallTestSchema.sql';
@@ -72,7 +72,7 @@ class bulkPgSchemaInstallerTest extends BrowserTestBase {
 		foreach (['regions', 'countries', 'locations', 'castles', 'knights', 'ancestors'] as $table) {
 			$result = \Drupal::database()->query($sql,
 				[':schema' => $schema_name, ':table' => $table])->fetchField();
-			$this->assertTrue($result, "Table ($table) did not exist when it should have.");
+			$this->assertEquals(1, $result, "Table ($table) did not exist when it should have.");
 		}
 		// Check data exists.
 		// -- regions.

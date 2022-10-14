@@ -25,11 +25,11 @@ use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
  *       "delete" = "Drupal\tripal\Form\TripalEntityTypeDeleteForm"
  *     },
  *     "route_provider" = {
- *       "html" = "Drupal\tripal\TripalEntityTypeHtmlRouteProvider",
+ *       "html" = "Drupal\tripal\Routing\TripalEntityTypeHtmlRouteProvider",
  *     },
  *   },
  *   config_prefix = "bio_data",
- *   admin_permission = "administer tripal content types",
+ *   admin_permission = "manage tripal content types",
  *   bundle_of = "tripal_entity",
  *   entity_keys = {
  *     "id" = "name",
@@ -46,7 +46,8 @@ use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
  *     "id",
  *     "name",
  *     "label",
- *     "term_id",
+ *     "termIdSpace",
+ *     "termAccession",
  *     "help_text",
  *     "category",
  *     "title_format",
@@ -80,11 +81,18 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
   protected $label;
 
   /**
-   * The Tripal Term which describes this content type.
+   * The Tripal Term ID Space which describes this content type.
    *
-   * @var integer
+   * @var string
    */
-  protected $term_id;
+  protected $termIdSpace;
+
+  /**
+   * The Tripal Term Accession which describes this content type.
+   *
+   * @var string
+   */
+  protected $termAccession;
 
   /**
    * Help text to describe to the administrator what this content type is.
@@ -188,18 +196,40 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
   /**
    * {@inheritdoc}
    */
-  public function getTerm() {
-    $logger = \Drupal::service('tripal.logger');
-    $logger->error('Not Implemented.');
-    return NULL;
+  public function getTermIdSpace() {
+    return $this->termIdSpace;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setTerm($term_id) {
-    $logger = \Drupal::service('tripal.logger');
-    $logger->error('Not Implemented.');
+  public function setTermIdSpace($termIdSpace) {
+    $this->termIdSpace = $termIdSpace;
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTermAccession() {
+    return $this->termAccession;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setTermAccession($termAccession) {
+    $this->termIdSpace = $termAccession;
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTerm() {
+    $manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+    $idspace = $manager->loadCollection($this->termIdSpace);
+    return $idspace->getTerm($this->termAccession);
   }
 
   /**

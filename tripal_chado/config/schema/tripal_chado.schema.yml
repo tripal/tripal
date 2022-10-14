@@ -4,3 +4,80 @@ tripal_chado.settings:
     default_schema:
       type: string
       label: 'Default Chado schema name'
+tripal_chado.chado_term_mapping.*:
+  type: config_entity
+  mapping:
+    id:
+      type: string
+      label: 'ID'
+      nullable: false
+    label:
+      type: label
+      label: 'Label'
+      nullable: false
+    description:
+      type: string
+      label: 'Description'
+    tables:
+      type: sequence
+      label: 'Chado Tables'
+      sequence:
+        type: mapping
+        mapping:
+            name:
+              type: string
+              label: 'Table Name'
+            columns:
+              type: sequence
+              label: 'Table Columns'
+              sequence:
+                type: mapping
+                mapping:
+                  name:
+                    type: string
+                    label: 'Column Name'
+                    nullable: false
+                  term_id:
+                    type: string
+                    label: 'Term ID'
+                    nullable: false
+                  term_name:
+                    type: string
+                    label: 'Term Name'
+                    nullable: false
+
+field.storage.tripal_entity.*:
+  type: field.storage.*.*
+  label: 'Tripal Entity Field Storage'
+  mapping:
+    settings:
+      type: field.storage_settings.*
+      label: 'Tripal Field Storage Settings'
+      mapping:
+        storage_plugin_id:
+          type: string
+          label: 'Tripal Storage Plugin Machine Name'
+        max_length:
+          type: integer
+          label: 'Storage Maximum length'
+        storage_plugin_settings:
+          type: field.storage.tripal_entity.*.settings.storage_plugin_settings.*
+          label: 'Tripal Storage-specific Settings'
+          mapping:
+            base_table:
+              type: string
+              label: 'Chado Base Table'
+            property_settings:
+              type: sequence
+              sequence:
+                type: mapping
+                mapping:
+                  action:
+                    type: string
+                    label: 'Action (e.g. store)'
+                  chado_table:
+                    type: string
+                    label: 'Chado Table (e.g. feature)'
+                  chado_column:
+                    type: string
+                    label: 'Chado Column (e.g. uniquename)'

@@ -2,7 +2,8 @@
 
 namespace Drupal\tripal_chado\Task;
 
-use Drupal\tripal_chado\Task\ChadoTaskBase;
+use Drupal\Core\Config\Entity\ConfigEntityStorage;
+use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\tripal_biodb\Exception\TaskException;
 use Drupal\tripal_biodb\Exception\LockException;
 use Drupal\tripal_biodb\Exception\ParameterException;
@@ -30,7 +31,7 @@ class ChadoPreparer extends ChadoTaskBase {
   /**
    * A connection to the Chado database.
    *
-   * @var object
+   * @var \Drupal\tripal\TripalDBX\TripalDbxConnection
    */
   protected $chado = NULL;
 
@@ -144,38 +145,48 @@ class ChadoPreparer extends ChadoTaskBase {
 
     try
     {
-      $this->setProgress(0.1);
-      $this->logger->notice("Creating Tripal Materialized Views and Custom Tables...");
       $chado_version = $this->chado->getVersion();
-
-      if ($chado_version == '1.3') {
-        $this->add_vx_x_custom_tables();
-        $this->fix_v1_3_custom_tables();
+      if ($chado_version != '1.3') {
+        throw new TaskException("Cannot prepare. Currently only Chado v1.3 is supported.");
       }
+
+      $this->setProgress(0.1);
+      $this->logger->notice("Creating Tripal Custom Tables...");
+      $this->createCustomTables();
+
+      $this->setProgress(0.15);
+      $this->logger->notice("Creating Tripal Materialized Views...");
+      $this->createMviews();
 
       $this->setProgress(0.2);
       $this->logger->notice("Loading ontologies...");
-      $this->loadOntologies();
+      $terms_setup = \Drupal::service('tripal_chado.terms_init');
+      $terms_setup->installTerms();
+      // $this->importOntologies(); @todo uncomment before PR
 
       $this->setProgress(0.3);
       $this->logger->notice('Populating materialized view cv_root_mview...');
-      // POSTPONED: populate mviews. // SEEMS TO BE MVIEW RELATED AND THUS NOT NEEDED FOR TRIPAL LOADERS
+      $this->populateMview_cv_root_mview();
 
       $this->setProgress(0.4);
+      $this->logger->notice('Populating materialized view db2cv_mview...');
+      $this->populateMview_db2cv_mview();
+
+      $this->setProgress(0.5);
       $this->logger->notice("Making semantic connections for Chado tables/fields...");
       // $this->populate_chado_semweb_table(); // WE NEED TO DO THIS
 
-      $this->setProgress(0.5);
+      $this->setProgress(0.6);
       $this->logger->notice("Map Chado Controlled vocabularies to Tripal Terms...");
       // TODO //  NEXT UP ON THE LIST TO DETERMINE IF WE NEED THIS
 
-      $this->setProgress(0.6);
-      $this->logger->notice('Populating materialized view db2cv_mview...');
-      // POSTPONED (mview related)
-
       $this->setProgress(0.7);
       $this->logger->notice("Creating default content types...");
-      $this->contentTypes();
+      $this->createGeneralContentTypes();
+      $this->createGenomicContentTypes();
+      $this->createGeneticContentTypes();
+      $this->createGermplasmContentTypes();
+      $this->createExpressionContentTypes();
 
       $this->setProgress(1);
       $task_success = TRUE;
@@ -202,66 +213,25 @@ class ChadoPreparer extends ChadoTaskBase {
     return $task_success;
   }
 
-
-
-    /**
-   * Many of the custom tables created for Chado v1.2 are now in Chado v1.3.
-   *
-   * These tables need not be tracked by Tripal anymore as custom tables and
-   * in some cases the Chado version has different columns so we need to
-   * adjust them.
-   */
-  protected function fix_v1_3_custom_tables() {
-
-    // Update the featuremap_dbxref table by adding an is_current field.
-    if (!chado_column_exists('featuremap_dbxref', 'is_current')) {
-      $this->chado->query("ALTER TABLE {featuremap_dbxref} ADD COLUMN is_current boolean DEFAULT true NOT NULL;");
-    }
-
-    // Remove the previously managed custom tables from the
-    // tripal_custom_tables table.
-    // \Drupal::database()->select
-    $db = \Drupal::database();
-    $table_names = [
-      'analysisfeatureprop',
-      'featuremap_dbxref',
-      'contactprop',
-      'featuremapprop',
-      'featureposprop',
-      'pubauthor_contact',
-    ];
-    for ($i=0; $i<count($table_names); $i++) {
-      $table_name = $table_names[$i];
-      $db->delete('tripal_custom_tables')
-      ->condition('table_name', $table_name)
-      ->execute();
-    }
-  }
-
   /**
-   * Add custom tables for any version of Chado.
+   * Create the custom tables this module needs.
    *
    * These are tables that Chado uses to manage the site (i.e. temporary
    * loading tables) and not for primary data storage.
    */
-  protected function add_vx_x_custom_tables() {
-    // Add in custom tables.
-    $this->tripal_chado_add_tripal_gff_temp_table();
-    $this->tripal_chado_add_tripal_gffcds_temp_table();
-    $this->tripal_chado_add_tripal_gffprotein_temp_table();
-    $this->tripal_chado_add_tripal_obo_temp_table();
-
-    // Add in materialized views.
-    // TODO BUT NOT CRITICAL
-    // $this->tripal_chado_add_organism_stock_count_mview();
-    // $this->tripal_chado_add_library_feature_count_mview();
-    // $this->tripal_chado_add_organism_feature_count_mview();
-    // $this->tripal_chado_add_analysis_organism_mview();
-    // $this->tripal_chado_add_cv_root_mview_mview();
-    // $this->tripal_chado_add_db2cv_mview_mview();
+  protected function createCustomTables() {
+    $this->createCustomTable_tripal_gff_temp();
+    $this->createCustomTable_tripal_gffcds_temp();
+    $this->createCustomTable_tripal_gffprotein_temp();
+    $this->createCustomTable_tripal_obo_temp();
   }
 
-  protected function tripal_chado_add_tripal_gff_temp_table() {
+  /**
+   * Creates the tripal_gff_temp table.
+   *
+   * This table is used by the GFF Importer.
+   */
+  protected function createCustomTable_tripal_gff_temp() {
     $schema = [
       'table' => 'tripal_gff_temp',
       'fields' => [
@@ -294,14 +264,21 @@ class ChadoPreparer extends ChadoTaskBase {
       ],
     ];
 
-    chado_create_custom_table('tripal_gff_temp', $schema, TRUE, NULL,
-      FALSE, $this->chado);
+    $custom_tables = \Drupal::service('tripal_chado.custom_tables');
+    $custom_table = $custom_tables->create('tripal_gff_temp', $this->chado->getSchemaName());
+    $custom_table->setTableSchema($schema);
+    $custom_table->setHidden(True);
+
+    //chado_create_custom_table('tripal_gff_temp', $schema, TRUE, NULL,
+    //  FALSE, $this->chado);
   }
 
   /**
+   * Creates the tripal_gffcds_temp table.
    *
+   * This table is used by the GFF Importer.
    */
-  function tripal_chado_add_tripal_gffcds_temp_table() {
+  function createCustomTable_tripal_gffcds_temp() {
     $schema = [
       'table' => 'tripal_gffcds_temp',
       'fields' => [
@@ -335,14 +312,22 @@ class ChadoPreparer extends ChadoTaskBase {
         'tripal_gff_temp_idx0' => ['parent_id'],
       ],
     ];
-    chado_create_custom_table('tripal_gffcds_temp', $schema, TRUE, NULL,
-      FALSE, $this->chado);
+
+    $custom_tables = \Drupal::service('tripal_chado.custom_tables');
+    $custom_table = $custom_tables->create('tripal_gffcds_temp', $this->chado->getSchemaName());
+    $custom_table->setTableSchema($schema);
+    $custom_table->setHidden(True);
+
+    //chado_create_custom_table('tripal_gffcds_temp', $schema, TRUE, NULL,
+    //  FALSE, $this->chado);
   }
 
   /**
+   * Create the tripal_gffproptein_temp table.
    *
+   * This table is used by the GFF Importer.
    */
-  function tripal_chado_add_tripal_gffprotein_temp_table() {
+  function createCustomTable_tripal_gffprotein_temp() {
     $schema = [
       'table' => 'tripal_gffprotein_temp',
       'fields' => [
@@ -371,35 +356,65 @@ class ChadoPreparer extends ChadoTaskBase {
         'tripal_gff_temp_uq0' => ['feature_id'],
       ],
     ];
-    chado_create_custom_table('tripal_gffprotein_temp', $schema, TRUE, NULL,
-      FALSE, $this->chado);
+
+    $custom_tables = \Drupal::service('tripal_chado.custom_tables');
+    $custom_table = $custom_tables->create('tripal_gffprotein_temp', $this->chado->getSchemaName());
+    $custom_table->setTableSchema($schema);
+    $custom_table->setHidden(True);
+
+    //chado_create_custom_table('tripal_gffprotein_temp', $schema, TRUE, NULL,
+    //  FALSE, $this->chado);
   }
 
   /**
-   * Creates a temporary table to store obo details while loading an obo file
+   * Create the tripal_obo_temp table.
    *
+   * This table is used by the OBO Importer.
    */
-  function tripal_chado_add_tripal_obo_temp_table() {
-    // the tripal_obo_temp table is used for temporary housing of records when loading OBO files
-    // we create it here using plain SQL because we want it to be in the chado schema but we
-    // do not want to use the Tripal Custom Table API because we don't want it to appear in the
-    // list of custom tables.  It needs to be available for the Tripal Chado API so we create it
-    // here and then define it in the tripal_cv/api/tripal_cv.schema.api.inc
-    if (!chado_table_exists('tripal_obo_temp')) {
-      $sql = "
-        CREATE TABLE {tripal_obo_temp} (
-          id character varying(255) NOT NULL,
-          stanza text NOT NULL,
-          type character varying(50) NOT NULL,
-          CONSTRAINT tripal_obo_temp_uq0 UNIQUE (id)
-        );
-      ";
-      $this->chado->query($sql);
-      $sql = "CREATE INDEX tripal_obo_temp_idx0 ON {tripal_obo_temp} USING btree (id)";
-      $this->chado->query($sql);
-      $sql = "CREATE INDEX tripal_obo_temp_idx1 ON {tripal_obo_temp} USING btree (type)";
-      $this->chado->query($sql);
-    }
+  function createCustomTable_tripal_obo_temp() {
+    $schema = [
+      'table' => 'tripal_obo_temp',
+      'fields' => [
+        'id' => [
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+        ],
+        'stanza' => [
+          'type' => 'text',
+          'not null' => TRUE,
+        ],
+        'type' => [
+          'type' => 'varchar',
+          'length' => 50,
+          'not null' => TRUE,
+        ],
+      ],
+      'indexes' => [
+        'tripal_obo_temp_idx0' => ['id'],
+        'tripal_obo_temp_idx1' => ['type'],
+      ],
+      'unique keys' => [
+        'tripal_obo_temp0' => ['id'],
+      ],
+    ];
+
+    $custom_tables = \Drupal::service('tripal_chado.custom_tables');
+    $custom_table = $custom_tables->create('tripal_obo_temp', $this->chado->getSchemaName());
+    $custom_table->setTableSchema($schema);
+    $custom_table->setHidden(True);
+  }
+
+  /**
+   * Creates the materialized views used by this module.
+   */
+  protected function createMviews() {
+    $this->createMview_organism_stock_count();
+    $this->createMview_library_feature_count();
+    $this->createMview_organism_feature_count();
+    $this->createMview_analysis_organism();
+    $this->createMview_cv_root_mview();
+    $this->createMview_db2cv_mview();
   }
 
 
@@ -409,10 +424,9 @@ class ChadoPreparer extends ChadoTaskBase {
    *
    * @ingroup tripal_stock
    */
-  function tripal_chado_add_organism_stock_count_mview() {
+  private function createMview_organism_stock_count() {
     $view_name = 'organism_stock_count';
     $comment = 'Stores the type and number of stocks per organism';
-
     $schema = [
       'description' => $comment,
       'table' => $view_name,
@@ -465,15 +479,18 @@ class ChadoPreparer extends ChadoTaskBase {
           count(S.stock_id) as num_stocks,
           CVT.cvterm_id, CVT.name as stock_type
        FROM organism O
-          INNER JOIN stock S  ON O.Organism_id = S.organism_id
-          INNER JOIN cvterm CVT ON S.type_id     = CVT.cvterm_id
+          INNER JOIN stock S ON O.Organism_id = S.organism_id
+          INNER JOIN cvterm CVT ON S.type_id = CVT.cvterm_id
        GROUP BY
           O.Organism_id, O.genus, O.species, O.common_name, CVT.cvterm_id, CVT.name
     ";
 
-    chado_add_mview($view_name, 'tripal_stock', $schema, $sql, $comment, FALSE);
+    $mviews = \Drupal::service('tripal_chado.materialized_views');
+    $mview = $mviews->create($view_name, $this->chado->getSchemaName());
+    $mview->setTableSchema($schema);
+    $mview->setSqlQuery($sql);
+    $mview->setComment($comment);
   }
-
 
   /**
    * Adds a materialized view keeping track of the type of features associated
@@ -481,7 +498,7 @@ class ChadoPreparer extends ChadoTaskBase {
    *
    * @ingroup tripal_library
    */
-  function tripal_chado_add_library_feature_count_mview() {
+  private function createMview_library_feature_count() {
     $view_name = 'library_feature_count';
     $comment = 'Provides count of feature by type that are associated with all libraries';
 
@@ -526,14 +543,12 @@ class ChadoPreparer extends ChadoTaskBase {
       GROUP BY L.library_id, L.name, CVT.name
     ";
 
-    chado_add_mview($view_name, 'tripal_library', $schema, $sql, $comment, FALSE);
+    $mviews = \Drupal::service('tripal_chado.materialized_views');
+    $mview = $mviews->create($view_name, $this->chado->getSchemaName());
+    $mview->setTableSchema($schema);
+    $mview->setSqlQuery($sql);
+    $mview->setComment($comment);
   }
-
-
-  /**
-   *
-   */
-
 
   /**
    * Creates a materialized view that stores the type & number of features per
@@ -541,7 +556,7 @@ class ChadoPreparer extends ChadoTaskBase {
    *
    * @ingroup tripal_feature
    */
-  function tripal_chado_add_organism_feature_count_mview() {
+  private function createMview_organism_feature_count() {
     $view_name = 'organism_feature_count';
     $comment = 'Stores the type and number of features per organism';
 
@@ -603,7 +618,11 @@ class ChadoPreparer extends ChadoTaskBase {
           O.Organism_id, O.genus, O.species, O.common_name, CVT.cvterm_id, CVT.name
     ";
 
-    chado_add_mview($view_name, 'tripal_feature', $schema, $sql, $comment, FALSE);
+    $mviews = \Drupal::service('tripal_chado.materialized_views');
+    $mview = $mviews->create($view_name, $this->chado->getSchemaName());
+    $mview->setTableSchema($schema);
+    $mview->setSqlQuery($sql);
+    $mview->setComment($comment);
   }
 
 
@@ -612,20 +631,9 @@ class ChadoPreparer extends ChadoTaskBase {
    * associated features.
    *
    */
-  function tripal_chado_add_analysis_organism_mview() {
+  private function createMview_analysis_organism() {
     $view_name = 'analysis_organism';
-    $comment = t('This view is for associating an organism (via it\'s associated features) to an analysis.');
-
-    // this is the SQL used to identify the organism to which an analsysis
-    // has been used.  This is obtained though the analysisfeature -> feature -> organism
-    // joins
-    $sql = "
-      SELECT DISTINCT A.analysis_id, O.organism_id
-      FROM analysis A
-        INNER JOIN analysisfeature AF ON A.analysis_id = AF.analysis_id
-        INNER JOIN feature F          ON AF.feature_id = F.feature_id
-        INNER JOIN organism O         ON O.organism_id = F.organism_id
-    ";
+    $comment = 'This view is for associating an organism (via it\'s associated features) to an analysis.';
 
     // the schema array for describing this view
     $schema = [
@@ -663,8 +671,22 @@ class ChadoPreparer extends ChadoTaskBase {
       ],
     ];
 
-    // add the view
-    chado_add_mview($view_name, 'tripal_analysis', $schema, $sql, $comment, FALSE);
+    // this is the SQL used to identify the organism to which an analsysis
+    // has been used.  This is obtained though the analysisfeature -> feature -> organism
+    // joins
+    $sql = "
+      SELECT DISTINCT A.analysis_id, O.organism_id
+      FROM analysis A
+        INNER JOIN analysisfeature AF ON A.analysis_id = AF.analysis_id
+        INNER JOIN feature F ON AF.feature_id = F.feature_id
+        INNER JOIN organism O ON O.organism_id = F.organism_id
+    ";
+
+    $mviews = \Drupal::service('tripal_chado.materialized_views');
+    $mview = $mviews->create($view_name, $this->chado->getSchemaName());
+    $mview->setTableSchema($schema);
+    $mview->setSqlQuery($sql);
+    $mview->setComment($comment);
   }
 
   /**
@@ -673,11 +695,11 @@ class ChadoPreparer extends ChadoTaskBase {
    * This is needed for viewing cv trees
    *
    */
-  function tripal_chado_add_db2cv_mview_mview() {
-    $mv_name = 'db2cv_mview';
+  private function createMview_db2cv_mview() {
+    $view_name = 'db2cv_mview';
     $comment = 'A table for quick lookup of the vocabularies and the databases they are associated with.';
     $schema = [
-      'table' => $mv_name,
+      'table' => $view_name,
       'description' => $comment,
       'fields' => [
         'cv_id' => [
@@ -723,8 +745,12 @@ class ChadoPreparer extends ChadoTaskBase {
       ORDER BY DB.name
     ";
 
-    // Create the MView
-    chado_add_mview($mv_name, 'tripal_chado', $schema, $sql, $comment, FALSE, $this->chado);
+    $mviews = \Drupal::service('tripal_chado.materialized_views');
+    $mview = $mviews->create($view_name, $this->chado->getSchemaName());
+    $mview->setTableSchema($schema);
+    $mview->setSqlQuery($sql);
+    $mview->setComment($comment);
+    $mview->setHidden(True);
   }
 
   /**
@@ -733,11 +759,11 @@ class ChadoPreparer extends ChadoTaskBase {
    * This is needed for viewing cv trees
    *
    */
-  function tripal_chado_add_cv_root_mview_mview() {
-    $mv_name = 'cv_root_mview';
+  private function createMview_cv_root_mview() {
+    $view_name = 'cv_root_mview';
     $comment = 'A list of the root terms for all controlled vocabularies. This is needed for viewing CV trees';
     $schema = [
-      'table' => $mv_name,
+      'table' => $view_name,
       'description' => $comment,
       'fields' => [
         'name' => [
@@ -777,46 +803,32 @@ class ChadoPreparer extends ChadoTaskBase {
         CVT.is_relationshiptype = 0 and CVT.is_obsolete = 0
     ";
 
-    // Create the MView
-    chado_add_mview($mv_name, 'tripal_chado', $schema, $sql, $comment, FALSE, $this->chado);
-  }
-
-
-
-  /**
-   * For Chado v1.1 Tripal provides some new custom tables.
-   *
-   * For Chado v1.2 or greater these tables are not needed as they are part of the
-   * schema update.
-   */
-  protected function add_v1_1_custom_tables() {
-    $this->tripal_chado_add_analysisfeatureprop_table();
+    $mviews = \Drupal::service('tripal_chado.materialized_views');
+    $mview = $mviews->create($view_name, $this->chado->getSchemaName());
+    $mview->setTableSchema($schema);
+    $mview->setSqlQuery($sql);
+    $mview->setComment($comment);
+    $mview->setHidden(True);
   }
 
   /**
-   * Create a legacy custom chado table (analysisfeatureprop) to store properties
-   * of analysisfeature links.
+   * Populates the cv_root_mview materialized view.
    */
-  protected function tripal_chado_add_analysisfeatureprop_table() {
-    // Create analysisfeatureprop table in chado.  This is needed for Chado
-    // version 1.11, the table exists in Chado 1.2.
-    $schema = $this->chado->schema();
-    if (!$schema->tableExists('analysisfeatureprop')) {
-      $sql = "
-        CREATE TABLE {analysisfeatureprop} (
-          analysisfeatureprop_id SERIAL PRIMARY KEY,
-          analysisfeature_id     INTEGER NOT NULL,
-          type_id                INTEGER NOT NULL,
-          value                  TEXT,
-          rank                   INTEGER NOT NULL,
-          CONSTRAINT analysisfeature_id_type_id_rank UNIQUE (analysisfeature_id, type_id, rank),
-          CONSTRAINT analysisfeatureprop_analysisfeature_id_fkey FOREIGN KEY (analysisfeature_id) REFERENCES {analysisfeature}(analysisfeature_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
-          CONSTRAINT analysisfeatureprop_type_id_fkey FOREIGN KEY (type_id) REFERENCES {cvterm}(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
-        )
-      ";
-      $this->chado->query($sql);
-    }
+  private function populateMview_cv_root_mview() {
+    $mviews = \Drupal::service('tripal_chado.materialized_views');
+    $mview = $mviews->loadByName('cv_root_mview', $this->chado->getSchemaName());
+    $mview->populate();
   }
+
+  /**
+   * Populates the db2cv materialized view.
+   */
+  private function populateMview_db2cv_mview() {
+    $mviews = \Drupal::service('tripal_chado.materialized_views');
+    $mview = $mviews->loadByName('db2cv_mview', $this->chado->getSchemaName());
+    $mview->populate();
+  }
+
 
   /**
    * Set progress value.
@@ -895,152 +907,76 @@ class ChadoPreparer extends ChadoTaskBase {
   }
 
   /**
-   * Loads ontologies necessary for creation of default Tripal content types.
+   * Gets a term by its idSpace and accession
+   *
+   * @param string $idSpace
+   *   The Id space name for the term.
+   * @param string $accession
+   *   The accession for the term.
+   * @return TripalTerm|NULL
+   *   A tripal term object.
    */
-  protected function loadOntologies() {
+  private function getTerm($idSpace, $accession, $vocabulary = NULL) {
+    $id = $this->getIdSpace($idSpace);
+    if ($vocabulary) {
+      $id->setDefaultVocabulary($vocabulary);
+    }
+    return $id->getTerm($accession);
+  }
 
+  /**
+   * Imports ontologies into Chado.
+   */
+  protected function importOntologies() {
     $ontologies = [];
-
-    // NCIT
-    $ncit_vocab = $this->getVocabulary('ncit');
-    $ncit_vocab->setLabel('NCI Thesaurus OBO Edition');
-    $ncit_vocab->setUrl('http://purl.obolibrary.org/obo/ncit.owl');
-    $ncit_idspace = $this->getIdSpace('NCIT');
-    $ncit_idspace->setDescription('The NCIt is a reference terminology that includes broad coverage of the cancer domain, including cancer related diseases, findings and abnormalities. NCIt OBO Edition releases should be considered experimental.');
-    $ncit_idspace->setUrlPrefix('http://purl.obolibrary.org/obo/{db}_{accession}');
-    $ncit_idspace->setDefaultVocabulary('ncit');
-    $ncit__subgroup = new TripalTerm([
-      'name' => 'Subgroup',
-      'idSpace' => 'NCIT',
-      'vocabulary' => 'ncit',
-      'accession' => 'C25693',
-      'definition' => 'A subdivision of a larger group with members often exhibiting similar characteristics. [ NCI ]',
-    ]);
-    $ncit_idspace->saveTerm($ncit__subgroup);
-
-    // RDFS
-    $rdfs_vocab = $this->getVocabulary('rdfs');
-    $rdfs_vocab->setLabel('Resource Description Framework Schema');
-    $rdfs_vocab->setUrl('https://www.w3.org/TR/rdf-schema/');
-    $rdfs_idspace = $this->getIdSpace('rdfs');
-    $rdfs_idspace->setDescription('Resource Description Framework Schema');
-    $rdfs_idspace->setUrlPrefix('http://www.w3.org/2000/01/rdf-schema#{accession}');
-    $rdfs_idspace->setDefaultVocabulary('rdfs');
-    $rdfs__comment = new TripalTerm([
-      'name' => 'comment',
-      'accession' => 'comment',
-      'idSpace' => 'rdfs',
-      'vocabulary' => 'rdfs',
-      'definition' => 'A human-readable description of a resource\'s name.',
-    ]);
-    $rdfs_idspace->saveTerm($rdfs__comment);
-
-    // RO
-    $rel_vocab = $this->getVocabulary('ro');
-    $rel_vocab->setLabel('Relationship Ontology (legacy)');
-    $rel_vocab->setUrl('cv/lookup/RO');
-    $RO_idspace = $this->getIdSpace('RO');
-    $RO_idspace->setDescription('Relationship Ontology (legacy)');
-    $RO_idspace->setURLPrefix("cv/lookup/RO/{accession}	");
-    $RO_idspace->setDefaultVocabulary('ro');
     $ontologies[] = [
-      'vocabulary' => $rel_vocab,
-      'idSpace' => $RO_idspace,
+      'vocabulary' => $this->getVocabulary('ro'),
+      'idSpace' => $this->getIdSpace('RO'),
       'path' => '{tripal_chado}/files/legacy_ro.obo',
       'auto_load' => FALSE,
     ];
-
-    // GO
-    $cc_vocab = $this->getVocabulary('cellular_component');
-    $bp_vocab = $this->getVocabulary('biological_process');
-    $mf_vocab = $this->getVocabulary('molecular_function');
-    $cc_vocab->setLabel('Gene Ontology Cellular Component Vocabulary');
-    $bp_vocab->setLabel('Gene Ontology Biological Process Vocabulary');
-    $mf_vocab->setLabel('Gene Ontology Molecular Function Vocabulary');
-    $cc_vocab->setURL('http://geneontology.org/');
-    $bp_vocab->setURL('http://geneontology.org/');
-    $mf_vocab->setURL('http://geneontology.org/');
-    $GO_idspace = $this->getIdSpace('GO');
-    $GO_idspace->setDescription("The Gene Ontology (GO) knowledgebase is the world’s largest source of information on the functions of genes");
-    $GO_idspace->setURLPrefix("http://amigo.geneontology.org/amigo/term/{db}:{accession}");
-    $GO_idspace->setDefaultVocabulary('cellular_component');
     $ontologies[] = [
-      'vocabulary' => $cc_vocab,
-      'idSpace' => $GO_idspace,
+      'vocabulary' => $this->getVocabulary('cellular_component'),
+      'idSpace' => $this->getIdSpace('GO'),
       'path' => 'http://purl.obolibrary.org/obo/go.obo',
       'auto_load' => FALSE,
     ];
-
-    // SO
-    $sequence_vocab = $this->getVocabulary('sequence');
-    $sequence_vocab->setLabel('The Sequence Ontology');
-    $sequence_vocab->setURL('http://www.sequenceontology.org');
-    $SO_idspace = $this->getIdSpace('SO');
-    $SO_idspace->setDescription("The Sequence Ontology");
-    $SO_idspace->setURLPrefix("http://www.sequenceontology.org/browser/current_svn/term/{db}:{accession}");
-    $SO_idspace->setDefaultVocabulary('sequence');
     $ontologies[] = [
-      'vocabulary' => $sequence_vocab,
-      'idSpace' => $SO_idspace,
+      'vocabulary' => $this->getVocabulary('sequence'),
+      'idSpace' => $this->getIdSpace('SO'),
       'path' => 'http://purl.obolibrary.org/obo/so.obo',
       'auto_load' => TRUE,
     ];
-
-    // TAXRANK
-    $taxrank_vocab = $this->getVocabulary('taxonomic_rank');
-    $taxrank_vocab->setLabel('Taxonomic Rank');
-    $taxrank_vocab->setURL('http://www.obofoundry.org/ontology/taxrank.html');
-    $TAXRANK_idspace = $this->getIdSpace('TAXRANK');
-    $TAXRANK_idspace->setDescription("A vocabulary of taxonomic ranks (species, family, phylum, etc)");
-    $TAXRANK_idspace->setURLPrefix("http://purl.obolibrary.org/obo/{db}_{accession}");
-    $TAXRANK_idspace->setDefaultVocabulary('taxonomic_rank');
     $ontologies[] = [
-      'vocabulary' => $taxrank_vocab,
-      'idSpace' => $TAXRANK_idspace,
+      'vocabulary' => $this->getVocabulary('taxonomic_rank'),
+      'idSpace' => $this->getIdSpace('TAXRANK'),
       'path' => 'http://purl.obolibrary.org/obo/taxrank.obo',
       'auto_load' => TRUE,
     ];
-
-    // TContact
-    $tcontact_vocab = $this->getVocabulary('tripal_contact');
-    $tcontact_vocab->setLabel('Tripal Contact Ontology');
-    $tcontact_vocab->setURL('cv/lookup/TCONTACT');
-    $tcontact_idspace = $this->getIdSpace('TCONTACT');
-    $tcontact_idspace->setDescription("Tripal Contact Ontology. A temporary ontology until a more formal appropriate ontology an be identified.");
-    $tcontact_idspace->setURLPrefix("cv/lookup/TCONTACT/{accession}	");
-    $tcontact_idspace->setDefaultVocabulary('tripal_contact');
     $ontologies[] = [
-      'vocabulary' => $tcontact_vocab,
-      'idSpace' => $tcontact_idspace,
+      'vocabulary' => $this->getVocabulary('tripal_contact'),
+      'idSpace' => $this->getIdSpace('TCONTACT'),
       'path' => '{tripal_chado}/files/tcontact.obo',
       'auto_load' => TRUE,
     ];
-
-    // TPub
-    $tpub_vocab = $this->getVocabulary('tripal_pub');
-    $tpub_vocab->setLabel('Tripal Publication Ontology');
-    $tpub_vocab->setURL('cv/lookup/TPUB');
-    $tpub_idspace = $this->getIdSpace('TPUB');
-    $tpub_idspace->setDescription("Tripal Publication Ontology. A temporary ontology until a more formal appropriate ontology an be identified.");
-    $tpub_idspace->setURLPrefix("cv/lookup/TPUB/{accession}	");
-    $tpub_idspace->setDefaultVocabulary('tripal_pub');
     $ontologies[] = [
-      'vocabulary' => $tpub_vocab,
-      'idSpace' => $tpub_idspace,
+      'vocabulary' => $this->getVocabulary('tripal_pub'),
+      'idSpace' => $this->getIdSpace('TPUB'),
       'path' => '{tripal_chado}/files/tpub.obo',
       'auto_load' => TRUE,
     ];
 
     // Iterate through each ontology and install them with the OBO Importer.
     foreach ($ontologies as $ontology) {
-      $obo_id = $this->addOntologyRecord($ontology);
+      $obo_id = $this->insertOntologyRecord($ontology);
+      $schema_name = $this->outputSchemas[0]->getSchemaName();
       if ($ontology['auto_load']) {
-         $this->logger->notice("  Importing " . $ontology['idSpace']->getDescription());
-         $importer_manager = \Drupal::service('tripal.importer');
-         $obo_importer = $importer_manager->createInstance('chado_obo_loader');
-         $obo_importer->create(['obo_id' => $obo_id]);
-         $obo_importer->run();
-         $obo_importer->postRun();
+        $this->logger->notice("Importing " . $ontology['idSpace']->getDescription());
+        $importer_manager = \Drupal::service('tripal.importer');
+        $obo_importer = $importer_manager->createInstance('chado_obo_loader');
+        $obo_importer->create(['obo_id' => $obo_id, 'schema_name' => $schema_name]);
+        $obo_importer->run();
+        $obo_importer->postRun();
       }
     }
   }
@@ -1053,7 +989,7 @@ class ChadoPreparer extends ChadoTaskBase {
    * @return int
    *   The Id of the inserted OBO record.
    */
-  private function addOntologyRecord($ontology) {
+  private function insertOntologyRecord($ontology) {
 
     $name = $ontology['idSpace']->getDescription();
 
@@ -1089,591 +1025,678 @@ class ChadoPreparer extends ChadoTaskBase {
   }
 
   /**
-   * Creates default content types.
+   * Create a new Content Type.
+   *
+   * @param array $details
+   *   Describes the content type you would like to create.
+   *   Should contain the following:
+   *    - label: the human-readable label to be used for the content type.
+   *    - category: a human-readable category to group like content types together.
+   *    - term: a tripal term object which should be associated with the content type.
    */
-  protected function contentTypes() {
-    $this->generalContentTypes();
-    $this->genomicContentTypes();
-    $this->geneticContentTypes();
-    $this->germplasmContentTypes();
-    $this->expressionContentTypes();
+  private function createContentType($details) {
+
+    $entityType = NULL;
+    $bundle = '';
+
+    $term = $details['term'];
+    if (!array_key_exists('term', $details) or !$details['term']) {
+      $this->logger->error(t('Creation of content type, "@type", failed. No term provided.',
+          ['@type' => $details['label']]));
+      return NULL;
+    }
+    if (!$term->isValid()) {
+      $this->logger->error(t('Creation of content type, "@type", failed. The provided term, "@term", was not valid.',
+          ['@type' => $details['label'], '@term' => $term->getTermId()]));
+      return NULL;
+    }
+
+    // Check if the type already exists.
+    $entityTypes = \Drupal::entityTypeManager()
+      ->getStorage('tripal_entity_type')
+      ->loadByProperties(['label' => $details['label']]);
+    if (!empty($entityTypes)) {
+      $this->logger->notice(t('Skipping content type, "@type", as it already exists.',
+          ['@type' => $details['label']]));
+      $bundle = array_pop(array_keys($entityTypes));
+      $entityType = $entityTypes[$bundle];
+    }
+    else {
+      // Get the next bio_data_x index number.
+      $cid = 'chado_bio_data_index';
+      $cached_val = \Drupal::cache()->get($cid, 0);
+      if ($cached_val != 0) {
+        $cached_val = $cached_val->data;
+      }
+      $next_index = $cached_val + 1;
+      $bundle = 'bio_data_' . $next_index;
+      $details['id'] = $next_index;
+      $details['name'] = $bundle;
+
+      $entityType = TripalEntityType::create($details);
+      if (is_object($entityType)) {
+        $entityType->save();
+        $this->logger->notice(t('Content type, "@type", created..',
+            ['@type' => $details['label']]));
+        \Drupal::cache()->set($cid, $next_index);
+      }
+      else {
+        $this->logger->error(t('Creation of content type, "@type", failed. The provided details were: ',
+            ['@type' => $details['label']]) . print_r($details));
+      }
+    }
+
+    // Create the default view mode for this new content type.
+    $storage = \Drupal::entityTypeManager()->getStorage('entity_view_display');
+    $view_display = $storage->load('tripal_entity.' . $bundle . '.default');
+    if (!$view_display) {
+      $view_details = [
+        'langcode' => 'en',
+        'status' => True,
+        'dependencies' => [
+          'module' => ['tripal']
+        ],
+        'targetEntityType' => 'tripal_entity',
+        'bundle' => $bundle,
+        'mode' => 'default',
+        'content' => [],
+        'hidden' => [],
+      ];
+      $view_display = $storage->create($view_details, 'entity_view_display');
+      if (!$view_display->save()) {
+        $this->logger->error(t('Creation of content type, "@type", default view mode failed. The provided details were: ',
+            ['@type' => $details['label']]) . print_r($details));
+      }
+    }
+
+    // Create the default form mode for this new content type.
+    $storage = \Drupal::entityTypeManager()->getStorage('entity_form_display');
+    $form_display = $storage->load('tripal_entity.' . $bundle . '.default');
+    if (!$form_display) {
+      $form_details = [
+        'langcode' => 'en',
+        'status' => True,
+        'dependencies' => [
+          'module' => ['tripal']
+        ],
+        'targetEntityType' => 'tripal_entity',
+        'bundle' => $bundle,
+        'mode' => 'default',
+        'content' => [],
+        'hidden' => [],
+      ];
+      $form_display = $storage->create($form_details, 'entity_view_display');
+      if (!$form_display->save()) {
+        $this->logger->error(t('Creation of content type, "@type", default form mode failed. The provided details were: ',
+            ['@type' => $details['label']]) . print_r($details));
+      }
+    }
+    return $entityType;
   }
 
   /**
-   * Helper: Create a given set of types.
+   * Automatically adds single-valued fields for base tables.
    *
-   * @param $types
-   *   An array of types to be created. The key is used to link the type to
-   *   it's term and the value is an array of details to be passed to the
-   *   create() method for Tripal Entity Types. Some keys should be:
-   *    - id: the integer id for this type; this will go away since it
-   *        should be automatic.
-   *    - name: the machine name for this type. It should be bio_data_[id]
-   *        where [id] matches the integer id above. Also should be automatic.
-   *    - label: a human-readable label for the content type.
-   *    - category: a grouping string to categorize content types in the UI.
-   *    - help_text: a single sentence describing the content type -usually
-   *        the default is the term definition.
-   * @param $terms
-   *   An array of terms which must already exist where the key maps to a
-   *   content type in the $types array. The value for each item is an array of
-   *   details to be passed to the term creation API. Some keys should be:
-   *    - accession: the unique identifier for the term (i.e. 2945)
-   *    - vocabulary:
-   *       - namespace: The name of the vocabulary (i.e. EDAM).
-   *       - idspace: the id space of the term (i.e. operation).
+   * @param TripalEntityType $entityType
+   * @param string $chado_table
    */
-  protected function createGivenContentTypes($types, $terms) {
-    foreach($terms as $key => $term_details) {
-      $type_details = $types[$key];
+  private function addBaseTableSVFields(TripalEntityType $entityType, string $chado_table) {
 
-      $this->logger->notice("  -- Creating " . $type_details['label'] . " (" . $type_details['name'] . ")...");
+    // We need the idSpace manager object.
+    $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
 
-      // TODO: Create the term once the API is upgraded.
-      // $term = \Drupal::service('tripal.tripalTerm.manager')->getTerms($term_details);
+    // Get the Chado table information.
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+    $schema_def = $schema->getTableDef($chado_table, ['format' => 'Drupal']);
+    $pk = $schema_def['primary key'];
+    if (is_array($pk)) {
+      $pk = $pk[0];
+    }
+    $columns = $schema_def['fields'];
 
-      // TODO: Set the term in the type details.
-      if (is_object($term)) {
-        // $type_details['term_id'] = $term->getID();
-        if (!array_key_exists($type_details, 'help_text')) {
-          // $type_details['help_text'] = $term->getDefinition();
-        }
+    // Get the term to table mapping information for the core chado mapping.
+    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
+    $mapping = $storage->load('core_mapping');
+
+    $weight = 10;
+    foreach ($columns AS $column => $detail) {
+      // Do not add afield for the primary key
+      if ($column == $pk) {
+        continue;
       }
-      else {
-        $this->logger->warning("\tNo term attached -waiting on API update.");
-      }
 
-      // Check if the type already exists.
-      // TODO: use term instead of label once it's available.
-      $filter = ['label' => $type_details['label'] ];
-      $exists = \Drupal::entityTypeManager()
-        ->getStorage('tripal_entity_type')
-        ->loadByProperties($filter);
+      $term_id = $mapping->getColumnTermId($chado_table, $column);
+      list($idSpace_name, $accession) = explode(':', $term_id);
+      $idSpace = $idSpace_manager->loadCollection($idSpace_name);
+      if ($idSpace) {
+        $term = $idSpace->getTerm($accession);
 
-      // Create the Type.
-      if (empty($exists)) {
-        $tripal_type = TripalEntityType::create($type_details);
-        if (is_object($tripal_type)) {
-          $tripal_type->save();
-          $this->logger->notice("\tSaved successfully.");
+        $field_name = strtolower($entityType->getName() . '_' . $idSpace_name . '_' . preg_replace('/[^\w]/', '_', $accession));
+        $field_name = substr($field_name, 0, 32);
+
+        $field_type = '';
+        $storage_settings = [];
+        if (strtolower($detail['type']) == 'character varying') {
+          $field_type = 'tripal_string_type';
+          $storage_settings['max_length'] = $detail['size'];
         }
-        else {
-          $this->logger->error("\tCreation Failed! Details provided were: " . print_r($type_details));
+        if (strtolower($detail['type']) == 'text') {
+          $field_type = 'tripal_text_type';
         }
-      }
-      else {
-        $this->logger->notice("\tSkipping as the content type already exists.");
+        if (strtolower($detail['type']) == 'bigint' or strtolower($detail['type']) == 'int') {
+          // Make sure it's not a foreign key. If so, this will most likely be a complex field.
+          $is_fk = FALSE;
+          foreach ($schema_def['foreign keys'] as $fktable => $fkdetails) {
+            if (array_key_exists($column, $fkdetails['columns'])) {
+              $is_fk = TRUE;
+            }
+          }
+          if (!$is_fk) {
+            $field_type = 'tripal_integer_type';
+          }
+        }
+        // @todo handle all the different database column types.
+
+        // Is the field required? Ensure we match the database.
+        $is_required = FALSE;
+        if (isset($detail['not null']) && $detail['not null'] == 1) {
+          $is_required = TRUE;
+        }
+
+        // Can the database support multiple cardinality?
+        // @todo currently we're not automatically determining this.
+        $cardinality = 1;
+
+        // If we don't have a suported field type then just skip this
+        // columns
+        if (!$field_type) {
+          continue;
+        }
+
+        $field = [
+          'name' => $field_name,
+          'label' => ucwords($term->getName()),
+          'type' => $field_type,
+          'description' => $term->getDefinition(),
+          'cardinality' => $cardinality,
+          'required' => $is_required,
+          'storage_settings' => [
+            'storage_plugin_id' => 'chado_storage',
+            'storage_plugin_settings' => [
+              'base_table' => $chado_table,
+              'property_settings' => [
+                'value' => [
+                  'action' => 'store',
+                  'chado_table' => $chado_table,
+                  'chado_column' => $column,
+                ]
+              ],
+            ],
+          ],
+          'settings' => [
+            'termIdSpace' => $idSpace_name,
+            'termAccession' => $term->getAccession(),
+          ],
+          'display' => [
+            'view' => [
+              'default' => [
+                'region' => 'content',
+                'label' => 'above',
+                'weight' => $weight,
+              ],
+            ],
+            'form' => [
+              'default' => [
+                'region' => 'content',
+                'weight' => $weight,
+              ],
+            ],
+          ],
+        ];
+
+        // Now add in any additional storage settings
+        foreach ($storage_settings as $key => $value) {
+          $field['storage_settings'][$key] = $value;
+        }
+
+        /**
+         * @var \Drupal\tripal\Services\TripalFieldsManager $tripal_fields
+         */
+        $tripal_fields = \Drupal::service('tripal.fields');
+        $tripal_fields->addBundleField($entityType->getName(), $field);
+        $weight = $weight + 5;
       }
     }
   }
 
   /**
-   * Creates the "General" category of content types.
+   * Automatically adds the organism complex value fields for base tables.
    *
-   * @code
-   $terms[''] =[
-     'accession' => '',
-     'vocabulary' => [
-       'idspace' => '',
-     ],
-   ];
-   $types['']= [
-     'id' => ,
-     'name' => '',
-     'label' => '',
-     'category' => 'General',
-   ];
-   * @endcode
+   * @param TripalEntityType $entityType
+   * @param string $chado_table
    */
-  protected function generalContentTypes() {
+  private function addOrganismField(TripalEntityType $entityType, string $chado_table) {
 
-    // The 'Organism' entity type. This uses the obi:organism term.
-    $terms['organism'] =[
-      'accession' => '0100026',
-      'vocabulary' => [
-        'idspace' => 'OBI',
+    // We need the idSpace manager object.
+    $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+
+    // Get the Chado table information.
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+    $schema_def = $schema->getTableDef($chado_table, ['format' => 'Drupal']);
+
+    // Get the term to table mapping information for the core chado mapping.
+    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
+    $mapping = $storage->load('core_mapping');
+
+    $weight = 10;
+    // This is only for organism foreign keys so no need to add if it's the organism table.
+    if ($chado_table == 'organism') {
+      return;
+    }
+
+    // Now check for the foreign key.
+    if (array_key_exists('organism_id', $schema_def['fields'])) {
+      $org_id_col = 'organism_id';
+    } elseif (array_key_exists('taxon_id', $schema_def['fields'])){
+      $org_id_col = 'taxon_id';
+    }
+    else {
+      // there is no foreign key to the organism table for this chado table.
+      return;
+    }
+
+    // Now retrieve the term mapped to this chado column.
+    $term_id = $mapping->getColumnTermId($chado_table, $org_id_col);
+    list($idSpace_name, $accession) = explode(':', $term_id);
+    $idSpace = $idSpace_manager->loadCollection($idSpace_name);
+    if (!is_object($idSpace)) {
+      // Unable to find the term we need.
+      // No error was originally returned here but we may want to consider adding one.
+      return;
+    }
+
+    $term = $idSpace->getTerm($accession);
+
+    // Use the same method as Tripal v3 for creating field names.
+    $field_name = strtolower($entityType->getName() . '_' . $idSpace_name . '_' . preg_replace('/[^\w]/', '_', $accession));
+    $field_name = substr($field_name, 0, 32);
+    $field_type = 'obi__organism';
+
+    // Is the field required? Ensure we match the database.
+    $is_required = FALSE;
+    if (array_key_exists('not null', $schema_def['fields'][$org_id_col]) and
+        $schema_def['fields'][$org_id_col]['not null'] == TRUE) {
+      $is_required = TRUE;
+    }
+
+    $field = [
+      'name' => $field_name,
+      'label' => ucwords($term->getName()),
+      'type' => $field_type,
+      'description' => $term->getDefinition(),
+      'cardinality' => 1,
+      'required' => $is_required,
+      'storage_settings' => [
+        'storage_plugin_id' => 'chado_storage',
+        'storage_plugin_settings' => [
+          'base_table' => $chado_table,
+          'property_settings' => [
+            'value' => [
+              'action' => 'store',
+              'chado_table' => $chado_table,
+              'chado_column' => $org_id_col,
+            ],
+          ],
+        ],
+      ],
+      'settings' => [
+       'termIdSpace' => $idSpace_name,
+       'termAccession' => $term->getAccession(),
+      ],
+      'display' => [
+       'view' => [
+         'default' => [
+           'region' => 'content',
+           'label' => 'above',
+           'weight' => $weight,
+         ],
+       ],
+       'form' => [
+         'default' => [
+           'region' => 'content',
+           'weight' => $weight,
+         ],
+       ],
       ],
     ];
-    $types['organism']= [
-      'id' => 1,
-      'name' => 'bio_data_1',
+    $tripal_fields = \Drupal::service('tripal.fields');
+    $tripal_fields->addBundleField($entityType->getName(), $field);
+  }
+
+  /**
+   * Automatically adds complex value fields for base tables.
+   *
+   * @param TripalEntityType $entityType
+   * @param string $chado_table
+   */
+  private function addTypeField(TripalEntityType $entityType, string $chado_table) {
+
+    // We need the idSpace manager object.
+    $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+
+    // Get the Chado table information.
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+    $schema_def = $schema->getTableDef($chado_table, ['format' => 'Drupal']);
+
+    // Get the term to table mapping information for the core chado mapping.
+    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
+    $mapping = $storage->load('core_mapping');
+
+    $weight = 10;
+    // We won't add a type field if there isn't a type_id.
+    if (!array_key_exists('type_id', $schema_def['fields'])) {
+      return;
+    }
+
+    $term_id = $mapping->getColumnTermId($chado_table, 'type_id');
+    list($idSpace_name, $accession) = explode(':', $term_id);
+    $idSpace = $idSpace_manager->loadCollection($idSpace_name);
+    if (!is_object($idSpace)) {
+      // Unable to find the term we need.
+      // No error was originally returned here but we may want to consider adding one.
+      return;
+    }
+
+    $term = $idSpace->getTerm($accession);
+
+    // Use the same method as Tripal v3 for creating field names.
+    $field_name = strtolower($idSpace_name . '__' . preg_replace('/[^\w]/', '_', $term->getName()));
+    $field_name = substr($field_name, 0, 32);
+    $field_type = 'tripal_integer_type';
+
+    // Is the field required? Ensure we match the database.
+    $is_required = FALSE;
+    if (array_key_exists('not null', $schema_def['fields']['type_id']) and
+        $schema_def['fields']['type_id']['not null'] == TRUE) {
+      $is_required = TRUE;
+    }
+
+    $field = [
+      'name' => $field_name,
+      'label' => ucwords($term->getName()),
+      'type' => $field_type,
+      'description' => $term->getDefinition(),
+      'cardinality' => 1,
+      'required' => $is_required,
+      'storage_settings' => [
+        'storage_plugin_id' => 'chado_storage',
+        'storage_plugin_settings' => [
+          'base_table' => $chado_table,
+          'property_settings' => [
+            'value' => [
+              'action' => 'store',
+              'chado_table' => $chado_table,
+              'chado_column' => 'type_id',
+            ],
+          ],
+        ],
+      ],
+      'settings' => [
+        'termIdSpace' => $idSpace_name,
+        'termAccession' => $term->getAccession(),
+      ],
+      'display' => [
+        'view' => [
+          'default' => [
+            'region' => 'content',
+            'label' => 'above',
+            'weight' => $weight,
+          ],
+        ],
+        'form' => [
+          'default' => [
+            'region' => 'content',
+            'weight' => $weight,
+          ],
+        ],
+      ],
+    ];
+    $tripal_fields = \Drupal::service('tripal.fields');
+    $tripal_fields->addBundleField($entityType->getName(), $field);
+  }
+
+
+  /**
+   * Creates the "General" category of content types.
+   */
+  private function createGeneralContentTypes() {
+
+    $entity_type = $this->createContentType([
       'label' => 'Organism',
+      'term' => $this->getTerm('OBI', '0100026'),
       'category' => 'General',
-    ];
+    ]);
+    $this->addBaseTableSVFields($entity_type, 'organism');
 
-    // The 'Analysis' entity type. This uses the EDAM:analysis term.
-    $terms['analysis'] = [
-      'accession' => '2945',
-      'vocabulary' => [
-        'namespace' => 'EDAM',
-        'idspace' => 'operation',
-      ],
-    ];
-    $types['analysis'] = [
-      'id' => 2,
-      'name' => 'bio_data_2',
+    $entity_type = $this->createContentType([
       'label' => 'Analysis',
+      'term' => $this->getTerm('operation', '2945', 'EDAM'),
       'category' => 'General',
-    ];
+    ]);
+    $this->addBaseTableSVFields($entity_type, 'analysis');
 
-    // The 'Project' entity type. bio_data_3
-    $terms['project'] =[
-      'accession' => 'C47885',
-      'vocabulary' => [
-        'idspace' => 'NCIT',
-      ],
-    ];
-    $types['project']= [
-      'id' => 3,
-      'name' => 'bio_data_3',
+    $entity_type = $this->createContentType([
       'label' => 'Project',
+      'term' => $this->getTerm('NCIT', 'C47885'),
       'category' => 'General',
-    ];
+    ]);
+    $this->addBaseTableSVFields($entity_type, 'project');
 
-    // The 'Study' entity type. bio_data_4
-    $terms['study'] =[
-      'accession' => '001066',
-      'vocabulary' => [
-        'idspace' => 'SIO',
-      ],
-    ];
-    $types['study']= [
-      'id' => 4,
-      'name' => 'bio_data_4',
+    $entity_type = $this->createContentType([
       'label' => 'Study',
+      'term' => $this->getTerm('SIO', '001066'),
       'category' => 'General',
-    ];
+    ]);
+    $this->addBaseTableSVFields($entity_type, 'study');
 
-    // The 'Contact' entity type. bio_data_5
-    $terms['contact'] =[
-      'accession' => 'contact',
-      'vocabulary' => [
-        'idspace' => 'local',
-      ],
-    ];
-    $types['contact']= [
-      'id' => 5,
-      'name' => 'bio_data_5',
+    $entity_type = $this->createContentType([
       'label' => 'Contact',
+      'term' => $this->getTerm('local', 'contact'),
       'category' => 'General',
-    ];
+    ]);
+    $this->addBaseTableSVFields($entity_type, 'contact');
 
-    // The 'Publication' entity type. bio_data_6
-    $terms['publication'] =[
-      'accession' => '0000002',
-      'vocabulary' => [
-        'idspace' => 'TPUB',
-      ],
-    ];
-    $types['publication']= [
-      'id' => 6,
-      'name' => 'bio_data_6',
+    $entity_type = $this->createContentType([
       'label' => 'Publication',
+      'term' => $this->getTerm('TPUB', '0000002'),
       'category' => 'General',
-    ];
+    ]);
+    // @todo we need to handle the pub table specially.
+    //$this->addBaseTableSVFields($entity_type, 'pub');
 
-    // The 'Protocol' entity type. bio_data_7
-    $terms['protocol'] =[
-      'accession' => '00101',
-      'vocabulary' => [
-        'idspace' => 'sep',
-      ],
-    ];
-    $types['protocol']= [
-      'id' => 7,
-      'name' => 'bio_data_7',
+    $entity_type = $this->createContentType([
       'label' => 'Protocol',
+      'term' => $this->getTerm('sep', '00101'),
       'category' => 'General',
-    ];
-
-    $this->createGivenContentTypes($types, $terms);
+    ]);
+    $this->addBaseTableSVFields($entity_type, 'protocol');
   }
 
   /**
    * Creates the "Genomic" category of content types.
-   *
-   * @code
-   $terms[''] =[
-     'accession' => '',
-     'vocabulary' => [
-       'idspace' => '',
-     ],
-   ];
-   $types['']= [
-     'id' => ,
-     'name' => '',
-     'label' => '',
-     'category' => 'Genomic',
-   ];
-   * @endcode
    */
-  protected function genomicContentTypes() {
+  private function createGenomicContentTypes() {
 
-    // The 'Gene' entity type. This uses the sequence:gene term.
-    $terms['gene'] = [
-      'accession' => '0000704',
-      'vocabulary' => [
-        'namespace' => 'sequence',
-        'idspace' => 'SO',
-      ],
-    ];
-    $types['gene'] = [
-      'id' => 8,
-      'name' => 'bio_data_8',
+    $entity_type = $this->createContentType([
       'label' => 'Gene',
+      'term' => $this->getTerm('SO', '0000704'),
       'category' => 'Genomic',
-    ];
+    ]);
+    $this->addBaseTableSVFields($entity_type, 'feature');
+    $this->addOrganismField($entity_type, 'feature');
+    $this->addTypeField($entity_type, 'feature');
 
-    // the 'mRNA' entity type. bio_data_9
-    $terms['mRNA'] =[
-      'accession' => '0000234',
-      'vocabulary' => [
-        'idspace' => 'SO',
-      ],
-    ];
-    $types['mRNA']= [
-      'id' => 9,
-      'name' => 'bio_data_9',
+    $entity_type = $this->createContentType([
       'label' => 'mRNA',
+      'term' => $this->getTerm('SO', '0000234'),
       'category' => 'Genomic',
-    ];
+    ]);
+    $this->addBaseTableSVFields($entity_type, 'feature');
 
-    // The 'Phylogenetic tree' entity type. bio_data_10
-    $terms['phylo'] =[
-      'accession' => '0872',
-      'vocabulary' => [
-        'idspace' => 'data',
-      ],
-    ];
-    $types['phylo']= [
-      'id' => 10,
-      'name' => 'bio_data_10',
+    $entity_type = $this->createContentType([
       'label' => 'Phylogenetic Tree',
+      'term' => $this->getTerm('data', '0872', 'EDAM'),
       'category' => 'Genomic',
-    ];
+    ]);
+    $this->addBaseTableSVFields($entity_type, 'phylotree');
 
-    // The 'Physical Map' entity type. bio_data_11
-    $terms['map'] =[
-      'accession' => '1280',
-      'vocabulary' => [
-        'idspace' => 'data',
-      ],
-    ];
-    $types['map']= [
-      'id' => 11,
-      'name' => 'bio_data_11',
+    $entity_type = $this->createContentType([
       'label' => 'Physical Map',
+      'term' => $this->getTerm('data', '1280', 'EDAM'),
       'category' => 'Genomic',
-    ];
+    ]);
+    $this->addBaseTableSVFields($entity_type, 'featuremap');
 
-    // The 'DNA Library' entity type. bio_data_12
-    $terms['library'] =[
-      'accession' => 'C16223',
-      'vocabulary' => [
-        'idspace' => 'NCIT',
-      ],
-    ];
-    $types['library']= [
-      'id' => 12,
-      'name' => 'bio_data_12',
+    $entity_type = $this->createContentType([
       'label' => 'DNA Library',
+      'term' => $this->getTerm('NCIT', 'C16223'),
       'category' => 'Genomic',
-    ];
+    ]);
+    $this->addBaseTableSVFields($entity_type, 'library');
 
-    // The 'Genome Assembly' entity type. bio_data_13
-    $terms['assembly'] =[
-      'accession' => '0525',
-      'vocabulary' => [
-        'idspace' => 'operation',
-      ],
-    ];
-    $types['assembly']= [
-      'id' => 13,
-      'name' => 'bio_data_13',
+    $entity_type = $this->createContentType([
       'label' => 'Genome Assembly',
+      'term' => $this->getTerm('operation', '0525', 'EDAM'),
       'category' => 'Genomic',
-    ];
+    ]);
+    $this->addBaseTableSVFields($entity_type, 'analysis');
 
-    // The 'Genome Annotation' entity type. bio_data_14
-    $terms['annotation'] =[
-      'accession' => '0362',
-      'vocabulary' => [
-        'idspace' => 'operation',
-      ],
-    ];
-    $types['annotation']= [
-      'id' => 14,
-      'name' => 'bio_data_14',
-      'label' => 'Genome Assembly',
+    $entity_type = $this->createContentType([
+      'label' => 'Genome Annotation',
+      'term' => $this->getTerm('operation', '0362', 'EDAM'),
       'category' => 'Genomic',
-    ];
+    ]);
+    $this->addBaseTableSVFields($entity_type, 'analysis');
 
-    // The 'Genome Project' entity type. bio_data_15
-    $terms['genomeproject'] =[
-      'accession' => 'Genome Project',
-      'vocabulary' => [
-        'idspace' => 'local',
-      ],
-    ];
-    $types['genomeproject']= [
-      'id' => 15,
-      'name' => 'bio_data_15',
+    $entity_type = $this->createContentType([
       'label' => 'Genome Project',
+      'term' => $this->getTerm('local', 'Genome Project'),
       'category' => 'Genomic',
-    ];
-
-    $this->createGivenContentTypes($types, $terms);
+    ]);
+    $this->addBaseTableSVFields($entity_type, 'project');
   }
 
   /**
    * Creates the "Genetic" category of content types.
-   *
-   * @code
-   $terms[''] =[
-     'accession' => '',
-     'vocabulary' => [
-       'idspace' => '',
-     ],
-   ];
-   $types['']= [
-     'id' => ,
-     'name' => '',
-     'label' => '',
-     'category' => 'Genetic',
-   ];
-   * @endcode
    */
-  protected function geneticContentTypes() {
+  private function createGeneticContentTypes() {
 
-    // The 'Genetic Map' entity type. bio_data_16
-    $terms['map'] =[
-      'accession' => '1278',
-      'vocabulary' => [
-        'idspace' => 'data',
-      ],
-    ];
-    $types['map']= [
-      'id' => 16,
-      'name' => 'bio_data_16',
+    $entity_type = $this->createContentType([
       'label' => 'Genetic Map',
+      'term' => $this->getTerm('data', '1278', 'EDAM'),
       'category' => 'Genetic',
-    ];
+    ]);
+    $this->addBaseTableSVFields($entity_type, 'featuremap');
 
-    // The 'QTL' entity type. bio_data_17
-    $terms['qtl'] =[
-      'accession' => '0000771',
-      'vocabulary' => [
-        'idspace' => 'SO',
-      ],
-    ];
-    $types['qtl']= [
-      'id' => 17,
-      'name' => 'bio_data_17',
+    $entity_type = $this->createContentType([
       'label' => 'QTL',
+      'term' => $this->getTerm('SO', '0000771'),
       'category' => 'Genetic',
-    ];
+    ]);
+    $this->addBaseTableSVFields($entity_type, 'feature');
 
-    // The 'Sequence Variant' entity type. bio_data_18
-    $terms['variant'] =[
-      'accession' => '0001060',
-      'vocabulary' => [
-        'idspace' => 'SO',
-      ],
-    ];
-    $types['variant']= [
-      'id' => 18,
-      'name' => 'bio_data_18',
+    $entity_type = $this->createContentType([
       'label' => 'Sequence Variant',
+      'term' => $this->getTerm('SO', '0001060'),
       'category' => 'Genetic',
-    ];
+    ]);
+    $this->addBaseTableSVFields($entity_type, 'feature');
 
-    // The 'Genetic Marker' entity type. bio_data_19
-    $terms['marker'] =[
-      'accession' => '0001645',
-      'vocabulary' => [
-        'idspace' => 'SO',
-      ],
-    ];
-    $types['marker']= [
-      'id' => 19,
-      'name' => 'bio_data_19',
+    $entity_type = $this->createContentType([
       'label' => 'Genetic Marker',
+      'term' => $this->getTerm('SO', '0001645'),
       'category' => 'Genetic',
-    ];
+    ]);
+    $this->addBaseTableSVFields($entity_type, 'feature');
 
-    // The 'Heritable Phenotypic Marker' entity type. bio_data_20
-    $terms['hpn'] =[
-      'accession' => '0001500',
-      'vocabulary' => [
-        'idspace' => 'SO',
-      ],
-    ];
-    $types['hpn']= [
-      'id' => 20,
-      'name' => 'bio_data_20',
+    $entity_type = $this->createContentType([
       'label' => 'Heritable Phenotypic Marker',
+      'term' => $this->getTerm('SO', '0001500'),
       'category' => 'Genetic',
-    ];
-
-    $this->createGivenContentTypes($types, $terms);
+    ]);
+    $this->addBaseTableSVFields($entity_type, 'feature');
   }
 
   /**
    * Creates the "Germplasm" category of content types.
-   *
-   * @code
-   $terms[''] =[
-     'accession' => '',
-     'vocabulary' => [
-       'idspace' => '',
-     ],
-   ];
-   $types['']= [
-     'id' => ,
-     'name' => '',
-     'label' => '',
-     'category' => 'Germplasm',
-   ];
-   * @endcode
    */
-  protected function germplasmContentTypes() {
+  private function createGermplasmContentTypes() {
 
-    // The 'Phenotypic Trait' entity type. bio_data_28
-    $terms['trait'] =[
-      'accession' => 'C85496',
-      'vocabulary' => [
-        'idspace' => 'NCIT',
-      ],
-    ];
-    $types['trait']= [
-      'id' => 28,
-      'name' => 'bio_data_28',
-      'label' => 'Phenotypic Trait',
-      'category' => 'Germplasm',
-    ];
+    // @todo this is commented out in Tripal v3 so
+    // leaving it as such here too.
+//     $entity_type = $this->createContentType([
+//       'label' => 'Phenotypic Trait',
+//       'term' => $this->getTerm('NCIT', 'C85496'),
+//       'category' => 'Germplasm',
+//     ]);
+//     $this->addBaseTableSVFields($entity_type, 'cvterm');
 
-    // The 'Germplasm Accession' entity type. bio_data_21
-    $terms['accession'] = [
-      'accession' => '0000044',
-      'vocabulary' => [
-        'namespace' => 'germplasm_ontology',
-        'idspace' => 'CO_010',
-      ],
-    ];
-    $types['accession'] = [
-      'id' => 21,
-      'name' => 'bio_data_21',
+    $entity_type = $this->createContentType([
       'label' => 'Germplasm Accession',
+      'term' => $this->getTerm('CO_010', '0000044'),
       'category' => 'Germplasm',
-    ];
+    ]);
+    $this->addBaseTableSVFields($entity_type, 'stock');
 
-    // The 'Breeding Cross' entity type. bio_data_22
-    $terms['cross'] =[
-      'accession' => '0000255',
-      'vocabulary' => [
-        'idspace' => 'CO_010',
-      ],
-    ];
-    $types['cross']= [
-      'id' => 22,
-      'name' => 'bio_data_22',
+    $entity_type = $this->createContentType([
       'label' => 'Breeding Cross',
+      'term' => $this->getTerm('CO_010', '0000255'),
       'category' => 'Germplasm',
-    ];
+    ]);
+    $this->addBaseTableSVFields($entity_type, 'stock');
 
-    // The 'Germplasm Variety' entity type. bio_data_23
-    $terms['variety'] =[
-      'accession' => '0000029',
-      'vocabulary' => [
-        'idspace' => 'CO_010',
-      ],
-    ];
-    $types['variety']= [
-      'id' => 23,
-      'name' => 'bio_data_23',
+    $entity_type = $this->createContentType([
       'label' => 'Germplasm Variety',
+      'term' => $this->getTerm('CO_010', '0000029'),
       'category' => 'Germplasm',
-    ];
+    ]);
+    $this->addBaseTableSVFields($entity_type, 'stock');
 
-    // The 'Recombinant Inbred Line' entity type. bio_data_24
-    $terms['ril'] =[
-      'accession' => '0000162',
-      'vocabulary' => [
-        'idspace' => 'CO_010',
-      ],
-    ];
-    $types['ril']= [
-      'id' => 24,
-      'name' => 'bio_data_24',
+    $entity_type = $this->createContentType([
       'label' => 'Recombinant Inbred Line',
+      'term' => $this->getTerm('CO_010', '0000162'),
       'category' => 'Germplasm',
-    ];
-
-    $this->createGivenContentTypes($types, $terms);
+    ]);
+    $this->addBaseTableSVFields($entity_type, 'stock');
   }
 
   /**
    * Creates the "Expression" category of content types.
-   *
-   * @code
-   $terms[''] =[
-     'accession' => '',
-     'vocabulary' => [
-       'idspace' => '',
-     ],
-   ];
-   $types['']= [
-     'id' => ,
-     'name' => '',
-     'label' => '',
-     'category' => 'Expression',
-   ];
-   * @endcode
    */
-  protected function expressionContentTypes() {
+  private function createExpressionContentTypes() {
 
-    // The 'biological sample' entity type. bio_data_25
-    $terms['sample'] =[
-      'accession' => '00195',
-      'vocabulary' => [
-        'idspace' => 'sep',
-      ],
-    ];
-    $types['sample']= [
-      'id' => 25,
-      'name' => 'bio_data_25',
+    $entity_type = $this->createContentType([
       'label' => 'Biological Sample',
+      'term' => $this->getTerm('sep', '00195'),
       'category' => 'Expression',
-    ];
+    ]);
+    $this->addBaseTableSVFields($entity_type, 'biomaterial');
 
-    // The 'Assay' entity type. bio_data_26
-    $terms['assay'] =[
-      'accession' => '0000070',
-      'vocabulary' => [
-        'idspace' => 'OBI',
-      ],
-    ];
-    $types['assay']= [
-      'id' => 26,
-      'name' => 'bio_data_26',
+    $entity_type = $this->createContentType([
       'label' => 'Assay',
+      'term' => $this->getTerm('OBI', '0000070'),
       'category' => 'Expression',
-    ];
+    ]);
+    $this->addBaseTableSVFields($entity_type, 'assaty');
 
-    // The 'Array Design' entity type. bio_data_27
-    $terms['design'] =[
-      'accession' => '0000269',
-      'vocabulary' => [
-        'idspace' => 'EFO',
-      ],
-    ];
-    $types['design']= [
-      'id' => 27,
-      'name' => 'bio_data_27',
+    $entity_type = $this->createContentType([
       'label' => 'Array Design',
+      'term' => $this->getTerm('EFO', '0000269'),
       'category' => 'Expression',
-    ];
-
-    $this->createGivenContentTypes($types, $terms);
+    ]);
+    $this->addBaseTableSVFields($entity_type, 'arraydesign');
   }
 }

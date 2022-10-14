@@ -5,3 +5,8 @@ tripaldocker/dev/.env
 */_build
 vendor
 .phpunit.result.cache
+clover.xml
+cc-test-reporter
+coverage/
+*/.DS_Store
+.DS_Store

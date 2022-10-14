@@ -900,7 +900,9 @@ abstract class TripalDbxConnection extends PgConnection {
 
     // Then replace schema prefixes (specied in settings).
     $i = 1;
-    while (array_key_exists("$i", $this->prefixes)) {
+    while (array_key_exists("$i", $this->prefixes)
+      AND ($this->prefixes[$i] !== NULL)) {
+
       $this->prefixSearch[] = '{' . $i . ':';
       $this->prefixReplace[] =
         $start_quote
@@ -918,14 +920,17 @@ abstract class TripalDbxConnection extends PgConnection {
     // $this->prefixes['default'] can point to another database like
     // 'other_db.'. In this instance we need to quote the identifiers correctly.
     // For example, "other_db"."PREFIX_table_name".
-    $this->prefixReplace[] =
-      $start_quote
-      . str_replace(
-        '.',
-        $end_quote . '.' . $start_quote,
-        $this->prefixes['default']
-      )
-    ;
+    if (array_key_exists("default", $this->prefixes)
+      AND ($this->prefixes['default'] !== NULL)) {
+
+      $this->prefixReplace[] =
+        $start_quote
+        . str_replace(
+          '.',
+          $end_quote . '.' . $start_quote,
+          $this->prefixes['default']
+        );
+    }
 
     if (!empty($this->schemaName)) {
       $this->prefixSearch[] = '{1:';
@@ -957,14 +962,17 @@ abstract class TripalDbxConnection extends PgConnection {
     // $this->prefixes['default'] can point to another database like
     // 'other_db.'. In this instance we need to quote the identifiers correctly.
     // For example, "other_db"."PREFIX_table_name".
-    $this->prefixReplace[] =
-      $start_quote
-      . str_replace(
-        '.',
-        $end_quote . '.' . $start_quote,
-        $this->prefixes['default']
-      )
-    ;
+    if (array_key_exists("default", $this->prefixes)
+      AND ($this->prefixes['default'] !== NULL)) {
+
+      $this->prefixReplace[] =
+        $start_quote
+        . str_replace(
+          '.',
+          $end_quote . '.' . $start_quote,
+          $this->prefixes['default']
+        );
+    }
     $this->prefixSearch[] = '}';
     $this->prefixReplace[] = $end_quote;
 
@@ -1040,7 +1048,7 @@ abstract class TripalDbxConnection extends PgConnection {
    *   The same query passed in  but now with properly prefixed table names.
    */
   public function prefixTables($sql) {
-        
+
     // Make sure there is no extra "{number:" in the query.
     $matches = [];
     if (preg_match_all('/\{(\d+):/', $sql, $matches)) {
@@ -1063,7 +1071,7 @@ abstract class TripalDbxConnection extends PgConnection {
         }
       }
     }
-    
+
     // Check if any tables have already been prefixed. This can happen because
     // Drupal uses different routes to convert a Select, Insert or Update to a
     // string which may result in calling this function more than once. If so,

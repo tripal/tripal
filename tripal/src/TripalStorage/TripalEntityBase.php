@@ -20,9 +20,9 @@ class TripalEntityBase extends ContentEntityBase {
 
     // Build all storage operations that will be done, saving the tripal
     // fields that will be saved and clearing them from each entity.
-    $storageOps = array()
+    $storageOps = [];
     // Specifically, for each field...
-    foreach($this->bundleFieldDefinitions() as $fieldDefinition) {
+    foreach ($this->bundleFieldDefinitions() as $fieldDefinition) {
       // Retrieve its Field Instance class.
       $field = \Drupal::service("plugin.manager.field.field_type").getInstance($fieldDefinition->getType());
       // If it is a TripalField then...
@@ -50,7 +50,7 @@ class TripalEntityBase extends ContentEntityBase {
     // This is where the biological data is actually saved to the database
     // using the appropriate TripalStorage plugin.
     foreach ($storageOps as $tsid => $properties) {
-      $tripalStorage = \Drupal::service("plugin.manager.tripal.storage")->getInstance($tsid);
+      $tripalStorage = \Drupal::service("tripal.storage")->getInstance($tsid);
       $tripalStorage->saveValues($properties);
     }
   }
@@ -62,8 +62,8 @@ class TripalEntityBase extends ContentEntityBase {
     parent::postLoad($storage, $entities);
 
     // Build the storage operations that will be done and entity references
-    $storageOps = array();
-    $entityRefs = array();
+    $storageOps = [];
+    $entityRefs = [];
     // For each entity to be loaded, check each field so we can...
     foreach ($entities as $entity) {
       $hasTripalFields = FALSE;
@@ -93,9 +93,9 @@ class TripalEntityBase extends ContentEntityBase {
     }
 
     // Load all properties from their respective storage plugins
-    $loaded = array()
+    $loaded = [];
     foreach ($storageOps as $tsid => $properties) {
-      $tripalStorage = \Drupal::service("plugin.manager.tripal.storage")->getInstance($tsid);
+      $tripalStorage = \Drupal::service("tripal.storage")->getInstance($tsid);
       $tripalStorage->loadValues($properties);
       $loaded = array_merge($loaded,$properties);
     }

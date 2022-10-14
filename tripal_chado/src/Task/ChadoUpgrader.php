@@ -583,7 +583,7 @@ class ChadoUpgrader extends ChadoTaskBase {
       $ref_schema->schema()->createSchema();
 
       // Apply SQL file containing schema definitions.
-      $module_path = drupal_get_path('module', 'tripal_chado');
+      $module_path = \Drupal::service('extension.list.module')->getPath('tripal_chado');
       $file_path =
         $module_path
         . '/chado_schema/chado-only-'
@@ -2180,7 +2180,7 @@ class ChadoUpgrader extends ChadoTaskBase {
     $version = $this->parameters['version'];
 
     // Get initialization script.
-    $module_path = drupal_get_path('module', 'tripal_chado');
+    $module_path = \Drupal::service('extension.list.module')->getPath('tripal_chado');
     $sql_file = $module_path . '/chado_schema/initialize-' . $version . '.sql';
     $sql = file_get_contents($sql_file);
     // Remove any search_path change containing 'chado' as a schema name.

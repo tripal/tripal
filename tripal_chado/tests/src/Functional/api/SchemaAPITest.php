@@ -44,7 +44,7 @@ class SchemaAPITest extends BrowserTestBase {
     $check_schema = "SELECT true FROM pg_namespace WHERE nspname = :schema";
     $exists = $connection->query($check_schema, [':schema' => $this::$schemaName])
       ->fetchField();
-    $this->assertTrue($exists, 'Cannot check chado schema api without chado.
+    $this->assertEquals(1, $exists, 'Cannot check chado schema api without chado.
       Please ensure chado is installed in the schema named "testchado".');
 
     // Initialize ChadoSchema class to test new api.
@@ -172,7 +172,7 @@ class SchemaAPITest extends BrowserTestBase {
     $check_schema = "SELECT true FROM pg_namespace WHERE nspname = :schema";
     $exists = $connection->query($check_schema, [':schema' => $this::$schemaName])
       ->fetchField();
-    $this->assertTrue($exists, 'Cannot check chado schema api without chado.
+    $this->assertEquals(1, $exists, 'Cannot check chado schema api without chado.
       Please ensure chado is installed in the schema named "testchado".');
 
     // First check the default schema.
@@ -278,7 +278,7 @@ class SchemaAPITest extends BrowserTestBase {
     $check_schema = "SELECT true FROM pg_namespace WHERE nspname = :schema";
     $exists = $connection->query($check_schema, [':schema' => $this::$schemaName])
       ->fetchField();
-    $this->assertTrue($exists, 'Cannot check chado schema api without chado.
+    $this->assertEquals(1, $exists, 'Cannot check chado schema api without chado.
       Please ensure chado is installed in the schema named "testchado".');
 
     $chado_schema = new \Drupal\tripal_chado\api\ChadoSchema(1.3, $this::$schemaName);
@@ -320,7 +320,7 @@ class SchemaAPITest extends BrowserTestBase {
     $check_schema = "SELECT true FROM pg_namespace WHERE nspname = :schema";
     $exists = $connection->query($check_schema, [':schema' => $this::$schemaName])
       ->fetchField();
-    $this->assertTrue($exists, 'Cannot check chado schema api without chado.
+    $this->assertEquals(1, $exists, 'Cannot check chado schema api without chado.
       Please ensure chado is installed in the schema named "testchado".');
 
     // Check: Known tables for a given version are returned.
@@ -352,7 +352,7 @@ class SchemaAPITest extends BrowserTestBase {
     $check_schema = "SELECT true FROM pg_namespace WHERE nspname = :schema";
     $exists = $connection->query($check_schema, [':schema' => $this::$schemaName])
       ->fetchField();
-    $this->assertTrue($exists, 'Cannot check chado schema api without chado.
+    $this->assertEquals(1, $exists, 'Cannot check chado schema api without chado.
       Please ensure chado is installed in the schema named "testchado".');
 
     // Check all Chado 1.3 tables.
@@ -504,7 +504,7 @@ class SchemaAPITest extends BrowserTestBase {
     $check_schema = "SELECT true FROM pg_namespace WHERE nspname = :schema";
     $exists = $connection->query($check_schema, [':schema' => $this::$schemaName])
       ->fetchField();
-    $this->assertTrue($exists, 'Cannot check chado schema api without chado.
+    $this->assertEquals(1, $exists, 'Cannot check chado schema api without chado.
       Please ensure chado is installed in the schema named "testchado".');
 
     // Check: Known base tables for a given version are returned.

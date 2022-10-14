@@ -7,6 +7,7 @@ use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Link;
+use Drupal\tripal_chado\Services\ChadoCustomTable;
 
 class ChadoCustomTablesDeleteForm extends FormBase {
 
@@ -23,29 +24,20 @@ class ChadoCustomTablesDeleteForm extends FormBase {
    *
    */
   public function buildForm(array $form, FormStateInterface $form_state, $table_id = null) {
-  
-    // get details about this table entry
-    $sql = "SELECT * FROM tripal_custom_tables WHERE table_id = :table_id";
-    $results = chado_query($sql, [':table_id' => $table_id]);
-    $entry = $results->fetchObject();
-  
-    // if this is a materialized view then don't allow editing with this function
-    if ($entry->mview_id) {
-      \Drupal::messenger()->addMessage("This custom table is a materialized view. Please use the " . Link::fromTextAndUrl('Materialized View', Url::fromUserInput('admin/tripal/storage/chado/mviews')) . " interface to delete it.", 'error');
-      drupal_goto("admin/tripal/storage/chado/custom_tables");
-      return [];
-    }
-  
-  
+
+    $custom_tables = \Drupal::service('tripal_chado.custom_tables');
+    $custom_table = $custom_tables->loadById($table_id);
+
     $form = [];
     $form['table_id'] = [
       '#type' => 'value',
       '#value' => $table_id,
     ];
-  
+
     $form['sure'] = [
       '#type' => 'markup',
-      '#markup' => '<p>Are you sure you want to delete the "' . $entry->table_name . '" custom table?</p>',
+      '#markup' => '<p>Are you sure you want to delete the "' . $custom_table->getTableName() .
+        '" custom table in the "' . $custom_table->getChadoSchema() . '" schema?</p>',
     ];
     $form['submit'] = [
       '#type' => 'submit',
@@ -57,7 +49,7 @@ class ChadoCustomTablesDeleteForm extends FormBase {
     ];
     return $form;
   }
-  
+
   /**
    * form submit hook for the tripal_custom_tables_delete_form form.
    *
@@ -66,17 +58,19 @@ class ChadoCustomTablesDeleteForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $values = $form_state->getValues();
-    
+
     $action = $values['op'];
     $table_id = $values['table_id'];
-  
+
     if (strcmp($action, 'Delete') == 0) {
-      $result = chado_delete_custom_table($table_id);
-      if($result == TRUE) {
+      $custom_tables = \Drupal::service('tripal_chado.custom_tables');
+      $custom_table = $custom_tables->loadById($table_id);
+      $success = $custom_table->destroy();
+      if($success == TRUE) {
         \Drupal::messenger()->addMessage(t("Custom table successfully deleted"));
       }
       else {
-        \Drupal::messenger()->addMessage(t("An error occurred when trying to delete custom table. Check the report logs."));
+        \Drupal::messenger()->addError(t("An error occurred when trying to delete custom table. Check the report logs."));
       }
     }
     else {
@@ -85,7 +79,7 @@ class ChadoCustomTablesDeleteForm extends FormBase {
     // drupal_goto("admin/tripal/storage/chado/custom_tables");
     $response = new RedirectResponse(\Drupal\Core\Url::fromUserInput('/admin/tripal/storage/chado/custom_tables')->toString());
     $response->send();
-  }  
+  }
 }
 
 

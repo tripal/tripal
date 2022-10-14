@@ -1,0 +1,46 @@
+
+name: PHPUnit on Drupal 9.5.x-dev (PHP 8.0)
+on:
+  push:
+    branches:
+      - 9.x-4.x
+
+env:
+  DRUPALVER: 9.5.x-dev
+
+jobs:
+  run-tests:
+    name: "Drupal 9.5.x-dev (PHP 8.0)"
+    runs-on: ubuntu-latest
+    steps:
+      # Check out the repo
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      # Here we fully  build a docker using the current checked out code
+      # to ensure we have not broken the install/build process.
+      - name: Build the Docker
+        run: |
+          docker build --tag=tripaldocker:localdocker \
+            --build-arg drupalversion="$DRUPALVER" \
+            --build-arg chadoschema='testchado' ./ \
+            --file tripaldocker/Dockerfile-php8-pgsql13
+      # Just spin up docker the good ol' fashion way.
+      - name: Spin up Local Docker
+        run: |
+          docker run --publish=80:80 --name=tripaldocker -tid \
+            --volume=`pwd`:/var/www/drupal9/web/modules/contrib/tripal \
+            tripaldocker:localdocker
+          docker exec tripaldocker service postgresql restart
+      # Runs the PHPUnit tests.
+      - name: Run PHPUnit Tests
+        env:
+          SIMPLETEST_BASE_URL: "http://localhost"
+          SIMPLETEST_DB: "pgsql://drupaladmin:drupal9developmentonlylocal@localhost/sitedb"
+          BROWSER_OUTPUT_DIRECTORY: "/var/www/drupal9/web/sites/default/files/simpletest"
+        run: |
+          docker exec tripaldocker service postgresql restart
+          docker exec -e SIMPLETEST_BASE_URL=$SIMPLETEST_BASE_URL \
+            -e SIMPLETEST_DB=$SIMPLETEST_DB \
+            -e BROWSER_OUTPUT_DIRECTORY=$BROWSER_OUTPUT_DIRECTORY \
+            --workdir=/var/www/drupal9/web/modules/contrib/tripal \
+            tripaldocker phpunit

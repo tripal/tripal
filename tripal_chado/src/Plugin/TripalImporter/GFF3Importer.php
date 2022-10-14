@@ -1,4 +1,3 @@
-<?php
 
 namespace Drupal\tripal_chado\Plugin\TripalImporter;
 

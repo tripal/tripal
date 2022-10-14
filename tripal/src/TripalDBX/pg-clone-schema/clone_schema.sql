@@ -72,7 +72,7 @@ $$
     IF (v_table_oid IS NULL) THEN
       RAISE EXCEPTION 'table does not exist';
     END IF;
-    
+
     -- start the create definition
     v_table_ddl := 'CREATE TABLE ' || in_schema || '.' || in_table || ' (' || E'\n';
 
@@ -120,7 +120,7 @@ $$
       JOIN pg_catalog.pg_namespace nsp ON nsp.oid = connamespace
       WHERE nsp.nspname = in_schema
       AND rel.relname = in_table
-      ORDER BY type_rank
+      ORDER BY type_rank ASC, con.conname ASC
     LOOP
       IF v_constraintrec.type_rank = 1 THEN
           v_primary := True;
@@ -147,6 +147,7 @@ $$
       SELECT indexdef, indexname
       FROM pg_indexes
       WHERE (schemaname, tablename) = (in_schema, in_table)
+      ORDER BY indexname ASC
     LOOP
       IF v_indexrec.indexname = v_constraint_name THEN
           continue;
@@ -995,7 +996,7 @@ BEGIN
         AND indexdef ~* ('(^|\W)' || quote_ident(source_schema) || '\.')
     LOOP
       buffer := regexp_replace(buffer::text, '(^|\W)' || quote_ident(source_schema) || '\.', '\1' || quote_ident(dest_schema) || '.', 'gis');
-     
+
       IF ddl_only THEN
         -- Drop previous definition.
         RAISE INFO '%', 'DROP INDEX ' || quote_ident(dest_schema) || '.' || quote_ident(buffer2) || ';';
