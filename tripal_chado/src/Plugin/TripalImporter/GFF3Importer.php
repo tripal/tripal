@@ -333,9 +333,8 @@ class GFF3Importer extends ChadoImporterBase {
     $sql = "SELECT * FROM {organism} ORDER BY genus, species";
     $org_rset = $chado->query($sql);
     $organisms = [];
-    $organisms[''] = '';
     while ($organism = $org_rset->fetchObject()) {
-      $organisms[$organism->organism_id] = "$organism->genus $organism->species ($organism->common_name)";
+      $organisms[$organism->organism_id] = chado_get_organism_scientific_name($organism);
     }
 
     $form['organism_id'] = [
@@ -344,6 +343,7 @@ class GFF3Importer extends ChadoImporterBase {
       '#description' => t("Choose an existing organism to which the entries in the GFF file will be associated."),
       '#required' => TRUE,
       '#options' => $organisms,
+      '#empty_option' => t('- Select -'),
     ];
 
     $form['landmark_type'] = [
@@ -351,7 +351,7 @@ class GFF3Importer extends ChadoImporterBase {
       '#type' => 'textfield',
       '#description' => t("Optional. Use this field to specify a Sequence Ontology type
        for the landmark sequences in the GFF fie (e.g. 'chromosome'). This is only needed if
-       the landmark features (first column of the GFF3 file) are not already in the database.."),
+       the landmark features (first column of the GFF3 file) are not already in the database."),
     ];
 
     $form['proteins'] = [
@@ -485,7 +485,7 @@ class GFF3Importer extends ChadoImporterBase {
 
     $form_state_values = $form_state->getValues();
 
-    // UNUSED VARIABLES DETECTED BY IDE (Rish 09/12/2022)
+    // These form inputs are not yet being validated:
     // $organism_id = $form_state_values['organism_id'];
     // $target_organism_id = $form_state_values['target_organism_id'];
     // $target_type = trim($form_state_values['target_type']);
