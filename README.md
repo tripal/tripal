@@ -30,29 +30,33 @@ This project acts as the home of Tripal 4 development. Once Tripal 4 is stable, 
 
 ### Required for Tripal 4.alpha1 Release
 
-- Testing on 9.5.x + 10.0.x w/ target 9.4.x ([#257](https://github.com/tripal/t4d8/issues/257))
+- ✅ Testing on 9.5.x + 10.0.x w/ target 9.4.x ([#257](https://github.com/tripal/t4d8/issues/257))
 - Make Tripal DBX more stable ([#217](https://github.com/tripal/t4d8/issues/217), [#218](https://github.com/tripal/t4d8/issues/218))
 - Ensure Content Type is using Terms fully ([#256](https://github.com/tripal/t4d8/issues/256))
-- Automated creation of fields for Chado ([#258](https://github.com/tripal/t4d8/issues/258))
-- Create at least two complex fields: organism + properties ([#259](https://github.com/tripal/t4d8/issues/259), [#265](https://github.com/tripal/t4d8/issues/265))
+- ✅ Automated creation of fields for Chado ([#258](https://github.com/tripal/t4d8/issues/258))
+- ✅ Organism complex field (tests foreign key fields; [#259](https://github.com/tripal/t4d8/issues/259) )
+- [IN REVIEW] Properties complex field (tests linking table fields; [#265](https://github.com/tripal/t4d8/issues/265))
+- Type/CVterm complex field (needed for many base tables, )
+- ✅ GFF3 Importer (needed for basic loading of data to test content types; [#275](https://github.com/tripal/t4d8/pull/275))
 - Documentation + Tutorials for upgrading + creating fields
-- Finish implementing Chado Storage ([#236](https://github.com/tripal/t4d8/issues/236), [#237](https://github.com/tripal/t4d8/issues/237), [#238](https://github.com/tripal/t4d8/issues/238), [#239](https://github.com/tripal/t4d8/issues/239))
+- ✅ Implementing core Chado Storage for fields ([#236](https://github.com/tripal/t4d8/issues/236), [#237](https://github.com/tripal/t4d8/issues/237))
 - Merge the t4d8 repository back into the tripal repository
 
 ### Required for Tripal 4.alpha2 Release
 
 - Publishing of the pages
-- GFF3 Importer
+- Finish implementing Chado Storage for fields ([#238](https://github.com/tripal/t4d8/issues/238), [#239](https://github.com/tripal/t4d8/issues/239))
 - Drush generator/updator for fields
 - Update existing core fields
 - Finish Chado Vocabs/ID Spaces/Terms ([#242](https://github.com/tripal/t4d8/issues/242), [#243](https://github.com/tripal/t4d8/issues/243))
 - Legacy API
+- Move data type specific functionality into extension modules ([#281](https://github.com/tripal/t4d8/issues/281))
 
 ### Required for Tripal 4.alpha3 Release
 
 - Display suite / page work
-- Importers: FASTA, Publications, Taxonomy, Newick
-- Search (like ElastSearch rather then Views)
+- Importers: Publications, Taxonomy, Newick
+- Search (ElasticSearch rather then Views)
 
 ## How to get involved!
 
