@@ -16,7 +16,7 @@ function tripal_featuremap_disable() {
   require_once("tripal_featuremap.views_default.inc");
   $views = tripal_featuremap_views_default_views();
   foreach (array_keys($views) as $view_name) {
-    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+    tripal_disable_view($view_name, FALSE, ['suppress_error' => TRUE]);
   }
 
 }
@@ -27,15 +27,15 @@ function tripal_featuremap_disable() {
  * @ingroup tripal_legacy_featuremap
  */
 function tripal_featuremap_requirements($phase) {
-  $requirements = array();
+  $requirements = [];
   if ($phase == 'install') {
     // make sure chado is installed
     if (!$GLOBALS["chado_is_installed"]) {
-      $requirements ['tripal_featuremap'] = array(
+      $requirements ['tripal_featuremap'] = [
         'title' => "tripal_featuremap",
         'value' => "ERROR: Chado most be installed before this module can be enabled",
         'severity' => REQUIREMENT_ERROR,
-      );
+      ];
     }
   }
   return $requirements;
