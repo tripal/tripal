@@ -71,7 +71,7 @@ class FASTAImporter extends TripalImporter {
   public function form($form, &$form_state) {
 
     // get the list of organisms
-    $organisms = chado_get_organism_select_options(FALSE);
+    $organisms = chado_get_organism_select_options(FALSE, TRUE);
     $form['organism_id'] = [
       '#title' => t('Organism'),
       '#type' => t('select'),
