@@ -2583,10 +2583,13 @@ class GFF3Importer extends TripalImporter {
       // If the feature is not skipped
       if (!$feature['skipped'] and $feature['derives_from']) {
         $object_id = $this->features[$feature['derives_from']]['feature_id'];
-        $sql .= "(:subject_id_$i, :object_id_$i, :type_id_$i, 0),\n";
-        $args[":subject_id_$i"] = $feature_id;
-        $args[":object_id_$i"] = $object_id;
-        $args[":type_id_$i"] = $type_id;
+        // If the feature that this was derived from is not defined in the gff3, then skip it
+        if ($object_id) {
+          $sql .= "(:subject_id_$i, :object_id_$i, :type_id_$i, 0),\n";
+          $args[":subject_id_$i"] = $feature_id;
+          $args[":object_id_$i"] = $object_id;
+          $args[":type_id_$i"] = $type_id;
+        }
       }
 
       // If we've reached the size of the batch then let's do the insert.
