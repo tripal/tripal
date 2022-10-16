@@ -1,19 +1,70 @@
+
+##
+# Core Tripal Permissions.
+##
 administer tripal:
-  title: 'Administer Tripal'
-  description: 'Used to access the administration pages for Tripal.'
-
-upload files:
-  title: 'Upload Files'
-  description: "Allows the user to upload files using Tripal's HTML5 loader."
-
-##
-# Tripal Content Entities.
-##
-administer tripal content types:
-  title: 'Administer Tripal Content Types'
-  description: 'Create, edit, delete tripal content types and perform additional administrative tasks across all tripal content types.'
+  title: 'View Tripal Administration Pages'
+  description: 'Allow the user to access administrative pages of Tripal. This includes the menus and listings (e.g. jobs, storage systems, extensions) but not management of the various subsystems as they have their own permissions.'
   restrict access: true
 
+##
+# Tripal Jobs.
+##
+manage tripal jobs:
+  title: "Manage Tripal Jobs"
+  description: "Allows the user to access the job management pages."
+
+##
+# HTML 5 File Form Element
+##
+upload files:
+  title: 'Upload Tripal Data Files'
+  description: "Allows the user to upload files using Tripal's HTML5 loader."
+
+make files permanent:
+  title: 'Make Tripal Data Files Permanent'
+  description: 'Allows the user to make files they have access to permanent. Files that are permanent will not expire and will not be cleaned up.'
+
+admin tripal files:
+  title: "Administer Tripal Managed Files"
+  description: "Allows the user to administer file upload maximum size, user quotas and file expiration dates."
+
+manage tripal files:
+  title: "Manage Own Tripal Data Files"
+  description: 'Allows users to manage their own data files uploaded via Tripal.'
+
+manage tripal data collections:
+  title: "Manage Own Tripal Data Collections"
+  description: 'Allows users to manage their own Tripal data collections.'
+
+##
+# Tripal Content and Tripal Content Types.
+#
+# Additional permissions are dynamic.
+# @see Drupal\tripal\AccessTripalEntityAccessControlHandler
+##
+administer tripal content:
+  title: 'Administer Tripal Content'
+  description: 'Allows users to access the Tripal Content listing and add, edit, delete Tripal content of any type.'
+  restrict access: true
+
+access tripal content overview:
+  title: 'Access Tripal Content listing'
+  description: 'Allows the user to access the Tripal content listing.'
+
+manage tripal content types:
+  title: 'Manage Tripal content types'
+  description: 'Allows users to access the Tripal Content Types listing and add, edit or delete items listed.'
+  restrict access: true
+
+publish tripal content:
+  title: 'Publish Tripal Content'
+  description: 'Allows the user to publish Tripal content of all Tripal Content Types for online access.'
+
+##
+# These should all be per content type.
+# @todo See Issue #270 (https://github.com/tripal/t4d8/issues/270)
+##
 add tripal content entities:
   title: 'Create new Tripal Content'
 
@@ -23,19 +74,24 @@ edit tripal content entities:
 delete tripal content entities:
   title: 'Delete Tripal Content'
 
-access tripal content overview:
-  title: 'Access the Tripal Content overview page'
+view tripal content entities:
+  title: 'View Tripal Content'
 
-view published tripal content entities:
-  title: 'View published Tripal Content'
-
-view unpublished tripal content entities:
-  title: 'View unpublished Tripal Content'
-
+##
+# The core Trpal Importers permissions.
+#
+# Additional permissions are dynamic.
+# @see TripalImporterPermissionsController:permissions()
+##
 allow tripal import:
-  title: 'Allow access to Tripal Importer Admin Listing'
-  description: 'Allow access to execute importer'
-  restrict access: true
+  title: 'Access Tripal Importer Admin Listing'
+  description: 'Allow access to the listing of importers available through Tripal.'
 
+##
+# Callbacks for Dynamic permissions.
+#
+# The following class methods provide additional permissions that depend on
+# runtime conditions or site-specific content types + importers.
+##
 permission_callbacks:
   - Drupal\tripal\Controller\TripalImporterPermissionsController::permissions

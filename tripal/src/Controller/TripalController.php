@@ -7,6 +7,8 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Drupal\Core\Render\Markup;
+use Drupal\file\Entity\File;
+use Drupal\user\Entity\User;
 /**
  * Controller routines for the Tripal Module
  */
@@ -136,29 +138,36 @@ class TripalController extends ControllerBase{
     ];
   }
 
-  public function tripalUserFiles($user) {
+  public function tripalUserFiles(User $user) {
     //tripal_user_files_page in tripal.user.inc
     return [
       '#markup' => 'Not yet upgraded.',
     ];
   }
 
-  public function tripalUserFileDetails($uid, $file_id) {
+  public function tripalUserFileDetails(User $user, File $file) {
     //tripal_view_file in tripal.user.inc
     return [
       '#markup' => 'Not yet upgraded.',
     ];
   }
 
-  public function tripalUserFileRenew($uid, $file_id) {
+  public function tripalUserFileRenew(User $user, File $file) {
     //tripal_renew_file in tripal.user.inc
     return [
       '#markup' => 'Not yet upgraded.',
     ];
   }
 
-  public function tripalUserFileDownload($uid, $file_id) {
+  public function tripalUserFileDownload(User $user, File $file) {
     //tripal_download_file in tripal.user.inc
+    return [
+      '#markup' => 'Not yet upgraded.',
+    ];
+  }
+
+  public function tripalUserFileDelete(User $user, File $file) {
+    //tripal_delete_file in tripal.user.inc
     return [
       '#markup' => 'Not yet upgraded.',
     ];
@@ -181,8 +190,11 @@ class TripalController extends ControllerBase{
       return [];
     }
 
-    $output .= \Drupal::service('renderer')->render($note_block->build());
-    $output .= \Drupal::service('renderer')->render($bar_chart_block->build());
+    $built_note_block = $note_block->build();
+    $output .= \Drupal::service('renderer')->render($built_note_block);
+
+    $built_bar_chart_block = $bar_chart_block->build();
+    $output .= \Drupal::service('renderer')->render($built_bar_chart_block);
 
     return [
       '#markup' => $output,

@@ -1,127 +1,140 @@
-# Tripal Content menu items definition
+
+##
+# Tripal Content + Content Types
+##
+
+# -- Tripal content link on Drupal content administration menu.
 entity.tripal_entity.collection:
   title: 'Tripal Content'
   route_name: entity.tripal_entity.collection
-  description: 'List biological content created via Tripal.'
+  description: "Manage biological content created via Tripal either by users or via publishing from a support biological data store."
   parent: system.admin_content
   weight: 100
 
-# Tripal Content type menu items definition
+# -- Tripal Content type link on Drupal structure administration menu.
 entity.tripal_entity_type.collection:
   title: 'Tripal Content Types'
   route_name: entity.tripal_entity_type.collection
-  description: 'Manage ontology-driven biological content types that are added using Tripal.'
+  description: "Manage ontology-driven biological content types that are added using Tripal. This page provides definition, form and display management per content type."
   parent: system.admin_structure
   weight: 99
 
-## CVterm lookup.
+##
+# Tripal Controlled Vocabularies.
+##
+
+# -- User-focused CVterm lookup tool.
 tripal.cv_lookup:
   title: 'Controlled Vocabularies'
   route_name: tripal.cv_lookup
-  description: 'A tool to explore the controlled vocabularies that are used on this site.'
+  description: "A tool for users to explore the controlled vocabularies that are used on this site for full access to definitions, hierarchy and provenance."
   menu_name: tools
 
 ##
 # Tripal Admin menu
 ##
+
+# -- The root Tripal administration menu item.
 tripal.admin:
   route_name: tripal.admin
   title: 'Tripal'
-  description: 'Manage the behavior or Tripal and its various modules.'
+  description: "The core administrative menu for Tripal. This menu listing provides tools to manage the behavior or Tripal and its various modules and extensions."
   parent: system.admin
 
+# -- Tripal Registration link.
 tripal.admin_register:
   route_name: tripal.admin_register
-  title: 'Tripal Registration'
-  description: 'Register your Tripal website. Registration of Tripal websites gives the developers important information that allow us to continue to secure funding for maintenance and expansion.'
+  title: 'Registration'
+  description: "Please register your Tripal website with tripal.info here. This gives the developers important information that allows us to continue to secure funding for maintenance and expansion while still respecting your privacy. This information will not be shared publicly (see page for full data usage statement) and no information about your site is shared unless you opt-in here."
   parent: tripal.admin
-  weight: 1
+  weight: -100
 
-tripal.content_bio_data_unpublish:
-  route_name: tripal.content_bio_data_unpublish
-  description: 'Unpublish content that has no associated records in the data store.'
-  title: 'Unpublish Orphaned Content'
-  parent: tripal.admin
-  weight: 20
-
-tripal.storage:
-  route_name: tripal.storage
-  title: 'Data Storage'
-  description: 'Tripal is designed to access biological data in any data storage back-end.  A storage back-end must have a module that can be installed that interfaces with Tripal.  By default the base Tripal package provides The Tripal Chado module for storing data in the GMOD Chado database schema.  All available storage backends and their administrative tools are found here.'
-  parent: tripal.admin
-  weight: 30
-
-tripal.extension:
-  route_name: tripal.extension
-  title: 'Extensions'
-  description: 'Configuration and management pages for Tripal extension modules.'
-  parent: tripal.admin
-  weight: 40
-
+# -- Tripal Jobs Admin link.
 tripal.jobs:
   route_name: tripal.jobs
-  description: 'Provides tools for managing jobs submitted to Tripal.  In some cases, long-running tasks are too slow to complete within a single browser session.  The Tripal jobs system allows long-running tasks to be submitted to a queue that can be executed manually by the site admin or automatically using a module such as the Tripal Daemon, https://www.drupal.org/project/tripal_daemon, extension module.'
+  description: "Provides tools for managing jobs submitted to Tripal.  In some cases, long-running tasks are too slow to complete within a single browser session.  The Tripal jobs system allows long-running tasks to be submitted to a queue that can be executed manually by the site admin or automatically using extension modules (e.g. Tripal Daemon)."
   title: 'Jobs'
   parent: tripal.admin
-  weight: 50
+  weight: -90
 
+# -- Data Loaders listing link.
 tripal.data_loaders:
   route_name: tripal.data_loaders
-  description: 'Tools facilitating data import'
+  description: "Data importers for many biological data types and file formats can be found here. Tripal provides an API supporting data import which allows extension data importers to also appear in this listing."
   title: 'Data Loaders'
   parent: tripal.admin
-  weight: 60
-
+  weight: -80
+# ...... Additional links for importers are added dyncamically through this item.
 tripal.data_loaders_tripalimporterlink:
   class: Drupal\tripal\Plugin\Menu\TripalImporterLink
   deriver: Drupal\tripal\Plugin\Derivative\TripalImporterLink
   parent: tripal.data_loaders
-  weight: 10  
+  weight: 10
 
+# -- Tripal Data Collections admin link.
 tripal.data_collections:
   route_name: tripal.data_collections
-  description: 'Site-wide settings for data collections'
+  description: "Tripal provides functionality allowing users to group data into collections. Site-wide settings for Tripal data collections can be accessed here with each user accessing their own data collections from their user profile page."
   title: 'Data Collections'
   parent: tripal.admin
-  weight: 70
+  weight: -70
 
+# -- Tripal managed files admin link.
 tripal.files:
   route_name: tripal.files
-  description: 'Set maximum upload sizes, quotas and view usage.'
-  title: 'User File Management'
+  description: "When a user imports data using one of the provided data loaders or uploads a file using the Tripal HTML5 form element, those files are stored within a Tripal-managed quota system. You can manage maximum upload sizes and disk usage quotas, as well as, view usage reports here."
+  title: 'Tripal Managed Files'
   parent: tripal.admin
-  weight: 80
-  
+  weight: -60
+
+# -- Configuration for Tripal Content Ontology Terms link.
 entity.tripal_content_terms.collection:
   route_name: entity.tripal_content_terms.collection
   title: 'Tripal Content Terms'
   parent: tripal.admin
-  description: 'Configure controlled vocabulary terms used for Tripal content'
-
-tripal.files_file_usage:
-  route_name: tripal.files_file_usage
-  description: 'Set maximum upload size.'
-  title: 'Manage Usage'
-  parent: tripal.files
+  description: "Tripal content is very ontology-focused in it's design with all content types defined by ontology terms rather then their primary storage. These ontologies and their terms can be managed here."
   weight: 80
 
-tripal.files_quota:
-  route_name: tripal.files_quota
-  description: 'Set default quota, expiration date, and custom quotas'
-  title: 'User Quotas'
-  parent: tripal.files
+# -- Root link for Tripal managed data storage (i.e. Tripal DBX)
+tripal.storage:
+  route_name: tripal.storage
+  title: 'Data Storage'
+  description: "Tripal is designed to access biological data in any data storage back-end with specific data store functionality provided by additional modules (e.g. Tripal Chado interfaces with the GMOD Chado schema). All available storage backends and their administrative tools are found here."
+  parent: tripal.admin
   weight: 90
 
-tripal.files_usage:
-  route_name: tripal.files_usage
-  description: 'Set default quota, expiration date, and custom quotas'
-  title: 'File Usage'
-  parent: tripal.files
+# -- Root link for Tripal extension listing.
+tripal.extension:
+  route_name: tripal.extension
+  title: 'Extensions'
+  description: "Tripal is very modular and provides a number of APIs for developers to extend the core functionality. The configuration and management pages for all Tripal extension modules can be found here."
+  parent: tripal.admin
   weight: 100
 
-tripal.files_quota_add:
-  route_name: tripal.files_quota_add
-  description: 'Gives the user a new quota and expiration date'
-  title: 'Add Custom Quota'
+##
+# Tripal Managed File Menu
+##
+
+# -- Manage the single file upload size.
+tripal.files_file_usage:
+  route_name: tripal.files_file_usage
+  title: 'Manage File Upload Size'
   parent: tripal.files
-  weight: 110
+  description: "Allows you to set the maximum upload size for files managed by Tripal (e.g. files associated with data import)."
+  weight: 80
+
+# -- Manage disk usage quota defaults and per user quotas.
+tripal.files_quota:
+  route_name: tripal.files_quota
+  title: 'Disk Usage Quotas'
+  parent: tripal.files
+  description: "Allows you to set the default disk usage quota + file expiration date; as well as, provides management tools for per user quotas."
+  weight: 90
+
+# -- managed file listing for administrators.
+tripal.files_usage:
+  route_name: tripal.files_usage
+  title: 'File Usage Reports'
+  parent: tripal.files
+  description: "Provides information on Tripal managed files currently available."
+  weight: 100
