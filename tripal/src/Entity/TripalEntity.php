@@ -81,7 +81,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    *   - *type: the type of tripal entity this is (e.g. bio_data_1)
    *   - status: whether the entity is published or not (boolean)
    *   - created: the unix timestamp for when this content was created.
-   * @return
+   * @return object
    *  The newly created entity.
    */
   public static function create(array $values = []) {
@@ -148,11 +148,11 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   /**
    * Sets the URL alias for the current entity.
    *
-   * @param $alias
+   * @param string $alias
    *   The alias to use. It can contain tokens the correspond to field values.
    *   Token should be be compatible with those returned by
    *   tripal_get_entity_tokens().
-   * @param $cache
+   * @param array $cache
    *   This array is used to store objects you want to cache for performance
    *   reasons, as well as, cache related options. The following are supported:
    *   - TripalEntityType $bundle
@@ -505,25 +505,37 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     // This is where the biological data is actually saved to the database
     // using the appropriate TripalStorage plugin.
     foreach ($values as $tsid => $tsid_values) {
-      if ($this->isDefaultRevision() and $this->isNewRevision()) {
 
-        // Insert Step 1:  Add the values.
-        $success = $tripal_storages[$tsid]->insertValues($tsid_values);
-        if (!$success) {
-          throw new \Exception("Cannot insert the entity. See the recent logs for more details.");
+      // Do an insert
+      if ($this->isDefaultRevision() and $this->isNewRevision()) {
+        try {
+          $tripal_storages[$tsid]->insertValues($tsid_values);
+        }
+        catch (\Exception $e) {
+          \Drupal::messenger()->addError('Cannot insert this entity. See the recent ' .
+              'logs for more details or contact the site administrator if you ' .
+              'cannot view the logs.');
         }
         $values[$tsid] = $tsid_values;
       }
+
+      // Do an Update
       else {
-        $success = $tripal_storages[$tsid]->updateValues($tsid_values);
-        if (!$success) {
-          throw new \Exception("Cannot update the entity. See the recent logs for more details.");
+        try {
+          $tripal_storages[$tsid]->updateValues($tsid_values);
+        }
+        catch (\Exception $e) {
+          \Drupal::messenger()->addError('Cannot update this entity. See the recent ' .
+              'logs for more details or contact the site administrator if you cannot ' .
+              'view the logs.');
         }
       }
     }
-    // Next update the record IDs in the entity.
+
+    // Set the record ID for the property provided by the storage class.
+    $delta_remove = [];
     foreach ($fields as $field_name => $items) {
-      foreach($items as $delta => $item) {
+      foreach($items as $item) {
 
         // If it is not a TripalField then skip it.
         if (! $item instanceof TripalFieldItemInterface) {
@@ -532,14 +544,23 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
         $delta = $item->getName();
         $tsid = $item->tripalStorageId();
+        $prop_values = [];
+        $record_id = $values[$tsid][$field_name][$delta]['record_id']['value'];
+        $item->tripalLoad($item, $field_name, [$record_id], $this);
 
-        if (!array_key_exists('record_id', $values[$tsid][$field_name][$delta])) {
+        // The storage class may no longer have a property linked to a record.
+        // If so, we need to delete the item from the entity.
+        if ($record_id->getValue() == 0) {
+          $delta_remove[$field_name][] = $delta;
           continue;
         }
-        $record_id = $values[$tsid][$field_name][$delta]['record_id']['value'];
-        $properties = [];
-        $properties[] = $record_id;
-        $item->tripalLoad($item, $field_name, $properties, $this);
+      }
+    }
+
+    // Now remove any values that shouldn't be there.
+    foreach ($delta_remove as $field_name => $deltas) {
+      foreach (array_reverse($deltas) as $delta) {
+        $this->get($field_name)->removeItem($delta);
       }
     }
   }
@@ -608,16 +629,20 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       // Iterate through the storage plugins.
       $load_success = False;
       foreach ($values as $tsid => $tsid_values) {
-        $load_success = $tripal_storages[$tsid]->loadValues($tsid_values);
-        if ($load_success) {
-          $values[$tsid] = $tsid_values;
+        try {
+          $load_success = $tripal_storages[$tsid]->loadValues($tsid_values);
+          if ($load_success) {
+            $values[$tsid] = $tsid_values;
+          }
+        }
+        catch (\Exception $e) {
+          \Drupal::messenger()->addError('Cannot load the entity. See the recent ' .
+              'logs for more details or contact the site administrator if you cannot ' .
+              'view the logs.');
         }
       }
 
-      if (!$load_success) {
-        \Drupal::messenger()->addError('Trouble loading the entity. See the recent logs for details.');
-        continue;
-      }
+
 
       // Step 3: Update the entity values to match what was returned.
       // Iterate through the field definitinos again.

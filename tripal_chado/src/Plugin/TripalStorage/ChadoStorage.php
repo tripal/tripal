@@ -202,8 +202,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     }
     catch (\Exception $e) {
       $transaction_chado->rollback();
-      $logger->error($e->getMessage());
-      return FALSE;
+      throw new \Exception($e);
     }
 
     // Now set the record Ids of the properties.
@@ -300,6 +299,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
 
     $transaction_chado = $chado->startTransaction();
     try {
+
+      // Handle base table records first.
       foreach ($records as $chado_table => $deltas) {
         foreach ($deltas as $delta => $record) {
 
@@ -313,26 +314,50 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             $this->updateChadoRecord($records, $chado_table, $delta, $record);
             continue;
           }
+        }
+      }
 
-          // For non base table records we may be inserting, updating, or
-          // deleting depending on the context.
+      // Next delete all non base records so we can replace them
+      // with updates. This is necessary because we may violoate unique
+      // contraints if we don't e.g. changing the order of records with a
+      // rank.
+      foreach ($records as $chado_table => $deltas) {
+        foreach ($deltas as $delta => $record) {
+
+          // Skip base table records.
+          if (in_array($chado_table, array_keys($base_tables))) {
+            continue;
+          }
+
+          // Skip records that are already marked for insertion.
           if (!$this->hasValidConditions($record)) {
-            $this->insertChadoRecord($records, $chado_table, $delta, $record);
             continue;
           }
+
+          $this->deleteChadoRecord($records, $chado_table, $delta, $record);
+        }
+      }
+
+      // Now insert all new values for nor the non-base table records.
+      foreach ($records as $chado_table => $deltas) {
+        foreach ($deltas as $delta => $record) {
+
+          // Skip base table records.
+          if (in_array($chado_table, array_keys($base_tables))) {
+            continue;
+          }
+          // Skip records that were supposed to be deleted (and were).
           if ($this->isEmptyRecord($record)) {
-            $this->deleteChadoRecord($records, $chado_table, $delta, $record);
             continue;
           }
-          $this->updateChadoRecord($records, $chado_table, $delta, $record);
+          $this->insertChadoRecord($records, $chado_table, $delta, $record);
         }
       }
       $this->setRecordIds($values, $records);
     }
     catch (\Exception $e) {
       $transaction_chado->rollback();
-      $logger->error($e->getMessage());
-      return FALSE;
+      throw new \Exception($e);
     }
     return TRUE;
   }
@@ -424,8 +449,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     }
     catch (\Exception $e) {
       $transaction_chado->rollback();
-      $logger->error($e->getMessage());
-      return FALSE;
+      throw new \Exception($e);
     }
 
     return TRUE;
