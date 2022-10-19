@@ -1,7 +1,0 @@
-Setting up Tripal Vocabularies
-==============================
-
-Controlled vocabulary terms are used to define Tripal Content Types. As such, they are one of the first things you'll need to set up for your Tripal site.
-
-.. note::
-  Refer to the following page for detailed information on what controlled vocabularies are, and how Tripal uses them: :doc:`/dev_guide/cvterms`
