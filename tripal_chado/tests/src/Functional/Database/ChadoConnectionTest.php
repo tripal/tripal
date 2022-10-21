@@ -48,15 +48,31 @@ class ChadoConnectionTest extends ChadoTestBrowserBase {
     // necessary and could be interchanged by Drupal, we use the following pattern.
     $we_expect_pattern = str_replace('SCHEMAPREFIX', $chado_1_prefix, '/["\']+SCHEMAPREFIX["\']+\.["\']+feature["\']+/');
     $this->assertMatchesRegularExpression($we_expect_pattern, $sqlStatement,
-      "The sql statement does not have the table prefix we expect."); 
+      "The sql statement does not have the table prefix we expect.");
 
     // Test the API realizes that chado is the default schema for this query.
-    $query = $connection->query("SELECT name, uniquename FROM {feature} LIMIT 1");
-    $sqlStatement = $query->getQueryString();
+    // We expect this to fail as the default database is chado unless Tripal DBX
+    // is told otherwise.
+    // NOTE: we use try/catch here so we can continue with our testing.
+    // When using expectException the execution of all other assertions is skipped.
+    try {
+      $query = $connection->query("SELECT name, uniquename FROM {feature} LIMIT 1");
+    } catch (\Drupal\Core\Database\DatabaseExceptionWrapper $e) {
+      $this->assertTrue(TRUE, "We expect to have an exception thrown when TripalDBX incorrectly assumes the feature table is in Drupal, which it's not.");
+    }
+
+    // Now we want to tell Tripal DBX that the default schema for this query should be chado.
+    $connection->useTripalDbxSchemaFor(\Drupal\Tests\tripal_chado\Functional\ChadoConnectionTest::class);
+    try {
+      $query = $connection->query("SELECT name, uniquename FROM {feature} LIMIT 1");
+    } catch (\Drupal\Core\Database\DatabaseExceptionWrapper $e) {
+      $this->assertTrue(FALSE, "Now TripalDBX should know that chado is the default schema for this test class and it should not throw an exception.");
+    }
     // We expect: "SCHEMAPREFIX"."feature" but since the quotes are not
     // necessary and could be interchanged by Drupal, we use the following pattern.
+    $sqlStatement = $query->getQueryString();
     $we_expect_pattern = str_replace('SCHEMAPREFIX', $chado_1_prefix, '/["\']+SCHEMAPREFIX["\']+\.["\']+feature["\']+/');
     $this->assertMatchesRegularExpression($we_expect_pattern, $sqlStatement,
-      "Unable to determine that chado is the default schema because the sql statement does not have the table prefix we expect.");
+      "The sql statement does not have the table prefix we expect.");
   }
 }
