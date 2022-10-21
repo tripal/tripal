@@ -62,7 +62,41 @@ class ChadoConnectionTest extends ChadoTestBrowserBase {
     }
 
     // Now we want to tell Tripal DBX that the default schema for this query should be chado.
+    // Using useTripalDbxSchemaFor():
+    //---------------------------------
+    // PARENT CLASS: Let's check if it works when a parent class is white listed.
+    $connection = \Drupal::service('tripal_chado.database');
+    $connection->useTripalDbxSchemaFor(\Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase::class);
+    try {
+      $query = $connection->query("SELECT name, uniquename FROM {feature} LIMIT 1");
+    } catch (\Drupal\Core\Database\DatabaseExceptionWrapper $e) {
+      $this->assertTrue(FALSE, "Now TripalDBX should know that chado is the default schema for this test class and it should not throw an exception.");
+    }
+    // We expect: "SCHEMAPREFIX"."feature" but since the quotes are not
+    // necessary and could be interchanged by Drupal, we use the following pattern.
+    $sqlStatement = $query->getQueryString();
+    $we_expect_pattern = str_replace('SCHEMAPREFIX', $chado_1_prefix, '/["\']+SCHEMAPREFIX["\']+\.["\']+feature["\']+/');
+    $this->assertMatchesRegularExpression($we_expect_pattern, $sqlStatement,
+      "The sql statement does not have the table prefix we expect.");
+
+    // CURRENT CLASS: Let's test it works when the current class is whitelisted
+    $connection = \Drupal::service('tripal_chado.database');
     $connection->useTripalDbxSchemaFor(\Drupal\Tests\tripal_chado\Functional\ChadoConnectionTest::class);
+    try {
+      $query = $connection->query("SELECT name, uniquename FROM {feature} LIMIT 1");
+    } catch (\Drupal\Core\Database\DatabaseExceptionWrapper $e) {
+      $this->assertTrue(FALSE, "Now TripalDBX should know that chado is the default schema for this test class and it should not throw an exception.");
+    }
+    // We expect: "SCHEMAPREFIX"."feature" but since the quotes are not
+    // necessary and could be interchanged by Drupal, we use the following pattern.
+    $sqlStatement = $query->getQueryString();
+    $we_expect_pattern = str_replace('SCHEMAPREFIX', $chado_1_prefix, '/["\']+SCHEMAPREFIX["\']+\.["\']+feature["\']+/');
+    $this->assertMatchesRegularExpression($we_expect_pattern, $sqlStatement,
+      "The sql statement does not have the table prefix we expect.");
+
+    // CURRENT OBJECT: Let's test it works when the current class is whitelisted
+    $connection = \Drupal::service('tripal_chado.database');
+    $connection->useTripalDbxSchemaFor($this);
     try {
       $query = $connection->query("SELECT name, uniquename FROM {feature} LIMIT 1");
     } catch (\Drupal\Core\Database\DatabaseExceptionWrapper $e) {
