@@ -990,7 +990,7 @@ abstract class TripalDbxConnection extends PgConnection {
    * @return bool
    *   TRUE if default schema is not Drupal's but the Tripal DBX managed one.
    */
-  protected function shouldUseTripalDbxSchema() :bool {
+  public function shouldUseTripalDbxSchema() :bool {
     $should = FALSE;
 
     // Check the class/object who is using Tripal DBX:
@@ -1339,6 +1339,16 @@ abstract class TripalDbxConnection extends PgConnection {
     }
 
     return parent::escapeTable($table);
+  }
+
+  /**
+   * Retrieve a list of classes which are using Tripal DBX byb default.
+   *
+   * @return array
+   *  An array of class names including namespace.
+   */
+  public function getListClassesUsingTripalDbx() {
+    return $this->classesUsingTripalDbx;
   }
 
   /**

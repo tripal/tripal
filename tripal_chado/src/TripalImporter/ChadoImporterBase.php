@@ -48,6 +48,7 @@ abstract class ChadoImporterBase extends TripalImporterBase {
     }
 
     $connection->setSchemaName($schema_name);
+    $connection->useTripalDbxSchemaFor(get_class());
 
     return $connection;
   }

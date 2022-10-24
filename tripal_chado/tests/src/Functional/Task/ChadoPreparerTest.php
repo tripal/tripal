@@ -24,7 +24,7 @@ class ChadoPreparerFunctionalTest extends ChadoTestBrowserBase {
    * @cover ::setParameters
    * @cover ::performTask
    */
-  public function testPerformTaskRenamer() {
+  public function testPerformTask() {
 
     // Test preparer.
     $preparer = \Drupal::service('tripal_chado.preparer');
