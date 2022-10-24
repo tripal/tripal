@@ -80,4 +80,27 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
       $this->chado = $this->getTestSchema(ChadoTestBrowserBase::INIT_CHADO_EMPTY);
     }
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function prepareTestChado() :void {
+    /**
+     * This should perform additional imports into the empty chado
+     * which should have already existed from setUp function.
+     * Therefore $this->chado should already exist, no need to update 
+     * this child variable.
+     */
+    
+    // Execute SQL File here since empty chado schema already created in setUp
+    $success = $this->chado->executeSqlFile(
+      __DIR__ . '/../../fixtures/fill_chado_test_prepare.sql',
+      'none');
+
+    // Execute SQL File here for public test schema which would also have been created. 
+    $public = \Drupal::database();
+    $success = $public->executeSqlFile(
+        __DIR__ . '/../../fixtures/fill_public_test_prepare.sql',
+        'none');
+  }
 }

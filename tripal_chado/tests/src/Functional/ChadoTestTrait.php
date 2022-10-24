@@ -249,6 +249,21 @@ trait ChadoTestTrait  {
         $this->assertTrue($success, 'Chado version loaded.');
         break;
 
+      case static::PREPARE_TEST_CHADO:
+          $tripaldbx_db->schema()->createSchema();
+          $this->assertTrue($tripaldbx_db->schema()->schemaExists(), 'Test schema created.');
+          $success = $tripaldbx_db->executeSqlFile(
+            __DIR__ . '/../../../chado_schema/chado-only-1.3.sql',
+            ['chado' => $schema_name]);
+          $this->assertTrue($success, 'Chado schema loaded.');
+          $this->assertGreaterThan(100, $tripaldbx_db->schema()->getSchemaSize(), 'Test schema not empty.');
+          
+          // Add version information to the schema so the tests don't fail.
+          $success = $tripaldbx_db->executeSqlFile(__DIR__ . '/../../fixtures/version.sql',
+              ['chado' => $schema_name]);
+          $this->assertTrue($success, 'Chado version loaded.');
+          break;        
+
       case static::INIT_DUMMY:
         $tripaldbx_db->schema()->createSchema();
         $this->assertTrue($tripaldbx_db->schema()->schemaExists(), 'Test schema created.');
