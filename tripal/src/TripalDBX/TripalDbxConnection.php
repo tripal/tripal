@@ -992,6 +992,11 @@ abstract class TripalDbxConnection extends PgConnection {
    */
   protected function shouldUseTripalDbxSchema() :bool {
     $should = FALSE;
+
+    // Check the class/object who is using Tripal DBX:
+    // We do this using the backtrace functionality with the assumption that
+    // the class at the deepest level of the backtrace is the one to check.
+    //
     // We start at 2 because this protected method can only be called at level 1
     // from a local class method so we can skip level 1.
     $bt_level = 2;
@@ -1005,12 +1010,29 @@ abstract class TripalDbxConnection extends PgConnection {
       ++$bt_level;
       $calling_class = $backtrace[$bt_level]['class'] ?? '';
       $calling_object = $backtrace[$bt_level]['object'] ?? FALSE;
+
     }
-    if (!empty($this->classesUsingTripalDbx[$calling_class])
-        || (in_array($calling_object, $this->objectsUsingTripalDbx))
-    ) {
+    if (!empty($this->classesUsingTripalDbx[$calling_class])) {
       $should = TRUE;
     }
+    elseif (in_array($calling_object, $this->objectsUsingTripalDbx)) {
+      $should = TRUE;
+    }
+
+    // Check all parents of the class who is using Tripal DBX:
+    // This allows for APIs to be added to the whitelist and all children class
+    // implementations to then automatically use the Tripal DBX managed schema.
+    $class = new \ReflectionClass($calling_class);
+    $inheritance_level = 0;
+    while ($parent = $class->getParentClass()) {
+      $inheritance_level++;
+      $parent_class = $parent->getName();
+      if (!empty($this->classesUsingTripalDbx[$parent_class])) {
+        $should = TRUE;
+      }
+      $class = $parent;
+    }
+
     return $should;
   }
 
