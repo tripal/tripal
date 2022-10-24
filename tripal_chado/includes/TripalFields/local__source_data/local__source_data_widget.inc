@@ -83,11 +83,11 @@ class local__source_data_widget extends ChadoFieldWidget {
       '#maxlength' => $schema['fields']['sourceversion']['length'],
     ];
     $widget['source_data']['sourceuri'] = [
-      '#type' => 'textfield',
+      '#type' => 'textarea',
       '#title' => 'Data Source URI',
       '#description' => 'The URI (e.g. web URL) where the source data can be retrieved.',
       '#default_value' => $sourceuri,
-      '#maxlength' => 8192,  // length in table is unlimited, but need something here. In T4 will be a textarea
+      '#rows' => 1,
     ];
 
   }
@@ -102,7 +102,7 @@ class local__source_data_widget extends ChadoFieldWidget {
 
     $source_name = $form_state['values'][$field_name]['und'][$delta]['source_data']['sourcename'];
     $sourceversion = $form_state['values'][$field_name]['und'][$delta]['source_data']['sourceversion'];
-    $sourceuri = $form_state['values'][$field_name]['und'][$delta]['source_data']['sourceuri'];
+    $sourceuri = preg_replace('/[\r\n]/', '', $form_state['values'][$field_name]['und'][$delta]['source_data']['sourceuri']);
 
     // Set the value so the form element won't be ignored.
     $form_state['values'][$field_name]['und'][$delta]['value'] = $source_name;
