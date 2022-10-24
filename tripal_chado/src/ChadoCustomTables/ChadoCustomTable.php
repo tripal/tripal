@@ -97,8 +97,8 @@ class ChadoCustomTable {
     $query->condition('ct.table_name', $this->table_name);
     $query->condition('ct.chado', $this->chado_schema);
     $results = $query->execute();
-    if ($results) {
-      $custom_table = $results->fetchObject();
+    $custom_table = $results->fetchObject();
+    if (is_object($custom_table)) {
       $this->table_id = $custom_table->table_id;
     }
   }
