@@ -25,7 +25,6 @@ class ChadoTestPrepare extends ChadoTestBrowserBase {
     $chado = $this->chado;
     $schema_name = $chado->getSchemaName();
 
-    print_r('Schema name:' . $schema_name . "\n");
 
     $this->prepareTestChado();
 
