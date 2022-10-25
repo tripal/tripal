@@ -98,9 +98,9 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
       'none');
 
     // Execute SQL File here for public test schema which would also have been created. 
-    $public = \Drupal::database();
-    $success = $public->executeSqlFile(
-        __DIR__ . '/../../fixtures/fill_public_test_prepare.sql',
-        'none');
+    // $public = \Drupal::database();
+    // $success = $public->executeSqlFile(
+    //     __DIR__ . '/../../fixtures/fill_public_test_prepare.sql',
+    //     'none');
   }
 }
