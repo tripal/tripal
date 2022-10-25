@@ -92,20 +92,29 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
      * this child variable.
      */
 
-    // Simple test to make sure data gets in
-    $success = $this->chado->executeSqlFile(
-      __DIR__ . '/../../fixtures/fill_chado_test_temp.sql');
-    print_r(file_get_contents(__DIR__ . '/../../fixtures/fill_chado_test_temp.sql'));
     
     // Execute SQL File here since empty chado schema already created in setUp
-    // $success = $this->chado->executeSqlFile(
-    //   __DIR__ . '/../../fixtures/fill_chado_test_prepare.sql',
-    //   ['chado' => $this->chado->getSchemaName()]);
+    $success = $this->chado->executeSqlFile(
+      __DIR__ . '/../../fixtures/fill_chado_test_prepare.sql',
+      'none');
 
     // Execute SQL File here for public test schema which would also have been created. 
     // $public = \Drupal::database();
     // $success = $public->executeSqlFile(
     //     __DIR__ . '/../../fixtures/fill_public_test_prepare.sql',
     //     'none');
+  }
+
+  protected function prepareTestChadoTheWrongWay() {
+    $lines = file(__DIR__ . '/../../fixtures/fill_chado_test_prepare.sql');
+    foreach ($lines as $line) {
+        if (trim($line) == "") {
+
+        }
+        else {
+            // print_r('Line:' . $line . "\n");
+            $this->chado->query($line);
+        }
+    }
   }
 }

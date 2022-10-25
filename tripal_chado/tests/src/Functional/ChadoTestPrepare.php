@@ -26,11 +26,22 @@ class ChadoTestPrepare extends ChadoTestBrowserBase {
     $schema_name = $chado->getSchemaName();
 
 
-    $this->prepareTestChado();
+    // $this->prepareTestChado(); // This does not work :(
+    $this->prepareTestChadoTheWrongWay(); // This works :(
 
-    $db_results = $chado->query('SELECT * FROM db');
+    $cv_results = $chado->query("SELECT * FROM cv WHERE name LIKE 'sep'");
+    $cv_found = false;
+    foreach ($cv_results as $row) {
+        $cv_found = true;
+    } 
+    $this->assertTrue($cv_found, 'Found SEP CV'); 
+      
+
+    $db_results = $chado->query("SELECT * FROM db WHERE name LIKE 'TAXRANK';");
+    $db_found = true;
     foreach ($db_results as $row) {
-        print_r($row);
+        $db_found = true;
     }
+    $this->assertTrue($db_found, 'Found TAXRANK DB'); 
   }
 }
