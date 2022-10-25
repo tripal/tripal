@@ -91,11 +91,16 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
      * Therefore $this->chado should already exist, no need to update 
      * this child variable.
      */
+
+    // Simple test to make sure data gets in
+    $success = $this->chado->executeSqlFile(
+      __DIR__ . '/../../fixtures/fill_chado_test_temp.sql');
+    print_r(file_get_contents(__DIR__ . '/../../fixtures/fill_chado_test_temp.sql'));
     
     // Execute SQL File here since empty chado schema already created in setUp
-    $success = $this->chado->executeSqlFile(
-      __DIR__ . '/../../fixtures/fill_chado_test_prepare.sql',
-      'none');
+    // $success = $this->chado->executeSqlFile(
+    //   __DIR__ . '/../../fixtures/fill_chado_test_prepare.sql',
+    //   ['chado' => $this->chado->getSchemaName()]);
 
     // Execute SQL File here for public test schema which would also have been created. 
     // $public = \Drupal::database();
