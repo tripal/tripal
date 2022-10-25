@@ -108,13 +108,9 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
   protected function prepareTestChadoTheWrongWay() {
     $lines = file(__DIR__ . '/../../fixtures/fill_chado_test_prepare.sql');
     foreach ($lines as $line) {
-        if (trim($line) == "") {
-
-        }
-        else {
-            // print_r('Line:' . $line . "\n");
-            $this->chado->query($line);
-        }
+      if (trim($line) != "") {
+        $this->chado->query($line);
+      }
     }
   }
 }
