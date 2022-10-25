@@ -43,5 +43,12 @@ class ChadoTestPrepare extends ChadoTestBrowserBase {
         $db_found = true;
     }
     $this->assertTrue($db_found, 'Found TAXRANK DB'); 
+
+    // $cvterm_results = $chado->query("SELECT * FROM cvterm WHERE name LIKE 'TAXRANK';");
+    // $cvterm_found = true;
+    // foreach ($cvterm_results as $row) {
+    //     $cvterm_found = true;
+    // }
+    // $this->assertTrue($cvterm_found, 'Found TAXRANK DB');     
   }
 }
