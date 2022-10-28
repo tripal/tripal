@@ -6,7 +6,7 @@ class local__contact_formatter extends ChadoFieldFormatter {
   public static $default_label = 'Contact';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = ['local_contact'];
+  public static $field_types = ['local__contact'];
 
 
   /**
