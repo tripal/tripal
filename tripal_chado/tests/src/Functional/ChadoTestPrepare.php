@@ -27,8 +27,9 @@ class ChadoTestPrepare extends ChadoTestBrowserBase {
 
 
     // $this->prepareTestChado(); // This does not work :(
-    $this->prepareTestChadoTheWrongWay(); // This works :(
+    $this->prepareTestChadoTheWrongWay(); // This works :( or :)
 
+    // Test to see if cv table data got imported
     $cv_results = $chado->query("SELECT * FROM cv WHERE name LIKE 'sep'");
     $cv_found = false;
     foreach ($cv_results as $row) {
@@ -36,7 +37,7 @@ class ChadoTestPrepare extends ChadoTestBrowserBase {
     } 
     $this->assertTrue($cv_found, 'Found SEP CV'); 
       
-
+    // Test to see whether db table data got imported
     $db_results = $chado->query("SELECT * FROM db WHERE name LIKE 'TAXRANK';");
     $db_found = true;
     foreach ($db_results as $row) {
@@ -44,11 +45,12 @@ class ChadoTestPrepare extends ChadoTestBrowserBase {
     }
     $this->assertTrue($db_found, 'Found TAXRANK DB'); 
 
-    // $cvterm_results = $chado->query("SELECT * FROM cvterm WHERE name LIKE 'TAXRANK';");
-    // $cvterm_found = true;
-    // foreach ($cvterm_results as $row) {
-    //     $cvterm_found = true;
-    // }
-    // $this->assertTrue($cvterm_found, 'Found TAXRANK DB');     
+    // Test to see whether cvterm table data got imported
+    $cvterm_results = $chado->query("SELECT * FROM cvterm WHERE name LIKE 'accession';");
+    $cvterm_found = true;
+    foreach ($cvterm_results as $row) {
+        $cvterm_found = true;
+    }
+    $this->assertTrue($cvterm_found, 'Found accession cvterm');     
   }
 }

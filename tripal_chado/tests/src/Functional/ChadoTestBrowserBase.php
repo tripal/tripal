@@ -106,11 +106,21 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
   }
 
   protected function prepareTestChadoTheWrongWay() {
+    // Import data from chado_test_prepare fixture file
     $lines = file(__DIR__ . '/../../fixtures/fill_chado_test_prepare.sql');
     foreach ($lines as $line) {
       if (trim($line) != "") {
         $this->chado->query($line);
       }
     }
+    
+    // Import data from public_test_prepare fixture file
+    // $lines = file(__DIR__ . '/../../fixtures/fill_public_test_prepare.sql');
+    // foreach ($lines as $line) {
+    //   if (trim($line) != "") {
+    //     $this->chado->query($line);
+    //   }
+    // }    
   }
+
 }
