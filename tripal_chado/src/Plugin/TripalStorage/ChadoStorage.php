@@ -4,6 +4,8 @@ namespace Drupal\tripal_chado\Plugin\TripalStorage;
 
 use Drupal\Core\Plugin\PluginBase;
 use Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface;
+use Symfony\Component\Validator\ConstraintViolation;
+
 
 
 /**
@@ -868,5 +870,347 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     // Add the right table back onto the path as the new left table and recurse.
     $depth++;
     $this->addChadoRecordJoins($records, $chado_column, $as, $delta, $path_arr, $parent_table, $depth);
+  }
+
+
+  /**
+   * Checks that required fields have values.
+   *
+   * @param $values
+   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
+   * @param string $chado_table
+   *   The name of the table
+   * @param int $record_id
+   *   The record ID of the record.
+   * @param array $record
+   *   The record to validate
+   * @param array $violoations
+   *   An array to which any new violoations can be added.
+   */
+  private function validateRequired($values, $chado_table, $record_id, $record, &$violations) {
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+    $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
+    $pkey = $table_def['primary key'];
+
+    $missing = [];
+    foreach ($table_def['fields'] as $col => $info) {
+      $col_val = $record['fields'][$col];
+
+      // Don't check the pkey
+      if ($col == $pkey) {
+        continue;
+      }
+
+      // If the field requires a value but doesn't have one then it may be
+      // a problem.
+      if ($info['not null'] == TRUE and !$col_val) {
+        // If the column  has a default value then it's not a problem.
+        if (array_key_exists('default', $info)) {
+          continue;
+        }
+        $missing[] = $col;
+      }
+    }
+
+    if (count($missing) > 0) {
+      // Documentation for how to creata violation is here
+      // https://github.com/symfony/validator/blob/6.1/ConstraintViolation.php
+      $message = 'The item cannot be saved because the following values are missing. ';
+      $params = [];
+      foreach ($missing as $col) {
+        $message .=  ucfirst($col) . ", ";
+      }
+      $message = substr($message, 0, -1) . '.';
+      $violations[] = new ConstraintViolation(t($message, $params)->render(),
+          $message, $params, '', NULL, '', 1, 0, NULL, '');
+    }
+  }
+
+  /**
+   * Checks the unique constraint of the table.
+   *
+   * @param $values
+   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
+   * @param string $chado_table
+   *   The name of the table
+   * @param int $record_id
+   *   The record ID of the record.
+   * @param array $record
+   *   The record to validate
+   * @param array $violoations
+   *   An array to which any new violoations can be added.
+   */
+  private function validateUnique($values, $chado_table, $record_id, $record, &$violations) {
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+    $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
+
+    // Check if we are violoating a unique contraint (if it's an insert)
+    if (array_key_exists('unique keys',  $table_def)) {
+      $pkey = $table_def['primary key'];
+
+      // Iterate through the unique constraints and see if the record
+      // violates it.
+      $ukeys = $table_def['unique keys'];
+      foreach ($ukeys as $ukey_name => $ukey_cols) {
+        $ukey_cols = explode(',', $ukey_cols);
+        $query = $chado->select($chado_table, 'ct');
+        $query->fields('ct');
+        foreach ($ukey_cols as $col) {
+          $col = trim($col);
+          $col_val = $record['fields'][$col];
+          // There is an issue with postgreSQL that if the value is allowed
+          // to be null but it is in a unique constraint then it will allow
+          // it to be inserted because a Null != NULL. So, skip checking
+          // these columns in the unique constraint if they are empty.
+          if ($table_def['fields'][$col]['not null'] == FALSE and !$col_val) {
+            continue;
+          }
+          $query->condition($col, $col_val);
+        }
+
+        // If we have maatching record, check for a unique constraint
+        // violation.
+        $match = $query->execute()->fetchObject();
+        if ($match) {
+
+          // Add a constraint violoation if we have a match and the
+          // record_id is 0. This would be an insert but a record already
+          // exists. Or, if the record_id isn't the same as the  matched
+          // record. This is an update that conflicts with an existing
+          // record.
+          if (($record_id == 0) or ($record_id != $match->$pkey)) {
+            // Documentation for how to creata violation is here
+            // https://github.com/symfony/validator/blob/6.1/ConstraintViolation.php
+            $message = 'The item cannot be saved as another already exists with the following values. ';
+            $params = [];
+            foreach ($ukey_cols as $col) {
+              $col = trim($col);
+              $col_val = $record['fields'][$col];
+              if ($table_def['fields'][$col]['not null'] == FALSE and !$col_val) {
+                continue;
+              }
+              $message .=  ucfirst($col) . ": '@$col'. ";
+              $params["@$col"] = $col_val;
+            }
+            $violations[] = new ConstraintViolation(t($message, $params)->render(),
+                $message, $params, '', NULL, '', 1, 0, NULL, '');
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Checks that foreign key values exist.
+   *
+   * @param $values
+   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
+   * @param string $chado_table
+   *   The name of the table
+   * @param int $record_id
+   *   The record ID of the record.
+   * @param array $record
+   *   The record to validate
+   * @param array $violoations
+   *   An array to which any new violoations can be added.
+   */
+  private function validateFKs($values, $chado_table, $record_id, $record, &$violations) {
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+    $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
+
+    $bad_fks = [];
+    $fkeys = $table_def['foreign keys'];
+    foreach ($fkeys as $fk_table => $info) {
+      foreach ($info['columns'] as $lcol => $rcol) {
+
+        // If an FK allows nulls and the value is null then skip this one..
+        $col_val = $record['fields'][$lcol];
+        if ($table_def['fields'][$lcol]['not null'] == FALSE and !$col_val) {
+          continue;
+        }
+
+        // Check if the  id is present in the FK talbe.
+        $query = $chado->select($fk_table, 'fk');
+        $query->fields('fk', [$rcol]);
+        $query->condition($rcol, $col_val);
+        $fk_id = $query->execute()->fetchField();
+        if (!$fk_id) {
+          $bad_fks[] = $lcol;
+        }
+      }
+    }
+
+    if (count($bad_fks) > 0) {
+      // Documentation for how to creata violation is here
+      // https://github.com/symfony/validator/blob/6.1/ConstraintViolation.php
+      $message = 'The item cannot be saved because the following values have a missing linked record in the data store.';
+      $params = [];
+      foreach ($bad_fks as $col) {
+        $message .=  ucfirst($col) . ", ";
+      }
+      $message = substr($message, 0, -1) . '.';
+      $violations[] = new ConstraintViolation(t($message, $params)->render(),
+          $message, $params, '', NULL, '', 1, 0, NULL, '');
+    }
+  }
+
+  /**
+   * Checks that foreign key values exist.
+   *
+   * @param $values
+   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
+   * @param string $chado_table
+   *   The name of the table
+   * @param int $record_id
+   *   The record ID of the record.
+   * @param array $record
+   *   The record to validate
+   * @param array $violoations
+   *   An array to which any new violoations can be added.
+   */
+  public function validateTypes($values, $chado_table, $record_id, $record, &$violations) {
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+    $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
+
+    $bad_types = [];
+    foreach ($table_def['fields'] as $col => $info) {
+      $col_val = $record['fields'][$col];
+
+      // Skip fields without values. If they are required
+      // but missing then the validateRequired() function will ccthc those.
+      if (!$col_val) {
+        continue;
+      }
+
+      if ($info['type'] == 'integer' or
+          $info['type'] == 'bigint' or
+          $info['type'] == 'smallint' or
+          $info['type'] == 'serial') {
+        if (!preg_match('/^\d+$/', $col_val)) {
+          $bad_types[$col] = 'Integer';
+        }
+      }
+      else if ($info['type'] == 'boolean') {
+        if (!is_bool($col_val)) {
+          $bad_types[$col] = 'Boolean';
+        }
+      }
+      else if ($info['type'] == 'timestamp without time zone' or
+               $info['type'] == 'date') {
+        if (!is_integer($col_val)) {
+          $bad_types[$col] = 'Timestamp';
+        }
+      }
+      else if ($info['type'] == 'character varying' or
+               $info['type'] == 'character' or
+               $info['type'] == 'text') {
+       // Do nothing.
+      }
+      else if ($info['type'] == 'double precision' or
+               $info['type'] == 'real') {
+         if (!is_numeric($col_val)) {
+           $bad_types[$col] = 'Number';
+         }
+      }
+    }
+
+    if (count($bad_types) > 0) {
+      // Documentation for how to creata violation is here
+      // https://github.com/symfony/validator/blob/6.1/ConstraintViolation.php
+      $message = 'The item cannot be saved because the following values are of the wrong type.';
+      $params = [];
+      foreach ($bad_types as $col => $col_type) {
+        $message .=  ucfirst($col) . " should be $col_type. " ;
+      }
+      $violations[] = new ConstraintViolation(t($message, $params)->render(),
+          $message, $params, '', NULL, '', 1, 0, NULL, '');
+    }
+  }
+
+  /**
+   * Checks that size of the value isn't too large
+   *
+   * @param $values
+   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
+   * @param string $chado_table
+   *   The name of the table
+   * @param int $record_id
+   *   The record ID of the record.
+   * @param array $record
+   *   The record to validate
+   * @param array $violoations
+   *   An array to which any new violoations can be added.
+   */
+  public function validateSize($values, $chado_table, $record_id, $record, &$violations) {
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+    $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
+
+    $bad_sizes = [];
+    foreach ($table_def['fields'] as $col => $info) {
+      $col_val = $record['fields'][$col];
+
+      // Skip fields without values. If they are required
+      // but missing then the validateRequired() function will ccthc those.
+      if (!$col_val) {
+        continue;
+      }
+
+      // If the column has a size then check it.
+      if (array_key_exists('size', $info)) {
+
+        // If this is a string type column.
+        if ($info['type'] == 'character varying' or
+            $info['type'] == 'character' or
+            $info['type'] == 'text') {
+          if (strlen($col_val) > $info['size']) {
+            $bad_sizes[$col] = $info['size'];
+          }
+        }
+      }
+    }
+
+    if (count($bad_sizes) > 0) {
+      // Documentation for how to creata violation is here
+      // https://github.com/symfony/validator/blob/6.1/ConstraintViolation.php
+      $message = 'The item cannot be saved because the following values are too large. ';
+      $params = [];
+      foreach ($bad_sizes as $col => $size) {
+        $message .=  ucfirst($col) . " should be less than $size characters long. " ;
+      }
+      $violations[] = new ConstraintViolation(t($message, $params)->render(),
+          $message, $params, '', NULL, '', 1, 0, NULL, '');
+    }
+  }
+
+
+  /**
+   *
+   * {@inheritDoc}
+   */
+  public function validateValues($values) {
+
+    $build = $this->buildChadoRecords($values, TRUE);
+    $records = $build['records'];
+    $violations = [];
+
+    // We only need to validate the base table properties because
+    // the linker table values get completely replaced on an update and
+    // should not exist for an insert.
+    foreach ($build['base_tables'] as $base_table => $record_id) {
+      foreach ($records[$base_table] as $delta => $record) {
+        $record = $records[$base_table][$delta];
+        $this->validateUnique($values, $base_table, $record_id, $record, $violations);
+        $this->validateRequired($values, $base_table, $record_id, $record, $violations);
+        $this->validateFKs($values, $base_table, $record_id, $record, $violations);
+        $this->validateTypes($values, $base_table, $record_id, $record, $violations);
+        $this->validateSize($values, $base_table, $record_id, $record, $violations);
+      }
+    }
+    return $violations;
   }
 }

@@ -119,4 +119,18 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    *   that match.
    */
   public function findValues($match);
+
+
+
+  /**
+   * Performs validation checks on values.
+   *
+   * @param array $values
+   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
+   *
+   * @return array
+   *   An array of \Symfony\Component\Validator\ConstraintViolation objects.
+   */
+  public function validateValues($values);
+
 }

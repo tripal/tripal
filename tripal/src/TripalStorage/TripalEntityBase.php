@@ -128,4 +128,7 @@ class TripalEntityBase extends ContentEntityBase {
     }
   }
 
+  public function validate() {
+    parent::validate();
+  }
 }
