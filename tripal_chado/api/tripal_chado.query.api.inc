@@ -1751,7 +1751,7 @@ function chado_query($sql, $args = [], $options = []) {
     }
 
     // Now set the Drupal prefix if the table is surrounded by square brackets.
-    if (preg_match_all('/\[(.*?)\]/', $sql, $matches)) {
+    if (preg_match_all('/\[(.+?)\]/', $sql, $matches)) {
       $matches = $matches[1];
       $drupal_tables = array_unique(array_keys(drupal_get_schema()));
       foreach ($matches as $match) {
@@ -1797,7 +1797,7 @@ function chado_query($sql, $args = [], $options = []) {
   // represented and if present don't execute the query but instead warn the
   // administrator.
   else {
-    if (preg_match('/\[(\w*?)\]/', $sql)) {
+    if (preg_match('/\[(\w+?)\]/', $sql)) {
       tripal_report_error('chado_query', TRIPAL_ERROR,
         'The following query does not support external chado databases. Please file an issue with the Drupal.org Tripal Project. Query: @query',
         ['@query' => $sql]
