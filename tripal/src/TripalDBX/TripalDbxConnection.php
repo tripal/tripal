@@ -1022,15 +1022,20 @@ abstract class TripalDbxConnection extends PgConnection {
     // Check all parents of the class who is using Tripal DBX:
     // This allows for APIs to be added to the whitelist and all children class
     // implementations to then automatically use the Tripal DBX managed schema.
-    $class = new \ReflectionClass($calling_class);
-    $inheritance_level = 0;
-    while ($parent = $class->getParentClass()) {
-      $inheritance_level++;
-      $parent_class = $parent->getName();
-      if (!empty($this->classesUsingTripalDbx[$parent_class])) {
-        $should = TRUE;
+    if (class_exists($calling_class)) {
+      $class = new \ReflectionClass($calling_class);
+      $inheritance_level = 0;
+      while ($parent = $class->getParentClass()) {
+        $inheritance_level++;
+        $parent_class = $parent->getName();
+        if (!empty($this->classesUsingTripalDbx[$parent_class])) {
+          $should = TRUE;
+        }
+        $class = $parent;
       }
-      $class = $parent;
+    }
+    else {
+      throw new Exception("TripalDBX unable to find class for checking inheritance. This class must exist and be available in the current application space: $calling_class. Hint: make sure to 'use' all needed classes in your application.");
     }
 
     return $should;
