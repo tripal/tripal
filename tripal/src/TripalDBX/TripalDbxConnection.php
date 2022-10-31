@@ -1035,7 +1035,7 @@ abstract class TripalDbxConnection extends PgConnection {
       }
     }
     else {
-      throw new Exception("TripalDBX unable to find class for checking inheritance. This class must exist and be available in the current application space: $calling_class. Hint: make sure to 'use' all needed classes in your application.");
+      throw new \Exception("TripalDBX unable to find class for checking inheritance. This class must exist and be available in the current application space: $calling_class. Hint: make sure to 'use' all needed classes in your application.");
     }
 
     return $should;
