@@ -1034,7 +1034,10 @@ abstract class TripalDbxConnection extends PgConnection {
         $class = $parent;
       }
     }
-    else {
+    // If Tripal DBX was called from a stand-alone function (i.e. not within
+    // a class) then the calling class will be empty. We do not want to throw
+    // an exception in that case.
+    elseif (!empty($calling_class)) {
       throw new \Exception("TripalDBX unable to find class for checking inheritance. This class must exist and be available in the current application space: $calling_class. Hint: make sure to 'use' all needed classes in your application.");
     }
 
