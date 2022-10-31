@@ -88,39 +88,31 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
     /**
      * This should perform additional imports into the empty chado
      * which should have already existed from setUp function.
-     * Therefore $this->chado should already exist, no need to update 
+     * Therefore $this->chado should already exist, no need to update
      * this child variable.
      */
 
-    
-    // Execute SQL File here since empty chado schema already created in setUp
-    $success = $this->chado->executeSqlFile(
-      __DIR__ . '/../../fixtures/fill_chado_test_prepare.sql',
-      'none');
+     // This has more overhead then we would like but is correct since the SQL
+     // file provided has all single-line queries.
+     // @todo replace this with executeSqlFile once we figure out what is
+     // causing that to fail.
+     $lines = file(__DIR__ . '/../../fixtures/fill_chado_test_prepare.sql');
+     foreach ($lines as $line) {
+       if (trim($line) != "") {
+         $this->chado->query($line);
+       }
+     }
 
-    // Execute SQL File here for public test schema which would also have been created. 
+    // Execute SQL File here since empty chado schema already created in setUp
+    // $success = $this->chado->executeSqlFile(
+    //   __DIR__ . '/../../fixtures/fill_chado_test_prepare.sql',
+    //   'none');
+
+    // Execute SQL File here for public test schema which would also have been created.
     // $public = \Drupal::database();
     // $success = $public->executeSqlFile(
     //     __DIR__ . '/../../fixtures/fill_public_test_prepare.sql',
     //     'none');
-  }
-
-  protected function prepareTestChadoTheWrongWay() {
-    // Import data from chado_test_prepare fixture file
-    $lines = file(__DIR__ . '/../../fixtures/fill_chado_test_prepare.sql');
-    foreach ($lines as $line) {
-      if (trim($line) != "") {
-        $this->chado->query($line);
-      }
-    }
-    
-    // Import data from public_test_prepare fixture file
-    // $lines = file(__DIR__ . '/../../fixtures/fill_public_test_prepare.sql');
-    // foreach ($lines as $line) {
-    //   if (trim($line) != "") {
-    //     $this->chado->query($line);
-    //   }
-    // }    
   }
 
 }
