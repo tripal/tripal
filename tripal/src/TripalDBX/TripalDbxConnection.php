@@ -990,8 +990,13 @@ abstract class TripalDbxConnection extends PgConnection {
    * @return bool
    *   TRUE if default schema is not Drupal's but the Tripal DBX managed one.
    */
-  protected function shouldUseTripalDbxSchema() :bool {
+  public function shouldUseTripalDbxSchema() :bool {
     $should = FALSE;
+
+    // Check the class/object who is using Tripal DBX:
+    // We do this using the backtrace functionality with the assumption that
+    // the class at the deepest level of the backtrace is the one to check.
+    //
     // We start at 2 because this protected method can only be called at level 1
     // from a local class method so we can skip level 1.
     $bt_level = 2;
@@ -1005,12 +1010,37 @@ abstract class TripalDbxConnection extends PgConnection {
       ++$bt_level;
       $calling_class = $backtrace[$bt_level]['class'] ?? '';
       $calling_object = $backtrace[$bt_level]['object'] ?? FALSE;
+
     }
-    if (!empty($this->classesUsingTripalDbx[$calling_class])
-        || (in_array($calling_object, $this->objectsUsingTripalDbx))
-    ) {
+    if (!empty($this->classesUsingTripalDbx[$calling_class])) {
       $should = TRUE;
     }
+    elseif (in_array($calling_object, $this->objectsUsingTripalDbx)) {
+      $should = TRUE;
+    }
+
+    // Check all parents of the class who is using Tripal DBX:
+    // This allows for APIs to be added to the whitelist and all children class
+    // implementations to then automatically use the Tripal DBX managed schema.
+    if (class_exists($calling_class)) {
+      $class = new \ReflectionClass($calling_class);
+      $inheritance_level = 0;
+      while ($parent = $class->getParentClass()) {
+        $inheritance_level++;
+        $parent_class = $parent->getName();
+        if (!empty($this->classesUsingTripalDbx[$parent_class])) {
+          $should = TRUE;
+        }
+        $class = $parent;
+      }
+    }
+    // If Tripal DBX was called from a stand-alone function (i.e. not within
+    // a class) then the calling class will be empty. We do not want to throw
+    // an exception in that case.
+    elseif (!empty($calling_class)) {
+      throw new \Exception("TripalDBX unable to find class for checking inheritance. This class must exist and be available in the current application space: $calling_class. Hint: make sure to 'use' all needed classes in your application.");
+    }
+
     return $should;
   }
 
@@ -1317,6 +1347,16 @@ abstract class TripalDbxConnection extends PgConnection {
     }
 
     return parent::escapeTable($table);
+  }
+
+  /**
+   * Retrieve a list of classes which are using Tripal DBX byb default.
+   *
+   * @return array
+   *  An array of class names including namespace.
+   */
+  public function getListClassesUsingTripalDbx() {
+    return $this->classesUsingTripalDbx;
   }
 
   /**

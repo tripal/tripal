@@ -1,20 +1,19 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Functional;
+namespace Drupal\Tests\tripal_chado\Functional\Task;
 
-use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
-use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
-use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
-use Drupal\tripal\TripalStorage\StoragePropertyValue;
-use Drupal\tripal\TripalVocabTerms\TripalTerm;
-use Drupal\Tests\tripal_chado\Functional\MockClass\FieldConfigMock;
+use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
+use Drupal\tripal_chado\Task\ChadoPreparer;
 
 /**
- * Tests for the ChadoCVTerm classes
+ * Tests for Chado preparer task.
+ *
+ * @coversDefaultClass \Drupal\tripal_chado\Task\ChadoPreparer
  *
  * @group Tripal
  * @group Tripal Chado
- * @group Tripal Chado ChadoStorage
+ * @group Tripal Chado Task
+ * @group Tripal Chado Preparer
  */
 class ChadoPreparerTest extends ChadoTestBrowserBase {
 
@@ -41,7 +40,8 @@ class ChadoPreparerTest extends ChadoTestBrowserBase {
     $preparer->setParameters([
       'output_schemas' => [$test_chado->getSchemaName()],
     ]);
-    $preparer->performTask();
+    $success = $preparer->performTask();
+    $this->assertTrue($success, 'Task performed.');
 
   }
 }

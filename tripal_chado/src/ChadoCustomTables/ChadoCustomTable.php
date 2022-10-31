@@ -101,6 +101,7 @@ class ChadoCustomTable {
     $query->condition('ct.chado', $this->chado_schema);
     $results = $query->execute();
     $this->table_id = $results->fetchField();
+
   }
 
   /**
