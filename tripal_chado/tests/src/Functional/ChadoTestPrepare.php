@@ -27,15 +27,15 @@ class ChadoTestPrepare extends ChadoTestBrowserBase {
 
 
     // $this->prepareTestChado(); // This does not work :(
-    $this->prepareTestChadoTheWrongWay(); // This works :( or :)
+    $this->prepareTestChado(); // This works :( or :)
 
     // Test to see if cv table data got imported
-    $cv_results = $chado->query("SELECT * FROM cv WHERE name LIKE 'sep'");
+    $cv_results = $chado->query("SELECT * FROM {1:cv} WHERE name LIKE 'feature_property'");
     $cv_found = false;
     foreach ($cv_results as $row) {
         $cv_found = true;
     } 
-    $this->assertTrue($cv_found, 'Found SEP CV'); 
+    $this->assertTrue($cv_found, 'Found feature_property CV'); 
       
     // Test to see whether db table data got imported
     $db_results = $chado->query("SELECT * FROM db WHERE name LIKE 'TAXRANK';");
