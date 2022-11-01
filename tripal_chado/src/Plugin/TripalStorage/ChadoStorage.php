@@ -48,6 +48,15 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    */
   protected $id_mapping = [];
 
+  /**
+   * Retrieve a Chado database connection.
+   */
+  protected function getChadoConnection() {
+    $chado = \Drupal::service('tripal_chado.database');
+    $chado->useTripalDbxSchemaFor(get_class());
+    return $chado;
+  }
+
 	/**
 	 * @{inheritdoc}
 	 */
@@ -126,13 +135,13 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    */
   private function insertChadoRecord(&$records, $chado_table, $delta, $record) {
 
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     $schema = $chado->schema();
     $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
     $pkey = $table_def['primary key'];
 
     // Insert the record.
-    $insert = $chado->insert($chado_table);
+    $insert = $chado->insert('1:'.$chado_table);
     $insert->fields($record['fields']);
     $record_id = $insert->execute();
     if (!$record_id) {
@@ -149,7 +158,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
 	 * @{inheritdoc}
 	 */
   public function insertValues(&$values) : bool {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     $logger = \Drupal::service('tripal.logger');
     $schema = $chado->schema();
 
@@ -263,7 +272,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    * @throws \Exception
    */
   private function updateChadoRecord(&$records, $chado_table, $delta, $record) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
 
     // Don't update if we don't have any conditions set.
     if (!$this->hasValidConditions($record)) {
@@ -271,7 +280,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
     }
 
-    $update = $chado->update($chado_table);
+    $update = $chado->update('1:'.$chado_table);
     $update->fields($record['fields']);
     foreach ($record['conditions'] as $chado_column => $cond_value) {
       $update->condition($chado_column, $cond_value);
@@ -292,7 +301,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    * @{inheritdoc}
    */
   public function updateValues(&$values) : bool {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     $logger = \Drupal::service('tripal.logger');
 
     $build = $this->buildChadoRecords($values, TRUE);
@@ -375,7 +384,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    * @throws \Exception
    */
   public function selectChadoRecord(&$records, $base_tables, $chado_table, $delta, $record) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
 
     if (!array_key_exists('conditions', $record)) {
       throw new \Exception($this->t('Cannot select record in the Chado "@table" table due to missing conditions. Record: @record',
@@ -390,7 +399,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     }
 
     // Select the fields in the chado table.
-    $select = $chado->select($chado_table, 'ct');
+    $select = $chado->select('1:'.$chado_table, 'ct');
     $select->fields('ct', array_keys($record['fields']));
 
     // Add in any joins.
@@ -433,7 +442,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    * @{inheritdoc}
    */
   public function loadValues(&$values) : bool {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     $logger = \Drupal::service('tripal.logger');
 
     $build = $this->buildChadoRecords($values, FALSE);
@@ -467,7 +476,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    * @throws \Exception
    */
   private function deleteChadoRecord(&$records, $chado_table, $delta, $record) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     $schema = $chado->schema();
     $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
     $pkey = $table_def['primary key'];
@@ -478,7 +487,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
     }
 
-    $delete = $chado->delete($chado_table);
+    $delete = $chado->delete('1:'.$chado_table);
     foreach ($record['conditions'] as $chado_column => $cond_value) {
       $delete->condition($chado_column, $cond_value);
     }
@@ -522,7 +531,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
   *   The set of Chado records.
   */
   protected function setRecordIds(&$values, $records) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     $schema = $chado->schema();
 
     // Iterate through the value objects.
@@ -674,7 +683,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    */
   protected function buildChadoRecords($values, bool $is_store) {
     $logger = \Drupal::service('tripal.logger');
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     $schema = $chado->schema();
     $records = [];
     $base_record_ids = [];
@@ -844,7 +853,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     $parent_table = !$parent_table ? $left_table : $parent_table;
     $lalias = $depth == 0 ? 'ct' : 'j' . ($depth - 1);
     $ralias = 'j' . $depth;
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     $schema = $chado->schema();
     $ltable_def = $schema->getTableDef($left_table, ['format' => 'drupal']);
     $rtable_def = $schema->getTableDef($right_table, ['format' => 'drupal']);
@@ -888,7 +897,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    *   An array to which any new violoations can be added.
    */
   private function validateRequired($values, $chado_table, $record_id, $record, &$violations) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     $schema = $chado->schema();
     $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
     $pkey = $table_def['primary key'];
@@ -942,7 +951,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    *   An array to which any new violoations can be added.
    */
   private function validateUnique($values, $chado_table, $record_id, $record, &$violations) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     $schema = $chado->schema();
     $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
 
@@ -955,7 +964,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       $ukeys = $table_def['unique keys'];
       foreach ($ukeys as $ukey_name => $ukey_cols) {
         $ukey_cols = explode(',', $ukey_cols);
-        $query = $chado->select($chado_table, 'ct');
+        $query = $chado->select('1:'.$chado_table, 'ct');
         $query->fields('ct');
         foreach ($ukey_cols as $col) {
           $col = trim($col);
@@ -1017,7 +1026,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    *   An array to which any new violoations can be added.
    */
   private function validateFKs($values, $chado_table, $record_id, $record, &$violations) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     $schema = $chado->schema();
     $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
 
@@ -1072,7 +1081,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    *   An array to which any new violoations can be added.
    */
   public function validateTypes($values, $chado_table, $record_id, $record, &$violations) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     $schema = $chado->schema();
     $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
 
@@ -1146,7 +1155,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    *   An array to which any new violoations can be added.
    */
   public function validateSize($values, $chado_table, $record_id, $record, &$violations) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     $schema = $chado->schema();
     $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
 
