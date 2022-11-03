@@ -1,3 +1,17 @@
+CREATE TABLE tripal_gff_temp ( feature_id integer NOT NULL, organism_id integer NOT NULL, uniquename text NOT NULL, type_name character varying(1024) NOT NULL);
+CREATE TABLE tripal_gffcds_temp ( feature_id integer NOT NULL, parent_id integer NOT NULL, phase integer, strand integer NOT NULL, fmin integer NOT NULL, fmax integer NOT NULL);
+CREATE TABLE tripal_gffprotein_temp ( feature_id integer NOT NULL, parent_id integer NOT NULL, fmin integer NOT NULL, fmax integer NOT NULL);
+CREATE TABLE tripal_obo_temp ( id character varying(255) NOT NULL, stanza text NOT NULL, type character varying(50) NOT NULL);
+ALTER TABLE ONLY tripal_gff_temp ADD CONSTRAINT tripal_gff_temp__tripal_gff_temp_uq0__key UNIQUE (feature_id);
+ALTER TABLE ONLY tripal_gff_temp ADD CONSTRAINT tripal_gff_temp__tripal_gff_temp_uq1__key UNIQUE (uniquename, organism_id, type_name);
+ALTER TABLE ONLY tripal_gffprotein_temp ADD CONSTRAINT tripal_gffprotein_temp__tripal_gff_temp_uq0__key UNIQUE (feature_id);
+ALTER TABLE ONLY tripal_obo_temp ADD CONSTRAINT tripal_obo_temp__tripal_obo_temp0__key UNIQUE (id);
+CREATE INDEX tripal_gff_temp__tripal_gff_temp_idx0__idx ON tripal_gff_temp USING btree (organism_id);
+CREATE INDEX tripal_gff_temp__tripal_gff_temp_idx1__idx ON tripal_gff_temp USING btree (uniquename);
+CREATE INDEX tripal_gffcds_temp__tripal_gff_temp_idx0__idx ON tripal_gffcds_temp USING btree (parent_id);
+CREATE INDEX tripal_gffprotein_temp__tripal_gff_temp_idx0__idx ON tripal_gffprotein_temp USING btree (parent_id);
+CREATE INDEX tripal_obo_temp__tripal_obo_temp_idx0__idx ON tripal_obo_temp USING btree (id);
+CREATE INDEX tripal_obo_temp__tripal_obo_temp_idx1__idx ON tripal_obo_temp USING btree (type);
 INSERT INTO db VALUES (2, 'CO_010', 'Crop Germplasm Ontology', 'http://www.cropontology.org/terms/CO_010:{accession}', 'http://www.cropontology.org/get-ontology/CO_010');
 INSERT INTO db VALUES (11, 'OBI', 'The Ontology for Biomedical Investigation', 'http://purl.obolibrary.org/obo/{db}_{accession}', 'http://obi-ontology.org/page/Main_Page');
 INSERT INTO db VALUES (3, 'dc', 'DCMI Metadata Terms', 'http://purl.org/dc/terms/{accession}', 'http://purl.org/dc/dcmitype/');

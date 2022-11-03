@@ -63,6 +63,25 @@ class ChadoPreparerTest extends ChadoTestBrowserBase {
    */
   protected function runPrepareStepAssertions() {
 
+    // 1: CREATE CHADO CUSTOM TABLES.
+    // --------------------------------
+    $schema = $this->chado->schema();
+    $expected_tables = [
+      'tripal_gff_temp',
+      'tripal_gffcds_temp',
+      'tripal_gffprotein_temp',
+      'tripal_obo_temp'
+    ];
+    foreach ($expected_tables as $table_name) {
+      $this->assertTrue($schema->tableExists($table_name),
+          "The Tripal $table_name doesn't exist but should have been created during the prepare step.");
+    }
+
+    // 2: CREATE CHADO MVIEWS.
+    // --------------------------------
+
+    // 3: IMPORT ONTOLOGIES.
+    // --------------------------------
     // Test to see if cv table data got imported
     $cv_results = $this->chado->query("SELECT * FROM {1:cv} WHERE name LIKE 'feature_property'");
     $cv_found = false;
@@ -86,5 +105,19 @@ class ChadoPreparerTest extends ChadoTestBrowserBase {
         $cvterm_found = true;
     }
     $this->assertTrue($cvterm_found, 'Found accession cvterm');
+
+    // 4: POPULATE CV_ROOT_MVIEW.
+    // --------------------------------
+
+    // 5: POPULATE DB2CV_MVIEW.
+    // --------------------------------
+
+    // 6: POPULATE CHADO_SEMWEB TABLE.
+    // --------------------------------
+    // Functionality not complete in the prepare step yet.
+
+    // 7: CHADO CVS TO TRIPAL TERMS.
+    // --------------------------------
+    // Functionality not complete in the prepare step yet.
   }
 }
