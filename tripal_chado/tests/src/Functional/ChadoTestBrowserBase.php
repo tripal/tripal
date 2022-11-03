@@ -29,16 +29,6 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
   use ChadoTestTrait;
 
   /**
-   * ChadoConnection instance
-   */
-  protected $chado = NULL;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static $modules = ['tripal', 'tripal_biodb', 'tripal_chado'];
-
-  /**
    * Just get a free test schema name.
    */
   public const SCHEMA_NAME_ONLY = 0;
@@ -62,6 +52,21 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
    * Create a Chado schema and initialize it with dummy data.
    */
   public const INIT_CHADO_DUMMY = 4;
+
+  /**
+   * Create a Chado schema and prepare both it and the associated drupal schema.
+   */
+  public const PREPARE_TEST_CHADO = 5;
+
+  /**
+   * ChadoConnection instance
+   */
+  protected $chado = NULL;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected static $modules = ['tripal', 'tripal_biodb', 'tripal_chado'];
 
   /**
    * {@inheritdoc}
