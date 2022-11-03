@@ -210,7 +210,7 @@ class ChadoPreparer extends ChadoTaskBase {
       // in order to actually facillitate debugging.
       throw new TaskException(
         "Failed to complete schema integration (i.e. Prepare) task.\n"
-        . $e->getMessage()
+        . $e->getMessage() . "\n"
         . "Original Exception Trace:\n" . $e->getTraceAsString()
       );
     }
@@ -1070,7 +1070,7 @@ class ChadoPreparer extends ChadoTaskBase {
       // Get the next bio_data_x index number.
       $cid = 'chado_bio_data_index';
       $cached_val = \Drupal::cache()->get($cid, 0);
-      if ($cached_val != 0) {
+      if (is_object($cached_val)) {
         $cached_val = $cached_val->data;
       }
       $next_index = $cached_val + 1;
