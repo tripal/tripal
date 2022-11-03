@@ -21,9 +21,13 @@ class OBOImporterTest extends ChadoTestBrowserBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['tripal', 'tripal_chado', 'tripal_biodb', 'field_ui'];
+  protected static $modules = ['tripal', 'tripal_chado', 'tripal_biodb'];
 
   public function testOBOImporter() {
+
+    $this->markTestIncomplete(
+      'This test will be completed in a separate PR.'
+    );
 
     $public = \Drupal::database();
     $test_chado = $this->chado;
@@ -36,7 +40,7 @@ class OBOImporterTest extends ChadoTestBrowserBase {
     ]);
     $obo_id = $insert->execute();
 
-    // Createa n instance of the OBO importer.
+    // Create an instance of the OBO importer.
     /**
      *
      * @var \Drupal\tripal_chado\Plugin\TripalImporter\OBOImporter $obo_importer
