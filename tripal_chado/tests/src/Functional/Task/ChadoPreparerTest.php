@@ -74,37 +74,34 @@ class ChadoPreparerTest extends ChadoTestBrowserBase {
     ];
     foreach ($expected_tables as $table_name) {
       $this->assertTrue($schema->tableExists($table_name),
-          "The Tripal $table_name doesn't exist but should have been created during the prepare step.");
+          "The Tripal Custom Table $table_name doesn't exist but should have been created during the prepare step.");
     }
 
     // 2: CREATE CHADO MVIEWS.
     // --------------------------------
+    $schema = $this->chado->schema();
+    $expected_tables = [
+      'organism_stock_count',
+      'library_feature_count',
+      'organism_feature_count',
+      'analysis_organism',
+      'db2cv_mview',
+      'cv_root_mview'
+    ];
+    foreach ($expected_tables as $table_name) {
+      $this->assertTrue($schema->tableExists($table_name),
+          "The Tripal Materialized View $table_name doesn't exist but should have been created during the prepare step.");
+    }
 
     // 3: IMPORT ONTOLOGIES.
     // --------------------------------
-    // Test to see if cv table data got imported
-    $cv_results = $this->chado->query("SELECT * FROM {1:cv} WHERE name LIKE 'feature_property'");
-    $cv_found = false;
-    foreach ($cv_results as $row) {
-        $cv_found = true;
-    }
-    $this->assertTrue($cv_found, 'Found feature_property CV');
-
-    // Test to see whether db table data got imported
-    $db_results = $this->chado->query("SELECT * FROM {1:db} WHERE name LIKE 'TAXRANK';");
-    $db_found = true;
-    foreach ($db_results as $row) {
-        $db_found = true;
-    }
-    $this->assertTrue($db_found, 'Found TAXRANK DB');
-
-    // Test to see whether cvterm table data got imported
-    $cvterm_results = $this->chado->query("SELECT * FROM {1:cvterm} WHERE name LIKE 'accession';");
-    $cvterm_found = true;
-    foreach ($cvterm_results as $row) {
-        $cvterm_found = true;
-    }
-    $this->assertTrue($cvterm_found, 'Found accession cvterm');
+    // Check for some specific cv / db which should have been inserted.
+    $cv_found = $this->chado->query("SELECT 1 FROM {1:cv} WHERE name = 'feature_property'")->fetchField();
+    $this->assertEquals(1, $cv_found, 'Found feature_property CV');
+    $db_found = $this->chado->query("SELECT 1 FROM {1:db} WHERE name = 'TAXRANK';")->fetchField();
+    $this->assertEquals(1, $db_found, 'Found TAXRANK DB');
+    $cvterm_found = $this->chado->query("SELECT 1 FROM {1:cvterm} WHERE name = 'accession'")->fetchField();
+    $this->assertEquals(1, $cvterm_found, 'Found accession cvterm');
 
     // 4: POPULATE CV_ROOT_MVIEW.
     // --------------------------------
