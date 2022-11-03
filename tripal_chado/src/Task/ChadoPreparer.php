@@ -205,9 +205,13 @@ class ChadoPreparer extends ChadoTaskBase {
       // Release all locks.
       $this->releaseTaskLocks();
 
+      // Rethrow Exception:
+      // Make sure to include the original stack trace
+      // in order to actually facillitate debugging.
       throw new TaskException(
-        "Failed to complete schema integration task.\n"
+        "Failed to complete schema integration (i.e. Prepare) task.\n"
         . $e->getMessage()
+        . "Original Exception Trace:\n" . $e->getTraceAsString()
       );
     }
 
