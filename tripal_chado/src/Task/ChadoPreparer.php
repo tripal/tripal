@@ -1154,9 +1154,17 @@ class ChadoPreparer extends ChadoTaskBase {
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
     $schema_def = $schema->getTableDef($chado_table, ['format' => 'Drupal']);
-    $pk = $schema_def['primary key'];
-    if (is_array($pk)) {
-      $pk = $pk[0];
+    if (!is_array($schema_def) OR empty($schema_def)) {
+      throw new \Exception("Unable to find schema definition for $chado_table.");
+    }
+    if (array_key_exists('primary key', $schema_def)) {
+      $pk = $schema_def['primary key'];
+      if (is_array($pk)) {
+        $pk = $pk[0];
+      }
+    }
+    else {
+      $pk = $chado_table . '_id';
     }
     $columns = $schema_def['fields'];
 
@@ -1695,7 +1703,7 @@ class ChadoPreparer extends ChadoTaskBase {
       'term' => $this->getTerm('OBI', '0000070'),
       'category' => 'Expression',
     ]);
-    $this->addBaseTableSVFields($entity_type, 'assaty');
+    $this->addBaseTableSVFields($entity_type, 'assay');
 
     $entity_type = $this->createContentType([
       'label' => 'Array Design',
