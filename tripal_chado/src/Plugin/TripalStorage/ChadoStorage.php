@@ -1213,11 +1213,14 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     foreach ($build['base_tables'] as $base_table => $record_id) {
       foreach ($records[$base_table] as $delta => $record) {
         $record = $records[$base_table][$delta];
-        $this->validateUnique($values, $base_table, $record_id, $record, $violations);
         $this->validateRequired($values, $base_table, $record_id, $record, $violations);
-        $this->validateFKs($values, $base_table, $record_id, $record, $violations);
         $this->validateTypes($values, $base_table, $record_id, $record, $violations);
         $this->validateSize($values, $base_table, $record_id, $record, $violations);
+        // Don't do the SQL checks if there are previous problems.
+        if (count($violations) == 0) {
+          $this->validateUnique($values, $base_table, $record_id, $record, $violations);
+          $this->validateFKs($values, $base_table, $record_id, $record, $violations);
+        }
       }
     }
     return $violations;
