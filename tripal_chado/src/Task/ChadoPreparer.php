@@ -1417,7 +1417,7 @@ class ChadoPreparer extends ChadoTaskBase {
     // Use the same method as Tripal v3 for creating field names.
     $field_name = strtolower($idSpace_name . '__' . preg_replace('/[^\w]/', '_', $term->getName()));
     $field_name = substr($field_name, 0, 32);
-    $field_type = 'chado_integer_type';
+    $field_type = 'schema__additional_type';
 
     // Is the field required? Ensure we match the database.
     $is_required = FALSE;
@@ -1692,7 +1692,7 @@ class ChadoPreparer extends ChadoTaskBase {
       'term' => $this->getTerm('OBI', '0000070'),
       'category' => 'Expression',
     ]);
-    $this->addBaseTableSVFields($entity_type, 'assaty');
+    $this->addBaseTableSVFields($entity_type, 'assay');
 
     $entity_type = $this->createContentType([
       'label' => 'Array Design',

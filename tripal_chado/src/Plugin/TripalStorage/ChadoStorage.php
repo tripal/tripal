@@ -405,20 +405,22 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     // Add in any joins.
     if (array_key_exists('joins', $record)) {
       $j_index = 0;
-      foreach ($record['joins'] as $rtable => $jinfo) {
-        $lalias = $jinfo['on']['left_alias'];
-        $ralias = $jinfo['on']['right_alias'];
-        $lcol = $jinfo['on']['left_col'];
-        $rcol = $jinfo['on']['right_col'];
+      foreach ($record['joins'] as $rtable => $rjoins) {
+        foreach ($rjoins as $jinfo) {
+          $lalias = $jinfo['on']['left_alias'];
+          $ralias = $jinfo['on']['right_alias'];
+          $lcol = $jinfo['on']['left_col'];
+          $rcol = $jinfo['on']['right_col'];
 
-        $select->leftJoin('1:' . $rtable, $ralias, $lalias . '.' .  $lcol . '=' .  $ralias . '.' . $rcol);
+          $select->leftJoin('1:' . $rtable, $ralias, $lalias . '.' .  $lcol . '=' .  $ralias . '.' . $rcol);
 
-        foreach ($jinfo['columns'] as $column) {
-          $sel_col = $column[0];
-          $sel_col_as = $column[1];
-          $select->addField($ralias, $sel_col, $sel_col_as);
+          foreach ($jinfo['columns'] as $column) {
+            $sel_col = $column[0];
+            $sel_col_as = $column[1];
+            $select->addField($ralias, $sel_col, $sel_col_as);
+          }
+          $j_index++;
         }
-        $j_index++;
       }
     }
 
@@ -589,6 +591,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
   protected function setPropValues(&$values, $records) {
 
     $replace = [];
+    $function = [];
 
     // Iterate through the value objects.
     foreach ($values as $field_name => $deltas) {
@@ -627,6 +630,10 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           if ($action == 'replace') {
             $replace[] = [$field_name, $delta, $key, $info];
           }
+
+          if ($action == 'function') {
+            $function[] = [$field_name, $delta, $key, $info];
+          }
         }
       }
     }
@@ -652,6 +659,27 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           }
         }
       }
+      if ($value !== NULL && is_string($value)) {
+        $values[$field_name][$delta][$key]['value']->setValue(trim($value));
+      }
+      else {
+        $values[$field_name][$delta][$key]['value']->setValue($value);
+      }
+    }
+
+    // Lastly, let's call any functions.
+    foreach ($function as $item) {
+      $field_name = $item[0];
+      $delta = $item[1];
+      $key = $item[2];
+      $info = $item[3];
+      $prop_type = $info['type'];
+      $prop_storage_settings = $prop_type->getStorageSettings();
+      $namespace = $prop_storage_settings['namespace'];
+      $callback = $prop_storage_settings['function'];
+
+      $value = call_user_func($namespace . '\\' . $callback);
+
       if ($value !== NULL && is_string($value)) {
         $values[$field_name][$delta][$key]['value']->setValue(trim($value));
       }
@@ -746,6 +774,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
               $fk_col = array_keys($chado_table_def['foreign keys'][$base_table]['columns'])[0];
             }
           }
+
 
           // If this is the record ID then keep track of it. This will only
           // be present if we're performing a load or update.
@@ -842,26 +871,43 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    * @param string $path
    */
   protected function addChadoRecordJoins(array &$records, string $chado_column, string $as,
-      int $delta, array $path_arr, $parent_table = NULL, $depth = 0) {
+      int $delta, array $path_arr, $parent_table = NULL, $parent_column = NULL, $depth = 0) {
 
     // Get the left column and the right table join infor.
     list($left, $right) = explode(">", array_shift($path_arr));
     list($left_table, $left_col) = explode(".", $left);
     list($right_table, $right_col) = explode(".", $right);
 
-    // We want all joins to be with the parent table record.
+    // If the parent_table is not specified then it will be the left table.
+    // The only time the parent table is not specified is when this function
+    // is first called.
     $parent_table = !$parent_table ? $left_table : $parent_table;
-    $lalias = $depth == 0 ? 'ct' : 'j' . ($depth - 1);
-    $ralias = 'j' . $depth;
+    $parent_column = !$parent_column ? $left_col : $parent_column;
+
+    // A parent table may have more than one join to a right table so we
+    // initialize the right table with an array.
+    if (!array_key_exists($right_table, $records[$parent_table][$delta]['joins'])) {
+      $records[$parent_table][$delta]['joins'][$right_table] = [];
+    }
+    if (!array_key_exists($parent_column, $records[$parent_table][$delta]['joins'][$right_table])) {
+      $records[$parent_table][$delta]['joins'][$right_table][$parent_column] = [
+        'on' => [],
+        'columns' => []
+      ];
+    }
+
+    // Get then current number of joins to the right table.
+    $num_left = count($records[$parent_table][$delta]['joins'][$left_table]) - 1;
+    $num_right = count($records[$parent_table][$delta]['joins'][$right_table]) - 1;
+
+    // Generate aliases for the left and right tables in the join.
+    $lalias = $depth == 0 ? 'ct' : 'j' . $left_table . $num_left;
+    $ralias = 'j' . $right_table . $num_right;
     $chado = $this->getChadoConnection();
     $schema = $chado->schema();
-    $ltable_def = $schema->getTableDef($left_table, ['format' => 'drupal']);
-    $rtable_def = $schema->getTableDef($right_table, ['format' => 'drupal']);
-
-    // @todo check the requested join is valid.
 
     // Add the join.
-    $records[$parent_table][$delta]['joins'][$right_table]['on'] = [
+    $records[$parent_table][$delta]['joins'][$right_table][$parent_column]['on'] = [
       'left_table' => $left_table,
       'left_col' => $left_col,
       'right_table' => $right_table,
@@ -870,15 +916,15 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       'right_alias' => $ralias,
     ];
 
-    // We're done recursing if we only have two elements left in the path
-    if (count($path_arr)== 0) {
-      $records[$parent_table][$delta]['joins'][$right_table]['columns'][] = [$chado_column, $as];
+    // We're done recursing if we only have no elements left in the path
+    if (count($path_arr) == 0) {
+      $records[$parent_table][$delta]['joins'][$right_table][$parent_column]['columns'][] = [$chado_column, $as];
       return;
     }
 
     // Add the right table back onto the path as the new left table and recurse.
     $depth++;
-    $this->addChadoRecordJoins($records, $chado_column, $as, $delta, $path_arr, $parent_table, $depth);
+    $this->addChadoRecordJoins($records, $chado_column, $as, $delta, $path_arr, $parent_table, $parent_column, $depth);
   }
 
 
@@ -930,7 +976,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       foreach ($missing as $col) {
         $message .=  ucfirst($col) . ", ";
       }
-      $message = substr($message, 0, -1) . '.';
+      $message = substr($message, 0, -2) . '.';
       $violations[] = new ConstraintViolation(t($message, $params)->render(),
           $message, $params, '', NULL, '', 1, 0, NULL, '');
     }
