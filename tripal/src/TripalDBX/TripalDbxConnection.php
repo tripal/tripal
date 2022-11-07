@@ -1226,7 +1226,9 @@ abstract class TripalDbxConnection extends PgConnection {
     ?string $schema_name = NULL
   ) :bool {
     // Get schema to use.
-    $schema_name = $this->getDefaultSchemaName($schema_name);
+    if (empty($schema_name)) {
+      $schema_name = $this->getDefaultSchemaName($schema_name);
+    }
     // Set search_path.
     if (!empty($schema_name)) {
       $search_path = 'SET search_path = "' . $schema_name . '";';
@@ -1247,19 +1249,29 @@ abstract class TripalDbxConnection extends PgConnection {
       elseif (is_array($search_path_mode)) {
         $search = [];
         $replace = [];
+
         foreach ($search_path_mode as $old_name => $replacement) {
+
+          // Ensure the replacement pattern is sanitized.
           // Secure replacement (we allow comas and spaces).
           $replacement = preg_replace(
             '/[^a-z_\\xA0-\\xFF0-9\s,]+/',
             '',
             $replacement
           );
+
+          // Find/Replace any search path queries.
           $search[] =
             '/(SET\s*search_path\s*=(?:[^;]+,)?)\s*'
             . preg_quote($old_name)
             . '\s*((?:,[^;]+)?;)(?!\s*--\s*KEEP)/im'
           ;
           $replace[] = '\1' . $replacement . '\2';
+
+          // Find/replace any in-query table prefixing.
+          $search[] = '/ '. preg_quote($old_name) . '\.(\w+) /';
+          $replace[] = ' ' . $replacement . '.\1 ';
+
         }
         $sql_queries = preg_replace(
           $search,
@@ -1307,13 +1319,15 @@ abstract class TripalDbxConnection extends PgConnection {
    */
   public function executeSqlFile(
     string $sql_file_path,
-    $search_path_mode = FALSE
+    $search_path_mode = FALSE,
+    ?string $schema_name = NULL
   ) :bool {
     // Retrieve the SQL file.
     $sql_queries = file_get_contents($sql_file_path);
     return $this->executeSqlQueries(
       $sql_queries,
-      $search_path_mode
+      $search_path_mode,
+      $schema_name
     );
   }
 
