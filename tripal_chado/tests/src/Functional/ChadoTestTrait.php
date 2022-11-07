@@ -258,9 +258,9 @@ trait ChadoTestTrait  {
           $this->assertGreaterThan(100, $tripaldbx_db->schema()->getSchemaSize(), 'Test schema not empty.');
 
           // Add version information to the schema so the tests don't fail.
-          $success = $tripaldbx_db->executeSqlFile(__DIR__ . '/../../fixtures/version.sql',
+          $success = $tripaldbx_db->executeSqlFile(__DIR__ . '/../../fixtures/fill_chado_test_prepare.sql',
               ['chado' => $schema_name]);
-          $this->assertTrue($success, 'Chado version loaded.');
+          $this->assertTrue($success, 'Prepared chado records added.');
           break;
 
       case static::INIT_DUMMY:
@@ -311,7 +311,7 @@ trait ChadoTestTrait  {
   ) {
     self::$testSchemas[$tripaldbx_db->getSchemaName()] = FALSE;
     try {
-      //$tripaldbx_db->schema()->dropSchema();
+      $tripaldbx_db->schema()->dropSchema();
     }
     catch (\Exception $e) {
       // Ignore issues.
