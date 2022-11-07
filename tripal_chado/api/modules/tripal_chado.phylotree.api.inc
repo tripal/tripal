@@ -889,7 +889,7 @@ function chado_phylogeny_lookup_organism_by_name($name) {
   $count = chado_query($sql, $args)->fetchField();
   if ($count == 1) {
     $sql = "SELECT organism_id FROM {organism} WHERE abbreviation = :name";
-    $organism_id = $chado_query($sql, $args)->fetchField();
+    $organism_id = chado_query($sql, $args)->fetchField();
   }
 
   // The abbreviation query failed, so now query on genus + species and
