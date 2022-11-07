@@ -577,11 +577,11 @@ class OBOImporter extends ChadoImporterBase {
     $query->fields('CVT');
     $query->condition('DB.name', $idSpace, '=');
     $query->condition('DBX.accession', $accession, '=');
-    $result = $query->execute();
-    if (!$result) {
+    $cvterm = $query->execute()->fetchObject();
+    if (!$cvterm) {
       throw new \Exception("OBOImporter: Could not find term: '$idSpace:$accession'");
     }
-    return $result->fetchObject();
+    return $cvterm;
   }
 
   /**
