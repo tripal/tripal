@@ -990,7 +990,7 @@ abstract class TripalDbxConnection extends PgConnection {
    * @return bool
    *   TRUE if default schema is not Drupal's but the Tripal DBX managed one.
    */
-  protected function shouldUseTripalDbxSchema() :bool {
+  public function shouldUseTripalDbxSchema() :bool {
     $should = FALSE;
 
     // Check the class/object who is using Tripal DBX:
@@ -1022,15 +1022,23 @@ abstract class TripalDbxConnection extends PgConnection {
     // Check all parents of the class who is using Tripal DBX:
     // This allows for APIs to be added to the whitelist and all children class
     // implementations to then automatically use the Tripal DBX managed schema.
-    $class = new \ReflectionClass($calling_class);
-    $inheritance_level = 0;
-    while ($parent = $class->getParentClass()) {
-      $inheritance_level++;
-      $parent_class = $parent->getName();
-      if (!empty($this->classesUsingTripalDbx[$parent_class])) {
-        $should = TRUE;
+    if (class_exists($calling_class)) {
+      $class = new \ReflectionClass($calling_class);
+      $inheritance_level = 0;
+      while ($parent = $class->getParentClass()) {
+        $inheritance_level++;
+        $parent_class = $parent->getName();
+        if (!empty($this->classesUsingTripalDbx[$parent_class])) {
+          $should = TRUE;
+        }
+        $class = $parent;
       }
-      $class = $parent;
+    }
+    // If Tripal DBX was called from a stand-alone function (i.e. not within
+    // a class) then the calling class will be empty. We do not want to throw
+    // an exception in that case.
+    elseif (!empty($calling_class)) {
+      throw new \Exception("TripalDBX unable to find class for checking inheritance. This class must exist and be available in the current application space: $calling_class. Hint: make sure to 'use' all needed classes in your application.");
     }
 
     return $should;
@@ -1218,7 +1226,9 @@ abstract class TripalDbxConnection extends PgConnection {
     ?string $schema_name = NULL
   ) :bool {
     // Get schema to use.
-    $schema_name = $this->getDefaultSchemaName($schema_name);
+    if (empty($schema_name)) {
+      $schema_name = $this->getDefaultSchemaName($schema_name);
+    }
     // Set search_path.
     if (!empty($schema_name)) {
       $search_path = 'SET search_path = "' . $schema_name . '";';
@@ -1239,19 +1249,29 @@ abstract class TripalDbxConnection extends PgConnection {
       elseif (is_array($search_path_mode)) {
         $search = [];
         $replace = [];
+
         foreach ($search_path_mode as $old_name => $replacement) {
+
+          // Ensure the replacement pattern is sanitized.
           // Secure replacement (we allow comas and spaces).
           $replacement = preg_replace(
             '/[^a-z_\\xA0-\\xFF0-9\s,]+/',
             '',
             $replacement
           );
+
+          // Find/Replace any search path queries.
           $search[] =
             '/(SET\s*search_path\s*=(?:[^;]+,)?)\s*'
             . preg_quote($old_name)
             . '\s*((?:,[^;]+)?;)(?!\s*--\s*KEEP)/im'
           ;
           $replace[] = '\1' . $replacement . '\2';
+
+          // Find/replace any in-query table prefixing.
+          $search[] = '/ '. preg_quote($old_name) . '\.(\w+) /';
+          $replace[] = ' ' . $replacement . '.\1 ';
+
         }
         $sql_queries = preg_replace(
           $search,
@@ -1299,13 +1319,15 @@ abstract class TripalDbxConnection extends PgConnection {
    */
   public function executeSqlFile(
     string $sql_file_path,
-    $search_path_mode = FALSE
+    $search_path_mode = FALSE,
+    ?string $schema_name = NULL
   ) :bool {
     // Retrieve the SQL file.
     $sql_queries = file_get_contents($sql_file_path);
     return $this->executeSqlQueries(
       $sql_queries,
-      $search_path_mode
+      $search_path_mode,
+      $schema_name
     );
   }
 
@@ -1339,6 +1361,16 @@ abstract class TripalDbxConnection extends PgConnection {
     }
 
     return parent::escapeTable($table);
+  }
+
+  /**
+   * Retrieve a list of classes which are using Tripal DBX byb default.
+   *
+   * @return array
+   *  An array of class names including namespace.
+   */
+  public function getListClassesUsingTripalDbx() {
+    return $this->classesUsingTripalDbx;
   }
 
   /**
