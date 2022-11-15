@@ -547,7 +547,7 @@ class OBOImporter extends ChadoImporterBase {
   private function getChadoCvtermById($cvterm_id) {
     $chado = $this->getChadoConnection();
 
-    $query = $chado->select('cvterm', 'CVT');
+    $query = $chado->select('1:cvterm', 'CVT');
     $query->fields('CVT');
     $query->condition('CVT.cvterm_id', $cvterm_id);
     $result = $query->execute();
@@ -571,14 +571,17 @@ class OBOImporter extends ChadoImporterBase {
   private function getChadoCvtermByAccession($idSpace, $accession) {
     $chado = $this->getChadoConnection();
 
-    $query = $chado->select('cvterm', 'CVT');
-    $query->join('dbxref', 'DBX', '"DBX".dbxref_id = "CVT".dbxref_id');
-    $query->join('db', 'DB', '"DB".db_id = "DBX".db_id');
+    $query = $chado->select('1:cvterm', 'CVT');
+    $query->join('1:dbxref', 'DBX', '"DBX".dbxref_id = "CVT".dbxref_id');
+    $query->join('1:db', 'DB', '"DB".db_id = "DBX".db_id');
     $query->fields('CVT');
     $query->condition('DB.name', $idSpace, '=');
     $query->condition('DBX.accession', $accession, '=');
-    $result = $query->execute();
-    return $result ? $result->fetchObject() : NULL;
+    $cvterm = $query->execute()->fetchObject();
+    if (!$cvterm) {
+      throw new \Exception("OBOImporter: Could not find term: '$idSpace:$accession'");
+    }
+    return $cvterm;
   }
 
   /**
@@ -593,7 +596,7 @@ class OBOImporter extends ChadoImporterBase {
    */
   private function getChadoCvtermByName($cv_id, $name) {
     $chado = $this->getChadoConnection();
-    $query = $chado->select('cvterm', 'CVT');
+    $query = $chado->select('1:cvterm', 'CVT');
     $query->fields('CVT');
     $query->condition('cv_id', $cv_id);
     $query->condition('name', $name);
@@ -610,7 +613,7 @@ class OBOImporter extends ChadoImporterBase {
    */
   private function getChadoCvtermByDbxref($dbxref_id) {
     $chado = $this->getChadoConnection();
-    $query = $chado->select('cvterm', 'CVT');
+    $query = $chado->select('1:cvterm', 'CVT');
     $query->fields('CVT');
     $query->condition('CVT.dbxref_id', $dbxref_id);
     $result = $query->execute();
@@ -629,7 +632,7 @@ class OBOImporter extends ChadoImporterBase {
    */
   private function getChadoDBXrefByAccession($db_id, $accession) {
     $chado = $this->getChadoConnection();
-    $query = $chado->select('dbxref', 'DBX');
+    $query = $chado->select('1:dbxref', 'DBX');
     $query->fields('DBX');
     $query->condition('DBX.db_id', $db_id);
     $query->condition('DBX.accession', $accession);
@@ -647,7 +650,7 @@ class OBOImporter extends ChadoImporterBase {
    */
   private function getChadoDBXrefById($dbxref_id) {
     $chado = $this->getChadoConnection();
-    $query = $chado->select('dbxref', 'DBX');
+    $query = $chado->select('1:dbxref', 'DBX');
     $query->fields('DBX');
     $query->condition('DBX.dbxref_id', $dbxref_id);
     $result = $query->execute();
@@ -664,7 +667,7 @@ class OBOImporter extends ChadoImporterBase {
    */
   private function getChadoDbByName($name) {
     $chado = $this->getChadoConnection();
-    $query = $chado->select('db', 'db');
+    $query = $chado->select('1:db', 'db');
     $query->fields('db');
     $query->condition('name', $name);
     $result = $query->execute();
@@ -680,7 +683,7 @@ class OBOImporter extends ChadoImporterBase {
    */
   private function getChadoDbById($db_id) {
     $chado = $this->getChadoConnection();
-    $query = $chado->select('db', 'db');
+    $query = $chado->select('1:db', 'db');
     $query->fields('db');
     $query->condition('db_id', $db_id);
     $result = $query->execute();
@@ -697,7 +700,7 @@ class OBOImporter extends ChadoImporterBase {
    */
   private function getChadoCvByName($name) {
     $chado = $this->getChadoConnection();
-    $query = $chado->select('cv', 'cv');
+    $query = $chado->select('1:cv', 'cv');
     $query->fields('cv');
     $query->condition('name', $name);
     $result = $query->execute();
@@ -714,7 +717,7 @@ class OBOImporter extends ChadoImporterBase {
    */
   private function getChadoCvById($cv_id) {
     $chado = $this->getChadoConnection();
-    $query = $chado->select('cv', 'cv');
+    $query = $chado->select('1:cv', 'cv');
     $query->fields('cv');
     $query->condition('cv_id', $cv_id);
     $result = $query->execute();
@@ -778,14 +781,14 @@ class OBOImporter extends ChadoImporterBase {
     }
 
     // Get the list of all CVs so we can save on lookups later
-    $sql = "SELECT * FROM {cv} CV";
+    $sql = "SELECT * FROM {1:cv} CV";
     $cvs = $chado->query($sql);
     while ($cv = $cvs->fetchObject()) {
       $this->all_cvs[$cv->name] = $cv;
     }
 
     // Get the list of all DBs so we can save on lookups later
-    $sql = "SELECT * FROM {db} DB";
+    $sql = "SELECT * FROM {1:db} DB";
     $dbs = $chado->query($sql);
     while ($db = $dbs->fetchObject()) {
       $this->all_dbs[$db->name] = $db;
@@ -1120,7 +1123,7 @@ class OBOImporter extends ChadoImporterBase {
 
       // First see if we've seen this ontology before and get it's currently
       // loaded database.
-      $sql = "SELECT dbname FROM {db2cv_mview} WHERE cvname = :cvname";
+      $sql = "SELECT dbname FROM {1:db2cv_mview} WHERE cvname = :cvname";
       $short_name = $chado->query($sql, [':cvname' => $namespace])->fetchField();
 
       if (!$short_name and array_key_exists('namespace-id-rule', $header)) {
@@ -1501,7 +1504,7 @@ class OBOImporter extends ChadoImporterBase {
             $this->fixTermMismatch($stanza, $dbxref, $cv, $name);
 
             // Now update this cvterm record.
-            $query = $chado->update('cvterm');
+            $query = $chado->update('1:cvterm');
             $query->fields([
               'name' => $name,
               'definition' => $definition,
@@ -1536,7 +1539,7 @@ class OBOImporter extends ChadoImporterBase {
         }
 
         // Now insert.
-        $query = $chado->insert('cvterm');
+        $query = $chado->insert('1:cvterm');
         $query->fields([
           'cv_id' => $cv->cv_id,
           'name' => $name,
@@ -1587,13 +1590,13 @@ class OBOImporter extends ChadoImporterBase {
    * @return bool
    *   Returns TRUE if a conflict was found and corrected.
    */
-  public function fixTermMismatch($stanza, $dbxref, $cv, $name) {
+  private function fixTermMismatch($stanza, $dbxref, $cv, $name) {
     $chado = $this->getChadoConnection();
 
     $name = $stanza['name'][0];
 
     // First get the record for any potential conflicting term.
-    $query = $chado->select('cvterm', 'CVT');
+    $query = $chado->select('1:cvterm', 'CVT');
     $query->fields('CVT');
     $query->condition('CVT.name', $name);
     $query->condition('CVT.cv_id', $cv->cv_id);
@@ -1625,7 +1628,7 @@ class OBOImporter extends ChadoImporterBase {
       $check_stanza = $this->getCachedTermStanza($check_accession);
       if (!$check_stanza) {
         $new_name = $check_cvterm->getValue('name') . ' (' . $check_accession . ')';
-        $query = $chado->update('cvterm');
+        $query = $chado->update('1:cvterm');
         $query->fields([
           'name' => $new_name,
           'is_obsolete' => '1',
@@ -1640,7 +1643,7 @@ class OBOImporter extends ChadoImporterBase {
       else {
         if (array_key_exists('is_obsolete', $check_stanza) and ($check_stanza['is_obsolete'][0] == 'true') and (!array_key_exists('is_obsolete', $stanza) or ($stanza['is_obsolete'][0] != 'true'))) {
           $new_name = $check_cvterm->name . ' (obsolete)';
-          $query = $chado->update('cvterm');
+          $query = $chado->update('1:cvterm');
           $query->fields([
             'name' => $new_name,
           ]);
@@ -1657,7 +1660,7 @@ class OBOImporter extends ChadoImporterBase {
         // name of the other.
         else {
           $new_name = $check_cvterm->name . ' (' . $check_accession . ')';
-          $query = $chado->update('cvterm');
+          $query = $chado->update('1:cvterm');
           $query->fields([
             'name' => $new_name,
           ]);
@@ -1706,7 +1709,7 @@ class OBOImporter extends ChadoImporterBase {
     // remove any relationships, properties, xrefs, and synonyms that this
     // term already has so that they can be re-added.
     $sql = "
-      DELETE FROM {cvterm_relationship}
+      DELETE FROM {1:cvterm_relationship}
       WHERE subject_id = :cvterm_id
     ";
     $chado->query($sql, [':cvterm_id' => $cvterm_id]);
@@ -1715,26 +1718,26 @@ class OBOImporter extends ChadoImporterBase {
     // this term is the object.
     if (in_array('is_obsolete', $stanza) and $stanza['is_obsolete'] == 'true') {
       $sql = "
-        DELETE FROM {cvterm_relationship}
+        DELETE FROM {1:cvterm_relationship}
         WHERE object_id = :cvterm_id
       ";
       $chado->query($sql, [':cvterm_id' => $cvterm_id]);
     }
 
     $sql = "
-      DELETE FROM {cvtermprop}
+      DELETE FROM {1:cvtermprop}
       WHERE cvterm_id = :cvterm_id
     ";
     $chado->query($sql, [':cvterm_id' => $cvterm_id]);
 
     $sql = "
-      DELETE FROM {cvterm_dbxref}
+      DELETE FROM {1:cvterm_dbxref}
       WHERE cvterm_id = :cvterm_id
     ";
     $chado->query($sql, [':cvterm_id' => $cvterm_id]);
 
     $sql = "
-      DELETE FROM {cvtermsynonym} CVTSYN
+      DELETE FROM {1:cvtermsynonym} CVTSYN
       WHERE cvterm_id = :cvterm_id
     ";
     $chado->query($sql, [':cvterm_id' => $cvterm_id]);
@@ -2142,7 +2145,7 @@ class OBOImporter extends ChadoImporterBase {
     if ($this->cache_type == 'table') {
       $sql = "
         SELECT count(*) as num_terms
-        FROM {tripal_obo_temp}
+        FROM {1:tripal_obo_temp}
         WHERE type = :type
       ";
       $result = $chado->query($sql, [':type' => $type])->fetchObject();
@@ -2163,7 +2166,7 @@ class OBOImporter extends ChadoImporterBase {
   private function getCachedTermStanzas($type) {
     $chado = $this->getChadoConnection();
     if ($this->cache_type == 'table') {
-      $sql = "SELECT id FROM {tripal_obo_temp} WHERE type = 'Typedef' ";
+      $sql = "SELECT id FROM {1:tripal_obo_temp} WHERE type = 'Typedef' ";
       $typedefs = $chado->query($sql);
       return $typedefs;
     }
@@ -2176,7 +2179,7 @@ class OBOImporter extends ChadoImporterBase {
   private function clearTermStanzaCache() {
     $chado = $this->getChadoConnection();
     if ($this->cache_type == 'table') {
-      $sql = "DELETE FROM {tripal_obo_temp}";
+      $sql = "DELETE FROM {1:tripal_obo_temp}";
       $chado->query($sql);
       return;
     }
@@ -2485,7 +2488,7 @@ class OBOImporter extends ChadoImporterBase {
     if (array_key_exists($dbname, $this->all_dbs)) {
       return $this->all_dbs[$dbname];
     }
-    $query = $chado->insert('db');
+    $query = $chado->insert('1:db');
     $query->fields([
       'name' => $dbname,
       'url' => $url,
@@ -2521,7 +2524,7 @@ class OBOImporter extends ChadoImporterBase {
     }
 
     // Add the database if it doesn't exist.
-    $query = $chado->insert('dbxref');
+    $query = $chado->insert('1:dbxref');
     $query->fields([
       'db_id' => $db_id,
       'accession' => $accession,
@@ -2548,7 +2551,7 @@ class OBOImporter extends ChadoImporterBase {
   private function insertChadoCvtermDbxref($cvterm_id, $dbxref_id) {
     $chado = $this->getChadoConnection();
 
-    $squery = $chado->select('cvterm_dbxref', 'CVTDBX');
+    $squery = $chado->select('1:cvterm_dbxref', 'CVTDBX');
     $squery->fields('CVTDBX');
     $squery->condition('CVTDBX.cvterm_id', $cvterm_id);
     $squery->condition('CVTDBX.dbxref_id', $dbxref_id);
@@ -2557,7 +2560,7 @@ class OBOImporter extends ChadoImporterBase {
       return $cvterm_dbxref;
     }
 
-    $query = $chado->insert('cvterm_dbxref');
+    $query = $chado->insert('1:cvterm_dbxref');
     $query->fields([
       'cvterm_id' => $cvterm_id,
       'dbxref_id' => $dbxref_id,
@@ -2583,7 +2586,7 @@ class OBOImporter extends ChadoImporterBase {
   private function insertChadoCvtermSynonym($cvterm_id, $synonym) {
     $chado = $this->getChadoConnection();
 
-    $query = $chado->insert('cvtermsynonym');
+    $query = $chado->insert('1:cvtermsynonym');
     $query->fields([
       'cvterm_id' => $cvterm_id,
       'synonym' => $synonym,
@@ -2610,7 +2613,7 @@ class OBOImporter extends ChadoImporterBase {
   private function insertChadoCvtermProp($cvterm_id, $type_id, $value, $rank = 0) {
     $chado = $this->getChadoConnection();
 
-    $query = $chado->insert('cvtermprop');
+    $query = $chado->insert('1:cvtermprop');
     $query->fields([
       'cvterm_id' => $cvterm_id,
       'type_id' => $type_id,
@@ -2637,7 +2640,7 @@ class OBOImporter extends ChadoImporterBase {
   private function insertChadoCvtermRelationship($subject_id, $type_id, $object_id) {
     $chado = $this->getChadoConnection();
 
-    $query = $chado->insert('cvterm_relationship');
+    $query = $chado->insert('1:cvterm_relationship');
     $query->fields([
       'subject_id' => $subject_id,
       'type_id' => $type_id,
@@ -2667,7 +2670,7 @@ class OBOImporter extends ChadoImporterBase {
       return $this->all_cvs[$cvname];
     }
 
-    $query = $chado->insert('cv');
+    $query = $chado->insert('1:cv');
     $query->fields(['name' => $cvname]);
     $success = $query->execute();
     if (!$success) {

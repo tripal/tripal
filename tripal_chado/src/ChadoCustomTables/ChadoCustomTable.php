@@ -59,14 +59,17 @@ class ChadoCustomTable {
     // an empty record for it.
     if (!$this->table_id) {
       $public = \Drupal::database();
-      $chado = $this->getChado();
       $insert = $public->insert('tripal_custom_tables');
       $insert->fields([
-        'table_name' => $table_name,
+        'table_name' => $this->table_name,
         'schema' => '',
-        'chado' => $chado->getSchemaName(),
+        'chado' => $this->chado_schema,
       ]);
-      $insert->execute();
+      $table_id = $insert->execute();
+      if (!$table_id) {
+        throw New \Exception('Could not add the custom table, "' . $this->table_name .
+            '" for the Chado schema "' . $this->chado_schema .'".');
+      }
       $this->setTableId();
     }
   }
@@ -97,10 +100,8 @@ class ChadoCustomTable {
     $query->condition('ct.table_name', $this->table_name);
     $query->condition('ct.chado', $this->chado_schema);
     $results = $query->execute();
-    if ($results) {
-      $custom_table = $results->fetchObject();
-      $this->table_id = $custom_table->table_id;
-    }
+    $this->table_id = $results->fetchField();
+
   }
 
   /**
