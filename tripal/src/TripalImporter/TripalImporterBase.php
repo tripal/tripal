@@ -449,7 +449,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
 
     if ($total_handled == 0) {
       $memory = number_format(memory_get_usage());
-      print t("Percent complete: 0%. Memory: " . $memory . " bytes.") . "\r";
+      $this->logger->notice(t("Percent complete: 0%. Memory: " . $memory . " bytes.") . "\r");
       return;
     }
 
@@ -462,12 +462,10 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
     if ($ipercent > 0 and $ipercent != $this->reported and $ipercent % $this->interval == 0) {
       $memory = number_format(memory_get_usage());
       $spercent = sprintf("%.2f", $percent);
-      /*
-      print t("Percent complete: !percent %. Memory: !memory bytes.",
-          ['!percent' => $spercent, '!memory' => $memory]) . "\r";
-      */
-      print t("Percent complete: " . $spercent .
-        " %. Memory: " . $memory . " bytes.") . "\r";
+      $this->logger->notice(
+        t("Percent complete: " . $spercent . " %. Memory: " . $memory . " bytes.")
+         . "\r"
+      );
 
       // If we have a job the update the job progress too.
       if ($this->job) {

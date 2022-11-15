@@ -141,6 +141,7 @@ class ChadoPreparer extends ChadoTaskBase {
     $schema_name = $this->outputSchemas[0]->getSchemaName();
     $this->chado = \Drupal::service('tripal_chado.database');
     $this->chado->setSchemaName($schema_name);
+    $this->chado->useTripalDbxSchemaFor(get_class());
     $this->public = \Drupal::database();
 
     try
@@ -162,7 +163,7 @@ class ChadoPreparer extends ChadoTaskBase {
       $this->logger->notice("Loading ontologies...");
       $terms_setup = \Drupal::service('tripal_chado.terms_init');
       $terms_setup->installTerms();
-      // $this->importOntologies(); @todo uncomment before PR
+      $this->importOntologies();
 
       $this->setProgress(0.3);
       $this->logger->notice('Populating materialized view cv_root_mview...');
@@ -204,9 +205,13 @@ class ChadoPreparer extends ChadoTaskBase {
       // Release all locks.
       $this->releaseTaskLocks();
 
+      // Rethrow Exception:
+      // Make sure to include the original stack trace
+      // in order to actually facillitate debugging.
       throw new TaskException(
-        "Failed to complete schema integration task.\n"
-        . $e->getMessage()
+        "Failed to complete schema integration (i.e. Prepare) task.\n"
+        . $e->getMessage() . "\n"
+        . "Original Exception Trace:\n" . $e->getTraceAsString()
       );
     }
 
@@ -1065,7 +1070,7 @@ class ChadoPreparer extends ChadoTaskBase {
       // Get the next bio_data_x index number.
       $cid = 'chado_bio_data_index';
       $cached_val = \Drupal::cache()->get($cid, 0);
-      if ($cached_val != 0) {
+      if (is_object($cached_val)) {
         $cached_val = $cached_val->data;
       }
       $next_index = $cached_val + 1;
@@ -1149,9 +1154,17 @@ class ChadoPreparer extends ChadoTaskBase {
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
     $schema_def = $schema->getTableDef($chado_table, ['format' => 'Drupal']);
-    $pk = $schema_def['primary key'];
-    if (is_array($pk)) {
-      $pk = $pk[0];
+    if (!is_array($schema_def) OR empty($schema_def)) {
+      throw new \Exception("Unable to find schema definition for $chado_table.");
+    }
+    if (array_key_exists('primary key', $schema_def)) {
+      $pk = $schema_def['primary key'];
+      if (is_array($pk)) {
+        $pk = $pk[0];
+      }
+    }
+    else {
+      $pk = $chado_table . '_id';
     }
     $columns = $schema_def['fields'];
 
@@ -1690,7 +1703,7 @@ class ChadoPreparer extends ChadoTaskBase {
       'term' => $this->getTerm('OBI', '0000070'),
       'category' => 'Expression',
     ]);
-    $this->addBaseTableSVFields($entity_type, 'assaty');
+    $this->addBaseTableSVFields($entity_type, 'assay');
 
     $entity_type = $this->createContentType([
       'label' => 'Array Design',
