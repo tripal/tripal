@@ -298,14 +298,7 @@ class GFF3Importer extends TripalImporter {
   public function form($form, &$form_state) {
 
     // get the list of organisms
-    $sql = "SELECT * FROM {organism} ORDER BY genus, species";
-    $org_rset = chado_query($sql);
-    $organisms = [];
-    $organisms[''] = '';
-    while ($organism = $org_rset->fetchObject()) {
-      $organisms[$organism->organism_id] = "$organism->genus $organism->species ($organism->common_name)";
-    }
-
+    $organisms = chado_get_organism_select_options(FALSE);
     $form['organism_id'] = [
       '#title' => t('Existing Organism'),
       '#type' => 'select',
@@ -949,7 +942,7 @@ class GFF3Importer extends TripalImporter {
     $ret['stop'] = $fmax;
 
     // Landmark (seqid) validation checks based on GFF3 specifications
-    preg_match('/[a-zA-Z0-9\.:\^\*\$@!\+_\?-\|]*/', $ret['landmark'], $matches);
+    preg_match('/[a-zA-Z0-9\.:\^\*\$@!\+_\?\-\|]*/', $ret['landmark'], $matches);
     if ($matches[0] != $ret['landmark']) {
       throw new Exception(t("Landmark/seqid !landmark contains invalid
         characters. Only characters included in this regular expression is
