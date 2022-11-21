@@ -157,6 +157,11 @@ class local__source_data extends ChadoField {
     $sourceversion_term = chado_get_semweb_term('analysis', 'sourceversion');
     $sourceuri_term = chado_get_semweb_term('analysis', 'sourceuri');
 
+    // Need to expand sourceuri if it is >=250 characters long.
+    if (in_array('analysis.sourceuri', $analysis->expandable_fields)) {
+      $analysis = chado_expand_var($analysis, 'field', 'analysis.sourceuri', []);
+    }
+
     $entity->{$field_name}['und'][0] = [
       'value' => [
         $sourcename_term => $analysis->sourcename,
