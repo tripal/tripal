@@ -529,9 +529,17 @@ class GFF3Importer extends ChadoImporterBase {
    * {@inheritDoc}
    */
   public function run() {
-    $chado = $this->getChadoConnection();
-
     $arguments = $this->arguments['run_args'];
+
+    // Check if there's a chado element (this makes it compatible with tests)
+    if($arguments['chado']) {
+      $chado = $arguments['chado'];
+    }
+    else {
+      // This happens if there's no chado object specified
+      $chado = $this->getChadoConnection();
+    }
+
     $this->gff_file = $this->arguments['files'][0]['file_path'];
 
     // Set the private member variables of this class using the loader inputs.
@@ -552,7 +560,7 @@ class GFF3Importer extends ChadoImporterBase {
 
     // Check to see if the file is located local to Drupal
     $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $this->gff_file;
-    if (!file_exists($dfile)) {
+    if (file_exists($dfile)) {
       $this->gff_file = $dfile;
     }
     // If the file is not local to Drupal check if it exists on the system.

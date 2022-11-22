@@ -105,7 +105,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase {
     $run_args = [
       'files' => [
         0 => [
-          'file_path' => '/../../../fixtures/gff3_loader/small_gene.gff'
+          'file_path' => __DIR__ . '/../../../fixtures/gff3_loader/small_gene.gff'
         ]
       ],
       'schema_name' => $schema_name,
@@ -133,9 +133,9 @@ class GFF3ImporterTest extends ChadoTestBrowserBase {
 
     print_r('DIR: ' . __DIR__);
     $file_details = [
-      'file_local' => 'modules/t4d8/tripal_chado/tests/fixtures/gff3_loader/small_gene.gff',
+      //'file_local' => 'modules/t4d8/tripal_chado/tests/fixtures/gff3_loader/small_gene.gff',
       //'file_local' => '../..' . __DIR__ . '/../../../fixtures/gff3_loader/small_gene.gff',
-      //'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/small_gene.gff',
+      'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/small_gene.gff',
     ];
     
     $gff3_importer->create($run_args, $file_details); 
