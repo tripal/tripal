@@ -576,13 +576,13 @@ class GFF3Importer extends ChadoImporterBase {
     }
 
     // Get the feature property CV object
-    $this->feature_prop_cv = $chado->select('cv')
+    $this->feature_prop_cv = $chado->select('1:cv')
     ->fields('cv')
     ->condition('name', 'feature_property')
     ->execute()
     ->fetchObject();
 
-    $num_found = $chado->select('cv')
+    $num_found = $chado->select('1:cv')
     ->fields('cv')
     ->condition('name', 'feature_property')
     ->countQuery()
@@ -595,13 +595,13 @@ class GFF3Importer extends ChadoImporterBase {
     }
 
     // Get the sequence CV object.
-    $this->feature_cv = $chado->select('cv')
+    $this->feature_cv = $chado->select('1:cv')
     ->fields('cv')
     ->condition('name', 'sequence')
     ->execute()
     ->fetchObject();
 
-    $num_found = $chado->select('cv')
+    $num_found = $chado->select('1:cv')
     ->fields('cv')
     ->condition('name', 'sequence')
     ->countQuery()
@@ -613,13 +613,13 @@ class GFF3Importer extends ChadoImporterBase {
     }
 
     // Get the organism object.
-    $this->organism = $chado->select('organism','o')
+    $this->organism = $chado->select('1:organism','o')
     ->fields('o')
     ->condition('organism_id', $this->organism_id)
     ->execute()
     ->fetchObject();
 
-    $num_found = $chado->select('organism','o')
+    $num_found = $chado->select('1:organism','o')
     ->fields('o')
     ->condition('organism_id', $this->organism_id)
     ->countQuery()
@@ -631,13 +631,13 @@ class GFF3Importer extends ChadoImporterBase {
     }
 
     // Get the analysis object.
-    $this->analysis = $chado->select('analysis','a')
+    $this->analysis = $chado->select('1:analysis','a')
     ->fields('a')
     ->condition('analysis_id', $this->analysis_id)
     ->execute()
     ->fetchObject();
 
-    $num_found = $chado->select('analysis','a')
+    $num_found = $chado->select('1:analysis','a')
     ->fields('a')
     ->condition('analysis_id', $this->analysis_id)
     ->countQuery()
@@ -650,7 +650,7 @@ class GFF3Importer extends ChadoImporterBase {
 
     // If a landmark type was provided then get that object.
     if ($this->landmark_type) {
-      $this->landmark_cvterm = $chado->select('cvterm', 'c')
+      $this->landmark_cvterm = $chado->select('1:cvterm', 'c')
       ->fields('c')
       ->condition('cv_id', $this->feature_cv->cv_id)
       ->condition('name', $this->landmark_type)
@@ -658,7 +658,7 @@ class GFF3Importer extends ChadoImporterBase {
       ->fetchObject();
 
 
-      $num_found = $chado->select('cvterm', 'c')
+      $num_found = $chado->select('1:cvterm', 'c')
       ->fields('c')
       ->condition('cv_id', $this->feature_cv->cv_id)
       ->condition('name', $this->landmark_type)
@@ -674,7 +674,7 @@ class GFF3Importer extends ChadoImporterBase {
     // If a target type is provided then get the ID.
     if ($this->target_type) {
 
-      $target_type = $chado->select('cvterm','c')
+      $target_type = $chado->select('1:cvterm','c')
       ->fields('c')
       ->condition('name', $this->target_type)
       ->condition('cv_id', $this->feature_cv->cv_id)
@@ -682,7 +682,7 @@ class GFF3Importer extends ChadoImporterBase {
       ->fetchObject();
 
 
-      $num_found = $chado->select('cvterm','c')
+      $num_found = $chado->select('1:cvterm','c')
       ->fields('c')
       ->condition('name', $this->target_type)
       ->condition('cv_id', $this->feature_cv->cv_id)
@@ -837,8 +837,8 @@ class GFF3Importer extends ChadoImporterBase {
 
     $sel_cvterm_sql = "
       SELECT CVT.cvterm_id, CVT.name, CVTS.synonym
-      FROM {cvterm} CVT
-        LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
+      FROM {1:cvterm} CVT
+        LEFT JOIN {1:cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
       WHERE CVT.cv_id = :cv_id and
        (lower(CVT.name) = lower(:name) or lower(CVTS.synonym) = lower(:synonym))
     ";
@@ -949,12 +949,12 @@ class GFF3Importer extends ChadoImporterBase {
     $result = chado_select_record('pub', ['*'], $select);
     if (count($result) == 0) {
       $pub_sql = "
-        INSERT INTO {pub} (uniquename,type_id)
+        INSERT INTO {1:pub} (uniquename,type_id)
         VALUES (:uname,
           (SELECT cvterm_id
-           FROM {cvterm} CVT
-             INNER JOIN {dbxref} DBX ON DBX.dbxref_id = CVT.dbxref_id
-             INNER JOIN {db} DB      ON DB.db_id      = DBX.db_id
+           FROM {1:cvterm} CVT
+             INNER JOIN {1:dbxref} DBX ON DBX.dbxref_id = CVT.dbxref_id
+             INNER JOIN {1:db} DB      ON DB.db_id      = DBX.db_id
            WHERE CVT.name = :type_id))
       ";
       $status = $chado->query($pub_sql);
@@ -1455,7 +1455,7 @@ class GFF3Importer extends ChadoImporterBase {
       return $this->landmarks[$landmark_name];
     }
 
-    $landmark_select = $chado->select('feature')
+    $landmark_select = $chado->select('1:feature')
       ->fields('feature')
       ->condition('organism_id', $this->organism_id)
       ->condition('uniquename', $landmark_name);
@@ -1511,7 +1511,7 @@ class GFF3Importer extends ChadoImporterBase {
   private function insertLandmark($name) {
     $chado = $this->getChadoConnection();
     $residues = '';
-    $insert_id = $chado->insert('feature')
+    $insert_id = $chado->insert('1:feature')
     ->fields([
       'organism_id' => $this->organism->organism_id,
       'uniquename' => $name,
@@ -2283,9 +2283,9 @@ class GFF3Importer extends ChadoImporterBase {
     // looking for them and then insert those that don't exist.
     $init_sql = "
       SELECT DB.name, DBX.db_id, DBX.accession, DBX.dbxref_id, CVT.cvterm_id
-      FROM {dbxref} DBX
-        INNER JOIN {db} DB on DB.db_id = DBX.db_id
-        LEFT JOIN {cvterm} CVT on DBX.dbxref_id = CVT.dbxref_id
+      FROM {1:dbxref} DBX
+        INNER JOIN {1:db} DB on DB.db_id = DBX.db_id
+        LEFT JOIN {1:cvterm} CVT on DBX.dbxref_id = CVT.dbxref_id
       WHERE
     ";
     $i = 0;
@@ -2804,7 +2804,7 @@ class GFF3Importer extends ChadoImporterBase {
 
     // Get the organism object.
     list($genus, $species) = explode(':', $organism_attr, 2);
-    $organism_select = $chado->select('organism','o');
+    $organism_select = $chado->select('1:organism','o');
     $organism_select->fields('o');
     $organism_select->condition('genus', $genus);
     $organism_select->condition('species', $species);
@@ -2824,7 +2824,7 @@ class GFF3Importer extends ChadoImporterBase {
     }
 
     if ($this->create_organism) {
-      $organism_insert = $chado->insert('organism');
+      $organism_insert = $chado->insert('1:organism');
       $organism_insert->fields([
         'genus' => $genus,
         'species' => $species
