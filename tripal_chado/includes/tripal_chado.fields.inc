@@ -66,7 +66,7 @@ function tripal_chado_bundle_fields_info_base(&$info, $details, $entity_type, $b
   $columns = $schema['fields'];
   foreach ($columns as $column_name => $details) {
 
-    // Skip the source columns  in the analysis table. We have a custom
+    // Skip the source columns in the analysis table. We have a custom
     // field for those columns
     if ($table_name == 'analysis' and ($column_name == 'sourceuri' or
         $column_name == 'sourceversion' or $column_name == 'sourcename')) {
@@ -654,7 +654,7 @@ function tripal_chado_bundle_fields_info_linker(&$info, $details, $entity_type, 
   }
 
   // EXPRESSION
-  // TODO: this should only show up on gene or mRNA bunldes, not every feature.
+  // TODO: this should only show up on gene or mRNA bundles, not every feature.
   //   $expression_table = $table_name . '_expression';
   //   if (chado_table_exists($expression_table)) {
   //     $field_name = 'go__gene_expression';
@@ -731,6 +731,28 @@ function tripal_chado_bundle_fields_info_linker(&$info, $details, $entity_type, 
   //       ),
   //     );
   //   }
+
+  // PROJECTS
+  // supports project as either prefix or suffix of linker table name
+  $project_table = 'project_' . $table_name;
+  if (!chado_table_exists($project_table)) {
+    $project_table = $table_name . '_project';
+  }
+  if (chado_table_exists($project_table)) {
+    $schema = chado_get_schema($project_table);
+    $pkey = $schema['primary key'][0];
+    $field_name = 'project_' . $table_name;
+    $field_type = 'chado_linker__project';
+    $info[$field_name] = [
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'locked' => FALSE,
+      'storage' => [
+        'type' => 'field_chado_storage',
+      ],
+    ];
+  }
 
   // PROPERTIES
   $prop_table = $table_name . 'prop';
@@ -925,7 +947,7 @@ function tripal_chado_bundle_instances_info_base(&$info, $entity_type, $bundle, 
   $columns = $schema['fields'];
   foreach ($columns as $column_name => $details) {
 
-    // Skip the source columns  in the analysis table. We have a custom
+    // Skip the source columns in the analysis table. We have a custom
     // field for those columns
     if ($table_name == 'analysis' and ($column_name == 'sourceuri' or
         $column_name == 'sourceversion' or $column_name == 'sourcename')) {
@@ -1504,7 +1526,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
       'entity_type' => $entity_type,
       'bundle' => $bundle->name,
       'label' => 'Contact',
-      'description' => 'An indvidual or organization that serves as a contact for this record.',
+      'description' => 'An individual or organization that serves as a contact for this record.',
       'required' => FALSE,
       'settings' => [
         'auto_attach' => FALSE,
@@ -2278,7 +2300,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       'entity_type' => $entity_type,
       'bundle' => $bundle->name,
       'label' => 'Contact',
-      'description' => 'Associates an indviddual or organization with this record',
+      'description' => 'Associates an individual or organization with this record',
       'required' => FALSE,
       'settings' => [
         'auto_attach' => FALSE,
@@ -2533,6 +2555,46 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
   //       ),
   //     );
   //   }
+
+  // PROJECTS
+  // supports project as either prefix or suffix of linker table name
+  $project_table = 'project_' . $table_name;
+  if (!chado_table_exists($project_table)) {
+    $project_table = $table_name . '_project';
+  }
+  if (chado_table_exists($project_table)) {
+    $field_name = 'project_' . $table_name;
+    $info[$field_name] = $info[$field_name] = [
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Project',
+      'description' => 'Associates a project with this record',
+      'required' => FALSE,
+      'settings' => [
+        'auto_attach' => FALSE,
+        'chado_table' => $project_table,
+        'base_table' => $table_name,
+        'chado_column' => 'project_id',
+        'term_accession' => 'C47885',
+        'term_vocabulary' => 'NCIT',
+        'term_name' => 'project',
+      ],
+      'widget' => [
+        'type' => 'chado_linker__project_widget',
+        'settings' => [
+          'display_label' => 1,
+        ],
+      ],
+      'display' => [
+        'default' => [
+          'label' => 'hidden',
+          'type' => 'chado_linker__project_formatter',
+          'settings' => [],
+        ],
+      ],
+    ];
+  }
 
   // PROPERTIES
   $prop_table = $table_name . 'prop';
