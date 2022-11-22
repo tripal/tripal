@@ -57,48 +57,13 @@ class GFF3ImporterTest extends ChadoTestBrowserBase {
       ->execute();
 
 
-    // The OBO loader requires some chado terms
-    // This service initializes this data into the test schema database
-    // $cti = new \Drupal\tripal_chado\Services\ChadoTermsInit;
-    // $cti->installTerms();
-
-    // GFF3 fixtures file location
-    $debug_gff_file_loc = __DIR__ . '/../../../fixtures/gff3_loader/small_gene.gff';
-    print_r("\n\n\n");
-    print_r('Filesize: ' . filesize($debug_gff_file_loc) . "\n");
-
-    // Import the Sequence Ontology using the OBO loader
-    // $obo_so_id = $public->insert('tripal_cv_obo')
-    //     ->fields([
-    //       'name' => 'Sequence Ontology',
-    //       'path' => 'http://purl.obolibrary.org/obo/so.obo'
-    //     ])
-    //     ->execute();
-    
-    // $importer_manager = \Drupal::service('tripal.importer');
-    // $obo_importer = $importer_manager->createInstance('chado_obo_loader');
-    // $run_args = [
-    //   'schema_name' => $schema_name,
-    //   'obo_id' => $obo_so_id
-    // ];
-    // $obo_importer->create($run_args, []);  
-    // $obo_importer->run([
-    //   'chado' => $chado,
-    //   'schema_name' => $schema_name
-    // ]);
-
     // Verify that gene is now in the cvterm table (which gets imported from SO obo)
     $result_gene_cvterm = $chado->query("SELECT * FROM {1:cvterm} WHERE name = 'gene' LIMIT 1;");
     $cvterm_object = null;
     $cvterm_object = $result_gene_cvterm->fetchObject();
     $this->assertNotEquals($cvterm_object, null);
     
-    // TODO
-    // We need to figure out a way to set chado_schema_main
-    // since seems to be needed by postRun
-    // $this->chado_schema_main = $schema_name;
-    // $obo_importer->postRun();
-      
+
     // Perform the GFF3 test by creating an instance of the GFF3 loader
     $importer_manager = \Drupal::service('tripal.importer');
     $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
@@ -129,12 +94,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase {
       'skip_protein' => NULL,
     ];
 
-    
-
-    print_r('DIR: ' . __DIR__);
     $file_details = [
-      //'file_local' => 'modules/t4d8/tripal_chado/tests/fixtures/gff3_loader/small_gene.gff',
-      //'file_local' => '../..' . __DIR__ . '/../../../fixtures/gff3_loader/small_gene.gff',
       'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/small_gene.gff',
     ];
     
