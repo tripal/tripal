@@ -3174,4 +3174,49 @@ class GFF3Importer extends ChadoImporterBase {
   public function formSubmit($form, &$form_state) {
 
   }
+
+
+  function insert_cvterm($term, $options = []) {
+    // TODO: This $chado object needs to be compatible with tests
+    $chado = $this->getChadoConnection();
+    // This will get a vocab and create it if it is not found (great)
+    $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
+    $vocabulary = $vmanager->loadCollection($term['cv_name'], 'chado_vocabulary');
+    if (!$vocabulary) {
+      $vocabulary = $vmanager->createCollection($term['cv_name'], 'chado_vocabulary');
+    }
+
+ 
+
+    // This will get an id space or create it if it is not found (great)
+    $idspace_name = explode(':', $term['id'])[0];
+    $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+    $idspace = $idsmanager->loadCollection($idspace_name, 'chado_id_space');
+    if (!$idspace) {
+      $idspace = $idsmanager->createCollection($idspace_name, 'chado_id_space');
+    }
+
+
+    $accession = explode(':', $term['id'])[1];
+    // Create the term
+    if ($idspace) {
+      $term = new TripalTerm([
+        'name' => $term['name'], // entire term id
+        'accession' => $accession, // second part of term id
+        'idSpace' => $idspace_name, // first part of term id
+        'vocabulary' => $term['cv_name'], // vocabulary
+        'definition' => '', // this is not given by the term object (???)
+      ]);
+      $idspace->saveTerm($term);
+    } 
+    
+    $cvterm_object = $chado->select('1:cvterm', 'cvterm')
+    ->fields('cvterm')
+    ->condition('cvterm.name', $accession)
+    ->execute()->fetchObject();
+
+    print_r("insert_cvterm function in GFF3Importer.php\n");
+    print_r($cvterm_object);
+    return $cvterm_object;
+  }  
 }
