@@ -576,13 +576,13 @@ class GFF3Importer extends ChadoImporterBase {
     }
 
     // Get the feature property CV object
-    $this->feature_prop_cv = $chado->select('1:cv')
+    $this->feature_prop_cv = $chado->select('1:cv','cv')
     ->fields('cv')
     ->condition('name', 'feature_property')
     ->execute()
     ->fetchObject();
 
-    $num_found = $chado->select('1:cv')
+    $num_found = $chado->select('1:cv','cv')
     ->fields('cv')
     ->condition('name', 'feature_property')
     ->countQuery()
@@ -595,13 +595,13 @@ class GFF3Importer extends ChadoImporterBase {
     }
 
     // Get the sequence CV object.
-    $this->feature_cv = $chado->select('1:cv')
+    $this->feature_cv = $chado->select('1:cv','cv')
     ->fields('cv')
     ->condition('name', 'sequence')
     ->execute()
     ->fetchObject();
 
-    $num_found = $chado->select('1:cv')
+    $num_found = $chado->select('1:cv', 'cv')
     ->fields('cv')
     ->condition('name', 'sequence')
     ->countQuery()
@@ -1511,7 +1511,7 @@ class GFF3Importer extends ChadoImporterBase {
   private function insertLandmark($name) {
     $chado = $this->getChadoConnection();
     $residues = '';
-    $insert_id = $chado->insert('1:feature')
+    $insert_id = $chado->insert('1:feature', 'feature')
     ->fields([
       'organism_id' => $this->organism->organism_id,
       'uniquename' => $name,
@@ -2824,7 +2824,7 @@ class GFF3Importer extends ChadoImporterBase {
     }
 
     if ($this->create_organism) {
-      $organism_insert = $chado->insert('1:organism');
+      $organism_insert = $chado->insert('1:organism', 'feature');
       $organism_insert->fields([
         'genus' => $genus,
         'species' => $species
