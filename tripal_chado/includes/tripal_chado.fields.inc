@@ -670,6 +670,31 @@ function tripal_chado_bundle_fields_info_linker(&$info, $details, $entity_type, 
   //     );
   //   }
 
+  // FEATURES
+  $project_table = $table_name . '_feature';
+  if (!chado_table_exists($feature_table)) {
+    $feature_table = 'feature_' . $table_name;
+  }
+  // supports analysisfeature table also
+  if (!chado_table_exists($feature_table)) {
+    $feature_table = $table_name . 'feature';
+  }
+  if (chado_table_exists($feature_table)) {
+    $schema = chado_get_schema($feature_table);
+    $pkey = $schema['primary key'][0];
+    $field_name = $table_name . '_feature';
+    $field_type = 'chado_linker__feature';
+    $info[$field_name] = [
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'locked' => FALSE,
+      'storage' => [
+        'type' => 'field_chado_storage',
+      ],
+    ];
+  }
+
   // FEATURELOC
   if ($table_name == 'feature') {
     $field_name = 'data__sequence_coordinates';
@@ -2405,6 +2430,49 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
   //     );
   //   }
 
+  // FEATURES
+  $feature_table = $table_name . '_feature';
+  if (!chado_table_exists($feature_table)) {
+    $feature_table = 'feature_' . $table_name;
+  }
+  // supports analysisfeature table also
+  if (!chado_table_exists($feature_table)) {
+    $feature_table = $table_name . 'feature';
+  }
+  if (chado_table_exists($feature_table)) {
+    $field_name = $table_name . '_feature';
+    $info[$field_name] = $info[$field_name] = [
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Features',
+      'description' => 'Associates a feature with this record',
+      'required' => FALSE,
+      'settings' => [
+        'auto_attach' => FALSE,
+        'chado_table' => $feature_table,
+        'base_table' => $table_name,
+        'chado_column' => 'feature_id',
+        'term_accession' => 'C73619',
+        'term_vocabulary' => 'NCIT',
+        'term_name' => 'feature',
+      ],
+      'widget' => [
+        'type' => 'chado_linker__feature_widget',
+        'settings' => [
+          'display_label' => 1,
+        ],
+      ],
+      'display' => [
+        'default' => [
+          'label' => 'hidden',
+          'type' => 'chado_linker__feature_formatter',
+          'settings' => [],
+        ],
+      ],
+    ];
+  }
+
   // FEATURELOC
   if ($table_name == 'feature') {
     $field_name = 'data__sequence_coordinates';
@@ -2568,7 +2636,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       'field_name' => $field_name,
       'entity_type' => $entity_type,
       'bundle' => $bundle->name,
-      'label' => 'Project',
+      'label' => 'Projects',
       'description' => 'Associates a project with this record',
       'required' => FALSE,
       'settings' => [

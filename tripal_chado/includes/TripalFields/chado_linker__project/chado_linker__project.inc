@@ -12,7 +12,7 @@ class chado_linker__project extends ChadoField {
   // --------------------------------------------------------------------------
 
   // The default label for this field.
-  public static $default_label = 'projects';
+  public static $default_label = 'Projects';
 
   // The default description for this field.
   public static $description = 'Associates a project with this record';
@@ -127,7 +127,7 @@ class chado_linker__project extends ChadoField {
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
-    // If we don't have a chado record return before creating a stub for this field!
+    // If we don't have a chado record, return before creating a stub for this field!
     if (!$record) {
       return;
     }
@@ -176,6 +176,8 @@ class chado_linker__project extends ChadoField {
           'chado-' . $field_table . '__' . $pkey => $project_linker->$pkey,
           'chado-' . $field_table . '__' . $fkey_lcolumn => $record->$fkey_lcolumn,
           'chado-' . $field_table . '__' . 'project_id' => $project->project_id,
+          // For the widget to work properly we will preform values.
+          'project_name' => $project->name . ' [id: ' . $project->project_id . ']',
         ];
 
         if (property_exists($project, 'entity_id')) {
@@ -264,7 +266,7 @@ class chado_linker__project extends ChadoField {
 
 
 /**
- * An Ajax callback for the pub widget.
+ * An Ajax callback for the widget.
  */
 function chado_linker__project_widget_form_ajax_callback($form, $form_state) {
 
@@ -275,7 +277,7 @@ function chado_linker__project_widget_form_ajax_callback($form, $form_state) {
 }
 
 /**
- * Theme function for the pub widget.
+ * Theme function for the widget.
  *
  * @param $variables
  */
@@ -288,8 +290,8 @@ function theme_chado_linker__project_widget($variables) {
   $fkey = $element['#fkey_field'];
 
   $layout = "
-      <div class=\"pub-widget\">
-        <div class=\"pub-widget-item\">" .
+      <div class=\"chado-linker--project-widget\">
+        <div class=\"chado-linker--project-widget-item\">" .
     drupal_render($element['name']) . "
         </div>
       </div>

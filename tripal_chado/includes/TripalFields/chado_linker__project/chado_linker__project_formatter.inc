@@ -3,7 +3,7 @@
 class chado_linker__project_formatter extends ChadoFieldFormatter {
 
   // The default label for this field.
-  public static $default_label = 'projects';
+  public static $default_label = 'Projects';
 
   // The list of field types for which this formatter is appropriate.
   public static $field_types = ['chado_linker__project'];
