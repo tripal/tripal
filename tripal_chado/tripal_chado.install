@@ -2116,3 +2116,46 @@ function tripal_chado_update_7340() {
     throw new DrupalUpdateException('Could not perform update: '. $error);
   }
 }
+
+/**
+ * Adds cvterms for new chado_linker__xxx tripal fields.
+ */
+function tripal_chado_update_7341() {
+  try {
+    // For chado_linker__analysis field.
+    chado_insert_cvterm([
+      'id' => 'NCIT:C25391',
+      'name' => 'Analysis',
+      'cv_name' => 'ncit',
+      'definition' => 'Examination and interpretation; the process of identifying an issue to be understood and'
+                    . ' addressed, modelling the issue, investigating the model results, interpreting the results,'
+                    . ' and possibly making a recommendation. The concept also refers to the examination and study'
+                    . ' of a whole in terms of the parts composing it.',
+    ]);
+    // For chado_linker__assay field.
+    chado_insert_cvterm([
+      'id' => 'NCIT:C60819',
+      'name' => 'Assay',
+      'cv_name' => 'ncit',
+      'definition' => 'A qualitative or quantitative analysis performed to determine the amount of a particular'
+                    . ' constituent in a sample or the biological or pharmacological properties of a drug.',
+    ]);
+    // For chado_linker__feature field.
+    chado_insert_cvterm([
+      'id' => 'NCIT:C73619',
+      'name' => 'Feature',
+      'cv_name' => 'ncit',
+      'definition' => 'A prominent or identifiable aspect, region, or site of interest',
+    ]);
+    // For chado_linker__stock field.
+    chado_insert_cvterm([
+      'id' => 'NCIT:C48288',
+      'name' => 'Stock',
+      'cv_name' => 'ncit',
+      'definition' => 'The merchandise that a shop has on hand.',
+    ]);
+  } catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not perform update: '. $error);
+  }
+}
