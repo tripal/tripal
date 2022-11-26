@@ -75,7 +75,7 @@ class chado_linker__project extends ChadoField {
         'elements' => [
           $name_term => [
             'searchable' => TRUE,
-            'label' => 'project Name',
+            'label' => 'Project Name',
             'help' => 'The name of the project.',
             'operations' => ['eq', 'ne', 'contains', 'starts'],
             'sortable' => TRUE,
@@ -85,7 +85,7 @@ class chado_linker__project extends ChadoField {
           ],
           $description_term => [
             'searchable' => TRUE,
-            'label' => 'project Description',
+            'label' => 'Project Description',
             'help' => 'A description of the project.',
             'operations' => ['contains'],
             'sortable' => TRUE,
@@ -117,6 +117,12 @@ class chado_linker__project extends ChadoField {
 
     $name_term = chado_get_semweb_term('project', 'name');
     $description_term = chado_get_semweb_term('project', 'description');
+    $summary_term = 'ncit:Count';
+
+    // Set some defaults for the empty record.
+    $entity->{$field_name}['und'][0] = [
+      'value' => [],
+    ];
 
     // Get the FK that links to the base record.
     $schema = chado_get_schema($field_table);
@@ -132,58 +138,80 @@ class chado_linker__project extends ChadoField {
       return;
     }
 
-    // Set some defaults for the empty record.
-    $entity->{$field_name}['und'][0] = [
-      'value' => [],
-      'chado-' . $field_table . '__' . $pkey => '',
-      'chado-' . $field_table . '__' . $fkey_lcolumn => $record->$fkey_lcolumn,
-      'chado-' . $field_table . '__' . 'project_id' => '',
-    ];
-
+    // Linker table name may have project as either prefix or suffix.
     $linker_table = 'project_' . $base_table;
     if (!chado_table_exists($linker_table)) {
       $linker_table = $base_table . '_project';
     }
-    $options = [
-      'return_array' => 1,
-      'include_fk' => [
-        'project_id' => [
-          'type_id' => [
-            'dbxref_id' => [
-              'db_id' => TRUE,
+
+    if (!chado_table_exists($linker_table)) {
+      return;
+    }
+
+    // Evaluate how many linked records there are, and if too many just show a summary,
+    // however, this is unlikely for this field.
+    $load_limit = array_key_exists('load_limit', $this->instance['settings'])
+                ? $this->instance['settings']['load_limit'] : 500;
+    $sql1 = 'SELECT COUNT(*) FROM {'.$linker_table.'} WHERE '.$fkey_lcolumn.' = :fkey_lcolumn_id';
+    $args1 = [':fkey_lcolumn_id' => $record->$fkey_lcolumn];
+    $count = chado_query($sql1, $args1)->fetchField();
+
+    if ($count <= $load_limit) {
+      $options = [
+        'return_array' => 1,
+        'include_fk' => [
+          'project_id' => [
+            'type_id' => [
+              'dbxref_id' => [
+                'db_id' => TRUE,
+              ],
             ],
           ],
+          $fkey_lcolumn => TRUE,
         ],
-        $fkey_lcolumn => TRUE,
-      ],
-    ];
-    $record = chado_expand_var($record, 'table', $linker_table, $options);
-    $project_linkers = $record->$linker_table;
-    if ($project_linkers) {
-      foreach ($project_linkers as $i => $project_linker) {
-        // Expand description if necessary due to length.
-        if (in_array('project.description', $project_linker->expandable_fields)) {
-          $project_linker = chado_expand_var($project_linker, 'field', 'project.description', []);
-        }
-        $project = $project_linker->project_id;
-        $entity->{$field_name}['und'][$i] = [
-          'value' => [
-            $name_term => $project->name,
-            $description_term => $project->description,
-          ],
-          // Add elements that are not part of the values but used by
-          // the chado storage back-end for saving values.
-          'chado-' . $field_table . '__' . $pkey => $project_linker->$pkey,
-          'chado-' . $field_table . '__' . $fkey_lcolumn => $record->$fkey_lcolumn,
-          'chado-' . $field_table . '__' . 'project_id' => $project->project_id,
-          // For the widget to work properly we will preform values.
-          'project_name' => $project->name . ' [id: ' . $project->project_id . ']',
-        ];
+      ];
+      $record = chado_expand_var($record, 'table', $linker_table, $options);
+      $project_linkers = $record->$linker_table;
+      if ($project_linkers) {
+        foreach ($project_linkers as $i => $project_linker) {
+          // Expand description if necessary due to length.
+          if (in_array('project.description', $project_linker->expandable_fields)) {
+            $project_linker = chado_expand_var($project_linker, 'field', 'project.description', []);
+          }
+          $project = $project_linker->project_id;
+          $entity->{$field_name}['und'][$i] = [
+            'value' => [
+              $name_term => $project->name,
+              $description_term => $project->description,
+            ],
+            // Add elements that are not part of the values but used by
+            // the chado storage back-end for saving values.
+            'chado-' . $field_table . '__' . $pkey => $project_linker->$pkey,
+            'chado-' . $field_table . '__' . $fkey_lcolumn => $record->$fkey_lcolumn,
+            'chado-' . $field_table . '__' . 'project_id' => $project->project_id,
+            // For the widget to work properly we will preform values.
+            'project_name' => $project->name . ' [id: ' . $project->project_id . ']',
+          ];
 
-        if (property_exists($project, 'entity_id')) {
-          $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $project->entity_id;
+          if (property_exists($project, 'entity_id')) {
+            $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $project->entity_id;
+          }
         }
       }
+    }
+    else {
+      // If too many records to display, just return a summary. The widget won't
+      // show any existing records, but can be used to add additional records.
+      // Web services will only show this summary.
+      $content = t('There are :count related projects', [':count' => $count]);
+
+      // The formatter will check for the $summary_term key, and when
+      // present will display this summary and not display the usual table.
+      $entity->{$field_name}['und'][0] = [
+        'value' => [
+          $summary_term => $content,
+        ],
+      ];
     }
   }
 

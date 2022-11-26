@@ -619,6 +619,31 @@ function tripal_chado_bundle_fields_info_linker(&$info, $details, $entity_type, 
   $cvterm_id = $details['chado_cvterm_id'];
   $type_value = $details['chado_type_value'];
 
+  // ANALYSES
+  $analysis_table = $table_name . '_analysis';
+  if (!chado_table_exists($analysis_table)) {
+    $analysis_table = 'analysis_' . $table_name;
+  }
+  // Also supports analysisfeature table.
+  if (!chado_table_exists($analysis_table)) {
+    $analysis_table = 'analysis' . $table_name;
+  }
+  if (chado_table_exists($analysis_table)) {
+    $schema = chado_get_schema($analysis_table);
+    $pkey = $schema['primary key'][0];
+    $field_name = $table_name . '_analysis';
+    $field_type = 'chado_linker__analysis';
+    $info[$field_name] = [
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'locked' => FALSE,
+      'storage' => [
+        'type' => 'field_chado_storage',
+      ],
+    ];
+  }
+
   // CONTACTS
   $contact_table = $table_name . '_contact';
   if (chado_table_exists($contact_table)) {
@@ -671,11 +696,11 @@ function tripal_chado_bundle_fields_info_linker(&$info, $details, $entity_type, 
   //   }
 
   // FEATURES
-  $project_table = $table_name . '_feature';
+  $feature_table = $table_name . '_feature';
   if (!chado_table_exists($feature_table)) {
     $feature_table = 'feature_' . $table_name;
   }
-  // supports analysisfeature table also
+  // Also supports analysisfeature table.
   if (!chado_table_exists($feature_table)) {
     $feature_table = $table_name . 'feature';
   }
@@ -766,7 +791,7 @@ function tripal_chado_bundle_fields_info_linker(&$info, $details, $entity_type, 
   if (chado_table_exists($project_table)) {
     $schema = chado_get_schema($project_table);
     $pkey = $schema['primary key'][0];
-    $field_name = 'project_' . $table_name;
+    $field_name = $table_name . '_project';
     $field_type = 'chado_linker__project';
     $info[$field_name] = [
       'field_name' => $field_name,
@@ -2316,6 +2341,49 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
   $cvterm_id = $details['chado_cvterm_id'];
   $type_value = $details['chado_type_value'];
 
+  // ANALYSES
+  $analysis_table = $table_name . '_analysis';
+  if (!chado_table_exists($analysis_table)) {
+    $analysis_table = 'analysis_' . $table_name;
+  }
+  // Also supports analysisfeature table.
+  if (!chado_table_exists($analysis_table)) {
+    $analysis_table = 'analysis' . $table_name;
+  }
+  if (chado_table_exists($analysis_table)) {
+    $field_name = $table_name . '_analysis';
+    $info[$field_name] = $info[$field_name] = [
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Analysis',
+      'description' => 'Associates an analysis with this record',
+      'required' => FALSE,
+      'settings' => [
+        'auto_attach' => FALSE,
+        'chado_table' => $analysis_table,
+        'base_table' => $table_name,
+        'chado_column' => 'analysis_id',
+        'term_accession' => 'C25391',
+        'term_vocabulary' => 'NCIT',
+        'term_name' => 'analysis',
+      ],
+      'widget' => [
+        'type' => 'chado_linker__analysis_widget',
+        'settings' => [
+          'display_label' => 1,
+        ],
+      ],
+      'display' => [
+        'default' => [
+          'label' => 'hidden',
+          'type' => 'chado_linker__analysis_formatter',
+          'settings' => [],
+        ],
+      ],
+    ];
+  }
+
   // CONTACTS
   $contact_table = $table_name . '_contact';
   if (chado_table_exists($contact_table)) {
@@ -2435,7 +2503,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
   if (!chado_table_exists($feature_table)) {
     $feature_table = 'feature_' . $table_name;
   }
-  // supports analysisfeature table also
+  // Also supports analysisfeature table.
   if (!chado_table_exists($feature_table)) {
     $feature_table = $table_name . 'feature';
   }
@@ -2445,7 +2513,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       'field_name' => $field_name,
       'entity_type' => $entity_type,
       'bundle' => $bundle->name,
-      'label' => 'Features',
+      'label' => 'Feature',
       'description' => 'Associates a feature with this record',
       'required' => FALSE,
       'settings' => [
@@ -2631,12 +2699,12 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
     $project_table = $table_name . '_project';
   }
   if (chado_table_exists($project_table)) {
-    $field_name = 'project_' . $table_name;
+    $field_name = $table_name . '_project';
     $info[$field_name] = $info[$field_name] = [
       'field_name' => $field_name,
       'entity_type' => $entity_type,
       'bundle' => $bundle->name,
-      'label' => 'Projects',
+      'label' => 'Project',
       'description' => 'Associates a project with this record',
       'required' => FALSE,
       'settings' => [

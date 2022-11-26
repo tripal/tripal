@@ -1,12 +1,12 @@
 <?php
 
-class chado_linker__project_formatter extends ChadoFieldFormatter {
+class chado_linker__analysis_formatter extends ChadoFieldFormatter {
 
   // The default label for this field.
-  public static $default_label = 'Projects';
+  public static $default_label = 'Analyses';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = ['chado_linker__project'];
+  public static $field_types = ['chado_linker__analysis'];
 
 
   /**
@@ -25,8 +25,8 @@ class chado_linker__project_formatter extends ChadoFieldFormatter {
     // Get the settings
     $settings = $display['settings'];
 
-    $name_term = chado_get_semweb_term('project', 'name');
-    $description_term = chado_get_semweb_term('project', 'description');
+    $name_term = chado_get_semweb_term('analysis', 'name');
+    $description_term = chado_get_semweb_term('analysis', 'description');
     $summary_term = 'ncit:Count';
 
     $headers = ['Name', 'Description'];
@@ -42,26 +42,26 @@ class chado_linker__project_formatter extends ChadoFieldFormatter {
       ];
     }
 
-    // Normal output is a table of projects
+    // Normal output is a table of analyses
     else {
       foreach ($items as $delta => $item) {
-        $project = $item['value'];
-        if (!$project) {
+        $analysis = $item['value'];
+        if (!$analysis) {
           continue;
         }
 
         // Get the field values
-        $project_name = $project[$name_term];
-        $description = $project[$description_term];
+        $analysis_name = $analysis[$name_term];
+        $description = $analysis[$description_term];
 
         // Add a link if there is an entity.
         if (array_key_exists('entity', $item['value']) and $item['value']['entity']) {
           list($entity_type, $entity_id) = explode(':', $item['value']['entity']);
-          $project_name = l($project_name, "bio_data/" . $entity_id, ['attributes' => ['target' => "_blank"]]);
+          $analysis_name = l($analysis_name, "bio_data/" . $entity_id, ['attributes' => ['target' => "_blank"]]);
         }
         $rows[] = [
-          $project_name,
-          $description
+          $analysis_name,
+          $description,
         ];
       }
 

@@ -1,12 +1,12 @@
 <?php
 
-class chado_linker__project_widget extends ChadoFieldWidget {
+class chado_linker__analysis_widget extends ChadoFieldWidget {
 
   // The default label for this field.
-  public static $default_label = 'Projects';
+  public static $default_label = 'Analyses';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = ['chado_linker__project'];
+  public static $field_types = ['chado_linker__analysis'];
 
   /**
    *
@@ -32,11 +32,11 @@ class chado_linker__project_widget extends ChadoFieldWidget {
     // Get the field defaults.
     $record_id = '';
     $fk_value = (array_key_exists('#entity', $element) and $element['#entity']) ? $element['#entity']->chado_record_id : NULL;
-    $project_id = '';
+    $analysis_id = '';
     $name = '';
     $name_label = '';
 
-    $name_term = chado_get_semweb_term('project', 'name');
+    $name_term = chado_get_semweb_term('analysis', 'name');
 
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.
@@ -46,18 +46,19 @@ class chado_linker__project_widget extends ChadoFieldWidget {
       }
       $fk_value = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__' . $fkey_lcolumn, $fk_value);
       $record_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__' . $pkey, $record_id);
-      $project_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__project_id', $project_id);
+      $analysis_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__analysis_id', $analysis_id);
     }
 
     // Check $form_state['values'] to see if an AJAX call set the values.
     if (array_key_exists('values', $form_state) and
       array_key_exists($field_name, $form_state['values'])) {
-      $name = $form_state['values'][$field_name]['und'][$delta]['project_name'];
+      $name = $form_state['values'][$field_name]['und'][$delta]['analysis_name'];
     }
 
     // Get element values added to help support insert/updates.
-    $name_label = tripal_get_field_item_keyval($items, $delta, 'project_name', $name);
+    $name_label = tripal_get_field_item_keyval($items, $delta, 'analysis_name', $name);
 
+    // Save the values needed by the Chado Storage API.
     $widget['value'] = [
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
@@ -71,16 +72,16 @@ class chado_linker__project_widget extends ChadoFieldWidget {
       '#type' => 'value',
       '#default_value' => $fk_value,
     ];
-    $widget['chado-' . $field_table . '__project_id'] = [
+    $widget['chado-' . $field_table . '__analysis_id'] = [
       '#type' => 'value',
-      '#default_value' => $project_id,
+      '#default_value' => $analysis_id,
     ];
 
     $widget['name'] = [
       '#type' => 'textfield',
-      '#title' => t('project'),
+      '#title' => t('analysis'),
       '#default_value' => $name_label,
-      '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/project',
+      '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/analysis',
       '#maxlength' => 100000,
     ];
   }
@@ -98,7 +99,7 @@ class chado_linker__project_widget extends ChadoFieldWidget {
     $chado_column = $this->instance['settings']['chado_column'];
     $instance = $this->instance;
 
-    // Get information about this project linker table.
+    // Get information about this analysis linker table.
     $schema = chado_get_schema($field_table);
     $pkey = $schema['primary key'][0];
     $lfkey_field = key($schema['foreign keys'][$base_table]['columns']);
@@ -111,21 +112,21 @@ class chado_linker__project_widget extends ChadoFieldWidget {
     if ($name) {
       $matches = [];
       if (preg_match('/^.*\[id: (\d+)]$/', $name, $matches)) {
-        $project_id = $matches[1];
-        $project = chado_generate_var('project', ['project_id' => $project_id]);
+        $analysis_id = $matches[1];
+        $analysis = chado_generate_var('analysis', ['analysis_id' => $analysis_id]);
       }
       else {
-        $project = chado_generate_var('project', ['name' => $name]);
+        $analysis = chado_generate_var('analysis', ['name' => $name]);
       }
-      if ($project) {
-        $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__project_id'] = $project->project_id;
+      if ($analysis) {
+        $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__analysis_id'] = $analysis->analysis_id;
         $form_state['values'][$field_name]['und'][$delta]['value'] = $name;
       }
     }
     // If no name is provided then we want to set the field for deletion.
     else {
       $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $lfkey_field] = '';
-      $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__project_id'] = '';
+      $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__analysis_id'] = '';
     }
   }
 }

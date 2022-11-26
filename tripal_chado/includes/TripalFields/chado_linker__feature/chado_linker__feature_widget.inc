@@ -27,8 +27,6 @@ class chado_linker__feature_widget extends ChadoFieldWidget {
     $pkey = $schema['primary key'][0];
 
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
-    //    $fkey_lcolumn = key($schema['foreign keys']['protocol']['columns']);
-
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
     // Get the field defaults.
