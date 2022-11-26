@@ -17,6 +17,36 @@
 
 
 /**
+ * Used for autocomplete in forms for identifying analyses
+ *
+ * @param $string
+ *   The string to search for.
+ *
+ * @return
+ *   A json array of terms that begin with the provided string.
+ *
+ * @ingroup tripal_analysis_api
+ */
+function chado_autocomplete_analysis($string = '') {
+  $items = [];
+  $sql = "
+    SELECT
+      B.analysis_id as id, B.name
+    FROM {analysis} B
+    WHERE lower(B.name) like lower(:str)
+    ORDER by B.name
+    LIMIT 25 OFFSET 0
+  ";
+  $records = chado_query($sql, [':str' => $string . '%']);
+  while ($r = $records->fetchObject()) {
+    $key = "$r->name [id: $r->id]";
+    $items[$key] = "$r->name";
+  }
+
+  drupal_json_output($items);
+}
+
+/**
  * Retrieves a chado analysis variable.
  *
  * @param $identifier
