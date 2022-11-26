@@ -31,8 +31,13 @@ abstract class ChadoImporterBase extends TripalImporterBase {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
 
-  public function setChadoConnection($chado_incoming) {
-    $this->chado = $chado_incoming;
+  /**
+   * This function can set the chado variable from an external resource
+   * This is used particularly for tests where a specific chado environment
+   * needs to be created.
+   */
+  public function setChadoConnection($chado) {
+    $this->chado = $chado;
   }
 
   /**
