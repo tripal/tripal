@@ -54,6 +54,9 @@ abstract class ChadoImporterBase extends TripalImporterBase {
       $chado = \Drupal::service('tripal_chado.database');
       $this->chado = $chado;
     }
+    else {
+      $chado = $this->chado;
+    }
 
     // Get the chado schema name if available.
     $schema_name = '';
