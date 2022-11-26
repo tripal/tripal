@@ -532,8 +532,9 @@ class GFF3Importer extends ChadoImporterBase {
     $arguments = $this->arguments['run_args'];
 
     // Check if there's a chado element (this makes it compatible with tests)
-    if($settings['chado']) {
+    if ($settings['chado']) {
       $chado = $settings['chado'];
+      $this->setChadoConnection($chado);
     }
     else {
       // This happens if there's no chado object specified
