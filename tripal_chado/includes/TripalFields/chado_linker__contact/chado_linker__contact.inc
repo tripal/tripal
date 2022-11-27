@@ -130,6 +130,11 @@ class chado_linker__contact extends ChadoField {
     $name_term = chado_get_semweb_term('contact', 'name');
     $description_term = chado_get_semweb_term('contact', 'description');
 
+    // Set some defaults for the empty record.
+    $entity->{$field_name}['und'][0] = [
+      'value' => [],
+    ];
+
     // Get the FK that links to the base record.
     $schema = chado_get_schema($field_table);
     $pkey = $schema['primary key'][0];
