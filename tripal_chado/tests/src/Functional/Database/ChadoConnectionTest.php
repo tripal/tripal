@@ -145,7 +145,6 @@ class ChadoConnectionTest extends ChadoTestBrowserBase {
     $this->assertEquals($version, $expected_version,
       "Unable to extract the Exact Version from INIT_CHADO_EMPTY test schema with the schema name provided.");
 
-
     /*
      CURRENTLY THE DUMMY SCHEMA DOESNT ACTUALLY LOAD...
 
