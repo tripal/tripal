@@ -644,6 +644,27 @@ function tripal_chado_bundle_fields_info_linker(&$info, $details, $entity_type, 
     ];
   }
 
+  // ASSAYS
+  $assay_table = $table_name . '_assay';
+  if (!chado_table_exists($assay_table)) {
+    $assay_table = 'assay_' . $table_name;
+  }
+  if (chado_table_exists($assay_table)) {
+    $schema = chado_get_schema($assay_table);
+    $pkey = $schema['primary key'][0];
+    $field_name = $table_name . '_assay';
+    $field_type = 'chado_linker__assay';
+    $info[$field_name] = [
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'locked' => FALSE,
+      'storage' => [
+        'type' => 'field_chado_storage',
+      ],
+    ];
+  }
+
   // CONTACTS
   $contact_table = $table_name . '_contact';
   if (chado_table_exists($contact_table)) {
@@ -902,6 +923,30 @@ function tripal_chado_bundle_fields_info_linker(&$info, $details, $entity_type, 
   if (chado_table_exists($rel_table)) {
     $field_name = 'sbo__relationship';
     $field_type = 'sbo__relationship';
+    $info[$field_name] = [
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'locked' => FALSE,
+      'storage' => [
+        'type' => 'field_chado_storage',
+      ],
+    ];
+  }
+
+  // STOCKS
+  // supports stock as either prefix or suffix of linker table name
+  $stock_table = $table_name . '_stock';
+  // Unfortunately a special case here, mainlab tripal defines a chado.feature_stock
+  // table conflicting with the tripal chado.stock_feature table.
+  if (($table_name == 'feature') or (!chado_table_exists($stock_table))) {
+    $stock_table = 'stock_' . $table_name;
+  }
+  if (chado_table_exists($stock_table)) {
+    $schema = chado_get_schema($stock_table);
+    $pkey = $schema['primary key'][0];
+    $field_name = $table_name . '_stock';
+    $field_type = 'chado_linker__stock';
     $info[$field_name] = [
       'field_name' => $field_name,
       'type' => $field_type,
@@ -2384,6 +2429,45 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
     ];
   }
 
+  // ASSAYS
+  $assay_table = $table_name . '_assay';
+  if (!chado_table_exists($assay_table)) {
+    $assay_table = 'assay_' . $table_name;
+  }
+  if (chado_table_exists($assay_table)) {
+    $field_name = $table_name . '_assay';
+    $info[$field_name] = $info[$field_name] = [
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Assay',
+      'description' => 'Associates an assay with this record',
+      'required' => FALSE,
+      'settings' => [
+        'auto_attach' => FALSE,
+        'chado_table' => $assay_table,
+        'base_table' => $table_name,
+        'chado_column' => 'assay_id',
+        'term_accession' => 'C60819',
+        'term_vocabulary' => 'NCIT',
+        'term_name' => 'assay',
+      ],
+      'widget' => [
+        'type' => 'chado_linker__assay_widget',
+        'settings' => [
+          'display_label' => 1,
+        ],
+      ],
+      'display' => [
+        'default' => [
+          'label' => 'hidden',
+          'type' => 'chado_linker__assay_formatter',
+          'settings' => [],
+        ],
+      ],
+    ];
+  }
+
   // CONTACTS
   $contact_table = $table_name . '_contact';
   if (chado_table_exists($contact_table)) {
@@ -2954,6 +3038,48 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
             'title' => 'Relationships',
             'empty' => 'There are no relationships',
           ],
+        ],
+      ],
+    ];
+  }
+
+  // STOCKS
+  // supports stock as either prefix or suffix of linker table name
+  $stock_table = $table_name . '_stock';
+  // Unfortunately a special case here, mainlab tripal defines a chado.feature_stock
+  // table conflicting with the tripal chado.stock_feature table.
+  if (($table_name == 'feature') or (!chado_table_exists($stock_table))) {
+    $stock_table = 'stock_' . $table_name;
+  }
+  if (chado_table_exists($stock_table)) {
+    $field_name = $table_name . '_stock';
+    $info[$field_name] = $info[$field_name] = [
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Stock',
+      'description' => 'Associates a stock with this record',
+      'required' => FALSE,
+      'settings' => [
+        'auto_attach' => FALSE,
+        'chado_table' => $stock_table,
+        'base_table' => $table_name,
+        'chado_column' => 'stock_id',
+        'term_accession' => 'C48288',
+        'term_vocabulary' => 'NCIT',
+        'term_name' => 'stock',
+      ],
+      'widget' => [
+        'type' => 'chado_linker__stock_widget',
+        'settings' => [
+          'display_label' => 1,
+        ],
+      ],
+      'display' => [
+        'default' => [
+          'label' => 'hidden',
+          'type' => 'chado_linker__stock_formatter',
+          'settings' => [],
         ],
       ],
     ];

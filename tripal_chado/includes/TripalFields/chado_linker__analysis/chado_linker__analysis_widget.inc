@@ -39,7 +39,7 @@ class chado_linker__analysis_widget extends ChadoFieldWidget {
     $name_term = chado_get_semweb_term('analysis', 'name');
 
     // If the field already has a value then it will come through the $items
-    // array.  This happens when editing an existing record.
+    // array. This happens when editing an existing record.
     if (count($items) > 0 and array_key_exists($delta, $items)) {
       if (is_array($items[$delta]) and is_array($items[$delta]['value']) and array_key_exists($name_term, $items[$delta]['value'])) {
         $name = $items[$delta]['value'][$name_term];
@@ -111,7 +111,7 @@ class chado_linker__analysis_widget extends ChadoFieldWidget {
     // value to be the chado_record_id
     if ($name) {
       $matches = [];
-      if (preg_match('/^.*\[id: (\d+)]$/', $name, $matches)) {
+      if (preg_match('/^.*\[id: (\d+)\]$/', $name, $matches)) {
         $analysis_id = $matches[1];
         $analysis = chado_generate_var('analysis', ['analysis_id' => $analysis_id]);
       }

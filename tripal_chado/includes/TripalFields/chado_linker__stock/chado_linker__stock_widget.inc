@@ -35,14 +35,14 @@ class chado_linker__stock_widget extends ChadoFieldWidget {
     $stock_id = '';
     $name = '';
     $name_label = '';
-    // chado.stock_feature has a type_id and rank column
+    // Special case, chado.stock_feature has a type_id and rank column
     $linker_type_id = '';
-    $linker_rank = '';
+    $linker_rank = 0;
 
     $name_term = chado_get_semweb_term('stock', 'name');
 
     // If the field already has a value then it will come through the $items
-    // array.  This happens when editing an existing record.
+    // array. This happens when editing an existing record.
     if (count($items) > 0 and array_key_exists($delta, $items)) {
       if (is_array($items[$delta]) and is_array($items[$delta]['value']) and array_key_exists($name_term, $items[$delta]['value'])) {
         $name = $items[$delta]['value'][$name_term];
@@ -50,6 +50,9 @@ class chado_linker__stock_widget extends ChadoFieldWidget {
       $fk_value = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__' . $fkey_lcolumn, $fk_value);
       $record_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__' . $pkey, $record_id);
       $stock_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__stock_id', $stock_id);
+      // Only present for chado.stock_feature table.
+      $linker_type_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__type_id', $linker_type_id);
+      $linker_rank = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__rank', $linker_rank);
     }
 
     // Check $form_state['values'] to see if an AJAX call set the values.
@@ -87,6 +90,18 @@ class chado_linker__stock_widget extends ChadoFieldWidget {
       '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/stock',
       '#maxlength' => 100000,
     ];
+
+    if ($linker_type_id) {
+      $widget['chado-' . $field_table . '__type_id'] = [
+        '#type' => 'value',
+        '#default_value' => $linker_type_id,
+      ];
+      $widget['chado-' . $field_table . '__rank'] = [
+        '#type' => 'value',
+        '#default_value' => $linker_rank,
+      ];
+    }
+
   }
 
 
@@ -115,7 +130,7 @@ class chado_linker__stock_widget extends ChadoFieldWidget {
     // value to be the chado_record_id
     if ($name) {
       $matches = [];
-      if (preg_match('/^.*\[id: (\d+)]$/', $name, $matches)) {
+      if (preg_match('/^.*\[id: (\d+)\]$/', $name, $matches)) {
         $stock_id = $matches[1];
         $stock = chado_generate_var('stock', ['stock_id' => $stock_id]);
       }
@@ -125,12 +140,26 @@ class chado_linker__stock_widget extends ChadoFieldWidget {
       if ($stock) {
         $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__stock_id'] = $stock->stock_id;
         $form_state['values'][$field_name]['und'][$delta]['value'] = $name;
+
+        // Special case, chado.stock_feature has a type_id and rank column, needed if adding a new stock.
+        // If this is an existing entry, the type_id and rank are not specified, which leaves them unchanged.
+        if (array_key_exists('type_id', $schema['fields'])) {
+          // If this is a new entry, set type_id to that of the stock.
+          // Rank has a default value (0), so we don't need to specify anything.
+          if (!array_key_exists('chado-' . $field_table . '__type_id', $form_state['values'][$field_name]['und'][$delta])) {
+            $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__type_id'] = $stock->type_id->cvterm_id;
+          }
+        }
       }
     }
     // If no name is provided then we want to set the field for deletion.
     else {
       $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $lfkey_field] = '';
       $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__stock_id'] = '';
+      if (array_key_exists('type_id', $schema['fields'])) {
+        $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__type_id'] = '';
+        $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__rank'] = '';
+      }
     }
   }
 }

@@ -152,8 +152,8 @@ class chado_linker__stock extends ChadoField {
 
     // Linker table name may have stock as either prefix or suffix
     $linker_table = $base_table . '_stock';
-    // Messy special case here, mainlab tripal defines a chado.feature_stock table
-    // conflicting with the tripal chado.stock_feature table.
+    // Unfortunately a special case here, mainlab tripal defines a chado.feature_stock
+    // table conflicting with the tripal chado.stock_feature table.
     if (($base_table == 'feature') or (!chado_table_exists($linker_table))) {
       $linker_table = 'stock_' . $base_table;
     }
@@ -169,8 +169,14 @@ class chado_linker__stock extends ChadoField {
     $count = chado_query($sql1, $args1)->fetchField();
 
     if ($count <= $load_limit) {
+      // Special case, chado.stock_feature has a type_id and rank column.
+      $type_sql = '';
+      if (chado_column_exists($linker_table, 'type_id')) {
+        $type_sql = ' LT.type_id AS linker_type_id, LT.rank AS linker_rank,';
+      }
       // Since there could be many records, perform SQL query directly to reduce overhead.
       $sql2 = 'SELECT LT.'.$pkey.' AS pkey_value,'
+            . $type_sql
             . ' S.stock_id, S.name, S.uniquename,'
             . ' T.name AS type, LOWER(T.name) AS sortkey'
             . ' FROM {'.$linker_table.'} LT'
@@ -197,6 +203,10 @@ class chado_linker__stock extends ChadoField {
           // For the widget to work properly we will preform values.
           'stock_name' => $linker->name . ' [id: ' . $linker->stock_id . ']',
         ];
+        if (property_exists($linker, 'linker_type_id')) {
+          $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__type_id'] = $linker->linker_type_id;
+          $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__rank'] = $linker->linker_rank;
+        }
         $entity_id = chado_get_record_entity_by_table('stock', $linker->stock_id);
         if ($entity_id) {
           $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $entity_id;
