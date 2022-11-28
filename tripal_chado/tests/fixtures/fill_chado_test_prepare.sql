@@ -102,7 +102,7 @@ INSERT INTO chado.db VALUES (41, 'WIKI', '', NULL, '');
 INSERT INTO chado.db VALUES (42, 'https', '', NULL, '');
 INSERT INTO chado.db VALUES (43, 'BioRXiv', '', NULL, '');
 INSERT INTO chado.dbxref VALUES (1, 1, 'local:null', '', NULL);
-INSERT INTO chado.dbxref VALUES (2, 1, 'chado_properties:version', '', NULL);
+INSERT INTO chado.dbxref VALUES (2, 1, 'version', '', NULL);
 INSERT INTO chado.dbxref VALUES (3, 2, '0000044', '', NULL);
 INSERT INTO chado.dbxref VALUES (4, 2, '0000255', '', NULL);
 INSERT INTO chado.dbxref VALUES (5, 2, '0000029', '', NULL);
@@ -16495,3 +16495,4 @@ CREATE INDEX tripal_gffcds_temp__tripal_gff_temp_idx0__idx ON chado.tripal_gffcd
 CREATE INDEX tripal_gffprotein_temp__tripal_gff_temp_idx0__idx ON chado.tripal_gffprotein_temp USING btree (parent_id);
 CREATE INDEX tripal_obo_temp__tripal_obo_temp_idx0__idx ON chado.tripal_obo_temp USING btree (id);
 CREATE INDEX tripal_obo_temp__tripal_obo_temp_idx1__idx ON chado.tripal_obo_temp USING btree (type);
+INSERT INTO chado.chadoprop (type_id, value, rank) SELECT cvterm_id as type_id, '1.3' as value, 0 as rank FROM chado.cvterm WHERE name = 'version';
