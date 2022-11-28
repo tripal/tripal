@@ -2154,6 +2154,13 @@ function tripal_chado_update_7341() {
       'cv_name' => 'ncit',
       'definition' => 'The merchandise that a shop has on hand.',
     ]);
+    // For summary when too many records.
+    chado_insert_cvterm([
+      'id' => 'NCIT:C25463',
+      'name' => 'Count',
+      'cv_name' => 'ncit',
+      'definition' => 'Determining the number or amount of something.',
+    ]);
 
     // Default maximum record limit for chado_linker__xxx fields
     variable_set('chado_linker_load_limit', 500);
