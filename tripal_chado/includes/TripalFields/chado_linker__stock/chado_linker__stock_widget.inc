@@ -1,12 +1,12 @@
 <?php
 
-class chado_linker__contact_widget extends ChadoFieldWidget {
+class chado_linker__stock_widget extends ChadoFieldWidget {
 
   // The default label for this field.
-  public static $default_label = 'Contacts';
+  public static $default_label = 'Stocks';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = ['chado_linker__contact'];
+  public static $field_types = ['chado_linker__stock'];
 
   /**
    *
@@ -27,18 +27,19 @@ class chado_linker__contact_widget extends ChadoFieldWidget {
     $pkey = $schema['primary key'][0];
 
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
-    //    $fkey_lcolumn = key($schema['foreign keys']['protocol']['columns']);
-
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
     // Get the field defaults.
     $record_id = '';
     $fk_value = (array_key_exists('#entity', $element) and $element['#entity']) ? $element['#entity']->chado_record_id : NULL;
-    $contact_id = '';
+    $stock_id = '';
     $name = '';
-    $value = '';
+    $name_label = '';
+    // chado.stock_feature has a type_id and rank column
+    $linker_type_id = '';
+    $linker_rank = '';
 
-    $name_term = chado_get_semweb_term('contact', 'name');
+    $name_term = chado_get_semweb_term('stock', 'name');
 
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.
@@ -48,7 +49,7 @@ class chado_linker__contact_widget extends ChadoFieldWidget {
       }
       $fk_value = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__' . $fkey_lcolumn, $fk_value);
       $record_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__' . $pkey, $record_id);
-      $contact_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__contact_id', $contact_id);
+      $stock_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__stock_id', $stock_id);
     }
 
     // Check $form_state['values'] to see if an AJAX call set the values.
@@ -57,9 +58,10 @@ class chado_linker__contact_widget extends ChadoFieldWidget {
       $name = $form_state['values'][$field_name]['und'][$delta]['name'];
     }
 
+    // Get element values added to help support insert/updates.
+    $name_label = tripal_get_field_item_keyval($items, $delta, 'stock_name', $name);
 
-    $schema = chado_get_schema('contact');
-
+    // Save the values needed by the Chado Storage API.
     $widget['value'] = [
       '#type' => 'value',
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
@@ -73,16 +75,16 @@ class chado_linker__contact_widget extends ChadoFieldWidget {
       '#type' => 'value',
       '#default_value' => $fk_value,
     ];
-    $widget['chado-' . $field_table . '__contact_id'] = [
+    $widget['chado-' . $field_table . '__stock_id'] = [
       '#type' => 'value',
-      '#default_value' => $contact_id,
+      '#default_value' => $stock_id,
     ];
 
     $widget['name'] = [
       '#type' => 'textfield',
-      '#title' => t('Contact'),
-      '#default_value' => $name,
-      '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/contact',
+      '#title' => t('stock'),
+      '#default_value' => $name_label,
+      '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/stock',
       '#maxlength' => 100000,
     ];
   }
@@ -100,8 +102,9 @@ class chado_linker__contact_widget extends ChadoFieldWidget {
     $chado_column = $this->instance['settings']['chado_column'];
     $instance = $this->instance;
 
-    // Get information about this contact linke rtable.
+    // Get information about this stock linker table.
     $schema = chado_get_schema($field_table);
+
     $pkey = $schema['primary key'][0];
     $lfkey_field = key($schema['foreign keys'][$base_table]['columns']);
 
@@ -111,16 +114,23 @@ class chado_linker__contact_widget extends ChadoFieldWidget {
     // If the user provided a name then we want to set the foreign key
     // value to be the chado_record_id
     if ($name) {
-      $contact = chado_generate_var('contact', ['name' => $name]);
-      if ($contact) {
-        $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__contact_id'] = $contact->contact_id;
+      $matches = [];
+      if (preg_match('/^.*\[id: (\d+)]$/', $name, $matches)) {
+        $stock_id = $matches[1];
+        $stock = chado_generate_var('stock', ['stock_id' => $stock_id]);
+      }
+      else {
+        $stock = chado_generate_var('stock', ['name' => $name]);
+      }
+      if ($stock) {
+        $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__stock_id'] = $stock->stock_id;
         $form_state['values'][$field_name]['und'][$delta]['value'] = $name;
       }
     }
     // If no name is provided then we want to set the field for deletion.
     else {
       $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $lfkey_field] = '';
-      $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__contact_id'] = '';
+      $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__stock_id'] = '';
     }
   }
 }

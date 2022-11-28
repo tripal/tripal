@@ -1,6 +1,6 @@
 <?php
 
-class chado_linker__project extends ChadoField {
+class chado_linker__assay extends ChadoField {
 
 
   // --------------------------------------------------------------------------
@@ -12,10 +12,10 @@ class chado_linker__project extends ChadoField {
   // --------------------------------------------------------------------------
 
   // The default label for this field.
-  public static $default_label = 'Projects';
+  public static $default_label = 'Assays';
 
-  // The default description for this field.
-  public static $description = 'Associates a project with this record';
+  // The default uniquename for this field.
+  public static $uniquename = 'Associates an assay with this record';
 
   // Provide a list of instance specific settings. These can be accessed within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
@@ -28,9 +28,9 @@ class chado_linker__project extends ChadoField {
     // The short name for the vocabulary (e.g. schema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'NCIT',
     // The name of the term.
-    'term_name' => 'project',
+    'term_name' => 'assay',
     // The unique ID (i.e. accession) of the term.
-    'term_accession' => 'C47885',
+    'term_accession' => 'C60819',
     // Set to TRUE if the site admin is allowed to change the term
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
@@ -38,10 +38,10 @@ class chado_linker__project extends ChadoField {
   ];
 
   // The default widget for this field.
-  public static $default_widget = 'chado_linker__project_widget';
+  public static $default_widget = 'chado_linker__assay_widget';
 
   // The default formatter for this field.
-  public static $default_formatter = 'chado_linker__project_formatter';
+  public static $default_formatter = 'chado_linker__assay_formatter';
 
   // --------------------------------------------------------------------------
   //              PROTECTED CLASS MEMBERS -- DO NOT OVERRIDE
@@ -62,8 +62,8 @@ class chado_linker__project extends ChadoField {
   public function elementInfo() {
 
     $field_term = $this->getFieldTermID();
-    $name_term = chado_get_semweb_term('project', 'name');
-    $description_term = chado_get_semweb_term('project', 'description');
+    $name_term = chado_get_semweb_term('assay', 'name');
+    $description_term = chado_get_semweb_term('assay', 'description');
 
     return [
       $field_term => [
@@ -75,8 +75,8 @@ class chado_linker__project extends ChadoField {
         'elements' => [
           $name_term => [
             'searchable' => TRUE,
-            'label' => 'Project Name',
-            'help' => 'The name of the project.',
+            'label' => 'Assay Name',
+            'help' => 'The name of the assay.',
             'operations' => ['eq', 'ne', 'contains', 'starts'],
             'sortable' => TRUE,
             'type' => 'xs:string',
@@ -85,8 +85,8 @@ class chado_linker__project extends ChadoField {
           ],
           $description_term => [
             'searchable' => TRUE,
-            'label' => 'Project Description',
-            'help' => 'A description of the project.',
+            'label' => 'Assay Description',
+            'help' => 'A description of the assay.',
             'operations' => ['contains'],
             'sortable' => TRUE,
             'type' => 'xs:string',
@@ -115,8 +115,8 @@ class chado_linker__project extends ChadoField {
     $field_column = $this->instance['settings']['chado_column'];
     $base_table = $this->instance['settings']['base_table'];
 
-    $name_term = chado_get_semweb_term('project', 'name');
-    $description_term = chado_get_semweb_term('project', 'description');
+    $name_term = chado_get_semweb_term('assay', 'name');
+    $description_term = chado_get_semweb_term('assay', 'description');
     $summary_term = 'ncit:Count';
 
     // Set some defaults for the empty record.
@@ -138,18 +138,16 @@ class chado_linker__project extends ChadoField {
       return;
     }
 
-    // Linker table name may have project as either prefix or suffix.
-    $linker_table = 'project_' . $base_table;
+    // Linker table name may have assay as either prefix or suffix
+    $linker_table = $base_table . '_assay';
     if (!chado_table_exists($linker_table)) {
-      $linker_table = $base_table . '_project';
+      $linker_table = 'assay_' . $base_table;
     }
-
-    if (!chado_table_exists($linker_table)) {
+    if (!chado_table_exists($linker_table)) { 
       return;
     }
 
-    // Evaluate how many linked records there are, and if too many just show a summary,
-    // however, this is unlikely for this field.
+    // Evaluate how many linked records there are, and if too many just show a summary.
     $load_limit = array_key_exists('load_limit', $this->instance['settings'])
                 ? $this->instance['settings']['load_limit'] : 500;
     $sql1 = 'SELECT COUNT(*) FROM {'.$linker_table.'} WHERE '.$fkey_lcolumn.' = :fkey_lcolumn_id';
@@ -157,53 +155,42 @@ class chado_linker__project extends ChadoField {
     $count = chado_query($sql1, $args1)->fetchField();
 
     if ($count <= $load_limit) {
-      $options = [
-        'return_array' => 1,
-        'include_fk' => [
-          'project_id' => [
-            'type_id' => [
-              'dbxref_id' => [
-                'db_id' => TRUE,
-              ],
-            ],
-          ],
-          $fkey_lcolumn => TRUE,
-        ],
-      ];
-      $record = chado_expand_var($record, 'table', $linker_table, $options);
-      $project_linkers = $record->$linker_table;
-      if ($project_linkers) {
-        foreach ($project_linkers as $i => $project_linker) {
-          // Expand description if necessary due to length.
-          if (in_array('project.description', $project_linker->expandable_fields)) {
-            $project_linker = chado_expand_var($project_linker, 'field', 'project.description', []);
-          }
-          $project = $project_linker->project_id;
-          $entity->{$field_name}['und'][$i] = [
-            'value' => [
-              $name_term => $project->name,
-              $description_term => $project->description,
-            ],
-            // Add elements that are not part of the values but used by
-            // the chado storage back-end for saving values.
-            'chado-' . $field_table . '__' . $pkey => $project_linker->$pkey,
-            'chado-' . $field_table . '__' . $fkey_lcolumn => $record->$fkey_lcolumn,
-            'chado-' . $field_table . '__' . 'project_id' => $project->project_id,
-            // For the widget to work properly we will preform values.
-            'project_name' => $project->name . ' [id: ' . $project->project_id . ']',
-          ];
+      // Since there could be many records, perform SQL query directly to reduce overhead.
+      $sql2 = 'SELECT LT.'.$pkey.' AS pkey_value, A.assay_id, A.name, A.description'
+            . ' FROM {'.$linker_table.'} LT'
+            . ' LEFT JOIN {assay} A ON LT.assay_id = A.assay_id'
+            . ' WHERE LT.'.$fkey_lcolumn.' = :assay_id'
+            . ' ORDER BY LOWER(A.name)';
+      $args2 = [':assay_id' => $record->$fkey_lcolumn];
+      $linkers = chado_query($sql2, $args2);
 
-          if (property_exists($project, 'entity_id')) {
-            $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $project->entity_id;
-          }
+      $i = 0;
+      while ( $linker = $linkers->fetchObject() ) {
+        $entity->{$field_name}['und'][$i] = [
+          'value' => [
+            $name_term => $linker->name,
+            $description_term => $linker->description,
+          ],
+          // Add elements that are not part of the values but used by
+          // the chado storage back-end for saving values.
+          'chado-' . $field_table . '__' . $pkey => $linker->pkey_value,
+          'chado-' . $field_table . '__' . $fkey_lcolumn => $record->$fkey_lcolumn,
+          'chado-' . $field_table . '__' . 'assay_id' => $linker->assay_id,
+          // For the widget to work properly we will preform values.
+          'assay_name' => $linker->name . ' [id: ' . $linker->assay_id . ']',
+        ];
+        $entity_id = chado_get_record_entity_by_table('assay', $linker->assay_id);
+        if ($entity_id) {
+          $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $entity_id;
         }
+        $i++;
       }
     }
     else {
       // If too many records to display, just return a summary. The widget won't
       // show any existing records, but can be used to add additional records.
       // Web services will only show this summary.
-      $content = t('There are :count related projects', [':count' => $count]);
+      $content = t('There are :count related assays', [':count' => $count]);
 
       // The formatter will check for the $summary_term key, and when
       // present will display this summary and not display the usual table.
@@ -223,32 +210,32 @@ class chado_linker__project extends ChadoField {
     $operator = $condition['operator'];
 
     $field_term_id = $this->getFieldTermID();
-    $name_term = chado_get_semweb_term('project', 'name');
-    $description_term = chado_get_semweb_term('project', 'description');
+    $name_term = chado_get_semweb_term('assay', 'name');
+    $description_term = chado_get_semweb_term('assay', 'description');
 
-    $project_linker = $this->instance['settings']['chado_table'];
+    $assay_linker = $this->instance['settings']['chado_table'];
     $base_table = $this->instance['settings']['base_table'];
 
     // Get the FK that links to the base record.
-    $schema = chado_get_schema($project_linker);
+    $schema = chado_get_schema($assay_linker);
     $pkey = $schema['primary key'][0];
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
-    // Join the project linker table and then join the project table.
-    $calias = 'project_' . $project_linker;
+    // Join the assay linker table and then join the assay table.
+    $calias = 'assay_' . $assay_linker;
     if (!chado_table_exists($calias)) {
-      $calias = $project_linker . '_project';
+      $calias = $assay_linker . '_assay';
     }
-    $this->queryJoinOnce($query, $project_linker, $alias, "base.$fkey_rcolumn = $alias.$fkey_lcolumn");
-    $this->queryJoinOnce($query, 'project', $calias, "$calias.project_id = $alias.project_id");
+    $this->queryJoinOnce($query, $assay_linker, $alias, "base.$fkey_rcolumn = $alias.$fkey_lcolumn");
+    $this->queryJoinOnce($query, 'assay', $calias, "$calias.assay_id = $alias.assay_id");
 
-    // Search by the project name
+    // Search by the assay name
     if ($condition['column'] == $field_term_id or
       $condition['column'] == $field_term_id . ',' . $name_term) {
       $query->condition("$calias.name", $condition['value'], $operator);
     }
-    // Search on the project description.
+    // Search on the assay description.
     if ($condition['column'] == $field_term_id . ',' . $description_term) {
       $query->condition("$calias.description", $condition['value'], $operator);
     }
@@ -260,32 +247,32 @@ class chado_linker__project extends ChadoField {
   public function queryOrder($query, $order) {
     $alias = $this->field['field_name'];
     $field_term_id = $this->getFieldTermID();
-    $name_term = chado_get_semweb_term('project', 'name');
-    $description_term = chado_get_semweb_term('project', 'description');
+    $name_term = chado_get_semweb_term('assay', 'name');
+    $description_term = chado_get_semweb_term('assay', 'description');
 
-    $project_linker = $this->instance['settings']['chado_table'];
+    $assay_linker = $this->instance['settings']['chado_table'];
     $base_table = $this->instance['settings']['base_table'];
 
     // Get the FK that links to the base record.
-    $schema = chado_get_schema($project_linker);
+    $schema = chado_get_schema($assay_linker);
     $pkey = $schema['primary key'][0];
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
-    // Join the project linker table and then join the project table.
-    $calias = 'project_' . $project_linker;
+    // Join the assay linker table and then join the assay table.
+    $calias = 'assay_' . $assay_linker;
     if (!chado_table_exists($calias)) {
-      $calias = $project_linker . '_project';
+      $calias = $assay_linker . '_assay';
     }
-    $this->queryJoinOnce($query, $project_linker, $alias, "base.$fkey_rcolumn = $alias.$fkey_lcolumn", "LEFT OUTER");
-    $this->queryJoinOnce($query, 'project', $calias, "$calias.project_id = $alias.project_id", "LEFT OUTER");
+    $this->queryJoinOnce($query, $assay_linker, $alias, "base.$fkey_rcolumn = $alias.$fkey_lcolumn", "LEFT OUTER");
+    $this->queryJoinOnce($query, 'assay', $calias, "$calias.assay_id = $alias.assay_id", "LEFT OUTER");
 
-    // Search by the project name
+    // Search by the assay name
     if ($order['column'] == $field_term_id or
       $order['column'] == $field_term_id . ',' . $name_term) {
       $query->orderBy("$calias.name", $order['direction']);
     }
-    // Search on the project description.
+    // Search on the assay description.
     if ($order['column'] == $field_term_id . ',' . $description_term) {
       $query->orderBy("$calias.description", $order['direction']);
     }
@@ -296,7 +283,7 @@ class chado_linker__project extends ChadoField {
 /**
  * An Ajax callback for the widget.
  */
-function chado_linker__project_widget_form_ajax_callback($form, $form_state) {
+function chado_linker__assay_widget_form_ajax_callback($form, $form_state) {
 
   $field_name = $form_state['triggering_element']['#parents'][0];
   $delta = $form_state['triggering_element']['#parents'][2];
@@ -309,7 +296,7 @@ function chado_linker__project_widget_form_ajax_callback($form, $form_state) {
  *
  * @param $variables
  */
-function theme_chado_linker__project_widget($variables) {
+function theme_chado_linker__assay_widget($variables) {
   $element = $variables['element'];
 
   // These two fields were added to the widget to help identify the fields
@@ -318,8 +305,8 @@ function theme_chado_linker__project_widget($variables) {
   $fkey = $element['#fkey_field'];
 
   $layout = "
-      <div class=\"chado-linker--project-widget\">
-        <div class=\"chado-linker--project-widget-item\">" .
+      <div class=\"chado-linker--assay-widget\">
+        <div class=\"chado-linker--assay-widget-item\">" .
     drupal_render($element['name']) . "
         </div>
       </div>

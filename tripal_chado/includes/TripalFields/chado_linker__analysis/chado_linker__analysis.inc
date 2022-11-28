@@ -8,7 +8,7 @@ class chado_linker__analysis extends ChadoField {
   //
   // The following constants SHOULD be set for each descendent class.  They are
   // used by the static functions to provide information to Drupal about
-  // the field and it's default widget and formatter.
+  // the field and its default widget and formatter.
   // --------------------------------------------------------------------------
 
   // The default label for this field.
@@ -163,7 +163,7 @@ class chado_linker__analysis extends ChadoField {
       $sql2 = 'SELECT LT.'.$pkey.' AS pkey_value, A.analysis_id, A.name, A.description'
             . ' FROM {'.$linker_table.'} LT'
             . ' LEFT JOIN {analysis} A ON LT.analysis_id = A.analysis_id'
-            . ' WHERE LT.feature_id = :analysis_id'
+            . ' WHERE LT.'.$fkey_lcolumn.' = :analysis_id'
             . ' ORDER BY LOWER(A.name)';
       $args2 = [':analysis_id' => $record->$fkey_lcolumn];
       $linkers = chado_query($sql2, $args2);

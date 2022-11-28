@@ -8,7 +8,7 @@ class chado_linker__feature extends ChadoField {
   //
   // The following constants SHOULD be set for each descendent class.  They are
   // used by the static functions to provide information to Drupal about
-  // the field and it's default widget and formatter.
+  // the field and its default widget and formatter.
   // --------------------------------------------------------------------------
 
   // The default label for this field.
