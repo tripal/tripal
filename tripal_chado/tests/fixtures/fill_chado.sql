@@ -1,1 +1,2 @@
--- @todo: add queries to randomly fill some Chado tables or use a dump?
+INSERT INTO chado.organism (genus, species, abbreviation, common_name)
+  VALUES ('Tripalus', 'databasica', 'T. databasica', 'Tripal');

@@ -226,9 +226,13 @@ trait ChadoTestTrait  {
           __DIR__ . '/../../../chado_schema/chado-only-1.3.sql',
           ['chado' => $schema_name]);
         $this->assertTrue($success, 'Chado schema loaded.');
-        $success = $tripaldbx_db->executeSqlFile(
-          __DIR__ . '/../../fixtures/fill_chado.sql',
-          'none');
+
+        $success = $tripaldbx_db->executeSqlFile(__DIR__ . '/../../fixtures/fill_chado_test_prepare.sql',
+            ['chado' => $schema_name]);
+        $this->assertTrue($success, 'Prepared chado records added.');
+
+        $success = $tripaldbx_db->executeSqlFile(__DIR__ . '/../../fixtures/fill_chado.sql',
+            ['chado' => $schema_name]);
         $this->assertTrue($success, 'Dummy Chado schema loaded.');
         $this->assertGreaterThan(100, $tripaldbx_db->schema()->getSchemaSize(), 'Test schema not empty.');
         break;
