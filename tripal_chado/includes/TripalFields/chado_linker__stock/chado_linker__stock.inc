@@ -129,7 +129,7 @@ class chado_linker__stock extends ChadoField {
     $type_term = chado_get_semweb_term('stock', 'type_id');
     $name_term = chado_get_semweb_term('stock', 'name');
     $uniquename_term = chado_get_semweb_term('stock', 'uniquename');
-    $summary_term = 'ncit:Count';
+    $summary_term = 'NCIT:C25463'; // ncit:Count
 
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = [
@@ -162,8 +162,11 @@ class chado_linker__stock extends ChadoField {
     }
 
     // Evaluate how many linked records there are, and if too many just show a summary.
-    $load_limit = array_key_exists('load_limit', $this->instance['settings'])
-                ? $this->instance['settings']['load_limit'] : 500;
+    $load_limit = variable_get('chado_linker_load_limit');
+    $load_limit = $load_limit ? $load_limit : 500;
+    if (array_key_exists('chado_linker_load_limit', $this->instance['settings'])) {
+      $load_limit = $this->instance['settings']['chado_linker_load_limit'];
+    }
     $sql1 = 'SELECT COUNT(*) FROM {'.$linker_table.'} WHERE '.$fkey_lcolumn.' = :fkey_lcolumn_id';
     $args1 = [':fkey_lcolumn_id' => $record->$fkey_lcolumn];
     $count = chado_query($sql1, $args1)->fetchField();

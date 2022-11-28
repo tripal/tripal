@@ -27,7 +27,7 @@ class chado_linker__assay_formatter extends ChadoFieldFormatter {
 
     $name_term = chado_get_semweb_term('assay', 'name');
     $description_term = chado_get_semweb_term('assay', 'description');
-    $summary_term = 'ncit:Count';
+    $summary_term = 'NCIT:C25463'; // ncit:Count
 
     $headers = ['Name', 'Description'];
     $rows = [];

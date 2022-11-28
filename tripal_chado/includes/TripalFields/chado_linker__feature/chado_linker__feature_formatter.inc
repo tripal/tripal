@@ -28,7 +28,7 @@ class chado_linker__feature_formatter extends ChadoFieldFormatter {
     $type_term = chado_get_semweb_term('feature', 'type_id');
     $name_term = chado_get_semweb_term('feature', 'name');
     $uniquename_term = chado_get_semweb_term('feature', 'uniquename');
-    $summary_term = 'ncit:Count';
+    $summary_term = 'NCIT:C25463'; // ncit:Count
 
     $headers = ['Name', 'Uniquename', 'Feature Type'];
     $rows = [];

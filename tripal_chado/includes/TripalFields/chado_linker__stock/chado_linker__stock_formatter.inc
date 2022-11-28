@@ -28,7 +28,7 @@ class chado_linker__stock_formatter extends ChadoFieldFormatter {
     $type_term = chado_get_semweb_term('stock', 'type_id');
     $name_term = chado_get_semweb_term('stock', 'name');
     $uniquename_term = chado_get_semweb_term('stock', 'uniquename');
-    $summary_term = 'ncit:Count';
+    $summary_term = 'NCIT:C25463'; // ncit:Count
 
     $headers = ['Name', 'Uniquename', 'Stock Type'];
     $rows = [];
