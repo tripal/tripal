@@ -503,11 +503,11 @@ class GFF3Importer extends ChadoImporterBase {
 
 
     if ($line_number and !is_numeric($line_number) or $line_number < 0) {
-      form_set_error('line_number', t("Please provide an integer line number greater than zero."));
+      \Drupal::messenger()->addError(t("Please provide an integer line number greater than zero."));
     }
 
     if (!($re_mrna and $re_protein) and ($re_mrna or $re_protein)) {
-      form_set_error('re_uname', t("You must provide both a regular expression for mRNA and a replacement string for protein"));
+      \Drupal::messenger()->addError(t("You must provide both a regular expression for mRNA and a replacement string for protein"));
     }
 
     // check the regular expression to make sure it is valid
@@ -516,11 +516,11 @@ class GFF3Importer extends ChadoImporterBase {
     $result = preg_replace("/" . $re_mrna . "/", $re_protein, NULL);
     restore_error_handler();
     if ($result_re === FALSE) {
-      form_set_error('re_mrna', 'Invalid regular expression.');
+      \Drupal::messenger()->addError('Invalid regular expression.');
     }
     else {
       if ($result === FALSE) {
-        form_set_error('re_protein', 'Invalid replacement string.');
+        \Drupal::messenger()->addError('Invalid replacement string.');
       }
     }
   }
