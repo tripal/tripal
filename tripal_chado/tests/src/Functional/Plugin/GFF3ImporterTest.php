@@ -32,10 +32,15 @@ class GFF3ImporterTest extends ChadoTestBrowserBase {
    */
   public function testGFFImporterSimpleTest() {
     $public = \Drupal::database();
+
+    // Installs up the chado with the test chado data
     $chado = $this->getTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
-    // $chado = $this->getTestSchema(ChadoTestBrowserBase::INIT_CHADO_EMPTY);
+
+    // Keep track of the schema name in case we need it
     $schema_name = $chado->getSchemaName();
 
+    // Import landmarks from fixture
+    $chado->executeSqlFile(__DIR__ . '/../../../fixtures/gff3_loader/landmarks.sql');
 
     // Insert organism
     $organism_id = $chado->insert('1:organism')
