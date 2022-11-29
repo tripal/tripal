@@ -528,18 +528,10 @@ class GFF3Importer extends ChadoImporterBase {
   /**
    * {@inheritDoc}
    */
-  public function run($settings = NULL) {
+  public function run() {
     $arguments = $this->arguments['run_args'];
 
-    // Check if there's a chado element (this makes it compatible with tests)
-    if ($settings['chado']) {
-      $chado = $settings['chado'];
-      $this->setChadoConnection($chado);
-    }
-    else {
-      // This happens if there's no chado object specified
-      $chado = $this->getChadoConnection();
-    }
+    $chado = $this->getChadoConnection();
 
     $this->gff_file = $this->arguments['files'][0]['file_path'];
 

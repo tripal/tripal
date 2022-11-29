@@ -18,26 +18,10 @@ abstract class ChadoImporterBase extends TripalImporterBase {
   protected $chado_schema_main;
 
   /**
-   * The main chado Tripal DBX Object
-   * Particularly useful for tests which require a specially set up
-   * environment
-   */
-  protected $chado;
-
-  /**
    * {@inheritdoc}
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
-
-  /**
-   * This function can set the chado variable from an external resource
-   * This is used particularly for tests where a specific chado environment
-   * needs to be created.
-   */
-  public function setChadoConnection($chado) {
-    $this->chado = $chado;
   }
 
   /**
@@ -46,17 +30,7 @@ abstract class ChadoImporterBase extends TripalImporterBase {
    * Requires you to call the parent::form in your form.
    */
   public function getChadoConnection() {
-
-    if(!$this->chado) {
-      /**
-       * @var \Drupal\tripal_chado\Database\ChadoConnection $chado
-       */
-      $chado = \Drupal::service('tripal_chado.database');
-      $this->chado = $chado;
-    }
-    else {
-      $chado = $this->chado;
-    }
+    $chado = \Drupal::service('tripal_chado.database');
 
     // Get the chado schema name if available.
     $schema_name = '';

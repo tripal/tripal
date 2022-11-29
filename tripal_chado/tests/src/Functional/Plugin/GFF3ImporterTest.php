@@ -123,10 +123,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase {
     
     $gff3_importer->create($run_args, $file_details); 
     $gff3_importer->prepareFiles();
-    $gff3_importer->run([
-      'chado' => $chado,
-      'schema_name' => $schema_name
-    ]);
+    $gff3_importer->run();
     $gff3_importer->postRun();
     
 
