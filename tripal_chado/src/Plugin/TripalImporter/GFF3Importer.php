@@ -953,7 +953,10 @@ class GFF3Importer extends ChadoImporterBase {
              INNER JOIN {1:db} DB      ON DB.db_id      = DBX.db_id
            WHERE CVT.name = :type_id))
       ";
-      $status = $chado->query($pub_sql);
+      $status = $chado->query($pub_sql, [
+        ':uname' => 'null',
+        ':type_id' => 'null',
+      ]);
       if (!$status) {
         $this->logger->warning("Cannot prepare statement 'ins_pub_uniquename_typeid.");
         return 0;
