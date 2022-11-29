@@ -123,8 +123,6 @@ class ChadoConnectionTest extends ChadoTestBrowserBase {
    * A. no parameters
    * B. schema name supplied
    * C. exact version requested.
-   *
-   * @group lacey-test
    */
   public function testFindVersion() {
     $expected_version = '1.3';
