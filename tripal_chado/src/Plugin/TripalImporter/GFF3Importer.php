@@ -864,7 +864,8 @@ class GFF3Importer extends ChadoImporterBase {
         'is_relationship' => FALSE,
       ];
       // @todo convert api call
-      $cvterm = (object) chado_insert_cvterm($term, ['update_existing' => FALSE]);
+      // $cvterm = (object) chado_insert_cvterm($term, ['update_existing' => FALSE]);
+      $cvterm = (object) $this->insert_cvterm($term, ['update_existing' => FALSE]);
       $cvterm_match = $cvterm;
     }
 
@@ -927,7 +928,8 @@ class GFF3Importer extends ChadoImporterBase {
         'cv_name' => $syncv->name,
         'is_relationship' => FALSE,
       ];
-      $syntype = chado_insert_cvterm($term, ['update_existing' => TRUE]);
+      // $syntype = chado_insert_cvterm($term, ['update_existing' => TRUE]);
+      $syntype = $this->insert_cvterm($term, ['update_existing' => TRUE]);
       if (!$syntype) {
         $this->logger->warning("Cannot add synonym type: synonym_type:exact");
         return 0;
@@ -3197,7 +3199,6 @@ class GFF3Importer extends ChadoImporterBase {
       $idspace = $idsmanager->createCollection($idspace_name, 'chado_id_space');
     }
 
-
     $accession = explode(':', $term['id'])[1];
     // Create the term
     if ($idspace) {
@@ -3216,8 +3217,8 @@ class GFF3Importer extends ChadoImporterBase {
     ->condition('cvterm.name', $accession)
     ->execute()->fetchObject();
 
-    print_r("insert_cvterm function in GFF3Importer.php\n");
-    print_r($cvterm_object);
+    // print_r("insert_cvterm function in GFF3Importer.php\n");
+    // print_r($cvterm_object);
     return $cvterm_object;
   }  
 }
