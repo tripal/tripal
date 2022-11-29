@@ -876,9 +876,10 @@ class GFF3Importer extends ChadoImporterBase {
    * Makes sure Chado is ready with the necessary synonym type records.
    */
   private function prepSynonms() {
+    $chado = $this->getChadoConnection();
     // make sure we have a 'synonym_type' vocabulary
     $select = ['name' => 'synonym_type'];
-    $results = chado_select_record('cv', ['*'], $select);
+    $results = chado_select_record('cv', ['*'], $select, [], $chado->getSchemaName());
 
     if (count($results) == 0) {
       // insert the 'synonym_type' vocabulary
