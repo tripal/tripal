@@ -330,7 +330,7 @@ class GFF3Importer extends ChadoImporterBase {
     $form = parent::form($form, $form_state);
 
     // get the list of organisms
-    $sql = "SELECT * FROM {organism} ORDER BY genus, species";
+    $sql = "SELECT * FROM {1:organism} ORDER BY genus, species";
     $org_rset = $chado->query($sql);
     $organisms = [];
     while ($organism = $org_rset->fetchObject()) {
@@ -1910,7 +1910,7 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setTotalItems($num_batches);
 
     $init_sql = "
-      INSERT INTO {feature}
+      INSERT INTO {1:feature}
         (uniquename, name, type_id, organism_id, residues, md5checksum,
          seqlen, is_analysis, is_obsolete)
       VALUES\n";
@@ -2143,7 +2143,7 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    $init_sql = "INSERT INTO {featureprop} (feature_id, type_id, value, rank) VALUES\n";
+    $init_sql = "INSERT INTO {1:featureprop} (feature_id, type_id, value, rank) VALUES\n";
     $i = 0;
     $j = 0;
     $total = 0;
@@ -2209,7 +2209,7 @@ class GFF3Importer extends ChadoImporterBase {
     $part_of = $this->getTypeID('part_of', FALSE);
     $derives_from = $this->getTypeID('derives_from', FALSE);
 
-    $init_sql = "INSERT INTO {feature_relationship} (subject_id, object_id, type_id, rank) VALUES\n";
+    $init_sql = "INSERT INTO {1:feature_relationship} (subject_id, object_id, type_id, rank) VALUES\n";
     $i = 0;
     $j = 0;
     $total = 0;
@@ -2434,7 +2434,7 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    $init_sql = "INSERT INTO {dbxref} (db_id, accession) VALUES\n";
+    $init_sql = "INSERT INTO {1:dbxref} (db_id, accession) VALUES\n";
     $i = 0;
     $total = 0;
     $batch_num = 1;
@@ -2484,7 +2484,7 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setTotalItems($num_batches);
 
     // Don't need to use placeholders for this insert since we are only using integers.
-    $init_sql = "INSERT INTO {feature_dbxref} (feature_id, dbxref_id) VALUES \n";
+    $init_sql = "INSERT INTO {1:feature_dbxref} (feature_id, dbxref_id) VALUES \n";
     $i = 0;
     $j = 0;
     $total = 0;
@@ -2543,7 +2543,7 @@ class GFF3Importer extends ChadoImporterBase {
 
     // Don't need to use placeholders for this insert since we are only using integers.
 
-    $init_sql = "INSERT INTO {feature_cvterm} (feature_id, cvterm_id, pub_id) VALUES \n";
+    $init_sql = "INSERT INTO {1:feature_cvterm} (feature_id, cvterm_id, pub_id) VALUES \n";
     $i = 0;
     $j = 0;
     $total = 0;
@@ -2606,7 +2606,7 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setTotalItems($num_batches);
 
     $init_sql = "
-      INSERT INTO {featureloc}
+      INSERT INTO {1:featureloc}
         (srcfeature_id, feature_id, fmin, fmax, strand, phase, rank)
       VALUES\n";
     $i = 0;
@@ -2679,7 +2679,7 @@ class GFF3Importer extends ChadoImporterBase {
     // Get the 'derives_from' cvterm
     $type_id = $this->getTypeID('derives_from', FALSE);
 
-    $init_sql = "INSERT INTO {feature_relationship} (subject_id, object_id, type_id, rank) VALUES\n";
+    $init_sql = "INSERT INTO {1:feature_relationship} (subject_id, object_id, type_id, rank) VALUES\n";
     $i = 0;
     $total = 0;
     $batch_num = 1;
@@ -2739,7 +2739,7 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setTotalItems($num_batches);
 
     $init_sql = "
-      INSERT INTO {featureloc}
+      INSERT INTO {1:featureloc}
         (srcfeature_id, feature_id, fmin, fmax, strand, phase, rank)
       VALUES\n";
     $i = 0;
@@ -2913,7 +2913,7 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    $init_sql = "INSERT INTO {synonym} (type_id, name, synonym_sgml) VALUES\n";
+    $init_sql = "INSERT INTO {1:synonym} (type_id, name, synonym_sgml) VALUES\n";
     $i = 0;
     $total = 0;
     $batch_num = 1;
@@ -2963,7 +2963,7 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    $init_sql = "INSERT INTO {feature_synonym} (synonym_id, feature_id, pub_id) VALUES \n";
+    $init_sql = "INSERT INTO {1:feature_synonym} (synonym_id, feature_id, pub_id) VALUES \n";
     $i = 0;
     $j = 0;
     $total = 0;
@@ -3118,7 +3118,7 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    $init_sql = "INSERT INTO {analysisfeature} (feature_id, analysis_id, significance) VALUES \n";
+    $init_sql = "INSERT INTO {1:analysisfeature} (feature_id, analysis_id, significance) VALUES \n";
     $i = 0;
     $total = 0;
     $batch_num = 1;

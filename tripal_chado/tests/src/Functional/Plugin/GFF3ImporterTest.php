@@ -35,12 +35,15 @@ class GFF3ImporterTest extends ChadoTestBrowserBase {
 
     // Installs up the chado with the test chado data
     $chado = $this->getTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
-
+    
     // Keep track of the schema name in case we need it
     $schema_name = $chado->getSchemaName();
 
-    // Import landmarks from fixture
-    $chado->executeSqlFile(__DIR__ . '/../../../fixtures/gff3_loader/landmarks.sql');
+
+    // Test to ensure cvterms are found in the cvterms table
+    $cvterms_count_query = $chado->query("SELECT count(*) as c1 FROM {1:cvterm}");
+    $cvterms_count_object = $cvterms_count_query->fetchObject();
+    $this->assertNotEquals($cvterms_count_object->c1, 0); 
 
     // Insert organism
     $organism_id = $chado->insert('1:organism')
@@ -67,6 +70,21 @@ class GFF3ImporterTest extends ChadoTestBrowserBase {
     $cvterm_object = null;
     $cvterm_object = $result_gene_cvterm->fetchObject();
     $this->assertNotEquals($cvterm_object, null);
+
+
+    // Import landmarks from fixture
+    // $chado->executeSqlFile(__DIR__ . '/../../../fixtures/gff3_loader/landmarks.sql');
+
+    // Manually insert landmarks into features table
+    $chado->query("INSERT INTO {1:feature} (dbxref_id, organism_id, name, uniquename, residues, seqlen, md5checksum, type_id, is_analysis, is_obsolete, timeaccessioned, timelastmodified) VALUES (NULL, 1, 'scaffold1', 'scaffold1', 'CAACAAGAAGTAAGCATAGGTTAATTATCATCCACGCATATTAATCAAGAATCGATGCTCGATTAATGTTTTTGAATTGACAAACAAAAGTTTTGTAAAAAGGACTTGTTGGTGGTGGTGGGGTGGTGGTGATGGTGTGGTGGGTAGGTCGCTGGTCGTCGCCGGCGTGGTGGAAGTCTCGCTGGCCGGTGTCTCGGCGGTCTGGTGGCGGCTGGTGGCGGTAGTTGTGAGTTTTTTCTTTCTTTTTTTGTTTTTTTTTTTTACTTTTTACTTTTTTTTCGTCTTGAACAAATTAAAAATAGAGTTTGTTTGTATTTGGTTATTATTTATTGATAAGGGTATATTCGTCCTGTTTGGTCTTGATGTAATAAAATTAAATTAATTTACGGGCTTCAACTAATAAACTCCTTCATGTTGGTTTGAACTAATAAAAAAAGGGGAAATTTGCTAGACACCCCTAATTTTGGACTTATATGGGTAGAAGTCCTAGTTGCTAGATGAATATAGGCCTAGGTCCATCCACATAAAAAAATAATATAAATTAAATAATAAAAATAATATATAGACATAAGTACCCTTATTGAATAAACATATTTTAGGGGATTCAGTTATATACGTAAAGTTGGGAAATCAAATCCCACTAATCACGATTGAAGGCAGAGTATCGTGTAAGACGTTTGGAAAACATATCTTAGTCGATTCCAGTGGAATATGAGATCA', 720, '83578d8afdaec399c682aa6c0ddd29c9', 474, false, false, '2022-11-28 21:44:51.006276', '2022-11-28 21:44:51.006276');");
+    $chado->query("INSERT INTO {1:feature} (dbxref_id, organism_id, name, uniquename, residues, seqlen, md5checksum, type_id, is_analysis, is_obsolete, timeaccessioned, timelastmodified) VALUES (NULL, 1, 'FRAEX38873_v2_000000010.1', 'FRAEX38873_v2_000000010.1', 'MDQNQFANELISSYFLQQWRHNSQTLTLNPTPSNSGTESDSARSDLEYEDEGEEFPTELDTVNSSGGFSVVGPGKLSVLYPNVNLHGHDVGVVHANCAAPSKRLLYYFEMYVKNAGAKGQIAIGFITSAFKVRRHPGWEANTYGYHGDDGLLYRGRGKGESFGPMYTTDDTKYTTGDTVGGGINYATQEFFFTKNGVVVGTVSKDVKSPVFPTVAVHSQGEEVTVNFGKDPFVFDIKAYEAEQRAIQQEKIDCISIPLDAGHGLVRSYLQHYGYEGTLEFFDMASKSTAPPISLVPENGFNEEDNVYAMNRRTLRELIRHGEIDETFAKLRELYPQIVQDDRSSICFLLHTQKFIELVRVGKLEEAVLYGRSEFEKFKRRSEFDDLVKDCAALLAYERPDNSSVGYLLRESQRELVADAVNAIILATNPNVKDPKCCLQSRLERLLRQLTACFLEKRSLNGGDGEAFHLRRILKSGKKG', 479, 'c5915348dc93ebb73a9bb17acfb29e84', 474, false, false, '2022-11-28 21:44:51.006276', '2022-11-28 21:44:51.006276');");
+    $chado->query("INSERT INTO {1:feature} (dbxref_id, organism_id, name, uniquename, residues, seqlen, md5checksum, type_id, is_analysis, is_obsolete, timeaccessioned, timelastmodified) VALUES (NULL, 1, 'FRAEX38873_v2_000000010.2', 'FRAEX38873_v2_000000010.2', 'MDQNQFANELISSYFLQQWRHNSQTLTLNPTPSNSGTESDSARSDLEYEDEGEEFPTELDTVNSSGGFSVVGPGKLSVLYPNVNLHGHDVGVVHANCAAPSKRLLYYFEMYVKNAGAKGQIAIGFITSAFKVRRHPGWEANTYGYHGDDGLLYRGRGKGESFGPMYTTDDTKYTTGDTVGGGINYATQEFFFTKNGVVVGTVSKDVKSPVFPTVAVHSQGEEVTVNFGKDPFVFDIKAYEAEQRAIQQEKIDCISIPLDAGHGLVRSYLQHYGYEGTLEFFDMASKSTAPPISLVPENGFNEEDNVYAMNRRTLRELIRHGEIDETFAKLRELYPQIVQDDRSSICFLLHTQKFIELVRVGKLEEAVLYGRSEFEKFKRRSEFDDLVKDCAALLAYERPDNSSVGYLLRESQRELVADAVNAIILATNPNVKDPKCCLQSRLERLLRQLTACFLEKRSLNGGDGEAFHLRRILKSGKKG', 479, 'c5915348dc93ebb73a9bb17acfb29e84', 474, false, false, '2022-11-28 21:44:51.006276', '2022-11-28 21:44:51.006276');");
+
+    // Test to ensure scaffold1 is found in the features table after landmarks loaded
+    $scaffold_query = $chado->query("SELECT count(*) as c1 FROM {1:feature}");
+    $scaffold_object = $scaffold_query->fetchObject();
+    print_r("Scaffold object\n");
+    print_r($scaffold_object);    
     
 
     // Perform the GFF3 test by creating an instance of the GFF3 loader
@@ -111,35 +129,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase {
     ]);
     $gff3_importer->postRun();
     
-    // $gff3_importer = new GFF3Importer();
-    // $gff_file = __DIR__ . '/../data/small_gene.gff';
-    // $fasta = ['file_local' => __DIR__ . '/../data/short_scaffold.fasta'];
-    // $run_args = [
-    //   'analysis_id' => $analysis->analysis_id,
-    //   'organism_id' => $organism->organism_id,
-    //   'use_transaction' => 1,
-    //   'add_only' => 0,
-    //   'update' => 1,
-    //   'create_organism' => 0,
-    //   'create_target' => 0,
-    //   // regexps for mRNA and protein.
-    //   're_mrna' => NULL,
-    //   're_protein' => NULL,
-    //   // optional
-    //   'target_organism_id' => NULL,
-    //   'target_type' => NULL,
-    //   'start_line' => NULL,
-    //   'line_number' => NULL, // Previous error without this
-    //   'landmark_type' => NULL,
-    //   'alt_id_attr' => NULL,
-    //   'skip_protein' => NULL,
-    // ];
-    // $this->loadLandmarks($analysis, $organism, $fasta);
 
-    // $arguments = $gff3_importer->getArguments();
-    // $arguments['run_args'] = $run_args;
-    // $arguments['files'][0]['file_path'] = $gff_file;
-    // $gff3_importer->setArguments($arguments); // run arguments from above
 
     // // NEW T4 CODE
     // $gff3_importer->run();
