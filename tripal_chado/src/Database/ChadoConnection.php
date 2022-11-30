@@ -184,10 +184,11 @@ class ChadoConnection extends TripalDbxConnection {
         $version = '0.02';
       }
 
+      // @bug currently weird prefixing when fieldExists is used.
       // 'cv.cvname' column replaced by 'cv.name' after 0.03.
-      if ($this->schema()->fieldExists('cv', 'cvname')) {
-        $version = '0.03';
-      }
+      // if ($this->schema()->fieldExists('cv ', 'cvname')) {
+      //   $version = '0.03';
+      // }
 
       // 'feature_cvterm_dbxref' table added in 1.0.
       if ($this->schema()->tableExists('feature_cvterm_dbxref')) {
@@ -209,10 +210,11 @@ class ChadoConnection extends TripalDbxConnection {
         $version = '1.3';
       }
 
+      // @bug currently weird prefixing when fieldExists is used.
       // 'featureprop.cvalue_id' column added in 1.4.
-      if ($this->schema()->fieldExists('featureprop', 'cvalue_id')) {
-        $version = '1.4';
-      }
+      // if ($this->schema()->fieldExists('featureprop', 'cvalue_id')) {
+      //   $version = '1.4';
+      // }
     }
 
     return $version;

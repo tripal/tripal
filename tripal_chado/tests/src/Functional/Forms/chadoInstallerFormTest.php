@@ -55,6 +55,7 @@ class chadoInstallerFormTest extends BrowserTestBase {
     // Check that the page opens.
     $page_content = $this->drupalGet(Url::fromRoute('tripal_chado.chado_install_form'));
     $status_code = $session->getStatusCode();
+    // @debug print $page_content;
     $this->assertEquals(200, $status_code, "We should be able to access the chado install page.");
 
     // @todo we will want to test more then just this at some point.
