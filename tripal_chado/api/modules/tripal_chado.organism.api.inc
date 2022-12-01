@@ -182,60 +182,72 @@ function chado_get_organism_scientific_name($organism) {
 }
 
 /**
- * Returns a list of organisms that are currently synced with Drupal to use in
- * select lists.
+ * Returns a list of organisms to use in select lists.
  *
  * @param $syncd_only
  *   Whether or not to return all chado organisms or just those sync'd with
- *   drupal. Defaults to TRUE (only sync'd organisms).
+ *   drupal. Defaults to TRUE (only sync'd organisms). For Tripal v3 you want FALSE here.
+ *
+ * @param $show_common_name
+ *   When true, include the organism common name, if present, in parentheses.
  *
  * @return
- *   An array of organisms sync'd with Drupal where each value is the organism
+ *   An array of organisms where each value is the organism
  *   scientific name and the keys are organism_id's.
  *
  * @ingroup tripal_organism_api
  */
-function chado_get_organism_select_options($syncd_only = TRUE) {
+function chado_get_organism_select_options($syncd_only = TRUE, $show_common_name = FALSE) {
+
+  // This flag indicates whether infraspecific nomenclature (chado 1.3) is available on this site.
+  $infra_present = chado_column_exists('organism', 'infraspecific_name');
+
   $org_list = [];
   $org_list[] = 'Select an organism';
 
   if ($syncd_only) {
+    // Retrieve only synced organisms, relevant only for Tripal v2 sites
     $sql = "
-      SELECT *
+      SELECT O.*
       FROM [chado_organism] CO
         INNER JOIN {organism} O ON O.organism_id = CO.organism_id
       ORDER BY O.genus, O.species
     ";
-    // if present in this site's version of chado, include infraspecific nomenclature in sorting
-    if (chado_column_exists('organism', 'infraspecific_name')) {
-      $sql .= ", REPLACE ((SELECT name FROM {cvterm} CVT WHERE CVT.cvterm_id = O.type_id
-                AND CVT.cv_id = (SELECT cv_id FROM {cv} WHERE name='taxonomic_rank')), 'no_rank', ''),
-                O.infraspecific_name";
-    }
-    $orgs = chado_query($sql);
-
-    // Iterate through the organisms and build an array of those that are synced.
-    foreach ($orgs as $org) {
-      $org_list[$org->organism_id] = chado_get_organism_scientific_name($org);
-    }
   }
   else {
-    // use this SQL statement for getting the organisms
-    $csql = "SELECT * FROM {organism} ORDER BY genus, species";
-    // if present in this site's version of chado, include infraspecific nomenclature in sorting
-    if (chado_column_exists('organism', 'infraspecific_name')) {
-      $csql = "SELECT organism_id, genus, species, type_id,"
-            . " (REPLACE ((SELECT name FROM {cvterm} CVT WHERE CVT.cvterm_id = type_id AND CVT.cv_id ="
-            . "   (SELECT cv_id FROM {cv} WHERE name='taxonomic_rank')), 'no_rank', '')) AS infraspecific_type,"
-            . " infraspecific_name FROM {organism} ORDER BY genus, species, infraspecific_type, infraspecific_name";
-    }
-    $orgs = chado_query($csql);
-
-    // Iterate through the organisms and build an array of those that are synced.
-    foreach ($orgs as $org) {
-      $org_list[$org->organism_id] = chado_get_organism_scientific_name($org);
+    // Retrieve all organisms
+    $sql = "
+      SELECT *
+      FROM {organism}
+      ORDER BY genus, species
+    ";
+    if ($infra_present) {
+      $sql = "
+        SELECT organism_id, genus, species, type_id,
+          (REPLACE ((SELECT name FROM {cvterm} CVT WHERE CVT.cvterm_id = type_id AND CVT.cv_id =
+            (SELECT cv_id FROM {cv} WHERE name='taxonomic_rank')), 'no_rank', '')) AS infraspecific_type,
+          infraspecific_name, common_name
+        FROM {organism}
+        ORDER BY genus, species, infraspecific_type, infraspecific_name
+      ";
     }
   }
+  $orgs = chado_query($sql);
+
+  // Iterate through the organisms and build an array of their names.
+  foreach ($orgs as $org) {
+    $org_list[$org->organism_id] = $org->genus . ' ' . $org->species;
+    // Include abbreviated infraspecific nomenclature in name when present,
+    // e.g. subspecies becomes subsp.
+    if ($infra_present and ($org->infraspecific_type or $org->infraspecific_name)) {
+      $org_list[$org->organism_id] = chado_get_organism_scientific_name($org);
+    }
+    // Append common name when requested and when present.
+    if ($show_common_name and $org->common_name) {
+      $org_list[$org->organism_id] .= ' (' . $org->common_name . ')';
+    }
+  }
+
   return $org_list;
 }
 
