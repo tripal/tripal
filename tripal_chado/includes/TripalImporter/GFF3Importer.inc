@@ -822,26 +822,22 @@ class GFF3Importer extends TripalImporter {
     $select = ['uniquename' => 'null'];
     $result = chado_select_record('pub', ['*'], $select);
     if (count($result) == 0) {
+      // Insert the null pub.
       $pub_sql = "
         INSERT INTO {pub} (uniquename,type_id)
         VALUES (:uname,
           (SELECT cvterm_id
-           FROM {cvterm} CVT
-             INNER JOIN {dbxref} DBX ON DBX.dbxref_id = CVT.dbxref_id
-             INNER JOIN {db} DB      ON DB.db_id      = DBX.db_id
-           WHERE CVT.name = :type_id))
+            FROM {cvterm} CVT
+            WHERE CVT.name = :cvterm_name
+            AND cv_id = (SELECT cv_id
+              FROM {cv} CV
+              WHERE CV.name = :cv_name
+            )
+          )
+        )
       ";
-      $status = chado_query($psql);
-      if (!$status) {
-        $this->logMessage("Cannot prepare statement 'ins_pub_uniquename_typeid.", [], TRIPAL_WARNING);
-        return 0;
-      }
-
-      // Insert the null pub.
-      $result = chado_query($pub_sql, [
-          ':uname' => 'null',
-          ':type_id' => 'null',
-      ])->fetchObject();
+      $pub_args = [':uname' => 'null', ':cvterm_name' => 'null', ':cv_name' => 'null'];
+      $result = chado_query($pub_sql, $pub_args)->fetchObject();
       if (!$result) {
         $this->logMessage("Cannot add null publication needed for setup of alias.", [], TRIPAL_WARNING);
         return 0;
