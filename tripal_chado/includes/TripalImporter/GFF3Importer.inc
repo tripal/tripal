@@ -2295,6 +2295,10 @@ class GFF3Importer extends TripalImporter {
           $args = [':landmarks' => $names, ':organism_id' => $organism_id];
           $results = chado_query($sql, $args);
           while ($f = $results->fetchObject()) {
+            if (array_key_exists($f->uniquename, $this->landmarks)) {
+              throw new Exception(t('Duplicate landmark, "!uniquename" is ambiguous for this organism',
+                ['!uniquename' => $f->uniquename]));
+            }
             $this->landmarks[$f->uniquename] = $f->feature_id;
           }
         }
