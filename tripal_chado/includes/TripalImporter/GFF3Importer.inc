@@ -414,9 +414,11 @@ class GFF3Importer extends TripalImporter {
     $form['advanced']['line_number'] = [
       '#type' => 'textfield',
       '#title' => t('Start Line Number'),
+      '#required' => TRUE,
       '#description' => t('Enter the line number in the GFF file where you would like to begin processing.  The
       first line is line number 1.  This option is useful for examining loading problems with large GFF files.'),
       '#size' => 10,
+      '#default_value' => 1,
     ];
 
     $form['advanced']['alt_id_attr'] = [
@@ -619,7 +621,7 @@ class GFF3Importer extends TripalImporter {
           ['!num_features' =>  number_format(count(array_keys($this->update_names)))]);
       $this->updateFeatureNames();
 
-      $this->logMessage("Step  10 of 27: Get new feature IDs...                             ");
+      $this->logMessage("Step 10 of 27: Get new feature IDs...                            ");
       $this->findFeatures();
 
       $this->logMessage("Step 11 of 27: Insert locations...                               ");
@@ -1563,16 +1565,17 @@ class GFF3Importer extends TripalImporter {
       $feature = $this->getCachedFeature($findex);
       $type = $feature['type'];
       if ($type == 'cds' or $type == 'protein' or $type == 'polypeptide') {
-        $parent_name = $feature['parent'];
-        if ($parent_name) {
-          if (!array_key_exists($parent_name, $this->proteins)) {
-            $this->proteins[$parent_name] = [];
-          }
-          if ($type == 'cds') {
-            $this->proteins[$parent_name]['cds'][] = $findex;
-          }
-          if ($type == 'protein' or $type == 'polypeptide') {
-            $this->proteins[$parent_name]['protein'] = $findex;
+        foreach (explode(',', $feature['parent']) as $parent_name) {
+          if ($parent_name) {
+            if (!array_key_exists($parent_name, $this->proteins)) {
+              $this->proteins[$parent_name] = [];
+            }
+            if ($type == 'cds') {
+              $this->proteins[$parent_name]['cds'][] = $findex;
+            }
+            if ($type == 'protein' or $type == 'polypeptide') {
+              $this->proteins[$parent_name]['protein'] = $findex;
+            }
           }
         }
       }
@@ -1806,7 +1809,20 @@ class GFF3Importer extends TripalImporter {
       // Only do an insert if this feature doesn't already exist in the databse.
       if (!$feature_id and !$feature['skipped']) {
         $residues = '';
-        $type_id = $this->feature_cvterm_lookup[$feature['type']];
+        $type = $feature['type'];
+        if (!$type) {
+          throw new Exception(t('Missing a feature type for feature %uniquename',
+              ['%uniquename' => $uniquename]));
+        }
+        // Array lookup is faster, but possibly first time we need a db query
+        $type_id = $this->feature_cvterm_lookup[$type];
+        if (!$type_id) {
+          $type_id = $this->getTypeID($type, FALSE);
+        }
+        if (!$type_id) {
+          throw new Exception(t('Undefined feature type %type for feature %uniquename',
+              ['%type' => $type, '%uniquename' => $uniquename]));
+        }
         $sql .= "(:uniquename_$i, :name_$i, :type_id_$i, :organism_id_$i, :residues_$i, " .
                " :md5checksum_$i, :seqlen_$i, FALSE, FALSE),\n";
         $args[":uniquename_$i"] = $uniquename;
@@ -1864,7 +1880,7 @@ class GFF3Importer extends TripalImporter {
       $total++;
       $i++;
       // Only do an update if this feature already exist in the database and is flagged for update.
-      // TO DO: make is_obsolute updatable. Make sure to add is_obsolute collection to cached feature
+      // TO DO: make is_obsolete updatable. Make sure to add is_obsolete collection to cached feature
       $sql .= "(:name_$i, :feature_id_$i),\n";
       $args[":name_$i"] = $new_name;
       $args[":feature_id_$i"] = $feature_id;
@@ -2563,10 +2579,13 @@ class GFF3Importer extends TripalImporter {
       // If the feature is not skipped
       if (!$feature['skipped'] and $feature['derives_from']) {
         $object_id = $this->features[$feature['derives_from']]['feature_id'];
-        $sql .= "(:subject_id_$i, :object_id_$i, :type_id_$i, 0),\n";
-        $args[":subject_id_$i"] = $feature_id;
-        $args[":object_id_$i"] = $object_id;
-        $args[":type_id_$i"] = $type_id;
+        // If the feature that this was derived from is not defined in the gff3, then skip it
+        if ($object_id) {
+          $sql .= "(:subject_id_$i, :object_id_$i, :type_id_$i, 0),\n";
+          $args[":subject_id_$i"] = $feature_id;
+          $args[":object_id_$i"] = $object_id;
+          $args[":type_id_$i"] = $type_id;
+        }
       }
 
       // If we've reached the size of the batch then let's do the insert.
