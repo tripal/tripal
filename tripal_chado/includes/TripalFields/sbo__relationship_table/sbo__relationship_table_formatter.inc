@@ -180,7 +180,7 @@ class sbo__relationship_table_formatter extends ChadoFieldFormatter {
 
       // Determine if the subject or object is the current entity.
       $is_subject = TRUE;
-      if ($entity->chado_record_id == $item['chado-organism_relationship__object_id']) {
+      if ($entity->chado_record_id == $item['chado-'.$entity->chado_table.'_relationship__object_id']) {
         $is_subject = FALSE;
       }
 
