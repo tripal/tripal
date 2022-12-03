@@ -93,9 +93,9 @@ class ChadoCvAPITest extends ChadoTestBrowserBase {
       $this->assertTrue(ChadoSchema::schemaExists($this->schema_name),
       'testchado schema could not be found to perform further tests');
     }
-	}
+  }
 
-	/**
+  /**
    * Tests chado.cvterm associated functions.
    *
    * @group tripal-chado
@@ -103,12 +103,6 @@ class ChadoCvAPITest extends ChadoTestBrowserBase {
    */
   public function testcvterm() {
     if (ChadoSchema::schemaExists($this->schema_name) == TRUE) {
-
-      // Prep by inserting the null pub needed for this test.
-      \Drupal::database()->query(
-        "INSERT INTO " . $this->schema_name . ".pub (miniref, uniquename, type_id)
-          VALUES ('null', 'null', 1)"
-      );
 
       // INSERT.
       // chado_insert_cvterm().
