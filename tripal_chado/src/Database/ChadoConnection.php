@@ -231,22 +231,22 @@ class ChadoConnection extends TripalDbxConnection {
 
           // 'cell_line' table added in 1.1-1.11.
           if ($this->schema()->tableExists('cell_line')) {
-            $version = '1.1x';
+            $version = '1.1';
           }
 
           // 'cvprop' table added in 1.2-1.24.
           if ($this->schema()->tableExists('cvprop')) {
-            $version = '1.2x';
+            $version = '1.2';
           }
 
           // 'analysis_cvterm' table added in 1.3-1.31.
           if ($this->schema()->tableExists('analysis_cvterm')) {
-            $version = '1.3x';
+            $version = '1.3';
           }
 
           // 'featureprop.cvalue_id' column added in 1.4.
           if ($this->schema()->fieldExists('featureprop', 'cvalue_id')) {
-            $version = '1.4+';
+            $version = '1.4';
           }
         }
       }

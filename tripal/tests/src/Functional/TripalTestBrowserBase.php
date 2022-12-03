@@ -124,23 +124,32 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
 
     // Create the Vocabulary.
     $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
-    $vocabulary = $vmanager->createCollection($values['vocab_name'], 'chado_vocabulary');
-    $this->assertInstanceOf(TripalVocabularyInterface::class, $vocabulary, "Unable to create the Vocabulary.");
+    $vocabulary = $vmanager->loadCollection($values['vocab_name']);
+    if (!$vocabulary) {
+      $vocabulary = $vmanager->createCollection($values['vocab_name'], 'chado_vocabulary');
+      $this->assertInstanceOf(TripalVocabularyInterface::class, $vocabulary, "Unable to create the Vocabulary.");
+    }
 
     // Create the ID Space.
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    $idSpace = $idsmanager->createCollection($values['id_space_name'], 'chado_id_space');
-    $this->assertInstanceOf(TripalIdSpaceInterface::class, $idSpace, "Unable to create the ID Space.");
+    $idSpace = $idsmanager->loadCollection($values['id_space_name']);
+    if (!$idSpace) {
+      $idSpace = $idsmanager->createCollection($values['id_space_name'], 'chado_id_space');
+      $this->assertInstanceOf(TripalIdSpaceInterface::class, $idSpace, "Unable to create the ID Space.");
+    }
     // Assign the vocabulary as the default for this ID Space.
     $idSpace->setDefaultVocabulary($vocabulary->getName());
 
-    // Now create the term.
-    $values['term']['idSpace'] = $idSpace->getName();
-    $values['term']['vocabulary'] = $vocabulary->getName();
-    $term = new TripalTerm($values['term']);
-    $this->assertInstanceOf(TripalTerm::class, $term, "Unable to create the term object.");
-    // and save it to the ID Space.
-    $idSpace->saveTerm($term);
+    $term = $idSpace->getTerm($values['term']['accession']);
+    if (!$term) {
+      // Now create the term.
+      $values['term']['idSpace'] = $idSpace->getName();
+      $values['term']['vocabulary'] = $vocabulary->getName();
+      $term = new TripalTerm($values['term']);
+      $this->assertInstanceOf(TripalTerm::class, $term, "Unable to create the term object.");
+      // and save it to the ID Space.
+      $idSpace->saveTerm($term);
+    }
 
     return $term;
   }
