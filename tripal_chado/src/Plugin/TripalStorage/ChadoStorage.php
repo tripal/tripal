@@ -277,7 +277,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     // Don't update if we don't have any conditions set.
     if (!$this->hasValidConditions($record)) {
       throw new \Exception($this->t('Cannot update record in the Chado "@table" table due to unset conditions. Record: @record',
-          ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+        ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
     }
 
     $update = $chado->update('1:'.$chado_table);
@@ -292,7 +292,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     }
     if ($rows_affected > 1) {
       throw new \Exception($this->t('Incorrectly tried to update multiple records in the Chado "@table" table. Record: @record',
-          ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+        ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
     }
   }
 
@@ -884,6 +884,14 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     $parent_table = !$parent_table ? $left_table : $parent_table;
     $parent_column = !$parent_column ? $left_col : $parent_column;
 
+
+    // Make sure the parent table has a 'joins' array.
+    if (!array_key_exists($parent_table, $records) or
+        !array_key_exists($delta, $records[$parent_table]) or
+        !array_key_exists('joins', $records[$parent_table][$delta])) {
+      $records[$parent_table][$delta]['joins'] = [];
+    }
+    
     // A parent table may have more than one join to a right table so we
     // initialize the right table with an array.
     if (!array_key_exists($right_table, $records[$parent_table][$delta]['joins'])) {
@@ -897,7 +905,10 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     }
 
     // Get then current number of joins to the right table.
-    $num_left = count($records[$parent_table][$delta]['joins'][$left_table]) - 1;
+    $num_left = 0;
+    if (array_key_exists($left_table,$records[$parent_table][$delta]['joins'])) {
+      $num_left = count($records[$parent_table][$delta]['joins'][$left_table]) - 1;
+    }
     $num_right = count($records[$parent_table][$delta]['joins'][$right_table]) - 1;
 
     // Generate aliases for the left and right tables in the join.

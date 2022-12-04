@@ -1415,6 +1415,7 @@ class ChadoPreparer extends ChadoTaskBase {
     if (!array_key_exists('type_id', $schema_def['fields'])) {
       return;
     }
+    print ("Hello1!!!");
 
     $term_id = $mapping->getColumnTermId($chado_table, 'type_id');
     list($idSpace_name, $accession) = explode(':', $term_id);
@@ -1495,6 +1496,7 @@ class ChadoPreparer extends ChadoTaskBase {
       'category' => 'General',
     ]);
     $this->addBaseTableSVFields($entity_type, 'organism');
+    $this->addTypeField($entity_type, 'organism');    
 
     $entity_type = $this->createContentType([
       'label' => 'Analysis',
