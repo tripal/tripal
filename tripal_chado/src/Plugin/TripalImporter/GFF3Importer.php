@@ -1041,6 +1041,7 @@ class GFF3Importer extends ChadoImporterBase {
         ->condition('name', "DB:$dbname");
       $db_count = $db_query->countQuery()->execute()->fetchField();
       $db = $db_query->execute()->fetchObject();
+      print_r("DB COUNT:" . $db_count . "\n");
       if ($db_count == 0) {
         $values = ['name' => "$dbname"];
         // $db = chado_select_record('db', ['db_id'], $values, NULL, $this->chado_schema_main);
@@ -1050,14 +1051,16 @@ class GFF3Importer extends ChadoImporterBase {
         $db_count = $db_query->countQuery()->execute()->fetchField();
         $db = $db_query->execute()->fetchObject();
       }
+      print_r("DB COUNT:" . $db_count . "\n");
       if ($db_count == 0) {
         $values = [
           'name' => $dbname,
-          'description' => 'Added automatically by the Triapl GFF loader.',
+          'description' => 'Added automatically by the Tripal GFF loader.',
         ];
         // $success = chado_insert_record('db', $values, array(
         //   'skip_validation' => TRUE,
         // ), $this->chado_schema_main);
+        print_r("DB NAME:" . $dbname . "\n");
         $success = $chado->insert('1:db')
           ->fields($values)
           ->execute();
