@@ -1061,6 +1061,11 @@ class GFF3Importer extends ChadoImporterBase {
         //   'skip_validation' => TRUE,
         // ), $this->chado_schema_main);
         print_r("DB NAME:" . $dbname . "\n");
+        $debug_db_serial = $chado->query("SELECT currval(pg_get_serial_sequence('" . $chado->getSchemaName() . ".db', 'db_id'));");
+        while($obj = $debug_db_serial->fetchObject) {
+          print_r($obj);
+          print_r("\n");
+        }
         $success = $chado->insert('1:db')
           ->fields($values)
           ->execute();
