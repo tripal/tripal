@@ -879,29 +879,44 @@ class GFF3Importer extends ChadoImporterBase {
     $chado = $this->getChadoConnection();
     // make sure we have a 'synonym_type' vocabulary
     $select = ['name' => 'synonym_type'];
-    $results = chado_select_record('cv', ['*'], $select, NULL, $this->chado_schema_main);
+    // $results = chado_select_record('cv', ['*'], $select, NULL, $this->chado_schema_main);
+    $results_query = $chado->select('1:cv', 'cv')
+      ->fields('cv')
+      ->condition('name', 'synonym_type');
+    $results = $results_query->execute()->fetchObject();
+    $results_count = $results_query->countQuery()->execute()->fetchField();
 
-    if (count($results) == 0) {
+
+    if ($results_count == 0) {
       // insert the 'synonym_type' vocabulary
       $values = [
           'name' => 'synonym_type',
           'definition' => 'vocabulary for synonym types',
       ];
-      $success = chado_insert_record('cv', $values, array(
-          'skip_validation' => TRUE,
-      ), $this->chado_schema_main);
+      // $success = chado_insert_record('cv', $values, array(
+      //     'skip_validation' => TRUE,
+      // ), $this->chado_schema_main);
+      $success = $chado->insert('1:cv')
+        ->fields($values)
+        ->execute();
+
       if (!$success) {
         $this->logger->warning("Failed to add the synonyms type vocabulary.");
         return 0;
       }
       // now that we've added the cv we need to get the record
-      $results = chado_select_record('cv', ['*'], $select, NULL, $this->chado_schema_main);
-      if (count($results) > 0) {
-        $syncv = $results[0];
+      // $results = chado_select_record('cv', ['*'], $select, NULL, $this->chado_schema_main);
+      $results_query = $chado->select('1:cv', 'cv')
+      ->fields('cv')
+      ->condition('name', 'synonym_type');
+      $results = $results_query->execute()->fetchObject();
+      $results_count = $results_query->countQuery()->execute()->fetchField();
+      if ($results_count > 0) {
+        $syncv = $results;
       }
     }
     else {
-      $syncv = $results[0];
+      $syncv = $results;
     }
 
     // get the 'exact' cvterm, which is the type of synonym we're adding
@@ -911,8 +926,24 @@ class GFF3Importer extends ChadoImporterBase {
         'name' => 'synonym_type',
       ],
     ];
-    $result = chado_select_record('cvterm', ['*'], $select, NULL, $this->chado_schema_main);
-    if (count($result) == 0) {
+    // $result = chado_select_record('cvterm', ['*'], $select, NULL, $this->chado_schema_main);
+    $result_cv = $chado->select('1:cv', 'cv')
+      ->fields('cv')
+      ->condition('name', 'synonym_type')
+      ->execute();
+    if (!$result_cv) {
+      $this->logger->warning("DB synonym_type could not be found");
+      return 0;      
+    }
+
+    $result_query = $chado->select('1:cvterm', 'cvterm')
+      ->fields('cvterm')
+      ->condition('name', 'exact')
+      ->condition('cv_id', $result_cv->fetchObject()->cv_id);
+    $result = $result_query->execute()->fetchObject();
+    $result_count = $result_query->countQuery()->execute()->fetchField();
+
+    if ($result_count == 0) {
       $term = [
         'name' => 'exact',
         'id' => "synonym_type:exact",
@@ -929,7 +960,7 @@ class GFF3Importer extends ChadoImporterBase {
       }
     }
     else {
-      $syntype = $result[0];
+      $syntype = $result;
     }
     $this->exact_syn = $syntype;
   }
@@ -942,8 +973,13 @@ class GFF3Importer extends ChadoImporterBase {
     // Check to see if we have a NULL publication in the pub table.  If not,
     // then add one.
     $select = ['uniquename' => 'null'];
-    $result = chado_select_record('pub', ['*'], $select, NULL, $this->chado_schema_main);
-    if (count($result) == 0) {
+    // $result = chado_select_record('pub', ['*'], $select, NULL, $this->chado_schema_main);
+    $result_query = $chado->select('1:pub', 'pub')
+      ->fields('pub')
+      ->condition('uniquename', 'null');
+    $result_count = $result_query->countQuery()->execute()->fetchField();
+
+    if ($result_count == 0) {
       $pub_sql = "
         INSERT INTO {1:pub} (uniquename,type_id)
         VALUES (:uname,
@@ -963,19 +999,25 @@ class GFF3Importer extends ChadoImporterBase {
       }
 
       // Insert the null pub.
-      $result = $chado->query($pub_sql, [
-          ':uname' => 'null',
-          ':type_id' => 'null',
-      ])->fetchObject();
-      if (!$result) {
-        $this->logger->warning("Cannot add null publication needed for setup of alias.");
-        return 0;
-      }
-      $result = chado_select_record('pub', ['*'], $select, NULL, $this->chado_schema_main);
-      $pub = $result[0];
+      // $result = $chado->query($pub_sql, [
+      //     ':uname' => 'null',
+      //     ':type_id' => 'null',
+      // ])->fetchObject();
+      // if (!$result) {
+      //   $this->logger->warning("Cannot add null publication needed for setup of alias.");
+      //   return 0;
+      // }
+
+      // $result = chado_select_record('pub', ['*'], $select, NULL, $this->chado_schema_main);
+      $result_query = $chado->select('1:pub','pub')
+        ->fields('pub')
+        ->condition('uniquename','null');
+      $result = $result_query->execute()->fetchObject();
+      $pub = $result;
     }
     else {
-      $pub = $result[0];
+      $result = $result_query->execute()->fetchObject();
+      $pub = $result;
     }
     $this->null_pub = $pub;
   }
@@ -984,7 +1026,7 @@ class GFF3Importer extends ChadoImporterBase {
    * Makes sure Chado is ready with the necessary DB records.
    */
   private function prepDBs() {
-
+    $chado = $this->getChadoConnection();
     // Get the list of database records that are needed by this GFF file. If
     // they do not exist then add them.
     foreach (array_keys($this->db_lookup) as $dbname) {
@@ -993,22 +1035,39 @@ class GFF3Importer extends ChadoImporterBase {
       // can't be found then look for the name as is.  If it still can't be found
       // the create the database
       $values = ['name' => "DB:$dbname"];
-      $db = chado_select_record('db', ['db_id'], $values, NULL, $this->chado_schema_main);
-      if (count($db) == 0) {
+      // $db = chado_select_record('db', ['db_id'], $values, NULL, $this->chado_schema_main);
+      $db_query = $chado->select('1:db','db')
+        ->fields('db')
+        ->condition('name', "DB:$dbname");
+      $db_count = $db_query->countQuery()->execute()->fetchField();
+      $db = $db_query->execute()->fetchObject();
+      if ($db_count == 0) {
         $values = ['name' => "$dbname"];
-        $db = chado_select_record('db', ['db_id'], $values, NULL, $this->chado_schema_main);
+        // $db = chado_select_record('db', ['db_id'], $values, NULL, $this->chado_schema_main);
+        $db_query = $chado->select('1:db', 'db')
+          ->fields('db')
+          ->condition('name', "$dbname");
+        $db_count = $db_query->countQuery()->execute()->fetchField();
+        $db = $db_query->execute()->fetchObject();
       }
-      if (count($db) == 0) {
+      if ($db_count == 0) {
         $values = [
           'name' => $dbname,
           'description' => 'Added automatically by the Triapl GFF loader.',
         ];
-        $success = chado_insert_record('db', $values, array(
-          'skip_validation' => TRUE,
-        ), $this->chado_schema_main);
+        // $success = chado_insert_record('db', $values, array(
+        //   'skip_validation' => TRUE,
+        // ), $this->chado_schema_main);
+        $success = $chado->insert('1:db')
+          ->fields($values)
+          ->execute();
         if ($success) {
           $values = ['name' => "$dbname"];
-          $db = chado_select_record('db', ['db_id'], $values, NULL, $this->chado_schema_main);
+          // $db = chado_select_record('db', ['db_id'], $values, NULL, $this->chado_schema_main);
+          $db_query = $chado->select('1:db', 'db')
+            ->fields('db')
+            ->condition('name', "$dbname");
+          $db = $db_query->execute()->fetchObject();
         }
         else {
           $this->logger->warning("Cannot find or add the database $dbname.");
@@ -1016,7 +1075,7 @@ class GFF3Importer extends ChadoImporterBase {
         }
       }
 
-      $this->db_lookup[$dbname] = $db[0]->db_id;
+      $this->db_lookup[$dbname] = $db->db_id;
     }
   }
 
