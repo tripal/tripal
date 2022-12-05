@@ -419,7 +419,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
         $subject_id = $matches[1];
       }
       // Otherwise we need to look it up using the name field determined in the
-      // constructor for the current field. There may be more then one name field
+      // constructor for the current field. There may be more than one name field
       // (e.g. organism: genus + species) so we want to check both.
       else {
         $sql = 'SELECT ' . $fkey_rcolumn . ' FROM {' . $base_table . '} WHERE ' . implode('||', $this->base_name_columns) . '=:keyword';
@@ -438,7 +438,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
         $object_id = $matches[1];
       }
       // Otherwise we need to look it up using the name field determined in the
-      // constructor for the current field. There may be more then one name field
+      // constructor for the current field. There may be more than one name field
       // (e.g. organism: genus + species) so we want to check both.
       else {
         $sql = 'SELECT ' . $fkey_rcolumn . ' FROM {' . $base_table . '} WHERE ' . implode('||', $this->base_name_columns) . '=:keyword';
@@ -461,7 +461,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
         }
       }
       // Otherwise, maybe we are creating the entity...
-      // The storage API sohuld handle this case and automagically add the key in once
+      // The storage API should handle this case and automagically add the key in once
       // the chado record is created... so all we need to do is set the other columns.
       elseif ($subject_name && $object_id && $type_id) {
         $form_state['values'][$field_name][$langcode][$delta]['value'] = 'value must be set but is not used';
@@ -479,7 +479,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
           $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__rank'] = $form_state['values'][$field_name][$langcode][$delta]['_weight'];
         }
       }
-      // Otherwise, we don't have a vallue to insert so leave them blank.
+      // Otherwise, we don't have a value to insert so leave them blank.
       else {
         $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $subject_id_key] = '';
         $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key] = '';
