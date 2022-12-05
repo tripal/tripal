@@ -25,11 +25,16 @@ class schema__additional_type_widget extends TripalWidgetBase {
    * {@inheritdoc}
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-
+    $chado = \Drupal::service('tripal_chado.database');
+      
+    // Get the field settings.
+    $field_definition = $items[$delta]->getFieldDefinition();
+    $field_settings = $field_definition->getSettings();
+    $storage_settings = $field_settings['storage_plugin_settings'];
+    
     $cvterm_id = $items[$delta]->value ?? NULL;
     $default_value = '';
-    if ($cvterm_id) {
-      $chado = \Drupal::service('tripal_chado.database');
+    if ($cvterm_id) {      
       $query = $chado->select('1:cvterm', 'cvt');
       $query->leftJoin('1:dbxref', 'dbx', 'dbx.dbxref_id = cvt.dbxref_id');
       $query->leftJoin('1:db', 'db', 'dbx.db_id = db.db_id');
@@ -39,6 +44,22 @@ class schema__additional_type_widget extends TripalWidgetBase {
       $query->condition('cvt.cvterm_id', $cvterm_id);
       $result = $query->execute()->fetchObject();
       $default_value = $result->name  . ' (' . $result->db_name . ':' . $result->accession . ')';
+    }
+    
+    $fixed_value = NULL;
+    if (array_key_exists('fixed_value', $storage_settings['property_settings']['value'])) {
+      $fixed_value = $storage_settings['property_settings']['value']['fixed_value'];     
+      list($idSpace, $accession) = explode(':', $fixed_value);
+      $query = $chado->select('1:cvterm', 'cvt');
+      if ($accession) {
+        $query->fields('cvt', ['cvterm_id', 'name']);
+        $query->join('1:dbxref', 'dbx', 'dbx.dbxref_id = cvt.dbxref_id');
+        $query->join('1:db', 'db', 'db.db_id = dbx.db_id');
+        $query->condition('db.name', $idSpace);
+        $query->condition('dbx.accession', $accession);
+        $cvterm = $query->execute()->fetchObject();
+        $default_value = $cvterm->name  . ' (' .$idSpace . ':' . $accession . ')';
+      }
     }
 
     // Use the element defaults. They contain the required value, title, etc.
@@ -53,6 +74,9 @@ class schema__additional_type_widget extends TripalWidgetBase {
     $element['value_autoc']['#default_value'] = $default_value;
     $element['value_autoc']['#autocomplete_route_name'] = 'tripal.cvterm_autocomplete';
     $element['value_autoc']['#autocomplete_route_parameters'] = ['count' => 10];
+    if ($fixed_value and $default_value) {
+      $element['#disabled'] = TRUE;
+    }
 
     // Store the numeric value in a hidden value.
     $element['value'] = [

@@ -104,7 +104,7 @@ class chado_linker__prop extends ChadoFieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public function tripalValuesTemplate() {
+  public function tripalValuesTemplate($field_definition) {
 
     // Get the field settings.
     $field_definition = $this->getFieldDefinition();

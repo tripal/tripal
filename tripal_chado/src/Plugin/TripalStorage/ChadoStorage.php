@@ -168,7 +168,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     $transaction_chado = $chado->startTransaction();
     try {
 
-      // First: Insert the base table records first.
+      // First: Insert the base table records.
       foreach ($build['base_tables'] as $base_table => $record_id) {
         foreach ($records[$base_table] as $delta => $record) {
           $record_id = $this->insertChadoRecord($records, $base_table, $delta, $record);
@@ -288,7 +288,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     $rows_affected = $update->execute();
     if ($rows_affected == 0) {
       throw new \Exception($this->t('Failed to update record in the Chado "@table" table. Record: @record',
-          ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+        ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
     }
     if ($rows_affected > 1) {
       throw new \Exception($this->t('Incorrectly tried to update multiple records in the Chado "@table" table. Record: @record',
@@ -543,7 +543,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           $definition = $info['definition'];
           $prop_type = $info['type'];
 
-          // Get the feild and property storage settings.
+          // Get the field and property storage settings.
           $field_settings = $definition->getSettings();
           $field_storage_settings = $field_settings['storage_plugin_settings'];
           $prop_storage_settings = $prop_type->getStorageSettings();
@@ -554,7 +554,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           $base_pkey = $base_table_def['primary key'];
 
           // Get the Chado table information. If one is not specified (as
-          // in teh case of single value fields) then default to the base
+          // in the case of single value fields) then default to the base
           // table.
           $chado_table = $base_table;
           $chado_table_def = $base_table_def;
@@ -565,15 +565,24 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             $pkey = $chado_table_def['primary key'];
           }
 
-          // Skip values we don't have tables or deltas fo in the record array.
+          // Skip values we don't have tables or deltas for in the record array.
           if (!in_array($chado_table, array_keys($records)) or
               !in_array($delta, array_keys($records[$chado_table]))) {
             continue;
           }
 
+          // If this is the record_id property then set it's value.
           if ($key == 'record_id') {
             $record_id = $records[$chado_table][$delta]['conditions'][$pkey];
             $values[$field_name][$delta][$key]['value']->setValue($record_id);
+          }
+          
+          // If this is a property managing a linked record ID then set it too.
+          if (array_key_exists('action', $prop_storage_settings)) {
+            if ($prop_storage_settings['action'] == 'link') {
+              $linked_record_id = $records[$chado_table][$delta]['conditions'][$pkey];
+              $values[$field_name][$delta][$key]['value']->setValue($linked_record_id);
+            }
           }
         }
       }
@@ -746,18 +755,18 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
 
           $field_label = $definition->getLabel();
           $field_settings = $definition->getSettings();
-          $field_storage_settings = $field_settings['storage_plugin_settings'];
+          $storage_plugin_settings = $field_settings['storage_plugin_settings'];
           $prop_storage_settings = $prop_type->getStorageSettings();
 
           // Check that the chado table is set.
-          if (!array_key_exists('base_table', $field_storage_settings)) {
+          if (!array_key_exists('base_table', $storage_plugin_settings)) {
             $logger->error($this->t('Cannot store the property, @field.@prop, in Chado. The field is missing the chado base table name.',
                 ['@field' => $field_name, '@prop' => $key]));
             continue;
           }
 
           // Get the base table definitions.
-          $base_table = $field_storage_settings['base_table'];
+          $base_table = $storage_plugin_settings['base_table'];
           $base_table_def = $schema->getTableDef($base_table, ['format' => 'drupal']);
           $base_pkey = $base_table_def['primary key'];
 
@@ -821,6 +830,14 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             if ($delete_if_empty) {
               $records[$chado_table][$delta]['delete_if_empty'][] = $key;
             }
+          }
+          if ($action == 'link') {            
+            // Set the value for the FK link in the records.
+            $chado_column = $prop_storage_settings['chado_column'];
+            $link_column = $prop_storage_settings['link_column'];
+            $records[$chado_table][$delta]['fields'][$link_column] = ['REPLACE_BASE_RECORD_ID', $base_table];
+            // Set a condition for the linked record.
+            $records[$chado_table][$delta]['conditions'][$chado_column] = $prop_value->getValue();            
           }
           if ($action == 'join') {
             $path = $prop_storage_settings['path'];
@@ -961,7 +978,10 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
 
     $missing = [];
     foreach ($table_def['fields'] as $col => $info) {
-      $col_val = $record['fields'][$col];
+      $col_val = NULL;
+      if (array_key_exists($col, $record['fields'])) {
+        $col_val = $record['fields'][$col];
+      }
 
       // Don't check the pkey
       if ($col == $pkey) {
@@ -1025,7 +1045,10 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
         $query->fields('ct');
         foreach ($ukey_cols as $col) {
           $col = trim($col);
-          $col_val = $record['fields'][$col];
+          $col_val = NULL;
+          if (array_key_exists($col, $record['fields'])) {
+            $col_val = $record['fields'][$col];
+          }
           // There is an issue with postgreSQL that if the value is allowed
           // to be null but it is in a unique constraint then it will allow
           // it to be inserted because a Null != NULL. So, skip checking
@@ -1053,7 +1076,10 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             $params = [];
             foreach ($ukey_cols as $col) {
               $col = trim($col);
-              $col_val = $record['fields'][$col];
+              $col_val = NULL;
+              if (array_key_exists($col, $record['fields'])) {
+                $col_val = $record['fields'][$col];
+              }
               if ($table_def['fields'][$col]['not null'] == FALSE and !$col_val) {
                 continue;
               }
@@ -1088,7 +1114,10 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
 
     $bad_fks = [];
-    $fkeys = $table_def['foreign keys'];
+    if (!array_key_exists('foreign keys', $table_def)) {
+      return;
+    }
+    $fkeys = $table_def['foreign keys'];    
     foreach ($fkeys as $fk_table => $info) {
       foreach ($info['columns'] as $lcol => $rcol) {
 
@@ -1144,7 +1173,10 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
 
     $bad_types = [];
     foreach ($table_def['fields'] as $col => $info) {
-      $col_val = $record['fields'][$col];
+      $col_val = NULL;
+      if (array_key_exists($col, $record['fields'])) {
+        $col_val = $record['fields'][$col];
+      }
 
       // Skip fields without values. If they are required
       // but missing then the validateRequired() function will ccthc those.
@@ -1218,7 +1250,10 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
 
     $bad_sizes = [];
     foreach ($table_def['fields'] as $col => $info) {
-      $col_val = $record['fields'][$col];
+      $col_val = NULL;
+      if (array_key_exists($col, $record['fields'])) {
+        $col_val = $record['fields'][$col];
+      }
 
       // Skip fields without values. If they are required
       // but missing then the validateRequired() function will ccthc those.

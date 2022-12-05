@@ -139,6 +139,21 @@ tables:
             -   name: 'value'
                 term_id: 'NCIT:C25712'
                 term_name: 'Value'
+                
+    -   name: 'analysisprop'
+        columns:
+            -   name: 'analysis_id'
+                term_id: 'operation:2945'
+                term_name: 'Analysis'
+            -   name: 'rank'
+                term_id: 'OBCS:0000117'
+                term_name: 'rank order'
+            -   name: 'type_id'
+                term_id: 'schema:additionalType'
+                term_name: 'additionalType'
+            -   name: 'value'
+                term_id: 'NCIT:C25712'
+                term_name: 'Value'
 
     -   name: 'analysis_organism'
         columns:
