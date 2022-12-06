@@ -8,7 +8,7 @@ class sbo__relationship extends ChadoField {
   //
   // The following constants SHOULD be set for each descendent class.  They are
   // used by the static functions to provide information to Drupal about
-  // the field and it's default widget and formatter.
+  // the field and its default widget and formatter.
   // --------------------------------------------------------------------------
 
   // The default label for this field.
@@ -1035,18 +1035,12 @@ class sbo__relationship extends ChadoField {
         'element' => 'type',
       ];
     }
-    if (!$subject_name) {
+    // Either subject or object can be blank and will default to the current record.
+    if (!$subject_name AND !$object_name) {
       $errors[] = [
         'error' => 'sbo__relationship',
-        'message' => t("Please provide the subject of the relationship."),
+        'message' => t("Please provide the subject and object of the relationship."),
         'element' => 'subject',
-      ];
-    }
-    if (!$object_name) {
-      $errors[] = [
-        'error' => 'sbo__relationship',
-        'message' => t("Please provide the object of the relationship."),
-        'element' => 'object',
       ];
     }
 
@@ -1083,76 +1077,80 @@ class sbo__relationship extends ChadoField {
     // latter we will pull it out.
     $subject_id = '';
     $fkey_rcolumn = $this->schema['foreign keys'][$base_table]['columns'][$subject_id_key];
-    $matches = [];
-    if (preg_match('/\[id: (\d+)\]/', $subject_name, $matches)) {
-      $subject_id = $matches[1];
-      $values = [$fkey_rcolumn => $subject_id];
-      $subject = chado_select_record($base_table, [$fkey_rcolumn], $values);
-      if (count($subject) == 0) {
-        $errors[] = [
-          'error' => 'sbo__relationship',
-          'message' => t("The subject record cannot be found using the specified id (e.g. [id: xx])."),
-          'element' => 'subject',
-        ];
+    if ($subject_name) {
+      $matches = [];
+      if (preg_match('/\[id: (\d+)\]/', $subject_name, $matches)) {
+        $subject_id = $matches[1];
+        $values = [$fkey_rcolumn => $subject_id];
+        $subject = chado_select_record($base_table, [$fkey_rcolumn], $values);
+        if (count($subject) == 0) {
+          $errors[] = [
+            'error' => 'sbo__relationship',
+            'message' => t("The subject record cannot be found using the specified id (e.g. [id: xx])."),
+            'element' => 'subject',
+          ];
+        }
       }
-    }
-    else {
-      // Otherwise we need to look it up using the name field determined in the
-      // constructor for the current field. There may be more than one name field
-      // (e.g. organism: genus + species) so we want to check both.
-      $sql = 'SELECT ' . $fkey_rcolumn . ' FROM {' . $base_table . '} WHERE ' . implode('||', $this->base_name_columns) . '=:keyword';
-      $subject = chado_query($sql, [':keyword' => $subject_name])->fetchAll();
-      if (count($subject) == 0 AND $chado_record_id) {
-        $errors[] = [
-          'error' => 'sbo__relationship',
-          'message' => t("The subject record cannot be found. Please check spelling."),
-          'element' => 'subject',
-        ];
-      }
-      elseif (count($subject) > 1) {
-        $errors[] = [
-          'error' => 'sbo__relationship',
-          'message' => t("The subject is not unique and therefore the relationship cannot be made."),
-          'element' => 'subject',
-        ];
+      else {
+        // Otherwise we need to look it up using the name field determined in the
+        // constructor for the current field. There may be more than one name field
+        // (e.g. organism: genus + species) so we want to check both.
+        $sql = 'SELECT ' . $fkey_rcolumn . ' FROM {' . $base_table . '} WHERE ' . implode("||' '||", $this->base_name_columns) . '=:keyword';
+        $subject = chado_query($sql, [':keyword' => $subject_name])->fetchAll();
+        if (count($subject) == 0 AND !$chado_record_id) {
+          $errors[] = [
+            'error' => 'sbo__relationship',
+            'message' => t("The subject record cannot be found. Please check spelling."),
+            'element' => 'subject',
+          ];
+        }
+        elseif (count($subject) > 1) {
+          $errors[] = [
+            'error' => 'sbo__relationship',
+            'message' => t("The subject is not unique and therefore the relationship cannot be made."),
+            'element' => 'subject',
+          ];
+        }
       }
     }
 
     // Now check for a matching object.
     $object_id = '';
     $fkey_rcolumn = $this->schema['foreign keys'][$base_table]['columns'][$object_id_key];
-    $matches = [];
-    if (preg_match('/\[id: (\d+)\]/', $object_name, $matches)) {
-      $object_id = $matches[1];
-      $values = [$fkey_rcolumn => $object_id];
-      $object = chado_select_record($base_table, [$fkey_rcolumn], $values);
-      if (count($object) == 0) {
-        $errors[] = [
-          'error' => 'sbo__relationship',
-          'message' => t("The object record cannot be found using the specified id (e.g. [id: xx])."),
-          'element' => 'object',
-        ];
+    if ($object_name) {
+      $matches = [];
+      if (preg_match('/\[id: (\d+)\]/', $object_name, $matches)) {
+        $object_id = $matches[1];
+        $values = [$fkey_rcolumn => $object_id];
+        $object = chado_select_record($base_table, [$fkey_rcolumn], $values);
+        if (count($object) == 0) {
+          $errors[] = [
+            'error' => 'sbo__relationship',
+            'message' => t("The object record cannot be found using the specified id (e.g. [id: xx])."),
+            'element' => 'object',
+          ];
+        }
       }
-    }
-    else {
-      // Otherwise we need to look it up using the name field determined in the
-      // constructor for the current field. There may be more than one name field
-      // (e.g. organism: genus + species) so we want to check both.
-      $sql = 'SELECT ' . $fkey_rcolumn . ' FROM {' . $base_table . '} WHERE ' . implode('||', $this->base_name_columns) . '=:keyword';
-      $object = chado_query($sql, [':keyword' => $object_name])->fetchAll();
-      if (count($object) == 0 AND $chado_record_id) {
-        $errors[] = [
-          'error' => 'sbo__relationship',
-          'message' => t("The object record cannot be found. Please check spelling."),
-          'element' => 'object',
-        ];
-      }
-      elseif (count($object) > 1) {
-        $errors[] = [
-          'error' => 'sbo__relationship',
-          'message' => t("The object is not unique and therefore the relationship cannot be made."),
-          'element' => 'object',
-        ];
+      else {
+        // Otherwise we need to look it up using the name field determined in the
+        // constructor for the current field. There may be more than one name field
+        // (e.g. organism: genus + species) so we want to check both.
+        $sql = 'SELECT ' . $fkey_rcolumn . ' FROM {' . $base_table . '} WHERE ' . implode("||' '||", $this->base_name_columns) . '=:keyword';
+        $object = chado_query($sql, [':keyword' => $object_name])->fetchAll();
+        if (count($object) == 0 AND !$chado_record_id) {
+          $errors[] = [
+            'error' => 'sbo__relationship',
+            'message' => t("The object record cannot be found. Please check spelling."),
+            'element' => 'object',
+          ];
+        }
+        elseif (count($object) > 1) {
+          $errors[] = [
+            'error' => 'sbo__relationship',
+            'message' => t("The object is not unique and therefore the relationship cannot be made."),
+            'element' => 'object',
+          ];
+        }
       }
     }
 
