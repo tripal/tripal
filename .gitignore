@@ -10,7 +10,3 @@ docs/docs
 docs/html
 docs/latex
 docs/xml
-*.OLD
-*.DEBUG
-*.OKAY
-*.PREVIOUS
