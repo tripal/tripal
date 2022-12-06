@@ -1061,8 +1061,13 @@ class GFF3Importer extends ChadoImporterBase {
         //   'skip_validation' => TRUE,
         // ), $this->chado_schema_main);
         print_r("DB NAME:" . $dbname . "\n");
+        $debug_dbs = $chado->query("SELECT * FROM {1:db} ORDER BY db_id ASC");
+        while ($obj = $debug_dbs->fetchObject()) {
+          print_r($obj);
+          print_r("\n");
+        }
         $debug_db_serial = $chado->query("SELECT currval(pg_get_serial_sequence('" . $chado->getSchemaName() . ".db', 'db_id'));");
-        while($obj = $debug_db_serial->fetchObject) {
+        while($obj = $debug_db_serial->fetchObject()) {
           print_r($obj);
           print_r("\n");
         }
