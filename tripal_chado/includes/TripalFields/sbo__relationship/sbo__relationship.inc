@@ -1039,7 +1039,7 @@ class sbo__relationship extends ChadoField {
     if (!$subject_name AND !$object_name) {
       $errors[] = [
         'error' => 'sbo__relationship',
-        'message' => t("Please provide the subject and object of the relationship."),
+        'message' => t("Please provide the subject or object of the relationship."),
         'element' => 'subject',
       ];
     }
