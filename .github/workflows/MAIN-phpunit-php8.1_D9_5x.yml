@@ -1,5 +1,5 @@
 
-name: PHPUnit on Drupal 9.5.x-dev (PHP 8.1)
+name: PHPUnit
 on:
   push:
     branches:
