@@ -425,8 +425,11 @@ class sbo__relationship_widget extends ChadoFieldWidget {
         else {
           $sql = 'SELECT ' . $fkey_rcolumn . ' FROM {' . $base_table . '} WHERE ' . implode("||' '||", $this->base_name_columns) . '=:keyword';
           $subject = chado_query($sql, [':keyword' => $subject_name])->fetchAll();
-          if (count($subject) > 0) {
+          if (count($subject) == 1) {
             $subject_id = $subject[0]->$fkey_rcolumn;
+          }
+          else {
+            form_set_error('sbo__relationship][' . $langcode . '][' . $delta . '][subject_name', 'The subject does not exist');
           }
         }
       }
@@ -450,8 +453,11 @@ class sbo__relationship_widget extends ChadoFieldWidget {
         elseif ($object_name) {
           $sql = 'SELECT ' . $fkey_rcolumn . ' FROM {' . $base_table . '} WHERE ' . implode("||' '||", $this->base_name_columns) . '=:keyword';
           $object = chado_query($sql, [':keyword' => $object_name])->fetchAll();
-          if (count($object) > 0) {
+          if (count($object) == 1) {
             $object_id = $object[0]->$fkey_rcolumn;
+          }
+          else {
+            form_set_error('sbo__relationship][' . $langcode . '][' . $delta . '][object_name', 'The object does not exist');
           }
         }
       }
