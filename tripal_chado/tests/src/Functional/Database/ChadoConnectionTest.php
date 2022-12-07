@@ -111,6 +111,63 @@ class ChadoConnectionTest extends ChadoTestBrowserBase {
   }
 
   /**
+   * Tests the Drupal query builders while quering chado.
+   */
+  public function testChadoQueryBuilding() {
+
+    // INSERT:
+    try {
+      $query = $this->chado->insert('1:db')
+        ->fields(['name' => 'GO']);
+      $query->execute();
+    } catch (\Drupal\Core\Database\DatabaseExceptionWrapper $e) {
+      $this->assertTrue(FALSE, "We should be able to insert into the Chado db table.");
+    }
+    $db_id = $this->chado->query("SELECT db_id FROM {1:db} WHERE name='GO'")->fetchField();
+    $this->assertIsNumeric($db_id, "We should be able to select the primary key of the newly inserted db record.");
+
+    // SELECT:
+    try {
+      $queryBuilder_db_id = $this->chado->select('1:db', 'db')
+        ->fields('db', ['db_id'])
+        ->condition('db.name', 'GO', '=')
+        ->execute()
+        ->fetchField();
+    } catch (\Drupal\Core\Database\DatabaseExceptionWrapper $e) {
+      $this->assertTrue(FALSE, "We should be able to select from the Chado db table using the query builder.");
+    }
+    $this->assertIsNumeric($queryBuilder_db_id, "We expect the returned db_id to be numeric.");
+    $this->assertEquals($db_id, $queryBuilder_db_id, "Both the query builder and query directly should provide the same result.");
+
+    // UPDATE:
+    $description = 'This is the description we will add during update.';
+    try {
+      $query = $this->chado->update('1:db')
+        ->fields(['description' => $description])
+        ->condition('name', 'GO', '=');
+      $query->execute();
+    } catch (\Drupal\Core\Database\DatabaseExceptionWrapper $e) {
+      $this->assertTrue(FALSE, "We should be able to update the Chado db table using the query builder.");
+    }
+    $results = $this->chado->query("SELECT * FROM {1:db} WHERE name='GO'")->fetchAll();
+    $this->assertEquals(1, sizeof($results), "There should be only a single GO db record.");
+    $this->assertIsNumeric($results[0]->db_id, "We should be able to select the primary key of the newly updated db record.");
+    $this->assertEquals($db_id, $results[0]->db_id, "The primary key should remain unchanged during update.");
+
+    // DELETE:
+    try {
+      $this->chado->delete('1:db')
+        ->condition('db.name', 'GO', '=')
+        ->execute();
+    } catch (\Drupal\Core\Database\DatabaseExceptionWrapper $e) {
+      $this->assertTrue(FALSE, "We should be able to delete from the Chado db table using the query builder.");
+    }
+    $results = $this->chado->query("SELECT * FROM {1:db} WHERE name='GO'")->fetchAll();
+    $this->assertEquals(0, sizeof($results), "There should not be any GO db record left.");
+
+  }
+
+  /**
    * This tests the ChadoConnection::findVersion() method.
    *
    * We will test that the version can be obtained from the test schema when it
