@@ -31,9 +31,9 @@ This project acts as the home of Tripal 4 development. Once Tripal 4 is stable, 
 ### Required for Tripal 4.alpha1 Release
 
 - ✅ Testing on 9.5.x + 10.0.x w/ target 9.4.x ([#257](https://github.com/tripal/t4d8/issues/257))
-- Make Tripal DBX more stable
+- ✅ Make Tripal DBX more stable
   - ✅ [#217](https://github.com/tripal/t4d8/issues/217)
-  - [#218](https://github.com/tripal/t4d8/issues/218)
+  - ✅ [#218](https://github.com/tripal/t4d8/issues/218)
 - Ensure Content Type is using Terms fully ([#256](https://github.com/tripal/t4d8/issues/256))
 - ✅ Automated creation of fields for Chado ([#258](https://github.com/tripal/t4d8/issues/258))
 - ✅ Organism complex field (tests foreign key fields; [#259](https://github.com/tripal/t4d8/issues/259) )
