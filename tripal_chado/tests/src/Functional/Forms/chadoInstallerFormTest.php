@@ -47,35 +47,18 @@ class chadoInstallerFormTest extends BrowserTestBase {
    *
    * @group form
    * @group chado-install
+   * @group chado-install-form
    */
   public function testLoadInstallerForm() {
-    $assert = $this->assertSession();
+    $session = $this->getSession();
 
     // Check that the page opens.
-    $this->drupalGet(Url::fromRoute('tripal_chado.chado_install_form'));
-    $assert->statusCodeEquals(200);
+    $page_content = $this->drupalGet(Url::fromRoute('tripal_chado.chado_install_form'));
+    $status_code = $session->getStatusCode();
+    // @debug print $page_content;
+    $this->assertEquals(200, $status_code, "We should be able to access the chado install page.");
 
-    // Check that the page contains the header.
-    $assert->pageTextContains('Chado Installation');
-
-    $this->markTestIncomplete(
-      'This test needs to be updated to the new form.'
-    );
-
-    // Check that the form can set the action and the schema name.
-    $assert->fieldExists('Installation/Upgrade Action');
-    $assert->fieldExists('Chado Schema Name');
-
-    // Now check that we can submit the form.
-    $values = [
-      'action_to_do' => 'Install Chado v1.3',
-      'schema_name' => uniqid(),
-    ];
-    // Submit the form.
-    $this->submitForm($values, 'Submit');
-
-    // Now there should be a message mentioning the schema to be installed.
-    $assert->responseContains($values['schema_name']);
+    // @todo we will want to test more then just this at some point.
   }
 
 }

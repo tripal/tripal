@@ -1269,8 +1269,8 @@ abstract class TripalDbxConnection extends PgConnection {
           $replace[] = '\1' . $replacement . '\2';
 
           // Find/replace any in-query table prefixing.
-          $search[] = '/ '. preg_quote($old_name) . '\.(\w+) /';
-          $replace[] = ' ' . $replacement . '.\1 ';
+          $search[] = '/([ \'])'. preg_quote($old_name) . '\.(\w+[ \'])/';
+          $replace[] = '\1' . $replacement . '.\2';
 
         }
         $sql_queries = preg_replace(

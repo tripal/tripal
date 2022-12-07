@@ -58,6 +58,7 @@ INSERT INTO chado.cv VALUES (57, 'schema', 'Schema.org. Schema.org is sponsored 
 INSERT INTO chado.cv VALUES (58, 'sep', 'A structured controlled vocabulary for the annotation of sample processing and separation techniques in scientific experiments.');
 INSERT INTO chado.cv VALUES (59, 'SIO', 'The Semanticscience Integrated Ontology (SIO) provides a simple, integrated ontology of types and relations for rich description of objects, processes and their attributes.');
 INSERT INTO chado.cv VALUES (60, 'synonym_type', NULL);
+SELECT pg_catalog.setval('chado.cv_cv_id_seq', 60, true);
 INSERT INTO chado.db VALUES (2, 'CO_010', 'Crop Germplasm Ontology', 'http://www.cropontology.org/terms/CO_010:{accession}', 'http://www.cropontology.org/get-ontology/CO_010');
 INSERT INTO chado.db VALUES (11, 'OBI', 'The Ontology for Biomedical Investigation', 'http://purl.obolibrary.org/obo/{db}_{accession}', 'http://obi-ontology.org/page/Main_Page');
 INSERT INTO chado.db VALUES (3, 'dc', 'DCMI Metadata Terms', 'http://purl.org/dc/terms/{accession}', 'http://purl.org/dc/dcmitype/');
@@ -101,8 +102,9 @@ INSERT INTO chado.db VALUES (32, 'sep', 'Sample processing and separation techni
 INSERT INTO chado.db VALUES (41, 'WIKI', '', NULL, '');
 INSERT INTO chado.db VALUES (42, 'https', '', NULL, '');
 INSERT INTO chado.db VALUES (43, 'BioRXiv', '', NULL, '');
+SELECT pg_catalog.setval('chado.db_db_id_seq', 43, true);
 INSERT INTO chado.dbxref VALUES (1, 1, 'local:null', '', NULL);
-INSERT INTO chado.dbxref VALUES (2, 1, 'chado_properties:version', '', NULL);
+INSERT INTO chado.dbxref VALUES (2, 1, 'version', '', NULL);
 INSERT INTO chado.dbxref VALUES (3, 2, '0000044', '', NULL);
 INSERT INTO chado.dbxref VALUES (4, 2, '0000255', '', NULL);
 INSERT INTO chado.dbxref VALUES (5, 2, '0000029', '', NULL);
@@ -3555,6 +3557,7 @@ INSERT INTO chado.dbxref VALUES (3451, 27, '0000252', '', NULL);
 INSERT INTO chado.dbxref VALUES (3452, 27, '0000253', '', NULL);
 INSERT INTO chado.dbxref VALUES (3453, 27, '0000254', '', NULL);
 INSERT INTO chado.dbxref VALUES (3454, 27, '0000255', '', NULL);
+SELECT pg_catalog.setval('chado.dbxref_dbxref_id_seq', 3454, true);
 INSERT INTO chado.cvterm VALUES (1, 1, 'null', NULL, 1, 0, 0);
 INSERT INTO chado.cvterm VALUES (2, 4, 'version', 'Chado schema version', 2, 0, 0);
 INSERT INTO chado.cvterm VALUES (3, 5, 'accession', '', 3, 0, 0);
@@ -6700,6 +6703,7 @@ INSERT INTO chado.cvterm VALUES (3142, 32, 'Media Alias', 'An alternate name for
 INSERT INTO chado.cvterm VALUES (3143, 32, 'Media Code', 'A unique special code for a journal, book, conference proceeding, etc', 3452, 0, 0);
 INSERT INTO chado.cvterm VALUES (3144, 32, 'Publication Code', 'A unique special code for journal article, book, book chapter or any publication type.', 3453, 0, 0);
 INSERT INTO chado.cvterm VALUES (3145, 32, 'Patent Number', 'A unique special code for journal article, book, book chapter or any publication type.', 3454, 0, 0);
+SELECT pg_catalog.setval('chado.cvterm_cvterm_id_seq', 3145, true);
 INSERT INTO chado.cvterm_dbxref VALUES (1, 411, 412, 0);
 INSERT INTO chado.cvterm_dbxref VALUES (2, 345, 488, 0);
 INSERT INTO chado.cvterm_dbxref VALUES (3, 345, 489, 0);
@@ -7025,6 +7029,7 @@ INSERT INTO chado.cvterm_dbxref VALUES (322, 2866, 3172, 0);
 INSERT INTO chado.cvterm_dbxref VALUES (323, 2867, 3174, 0);
 INSERT INTO chado.cvterm_dbxref VALUES (324, 2868, 3176, 0);
 INSERT INTO chado.cvterm_dbxref VALUES (325, 2869, 3178, 0);
+SELECT pg_catalog.setval('chado.cvterm_dbxref_cvterm_dbxref_id_seq', 325, true);
 INSERT INTO chado.cvterm_relationship VALUES (1, 202, 201, 203);
 INSERT INTO chado.cvterm_relationship VALUES (2, 202, 218, 219);
 INSERT INTO chado.cvterm_relationship VALUES (3, 202, 222, 223);
@@ -10455,6 +10460,7 @@ INSERT INTO chado.cvterm_relationship VALUES (3427, 2931, 3144, 2933);
 INSERT INTO chado.cvterm_relationship VALUES (3428, 2931, 3145, 2933);
 INSERT INTO chado.cvterm_relationship VALUES (3429, 2931, 2980, 2933);
 INSERT INTO chado.cvterm_relationship VALUES (3430, 2931, 2952, 2933);
+SELECT pg_catalog.setval('chado.cvterm_relationship_cvterm_relationship_id_seq', 3430, true);
 INSERT INTO chado.cvtermprop VALUES (1, 199, 153, 'SOFA', 0);
 INSERT INTO chado.cvtermprop VALUES (2, 200, 155, 'This relationship is vague and up for discussion.', 0);
 INSERT INTO chado.cvtermprop VALUES (3, 201, 155, 'If A is a feature with multiple regions such as a multi exon transcript, the supporting EST evidence is complete if each of the regions is supported by an equivalent region in B. Also there must be no extra regions in B that are not represented in A. This relationship was requested by jeltje on the SO term tracker. The thread for the discussion is available can be accessed via tracker ID:1917222.', 0);
@@ -11796,6 +11802,7 @@ INSERT INTO chado.cvtermprop VALUES (1338, 3129, 153, 'MeSH_Publication_Type', 0
 INSERT INTO chado.cvtermprop VALUES (1339, 3130, 153, 'MeSH_Publication_Type', 0);
 INSERT INTO chado.cvtermprop VALUES (1340, 3131, 153, 'MeSH_Publication_Type', 0);
 INSERT INTO chado.cvtermprop VALUES (1341, 3132, 153, 'MeSH_Publication_Type', 0);
+SELECT pg_catalog.setval('chado.cvtermprop_cvtermprop_id_seq', 1341, true);
 INSERT INTO chado.cvtermsynonym VALUES (1, 251, 'sequence', NULL);
 INSERT INTO chado.cvtermsynonym VALUES (2, 252, 'INSDC_feature:misc_structure', NULL);
 INSERT INTO chado.cvtermsynonym VALUES (3, 252, 'sequence secondary structure', NULL);
@@ -16352,6 +16359,7 @@ INSERT INTO chado.cvtermsynonym VALUES (4553, 2912, 'last_name', NULL);
 INSERT INTO chado.cvtermsynonym VALUES (4554, 2913, 'first_name', NULL);
 INSERT INTO chado.cvtermsynonym VALUES (4555, 2955, 'Patents', NULL);
 INSERT INTO chado.cvtermsynonym VALUES (4556, 2960, 'Author List', NULL);
+SELECT pg_catalog.setval('chado.synonym_synonym_id_seq', 4556, false);
 CREATE TABLE chado.analysis_organism (
     analysis_id bigint NOT NULL,
     organism_id bigint NOT NULL
@@ -16495,3 +16503,4 @@ CREATE INDEX tripal_gffcds_temp__tripal_gff_temp_idx0__idx ON chado.tripal_gffcd
 CREATE INDEX tripal_gffprotein_temp__tripal_gff_temp_idx0__idx ON chado.tripal_gffprotein_temp USING btree (parent_id);
 CREATE INDEX tripal_obo_temp__tripal_obo_temp_idx0__idx ON chado.tripal_obo_temp USING btree (id);
 CREATE INDEX tripal_obo_temp__tripal_obo_temp_idx1__idx ON chado.tripal_obo_temp USING btree (type);
+INSERT INTO chado.chadoprop (type_id, value, rank) SELECT cvterm_id as type_id, '1.3' as value, 0 as rank FROM chado.cvterm WHERE name = 'version';
