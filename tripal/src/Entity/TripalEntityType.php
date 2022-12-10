@@ -137,6 +137,68 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
   protected $ajax_field;
 
   // --------------------------------------------------------------------------
+  //                             CREATE + SAVE
+  //
+  // Tripal Entity Types are created using the Drupal Entity API.
+  // To create new type, you will use the static create function we extended
+  // below to pass in the info for the new type and then call the save method on
+  // the created object to permanently save it to your site.
+  //
+  //    $new_entityType = TripalEntityType::create($details);
+  //    if (is_object($entityType)) {
+  //      $new_entityType->save();
+  //    }
+  // --------------------------------------------------------------------------
+
+  /**
+   * Contructs a new TripalEntityType object without permanently saving it.
+   *
+   * Extends EntityBase::create() with support for TripalTerm as a value.
+   *
+   * @param array $values
+   *    An array of values to set, keyed by property name. Supported keys are:
+   *      -
+   * @return TripalEntityType
+   *    An TripalEntityType with the values passed in set appropriately.
+   */
+  public static function create(array $values = []) {
+
+    // Check if a TripalTerm object was passed in.
+    // If yes, extract the ID Space and Accession for saving.
+
+    // Ensure that required values are supplied.
+
+    // Let the parent implementation finish creating the object.
+    // NOTE: We do things in this order because a configuration entity cannot
+    // save an object to it's storage. Thus we need to extract the term strings
+    // for storage and retrieve the Term object later if requested via getTerm().
+    parent::create($values);
+  }
+
+  /**
+   * Saves the new TripalEntityType permanently.
+   *
+   * Extends ConfigEntityBase::save() with support for creating the associated
+   * TripalTerm if it doesn't already exist.
+   *
+   * When saving existing entities, the entity is assumed to be complete,
+   * partial updates of entities are not supported.
+   *
+   * @return int
+   *   Either SAVED_NEW or SAVED_UPDATED, depending on the operation performed.
+   */
+   public function save() {
+
+     // Check that the TripalTerm exists with the ID Space and Accession
+     // added to this type when it was created.
+
+     // If not, then create the TripalTerm, TripalIDSpace and TripalVocabulary.
+
+     // Finally save the rest of the entity using the parent implementation.
+     return parent::save();
+   }
+
+  // --------------------------------------------------------------------------
   //                          MAIN SETTER / GETTERS
   //
   // The following methods allow the main properties of the Tripal Entity Type

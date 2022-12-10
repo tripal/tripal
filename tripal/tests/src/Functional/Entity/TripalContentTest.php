@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\tripal\Functional\Entity;
 
-use Drupal\Tests\BrowserTestBase;
+use Drupal\Tests\tripal\Functional\TripalTestBrowserBase;
 use Drupal\Core\Url;
 
 /**
@@ -11,13 +11,43 @@ use Drupal\Core\Url;
  * @group Tripal
  * @group Tripal Content
  */
-class TripalContentTest extends BrowserTestBase {
-    protected $defaultTheme = 'stable';
-
-    protected static $modules = ['tripal'];
+class TripalContentTest extends TripalTestBrowserBase {
 
   /**
-   * Basic tests for Tripal Content Types.
+   * Test the CRUD actions for Tripal Content Type and Tripal Content Entities.
+   */
+  public function testTripalContentCRUD() {
+
+    // Setting the default values:
+    $random = $this->getRandomGenerator();
+    // Sets a random id + associated machine name.
+    $values['id'] = random_int(1,500);
+    $values['name'] = 'bio_data_' . $values['id'];
+    // Provides a title with ~8 latin capitalized words.
+    $values['label'] = $random->sentences(8,TRUE);
+    // Provides a category with ~3 latin capitalized words.
+    $values['category'] = $random->sentences(3,TRUE);
+
+    // Create a mock term to provide to the entity.
+    $term_name = $random->sentences(3,TRUE);
+    $term = $this->createMock('\Drupal\tripal\TripalVocabTerms\TripalTerm');
+    $term->expects($this->any())
+      ->method('getName')->will($this->returnValue($term_name));
+    $values['term'] = $term;
+
+    // Actually creating the type.
+    $entity_type_obj = \Drupal\tripal\Entity\TripalEntityType::create($values);
+    $this->assertIsObject($entity_type_obj, "Unable to create a test content type.");
+    $entity_type_obj->save();
+
+    // A quick double check before returning it.
+    $entity_type = $entity_type_obj->getName();
+    $this->assertEquals($values['name'], $entity_type, "Unable to retrieve machine name from the newly created entity type.");
+  }
+
+  /**
+   * Testing that the Tripal content pages load without error
+   * and that permissions are correct.
    */
   public function testTripalEmptyContentTypes() {
     $assert = $this->assertSession();
@@ -50,6 +80,69 @@ class TripalContentTest extends BrowserTestBase {
       $this->drupalGet($url);
       $assert->statusCodeEquals(200);
     }
+  }
+
+  /**
+   * HELPER: Create Tripal Term.
+   *
+   * NOTE: This function can be removed when PR tripal/t4d8 #274 is merged.
+   * At this point you can replace it with TripalTestBrowserBase->createTripalTerm().
+   *
+   * @param array $values
+   *   These values are passed directly to the create() method. Suggested values are:
+   *    - vocab_name (string)
+   *    - id_space_name (string)
+   *    - term (array)
+   *        - name (string)
+   *        - definition (string)
+   *        - accession (string)
+   */
+  private function helperCreateTripalTerm($values) {
+
+    // Setting the default values:
+    $random = $this->getRandomGenerator();
+    // Provides a title with ~4 latin capitalized words.
+    $values['vocab_name'] = $values['vocab_name'] ?? $random->sentences(4, TRUE);
+    // Provides a 4 character string.
+    $values['id_space_name'] = $values['id_space_name'] ?? $random->word(4);
+    $values['term'] = $values['term'] ?? array();
+    // Provides a unique string with ~8 characters.
+    $values['term']['accession'] = $values['term']['accession'] ?? $random->name(8, TRUE);
+    // Provides a title with ~2 latin capitalized words.
+    $values['term']['name'] = $values['term']['name'] ?? $random->sentences(2, TRUE);
+    // Provides as collection of sentences with ~20 words.
+    $values['term']['definition'] = $values['term']['definition'] ?? $random->sentences(20);
+
+    // Create the Vocabulary.
+    $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
+    $vocabulary = $vmanager->loadCollection($values['vocab_name']);
+    if (!$vocabulary) {
+      $vocabulary = $vmanager->createCollection($values['vocab_name'], 'chado_vocabulary');
+      $this->assertInstanceOf(TripalVocabularyInterface::class, $vocabulary, "Unable to create the Vocabulary.");
+    }
+
+    // Create the ID Space.
+    $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+    $idSpace = $idsmanager->loadCollection($values['id_space_name']);
+    if (!$idSpace) {
+      $idSpace = $idsmanager->createCollection($values['id_space_name'], 'chado_id_space');
+      $this->assertInstanceOf(TripalIdSpaceInterface::class, $idSpace, "Unable to create the ID Space.");
+    }
+    // Assign the vocabulary as the default for this ID Space.
+    $idSpace->setDefaultVocabulary($vocabulary->getName());
+
+    $term = $idSpace->getTerm($values['term']['accession']);
+    if (!$term) {
+      // Now create the term.
+      $values['term']['idSpace'] = $idSpace->getName();
+      $values['term']['vocabulary'] = $vocabulary->getName();
+      $term = new TripalTerm($values['term']);
+      $this->assertInstanceOf(TripalTerm::class, $term, "Unable to create the term object.");
+      // and save it to the ID Space.
+      $idSpace->saveTerm($term);
+    }
+
+    return $term;
   }
 
 }
