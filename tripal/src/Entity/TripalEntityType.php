@@ -3,6 +3,7 @@
 namespace Drupal\tripal\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
+use Drupal\tripal\TripalVocabTerms\TripalTerm;
 
 /**
  * Defines the Tripal Content type entity.
@@ -163,16 +164,82 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    */
   public static function create(array $values = []) {
 
+    // Set the id and name of the content type. This follows a very specific
+    // pattern and thus should not be set in the $values array.
+    // Get the next bio_data_x index number.
+    $cid = 'chado_bio_data_index';
+    $cached_val = \Drupal::cache()->get($cid, 0);
+    if (is_object($cached_val)) {
+      $cached_val = $cached_val->data;
+    }
+    $next_index = $cached_val + 1;
+    $bundle = 'bio_data_' . $next_index;
+    $values['id'] = $next_index;
+    $values['name'] = $bundle;
+
     // Check if a TripalTerm object was passed in.
     // If yes, extract the ID Space and Accession for saving.
+    if (array_key_exists('term', $values)) {
+      if (is_a($values['term'], '\Drupal\tripal\TripalVocabTerms\TripalTerm')) {
+        $term = $values['term'];
+        unset($values['term']);
+        $values['termIdSpace'] = $term->getIdSpace();
+        $values['termAccession'] = $term->getAccession();
+      }
+      else {
+        $class_name_passed_in = get_class($values['term']);
+        throw new \Exception("When passing a term to create a TripalEntityType is must be of type TripalTerm. You passed in an object of type " . $class_name_passed_in . ".");
+      }
+    }
+
+    // Fill in default values.
+    // The key is the key expected in $values and the value is the default
+    // value to apply if that key was not already set.
+    $defaults = [];
+    $defaults['category'] = 'General';
+    $defaults['hide_empty_field'] = TRUE;
+    $defaults['ajax_field'] = TRUE;
+    foreach ($defaults as $key => $default_value) {
+      if (!array_key_exists($key, $values)) {
+        $values[$key] = $default_value;
+      }
+    }
 
     // Ensure that required values are supplied.
+    // The key is the key expected in $values, all of these should be strings.
+    $required_values = [ 'label', 'termIdSpace', 'termAccession', 'help_text' ];
+    foreach ($required_values as $key) {
+      if (array_key_exists($key, $values)) {
+        if (!is_string($values[$key])) {
+          $passed_in_type = gettype($values[$key]);
+          throw new \Exception("The $key is expected to be a string. You passed in a $passed_in_type.");
+        }
+      }
+      else {
+        throw new \Exception("The $key is required when creating a TripalEntityType.");
+      }
+    }
+    // Check that the title format is provided and contains at least one token.
+    if (array_key_exists('title_format', $values)) {
+      // @todo
+    }
+    else {
+      throw new \Exception("You must provide a title format when creating a TripalEntityType.");
+    }
+    // Check that the URL format is provided, contains at least one token
+    // and is a valid URL.
+    if (array_key_exists('url_format', $values)) {
+      // @todo
+    }
+    else {
+      throw new \Exception("You must provide a URL format when creating a TripalEntityType.");
+    }
 
     // Let the parent implementation finish creating the object.
     // NOTE: We do things in this order because a configuration entity cannot
     // save an object to it's storage. Thus we need to extract the term strings
     // for storage and retrieve the Term object later if requested via getTerm().
-    parent::create($values);
+    return parent::create($values);
   }
 
   /**

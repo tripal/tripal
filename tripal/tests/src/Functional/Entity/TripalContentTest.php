@@ -20,19 +20,25 @@ class TripalContentTest extends TripalTestBrowserBase {
 
     // Setting the default values:
     $random = $this->getRandomGenerator();
-    // Sets a random id + associated machine name.
-    $values['id'] = random_int(1,500);
-    $values['name'] = 'bio_data_' . $values['id'];
     // Provides a title with ~8 latin capitalized words.
     $values['label'] = $random->sentences(8,TRUE);
     // Provides a category with ~3 latin capitalized words.
     $values['category'] = $random->sentences(3,TRUE);
+    // Provides a title with ~8 latin capitalized words.
+    $values['help_text'] = $random->sentences(25);
+    // Provides a title with ~8 latin capitalized words.
+    $values['title_format'] = $random->sentences(8,TRUE);
+    // Provides a category with ~3 latin capitalized words separated by '/'.
+    $values['url_format'] = str_replace(' ', '/', $random->sentences(3,TRUE));
 
     // Create a mock term to provide to the entity.
-    $term_name = $random->sentences(3,TRUE);
+    $term_idspace = $random->sentences(3,TRUE);
+    $term_accession = $random->sentences(3,TRUE);
     $term = $this->createMock('\Drupal\tripal\TripalVocabTerms\TripalTerm');
     $term->expects($this->any())
-      ->method('getName')->will($this->returnValue($term_name));
+      ->method('getIdSpace')->will($this->returnValue($term_idspace));
+    $term->expects($this->any())
+      ->method('getAccession')->will($this->returnValue($term_accession));
     $values['term'] = $term;
 
     // Actually creating the type.
@@ -41,8 +47,8 @@ class TripalContentTest extends TripalTestBrowserBase {
     $entity_type_obj->save();
 
     // A quick double check before returning it.
-    $entity_type = $entity_type_obj->getName();
-    $this->assertEquals($values['name'], $entity_type, "Unable to retrieve machine name from the newly created entity type.");
+    $entity_type_label = $entity_type_obj->getLabel();
+    $this->assertEquals($values['label'], $entity_type_label, "Unable to retrieve label from the newly created entity type.");
   }
 
   /**
