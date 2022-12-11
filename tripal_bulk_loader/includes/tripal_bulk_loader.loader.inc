@@ -350,6 +350,8 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
 
     // Start Transaction
     $savepoint = '';
+    $transactions = FALSE;
+    $new_transaction_per_row = FALSE;
     switch (variable_get('tripal_bulk_loader_transactions', 'row')) {
       case "none":
         break;
