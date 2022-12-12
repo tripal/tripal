@@ -1044,6 +1044,16 @@ class ChadoPreparer extends ChadoTaskBase {
     $entityType = NULL;
     $bundle = '';
 
+    $cid = 'chado_bio_data_index';
+    $cached_val = \Drupal::cache()->get($cid, 0);
+    if (is_object($cached_val)) {
+      $cached_val = $cached_val->data;
+    }
+    $next_index = $cached_val + 1;
+    $bundle = 'bio_data_' . $next_index;
+    $details['id'] = $next_index;
+    $details['name'] = $bundle;
+
     $term = $details['term'];
     if (!array_key_exists('term', $details) or !$details['term']) {
       $this->logger->error(t('Creation of content type, "@type", failed. No term provided.',

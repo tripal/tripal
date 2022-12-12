@@ -161,7 +161,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    *      -
    * @return TripalEntityType
    *    An TripalEntityType with the values passed in set appropriately.
-   */
+   *
   public static function create(array $values = []) {
 
     // Set the id and name of the content type. This follows a very specific
@@ -185,6 +185,12 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
         unset($values['term']);
         $values['termIdSpace'] = $term->getIdSpace();
         $values['termAccession'] = $term->getAccession();
+
+        // Since we have a term object, we can use the definition to set the
+        // help text if it's not already set.
+        if (!array_key_exists('help_text', $values)) {
+          $values['help_text'] = $term->getDefinition();
+        }
       }
       else {
         $class_name_passed_in = get_class($values['term']);
@@ -219,21 +225,6 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
         throw new \Exception("The $key is required when creating a TripalEntityType.");
       }
     }
-    // Check that the title format is provided and contains at least one token.
-    if (array_key_exists('title_format', $values)) {
-      // @todo
-    }
-    else {
-      throw new \Exception("You must provide a title format when creating a TripalEntityType.");
-    }
-    // Check that the URL format is provided, contains at least one token
-    // and is a valid URL.
-    if (array_key_exists('url_format', $values)) {
-      // @todo
-    }
-    else {
-      throw new \Exception("You must provide a URL format when creating a TripalEntityType.");
-    }
 
     // Let the parent implementation finish creating the object.
     // NOTE: We do things in this order because a configuration entity cannot
@@ -241,6 +232,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     // for storage and retrieve the Term object later if requested via getTerm().
     return parent::create($values);
   }
+  */
 
   /**
    * Saves the new TripalEntityType permanently.
@@ -253,7 +245,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    *
    * @return int
    *   Either SAVED_NEW or SAVED_UPDATED, depending on the operation performed.
-   */
+   *
    public function save() {
 
      // Check that the TripalTerm exists with the ID Space and Accession
@@ -264,6 +256,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
      // Finally save the rest of the entity using the parent implementation.
      return parent::save();
    }
+   */
 
   // --------------------------------------------------------------------------
   //                          MAIN SETTER / GETTERS
