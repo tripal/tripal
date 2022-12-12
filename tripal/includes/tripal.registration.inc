@@ -46,7 +46,10 @@ function tripal_registration_form($form, &$form_state) {
       'wrapper' => 'reg-details',
     ),
   );
-  $opt_out = $form_data['values']['disable_tripal_reporting'];
+  $opt_out = FALSE;
+  if ($form_data and array_key_exists('values', $form_data) and array_key_exists('disable_tripal_reporting', $form_data['values'])) {
+    $opt_out = $form_data['values']['disable_tripal_reporting'];
+  }
   if (array_key_exists('values', $form_state) and
       array_key_exists('disable_tripal_reporting', $form_state['values'])){
         $opt_out = $form_state['values']['disable_tripal_reporting'] ? TRUE : FALSE;
