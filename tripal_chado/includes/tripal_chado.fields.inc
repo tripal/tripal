@@ -2421,7 +2421,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ],
       'display' => [
         'default' => [
-          'label' => 'hidden',
+          'label' => 'inline',
           'type' => 'chado_linker__analysis_formatter',
           'settings' => [],
         ],
@@ -2460,7 +2460,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ],
       'display' => [
         'default' => [
-          'label' => 'hidden',
+          'label' => 'inline',
           'type' => 'chado_linker__assay_formatter',
           'settings' => [],
         ],
@@ -2496,7 +2496,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ],
       'display' => [
         'default' => [
-          'label' => 'hidden',
+          'label' => 'inline',
           'type' => 'chado_linker__contact_formatter',
           'settings' => [],
         ],
@@ -2617,7 +2617,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ],
       'display' => [
         'default' => [
-          'label' => 'hidden',
+          'label' => 'inline',
           'type' => 'chado_linker__feature_formatter',
           'settings' => [],
         ],
@@ -2808,7 +2808,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ],
       'display' => [
         'default' => [
-          'label' => 'hidden',
+          'label' => 'inline',
           'type' => 'chado_linker__project_formatter',
           'settings' => [],
         ],
@@ -3077,7 +3077,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       ],
       'display' => [
         'default' => [
-          'label' => 'hidden',
+          'label' => 'inline',
           'type' => 'chado_linker__stock_formatter',
           'settings' => [],
         ],
