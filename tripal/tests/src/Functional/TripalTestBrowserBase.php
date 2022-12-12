@@ -58,6 +58,7 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
     $values['term'] = $values['term'] ?? $this->createTripalTerm();
     $values['cardinality'] = $values['cardinality'] ?? 1;
     $values['storage_plugin_settings'] = $values['storage_plugin_settings'] ?? [];
+    $values['is_required'] = $values['is_required'] ?? FALSE;
 
     $term = $values['term'];
 
@@ -149,7 +150,6 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
     $idSpace->setDefaultVocabulary($vocabulary->getName());
 
     $term = $idSpace->getTerm($values['term']['accession']);
-    print_r(get_object_vars($term));
     if (!$term) {
       // Now create the term.
       $values['term']['idSpace'] = $idSpace->getName();
@@ -185,7 +185,8 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
 
     // Setting the default values:
     $random = $this->getRandomGenerator();
-    $values['title'] = $values['title'] ?? $random->sentences(8,TRUE); // provides a title with ~8 latin capitalized words.
+    // Provides a title with ~8 latin capitalized words.
+    $values['title'] = $values['title'] ?? $random->sentences(8, TRUE);
 
     // Creates a type if one is not provided.
     if (!isset($values['type'])) {
@@ -195,9 +196,6 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
 
     $entity = \Drupal\tripal\Entity\TripalEntity::create($values);
     $this->assertIsObject($entity, "Unable to create a test entity.");
-    $entity->save();
-    $entity_id = $entity->id();
-    $this->assertIsNumeric($entity_id, "Unable to retrieve the ID from our newly created entity.");
 
     return $entity;
   }
