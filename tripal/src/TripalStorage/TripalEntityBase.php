@@ -74,8 +74,8 @@ class TripalEntityBase extends ContentEntityBase {
           $hasTripalFields = TRUE;
           $props = $field->tripalValuesTemplate();
           $tsid = $field->tripalStorageId();
-          if (array_key_exists($tsid,$storageOps)) {
-            $storageOps[$tsid] = array_merge($storageOps[$tsid],$props);
+          if (array_key_exists($tsid, $storageOps)) {
+            $storageOps[$tsid] = array_merge($storageOps[$tsid], $props);
           }
           else {
             $storageOps[$tsid] = $props;
@@ -128,4 +128,7 @@ class TripalEntityBase extends ContentEntityBase {
     }
   }
 
+  public function validate() {
+    parent::validate();
+  }
 }

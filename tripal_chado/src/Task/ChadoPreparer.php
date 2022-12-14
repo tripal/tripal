@@ -1191,11 +1191,11 @@ class ChadoPreparer extends ChadoTaskBase {
         $field_type = '';
         $storage_settings = [];
         if (strtolower($detail['type']) == 'character varying') {
-          $field_type = 'tripal_string_type';
+          $field_type = 'chado_string_type';
           $storage_settings['max_length'] = $detail['size'];
         }
         if (strtolower($detail['type']) == 'text') {
-          $field_type = 'tripal_text_type';
+          $field_type = 'chado_text_type';
         }
         if (strtolower($detail['type']) == 'bigint' or strtolower($detail['type']) == 'int') {
           // Make sure it's not a foreign key. If so, this will most likely be a complex field.
@@ -1206,7 +1206,7 @@ class ChadoPreparer extends ChadoTaskBase {
             }
           }
           if (!$is_fk) {
-            $field_type = 'tripal_integer_type';
+            $field_type = 'chado_integer_type';
           }
         }
         // @todo handle all the different database column types.
@@ -1304,6 +1304,7 @@ class ChadoPreparer extends ChadoTaskBase {
     $mapping = $storage->load('core_mapping');
 
     $weight = 10;
+
     // This is only for organism foreign keys so no need to add if it's the organism table.
     if ($chado_table == 'organism') {
       return;
@@ -1409,6 +1410,7 @@ class ChadoPreparer extends ChadoTaskBase {
     $mapping = $storage->load('core_mapping');
 
     $weight = 10;
+
     // We won't add a type field if there isn't a type_id.
     if (!array_key_exists('type_id', $schema_def['fields'])) {
       return;
@@ -1428,7 +1430,7 @@ class ChadoPreparer extends ChadoTaskBase {
     // Use the same method as Tripal v3 for creating field names.
     $field_name = strtolower($idSpace_name . '__' . preg_replace('/[^\w]/', '_', $term->getName()));
     $field_name = substr($field_name, 0, 32);
-    $field_type = 'tripal_integer_type';
+    $field_type = 'chado_integer_type';
 
     // Is the field required? Ensure we match the database.
     $is_required = FALSE;

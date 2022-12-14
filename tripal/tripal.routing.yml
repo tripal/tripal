@@ -218,6 +218,16 @@ tripal.cv_lookup_term_children:
     _permission: 'access content'
 
 
+tripal.cvterm_autocomplete:
+  path: 'cvterm/autocomplete/{count}'
+  defaults:
+    _controller: '\Drupal\tripal\Controller\CVTermAutocompleteController::handleAutocomplete'
+    _title: 'Vocabulary Term Autocomplete'
+    _format: json
+  requirements:
+    _permission: 'access content'
+
+
 ##
 # Data Loaders.
 ##

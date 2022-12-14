@@ -229,6 +229,14 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
   }
 
   /**
+   *
+   * @param array $storage_settings
+   */
+  public function setStorageSettings($storage_settings) {
+    $this->storage_settings = $storage_settings;
+  }
+
+  /**
    * The id of this storage property type base.
    *
    * @var string
