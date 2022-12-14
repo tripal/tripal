@@ -307,7 +307,7 @@ class ogi__location_on_map extends ChadoField {
           // Map.
           $map_term => [
             $name_term => $featuremap->name,
-            $description_term => $featuremap->description,
+            $description_term => property_exists('description', $featuremap)?$featuremap->description:'',
           ],
           $ref_feature_term => [
             $ref_feature_name => $featurepos->map_feature_id->name,
