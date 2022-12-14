@@ -369,7 +369,7 @@ class data__sequence_record extends ChadoField {
           $seq_length_term => strlen($gene->residues),
           $seq_md5sum_term => md5($gene->residues),
           $type_term => 'gene',
-          $fasta_defline => chado_get_fasta_defline($gene),
+          $fasta_defline => chado_get_fasta_defline($gene, '', NULL, 'gene'),
         ];
       }
       else {
@@ -426,7 +426,7 @@ class data__sequence_record extends ChadoField {
           $seq_length_term => strlen($protein->residues),
           $seq_md5sum_term => md5($protein->residues),
           $type_term => 'polypeptide',
-          $fasta_defline => chado_get_fasta_defline($protein),
+          $fasta_defline => chado_get_fasta_defline($protein, '', NULL, 'protein'),
         ];
       }
     }
