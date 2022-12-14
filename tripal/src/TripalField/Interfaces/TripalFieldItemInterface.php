@@ -68,11 +68,16 @@ interface TripalFieldItemInterface extends FieldItemInterface {
 
   /**
    * Returns an empty template array of all property values this field uses for loading and saving.
-   *
+   * 
+   * @param  object $field_definition
+   *   The field configuration object. This can be an instance of:
+   *   \Drupal\field\Entity\FieldStorageConfig or
+   *   \Drupal\field\Entity\FieldConfig
+   *   
    * @return array
    *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue property value templates.
    */
-  public function tripalValuesTemplate();
+  public function tripalValuesTemplate($field_definition);
 
   /**
    * Loads the values from the given array of properties to the given entity.
