@@ -239,10 +239,10 @@ class ChadoMview extends ChadoCustomTable {
     $transaction = $public->startTransaction();
 
     try {
-      $chado->query("DELETE FROM {" . $this->getTableName() . "}");
+      $chado->query("DELETE FROM {1:" . $this->getTableName() . "}");
       $sql_query = $this->getSqlQuery();
-      $chado->query("INSERT INTO {" . $this->getTableName() . "} ($sql_query)");
-      $results = $chado->query("SELECT COUNT(*) as num_rows FROM {" . $this->getTableName() . "}");
+      $chado->query("INSERT INTO {1:" . $this->getTableName() . "} ($sql_query)");
+      $results = $chado->query("SELECT COUNT(*) as num_rows FROM {1:" . $this->getTableName() . "}");
       $num_rows = $results->fetchField();
       $this->setStatus("Populated with " . $num_rows . " rows");
       $this->setLastUpdate(time());

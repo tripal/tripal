@@ -8,7 +8,7 @@ use Drupal\tripal_chado\Database\ChadoConnection;
 /**
  * This is a PHP Trait for Chado tests.
  *
- * It provides the functions and member variables that are 
+ * It provides the functions and member variables that are
  * used for both any test class that needs testing with Chado.
  *
  * @group Tripal
@@ -16,8 +16,7 @@ use Drupal\tripal_chado\Database\ChadoConnection;
  */
 
 trait ChadoTestTrait  {
-   
-   
+
   /**
    * Tripal DBX tool instance.
    */
@@ -27,7 +26,7 @@ trait ChadoTestTrait  {
    * Real (Drupal live, not test) config factory.
    */
   protected $realConfigFactory;
-  
+
   /**
    * Base name for test schemas.
    */
@@ -227,9 +226,13 @@ trait ChadoTestTrait  {
           __DIR__ . '/../../../chado_schema/chado-only-1.3.sql',
           ['chado' => $schema_name]);
         $this->assertTrue($success, 'Chado schema loaded.');
-        $success = $tripaldbx_db->executeSqlFile(
-          __DIR__ . '/../../fixtures/fill_chado.sql',
-          'none');
+
+        $success = $tripaldbx_db->executeSqlFile(__DIR__ . '/../../fixtures/fill_chado_test_prepare.sql',
+            ['chado' => $schema_name]);
+        $this->assertTrue($success, 'Prepared chado records added.');
+
+        $success = $tripaldbx_db->executeSqlFile(__DIR__ . '/../../fixtures/fill_chado.sql',
+            ['chado' => $schema_name]);
         $this->assertTrue($success, 'Dummy Chado schema loaded.');
         $this->assertGreaterThan(100, $tripaldbx_db->schema()->getSchemaSize(), 'Test schema not empty.');
         break;
@@ -242,12 +245,27 @@ trait ChadoTestTrait  {
           ['chado' => $schema_name]);
         $this->assertTrue($success, 'Chado schema loaded.');
         $this->assertGreaterThan(100, $tripaldbx_db->schema()->getSchemaSize(), 'Test schema not empty.');
-        
+
         // Add version information to the schema so the tests don't fail.
         $success = $tripaldbx_db->executeSqlFile(__DIR__ . '/../../fixtures/version.sql',
             ['chado' => $schema_name]);
         $this->assertTrue($success, 'Chado version loaded.');
         break;
+
+      case static::PREPARE_TEST_CHADO:
+          $tripaldbx_db->schema()->createSchema();
+          $this->assertTrue($tripaldbx_db->schema()->schemaExists(), 'Test schema created.');
+          $success = $tripaldbx_db->executeSqlFile(
+            __DIR__ . '/../../../chado_schema/chado-only-1.3.sql',
+            ['chado' => $schema_name]);
+          $this->assertTrue($success, 'Chado schema loaded.');
+          $this->assertGreaterThan(100, $tripaldbx_db->schema()->getSchemaSize(), 'Test schema not empty.');
+
+          // Add version information to the schema so the tests don't fail.
+          $success = $tripaldbx_db->executeSqlFile(__DIR__ . '/../../fixtures/fill_chado_test_prepare.sql',
+              ['chado' => $schema_name]);
+          $this->assertTrue($success, 'Prepared chado records added.');
+          break;
 
       case static::INIT_DUMMY:
         $tripaldbx_db->schema()->createSchema();
@@ -273,12 +291,12 @@ trait ChadoTestTrait  {
     }
     self::$db = self::$db ?? \Drupal::database();
     self::$testSchemas[$schema_name] = TRUE;
-    
-    // Make sure that any other connections to TripalDBX will see this new test schema as 
+
+    // Make sure that any other connections to TripalDBX will see this new test schema as
     // the default schema.
-    $config = \Drupal::service('config.factory')->getEditable('tripal_chado.settings');    
+    $config = \Drupal::service('config.factory')->getEditable('tripal_chado.settings');
     $config->set('default_schema', $schema_name)->save();
-    
+
     // As a safety check, make sure that the tripalDBX object is using the test schema.
     // We don't want to perform tests in a live schema.
     $this->assertTrue($tripaldbx_db->getSchemaName() == $schema_name, 'TripalDBX is not using the test schema.');
@@ -297,7 +315,7 @@ trait ChadoTestTrait  {
   ) {
     self::$testSchemas[$tripaldbx_db->getSchemaName()] = FALSE;
     try {
-      //$tripaldbx_db->schema()->dropSchema();
+      $tripaldbx_db->schema()->dropSchema();
     }
     catch (\Exception $e) {
       // Ignore issues.

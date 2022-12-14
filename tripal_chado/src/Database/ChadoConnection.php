@@ -118,6 +118,8 @@ class ChadoConnection extends TripalDbxConnection {
     // By default, we don't know the version.
     $version = '';
 
+    // If we don't have a schema name then grab the default one.
+    // If a schema name is passed in then check it is valid.
     try {
       $schema_name = $this->getDefaultSchemaName($schema_name);
     }
@@ -125,132 +127,96 @@ class ChadoConnection extends TripalDbxConnection {
       return $version;
     }
 
+    // Check the drupal table containing all chado instances installed by Tripal.
     $result = $this->select('chado_installations' ,'i')
       ->fields('i', ['version'])
       ->condition('schema_name', $schema_name, '=')
       ->execute()
-      ->fetch()
-    ;
-
+      ->fetch();
     if ($result) {
-      $version = $result->version;
+      return $result->version;
     }
-    else {
-      // Not integrated into Tripal, make sure it is a Chado schema.
-      // An arbitrary list of typical Chado tables.
-      $chado_tables = [
-        'db',
-        'dbxref',
-        'cv',
-        'cvterm',
-        'project',
-        'organism',
-        'synonym',
-        'feature',
-        'stock',
-        'analysis',
-        'study',
-        'contact',
-        'pub',
-        'phylonode',
-        'phylotree',
-        'library',
-      ];
-      // Check if the schema contains typical Chado tables by counting them.
-      $sql_query = "
-        SELECT COUNT(1) AS \"cnt\"
-        FROM pg_tables
-        WHERE schemaname=:schema AND tablename IN (:tables[]);
-      ";
-      $table_match_count = $this
-        ->query(
-          $sql_query,
-          [':schema' => $schema_name, ':tables[]' => $chado_tables]
-        )
-        ->fetchField()
-      ;
-      // Do we have a match?
-      if (count($chado_tables) == $table_match_count) {
-        // We got a Chado, try to get it from chadoprop table.
-        $version = '0';
+
+    // Since it's not integrated into Tripal, we want to make sure it is a
+    // Chado schema. To do this we're going to check if an arbitrary list of
+    // tables typically in chado are in this schema by counting them.
+    $chado_tables = ['db', 'dbxref', 'cv', 'cvterm', 'project', 'organism',
+      'synonym', 'feature', 'stock', 'analysis', 'study', 'contact', 'pub',
+      'phylonode', 'phylotree', 'library' ];
+    $sql_query = "
+      SELECT COUNT(1) AS \"cnt\"
+      FROM pg_tables
+      WHERE schemaname=:schema AND tablename IN (:tables[])";
+    $table_match_count = $this->query(
+        $sql_query,
+        [':schema' => $schema_name, ':tables[]' => $chado_tables]
+      )->fetchField();
+
+    // If all of our chado tables were present...
+    if (count($chado_tables) == $table_match_count) {
+
+      // We will check for a chadoprop table and get the version from there
+      // if it's available.
+      if ($this->schema()->tableExists('chadoprop')) {
+
+        $quoted_schema_name = $this->tripalDbxApi->quoteDbObjectId($schema_name);
         $sql_query = "
-          SELECT true
-          FROM pg_tables
+          SELECT value
+          FROM $quoted_schema_name.chadoprop cp
+            JOIN $quoted_schema_name.cvterm cvt ON cvt.cvterm_id = cp.type_id
+            JOIN $quoted_schema_name.cv CV ON cvt.cv_id = cv.cv_id
           WHERE
-            schemaname = :schema
-            AND tablename = 'chadoprop'
-        ;";
-        $prop_exists = $this
-          ->query(
-            $sql_query,
-            [':schema' => $schema_name]
-          )
-          ->fetchField()
-        ;
-
-        if ($prop_exists) {
-          // Get it from chadoprop table.
-          // First get a quoted name for query.
-          $quoted_schema_name = $this->tripalDbxApi->quoteDbObjectId($schema_name);
-          $sql_query = "
-            SELECT value
-            FROM $quoted_schema_name.chadoprop cp
-              JOIN $quoted_schema_name.cvterm cvt ON cvt.cvterm_id = cp.type_id
-              JOIN $quoted_schema_name.cv CV ON cvt.cv_id = cv.cv_id
-            WHERE
-              cv.name = 'chado_properties'
-              AND cvt.name = 'version'
-            ;
-          ";
-          $v = $this->query($sql_query)->fetchObject();
-
-          // If we don't have a version in the chadoprop table then it must be
-          // v1.11 or older.
-          if ($v) {
-            $version = $v->value;
-          }
-        }
-
-        // Try to guess it from schema content from table specific to newer
-        // versions (https://github.com/GMOD/Chado/tree/master/chado/schemas).
-        if (!$version) {
-          // 'feature_organism' table added in 0.02.
-          if ($this->schema()->tableExists('feature_organism')) {
-            $version = '0.02';
-          }
-
-          // 'cv.cvname' column replaced by 'cv.name' after 0.03.
-          if ($this->schema()->fieldExists('cv', 'cvname')) {
-            $version = '0.03';
-          }
-
-          // 'feature_cvterm_dbxref' table added in 1.0.
-          if ($this->schema()->tableExists('feature_cvterm_dbxref')) {
-            $version = '1.0';
-          }
-
-          // 'cell_line' table added in 1.1-1.11.
-          if ($this->schema()->tableExists('cell_line')) {
-            $version = '1.1x';
-          }
-
-          // 'cvprop' table added in 1.2-1.24.
-          if ($this->schema()->tableExists('cvprop')) {
-            $version = '1.2x';
-          }
-
-          // 'analysis_cvterm' table added in 1.3-1.31.
-          if ($this->schema()->tableExists('analysis_cvterm')) {
-            $version = '1.3x';
-          }
-
-          // 'featureprop.cvalue_id' column added in 1.4.
-          if ($this->schema()->fieldExists('featureprop', 'cvalue_id')) {
-            $version = '1.4+';
-          }
+            cv.name = 'chado_properties'
+            AND cvt.name = 'version'";
+        $v = $this->query($sql_query)->fetchObject();
+        if ($v) {
+          return $v->value;
         }
       }
+
+      // If we don't have a version in the chadoprop table then it must be
+      // v1.11 or older...
+      // Try to guess it from schema content from table specific to newer
+      // versions (https://github.com/GMOD/Chado/tree/master/chado/schemas).
+
+      // 'feature_organism' table added in 0.02.
+      if ($this->schema()->tableExists('feature_organism')) {
+        $version = '0.02';
+      }
+
+      // @bug currently weird prefixing when fieldExists is used.
+      // 'cv.cvname' column replaced by 'cv.name' after 0.03.
+      // if ($this->schema()->fieldExists('cv ', 'cvname')) {
+      //   $version = '0.03';
+      // }
+
+      // 'feature_cvterm_dbxref' table added in 1.0.
+      if ($this->schema()->tableExists('feature_cvterm_dbxref')) {
+        $version = '1.0';
+      }
+
+      // 'cell_line' table added in 1.1-1.11.
+      if ($this->schema()->tableExists('cell_line')) {
+        $version = '1.1';
+      }
+
+      // 'cvprop' table added in 1.2-1.24.
+      if ($this->schema()->tableExists('cvprop')) {
+        $version = '1.2';
+      }
+
+      // 'analysis_cvterm' table added in 1.3-1.31.
+      if ($this->schema()->tableExists('analysis_cvterm')) {
+        $version = '1.3';
+      }
+
+      // @bug currently weird prefixing when fieldExists is used.
+      // 'featureprop.cvalue_id' column added in 1.4.
+      // if ($this->schema()->fieldExists('featureprop', 'cvalue_id')) {
+      //   $version = '1.4';
+      // }
     }
+
     return $version;
   }
 

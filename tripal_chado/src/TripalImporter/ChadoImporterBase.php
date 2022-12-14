@@ -21,7 +21,7 @@ abstract class ChadoImporterBase extends TripalImporterBase {
    * {@inheritdoc}
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition) {
-    parent::__construct($configuration,$plugin_id,$plugin_definition);
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
 
   /**
@@ -31,25 +31,33 @@ abstract class ChadoImporterBase extends TripalImporterBase {
    */
   public function getChadoConnection() {
 
-    $connection = \Drupal::service('tripal_chado.database');
+    /**
+     * @var \Drupal\tripal_chado\Database\ChadoConnection $chado
+     */
+    $chado = \Drupal::service('tripal_chado.database');
 
     // Get the chado schema name if available.
+    $schema_name = '';
     if (!empty($this->chado_schema_main)) {
       $schema_name = $this->chado_schema_main;
     }
     elseif (!empty($this->arguments) && !empty($this->arguments['run_args'])) {
       if (isset($this->arguments['run_args']['schema_name'])) {
-        $this->chado_schema_main = $schema_name = $this->arguments['run_args']['schema_name'];
+        $schema_name = $this->arguments['run_args']['schema_name'];
+        $this->chado_schema_main = $schema_name;
       }
     }
     else {
       $this->logger->error("Unable to set Chado Schema based on importer arguments. This may mean that parent::form was not called in the form method of this importer.");
-      return $connection;
+      return $chado;
     }
 
-    $connection->setSchemaName($schema_name);
+    if ($chado->getSchemaName() != $schema_name) {
+      $chado->setSchemaName($schema_name);
+    }
+    $chado->useTripalDbxSchemaFor(get_class());
 
-    return $connection;
+    return $chado;
   }
 
   /**
