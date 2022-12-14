@@ -1082,6 +1082,7 @@ class ChadoPreparer extends ChadoTaskBase {
         $entityType->save();
         $this->logger->notice(t('Content type, "@type", created..',
             ['@type' => $details['label']]));
+        $bundle = $entityType->getName();
         \Drupal::cache()->set($cid, $next_index);
       }
       else {

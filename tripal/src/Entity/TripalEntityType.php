@@ -161,21 +161,8 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    *      -
    * @return TripalEntityType
    *    An TripalEntityType with the values passed in set appropriately.
-   *
+   */
   public static function create(array $values = []) {
-
-    // Set the id and name of the content type. This follows a very specific
-    // pattern and thus should not be set in the $values array.
-    // Get the next bio_data_x index number.
-    $cid = 'chado_bio_data_index';
-    $cached_val = \Drupal::cache()->get($cid, 0);
-    if (is_object($cached_val)) {
-      $cached_val = $cached_val->data;
-    }
-    $next_index = $cached_val + 1;
-    $bundle = 'bio_data_' . $next_index;
-    $values['id'] = $next_index;
-    $values['name'] = $bundle;
 
     // Check if a TripalTerm object was passed in.
     // If yes, extract the ID Space and Accession for saving.
@@ -232,7 +219,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     // for storage and retrieve the Term object later if requested via getTerm().
     return parent::create($values);
   }
-  */
+
 
   /**
    * Saves the new TripalEntityType permanently.
@@ -245,7 +232,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    *
    * @return int
    *   Either SAVED_NEW or SAVED_UPDATED, depending on the operation performed.
-   *
+   */
    public function save() {
 
      // Check that the TripalTerm exists with the ID Space and Accession
@@ -253,10 +240,16 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
 
      // If not, then create the TripalTerm, TripalIDSpace and TripalVocabulary.
 
-     // Finally save the rest of the entity using the parent implementation.
-     return parent::save();
+     // Save the rest of the entity using the parent implementation.
+     // This is when the id is assigned.
+     $return_status = parent::save();
+
+     // Next, we want to set the name based on the id.
+     // Specifically, we expect bio_data_[id] to be the name of the Tripal Content Type.
+     // $this->name = 'bio_data_' . $this->id;
+
+     return $return_status;
    }
-   */
 
   // --------------------------------------------------------------------------
   //                          MAIN SETTER / GETTERS
