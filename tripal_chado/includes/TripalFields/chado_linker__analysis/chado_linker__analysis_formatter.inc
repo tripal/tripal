@@ -59,9 +59,12 @@ class chado_linker__analysis_formatter extends ChadoFieldFormatter {
           list($entity_type, $entity_id) = explode(':', $item['value']['entity']);
           $analysis_name = l($analysis_name, "bio_data/" . $entity_id, ['attributes' => ['target' => "_blank"]]);
         }
+
+        // This cell styling implements a maximum height for the
+        // content, if taller there is a scrollbar.
         $rows[] = [
-          $analysis_name,
-          $description,
+          '<div class="chado-linker--cell">' . $analysis_name . '</div>',
+          '<div class="chado-linker--cell">' . $description . '</div>',
         ];
       }
 
