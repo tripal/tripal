@@ -176,7 +176,10 @@ class chado_linker__stock extends ChadoField {
       // Special case, chado.stock_feature has a type_id and rank column.
       $type_sql = '';
       if (chado_column_exists($linker_table, 'type_id')) {
-        $type_sql = ' LT.type_id AS linker_type_id, LT.rank AS linker_rank,';
+        $type_sql .= ' LT.type_id AS linker_type_id,';
+      }
+      if (chado_column_exists($linker_table, 'rank')) {
+        $type_sql .= ' LT.rank AS linker_rank,';
       }
       // Since there could be many records, perform SQL query directly to reduce overhead.
       $sql2 = 'SELECT LT.'.$pkey.' AS pkey_value,'
