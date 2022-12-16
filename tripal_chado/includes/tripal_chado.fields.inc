@@ -938,8 +938,9 @@ function tripal_chado_bundle_fields_info_linker(&$info, $details, $entity_type, 
   // supports stock as either prefix or suffix of linker table name
   $stock_table = $table_name . '_stock';
   // Unfortunately a special case here, mainlab tripal defines a chado.feature_stock
-  // table conflicting with the tripal chado.stock_feature table.
-  if (($table_name == 'feature') or (!chado_table_exists($stock_table))) {
+  // table conflicting with the tripal chado.stock_feature table, similarly with
+  // chado.featuremap_stock
+  if (($table_name == 'feature') or ($table_name == 'featuremap') or (!chado_table_exists($stock_table))) {
     $stock_table = 'stock_' . $table_name;
   }
   if (chado_table_exists($stock_table)) {
@@ -3047,8 +3048,9 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
   // supports stock as either prefix or suffix of linker table name
   $stock_table = $table_name . '_stock';
   // Unfortunately a special case here, mainlab tripal defines a chado.feature_stock
-  // table conflicting with the tripal chado.stock_feature table.
-  if (($table_name == 'feature') or (!chado_table_exists($stock_table))) {
+  // table conflicting with the tripal chado.stock_feature table, similarly with
+  // chado.featuremap_stock
+  if (($table_name == 'feature') or ($table_name == 'featuremap') or (!chado_table_exists($stock_table))) {
     $stock_table = 'stock_' . $table_name;
   }
   if (chado_table_exists($stock_table)) {
