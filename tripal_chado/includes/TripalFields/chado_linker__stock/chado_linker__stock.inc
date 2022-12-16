@@ -153,8 +153,9 @@ class chado_linker__stock extends ChadoField {
     // Linker table name may have stock as either prefix or suffix
     $linker_table = $base_table . '_stock';
     // Unfortunately a special case here, mainlab tripal defines a chado.feature_stock
-    // table conflicting with the tripal chado.stock_feature table.
-    if (($base_table == 'feature') or (!chado_table_exists($linker_table))) {
+    // table conflicting with the tripal chado.stock_feature table, similarly with
+    // chado.featuremap_stock
+    if (($base_table == 'feature') or ($base_table == 'featuremap') or (!chado_table_exists($stock_table))) {
       $linker_table = 'stock_' . $base_table;
     }
     if (!chado_table_exists($linker_table)) {
