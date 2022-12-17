@@ -513,6 +513,21 @@ function tripal_chado_menu() {
   );
 
   //////////////////////////////////////////////////////////////////////////////
+  //                           Field Settings
+  //////////////////////////////////////////////////////////////////////////////
+  $items['admin/tripal/storage/chado/field_settings'] = array(
+    'title' => 'Field Settings',
+    'description' => t('Settings for Tripal Chado fields.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_chado_field_settings_admin_form'),
+    'type' => MENU_NORMAL_ITEM,
+    'access arguments' => array('administer chado fields'),
+    'file' => 'includes/tripal_chado.field_settings.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'weight' => 9,
+  );
+
+  //////////////////////////////////////////////////////////////////////////////
   //                           Auto Completes
   //////////////////////////////////////////////////////////////////////////////
   $items['admin/tripal/storage/chado/auto_name/dbxref/%/%'] = array(
