@@ -1,6 +1,6 @@
 <?php
 
-class chado_linker__stock extends ChadoField {
+class chado_linker__featuremap extends ChadoField {
 
 
   // --------------------------------------------------------------------------
@@ -12,10 +12,10 @@ class chado_linker__stock extends ChadoField {
   // --------------------------------------------------------------------------
 
   // The default label for this field.
-  public static $default_label = 'Stocks';
+  public static $default_label = 'Featuremaps';
 
   // The default uniquename for this field.
-  public static $uniquename = 'Associates a stock with this record';
+  public static $uniquename = 'Associates a featuremap with this record';
 
   // Provide a list of instance specific settings. These can be accessed within
   // the instanceSettingsForm.  When the instanceSettingsForm is submitted
@@ -26,11 +26,11 @@ class chado_linker__stock extends ChadoField {
   // required for all TripalFields.
   public static $default_instance_settings = [
     // The short name for the vocabulary (e.g. schema, SO, GO, PATO, etc.).
-    'term_vocabulary' => 'NCIT',
+    'term_vocabulary' => 'data',
     // The name of the term.
-    'term_name' => 'stock',
+    'term_name' => 'featuremap',
     // The unique ID (i.e. accession) of the term.
-    'term_accession' => 'C48288',
+    'term_accession' => '1274',
     // Set to TRUE if the site admin is allowed to change the term
     // type. This will create form elements when editing the field instance
     // to allow the site admin to change the term settings above.
@@ -38,10 +38,10 @@ class chado_linker__stock extends ChadoField {
   ];
 
   // The default widget for this field.
-  public static $default_widget = 'chado_linker__stock_widget';
+  public static $default_widget = 'chado_linker__featuremap_widget';
 
   // The default formatter for this field.
-  public static $default_formatter = 'chado_linker__stock_formatter';
+  public static $default_formatter = 'chado_linker__featuremap_formatter';
 
   // --------------------------------------------------------------------------
   //              PROTECTED CLASS MEMBERS -- DO NOT OVERRIDE
@@ -62,9 +62,9 @@ class chado_linker__stock extends ChadoField {
   public function elementInfo() {
 
     $field_term = $this->getFieldTermID();
-    $type_term = chado_get_semweb_term('stock', 'type_id');
-    $name_term = chado_get_semweb_term('stock', 'name');
-    $uniquename_term = chado_get_semweb_term('stock', 'uniquename');
+    $unittype_term = chado_get_semweb_term('featuremap', 'unittype_id');
+    $name_term = chado_get_semweb_term('featuremap', 'name');
+    $description_term = chado_get_semweb_term('featuremap', 'description');
 
     return [
       $field_term => [
@@ -74,10 +74,10 @@ class chado_linker__stock extends ChadoField {
         'type' => 'xs:complexType',
         'readonly' => FALSE,
         'elements' => [
-          $type_term => [
+          $unittype_term => [
             'searchable' => TRUE,
-            'label' => 'Stock Type',
-            'help' => 'The type of stock',
+            'label' => 'Featuremap Units',
+            'help' => 'The units used by the featuremap',
             'operations' => ['eq', 'ne', 'contains', 'starts'],
             'sortable' => TRUE,
             'type' => 'xs:string',
@@ -86,18 +86,18 @@ class chado_linker__stock extends ChadoField {
           ],
           $name_term => [
             'searchable' => TRUE,
-            'label' => 'Stock Name',
-            'help' => 'The name of the stock.',
+            'label' => 'Featuremap Name',
+            'help' => 'The name of the featuremap.',
             'operations' => ['eq', 'ne', 'contains', 'starts'],
             'sortable' => TRUE,
             'type' => 'xs:string',
             'readonly' => FALSE,
             'required' => TRUE,
           ],
-          $uniquename_term => [
+          $description_term => [
             'searchable' => TRUE,
-            'label' => 'Stock Unique Name',
-            'help' => 'A unique identifier of the stock.',
+            'label' => 'Featuremap Description',
+            'help' => 'A description of the featuremap.',
             'operations' => ['contains'],
             'sortable' => TRUE,
             'type' => 'xs:string',
@@ -126,9 +126,9 @@ class chado_linker__stock extends ChadoField {
     $field_column = $this->instance['settings']['chado_column'];
     $base_table = $this->instance['settings']['base_table'];
 
-    $type_term = chado_get_semweb_term('stock', 'type_id');
-    $name_term = chado_get_semweb_term('stock', 'name');
-    $uniquename_term = chado_get_semweb_term('stock', 'uniquename');
+    $unittype_term = chado_get_semweb_term('featuremap', 'unittype_id');
+    $name_term = chado_get_semweb_term('featuremap', 'name');
+    $description_term = chado_get_semweb_term('featuremap', 'description');
     $summary_term = 'NCIT:C25463'; // ncit:Count
 
     // Set some defaults for the empty record.
@@ -150,13 +150,10 @@ class chado_linker__stock extends ChadoField {
       return;
     }
 
-    // Linker table name may have stock as either prefix or suffix
-    $linker_table = $base_table . '_stock';
-    // Unfortunately a special case here, mainlab tripal defines a chado.feature_stock
-    // table conflicting with the tripal chado.stock_feature table, similarly with
-    // chado.featuremap_stock
-    if (($base_table == 'feature') or ($base_table == 'featuremap') or (!chado_table_exists($linker_table))) {
-      $linker_table = 'stock_' . $base_table;
+    // Linker table name may have featuremap as either prefix or suffix
+    $linker_table = $base_table . '_featuremap';
+    if (!chado_table_exists($linker_table)) {
+      $linker_table = 'featuremap_' . $base_table;
     }
     if (!chado_table_exists($linker_table)) {
       return;
@@ -173,8 +170,7 @@ class chado_linker__stock extends ChadoField {
     $count = chado_query($sql1, $args1)->fetchField();
 
     if ($count <= $load_limit) {
-      // Special cases, chado.stock_feature has a type_id and rank column,
-      // chado.stock_featuremap has a type_id but no rank.
+      // Handle type_id and rank only when they exist in the linker table.
       $type_sql = '';
       if (chado_column_exists($linker_table, 'type_id')) {
         $type_sql .= ' LT.type_id AS linker_type_id,';
@@ -185,13 +181,13 @@ class chado_linker__stock extends ChadoField {
       // Since there could be many records, perform SQL query directly to reduce overhead.
       $sql2 = 'SELECT LT.'.$pkey.' AS pkey_value,'
             . $type_sql
-            . ' S.stock_id, S.name, S.uniquename,'
+            . ' FM.featuremap_id, FM.name, FM.description,'
             . ' T.name AS type, LOWER(T.name) AS sortkey'
             . ' FROM {'.$linker_table.'} LT'
-            . ' LEFT JOIN {stock} S ON LT.stock_id = S.stock_id'
-            . ' LEFT JOIN {cvterm} T ON S.type_id = T.cvterm_id'
+            . ' LEFT JOIN {featuremap} FM ON LT.featuremap_id = FM.featuremap_id'
+            . ' LEFT JOIN {cvterm} T ON FM.unittype_id = T.cvterm_id'
             . ' WHERE LT.'.$fkey_lcolumn.' = :fkey_lcolumn_id'
-            . ' ORDER BY sortkey, LOWER(S.name)';
+            . ' ORDER BY sortkey, LOWER(FM.name)';
       $args2 = [':fkey_lcolumn_id' => $record->$fkey_lcolumn];
       $linkers = chado_query($sql2, $args2);
 
@@ -199,17 +195,17 @@ class chado_linker__stock extends ChadoField {
       while ( $linker = $linkers->fetchObject() ) {
         $entity->{$field_name}['und'][$i] = [
           'value' => [
-            $type_term => $linker->type,
+            $unittype_term => $linker->type,
             $name_term => $linker->name,
-            $uniquename_term => $linker->uniquename,
+            $description_term => $linker->description,
           ],
           // Add elements that are not part of the values but used by
           // the chado storage back-end for saving values.
           'chado-' . $field_table . '__' . $pkey => $linker->pkey_value,
           'chado-' . $field_table . '__' . $fkey_lcolumn => $record->$fkey_lcolumn,
-          'chado-' . $field_table . '__' . 'stock_id' => $linker->stock_id,
+          'chado-' . $field_table . '__' . 'featuremap_id' => $linker->featuremap_id,
           // For the widget to work properly we will preform values.
-          'stock_name' => $linker->name . ' [id: ' . $linker->stock_id . ']',
+          'featuremap_name' => $linker->name . ' [id: ' . $linker->featuremap_id . ']',
         ];
         if (property_exists($linker, 'linker_type_id')) {
           $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__type_id'] = $linker->linker_type_id;
@@ -217,7 +213,7 @@ class chado_linker__stock extends ChadoField {
         if (property_exists($linker, 'linker_rank')) {
           $entity->{$field_name}['und'][$i]['chado-' . $field_table . '__rank'] = $linker->linker_rank;
         }
-        $entity_id = chado_get_record_entity_by_table('stock', $linker->stock_id);
+        $entity_id = chado_get_record_entity_by_table('featuremap', $linker->featuremap_id);
         if ($entity_id) {
           $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $entity_id;
         }
@@ -228,24 +224,24 @@ class chado_linker__stock extends ChadoField {
       // If too many records to display, just return a summary. The widget won't
       // show any existing records, but can be used to add additional records.
       // Web services will only show this summary.
-      $sql3 = 'SELECT DISTINCT T.name, LOWER(T.name) AS sortkey, COUNT(*) AS count'
+      $sql3 = 'SELECT DISTINCT FM.name, LOWER(FM.name) AS sortkey, COUNT(*) AS count'
             . ' FROM {'.$linker_table.'} LT'
-            . ' LEFT JOIN {stock} S ON LT.stock_id = S.stock_id'
-            . ' LEFT JOIN {cvterm} T ON S.type_id = T.cvterm_id'
+            . ' LEFT JOIN {featuremap} FM ON LT.featuremap_id = FM.featuremap_id'
+            . ' LEFT JOIN {cvterm} T ON FM.unittype_id = T.cvterm_id'
             . ' WHERE LT.'.$fkey_lcolumn.' = :fkey_lcolumn_id'
             . ' GROUP BY T.name'
             . ' ORDER BY sortkey';
       $args3 = [':fkey_lcolumn_id' => $record->$fkey_lcolumn];
-      $stocktypes = chado_query($sql3, $args3);
+      $featuremaptypes = chado_query($sql3, $args3);
 
-      // Summarize each stock type separately.
+      // Summarize each featuremap unittype separately.
       $content = '';
       $ntypes = 0;
-      while ( $stocktype = $stocktypes->fetchObject() ) {
-        $content .= format_plural($stocktype->count,
-                      'There is :count :type stock<br>',
-                      'There are :count :type stocks<br>',
-                      [':count' => $stocktype->count, ':type' => $stocktype->name]);
+      while ( $featuremaptype = $featuremaptypes->fetchObject() ) {
+        $content .= format_plural($featuremaptype->count,
+                      'There is :count :type featuremap<br>',
+                      'There are :count :type featuremaps<br>',
+                      [':count' => $featuremaptype->count, ':type' => $featuremaptype->name]);
         $ntypes++;
       }
       if ($ntypes > 1) {
@@ -270,35 +266,35 @@ class chado_linker__stock extends ChadoField {
     $operator = $condition['operator'];
 
     $field_term_id = $this->getFieldTermID();
-    $type_term = chado_get_semweb_term('stock', 'type_id');
-    $name_term = chado_get_semweb_term('stock', 'name');
-    $uniquename_term = chado_get_semweb_term('stock', 'uniquename');
+    $unittype_term = chado_get_semweb_term('featuremap', 'unittype_id');
+    $name_term = chado_get_semweb_term('featuremap', 'name');
+    $description_term = chado_get_semweb_term('featuremap', 'description');
 
-    $stock_linker = $this->instance['settings']['chado_table'];
+    $featuremap_linker = $this->instance['settings']['chado_table'];
     $base_table = $this->instance['settings']['base_table'];
 
     // Get the FK that links to the base record.
-    $schema = chado_get_schema($stock_linker);
+    $schema = chado_get_schema($featuremap_linker);
     $pkey = $schema['primary key'][0];
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
-    // Join the stock linker table and then join the stock table.
-    $calias = 'stock_' . $stock_linker;
+    // Join the featuremap linker table and then join the featuremap table.
+    $calias = 'featuremap_' . $featuremap_linker;
     if (!chado_table_exists($calias)) {
-      $calias = $stock_linker . '_stock';
+      $calias = $featuremap_linker . '_featuremap';
     }
-    $this->queryJoinOnce($query, $stock_linker, $alias, "base.$fkey_rcolumn = $alias.$fkey_lcolumn");
-    $this->queryJoinOnce($query, 'stock', $calias, "$calias.stock_id = $alias.stock_id");
+    $this->queryJoinOnce($query, $featuremap_linker, $alias, "base.$fkey_rcolumn = $alias.$fkey_lcolumn");
+    $this->queryJoinOnce($query, 'featuremap', $calias, "$calias.featuremap_id = $alias.featuremap_id");
 
-    // Search by the stock name
+    // Search by the featuremap name
     if ($condition['column'] == $field_term_id or
       $condition['column'] == $field_term_id . ',' . $name_term) {
       $query->condition("$calias.name", $condition['value'], $operator);
     }
-    // Search on the stock uniquename.
-    if ($condition['column'] == $field_term_id . ',' . $uniquename_term) {
-      $query->condition("$calias.uniquename", $condition['value'], $operator);
+    // Search on the featuremap description.
+    if ($condition['column'] == $field_term_id . ',' . $description_term) {
+      $query->condition("$calias.description", $condition['value'], $operator);
     }
   }
 
@@ -308,34 +304,34 @@ class chado_linker__stock extends ChadoField {
   public function queryOrder($query, $order) {
     $alias = $this->field['field_name'];
     $field_term_id = $this->getFieldTermID();
-    $name_term = chado_get_semweb_term('stock', 'name');
-    $uniquename_term = chado_get_semweb_term('stock', 'uniquename');
+    $name_term = chado_get_semweb_term('featuremap', 'name');
+    $description_term = chado_get_semweb_term('featuremap', 'description');
 
-    $stock_linker = $this->instance['settings']['chado_table'];
+    $featuremap_linker = $this->instance['settings']['chado_table'];
     $base_table = $this->instance['settings']['base_table'];
 
     // Get the FK that links to the base record.
-    $schema = chado_get_schema($stock_linker);
+    $schema = chado_get_schema($featuremap_linker);
     $pkey = $schema['primary key'][0];
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
-    // Join the stock linker table and then join the stock table.
-    $calias = 'stock_' . $stock_linker;
+    // Join the featuremap linker table and then join the featuremap table.
+    $calias = 'featuremap_' . $featuremap_linker;
     if (!chado_table_exists($calias)) {
-      $calias = $stock_linker . '_stock';
+      $calias = $featuremap_linker . '_featuremap';
     }
-    $this->queryJoinOnce($query, $stock_linker, $alias, "base.$fkey_rcolumn = $alias.$fkey_lcolumn", "LEFT OUTER");
-    $this->queryJoinOnce($query, 'stock', $calias, "$calias.stock_id = $alias.stock_id", "LEFT OUTER");
+    $this->queryJoinOnce($query, $featuremap_linker, $alias, "base.$fkey_rcolumn = $alias.$fkey_lcolumn", "LEFT OUTER");
+    $this->queryJoinOnce($query, 'featuremap', $calias, "$calias.featuremap_id = $alias.featuremap_id", "LEFT OUTER");
 
-    // Search by the stock name
+    // Search by the featuremap name
     if ($order['column'] == $field_term_id or
       $order['column'] == $field_term_id . ',' . $name_term) {
       $query->orderBy("$calias.name", $order['direction']);
     }
-    // Search on the stock uniquename.
-    if ($order['column'] == $field_term_id . ',' . $uniquename_term) {
-      $query->orderBy("$calias.uniquename", $order['direction']);
+    // Search on the featuremap description.
+    if ($order['column'] == $field_term_id . ',' . $description_term) {
+      $query->orderBy("$calias.description", $order['direction']);
     }
   }
 }
@@ -344,7 +340,7 @@ class chado_linker__stock extends ChadoField {
 /**
  * An Ajax callback for the widget.
  */
-function chado_linker__stock_widget_form_ajax_callback($form, $form_state) {
+function chado_linker__featuremap_widget_form_ajax_callback($form, $form_state) {
 
   $field_name = $form_state['triggering_element']['#parents'][0];
   $delta = $form_state['triggering_element']['#parents'][2];
@@ -357,7 +353,7 @@ function chado_linker__stock_widget_form_ajax_callback($form, $form_state) {
  *
  * @param $variables
  */
-function theme_chado_linker__stock_widget($variables) {
+function theme_chado_linker__featuremap_widget($variables) {
   $element = $variables['element'];
 
   // These two fields were added to the widget to help identify the fields
@@ -366,8 +362,8 @@ function theme_chado_linker__stock_widget($variables) {
   $fkey = $element['#fkey_field'];
 
   $layout = "
-      <div class=\"chado-linker--stock-widget\">
-        <div class=\"chado-linker--stock-widget-item\">" .
+      <div class=\"chado-linker--featuremap-widget\">
+        <div class=\"chado-linker--featuremap-widget-item\">" .
     drupal_render($element['name']) . "
         </div>
       </div>

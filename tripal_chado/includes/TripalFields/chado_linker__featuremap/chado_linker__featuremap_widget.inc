@@ -1,12 +1,12 @@
 <?php
 
-class chado_linker__stock_widget extends ChadoFieldWidget {
+class chado_linker__featuremap_widget extends ChadoFieldWidget {
 
   // The default label for this field.
-  public static $default_label = 'Stocks';
+  public static $default_label = 'Featuremaps';
 
   // The list of field types for which this formatter is appropriate.
-  public static $field_types = ['chado_linker__stock'];
+  public static $field_types = ['chado_linker__featuremap'];
 
   /**
    *
@@ -32,14 +32,14 @@ class chado_linker__stock_widget extends ChadoFieldWidget {
     // Get the field defaults.
     $record_id = '';
     $fk_value = (array_key_exists('#entity', $element) and $element['#entity']) ? $element['#entity']->chado_record_id : NULL;
-    $stock_id = '';
+    $featuremap_id = '';
     $name = '';
     $name_label = '';
-    // Not always present, e.g. chado.stock_feature has a type_id and rank column
+    // Not always present.
     $linker_type_id = '';
     $linker_rank = 0;
 
-    $name_term = chado_get_semweb_term('stock', 'name');
+    $name_term = chado_get_semweb_term('featuremap', 'name');
 
     // If the field already has a value then it will come through the $items
     // array. This happens when editing an existing record.
@@ -49,8 +49,8 @@ class chado_linker__stock_widget extends ChadoFieldWidget {
       }
       $fk_value = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__' . $fkey_lcolumn, $fk_value);
       $record_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__' . $pkey, $record_id);
-      $stock_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__stock_id', $stock_id);
-      // Not always present
+      $featuremap_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__featuremap_id', $featuremap_id);
+      // Not necessarily present
       $linker_type_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__type_id', $linker_type_id);
       $linker_rank = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__rank', $linker_rank);
     }
@@ -62,7 +62,7 @@ class chado_linker__stock_widget extends ChadoFieldWidget {
     }
 
     // Get element values added to help support insert/updates.
-    $name_label = tripal_get_field_item_keyval($items, $delta, 'stock_name', $name);
+    $name_label = tripal_get_field_item_keyval($items, $delta, 'featuremap_name', $name);
 
     // Save the values needed by the Chado Storage API.
     $widget['value'] = [
@@ -78,16 +78,16 @@ class chado_linker__stock_widget extends ChadoFieldWidget {
       '#type' => 'value',
       '#default_value' => $fk_value,
     ];
-    $widget['chado-' . $field_table . '__stock_id'] = [
+    $widget['chado-' . $field_table . '__featuremap_id'] = [
       '#type' => 'value',
-      '#default_value' => $stock_id,
+      '#default_value' => $featuremap_id,
     ];
 
     $widget['name'] = [
       '#type' => 'textfield',
-      '#title' => t('stock'),
+      '#title' => t('featuremap'),
       '#default_value' => $name_label,
-      '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/stock',
+      '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/featuremap',
       '#maxlength' => 100000,
     ];
 
@@ -119,7 +119,7 @@ class chado_linker__stock_widget extends ChadoFieldWidget {
     $chado_column = $this->instance['settings']['chado_column'];
     $instance = $this->instance;
 
-    // Get information about this stock linker table.
+    // Get information about this featuremap linker table.
     $schema = chado_get_schema($field_table);
 
     $pkey = $schema['primary key'][0];
@@ -133,23 +133,23 @@ class chado_linker__stock_widget extends ChadoFieldWidget {
     if ($name) {
       $matches = [];
       if (preg_match('/^.*\[id: (\d+)\]$/', $name, $matches)) {
-        $stock_id = $matches[1];
-        $stock = chado_generate_var('stock', ['stock_id' => $stock_id]);
+        $featuremap_id = $matches[1];
+        $featuremap = chado_generate_var('featuremap', ['featuremap_id' => $featuremap_id]);
       }
       else {
-        $stock = chado_generate_var('stock', ['name' => $name]);
+        $featuremap = chado_generate_var('featuremap', ['name' => $name]);
       }
-      if ($stock) {
-        $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__stock_id'] = $stock->stock_id;
+      if ($featuremap) {
+        $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__featuremap_id'] = $featuremap->featuremap_id;
         $form_state['values'][$field_name]['und'][$delta]['value'] = $name;
 
-        // Special case, chado.stock_feature has a type_id and rank column, needed if adding a new stock.
+        // type_id or rank are not necessarily present.
         // If this is an existing entry, the type_id and rank are not specified, which leaves them unchanged.
         if (array_key_exists('type_id', $schema['fields'])) {
-          // If this is a new entry, set type_id to that of the stock.
+          // If this is a new entry, set type_id to that of the featuremap.
           // Rank has a default value (0), so we don't need to specify anything.
           if (!array_key_exists('chado-' . $field_table . '__type_id', $form_state['values'][$field_name]['und'][$delta])) {
-            $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__type_id'] = $stock->type_id->cvterm_id;
+            $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__type_id'] = $featuremap->type_id->cvterm_id;
           }
         }
       }
@@ -157,7 +157,7 @@ class chado_linker__stock_widget extends ChadoFieldWidget {
     // If no name is provided then we want to set the field for deletion.
     else {
       $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__' . $lfkey_field] = '';
-      $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__stock_id'] = '';
+      $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__featuremap_id'] = '';
       if (array_key_exists('type_id', $schema['fields'])) {
         $form_state['values'][$field_name]['und'][$delta]['chado-' . $field_table . '__type_id'] = '';
       }

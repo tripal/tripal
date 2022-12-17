@@ -98,7 +98,7 @@ class chado_linker__contact extends ChadoField {
           $description_term => [
             'searchable' => TRUE,
             'label' => 'Contact Description',
-            'help' => 'A descriptoin of the contact.',
+            'help' => 'A description of the contact.',
             'operations' => ['contains'],
             'sortable' => TRUE,
             'type' => 'xs:string',
