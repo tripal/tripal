@@ -2154,6 +2154,13 @@ function tripal_chado_update_7341() {
       'cv_name' => 'ncit',
       'definition' => 'The merchandise that a shop has on hand.',
     ]);
+    // For chado_linker__study field.
+    chado_insert_cvterm([
+      'id' => 'NCIT:C63536',
+      'name' => 'Study',
+      'cv_name' => 'ncit',
+      'definition' => 'A detailed examination, analysis, or critical inspection of a subject designed to discover facts about it.',
+    ]);
     // For summary when too many records.
     chado_insert_cvterm([
       'id' => 'NCIT:C25463',

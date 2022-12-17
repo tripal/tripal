@@ -28,7 +28,7 @@ class chado_linker__stock extends ChadoField {
     // The short name for the vocabulary (e.g. schema, SO, GO, PATO, etc.).
     'term_vocabulary' => 'NCIT',
     // The name of the term.
-    'term_name' => 'stock',
+    'term_name' => 'Stock',
     // The unique ID (i.e. accession) of the term.
     'term_accession' => 'C48288',
     // Set to TRUE if the site admin is allowed to change the term
@@ -163,8 +163,7 @@ class chado_linker__stock extends ChadoField {
     }
 
     // Evaluate how many linked records there are, and if too many just show a summary.
-    $load_limit = variable_get('chado_linker_load_limit');
-    $load_limit = $load_limit ? $load_limit : 500;
+    $load_limit = variable_get('chado_linker_load_limit', 500);
     if (array_key_exists('chado_linker_load_limit', $this->instance['settings'])) {
       $load_limit = $this->instance['settings']['chado_linker_load_limit'];
     }

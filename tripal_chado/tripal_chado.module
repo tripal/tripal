@@ -51,6 +51,7 @@ require_once 'api/modules/tripal_chado.organism.api.inc';
 require_once 'api/modules/tripal_chado.pub.api.inc';
 require_once 'api/modules/tripal_chado.stock.api.inc';
 require_once 'api/modules/tripal_chado.phylotree.api.inc';
+require_once 'api/modules/tripal_chado.study.api.inc';
 require_once 'api/modules/tripal_chado.module.DEPRECATED.api.inc';
 
 //
@@ -563,19 +564,19 @@ function tripal_chado_menu() {
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
   );
-  $items['admin/tripal/storage/chado/auto_name/assay/%'] = array(
-    'page callback' => 'chado_autocomplete_assay',
-    'page arguments' => array(6),
-    'access arguments' => array('access content'),
-    'file' => 'api/modules/tripal_chado.assay.api.inc',
-    'file path' => drupal_get_path('module', 'tripal_chado'),
-    'type' => MENU_CALLBACK,
-  );
   $items['admin/tripal/storage/chado/auto_name/analysis/%'] = array(
     'page callback' => 'chado_autocomplete_analysis',
     'page arguments' => array(6),
     'access arguments' => array('access content'),
     'file' => 'api/modules/tripal_chado.analysis.api.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/storage/chado/auto_name/assay/%'] = array(
+    'page callback' => 'chado_autocomplete_assay',
+    'page arguments' => array(6),
+    'access arguments' => array('access content'),
+    'file' => 'api/modules/tripal_chado.assay.api.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
   );
@@ -611,6 +612,14 @@ function tripal_chado_menu() {
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
   );
+  $items['admin/tripal/storage/chado/auto_name/project/%'] = array(
+    'page callback' => 'chado_autocomplete_project',
+    'page arguments' => array(6),
+    'access arguments' => array('access content'),
+    'file' => 'api/modules/tripal_chado.project.api.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_CALLBACK,
+  );
   $items['admin/tripal/storage/chado/auto_name/stock/%'] = array(
     'page callback' => 'chado_autocomplete_stock',
     'page arguments' => array(6),
@@ -619,11 +628,11 @@ function tripal_chado_menu() {
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
   );
-  $items['admin/tripal/storage/chado/auto_name/project/%'] = array(
-    'page callback' => 'chado_autocomplete_project',
+  $items['admin/tripal/storage/chado/auto_name/study/%'] = array(
+    'page callback' => 'chado_autocomplete_study',
     'page arguments' => array(6),
     'access arguments' => array('access content'),
-    'file' => 'api/modules/tripal_chado.project.api.inc',
+    'file' => 'api/modules/tripal_chado.study.api.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
   );

@@ -756,6 +756,27 @@ function tripal_chado_bundle_fields_info_linker(&$info, $details, $entity_type, 
     ];
   }
 
+  // FEATUREMAPS
+  $featuremap_table = $table_name . '_featuremap';
+  if (!chado_table_exists($featuremap_table)) {
+    $featuremap_table = 'featuremap_' . $table_name;
+  }
+  if (chado_table_exists($featuremap_table)) {
+    $schema = chado_get_schema($featuremap_table);
+    $pkey = $schema['primary key'][0];
+    $field_name = $table_name . '_featuremap';
+    $field_type = 'chado_linker__featuremap';
+    $info[$field_name] = [
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'locked' => FALSE,
+      'storage' => [
+        'type' => 'field_chado_storage',
+      ],
+    ];
+  }
+
   // FEATUREPOS
   if ($table_name == 'feature') {
     $field_name = 'ogi__location_on_map';
@@ -948,6 +969,28 @@ function tripal_chado_bundle_fields_info_linker(&$info, $details, $entity_type, 
     $pkey = $schema['primary key'][0];
     $field_name = $table_name . '_stock';
     $field_type = 'chado_linker__stock';
+    $info[$field_name] = [
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'locked' => FALSE,
+      'storage' => [
+        'type' => 'field_chado_storage',
+      ],
+    ];
+  }
+
+  // STUDIES
+  // supports study as either prefix or suffix of linker table name
+  $study_table = 'study_' . $table_name;
+  if (!chado_table_exists($study_table)) {
+    $study_table = $table_name . '_study';
+  }
+  if (chado_table_exists($study_table)) {
+    $schema = chado_get_schema($study_table);
+    $pkey = $schema['primary key'][0];
+    $field_name = $table_name . '_study';
+    $field_type = 'chado_linker__study';
     $info[$field_name] = [
       'field_name' => $field_name,
       'type' => $field_type,
@@ -2412,7 +2455,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
         'chado_column' => 'analysis_id',
         'term_accession' => 'C25391',
         'term_vocabulary' => 'NCIT',
-        'term_name' => 'analysis',
+        'term_name' => 'Analysis',
       ],
       'widget' => [
         'type' => 'chado_linker__analysis_widget',
@@ -2451,7 +2494,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
         'chado_column' => 'assay_id',
         'term_accession' => 'C60819',
         'term_vocabulary' => 'NCIT',
-        'term_name' => 'assay',
+        'term_name' => 'Assay',
       ],
       'widget' => [
         'type' => 'chado_linker__assay_widget',
@@ -2608,7 +2651,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
         'chado_column' => 'feature_id',
         'term_accession' => 'C73619',
         'term_vocabulary' => 'NCIT',
-        'term_name' => 'feature',
+        'term_name' => 'Feature',
       ],
       'widget' => [
         'type' => 'chado_linker__feature_widget',
@@ -2658,6 +2701,45 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
         'default' => [
           'label' => 'hidden',
           'type' => 'data__sequence_coordinates_formatter',
+          'settings' => [],
+        ],
+      ],
+    ];
+  }
+
+  // FEATUREMAPS
+  $featuremap_table = $table_name . '_featuremap';
+  if (!chado_table_exists($featuremap_table)) {
+    $featuremap_table = 'featuremap_' . $table_name;
+  }
+  if (chado_table_exists($featuremap_table)) {
+    $field_name = $table_name . '_featuremap';
+    $info[$field_name] = $info[$field_name] = [
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Featuremap',
+      'description' => 'Associates a featuremap with this record',
+      'required' => FALSE,
+      'settings' => [
+        'auto_attach' => FALSE,
+        'chado_table' => $featuremap_table,
+        'base_table' => $table_name,
+        'chado_column' => 'featuremap_id',
+        'term_accession' => '1274',
+        'term_vocabulary' => 'data',
+        'term_name' => 'Map',
+      ],
+      'widget' => [
+        'type' => 'chado_linker__featuremap_widget',
+        'settings' => [
+          'display_label' => 1,
+        ],
+      ],
+      'display' => [
+        'default' => [
+          'label' => 'inline',
+          'type' => 'chado_linker__featuremap_formatter',
           'settings' => [],
         ],
       ],
@@ -2799,7 +2881,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
         'chado_column' => 'project_id',
         'term_accession' => 'C47885',
         'term_vocabulary' => 'NCIT',
-        'term_name' => 'project',
+        'term_name' => 'Project',
       ],
       'widget' => [
         'type' => 'chado_linker__project_widget',
@@ -3069,7 +3151,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
         'chado_column' => 'stock_id',
         'term_accession' => 'C48288',
         'term_vocabulary' => 'NCIT',
-        'term_name' => 'stock',
+        'term_name' => 'Stock',
       ],
       'widget' => [
         'type' => 'chado_linker__stock_widget',
@@ -3081,6 +3163,46 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
         'default' => [
           'label' => 'inline',
           'type' => 'chado_linker__stock_formatter',
+          'settings' => [],
+        ],
+      ],
+    ];
+  }
+
+  // STUDIES
+  // supports study as either prefix or suffix of linker table name
+  $study_table = 'study_' . $table_name;
+  if (!chado_table_exists($study_table)) {
+    $study_table = $table_name . '_study';
+  }
+  if (chado_table_exists($study_table)) {
+    $field_name = $table_name . '_study';
+    $info[$field_name] = $info[$field_name] = [
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Study',
+      'description' => 'Associates a study with this record',
+      'required' => FALSE,
+      'settings' => [
+        'auto_attach' => FALSE,
+        'chado_table' => $study_table,
+        'base_table' => $table_name,
+        'chado_column' => 'study_id',
+        'term_accession' => 'C63536',
+        'term_vocabulary' => 'NCIT',
+        'term_name' => 'Study',
+      ],
+      'widget' => [
+        'type' => 'chado_linker__study_widget',
+        'settings' => [
+          'display_label' => 1,
+        ],
+      ],
+      'display' => [
+        'default' => [
+          'label' => 'inline',
+          'type' => 'chado_linker__study_formatter',
           'settings' => [],
         ],
       ],
