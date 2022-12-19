@@ -70,7 +70,7 @@ class chado_linker__project_formatter extends ChadoFieldFormatter {
         // content, if taller there is a scrollbar.
         $rows[] = [
           $cell_begin . $project_name . $cell_end,
-          $cell_begin . $description . cell_end,
+          $cell_begin . $description . $cell_end,
         ];
       }
 
