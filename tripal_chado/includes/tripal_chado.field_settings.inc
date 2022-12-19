@@ -25,6 +25,16 @@ function tripal_chado_field_settings_admin_form($form, $form_state) {
     '#default_value' => variable_get('chado_linker_load_limit', 500),
   ];
 
+  $form['general']['max_height']= [
+    '#type' => 'textfield',
+    '#title' => t('Maximum field height'),
+    '#size' => 20,
+    '#description' => t('For fields that support it, this option sets the'
+       . ' maximium height of a single record. If it is taller, then a'
+       . ' scrollbar is added.'),
+    '#default_value' => variable_get('chado_linker_max_height', 200),
+  ];
+
   $form['submit'] = [
     '#type' => 'submit',
     '#value' => 'Save Configuration'
@@ -38,9 +48,13 @@ function tripal_chado_field_settings_admin_form($form, $form_state) {
  */
 function tripal_chado_field_settings_admin_form_validate($form, &$form_state) {
 
-  $max_delta = $form_state['values']['max_delta'];
-  if (!preg_match('/^\d+$/', $max_delta) or ($max_delta < 1)) {
-    form_set_error('max_delta', 'Please enter a positive integer.');
+  // Validation for the positive integer fields.
+  $fields = ['max_delta', 'max_height'];
+  foreach ($fields as $field) {
+    $value = $form_state['values'][$field];
+    if (!preg_match('/^\d+$/', $value) or ($value < 1)) {
+      form_set_error($field, 'Please enter a positive integer.');
+    }
   }
 }
 
@@ -50,4 +64,5 @@ function tripal_chado_field_settings_admin_form_validate($form, &$form_state) {
 function tripal_chado_field_settings_admin_form_submit($form, $form_state) {
 
   variable_set('chado_linker_load_limit', $form_state['values']['max_delta']);
+  variable_set('chado_linker_max_height', $form_state['values']['max_height']);
 }

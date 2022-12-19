@@ -45,6 +45,12 @@ class chado_linker__stock_formatter extends ChadoFieldFormatter {
 
     // Normal output is a table of stocks
     else {
+      // This configurable cell styling implements a maximum height
+      // for the content, if taller there is a scrollbar.
+      $max_height = variable_get('chado_linker_max_height', 200);
+      $cell_begin = '<div class="chado-linker--cell" style="max-height:' . $max_height . 'px">';
+      $cell_end = '</div>';
+
       foreach ($items as $delta => $item) {
         $stock = $item['value'];
         if (!$stock) {
@@ -65,9 +71,9 @@ class chado_linker__stock_formatter extends ChadoFieldFormatter {
         // This cell styling implements a maximum height for the
         // content, if taller there is a scrollbar.
         $rows[] = [
-          '<div class="chado-linker--cell">' . $stock_name . '</div>',
-          '<div class="chado-linker--cell">' . $uniquename . '</div>',
-          '<div class="chado-linker--cell">' . $type . '</div>',
+          $cell_begin . $stock_name . $cell_end,
+          $cell_begin . $uniquename . $cell_end,
+          $cell_begin . $type . $cell_end,
         ];
       }
 

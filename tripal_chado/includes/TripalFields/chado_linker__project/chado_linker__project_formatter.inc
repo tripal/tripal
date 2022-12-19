@@ -44,6 +44,12 @@ class chado_linker__project_formatter extends ChadoFieldFormatter {
 
     // Normal output is a table of projects
     else {
+      // This configurable cell styling implements a maximum height
+      // for the content, if taller there is a scrollbar.
+      $max_height = variable_get('chado_linker_max_height', 200);
+      $cell_begin = '<div class="chado-linker--cell" style="max-height:' . $max_height . 'px">';
+      $cell_end = '</div>';
+
       foreach ($items as $delta => $item) {
         $project = $item['value'];
         if (!$project) {
@@ -63,8 +69,8 @@ class chado_linker__project_formatter extends ChadoFieldFormatter {
         // This cell styling implements a maximum height for the
         // content, if taller there is a scrollbar.
         $rows[] = [
-          '<div class="chado-linker--cell">' . $project_name . '</div>',
-          '<div class="chado-linker--cell">' . $description . '</div>',
+          $cell_begin . $project_name . $cell_end,
+          $cell_begin . $description . cell_end,
         ];
       }
 

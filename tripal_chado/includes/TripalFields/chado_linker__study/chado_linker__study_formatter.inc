@@ -44,6 +44,12 @@ class chado_linker__study_formatter extends ChadoFieldFormatter {
 
     // Normal output is a table of studies
     else {
+      // This configurable cell styling implements a maximum height
+      // for the content, if taller there is a scrollbar.
+      $max_height = variable_get('chado_linker_max_height', 200);
+      $cell_begin = '<div class="chado-linker--cell" style="max-height:' . $max_height . 'px">';
+      $cell_end = '</div>';
+
       foreach ($items as $delta => $item) {
         $study = $item['value'];
         if (!$study) {
@@ -60,11 +66,9 @@ class chado_linker__study_formatter extends ChadoFieldFormatter {
           $study_name = l($study_name, "bio_data/" . $entity_id, ['attributes' => ['target' => "_blank"]]);
         }
 
-        // This cell styling implements a maximum height for the
-        // content, if taller there is a scrollbar.
         $rows[] = [
-          '<div class="chado-linker--cell">' . $study_name . '</div>',
-          '<div class="chado-linker--cell">' . $description . '</div>',
+          $cell_begin . $study_name . $cell_end,
+          $cell_begin . $description . $cell_end,
         ];
       }
 

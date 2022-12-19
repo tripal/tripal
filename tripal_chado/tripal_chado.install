@@ -2172,6 +2172,9 @@ function tripal_chado_update_7341() {
     // Default maximum record limit for chado_linker__xxx fields
     variable_set('chado_linker_load_limit', 500);
 
+    // Default maximum display height for chado_linker__xxx fields
+    variable_set('chado_linker_max_height', 200);
+
   } catch (\PDOException $e) {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Could not perform update: '. $error);
