@@ -1636,10 +1636,11 @@ class GFF3Importer extends TripalImporter {
         // Get the name for the protein
         $name = $parent_name;
         $uname = $parent_name . '-protein';
-        // If regexes are provdied then use those to create the protein name.
+        // If regexes are provided then use those to create the protein name.
         if ($this->re_mrna and $this->re_protein) {
           $uname = preg_replace("/" . $this->re_mrna . "/", $this->re_protein, $parent_name);
         }
+        $cds_organism_id = array_key_exists('organism_id', $cds)?$cds['organism_id']:NULL;
 
         // Now create the protein feature.
         $feature = [
@@ -1659,7 +1660,7 @@ class GFF3Importer extends TripalImporter {
           'dbxrefs' => [],
           'terms' => [],
           'derives_from' => NULL,
-          'organism' => $cds['organism_id'],
+          'organism' => $cds_organism_id,
           'target' => [],
           'properties' => [],
           'parent' => $cds['parent'],
