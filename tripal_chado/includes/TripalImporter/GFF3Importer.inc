@@ -2997,6 +2997,7 @@ class GFF3Importer extends TripalImporter {
     $this->setTotalItems($num_batches);
 
     $init_sql = "INSERT INTO {analysisfeature} (feature_id, analysis_id, significance) VALUES \n";
+    $sql = '';
     $i = 0;
     $total = 0;
     $batch_num = 1;
@@ -3014,7 +3015,7 @@ class GFF3Importer extends TripalImporter {
         $sql .= "(:feature_id_$i, :analysis_id_$i, :significance_$i),\n";
         $args[":feature_id_$i"] = $feature_id;
         $args[":analysis_id_$i"] = $this->analysis->getID();
-        if (strcmp($feature['score'], '.') != 0) {
+        if (array_key_exists('score', $feature) and (strcmp($feature['score'], '.') != 0)) {
           $args[":significance_$i"] = $feature['score'];
         }
         else {
