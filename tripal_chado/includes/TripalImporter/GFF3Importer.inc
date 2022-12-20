@@ -715,7 +715,7 @@ class GFF3Importer extends TripalImporter {
     }
 
     $sel_cvterm_sql = "
-      SELECT CVT.cvterm_id
+      SELECT CVT.cvterm_id, CVT.name
       FROM {cvterm} CVT
         LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
       WHERE CVT.cv_id = :cv_id and
@@ -726,11 +726,13 @@ class GFF3Importer extends TripalImporter {
       ':name' => $type,
       ':synonym' => $type,
     ]);
-    $cvterm_id = $result->fetchField();
+    $cvterm = $result->fetchObject();
 
-    // If the term couldn't be found and it's a property term then insert it
-    // as a local term.
-    if (!$cvterm_id) {
+    if ($cvterm) {
+      $cvterm_id = $cvterm->cvterm_id;
+    }
+    // If the term couldn't be found then insert it as a local term.
+    else {
       $term = [
         'id' => "local:$type",
         'name' => $type,
@@ -741,6 +743,7 @@ class GFF3Importer extends TripalImporter {
       ];
       $cvterm = (object) chado_insert_cvterm($term, ['update_existing' => FALSE]);
       $cvterm_id = $cvterm->cvterm_id;
+      $this->logMessage("Defined new local cv term \"$type\" in cv \"$cv_name\"");
     }
 
     if ($is_prop_type) {
@@ -1087,7 +1090,7 @@ class GFF3Importer extends TripalImporter {
           }
         }
         else {
-          throw new Exception(t('The "Target" attribute is incorreclty formatted for the feature "%uniquename."',
+          throw new Exception(t('The "Target" attribute is incorrectly formatted for the feature "%uniquename."',
               ['%uniquename' => $ret['uniquename']]));
         }
       }
