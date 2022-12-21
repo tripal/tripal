@@ -3,7 +3,6 @@
 namespace Drupal\tripal\TripalField\Interfaces;
 
 use Drupal\Core\Field\FieldItemInterface;
-use Drupal\Core\Field\FieldStorageDefinitionInterface;
 
 interface TripalFieldItemInterface extends FieldItemInterface {
 
@@ -18,13 +17,15 @@ interface TripalFieldItemInterface extends FieldItemInterface {
   /**
    * Returns the property types required by this field.
    *
-   * @param FieldStorageDefinitionInterface $field_definition
-   *   The entity type id of this field's entity.
+   * @param  object $field_definition
+   *   The field configuration object. This can be an instance of:
+   *   \Drupal\field\Entity\FieldStorageConfig or
+   *   \Drupal\field\Entity\FieldConfig
    *
    * @return array
    *   Array of \Drupal\tripal\TripalStorage\StoragePropertyTypeBase property types.
    */
-  public static function tripalTypes(FieldStorageDefinitionInterface $field_definition);
+  public static function tripalTypes($field_definition);
 
   /**
    * Allows child field items to add default types.
@@ -67,11 +68,16 @@ interface TripalFieldItemInterface extends FieldItemInterface {
 
   /**
    * Returns an empty template array of all property values this field uses for loading and saving.
-   *
+   * 
+   * @param  object $field_definition
+   *   The field configuration object. This can be an instance of:
+   *   \Drupal\field\Entity\FieldStorageConfig or
+   *   \Drupal\field\Entity\FieldConfig
+   *   
    * @return array
    *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue property value templates.
    */
-  public function tripalValuesTemplate();
+  public function tripalValuesTemplate($field_definition);
 
   /**
    * Loads the values from the given array of properties to the given entity.

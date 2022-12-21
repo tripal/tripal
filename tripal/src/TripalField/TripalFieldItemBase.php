@@ -36,7 +36,9 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $settings = [
       'storage_plugin_id' => '',
       'storage_plugin_settings' => [
-        'property_settings' => [],
+        'property_settings' => [
+          'cache' => FALSE
+        ],
       ],
     ];
     return $settings + parent::defaultStorageSettings();
@@ -47,11 +49,12 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    * {@inheritdoc}
    */
   public static function defaultTripalTypes($entity_type_id, $field_type) {
+    $settings = ['cache' => TRUE];    
     return [
       // The record Id can be used by the Tripal storage plugin to
-      // assocaite the values this field provides with a record in the
+      // associate the values this field provides with a record in the
       // data store.
-      new IntStoragePropertyType($entity_type_id, $field_type, "record_id"),
+      new IntStoragePropertyType($entity_type_id, $field_type, "record_id", $settings),
     ];
   }
 
@@ -474,10 +477,17 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    */
   public function tripalClear($field_item, $field_name, $properties, $entity) {
     $delta = $field_item->getName();
+    $field_definition = $field_item->getFieldDefinition();
+    $storage_settings = $field_definition->getSetting('storage_plugin_settings');
+    $property_settings = $storage_settings['property_settings'];
+    
     foreach ($properties as $property) {
-      $prop_key = $property->getKey();
-      // Never clear out the record_id we need this to map to Chado records.
-      if ($prop_key == 'record_id') {
+      $prop_key = $property->getKey();      
+      
+      // Keep properties that have caching enabled.
+      if (array_key_exists($prop_key, $property_settings) and 
+          array_key_exists('cache', $property_settings[$prop_key]) and 
+          $property_settings[$prop_key]['cache'] == TRUE) {
         continue;
       }
       $entity->get($field_name)->get($delta)->get($prop_key)->setValue('', False);
