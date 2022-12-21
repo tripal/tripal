@@ -235,6 +235,13 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    */
    public function save() {
 
+     // First we want to set an id for this content type.
+     $config = \Drupal::service('config.factory')->getEditable('tripal.settings');
+     $max_id = $config->get('tripal_entity_type.max_id');
+     $this->id = $max_id + 1;
+     $this->name = 'bio_data_' . $this->id;
+     $config->set('tripal_entity_type.max_id', $this->id)->save();
+
      // Check that the TripalTerm exists with the ID Space and Accession
      // added to this type when it was created.
 
@@ -243,10 +250,6 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
      // Save the rest of the entity using the parent implementation.
      // This is when the id is assigned.
      $return_status = parent::save();
-
-     // Next, we want to set the name based on the id.
-     // Specifically, we expect bio_data_[id] to be the name of the Tripal Content Type.
-     // $this->name = 'bio_data_' . $this->id;
 
      return $return_status;
    }
