@@ -168,33 +168,11 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     // If yes, extract the ID Space and Accession for saving.
     if (array_key_exists('term', $values)) {
       if (is_a($values['term'], '\Drupal\tripal\TripalVocabTerms\TripalTerm')) {
-        $term = $values['term'];
-        unset($values['term']);
-        $values['termIdSpace'] = $term->getIdSpace();
-        $values['termAccession'] = $term->getAccession();
-
-        // Since we have a term object, we can use the definition to set the
-        // help text if it's not already set.
-        if (!array_key_exists('help_text', $values)) {
-          $values['help_text'] = $term->getDefinition();
-        }
+        $this->setTerm($values['term']);
       }
       else {
         $class_name_passed_in = get_class($values['term']);
         throw new \Exception("When passing a term to create a TripalEntityType is must be of type TripalTerm. You passed in an object of type " . $class_name_passed_in . ".");
-      }
-    }
-
-    // Fill in default values.
-    // The key is the key expected in $values and the value is the default
-    // value to apply if that key was not already set.
-    $defaults = [];
-    $defaults['category'] = 'General';
-    $defaults['hide_empty_field'] = TRUE;
-    $defaults['ajax_field'] = TRUE;
-    foreach ($defaults as $key => $default_value) {
-      if (!array_key_exists($key, $values)) {
-        $values[$key] = $default_value;
       }
     }
 
@@ -242,6 +220,9 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
      $this->name = 'bio_data_' . $this->id;
      $config->set('tripal_entity_type.max_id', $this->id)->save();
 
+     // Set defaults for anything not already set.
+     $this->setDefaults();
+
      // Check that the TripalTerm exists with the ID Space and Accession
      // added to this type when it was created.
 
@@ -253,6 +234,22 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
 
      return $return_status;
    }
+
+  /**
+   * Set defaults of values which are not yet set.
+   */
+  public function setDefaults() {
+
+    if ($this->category === NULL) {
+      $this->category = 'General';
+    }
+    if ($this->hide_empty_field === NULL) {
+      $this->hide_empty_field = TRUE;
+    }
+    if ($this->ajax_field === NULL) {
+      $this->ajax_field = TRUE;
+    }
+  }
 
   // --------------------------------------------------------------------------
   //                          MAIN SETTER / GETTERS
@@ -348,6 +345,20 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     $manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
     $idspace = $manager->loadCollection($this->termIdSpace);
     return $idspace->getTerm($this->termAccession);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setTerm(TripalTerm $term) {
+    $this->termIdSpace = $term->getIdSpace();
+    $this->termAccession = $term->getAccession();
+
+    // Since we have a term object, we can use the definition to set the
+    // help text if it's not already set.
+    if ($this->help_text === NULL) {
+      $this->help_text = $term->getDefinition();
+    }
   }
 
   /**
