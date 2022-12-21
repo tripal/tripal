@@ -960,8 +960,9 @@ function tripal_chado_bundle_fields_info_linker(&$info, $details, $entity_type, 
   $stock_table = $table_name . '_stock';
   // Unfortunately a special case here, mainlab tripal defines a chado.feature_stock
   // table conflicting with the tripal chado.stock_feature table, similarly with
-  // chado.featuremap_stock
-  if (($table_name == 'feature') or ($table_name == 'featuremap') or (!chado_table_exists($stock_table))) {
+  // chado.featuremap_stock, chado.library_stock
+  if (($table_name == 'feature') or ($table_name == 'featuremap')
+    or ($table_name == 'library') or (!chado_table_exists($stock_table))) {
     $stock_table = 'stock_' . $table_name;
   }
   if (chado_table_exists($stock_table)) {
@@ -3131,8 +3132,9 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
   $stock_table = $table_name . '_stock';
   // Unfortunately a special case here, mainlab tripal defines a chado.feature_stock
   // table conflicting with the tripal chado.stock_feature table, similarly with
-  // chado.featuremap_stock
-  if (($table_name == 'feature') or ($table_name == 'featuremap') or (!chado_table_exists($stock_table))) {
+  // chado.featuremap_stock, chado.library_stock
+  if (($table_name == 'feature') or ($table_name == 'featuremap')
+    or ($table_name == 'library') or (!chado_table_exists($stock_table))) {
     $stock_table = 'stock_' . $table_name;
   }
   if (chado_table_exists($stock_table)) {
