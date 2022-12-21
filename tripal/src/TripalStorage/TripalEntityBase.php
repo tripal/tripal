@@ -28,9 +28,9 @@ class TripalEntityBase extends ContentEntityBase {
       // If it is a TripalField then...
       if ($field instanceof TripalFieldItemInterface) {
         // Get empty template list of property values this field uses
-        $props = $field->tripalValuesTemplate();
+        $props = $field->tripalValuesTemplate($fieldDefinition);
         // Retrieve the biological data to be saved...
-        $field->tripalSave($props,$this);
+        $field->tripalSave($props, $this);
         // Now we clear the biological data from the Drupal field values to ensure
         // this data is not duplicated.
         $field->tripalClear($this);
@@ -72,7 +72,7 @@ class TripalEntityBase extends ContentEntityBase {
         // compile a list of TripalField values grouped by TripalStorage implementations.
         if ($field instanceof TripalFieldItemInterface) {
           $hasTripalFields = TRUE;
-          $props = $field->tripalValuesTemplate();
+          $props = $field->tripalValuesTemplate($fieldDefinition);
           $tsid = $field->tripalStorageId();
           if (array_key_exists($tsid, $storageOps)) {
             $storageOps[$tsid] = array_merge($storageOps[$tsid], $props);

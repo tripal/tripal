@@ -772,6 +772,10 @@ vocabularies:
             -   id: 'NCIT:C25693'
                 name: 'Subgroup'
                 description: 'A subdivision of a larger group with members often exhibiting similar characteristics. [ NCI ]'
+            -   id: 'NCIT:C42699'
+                name: 'Namespace'
+                description: 'In general, a namespace is an abstract container, which is or could be filled by names, or technical terms, or words, and these represent or stand for real-world things. A description logic terminology namespace is a collection of Kind, Role, Property and Concept definitions. As in computer programming, context namespaces are intended to allow multiple knowledge bases to reside in the same physical database. (from Apelon) [ NCI ]'
+                
 
     -   name: 'ncbitaxon'
         label: 'NCBI organismal classification. An ontology representation of the NCBI organismal taxonomy'

@@ -107,7 +107,7 @@ class ChadoPreparerTest extends ChadoTestBrowserBase {
     ];
     foreach ($expected_counts_by_table as $table_name => $expected_count) {
       $count = $chado2check->query("SELECT count(*) FROM {1:$table_name}")->fetchField();
-      $this->assertEquals($expected_count, $count,
+      $this->assertGreaterThanOrEqual($expected_count, $count,
         "There was not the expected number of records in the $table_name table after preparing.");
     }
 
@@ -124,7 +124,7 @@ class ChadoPreparerTest extends ChadoTestBrowserBase {
     $table_name = 'cv_root_mview';
     $expected_count = 9;
     $count = $chado2check->query("SELECT count(*) FROM {1:$table_name}")->fetchField();
-    $this->assertEquals($expected_count, $count,
+    $this->assertGreaterThanOrEqual($expected_count, $count,
       "There was not the expected number of records in the $table_name table after preparing.");
 
     // 5: POPULATE DB2CV_MVIEW.
@@ -132,7 +132,7 @@ class ChadoPreparerTest extends ChadoTestBrowserBase {
     $table_name = 'db2cv_mview';
     $expected_count = 41;
     $count = $chado2check->query("SELECT count(*) FROM {1:$table_name}")->fetchField();
-    $this->assertEquals($expected_count, $count,
+    $this->assertGreaterThanOrEqual($expected_count, $count,
       "There was not the expected number of records in the $table_name table after preparing.");
 
     // 6: POPULATE CHADO_SEMWEB TABLE.

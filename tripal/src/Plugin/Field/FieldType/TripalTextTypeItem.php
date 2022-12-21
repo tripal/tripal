@@ -41,7 +41,7 @@ class TripalTextTypeItem extends TripalFieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public function tripalValuesTemplate() {
+  public function tripalValuesTemplate($field_definition) {
     $entity = $this->getEntity();
     $entity_type_id = $entity->getEntityTypeId();
     $entity_id = $entity->id();

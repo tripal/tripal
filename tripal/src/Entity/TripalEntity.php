@@ -495,14 +495,14 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
         // Get the empty property values for this field item and the
         // property type objects.
-        $prop_values = $item->tripalValuesTemplate();
+        $prop_values = $item->tripalValuesTemplate($item->getFieldDefinition());
         $prop_types = get_class($item)::tripalTypes($item->getFieldDefinition());
 
         // Sets the values from the entity on both the property and in entity.
         // Despite the function name, no values are saved to the database.
         $item->tripalSave($item, $field_name, $prop_values, $entity);
 
-        // Clears the values from the entity (does not clear thme from the
+        // Clears the values from the entity (does not clear them from the
         // property).
         $item->tripalClear($item, $field_name, $prop_values, $entity);
 
@@ -567,27 +567,39 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       }
     }
 
-    // Set the record ID for the property provided by the storage class.
+    // Set the property values that should be cached.
     $delta_remove = [];
     $fields = $this->getFields();
     foreach ($fields as $field_name => $items) {
       foreach($items as $item) {
 
         // If it is not a TripalField then skip it.
-        if (! $item instanceof TripalFieldItemInterface) {
+        if (!($item instanceof TripalFieldItemInterface)) {
           continue;
         }
-
+        
         $delta = $item->getName();
         $tsid = $item->tripalStorageId();
-        $record_id = $values[$tsid][$field_name][$delta]['record_id']['value'];
-        $item->tripalLoad($item, $field_name, [$record_id], $this);
-
-        // The storage class may no longer have a property linked to a record.
-        // If so, we need to delete the item from the entity.
-        if ($record_id->getValue() == 0) {
-          $delta_remove[$field_name][] = $delta;
-          continue;
+        
+        // Load into the entity the field properties that are to be cached.        
+        $load_props = [];
+        foreach ($values[$tsid][$field_name][$delta] as $prop_info) {
+          $property_settings = $prop_info['type']->getStorageSettings();
+          if (array_key_exists('cache', $property_settings) and
+              $property_settings['cache'] == TRUE) {
+            $load_props[] = $prop_info['value'];
+          }
+        }
+        if (count($load_props) > 0) {
+          $item->tripalLoad($item, $field_name, $load_props, $this);
+  
+          // Delete cached elements that have no value.        
+          foreach ($load_props as $prop) {
+            if (!$prop->getValue()) {
+              $delta_remove[$field_name][] = $delta;
+              continue;
+            }
+          }
         }
       }
     }
