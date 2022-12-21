@@ -946,7 +946,7 @@ class GFF3Importer extends TripalImporter {
     preg_match('/[a-zA-Z0-9\.:\^\*\$@!\+_\?\-\|]*/', $ret['landmark'], $matches);
     if ($matches[0] != $ret['landmark']) {
       throw new Exception(t("Landmark/seqid !landmark contains invalid
-        characters. Only characters included in this regular expression is
+        characters. Only characters included in this regular expression are
         allowed [a-zA-Z0-9.:^*$@!+_?-|]",
         ['!landmark' => $ret['landmark']]));
     }
@@ -2276,9 +2276,13 @@ class GFF3Importer extends TripalImporter {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
     $organism_id = $this->organism->getID();
+    $landmark_cvterm = $this->landmark_cvterm;
 
     $sql = "SELECT name, uniquename, feature_id FROM {feature} "
          . "WHERE uniquename IN (:landmarks) AND organism_id=:organism_id";
+    if ($landmark_cvterm) {
+      $sql .= " AND type_id=:type_id";
+    }
     $i = 0;
     $total = 0;
     $batch_num = 1;
@@ -2297,10 +2301,14 @@ class GFF3Importer extends TripalImporter {
       if ($i == $batch_size or $total == $num_landmarks) {
         if (count($names) > 0) {
           $args = [':landmarks' => $names, ':organism_id' => $organism_id];
+          if ($landmark_cvterm) {
+            $args[':type_id'] = $landmark_cvterm->getValue('cvterm_id');
+          }
           $results = chado_query($sql, $args);
           while ($f = $results->fetchObject()) {
-            if (array_key_exists($f->uniquename, $this->landmarks)) {
-              throw new Exception(t('Duplicate landmark, "!uniquename" is ambiguous for this organism',
+            if (($this->landmarks[$f->uniquename]) and ($this->landmarks[$f->uniquename] != $f->feature_id)) {
+              throw new Exception(t('The landmark "!uniquename" is ambiguous for this organism.'
+                                  . ' Please redo the importer job and specify a landmark type.',
                 ['!uniquename' => $f->uniquename]));
             }
             $this->landmarks[$f->uniquename] = $f->feature_id;
