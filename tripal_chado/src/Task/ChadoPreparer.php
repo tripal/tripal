@@ -29,18 +29,12 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
 class ChadoPreparer extends ChadoTaskBase {
 
   /**
-   * A connection to the Chado database.
+   * The main chado schema for this importer.
+   * This will be used in getChadoConnection.
    *
-   * @var \Drupal\tripal\TripalDBX\TripalDbxConnection
+   * @var string
    */
-  protected $chado = NULL;
-
-  /**
-   * A connection to the public Drupal database.
-   *
-   * @var object
-   */
-  protected $public = NULL;
+  protected $chado_schema_main;
 
   /**
    * Name of the task.
@@ -139,14 +133,14 @@ class ChadoPreparer extends ChadoTaskBase {
 
     // Make sure we use the specified Chado schema.
     $schema_name = $this->outputSchemas[0]->getSchemaName();
-    $this->chado = \Drupal::service('tripal_chado.database');
-    $this->chado->setSchemaName($schema_name);
-    $this->chado->useTripalDbxSchemaFor(get_class());
-    $this->public = \Drupal::database();
+    $this->chado_schema_main = $schema_name;
+    $chado = \Drupal::service('tripal_chado.database');
+    $chado->setSchemaName($schema_name);
+    $chado->useTripalDbxSchemaFor(get_class());
 
     try
     {
-      $chado_version = $this->chado->getVersion();
+      $chado_version = $chado->getVersion();
       if ($chado_version != '1.3') {
         throw new TaskException("Cannot prepare. Currently only Chado v1.3 is supported.");
       }
@@ -270,12 +264,9 @@ class ChadoPreparer extends ChadoTaskBase {
     ];
 
     $custom_tables = \Drupal::service('tripal_chado.custom_tables');
-    $custom_table = $custom_tables->create('tripal_gff_temp', $this->chado->getSchemaName());
+    $custom_table = $custom_tables->create('tripal_gff_temp', $this->chado_schema_main);
     $custom_table->setTableSchema($schema);
     $custom_table->setHidden(True);
-
-    //chado_create_custom_table('tripal_gff_temp', $schema, TRUE, NULL,
-    //  FALSE, $this->chado);
   }
 
   /**
@@ -319,12 +310,9 @@ class ChadoPreparer extends ChadoTaskBase {
     ];
 
     $custom_tables = \Drupal::service('tripal_chado.custom_tables');
-    $custom_table = $custom_tables->create('tripal_gffcds_temp', $this->chado->getSchemaName());
+    $custom_table = $custom_tables->create('tripal_gffcds_temp', $this->chado_schema_main);
     $custom_table->setTableSchema($schema);
     $custom_table->setHidden(True);
-
-    //chado_create_custom_table('tripal_gffcds_temp', $schema, TRUE, NULL,
-    //  FALSE, $this->chado);
   }
 
   /**
@@ -363,12 +351,9 @@ class ChadoPreparer extends ChadoTaskBase {
     ];
 
     $custom_tables = \Drupal::service('tripal_chado.custom_tables');
-    $custom_table = $custom_tables->create('tripal_gffprotein_temp', $this->chado->getSchemaName());
+    $custom_table = $custom_tables->create('tripal_gffprotein_temp', $this->chado_schema_main);
     $custom_table->setTableSchema($schema);
     $custom_table->setHidden(True);
-
-    //chado_create_custom_table('tripal_gffprotein_temp', $schema, TRUE, NULL,
-    //  FALSE, $this->chado);
   }
 
   /**
@@ -405,7 +390,7 @@ class ChadoPreparer extends ChadoTaskBase {
     ];
 
     $custom_tables = \Drupal::service('tripal_chado.custom_tables');
-    $custom_table = $custom_tables->create('tripal_obo_temp', $this->chado->getSchemaName());
+    $custom_table = $custom_tables->create('tripal_obo_temp', $this->chado_schema_main);
     $custom_table->setTableSchema($schema);
     $custom_table->setHidden(True);
   }
@@ -491,7 +476,7 @@ class ChadoPreparer extends ChadoTaskBase {
     ";
 
     $mviews = \Drupal::service('tripal_chado.materialized_views');
-    $mview = $mviews->create($view_name, $this->chado->getSchemaName());
+    $mview = $mviews->create($view_name, $this->chado_schema_main);
     $mview->setTableSchema($schema);
     $mview->setSqlQuery($sql);
     $mview->setComment($comment);
@@ -549,7 +534,7 @@ class ChadoPreparer extends ChadoTaskBase {
     ";
 
     $mviews = \Drupal::service('tripal_chado.materialized_views');
-    $mview = $mviews->create($view_name, $this->chado->getSchemaName());
+    $mview = $mviews->create($view_name, $this->chado_schema_main);
     $mview->setTableSchema($schema);
     $mview->setSqlQuery($sql);
     $mview->setComment($comment);
@@ -624,7 +609,7 @@ class ChadoPreparer extends ChadoTaskBase {
     ";
 
     $mviews = \Drupal::service('tripal_chado.materialized_views');
-    $mview = $mviews->create($view_name, $this->chado->getSchemaName());
+    $mview = $mviews->create($view_name, $this->chado_schema_main);
     $mview->setTableSchema($schema);
     $mview->setSqlQuery($sql);
     $mview->setComment($comment);
@@ -688,7 +673,7 @@ class ChadoPreparer extends ChadoTaskBase {
     ";
 
     $mviews = \Drupal::service('tripal_chado.materialized_views');
-    $mview = $mviews->create($view_name, $this->chado->getSchemaName());
+    $mview = $mviews->create($view_name, $this->chado_schema_main);
     $mview->setTableSchema($schema);
     $mview->setSqlQuery($sql);
     $mview->setComment($comment);
@@ -751,7 +736,7 @@ class ChadoPreparer extends ChadoTaskBase {
     ";
 
     $mviews = \Drupal::service('tripal_chado.materialized_views');
-    $mview = $mviews->create($view_name, $this->chado->getSchemaName());
+    $mview = $mviews->create($view_name, $this->chado_schema_main);
     $mview->setTableSchema($schema);
     $mview->setSqlQuery($sql);
     $mview->setComment($comment);
@@ -809,7 +794,7 @@ class ChadoPreparer extends ChadoTaskBase {
     ";
 
     $mviews = \Drupal::service('tripal_chado.materialized_views');
-    $mview = $mviews->create($view_name, $this->chado->getSchemaName());
+    $mview = $mviews->create($view_name, $this->chado_schema_main);
     $mview->setTableSchema($schema);
     $mview->setSqlQuery($sql);
     $mview->setComment($comment);
@@ -821,7 +806,7 @@ class ChadoPreparer extends ChadoTaskBase {
    */
   private function populateMview_cv_root_mview() {
     $mviews = \Drupal::service('tripal_chado.materialized_views');
-    $mview = $mviews->loadByName('cv_root_mview', $this->chado->getSchemaName());
+    $mview = $mviews->loadByName('cv_root_mview', $this->chado_schema_main);
     $mview->populate();
   }
 
@@ -830,7 +815,7 @@ class ChadoPreparer extends ChadoTaskBase {
    */
   private function populateMview_db2cv_mview() {
     $mviews = \Drupal::service('tripal_chado.materialized_views');
-    $mview = $mviews->loadByName('db2cv_mview', $this->chado->getSchemaName());
+    $mview = $mviews->loadByName('db2cv_mview', $this->chado_schema_main);
     $mview->populate();
   }
 
@@ -995,18 +980,19 @@ class ChadoPreparer extends ChadoTaskBase {
    *   The Id of the inserted OBO record.
    */
   private function insertOntologyRecord($ontology) {
+    $public = \Drupal::database();
 
     $name = $ontology['idSpace']->getDescription();
 
     // Make sure an OBO with the same name doesn't already exist.
-    $obo_id = $this->public->select('tripal_cv_obo', 'tco')
+    $obo_id = $public->select('tripal_cv_obo', 'tco')
       ->fields('tco', ['obo_id'])
       ->condition('name', $name)
       ->execute()
       ->fetchField();
 
     if ($obo_id) {
-      $this->public->update('tripal_cv_obo')
+      $public->update('tripal_cv_obo')
         ->fields([
           'path' => $ontology['path'],
         ])
@@ -1014,7 +1000,7 @@ class ChadoPreparer extends ChadoTaskBase {
         ->execute();
     }
     else {
-      $this->public->insert('tripal_cv_obo')
+      $public->insert('tripal_cv_obo')
         ->fields([
           'name' => $name,
           'path' => $ontology['path'],
@@ -1022,7 +1008,7 @@ class ChadoPreparer extends ChadoTaskBase {
         ->execute();
     }
 
-    return $this->public->select('tripal_cv_obo', 'tco')
+    return $public->select('tripal_cv_obo', 'tco')
       ->fields('tco', ['obo_id'])
       ->condition('name', $name)
       ->execute()
@@ -1180,11 +1166,11 @@ class ChadoPreparer extends ChadoTaskBase {
         $field_type = '';
         $storage_settings = [];
         if (strtolower($detail['type']) == 'character varying') {
-          $field_type = 'tripal_string_type';
+          $field_type = 'chado_string_type';
           $storage_settings['max_length'] = $detail['size'];
         }
         if (strtolower($detail['type']) == 'text') {
-          $field_type = 'tripal_text_type';
+          $field_type = 'chado_text_type';
         }
         if (strtolower($detail['type']) == 'bigint' or strtolower($detail['type']) == 'int') {
           // Make sure it's not a foreign key. If so, this will most likely be a complex field.
@@ -1195,7 +1181,7 @@ class ChadoPreparer extends ChadoTaskBase {
             }
           }
           if (!$is_fk) {
-            $field_type = 'tripal_integer_type';
+            $field_type = 'chado_integer_type';
           }
         }
         // @todo handle all the different database column types.
@@ -1293,6 +1279,7 @@ class ChadoPreparer extends ChadoTaskBase {
     $mapping = $storage->load('core_mapping');
 
     $weight = 10;
+
     // This is only for organism foreign keys so no need to add if it's the organism table.
     if ($chado_table == 'organism') {
       return;
@@ -1383,7 +1370,8 @@ class ChadoPreparer extends ChadoTaskBase {
    * @param TripalEntityType $entityType
    * @param string $chado_table
    */
-  private function addTypeField(TripalEntityType $entityType, string $chado_table) {
+  private function addTypeField(TripalEntityType $entityType, string $base_table,
+    string $chado_table, string $chado_field, string $field_label = 'Type') {
 
     // We need the idSpace manager object.
     $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
@@ -1398,12 +1386,8 @@ class ChadoPreparer extends ChadoTaskBase {
     $mapping = $storage->load('core_mapping');
 
     $weight = 10;
-    // We won't add a type field if there isn't a type_id.
-    if (!array_key_exists('type_id', $schema_def['fields'])) {
-      return;
-    }
 
-    $term_id = $mapping->getColumnTermId($chado_table, 'type_id');
+    $term_id = $mapping->getColumnTermId($chado_table, $chado_field);
     list($idSpace_name, $accession) = explode(':', $term_id);
     $idSpace = $idSpace_manager->loadCollection($idSpace_name);
     if (!is_object($idSpace)) {
@@ -1412,43 +1396,73 @@ class ChadoPreparer extends ChadoTaskBase {
       return;
     }
 
-    $term = $idSpace->getTerm($accession);
+    $dbcol_term = $idSpace->getTerm($accession);
+    $field_term = $entityType->getTerm();
+    switch($chado_table) {
+      // Tables with the content type mapped to all records in the table.
+      case 'contact':
+      case 'organism':
+      case 'phylonode':
+      case 'protocol':
+      case 'pub':
+      case 'treatment':
+      case 'featuremap':
+        $fixed_value = NULL;
+        break;
+      // Tables with content types mapped by type_id.
+      case 'analysisprop':
+      case 'projectprop':
+      case 'feature':
+      case 'featuremap':
+      case 'genotype':
+      case 'library':
+      case 'nd_experiment':
+      case 'nd_protocol':
+      case 'nd_reagent':
+      case 'phylotree':
+      case 'stock':
+        $fixed_value = $field_term->getIdSpace() . ":" . $field_term->getAccession();
+        break;
+      default:
+        $fixed_value = NULL;
+    }
 
     // Use the same method as Tripal v3 for creating field names.
-    $field_name = strtolower($idSpace_name . '__' . preg_replace('/[^\w]/', '_', $term->getName()));
+    $field_name = strtolower($entityType->getName() . '_' . $dbcol_term->getIdSpace() . '__' . preg_replace('/[^\w]/', '_', $dbcol_term->getName()));
     $field_name = substr($field_name, 0, 32);
-    $field_type = 'tripal_integer_type';
+    $field_type = 'schema__additional_type';
 
     // Is the field required? Ensure we match the database.
     $is_required = FALSE;
-    if (array_key_exists('not null', $schema_def['fields']['type_id']) and
-        $schema_def['fields']['type_id']['not null'] == TRUE) {
+    if (array_key_exists('not null', $schema_def['fields'][$chado_field]) and
+        $schema_def['fields'][$chado_field]['not null'] == TRUE) {
       $is_required = TRUE;
     }
 
     $field = [
       'name' => $field_name,
-      'label' => ucwords($term->getName()),
+      'label' => $field_label,
       'type' => $field_type,
-      'description' => $term->getDefinition(),
+      'description' => $dbcol_term->getDefinition(),
       'cardinality' => 1,
       'required' => $is_required,
       'storage_settings' => [
         'storage_plugin_id' => 'chado_storage',
         'storage_plugin_settings' => [
-          'base_table' => $chado_table,
+          'base_table' => $base_table,
           'property_settings' => [
             'value' => [
               'action' => 'store',
               'chado_table' => $chado_table,
-              'chado_column' => 'type_id',
+              'chado_column' => $chado_field,
+              'fixed_value' => $fixed_value
             ],
           ],
         ],
       ],
       'settings' => [
-        'termIdSpace' => $idSpace_name,
-        'termAccession' => $term->getAccession(),
+        'termIdSpace' => $field_term->getIdSpace(),
+        'termAccession' => $field_term->getAccession(),
       ],
       'display' => [
         'view' => [
@@ -1482,6 +1496,7 @@ class ChadoPreparer extends ChadoTaskBase {
       'category' => 'General',
     ]);
     $this->addBaseTableSVFields($entity_type, 'organism');
+    $this->addTypeField($entity_type, 'organism', 'organism', 'type_id', 'Infraspecific Type');
 
     $entity_type = $this->createContentType([
       'label' => 'Analysis',
@@ -1510,6 +1525,7 @@ class ChadoPreparer extends ChadoTaskBase {
       'category' => 'General',
     ]);
     $this->addBaseTableSVFields($entity_type, 'contact');
+    $this->addTypeField($entity_type, 'contact', 'contact', 'type_id', 'Contact Type');
 
     $entity_type = $this->createContentType([
       'label' => 'Publication',
@@ -1518,6 +1534,7 @@ class ChadoPreparer extends ChadoTaskBase {
     ]);
     // @todo we need to handle the pub table specially.
     //$this->addBaseTableSVFields($entity_type, 'pub');
+    //$this->addTypeField($entity_type, 'pub', 'pub', 'type_id');
 
     $entity_type = $this->createContentType([
       'label' => 'Protocol',
@@ -1525,6 +1542,7 @@ class ChadoPreparer extends ChadoTaskBase {
       'category' => 'General',
     ]);
     $this->addBaseTableSVFields($entity_type, 'protocol');
+    $this->addTypeField($entity_type, 'protocol', 'protocol', 'type_id', 'Protocol Type');
   }
 
   /**
@@ -1539,7 +1557,7 @@ class ChadoPreparer extends ChadoTaskBase {
     ]);
     $this->addBaseTableSVFields($entity_type, 'feature');
     $this->addOrganismField($entity_type, 'feature');
-    $this->addTypeField($entity_type, 'feature');
+    $this->addTypeField($entity_type, 'feature', 'feature', 'type_id');
 
     $entity_type = $this->createContentType([
       'label' => 'mRNA',
@@ -1547,6 +1565,7 @@ class ChadoPreparer extends ChadoTaskBase {
       'category' => 'Genomic',
     ]);
     $this->addBaseTableSVFields($entity_type, 'feature');
+    $this->addTypeField($entity_type, 'feature', 'feature', 'type_id');
 
     $entity_type = $this->createContentType([
       'label' => 'Phylogenetic Tree',
@@ -1554,6 +1573,7 @@ class ChadoPreparer extends ChadoTaskBase {
       'category' => 'Genomic',
     ]);
     $this->addBaseTableSVFields($entity_type, 'phylotree');
+    $this->addTypeField($entity_type, 'phylotree', 'phylotree', 'type_id');
 
     $entity_type = $this->createContentType([
       'label' => 'Physical Map',
@@ -1561,6 +1581,7 @@ class ChadoPreparer extends ChadoTaskBase {
       'category' => 'Genomic',
     ]);
     $this->addBaseTableSVFields($entity_type, 'featuremap');
+    $this->addTypeField($entity_type, 'featuremap', 'featuremap', 'unittype_id', 'Unit Type');
 
     $entity_type = $this->createContentType([
       'label' => 'DNA Library',
@@ -1568,6 +1589,7 @@ class ChadoPreparer extends ChadoTaskBase {
       'category' => 'Genomic',
     ]);
     $this->addBaseTableSVFields($entity_type, 'library');
+    $this->addTypeField($entity_type, 'library', 'library', 'type_id', 'Library Type');
 
     $entity_type = $this->createContentType([
       'label' => 'Genome Assembly',
@@ -1575,6 +1597,7 @@ class ChadoPreparer extends ChadoTaskBase {
       'category' => 'Genomic',
     ]);
     $this->addBaseTableSVFields($entity_type, 'analysis');
+    $this->addTypeField($entity_type, 'analysis', 'analysisprop', 'type_id');
 
     $entity_type = $this->createContentType([
       'label' => 'Genome Annotation',
@@ -1582,6 +1605,7 @@ class ChadoPreparer extends ChadoTaskBase {
       'category' => 'Genomic',
     ]);
     $this->addBaseTableSVFields($entity_type, 'analysis');
+    $this->addTypeField($entity_type, 'analysis', 'analysisprop', 'type_id');
 
     $entity_type = $this->createContentType([
       'label' => 'Genome Project',
@@ -1589,6 +1613,7 @@ class ChadoPreparer extends ChadoTaskBase {
       'category' => 'Genomic',
     ]);
     $this->addBaseTableSVFields($entity_type, 'project');
+    $this->addTypeField($entity_type, 'project', 'projectprop', 'type_id');
   }
 
   /**
@@ -1602,6 +1627,7 @@ class ChadoPreparer extends ChadoTaskBase {
       'category' => 'Genetic',
     ]);
     $this->addBaseTableSVFields($entity_type, 'featuremap');
+    $this->addTypeField($entity_type, 'featuremap', 'featuremap', 'unittype_id', 'Unit Type');
 
     $entity_type = $this->createContentType([
       'label' => 'QTL',
@@ -1609,6 +1635,7 @@ class ChadoPreparer extends ChadoTaskBase {
       'category' => 'Genetic',
     ]);
     $this->addBaseTableSVFields($entity_type, 'feature');
+    $this->addTypeField($entity_type, 'feature', 'feature', 'type_id');
 
     $entity_type = $this->createContentType([
       'label' => 'Sequence Variant',
@@ -1616,6 +1643,7 @@ class ChadoPreparer extends ChadoTaskBase {
       'category' => 'Genetic',
     ]);
     $this->addBaseTableSVFields($entity_type, 'feature');
+    $this->addTypeField($entity_type, 'feature', 'feature', 'type_id');
 
     $entity_type = $this->createContentType([
       'label' => 'Genetic Marker',
@@ -1623,6 +1651,7 @@ class ChadoPreparer extends ChadoTaskBase {
       'category' => 'Genetic',
     ]);
     $this->addBaseTableSVFields($entity_type, 'feature');
+    $this->addTypeField($entity_type, 'feature', 'feature', 'type_id');
 
     $entity_type = $this->createContentType([
       'label' => 'Heritable Phenotypic Marker',
@@ -1630,6 +1659,7 @@ class ChadoPreparer extends ChadoTaskBase {
       'category' => 'Genetic',
     ]);
     $this->addBaseTableSVFields($entity_type, 'feature');
+    $this->addTypeField($entity_type, 'feature', 'feature', 'type_id');
   }
 
   /**
@@ -1652,6 +1682,7 @@ class ChadoPreparer extends ChadoTaskBase {
       'category' => 'Germplasm',
     ]);
     $this->addBaseTableSVFields($entity_type, 'stock');
+    $this->addTypeField($entity_type, 'stock', 'stock', 'type_id');
 
     $entity_type = $this->createContentType([
       'label' => 'Breeding Cross',
@@ -1659,6 +1690,7 @@ class ChadoPreparer extends ChadoTaskBase {
       'category' => 'Germplasm',
     ]);
     $this->addBaseTableSVFields($entity_type, 'stock');
+    $this->addTypeField($entity_type, 'stock', 'stock', 'type_id');
 
     $entity_type = $this->createContentType([
       'label' => 'Germplasm Variety',
@@ -1666,6 +1698,7 @@ class ChadoPreparer extends ChadoTaskBase {
       'category' => 'Germplasm',
     ]);
     $this->addBaseTableSVFields($entity_type, 'stock');
+    $this->addTypeField($entity_type, 'stock', 'stock', 'type_id');
 
     $entity_type = $this->createContentType([
       'label' => 'Recombinant Inbred Line',
@@ -1673,6 +1706,7 @@ class ChadoPreparer extends ChadoTaskBase {
       'category' => 'Germplasm',
     ]);
     $this->addBaseTableSVFields($entity_type, 'stock');
+    $this->addTypeField($entity_type, 'stock', 'stock', 'type_id');
   }
 
   /**
@@ -1700,5 +1734,7 @@ class ChadoPreparer extends ChadoTaskBase {
       'category' => 'Expression',
     ]);
     $this->addBaseTableSVFields($entity_type, 'arraydesign');
+    $this->addTypeField($entity_type, 'arraydesign', 'arraydesign', 'substratetype_id', 'Substrate Type');
+    $this->addTypeField($entity_type, 'arraydesign', 'arraydesign', 'platformtype_id', 'Platform Type');
   }
 }

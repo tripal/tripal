@@ -1,27 +1,28 @@
 <?php
 
-namespace Drupal\tripal\Plugin\Field\FieldType;
+namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\core\Form\FormStateInterface;
 use Drupal\core\Field\FieldDefinitionInterface;
+use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 
 /**
- * Plugin implementation of Tripal string field type.
+ * Plugin implementation of string field type for Chado.
  *
  * @FieldType(
- *   id = "tripal_string_type",
- *   label = @Translation("Tripal String Field Type"),
+ *   id = "chado_string_type",
+ *   label = @Translation("Chado String Field Type"),
  *   description = @Translation("A string field."),
- *   default_widget = "default_tripal_string_type_widget",
- *   default_formatter = "default_tripal_string_type_formatter"
+ *   default_widget = "chado_string_type_widget",
+ *   default_formatter = "chado_string_type_formatter"
  * )
  */
-class TripalStringTypeItem extends TripalFieldItemBase {
+class ChadoStringTypeItem extends ChadoFieldItemBase {
 
-  public static $id = "tripal_string_type";
+  public static $id = "chado_string_type";
 
   /**
    * {@inheritdoc}

@@ -9,7 +9,7 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
  * Defines an interface for tripal vocabulary plugins.
  */
 interface TripalVocabularyInterface extends TripalCollectionPluginInterface {
-  
+
   /**
    * Returns list of id space collection names that is contained in this vocabulary.
    *
@@ -70,25 +70,25 @@ interface TripalVocabularyInterface extends TripalCollectionPluginInterface {
    *
    * @param string $url
    *   The URL.
-   *   
+   *
    * @return bool
    *   True if the value was set or false otherwise.
    */
   public function setURL($url);
-  
-  
+
+
   /**
    * Returns the namespace of the vocabulary
-   * 
+   *
    * This should be identical to the name of the collection, and
    * therefore, there is no setter function.
-   * 
+   *
    * @return string $namespace
    *   The namespace of the vocabulary.
    */
   public function getNameSpace();
-  
-  
+
+
   /**
    * Sets the label for the vocabulary.
    *
@@ -101,13 +101,13 @@ interface TripalVocabularyInterface extends TripalCollectionPluginInterface {
    *
    * @return bool
    *   True on success or false otherwise.
-   *   
+   *
    * @return bool
    *   True if the value was set or false otherwise.
    */
   public function setLabel($label);
-  
-  
+
+
   /**
    * Returns the label of the vocabulary.
    *
@@ -119,5 +119,5 @@ interface TripalVocabularyInterface extends TripalCollectionPluginInterface {
    *   The name of the vocabulary.
    */
   public function getLabel();
-  
+
 }

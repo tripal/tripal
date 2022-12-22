@@ -36,6 +36,7 @@ class obi__organism_widget extends TripalWidgetBase {
     $query->orderBy('genus');
     $query->orderBy('species');
     $results = $query->execute();
+
     while ($organism = $results->fetchObject()) {
       $org_name = $organism->genus . ' ' . $organism->species;
 
@@ -53,6 +54,7 @@ class obi__organism_widget extends TripalWidgetBase {
       '#options' => $organisms,
       '#default_value' => $items[$delta]->value ?? '',
       '#placeholder' => $this->getSetting('placeholder'),
+      '#empty_option' => '-- Select --',
     ];
 
     return $element + parent::formElement($items, $delta, $element, $form, $form_state);
