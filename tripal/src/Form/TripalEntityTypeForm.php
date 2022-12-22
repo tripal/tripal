@@ -32,7 +32,6 @@ class TripalEntityTypeForm extends EntityForm {
       '#required' => TRUE,
     ];
 
-
     // Determine the machine name for the content type.
     if ($tripal_entity_type->isNew()) {
       $config = \Drupal::config('tripal.settings');
@@ -58,8 +57,9 @@ class TripalEntityTypeForm extends EntityForm {
 
     // We need to choose a term if this is a new content type.
     // The term cannot be changed later!
-    /*
     if ($tripal_entity_type->isNew()) {
+
+      /*
       $description = t('The Tripal controlled vocabulary term (cv) term which characterizes this content type. For example, to create a content type for storing "genes", use the "gene" term from the Sequence Ontology (SO). <strong>The Tripal CV Term must already exist; you can <a href="@termUrl">add a Tripal CV Term here</a>.</strong>',
         ['@termUrl' => Url::fromRoute('entity.tripal_vocab.collection')->toString()]);
       $form['term_id'] = [
@@ -69,14 +69,15 @@ class TripalEntityTypeForm extends EntityForm {
         '#target_type' => 'tripal_term',
         '#required' => TRUE,
       ];
+      */
     }
     else {
       $term = $tripal_entity_type->getTerm();
-      $vocab = $term->getVocab();
+      $vocab = $term->getVocabularyObject();
       // Save the term for later.
       $form['term_id'] = [
         '#type' => 'hidden',
-        '#value' => $term->getId(),
+        '#value' => $term->getInternalId(),
       ];
       // Describe the term to the user but do not allow them to change it.
       $form['term'] = [
@@ -84,22 +85,21 @@ class TripalEntityTypeForm extends EntityForm {
         '#caption' => 'Controlled Vocabulary Term',
         '#rows' => [
           [
-            ['header' => TRUE, 'data' => 'Vocabulary'],
+            'Vocabulary',
             $vocab->getLabel()
           ],
           [
-            ['header' => TRUE, 'data' => 'Name'],
+            'Name',
             $term->getName()
           ],
           [
-            ['header' => TRUE, 'data' => 'Accession'],
-            $term->getAccession()
+            'Accession',
+            $term->getTermId()
           ],
         ],
         '#weight' => -8,
       ];
     }
-    */
 
     $description = "A grouping category for this Tripal Content type. It should be the same as other Tripal Content types and can be used to group similar biological data types to make them easier to find.";
     $form['category'] = [
