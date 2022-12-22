@@ -678,24 +678,26 @@ function tripal_tripal_cron_notification() {
       $info = $function($entity_type, $bundle);
       drupal_alter('bundle_instances_info', $info, $bundle, $term);
       foreach ($info as $field_name => $details) {
+        if (isset($details['field_name'])) {
 
-        // If the field is already attached to this bundle then skip it.
-        $field = field_info_field($details['field_name']);
-        if ($field and array_key_exists('bundles', $field) and
-          array_key_exists('TripalEntity', $field['bundles']) and
-          in_array($bundle->name, $field['bundles']['TripalEntity'])) {
-          continue;
+          // If the field is already attached to this bundle then skip it.
+          $field = field_info_field($details['field_name']);
+          if ($field and array_key_exists('bundles', $field) and
+            array_key_exists('TripalEntity', $field['bundles']) and
+            in_array($bundle->name, $field['bundles']['TripalEntity'])) {
+            continue;
+          }
+
+          // Create notification that new fields exist.
+          $detail_info = ' Tripal has detected a new field ' . $details['field_name'] . ' for ' . $bundle->label . ' content type is available for import.';
+          $title = 'New field available for import';
+          $actions['Import'] = 'admin/import/field/' . $details['field_name'] . '/' . $bundle->name . '/' . $module . '/instance';
+          $type = 'Field';
+          $submitter_id = $details['field_name'] . '-' . $bundle_name->name . '-' . $module;
+
+          tripal_add_notification($title, $detail_info, $type, $actions, $submitter_id);
+          $num_created++;
         }
-
-        // Create notification that new fields exist.
-        $detail_info = ' Tripal has detected a new field ' . $details['field_name'] . ' for ' . $bundle->label . ' content type is available for import.';
-        $title = 'New field available for import';
-        $actions['Import'] = 'admin/import/field/' . $details['field_name'] . '/' . $bundle->name . '/' . $module . '/instance';
-        $type = 'Field';
-        $submitter_id = $details['field_name'] . '-' . $bundle_name->name . '-' . $module;
-
-        tripal_add_notification($title, $detail_info, $type, $actions, $submitter_id);
-        $num_created++;
       }
     }
   }
