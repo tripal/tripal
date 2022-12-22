@@ -168,26 +168,20 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     // If yes, extract the ID Space and Accession for saving.
     if (array_key_exists('term', $values)) {
       if (is_a($values['term'], '\Drupal\tripal\TripalVocabTerms\TripalTerm')) {
-        $this->setTerm($values['term']);
+        $term = $values['term'];
+        unset($values['term']);
+        $values['termIdSpace'] = $term->getIdSpace();
+        $values['termAccession'] = $term->getAccession();
+
+        // Since we have a term object, we can use the definition to set the
+        // help text if it's not already set.
+        if (!array_key_exists('help_text', $values)) {
+          $values['help_text'] = $term->getDefinition();
+        }
       }
       else {
         $class_name_passed_in = get_class($values['term']);
         throw new \Exception("When passing a term to create a TripalEntityType is must be of type TripalTerm. You passed in an object of type " . $class_name_passed_in . ".");
-      }
-    }
-
-    // Ensure that required values are supplied.
-    // The key is the key expected in $values, all of these should be strings.
-    $required_values = [ 'label', 'termIdSpace', 'termAccession', 'help_text' ];
-    foreach ($required_values as $key) {
-      if (array_key_exists($key, $values)) {
-        if (!is_string($values[$key])) {
-          $passed_in_type = gettype($values[$key]);
-          throw new \Exception("The $key is expected to be a string. You passed in a $passed_in_type.");
-        }
-      }
-      else {
-        throw new \Exception("The $key is required when creating a TripalEntityType.");
       }
     }
 
@@ -223,10 +217,8 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
      // Set defaults for anything not already set.
      $this->setDefaults();
 
-     // Check that the TripalTerm exists with the ID Space and Accession
-     // added to this type when it was created.
-
-     // If not, then create the TripalTerm, TripalIDSpace and TripalVocabulary.
+     // Validate the values before trying to save.
+     $this->validate();
 
      // Save the rest of the entity using the parent implementation.
      // This is when the id is assigned.
@@ -234,6 +226,42 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
 
      return $return_status;
    }
+
+  /**
+   * Validate the expected values before saving.
+   *
+   * Note: This function throws exceptions so make sure to catch them ;-p
+   * We do not want users seeing a WSOD.
+   */
+  public function validate() {
+
+    if ($this->label === NULL) {
+      throw new \Exception("The label is required when creating a TripalEntityType.");
+    }
+    if ($this->help_text === NULL) {
+      throw new \Exception("The help text is required when creating a TripalEntityType.");
+    }
+
+    if ($this->termIdSpace === NULL) {
+      throw new \Exception("The Term ID Space is required when creating a TripalEntityType.");
+    }
+    if ($this->termAccession === NULL) {
+      throw new \Exception("The Term Accession is required when creating a TripalEntityType.");
+    }
+
+    // Check that the TripalTerm exists with the ID Space and Accession
+    // added to this type when it was created.
+
+    // If not, then create the TripalTerm, TripalIDSpace and TripalVocabulary.
+  }
+
+  // --------------------------------------------------------------------------
+  //                          MAIN SETTER / GETTERS
+  //
+  // The following methods allow the main properties of the Tripal Entity Type
+  // to be set or retrieved. These properties include ID, macine name, term
+  // help text and category.
+  // --------------------------------------------------------------------------
 
   /**
    * Set defaults of values which are not yet set.
@@ -250,14 +278,6 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
       $this->ajax_field = TRUE;
     }
   }
-
-  // --------------------------------------------------------------------------
-  //                          MAIN SETTER / GETTERS
-  //
-  // The following methods allow the main properties of the Tripal Entity Type
-  // to be set or retrieved. These properties include ID, macine name, term
-  // help text and category.
-  // --------------------------------------------------------------------------
 
   /**
    * {@inheritdoc}
