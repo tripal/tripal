@@ -27,6 +27,15 @@ class chado_linker__prop extends ChadoFieldItemBase {
 
   public static $id = "chado_linker__prop";
 
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultStorageSettings() {
+    $settings = parent::defaultStorageSettings();
+    $settings['storage_plugin_settings']['base_table'] = '';
+    $settings['storage_plugin_settings']['prop_table'] = '';
+    return $settings;
+  }
 
   /**
    * {@inheritdoc}
@@ -37,68 +46,59 @@ class chado_linker__prop extends ChadoFieldItemBase {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
     $settings = $field_definition->getSetting('storage_plugin_settings');
     $base_table = $settings['base_table'];
-    $property_settings = $settings['property_settings'];
+    $prop_table = $settings['prop_table'];
 
     // If we don't have a base table then we're not ready to specify the
     // properties for this field.
     if (!$base_table) {
-      return TripalFieldItemBase::defaultTripalTypes($entity_type_id, self::$id);
+      return [
+        new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', [
+          'action' => 'store_id',
+          'drupal_store' => TRUE,
+        ])
+      ];
     }
 
-    // Get the primary key and FK columns.
+    // Get the base table columns needed for this field.
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
-    $chado_table = $property_settings['value']['chado_table'];
-    $schema_def = $schema->getTableDef($chado_table, ['format' => 'Drupal']);
-    $fk_col = array_keys($schema_def['foreign keys'][$base_table]['columns'])[0];
-    $pk_col = $schema_def['primary key'];
+    $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+    $base_pkey_col = $base_schema_def['primary key'];
 
-
-    // Get the property term IDs. We'll use these as the property names.
-    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
-    $mapping = $storage->load('core_mapping');
-    $rank_term = $mapping->getColumnTermId($chado_table, 'rank');
-    $type_term = $mapping->getColumnTermId($chado_table, 'type_id');
-    $fk_term = $mapping->getColumnTermId($chado_table, $fk_col);
-
-    // Indicate the action to perform for each property.
-    $value_settings = $settings['property_settings']['value'];
-    $rec_id_settings = [
-      'chado_table' => $chado_table,
-      'chado_column' => $pk_col,
-    ];
-    $rank_settings = [
-      'action' => 'store',
-      'chado_table' => $chado_table,
-      'chado_column' => 'rank'
-    ];
-    $type_settings = [
-      'action' => 'store',
-      'chado_table' => $chado_table,
-      'chado_column' => 'type_id'
-    ];
-    $fk_id_settings = [
-      'action' => 'store',
-      'chado_table' => $chado_table,
-      'chado_column' => $fk_col,
-    ];
+    $prop_schema_def = $schema->getTableDef($prop_table, ['format' => 'Drupal']);
+    $prop_fk_col = array_keys($prop_schema_def['foreign keys'][$base_table]['columns'])[0];
 
     // Create the property types.
-    $value = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'value', $value_settings);
-    $rank = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $rank_term,  $rank_settings);
-    $type_id = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $type_term,  $type_settings);
-    $fk_id = new ChadoIntStoragePropertyType($entity_type_id, self::$id, $fk_term,  $fk_id_settings);
-
-    // All Tripal fields have a record_id property and if the chado_table is
-    // not specified then it defaults to the base table. We need to store the
-    // record_id of the prop table so change the record_id settings.
-    $default_types = ChadoFieldItemBase::defaultTripalTypes($entity_type_id, self::$id);
-    $default_types[0]->setStorageSettings($rec_id_settings);
-
-    // Return the list of property types.
-    $types = [$value, $rank, $type_id, $fk_id];
-    $types = array_merge($types, $default_types);
-    return $types;
+    return [
+      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', [
+        'action' => 'store_id',
+        'drupal_store' => TRUE,
+        'chado_table' => $base_table,
+        'chado_column' => $base_pkey_col
+      ]),
+      new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'value', [
+        'action' => 'store',
+        'chado_table' => $prop_table,
+        'chado_column' => 'value',
+        'delete_if_empty' => TRUE,
+        'empty_value' => ''
+      ]),
+      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'rank',  [
+        'action' => 'store',
+        'chado_table' => $prop_table,
+        'chado_column' => 'rank'
+      ]),
+      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'type_id',  [
+        'action' => 'store',
+        'chado_table' => $prop_table,
+        'chado_column' => 'type_id'
+      ]),
+      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id',  [
+        'action' => 'store',
+        'chado_table' => $prop_table,
+        'chado_column' => $prop_fk_col,
+      ]),
+    ];
   }
 
   /**
@@ -106,46 +106,17 @@ class chado_linker__prop extends ChadoFieldItemBase {
    */
   public function tripalValuesTemplate($field_definition) {
 
-    // Get the field settings.
-    $field_definition = $this->getFieldDefinition();
-    $settings = $field_definition->getSettings();
-    $termIdSpace = $settings['termIdSpace'];
-    $termAccession = $settings['termAccession'];
-
-    // Get the Entity information.
     $entity = $this->getEntity();
     $entity_type_id = $entity->getEntityTypeId();
     $entity_id = $entity->id();
 
-    // Get the storage settings.
-    $property_settings = $this->getSettings();
-    $chado_table = $property_settings['storage_plugin_settings']['property_settings']['value']['chado_table'];
-    $base_table = $property_settings['storage_plugin_settings']['base_table'];
-
-    // Get the FK column in the base table that links to the base table.
-    $chado = \Drupal::service('tripal_chado.database');
-    $schema = $chado->schema();
-    $schema_def = $schema->getTableDef($chado_table, ['format' => 'Drupal']);
-    $fk_col = array_keys($schema_def['foreign keys'][$base_table]['columns'])[0];
-
-    // Get the property term IDs. We'll use these as the property names.
-    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
-    $mapping = $storage->load('core_mapping');
-    $rank_term = $mapping->getColumnTermId($chado_table, 'rank');
-    $type_term = $mapping->getColumnTermId($chado_table, 'type_id');
-    $fk_term = $mapping->getColumnTermId($chado_table, $fk_col);
-
-    // Build the values array.
-    $value = new StoragePropertyValue($entity_type_id, self::$id, 'value', $entity_id);
-    $rank = new StoragePropertyValue($entity_type_id, self::$id, $rank_term, $entity_id);
-    $type_id = new StoragePropertyValue($entity_type_id, self::$id, $type_term, $entity_id);
-    $fk_id = new StoragePropertyValue($entity_type_id, self::$id, $fk_term, $entity_id);
-
-    // Build the array of values to return.
-    $values = [$value, $rank, $type_id, $fk_id];
-    $default_values = ChadoFieldItemBase::defaultTripalValuesTemplate($entity_type_id, self::$id, $entity_id);
-    $values = array_merge($values, $default_values);
-    return $values;
+    return [
+      new StoragePropertyValue($entity_type_id, self::$id, 'record_id', $entity_id),
+      new StoragePropertyValue($entity_type_id, self::$id, 'value', $entity_id),
+      new StoragePropertyValue($entity_type_id, self::$id, 'rank', $entity_id),
+      new StoragePropertyValue($entity_type_id, self::$id, 'type_id', $entity_id),
+      new StoragePropertyValue($entity_type_id, self::$id, 'linker_id', $entity_id),
+    ];
   }
 
   /**
@@ -180,11 +151,7 @@ class chado_linker__prop extends ChadoFieldItemBase {
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
     if ($schema->tableExists($prop_table)) {
-      $form_state->setValue(['settings','storage_plugin_settings','property_settings','value','action'], 'store');
-      $form_state->setValue(['settings','storage_plugin_settings','property_settings','value','chado_table'], $prop_table);
-      $form_state->setValue(['settings','storage_plugin_settings','property_settings','value','chado_column'], 'value');
-      $form_state->setValue(['settings','storage_plugin_settings','property_settings','value','delete_if_empty'], TRUE);
-      $form_state->setValue(['settings','storage_plugin_settings','property_settings','value','empty_value'], '');
+      $form_state->setValue(['settings', 'storage_plugin_settings', 'prop_table'], $prop_table);
     }
     else {
       $form_state->setErrorByName('storage_plugin_settings][base_table',

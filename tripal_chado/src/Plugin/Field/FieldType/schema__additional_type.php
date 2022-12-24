@@ -24,7 +24,18 @@ use Drupal\core\Field\FieldDefinitionInterface;
  */
 class schema__additional_type extends ChadoFieldItemBase {
 
-  public static $id = "schema__additional_type"; 
+  public static $id = "schema__additional_type";
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultStorageSettings() {
+    $settings = parent::defaultStorageSettings();
+    $settings['storage_plugin_settings']['base_table'] = '';
+    $settings['storage_plugin_settings']['type_table'] = '';
+    $settings['storage_plugin_settings']['type_column'] = '';
+    return $settings;
+  }
 
   /**
    * {@inheritdoc}
@@ -32,69 +43,67 @@ class schema__additional_type extends ChadoFieldItemBase {
   public static function tripalTypes($field_definition) {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
-    // Get the Chado table and column this field maps to.
+    // Get the base Chado table and column this field maps to.
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
-    $base_table = $storage_settings['base_table'];     
-    $property_settings = $storage_settings['property_settings'];
-    $chado_table = $property_settings['value']['chado_table'];
-    $chado_column = $property_settings['value']['chado_column'];
+    $base_table = $storage_settings['base_table'];
+    $type_table = $storage_settings['type_table'];
+    $type_column = $storage_settings['type_column'];
 
-    // If we don't have a base table then we're not ready to specify the
-    // properties for this field.
-    if (!$base_table) {
-      return TripalFieldItemBase::defaultTripalTypes($entity_type_id, self::$id);
-    }
+    // Get the base table columns needed for this field.
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+    $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+    $base_pkey_col = $base_schema_def['primary key'];
 
-    // Indicate the action to perform for each property.
-    $value_settings = $property_settings['value'];
-    $idspace_settings = [
-      'action' => 'join',
-      'path' => $chado_table . '.' . $chado_column . '>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id',
-      'chado_column' => 'name',
-      'as' => 'idSpace'
+    $properties = [
+      new ChadoIntStoragePropertyType($entity_type_id, self::$id,'record_id', [
+        'action' => 'store_id',
+        'drupal_store' => TRUE,
+        'chado_table' => $base_table,
+        'chado_column' => $base_pkey_col
+      ]),
+      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'value', [
+        'action' => 'store',
+        'chado_table' => $type_table,
+        'chado_column' => $type_column,
+      ]),
+      new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'term_name', 128, [
+        'action' => 'join',
+        'path' => $type_table . '.' . $type_column . '>cvterm.cvterm_id',
+        'chado_column' => 'name',
+        'as' => 'term_name'
+      ]),
+      new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'id_space', 128, [
+        'action' => 'join',
+        'path' => $type_table . '.' . $type_column . '>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id',
+        'chado_column' => 'name',
+        'as' => 'idSpace'
+      ]),
+      new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'accession', 128, [
+        'action' => 'join',
+        'path' => $type_table. '.' . $type_column . '>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id',
+        'chado_column' => 'accession',
+        'as' => 'accession'
+      ]),
     ];
-    $accession_settings = [
-      'action' => 'join',
-      'path' => $chado_table. '.' . $chado_column . '>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id',
-      'chado_column' => 'accession',
-      'as' => 'accession'
-    ];
-    $name_settings = [
-      'action' => 'join',
-      'path' => $chado_table . '.' . $chado_column . '>cvterm.cvterm_id',
-      'chado_column' => 'name',
-      'as' => 'term_name'
-    ];
-    
-    $value = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'value', $value_settings);
-    $name = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'schema_name', 128, $name_settings);
-    $idSpace = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'NCIT_C42699', 128, $idspace_settings);
-    $accession = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'data_2091', 128, $accession_settings);    
-    $types = [$value, $name, $idSpace, $accession];
-    
+
     // If the chado table is not the same as the base table then we are storing the type
     // in a property table.  We need to set the FK column of the prop table.
-    if ($chado_table != $base_table) {
+    if ($type_table != $base_table) {
       $chado = \Drupal::service('tripal_chado.database');
       $schema = $chado->schema();
-      $schema_def = $schema->getTableDef($chado_table, ['format' => 'Drupal']);
+      $schema_def = $schema->getTableDef($type_table, ['format' => 'Drupal']);
       $pk_field = $schema_def['primary key'];
       $fk_field = array_keys($schema_def['foreign keys'][$base_table]['columns'])[0];
-      $link_settings = [
-        'cache' => TRUE,
+      $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', [
+        'drupal_store' => TRUE,
         'action' => 'link',
-        'chado_table' => $chado_table,
+        'chado_table' => $type_table,
         'chado_column' => $pk_field,
         'link_column' => $fk_field,
-      ];
-      $link = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', $link_settings);
-      $types[] = $link;
+      ]);
     }
-        
-    // Return the list of property types.
-    $default_types = ChadoFieldItemBase::defaultTripalTypes($entity_type_id, self::$id);
-    $types = array_merge($types, $default_types);    
-    return $types;
+    return $properties;
   }
 
   /**
@@ -104,33 +113,23 @@ class schema__additional_type extends ChadoFieldItemBase {
     $entity = $this->getEntity();
     $entity_type_id = $entity->getEntityTypeId();
     $entity_id = $entity->id();
-    
+
     // Get the Chado table and column this field maps to.
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
     $base_table = $storage_settings['base_table'];
-    $property_settings = $storage_settings['property_settings'];
-    $chado_table = $property_settings['value']['chado_table'];
-    $chado_column = $property_settings['value']['chado_column'];
-    
-    // If we don't have a base table then we're not ready to specify the
-    // properties for this field.
-    if (!$base_table) {
-      return TripalFieldItemBase::defaultTripalTypes($entity_type_id, self::$id);
-    }
+    $type_table = $storage_settings['type_table'];
 
-    // Build the values array.
-    $values = [
+    $properties = [
+      new StoragePropertyValue($entity_type_id, self::$id, 'record_id', $entity_id),
       new StoragePropertyValue($entity_type_id, self::$id, 'value', $entity_id),
-      new StoragePropertyValue($entity_type_id, self::$id, 'schema_name', $entity_id),
-      new StoragePropertyValue($entity_type_id, self::$id, 'NCIT_C42699', $entity_id),
-      new StoragePropertyValue($entity_type_id, self::$id, 'data_2091', $entity_id),
+      new StoragePropertyValue($entity_type_id, self::$id, 'term_name', $entity_id),
+      new StoragePropertyValue($entity_type_id, self::$id, 'id_space', $entity_id),
+      new StoragePropertyValue($entity_type_id, self::$id, 'accession', $entity_id),
     ];
-    if ($chado_table != $base_table) {
-      $values[] = new StoragePropertyValue($entity_type_id, self::$id, 'linker_id', $entity_id);
+    if ($type_table != $base_table) {
+      $properties[] = new StoragePropertyValue($entity_type_id, self::$id, 'linker_id', $entity_id);
     }
-    $default_values = ChadoFieldItemBase::defaultTripalValuesTemplate($entity_type_id, self::$id, $entity_id);
-    $values = array_merge($values, $default_values);
-    return $values;
+    return $properties;
   }
 
   /**

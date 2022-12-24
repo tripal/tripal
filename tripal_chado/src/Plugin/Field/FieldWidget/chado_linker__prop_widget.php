@@ -35,10 +35,10 @@ class chado_linker__prop_widget extends TripalWidgetBase {
 
     // Get the primary key and FK columns.
     $base_table = $storage_settings['base_table'];
-    $chado_table = $storage_settings['property_settings']['value']['chado_table'];
+    $prop_table = $storage_settings['prop_table'];
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
-    $schema_def = $schema->getTableDef($chado_table, ['format' => 'Drupal']);
+    $schema_def = $schema->getTableDef($prop_table, ['format' => 'Drupal']);
     $fk_col = array_keys($schema_def['foreign keys'][$base_table]['columns'])[0];
 
     // Allow the user to set the property value.
@@ -56,7 +56,7 @@ class chado_linker__prop_widget extends TripalWidgetBase {
     // Set the property type_id value.  The user shouldn't edit this. It's
     // built into the field.
     if ($field_settings['termIdSpace'] and $field_settings['termAccession']) {
-      $type_term = $this->sanitizeKey($mapping->getColumnTermId($chado_table, 'type_id'));
+      $type_term = $this->sanitizeKey($mapping->getColumnTermId($prop_table, 'type_id'));
       $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
       $idSpace = $idSpace_manager->loadCollection($field_settings['termIdSpace']);
 
@@ -67,7 +67,7 @@ class chado_linker__prop_widget extends TripalWidgetBase {
       ];
     }
 
-    $rank_term = $this->sanitizeKey($mapping->getColumnTermId($chado_table, 'rank'));
+    $rank_term = $this->sanitizeKey($mapping->getColumnTermId($prop_table, 'rank'));
     $element[$rank_term] = [
       '#type' => 'value',
       '#value' => $delta,
@@ -75,7 +75,7 @@ class chado_linker__prop_widget extends TripalWidgetBase {
 
     // Set the foreign key value. This is the record ID to the base table and
     // should not be set by the end user.
-    $fk_term = $mapping->getColumnTermId($chado_table, $fk_col);
+    $fk_term = $mapping->getColumnTermId($prop_table, $fk_col);
     $element[$fk_term] = [
       '#type' => 'value',
       '#value' => $items[$delta]->getValue($fk_term),
@@ -92,8 +92,8 @@ class chado_linker__prop_widget extends TripalWidgetBase {
     $mapping = $storage->load('core_mapping');
 
     $storage_settings = $this->getFieldSetting('storage_plugin_settings');
-    $chado_table = $storage_settings['property_settings']['value']['chado_table'];
-    $rank_term = $this->sanitizeKey($mapping->getColumnTermId($chado_table, 'rank'));
+    $prop_table = $storage_settings['prop_table'];
+    $rank_term = $this->sanitizeKey($mapping->getColumnTermId($prop_table, 'rank'));
 
     // Remove any empty values that aren't mapped to a record id.
     foreach ($values as $val_key => $value) {

@@ -24,7 +24,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
   public static function defaultFieldSettings() {
     $settings = [
       'termIdSpace' => '',
-      'termAccession' => ''
+      'termAccession' => '',
     ];
     return $settings + parent::defaultFieldSettings();
   }
@@ -35,36 +35,9 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
   public static function defaultStorageSettings() {
     $settings = [
       'storage_plugin_id' => '',
-      'storage_plugin_settings' => [
-        'property_settings' => [
-          'cache' => FALSE
-        ],
-      ],
+      'storage_plugin_settings' => [],
     ];
     return $settings + parent::defaultStorageSettings();
-  }
-
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function defaultTripalTypes($entity_type_id, $field_type) {
-    $settings = ['cache' => TRUE];    
-    return [
-      // The record Id can be used by the Tripal storage plugin to
-      // associate the values this field provides with a record in the
-      // data store.
-      new IntStoragePropertyType($entity_type_id, $field_type, "record_id", $settings),
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function defaultTripalValuesTemplate($entity_type_id, $field_type, $entity_id) {
-    return [
-      new StoragePropertyValue($entity_type_id, $field_type, "record_id", $entity_id),
-    ];
   }
 
 
@@ -356,7 +329,6 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $elements = [];
     $settings = $this->getSetting('storage_plugin_settings');
 
-
     // turn into selection
     $elements["storage_plugin_id"] = [
       "#type" => "textfield",
@@ -451,9 +423,9 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
   /**
    * {@inheritdoc}
    */
-  public function tripalSave($field_item, $field_name, $properties, $entity) {
+  public function tripalSave($field_item, $field_name, $prop_types, $prop_values, $entity) {
     $delta = $field_item->getName();
-    foreach ($properties as $property) {
+    foreach ($prop_values as $property) {
       $prop_key = $property->getKey();
       $value = $entity->get($field_name)->get($delta)->get($prop_key)->getValue();
       $property->setValue($value);
@@ -463,9 +435,9 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
   /**
    * {@inheritdoc}
    */
-  public function tripalLoad($field_item, $field_name, $properties, $entity) {
+  public function tripalLoad($field_item, $field_name, $prop_types, $prop_values, $entity) {
     $delta = $field_item->getName();
-    foreach ($properties as $property) {
+    foreach ($prop_values as $property) {
       $prop_key = $property->getKey();
       $entity->get($field_name)->get($delta)->get($prop_key)->setValue($property->getValue(), False);
     }
@@ -475,21 +447,25 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
   /**
    * {@inheritdoc}
    */
-  public function tripalClear($field_item, $field_name, $properties, $entity) {
+  public function tripalClear($field_item, $field_name, $prop_types, $prop_values, $entity) {
     $delta = $field_item->getName();
-    $field_definition = $field_item->getFieldDefinition();
-    $storage_settings = $field_definition->getSetting('storage_plugin_settings');
-    $property_settings = $storage_settings['property_settings'];
-    
-    foreach ($properties as $property) {
-      $prop_key = $property->getKey();      
-      
+
+    foreach ($prop_values as $prop_value) {
+      $prop_key = $prop_value->getKey();
+
+      // Get the settings from the property type whose key matches this value.
+      $settings = ['drupal_store' => FALSE];
+      foreach ($prop_types as $prop_type) {
+        if ($prop_type->getKey() == $prop_key) {
+          $settings = $prop_type->getStorageSettings();
+        }
+      }
+
       // Keep properties that have caching enabled.
-      if (array_key_exists($prop_key, $property_settings) and 
-          array_key_exists('cache', $property_settings[$prop_key]) and 
-          $property_settings[$prop_key]['cache'] == TRUE) {
+      if (array_key_exists('drupal_store', $settings) and $settings['drupal_store'] == TRUE) {
         continue;
       }
+      // Clear all other properties.
       $entity->get($field_name)->get($delta)->get($prop_key)->setValue('', False);
     }
   }

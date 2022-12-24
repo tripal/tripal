@@ -28,7 +28,7 @@ class schema__additional_type_formatter extends TripalFormatterBase {
 
     foreach($items as $delta => $item) {
       $elements[$delta] = [
-        "#markup" => $item->get('schema_name')->getString()
+        "#markup" => $item->get('term_name')->getString()
       ];
     }
 

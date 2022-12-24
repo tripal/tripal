@@ -28,7 +28,7 @@ class obi__organism_formatter extends TripalFormatterBase {
 
     foreach($items as $delta => $item) {
       $elements[$delta] = [
-        "#markup" => $item->get('rdfs_label')->getString()
+        "#markup" => $item->get('label')->getString()
       ];
     }
 

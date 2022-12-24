@@ -26,15 +26,15 @@ class schema__additional_type_widget extends TripalWidgetBase {
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
     $chado = \Drupal::service('tripal_chado.database');
-      
+
     // Get the field settings.
     $field_definition = $items[$delta]->getFieldDefinition();
     $field_settings = $field_definition->getSettings();
     $storage_settings = $field_settings['storage_plugin_settings'];
-    
+
     $cvterm_id = $items[$delta]->value ?? NULL;
     $default_value = '';
-    if ($cvterm_id) {      
+    if ($cvterm_id) {
       $query = $chado->select('1:cvterm', 'cvt');
       $query->leftJoin('1:dbxref', 'dbx', 'dbx.dbxref_id = cvt.dbxref_id');
       $query->leftJoin('1:db', 'db', 'dbx.db_id = db.db_id');
@@ -45,10 +45,10 @@ class schema__additional_type_widget extends TripalWidgetBase {
       $result = $query->execute()->fetchObject();
       $default_value = $result->name  . ' (' . $result->db_name . ':' . $result->accession . ')';
     }
-    
+
     $fixed_value = NULL;
-    if (array_key_exists('fixed_value', $storage_settings['property_settings']['value'])) {
-      $fixed_value = $storage_settings['property_settings']['value']['fixed_value'];     
+    if (array_key_exists('fixed_value', $storage_settings) and !empty($storage_settings['fixed_value'])) {
+      $fixed_value = $storage_settings['fixed_value'];
       list($idSpace, $accession) = explode(':', $fixed_value);
       $query = $chado->select('1:cvterm', 'cvt');
       if ($accession) {

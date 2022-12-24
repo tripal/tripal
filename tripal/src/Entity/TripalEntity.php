@@ -500,11 +500,11 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
         // Sets the values from the entity on both the property and in entity.
         // Despite the function name, no values are saved to the database.
-        $item->tripalSave($item, $field_name, $prop_values, $entity);
+        $item->tripalSave($item, $field_name, $prop_types, $prop_values, $entity);
 
         // Clears the values from the entity (does not clear them from the
         // property).
-        $item->tripalClear($item, $field_name, $prop_values, $entity);
+        $item->tripalClear($item, $field_name, $prop_types, $prop_values, $entity);
 
 
         // Prepare the properties for the storage plugin.
@@ -577,25 +577,28 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         if (!($item instanceof TripalFieldItemInterface)) {
           continue;
         }
-        
+
         $delta = $item->getName();
         $tsid = $item->tripalStorageId();
-        
-        // Load into the entity the field properties that are to be cached.        
-        $load_props = [];
+
+        // Load into the entity the properties that are to be stored in Drupal.
+        $prop_values = [];
+        $prop_types = [];
         foreach ($values[$tsid][$field_name][$delta] as $prop_info) {
-          $property_settings = $prop_info['type']->getStorageSettings();
-          if (array_key_exists('cache', $property_settings) and
-              $property_settings['cache'] == TRUE) {
-            $load_props[] = $prop_info['value'];
+          $prop_type = $prop_info['type'];
+          $prop_value = $prop_info['value'];
+          $settings = $prop_type->getStorageSettings();
+          if (array_key_exists('drupal_store', $settings) and $settings['drupal_store'] == TRUE) {
+            $prop_values[] = $prop_value;
+            $prop_types[] = $prop_type;
           }
         }
-        if (count($load_props) > 0) {
-          $item->tripalLoad($item, $field_name, $load_props, $this);
-  
-          // Delete cached elements that have no value.        
-          foreach ($load_props as $prop) {
-            if (!$prop->getValue()) {
+        if (count($prop_values) > 0) {
+          $item->tripalLoad($item, $field_name, $prop_types, $prop_values, $this);
+
+          // Delete elements that have no value.
+          foreach ($prop_values as $prop_value) {
+            if (!$prop_value->getValue()) {
               $delta_remove[$field_name][] = $delta;
               continue;
             }
@@ -663,13 +666,15 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           $tsid = $item->tripalStorageId();
 
           // reate a new properties array for this field item.
-          $properties = [];
+          $prop_values = [];
+          $prop_types = [];
           foreach ($values[$tsid][$field_name][$delta] as $key => $info) {
-            $properties[] = $info['value'];
+            $prop_values[] = $info['value'];
+            $prop_types[] = $info['type'];
           }
 
           // Now set the entity values for this field.
-          $item->tripalLoad($item, $field_name, $properties, $entity);
+          $item->tripalLoad($item, $field_name, $prop_types, $prop_values, $entity);
         }
       }
     }

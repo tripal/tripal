@@ -3,12 +3,12 @@
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal\TripalField\TripalFieldItemBase;
-use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\core\Form\FormStateInterface;
 use Drupal\core\Field\FieldDefinitionInterface;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
-
+use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 /**
  * Plugin implementation of string field type for Chado.
  *
@@ -36,10 +36,11 @@ class ChadoStringTypeItem extends ChadoFieldItemBase {
    * {@inheritdoc}
    */
   public static function defaultStorageSettings() {
-    $settings = [
-      'max_length' => 255,
-    ];
-    return $settings + parent::defaultStorageSettings();
+    $settings = parent::defaultStorageSettings();
+    $settings['max_length'] = 255;
+    $settings['storage_plugin_settings']['base_table'] = '';
+    $settings['storage_plugin_settings']['base_column'] = '';
+    return $settings;
   }
 
   /**
@@ -100,13 +101,29 @@ class ChadoStringTypeItem extends ChadoFieldItemBase {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
     $max_length = $field_definition->getSetting('max_length');
     $settings = $field_definition->getSetting('storage_plugin_settings');
-    $value_settings = $settings['property_settings']['value'];
-    $types = [
-      new VarCharStoragePropertyType($entity_type_id, self::$id, "value", $max_length, $value_settings),
+    $base_table = $settings['base_table'];
+    $base_column = $settings['base_column'];
+
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+
+    // Get the base table columns needed for this field.
+    $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+    $base_pkey_col = $base_schema_def['primary key'];
+
+    return [
+      new ChadoIntStoragePropertyType($entity_type_id, self::$id,'record_id', [
+        'action' => 'store_id',
+        'drupal_store' => TRUE,
+        'chado_table' => $base_table,
+        'chado_column' => $base_pkey_col
+      ]),
+      new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, "value", $max_length, [
+        'action' => 'store',
+        'chado_table' => $base_table,
+        'chado_column' => $base_column,
+      ]),
     ];
-    $default_types = TripalFieldItemBase::defaultTripalTypes($entity_type_id, self::$id);
-    $types = array_merge($types, $default_types);
-    return $types;
   }
 
   /**
@@ -116,11 +133,10 @@ class ChadoStringTypeItem extends ChadoFieldItemBase {
     $entity = $this->getEntity();
     $entity_type_id = $entity->getEntityTypeId();
     $entity_id = $entity->id();
-    $values = [
+
+    return [
+      new StoragePropertyValue($entity_type_id, self::$id, "record_id", $entity_id),
       new StoragePropertyValue($entity_type_id, self::$id, "value", $entity_id),
     ];
-    $default_values = TripalFieldItemBase::defaultTripalValuesTemplate($entity_type_id, self::$id, $entity_id);
-    $values = array_merge($values, $default_values);
-    return $values;
   }
 }
