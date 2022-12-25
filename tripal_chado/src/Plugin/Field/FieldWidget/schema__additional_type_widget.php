@@ -6,6 +6,7 @@ use Drupal\tripal\TripalField\TripalWidgetBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\FormValidator;
+use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
  * Plugin implementation of default Tripal string type widget.
@@ -19,7 +20,7 @@ use Drupal\Core\Form\FormValidator;
  *   }
  * )
  */
-class schema__additional_type_widget extends TripalWidgetBase {
+class schema__additional_type_widget extends ChadoWidgetBase {
 
   /**
    * {@inheritdoc}
@@ -30,25 +31,38 @@ class schema__additional_type_widget extends TripalWidgetBase {
     // Get the field settings.
     $field_definition = $items[$delta]->getFieldDefinition();
     $field_settings = $field_definition->getSettings();
-    $storage_settings = $field_settings['storage_plugin_settings'];
+    $storage_settings = $field_definition->getSetting('storage_plugin_settings');
+    $base_table = $storage_settings['base_table'];
+    $type_table = $storage_settings['type_table'];
+    $fixed_value = $field_settings['fixed_value'];
 
-    $cvterm_id = $items[$delta]->value ?? NULL;
-    $default_value = '';
-    if ($cvterm_id) {
+    // Get the default values.
+    $item_vals = $items[$delta]->getValue();
+    $record_id = $item_vals['record_id'] ?? 0;
+    $type_id = $item_vals['type_id'] ?? 0;
+    $prop_id = 0;
+    $link_id = 0;
+    if ($type_table != $base_table) {
+      $prop_id = $item_vals['prop_id'] ?? 0;
+      $link_id = $item_vals['link_id'] ?? 0;
+    }
+
+    // Find the term if one is present.
+    $default_autoc = '';
+    if ($type_id) {
       $query = $chado->select('1:cvterm', 'cvt');
       $query->leftJoin('1:dbxref', 'dbx', 'dbx.dbxref_id = cvt.dbxref_id');
       $query->leftJoin('1:db', 'db', 'dbx.db_id = db.db_id');
       $query->fields('cvt', ['name']);
       $query->fields('dbx', ['accession']);
       $query->fields('db', ['name']);
-      $query->condition('cvt.cvterm_id', $cvterm_id);
+      $query->condition('cvt.cvterm_id', $type_id);
       $result = $query->execute()->fetchObject();
-      $default_value = $result->name  . ' (' . $result->db_name . ':' . $result->accession . ')';
+      $default_autoc = $result->name  . ' (' . $result->db_name . ':' . $result->accession . ')';
     }
 
-    $fixed_value = NULL;
-    if (array_key_exists('fixed_value', $storage_settings) and !empty($storage_settings['fixed_value'])) {
-      $fixed_value = $storage_settings['fixed_value'];
+    // If this is a fixed value then get it.
+    else if ($fixed_value) {
       list($idSpace, $accession) = explode(':', $fixed_value);
       $query = $chado->select('1:cvterm', 'cvt');
       if ($accession) {
@@ -58,33 +72,51 @@ class schema__additional_type_widget extends TripalWidgetBase {
         $query->condition('db.name', $idSpace);
         $query->condition('dbx.accession', $accession);
         $cvterm = $query->execute()->fetchObject();
-        $default_value = $cvterm->name  . ' (' .$idSpace . ':' . $accession . ')';
+        $default_autoc = $cvterm->name  . ' (' .$idSpace . ':' . $accession . ')';
       }
     }
 
-    // Use the element defaults. They contain the required value, title, etc.
-    $element['value_autoc'] = $element;
-
-    // Cusotmize the widget element.
-    $element['value_autoc']['#type'] = 'textfield';
-    $element['value_autoc']['#description'] =  t("Enter a vocabulary term name. A set of matching " .
-      "candidates will be provided to choose from. You may find the multiple matching terms " .
-      "from different vocabularies. The full accession for each term is provided " .
-      "to help choose. Only the top 10 best matches are shown at a time.");
-    $element['value_autoc']['#default_value'] = $default_value;
-    $element['value_autoc']['#autocomplete_route_name'] = 'tripal.cvterm_autocomplete';
-    $element['value_autoc']['#autocomplete_route_parameters'] = ['count' => 10];
-    if ($fixed_value and $default_value) {
-      $element['#disabled'] = TRUE;
+    // Mark this field as disabled if the value is fixed.
+    $disabled = FALSE;
+    if ($fixed_value and $default_autoc) {
+      $disabled = TRUE;
     }
 
-    // Store the numeric value in a hidden value.
-    $element['value'] = [
+    $elements = [];
+    $elements['record_id'] = [
       '#type' => 'value',
-      '#value' => $cvterm_id,
+      '#default_value' => $record_id,
+    ];
+    $elements['prop_id'] = [
+      '#type' => 'value',
+      '#default_value' => $prop_id,
+    ];
+    $elements['link_id'] = [
+      '#type' => 'value',
+      '#default_value' => $link_id,
+    ];
+    $elements['type_id'] = [
+      '#type' => 'value',
+      '#value' => $type_id,
+    ];
+    $elements['value'] = [
+      '#type' => 'value',
+      '#default_value' => $fixed_value,
     ];
 
-    return $element + parent::formElement($items, $delta, $element, $form, $form_state);
+    // Use the element defaults. They contain the required value, title, etc.
+    $elements['term_autoc'] = $element + [
+      '#type' => 'textfield',
+      '#description' =>  t("Enter a vocabulary term name. A set of matching " .
+        "candidates will be provided to choose from. You may find the multiple matching terms " .
+        "from different vocabularies. The full accession for each term is provided " .
+        "to help choose. Only the top 10 best matches are shown at a time."),
+      '#default_value' => $default_autoc,
+      '#autocomplete_route_name' => 'tripal.cvterm_autocomplete',
+      '#autocomplete_route_parameters' => ['count' => 10],
+      '#disabled' => $disabled,
+    ];
+    return $elements;
   }
 
   /**
@@ -95,14 +127,15 @@ class schema__additional_type_widget extends TripalWidgetBase {
     $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
     foreach ($values as $delta => $item) {
        $matches = [];
-       if (preg_match('/(.+?)\((.+?):(.+?)\)/', $item['value_autoc'], $matches)) {
+       if (preg_match('/(.+?)\((.+?):(.+?)\)/', $item['term_autoc'], $matches)) {
          $termIdSpace = $matches[2];
          $termAccession = $matches[3];
 
          $idSpace = $idSpace_manager->loadCollection($termIdSpace);
          $term = $idSpace->getTerm($termAccession);
          $cvterm_id = $term->getInternalId();
-         $values[$delta]['value'] = $cvterm_id;
+         $values[$delta]['type_id'] = $cvterm_id;
+         $values[$delta]['value'] = $term->getName();
        }
     }
 

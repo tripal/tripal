@@ -5,6 +5,7 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 use Drupal\tripal\TripalField\TripalFormatterBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
  * Plugin implementation of default Tripal string type formatter.
@@ -18,7 +19,7 @@ use Drupal\Core\Form\FormStateInterface;
  *   }
  * )
  */
-class obi__organism_formatter extends TripalFormatterBase {
+class obi__organism_formatter extends ChadoFormatterBase {
 
   /**
    * {@inheritdoc}

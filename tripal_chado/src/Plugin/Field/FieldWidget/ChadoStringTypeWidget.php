@@ -21,4 +21,16 @@ use Drupal\Core\Form\FormStateInterface;
  */
 class ChadoStringTypeWidget extends TripalStringTypeWidget {
 
+  /**
+   * {@inheritdoc}
+   */
+  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
+
+    $element = parent::formElement($items, $delta, $element, $form, $form_state);
+    $element['record_id'] = [
+      '#type' => 'value',
+      '#default_value' => $items[$delta]->record_id ?? 0,
+    ];
+    return $element;
+  }
 }

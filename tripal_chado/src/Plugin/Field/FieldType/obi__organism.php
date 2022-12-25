@@ -27,6 +27,13 @@ class obi__organism extends ChadoFieldItemBase {
   /**
    * {@inheritdoc}
    */
+  public static function mainPropertyName() {
+    return 'label';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function defaultFieldSettings() {
     $settings = parent::defaultFieldSettings();
     $settings['termIdSpace'] = 'OBI';
@@ -75,7 +82,7 @@ class obi__organism extends ChadoFieldItemBase {
         'chado_table' => $base_table,
         'chado_column' => $base_pkey_col
       ]),
-      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'value', [
+      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'organism_id', [
         'action' => 'store',
         'chado_table' => $base_table,
         'chado_column' => $base_fk_col,
@@ -105,26 +112,6 @@ class obi__organism extends ChadoFieldItemBase {
         'chado_column' => 'name',
         'as' => 'infraspecific_type_name'
       ])
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function tripalValuesTemplate($field_definition) {
-
-    $entity = $this->getEntity();
-    $entity_type_id = $entity->getEntityTypeId();
-    $entity_id = $entity->id();
-
-    return [
-      new StoragePropertyValue($entity_type_id, self::$id, 'record_id', $entity_id),
-      new StoragePropertyValue($entity_type_id, self::$id, 'value', $entity_id),
-      new StoragePropertyValue($entity_type_id, self::$id, 'label', $entity_id),
-      new StoragePropertyValue($entity_type_id, self::$id, 'genus', $entity_id),
-      new StoragePropertyValue($entity_type_id, self::$id, 'species', $entity_id),
-      new StoragePropertyValue($entity_type_id, self::$id, 'infraspecific_name', $entity_id),
-      new StoragePropertyValue($entity_type_id, self::$id, 'infraspecific_type', $entity_id),
     ];
   }
 }

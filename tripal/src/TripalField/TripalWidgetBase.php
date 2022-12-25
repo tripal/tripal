@@ -13,17 +13,6 @@ use Drupal\Core\Form\FormStateInterface;
  */
 abstract class TripalWidgetBase extends WidgetBase {
 
-  /**
-   * {@inheritdoc}
-   */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-
-    $element['record_id'] = [
-      '#type' => 'value',
-      '#default_value' => $items[$delta]->record_id ?? 0,
-    ];
-    return $element;
-  }
 
   /**
    * Santizies a property key.

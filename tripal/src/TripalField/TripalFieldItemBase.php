@@ -25,6 +25,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $settings = [
       'termIdSpace' => '',
       'termAccession' => '',
+      'max_delta' => 100
     ];
     return $settings + parent::defaultFieldSettings();
   }
@@ -486,4 +487,24 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
   public function sanitizeKey($key) {
     return preg_replace('/[^\w]/', '_', $key);
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function tripalValuesTemplate($field_definition) {
+    $entity = $this->getEntity();
+    $entity_type_id = $entity->getEntityTypeId();
+    $entity_id = $entity->id();
+
+    // Get the list of property types defind by this field and then
+    // return a corresponding array of property value objects.
+    $field_class = get_class($this);
+    $prop_types = $field_class::tripalTypes($field_definition);
+    $prop_values = [];
+    foreach ($prop_types as $prop_type) {
+      $prop_values[] = new StoragePropertyValue($entity_type_id, $field_class::$id, $prop_type->getKey(), $entity_id);
+    }
+    return $prop_values;
+  }
+
 }

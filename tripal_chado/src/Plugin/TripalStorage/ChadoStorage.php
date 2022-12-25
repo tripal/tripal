@@ -144,6 +144,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     $insert = $chado->insert('1:'.$chado_table);
     $insert->fields($record['fields']);
     $record_id = $insert->execute();
+
     if (!$record_id) {
       throw new \Exception($this->t('Failed to insert a record in the Chado "@table" table. Record: @record',
           ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
@@ -203,6 +204,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           foreach ($record['fields'] as $column => $val) {
             if (is_array($val) and $val[0] == 'REPLACE_BASE_RECORD_ID') {
               $base_table = $val[1];
+              $records[$chado_table][$delta]['fields'][$column] = $build['base_tables'][$base_table];
               $record['fields'][$column] = $build['base_tables'][$base_table];
             }
           }
@@ -215,6 +217,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       $transaction_chado->rollback();
       throw new \Exception($e);
     }
+
 
     // Now set the record Ids of the properties.
     return TRUE;
@@ -437,7 +440,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       throw new \Exception($this->t('Failed to select record in the Chado "@table" table. Record: @record',
           ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
     }
-    $records[$chado_table][$delta] = $results->fetchAssoc();
+    $records[$chado_table][$delta]['fields'] = $results->fetchAssoc();
   }
 
   /**
@@ -464,7 +467,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       $transaction_chado->rollback();
       throw new \Exception($e);
     }
-
     return TRUE;
   }
 
@@ -585,11 +587,9 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           }
 
           // If this is a property managing a linked record ID then set it too.
-          if (array_key_exists('action', $prop_storage_settings)) {
-            if ($prop_storage_settings['action'] == 'link') {
-              $linked_record_id = $records[$chado_table][$delta]['conditions'][$pkey];
-              $values[$field_name][$delta][$key]['value']->setValue($linked_record_id);
-            }
+          if ($action == 'link') {
+            $record_id = $records[$chado_table][$delta]['conditions'][$pkey];
+            $values[$field_name][$delta][$key]['value']->setValue($record_id);
           }
         }
       }
@@ -605,6 +605,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    *   The set of Chado records.
    */
   protected function setPropValues(&$values, $records) {
+    $chado = $this->getChadoConnection();
+    $schema = $chado->schema();
 
     $replace = [];
     $function = [];
@@ -613,13 +615,27 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     foreach ($values as $field_name => $deltas) {
       foreach ($deltas as $delta => $keys) {
         foreach ($keys as $key => $info) {
-
+          $definition = $info['definition'];
           $prop_type = $info['type'];
+
+          $field_settings = $definition->getSettings();
+          $storage_plugin_settings = $field_settings['storage_plugin_settings'];
           $prop_storage_settings = $prop_type->getStorageSettings();
           $action = $prop_storage_settings['action'];
 
+          // Record IDs and linked IDs get set in the setRecordIDs() function.
           if ($action == 'store_id') {
             continue;
+          }
+
+          // If this is a linked record then the ID should already be in the
+          // the conditions of the base table.
+          if ($action == 'link') {
+            $base_table = $storage_plugin_settings['base_table'];
+            $base_table_def = $schema->getTableDef($base_table, ['format' => 'drupal']);
+            $pkey = $base_table_def['primary key'];
+            $link_id = $records[$base_table][$delta]['conditions'][$pkey];
+            $values[$field_name][$delta][$key]['value']->setValue($link_id);
           }
 
           // Get the values of properties that can be stored.
@@ -628,8 +644,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             $chado_column = $prop_storage_settings['chado_column'];
             if (array_key_exists($chado_table, $records)) {
               if (array_key_exists($delta, $records[$chado_table])) {
-                if (array_key_exists($chado_column, $records[$chado_table][$delta])) {
-                  $value = $records[$chado_table][$delta][$chado_column];
+                if (array_key_exists($chado_column, $records[$chado_table][$delta]['fields'])) {
+                  $value = $records[$chado_table][$delta]['fields'][$chado_column];
                   $values[$field_name][$delta][$key]['value']->setValue($value);
                 }
               }
@@ -640,7 +656,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           if ($action == 'join') {
             $chado_column = $prop_storage_settings['chado_column'];
             $as = array_key_exists('as', $prop_storage_settings) ? $prop_storage_settings['as'] : $chado_column;
-            $value = $records[$chado_table][$delta][$as];
+            $value = $records[$chado_table][$delta]['fields'][$as];
             $values[$field_name][$delta][$key]['value']->setValue($value);
           }
 
@@ -664,13 +680,14 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       $info = $item[3];
       $prop_type = $info['type'];
       $prop_storage_settings = $prop_type->getStorageSettings();
-      $value = $prop_storage_settings['template'];
+      $template = $prop_storage_settings['template'];
 
       $matches = [];
-      if (preg_match_all('/\[(.*?)\]/', $value, $matches)) {
+      $value = $template;
+      if (preg_match_all('/\[(.*?)\]/', $template, $matches)) {
         foreach ($matches[1] as $match) {
           if (array_key_exists($match, $values[$field_name][$delta])) {
-            $match_value = $values[$field_name][$delta][$match]['value']->getValue();
+            $match_value = $values[$field_name][$delta][$match]['value']->getValue() ?? '';
             $value = preg_replace("/\[$match\]/", $match_value, $value);
           }
         }
@@ -770,8 +787,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           if (!array_key_exists('action', $prop_storage_settings)) {
             $logger->error($this->t('Cannot store the property, @field.@prop ("@label"), in Chado. The property is missing an action in the property settings: @settings',
                 ['@field' => $field_name, '@prop' => $key,
-                  '@label' => $field_label, '@settings' => print_r($prop_storage_settings, TRUE)]));
-                continue;
+                 '@label' => $field_label, '@settings' => print_r($prop_storage_settings, TRUE)]));
+            continue;
           }
           $action = $prop_storage_settings['action'];
 
@@ -791,7 +808,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           $chado_table = $base_table;
           $chado_table_def = $base_table_def;
           $pkey = $base_pkey;
-          $fk_col = NULL;
           if (array_key_exists('chado_table', $prop_storage_settings)) {
             $chado_table = $prop_storage_settings['chado_table'];
             $chado_table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
@@ -801,7 +817,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             }
           }
 
-          // If this is the record ID then keep track of it. This will only
+          // If this is the record ID then keep track of it. This Id will only
           // be present if we're performing a load or update.
           if ($action == 'store_id') {
             $record_id = $prop_value->getValue();
@@ -811,6 +827,11 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             }
             continue;
           }
+          // The link action will connect a linking table to the base table.
+          if ($action == 'link') {
+            $chado_column = $prop_storage_settings['chado_column'];
+            $records[$chado_table][$delta]['fields'][$chado_column] = ['REPLACE_BASE_RECORD_ID', $base_table];
+          }
           // An action of "store" means that this value can be loaded/stored
           // in the Chado table for the field.
           if ($action == 'store') {
@@ -819,16 +840,12 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             if (is_string($value)) {
               $value = trim($value);
             }
-            // If this column is the foreign key column to the base table then
-            // we need to replace it with the record ID. But we can't gurantee
-            // that fields come in order. So we'll leave a reminder token to
-            // replace it later.
-            if ($fk_col == $chado_column) {
-              $records[$chado_table][$delta]['fields'][$chado_column] = ['REPLACE_BASE_RECORD_ID', $base_table];
+            if (array_key_exists('empty_value', $prop_storage_settings)) {
+              if ($value === $prop_storage_settings['empty_value']) {
+                continue;
+              }
             }
-            else {
-              $records[$chado_table][$delta]['fields'][$chado_column] = $value;
-            }
+            $records[$chado_table][$delta]['fields'][$chado_column] = $value;
 
             // If this field should not allow an empty value that means this
             // entire record should be removed on an update and not inserted.
@@ -836,14 +853,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             if ($delete_if_empty) {
               $records[$chado_table][$delta]['delete_if_empty'][] = $key;
             }
-          }
-          if ($action == 'link') {
-            // Set the value for the FK link in the records.
-            $chado_column = $prop_storage_settings['chado_column'];
-            $link_column = $prop_storage_settings['link_column'];
-            $records[$chado_table][$delta]['fields'][$link_column] = ['REPLACE_BASE_RECORD_ID', $base_table];
-            // Set a condition for the linked record.
-            $records[$chado_table][$delta]['conditions'][$chado_column] = $prop_value->getValue();
           }
           if ($action == 'join') {
             $path = $prop_storage_settings['path'];
@@ -862,7 +871,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
         }
       }
     }
-
     // Iterate through the records and set any record IDs for FK relationships.
     foreach ($records as $table_name => $deltas) {
       foreach ($deltas as $delta => $info) {
@@ -1126,6 +1134,11 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     $fkeys = $table_def['foreign keys'];
     foreach ($fkeys as $fk_table => $info) {
       foreach ($info['columns'] as $lcol => $rcol) {
+
+        // If the FK is not set in the record then skip it.
+        if (!array_key_exists($lcol, $record['fields'])) {
+          continue;
+        }
 
         // If an FK allows nulls and the value is null then skip this one..
         $col_val = $record['fields'][$lcol];

@@ -1459,12 +1459,12 @@ class ChadoPreparer extends ChadoTaskBase {
           'base_table' => $base_table,
           'type_table' => $chado_table,
           'type_column' => $chado_field,
-          'fixed_value' => $fixed_value
         ],
       ],
       'settings' => [
         'termIdSpace' => $field_term->getIdSpace(),
         'termAccession' => $field_term->getAccession(),
+        'fixed_value' => $fixed_value
       ],
       'display' => [
         'view' => [

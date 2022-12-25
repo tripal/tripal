@@ -104,24 +104,6 @@ class chado_linker__prop extends ChadoFieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public function tripalValuesTemplate($field_definition) {
-
-    $entity = $this->getEntity();
-    $entity_type_id = $entity->getEntityTypeId();
-    $entity_id = $entity->id();
-
-    return [
-      new StoragePropertyValue($entity_type_id, self::$id, 'record_id', $entity_id),
-      new StoragePropertyValue($entity_type_id, self::$id, 'value', $entity_id),
-      new StoragePropertyValue($entity_type_id, self::$id, 'rank', $entity_id),
-      new StoragePropertyValue($entity_type_id, self::$id, 'type_id', $entity_id),
-      new StoragePropertyValue($entity_type_id, self::$id, 'linker_id', $entity_id),
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
 
     // We need to set the prop table for this field but we need to know

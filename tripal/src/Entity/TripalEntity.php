@@ -354,8 +354,20 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       else {
         $value_obj = $this->get($field_name);
         if ($value_obj) {
+          // A field may have multiple properties. We should use the
+          // main property key for the field when replacing the value.
+          $field_type = $this->getFieldDefinition($field_name)->getType();
+          $field_types = \Drupal::service('plugin.manager.field.field_type');
+          $field_type_def = $field_types->getDefinition($field_type);
+          $field_class = $field_type_def['class'];
+          $main_key = $field_class::mainPropertyName();
+
+          // Get the value if the property has one.
           $value_raw = $value_obj->getValue();
-          $value = $value_raw[0]['value'];
+          $value = '';
+          if (array_key_exists($main_key, $value_raw[0])) {
+            $value = $value_raw[0][$main_key];
+          }
 
           // If the value is an array it means we have sub elements and we can
           // descend through the array to look for matching value.
@@ -534,9 +546,8 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     // Create a values array appropriate for `loadValues()`
     list($values, $tripal_storages) = TripalEntity::getValuesArray($this);
 
-    // Save all properties to their respective storage plugins.
-    // This is where the biological data is actually saved to the database
-    // using the appropriate TripalStorage plugin.
+    // Perform the Insert or Update of the submitted values to the
+    // underlying data store.
     foreach ($values as $tsid => $tsid_values) {
 
       // Do an insert
@@ -567,7 +578,8 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       }
     }
 
-    // Set the property values that should be cached.
+    // Set the property values that should be saved in Drupal, everything
+    // else will stay in the underlying data store (e.g. Chado)..
     $delta_remove = [];
     $fields = $this->getFields();
     foreach ($fields as $field_name => $items) {
@@ -596,7 +608,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         if (count($prop_values) > 0) {
           $item->tripalLoad($item, $field_name, $prop_types, $prop_values, $this);
 
-          // Delete elements that have no value.
+          // Keep track of elements that have no value.
           foreach ($prop_values as $prop_value) {
             if (!$prop_value->getValue()) {
               $delta_remove[$field_name][] = $delta;

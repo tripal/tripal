@@ -5,6 +5,7 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 use Drupal\tripal\TripalField\TripalWidgetBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
  * Plugin implementation of default Tripal string type widget.
@@ -18,7 +19,8 @@ use Drupal\Core\Form\FormStateInterface;
  *   }
  * )
  */
-class chado_linker__prop_widget extends TripalWidgetBase {
+class chado_linker__prop_widget extends ChadoWidgetBase {
+
 
   /**
    * {@inheritdoc}
@@ -41,10 +43,15 @@ class chado_linker__prop_widget extends TripalWidgetBase {
     $schema_def = $schema->getTableDef($prop_table, ['format' => 'Drupal']);
     $fk_col = array_keys($schema_def['foreign keys'][$base_table]['columns'])[0];
 
-    // Allow the user to set the property value.
+    $record_id = $items[$delta]->record_id ?? 0;
     $default_value = $items[$delta]->getValue('value')['value'] ?? '';
 
-    $element['value'] = [
+    $elements = [];
+    $elements['record_id'] = [
+      '#type' => 'value',
+      '#default_value' => $record_id,
+    ];
+    $elements['value'] = $element + [
       '#type' => 'textarea',
       '#default_value' => $default_value,
       '#title' => '',
@@ -61,14 +68,14 @@ class chado_linker__prop_widget extends TripalWidgetBase {
       $idSpace = $idSpace_manager->loadCollection($field_settings['termIdSpace']);
 
       $term = $idSpace->getTerm($field_settings['termAccession']);
-      $element[$type_term] = [
+      $elements[$type_term] = [
         '#type' => 'value',
         '#value' => $term->getInternalId(),
       ];
     }
 
     $rank_term = $this->sanitizeKey($mapping->getColumnTermId($prop_table, 'rank'));
-    $element[$rank_term] = [
+    $elements[$rank_term] = [
       '#type' => 'value',
       '#value' => $delta,
     ];
@@ -76,12 +83,12 @@ class chado_linker__prop_widget extends TripalWidgetBase {
     // Set the foreign key value. This is the record ID to the base table and
     // should not be set by the end user.
     $fk_term = $mapping->getColumnTermId($prop_table, $fk_col);
-    $element[$fk_term] = [
+    $elements[$fk_term] = [
       '#type' => 'value',
       '#value' => $items[$delta]->getValue($fk_term),
     ];
 
-    return $element + parent::formElement($items, $delta, $element, $form, $form_state);
+    return $elements;
   }
 
   /**

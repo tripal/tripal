@@ -67,19 +67,4 @@ class ChadoIntegerTypeItem extends ChadoFieldItemBase {
       ]),
     ];
   }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function tripalValuesTemplate($field_definition) {
-    $entity = $this->getEntity();
-    $entity_type_id = $entity->getEntityTypeId();
-    $entity_id = $entity->id();
-
-    return [
-      new StoragePropertyValue($entity_type_id, self::$id, "record_id", $entity_id),
-      new StoragePropertyValue($entity_type_id, self::$id, "value", $entity_id),
-    ];
-  }
-
 }
