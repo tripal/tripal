@@ -366,7 +366,12 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
   public function getTerm() {
     $manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
     $idspace = $manager->loadCollection($this->termIdSpace);
-    return $idspace->getTerm($this->termAccession);
+    if (is_object($idspace)) {
+      return $idspace->getTerm($this->termAccession);
+    }
+    else {
+      return NULL;
+    }
   }
 
   /**
