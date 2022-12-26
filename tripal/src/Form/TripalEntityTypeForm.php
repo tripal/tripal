@@ -51,11 +51,19 @@ class TripalEntityTypeForm extends EntityForm {
     // NOTE: we go this route because only showin the field on the add page
     // causes a validation error.
     else {
-      $term = $tripal_entity_type->getTerm();
-      $vocab = $term->getVocabularyObject();
+      $vocab_label = $term_name = $term_accession = '';
 
-      $term_autocomplete_default = $term->getName() . ' (' . $term->getTermId() . ')';
-      $disabled = TRUE;
+      $term = $tripal_entity_type->getTerm();
+      if ($term) {
+        $vocab = $term->getVocabularyObject();
+
+        $vocab_label = $vocab->getLabel();
+        $term_name = $term->getName();
+        $term_accession = $term->getTermId();
+
+        $term_autocomplete_default = $term->getName() . ' (' . $term->getTermId() . ')';
+        $disabled = TRUE;
+      }
 
       // We also want to add an element at the top that fully describes the term.
       // So lets do that here and use weight to put it at the top.
@@ -65,15 +73,15 @@ class TripalEntityTypeForm extends EntityForm {
         '#rows' => [
           [
             'Vocabulary',
-            $vocab->getLabel()
+            $vocab_label
           ],
           [
             'Name',
-            $term->getName()
+            $term_name
           ],
           [
             'Accession',
-            $term->getTermId()
+            $term_accession
           ],
         ],
         '#weight' => -8,
