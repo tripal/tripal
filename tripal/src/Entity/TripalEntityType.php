@@ -208,11 +208,13 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    public function save() {
 
      // First we want to set an id for this content type.
-     $config = \Drupal::service('config.factory')->getEditable('tripal.settings');
-     $max_id = $config->get('tripal_entity_type.max_id');
-     $this->id = $max_id + 1;
-     $this->name = 'bio_data_' . $this->id;
-     $config->set('tripal_entity_type.max_id', $this->id)->save();
+     if ($this->isNew()) {
+       $config = \Drupal::service('config.factory')->getEditable('tripal.settings');
+       $max_id = $config->get('tripal_entity_type.max_id');
+       $this->id = $max_id + 1;
+       $this->name = 'bio_data_' . $this->id;
+       $config->set('tripal_entity_type.max_id', $this->id)->save();
+     }
 
      // Set defaults for anything not already set.
      $this->setDefaults();
@@ -354,7 +356,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    * {@inheritdoc}
    */
   public function setTermAccession($termAccession) {
-    $this->termIdSpace = $termAccession;
+    $this->termAccession = $termAccession;
     return $this;
   }
 

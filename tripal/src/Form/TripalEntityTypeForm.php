@@ -23,64 +23,43 @@ class TripalEntityTypeForm extends EntityForm {
     $tripal_entity_type = $this->entity;
     $tripal_entity_type->setDefaults();
 
-    $form['label'] = [
-      '#type' => 'textfield',
-      '#title' => $this->t('Label'),
-      '#maxlength' => 255,
-      '#default_value' => $tripal_entity_type->label(),
-      '#description' => $this->t("Label for the Tripal Content type."),
-      '#required' => TRUE,
-    ];
-
     // Determine the machine name for the content type.
+    // Note, there may be some discrepancy here if others happen to be creating
+    // content types at the same time. Here we are making a prediction but
+    // the TripalEntityType->save() method will create the id at the time of
+    // saving, not based on what we provide it here.
     if ($tripal_entity_type->isNew()) {
       $config = \Drupal::config('tripal.settings');
       $max_index = $config->get('tripal_entity_type.max_id');
-      $default_id = $max_index + 1;
+      $machine_name = 'bio_data_' . ($max_index + 1);
     }
     else {
-      $default_id = $tripal_entity_type->getID();
+      $machine_name = $tripal_entity_type->id();
     }
-    $form['name'] = [
-      '#type' => 'machine_name',
-      '#default_value' => 'bio_data_' . $default_id,
-      '#required' => TRUE,
-      '#machine_name' => [
-        'exists' => '\Drupal\tripal\Entity\TripalEntityType::load',
-      ],
-      '#disabled' => TRUE,
-    ];
-    $form['id'] = [
-      '#type' => 'hidden',
-      '#value' => $default_id,
-    ];
 
     // We need to choose a term if this is a new content type.
     // The term cannot be changed later!
+    $term_autocomplete_default = '';
+    $disabled = NULL;
     if ($tripal_entity_type->isNew()) {
-
-      /*
-      $description = t('The Tripal controlled vocabulary term (cv) term which characterizes this content type. For example, to create a content type for storing "genes", use the "gene" term from the Sequence Ontology (SO). <strong>The Tripal CV Term must already exist; you can <a href="@termUrl">add a Tripal CV Term here</a>.</strong>',
-        ['@termUrl' => Url::fromRoute('entity.tripal_vocab.collection')->toString()]);
-      $form['term_id'] = [
-        '#type' => 'entity_autocomplete',
-        '#title' => 'Tripal Controlled Vocabulary (CV) Term',
-        '#description' => $description,
-        '#target_type' => 'tripal_term',
-        '#required' => TRUE,
-      ];
-      */
+      $term_autocomplete_default = $form_state->getValue('term');
+      $disabled = FALSE;
     }
+    // As mentioned above, the term cannot be changed later!
+    // As such, if this is not a new content type then we will only take into
+    // account the set term (not the form state) and disable the field.
+    // NOTE: we go this route because only showin the field on the add page
+    // causes a validation error.
     else {
       $term = $tripal_entity_type->getTerm();
       $vocab = $term->getVocabularyObject();
-      // Save the term for later.
-      $form['term_id'] = [
-        '#type' => 'hidden',
-        '#value' => $term->getInternalId(),
-      ];
-      // Describe the term to the user but do not allow them to change it.
-      $form['term'] = [
+
+      $term_autocomplete_default = $term->getName() . ' (' . $term->getTermId() . ')';
+      $disabled = TRUE;
+
+      // We also want to add an element at the top that fully describes the term.
+      // So lets do that here and use weight to put it at the top.
+      $form['term_description'] = [
         '#type' => 'table',
         '#caption' => 'Controlled Vocabulary Term',
         '#rows' => [
@@ -100,6 +79,39 @@ class TripalEntityTypeForm extends EntityForm {
         '#weight' => -8,
       ];
     }
+
+    $form['label'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Label'),
+      '#maxlength' => 255,
+      '#default_value' => $tripal_entity_type->label(),
+      '#description' => $this->t("Label for the Tripal Content type."),
+      '#required' => TRUE,
+    ];
+
+    $form['name'] = [
+      '#type' => 'machine_name',
+      '#default_value' => $machine_name,
+      '#required' => TRUE,
+      '#machine_name' => [
+        'exists' => '\Drupal\tripal\Entity\TripalEntityType::load',
+      ],
+      '#disabled' => TRUE,
+    ];
+
+    $form['term'] = [
+      '#type' => 'textfield',
+      '#title' => 'Controlled Vocabulary Term',
+      '#required' => TRUE,
+      '#description' => $this->t('Enter a vocabulary term name. A set of matching ' .
+        'candidates will be provided to choose from. You may find the multiple matching terms ' .
+        'from different vocabularies. The full accession for each term is provided ' .
+        'to help choose. Only the top 10 best matches are shown at a time.'),
+      '#default_value' => $term_autocomplete_default,
+      '#disabled' => $disabled,
+      '#autocomplete_route_name' => 'tripal.cvterm_autocomplete',
+      '#autocomplete_route_parameters' => array('count' => 10),
+    ];
 
     $description = "A grouping category for this Tripal Content type. It should be the same as other Tripal Content types and can be used to group similar biological data types to make them easier to find.";
     $form['category'] = [
@@ -222,39 +234,88 @@ class TripalEntityTypeForm extends EntityForm {
         $this->t('A Tripal Content type with the label :label already exists. Please choose a unique label.', [':label' => $values['label']]));
     }
 
-    // Ensure the cvterm has not already been used for another Content Type.
-    /*
-    if ($tripal_entity_type->isNew()) {
-      $entities = \Drupal::entityTypeManager()
-        ->getStorage('tripal_entity_type')
-        ->loadByProperties(['term_id' => $values['term_id']]);
-      if (!empty($entities)) {
-        $form_state->setErrorByName('term_id',
-        $this->t('A Tripal Content type with choosen Tripal Controlled Vocabulay Term already exists. Please choose a unique term.'));
+    $term_str = $form_state->getValue('term');
+    $matches = [];
+    if (preg_match('/(.+?) \((.+?):(.+?)\)/', $term_str, $matches)) {
+      $idSpace = $matches[2];
+      $accession = $matches[3];
+
+      // Ensure the term has not already been used for another Content Type.
+      if ($tripal_entity_type->isNew()) {
+        $entity_query = \Drupal::entityTypeManager()
+          ->getStorage('tripal_entity_type')
+          ->getQuery();
+        // We don't want to restrict by permission here b/c we want to ensure
+        // that no type has this term whether the user has permission to see
+        // it or not.
+        $entity_query
+          ->accessCheck(FALSE)
+          ->condition('termIdSpace', $idSpace)
+          ->condition('termAccession', $accession);
+        $entities = $entity_query->execute();
+
+        if (!empty($entities)) {
+          $form_state->setErrorByName('term',
+          $this->t('A Tripal Content Type with this controlled vocabulay term already exists. Please choose a unique term.'));
+        }
+      }
+
+      // Ensure the term exists.
+      // We look up the term using the ID Space plugin manager.
+      $idSpace_object = \Drupal::service('tripal.collection_plugin_manager.idspace')
+        ->loadCollection($idSpace);
+      if ($idSpace_object === NULL) {
+        $form_state->setErrorByName('term',
+          $this->t('You entered "%termStr" but the ID Space, "%idspace", does not exist. Please select an existing term from the autocomplete drop-down.',
+          ['%termStr' => $term_str, '%idspace' => $idSpace]
+        ));
+      }
+      else {
+      $term_object = $idSpace_object->getTerm($accession);
+        if ($term_object === NULL) {
+          $form_state->setErrorByName('term',
+            $this->t('You entered "%termStr" but a term with the accession, "%accession", does not exist in that ID Space. Please select an existing term from the autocomplete drop-down.',
+            ['%termStr' => $term_str, '%accession' => $accession]
+          ));
+        }
       }
     }
-    */
+    else {
+      $form_state->setErrorByName('term',
+          'Please select a term from the autocomplete drop-down. It must have the ID space and accession in parenthesis.');
+    }
   }
 
   /**
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
-    $values = $form_state->getValues();
-    $tripal_entity_type = $this->entity;
 
-    // Set the basic values of a Tripal Entity Type.
-    $tripal_entity_type->setID($values['id']);
-    $tripal_entity_type->setName($values['name']);
+    // Grab the entity associated with this form for easier access to create/update it.
+    $tripal_entity_type = $this->entity;
+    // Get all the values from the form state at once for greater readability below.
+    $values = $form_state->getValues();
+
+    // Note: we have to reprocess the term ID Space + Accession because we can't
+    // save what we learned in validate. We do not use an if around the preg_replace()
+    // because in order to get here, this pattern has to work.
+    preg_match('/(.+?) \((.+?):(.+?)\)/', $values['term'], $matches);
+    $idSpace = $matches[2];
+    $accession = $matches[3];
+
+    // Set the properties for the new Tripal Content Type
+    // using those set in the form state.
     $tripal_entity_type->setLabel($values['label']);
     $tripal_entity_type->setHelpText($values['help']);
-    //$tripal_entity_type->setTerm($values['term_id']);
+    $tripal_entity_type->setTermIdSpace($idSpace);
+    $tripal_entity_type->setTermAccession($accession);
     $tripal_entity_type->setTitleFormat($values['title_format']);
     $tripal_entity_type->setURLFormat($values['url_format']);
 
     // Finally, save the entity we've compiled.
     $status = $tripal_entity_type->save();
 
+    // and let the use know if we were successful.
     $messenger = $this->messenger();
     switch ($status) {
       case SAVED_NEW:
