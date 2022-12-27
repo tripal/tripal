@@ -218,7 +218,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       throw new \Exception($e);
     }
 
-
     // Now set the record Ids of the properties.
     return TRUE;
   }
@@ -465,7 +464,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       $transaction_chado->rollback();
       throw new \Exception($e);
     }
-
     return TRUE;
   }
 
@@ -579,12 +577,12 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             $values[$field_name][$delta][$key]['value']->setValue($record_id);
           }
           // If this is the linked record_id property then set it's value.
-          if ($action == 'store_link_id') {
+          if ($action == 'store_pkey') {
             $record_id = $records[$chado_table][$delta]['conditions'][$chado_table_pkey];
             $values[$field_name][$delta][$key]['value']->setValue($record_id);
           }
           // If this is a property managing a linked record ID then set it too.
-          if ($action == 'link') {
+          if ($action == 'store_link') {
             $record_id = $records[$base_table][0]['conditions'][$base_table_pkey];
             $values[$field_name][$delta][$key]['value']->setValue($record_id);
           }
@@ -624,17 +622,17 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           if ($action == 'store_id') {
             continue;
           }
-          if ($action == 'store_link_id') {
+          if ($action == 'store_pkey') {
             continue;
           }
 
           // If this is a linked record then the ID should already be in the
           // the conditions of the base table.
-          if ($action == 'link') {
+          if ($action == 'store_link') {
             $base_table = $storage_plugin_settings['base_table'];
             $base_table_def = $schema->getTableDef($base_table, ['format' => 'drupal']);
-            $pkey = $base_table_def['primary key'];
-            $link_id = $records[$base_table][$delta]['conditions'][$pkey];
+            $base_table_pkey = $base_table_def['primary key'];
+            $link_id = $records[$base_table][0]['conditions'][$base_table_pkey];
             $values[$field_name][$delta][$key]['value']->setValue($link_id);
           }
 
@@ -833,12 +831,12 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             }
           }
           // This  action is to store the linked table primary key value.
-          if ($action == 'store_link_id') {
+          if ($action == 'store_pkey') {
             $link_record_id = $prop_value->getValue();
             $records[$chado_table][$delta]['conditions'][$chado_table_pkey] = $link_record_id;
           }
           // The link action will connect a linking table to the base table.
-          if ($action == 'link') {
+          if ($action == 'store_link') {
             $chado_column = $prop_storage_settings['chado_column'];
             $records[$chado_table][$delta]['fields'][$chado_column] = ['REPLACE_BASE_RECORD_ID', $base_table];
           }
@@ -850,11 +848,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             if (is_string($value)) {
               $value = trim($value);
             }
-//             if (array_key_exists('empty_value', $prop_storage_settings)) {
-//               if ($value === $prop_storage_settings['empty_value']) {
-//                 continue;
-//               }
-//             }
             $records[$chado_table][$delta]['fields'][$chado_column] = $value;
 
             // If this field should not allow an empty value that means this
@@ -891,7 +884,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             // If the base record ID is 0 then this is an insert and we
             // don't yet have the base record ID.  So, leave in the message
             // to replace the ID so we can do so later.
-            if (array_key_exists($base_table, $base_record_ids)) {
+            if (array_key_exists($base_table, $base_record_ids) and $base_record_ids[$base_table] != 0) {
               $records[$table_name][$delta]['fields'][$chado_column] = $base_record_ids[$base_table];
             }
           }
@@ -903,7 +896,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             // If the base record ID is 0 then this is an insert and we
             // don't yet have the base record ID.  So, leave in the message
             // to replace the ID so we can do so later.
-            if (array_key_exists($base_table, $base_record_ids)) {
+            if (array_key_exists($base_table, $base_record_ids) and $base_record_ids[$base_table] != 0) {
               $records[$table_name][$delta]['conditions'][$chado_column] = $base_record_ids[$base_table];
             }
           }
@@ -1163,9 +1156,9 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           continue;
         }
 
-        // If an FK allows nulls and the value is null then skip this one..
+        // If an FK allows nulls and the value is null then skip this one.
         $col_val = $record['fields'][$lcol];
-        if ($table_def['fields'][$lcol]['not null'] == FALSE and !$col_val) {
+        if ($table_def['fields'][$lcol]['not null'] == FALSE and $col_val === NULL) {
           continue;
         }
 
@@ -1183,7 +1176,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     if (count($bad_fks) > 0) {
       // Documentation for how to creata violation is here
       // https://github.com/symfony/validator/blob/6.1/ConstraintViolation.php
-      $message = 'The item cannot be saved because the following values have a missing linked record in the data store.';
+      $message = 'The item cannot be saved because the following values have a missing linked record in the data store: ';
       $params = [];
       foreach ($bad_fks as $col) {
         $message .=  ucfirst($col) . ", ";
@@ -1331,106 +1324,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
   }
 
   /**
-   * Checks that non-base table records have the same link ID as the record ID.
-   *
-   * Records for non-base tables may be linked via a foreign key to a base
-   * table. For example, an organismprop record should use the same organism_id
-   * as that used by the base record.  This function ensures that.
-   *
-   * @param array $values
-   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
-   * @param array $base_tables
-   *   An array of base tables and their record IDs.
-   * @param array $records
-   *   The set of Chado records.
-   * @param array $violoations
-   *   An array to which any new violoations can be added.
-   */
-  private function validateLinks($values, $records, $base_tables, &$violations) {
-    foreach ($records as $table_name => $deltas) {
-
-      // Skip base table records, we validated those separately.
-      if (in_array($table_name, array_keys($base_tables))) {
-        continue;
-      }
-
-      $chado = $this->getChadoConnection();
-      $schema = $chado->schema();
-      $table_def = $schema->getTableDef($table_name, ['format' => 'drupal']);
-      foreach ($deltas as $delta => $record) {
-        $fields = $record['fields'];
-
-        foreach ($fields as $column => $value) {
-
-          // Now iterate through the foreign keys. If one links to the base
-          // table then make sure it's ID matches.
-          foreach ($table_def['foreign keys'] as $fktable => $fkinfo) {
-            if (in_array($fktable, array_keys($base_tables))) {
-              $record_id = $base_tables[$fktable];
-              if (in_array($column, array_keys($fkinfo['columns']))) {
-                if ($value != $record_id) {
-                  // Documentation for how to creata violation is here
-                  // https://github.com/symfony/validator/blob/6.1/ConstraintViolation.php
-                  $message = 'The linked record for the Chado table ' . $table_name . ' can not be saved ' .
-                      'because it has a different record ID than the base record: ' . $record_id . '!=' . $value . '. ' .
-                      'Check the field that wants to add a record to the ' . $chado_table . ' table for bugs.';
-                  $params = [];
-                  $violations[] = new ConstraintViolation(t($message, $params)->render(),
-                      $message, $params, '', NULL, '', 1, 0, NULL, '');
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  /**
-   * Linker tables must have a condition for the primary key and a link column.
-   *
-   * This function ensures that all records
-   *
-   * @param array $values
-   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
-   * @param array $base_tables
-   *   An array of base tables and their record IDs.
-   * @param array $records
-   *   The set of Chado records.
-   * @param array $violoations
-   *   An array to which any new violoations can be added.
-   */
-  private function validateLinker($values, $records, $base_tables, &$violations) {
-    // Handle base table records first.
-    foreach ($records as $chado_table => $deltas) {
-
-      // Skip base table records, we validated those separately.
-      if (in_array($chado_table, array_keys($base_tables))) {
-        continue;
-      }
-
-      $chado = $this->getChadoConnection();
-      $schema = $chado->schema();
-      $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
-
-      foreach ($deltas as $delta => $record) {
-
-        if (!array_key_exists('conditions', $record)) {
-          // Documentation for how to creata violation is here
-          // https://github.com/symfony/validator/blob/6.1/ConstraintViolation.php
-          $message = 'The record for the Chado table ' . $chado_table . ' can not be saved ' .
-            'because it missing a condition for the primary key.' .
-            'Check the field that wants to add a record to the ' . $chado_table . ' table for bugs.';
-          $params = [];
-          $violations[] = new ConstraintViolation(t($message, $params)->render(),
-              $message, $params, '', NULL, '', 1, 0, NULL, '');
-        }
-      }
-    }
-  }
-
-
-  /**
    *
    * {@inheritDoc}
    */
@@ -1457,10 +1350,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
         }
       }
     }
-
-    // Check that tables linked to the base table follow the expected rules.
-    $this->validateLinks($values, $records, $base_tables, $violations);
-    //$this->validateLinker($values, $records, $base_tables, $violations);
 
     return $violations;
   }

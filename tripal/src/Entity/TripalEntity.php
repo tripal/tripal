@@ -622,7 +622,15 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     // Now remove any values that shouldn't be there.
     foreach ($delta_remove as $field_name => $deltas) {
       foreach (array_reverse($deltas) as $delta) {
-        $this->get($field_name)->removeItem($delta);
+        try {
+          $this->get($field_name)->removeItem($delta);
+        }
+        catch (\Exception $e) {
+          \Drupal::logger('tripal')->notice($e->getMessage());
+          \Drupal::messenger()->addError('Cannot insert this entity. See the recent ' .
+              'logs for more details or contact the site administrator if you ' .
+              'cannot view the logs.');
+        }
       }
     }
   }

@@ -103,13 +103,13 @@ class schema__additional_type extends ChadoFieldItemBase {
       $type_fkey_col = array_keys($type_table_def['foreign keys'][$base_table]['columns'])[0];
 
       $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'prop_id', [
-        'action' => 'store_link_id',
+        'action' => 'store_pkey',
         'drupal_store' => TRUE,
         'chado_table' => $type_table,
         'chado_column' => $type_pkey_col,
       ]);
       $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link_id', [
-        'action' => 'link',
+        'action' => 'store_link',
         'chado_table' => $type_table,
         'chado_column' => $type_fkey_col,
       ]);

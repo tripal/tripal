@@ -39,7 +39,7 @@ class schema__additional_type_widget extends ChadoWidgetBase {
     // Get the default values.
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
-    $type_id = $item_vals['type_id'] ?? 0;
+    $type_id = $item_vals['type_id'] ?? NULL;
     $prop_id = 0;
     $link_id = 0;
     if ($type_table != $base_table) {

@@ -78,13 +78,13 @@ class chado_linker__prop extends ChadoFieldItemBase {
         'chado_column' => $base_pkey_col
       ]),
       new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'prop_id', [
-        'action' => 'store_link_id',
+        'action' => 'store_pkey',
         'drupal_store' => TRUE,
         'chado_table' => $prop_table,
         'chado_column' => $prop_pkey_col,
       ]),
       new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id',  [
-        'action' => 'link',
+        'action' => 'store_link',
         'chado_table' => $prop_table,
         'chado_column' => $prop_fk_col,
       ]),
