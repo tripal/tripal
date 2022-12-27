@@ -66,6 +66,7 @@ class chado_linker__prop extends ChadoFieldItemBase {
     $base_pkey_col = $base_schema_def['primary key'];
 
     $prop_schema_def = $schema->getTableDef($prop_table, ['format' => 'Drupal']);
+    $prop_pkey_col = $prop_schema_def['primary key'];
     $prop_fk_col = array_keys($prop_schema_def['foreign keys'][$base_table]['columns'])[0];
 
     // Create the property types.
@@ -75,6 +76,17 @@ class chado_linker__prop extends ChadoFieldItemBase {
         'drupal_store' => TRUE,
         'chado_table' => $base_table,
         'chado_column' => $base_pkey_col
+      ]),
+      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'prop_id', [
+        'action' => 'store_link_id',
+        'drupal_store' => TRUE,
+        'chado_table' => $prop_table,
+        'chado_column' => $prop_pkey_col,
+      ]),
+      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id',  [
+        'action' => 'link',
+        'chado_table' => $prop_table,
+        'chado_column' => $prop_fk_col,
       ]),
       new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'value', [
         'action' => 'store',
@@ -92,11 +104,6 @@ class chado_linker__prop extends ChadoFieldItemBase {
         'action' => 'store',
         'chado_table' => $prop_table,
         'chado_column' => 'type_id'
-      ]),
-      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id',  [
-        'action' => 'store',
-        'chado_table' => $prop_table,
-        'chado_column' => $prop_fk_col,
       ]),
     ];
   }

@@ -27,29 +27,41 @@ class chado_linker__prop_widget extends ChadoWidgetBase {
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
 
-    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
-    $mapping = $storage->load('core_mapping');
-
     // Get the field settings.
     $field_definition = $items[$delta]->getFieldDefinition();
     $field_settings = $field_definition->getSettings();
-    $storage_settings = $field_settings['storage_plugin_settings'];
 
-    // Get the primary key and FK columns.
-    $base_table = $storage_settings['base_table'];
-    $prop_table = $storage_settings['prop_table'];
-    $chado = \Drupal::service('tripal_chado.database');
-    $schema = $chado->schema();
-    $schema_def = $schema->getTableDef($prop_table, ['format' => 'Drupal']);
-    $fk_col = array_keys($schema_def['foreign keys'][$base_table]['columns'])[0];
+    // Get the default values.
+    $item_vals = $items[$delta]->getValue();
+    $record_id = $item_vals['record_id'] ?? 0;
+    $prop_id = $item_vals['prop_id'] ?? 0;
+    $linker_id = $item_vals['linker_id'] ?? 0;
+    $default_value = $item_vals['value'] ?? '';
+    $term_id = NULL;
+    if ($field_settings['termIdSpace'] and $field_settings['termAccession']) {
+      $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+      $idSpace = $idSpace_manager->loadCollection($field_settings['termIdSpace']);
 
-    $record_id = $items[$delta]->record_id ?? 0;
-    $default_value = $items[$delta]->getValue('value')['value'] ?? '';
+      $term = $idSpace->getTerm($field_settings['termAccession']);
+      $term_id = $term->getInternalId();
+    }
 
     $elements = [];
     $elements['record_id'] = [
       '#type' => 'value',
       '#default_value' => $record_id,
+    ];
+    $elements['prop_id'] = [
+      '#type' => 'value',
+      '#default_value' => $prop_id,
+    ];
+    $elements['linker_id'] = [
+      '#type' => 'value',
+      '#value' => $linker_id,
+    ];
+    $elements['type_id'] = [
+      '#type' => 'value',
+      '#value' => $term_id,
     ];
     $elements['value'] = $element + [
       '#type' => 'textarea',
@@ -59,35 +71,10 @@ class chado_linker__prop_widget extends ChadoWidgetBase {
       '#rows' => '',
       '#required' => FALSE,
     ];
-
-    // Set the property type_id value.  The user shouldn't edit this. It's
-    // built into the field.
-    if ($field_settings['termIdSpace'] and $field_settings['termAccession']) {
-      $type_term = $this->sanitizeKey($mapping->getColumnTermId($prop_table, 'type_id'));
-      $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-      $idSpace = $idSpace_manager->loadCollection($field_settings['termIdSpace']);
-
-      $term = $idSpace->getTerm($field_settings['termAccession']);
-      $elements[$type_term] = [
-        '#type' => 'value',
-        '#value' => $term->getInternalId(),
-      ];
-    }
-
-    $rank_term = $this->sanitizeKey($mapping->getColumnTermId($prop_table, 'rank'));
-    $elements[$rank_term] = [
+    $elements['rank'] = [
       '#type' => 'value',
       '#value' => $delta,
     ];
-
-    // Set the foreign key value. This is the record ID to the base table and
-    // should not be set by the end user.
-    $fk_term = $mapping->getColumnTermId($prop_table, $fk_col);
-    $elements[$fk_term] = [
-      '#type' => 'value',
-      '#value' => $items[$delta]->getValue($fk_term),
-    ];
-
     return $elements;
   }
 

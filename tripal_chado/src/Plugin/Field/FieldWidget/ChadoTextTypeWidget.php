@@ -26,10 +26,11 @@ class ChadoTextTypeWidget extends TripalTextTypeWidget {
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
 
+    $item_vals = $items[$delta]->getValue();
     $element = parent::formElement($items, $delta, $element, $form, $form_state);
     $element['record_id'] = [
       '#type' => 'value',
-      '#default_value' => $items[$delta]->record_id ?? 0,
+      '#default_value' => $item_vals['record_id'] ?? 0,
     ];
     return $element;
   }

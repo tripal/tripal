@@ -63,13 +63,8 @@ class TripalField_chado_linker__propTest extends ChadoTestBrowserBase {
       'cardinality' => -1,
       'storage_plugin_settings' => [
         'base_table' => 'organism',
-        'property_settings' => [
-          'value' => [
-            'action' => 'store',
-            'chado_table' => 'organismprop',
-            'chado_column' => 'value',
-          ],
-        ],
+        'type_table' => 'organismprop',
+        'type_column' => 'type_id',
       ],
     ]);
 

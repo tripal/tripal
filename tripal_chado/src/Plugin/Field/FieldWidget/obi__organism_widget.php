@@ -50,8 +50,9 @@ class obi__organism_widget extends ChadoWidgetBase {
       $organisms[$organism->organism_id] = $org_name;
     }
 
-    $record_id = $items[$delta]->record_id ?? 0;
-    $organism_id = $items[$delta]->organism_id ?? 0;
+    $item_vals = $items[$delta]->getValue();
+    $record_id = $item_vals['record_id'] ?? 0;
+    $organism_id = $item_vals['organism_id'] ?? 0;
 
     $elements = [];
     $elements['record_id'] = [

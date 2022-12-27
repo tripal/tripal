@@ -188,13 +188,7 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
       'cardinality' => 1,
       'storage_plugin_settings' => [
         'base_table' => 'organism',
-        'property_settings' => [
-          'value' => [
-            'action' => 'store',
-            'chado_table' => 'organism',
-            'chado_column' => 'genus',
-          ]
-        ],
+        'base_column' => 'genus'
       ],
     ]);
 
@@ -206,13 +200,7 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
       'cardinality' => 1,
       'storage_plugin_settings' => [
         'base_table' => 'organism',
-        'property_settings' => [
-          'value' => [
-            'action' => 'store',
-            'chado_table' => 'organism',
-            'chado_column' => 'species',
-          ],
-        ],
+        'base_column' => 'species'
       ],
     ]);
 
@@ -224,13 +212,7 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
       'cardinality' => 1,
       'storage_plugin_settings' => [
         'base_table' => 'organism',
-        'property_settings' => [
-          'value' => [
-            'action' => 'store',
-            'chado_table' => 'organism',
-            'chado_column' => 'infraspecific_name',
-          ],
-        ],
+        'base_column' => 'infraspecific_type'
       ],
     ]);
 
@@ -242,13 +224,7 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
       'cardinality' => 1,
       'storage_plugin_settings' => [
         'base_table' => 'organism',
-        'property_settings' => [
-          'value' => [
-            'action' => 'store',
-            'chado_table' => 'organism',
-            'chado_column' => 'comment',
-          ],
-        ],
+        'base_column' => 'comment'
       ],
     ]);
 
@@ -260,13 +236,7 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
       'cardinality' => 1,
       'storage_plugin_settings' => [
         'base_table' => 'organism',
-        'property_settings' => [
-          'value' => [
-            'action' => 'store',
-            'chado_table' => 'organism',
-            'chado_column' => 'abbreviation',
-          ],
-        ],
+        'base_column' => 'abbreviation'
       ],
     ]);
 
@@ -278,13 +248,7 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
       'cardinality' => 1,
       'storage_plugin_settings' => [
         'base_table' => 'organism',
-        'property_settings' => [
-          'value' => [
-            'action' => 'store',
-            'chado_table' => 'organism',
-            'chado_column' => 'common_name',
-          ],
-        ],
+        'base_column' => 'common_name'
       ],
     ]);
 
@@ -299,31 +263,33 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
       'user_id' => 0,
       'status' => TRUE,
     ]);
+    print_r($entity);
 
 
     // Make sure that the entity has all of the fields.
-    $this->assertTrue($entity->hasField('bio_data_1_taxrank_0000005'), "The organism enitty is missing the genus field");
-    $this->assertTrue($entity->hasField('bio_data_1_taxrank_0000006'), "The organism enitty is missing the species field");
-    $this->assertTrue($entity->hasField('bio_data_1_taxrank_0000045'), "The organism enitty is missing the infraspecific name field");
-    $this->assertTrue($entity->hasField('bio_data_1_local_abbreviation'), "The organism enitty is missing the abbreviation field");
-    $this->assertTrue($entity->hasField('bio_data_1_ncbitaxon_common_name'), "The organism enitty is missing the common name field");
-    $this->assertTrue($entity->hasField('bio_data_1_schema_description'), "The organism enitty is missing the description field");
+    $this->assertTrue($entity->hasField('bio_data_1_taxrank_0000005'), "The organism enity is missing the bio_data_1_taxrank_0000005 field");
+    $this->assertTrue($entity->hasField('bio_data_1_taxrank_0000006'), "The organism enity is missing the bio_data_1_taxrank_0000006 field");
+    $this->assertTrue($entity->hasField('bio_data_1_taxrank_0000045'), "The organism enity is missing the bio_data_1_taxrank_0000045 field");
+    $this->assertTrue($entity->hasField('bio_data_1_local_abbreviation'), "The organism enitty is missing the bio_data_1_local_abbreviation field");
+    $this->assertTrue($entity->hasField('bio_data_1_ncbitaxon_common_name'), "The organism enitty is missing the bio_data_1_ncbitaxon_common_name field");
+    $this->assertTrue($entity->hasField('bio_data_1_schema_description'), "The organism enitty is missing the bio_data_1_schema_description field");
 
-    // Set the values
-    $entity->set('bio_data_1_taxrank_0000005', $genus);
-    $entity->set('bio_data_1_taxrank_0000006', $species);
+    // Set field property values.
+    $entity->bio_data_1_taxrank_0000005->value =  $genus;
+    $entity->bio_data_1_taxrank_0000006->value =  $species;
 
     // Save the entity.
+    $entity->enforceIsNew();
     $entity->save();
 
     // Make sure there is a record in the Chado database
-    $query = $this->chado->select('1:organism', 'O');
-    $query->fields('O', ['organism_id']);
+    $query = $this->chado->select('1:organism', 'organism');
+    $query->fields('organism', ['organism_id']);
     $query->condition('genus', $genus);
     $query->condition('species', $species);
     $organism_id = $query->execute()->fetchField();
 
-    //$this->assertNotEmpty($organism_id, "The organism entity did not create the organism record in Chado as expected");
+    $this->assertNotEmpty($organism_id, "The organism entity did not create the organism record in Chado as expected");
 
     $this->container->get('router.builder')->rebuild();
 
