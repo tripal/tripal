@@ -59,11 +59,6 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
   public const PREPARE_TEST_CHADO = 5;
 
   /**
-   * ChadoConnection instance
-   */
-  protected $chado = NULL;
-
-  /**
    * {@inheritdoc}
    */
   protected static $modules = ['tripal', 'tripal_biodb', 'tripal_chado'];
@@ -81,8 +76,6 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
       $this->getRealConfig();
       $this->initTripalDbx();
       $this->allowTestSchemas();
-
-      $this->chado = $this->getTestSchema(ChadoTestBrowserBase::INIT_CHADO_EMPTY);
     }
   }
 
@@ -103,6 +96,8 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
    *   The organism entity.
    */
   protected function createTestOrganismEntity($genus, $species) {
+
+    $chado = $this->getTestSchema();
 
     // Create the Organism Content Type
     $this->createTripalContentType([
@@ -317,7 +312,7 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
     $entity->save();
 
     // Make sure there is a record in the Chado database
-    $query = $this->chado->select('1:organism', 'O');
+    $query = $chado->select('1:organism', 'O');
     $query->fields('O', ['organism_id']);
     $query->condition('genus', $genus);
     $query->condition('species', $species);
