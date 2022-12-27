@@ -22,7 +22,7 @@ class ChadoCustomTablesTest extends ChadoTestBrowserBase {
     $manager = \Drupal::service('tripal_chado.custom_tables');
     $this->assertIsObject($manager, 'Able to retrieve the custom table service manager.');
 
-    $chado = $this->getTestSchema();
+    $chado = $this->createTestSchema(ChadoTestBrowserBase::INIT_CHADO_EMPTY);
     $chado_schema_name = $chado->getSchemaName();
 
     // Test manager get list of chado custom tables.
