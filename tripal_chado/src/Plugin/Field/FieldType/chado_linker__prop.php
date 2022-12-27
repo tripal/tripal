@@ -32,7 +32,6 @@ class chado_linker__prop extends ChadoFieldItemBase {
    */
   public static function defaultStorageSettings() {
     $settings = parent::defaultStorageSettings();
-    $settings['storage_plugin_settings']['base_table'] = '';
     $settings['storage_plugin_settings']['prop_table'] = '';
     return $settings;
   }
