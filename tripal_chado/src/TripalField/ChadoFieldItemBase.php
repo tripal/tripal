@@ -18,6 +18,7 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
   public static function defaultStorageSettings() {
     $settings = parent::defaultStorageSettings();
     $settings['storage_plugin_id'] = 'chado_storage';
+    $settings['storage_plugin_settings']['base_table'] = '';
     return $settings;
   }
 

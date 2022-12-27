@@ -263,35 +263,34 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
       'user_id' => 0,
       'status' => TRUE,
     ]);
-    print_r($entity);
 
 
-    // Make sure that the entity has all of the fields.
-    $this->assertTrue($entity->hasField('bio_data_1_taxrank_0000005'), "The organism enity is missing the bio_data_1_taxrank_0000005 field");
-    $this->assertTrue($entity->hasField('bio_data_1_taxrank_0000006'), "The organism enity is missing the bio_data_1_taxrank_0000006 field");
-    $this->assertTrue($entity->hasField('bio_data_1_taxrank_0000045'), "The organism enity is missing the bio_data_1_taxrank_0000045 field");
-    $this->assertTrue($entity->hasField('bio_data_1_local_abbreviation'), "The organism enitty is missing the bio_data_1_local_abbreviation field");
-    $this->assertTrue($entity->hasField('bio_data_1_ncbitaxon_common_name'), "The organism enitty is missing the bio_data_1_ncbitaxon_common_name field");
-    $this->assertTrue($entity->hasField('bio_data_1_schema_description'), "The organism enitty is missing the bio_data_1_schema_description field");
+//     // Make sure that the entity has all of the fields.
+//     $this->assertTrue($entity->hasField('bio_data_1_taxrank_0000005'), "The organism enity is missing the bio_data_1_taxrank_0000005 field");
+//     $this->assertTrue($entity->hasField('bio_data_1_taxrank_0000006'), "The organism enity is missing the bio_data_1_taxrank_0000006 field");
+//     $this->assertTrue($entity->hasField('bio_data_1_taxrank_0000045'), "The organism enity is missing the bio_data_1_taxrank_0000045 field");
+//     $this->assertTrue($entity->hasField('bio_data_1_local_abbreviation'), "The organism enitty is missing the bio_data_1_local_abbreviation field");
+//     $this->assertTrue($entity->hasField('bio_data_1_ncbitaxon_common_name'), "The organism enitty is missing the bio_data_1_ncbitaxon_common_name field");
+//     $this->assertTrue($entity->hasField('bio_data_1_schema_description'), "The organism enitty is missing the bio_data_1_schema_description field");
 
-    // Set field property values.
-    $entity->bio_data_1_taxrank_0000005->value =  $genus;
-    $entity->bio_data_1_taxrank_0000006->value =  $species;
+//     // Set field property values.
+//     $entity->bio_data_1_taxrank_0000005->value =  $genus;
+//     $entity->bio_data_1_taxrank_0000006->value =  $species;
 
-    // Save the entity.
-    $entity->enforceIsNew();
-    $entity->save();
+//     // Save the entity.
+//     $entity->enforceIsNew();
+//     $entity->save();
 
-    // Make sure there is a record in the Chado database
-    $query = $this->chado->select('1:organism', 'organism');
-    $query->fields('organism', ['organism_id']);
-    $query->condition('genus', $genus);
-    $query->condition('species', $species);
-    $organism_id = $query->execute()->fetchField();
+//     // Make sure there is a record in the Chado database
+//     $query = $this->chado->select('1:organism', 'organism');
+//     $query->fields('organism', ['organism_id']);
+//     $query->condition('genus', $genus);
+//     $query->condition('species', $species);
+//     $organism_id = $query->execute()->fetchField();
 
-    $this->assertNotEmpty($organism_id, "The organism entity did not create the organism record in Chado as expected");
+//     $this->assertNotEmpty($organism_id, "The organism entity did not create the organism record in Chado as expected");
 
-    $this->container->get('router.builder')->rebuild();
+//     $this->container->get('router.builder')->rebuild();
 
     return $entity;
   }

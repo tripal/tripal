@@ -31,7 +31,6 @@ class ChadoIntegerTypeItem extends ChadoFieldItemBase {
    */
   public static function defaultStorageSettings() {
     $settings = parent::defaultStorageSettings();
-    $settings['storage_plugin_settings']['base_table'] = '';
     $settings['storage_plugin_settings']['base_column'] = '';
     return $settings;
   }
