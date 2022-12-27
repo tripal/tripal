@@ -856,7 +856,7 @@ class GFF3Importer extends ChadoImporterBase {
         'is_relationship' => FALSE,
       ];
       // @todo convert api call
-      $cvterm = (object) chado_insert_cvterm($term, ['update_existing' => FALSE]);
+      $cvterm = (object) chado_insert_cvterm($term, ['update_existing' => FALSE], $this->chado_schema_main);
       // $cvterm = (object) $this->insert_cvterm($term, ['update_existing' => FALSE]);
       $cvterm_match = $cvterm;
     }
@@ -1066,11 +1066,11 @@ class GFF3Importer extends ChadoImporterBase {
           print_r($obj);
           print_r("\n");
         }
-        $debug_db_serial = $chado->query("SELECT currval(pg_get_serial_sequence('" . $chado->getSchemaName() . ".db', 'db_id'));");
-        while($obj = $debug_db_serial->fetchObject()) {
-          print_r($obj);
-          print_r("\n");
-        }
+        // $debug_db_serial = $chado->query("SELECT currval(pg_get_serial_sequence('" . $chado->getSchemaName() . ".db', 'db_id'));");
+        // while($obj = $debug_db_serial->fetchObject()) {
+        //   print_r($obj);
+        //   print_r("\n");
+        // }
         $success = $chado->insert('1:db')
           ->fields($values)
           ->execute();
@@ -1471,6 +1471,7 @@ class GFF3Importer extends ChadoImporterBase {
       if (array_key_exists($uniquename, $this->features)) {
         $findex = $this->features[$uniquename]['findex'];
         $feature = $this->getCachedFeature($findex);
+        print_r($feature);
         $feature_id = $feature['feature_id'];
       }
       else {
@@ -3034,6 +3035,7 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setTotalItems($num_batches);
 
     $init_sql = "INSERT INTO {1:feature_synonym} (synonym_id, feature_id, pub_id) VALUES \n";
+    $sql = "";
     $i = 0;
     $j = 0;
     $total = 0;
@@ -3189,6 +3191,7 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setTotalItems($num_batches);
 
     $init_sql = "INSERT INTO {1:analysisfeature} (feature_id, analysis_id, significance) VALUES \n";
+    $sql = "";
     $i = 0;
     $total = 0;
     $batch_num = 1;
