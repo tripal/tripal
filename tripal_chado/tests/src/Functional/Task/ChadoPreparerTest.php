@@ -46,7 +46,7 @@ class ChadoPreparerTest extends ChadoTestBrowserBase {
     $this->assertTrue($success, 'Task performed.');
 
     // Check that the prepare step created what we expected it to.
-    $this->runPrepareStepAssertions($test_chado);
+    $this->runPrepareStepAssertions($test_chado->getSchemaName());
   }
 
   /**
@@ -58,13 +58,15 @@ class ChadoPreparerTest extends ChadoTestBrowserBase {
    */
   public function testPrepareTestChadoSimulation() {
     $prepared_chado = $this->getTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
-    $this->runPrepareStepAssertions($prepared_chado);
+    $this->runPrepareStepAssertions($prepared_chado->getSchemaName());
   }
 
   /**
    * Helper Method: Check that the prepare step created what we expected it to.
    */
-  protected function runPrepareStepAssertions($chado2check) {
+  protected function runPrepareStepAssertions($chadoSchema2check) {
+    $chado2check = \Drupal::service('tripal_chado.database');
+    $chado2check->setSchemaName($chadoSchema2check);
     $schema2check = $chado2check->schema();
 
     // 1: CREATE CHADO CUSTOM TABLES.
@@ -105,7 +107,7 @@ class ChadoPreparerTest extends ChadoTestBrowserBase {
     ];
     foreach ($expected_counts_by_table as $table_name => $expected_count) {
       $count = $chado2check->query("SELECT count(*) FROM {1:$table_name}")->fetchField();
-      $this->assertEquals($expected_count, $count,
+      $this->assertGreaterThanOrEqual($expected_count, $count,
         "There was not the expected number of records in the $table_name table after preparing.");
     }
 
@@ -122,7 +124,7 @@ class ChadoPreparerTest extends ChadoTestBrowserBase {
     $table_name = 'cv_root_mview';
     $expected_count = 9;
     $count = $chado2check->query("SELECT count(*) FROM {1:$table_name}")->fetchField();
-    $this->assertEquals($expected_count, $count,
+    $this->assertGreaterThanOrEqual($expected_count, $count,
       "There was not the expected number of records in the $table_name table after preparing.");
 
     // 5: POPULATE DB2CV_MVIEW.
@@ -130,7 +132,7 @@ class ChadoPreparerTest extends ChadoTestBrowserBase {
     $table_name = 'db2cv_mview';
     $expected_count = 41;
     $count = $chado2check->query("SELECT count(*) FROM {1:$table_name}")->fetchField();
-    $this->assertEquals($expected_count, $count,
+    $this->assertGreaterThanOrEqual($expected_count, $count,
       "There was not the expected number of records in the $table_name table after preparing.");
 
     // 6: POPULATE CHADO_SEMWEB TABLE.

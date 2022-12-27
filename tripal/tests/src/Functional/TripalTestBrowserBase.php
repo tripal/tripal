@@ -49,7 +49,7 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
    *    - cardinality (integer)
    *    - storage_settings (array)
    */
-  public function createTripalField($entity_type, $values = []) {
+  public function createTripalField(string $entity_type, array $values = []) {
 
     // Setting the default values:
     $random = $this->getRandomGenerator();
@@ -57,7 +57,8 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
     $values['field_type'] = $values['field_type'] ?? 'tripal_string_type';
     $values['term'] = $values['term'] ?? $this->createTripalTerm();
     $values['cardinality'] = $values['cardinality'] ?? 1;
-    $values['storage_settings'] = $values['storage_settings'] ?? [];
+    $values['storage_plugin_settings'] = $values['storage_plugin_settings'] ?? [];
+    $values['is_required'] = $values['is_required'] ?? FALSE;
 
     $term = $values['term'];
 
@@ -68,7 +69,10 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
       'description' => $term->getDefinition(),
       'cardinality' => $values['cardinality'],
       'required' => $values['is_required'],
-      'storage_settings' => $values['storage_settings'],
+      'storage_settings' => [
+        'storage_plugin_id' => 'chado_storage',
+        'storage_plugin_settings' => $values['storage_plugin_settings'],
+      ],
       'settings' => [
         'termIdSpace' => $term->getIdSpace(),
         'termAccession' => $term->getAccession(),
@@ -115,32 +119,46 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
 
     // Setting the default values:
     $random = $this->getRandomGenerator();
-    $values['vocab_name'] = $values['vocab_name'] ?? $random->sentences(4,TRUE); // provides a title with ~4 latin capitalized words.
-    $values['id_space_name'] = $values['id_space_name'] ?? $random->word(4); // provides a 4 character string.
+    // Provides a title with ~4 latin capitalized words.
+    $values['vocab_name'] = $values['vocab_name'] ?? $random->sentences(4, TRUE);
+    // Provides a 4 character string.
+    $values['id_space_name'] = $values['id_space_name'] ?? $random->word(4);
     $values['term'] = $values['term'] ?? array();
-    $values['term']['accession'] = $values['term']['accession'] ?? $random->name(8,TRUE); // provides a unique string with ~8 characters.
-    $values['term']['name'] = $values['term']['name'] ?? $random->sentences(2,TRUE); // provides a title with ~2 latin capitalized words.
-    $values['term']['definition'] = $values['term']['definition'] ?? $random->sentences(20); // provides as collection of sentences with ~20 words.
+    // Provides a unique string with ~8 characters.
+    $values['term']['accession'] = $values['term']['accession'] ?? $random->name(8, TRUE);
+    // Provides a title with ~2 latin capitalized words.
+    $values['term']['name'] = $values['term']['name'] ?? $random->sentences(2, TRUE);
+    // Provides as collection of sentences with ~20 words.
+    $values['term']['definition'] = $values['term']['definition'] ?? $random->sentences(20);
 
     // Create the Vocabulary.
     $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
-    $vocabulary = $vmanager->createCollection($values['vocab_name'], 'chado_vocabulary');
-    $this->assertInstanceOf(TripalVocabularyInterface::class, $vocabulary, "Unable to create the Vocabulary.");
+    $vocabulary = $vmanager->loadCollection($values['vocab_name']);
+    if (!$vocabulary) {
+      $vocabulary = $vmanager->createCollection($values['vocab_name'], 'chado_vocabulary');
+      $this->assertInstanceOf(TripalVocabularyInterface::class, $vocabulary, "Unable to create the Vocabulary.");
+    }
 
     // Create the ID Space.
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    $idSpace = $idsmanager->createCollection($values['id_space_name'], 'chado_id_space');
-    $this->assertInstanceOf(TripalIdSpaceInterface::class, $idSpace, "Unable to create the ID Space.");
+    $idSpace = $idsmanager->loadCollection($values['id_space_name']);
+    if (!$idSpace) {
+      $idSpace = $idsmanager->createCollection($values['id_space_name'], 'chado_id_space');
+      $this->assertInstanceOf(TripalIdSpaceInterface::class, $idSpace, "Unable to create the ID Space.");
+    }
     // Assign the vocabulary as the default for this ID Space.
     $idSpace->setDefaultVocabulary($vocabulary->getName());
 
-    // Now create the term.
-    $values['term']['idSpace'] = $idSpace->getName();
-    $values['term']['vocabulary'] = $vocabulary->getName();
-    $term = new TripalTerm($values['term']);
-    $this->assertInstanceOf(TripalTerm::class, $term, "Unable to create the term object.");
-    // and save it to the ID Space.
-    $idSpace->saveTerm($term);
+    $term = $idSpace->getTerm($values['term']['accession']);
+    if (!$term) {
+      // Now create the term.
+      $values['term']['idSpace'] = $idSpace->getName();
+      $values['term']['vocabulary'] = $vocabulary->getName();
+      $term = new TripalTerm($values['term']);
+      $this->assertInstanceOf(TripalTerm::class, $term, "Unable to create the term object.");
+      // and save it to the ID Space.
+      $idSpace->saveTerm($term);
+    }
 
     return $term;
   }
@@ -167,7 +185,8 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
 
     // Setting the default values:
     $random = $this->getRandomGenerator();
-    $values['title'] = $values['title'] ?? $random->sentences(8,TRUE); // provides a title with ~8 latin capitalized words.
+    // Provides a title with ~8 latin capitalized words.
+    $values['title'] = $values['title'] ?? $random->sentences(8, TRUE);
 
     // Creates a type if one is not provided.
     if (!isset($values['type'])) {
@@ -177,9 +196,6 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
 
     $entity = \Drupal\tripal\Entity\TripalEntity::create($values);
     $this->assertIsObject($entity, "Unable to create a test entity.");
-    $entity->save();
-    $entity_id = $entity->id();
-    $this->assertIsNumeric($entity_id, "Unable to retrieve the ID from our newly created entity.");
 
     return $entity;
   }
@@ -215,10 +231,14 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
     $random = $this->getRandomGenerator();
     $values['id'] = $values['id'] ?? random_int(1,500);
     $values['name'] = $values['name'] ?? 'bio_data_' . $values['id'];
-    $values['label'] = $values['label'] ?? $random->sentences(3,TRUE); // provides a title with ~3 latin capitalized words.
-    $values['termIdSpace'] = $values['termIdSpace'] ?? $random->string(4); // provides a random non-unique 4 character string.
-    $values['termAccession'] = $values['termAccession'] ?? $random->string(10); // provides a random non-unique 10 character string.
-    $values['help_text'] = $values['help_text'] ?? $random->sentences(50); // provides a few of sentences with ~50 words total.
+    // Provides a title with ~3 latin capitalized words.
+    $values['label'] = $values['label'] ?? $random->sentences(3,TRUE);
+    // Provides a random non-unique 4 character string.
+    $values['termIdSpace'] = $values['termIdSpace'] ?? $random->string(4);
+    // Provides a random non-unique 10 character string.
+    $values['termAccession'] = $values['termAccession'] ?? $random->string(10);
+    // Provides a few of sentences with ~50 words total.
+    $values['help_text'] = $values['help_text'] ?? $random->sentences(50);
     $values['category'] = $values['category'] ?? 'Testing Types';
     $values['title_format'] = $values['title_format'] ?? 'This is a title format with no tokens';
     $values['url_format'] = $values['url_format'] ?? '/url/format/with/no/tokens';

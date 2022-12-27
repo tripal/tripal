@@ -683,7 +683,7 @@ EOD;
    *
    * @return array
    *   An associative array where the keys are the table names and values are
-   *   array of porperties such as:
+   *   array of properties such as:
    *   -'name': table name
    *   -'type': one of 'table', 'view', 'partition' and 'materialized view' for
    *     PostgreSQL materialized views.

@@ -62,6 +62,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
 
   use EntityChangedTrait;
 
+
   /**
    * Constructs a new Tripal entity object, without permanently saving it.
    *
@@ -81,7 +82,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    *   - *type: the type of tripal entity this is (e.g. bio_data_1)
    *   - status: whether the entity is published or not (boolean)
    *   - created: the unix timestamp for when this content was created.
-   * @return
+   * @return object
    *  The newly created entity.
    */
   public static function create(array $values = []) {
@@ -148,11 +149,11 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   /**
    * Sets the URL alias for the current entity.
    *
-   * @param $alias
+   * @param string $alias
    *   The alias to use. It can contain tokens the correspond to field values.
    *   Token should be be compatible with those returned by
    *   tripal_get_entity_tokens().
-   * @param $cache
+   * @param array $cache
    *   This array is used to store objects you want to cache for performance
    *   reasons, as well as, cache related options. The following are supported:
    *   - TripalEntityType $bundle
@@ -446,16 +447,31 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Retruns an associative array of property type value for the enitty.
+   *
+   * The array is keyed in the following leveles:
+   * - 1st: Tripal Stroage Plugin ID
+   * - 2nd: Field name
+   * - 3rd: Delta value of the field item.
+   * - 4th: the property key.
+   * - 5th: One of the following keys:
+   *   - 'type': The property type object.
+   *   - 'definition':  the field definition object for the field that this
+   *     property belongs to.
+   *   - 'value': the property value object.
+   *
+   * This function also returns an array of TripalStorage objects.
+   *
+   * @param TripalEntity $entity
+   *
+   * @return array
+   *   The returned array has two elements: an an array of values as described
+   *   above, and an array of TripalStorage objects,
    */
-  public function preSave(EntityStorageInterface $storage) {
-    parent::preSave($storage);
-
-    // Build all storage operations that will be done, saving the tripal
-    // fields that will be saved and clearing them from each entity.
+  public static function getValuesArray($entity) {
     $values = [];
     $tripal_storages = [];
-    $fields = $this->getFields();
+    $fields = $entity->getFields();
 
     // Specifically, for each field...
     foreach ($fields as $field_name => $items) {
@@ -469,21 +485,27 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         $delta = $item->getName();
         $tsid = $item->tripalStorageId();
 
+
         // Create instance of the storage plugin so we can add the properties
         // to it as we go.
-        if (!property_exists($storage, $tsid)) {
+        if (!array_key_exists($tsid, $tripal_storages)) {
           $tripal_storage = \Drupal::service("tripal.storage")->getInstance(['plugin_id' => $tsid]);
           $tripal_storages[$tsid] = $tripal_storage;
         }
 
         // Get the empty property values for this field item and the
-        // property type objects.  Then get the values from the entity
-        // and save them to the properties. Finally clear the values
-        // from the Drupal cache so as not to duplicate records.
-        $prop_values = $item->tripalValuesTemplate();
+        // property type objects.
+        $prop_values = $item->tripalValuesTemplate($item->getFieldDefinition());
         $prop_types = get_class($item)::tripalTypes($item->getFieldDefinition());
-        $item->tripalSave($item, $field_name, $prop_values, $this);
-        $item->tripalClear($item, $field_name, $prop_values, $this);
+
+        // Sets the values from the entity on both the property and in entity.
+        // Despite the function name, no values are saved to the database.
+        $item->tripalSave($item, $field_name, $prop_values, $entity);
+
+        // Clears the values from the entity (does not clear them from the
+        // property).
+        $item->tripalClear($item, $field_name, $prop_values, $entity);
+
 
         // Prepare the properties for the storage plugin.
         foreach ($prop_types as $prop_type) {
@@ -500,46 +522,92 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         }
       }
     }
+    return [$values, $tripal_storages];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function preSave(EntityStorageInterface $storage) {
+    parent::preSave($storage);
+
+    // Create a values array appropriate for `loadValues()`
+    list($values, $tripal_storages) = TripalEntity::getValuesArray($this);
 
     // Save all properties to their respective storage plugins.
     // This is where the biological data is actually saved to the database
     // using the appropriate TripalStorage plugin.
     foreach ($values as $tsid => $tsid_values) {
-      if ($this->isDefaultRevision() and $this->isNewRevision()) {
 
-        // Insert Step 1:  Add the values.
-        $success = $tripal_storages[$tsid]->insertValues($tsid_values);
-        if (!$success) {
-          throw new \Exception("Cannot insert the entity. See the recent logs for more details.");
+      // Do an insert
+      if ($this->isDefaultRevision() and $this->isNewRevision()) {
+        try {
+          $tripal_storages[$tsid]->insertValues($tsid_values);
+        }
+        catch (\Exception $e) {
+          \Drupal::logger('tripal')->notice($e->getMessage());
+          \Drupal::messenger()->addError('Cannot insert this entity. See the recent ' .
+              'logs for more details or contact the site administrator if you ' .
+              'cannot view the logs.');
         }
         $values[$tsid] = $tsid_values;
+      }
 
-        // Insert Step 2: Update the record IDs in the entity.
-        foreach ($fields as $field_name => $items) {
-          foreach($items as $item) {
+      // Do an Update
+      else {
+        try {
+          $tripal_storages[$tsid]->updateValues($tsid_values);
+        }
+        catch (\Exception $e) {
+          \Drupal::logger('tripal')->notice($e->getMessage());
+          \Drupal::messenger()->addError('Cannot update this entity. See the recent ' .
+              'logs for more details or contact the site administrator if you cannot ' .
+              'view the logs.');
+        }
+      }
+    }
 
-            // If it is not a TripalField then skip it.
-            if (! $item instanceof TripalFieldItemInterface) {
+    // Set the property values that should be cached.
+    $delta_remove = [];
+    $fields = $this->getFields();
+    foreach ($fields as $field_name => $items) {
+      foreach($items as $item) {
+
+        // If it is not a TripalField then skip it.
+        if (!($item instanceof TripalFieldItemInterface)) {
+          continue;
+        }
+        
+        $delta = $item->getName();
+        $tsid = $item->tripalStorageId();
+        
+        // Load into the entity the field properties that are to be cached.        
+        $load_props = [];
+        foreach ($values[$tsid][$field_name][$delta] as $prop_info) {
+          $property_settings = $prop_info['type']->getStorageSettings();
+          if (array_key_exists('cache', $property_settings) and
+              $property_settings['cache'] == TRUE) {
+            $load_props[] = $prop_info['value'];
+          }
+        }
+        if (count($load_props) > 0) {
+          $item->tripalLoad($item, $field_name, $load_props, $this);
+  
+          // Delete cached elements that have no value.        
+          foreach ($load_props as $prop) {
+            if (!$prop->getValue()) {
+              $delta_remove[$field_name][] = $delta;
               continue;
             }
-
-            $delta = $item->getName();
-            $tsid = $item->tripalStorageId();
-
-            if (!array_key_exists('record_id', $values[$tsid][$field_name][$delta])) {
-              continue;
-            }
-            $properties = [];
-            $properties[] = $values[$tsid][$field_name][$delta]['record_id']['value'];
-            $item->tripalLoad($item, $field_name, $properties, $this);
           }
         }
       }
-      else {
-        $success = $tripal_storages[$tsid]->updateValues($tsid_values);
-        if (!$success) {
-          throw new \Exception("Cannot update the entity. See the recent logs for more details.");
-        }
+    }
+
+    // Now remove any values that shouldn't be there.
+    foreach ($delta_remove as $field_name => $deltas) {
+      foreach (array_reverse($deltas) as $delta) {
+        $this->get($field_name)->removeItem($delta);
       }
     }
   }
@@ -557,70 +625,30 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     // Iterate through the entities provided.
     foreach ($entities as $entity) {
       $bundle = $entity->bundle();
-      $tripal_storages = [];
-      $values = [];
 
-      // Step 1:  Create a values array appropriate for `loadValues()`
-      // Get the bundle fields and iterate through them.
-      $field_defs = $field_manager->getFieldDefinitions($entity_type_id, $bundle);
-      foreach ($field_defs as $field_name => $field_def) {
+      // Create a values array appropriate for `loadValues()`
+      list($values, $tripal_storages) = TripalEntity::getValuesArray($entity);
 
-        // Createa  fieldItemlist and iterate through it.
-        $items = $field_type_manager->createFieldItemList($entity, $field_name, $entity->get($field_name)->getValue());
-        foreach($items as $item) {
 
-          // If it is not a TripalField then skip it.
-          if (! $item instanceof TripalFieldItemInterface) {
-            continue;
-          }
-
-          $delta = $item->getName();
-          $tsid = $item->tripalStorageId();
-
-          // Create instance of the storage plugin so we can add the properties
-          // to it as we go.
-          if (!property_exists($storage, $tsid)) {
-            $tripal_storage = \Drupal::service("tripal.storage")->getInstance(['plugin_id' => $tsid]);
-            $tripal_storages[$tsid] = $tripal_storage;
-          }
-
-          // Get the empty property values for this field item and the
-          // property type objects.
-          $prop_values = $item->tripalValuesTemplate();
-          $prop_types = get_class($item)::tripalTypes($item->getFieldDefinition());
-          $item->tripalSave($item, $field_name, $prop_values, $entity);
-          foreach ($prop_types as $prop_type) {
-            $key = $prop_type->getKey();
-            $values[$tsid][$field_name][$delta][$key] = [
-              'definition' => $item->getFieldDefinition(),
-              'type' => $prop_type
-            ];
-            $tripal_storages[$tsid]->addTypes($prop_type);
-          }
-          foreach ($prop_values as $prop_value) {
-            $key = $prop_value->getKey();
-            $values[$tsid][$field_name][$delta][$key]['value'] = $prop_value;
-          }
-        }
-      }
-
-      // Step 2: Load the values from the field data store.
-      // Iterate through the storage plugins.
+      // Call the loadValues() function for each storage type.
       $load_success = False;
       foreach ($values as $tsid => $tsid_values) {
-        $load_success = $tripal_storages[$tsid]->loadValues($tsid_values);
-        if ($load_success) {
-          $values[$tsid] = $tsid_values;
+        try {
+          $load_success = $tripal_storages[$tsid]->loadValues($tsid_values);
+          if ($load_success) {
+            $values[$tsid] = $tsid_values;
+          }
+        }
+        catch (\Exception $e) {
+          \Drupal::logger('tripal')->notice($e->getMessage());
+          \Drupal::messenger()->addError('Cannot load the entity. See the recent ' .
+              'logs for more details or contact the site administrator if you cannot ' .
+              'view the logs.');
         }
       }
 
-      if (!$load_success) {
-        \Drupal::messenger()->addError('Trouble loading the entity. See the recent logs for details.');
-        continue;
-      }
-
-      // Step 3: Update the entity values to match what was returned.
-      // Iterate through the field definitinos again.
+      // Update the entity values with the values returned by loadValues().
+      $field_defs = $field_manager->getFieldDefinitions($entity_type_id, $bundle);
       foreach ($field_defs as $field_name => $field_def) {
 
         // Createa  fieldItemlist and iterate through it.
@@ -645,5 +673,27 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         }
       }
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validate() {
+    // Let the parent class do it's validations and return the violoations list.
+    $violations = parent::validate();
+
+    // Create a values array appropriate for `loadValues()`
+    list($values, $tripal_storages) = TripalEntity::getValuesArray($this);
+
+    // Iterate through the different Tripal Storage objects and run the
+    // validateVales() function for the values that belong to it.
+    foreach ($values as $tsid => $tsid_values) {
+      $problems = $tripal_storages[$tsid]->validateValues($tsid_values);
+      foreach ($problems as $violation) {
+        $violations->add($violation);
+      }
+    }
+
+    return $violations;
   }
 }

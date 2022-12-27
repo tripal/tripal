@@ -1,27 +1,28 @@
 <?php
 
-namespace Drupal\tripal\Plugin\Field\FieldType;
+namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal\TripalField\TripalFieldItemBase;
-use Drupal\tripal\TripalStorage\IntStoragePropertyType;
+use Drupal\tripal\TripalStorage\TextStoragePropertyType;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\core\Form\FormStateInterface;
 use Drupal\core\Field\FieldDefinitionInterface;
+use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 
 /**
- * Plugin implementation of the 'integer' field type.
+ * Plugin implementation of the 'text' field type for Chado.
  *
  * @FieldType(
- *   id = "tripal_integer_type",
- *   label = @Translation("Tripal Integer Field Type"),
- *   description = @Translation("An integer field."),
- *   default_widget = "default_tripal_integer_type_widget",
- *   default_formatter = "default_tripal_integer_type_formatter"
+ *   id = "chado_text_type",
+ *   label = @Translation("Chado Text Field Type"),
+ *   description = @Translation("A text field."),
+ *   default_widget = "chado_text_type_widget",
+ *   default_formatter = "chado_text_type_formatter"
  * )
  */
-class TripalIntegerTypeItem extends TripalFieldItemBase {
+class ChadoTextTypeItem extends ChadoFieldItemBase {
 
-  public static $id = "tripal_integer_type";
+  public static $id = "chado_text_type";
 
   /**
    * {@inheritdoc}
@@ -31,7 +32,7 @@ class TripalIntegerTypeItem extends TripalFieldItemBase {
     $settings = $field_definition->getSetting('storage_plugin_settings');
     $value_settings = $settings['property_settings']['value'];
     $types = [
-      new IntStoragePropertyType($entity_type_id, self::$id, "value", $value_settings),
+      new TextStoragePropertyType($entity_type_id, self::$id, "value", $value_settings),
     ];
     $default_types = TripalFieldItemBase::defaultTripalTypes($entity_type_id, self::$id);
     $types = array_merge($types, $default_types);

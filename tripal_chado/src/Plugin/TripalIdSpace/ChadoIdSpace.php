@@ -1007,6 +1007,23 @@ class ChadoIdSpace extends TripalIdSpaceBase {
     if ($cache = \Drupal::cache()->get($cid)) {
       $default_vocab = $cache->data;
     }
+    else {
+      // If we couldn't find the cached vocabulary name then
+      // we should do a lookup. The cache must have been cleared.
+      // We'll pick the first entered cv record as the default.
+      $chado = \Drupal::service('tripal_chado.database');
+      $query = $chado->select('1:db2cv_mview', 'D2C');
+      $query->fields('D2C', ['cvname']);
+      $query->condition('dbname', $this->getName());
+      $query->orderBy('cv_id');
+      $results = $query->execute();
+      $result = $results->fetchObject();
+      if ($result) {
+        $default_vocab = $result->cvname;
+        $this->setDefaultVocabCache($default_vocab);
+      }
+    }
+
     return $default_vocab;
   }
 

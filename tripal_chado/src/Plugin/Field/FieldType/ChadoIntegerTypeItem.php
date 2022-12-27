@@ -1,27 +1,29 @@
 <?php
 
-namespace Drupal\tripal\Plugin\Field\FieldType;
+namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\tripal\TripalStorage\IntStoragePropertyType;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\core\Form\FormStateInterface;
 use Drupal\core\Field\FieldDefinitionInterface;
+use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 
 /**
- * Plugin implementation of the 'integer' field type.
+ * Plugin implementation of the 'integer' field type for Chado.
  *
  * @FieldType(
- *   id = "tripal_integer_type",
- *   label = @Translation("Tripal Integer Field Type"),
+ *   id = "chado_integer_type",
+ *   label = @Translation("Chado Integer Field Type"),
  *   description = @Translation("An integer field."),
- *   default_widget = "default_tripal_integer_type_widget",
- *   default_formatter = "default_tripal_integer_type_formatter"
+ *   default_widget = "chado_integer_type_widget",
+ *   default_formatter = "chado_integer_type_formatter"
  * )
  */
-class TripalIntegerTypeItem extends TripalFieldItemBase {
+class ChadoIntegerTypeItem extends ChadoFieldItemBase {
 
-  public static $id = "tripal_integer_type";
+  public static $id = "chado_integer_type";
+
 
   /**
    * {@inheritdoc}
@@ -52,4 +54,5 @@ class TripalIntegerTypeItem extends TripalFieldItemBase {
     $values = array_merge($values, $default_values);
     return $values;
   }
+
 }
