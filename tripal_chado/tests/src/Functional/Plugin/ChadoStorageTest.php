@@ -90,40 +90,56 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $chado_column = 'name';
     $cardinality = 1;
     $is_required = TRUE;
-    $propsettings = [
-      'action' => 'store',
-      'chado_table' => $chado_table,
-      'chado_column' => $chado_column,
-    ];
     $storage_settings = [
       'storage_plugin_id' => 'chado_storage',
       'storage_plugin_settings' => [
         'base_table' => $chado_table,
-        'property_settings' => [
-          'value' => $propsettings,
-        ],
       ],
     ];
 
     // Testing the Property Type + Value class creation
     // + prepping for future tests.
     // NOTE: You need to set the value = feature_id when creating the record_id StoragePropertyValue.
-    $recordId_propertyType = new ChadoIntStoragePropertyType($content_type, $field_name, 'record_id', $propsettings);
-    $recordId_propertyValue = new StoragePropertyValue($content_type, $field_name, 'record_id', $content_entity_id, $feature_id);
-    $value_propertyType = new ChadoVarCharStoragePropertyType($content_type, $field_name, 'value', 255, $propsettings);
-    $value_propertyValue = new StoragePropertyValue($content_type, $field_name, 'value', $content_entity_id);
-    $this->assertIsObject($recordId_propertyType, "Unable to create record_id ChadoIntStoragePropertyType: $field_name, record_id");
-    $this->assertIsObject($recordId_propertyValue, "Unable to create record_id StoragePropertyValue: $field_name, record_id, $content_entity_id");
-    $this->assertIsObject($value_propertyType, "Unable to create value ChadoIntStoragePropertyType: $field_name, value");
-    $this->assertIsObject($value_propertyValue, "Unable to create value StoragePropertyValue: $field_name, value, $content_entity_id");
+    $propertyTypes = [
+      'feature_id' => new ChadoIntStoragePropertyType($content_type, $field_name, 'feature_id',[
+        'action' => 'store_id',
+        'drupal_store' => TRUE,
+        'chado_table' => $chado_table,
+        'chado_column' => $chado_column,
+      ]),
+      'name' => new ChadoVarCharStoragePropertyType($content_type, $field_name, 'name', 255, [
+        'action' => 'store',
+        'chado_table' => $chado_table,
+        'chado_column' => $chado_column,
+      ]),
+    ];
+    $propertyValues = [
+      'feature_id' => new StoragePropertyValue(
+        $content_type,
+        $field_name,
+        'feature_id',
+        $content_entity_id,
+        $feature_id
+      ),
+      'name' => new StoragePropertyValue(
+        $content_type,
+        $field_name,
+        'feature_id',
+        $content_entity_id,
+      ),
+    ];
+    $this->assertIsObject($propertyTypes['feature_id'], "Unable to create feature_id ChadoIntStoragePropertyType: $field_name, record_id");
+    $this->assertIsObject($propertyValues['feature_id'], "Unable to create feature_id StoragePropertyValue: $field_name, record_id, $content_entity_id");
+    $this->assertIsObject($propertyTypes['name'], "Unable to create feature.name ChadoIntStoragePropertyType: $field_name, value");
+    $this->assertIsObject($propertyValues['name'], "Unable to create feature.name StoragePropertyValue: $field_name, value, $content_entity_id");
 
     // Make sure the values start empty.
-    $this->assertEquals($feature_id, $recordId_propertyValue->getValue(), "The $field_name record_id property should be the feature_id.");
-    $this->assertTrue(empty($value_propertyValue->getValue()), "The $field_name value property should not have a value.");
+    $this->assertEquals($feature_id, $propertyValues['feature_id']->getValue(), "The $field_name feature_id property should already be set.");
+    $this->assertTrue(empty($propertyValues['name']->getValue()), "The $field_name feature.name property should not have a value.");
 
     // Now test ChadoStorage->addTypes()
     // param array $types = Array of \Drupal\tripal\TripalStorage\StoragePropertyTypeBase objects.
-    $chado_storage->addTypes([$recordId_propertyType, $value_propertyType]);
+    $chado_storage->addTypes($propertyTypes);
     $retrieved_types = $chado_storage->getTypes();
     $this->assertIsArray($retrieved_types, "Unable to retrieve the PropertyTypes after adding $field_name.");
     $this->assertCount(2, $retrieved_types, "Did not revieve the expected number of PropertyTypes after adding $field_name.");
@@ -136,14 +152,14 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     // Next we actually load the values.
     $values[$field_name] = [
       0 => [
-        'value'=> [
-          'value' => $value_propertyValue,
-          'type' => $value_propertyType,
+        'name'=> [
+          'value' => $propertyValues['name'],
+          'type' => $propertyTypes['name'],
           'definition' => $fieldconfig,
         ],
-        'record_id' => [
-          'value' => $recordId_propertyValue,
-          'type' => $recordId_propertyType,
+        'feature_id' => [
+          'value' => $propertyValues['feature_id'],
+          'type' => $propertyTypes['feature_id'],
           'definition' => $fieldconfig,
         ],
       ],
@@ -152,7 +168,8 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $this->assertTrue($success, "Loading values after adding $field_name was not success (i.e. did not return TRUE).");
 
     // Then we test that the values are now in the types that we passed in.
-    $this->assertEquals('test_gene_name', $values['schema__name'][0]['value']['value']->getValue(), 'The gene name value was not loaded properly.');
+    //print_r($values['schema__name'][0]);
+    $this->assertEquals('test_gene_name', $values['schema__name'][0]['name']['value']->getValue(), 'The gene name value was not loaded properly.');
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // -- Multi-value single property field
@@ -321,7 +338,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
 
     // Then we test that the values are now in the types that we passed in.
     // All fields should have been loaded, not just our organism one.
-    $this->assertEquals('test_gene_name', $values['schema__name'][0]['value']['value']->getValue(), 'The gene name value was not loaded properly.');
+    $this->assertEquals('test_gene_name', $values['schema__name'][0]['name']['value']->getValue(), 'The gene name value was not loaded properly.');
     // Now test the organism values were loaded as expected.
     // Value: genus: Oryza, species: sativa, common_name: rice,
     //   abbreviation: O.sativa, infraspecific_name: Japonica,
