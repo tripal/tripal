@@ -27,7 +27,7 @@ class ChadoPreparerTest extends ChadoTestBrowserBase {
    */
   public function testChadoPreparer() {
 
-    $test_chado = $this->chado;
+    $test_chado = $this->createTestSchema(ChadoTestBrowserBase::INIT_CHADO_EMPTY);
 
     // Sanity check: make sure we have the necessary tables.
     $public = \Drupal::database();

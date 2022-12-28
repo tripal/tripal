@@ -30,7 +30,7 @@ class OBOImporterTest extends ChadoTestBrowserBase {
     );
 
     $public = \Drupal::database();
-    $test_chado = $this->chado;
+    $test_chado = $this->createTestSchema(ChadoTestBrowserBase::INIT_CHADO_EMPTY);
 
     // Insert a record into the tripal_cv_obo table for a vocabulary to load.
     $insert = $public->insert('tripal_cv_obo');
