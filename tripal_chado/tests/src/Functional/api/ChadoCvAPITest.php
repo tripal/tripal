@@ -30,9 +30,10 @@ class ChadoCvAPITest extends ChadoTestBrowserBase {
 
     parent::setUp();
 
-    $this->assertIsObject($this->chado, "Chado test schema was not set-up properly.");
+    $chado = $this->createTestSchema(ChadoTestBrowserBase::INIT_CHADO_EMPTY);
+    $this->assertIsObject($chado, "Chado test schema was not set-up properly.");
 
-    $schema_name = $this->chado->getSchemaName();
+    $schema_name = $chado->getSchemaName();
     $this->assertNotEmpty($schema_name, "We were not able to retrieve the schema name.");
 
     $this->schema_name = $schema_name;

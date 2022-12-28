@@ -30,6 +30,11 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
    *
    */
   public function testChadoStorage() {
+
+    // Create a new test schema for us to use.
+    $this->createTestSchema(ChadoTestBrowserBase::INIT_CHADO_EMPTY);
+
+    // Get plugin managers we need for our testing.
     $storage_manager = \Drupal::service('tripal.storage');
     $chado_storage = $storage_manager->createInstance('chado_storage');
 
@@ -376,7 +381,10 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
    */
   protected function addOryzaSativaRecord($type_term) {
 
-    $this->chado->insert('1:organism')
+    // Retrieve the test schema created in testChadoStorage().
+    $chado = $this->getTestSchema();
+
+    $chado->insert('1:organism')
       ->fields([
         'genus' => 'Oryza',
         'species' => 'sativa',
@@ -388,7 +396,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
       ])
       ->execute();
 
-    return $this->chado->select('1:organism', 'O')
+    return $chado->select('1:organism', 'O')
       ->fields('O')
       ->condition('species', 'sativa')
       ->execute()
@@ -420,7 +428,10 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
    */
   protected function addFeatureRecord($name, $uniquename, $type, $organism) {
 
-    $this->chado->insert('1:feature')
+    // Retrieve the test schema created in testChadoStorage().
+    $chado = $this->getTestSchema();
+
+    $chado->insert('1:feature')
       ->fields([
         'name' => $name,
         'uniquename' => $uniquename,
@@ -429,7 +440,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
       ])
       ->execute();
 
-    return $this->chado->select('1:feature', 'F')
+    return $chado->select('1:feature', 'F')
       ->fields('F')
       ->condition('name', $name)
       ->execute()
@@ -440,7 +451,11 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
    * A helper function for adding notes values to the featureprop table.
    */
   protected function addFeaturePropRecords($feature, $term, $value, $rank) {
-    $this->chado->insert('1:featureprop')
+
+    // Retrieve the test schema created in testChadoStorage().
+    $chado = $this->getTestSchema();
+
+    $chado->insert('1:featureprop')
       ->fields([
         'feature_id' => $feature->feature_id,
         'type_id' => $term->getInternalId(),
