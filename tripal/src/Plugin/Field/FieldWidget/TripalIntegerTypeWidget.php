@@ -31,6 +31,6 @@ class TripalIntegerTypeWidget extends TripalWidgetBase {
       '#placeholder' => $this->getSetting('placeholder'),
       '#attributes' => ['class' => ['js-text-full', 'text-full']],
     ];
-    return $element + parent::formElement($items, $delta, $element, $form, $form_state);
+    return $element;
   }
 }

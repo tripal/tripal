@@ -32,6 +32,6 @@ class TripalStringTypeWidget extends TripalWidgetBase {
       '#maxlength' => $this->getFieldSetting('max_length'),
       '#attributes' => ['class' => ['js-text-full', 'text-full']],
     ];
-    return $element + parent::formElement($items, $delta, $element, $form, $form_state);
+    return $element;
   }
 }

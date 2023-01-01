@@ -1056,7 +1056,7 @@ class ChadoPreparer extends ChadoTaskBase {
       $entityType = TripalEntityType::create($details);
       if (is_object($entityType)) {
         $entityType->save();
-        $this->logger->notice(t('Content type, "@type", created..',
+        $this->logger->notice(t('Content type, "@type", created.',
             ['@type' => $details['label']]));
         $bundle = $entityType->getName();
       }
@@ -1213,13 +1213,7 @@ class ChadoPreparer extends ChadoTaskBase {
             'storage_plugin_id' => 'chado_storage',
             'storage_plugin_settings' => [
               'base_table' => $chado_table,
-              'property_settings' => [
-                'value' => [
-                  'action' => 'store',
-                  'chado_table' => $chado_table,
-                  'chado_column' => $column,
-                ]
-              ],
+              'base_column' => $column,
             ],
           ],
           'settings' => [
@@ -1273,6 +1267,7 @@ class ChadoPreparer extends ChadoTaskBase {
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
     $schema_def = $schema->getTableDef($chado_table, ['format' => 'Drupal']);
+    $pkey_col = $schema_def['primary key'];
 
     // Get the term to table mapping information for the core chado mapping.
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
@@ -1331,13 +1326,6 @@ class ChadoPreparer extends ChadoTaskBase {
         'storage_plugin_id' => 'chado_storage',
         'storage_plugin_settings' => [
           'base_table' => $chado_table,
-          'property_settings' => [
-            'value' => [
-              'action' => 'store',
-              'chado_table' => $chado_table,
-              'chado_column' => $org_id_col,
-            ],
-          ],
         ],
       ],
       'settings' => [
@@ -1450,19 +1438,14 @@ class ChadoPreparer extends ChadoTaskBase {
         'storage_plugin_id' => 'chado_storage',
         'storage_plugin_settings' => [
           'base_table' => $base_table,
-          'property_settings' => [
-            'value' => [
-              'action' => 'store',
-              'chado_table' => $chado_table,
-              'chado_column' => $chado_field,
-              'fixed_value' => $fixed_value
-            ],
-          ],
+          'type_table' => $chado_table,
+          'type_column' => $chado_field,
         ],
       ],
       'settings' => [
         'termIdSpace' => $field_term->getIdSpace(),
         'termAccession' => $field_term->getAccession(),
+        'fixed_value' => $fixed_value
       ],
       'display' => [
         'view' => [

@@ -5,6 +5,7 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 use Drupal\tripal\TripalField\TripalFormatterBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
  * Plugin implementation of default Tripal string type formatter.
@@ -18,7 +19,7 @@ use Drupal\Core\Form\FormStateInterface;
  *   }
  * )
  */
-class schema__additional_type_formatter extends TripalFormatterBase {
+class schema__additional_type_formatter extends ChadoFormatterBase {
 
   /**
    * {@inheritDoc}
@@ -28,7 +29,7 @@ class schema__additional_type_formatter extends TripalFormatterBase {
 
     foreach($items as $delta => $item) {
       $elements[$delta] = [
-        "#markup" => $item->get('schema_name')->getString()
+        "#markup" => $item->get('term_name')->getString()
       ];
     }
 

@@ -5,6 +5,7 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
@@ -24,7 +25,39 @@ use Drupal\core\Field\FieldDefinitionInterface;
  */
 class schema__additional_type extends ChadoFieldItemBase {
 
-  public static $id = "schema__additional_type"; 
+  public static $id = "schema__additional_type";
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function mainPropertyName() {
+    return 'term_name';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultFieldSettings() {
+    $settings = parent::defaultFieldSettings();
+    // If a fixed value is set, then the field will will always use the
+    // same value and the user will not be allowed the change it using the
+    // widget.  This is necessary content types that correspond to Chado
+    // tables with a type_id that should always match the content type (e.g.
+    // gene).
+    $settings['fixed_value'] = FALSE;
+    return $settings;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultStorageSettings() {
+    $settings = parent::defaultStorageSettings();
+    $settings['storage_plugin_settings']['type_table'] = '';
+    $settings['storage_plugin_settings']['type_column'] = '';
+    return $settings;
+  }
 
   /**
    * {@inheritdoc}
@@ -34,103 +67,87 @@ class schema__additional_type extends ChadoFieldItemBase {
 
     // Get the Chado table and column this field maps to.
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
-    $base_table = $storage_settings['base_table'];     
-    $property_settings = $storage_settings['property_settings'];
-    $chado_table = $property_settings['value']['chado_table'];
-    $chado_column = $property_settings['value']['chado_column'];
+    $base_table = $storage_settings['base_table'];
+    $type_table = $storage_settings['type_table'];
+    $type_column = $storage_settings['type_column'];
 
-    // If we don't have a base table then we're not ready to specify the
-    // properties for this field.
-    if (!$base_table) {
-      return TripalFieldItemBase::defaultTripalTypes($entity_type_id, self::$id);
+    // Get the the connecting information about the base table and the
+    // the table where the type is stored.  If the base table has a `type_id`
+    // column then the base table and the type table are the same. If the
+    // we are using a prop table to store the type_id then the type table and
+    // base table will be different.
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+    $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+    $base_pkey_col = $base_table_def['primary key'];
+
+    $properties = [];
+
+    // Always store the record id of the base record that this field is
+    // associated with in Chado.
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', [
+      'action' => 'store_id',
+      'drupal_store' => TRUE,
+      'chado_table' => $base_table,
+      'chado_column' => $base_pkey_col
+    ]);
+
+    // If the type table and the base table are not the same then we are
+    // storing the type in a prop table and we need the pkey for the prop
+    // table, the fkey linking to the base table, and we'll set a value
+    // of the type name.
+    if ($type_table != $base_table) {
+      $type_table_def = $schema->getTableDef($type_table, ['format' => 'Drupal']);
+      $type_pkey_col = $type_table_def['primary key'];
+      $type_fkey_col = array_keys($type_table_def['foreign keys'][$base_table]['columns'])[0];
+
+      $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'prop_id', [
+        'action' => 'store_pkey',
+        'drupal_store' => TRUE,
+        'chado_table' => $type_table,
+        'chado_column' => $type_pkey_col,
+      ]);
+      $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link_id', [
+        'action' => 'store_link',
+        'chado_table' => $type_table,
+        'chado_column' => $type_fkey_col,
+      ]);
+      $properties[] =  new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'value', [
+        'action' => 'store',
+        'chado_table' => $type_table,
+        'chado_column' => 'value',
+      ]);
     }
 
-    // Indicate the action to perform for each property.
-    $value_settings = $property_settings['value'];
-    $idspace_settings = [
+    // We need to store the numeric cvterm ID for this field.
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'type_id', [
+      'action' => 'store',
+      'chado_table' => $type_table,
+      'chado_column' => $type_column,
+      'empty_value' => 0
+    ]);
+    // This fields needs the term name, idspace and accessession for proper
+    // display of the type.
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'term_name', 128, [
       'action' => 'join',
-      'path' => $chado_table . '.' . $chado_column . '>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id',
-      'chado_column' => 'name',
-      'as' => 'idSpace'
-    ];
-    $accession_settings = [
-      'action' => 'join',
-      'path' => $chado_table. '.' . $chado_column . '>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id',
-      'chado_column' => 'accession',
-      'as' => 'accession'
-    ];
-    $name_settings = [
-      'action' => 'join',
-      'path' => $chado_table . '.' . $chado_column . '>cvterm.cvterm_id',
+      'path' => $type_table . '.' . $type_column . '>cvterm.cvterm_id',
       'chado_column' => 'name',
       'as' => 'term_name'
-    ];
-    
-    $value = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'value', $value_settings);
-    $name = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'schema_name', 128, $name_settings);
-    $idSpace = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'NCIT_C42699', 128, $idspace_settings);
-    $accession = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'data_2091', 128, $accession_settings);    
-    $types = [$value, $name, $idSpace, $accession];
-    
-    // If the chado table is not the same as the base table then we are storing the type
-    // in a property table.  We need to set the FK column of the prop table.
-    if ($chado_table != $base_table) {
-      $chado = \Drupal::service('tripal_chado.database');
-      $schema = $chado->schema();
-      $schema_def = $schema->getTableDef($chado_table, ['format' => 'Drupal']);
-      $pk_field = $schema_def['primary key'];
-      $fk_field = array_keys($schema_def['foreign keys'][$base_table]['columns'])[0];
-      $link_settings = [
-        'cache' => TRUE,
-        'action' => 'link',
-        'chado_table' => $chado_table,
-        'chado_column' => $pk_field,
-        'link_column' => $fk_field,
-      ];
-      $link = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', $link_settings);
-      $types[] = $link;
-    }
-        
-    // Return the list of property types.
-    $default_types = ChadoFieldItemBase::defaultTripalTypes($entity_type_id, self::$id);
-    $types = array_merge($types, $default_types);    
-    return $types;
-  }
+    ]);
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'id_space', 128, [
+      'action' => 'join',
+      'path' => $type_table . '.' . $type_column . '>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id',
+      'chado_column' => 'name',
+      'as' => 'idSpace'
+    ]);
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'accession', 128, [
+      'action' => 'join',
+      'path' => $type_table. '.' . $type_column . '>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id',
+      'chado_column' => 'accession',
+      'as' => 'accession'
+    ]);
 
-  /**
-   * {@inheritdoc}
-   */
-  public function tripalValuesTemplate($field_definition) {
-    $entity = $this->getEntity();
-    $entity_type_id = $entity->getEntityTypeId();
-    $entity_id = $entity->id();
-    
-    // Get the Chado table and column this field maps to.
-    $storage_settings = $field_definition->getSetting('storage_plugin_settings');
-    $base_table = $storage_settings['base_table'];
-    $property_settings = $storage_settings['property_settings'];
-    $chado_table = $property_settings['value']['chado_table'];
-    $chado_column = $property_settings['value']['chado_column'];
-    
-    // If we don't have a base table then we're not ready to specify the
-    // properties for this field.
-    if (!$base_table) {
-      return TripalFieldItemBase::defaultTripalTypes($entity_type_id, self::$id);
-    }
-
-    // Build the values array.
-    $values = [
-      new StoragePropertyValue($entity_type_id, self::$id, 'value', $entity_id),
-      new StoragePropertyValue($entity_type_id, self::$id, 'schema_name', $entity_id),
-      new StoragePropertyValue($entity_type_id, self::$id, 'NCIT_C42699', $entity_id),
-      new StoragePropertyValue($entity_type_id, self::$id, 'data_2091', $entity_id),
-    ];
-    if ($chado_table != $base_table) {
-      $values[] = new StoragePropertyValue($entity_type_id, self::$id, 'linker_id', $entity_id);
-    }
-    $default_values = ChadoFieldItemBase::defaultTripalValuesTemplate($entity_type_id, self::$id, $entity_id);
-    $values = array_merge($values, $default_values);
-    return $values;
+    return $properties;
   }
 
   /**

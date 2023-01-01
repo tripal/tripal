@@ -6,6 +6,7 @@ use Drupal\tripal\TripalField\TripalFormatterBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
+use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
  * Plugin implementation of default Tripal string type formatter.
@@ -19,7 +20,7 @@ use Drupal\Core\Link;
  *   }
  * )
  */
-class chado_linker__prop_formatter extends TripalFormatterBase {
+class chado_linker__prop_formatter extends ChadoFormatterBase {
 
   /**
    * {@inheritdoc}

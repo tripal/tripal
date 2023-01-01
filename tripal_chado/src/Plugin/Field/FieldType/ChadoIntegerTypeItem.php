@@ -8,6 +8,8 @@ use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\core\Form\FormStateInterface;
 use Drupal\core\Field\FieldDefinitionInterface;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
+use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
+
 
 /**
  * Plugin implementation of the 'integer' field type for Chado.
@@ -24,6 +26,14 @@ class ChadoIntegerTypeItem extends ChadoFieldItemBase {
 
   public static $id = "chado_integer_type";
 
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultStorageSettings() {
+    $settings = parent::defaultStorageSettings();
+    $settings['storage_plugin_settings']['base_column'] = '';
+    return $settings;
+  }
 
   /**
    * {@inheritdoc}
@@ -31,28 +41,29 @@ class ChadoIntegerTypeItem extends ChadoFieldItemBase {
   public static function tripalTypes($field_definition) {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
     $settings = $field_definition->getSetting('storage_plugin_settings');
-    $value_settings = $settings['property_settings']['value'];
-    $types = [
-      new IntStoragePropertyType($entity_type_id, self::$id, "value", $value_settings),
-    ];
-    $default_types = TripalFieldItemBase::defaultTripalTypes($entity_type_id, self::$id);
-    $types = array_merge($types, $default_types);
-    return $types;
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function tripalValuesTemplate($field_definition) {
-    $entity = $this->getEntity();
-    $entity_type_id = $entity->getEntityTypeId();
-    $entity_id = $entity->id();
-    $values = [
-      new StoragePropertyValue($entity_type_id, self::$id, "value", $entity_id),
-    ];
-    $default_values = TripalFieldItemBase::defaultTripalValuesTemplate($entity_type_id, self::$id, $entity_id);
-    $values = array_merge($values, $default_values);
-    return $values;
-  }
+    $base_table = $settings['base_table'];
+    $base_column = $settings['base_column'];
 
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+
+    // Get the base table columns needed for this field.
+    $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+    $base_pkey_col = $base_schema_def['primary key'];
+
+    return [
+      new ChadoIntStoragePropertyType($entity_type_id, self::$id,'record_id', [
+        'action' => 'store_id',
+        'drupal_store' => TRUE,
+        'chado_table' => $base_table,
+        'chado_column' => $base_pkey_col
+      ]),
+      new ChadoIntStoragePropertyType($entity_type_id, self::$id, "value", [
+        'action' => 'store',
+        'chado_table' => $base_table,
+        'chado_column' => $base_column,
+      ]),
+    ];
+  }
 }
