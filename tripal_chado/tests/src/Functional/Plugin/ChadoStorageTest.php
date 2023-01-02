@@ -84,8 +84,6 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     // Value: test_gene_name
     $field_name  = 'schema__name';
     $field_label = 'Gene Name';
-    $field_type = 'tripal_string_type';
-    $field_term_string = 'schema:name';
     $chado_table = 'feature';
     $chado_column = 'name';
     $storage_settings = [
@@ -95,8 +93,10 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
       ],
     ];
 
+
     // Testing the Property Type + Value class creation
     // + prepping for future tests.
+    $this->addFieldPropertyCVterms();
     $propertyTypes = [
       'feature_id' => new ChadoIntStoragePropertyType($content_type, $field_name, 'feature_id', 'SIO:000729', [
         'action' => 'store_id',
@@ -553,6 +553,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     // First add the vocabulary term for the organism.type_id column.
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
     $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
+
     $sequence = $idsmanager->createCollection('SO', 'chado_id_space');
     $vmanager->createCollection('sequence', 'chado_vocabulary');
     $gene = new TripalTerm([
@@ -562,6 +563,89 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
       'accession' => '0000704)',
     ]);
     $sequence->saveTerm($gene);
+
+  }
+
+  /**
+   * A helper function for adding the CVterms needed for field properties.
+   */
+  protected function addFieldPropertyCVterms() {
+
+    // Create the terms that are needed for this field.
+    $this->createTripalTerm([
+      'vocab_name' => 'taxonomic_rank',
+      'id_space_name' => 'TAXRANK',
+      'term' => [
+        'name' => 'genus',
+        'definition' => '',
+        'accession' =>'0000005',
+      ],
+    ]);
+    $this->createTripalTerm([
+      'vocab_name' => 'taxonomic_rank',
+      'id_space_name' => 'TAXRANK',
+      'term' => [
+        'name' => 'species',
+        'definition' => '',
+        'accession' =>'0000006',
+      ],
+    ]);
+    $this->createTripalTerm([
+      'vocab_name' => 'SIO',
+      'id_space_name' => 'SIO',
+      'term' => [
+        'name' => 'record identifier',
+        'definition' => 'A record identifier is an identifier for a database entry.',
+        'accession' =>'000729',
+      ],
+    ]);
+    $this->createTripalTerm([
+      'vocab_name' => 'schema',
+      'id_space_name' => 'schema',
+      'term' => [
+        'name' => 'name',
+        'definition' => 'The name of the item.',
+        'accession' =>'name',
+      ],
+    ]);
+    $this->createTripalTerm([
+      'vocab_name' => 'schema',
+      'id_space_name' => 'schema',
+      'term' => [
+        'name' => 'additionalType',
+        'definition' => 'An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.	',
+        'accession' =>'additionalType',
+      ],
+    ]);
+    $this->createTripalTerm([
+      'vocab_name' => 'sequence',
+      'id_space_name' => 'SO',
+      'term' => [
+        'name' => 'sequence_feature',
+        'definition' => 'Any extent of continuous biological sequence. [LAMHDI:mb, SO:ke]',
+        'accession' =>'0000110',
+      ],
+    ]);
+    $this->createTripalTerm([
+      'vocab_name' => 'NCIT',
+      'id_space_name' => 'NCIT',
+      'term' => [
+        'name' => 'Value',
+        'definition' => 'A numerical quantity measured or assigned or computed.',
+        'accession' =>'C25712',
+      ],
+    ]);
+    $this->createTripalTerm([
+      'vocab_name' => 'OBCS',
+      'id_space_name' => 'OBCS',
+      'term' => [
+        'name' => 'rank order',
+        'definition' => 'A data item that represents an arrangement according to a rank, i.e., the position of a particular case relative to other cases on a defined scale.',
+        'accession' =>'0000117',
+      ],
+    ]);
+
+
     return $gene;
   }
 
