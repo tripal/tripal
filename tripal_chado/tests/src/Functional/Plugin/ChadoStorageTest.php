@@ -563,6 +563,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
       'accession' => '0000704)',
     ]);
     $sequence->saveTerm($gene);
+    return $gene;
 
   }
 
