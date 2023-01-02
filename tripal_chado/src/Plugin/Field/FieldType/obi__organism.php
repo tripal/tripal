@@ -73,44 +73,55 @@ class obi__organism extends ChadoFieldItemBase {
     $base_pkey_col = $base_schema_def['primary key'];
     $base_fk_col = array_keys($base_schema_def['foreign keys']['organism']['columns'])[0];
 
+    // Get the property terms by using the Chado table columns they map to.
+    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
+    $mapping = $storage->load('core_mapping');
+    $record_id_term = 'SIO:000729';
+    $label_term = 'rdfs:label';
+    $org_id_term = $mapping->getColumnTermId($base_table, 'organism_id');
+    $genus_term = $mapping->getColumnTermId('organism', 'genus');
+    $species_term = $mapping->getColumnTermId('organism', 'species');
+    $iftype_term = $mapping->getColumnTermId('organism', 'type_id');
+    $ifname_term = $mapping->getColumnTermId('organism', 'infraspecific_name');
+
     // Return the properties for this field.
-    return [
-      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', [
+    $properties = [];
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
         'action' => 'store_id',
         'drupal_store' => TRUE,
         'chado_table' => $base_table,
         'chado_column' => $base_pkey_col
-      ]),
-      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'organism_id', [
-        'action' => 'store',
-        'chado_table' => $base_table,
-        'chado_column' => $base_fk_col,
-      ]),
-      new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'label', $label_len, [
-        'action' => 'replace',
-        'template' => "<i>[genus] [species]</i> [infraspecific_type] [infraspecific_name]",
-      ]),
-      new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'genus', $genus_len, [
-        'action' => 'join',
-        'path' => $base_table . '.organism_id>organism.organism_id',
-        'chado_column' => 'genus'
-      ]),
-      new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'species', $species_len, [
-        'action' => 'join',
-        'path' => $base_table . '.organism_id>organism.organism_id',
-        'chado_column' => 'species'
-      ]),
-      new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'infraspecific_name', $ifname_len, [
-        'action' => 'join',
-        'path' => $base_table . '.organism_id>organism.organism_id',
-        'chado_column' => 'infraspecific_name',
-      ]),
-      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'infraspecific_type', [
-        'action' => 'join',
-        'path' => $base_table . '.organism_id>organism.organism_id;organism.type_id>cvterm.cvterm_id',
-        'chado_column' => 'name',
-        'as' => 'infraspecific_type_name'
-      ])
-    ];
+    ]);
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'organism_id', $org_id_term, [
+      'action' => 'store',
+      'chado_table' => $base_table,
+      'chado_column' => $base_fk_col,
+    ]);
+    $properties[] =  new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'label', $label_term, $label_len, [
+      'action' => 'replace',
+      'template' => "<i>[genus] [species]</i> [infraspecific_type] [infraspecific_name]",
+    ]);
+    $properties[] =  new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'genus', $genus_term, $genus_len, [
+      'action' => 'join',
+      'path' => $base_table . '.organism_id>organism.organism_id',
+      'chado_column' => 'genus'
+    ]);
+    $properties[] =  new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'species', $species_term, $species_len, [
+      'action' => 'join',
+      'path' => $base_table . '.organism_id>organism.organism_id',
+      'chado_column' => 'species'
+    ]);
+    $properties[] =  new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'infraspecific_name', $ifname_term, $ifname_len, [
+      'action' => 'join',
+      'path' => $base_table . '.organism_id>organism.organism_id',
+      'chado_column' => 'infraspecific_name',
+    ]);
+    $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'infraspecific_type', $iftype_term, [
+      'action' => 'join',
+      'path' => $base_table . '.organism_id>organism.organism_id;organism.type_id>cvterm.cvterm_id',
+      'chado_column' => 'name',
+      'as' => 'infraspecific_type_name'
+    ]);
+    return $properties;
   }
 }

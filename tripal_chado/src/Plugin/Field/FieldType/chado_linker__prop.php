@@ -50,8 +50,9 @@ class chado_linker__prop extends ChadoFieldItemBase {
     // If we don't have a base table then we're not ready to specify the
     // properties for this field.
     if (!$base_table) {
+      $record_id_term = 'SIO:000729';
       return [
-        new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', [
+        new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
           'action' => 'store_id',
           'drupal_store' => TRUE,
         ])
@@ -63,43 +64,51 @@ class chado_linker__prop extends ChadoFieldItemBase {
     $schema = $chado->schema();
     $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
     $base_pkey_col = $base_schema_def['primary key'];
-
     $prop_schema_def = $schema->getTableDef($prop_table, ['format' => 'Drupal']);
     $prop_pkey_col = $prop_schema_def['primary key'];
     $prop_fk_col = array_keys($prop_schema_def['foreign keys'][$base_table]['columns'])[0];
 
+    // Get the property terms by using the Chado table columns they map to.
+    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
+    $mapping = $storage->load('core_mapping');
+    $record_id_term = 'SIO:000729';
+    $link_term = $mapping->getColumnTermId($prop_table, $prop_fk_col);
+    $value_term = $mapping->getColumnTermId($prop_table, 'value');
+    $rank_term = $mapping->getColumnTermId($prop_table, 'rank');
+    $type_id_term = $mapping->getColumnTermId($prop_table, 'type_id');
+
     // Create the property types.
     return [
-      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', [
+      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
         'action' => 'store_id',
         'drupal_store' => TRUE,
         'chado_table' => $base_table,
         'chado_column' => $base_pkey_col
       ]),
-      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'prop_id', [
+      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'prop_id', $record_id_term, [
         'action' => 'store_pkey',
         'drupal_store' => TRUE,
         'chado_table' => $prop_table,
         'chado_column' => $prop_pkey_col,
       ]),
-      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id',  [
+      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id',  $link_term, [
         'action' => 'store_link',
         'chado_table' => $prop_table,
         'chado_column' => $prop_fk_col,
       ]),
-      new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'value', [
+      new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, [
         'action' => 'store',
         'chado_table' => $prop_table,
         'chado_column' => 'value',
         'delete_if_empty' => TRUE,
         'empty_value' => ''
       ]),
-      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'rank',  [
+      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'rank', $rank_term,  [
         'action' => 'store',
         'chado_table' => $prop_table,
         'chado_column' => 'rank'
       ]),
-      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'type_id',  [
+      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'type_id', $type_id_term, [
         'action' => 'store',
         'chado_table' => $prop_table,
         'chado_column' => 'type_id'
