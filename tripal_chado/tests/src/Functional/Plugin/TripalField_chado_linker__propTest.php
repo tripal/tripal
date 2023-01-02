@@ -30,7 +30,7 @@ class TripalField_chado_linker__propTest extends ChadoTestBrowserBase {
     parent::setup();
 
     // Use the Preapred test chado schema.
-    $this->getTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
+    $this->createTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
 
   }
 

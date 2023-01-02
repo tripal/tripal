@@ -3,6 +3,7 @@
 namespace Drupal\tripal\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
+use Drupal\tripal\TripalVocabTerms\TripalTerm;
 
 /**
  * Defines the Tripal Content type entity.
@@ -137,12 +138,148 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
   protected $ajax_field;
 
   // --------------------------------------------------------------------------
+  //                             CREATE + SAVE
+  //
+  // Tripal Entity Types are created using the Drupal Entity API.
+  // To create new type, you will use the static create function we extended
+  // below to pass in the info for the new type and then call the save method on
+  // the created object to permanently save it to your site.
+  //
+  //    $new_entityType = TripalEntityType::create($details);
+  //    if (is_object($entityType)) {
+  //      $new_entityType->save();
+  //    }
+  // --------------------------------------------------------------------------
+
+  /**
+   * Contructs a new TripalEntityType object without permanently saving it.
+   *
+   * Extends EntityBase::create() with support for TripalTerm as a value.
+   *
+   * @param array $values
+   *    An array of values to set, keyed by property name. Supported keys are:
+   *      -
+   * @return TripalEntityType
+   *    An TripalEntityType with the values passed in set appropriately.
+   */
+  public static function create(array $values = []) {
+
+    // Check if a TripalTerm object was passed in.
+    // If yes, extract the ID Space and Accession for saving.
+    if (array_key_exists('term', $values)) {
+      if (is_a($values['term'], '\Drupal\tripal\TripalVocabTerms\TripalTerm')) {
+        $term = $values['term'];
+        unset($values['term']);
+        $values['termIdSpace'] = $term->getIdSpace();
+        $values['termAccession'] = $term->getAccession();
+
+        // Since we have a term object, we can use the definition to set the
+        // help text if it's not already set.
+        if (!array_key_exists('help_text', $values)) {
+          $values['help_text'] = $term->getDefinition();
+        }
+      }
+      else {
+        $class_name_passed_in = get_class($values['term']);
+        throw new \Exception("When passing a term to create a TripalEntityType is must be of type TripalTerm. You passed in an object of type " . $class_name_passed_in . ".");
+      }
+    }
+
+    // Let the parent implementation finish creating the object.
+    // NOTE: We do things in this order because a configuration entity cannot
+    // save an object to it's storage. Thus we need to extract the term strings
+    // for storage and retrieve the Term object later if requested via getTerm().
+    return parent::create($values);
+  }
+
+
+  /**
+   * Saves the new TripalEntityType permanently.
+   *
+   * Extends ConfigEntityBase::save() with support for creating the associated
+   * TripalTerm if it doesn't already exist.
+   *
+   * When saving existing entities, the entity is assumed to be complete,
+   * partial updates of entities are not supported.
+   *
+   * @return int
+   *   Either SAVED_NEW or SAVED_UPDATED, depending on the operation performed.
+   */
+   public function save() {
+
+     // First we want to set an id for this content type.
+     if ($this->isNew()) {
+       $config = \Drupal::service('config.factory')->getEditable('tripal.settings');
+       $max_id = $config->get('tripal_entity_type.max_id');
+       $this->id = $max_id + 1;
+       $this->name = 'bio_data_' . $this->id;
+       $config->set('tripal_entity_type.max_id', $this->id)->save();
+     }
+
+     // Set defaults for anything not already set.
+     $this->setDefaults();
+
+     // Validate the values before trying to save.
+     $this->validate();
+
+     // Save the rest of the entity using the parent implementation.
+     // This is when the id is assigned.
+     $return_status = parent::save();
+
+     return $return_status;
+   }
+
+  /**
+   * Validate the expected values before saving.
+   *
+   * Note: This function throws exceptions so make sure to catch them ;-p
+   * We do not want users seeing a WSOD.
+   */
+  public function validate() {
+
+    if ($this->label === NULL) {
+      throw new \Exception("The label is required when creating a TripalEntityType.");
+    }
+    if ($this->help_text === NULL) {
+      throw new \Exception("The help text is required when creating a TripalEntityType.");
+    }
+
+    if ($this->termIdSpace === NULL) {
+      throw new \Exception("The Term ID Space is required when creating a TripalEntityType.");
+    }
+    if ($this->termAccession === NULL) {
+      throw new \Exception("The Term Accession is required when creating a TripalEntityType.");
+    }
+
+    // Check that the TripalTerm exists with the ID Space and Accession
+    // added to this type when it was created.
+
+    // If not, then create the TripalTerm, TripalIDSpace and TripalVocabulary.
+  }
+
+  // --------------------------------------------------------------------------
   //                          MAIN SETTER / GETTERS
   //
   // The following methods allow the main properties of the Tripal Entity Type
   // to be set or retrieved. These properties include ID, macine name, term
   // help text and category.
   // --------------------------------------------------------------------------
+
+  /**
+   * Set defaults of values which are not yet set.
+   */
+  public function setDefaults() {
+
+    if ($this->category === NULL) {
+      $this->category = 'General';
+    }
+    if ($this->hide_empty_field === NULL) {
+      $this->hide_empty_field = TRUE;
+    }
+    if ($this->ajax_field === NULL) {
+      $this->ajax_field = TRUE;
+    }
+  }
 
   /**
    * {@inheritdoc}
@@ -219,7 +356,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    * {@inheritdoc}
    */
   public function setTermAccession($termAccession) {
-    $this->termIdSpace = $termAccession;
+    $this->termAccession = $termAccession;
     return $this;
   }
 
@@ -229,7 +366,26 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
   public function getTerm() {
     $manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
     $idspace = $manager->loadCollection($this->termIdSpace);
-    return $idspace->getTerm($this->termAccession);
+    if (is_object($idspace)) {
+      return $idspace->getTerm($this->termAccession);
+    }
+    else {
+      return NULL;
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setTerm(TripalTerm $term) {
+    $this->termIdSpace = $term->getIdSpace();
+    $this->termAccession = $term->getAccession();
+
+    // Since we have a term object, we can use the definition to set the
+    // help text if it's not already set.
+    if ($this->help_text === NULL) {
+      $this->help_text = $term->getDefinition();
+    }
   }
 
   /**

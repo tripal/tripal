@@ -43,19 +43,10 @@ class TripalEntityTypeListBuilder extends ConfigEntityListBuilder {
 
     // Add in the term with link.
     $data['term'] = '';
-    /*
     $term = $entity->getTerm();
     if ($term) {
-      $idspace = $term->getIDSpace();
-      if ($idspace) {
-        $term_display = $term->getName() . ' (' . $idspace->getIDSpace() . ':' . $term->getAccession() . ')';
-        $data['term'] = Link::fromTextAndUrl(
-          $term_display,
-          $term->toUrl('canonical', ['tripal_term' => $term->id()])
-        )->toString();
-      }
+      $data['term'] = $term->getName() . ' (' . $term->getTermId() . ')';
     }
-    */
 
     // Add in classes for better themeing and testing.
     $rowData = [];

@@ -30,6 +30,11 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
    *
    */
   public function testChadoStorage() {
+
+    // Create a new test schema for us to use.
+    $this->createTestSchema(ChadoTestBrowserBase::INIT_CHADO_EMPTY);
+
+    // Get plugin managers we need for our testing.
     $storage_manager = \Drupal::service('tripal.storage');
     $chado_storage = $storage_manager->createInstance('chado_storage');
 
@@ -63,9 +68,9 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $feature_id = $gene->feature_id;
     // Add featureprop notes:
     $note_term = $this->addLocalNoteCVTerm();
-    $this->addFeaturePropRecords($gene, $note_term, "Note 1", 0);
-    $this->addFeaturePropRecords($gene, $note_term, "Note 2", 2);
-    $this->addFeaturePropRecords($gene, $note_term, "Note 3", 1);
+    $fprop_id_0 = $this->addFeaturePropRecords($gene, $note_term, "Note 1", 0);
+    $fprop_id_2 = $this->addFeaturePropRecords($gene, $note_term, "Note 2", 2);
+    $fprop_id_1 = $this->addFeaturePropRecords($gene, $note_term, "Note 3", 1);
 
     // For the ChadoStorage->addTypes() and ChadoStorage->loadValues()
     // We are going to progressively test these methods with more + more fields.
@@ -83,42 +88,55 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $field_term_string = 'schema:name';
     $chado_table = 'feature';
     $chado_column = 'name';
-    $cardinality = 1;
-    $is_required = TRUE;
-    $propsettings = [
-      'action' => 'store',
-      'chado_table' => $chado_table,
-      'chado_column' => $chado_column,
-    ];
     $storage_settings = [
       'storage_plugin_id' => 'chado_storage',
       'storage_plugin_settings' => [
         'base_table' => $chado_table,
-        'property_settings' => [
-          'value' => $propsettings,
-        ],
       ],
     ];
 
     // Testing the Property Type + Value class creation
     // + prepping for future tests.
-    // NOTE: You need to set the value = feature_id when creating the record_id StoragePropertyValue.
-    $recordId_propertyType = new ChadoIntStoragePropertyType($content_type, $field_name, 'record_id', $propsettings);
-    $recordId_propertyValue = new StoragePropertyValue($content_type, $field_name, 'record_id', $content_entity_id, $feature_id);
-    $value_propertyType = new ChadoVarCharStoragePropertyType($content_type, $field_name, 'value', 255, $propsettings);
-    $value_propertyValue = new StoragePropertyValue($content_type, $field_name, 'value', $content_entity_id);
-    $this->assertIsObject($recordId_propertyType, "Unable to create record_id ChadoIntStoragePropertyType: $field_name, record_id");
-    $this->assertIsObject($recordId_propertyValue, "Unable to create record_id StoragePropertyValue: $field_name, record_id, $content_entity_id");
-    $this->assertIsObject($value_propertyType, "Unable to create value ChadoIntStoragePropertyType: $field_name, value");
-    $this->assertIsObject($value_propertyValue, "Unable to create value StoragePropertyValue: $field_name, value, $content_entity_id");
+    $propertyTypes = [
+      'feature_id' => new ChadoIntStoragePropertyType($content_type, $field_name, 'feature_id',[
+        'action' => 'store_id',
+        'drupal_store' => TRUE,
+        'chado_table' => $chado_table,
+        'chado_column' => $chado_column,
+      ]),
+      'name' => new ChadoVarCharStoragePropertyType($content_type, $field_name, 'name', 255, [
+        'action' => 'store',
+        'chado_table' => $chado_table,
+        'chado_column' => $chado_column,
+      ]),
+    ];
+    $propertyValues = [
+      'feature_id' => new StoragePropertyValue(
+        $content_type,
+        $field_name,
+        'feature_id',
+        $content_entity_id,
+        $feature_id
+      ),
+      'name' => new StoragePropertyValue(
+        $content_type,
+        $field_name,
+        'name',
+        $content_entity_id,
+      ),
+    ];
+    $this->assertIsObject($propertyTypes['feature_id'], "Unable to create feature_id ChadoIntStoragePropertyType: $field_name, record_id");
+    $this->assertIsObject($propertyValues['feature_id'], "Unable to create feature_id StoragePropertyValue: $field_name, record_id, $content_entity_id");
+    $this->assertIsObject($propertyTypes['name'], "Unable to create feature.name ChadoIntStoragePropertyType: $field_name, value");
+    $this->assertIsObject($propertyValues['name'], "Unable to create feature.name StoragePropertyValue: $field_name, value, $content_entity_id");
 
     // Make sure the values start empty.
-    $this->assertEquals($feature_id, $recordId_propertyValue->getValue(), "The $field_name record_id property should be the feature_id.");
-    $this->assertTrue(empty($value_propertyValue->getValue()), "The $field_name value property should not have a value.");
+    $this->assertEquals($feature_id, $propertyValues['feature_id']->getValue(), "The $field_name feature_id property should already be set.");
+    $this->assertTrue(empty($propertyValues['name']->getValue()), "The $field_name feature.name property should not have a value.");
 
     // Now test ChadoStorage->addTypes()
     // param array $types = Array of \Drupal\tripal\TripalStorage\StoragePropertyTypeBase objects.
-    $chado_storage->addTypes([$recordId_propertyType, $value_propertyType]);
+    $chado_storage->addTypes($propertyTypes);
     $retrieved_types = $chado_storage->getTypes();
     $this->assertIsArray($retrieved_types, "Unable to retrieve the PropertyTypes after adding $field_name.");
     $this->assertCount(2, $retrieved_types, "Did not revieve the expected number of PropertyTypes after adding $field_name.");
@@ -131,14 +149,14 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     // Next we actually load the values.
     $values[$field_name] = [
       0 => [
-        'value'=> [
-          'value' => $value_propertyValue,
-          'type' => $value_propertyType,
+        'name'=> [
+          'value' => $propertyValues['name'],
+          'type' => $propertyTypes['name'],
           'definition' => $fieldconfig,
         ],
-        'record_id' => [
-          'value' => $recordId_propertyValue,
-          'type' => $recordId_propertyType,
+        'feature_id' => [
+          'value' => $propertyValues['feature_id'],
+          'type' => $propertyTypes['feature_id'],
           'definition' => $fieldconfig,
         ],
       ],
@@ -147,7 +165,8 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $this->assertTrue($success, "Loading values after adding $field_name was not success (i.e. did not return TRUE).");
 
     // Then we test that the values are now in the types that we passed in.
-    $this->assertEquals('test_gene_name', $values['schema__name'][0]['value']['value']->getValue(), 'The gene name value was not loaded properly.');
+    //print_r($values['schema__name'][0]);
+    $this->assertEquals('test_gene_name', $values['schema__name'][0]['name']['value']->getValue(), 'The gene name value was not loaded properly.');
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // -- Multi-value single property field
@@ -160,8 +179,148 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $field_term_string = 'local:note';
     $chado_table = 'featureprop';
     $chado_column = 'value';
+    $chado_table = 'featureprop';
+    $base_table = 'feature';
+    $chado_column = 'organism_id';
+    $storage_settings = [
+      'storage_plugin_id' => 'chado_storage',
+      'storage_plugin_settings' => [
+        'base_table' => $chado_table,
+      ],
+    ];
 
-    // @todo We're not actually ready to test this yet.
+    $propertyTypes = [
+      'feature_id' => new ChadoIntStoragePropertyType($content_type, $field_name, 'feature_id',[
+        'action' => 'store_id',
+        'drupal_store' => TRUE,
+        'chado_table' => 'feature',
+        'chado_column' => 'feature_id',
+      ]),
+      'featureprop_id' => new ChadoIntStoragePropertyType($content_type, $field_name, 'featureprop_id', [
+        'action' => 'store_pkey',
+        'chado_table' => 'featureprop',
+        'chado_column' => 'featureprop_id',
+      ]),
+      'fk_feature_id' => new ChadoIntStoragePropertyType($content_type, $field_name, 'fk_feature_id',[
+        'action' => 'store_link',
+        'chado_table' => 'featureprop',
+        'chado_column' => 'feature_id',
+      ]),
+      'type_id' => new ChadoIntStoragePropertyType($content_type, $field_name, 'type_id',[
+        'action' => 'store',
+        'chado_table' => 'featureprop',
+        'chado_column' => 'type_id',
+      ]),
+      'value' => new ChadoIntStoragePropertyType($content_type, $field_name, 'value',[
+        'action' => 'store',
+        'chado_table' => 'featureprop',
+        'chado_column' => 'value',
+      ]),
+      'rank' => new ChadoIntStoragePropertyType($content_type, $field_name, 'rank',[
+        'action' => 'store',
+        'chado_table' => 'featureprop',
+        'chado_column' => 'rank',
+      ]),
+    ];
+    foreach ($propertyTypes as $key => $propType) {
+      $this->assertIsObject($propType, "Unable to create the *StoragePropertyType: $field_name, $key");
+    }
+
+    // Testing the Property Value class creation.
+    $propertyValues = [
+      'feature_id' => new StoragePropertyValue($content_type, $field_name, 'feature_id', $content_entity_id, $feature_id),
+      'featureprop_id' => new StoragePropertyValue($content_type, $field_name, 'featureprop_id', $content_entity_id),
+      'fk_feature_id' => new StoragePropertyValue($content_type, $field_name, 'fk_feature_id', $content_entity_id),
+      'type_id' => new StoragePropertyValue($content_type, $field_name, 'type_id', $content_entity_id),
+      'value' => new StoragePropertyValue($content_type, $field_name, 'value', $content_entity_id),
+      'rank' => new StoragePropertyValue($content_type, $field_name, 'rank', $content_entity_id),
+    ];
+    foreach ($propertyValues as $key => $propVal) {
+      $this->assertIsObject($propVal, "Unable to create the StoragePropertyValue: $field_name, $key");
+    }
+
+    // Make sure the values start empty.
+    $this->assertEquals($feature_id, $propertyValues['feature_id']->getValue(), "The $field_name feature_id property should be the feature_id.");
+    $this->assertTrue(empty($propertyValues['featureprop_id']->getValue()), "The $field_name feature property pkey should not have a value.");
+    $this->assertTrue(empty($propertyValues['fk_feature_id']->getValue()), "The $field_name feature property feature_id property should not have a value.");
+    $this->assertTrue(empty($propertyValues['type_id']->getValue()), "The $field_name type_id property should not have a value.");
+    $this->assertTrue(empty($propertyValues['value']->getValue()), "The $field_name value property should not have a value.");
+    $this->assertTrue(empty($propertyValues['rank']->getValue()), "The $field_name rank property should not have a value.");
+
+    // Now test ChadoStorage->addTypes()
+    // param array $types = Array of \Drupal\tripal\TripalStorage\StoragePropertyTypeBase objects.
+    $chado_storage->addTypes($propertyTypes);
+    $retrieved_types = $chado_storage->getTypes();
+    $this->assertIsArray($retrieved_types, "Unable to retrieve the PropertyTypes after adding $field_name.");
+    $this->assertCount(8, $retrieved_types, "Did not revieve the expected number of PropertyTypes after adding $field_name.");
+
+    // We also need FieldConfig classes for loading values.
+    // We're going to create a TripalField and see if that works.
+    $fieldconfig = new FieldConfigMock(['field_name' => $field_name, 'entity_type' => $content_type]);
+    $fieldconfig->setMock(['label' => $field_label, 'settings' => $storage_settings]);
+
+    // Next we actually load the values.
+    $values[$field_name] = [ 0 => [], 1 => [], 2 => [] ];
+    foreach ($propertyTypes as $key => $propType) {
+      $values[$field_name][0][$key] = [
+        'type' => $propType,
+        'value' => clone $propertyValues[$key],
+        'definition' => $fieldconfig
+      ];
+      $values[$field_name][1][$key] = [
+        'type' => $propType,
+        'value' => clone $propertyValues[$key],
+        'definition' => $fieldconfig
+      ];
+      $values[$field_name][2][$key] = [
+        'type' => $propType,
+        'value' => clone $propertyValues[$key],
+        'definition' => $fieldconfig
+      ];
+    }
+    // We also need to set the featureprop_id for each.
+    $values[$field_name][0]['featureprop_id']['value']->setValue($fprop_id_0);
+    $values[$field_name][1]['featureprop_id']['value']->setValue($fprop_id_1);
+    $values[$field_name][2]['featureprop_id']['value']->setValue($fprop_id_2);
+    // Now we can try to load the rest of the property.
+    $success = $chado_storage->loadValues($values);
+    $this->assertTrue($success, "Loading values after adding $field_name was not success (i.e. did not return TRUE).");
+
+    // Then we test that the values are now in the types that we passed in.
+    // All fields should have been loaded, not just our organism one.
+    $this->assertEquals('test_gene_name', $values['schema__name'][0]['name']['value']->getValue(), 'The gene name value was not loaded properly.');
+    // Now test the feature properties were loaded as expected.
+    // Values:
+    //   - type: note (local:note), value: "Note 1", rank: 0
+    //   - type: note (local:note), value: "Note 2", rank: 2
+    //   - type: note (local:note), value: "Note 3", rank: 1
+    $this->assertEquals(
+      "Note 1", $values['local__note'][0]['value']['value']->getValue(),
+      'The delta 0 featureprop.value was not loaded properly.'
+    );
+    $this->assertEquals(
+      "Note 3", $values['local__note'][1]['value']['value']->getValue(),
+      'The delta 1 featureprop.value was not loaded properly.'
+    );
+    $this->assertEquals(
+      "Note 2", $values['local__note'][2]['value']['value']->getValue(),
+      'The delta 2 featureprop.value was not loaded properly.'
+    );
+    foreach([0,1,2] as $delta) {
+      $this->assertEquals(
+        $note_term->getInternalId(), $values['local__note'][$delta]['type_id']['value']->getValue(),
+        "The type_id of the delta $delta note was not loaded properly."
+      );
+      $this->assertEquals(
+        $feature_id, $values['local__note'][$delta]['fk_feature_id']['value']->getValue(),
+        "The featureprop.feature_id of the delta $delta note was not loaded properly."
+      );
+      $this->assertEquals(
+        $delta, $values['local__note'][$delta]['rank']['value']->getValue(),
+        "The featureprop.rank of the delta $delta note was not loaded properly."
+      );
+    }
+
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // -- Single value, multi-property field
@@ -175,96 +334,86 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $field_term_string = 'obi:organism';
     $chado_table = 'feature';
     $chado_column = 'organism_id';
-    $cardinality = 1;
-    $is_required = TRUE;
-    $propsettings = [
-      'action' => 'store',
-      'chado_table' => $chado_table,
-      'chado_column' => $chado_column,
-    ];
     $storage_settings = [
       'storage_plugin_id' => 'chado_storage',
       'storage_plugin_settings' => [
         'base_table' => $chado_table,
-        'property_settings' => [
-          'value' => $propsettings,
-        ],
       ],
     ];
 
     // Testing the Property Type class creation.
     $base_table = $chado_table;
-    $value_settings = $propsettings;
-    $label_settings = [
-      'action' => 'replace',
-      'template' => "<i>[TAXRANK:0000005] [TAXRANK:0000006]</i> [TAXRANK:0000046] [TAXRANK:0000047]",
+    $propertyTypes = [
+      'feature_id' => new ChadoIntStoragePropertyType($content_type, $field_name, 'feature_id', [
+        'action' => 'store_id',
+        'drupal_store' => TRUE,
+        'chado_table' => $base_table,
+        'chado_column' => 'feature_id'
+      ]),
+      'organism_id' => new ChadoIntStoragePropertyType($content_type, $field_name, 'organism_id', [
+        'action' => 'store',
+        'chado_table' => $base_table,
+        'chado_column' => 'organism_id',
+      ]),
+      'label' => new ChadoVarCharStoragePropertyType($content_type, $field_name, 'label', 255, [
+        'action' => 'replace',
+        'template' => "<i>[genus] [species]</i> [infraspecific_type] [infraspecific_name]",
+      ]),
+      'genus' => new ChadoVarCharStoragePropertyType($content_type, $field_name, 'genus', 255, [
+        'action' => 'join',
+        'path' => $base_table . '.organism_id>organism.organism_id',
+        'chado_column' => 'genus'
+      ]),
+      'species' => new ChadoVarCharStoragePropertyType($content_type, $field_name, 'species', 255, [
+        'action' => 'join',
+        'path' => $base_table . '.organism_id>organism.organism_id',
+        'chado_column' => 'species'
+      ]),
+      'infraspecific_name' => new ChadoVarCharStoragePropertyType($content_type, $field_name, 'infraspecific_name', 255, [
+        'action' => 'join',
+        'path' => $base_table . '.organism_id>organism.organism_id',
+        'chado_column' => 'infraspecific_name',
+      ]),
+      'infraspecific_type'=> new ChadoIntStoragePropertyType($content_type, $field_name, 'infraspecific_type', [
+        'action' => 'join',
+        'path' => $base_table . '.organism_id>organism.organism_id;organism.type_id>cvterm.cvterm_id',
+        'chado_column' => 'name',
+        'as' => 'infraspecific_type_name'
+      ])
     ];
-    $genus_settings = [
-      'action' => 'join',
-      'path' => $base_table . '.organism_id>organism.organism_id',
-      'chado_column' => 'genus'
-    ];
-    $species_settings = [
-      'action' => 'join',
-      'path' => $base_table . '.organism_id>organism.organism_id',
-      'chado_column' => 'species'
-    ];
-    $iftype_settings = [
-      'action' => 'join',
-      'path' => $base_table . '.organism_id>organism.organism_id;organism.type_id>cvterm.cvterm_id',
-      'chado_column' => 'name',
-      'as' => 'infraspecific_type_name'
-    ];
-    $ifname_settings = [
-      'action' => 'join',
-      'path' => $base_table . '.organism_id>organism.organism_id',
-      'chado_column' => 'infraspecific_name',
-    ];
-    $recordId_propertyType = new ChadoIntStoragePropertyType($content_type, $field_name, 'record_id', $propsettings);
-    $value_propertyType = new ChadoIntStoragePropertyType($content_type, $field_name, 'value', $value_settings);
-    $label_propertyType = new ChadoVarCharStoragePropertyType($content_type, $field_name, 'NCBITaxon:common_name', 125, $label_settings);
-    $genus_propertyType = new ChadoVarCharStoragePropertyType($content_type, $field_name, 'TAXRANK:0000005', 125, $genus_settings);
-    $species_propertyType = new ChadoVarCharStoragePropertyType($content_type, $field_name, 'TAXRANK:0000006', 125, $species_settings);
-    $ifname_propertyType = new ChadoVarCharStoragePropertyType($content_type, $field_name, 'TAXRANK:0000047', 125, $ifname_settings);
-    $iftype_propertyType = new ChadoIntStoragePropertyType($content_type, $field_name, 'TAXRANK:0000046', $iftype_settings);
-    $this->assertIsObject($recordId_propertyType, "Unable to create the ChadoIntStoragePropertyType: $field_name, record_id");
-    $this->assertIsObject($value_propertyType, "Unable to create the ChadoIntStoragePropertyType: $field_name, value");
-    $this->assertIsObject($label_propertyType, "Unable to create the ChadoVarCharStoragePropertyType: $field_name, label");
-    $this->assertIsObject($genus_propertyType, "Unable to create the ChadoVarCharStoragePropertyType: $field_name, genus");
-    $this->assertIsObject($species_propertyType, "Unable to create the ChadoVarCharStoragePropertyType: $field_name, species");
-    $this->assertIsObject($ifname_propertyType, "Unable to create the ChadoVarCharStoragePropertyType: $field_name, ifname");
-    $this->assertIsObject($iftype_propertyType, "Unable to create the ChadoIntStoragePropertyType: $field_name, iftype");
+    foreach ($propertyTypes as $key => $propType) {
+      $this->assertIsObject($propType, "Unable to create the *StoragePropertyType: $field_name, $key");
+    }
 
     // Testing the Property Value class creation.
-    $recordId_propertyValue = new StoragePropertyValue($content_type, $field_name, 'record_id', $content_entity_id, $organism_id);
-    $value_propertyValue = new StoragePropertyValue($content_type, $field_name, 'value', $content_entity_id);
-    $label_propertyValue = new StoragePropertyValue($content_type, $field_name, 'NCBITaxon:common_name', $content_entity_id);
-    $genus_propertyValue = new StoragePropertyValue($content_type, $field_name, 'TAXRANK:0000005', $content_entity_id);
-    $species_propertyValue = new StoragePropertyValue($content_type, $field_name, 'TAXRANK:0000006', $content_entity_id);
-    $ifname_propertyValue = new StoragePropertyValue($content_type, $field_name, 'TAXRANK:0000047', $content_entity_id);
-    $iftype_propertyValue = new StoragePropertyValue($content_type, $field_name, 'TAXRANK:0000046', $content_entity_id);
-    $this->assertIsObject($value_propertyValue, "Unable to create the StoragePropertyValue: $field_name, value");
-    $this->assertIsObject($label_propertyValue, "Unable to create the StoragePropertyValue: $field_name, label");
-    $this->assertIsObject($genus_propertyValue, "Unable to create the StoragePropertyValue: $field_name, genus");
-    $this->assertIsObject($species_propertyValue, "Unable to create the StoragePropertyValue: $field_name, species");
-    $this->assertIsObject($ifname_propertyValue, "Unable to create the StoragePropertyValue: $field_name, ifname");
-    $this->assertIsObject($iftype_propertyValue, "Unable to create the StoragePropertyValue: $field_name, iftype");
+    $propertyValues = [
+      'feature_id' => new StoragePropertyValue($content_type, $field_name, 'feature_id', $content_entity_id, $feature_id),
+      'organism_id' => new StoragePropertyValue($content_type, $field_name, 'organism_id', $content_entity_id),
+      'label' => new StoragePropertyValue($content_type, $field_name, 'label', $content_entity_id),
+      'genus' => new StoragePropertyValue($content_type, $field_name, 'genus', $content_entity_id),
+      'species' => new StoragePropertyValue($content_type, $field_name, 'species', $content_entity_id),
+      'infraspecific_name' => new StoragePropertyValue($content_type, $field_name, 'infraspecific_name', $content_entity_id),
+      'infraspecific_type'=> new StoragePropertyValue($content_type, $field_name, 'infraspecific_type', $content_entity_id)
+    ];
+    foreach ($propertyValues as $key => $propVal) {
+      $this->assertIsObject($propVal, "Unable to create the StoragePropertyValue: $field_name, $key");
+    }
 
     // Make sure the values start empty.
-    $this->assertEquals($organism_id, $recordId_propertyValue->getValue(), "The $field_name record_id property should be the organism_id.");
-    $this->assertTrue(empty($value_propertyValue->getValue()), "The $field_name value property should not have a value.");
-    $this->assertTrue(empty($label_propertyValue->getValue()), "The $field_name label property should not have a value.");
-    $this->assertTrue(empty($genus_propertyValue->getValue()), "The $field_name genus property should not have a value.");
-    $this->assertTrue(empty($species_propertyValue->getValue()), "The $field_name species property should not have a value.");
-    $this->assertTrue(empty($ifname_propertyValue->getValue()), "The $field_name ifname property should not have a value.");
-    $this->assertTrue(empty($iftype_propertyValue->getValue()), "The $field_name iftype property should not have a value.");
+    $this->assertEquals($feature_id, $propertyValues['feature_id']->getValue(), "The $field_name feature_id property should be the feature_id.");
+    $this->assertTrue(empty($propertyValues['organism_id']->getValue()), "The $field_name value property should not have a value.");
+    $this->assertTrue(empty($propertyValues['label']->getValue()), "The $field_name label property should not have a value.");
+    $this->assertTrue(empty($propertyValues['genus']->getValue()), "The $field_name genus property should not have a value.");
+    $this->assertTrue(empty($propertyValues['species']->getValue()), "The $field_name species property should not have a value.");
+    $this->assertTrue(empty($propertyValues['infraspecific_name']->getValue()), "The $field_name infraspecific_name property should not have a value.");
+    $this->assertTrue(empty($propertyValues['infraspecific_type']->getValue()), "The $field_name infraspecific_type property should not have a value.");
 
     // Now test ChadoStorage->addTypes()
     // param array $types = Array of \Drupal\tripal\TripalStorage\StoragePropertyTypeBase objects.
-    $chado_storage->addTypes([$recordId_propertyType, $value_propertyType, $label_propertyType, $genus_propertyType, $species_propertyType, $ifname_propertyType, $iftype_propertyType]);
+    $chado_storage->addTypes($propertyTypes);
     $retrieved_types = $chado_storage->getTypes();
     $this->assertIsArray($retrieved_types, "Unable to retrieve the PropertyTypes after adding $field_name.");
-    $this->assertCount(9, $retrieved_types, "Did not revieve the expected number of PropertyTypes after adding $field_name.");
+    $this->assertCount(15, $retrieved_types, "Did not revieve the expected number of PropertyTypes after adding $field_name.");
 
     // We also need FieldConfig classes for loading values.
     // We're going to create a TripalField and see if that works.
@@ -272,61 +421,45 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $fieldconfig->setMock(['label' => $field_label, 'settings' => $storage_settings]);
 
     // Next we actually load the values.
-    $values[$field_name] = [
-      0 => [
-        'record_id' => [
-          'value' => $recordId_propertyValue,
-          'type' => $recordId_propertyType,
-          'definition' => $fieldconfig,
-        ],
-        'value' => [
-          'value' => $value_propertyValue,
-          'type' => $value_propertyType,
-          'definition' => $fieldconfig,
-        ],
-        'NCBITaxon_common_name' => [
-          'value' => $label_propertyValue,
-          'type' => $label_propertyType,
-          'definition' => $fieldconfig,
-        ],
-        'TAXRANK_0000005' => [
-          'value' => $genus_propertyValue,
-          'type' => $genus_propertyType,
-          'definition' => $fieldconfig,
-        ],
-        'TAXRANK_0000006' => [
-          'value' => $species_propertyValue,
-          'type' => $species_propertyType,
-          'definition' => $fieldconfig,
-        ],
-        'TAXRANK_0000047' => [
-          'value' => $ifname_propertyValue,
-          'type' => $ifname_propertyType,
-          'definition' => $fieldconfig,
-        ],
-        'TAXRANK_0000046' => [
-          'value' => $iftype_propertyValue,
-          'type' => $iftype_propertyType,
-          'definition' => $fieldconfig,
-        ],
-      ],
-    ];
+    $values[$field_name] = [ 0 => [] ];
+    foreach ($propertyTypes as $key => $propType) {
+      $values[$field_name][0][$key] = [
+        'type' => $propType,
+        'value' => $propertyValues[$key],
+        'definition' => $fieldconfig
+      ];
+    }
     $success = $chado_storage->loadValues($values);
     $this->assertTrue($success, "Loading values after adding $field_name was not success (i.e. did not return TRUE).");
 
     // Then we test that the values are now in the types that we passed in.
     // All fields should have been loaded, not just our organism one.
-    $this->assertEquals('test_gene_name', $values['schema__name'][0]['value']['value']->getValue(), 'The gene name value was not loaded properly.');
+    $this->assertEquals(
+      'test_gene_name', $values['schema__name'][0]['name']['value']->getValue(),
+      'The gene name value was not loaded properly.'
+    );
+    $this->assertEquals(
+      "Note 1", $values['local__note'][0]['value']['value']->getValue(),
+      'The delta 0 featureprop.value was not loaded properly.'
+    );
+    $this->assertEquals(
+      "Note 3", $values['local__note'][1]['value']['value']->getValue(),
+      'The delta 1 featureprop.value was not loaded properly.'
+    );
+    $this->assertEquals(
+      "Note 2", $values['local__note'][2]['value']['value']->getValue(),
+      'The delta 2 featureprop.value was not loaded properly.'
+    );
     // Now test the organism values were loaded as expected.
     // Value: genus: Oryza, species: sativa, common_name: rice,
     //   abbreviation: O.sativa, infraspecific_name: Japonica,
     //   type: species_group (TAXRANK:0000010), comment: 'This is rice'
-    $this->assertEquals($organism_id, $values['obi__organism'][0]['value']['value']->getValue(), 'The organism value was not loaded properly.');
-    $this->assertEquals('Oryza', $values['obi__organism'][0]['TAXRANK_0000005']['value']->getValue(), 'The organism genus was not loaded properly.');
-    $this->assertEquals('sativa', $values['obi__organism'][0]['TAXRANK_0000006']['value']->getValue(), 'The organism species was not loaded properly.');
-    $this->assertEquals('Japonica', $values['obi__organism'][0]['TAXRANK_0000047']['value']->getValue(), 'The organism ifname was not loaded properly.');
-    $this->assertEquals('species_group', $values['obi__organism'][0]['TAXRANK_0000046']['value']->getValue(), 'The organism iftype was not loaded properly.');
-    $this->assertEquals("<i>Oryza sativa</i> species_group Japonica", $values['obi__organism'][0]['NCBITaxon_common_name']['value']->getValue(), 'The organism label was not loaded properly.');
+    $this->assertEquals($organism_id, $values['obi__organism'][0]['organism_id']['value']->getValue(), 'The organism value was not loaded properly.');
+    $this->assertEquals('Oryza', $values['obi__organism'][0]['genus']['value']->getValue(), 'The organism genus was not loaded properly.');
+    $this->assertEquals('sativa', $values['obi__organism'][0]['species']['value']->getValue(), 'The organism species was not loaded properly.');
+    $this->assertEquals('Japonica', $values['obi__organism'][0]['infraspecific_name']['value']->getValue(), 'The organism infraspecific name was not loaded properly.');
+    $this->assertEquals('species_group', $values['obi__organism'][0]['infraspecific_type']['value']->getValue(), 'The organism infraspecific type was not loaded properly.');
+    $this->assertEquals("<i>Oryza sativa</i> species_group Japonica", $values['obi__organism'][0]['label']['value']->getValue(), 'The organism label was not loaded properly.');
 
   }
 
@@ -376,7 +509,10 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
    */
   protected function addOryzaSativaRecord($type_term) {
 
-    $this->chado->insert('1:organism')
+    // Retrieve the test schema created in testChadoStorage().
+    $chado = $this->getTestSchema();
+
+    $chado->insert('1:organism')
       ->fields([
         'genus' => 'Oryza',
         'species' => 'sativa',
@@ -388,7 +524,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
       ])
       ->execute();
 
-    return $this->chado->select('1:organism', 'O')
+    return $chado->select('1:organism', 'O')
       ->fields('O')
       ->condition('species', 'sativa')
       ->execute()
@@ -420,7 +556,10 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
    */
   protected function addFeatureRecord($name, $uniquename, $type, $organism) {
 
-    $this->chado->insert('1:feature')
+    // Retrieve the test schema created in testChadoStorage().
+    $chado = $this->getTestSchema();
+
+    $chado->insert('1:feature')
       ->fields([
         'name' => $name,
         'uniquename' => $uniquename,
@@ -429,7 +568,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
       ])
       ->execute();
 
-    return $this->chado->select('1:feature', 'F')
+    return $chado->select('1:feature', 'F')
       ->fields('F')
       ->condition('name', $name)
       ->execute()
@@ -440,7 +579,11 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
    * A helper function for adding notes values to the featureprop table.
    */
   protected function addFeaturePropRecords($feature, $term, $value, $rank) {
-    $this->chado->insert('1:featureprop')
+
+    // Retrieve the test schema created in testChadoStorage().
+    $chado = $this->getTestSchema();
+
+    return $chado->insert('1:featureprop')
       ->fields([
         'feature_id' => $feature->feature_id,
         'type_id' => $term->getInternalId(),

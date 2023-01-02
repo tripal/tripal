@@ -1053,31 +1053,12 @@ class ChadoPreparer extends ChadoTaskBase {
       $entityType = $entityTypes[$bundle];
     }
     else {
-      // Get the next bio_data_x index number.
-      $cid = 'chado_bio_data_index';
-      $cached_val = \Drupal::cache()->get($cid, 0);
-      if (is_object($cached_val)) {
-        $cached_val = $cached_val->data;
-      }
-      $next_index = $cached_val + 1;
-      $bundle = 'bio_data_' . $next_index;
-      $details['id'] = $next_index;
-      $details['name'] = $bundle;
-
-      $values = [
-        'label' => $details['label'],
-        'id' => $next_index,
-        'name' => $bundle,
-        'category' => $details['category'],
-        'termIdSpace' => $term->getIdSpace(),
-        'termAccession' => $term->getAccession(),
-      ];
-      $entityType = TripalEntityType::create($values);
+      $entityType = TripalEntityType::create($details);
       if (is_object($entityType)) {
         $entityType->save();
         $this->logger->notice(t('Content type, "@type", created.',
             ['@type' => $details['label']]));
-        \Drupal::cache()->set($cid, $next_index);
+        $bundle = $entityType->getName();
       }
       else {
         $this->logger->error(t('Creation of content type, "@type", failed. The provided details were: ',
