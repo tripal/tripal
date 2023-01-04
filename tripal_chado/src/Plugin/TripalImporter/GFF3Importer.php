@@ -1041,7 +1041,7 @@ class GFF3Importer extends ChadoImporterBase {
         ->condition('name', "DB:$dbname");
       $db_count = $db_query->countQuery()->execute()->fetchField();
       $db = $db_query->execute()->fetchObject();
-      print_r("DB COUNT:" . $db_count . "\n");
+      // print_r("DB COUNT:" . $db_count . "\n");
       if ($db_count == 0) {
         $values = ['name' => "$dbname"];
         // $db = chado_select_record('db', ['db_id'], $values, NULL, $this->chado_schema_main);
@@ -1051,7 +1051,7 @@ class GFF3Importer extends ChadoImporterBase {
         $db_count = $db_query->countQuery()->execute()->fetchField();
         $db = $db_query->execute()->fetchObject();
       }
-      print_r("DB COUNT:" . $db_count . "\n");
+      // print_r("DB COUNT:" . $db_count . "\n");
       if ($db_count == 0) {
         $values = [
           'name' => $dbname,
@@ -1060,12 +1060,12 @@ class GFF3Importer extends ChadoImporterBase {
         // $success = chado_insert_record('db', $values, array(
         //   'skip_validation' => TRUE,
         // ), $this->chado_schema_main);
-        print_r("DB NAME:" . $dbname . "\n");
+        // print_r("DB NAME:" . $dbname . "\n");
         $debug_dbs = $chado->query("SELECT * FROM {1:db} ORDER BY db_id ASC");
-        while ($obj = $debug_dbs->fetchObject()) {
-          print_r($obj);
-          print_r("\n");
-        }
+        // while ($obj = $debug_dbs->fetchObject()) {
+        //   print_r($obj);
+        //   print_r("\n");
+        // }
         // $debug_db_serial = $chado->query("SELECT currval(pg_get_serial_sequence('" . $chado->getSchemaName() . ".db', 'db_id'));");
         // while($obj = $debug_db_serial->fetchObject()) {
         //   print_r($obj);
@@ -1472,6 +1472,7 @@ class GFF3Importer extends ChadoImporterBase {
         $findex = $this->features[$uniquename]['findex'];
         $feature = $this->getCachedFeature($findex);
         print_r($feature);
+        // TODO: RESOLVE ERROR
         $feature_id = $feature['feature_id'];
       }
       else {
