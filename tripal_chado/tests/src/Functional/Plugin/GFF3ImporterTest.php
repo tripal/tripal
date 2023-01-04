@@ -83,8 +83,8 @@ class GFF3ImporterTest extends ChadoTestBrowserBase {
     // Test to ensure scaffold1 is found in the features table after landmarks loaded
     $scaffold_query = $chado->query("SELECT count(*) as c1 FROM {1:feature}");
     $scaffold_object = $scaffold_query->fetchObject();
-    print_r("Scaffold object\n");
-    print_r($scaffold_object);    
+    // print_r("Scaffold object\n");
+    // print_r($scaffold_object);    
     
 
     // Perform the GFF3 test by creating an instance of the GFF3 loader

@@ -1471,8 +1471,12 @@ class GFF3Importer extends ChadoImporterBase {
       if (array_key_exists($uniquename, $this->features)) {
         $findex = $this->features[$uniquename]['findex'];
         $feature = $this->getCachedFeature($findex);
-        print_r($feature);
-        // TODO: RESOLVE ERROR
+        // print_r($feature);
+        // TODO: SEE IF THIS BREAKS THINGS
+        // DEBUG: THIS CODE LOGIC NEEDS DOUBLE CHECKING - ASK STEPHEN
+        if (empty($feature['feature_id'])) {
+          $feature['feature_id'] = NULL;
+        }
         $feature_id = $feature['feature_id'];
       }
       else {
@@ -3252,7 +3256,6 @@ class GFF3Importer extends ChadoImporterBase {
 
 
   function insert_cvterm($term, $options = []) {
-    // TODO: This $chado object needs to be compatible with tests
     $chado = $this->getChadoConnection();
     // This will get a vocab and create it if it is not found (great)
     $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
