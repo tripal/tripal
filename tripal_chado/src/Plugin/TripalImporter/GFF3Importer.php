@@ -1576,7 +1576,7 @@ class GFF3Importer extends ChadoImporterBase {
   private function insertLandmark($name) {
     $chado = $this->getChadoConnection();
     $residues = '';
-    $insert_id = $chado->insert('1:feature', 'feature')
+    $insert_id = $chado->insert('1:feature')
     ->fields([
       'organism_id' => $this->organism->organism_id,
       'uniquename' => $name,
@@ -2891,7 +2891,7 @@ class GFF3Importer extends ChadoImporterBase {
     }
 
     if ($this->create_organism) {
-      $organism_insert = $chado->insert('1:organism', 'feature');
+      $organism_insert = $chado->insert('1:organism');
       $organism_insert->fields([
         'genus' => $genus,
         'species' => $species
