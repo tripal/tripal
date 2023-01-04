@@ -36,6 +36,7 @@ class ChadoConnectionTest extends ChadoTestBrowserBase {
    * the Drupal testing is sufficient for the query builders.
    */
   public function testDefaultTablePrefixing() {
+    $this->createTestSchema(ChadoTestBrowserBase::INIT_CHADO_EMPTY);
 
     // Open a Connection to the default Tripal DBX managed Chado schema.
     $connection = \Drupal::service('tripal_chado.database');
@@ -114,21 +115,22 @@ class ChadoConnectionTest extends ChadoTestBrowserBase {
    * Tests the Drupal query builders while quering chado.
    */
   public function testChadoQueryBuilding() {
+    $chado = $this->createTestSchema(ChadoTestBrowserBase::INIT_CHADO_EMPTY);
 
     // INSERT:
     try {
-      $query = $this->chado->insert('1:db')
+      $query = $chado->insert('1:db')
         ->fields(['name' => 'GO']);
       $query->execute();
     } catch (\Drupal\Core\Database\DatabaseExceptionWrapper $e) {
       $this->assertTrue(FALSE, "We should be able to insert into the Chado db table.");
     }
-    $db_id = $this->chado->query("SELECT db_id FROM {1:db} WHERE name='GO'")->fetchField();
+    $db_id = $chado->query("SELECT db_id FROM {1:db} WHERE name='GO'")->fetchField();
     $this->assertIsNumeric($db_id, "We should be able to select the primary key of the newly inserted db record.");
 
     // SELECT:
     try {
-      $queryBuilder_db_id = $this->chado->select('1:db', 'db')
+      $queryBuilder_db_id = $chado->select('1:db', 'db')
         ->fields('db', ['db_id'])
         ->condition('db.name', 'GO', '=')
         ->execute()
@@ -142,27 +144,27 @@ class ChadoConnectionTest extends ChadoTestBrowserBase {
     // UPDATE:
     $description = 'This is the description we will add during update.';
     try {
-      $query = $this->chado->update('1:db')
+      $query = $chado->update('1:db')
         ->fields(['description' => $description])
         ->condition('name', 'GO', '=');
       $query->execute();
     } catch (\Drupal\Core\Database\DatabaseExceptionWrapper $e) {
       $this->assertTrue(FALSE, "We should be able to update the Chado db table using the query builder.");
     }
-    $results = $this->chado->query("SELECT * FROM {1:db} WHERE name='GO'")->fetchAll();
+    $results = $chado->query("SELECT * FROM {1:db} WHERE name='GO'")->fetchAll();
     $this->assertEquals(1, sizeof($results), "There should be only a single GO db record.");
     $this->assertIsNumeric($results[0]->db_id, "We should be able to select the primary key of the newly updated db record.");
     $this->assertEquals($db_id, $results[0]->db_id, "The primary key should remain unchanged during update.");
 
     // DELETE:
     try {
-      $this->chado->delete('1:db')
+      $chado->delete('1:db')
         ->condition('db.name', 'GO', '=')
         ->execute();
     } catch (\Drupal\Core\Database\DatabaseExceptionWrapper $e) {
       $this->assertTrue(FALSE, "We should be able to delete from the Chado db table using the query builder.");
     }
-    $results = $this->chado->query("SELECT * FROM {1:db} WHERE name='GO'")->fetchAll();
+    $results = $chado->query("SELECT * FROM {1:db} WHERE name='GO'")->fetchAll();
     $this->assertEquals(0, sizeof($results), "There should not be any GO db record left.");
 
   }
@@ -185,7 +187,7 @@ class ChadoConnectionTest extends ChadoTestBrowserBase {
     $expected_version = '1.3';
 
     // Test 1A
-    $connection = $this->chado;
+    $connection = $this->createTestSchema(ChadoTestBrowserBase::INIT_CHADO_EMPTY);
     $version = $connection->findVersion();
     $this->assertEquals($version, $expected_version,
       "Unable to extract the version from INIT_CHADO_EMPTY test schema with no parameters provided.");
@@ -201,7 +203,7 @@ class ChadoConnectionTest extends ChadoTestBrowserBase {
       "Unable to extract the Exact Version from INIT_CHADO_EMPTY test schema with the schema name provided.");
 
     // Test 2A
-    $connection = $this->getTestSchema(ChadoTestBrowserBase::INIT_CHADO_DUMMY);
+    $connection = $this->createTestSchema(ChadoTestBrowserBase::INIT_CHADO_DUMMY);
     $version = $connection->findVersion();
     $this->assertEquals($version, $expected_version,
       "Unable to extract the version from INIT_CHADO_DUMMY test schema with no parameters provided.");
@@ -217,7 +219,7 @@ class ChadoConnectionTest extends ChadoTestBrowserBase {
       "Unable to extract the Exact Version from INIT_CHADO_DUMMY test schema with the schema name provided.");
 
     // Test 3A
-    $connection = $this->getTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
+    $connection = $this->createTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
     $version = $connection->findVersion();
     $this->assertEquals($version, $expected_version,
       "Unable to extract the version from PREPARE_TEST_CHADO test schema with no parameters provided.");

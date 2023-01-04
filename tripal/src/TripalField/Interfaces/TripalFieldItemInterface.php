@@ -28,52 +28,13 @@ interface TripalFieldItemInterface extends FieldItemInterface {
   public static function tripalTypes($field_definition);
 
   /**
-   * Allows child field items to add default types.
-   *
-   * This function should be called in the tripalTypes implementation of
-   * any child class to ensure that default types needed for all Tripal fields
-   * get added.
-   *
-   * @param string $entity_type_id
-   *   The entity type id of this field's entity.
-   *
-   * @param string $field_type
-   *   The name of the field to which default types are needed..
-   *
-   * @return array
-   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyTypeBase property types.
-   */
-  public static function defaultTripalTypes($entity_type_id, $field_type);
-
-  /**
-   * Allows child field items to add default values to the template..
-   *
-   * This function should be called in the tripalValuesTemplate implementation
-   * of any child class to ensure that default types needed for all Tripal
-   * fields are known.
-   *
-   * @param string $entity_type_id
-   *   The entity type id of this field's entity.
-   *
-   * @param string $field_type
-   *   The name of the field to which default types are needed.
-   *
-   * @param string $entity_id
-   *   The Id of the entity that the value belongs to.
-   *
-   * @return array
-   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyTypeBase property types.
-   */
-  public static function defaultTripalValuesTemplate($entity_type_id, $field_type, $entity_id);
-
-  /**
    * Returns an empty template array of all property values this field uses for loading and saving.
-   * 
+   *
    * @param  object $field_definition
    *   The field configuration object. This can be an instance of:
    *   \Drupal\field\Entity\FieldStorageConfig or
    *   \Drupal\field\Entity\FieldConfig
-   *   
+   *
    * @return array
    *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue property value templates.
    */
@@ -89,13 +50,16 @@ interface TripalFieldItemInterface extends FieldItemInterface {
    * @param string $field_name
    *   The name of the field.
    *
-   * @param array $properties
+   * @param array $prop_types
+   *   Array of \Drupal\tripal\TripalStorage\\StoragePropertyType objects.
+   *
+   * @param array $prop_values
    *   Array of \Drupal\tripal\TripalStorage\\StoragePropertyValue objects.
    *
    * @param \Drupal\tripal\TripalStorage\TripalEntityBase $entity
    *   The entity.
    */
-  public function tripalLoad($field_item, $field_name, $properties, $entity);
+  public function tripalLoad($field_item, $field_name, $prop_types, $prop_values, $entity);
 
   /**
    * Saves the values to the given array of properties from the given entity.
@@ -106,13 +70,16 @@ interface TripalFieldItemInterface extends FieldItemInterface {
    * @param string $field_name
    *   The name of the field.
    *
-   * @param array $properties
+   * @param array $prop_types
+   *   Array of \Drupal\tripal\TripalStorage\\StoragePropertyType objects.
+   *
+   * @param array $prop_values
    *   Array of \Drupal\tripal\TripalStorage\\StoragePropertyValue objects.
    *
    * @param \Drupal\tripal\TripalStorage\TripalEntityBase $entity
    *   The entity.
    */
-  public function tripalSave($field_item, $field_name, $properties, $entity);
+  public function tripalSave($field_item, $field_name, $prop_types, $prop_values, $entity);
 
   /**
    * Clears all field values from the given entity.
@@ -126,11 +93,14 @@ interface TripalFieldItemInterface extends FieldItemInterface {
    * @param string $field_name
    *   The name of the field.
    *
-   * @param array $properties
+   * @param array $prop_types
+   *   Array of \Drupal\tripal\TripalStorage\\StoragePropertyType objects.
+   *
+   * @param array $prop_values
    *   Array of \Drupal\tripal\TripalStorage\\StoragePropertyValue objects.
    *
    * @param \Drupal\tripal\TripalStorage\TripalEntityBase $entity
    *   The entity.
    */
-  public function tripalClear($field_item, $field_name, $properties, $entity);
+  public function tripalClear($field_item, $field_name, $prop_types, $prop_values, $entity);
 }

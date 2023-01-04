@@ -48,6 +48,11 @@ trait ChadoTestTrait  {
   protected static $testSchemas = [];
 
   /**
+   * A string indicating the name of the current chado test schema.
+   */
+  protected $testSchemaName = NULL;
+
+  /**
    * A database connection.
    *
    * It should be set if not set in any test function that adds schema names to
@@ -199,6 +204,32 @@ trait ChadoTestTrait  {
 
   /**
    * Gets a new Chado schema for testing.
+   * Retrieves the current test schema.
+   * If there is not currently a test schema set-up then one will be created.
+   *
+   * @param int $init_level
+   *   One of the constant to select the schema initialization level.
+   *   If this is supplied then it forces a new connection to be made for
+   *   backwards compatibility.
+   *
+   * @return \Drupal\tripal\TripalDBX\TripalDbxConnection
+   *   A bio database connection using the generated schema.
+   */
+  protected function getTestSchema(int $init_level = NULL) {
+
+    if ($init_level !== NULL) {
+      return $this->createTestSchema($init_level);
+    }
+    elseif ($this->testSchemaName === NULL) {
+      return $this->createTestSchema();
+    }
+    else {
+      return new ChadoConnection($this->testSchemaName);
+    }
+  }
+
+  /**
+   * Creates a new Chado schema for testing.
    *
    * @param int $init_level
    *   One of the constant to select the schema initialization level.
@@ -206,7 +237,7 @@ trait ChadoTestTrait  {
    * @return \Drupal\tripal\TripalDBX\TripalDbxConnection
    *   A bio database connection using the generated schema.
    */
-  protected function getTestSchema(int $init_level = 0) {
+  protected function createTestSchema(int $init_level = 0) {
     $schema_name = $this->testSchemaBaseNames['chado']
       . '_'
       . bin2hex(random_bytes(8))
@@ -291,6 +322,7 @@ trait ChadoTestTrait  {
     }
     self::$db = self::$db ?? \Drupal::database();
     self::$testSchemas[$schema_name] = TRUE;
+    $this->testSchemaName = $schema_name;
 
     // Make sure that any other connections to TripalDBX will see this new test schema as
     // the default schema.

@@ -4,6 +4,7 @@ namespace Drupal\tripal_chado\TripalField;
 
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\tripal\TripalStorage\IntStoragePropertyType;
 
 
 /**
@@ -15,14 +16,10 @@ abstract class ChadoFieldItemBase extends TripalFieldItemBase {
    * {@inheritdoc}
    */
   public static function defaultStorageSettings() {
-    $settings = [
-      'storage_plugin_id' => 'chado_storage',
-      'storage_plugin_settings' => [
-        'base_table' => '',
-        'property_settings' => [],
-      ],
-    ];
-    return $settings + parent::defaultStorageSettings();
+    $settings = parent::defaultStorageSettings();
+    $settings['storage_plugin_id'] = 'chado_storage';
+    $settings['storage_plugin_settings']['base_table'] = '';
+    return $settings;
   }
 
 

@@ -27,7 +27,10 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
    */
   protected function getCV($cvname) {
 
-    $query = $this->chado->select('1:cv', 'cv')
+    // Retrieve the test schema created in testTripalVocabularyClasses().
+    $chado = $this->getTestSchema();
+
+    $query = $chado->select('1:cv', 'cv')
       ->condition('cv.name', $cvname, '=')
       ->fields('cv', ['name', 'definition']);
     $result = $query->execute();
@@ -47,7 +50,10 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
    */
   protected function getDB($dbname) {
 
-    $query = $this->chado->select('1:db', 'db')
+    // Retrieve the test schema created in testTripalVocabularyClasses().
+    $chado = $this->getTestSchema();
+
+    $query = $chado->select('1:db', 'db')
       ->condition('db.name', $dbname, '=')
       ->fields('db', ['name', 'urlprefix', 'url', 'description']);
     $result = $query->execute();
@@ -64,7 +70,11 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
    * @param string $cvterm_name
    */
   protected function getCVterm($cvname, $cvterm_name) {
-    $query = $this->chado->select('1:cvterm', 'CVT');
+
+    // Retrieve the test schema created in testTripalVocabularyClasses().
+    $chado = $this->getTestSchema();
+
+    $query = $chado->select('1:cvterm', 'CVT');
     $query->join('1:cv', 'CV', '"CV".cv_id = "CVT".cv_id');
     $query->fields('CVT', ['cv_id', 'name', 'cvterm_id', 'definition', 'is_obsolete', 'is_relationshiptype'])
       ->condition('CVT.name', $cvterm_name, '=')
@@ -85,7 +95,11 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
    * @return A database query result.
    */
   protected function updateRecord($table, $name, $field, $value) {
-    $query = $this->chado->update('1:' . $table)
+
+    // Retrieve the test schema created in testTripalVocabularyClasses().
+    $chado = $this->getTestSchema();
+
+    $query = $chado->update('1:' . $table)
       ->condition('name', $name, '=')
       ->fields([$field => $value]);
     return $query->execute();
@@ -100,7 +114,11 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
    * @return The number of records deleted.
    */
   protected function cleanDB($dbname) {
-    $query = $this->chado->delete('1:db')
+
+    // Retrieve the test schema created in testTripalVocabularyClasses().
+    $chado = $this->getTestSchema();
+
+    $query = $chado->delete('1:db')
       ->condition('name', $dbname, '=');
     return $query->execute();
   }
@@ -114,7 +132,11 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
    * @return The number of records deleted.
    */
   protected function cleanCV($cvname) {
-    $query = $this->chado->delete('1:cv', 'cv')
+
+    // Retrieve the test schema created in testTripalVocabularyClasses().
+    $chado = $this->getTestSchema();
+
+    $query = $chado->delete('1:cv', 'cv')
       ->condition('name', $cvname, '=');
     return $query->execute();
   }
@@ -126,6 +148,9 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
    *
    */
   public function testTripalVocabularyClasses() {
+
+    // Create a new test schema for us to use.
+    $this->createTestSchema(ChadoTestBrowserBase::INIT_CHADO_EMPTY);
 
     // Create Collection managers.
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');

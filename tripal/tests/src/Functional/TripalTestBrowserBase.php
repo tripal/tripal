@@ -229,8 +229,6 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
 
     // Setting the default values:
     $random = $this->getRandomGenerator();
-    $values['id'] = $values['id'] ?? random_int(1,500);
-    $values['name'] = $values['name'] ?? 'bio_data_' . $values['id'];
     // Provides a title with ~3 latin capitalized words.
     $values['label'] = $values['label'] ?? $random->sentences(3,TRUE);
     // Provides a random non-unique 4 character string.
@@ -251,8 +249,7 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
     $entity_type_obj->save();
 
     // A quick double check before returning it.
-    $entity_type = $entity_type_obj->getName();
-    $this->assertEquals($values['name'], $entity_type, "Unable to retrieve machine name from the newly created entity type.");
+    $this->assertEquals($values['label'], $entity_type_obj->getLabel(), "Unable to retrieve label from the newly created entity type.");
 
     return $entity_type_obj;
   }

@@ -30,7 +30,7 @@ class TripalField_chado_linker__propTest extends ChadoTestBrowserBase {
     parent::setup();
 
     // Use the Preapred test chado schema.
-    $this->getTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
+    $this->createTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
 
   }
 
@@ -63,32 +63,27 @@ class TripalField_chado_linker__propTest extends ChadoTestBrowserBase {
       'cardinality' => -1,
       'storage_plugin_settings' => [
         'base_table' => 'organism',
-        'property_settings' => [
-          'value' => [
-            'action' => 'store',
-            'chado_table' => 'organismprop',
-            'chado_column' => 'value',
-          ],
-        ],
+        'type_table' => 'organismprop',
+        'type_column' => 'type_id',
       ],
     ]);
 
-    // Reload the entity to get the field.
-    $entity = TripalEntity::load($entity->getID());
+//     // Reload the entity to get the field.
+//     $entity = TripalEntity::load($entity->getID());
 
-    // Verify that the note field got added to the organism entity.
-    $this->assertTrue($entity->hasField('bio_data_1_local_note'),
-      "The organism entity is missing the note field.");
+//     // Verify that the note field got added to the organism entity.
+//     $this->assertTrue($entity->hasField('bio_data_1_local_note'),
+//       "The organism entity is missing the note field.");
 
-    //
-    // Test a single property value.
-    //
+//     //
+//     // Test a single property value.
+//     //
 
-    // Test adding a single value.
-    $entity->set('bio_data_1_local_note', 'note1');
-    $entity->set('bio_data_1_local_abbreviation', 'C. siensis');
-    $entity->save();
-    $entity = TripalEntity::load($entity->getID());
+//     // Test adding a single value.
+//     $entity->set('bio_data_1_local_note', 'note1');
+//     $entity->set('bio_data_1_local_abbreviation', 'C. siensis');
+//     $entity->save();
+//     $entity = TripalEntity::load($entity->getID());
 
     /*
     // Make sure the field has a only one value

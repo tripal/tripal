@@ -5,6 +5,7 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 use Drupal\tripal\TripalField\TripalWidgetBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
  * Plugin implementation of default Tripal string type widget.
@@ -18,7 +19,7 @@ use Drupal\Core\Form\FormStateInterface;
  *   }
  * )
  */
-class obi__organism_widget extends TripalWidgetBase {
+class obi__organism_widget extends ChadoWidgetBase {
 
 
   /**
@@ -49,14 +50,23 @@ class obi__organism_widget extends TripalWidgetBase {
       $organisms[$organism->organism_id] = $org_name;
     }
 
-    $element['value'] = $element + [
+    $item_vals = $items[$delta]->getValue();
+    $record_id = $item_vals['record_id'] ?? 0;
+    $organism_id = $item_vals['organism_id'] ?? 0;
+
+    $elements = [];
+    $elements['record_id'] = [
+      '#type' => 'value',
+      '#default_value' => $record_id,
+    ];
+    $elements['organism_id'] = $element + [
       '#type' => 'select',
       '#options' => $organisms,
-      '#default_value' => $items[$delta]->value ?? '',
+      '#default_value' => $organism_id,
       '#placeholder' => $this->getSetting('placeholder'),
       '#empty_option' => '-- Select --',
     ];
 
-    return $element + parent::formElement($items, $delta, $element, $form, $form_state);
+    return $elements;
   }
 }
