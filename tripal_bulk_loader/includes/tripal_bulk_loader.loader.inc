@@ -209,12 +209,12 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
     foreach ($record_array['fields'] as $field_index => $field_array) {
 
       $default_data[$priority]['table'] = $record_array['table'];
-      $default_data[$priority]['mode'] = ($record_array['mode']) ? $record_array['mode'] : 'insert';
-      $default_data[$priority]['select_if_duplicate'] = ($record_array['select_if_duplicate']) ? $record_array['select_if_duplicate'] : 0;
-      $default_data[$priority]['update_if_duplicate'] = ($record_array['update_if_duplicate']) ? $record_array['update_if_duplicate'] : 0;
-      $default_data[$priority]['disabled'] = ($record_array['disable']) ? $record_array['disable'] : 0;
-      $default_data[$priority]['optional'] = ($record_array['optional']) ? $record_array['optional'] : 0;
-      $default_data[$priority]['select_optional'] = ($record_array['select_optional']) ? $record_array['select_optional'] : 0;
+      $default_data[$priority]['mode'] = empty($record_array['mode']) ? 'insert' : $record_array['mode'];
+      $default_data[$priority]['select_if_duplicate'] = empty($record_array['select_if_duplicate']) ? 0 : $record_array['select_if_duplicate'];
+      $default_data[$priority]['update_if_duplicate'] = empty($record_array['update_if_duplicate']) ? 0 : $record_array['update_if_duplicate'];
+      $default_data[$priority]['disabled'] = empty($record_array['disable']) ? 0 : $record_array['disable'];
+      $default_data[$priority]['optional'] = empty($record_array['optional']) ? 0 : $record_array['optional'];
+      $default_data[$priority]['select_optional'] = empty($record_array['select_optional']) ? 0 : $record_array['select_optional'];
       $default_data[$priority]['record_id'] = $record_array['record_id'];
       $default_data[$priority]['required'][$field_array['field']] = $field_array['required'];
 
@@ -896,10 +896,10 @@ function tripal_bulk_loader_add_spreadsheetdata_to_values($values, $line, $field
       continue;
     }
 
-    $column = $field2column[$field] - 1;
-    if ($column < 0) {
+    if (empty($field2column[$field])) {
       continue;
     }
+    $column = $field2column[$field] - 1;
 
     if (preg_match('/\S+/', $line[$column])) {
       $values[$field] = $line[$column];
