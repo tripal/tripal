@@ -481,40 +481,28 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
    * A helper function to add the TAXRANK:species_subgroup term to Chado.
    */
   protected function addTaxRankSubGroupCVTerm() {
-
-    // First add the vocabulary term for the organism.type_id column.
-    $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
-    $taxrank = $idsmanager->createCollection('TAXRANK', 'chado_id_space');
-    $vmanager->createCollection('taxonomic_rank', 'chado_vocabulary');
-    $species_group = new TripalTerm([
-      'name' => 'species_group',
-      'idSpace' => 'TAXRANK',
-      'vocabulary' => 'taxonomic_rank',
-      'accession' => '0000010',
+    return $this->createTripalTerm([
+      'vocab_name' => 'taxonomic_rank',
+      'id_space_name' => 'TAXRANK',
+      'term' => [
+        'name' => 'species_group',
+        'accession' =>'0000010',
+      ],
     ]);
-    $taxrank->saveTerm($species_group);
-    return $species_group;
   }
 
   /**
    * A helper function to add the local::note term to Chado.
    */
   protected function addLocalNoteCVTerm() {
-
-    // First add the vocabulary term for the organism.type_id column.
-    $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
-    $local = $idsmanager->createCollection('local', 'chado_id_space');
-    $vmanager->createCollection('local', 'chado_vocabulary');
-    $note = new TripalTerm([
-      'name' => 'note',
-      'idSpace' => 'local',
-      'vocabulary' => 'local',
-      'accession' => 'note',
+    return $this->createTripalTerm([
+      'vocab_name' => 'local',
+      'id_space_name' => 'local',
+      'term' => [
+        'name' => 'note',
+        'accession' =>'note',
+      ],
     ]);
-    $local->saveTerm($note);
-    return $note;
   }
 
 
@@ -550,21 +538,14 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
    * @return unknown
    */
   protected function addSOGeneCVterm() {
-    // First add the vocabulary term for the organism.type_id column.
-    $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
-
-    $sequence = $idsmanager->createCollection('SO', 'chado_id_space');
-    $vmanager->createCollection('sequence', 'chado_vocabulary');
-    $gene = new TripalTerm([
-      'name' => 'gene',
-      'idSpace' => 'SO',
-      'vocabulary' => 'sequence',
-      'accession' => '0000704)',
+    return $this->createTripalTerm([
+      'vocab_name' => 'sequence',
+      'id_space_name' => 'SO',
+      'term' => [
+        'name' => 'gene',
+        'accession' =>'0000704',
+      ],
     ]);
-    $sequence->saveTerm($gene);
-    return $gene;
-
   }
 
   /**
@@ -578,7 +559,6 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
       'id_space_name' => 'TAXRANK',
       'term' => [
         'name' => 'genus',
-        'definition' => '',
         'accession' =>'0000005',
       ],
     ]);
@@ -587,7 +567,6 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
       'id_space_name' => 'TAXRANK',
       'term' => [
         'name' => 'species',
-        'definition' => '',
         'accession' =>'0000006',
       ],
     ]);
@@ -645,9 +624,6 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
         'accession' =>'0000117',
       ],
     ]);
-
-
-    return $gene;
   }
 
   /**
