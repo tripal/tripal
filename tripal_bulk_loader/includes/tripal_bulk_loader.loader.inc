@@ -209,12 +209,12 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
     foreach ($record_array['fields'] as $field_index => $field_array) {
 
       $default_data[$priority]['table'] = $record_array['table'];
-      $default_data[$priority]['mode'] = empty($record_array['mode']) ? 'insert' : $record_array['mode'];
-      $default_data[$priority]['select_if_duplicate'] = empty($record_array['select_if_duplicate']) ? 0 : $record_array['select_if_duplicate'];
-      $default_data[$priority]['update_if_duplicate'] = empty($record_array['update_if_duplicate']) ? 0 : $record_array['update_if_duplicate'];
-      $default_data[$priority]['disabled'] = empty($record_array['disable']) ? 0 : $record_array['disable'];
-      $default_data[$priority]['optional'] = empty($record_array['optional']) ? 0 : $record_array['optional'];
-      $default_data[$priority]['select_optional'] = empty($record_array['select_optional']) ? 0 : $record_array['select_optional'];
+      $default_data[$priority]['mode'] = array_key_exists('mode', $record_array) ? $record_array['mode'] : 'insert';
+      $default_data[$priority]['select_if_duplicate'] = array_key_exists('select_if_duplicate', $record_array) ? $record_array['select_if_duplicate'] : 0;
+      $default_data[$priority]['update_if_duplicate'] = array_key_exists('update_if_duplicate', $record_array) ? $record_array['update_if_duplicate'] : 0;
+      $default_data[$priority]['disabled'] = array_key_exists('disable', $record_array) ? $record_array['disable'] : 0;
+      $default_data[$priority]['optional'] = array_key_exists('optional', $record_array) ? $record_array['optional'] : 0;
+      $default_data[$priority]['select_optional'] = array_key_exists('select_optional', $record_array) ? $record_array['select_optional'] : 0;
       $default_data[$priority]['record_id'] = $record_array['record_id'];
       $default_data[$priority]['required'][$field_array['field']] = $field_array['required'];
 
