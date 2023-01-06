@@ -32,7 +32,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
   public function testChadoStorage() {
 
     // Create a new test schema for us to use.
-    $this->createTestSchema(ChadoTestBrowserBase::INIT_CHADO_EMPTY);
+    $this->createTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
 
     // Get plugin managers we need for our testing.
     $storage_manager = \Drupal::service('tripal.storage');
@@ -482,19 +482,18 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
    */
   protected function addTaxRankSubGroupCVTerm() {
 
-    // First add the vocabulary term for the organism.type_id column.
-    $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
-    $taxrank = $idsmanager->createCollection('TAXRANK', 'chado_id_space');
-    $vmanager->createCollection('taxonomic_rank', 'chado_vocabulary');
-    $species_group = new TripalTerm([
-      'name' => 'species_group',
-      'idSpace' => 'TAXRANK',
-      'vocabulary' => 'taxonomic_rank',
-      'accession' => '0000010',
-    ]);
-    $taxrank->saveTerm($species_group);
+    $species_group = $this->createTripalTerm([
+      'vocab_name' => 'taxonomic_rank',
+      'id_space_name' => 'TAXRANK',
+      'term' => [
+        'name' => 'species_group',
+        'definition' => '',
+        'accession' =>'0000010',
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
     return $species_group;
+
   }
 
   /**
@@ -502,18 +501,16 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
    */
   protected function addLocalNoteCVTerm() {
 
-    // First add the vocabulary term for the organism.type_id column.
-    $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
-    $local = $idsmanager->createCollection('local', 'chado_id_space');
-    $vmanager->createCollection('local', 'chado_vocabulary');
-    $note = new TripalTerm([
-      'name' => 'note',
-      'idSpace' => 'local',
-      'vocabulary' => 'local',
-      'accession' => 'note',
-    ]);
-    $local->saveTerm($note);
+    $note = $this->createTripalTerm([
+      'vocab_name' => 'local',
+      'id_space_name' => 'local',
+      'term' => [
+        'name' => 'note',
+        'definition' => '',
+        'accession' =>'note',
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+      );
     return $note;
   }
 
@@ -550,19 +547,17 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
    * @return unknown
    */
   protected function addSOGeneCVterm() {
-    // First add the vocabulary term for the organism.type_id column.
-    $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
 
-    $sequence = $idsmanager->createCollection('SO', 'chado_id_space');
-    $vmanager->createCollection('sequence', 'chado_vocabulary');
-    $gene = new TripalTerm([
-      'name' => 'gene',
-      'idSpace' => 'SO',
-      'vocabulary' => 'sequence',
-      'accession' => '0000704)',
-    ]);
-    $sequence->saveTerm($gene);
+    $gene = $this->createTripalTerm([
+      'vocab_name' => 'sequence',
+      'id_space_name' => 'SO',
+      'term' => [
+        'name' => 'gene',
+        'definition' => '',
+        'accession' =>'0000704',
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
     return $gene;
 
   }
@@ -580,8 +575,9 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
         'name' => 'genus',
         'definition' => '',
         'accession' =>'0000005',
-      ],
-    ]);
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
     $this->createTripalTerm([
       'vocab_name' => 'taxonomic_rank',
       'id_space_name' => 'TAXRANK',
@@ -589,8 +585,9 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
         'name' => 'species',
         'definition' => '',
         'accession' =>'0000006',
-      ],
-    ]);
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
     $this->createTripalTerm([
       'vocab_name' => 'SIO',
       'id_space_name' => 'SIO',
@@ -598,8 +595,9 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
         'name' => 'record identifier',
         'definition' => 'A record identifier is an identifier for a database entry.',
         'accession' =>'000729',
-      ],
-    ]);
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
     $this->createTripalTerm([
       'vocab_name' => 'schema',
       'id_space_name' => 'schema',
@@ -607,8 +605,9 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
         'name' => 'name',
         'definition' => 'The name of the item.',
         'accession' =>'name',
-      ],
-    ]);
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
     $this->createTripalTerm([
       'vocab_name' => 'schema',
       'id_space_name' => 'schema',
@@ -616,8 +615,9 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
         'name' => 'additionalType',
         'definition' => 'An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.	',
         'accession' =>'additionalType',
-      ],
-    ]);
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
     $this->createTripalTerm([
       'vocab_name' => 'sequence',
       'id_space_name' => 'SO',
@@ -625,17 +625,19 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
         'name' => 'sequence_feature',
         'definition' => 'Any extent of continuous biological sequence. [LAMHDI:mb, SO:ke]',
         'accession' =>'0000110',
-      ],
-    ]);
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
     $this->createTripalTerm([
-      'vocab_name' => 'NCIT',
+      'vocab_name' => 'ncit',
       'id_space_name' => 'NCIT',
       'term' => [
         'name' => 'Value',
         'definition' => 'A numerical quantity measured or assigned or computed.',
         'accession' =>'C25712',
-      ],
-    ]);
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
     $this->createTripalTerm([
       'vocab_name' => 'OBCS',
       'id_space_name' => 'OBCS',
@@ -643,11 +645,9 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
         'name' => 'rank order',
         'definition' => 'A data item that represents an arrangement according to a rank, i.e., the position of a particular case relative to other cases on a defined scale.',
         'accession' =>'0000117',
-      ],
-    ]);
-
-
-    return $gene;
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
   }
 
   /**

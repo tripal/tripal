@@ -121,8 +121,9 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
         'name' => 'genus',
         'definition' => '',
         'accession' =>'0000005',
-      ],
-    ]);
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
     $species_term = $this->createTripalTerm([
       'vocab_name' => 'taxonomic_rank',
       'id_space_name' => 'TAXRANK',
@@ -130,8 +131,9 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
         'name' => 'species',
         'definition' => '',
         'accession' =>'0000006',
-      ],
-    ]);
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
     $infraspecies_term = $this->createTripalTerm([
       'vocab_name' => 'taxonomic_rank',
       'id_space_name' => 'TAXRANK',
@@ -139,8 +141,9 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
         'name' => 'infraspecies',
         'definition' => '',
         'accession' =>'0000045',
-      ],
-    ]);
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
     $description_term = $this->createTripalTerm([
       'vocab_name' => 'schema',
       'id_space_name' => 'schema',
@@ -148,8 +151,9 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
         'name' => 'description',
         'definition' => '',
         'accession' =>'description',
-      ],
-    ]);
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
     $abbreviation_term = $this->createTripalTerm([
       'vocab_name' => 'local',
       'id_space_name' => 'local',
@@ -157,8 +161,9 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
         'name' => 'abbreviation',
         'definition' => '',
         'accession' =>'abbreviation',
-      ],
-    ]);
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
     $common_name_term = $this->createTripalTerm([
       'vocab_name' => 'ncbitaxon',
       'id_space_name' => 'NCBITaxon',
@@ -166,8 +171,9 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
         'name' => 'common name',
         'definition' => '',
         'accession' =>'common_name',
-      ],
-    ]);
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
 
     ///
     // Create the fields for the Organism content type.
