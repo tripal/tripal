@@ -32,7 +32,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
   public function testChadoStorage() {
 
     // Create a new test schema for us to use.
-    $this->createTestSchema(ChadoTestBrowserBase::INIT_CHADO_EMPTY);
+    $this->createTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
 
     // Get plugin managers we need for our testing.
     $storage_manager = \Drupal::service('tripal.storage');
