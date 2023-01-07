@@ -241,6 +241,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
       ->condition('DB.name', $this->getName(), '=')
       ->condition('DBX.accession', $accession, '=');
     $cvterm = $query->execute()->fetchObject();
+    print_r($cvterm);
     if (!$cvterm) {
       return NULL;
     }

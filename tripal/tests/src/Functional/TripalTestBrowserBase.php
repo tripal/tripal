@@ -145,9 +145,8 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
     if (!$idSpace) {
       $idSpace = $idsmanager->createCollection($values['id_space_name'], $idspace_plugin_id);
       $this->assertInstanceOf(TripalIdSpaceInterface::class, $idSpace, "Unable to create the ID Space.");
+      $idSpace->setDefaultVocabulary($vocabulary->getName());
     }
-    // Assign the vocabulary as the default for this ID Space.
-    $idSpace->setDefaultVocabulary($vocabulary->getName());
 
     $term = $idSpace->getTerm($values['term']['accession']);
     if (!$term) {
