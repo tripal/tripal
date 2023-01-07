@@ -148,8 +148,7 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 ## Install composer and Drush.
 WORKDIR /var/www
 RUN chmod a+x /app/tripaldocker/init_scripts/composer-init.sh \
-  && /app/tripaldocker/init_scripts/composer-init.sh \
-  && vendor/bin/drush --version
+  && /app/tripaldocker/init_scripts/composer-init.sh
 
 ## Use composer to install Drupal.
 WORKDIR /var/www
