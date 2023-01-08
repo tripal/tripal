@@ -45,6 +45,15 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     // Ensure we see all logging in tests.
     \Drupal::state()->set('is_a_test_environment', TRUE);
 
+
+    $testEnviro_chado = $this->getTestSchema();
+    $testEnviro_chado_schemaname = $testEnviro_chado->getSchemaName();
+    $coreEnviro_chado = \Drupal::service('tripal_chado.database');
+    $coreEnviro_chado_schemaname = $coreEnviro_chado->getSchemaName();
+    print "\ntestChadoStorage: $testEnviro_chado_schemaname = $coreEnviro_chado_schemaname.\n";
+    // $this->assertEquals($testEnviro_chado_schemaname, $coreEnviro_chado_schemaname, "Core Services are not using the test schema.");
+
+
     // All Chado storage testing requires an entity.
     $content_entity = $this->createTripalContent();
     $content_entity_id = $content_entity->id();
@@ -174,7 +183,6 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $this->assertTrue($success, "Loading values after adding $field_name was not success (i.e. did not return TRUE).");
 
     // Then we test that the values are now in the types that we passed in.
-    //print_r($values['schema__name'][0]);
     $this->assertEquals('test_gene_name', $values['schema__name'][0]['name']['value']->getValue(), 'The gene name value was not loaded properly.');
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -337,7 +345,6 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
       );
     }
 
-
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // -- Single value, multi-property field
     // Stored in feature.organism_id; Term: obi:organism.
@@ -490,13 +497,15 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
   protected function addOryzaSativaRecord($type_term) {
 
     // Retrieve the test schema created in testChadoStorage().
-    /**
-     * @var \Drupal\tripal\TripalDBX\TripalDbxConnection $chado
-     */
-    $chado = $this->getTestSchema();
-    print_r($chado->getSchemaName() . "\n");
-    $chado = \Drupal::service('tripal_chado.database');
-    print_r($chado->getSchemaName() . "\n");
+    // @spficklins original testing location.
+    $testEnviro_chado = $this->getTestSchema();
+    $testEnviro_chado_schemaname = $testEnviro_chado->getSchemaName();
+    $coreEnviro_chado = \Drupal::service('tripal_chado.database');
+    $coreEnviro_chado_schemaname = $coreEnviro_chado->getSchemaName();
+    // @debug print "\naddOryzaSativaRecord: $testEnviro_chado_schemaname = $coreEnviro_chado_schemaname.\n";
+    $this->assertEquals($testEnviro_chado_schemaname, $coreEnviro_chado_schemaname, "Core Services are not using the test schema.");
+
+    $chado = $testEnviro_chado;
 
     $chado->insert('1:organism')
       ->fields([
@@ -557,11 +566,15 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
    */
   protected function addFeatureRecord($name, $uniquename, $type, $organism) {
 
+    $testEnviro_chado = $this->getTestSchema();
+    $testEnviro_chado_schemaname = $testEnviro_chado->getSchemaName();
+    $coreEnviro_chado = \Drupal::service('tripal_chado.database');
+    $coreEnviro_chado_schemaname = $coreEnviro_chado->getSchemaName();
+    // @debug print "\naddFeatureRecord: $testEnviro_chado_schemaname = $coreEnviro_chado_schemaname.\n";
+    $this->assertEquals($testEnviro_chado_schemaname, $coreEnviro_chado_schemaname, "Core Services are not using the test schema.");
+
     // Retrieve the test schema created in testChadoStorage().
-    /**
-     * @var \Drupal\tripal\TripalDBX\TripalDbxConnection $chado
-     */
-    //$chado = $this->getTestSchema();
+    // @original $chado = $this->getTestSchema();
     $chado = \Drupal::service('tripal_chado.database');
 
     $chado->insert('1:feature')
@@ -584,15 +597,12 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
    * A helper function for adding notes values to the featureprop table.
    */
   protected function addFeaturePropRecords($feature, $term, $value, $rank) {
-    print_r([
-      $term->getName(),
-      $term->getAccession(),
-      $term->getIdSpace(),
-      $term->getInternalId(),
-    ]);
+
+    // $deets = [$term->getName(), $term->getAccession(), $term->getIdSpace(), $term->getInternalId()];
+    // @debug print_r($deets);
 
     // Retrieve the test schema created in testChadoStorage().
-    //$chado = $this->getTestSchema();
+    // @original $chado = $this->getTestSchema();
     $chado = \Drupal::service('tripal_chado.database');
 
     return $chado->insert('1:featureprop')
