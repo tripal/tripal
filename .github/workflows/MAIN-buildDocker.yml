@@ -4,6 +4,7 @@ on:
     branches:
       - 9.x-4.x
       - 4v40g-0-test-docker-build
+      - tv4g0-328-dockerUpdateLatestTag
 
 jobs:
   push_to_registry:
@@ -27,9 +28,8 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           buildArgs: "drupalversion=${{ matrix.drupalversion }}"
           labels: 'tripal.branch=9.x-4.x,drupal.version.label="${{ matrix.label }}"'
-      - name: Build latest using 9.4.x-dev
-        id: docker_build_latest
-        uses: docker/build-push-action@v2
+      - uses: mr-smithers-excellent/docker-build-push@v5
+        name: Build latest using 9.4.x-dev
         if: ${{ matrix.drupalversion == '9.4.x-dev' }}
         with:
           image: tripalproject/tripaldocker
@@ -38,4 +38,4 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           buildArgs: "drupalversion=${{ matrix.drupalversion }}"
-          labels: 'tripal.branch=9.x-4.x,drupal.version.label="${{ matrix.label }}"'
+          labels: 'tripal.branch=9.x-4.x,drupal.version.label="${{ matrix.drupalversion }}"'
