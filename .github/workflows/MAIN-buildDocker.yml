@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        drupalversion: ['9.2.x-dev', '9.3.x-dev', '9.4.x-dev', '9.5.x-dev']
+        drupalversion: ['9.3.x-dev', '9.4.x-dev', '9.5.x-dev']
     continue-on-error: true
     name: Docker Build (drupal${{ matrix.drupalversion }})
     steps:
