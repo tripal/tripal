@@ -171,7 +171,6 @@ class TripalTerm {
    */
   public function setIdSpace(string $idSpace) {
 
-    // @todo This validation does not work in automated testing yet.
     $manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
     $idsp = $manager->loadCollection($idSpace);
     if (!$idsp) {
@@ -190,7 +189,6 @@ class TripalTerm {
    */
   public function setVocabulary(string $vocabulary) {
 
-    // @todo This validation does not work in automated testing yet.
     $manager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
     $vocab = $manager->loadCollection($vocabulary);
     if (!$vocab) {
