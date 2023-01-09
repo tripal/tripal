@@ -115,6 +115,156 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
       ])
       ->execute();
 
+    // Terms needed for storage properties.
+    $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
+    $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+
+    // SIO:000729
+    $vmanager->createCollection('SIO', 'chado_vocabulary');
+    $idsmanager->createCollection('SIO', 'chado_id_space');
+    $this->createTripalTerm([
+      'vocab_name' => 'SIO',
+      'id_space_name' => 'SIO',
+      'term' => [
+        'name' => 'record identifier',
+        'accession' =>'000729',
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
+
+    // schema:name
+    $vmanager->createCollection('schema', 'chado_vocabulary');
+    $idsmanager->createCollection('schema', 'chado_id_space');
+    $this->createTripalTerm([
+      'vocab_name' => 'schema',
+      'id_space_name' => 'schema',
+      'term' => [
+        'name' => 'name',
+        'accession' =>'name',
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
+    // schema:additionalType
+    $this->createTripalTerm([
+      'vocab_name' => 'schema',
+      'id_space_name' => 'schema',
+      'term' => [
+        'name' => 'additionalType',
+        'accession' =>'additionalType',
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
+
+    // SO:0000110
+    $vmanager->createCollection('sequence', 'chado_vocabulary');
+    $idsmanager->createCollection('SO', 'chado_id_space');
+    $this->createTripalTerm([
+      'vocab_name' => 'sequence',
+      'id_space_name' => 'SO',
+      'term' => [
+        'name' => 'sequence_feature',
+        'accession' =>'0000110',
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
+
+    // NCIT:C25712
+    $vmanager->createCollection('ncit', 'chado_vocabulary');
+    $idsmanager->createCollection('NCIT', 'chado_id_space');
+    $this->createTripalTerm([
+      'vocab_name' => 'ncit',
+      'id_space_name' => 'NCIT',
+      'term' => [
+        'name' => 'value',
+        'accession' =>'C25712',
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
+
+    // OBCS:0000117
+    $vmanager->createCollection('OBCS', 'chado_vocabulary');
+    $idsmanager->createCollection('OBCS', 'chado_id_space');
+    $this->createTripalTerm([
+      'vocab_name' => 'OBCS',
+      'id_space_name' => 'OBCS',
+      'term' => [
+        'name' => 'rank order',
+        'accession' =>'0000117',
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
+
+    // OBI:0100026
+    $vmanager->createCollection('obi', 'chado_vocabulary');
+    $idsmanager->createCollection('OBI', 'chado_id_space');
+    $this->createTripalTerm([
+      'vocab_name' => 'obi',
+      'id_space_name' => 'OBI',
+      'term' => [
+        'name' => 'organism',
+        'accession' =>'0100026',
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
+
+    // rdfs:label
+    $vmanager->createCollection('rdfs', 'chado_vocabulary');
+    $idsmanager->createCollection('rdfs', 'chado_id_space');
+    $this->createTripalTerm([
+      'vocab_name' => 'rdfs',
+      'id_space_name' => 'rdfs',
+      'term' => [
+        'name' => 'label',
+        'accession' =>'label',
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
+
+    // TAXRANK:0000005
+    $vmanager->createCollection('taxonomic_rank', 'chado_vocabulary');
+    $idsmanager->createCollection('TAXRANK', 'chado_id_space');
+    $this->createTripalTerm([
+      'vocab_name' => 'taxonomic_rank',
+      'id_space_name' => 'TAXRANK',
+      'term' => [
+        'name' => 'genus',
+        'accession' =>'0000005',
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
+    // TAXRANK:0000006
+    $this->createTripalTerm([
+      'vocab_name' => 'taxonomic_rank',
+      'id_space_name' => 'TAXRANK',
+      'term' => [
+        'name' => 'species',
+        'accession' =>'0000006',
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
+    // TAXRANK:0000045
+    $this->createTripalTerm([
+      'vocab_name' => 'taxonomic_rank',
+      'id_space_name' => 'TAXRANK',
+      'term' => [
+        'name' => 'infraspecific_name',
+        'accession' =>'0000045',
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
+
+    // local:infraspecific_type
+    $vmanager->createCollection('local', 'chado_vocabulary');
+    $idsmanager->createCollection('local', 'chado_id_space');
+    $this->createTripalTerm([
+      'vocab_name' => 'local',
+      'id_space_name' => 'local',
+      'term' => [
+        'name' => 'infraspecific_type',
+        'accession' =>'infraspecific_type',
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
   }
 
   /**
@@ -254,17 +404,6 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
       ],
     ];
 
-    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
-    $mapping = $storage->load('core_mapping');
-    $fk_term = $mapping->getColumnTermId('featureprop', 'feature_id');
-    print "\nfk_term = $fk_term\n.";
-    $type_id_term = $mapping->getColumnTermId('featureprop', 'type_id');
-    print "type_id_term = $type_id_term\n.";
-    $value_term = $mapping->getColumnTermId('featureprop', 'value');
-    print "value_term = $value_term\n.";
-    $rank_term = $mapping->getColumnTermId('featureprop', 'rank');
-    print "rank_term = $rank_term\n.";
-
     $propertyTypes = [
       'feature_id' => new ChadoIntStoragePropertyType($this->content_type, $field_name, 'feature_id', 'SIO:000729', [
         'action' => 'store_id',
@@ -277,22 +416,22 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
         'chado_table' => 'featureprop',
         'chado_column' => 'featureprop_id',
       ]),
-      'fk_feature_id' => new ChadoIntStoragePropertyType($this->content_type, $field_name, 'fk_feature_id', $fk_term, [
+      'fk_feature_id' => new ChadoIntStoragePropertyType($this->content_type, $field_name, 'fk_feature_id', 'SO:0000110', [
         'action' => 'store_link',
         'chado_table' => 'featureprop',
         'chado_column' => 'feature_id',
       ]),
-      'type_id' => new ChadoIntStoragePropertyType($this->content_type, $field_name, 'type_id', $type_id_term, [
+      'type_id' => new ChadoIntStoragePropertyType($this->content_type, $field_name, 'type_id', 'schema:additionalType', [
         'action' => 'store',
         'chado_table' => 'featureprop',
         'chado_column' => 'type_id',
       ]),
-      'value' => new ChadoIntStoragePropertyType($this->content_type, $field_name, 'value', $value_term, [
+      'value' => new ChadoIntStoragePropertyType($this->content_type, $field_name, 'value', 'NCIT:C25712', [
         'action' => 'store',
         'chado_table' => 'featureprop',
         'chado_column' => 'value',
       ]),
-      'rank' => new ChadoIntStoragePropertyType($this->content_type, $field_name, 'rank', $rank_term, [
+      'rank' => new ChadoIntStoragePropertyType($this->content_type, $field_name, 'rank', 'OBCS:0000117', [
         'action' => 'store',
         'chado_table' => 'featureprop',
         'chado_column' => 'rank',
@@ -306,10 +445,10 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $propertyValues = [
       'feature_id' => new StoragePropertyValue($this->content_type, $field_name, 'feature_id', 'SIO:000729', $this->content_entity_id, $this->feature_id),
       'featureprop_id' => new StoragePropertyValue($this->content_type, $field_name, 'featureprop_id', 'SIO:000729', $this->content_entity_id),
-      'fk_feature_id' => new StoragePropertyValue($this->content_type, $field_name, 'fk_feature_id', $fk_term, $this->content_entity_id),
-      'type_id' => new StoragePropertyValue($this->content_type, $field_name, 'type_id', $type_id_term, $this->content_entity_id),
-      'value' => new StoragePropertyValue($this->content_type, $field_name, 'value', $value_term, $this->content_entity_id),
-      'rank' => new StoragePropertyValue($this->content_type, $field_name, 'rank', $rank_term, $this->content_entity_id),
+      'fk_feature_id' => new StoragePropertyValue($this->content_type, $field_name, 'fk_feature_id', 'SO:0000110', $this->content_entity_id),
+      'type_id' => new StoragePropertyValue($this->content_type, $field_name, 'type_id', 'schema:additionalType', $this->content_entity_id),
+      'value' => new StoragePropertyValue($this->content_type, $field_name, 'value', 'NCIT:C25712', $this->content_entity_id),
+      'rank' => new StoragePropertyValue($this->content_type, $field_name, 'rank', 'OBCS:0000117', $this->content_entity_id),
     ];
     foreach ($propertyValues as $key => $propVal) {
       $this->assertIsObject($propVal, "Unable to create the StoragePropertyValue: $field_name, $key");
@@ -382,9 +521,10 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
       "Note 2", $values['rdfs__comment'][2]['value']['value']->getValue(),
       'The delta 2 featureprop.value was not loaded properly.'
     );
+    $note_type_id = $this->getCvtermID('rdfs', 'comment');
     foreach([0,1,2] as $delta) {
       $this->assertEquals(
-        $note_term->getInternalId(), $values['rdfs__comment'][$delta]['type_id']['value']->getValue(),
+        $note_type_id, $values['rdfs__comment'][$delta]['type_id']['value']->getValue(),
         "The type_id of the delta $delta note was not loaded properly."
       );
       $this->assertEquals(
@@ -418,11 +558,6 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
 
     // Testing the Property Type class creation.
     $base_table = $chado_table;
-    $org_id_term = $mapping->getColumnTermId($base_table, 'organism_id');
-    $genus_term = $mapping->getColumnTermId('organism', 'genus');
-    $species_term = $mapping->getColumnTermId('organism', 'species');
-    $iftype_term = $mapping->getColumnTermId('organism', 'type_id');
-    $ifname_term = $mapping->getColumnTermId('organism', 'infraspecific_name');
     $propertyTypes = [
       'feature_id' => new ChadoIntStoragePropertyType($this->content_type, $field_name, 'feature_id', 'SIO:000729', [
         'action' => 'store_id',
@@ -430,7 +565,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
         'chado_table' => $base_table,
         'chado_column' => 'feature_id'
       ]),
-      'organism_id' => new ChadoIntStoragePropertyType($this->content_type, $field_name, 'organism_id', $org_id_term, [
+      'organism_id' => new ChadoIntStoragePropertyType($this->content_type, $field_name, 'organism_id', 'OBI:0100026', [
         'action' => 'store',
         'chado_table' => $base_table,
         'chado_column' => 'organism_id',
@@ -439,22 +574,22 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
         'action' => 'replace',
         'template' => "<i>[genus] [species]</i> [infraspecific_type] [infraspecific_name]",
       ]),
-      'genus' => new ChadoVarCharStoragePropertyType($this->content_type, $field_name, 'genus', $genus_term, 255, [
+      'genus' => new ChadoVarCharStoragePropertyType($this->content_type, $field_name, 'genus', 'TAXRANK:0000005', 255, [
         'action' => 'join',
         'path' => $base_table . '.organism_id>organism.organism_id',
         'chado_column' => 'genus'
       ]),
-      'species' => new ChadoVarCharStoragePropertyType($this->content_type, $field_name, 'species', $species_term, 255, [
+      'species' => new ChadoVarCharStoragePropertyType($this->content_type, $field_name, 'species', 'TAXRANK:0000006', 255, [
         'action' => 'join',
         'path' => $base_table . '.organism_id>organism.organism_id',
         'chado_column' => 'species'
       ]),
-      'infraspecific_name' => new ChadoVarCharStoragePropertyType($this->content_type, $field_name, 'infraspecific_name', $ifname_term, 255, [
+      'infraspecific_name' => new ChadoVarCharStoragePropertyType($this->content_type, $field_name, 'infraspecific_name', 'TAXRANK:0000045', 255, [
         'action' => 'join',
         'path' => $base_table . '.organism_id>organism.organism_id',
         'chado_column' => 'infraspecific_name',
       ]),
-      'infraspecific_type'=> new ChadoIntStoragePropertyType($this->content_type, $field_name, 'infraspecific_type', $iftype_term, [
+      'infraspecific_type'=> new ChadoIntStoragePropertyType($this->content_type, $field_name, 'infraspecific_type', 'local:infraspecific_type', [
         'action' => 'join',
         'path' => $base_table . '.organism_id>organism.organism_id;organism.type_id>cvterm.cvterm_id',
         'chado_column' => 'name',
@@ -468,12 +603,12 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     // Testing the Property Value class creation.
     $propertyValues = [
       'feature_id' => new StoragePropertyValue($this->content_type, $field_name, 'feature_id', 'SIO:000729', $this->content_entity_id, $this->feature_id),
-      'organism_id' => new StoragePropertyValue($this->content_type, $field_name, 'organism_id', $org_id_term, $this->content_entity_id),
+      'organism_id' => new StoragePropertyValue($this->content_type, $field_name, 'organism_id', 'OBI:0100026', $this->content_entity_id),
       'label' => new StoragePropertyValue($this->content_type, $field_name, 'label', 'rdfs:label', $this->content_entity_id),
-      'genus' => new StoragePropertyValue($this->content_type, $field_name, 'genus', $genus_term, $this->content_entity_id),
-      'species' => new StoragePropertyValue($this->content_type, $field_name, 'species', $species_term, $this->content_entity_id),
-      'infraspecific_name' => new StoragePropertyValue($this->content_type, $field_name, 'infraspecific_name', $ifname_term, $this->content_entity_id),
-      'infraspecific_type'=> new StoragePropertyValue($this->content_type, $field_name, 'infraspecific_type', $iftype_term, $this->content_entity_id)
+      'genus' => new StoragePropertyValue($this->content_type, $field_name, 'genus', 'TAXRANK:0000005', $this->content_entity_id),
+      'species' => new StoragePropertyValue($this->content_type, $field_name, 'species', 'TAXRANK:0000006', $this->content_entity_id),
+      'infraspecific_name' => new StoragePropertyValue($this->content_type, $field_name, 'infraspecific_name', 'TAXRANK:0000045', $this->content_entity_id),
+      'infraspecific_type'=> new StoragePropertyValue($this->content_type, $field_name, 'infraspecific_type', 'local:infraspecific_type', $this->content_entity_id)
     ];
     foreach ($propertyValues as $key => $propVal) {
       $this->assertIsObject($propVal, "Unable to create the StoragePropertyValue: $field_name, $key");
@@ -540,6 +675,5 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $this->assertEquals('Japonica', $values['obi__organism'][0]['infraspecific_name']['value']->getValue(), 'The organism infraspecific name was not loaded properly.');
     $this->assertEquals('species_group', $values['obi__organism'][0]['infraspecific_type']['value']->getValue(), 'The organism infraspecific type was not loaded properly.');
     $this->assertEquals("<i>Oryza sativa</i> species_group Japonica", $values['obi__organism'][0]['label']['value']->getValue(), 'The organism label was not loaded properly.');
-
   }
 }

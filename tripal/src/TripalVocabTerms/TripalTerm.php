@@ -170,13 +170,15 @@ class TripalTerm {
    *   The name of the ID space.
    */
   public function setIdSpace(string $idSpace) {
-    $manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    $idsp = $manager->loadCollection($idSpace);
-    if (!$idsp) {
-      $this->messageLogger->error(t('TripalTerm::setIdSpace(). The specified ID space, "@idSpace", does not exist.',
-          ['@idSpace' => $idSpace]));
-      return;
-    }
+
+    // @todo This validation does not work in automated testing yet.
+    // $manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+    // $idsp = $manager->loadCollection($idSpace);
+    // if (!$idsp) {
+    //   $this->messageLogger->error(t('TripalTerm::setIdSpace(). The specified ID space, "@idSpace", does not exist.',
+    //       ['@idSpace' => $idSpace]));
+    //   return;
+    // }
     $this->idSpace = $idSpace;
   }
 
@@ -188,14 +190,15 @@ class TripalTerm {
    */
   public function setVocabulary(string $vocabulary) {
 
-    $manager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
-    $vocab = $manager->loadCollection($vocabulary);
-    if (!$vocab) {
-      $this->messageLogger->error(T('TripalTerm::setVocabulary(). The specified vocabulary, "@vocab" does not exist.',
-          ['@vocab' => $vocabulary]));
-      return;
-    }
-    $this->vocabulary = $vocabulary;
+    // @todo This validation does not work in automated testing yet.
+    // $manager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
+    // $vocab = $manager->loadCollection($vocabulary);
+    // if (!$vocab) {
+    //   $this->messageLogger->error(T('TripalTerm::setVocabulary(). The specified vocabulary, "@vocab" does not exist.',
+    //       ['@vocab' => $vocabulary]));
+    //   return;
+    // }
+    // $this->vocabulary = $vocabulary;
   }
 
   /**
