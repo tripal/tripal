@@ -461,7 +461,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
 
     // Don't save terms that aren't valid
     if (!$term->isValid()) {
-      $this->messageLogger->error(t('ChadoIdSpace::saveTerm(). The term, "@term" is not valid and cannot be saved.',
+      $this->messageLogger->error(t('ChadoIdSpace::saveTerm(). The term, "@term" is not valid and cannot be saved. It must include a name, accession, IdSpace and vocabulary.',
           ['@term' => $term->getIdSpace() . ':' . $term->getAccession()]));
       return False;
     }

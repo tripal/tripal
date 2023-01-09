@@ -115,153 +115,55 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
       ])
       ->execute();
 
-    // Terms needed for storage properties.
+    // We need to make sure the CVs we're going to use are registered.
+    // they should already be loaded in the test Chado instance.
     $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
 
-    // SIO:000729
-    $vmanager->createCollection('SIO', 'chado_vocabulary');
-    $idsmanager->createCollection('SIO', 'chado_id_space');
+    $vocabulary = $vmanager->createCollection('SIO', 'chado_vocabulary');
+    $idSpace = $idsmanager->createCollection('SIO', 'chado_id_space');
+    $idSpace->setDefaultVocabulary($vocabulary->getName());
+
+    $vocabulary = $vmanager->createCollection('schema', 'chado_vocabulary');
+    $idSpace = $idsmanager->createCollection('schema', 'chado_id_space');
+    $idSpace->setDefaultVocabulary($vocabulary->getName());
+
+    $vocabulary = $vmanager->createCollection('sequence', 'chado_vocabulary');
+    $idSpace = $idsmanager->createCollection('SO', 'chado_id_space');
+    $idSpace->setDefaultVocabulary($vocabulary->getName());
+
+    $vocabulary = $vmanager->createCollection('ncit', 'chado_vocabulary');
+    $idSpace = $idsmanager->createCollection('NCIT', 'chado_id_space');
+    $idSpace->setDefaultVocabulary($vocabulary->getName());
+
+    $vocabulary = $vmanager->createCollection('OBCS', 'chado_vocabulary');
+    $idSpace = $idsmanager->createCollection('OBCS', 'chado_id_space');
+    $idSpace->setDefaultVocabulary($vocabulary->getName());
+
+    $vocabulary = $vmanager->createCollection('obi', 'chado_vocabulary');
+    $idSpace = $idsmanager->createCollection('OBI', 'chado_id_space');
+    $idSpace->setDefaultVocabulary($vocabulary->getName());
+
+    $vocabulary = $vmanager->createCollection('rdfs', 'chado_vocabulary');
+    $idSpace = $idsmanager->createCollection('rdfs', 'chado_id_space');
+    $idSpace->setDefaultVocabulary($vocabulary->getName());
+
+    $vocabulary = $vmanager->createCollection('taxonomic_rank', 'chado_vocabulary');
+    $idSpace = $idsmanager->createCollection('TAXRANK', 'chado_id_space');
+    $idSpace->setDefaultVocabulary($vocabulary->getName());
+
+    $vocabulary = $vmanager->createCollection('local', 'chado_vocabulary');
+    $idSpace = $idsmanager->createCollection('local', 'chado_id_space');
+    $idSpace->setDefaultVocabulary($vocabulary->getName());
+
+    // This term is missing from the current prepared test Chado so we
+    // manually add it.
     $this->createTripalTerm([
       'vocab_name' => 'SIO',
       'id_space_name' => 'SIO',
       'term' => [
         'name' => 'record identifier',
         'accession' =>'000729',
-      ]],
-      'chado_id_space', 'chado_vocabulary'
-    );
-
-    // schema:name
-    $vmanager->createCollection('schema', 'chado_vocabulary');
-    $idsmanager->createCollection('schema', 'chado_id_space');
-    $this->createTripalTerm([
-      'vocab_name' => 'schema',
-      'id_space_name' => 'schema',
-      'term' => [
-        'name' => 'name',
-        'accession' =>'name',
-      ]],
-      'chado_id_space', 'chado_vocabulary'
-    );
-    // schema:additionalType
-    $this->createTripalTerm([
-      'vocab_name' => 'schema',
-      'id_space_name' => 'schema',
-      'term' => [
-        'name' => 'additionalType',
-        'accession' =>'additionalType',
-      ]],
-      'chado_id_space', 'chado_vocabulary'
-    );
-
-    // SO:0000110
-    $vmanager->createCollection('sequence', 'chado_vocabulary');
-    $idsmanager->createCollection('SO', 'chado_id_space');
-    $this->createTripalTerm([
-      'vocab_name' => 'sequence',
-      'id_space_name' => 'SO',
-      'term' => [
-        'name' => 'sequence_feature',
-        'accession' =>'0000110',
-      ]],
-      'chado_id_space', 'chado_vocabulary'
-    );
-
-    // NCIT:C25712
-    $vmanager->createCollection('ncit', 'chado_vocabulary');
-    $idsmanager->createCollection('NCIT', 'chado_id_space');
-    $this->createTripalTerm([
-      'vocab_name' => 'ncit',
-      'id_space_name' => 'NCIT',
-      'term' => [
-        'name' => 'value',
-        'accession' =>'C25712',
-      ]],
-      'chado_id_space', 'chado_vocabulary'
-    );
-
-    // OBCS:0000117
-    $vmanager->createCollection('OBCS', 'chado_vocabulary');
-    $idsmanager->createCollection('OBCS', 'chado_id_space');
-    $this->createTripalTerm([
-      'vocab_name' => 'OBCS',
-      'id_space_name' => 'OBCS',
-      'term' => [
-        'name' => 'rank order',
-        'accession' =>'0000117',
-      ]],
-      'chado_id_space', 'chado_vocabulary'
-    );
-
-    // OBI:0100026
-    $vmanager->createCollection('obi', 'chado_vocabulary');
-    $idsmanager->createCollection('OBI', 'chado_id_space');
-    $this->createTripalTerm([
-      'vocab_name' => 'obi',
-      'id_space_name' => 'OBI',
-      'term' => [
-        'name' => 'organism',
-        'accession' =>'0100026',
-      ]],
-      'chado_id_space', 'chado_vocabulary'
-    );
-
-    // rdfs:label
-    $vmanager->createCollection('rdfs', 'chado_vocabulary');
-    $idsmanager->createCollection('rdfs', 'chado_id_space');
-    $this->createTripalTerm([
-      'vocab_name' => 'rdfs',
-      'id_space_name' => 'rdfs',
-      'term' => [
-        'name' => 'label',
-        'accession' =>'label',
-      ]],
-      'chado_id_space', 'chado_vocabulary'
-    );
-
-    // TAXRANK:0000005
-    $vmanager->createCollection('taxonomic_rank', 'chado_vocabulary');
-    $idsmanager->createCollection('TAXRANK', 'chado_id_space');
-    $this->createTripalTerm([
-      'vocab_name' => 'taxonomic_rank',
-      'id_space_name' => 'TAXRANK',
-      'term' => [
-        'name' => 'genus',
-        'accession' =>'0000005',
-      ]],
-      'chado_id_space', 'chado_vocabulary'
-    );
-    // TAXRANK:0000006
-    $this->createTripalTerm([
-      'vocab_name' => 'taxonomic_rank',
-      'id_space_name' => 'TAXRANK',
-      'term' => [
-        'name' => 'species',
-        'accession' =>'0000006',
-      ]],
-      'chado_id_space', 'chado_vocabulary'
-    );
-    // TAXRANK:0000045
-    $this->createTripalTerm([
-      'vocab_name' => 'taxonomic_rank',
-      'id_space_name' => 'TAXRANK',
-      'term' => [
-        'name' => 'infraspecific_name',
-        'accession' =>'0000045',
-      ]],
-      'chado_id_space', 'chado_vocabulary'
-    );
-
-    // local:infraspecific_type
-    $vmanager->createCollection('local', 'chado_vocabulary');
-    $idsmanager->createCollection('local', 'chado_id_space');
-    $this->createTripalTerm([
-      'vocab_name' => 'local',
-      'id_space_name' => 'local',
-      'term' => [
-        'name' => 'infraspecific_type',
-        'accession' =>'infraspecific_type',
       ]],
       'chado_id_space', 'chado_vocabulary'
     );

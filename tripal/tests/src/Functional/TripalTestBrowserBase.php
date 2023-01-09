@@ -148,6 +148,7 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
       $idSpace->setDefaultVocabulary($vocabulary->getName());
     }
 
+
     $term = $idSpace->getTerm($values['term']['accession']);
     if (!$term) {
       // Now create the term.
