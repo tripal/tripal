@@ -292,7 +292,7 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
 
     // Test adding a default vocabulary to an ID space.  This should call the
     // addIdSpace() function on the vocabulary as well.
-    $GO->setDefaultVocabulary($GO_bp_namespace, "chado_vocabulary");
+    $GO->setDefaultVocabulary($GO_bp_namespace);
     $this->assertTrue($GO->getDefaultVocabulary() == $GO_bp_namespace, 'The default vocabulary was not set correctly by the ChadoIdSpace object.');
     $bp->setURL($GO_url);
     $this->assertTrue($bp->getURL() == $GO_url, 'The URL was not set correctly by the ChadoVocabulary after setting the default vocabulary.');
@@ -317,10 +317,10 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     $edam_format = $idsmanager->createCollection($EDAM_format_idspace, "chado_id_space");
     $edam_operation = $idsmanager->createCollection($EDAM_operation_idspace, "chado_id_space");
     $edam_topic = $idsmanager->createCollection($EDAM_topic_idspace, "chado_id_space");
-    $edam_data->setDefaultVocabulary($EDAM_namespace, 'chado_vocabulary');
-    $edam_format->setDefaultVocabulary($EDAM_namespace, 'chado_vocabulary');
-    $edam_operation->setDefaultVocabulary($EDAM_namespace, 'chado_vocabulary');
-    $edam_topic->setDefaultVocabulary($EDAM_namespace, 'chado_vocabulary');
+    $edam_data->setDefaultVocabulary($EDAM_namespace);
+    $edam_format->setDefaultVocabulary($EDAM_namespace);
+    $edam_operation->setDefaultVocabulary($EDAM_namespace);
+    $edam_topic->setDefaultVocabulary($EDAM_namespace);
     $edam->setLabel($EDAM_label);
     $edam->setURL($EDAM_url);
     $edam_data->setURLPrefix($EDAM_urlprefix);

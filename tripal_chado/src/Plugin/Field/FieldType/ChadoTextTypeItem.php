@@ -40,26 +40,32 @@ class ChadoTextTypeItem extends ChadoFieldItemBase {
    * {@inheritdoc}
    */
   public static function tripalTypes($field_definition) {
+
     $entity_type_id = $field_definition->getTargetEntityTypeId();
     $settings = $field_definition->getSetting('storage_plugin_settings');
     $base_table = $settings['base_table'];
     $base_column = $settings['base_column'];
 
+    // Get the base table columns needed for this field.
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
-
-    // Get the base table columns needed for this field.
     $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
     $base_pkey_col = $base_schema_def['primary key'];
 
+    // Get the property terms by using the Chado table columns they map to.
+    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
+    $mapping = $storage->load('core_mapping');
+    $record_id_term = 'SIO:000729';
+    $value_term = $mapping->getColumnTermId($base_table, $base_column);
+
     return [
-      new ChadoIntStoragePropertyType($entity_type_id, self::$id,'record_id', [
+      new ChadoIntStoragePropertyType($entity_type_id, self::$id,'record_id', $record_id_term, [
         'action' => 'store_id',
         'drupal_store' => TRUE,
         'chado_table' => $base_table,
         'chado_column' => $base_pkey_col
       ]),
-      new TextStoragePropertyType($entity_type_id, self::$id, "value", [
+      new TextStoragePropertyType($entity_type_id, self::$id, "value", $value_term, [
         'action' => 'store',
         'chado_table' => $base_table,
         'chado_column' => $base_column,

@@ -115,7 +115,7 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
    *        - definition (string)
    *        - accession (string)
    */
-  public function createTripalTerm($values = []) {
+  public function createTripalTerm($values, $idspace_plugin_id, $vocab_plugin_id) {
 
     // Setting the default values:
     $random = $this->getRandomGenerator();
@@ -135,7 +135,7 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
     $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
     $vocabulary = $vmanager->loadCollection($values['vocab_name']);
     if (!$vocabulary) {
-      $vocabulary = $vmanager->createCollection($values['vocab_name'], 'chado_vocabulary');
+      $vocabulary = $vmanager->createCollection($values['vocab_name'], $vocab_plugin_id);
       $this->assertInstanceOf(TripalVocabularyInterface::class, $vocabulary, "Unable to create the Vocabulary.");
     }
 
@@ -143,11 +143,11 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
     $idSpace = $idsmanager->loadCollection($values['id_space_name']);
     if (!$idSpace) {
-      $idSpace = $idsmanager->createCollection($values['id_space_name'], 'chado_id_space');
+      $idSpace = $idsmanager->createCollection($values['id_space_name'], $idspace_plugin_id);
       $this->assertInstanceOf(TripalIdSpaceInterface::class, $idSpace, "Unable to create the ID Space.");
+      $idSpace->setDefaultVocabulary($vocabulary->getName());
     }
-    // Assign the vocabulary as the default for this ID Space.
-    $idSpace->setDefaultVocabulary($vocabulary->getName());
+
 
     $term = $idSpace->getTerm($values['term']['accession']);
     if (!$term) {

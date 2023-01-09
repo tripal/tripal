@@ -170,6 +170,7 @@ class TripalTerm {
    *   The name of the ID space.
    */
   public function setIdSpace(string $idSpace) {
+
     $manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
     $idsp = $manager->loadCollection($idSpace);
     if (!$idsp) {
