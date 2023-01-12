@@ -12,8 +12,6 @@
                                                                       |_|                             
 
 
-This project acts as the home of Tripal 4 development. Once Tripal 4 is stable, it will be merged back into the [Core Tripal Repository](https://github.com/tripal/tripal).
-
 ## Compatibility
 
 ![Target Drupal Version 9.4.x-dev](https://img.shields.io/badge/Target%20Drupal%20Version-9.4.x-informational)
@@ -27,22 +25,6 @@ This project acts as the home of Tripal 4 development. Once Tripal 4 is stable, 
 
 
 ## Current Timeline
-
-### Required for Tripal 4.alpha1 Release
-
-- ✅ Testing on 9.5.x + 10.0.x w/ target 9.4.x ([#257](https://github.com/tripal/t4d8/issues/257))
-- ✅ Make Tripal DBX more stable
-  - ✅ [#217](https://github.com/tripal/t4d8/issues/217)
-  - ✅ [#218](https://github.com/tripal/t4d8/issues/218)
-- Ensure Content Type is using Terms fully ([#256](https://github.com/tripal/t4d8/issues/256))
-- ✅ Automated creation of fields for Chado ([#258](https://github.com/tripal/t4d8/issues/258))
-- ✅ Organism complex field (tests foreign key fields; [#259](https://github.com/tripal/t4d8/issues/259) )
-- [IN REVIEW] Properties complex field (tests linking table fields; [#265](https://github.com/tripal/t4d8/issues/265))
-- [IN REVIEW] Type/CVterm complex field (needed for many base tables, )
-- ✅ GFF3 Importer (needed for basic loading of data to test content types; [#275](https://github.com/tripal/t4d8/pull/275))
-- [IN REVIEW] Documentation + Tutorials for upgrading + creating fields
-- ✅ Implementing core Chado Storage for fields ([#236](https://github.com/tripal/t4d8/issues/236), [#237](https://github.com/tripal/t4d8/issues/237))
-- Merge the t4d8 repository back into the tripal repository
 
 ### Required for Tripal 4.alpha2 Release
 
