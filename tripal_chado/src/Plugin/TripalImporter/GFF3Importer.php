@@ -1474,9 +1474,9 @@ class GFF3Importer extends ChadoImporterBase {
         // print_r($feature);
         // TODO: SEE IF THIS BREAKS THINGS
         // DEBUG: THIS CODE LOGIC NEEDS DOUBLE CHECKING - ASK STEPHEN
-        if (empty($feature['feature_id'])) {
-          $feature['feature_id'] = NULL;
-        }
+        // if (empty($feature['feature_id'])) {
+        //   $feature['feature_id'] = NULL;
+        // }
         $feature_id = $feature['feature_id'];
       }
       else {
