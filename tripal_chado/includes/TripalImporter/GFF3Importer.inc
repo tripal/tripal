@@ -1373,7 +1373,7 @@ class GFF3Importer extends TripalImporter {
         $rstart = $region_matches[2];
         $rend = $region_matches[3];
         if (!$this->landmark_type) {
-          throw new Exception(t('The landmark, !landmark, cannot be added becuase no landmark type was provided. Please redo the importer job and specify a landmark type.',
+          throw new Exception(t('The landmark, !landmark, cannot be added because no landmark type was provided. Please redo the importer job and specify a landmark type.',
               ['!landmark' => $rid]));
         }
         $this->insertLandmark($rid);
