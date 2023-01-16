@@ -7,11 +7,14 @@
 <!---  Please set the header below based on the PR type:
 # New Feature
 # Bug Fix
-# Documentation  --->
+# Tripal 4 Core Dev Task  --->
 
 #
 
 Issue #
+
+<!--- Enter the Tripal version this PR applies to (i.e. either 3 or 4 ;-p) --->
+### Tripal Version: 
 
 ## Description
 <!--- Describe your changes in detail -->
@@ -21,11 +24,3 @@ Issue #
 <!--- Please describe in detail how to test these changes. -->
 <!--- Reviewers will use this section to test the submission! -->
 <!--- If you've implemented PHPUnit tests, you can describe the test cases here. -->
-<!--- Unit testing guidelines: https://github.com/tripal/tripal/blob/7.x-3.x/tests/README.md -->
-
-## Screenshots (if appropriate):
-
-## Additional Notes (if any):
-
-<!--- New features should include in-line code documentation. -->
-<!--- Would a user or developer guide be helpful for this feature? -->
