@@ -11,13 +11,16 @@ Welcome to the home of Tripal Development! If you are thinking to yourself "What
 
 # Current Status
 
- - Recommended Version: ![GitHub release (latest by date)](https://img.shields.io/github/v/release/tripal/tripal?color=brightgreen)
+ - Tripal 4.0-alpha1 has been released!
+    - Use this version to explore Tripal 4 and begin upgrading or creating extension modules!
+    - Upgrade path from Tripal 3 will be developed in future alpha releases.
+    - Note: Tripal 3 sites should be upgraded before November 2023 to keep security support by Drupal.
  - Development:
     - [![Tripal 3](https://img.shields.io/badge/dev-7.x--3.x-yellow)](https://github.com/tripal/tripal): Focus is on bug fixes
-    - [![Tripal 4](https://img.shields.io/badge/dev-7.x--4.x-yellow)](https://github.com/tripal/t4d8): Full upgrade to Drupal 8/9 (development in [T4D8 Repository](https://github.com/tripal/t4d8)).
+    - [![Tripal 4](https://img.shields.io/badge/dev-7.x--4.x-yellow)](https://github.com/tripal/tripal/tree/4.x): Full upgrade to Drupal 9/10 (alpha1 released!).
  - Tripal ![Tripal 1.x](https://img.shields.io/badge/unsupported-7.x--1.x-red) and ![Tripal 2.x](https://img.shields.io/badge/unsupported-7.x--2.x-red) are no longer supported by the Project Management Committee, although we will accept community submitted fixes for Tripal 2.x.
 
- # Resources
+ # Version 3 Resources
 
   - For information on **how to use Tripal** through the Administrative Interface: [Tripal Users Guide](https://tripal.readthedocs.io/en/latest/user_guide.html)
   - For help **extending Tripal** or understanding how it works: [Tripal Developers Guide](https://tripal.readthedocs.io/en/latest/dev_guide.html)
