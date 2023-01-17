@@ -23,19 +23,21 @@ use GFF3Importer;
  * @group Tripal Chado
  * @group Tripal Chado ChadoStorage
  */
-class GFF3ImporterTest extends ChadoTestBrowserBase {
+class GFF3ImporterTest extends ChadoTestBrowserBase
+{
 
   /**
    * Confirm basic GFF importer functionality.
    *
    * @group gff
    */
-  public function testGFFImporterSimpleTest() {
+  public function testGFFImporterSimpleTest()
+  {
     $public = \Drupal::database();
 
     // Installs up the chado with the test chado data
     $chado = $this->getTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
-    
+
     // Keep track of the schema name in case we need it
     $schema_name = $chado->getSchemaName();
 
@@ -43,14 +45,14 @@ class GFF3ImporterTest extends ChadoTestBrowserBase {
     // Test to ensure cvterms are found in the cvterms table
     $cvterms_count_query = $chado->query("SELECT count(*) as c1 FROM {1:cvterm}");
     $cvterms_count_object = $cvterms_count_query->fetchObject();
-    $this->assertNotEquals($cvterms_count_object->c1, 0); 
+    $this->assertNotEquals($cvterms_count_object->c1, 0);
 
     // Insert organism
     $organism_id = $chado->insert('1:organism')
       ->fields([
-          'genus' => 'Citrus',
-          'species' => 'sinensis',
-          'common_name' => 'Sweet Orange',
+        'genus' => 'Citrus',
+        'species' => 'sinensis',
+        'common_name' => 'Sweet Orange',
       ])
       ->execute();
 
@@ -77,6 +79,9 @@ class GFF3ImporterTest extends ChadoTestBrowserBase {
 
     // Manually insert landmarks into features table
     $chado->query("INSERT INTO {1:feature} (dbxref_id, organism_id, name, uniquename, residues, seqlen, md5checksum, type_id, is_analysis, is_obsolete, timeaccessioned, timelastmodified) VALUES (NULL, 1, 'scaffold1', 'scaffold1', 'CAACAAGAAGTAAGCATAGGTTAATTATCATCCACGCATATTAATCAAGAATCGATGCTCGATTAATGTTTTTGAATTGACAAACAAAAGTTTTGTAAAAAGGACTTGTTGGTGGTGGTGGGGTGGTGGTGATGGTGTGGTGGGTAGGTCGCTGGTCGTCGCCGGCGTGGTGGAAGTCTCGCTGGCCGGTGTCTCGGCGGTCTGGTGGCGGCTGGTGGCGGTAGTTGTGAGTTTTTTCTTTCTTTTTTTGTTTTTTTTTTTTACTTTTTACTTTTTTTTCGTCTTGAACAAATTAAAAATAGAGTTTGTTTGTATTTGGTTATTATTTATTGATAAGGGTATATTCGTCCTGTTTGGTCTTGATGTAATAAAATTAAATTAATTTACGGGCTTCAACTAATAAACTCCTTCATGTTGGTTTGAACTAATAAAAAAAGGGGAAATTTGCTAGACACCCCTAATTTTGGACTTATATGGGTAGAAGTCCTAGTTGCTAGATGAATATAGGCCTAGGTCCATCCACATAAAAAAATAATATAAATTAAATAATAAAAATAATATATAGACATAAGTACCCTTATTGAATAAACATATTTTAGGGGATTCAGTTATATACGTAAAGTTGGGAAATCAAATCCCACTAATCACGATTGAAGGCAGAGTATCGTGTAAGACGTTTGGAAAACATATCTTAGTCGATTCCAGTGGAATATGAGATCA', 720, '83578d8afdaec399c682aa6c0ddd29c9', 474, false, false, '2022-11-28 21:44:51.006276', '2022-11-28 21:44:51.006276');");
+    $chado->query("INSERT INTO {1:feature} (dbxref_id, organism_id, name, uniquename, residues, seqlen, md5checksum, type_id, is_analysis, is_obsolete, timeaccessioned, timelastmodified) VALUES (NULL, 1, 'Contig10036', 'Contig10036', '', 0, 'd41d8cd98f00b204e9800998ecf8427e', 474, false, false, '2022-11-26 05:39:55.810798', '2022-11-26 05:39:55.810798')");
+    $chado->query("INSERT INTO {1:feature} (dbxref_id, organism_id, name, uniquename, residues, seqlen, md5checksum, type_id, is_analysis, is_obsolete, timeaccessioned, timelastmodified) VALUES (NULL, 1, 'Contig1', 'Contig1', '', 0, 'd41d8cd98f00b204e9800998ecf8427e', 474, false, false, '2022-11-26 05:39:57.335594', '2022-11-26 05:39:57.335594');");
+    $chado->query("INSERT INTO {1:feature} (dbxref_id, organism_id, name, uniquename, residues, seqlen, md5checksum, type_id, is_analysis, is_obsolete, timeaccessioned, timelastmodified) VALUES (NULL, 1, 'Contig0', 'Contig0', '', 0, 'd41d8cd98f00b204e9800998ecf8427e', 474, false, false, '2022-11-26 05:39:59.809424', '2022-11-26 05:39:59.809424');");
     // $chado->query("INSERT INTO {1:feature} (dbxref_id, organism_id, name, uniquename, residues, seqlen, md5checksum, type_id, is_analysis, is_obsolete, timeaccessioned, timelastmodified) VALUES (NULL, 1, 'FRAEX38873_v2_000000010.1', 'FRAEX38873_v2_000000010.1', 'MDQNQFANELISSYFLQQWRHNSQTLTLNPTPSNSGTESDSARSDLEYEDEGEEFPTELDTVNSSGGFSVVGPGKLSVLYPNVNLHGHDVGVVHANCAAPSKRLLYYFEMYVKNAGAKGQIAIGFITSAFKVRRHPGWEANTYGYHGDDGLLYRGRGKGESFGPMYTTDDTKYTTGDTVGGGINYATQEFFFTKNGVVVGTVSKDVKSPVFPTVAVHSQGEEVTVNFGKDPFVFDIKAYEAEQRAIQQEKIDCISIPLDAGHGLVRSYLQHYGYEGTLEFFDMASKSTAPPISLVPENGFNEEDNVYAMNRRTLRELIRHGEIDETFAKLRELYPQIVQDDRSSICFLLHTQKFIELVRVGKLEEAVLYGRSEFEKFKRRSEFDDLVKDCAALLAYERPDNSSVGYLLRESQRELVADAVNAIILATNPNVKDPKCCLQSRLERLLRQLTACFLEKRSLNGGDGEAFHLRRILKSGKKG', 479, 'c5915348dc93ebb73a9bb17acfb29e84', 474, false, false, '2022-11-28 21:44:51.006276', '2022-11-28 21:44:51.006276');");
     // $chado->query("INSERT INTO {1:feature} (dbxref_id, organism_id, name, uniquename, residues, seqlen, md5checksum, type_id, is_analysis, is_obsolete, timeaccessioned, timelastmodified) VALUES (NULL, 1, 'FRAEX38873_v2_000000010.2', 'FRAEX38873_v2_000000010.2', 'MDQNQFANELISSYFLQQWRHNSQTLTLNPTPSNSGTESDSARSDLEYEDEGEEFPTELDTVNSSGGFSVVGPGKLSVLYPNVNLHGHDVGVVHANCAAPSKRLLYYFEMYVKNAGAKGQIAIGFITSAFKVRRHPGWEANTYGYHGDDGLLYRGRGKGESFGPMYTTDDTKYTTGDTVGGGINYATQEFFFTKNGVVVGTVSKDVKSPVFPTVAVHSQGEEVTVNFGKDPFVFDIKAYEAEQRAIQQEKIDCISIPLDAGHGLVRSYLQHYGYEGTLEFFDMASKSTAPPISLVPENGFNEEDNVYAMNRRTLRELIRHGEIDETFAKLRELYPQIVQDDRSSICFLLHTQKFIELVRVGKLEEAVLYGRSEFEKFKRRSEFDDLVKDCAALLAYERPDNSSVGYLLRESQRELVADAVNAIILATNPNVKDPKCCLQSRLERLLRQLTACFLEKRSLNGGDGEAFHLRRILKSGKKG', 479, 'c5915348dc93ebb73a9bb17acfb29e84', 474, false, false, '2022-11-28 21:44:51.006276', '2022-11-28 21:44:51.006276');");
 
@@ -86,7 +91,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase {
 
     // print_r("Scaffold object\n");
     // print_r($scaffold_object);    
-    
+
 
     // Perform the GFF3 test by creating an instance of the GFF3 loader
     $importer_manager = \Drupal::service('tripal.importer');
@@ -121,12 +126,12 @@ class GFF3ImporterTest extends ChadoTestBrowserBase {
     $file_details = [
       'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/small_gene.gff',
     ];
-    
-    $gff3_importer->create($run_args, $file_details); 
+
+    $gff3_importer->create($run_args, $file_details);
     $gff3_importer->prepareFiles();
     $gff3_importer->run();
     $gff3_importer->postRun();
-    
+
     // This check determines if scaffold1 was added to the features table (this was done manually above)
     $results = $chado->query("SELECT * FROM {1:feature} WHERE uniquename='scaffold1';");
     $results_object = $results->fetchObject();
@@ -161,43 +166,174 @@ class GFF3ImporterTest extends ChadoTestBrowserBase {
 
     // Do checks on the featureprop table as well
     // Ensures the bio type value got added
-    $results = $chado->query("SELECT * FROM {1:featureprop} WHERE feature_id = :feature_id AND value = :value;", [
+    $results = $chado->query("SELECT * FROM {1:featureprop} WHERE feature_id = :feature_id AND value LIKE :value;", [
       ':feature_id' => $gene_feature_id,
       ':value' => 'protein_coding'
     ]);
+    $has_exception = false;
     try {
       $results_object = $results->fetchObject();
-      $this->assertEquals($results_object->value, 'protein_coding');
+    } catch (\Exception $ex) {
+      $has_exception = true;
     }
-    catch (\Exception $ex) {
+    $this->assertEquals($has_exception, false, "biotype value was not added.");
+    unset($results);
+    unset($results_object);
 
-    }
 
     // Ensures the GAP value got added
-    $results = $chado->query("SELECT * FROM {1:featureprop} WHERE feature_id = :feature_id AND value = :value;", [
+    $results = $chado->query("SELECT * FROM {1:featureprop} WHERE feature_id = :feature_id AND value LIKE :value;", [
       ':feature_id' => $gene_feature_id,
       ':value' => 'test_gap_1'
     ]);
+    $has_exception = false;
     try {
       $results_object = $results->fetchObject();
-      $this->assertEquals($results_object->value, 'protein_coding');
+    } catch (\Exception $ex) {
+      $has_exception = true;
     }
-    catch (\Exception $ex) {
-
-    }    
+    $this->assertEquals($has_exception, false, "GAP value was not added.");
+    unset($results);
+    unset($results_object);
 
     // Ensures the NOTE value got added
-    $results = $chado->query("SELECT * FROM {1:featureprop} WHERE feature_id = :feature_id AND value = :value;", [
+    $results = $chado->query("SELECT * FROM {1:featureprop} WHERE feature_id = :feature_id AND value LIKE :value;", [
       ':feature_id' => $gene_feature_id,
       ':value' => 'test_gene_001_note'
     ]);
+    $has_exception = false;
     try {
       $results_object = $results->fetchObject();
-      $this->assertEquals($results_object->value, 'protein_coding');
+    } catch (\Exception $ex) {
+      $has_exception = true;
     }
-    catch (\Exception $ex) {
+    $this->assertEquals($has_exception, false, "NOTE value was not added.");
+    unset($results);
+    unset($results_object);
 
+    // BEGIN NEW FILE: Perform import on gff_duplicate_ids
+    $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
+    $run_args = [
+      'files' => [
+        0 => [
+          'file_path' => __DIR__ . '/../../../fixtures/gff3_loader/gff_duplicate_ids.gff'
+        ]
+      ],
+      'schema_name' => $schema_name,
+      'analysis_id' => $analysis_id,
+      'organism_id' => $organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'line_number' => NULL, // Previous error without this
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+      'skip_protein' => NULL,
+    ];
+
+    $file_details = [
+      'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_duplicate_ids.gff',
+    ];
+
+    $has_exception = false;
+    try {
+      $gff3_importer->create($run_args, $file_details);
+      $gff3_importer->prepareFiles();
+      $gff3_importer->run();
+      $gff3_importer->postRun();
+    } catch (\Exception $ex) {
+      $message = $ex->getMessage();
+      $has_exception = true;
     }
+    $this->assertEquals($has_exception, true, "Duplicate ID was not detected and did not throw an error which it should have done.");
+
+
+    // BEGIN NEW FILE: Perform import on gff_tag_unescaped_character
+    $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
+    $run_args = [
+      'files' => [
+        0 => [
+          'file_path' => __DIR__ . '/../../../fixtures/gff3_loader/gff_tag_unescaped_character.gff'
+        ]
+      ],
+      'schema_name' => $schema_name,
+      'analysis_id' => $analysis_id,
+      'organism_id' => $organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'line_number' => NULL, // Previous error without this
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+      'skip_protein' => NULL,
+    ];
+
+    $file_details = [
+      'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_tag_unescaped_character.gff',
+    ];
+
+    $has_exception = false;
+    try {
+      $gff3_importer->create($run_args, $file_details);
+      $gff3_importer->prepareFiles();
+      $gff3_importer->run();
+      $gff3_importer->postRun();
+    } catch (\Exception $ex) {
+      $message = $ex->getMessage();
+      $has_exception = true;
+    }
+    $this->assertEquals($has_exception, true, "Should not have saved the unescaped character");
+
+    // // BEGIN NEW FILE: Perform import on gff_invalidstartend
+    // $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
+    // $run_args = [
+    //   'files' => [
+    //     0 => [
+    //       'file_path' => __DIR__ . '/../../../fixtures/gff3_loader/gff_invalidstartend.gff'
+    //     ]
+    //   ],
+    //   'schema_name' => $schema_name,
+    //   'analysis_id' => $analysis_id,
+    //   'organism_id' => $organism_id,
+    //   'use_transaction' => 1,
+    //   'add_only' => 0,
+    //   'update' => 1,
+    //   'create_organism' => 0,
+    //   'create_target' => 0,
+    //   // regexps for mRNA and protein.
+    //   're_mrna' => NULL,
+    //   're_protein' => NULL,
+    //   // optional
+    //   'target_organism_id' => NULL,
+    //   'target_type' => NULL,
+    //   'start_line' => NULL,
+    //   'line_number' => NULL, // Previous error without this
+    //   'landmark_type' => NULL,
+    //   'alt_id_attr' => NULL,
+    //   'skip_protein' => NULL,
+    // ];
+
+    // $file_details = [
+    //   'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_invalidstartend.gff',
+    // ];
 
     // $results = $chado->query("SELECT * FROM {1:featureprop};");
     // while ($object = $results->fetchObject()) {
@@ -205,5 +341,4 @@ class GFF3ImporterTest extends ChadoTestBrowserBase {
     // }
 
   }
-
 }

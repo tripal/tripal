@@ -1041,7 +1041,6 @@ class GFF3Importer extends ChadoImporterBase {
         ->condition('name', "DB:$dbname");
       $db_count = $db_query->countQuery()->execute()->fetchField();
       $db = $db_query->execute()->fetchObject();
-      // print_r("DB COUNT:" . $db_count . "\n");
       if ($db_count == 0) {
         $values = ['name' => "$dbname"];
         // $db = chado_select_record('db', ['db_id'], $values, NULL, $this->chado_schema_main);
@@ -1051,7 +1050,7 @@ class GFF3Importer extends ChadoImporterBase {
         $db_count = $db_query->countQuery()->execute()->fetchField();
         $db = $db_query->execute()->fetchObject();
       }
-      // print_r("DB COUNT:" . $db_count . "\n");
+
       if ($db_count == 0) {
         $values = [
           'name' => $dbname,
@@ -3169,7 +3168,7 @@ class GFF3Importer extends ChadoImporterBase {
       }
       // If this feature has already been added but as a target of a previous
       // feature then we'll let it go through and replace the target feature.
-      elseif ($prev_feature['is_target'] == TRUE) {
+      elseif (@$prev_feature['is_target'] == TRUE) {
         // Do nothing.
       }
       else {
@@ -3292,8 +3291,6 @@ class GFF3Importer extends ChadoImporterBase {
     ->condition('cvterm.name', $accession)
     ->execute()->fetchObject();
 
-    // print_r("insert_cvterm function in GFF3Importer.php\n");
-    // print_r($cvterm_object);
     return $cvterm_object;
   }  
 }
