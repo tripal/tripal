@@ -102,7 +102,7 @@ class TripalEntityBase extends ContentEntityBase {
 
     // Add loaded properties to their correct entity and field references
     // Note: Each $property is an instance of StoragePropertyValue
-    // and thus contains information for it's associated entity ID/Type and
+    // and thus contains information for its associated entity ID/Type and
     // field ID/Key.
     foreach ($loaded as $property) {
       $tid = $property->getEntityId();
@@ -121,8 +121,8 @@ class TripalEntityBase extends ContentEntityBase {
       $entity = $entityRef["entity"];
       foreach ($entityRef as $fieldRef) {
         $field = $fieldRef["field"];
-        // Finally we let the TripalField attach the it's loaded properties
-        // which allows another opprotunity for re-organization if needed.
+        // Finally we let the TripalField attach its loaded properties
+        // which allows another opportunity for re-organization if needed.
         $field->tripalLoad($fieldRef["props"],$entity);
       }
     }

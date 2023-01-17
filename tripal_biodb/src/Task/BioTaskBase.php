@@ -192,7 +192,7 @@ abstract class BioTaskBase implements BioTaskInterface {
       // We need to take into account schemas prefixed with a database key.
       // The following regex separate the key from the schema name and also do a
       // pre-check on schema names that will be fully validated when the
-      // connection object will be instanciated.
+      // connection object will be instantiated.
       if (!preg_match(
             '/^((?:.+\.)?)([a-z_\\xA0-\\xFF][a-z_\\xA0-\\xFF0-9]*)$/',
             $schema,

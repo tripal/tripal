@@ -179,7 +179,7 @@ class TripalFileQuota implements FormInterface{
     $quota = $form_state->getValue('default_quota');
     $expiration = $form_state->getValue('default_expiration_date');
 
-    // if the 2nd element of the qutoa string occupied by a valid suffix we need to check to see
+    // if the 2nd element of the quota string occupied by a valid suffix we need to check to see
     // what we have to multiply the value by (1024 for GB 1024^2 for TB because
     // we assume that the initial number is already in MB)
     $matches = [];

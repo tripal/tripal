@@ -329,8 +329,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       }
 
       // Next delete all non base records so we can replace them
-      // with updates. This is necessary because we may violoate unique
-      // contraints if we don't e.g. changing the order of records with a
+      // with updates. This is necessary because we may violate unique
+      // constraints if we don't e.g. changing the order of records with a
       // rank.
       foreach ($records as $chado_table => $deltas) {
         foreach ($deltas as $delta => $record) {
@@ -571,12 +571,12 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             $chado_table_pkey = $chado_table_def['primary key'];
           }
 
-          // If this is the record_id property then set it's value.
+          // If this is the record_id property then set its value.
           if ($action == 'store_id') {
             $record_id = $records[$chado_table][0]['conditions'][$base_table_pkey];
             $values[$field_name][$delta][$key]['value']->setValue($record_id);
           }
-          // If this is the linked record_id property then set it's value.
+          // If this is the linked record_id property then set its value.
           if ($action == 'store_pkey') {
             $record_id = $records[$chado_table][$delta]['conditions'][$chado_table_pkey];
             $values[$field_name][$delta][$key]['value']->setValue($record_id);
@@ -592,7 +592,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
   }
 
   /**
-   * Sets the property values using the recrods returned from Chado.
+   * Sets the property values using the records returned from Chado.
    *
    * @param array $values
    *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
@@ -733,7 +733,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    *   - "value": a \Drupal\tripal\TripalStorage\StoragePropertyValue object
    *   - "type": a\Drupal\tripal\TripalStorage\StoragePropertyType object
    *   - "definition": a \Drupal\Field\Entity\FieldConfig object
-   *   When the function returns, any values retreived from the data store
+   *   When the function returns, any values retrieved from the data store
    *   will be set in the StoragePropertyValue object.
    * @param bool $is_store
    *   Set to TRUE if we are building the record array for an insert or an
@@ -816,9 +816,9 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           // This action is to store the base record primary key value.
           if ($action == 'store_id') {
             $record_id = $prop_value->getValue();
-            // If the record_id is zoer then this is a brand-new value for
+            // If the record_id is zero then this is a brand-new value for
             // this property.  Let's set it to be replaced in the hopes that
-            // some other propety has already been inserted and has the ID.
+            // some other property has already been inserted and has the ID.
             if ($record_id == 0) {
               $records[$chado_table][0]['conditions'][$chado_table_pkey] = ['REPLACE_BASE_RECORD_ID', $base_table];
               if (!array_key_exists($base_table, $base_record_ids)) {
@@ -997,8 +997,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    *   The record ID of the record.
    * @param array $record
    *   The record to validate
-   * @param array $violoations
-   *   An array to which any new violoations can be added.
+   * @param array $violations
+   *   An array to which any new violations can be added.
    */
   private function validateRequired($values, $chado_table, $record_id, $record, &$violations) {
     $chado = $this->getChadoConnection();
@@ -1030,7 +1030,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     }
 
     if (count($missing) > 0) {
-      // Documentation for how to creata violation is here
+      // Documentation for how to create a violation is here
       // https://github.com/symfony/validator/blob/6.1/ConstraintViolation.php
       $message = 'The item cannot be saved because the following values are missing. ';
       $params = [];
@@ -1054,15 +1054,15 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    *   The record ID of the record.
    * @param array $record
    *   The record to validate
-   * @param array $violoations
-   *   An array to which any new violoations can be added.
+   * @param array $violations
+   *   An array to which any new violations can be added.
    */
   private function validateUnique($values, $chado_table, $record_id, $record, &$violations) {
     $chado = $this->getChadoConnection();
     $schema = $chado->schema();
     $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
 
-    // Check if we are violoating a unique contraint (if it's an insert)
+    // Check if we are violating a unique constraint (if it's an insert)
     if (array_key_exists('unique keys',  $table_def)) {
       $pkey = $table_def['primary key'];
 
@@ -1089,18 +1089,18 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           $query->condition($col, $col_val);
         }
 
-        // If we have maatching record, check for a unique constraint
+        // If we have matching record, check for a unique constraint
         // violation.
         $match = $query->execute()->fetchObject();
         if ($match) {
 
-          // Add a constraint violoation if we have a match and the
+          // Add a constraint violation if we have a match and the
           // record_id is 0. This would be an insert but a record already
           // exists. Or, if the record_id isn't the same as the  matched
           // record. This is an update that conflicts with an existing
           // record.
           if (($record_id == 0) or ($record_id != $match->$pkey)) {
-            // Documentation for how to creata violation is here
+            // Documentation for how to create a violation is here
             // https://github.com/symfony/validator/blob/6.1/ConstraintViolation.php
             $message = 'The item cannot be saved as another already exists with the following values. ';
             $params = [];
@@ -1135,8 +1135,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    *   The record ID of the record.
    * @param array $record
    *   The record to validate
-   * @param array $violoations
-   *   An array to which any new violoations can be added.
+   * @param array $violations
+   *   An array to which any new violations can be added.
    */
   private function validateFKs($values, $chado_table, $record_id, $record, &$violations) {
     $chado = $this->getChadoConnection();
@@ -1162,7 +1162,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           continue;
         }
 
-        // Check if the  id is present in the FK talbe.
+        // Check if the id is present in the FK table.
         $query = $chado->select($fk_table, 'fk');
         $query->fields('fk', [$rcol]);
         $query->condition($rcol, $col_val);
@@ -1174,7 +1174,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     }
 
     if (count($bad_fks) > 0) {
-      // Documentation for how to creata violation is here
+      // Documentation for how to create a violation is here
       // https://github.com/symfony/validator/blob/6.1/ConstraintViolation.php
       $message = 'The item cannot be saved because the following values have a missing linked record in the data store: ';
       $params = [];
@@ -1198,8 +1198,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    *   The record ID of the record.
    * @param array $record
    *   The record to validate
-   * @param array $violoations
-   *   An array to which any new violoations can be added.
+   * @param array $violations
+   *   An array to which any new violations can be added.
    */
   public function validateTypes($values, $chado_table, $record_id, $record, &$violations) {
     $chado = $this->getChadoConnection();
@@ -1214,7 +1214,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       }
 
       // Skip fields without values. If they are required
-      // but missing then the validateRequired() function will ccthc those.
+      // but missing then the validateRequired() function will check those.
       if (!$col_val) {
         continue;
       }
@@ -1252,7 +1252,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     }
 
     if (count($bad_types) > 0) {
-      // Documentation for how to creata violation is here
+      // Documentation for how to create a violation is here
       // https://github.com/symfony/validator/blob/6.1/ConstraintViolation.php
       $message = 'The item cannot be saved because the following values are of the wrong type.';
       $params = [];
@@ -1275,8 +1275,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    *   The record ID of the record.
    * @param array $record
    *   The record to validate
-   * @param array $violoations
-   *   An array to which any new violoations can be added.
+   * @param array $violations
+   *   An array to which any new violations can be added.
    */
   public function validateSize($values, $chado_table, $record_id, $record, &$violations) {
     $chado = $this->getChadoConnection();
@@ -1291,7 +1291,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       }
 
       // Skip fields without values. If they are required
-      // but missing then the validateRequired() function will ccthc those.
+      // but missing then the validateRequired() function will check those.
       if (!$col_val) {
         continue;
       }
@@ -1311,7 +1311,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     }
 
     if (count($bad_sizes) > 0) {
-      // Documentation for how to creata violation is here
+      // Documentation for how to create a violation is here
       // https://github.com/symfony/validator/blob/6.1/ConstraintViolation.php
       $message = 'The item cannot be saved because the following values are too large. ';
       $params = [];

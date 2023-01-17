@@ -40,7 +40,7 @@ class ChadoMviewForm extends FormBase {
     $default_sql_query = '';
     $default_chado_schema = $chado->getSchemaName();
 
-    // If this is an edit then set the form detafauls differently.
+    // If this is an edit then set the form defaults differently.
     if (strcmp($action, 'Edit') == 0) {
       $mviews = \Drupal::service('tripal_chado.materialized_views');
       $mview = $mviews->loadById($mview_id);

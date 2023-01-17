@@ -50,7 +50,7 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    *   - "value": a \Drupal\tripal\TripalStorage\StoragePropertyValue object
    *   - "type": a\Drupal\tripal\TripalStorage\StoragePropertyType object
    *   - "definition": a \Drupal\Field\Entity\FieldConfig object
-   *   When the function returns, any values retreived from the data store
+   *   When the function returns, any values retrieved from the data store
    *   will be set in the StoragePropertyValue object.
    *
    * @return bool
@@ -70,7 +70,7 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    *   - "value": a \Drupal\tripal\TripalStorage\StoragePropertyValue object
    *   - "type": a\Drupal\tripal\TripalStorage\StoragePropertyType object
    *   - "definition": a \Drupal\Field\Entity\FieldConfig object
-   *   When the function returns, any values retreived from the data store
+   *   When the function returns, any values retrieved from the data store
    *   will be set in the StoragePropertyValue object.
    *
    * @return bool

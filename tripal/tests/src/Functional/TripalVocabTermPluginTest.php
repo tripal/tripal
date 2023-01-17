@@ -82,7 +82,7 @@ class TripalVocabTermPluginTest extends BrowserTestBase {
     //  -- Get/Set default vocabulary.
     //  -- Save/Remove terms from a specific id space.
     //  -- Get a list of terms within the id space with an exact or partial name.
-    //  -- Get a specific term based on it's unique accession.
+    //  -- Get a specific term based on its unique accession.
     //  -- Get the parents or children of a given term.
 	}
 
@@ -135,7 +135,7 @@ class TripalVocabTermPluginTest extends BrowserTestBase {
     // --Test that you can save a term to permanent storage and then retrieve it.
     // @todo
 
-    // --Test the static suggestTerms() functionalty.
+    // --Test the static suggestTerms() functionality.
     // @todo
 
 	}

@@ -156,7 +156,7 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
     $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
 
-    // These are the values we'll use for the ID space and vocaublary.
+    // These are the values we'll use for the ID space and vocablary.
     $GO_idspace = 'GO';
     $GO_cc_namespace = 'cellular_component';
     $GO_bp_namespace = 'biological_process';
@@ -298,7 +298,7 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     $this->assertTrue($bp->getURL() == $GO_url, 'The URL was not set correctly by the ChadoVocabulary after setting the default vocabulary.');
 
     //
-    // Testing multiple ID spaces per Vocbulary
+    // Testing multiple ID spaces per Vocabulary
     //
     $EDAM_data_idspace = 'data';
     $EDAM_format_idspace = 'format';
@@ -513,7 +513,7 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     $is_a->setIsRelationshipType(True);
     $this->assertTrue($is_a->isRelationshipType(), 'The "is_a" TripalTerm failed to indicate it is a relationship term.');
 
-    // Next create a child term and set it's parent.
+    // Next create a child term and set its parent.
     $child = new TripalTerm();
     $child->setName('biological phase');
     $child->setIdSpace('GO');
@@ -693,7 +693,7 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     // Finding Terms
     //
 
-    // Restore the parent to it's full state.
+    // Restore the parent to its full state.
     $parent = new TripalTerm([
       'name' => 'biological_process',
       'idSpace' => 'GO',
@@ -762,7 +762,7 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     // Get Children
     //
 
-    // Restore the child to it's full state.
+    // Restore the child to its full state.
     $child = new TripalTerm([
       'name' => 'biological phase',
       'idSpace' => 'GO',
@@ -886,7 +886,7 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     $dummy->setVocabulary('biological_process');
     $this->assertTrue($GO->saveTerm($dummy), 'A valid term did not return True when saving');
 
-    // Try to save a term taht doesn't belong to the idSpace
+    // Try to save a term that doesn't belong to the idSpace
     $this->assertFalse($rdfs_id->saveTerm($dummy), 'A term that did not belong to an idSpace should not have been saved.');
   }
 }

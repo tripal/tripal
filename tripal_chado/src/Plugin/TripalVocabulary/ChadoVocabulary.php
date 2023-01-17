@@ -124,7 +124,7 @@ class ChadoVocabulary extends TripalVocabularyBase {
 
 
   /**
-   * Loads an Vocbulary record from Chado.
+   * Loads a Vocabulary record from Chado.
    *
    * This function queries the `cv` table of Chado to get the values
    * for the vocabulary.
@@ -310,7 +310,7 @@ class ChadoVocabulary extends TripalVocabularyBase {
       return False;
     }
 
-    // This value goes to the Chado `db.url` column, so check it's size
+    // This value goes to the Chado `db.url` column, so check its size
     // to make sure it doesn't exceed it.
     if (strlen($url) > $this->db_def['fields']['url']['size']) {
       $this->messageLogger->error('ChadoVocabulary: The vocabulary name must not be longer than @size characters. ' +
@@ -356,7 +356,7 @@ class ChadoVocabulary extends TripalVocabularyBase {
    * {@inheritdoc}
    */
   public function setLabel($label) {
-    // Don't set a value for an vocubulary that isn't valid.
+    // Don't set a value for a vocabulary that isn't valid.
     if (!$this->is_valid) {
       return False;
     }
