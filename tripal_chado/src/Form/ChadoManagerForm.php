@@ -408,7 +408,7 @@ class ChadoManagerForm extends FormBase {
     $new_schema_name = $form_state->getValue('new_schema_name');
     $tripal_dbx = \Drupal::service('tripal.dbx');
 
-    // Check new schame name is valid.
+    // Check new schema name is valid.
     $issue = $tripal_dbx->isInvalidSchemaName($new_schema_name);
     if ($issue) {
       $form_state->setErrorByName(

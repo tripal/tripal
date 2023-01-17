@@ -28,7 +28,7 @@ use Drupal\Component\Utility\Html;
  * from related tables through use of a nested array. For example, the
  *   following
  * code shows you how to select the name and uniquename of a feature based on
- * it's type and source organism.
+ * its type and source organism.
  * @code
  *   $values =  array(
  *     'organism_id' => array(

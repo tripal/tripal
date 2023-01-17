@@ -92,7 +92,7 @@ entity.tripal_content_terms.collection:
   route_name: entity.tripal_content_terms.collection
   title: 'Tripal Content Terms'
   parent: tripal.admin
-  description: "Tripal content is very ontology-focused in it's design with all content types defined by ontology terms rather then their primary storage. These ontologies and their terms can be managed here."
+  description: "Tripal content is very ontology-focused in its design with all content types defined by ontology terms rather then their primary storage. These ontologies and their terms can be managed here."
   weight: 80
 
 # -- Root link for Tripal managed data storage (i.e. Tripal DBX)

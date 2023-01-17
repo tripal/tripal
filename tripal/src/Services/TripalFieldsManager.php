@@ -135,7 +135,7 @@ class TripalFieldsManager {
       foreach ($field_def['display'] as $display_type => $view_modes) {
         foreach ($view_modes as  $view_mode => $mode_config) {
           foreach ($mode_config as $setting_name => $value) {
-            // Maake sure the label is an allowed value.
+            // Make sure the label is an allowed value.
             if ($setting_name == 'label') {
               if (in_array($value, ['above', 'inline', 'hidden', 'visually_hidden'])) {
                 $new_defs['display'][$display_type][$view_mode][$setting_name] = $value;
