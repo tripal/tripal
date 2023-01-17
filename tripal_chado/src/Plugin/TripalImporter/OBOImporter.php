@@ -237,7 +237,7 @@ class OBOImporter extends ChadoImporterBase {
       '#description' => t('Select a vocabulary to import.'),
     ];
 
-    // Add the fields for updaing the OBO details
+    // Add the fields for updating the OBO details
     if ($obo_id) {
       $this->formEditOBOElements($form, $form_state, $obo_id);
     }
@@ -1121,7 +1121,7 @@ class OBOImporter extends ChadoImporterBase {
     // do a few tricks to try and find it.
     if ($namespace and !$short_name) {
 
-      // First see if we've seen this ontology before and get it's currently
+      // First see if we've seen this ontology before and get its currently
       // loaded database.
       $sql = "SELECT dbname FROM {1:db2cv_mview} WHERE cvname = :cvname";
       $short_name = $chado->query($sql, [':cvname' => $namespace])->fetchField();
@@ -1328,7 +1328,7 @@ class OBOImporter extends ChadoImporterBase {
           $type = $each['type'];
           $results = $this->oboEbiLookup($id, $type, $found_iri, $ontology);
           // if this term is the defining_ontology and we have the correct ID,
-          // we dont need more, get it and stop
+          // we don't need more, get it and stop
           break;
         }
       }
@@ -1485,8 +1485,8 @@ class OBOImporter extends ChadoImporterBase {
       $do_cvterm_insert = TRUE;
 
       // We need to locate terms using their dbxref. This is because term names
-      // can sometimes change, so we don't want to look up the term by it's name.
-      // the unique ID which is in the accession will never change.
+      // can sometimes change, so we don't want to look up the term by its name.
+      // The unique ID which is in the accession will never change.
       $dbxref = $this->getChadoDBXrefByAccession($db->db_id, $accession);
       if ($dbxref) {
 
@@ -2305,7 +2305,7 @@ class OBOImporter extends ChadoImporterBase {
           // If this term has a namespace then we want to keep track of it.
           if (array_key_exists('namespace', $stanza)) {
             // Fix the namespace for EDAM terms so they all use the same
-            // namespacke (i.e. cv record).
+            // namespace (i.e. cv record).
             if ($this->default_namespace == 'EDAM') {
               $stanza['namespace'][0] = 'EDAM';
             }
@@ -2334,7 +2334,7 @@ class OBOImporter extends ChadoImporterBase {
         continue;
       }
 
-      // For EDAM, we have to unfortuantely hard-code a fix as the
+      // For EDAM, we have to unfortunately hard-code a fix as the
       // short names of terms are correct.
       $line = preg_replace('/EDAM_(\w+)/', '\1', $line);
 
@@ -2506,7 +2506,7 @@ class OBOImporter extends ChadoImporterBase {
 
 
   /**
-   * Insert a Dbxref recrod to the database.
+   * Insert a Dbxref record to the database.
    *
    * @param int $db_id
    *   The dbxref Id.
