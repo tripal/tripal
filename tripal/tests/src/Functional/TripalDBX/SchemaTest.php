@@ -68,7 +68,7 @@ class SchemaTest extends KernelTestBase {
 
     // Get original config from Drupal real installation.
     // This is done by getting a connection to the real database first.
-    // Then instanciate a new config factory that will use that database through
+    // Then instantiate a new config factory that will use that database through
     // a new instance of config storage using that database.
     // Get Drupal real database.
     $drupal_db = \Drupal\Core\Database\Database::getConnection(

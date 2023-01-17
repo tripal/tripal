@@ -187,7 +187,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
 
     // Let the parent implementation finish creating the object.
     // NOTE: We do things in this order because a configuration entity cannot
-    // save an object to it's storage. Thus we need to extract the term strings
+    // save an object to its storage. Thus we need to extract the term strings
     // for storage and retrieve the Term object later if requested via getTerm().
     return parent::create($values);
   }

@@ -427,7 +427,7 @@ class ChadoSchema {
   /**
    * Get information about which Chado base table a cvterm is mapped to.
    *
-   * Vocbulary terms that represent content types in Tripal must be mapped to
+   * Vocabulary terms that represent content types in Tripal must be mapped to
    * Chado tables.  A cvterm can only be mapped to one base table in Chado.
    * This function will return an object that contains the chado table and
    * foreign key field to which the cvterm is mapped.  The 'chado_table'
@@ -982,8 +982,8 @@ class ChadoSchema {
      $chado_dot = $chado_schema . '.';
 
      // Determine the create index SQL command.
-     // Note: we dont use place holders here because we cannot
-     // have quotes around thse parameters.
+     // Note: we don't use place holders here because we cannot
+     // have quotes around these parameters.
      $query = 'CREATE INDEX "' . $indexname . '" ON ' . $chado_dot . $table . ' ';
      $query .= '(';
      $temp = [];

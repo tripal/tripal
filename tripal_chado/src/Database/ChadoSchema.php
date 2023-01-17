@@ -168,7 +168,7 @@ class ChadoSchema extends TripalDbxSchema {
   /**
    * Get information about which Chado base table a cvterm is mapped to.
    *
-   * Vocbulary terms that represent content types in Tripal must be mapped to
+   * Vocabulary terms that represent content types in Tripal must be mapped to
    * Chado tables.  A cvterm can only be mapped to one base table in Chado.
    * This function will return an object that contains the chado table and
    * foreign key field to which the cvterm is mapped.  The 'chado_table'
@@ -184,7 +184,7 @@ class ChadoSchema extends TripalDbxSchema {
    *     - accession:  the accession for the term.
    *     - bundle_id:  the ID for the bundle to which a term is associated.
    *   The 'vocabulary' and 'accession' must be used together, the 'cvterm_id'
-   *   can be used on it's own.
+   *   can be used on its own.
    *
    * @return
    *   An object containing the chado_table and chado_field properties or NULL

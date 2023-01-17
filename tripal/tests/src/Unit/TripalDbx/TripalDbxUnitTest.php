@@ -111,7 +111,7 @@ class TripalDbxUnitTest extends UnitTestCase {
     $this->proConnection->getConnectionOptions()->willReturn([
       'prefix' => [
         // We use a dot to specify Drupal is in a non-public schema.
-        // This first use case is simplier to test for cache.
+        // This first use case is simpler to test for cache.
         'default' => 'other.',
       ],
     ]);

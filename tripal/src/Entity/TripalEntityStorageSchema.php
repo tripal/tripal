@@ -20,7 +20,7 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
     foreach ($field_storage_definitions as $storageDefinition) {
       $field = \Drupal::service("plugin.manager.field.field_type").getInstance($storageDefinition->getType());
       if ($field instanceof TripalFieldItemInterface) {
-        // Each field can define it's value as a single-depth array of
+        // Each field can define its value as a single-depth array of
         // key => value pairs where the key is a name for that data (e.g. accession )
         // and the value is an implementation of StoragePropertyTypeBase setting the
         // type of the value (e.g. string).
@@ -31,7 +31,7 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
         // Note: this can be changed in the admin UI since all TripalStorage
         // types are expected to be able to read this key-value structure.
         $tsid = $field->tripalStorageId();
-        // Since each StoragePropertyTypeBase implementation knows it's
+        // Since each StoragePropertyTypeBase implementation knows its
         // key (saved as id) and associated field, we can merge them all here
         // without saving the key mapping.
         // We're basically just compiling all field property types with the
@@ -132,7 +132,7 @@ class TripalEntityStorageSchema extends SqlContentEntityStorageSchema {
           }
         }
         // Case 2: the new field did not exist before.
-        //   - we will need to add the new field to it's new storage.
+        //   - we will need to add the new field to its new storage.
         else {
           if (array_key_exists($tsid, $storageAdd)) {
             $storageAdd[$tsid] = array_merge($storageAdd[$tsid], $types);

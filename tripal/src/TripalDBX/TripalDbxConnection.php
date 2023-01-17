@@ -348,7 +348,7 @@ abstract class TripalDbxConnection extends PgConnection {
     // Check if a Tripal DBX managed schema name has been specified.
     if (!empty($schema_name)) {
       // We must use this PostgreSQL schema instead of the Drupal one as default
-      // for this dtaabase connection. To do so, we use the schema name as a
+      // for this database connection. To do so, we use the schema name as a
       // prefix (which is supported by Drupal PostgreSQL implementation).
       // If there are table-specific prefixes set, we assume the user knows what
       // he/she wants to do and we won't change those.
@@ -1253,7 +1253,7 @@ abstract class TripalDbxConnection extends PgConnection {
         foreach ($search_path_mode as $old_name => $replacement) {
 
           // Ensure the replacement pattern is sanitized.
-          // Secure replacement (we allow comas and spaces).
+          // Secure replacement (we allow commas and spaces).
           $replacement = preg_replace(
             '/[^a-z_\\xA0-\\xFF0-9\s,]+/',
             '',

@@ -323,7 +323,7 @@ class Register implements FormInterface {
     \Drupal::state()->set('tripal_site_registration', $form_state);
 
     // Now send the updated info to the Tripal Site.
-    // Only register with tripal.info if the user has not opt'd out.
+    // Only register with tripal.info if the user has not opted out.
     $messenger = \Drupal::messenger();
     if ($form_state->getValue('disable_tripal_reporting') == FALSE) {
       $this->tripal_registration_remote_submit($form_state);
