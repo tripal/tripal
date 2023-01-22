@@ -3168,7 +3168,7 @@ class GFF3Importer extends ChadoImporterBase {
       }
       // If this feature has already been added but as a target of a previous
       // feature then we'll let it go through and replace the target feature.
-      elseif (@$prev_feature['is_target'] == TRUE) {
+      elseif ($prev_feature['is_target'] == TRUE) {
         // Do nothing.
       }
       else {

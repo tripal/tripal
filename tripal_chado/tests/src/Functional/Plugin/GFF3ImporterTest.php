@@ -244,6 +244,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_duplicate_ids.gff',
     ];
 
+    
     $has_exception = false;
     try {
       $gff3_importer->create($run_args, $file_details);
@@ -254,8 +255,8 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $message = $ex->getMessage();
       $has_exception = true;
     }
-    $this->assertEquals($has_exception, true, "Duplicate ID was not detected and did not throw an error which it should have done.");
-
+    // $this->assertEquals($has_exception, true, "Duplicate ID was not detected and did not throw an error which it should have done.");
+    $this->assertEquals($has_exception, true);
 
     // BEGIN NEW FILE: Perform import on gff_tag_unescaped_character
     $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
@@ -300,40 +301,55 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $message = $ex->getMessage();
       $has_exception = true;
     }
-    $this->assertEquals($has_exception, true, "Should not have saved the unescaped character");
+    // $this->assertEquals($has_exception, true, "Should not have saved the unescaped character");
+    $this->assertEquals($has_exception, true);
 
-    // // BEGIN NEW FILE: Perform import on gff_invalidstartend
-    // $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
-    // $run_args = [
-    //   'files' => [
-    //     0 => [
-    //       'file_path' => __DIR__ . '/../../../fixtures/gff3_loader/gff_invalidstartend.gff'
-    //     ]
-    //   ],
-    //   'schema_name' => $schema_name,
-    //   'analysis_id' => $analysis_id,
-    //   'organism_id' => $organism_id,
-    //   'use_transaction' => 1,
-    //   'add_only' => 0,
-    //   'update' => 1,
-    //   'create_organism' => 0,
-    //   'create_target' => 0,
-    //   // regexps for mRNA and protein.
-    //   're_mrna' => NULL,
-    //   're_protein' => NULL,
-    //   // optional
-    //   'target_organism_id' => NULL,
-    //   'target_type' => NULL,
-    //   'start_line' => NULL,
-    //   'line_number' => NULL, // Previous error without this
-    //   'landmark_type' => NULL,
-    //   'alt_id_attr' => NULL,
-    //   'skip_protein' => NULL,
-    // ];
 
-    // $file_details = [
-    //   'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_invalidstartend.gff',
-    // ];
+    // BEGIN NEW FILE: Perform import on gff_invalidstartend
+    $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
+    $run_args = [
+      'files' => [
+        0 => [
+          'file_path' => __DIR__ . '/../../../fixtures/gff3_loader/gff_invalidstartend.gff'
+        ]
+      ],
+      'schema_name' => $schema_name,
+      'analysis_id' => $analysis_id,
+      'organism_id' => $organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'line_number' => NULL, // Previous error without this
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+      'skip_protein' => NULL,
+    ];
+
+    $file_details = [
+      'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_invalidstartend.gff',
+    ];
+
+    $has_exception = false;
+    try {
+      $gff3_importer->create($run_args, $file_details);
+      $gff3_importer->prepareFiles();
+      $gff3_importer->run();
+      $gff3_importer->postRun();
+    } catch (\Exception $ex) {
+      $message = $ex->getMessage();
+      $has_exception = true;
+    }
+    // $this->assertEquals($has_exception, true, "Should not complete when there is invalid start and end values");
+    $this->assertEquals($has_exception, true);
 
     // $results = $chado->query("SELECT * FROM {1:featureprop};");
     // while ($object = $results->fetchObject()) {
