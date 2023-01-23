@@ -82,7 +82,7 @@ function chado_get_organism($identifiers, $options = []) {
   if (isset($identifiers['scientific_name'])) {
     $scientific_name = $identifiers['scientific_name'];
     unset($identifiers['scientific_name']);
-    $organism_ids = chado_get_organism_id_from_scientific_name($scientific_name, ['scientific_name']);
+    $organism_ids = chado_get_organism_id_from_scientific_name($scientific_name, $options);
     if (count($organism_ids) == 1) {
       $identifiers['organism_id'] = $organism_ids[0];
     }
@@ -212,10 +212,15 @@ function chado_get_organism_scientific_name($organism) {
  *   The organism name to be queried. Infraspecific type can be abbreviated.
  *
  * @param $options
- *   Specifies how to search organism table, one or more of the following can be used:
- *   $options = ['scientific_name', 'abbreviation', 'common_name', 'case_sensitive']
- *   Search is case insensitive unless the 'case_sensitive' value is specified.
- *   If not specified, search defaults to scientific_name only, case insensitive.
+ *   An array of options. The following keys are available:
+ *     - check_abbreviation: If TRUE and the $name did not match the
+ *         scientific name, then check the abbreviation.
+ *     - check_common_name: If TRUE and the $name did not match the
+ *         scientific name, then check the common name.
+ *     - case_sensitive: If TRUE then all searches should be case
+ *         sensitive. Default is FALSE.
+ *   If no options are specified, search is for a match of $name to
+ *     the scientific_name only, case insensitive.
  *
  * @return
  *   Array of matching organism_id values.
@@ -223,87 +228,98 @@ function chado_get_organism_scientific_name($organism) {
  * @ingroup tripal_organism_api
  */
 function chado_get_organism_id_from_scientific_name($name, $options = []) {
-  // Default to scientific name if no other search method was specified.
-  if (!in_array('abbreviation', $options, true) and !in_array('common_name', $options, true)) {
-    $options[] = 'scientific_name';
-  }
   $organism_ids = [];
 
-  // By default search is case insensitive because this may handle user input.
-  $lower = '';
-  if (!in_array('case_sensitive', $options, true)) {
-    $name = strtolower($name);
-    $lower = 'LOWER';
+  // Handle missing $name by returning empty array.
+  if (!$name) {
+    return $organism_ids;
   }
 
-  // Try to find name in the abbreviation column. This does not
-  // have a unique constraint, so there may be more than one match.
-  if (in_array('abbreviation', $options, true)) {
-    $sql = 'SELECT organism_id FROM {organism} WHERE '.$lower.'(abbreviation) = :name';
-    $args = [':name' => $name];
-    $results = chado_query($sql, $args);
-    while ($organism = $results->fetchField()) {
+  // By default, search is case insensitive because this function may
+  // be used to handle input from users or from data files in loaders.
+  $sql_for_lower = '';
+  if (!in_array('case_sensitive', $options, true)) {
+    $name = strtolower($name);
+    $sql_for_lower = 'LOWER';
+  }
+
+  // Check scientific name first, and if a match is found, nothing
+  // else specified by $options will be checked.
+  // Scientific name is the combination of genus, species,
+  // and optionally infraspecific nomenclature added with Chado 1.3
+  // There is a unique constraint, so expect zero or one match here.
+  $infra_present = false;
+  $limit = 2;
+  if (chado_column_exists('organism', 'infraspecific_name')) {
+    $infra_present = true;
+    $limit = 4;
+  }
+  $parts = preg_split('/\s+/', $name, $limit);
+  // $name could be a single word, so make sure this is defined.
+  if (!array_key_exists(1, $parts)) {
+    $parts[1] = '';
+  }
+  $sql = 'SELECT organism_id FROM {organism} WHERE '.$sql_for_lower.'(genus) = :genus'
+       . ' AND '.$sql_for_lower.'(species) = :species';
+  $args = [ ':genus' => $parts[0], ':species' => $parts[1] ];
+  if ($infra_present) {
+    // When there is no infraspecific name, we can either use the "no_rank"
+    // taxonomic term in the type_id column, or else use NULL.
+    $sql .= ' AND ( type_id = (SELECT cvterm_id FROM {cvterm}'
+         . ' WHERE '.$sql_for_lower.'(name) = :infraspecific_type'
+         . ' AND cv_id = (SELECT cv_id FROM {cv} WHERE name = :taxonomic_rank))';
+    if (!array_key_exists(2, $parts)) {
+      $parts[2] = 'no_rank';
+      $sql .= " OR type_id IS NULL";
+    }
+    else {
+      $parts[2] = chado_unabbreviate_infraspecific_rank($parts[2]);
+    }
+    $sql .= ")";
+    $args[':infraspecific_type'] = $parts[2];
+    $args[':taxonomic_rank'] = 'taxonomic_rank';
+
+    // Infraspecific name, if present.
+    if (array_key_exists(3, $parts)) {
+      $sql .= ' AND '.$sql_for_lower.'(infraspecific_name) = :infraspecific_name';
+      $args[':infraspecific_name'] = $parts[3];
+    }
+    else {
+      // Infraspecific name not present, so this column
+      // must be either an empty string or NULL.
+      $sql .= " AND ( infraspecific_name = '' ) IS NOT FALSE";
+    }
+  }
+  $results = chado_query($sql, $args);
+  while ($organism = $results->fetchField()) {
+    if (!in_array($organism, $organism_ids)) {
       $organism_ids[] = $organism;
     }
   }
 
-  // Try to find name in the common_name column. This does not
-  // have a unique constraint, so there may be more than one match.
-  if (in_array('common_name', $options, true)) {
-    $sql = 'SELECT organism_id FROM {organism} WHERE '.$lower.'(common_name) = :name';
-    $args = [':name' => $name];
-    $results = chado_query($sql, $args);
-    while ($organism = $results->fetchField()) {
-      if (!in_array($organism, $organism_ids)) {
+  // Check other search modes only when no match was found for scientific name.
+  if (empty($organism_ids)) {
+    // Try to find $name in the abbreviation column. This does not
+    // have a unique constraint, so there may be more than one match.
+    if (in_array('check_abbreviation', $options, true)) {
+      $sql = 'SELECT organism_id FROM {organism} WHERE '.$sql_for_lower.'(abbreviation) = :name';
+      $args = [':name' => $name];
+      $results = chado_query($sql, $args);
+      while ($organism = $results->fetchField()) {
         $organism_ids[] = $organism;
       }
     }
-  }
 
-  // Try to find name with combination of genus, species,
-  // and optionally infraspecific nomenclature added wich Chado 1.3
-  // Here there is a unique constraint, expect zero or one match.
-  if (in_array('scientific_name', $options, true)) {
-    $infra_present = false;
-    $limit = 2;
-    if (chado_column_exists('organism', 'infraspecific_name')) {
-      $infra_present = true;
-      $limit = 4;
-    }
-    $parts = preg_split('/\s+/', $name, $limit);
-    $sql = 'SELECT organism_id FROM {organism} WHERE '.$lower.'(genus) = :genus'
-         . ' AND '.$lower.'(species) = :species';
-    $args = [ ':genus' => $parts[0], ':species' => $parts[1] ];
-    if ($infra_present) {
-      // When there is no infraspecific name, we can either use the "no_rank" taxonomic term
-      // in the type_id column, or else use NULL. Wrap these in parentheses.
-      $sql .= ' AND ( type_id = (SELECT cvterm_id FROM {cvterm} WHERE '.$lower.'(name) = :infraspecific_type'
-           . ' AND cv_id = (SELECT cv_id FROM {cv} WHERE name = :taxonomic_rank))';
-      if (!array_key_exists(2, $parts)) {
-        $parts[2] = 'no_rank';
-        $sql .= " OR type_id IS NULL";
-      }
-      else {
-        $parts[2] = chado_unabbreviate_infraspecific_rank($parts[2]);
-      }
-      $sql .= ")";
-      $args[':infraspecific_type'] = $parts[2];
-      $args[':taxonomic_rank'] = 'taxonomic_rank';
-
-      // Infraspecific name, if present.
-      if (array_key_exists(3, $parts)) {
-        $sql .= ' AND '.$lower.'(infraspecific_name) = :infraspecific_name';
-        $args[':infraspecific_name'] = $parts[3];
-      }
-      else {
-        // Not present, so this must be either empty string or NULL.
-        $sql .= " AND ( infraspecific_name = '' ) IS NOT FALSE";
-      }
-    }
-    $results = chado_query($sql, $args);
-    while ($organism = $results->fetchField()) {
-      if (!in_array($organism, $organism_ids)) {
-        $organism_ids[] = $organism;
+    // Try to find $name in the common_name column. This does not
+    // have a unique constraint, so there may be more than one match.
+    if (in_array('check_common_name', $options, true)) {
+      $sql = 'SELECT organism_id FROM {organism} WHERE '.$sql_for_lower.'(common_name) = :name';
+      $args = [':name' => $name];
+      $results = chado_query($sql, $args);
+      while ($organism = $results->fetchField()) {
+        if (!in_array($organism, $organism_ids)) {
+          $organism_ids[] = $organism;
+        }
       }
     }
   }
