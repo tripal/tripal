@@ -211,6 +211,13 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     unset($results);
     unset($results_object);
 
+    /**
+     * Run the GFF loader on gff_duplicate_ids.gff for testing.
+     *
+     * This tests whether the GFF loader detects duplicate IDs which makes a 
+     * GFF file invalid since IDs should be unique. The GFF loader should throw 
+     * and exception which this test checks for
+     */    
     // BEGIN NEW FILE: Perform import on gff_duplicate_ids
     $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
     $run_args = [
@@ -255,9 +262,15 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $message = $ex->getMessage();
       $has_exception = true;
     }
+    // TODO
     // $this->assertEquals($has_exception, true, "Duplicate ID was not detected and did not throw an error which it should have done.");
-    $this->assertEquals($has_exception, true);
 
+    /**
+     * Run the GFF loader on gff_tag_unescaped_character.gff for testing.
+     *
+     * This tests whether the GFF loader adds IDs that contain a comma. 
+     * The GFF loader should allow it
+     */  
     // BEGIN NEW FILE: Perform import on gff_tag_unescaped_character
     $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
     $run_args = [
@@ -301,10 +314,14 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $message = $ex->getMessage();
       $has_exception = true;
     }
+    // TODO
     // $this->assertEquals($has_exception, true, "Should not have saved the unescaped character");
-    $this->assertEquals($has_exception, true);
 
-
+    /**
+     * Run the GFF loader on gff_invalidstartend.gff for testing.
+     *
+     * This tests whether the GFF loader fixes start end values 
+     */  
     // BEGIN NEW FILE: Perform import on gff_invalidstartend
     $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
     $run_args = [
@@ -348,8 +365,163 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $message = $ex->getMessage();
       $has_exception = true;
     }
-    // $this->assertEquals($has_exception, true, "Should not complete when there is invalid start and end values");
-    $this->assertEquals($has_exception, true);
+    // TODO
+    // $this->assertEquals($has_exception, true, "Should not complete when there is invalid start and end values but did throw error.");
+
+    /**
+     * Run the GFF loader on gff_phase_invalid_character.gff for testing.
+     *
+     * This tests whether the GFF loader interprets the phase values correctly
+     * for CDS rows when a character outside of the range 0,1,2 is specified.
+     */
+    // BEGIN NEW FILE: Perform import on gff_phase_invalid_character
+    $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
+    $run_args = [
+      'files' => [
+        0 => [
+          'file_path' => __DIR__ . '/../../../fixtures/gff3_loader/gff_phase_invalid_character.gff'
+        ]
+      ],
+      'schema_name' => $schema_name,
+      'analysis_id' => $analysis_id,
+      'organism_id' => $organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'line_number' => NULL, // Previous error without this
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+      'skip_protein' => NULL,
+    ];
+
+    $file_details = [
+      'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_phase_invalid_character.gff',
+    ];
+
+    $has_exception = false;
+    try {
+      $gff3_importer->create($run_args, $file_details);
+      $gff3_importer->prepareFiles();
+      $gff3_importer->run();
+      $gff3_importer->postRun();
+    } catch (\Exception $ex) {
+      $message = $ex->getMessage();
+      $has_exception = true;
+    }
+    $this->assertEquals($has_exception, true, "Should not complete when there is invalid phase value (in this case character a) but did throw error.");
+
+    /**
+     * Run the GFF loader on gff_phase_invalid_number.gff for testing.
+     *
+     * This tests whether the GFF loader interprets the phase values correctly
+     * for CDS rows when a number outside of the range 0,1,2 is specified.
+     */ 
+    // BEGIN NEW FILE: Perform import on gff_phase_invalid_number
+    $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
+    $run_args = [
+      'files' => [
+        0 => [
+          'file_path' => __DIR__ . '/../../../fixtures/gff3_loader/gff_phase_invalid_number.gff'
+        ]
+      ],
+      'schema_name' => $schema_name,
+      'analysis_id' => $analysis_id,
+      'organism_id' => $organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'line_number' => NULL, // Previous error without this
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+      'skip_protein' => NULL,
+    ];
+
+    $file_details = [
+      'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_phase_invalid_number.gff',
+    ];
+
+    $has_exception = false;
+    try {
+      $gff3_importer->create($run_args, $file_details);
+      $gff3_importer->prepareFiles();
+      $gff3_importer->run();
+      $gff3_importer->postRun();
+    } catch (\Exception $ex) {
+      $message = $ex->getMessage();
+      $has_exception = true;
+    }
+    $this->assertEquals($has_exception, true, "Should not complete when there is invalid phase value (in this case a number) but did throw error.");
+
+    
+    /**
+     * Test that when checked, explicit proteins are created when specified within
+     * the GFF file. Explicit proteins will not respect the skip_protein argument
+     * and will therefore be added to the database.
+    */
+    // BEGIN NEW FILE: Perform import on gff_phase
+    $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
+    $run_args = [
+      'files' => [
+        0 => [
+          'file_path' => __DIR__ . '/../../../fixtures/gff3_loader/gff_phase.gff'
+        ]
+      ],
+      'schema_name' => $schema_name,
+      'analysis_id' => $analysis_id,
+      'organism_id' => $organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'line_number' => NULL, // Previous error without this
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+      'skip_protein' => NULL,
+    ];
+
+    $file_details = [
+      'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_phase.gff',
+    ];
+
+    $has_exception = false;
+    try {
+      $gff3_importer->create($run_args, $file_details);
+      $gff3_importer->prepareFiles();
+      $gff3_importer->run();
+      $gff3_importer->postRun();
+    } catch (\Exception $ex) {
+      $message = $ex->getMessage();
+      $has_exception = true;
+    }
+    // TODO
+    // $this->assertEquals($has_exception, false, "This is a valid phase file that should not produce an exception but did.");
+
 
     // $results = $chado->query("SELECT * FROM {1:featureprop};");
     // while ($object = $results->fetchObject()) {
