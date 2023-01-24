@@ -866,80 +866,28 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
  * Lookup an organism_id given an organism name (genus species)
  *
  * @param $name
- *   The organism name.
+ *   The organism name. Infraspecific type abbreviation is allowed.
  *
  * @return
- *   organism_id from chado.organism table, or FALSE on failure.
+ *   organism_id from chado.organism table on success, or FALSE on failure.
  *
  * @ingroup tripal_phylotree_api
  */
 function chado_phylogeny_lookup_organism_by_name($name) {
-  $organism_id = false;
-  if (!$name) {
-    return($organism_id);
-  }
-
-  // spaces in names are often replaced with underscores in newick files
+  // Spaces in names are often replaced with underscores in newick files.
   $name = trim(preg_replace('/_/', ' ', $name ));
 
-  // First try to find the name as-is in the abbreviation column. This does
-  // not have a unique constraint, so we must verify that the count is 1.
-  $sql = "SELECT COUNT(*) FROM {organism} WHERE abbreviation = :name";
-  $args = [':name' => $name];
-  $count = chado_query($sql, $args)->fetchField();
-  if ($count == 1) {
-    $sql = "SELECT organism_id FROM {organism} WHERE abbreviation = :name";
-    $organism_id = chado_query($sql, $args)->fetchField();
-  }
+  // Call api function to look up organism_id, case insensitive.
+  $organism_id = chado_get_organism_id_from_scientific_name($name, []);
 
-  // The abbreviation query failed, so now query on genus + species and
-  // optionally infraspecific nomenclature. Set $limit since prior to chado 1.3
-  // infraspecific nomenclature had to be stored with the species value, so
-  // there might be spaces there.
+  // The unique constraint on the organism table ensures we get
+  // either zero or one record returned.
+  if (empty($organism_id)) {
+    return FALSE;
+  }
   else {
-    $infra_supported = false;
-    $limit = 2;
-    if (chado_column_exists('organism', 'infraspecific_name')) {
-      $infra_supported = true;
-      $limit = 4;
-    }
-    $parts = preg_split('/\s+/', $name, $limit);
-    $sql = "SELECT organism_id FROM {organism} WHERE genus = :genus AND species = :species";
-    $args = [ ':genus' => $parts[0], ':species' => $parts[1] ];
-    if ($infra_supported) {
-      // When there is no infraspecific nomenclature for an organism, the
-      // type_id value will be either the "taxonomic_rank:no_rank" term,
-      // or it will be NULL.
-      $sql .= " AND (type_id ="
-           . " (SELECT cvterm_id FROM {cvterm} WHERE name = :infraspecific_type"
-           . " AND cv_id = (SELECT cv_id FROM {cv} WHERE name = 'taxonomic_rank'))";
-      if (array_key_exists(2, $parts)) {
-        // Infraspecific type may be abbreviated, the full form is needed
-        // for the sql query, e.g. expand subsp. to subspecies
-        $parts[2] = chado_unabbreviate_infraspecific_rank($parts[2]);
-      }
-      else {
-        $parts[2] = 'no_rank';
-        $sql .= " OR (type_id IS NULL)";
-      }
-      $sql .= ")";
-      $args = array_merge( $args, [':infraspecific_type' => $parts[2]] );
-
-      // infraspecific name
-      if (array_key_exists(3, $parts)) {
-        $sql .= " AND (infraspecific_name = :infraspecific_name)";
-        $args = array_merge( $args, [':infraspecific_name' => $parts[3]] );
-      }
-      else {
-        // this construction means it must be either empty string or NULL
-        $sql .= " AND ((infraspecific_name = '') IS NOT FALSE)";
-      }
-    }
-    // The unique constraint on the organism table ensures we get
-    // either zero or one record returned.
-    $organism_id = chado_query($sql, $args)->fetchField();
+    return $organism_id[0];
   }
-  return($organism_id);
 }
 
 /**
