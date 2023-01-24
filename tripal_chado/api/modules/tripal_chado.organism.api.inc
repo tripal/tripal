@@ -247,6 +247,8 @@ function chado_get_organism_id_from_scientific_name($name, $options = []) {
   // else specified by $options will be checked.
   // Scientific name is the combination of genus, species,
   // and optionally infraspecific nomenclature added with Chado 1.3
+  // For Chado 1.2 and earlier, infraspecific nomenclature had to
+  // be stored in the species column, so limit the split accordingly.
   // There is a unique constraint, so expect zero or one match here.
   $infra_present = false;
   $limit = 2;
