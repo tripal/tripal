@@ -21,17 +21,21 @@ class StoragePropertyValue extends StoragePropertyBase {
    * @param string key
    *   The key associated with this storage property value.
    *
+   * @param string term_id
+   *   The controlled vocabulary term asssociated with this property. It must be
+   *   in the form of "IdSpace:Accession" (e.g. "rdfs:label" or "OBI:0100026")
+   *
    * @param string entityId
    *   The entity id associated with this storage property value.
    *
    * @param ? $value
    *   An optional initial value for this storage property value.
    */
-  public function __construct($entityType,$fieldType,$key,$entityId,$value = NUll) {
+  public function __construct($entityType, $fieldType, $key, $term_id, $entityId, $value = NUll) {
     if (!$key) {
       throw new \Exception('Cannot create a StoragePropertyValue object without a key.');
     }
-    parent::__construct($entityType,$fieldType,$key);
+    parent::__construct($entityType, $fieldType, $key, $term_id);
     $this->entityId = $entityId;
     $this->value = $value;
   }

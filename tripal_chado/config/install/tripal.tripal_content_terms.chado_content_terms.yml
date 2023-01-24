@@ -1000,6 +1000,9 @@ vocabularies:
                 description: "Semanticscience Integrated Ontology"
                 urlPrefix: "http://semanticscience.org/resource/{db}_{accession}"
         terms:
+            -   id: 'SIO:000067'
+                name: 'namespace'
+                description: 'A namespace is an informational entity that defines a logical container for a set of symbols or identifiers.'
             -   id: 'SIO:000493'
                 name: 'clause'
                 description: 'A clause consists of a subject and a predicate.'
@@ -1015,6 +1018,9 @@ vocabularies:
             -   id: 'SIO:000281'
                 name: 'negation'
                 description: 'NOT is a logical operator in that has the value true if its operand is false.'
+            -   id: 'SIO:000729'
+                name: 'record identifier'
+                description: 'A record identifier is an identifier for a database entry.'
             -   id: 'SIO:001080'
                 name: 'vocabulary'
                 description: 'A vocabulary is a collection of terms.'

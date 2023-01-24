@@ -21,14 +21,18 @@ class VarCharStoragePropertyType extends StoragePropertyTypeBase {
    * @param string key
    *   The key associated with this property type.
    *
+   * @param string term_id
+   *   The controlled vocabulary term asssociated with this property. It must be
+   *   in the form of "IdSpace:Accession" (e.g. "rdfs:label" or "OBI:0100026")
+   *
    * @param int size
    *   The maximum size of characters for this type.
    *
    * @param array storage_settings
    *   An array of settings required for this property by the storage backend.*
    */
-  public function __construct($entityType, $fieldType, $key, $size = 255, $storage_settings = []) {
-    parent::__construct($entityType, $fieldType, $key, "varchar", $storage_settings);
+  public function __construct($entityType, $fieldType, $key, $term_id, $size = 255, $storage_settings = []) {
+    parent::__construct($entityType, $fieldType, $key, $term_id, "varchar", $storage_settings);
     $this->maxCharacterSize = $size;
   }
 

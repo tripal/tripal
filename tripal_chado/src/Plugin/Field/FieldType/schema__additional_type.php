@@ -81,11 +81,20 @@ class schema__additional_type extends ChadoFieldItemBase {
     $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
     $base_pkey_col = $base_table_def['primary key'];
 
-    $properties = [];
+    // Create variables to store the terms for the properties. We can use terms
+    // from Chado tables if appropriate.
+    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
+    $mapping = $storage->load('core_mapping');
+    $record_id_term = 'SIO:000729';
+    $type_id_term = $mapping->getColumnTermId($type_table, $type_column);
+    $name_term = $mapping->getColumnTermId('cvterm', 'name');
+    $idspace_term = 'SIO:000067';
+    $accession_term = $mapping->getColumnTermId('dbxref', 'accession');
 
     // Always store the record id of the base record that this field is
     // associated with in Chado.
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', [
+    $properties = [];
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
       'action' => 'store_id',
       'drupal_store' => TRUE,
       'chado_table' => $base_table,
@@ -100,19 +109,21 @@ class schema__additional_type extends ChadoFieldItemBase {
       $type_table_def = $schema->getTableDef($type_table, ['format' => 'Drupal']);
       $type_pkey_col = $type_table_def['primary key'];
       $type_fkey_col = array_keys($type_table_def['foreign keys'][$base_table]['columns'])[0];
+      $link_term = $mapping->getColumnTermId($type_table, $type_fkey_col);
+      $value_term = $mapping->getColumnTermId($type_table, 'value');
 
-      $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'prop_id', [
+      $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'prop_id', $record_id_term, [
         'action' => 'store_pkey',
         'drupal_store' => TRUE,
         'chado_table' => $type_table,
         'chado_column' => $type_pkey_col,
       ]);
-      $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link_id', [
+      $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'link_id', $link_term, [
         'action' => 'store_link',
         'chado_table' => $type_table,
         'chado_column' => $type_fkey_col,
       ]);
-      $properties[] =  new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'value', [
+      $properties[] =  new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, [
         'action' => 'store',
         'chado_table' => $type_table,
         'chado_column' => 'value',
@@ -120,7 +131,7 @@ class schema__additional_type extends ChadoFieldItemBase {
     }
 
     // We need to store the numeric cvterm ID for this field.
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'type_id', [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'type_id', $type_id_term, [
       'action' => 'store',
       'chado_table' => $type_table,
       'chado_column' => $type_column,
@@ -128,19 +139,19 @@ class schema__additional_type extends ChadoFieldItemBase {
     ]);
     // This fields needs the term name, idspace and accessession for proper
     // display of the type.
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'term_name', 128, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'term_name', $name_term, 128, [
       'action' => 'join',
       'path' => $type_table . '.' . $type_column . '>cvterm.cvterm_id',
       'chado_column' => 'name',
       'as' => 'term_name'
     ]);
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'id_space', 128, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'id_space', $idspace_term, 128, [
       'action' => 'join',
       'path' => $type_table . '.' . $type_column . '>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id;dbxref.db_id>db.db_id',
       'chado_column' => 'name',
       'as' => 'idSpace'
     ]);
-    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'accession', 128, [
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'accession', $accession_term, 128, [
       'action' => 'join',
       'path' => $type_table. '.' . $type_column . '>cvterm.cvterm_id;cvterm.dbxref_id>dbxref.dbxref_id',
       'chado_column' => 'accession',

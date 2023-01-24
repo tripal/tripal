@@ -502,7 +502,8 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $prop_types = $field_class::tripalTypes($field_definition);
     $prop_values = [];
     foreach ($prop_types as $prop_type) {
-      $prop_values[] = new StoragePropertyValue($entity_type_id, $field_class::$id, $prop_type->getKey(), $entity_id);
+      $prop_values[] = new StoragePropertyValue($entity_type_id, $field_class::$id,
+          $prop_type->getKey(), $prop_type->getTerm()->getTermId(), $entity_id);
     }
     return $prop_values;
   }

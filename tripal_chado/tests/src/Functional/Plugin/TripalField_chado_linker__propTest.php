@@ -51,8 +51,9 @@ class TripalField_chado_linker__propTest extends ChadoTestBrowserBase {
         'name' => 'Note',
         'definition' => 'A note',
         'accession' =>'Note',
-      ],
-    ]);
+      ]],
+      'chado_id_space', 'chado_vocabulary'
+    );
 
     // Add the chado_linker__prop to the content type.
     $this->createTripalField('bio_data_1', [
