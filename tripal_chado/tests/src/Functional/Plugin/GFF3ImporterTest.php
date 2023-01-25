@@ -468,14 +468,14 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $message = $ex->getMessage();
       $has_exception = true;
     }
-    $this->assertEquals($has_exception, true, "Should not complete when there is invalid phase value (in this case a number) but did throw error.");
+    $this->assertEquals($has_exception, true, "Should not complete when there is invalid phase value (in this case a number > 2) but did not throw error which should have happened.");
 
     
     /**
      * Test that when checked, explicit proteins are created when specified within
      * the GFF file. Explicit proteins will not respect the skip_protein argument
      * and will therefore be added to the database.
-    */
+     */
     // BEGIN NEW FILE: Perform import on gff_phase
     $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
     $run_args = [
@@ -523,10 +523,109 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     // $this->assertEquals($has_exception, false, "This is a valid phase file that should not produce an exception but did.");
 
 
+
     // $results = $chado->query("SELECT * FROM {1:featureprop};");
     // while ($object = $results->fetchObject()) {
     //   print_r($object);
     // }
+
+    /**
+     * Add a skip protein option.  Test that when checked, implicit proteins are
+     * not created, but that they are created when unchecked.
+     */
+    $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
+    $run_args = [
+      'files' => [
+        0 => [
+          'file_path' => __DIR__ . '/../../../fixtures/gff3_loader/gff_protein_generation.gff'
+        ]
+      ],
+      //Skip protein feature generation
+      'skip_protein' => 1,
+      'schema_name' => $schema_name,
+      'analysis_id' => $analysis_id,
+      'organism_id' => $organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'line_number' => NULL, // Previous error without this
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+      'skip_protein' => NULL,
+    ];
+
+    $file_details = [
+      'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_protein_generation.gff',
+    ];
+
+    $has_exception = false;
+    try {
+      $gff3_importer->create($run_args, $file_details);
+      $gff3_importer->prepareFiles();
+      $gff3_importer->run();
+      $gff3_importer->postRun();
+    } catch (\Exception $ex) {
+      $message = $ex->getMessage();
+      // print_r($ex->__toString());
+      $has_exception = true;
+    }
+    // TODO - Review this one with the Tripal 3 test since it does more checks after 
+    // solving the undefined organism_id issue. 
+    // $this->assertEquals($has_exception, false, "This should create a protein");
+
+
+    $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
+    $run_args = [
+      'files' => [
+        0 => [
+          'file_path' => __DIR__ . '/../../../fixtures/gff3_loader/gff_rightarrow_id.gff'
+        ]
+      ],
+      'schema_name' => $schema_name,
+      'analysis_id' => $analysis_id,
+      'organism_id' => $organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'line_number' => NULL, // Previous error without this
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+      'skip_protein' => NULL,
+    ];
+
+    $file_details = [
+      'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_rightarrow_id.gff',
+    ];
+
+    $has_exception = false;
+    try {
+      $gff3_importer->create($run_args, $file_details);
+      $gff3_importer->prepareFiles();
+      $gff3_importer->run();
+      $gff3_importer->postRun();
+    } catch (\Exception $ex) {
+      $message = $ex->getMessage();
+      // print_r($ex);
+      $has_exception = true;
+    }
 
   }
 }
