@@ -28,15 +28,6 @@ class TripalController extends ControllerBase{
     ];
   }
 
-  public function tripalExtensions() {
-    //
-    return [
-      '#markup' => 'Not yet upgraded.',
-    ];
-  }
-
-
-
   public function tripalAttachField($id) {
     //tripal_jobs_view in tripal.jobs.inc
     return [
