@@ -783,7 +783,7 @@ fields:
         content_type: gene
         label: Unique Name
         type: chado_text_type
-        description: A text token, number or something else which identifies an entity, but which may not be persistent (stable) or unique (the same identifier may identify multiple things).
+        description: A name that uniquely identifies the gene within the organism. 
         cardinality: 1
         required: true
         storage_settings: 
@@ -910,7 +910,7 @@ fields:
               region: content
               weight: 10
  
-    -   name: mRNA_name
+    -   name: mrna_name
         content_type: mRNA
         label: Name
         type: chado_string_type
@@ -937,11 +937,11 @@ fields:
               region: content
               weight: 10
 
-    -   name: mRNA_uniquename
+    -   name: mrna_uniquename
         content_type: mRNA
         label: Unique Name
         type: chado_text_type
-        description: A text token, number or something else which identifies an entity, but which may not be persistent (stable) or unique (the same identifier may identify multiple things).
+        description: A name that uniquely identifies the mRNA within the organism.
         cardinality: 1
         required: true
         storage_settings: 
@@ -963,7 +963,7 @@ fields:
               region: content
               weight: 15
 
-    -   name: mRNA_sequence
+    -   name: mrna_sequence
         content_type: mRNA
         label: Sequence
         type: chado_text_type
@@ -989,7 +989,7 @@ fields:
               region: content
               weight: 20
 
-    -   name: mRNA_sequence_length
+    -   name: mrna_sequence_length
         content_type: mRNA
         label: Sequence Length
         type: chado_integer_type
@@ -1015,7 +1015,7 @@ fields:
               region: content
               weight: 25
 
-    -   name: mRNA_type
+    -   name: mrna_type
         content_type: mRNA
         label: Type
         type: schema__additional_type
@@ -1236,7 +1236,7 @@ fields:
         content_type: DNA_library
         label: Unique Name
         type: chado_text_type
-        description: A text token, number or something else which identifies an entity, but which may not be persistent (stable) or unique (the same identifier may identify multiple things).
+        description: A name that uniquely identifies the DNA library on this site.
         cardinality: 1
         required: true
         storage_settings: 
@@ -1910,7 +1910,7 @@ fields:
         content_type: QTL
         label: Uniquen Name
         type: chado_text_type
-        description: A text token, number or something else which identifies an entity, but which may not be persistent (stable) or unique (the same identifier may identify multiple things).
+        description: A name that uniquely identifies the QTL within the organism.
         cardinality: 1
         required: true
         storage_settings: 
@@ -2043,7 +2043,7 @@ fields:
         content_type: seqvar
         label: Unique Name
         type: chado_text_type
-        description: A text token, number or something else which identifies an entity, but which may not be persistent (stable) or unique (the same identifier may identify multiple things).
+        description: A name that uniquely identifies the sequence variant within the organism.
         cardinality: 1
         required: true
         storage_settings: 
@@ -2176,7 +2176,7 @@ fields:
         content_type: genetic_marker
         label: Unique Name
         type: chado_text_type
-        description: A text token, number or something else which identifies an entity, but which may not be persistent (stable) or unique (the same identifier may identify multiple things).
+        description: A name that uniquely identifies the genetic marker within the organism.
         cardinality: 1
         required: true
         storage_settings: 
@@ -2309,7 +2309,7 @@ fields:
         content_type: phenotype_marker
         label: Uniquen Name
         type: chado_text_type
-        description: A text token, number or something else which identifies an entity, but which may not be persistent (stable) or unique (the same identifier may identify multiple things).
+        description: A name that uniquely identifies the heritable phenotypic marker within the organism.
         cardinality: 1
         required: true
         storage_settings: 
@@ -2442,7 +2442,7 @@ fields:
         content_type: germplasm
         label: Unique Name
         type: chado_text_type
-        description: A text token, number or something else which identifies an entity, but which may not be persistent (stable) or unique (the same identifier may identify multiple things).
+        description: A name that uniquely identifies the germplasm within this organism.
         cardinality: 1
         required: true
         storage_settings: 
@@ -2550,7 +2550,7 @@ fields:
         content_type: breeding_cross
         label: Unique Name
         type: chado_text_type
-        description: A text token, number or something else which identifies an entity, but which may not be persistent (stable) or unique (the same identifier may identify multiple things).
+        description: A name that uniquely identifies the breeding cross within this organism.
         cardinality: 1
         required: true
         storage_settings: 
@@ -2657,7 +2657,7 @@ fields:
         content_type: germplasm_variety
         label: Unique Name
         type: chado_text_type
-        description: A text token, number or something else which identifies an entity, but which may not be persistent (stable) or unique (the same identifier may identify multiple things).
+        description: A name that uniquely identifies the germplasm variety within this organism.
         cardinality: 1
         required: true
         storage_settings: 
@@ -2764,7 +2764,7 @@ fields:
         content_type: RIL
         label: Unique Name
         type: chado_text_type
-        description: A text token, number or something else which identifies an entity, but which may not be persistent (stable) or unique (the same identifier may identify multiple things).
+        description: A name that uniquely identifies the RIL within this organism.
         cardinality: 1
         required: true
         storage_settings: 
