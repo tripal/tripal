@@ -1,0 +1,194 @@
+id: 'chado_content_types'
+label: 'Chado Content Types'
+description: 'Content types provided by the Tripal Chado module'
+content_types:
+
+    -   label: Organism
+        term: OBI:0100026
+        category: General
+        name: organism
+        synonyms: 
+            - bio_data_1
+
+    -   label:  Analysis
+        term: operation:2945
+        category: General
+        name: analysis
+        synonyms: 
+            - bio_data_2
+
+    -   label: Project
+        term: NCIT:C47885
+        category: General
+        name: project
+        synonyms: 
+            - bio_data_3
+              
+    -   label: Study
+        term: SIO:001066
+        category: General
+        name: study
+        synonyms: 
+            - bio_data_4
+        
+    -   label: Contact
+        term: local:contact
+        category: General
+        name: contact
+        synonyms: 
+            -bio_data_5        
+
+    -   label: Publication
+        term: TPUB:0000002
+        category: General
+        name: pub
+        synonyms: 
+            - bio_data_6
+
+    -   label:  Protocol
+        term: sep:00101
+        category: General
+        name: protocol
+        synonyms: 
+            - bio_data_7
+        
+    -   label: Gene
+        term: SO:0000704
+        category: Genomic
+        name: gene
+        synonyms: 
+            - bio_data_8
+
+    -   label: mRNA
+        term: SO:0000234
+        category: Genomic
+        name: mRNA
+        synonyms: 
+            - bio_data_9
+            
+    -   label: Phylogenetic Tree
+        term: data:0872
+        category: Genomic
+        name: phylotree
+        synonyms: 
+            - bio_data_10
+              
+    -   label: Physical Map
+        term: data:1280
+        category: Genomic  
+        name: physmap 
+        synonyms: 
+            - bio_data_11    
+              
+    -   label: DNA Library
+        term: NCIT:C16223
+        category: Genomic
+        name: DNA_library
+        synonyms: 
+            - bio_data_12
+        
+    -   label: Genome Assembly
+        term: operation:0525
+        category: Genomic 
+        name:  genome_assembly
+        synonyms: 
+            - bio_data_13     
+
+    -   label: Genome Annotation
+        term: operation:0362
+        category: Genomic
+        name: genome_annotation
+        synonyms: 
+            - bio_data_14
+        
+    -   label: Genome Project
+        term: local:Genome Project
+        category: Genomic
+        name: genome_project
+        synonyms: 
+            - bio_data_15
+            
+    -   label: Genetic Map
+        term: data:1278
+        category: Genetic
+        name: genmap
+        synonyms: 
+            - bio_data_16
+            
+    -   label: QTL
+        term: SO:0000771
+        category: Genetic
+        name: qtl
+        synonyms: 
+            - bio_data_17
+        
+    -   label: Sequence Variant
+        term: SO:0001060
+        category: Genetic
+        name: seqvar
+        synonyms: 
+            - bio_data_18
+
+    -   label: Genetic Marker
+        term: SO:0001645
+        category: Genetic
+        name: genetic_marker
+        synonyms: 
+            - bio_data_19
+        
+    -   label: Heritable Phenotypic Marker
+        term: SO:0001500
+        category: Genetic
+        name: phenotype_marker
+        synonyms: 
+            - bio_data_20
+        
+    -   label: Germplasm Accession
+        term: CO_010:0000044
+        category: Germplasm
+        name: germplasm
+        synonyms: 
+            - bio_data_21
+        
+    -   label: Breeding Cross
+        term: CO_010:0000255
+        category: Germplasm
+        name: breeding_cross
+        synonyms: 
+            - bio_data_22
+        
+    -   label: Germplasm Variety
+        term: CO_010:0000029
+        category: Germplasm
+        name: germplasm_variety
+        synonyms: 
+            - bio_data_23
+        
+    -   label: Recombinant Inbred Line
+        term: CO_010:0000162
+        category: Germplasm
+        name: RIL
+        synonyms: 
+            - bio_data_24
+        
+    -   label: Biological Sample
+        term: sep:00195
+        category: Expression
+        name: biosample
+        synonyms: 
+            - bio_data_25
+        
+    -   label: Assay
+        term: OBI:0000070
+        category: Expression
+        name: assay
+        synonyms: 
+            - bio_data_26
+        
+    -   label: Array Design
+        term: EFO:0000269
+        category: Expression
+        name: array_design
+        synonyms: 
+            - bio_data_27
+        

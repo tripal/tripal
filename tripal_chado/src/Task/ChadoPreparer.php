@@ -177,11 +177,11 @@ class ChadoPreparer extends ChadoTaskBase {
 
       $this->setProgress(0.7);
       $this->logger->notice("Creating default content types...");
-      $this->createGeneralContentTypes();
-      $this->createGenomicContentTypes();
-      $this->createGeneticContentTypes();
-      $this->createGermplasmContentTypes();
-      $this->createExpressionContentTypes();
+//       $this->createGeneralContentTypes();
+//       $this->createGenomicContentTypes();
+//       $this->createGeneticContentTypes();
+//       $this->createGermplasmContentTypes();
+//       $this->createExpressionContentTypes();
 
       $this->setProgress(1);
       $task_success = TRUE;
