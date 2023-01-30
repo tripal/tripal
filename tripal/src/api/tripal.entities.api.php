@@ -156,7 +156,7 @@ function theme_token_list($tokens) {
  * during cron.
  *
  * @param $bundle_name
- *   The name of the bundle to refresh (e.g. bio_data_4).
+ *   The name of the bundle to refresh.
  *
  * @ingroup tripal_entities_api
  */

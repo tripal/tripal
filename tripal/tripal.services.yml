@@ -26,3 +26,5 @@ services:
     parent: default_plugin_manager
   tripal.fields:
     class: Drupal\tripal\Services\TripalFieldsManager
+  tripal.content_types_init:
+    class: Drupal\tripal\Services\TripalContentTypes

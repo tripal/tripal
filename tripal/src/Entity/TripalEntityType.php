@@ -75,6 +75,16 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
   protected $name;
 
   /**
+   * A list of strings as alternative machine names.
+   *
+   * This will be used to store the `bio_data_x` names that
+   * were used in Tripal v3.
+   *
+   * @var array
+   */
+  protected $synonyms;
+
+  /**
    * The Tripal Content type label.
    *
    * @var string
@@ -212,7 +222,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
        $config = \Drupal::service('config.factory')->getEditable('tripal.settings');
        $max_id = $config->get('tripal_entity_type.max_id');
        $this->id = $max_id + 1;
-       $this->name = 'bio_data_' . $this->id;
+       $this->name = $this->name;
        $config->set('tripal_entity_type.max_id', $this->id)->save();
      }
 

@@ -101,7 +101,7 @@ field.field.tripal_entity.*.*:
           type: string
           label: 'Term Accession'
 
- tripal.tripal_content_types.*:
+tripal.tripal_content_types.*:
    type: config_entity
    label: 'Tripal Content Types'
    mapping:
@@ -124,7 +124,7 @@ field.field.tripal_entity.*.*:
            mapping:
                label:
                  type: string
-                 label: 'Name'
+                 label: 'Label'
                  nullable: false
                term:
                  type: string
@@ -132,106 +132,132 @@ field.field.tripal_entity.*.*:
                  nullable: false
                category:
                  type: string
-                 label: "Category "
+                 label: "Category"
                  nullable: false
-               fields:
+               name:
+                 type: string
+                 label: "Machine Name"
+                 nullable: false
+               synonyms:
                  type: sequence
-                 label: 'Fields'
+                 label: "Synonyms"
+                 nullable: true
                  sequence:
-                   type: mapping
-                   mapping:
-                       name:
-                         type: string
-                         label: 'The field name. It must '
-                         nullable: false
-                       label:
-                         type: string
-                         label: 'Label'
-                         nullable: false
-                       type:
-                         type: string
-                         label: 'Type'
-                         nullable: false
-                       description:
-                         type: string
-                         label: 'Description'
-                         nullable: false
-                       cardinality:
-                         type: integer
-                         label: 'Cardinality'
-                         nullable: false
-                       required:
-                         type: boolean
-                         label: 'Required'
-                         nullable: false
-                       storage_settings:
-                         type: mapping
-                         label: 'Storage Settings'
-                         mapping:
-                           storage_plugin_id:
-                             type: string
-                             label: 'Storage Plugin ID'
-                             nullable: false
-                           storage_plugin_settings:
-                              type: mapping
-                              label: 'Storage Plugin Settings'
-                       settings:
-                         type: mapping
-                         label: 'Settings'
-                         mapping:
-                           termIdSpace:
-                             type: string
-                             label: "Term Id Space"
-                             nullable: false
-                           termAccession:
-                             type: string
-                             label: "Term Accession"
-                             nullable: false
-                       display:
-                         type: mapping
-                         label: 'Display'
-                         mapping:
-                           view:
-                             type: sequence
-                             label: 'View'
-                             sequence:
-                               type: mapping
-                               mapping:
-                                 name:
-                                   type: string
-                                   label: 'Display'
-                                   nullable: false
-                                 region:
-                                   type: string
-                                   label: 'Region'
-                                   nullable: false
-                                 label:
-                                   type: string
-                                   label: 'Label'
-                                   nullable: false
-                                 weight:
-                                   type: integer
-                                   label: 'Weight'
-                                   nullable: false
-                           form:
-                             type: sequence
-                             label: 'View'
-                             sequence:
-                               type: mapping
-                               mapping:
-                                 name:
-                                   type: string
-                                   label: 'Display'
-                                   nullable: false
-                                 region:
-                                   type: string
-                                   label: 'Region'
-                                   nullable: false
-                                 label:
-                                   type: string
-                                   label: 'Label'
-                                   nullable: false
-                                 weight:
-                                   type: integer
-                                   label: 'Weight'
-                                   nullable: false
+                    type: sequence
+                    
+tripal.tripal_fields.*:
+   type: config_entity
+   label: 'Tripal Content Types'
+   mapping:
+     id:
+       type: string
+       label: 'ID'
+       nullable: false
+     label:
+       type: label
+       label: 'Label'
+       nullable: false
+     description:
+       type: string
+       label: 'Description'
+     fields:
+         type: sequence
+         label: 'Fields'
+         sequence:
+           type: mapping
+           mapping:
+               name:
+                 type: string
+                 label: 'The field name. It must '
+                 nullable: false
+               label:
+                 type: string
+                 label: 'Label'
+                 nullable: false
+               type:
+                 type: string
+                 label: 'Type'
+                 nullable: false
+               description:
+                 type: string
+                 label: 'Description'
+                 nullable: false
+               cardinality:
+                 type: integer
+                 label: 'Cardinality'
+                 nullable: false
+               required:
+                 type: boolean
+                 label: 'Required'
+                 nullable: false
+               storage_settings:
+                 type: mapping
+                 label: 'Storage Settings'
+                 mapping:
+                   storage_plugin_id:
+                     type: string
+                     label: 'Storage Plugin ID'
+                     nullable: false
+                   storage_plugin_settings:
+                      type: mapping
+                      label: 'Storage Plugin Settings'
+               settings:
+                 type: mapping
+                 label: 'Settings'
+                 mapping:
+                   termIdSpace:
+                     type: string
+                     label: "Term Id Space"
+                     nullable: false
+                   termAccession:
+                     type: string
+                     label: "Term Accession"
+                     nullable: false
+               display:
+                 type: mapping
+                 label: 'Display'
+                 mapping:
+                   view:
+                     type: sequence
+                     label: 'View'
+                     sequence:
+                       type: mapping
+                       mapping:
+                         name:
+                           type: string
+                           label: 'Display'
+                           nullable: false
+                         region:
+                           type: string
+                           label: 'Region'
+                           nullable: false
+                         label:
+                           type: string
+                           label: 'Label'
+                           nullable: false
+                         weight:
+                           type: integer
+                           label: 'Weight'
+                           nullable: false
+                   form:
+                     type: sequence
+                     label: 'View'
+                     sequence:
+                       type: mapping
+                       mapping:
+                         name:
+                           type: string
+                           label: 'Display'
+                           nullable: false
+                         region:
+                           type: string
+                           label: 'Region'
+                           nullable: false
+                         label:
+                           type: string
+                           label: 'Label'
+                           nullable: false
+                         weight:
+                           type: integer
+                           label: 'Weight'
+                           nullable: false
