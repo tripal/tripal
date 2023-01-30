@@ -111,7 +111,7 @@ content_types:
     -   label: Genetic Map
         term: data:1278
         category: Genetic
-        name: genmap
+        name: genetic_map
         synonyms: 
             - bio_data_16
             
