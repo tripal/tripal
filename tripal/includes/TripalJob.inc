@@ -333,7 +333,7 @@ class TripalJob {
           $arguments[] = $this->job->job_id;
         }
         else {
-          $arguments[] = $this;
+          $arguments['job'] = $this;
         }
       }
 
