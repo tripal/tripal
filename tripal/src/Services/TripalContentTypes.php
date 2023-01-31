@@ -17,21 +17,20 @@ class TripalContentTypes {
   }
 
   /**
-   * Installs the module's content types.
+   * Installs the module's Tripal content types.
    *
    */
-  public function installContentTypes($logger) {
+  public function loadConfig($logger) {
     $config_factory = \Drupal::service('config.factory');
     $config_list = $config_factory->listAll('tripal.tripal_content_types');
     foreach ($config_list as $config_item) {
       $config = $config_factory->get($config_item);
       $label = $config->get('label');
-      $logger->notice("Creating:" . $label);
+      $logger->notice("Creating Tripal content types from" . $label);
       $content_types = $config->get('content_types');
       foreach ($content_types as $content_type) {
         $this->createContentType($content_type, $logger);
       }
-
     }
   }
 

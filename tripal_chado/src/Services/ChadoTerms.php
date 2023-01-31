@@ -7,7 +7,7 @@ use Drupal\tripal\TripalDBX\TripalDbxConnection;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 
 
-class ChadoTermsInit{
+class ChadoTerms {
 
   /**
    * Instantiates a new ChadoTermsInit object.
@@ -54,7 +54,7 @@ class ChadoTermsInit{
    * Installs the module's default terms into Chado.
    *
    */
-  public function installTerms() {
+  public function loadConfig() {
     $config_factory = \Drupal::service('config.factory');
     $config = $config_factory->get('tripal.tripal_content_terms.chado_content_terms');
     $vocabs = $config->get('vocabularies');

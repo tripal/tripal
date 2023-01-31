@@ -8,7 +8,7 @@ services:
   tripal_chado.materialized_views:
     class: Drupal\tripal_chado\Services\ChadoMviewsManager
   tripal_chado.terms_init:
-    class: Drupal\tripal_chado\Services\ChadoTermsInit
+    class: Drupal\tripal_chado\Services\ChadoTerms
   tripal_chado.cloner:
     class: Drupal\tripal_chado\Task\ChadoCloner
   tripal_chado.installer:

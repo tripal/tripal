@@ -156,11 +156,11 @@ class ChadoPreparer extends ChadoTaskBase {
       $this->setProgress(0.2);
       $this->logger->notice("Loading Terms...");
       $terms_setup = \Drupal::service('tripal_chado.terms_init');
-      $terms_setup->installTerms();
+      $terms_setup->loadConfig();
 
       $this->logger->notice("Creating Content Types...");
       $content_type_setup = \Drupal::service('tripal.content_types_init');
-      $content_type_setup->installContentTypes($this->logger);
+      $content_type_setup->loadConfig($this->logger);
 
       return True;
       $this->logger->notice("Importing Ontologies...");

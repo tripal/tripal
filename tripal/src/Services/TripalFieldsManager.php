@@ -166,8 +166,15 @@ class TripalFieldsManager {
    * @return bool
    *   True if the array passes validation checks. False otherwise.
    */
-  public function validateFieldDef(array $field_def) : bool {
-    $logger = \Drupal::service('tripal.logger');
+  public function validateFieldDef($field_def, $logger) : bool {
+
+    // Check if the type already exists.
+    $entityTypes = \Drupal::entityTypeManager()
+      ->getStorage('tripal_entity_type')
+      ->loadByProperties(['name' => $field_def['content_type']]);
+    if (!empty($entityTypes)) {
+      $logger->error('The specified entity type does not exist: ' . $field_def['content_type']);
+    }
 
     if (!array_key_exists('name', $field_def)) {
       $logger->error('The field is missing the "name" property.');
@@ -194,6 +201,32 @@ class TripalFieldsManager {
   }
 
   /**
+   * Attaches fields to Tripal content types.
+   *
+   * @param \Psr\Log\LoggerInterface $logger
+   *   A logger object to which messages will be logged.
+   */
+  public function loadConfig($logger) {
+    $config_factory = \Drupal::service('config.factory');
+    $config_list = $config_factory->listAll('tripal.tripal_fields');
+
+    // Iterate through the configuration items.
+    foreach ($config_list as $config_item) {
+      $config = $config_factory->get($config_item);
+      $label = $config->get('label');
+      $logger->notice("Attaching fields to Tripal content types from:" . $label);
+      $fields = $config->get('fields');
+
+      // Iterate through each field in the config file.
+      foreach ($fields as $field) {
+        $this->attachFields($fields, $logger);
+        $tripal_fields = \Drupal::service('tripal.fields');
+        $tripal_fields->addBundleField($field);
+      }
+    }
+  }
+
+  /**
    * Adds a field to a Tripal entity type.
    *
    * @param string $bundle
@@ -202,6 +235,7 @@ class TripalFieldsManager {
    *   An associative array providing the necessary information about a field
    *   instance for this entity type. The following key/values are supported
    *   - name: (string) The machine-readable name for this field.
+   *   - content_type: (string) The machine-readable name of the content type.
    *   - type: (string) The field type
    *   - label: (string) The default label for the field.
    *   - idSpace: (string) The name of the ID space for this field.
@@ -246,6 +280,7 @@ class TripalFieldsManager {
    * @code
    * $species = [
    *   'name' => 'taxrank__species',
+   *   'content_type' => 'organism',
    *   'label' => 'Species',
    *   'type' => 'tripal_string_type',
    *   'description' => 'The organism species name',
@@ -285,13 +320,18 @@ class TripalFieldsManager {
    * @return bool
    *   True if the field was added successfully. False otherwise.
    */
-  public function addBundleField(string $bundle, array $field_def) : bool {
-    $logger = \Drupal::service('tripal.logger');
+  public function addBundleField($field_def, $logger) : bool {
 
-    if (!$this->validateFieldDef($field_def)) {
-      return False;
+    // Make sure the field definition is valid.
+    if (!$this->validateFieldDef($field_def, $logger)) {
+      return FALSE;
     }
+
+    // Set defaults for the field if they are not already set.
     $field_def = $this->setFieldDefDefaults($field_def);
+
+    // Get the bundle and field id.
+    $bundle = $field_def['content_type'];
     $field_id = 'tripal_entity' . '.' . $bundle . '.' . $field_def['name'];
 
     try {
