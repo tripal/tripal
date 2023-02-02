@@ -582,6 +582,18 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     // solving the undefined organism_id issue. 
     // $this->assertEquals($has_exception, false, "This should create a protein");
 
+    /**
+     * Run the GFF loader on gff_rightarrow_ids.gff for testing.
+     *
+     * This tests whether the GFF loader fails if ID contains  
+     * arrow >. It should not fail.
+     */  
+
+
+    // $results = $chado->query("SELECT * FROM {1:feature} WHERE uniquename LIKE 'FRAEX38873_v2_000000010'");
+    // foreach($results as $row) {
+    //   print_r($row);
+    // }
 
     $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
     $run_args = [
@@ -623,9 +635,195 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $gff3_importer->postRun();
     } catch (\Exception $ex) {
       $message = $ex->getMessage();
-      // print_r($ex);
       $has_exception = true;
     }
+
+    $results = $chado->query("SELECT count(*) as c1 FROM {1:feature} WHERE uniquename = '>FRAEX38873_v2_000000010';");
+    foreach($results as $row) {
+      $this->assertEquals($row->c1, 1, 'A feature with uniquename >FRAEX38873_v2_000000010 should have been added but was not found.');
+    }
+    $this->assertEquals($has_exception, false, "This should not fail and the right arrow should be added.");
+
+
+    /**
+     * Run the GFF loader on gff_score.gff for testing.
+     *
+     * This tests whether the GFF loader interprets the score values
+     */
+    $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
+    $run_args = [
+      'files' => [
+        0 => [
+          'file_path' => __DIR__ . '/../../../fixtures/gff3_loader/gff_score.gff'
+        ]
+      ],
+      'schema_name' => $schema_name,
+      'analysis_id' => $analysis_id,
+      'organism_id' => $organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'line_number' => NULL, // Previous error without this
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+      'skip_protein' => NULL,
+    ];
+
+    $file_details = [
+      'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_score.gff',
+    ];
+
+    $has_exception = false;
+    try {
+      $gff3_importer->create($run_args, $file_details);
+      $gff3_importer->prepareFiles();
+      $gff3_importer->run();
+      $gff3_importer->postRun();
+
+      $results = $chado->query("SELECT * FROM {1:analysisfeature} WHERE significance = :significance LIMIT 1", [
+        ':significance' => 2
+      ]);
+      foreach ($results as $row) {
+        // print_r($row);
+        $this->assertEquals($row->significance,2, 'No significance value of 2 could be found in the db. Import failed.');
+      }
+      unset($results);
+
+      $results = $chado->query("SELECT * FROM {1:analysisfeature} WHERE significance = :significance LIMIT 1", [
+        ':significance' => 2.5
+      ]);
+      foreach ($results as $row) {
+        // print_r($row);
+        $this->assertEquals($row->significance,2.5, 'No significance value of 2.5 could be found in the db. Import failed.');
+      }
+      unset($results);
+
+      $results = $chado->query("SELECT * FROM {1:analysisfeature} WHERE significance = :significance LIMIT 1", [
+        ':significance' => -2.5
+      ]);
+      foreach ($results as $row) {
+        // print_r($row);
+        $this->assertEquals($row->significance,-2.5, 'No significance value of -2.5 could be found in the db. Import failed.');
+      }
+      unset($results);
+    } catch (\Exception $ex) {
+      $message = $ex->getMessage();
+      $has_exception = true;
+    }
+    $this->assertEquals($has_exception,false,'An exception occurred while importing gff_score which should not have happened');
+
+
+    /**
+     * Run the GFF loader on gff_seqid_invalid_character.gff for testing.
+     * Seqids seem to also be called landmarks within GFF loader.
+     * This tests whether the GFF loader has any issues with characters like  
+     * single quotes.
+     */ 
+    $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
+    $run_args = [
+      'files' => [
+        0 => [
+          'file_path' => __DIR__ . '/../../../fixtures/gff3_loader/gff_seqid_invalid_character.gff'
+        ]
+      ],
+      'schema_name' => $schema_name,
+      'analysis_id' => $analysis_id,
+      'organism_id' => $organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'line_number' => NULL, // Previous error without this
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+      'skip_protein' => NULL,
+    ];
+
+    $file_details = [
+      'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_seqid_invalid_character.gff',
+    ];
+
+    $has_exception = false;
+    try {
+      $gff3_importer->create($run_args, $file_details);
+      $gff3_importer->prepareFiles();
+      $gff3_importer->run();
+      $gff3_importer->postRun();
+      
+    } 
+    catch (\Exception $ex) {
+      $message = $ex->getMessage();
+      $has_exception = true;
+    }
+    $this->assertEquals($has_exception, true, 'An invalid seqid in the gff_seqid_invalid_character should have caused an exception but did not.');
+
+    /**
+     * Run the GFF loader on gff_strand.gff for testing.
+     *
+     * This tests whether the GFF loader interprets the strand values
+     */ 
+    $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
+    $run_args = [
+      'files' => [
+        0 => [
+          'file_path' => __DIR__ . '/../../../fixtures/gff3_loader/gff_strand_invalid.gff'
+        ]
+      ],
+      'schema_name' => $schema_name,
+      'analysis_id' => $analysis_id,
+      'organism_id' => $organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'line_number' => NULL, // Previous error without this
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+      'skip_protein' => NULL,
+    ];
+
+    $file_details = [
+      'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_strand_invalid.gff',
+    ];
+
+    $has_exception = false;
+    try {
+      $gff3_importer->create($run_args, $file_details);
+      $gff3_importer->prepareFiles();
+      $gff3_importer->run();
+      $gff3_importer->postRun();
+      
+    } 
+    catch (\Exception $ex) {
+      $message = $ex->getMessage();
+      $has_exception = true;
+    }
+    $this->assertEquals($has_exception, true, 'An invalid strand in the gff_strand_invalid.gff file should have caused an exception but did not.');
 
   }
 }
