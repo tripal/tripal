@@ -570,7 +570,7 @@ class TaxonomyImporter extends TripalImporter {
     foreach ($this->all_orgs as $organism) {
       // If the organism record is marked as new then let's skip it because
       // it was newly added and should have the updated information already.
-      if ($organism->is_new) {
+      if ((property_exists($organism, 'is_new')) and ($organism->is_new)) {
         continue;
       }
       $sci_name = chado_get_organism_scientific_name($organism);
@@ -1061,7 +1061,7 @@ class TaxonomyImporter extends TripalImporter {
             return;
           }
           // Otherwise, set the branch to be the current branch and continue.
-          if ($branch_set[$j]['name'] == $lineage_depth[$i - 1]) {
+          if (isset($branch_set[$j]['name']) and ($branch_set[$j]['name'] == $lineage_depth[$i - 1])) {
             $branch_set = &$branch_set[$j]['branch_set'];
             break;
           }
@@ -1095,7 +1095,6 @@ class TaxonomyImporter extends TripalImporter {
     $property = [
       'type_name' => $term_name,
       'cv_name' => 'organism_property',
-      'value' => $value,
       'rank' => $rank,
     ];
 

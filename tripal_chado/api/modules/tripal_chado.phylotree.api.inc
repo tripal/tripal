@@ -314,12 +314,12 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings) {
 function chado_insert_phylotree(&$options, &$errors, &$warnings) {
   global $user;
 
-  $options['name_re'] = $options['name_re'] ? trim($options['name_re']) : NULL;
+  $options['name_re'] = isset($options['name_re']) ? trim($options['name_re']) : NULL;
   $options['leaf_type'] = trim($options['leaf_type']);
   $options['name'] = trim($options['name']);
   $options['format'] = trim($options['format']);
   $options['tree_file'] = trim($options['tree_file']);
-  $options['analysis_id'] = $options['analysis_id'] ? $options['analysis_id'] : NULL;
+  $options['analysis_id'] = isset($options['analysis_id']) ? $options['analysis_id'] : NULL;
 
   // These are options for the tripal_report_error function. We do not
   // want to log messages to the watchdog but we do for the job and to
@@ -327,7 +327,7 @@ function chado_insert_phylotree(&$options, &$errors, &$warnings) {
   $options['message_type'] = 'tripal_phylogeny';
   $options['message_opts'] = [
     'watchdog' => FALSE,
-    'job' => $options['job'],
+    'job' => isset($options['job']) ? $options['job'] : NULL,
     'print' => TRUE,
   ];
 
@@ -792,7 +792,7 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
             else {
               // This is a taxonomy tree. Try to match leaf nodes with organisms.
               $organism_name = $tree['name'];
-              $re = $options['name_re'];
+              $re = isset($options['name_re']) ? $options['name_re'] : NULL;
               if (($re) and (preg_match("/$re/", $organism_name, $matches))) {
                 $organism_name = $matches[1];
               }
