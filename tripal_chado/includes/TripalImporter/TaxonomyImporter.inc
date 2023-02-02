@@ -702,33 +702,15 @@ class TaxonomyImporter extends TripalImporter {
     // If the caller did not provide an organism then we want to try and
     // add one. But, it only makes sense to add one if this record
     // is of rank species.
-    // First check if the full name (including the infrasepcific name)
-    // are all present in the genus and species name.  This would have
-    // been the Chado v1.2 (or less) of storing species.
+    // The api lookup function called here handles Chado v1.2 where infraspecific
+    // name is appended to the species, as well as Chado v1.3 where we have
+    // more columns in the organism table.
     if (!$organism) {
-      $sql = "
-          SELECT organism_id
-          FROM {organism}
-          WHERE concat(genus, ' ', species) = :sci_name
-        ";
-      $results = chado_query($sql, [':sci_name' => $sci_name]);
-      $item = $results->fetchObject();
-      if ($item) {
-        $columns = ['*'];
-        $values = ['organism_id' => $item->organism_id];
-        $organism = chado_select_record('organism', $columns, $values);
-        if (count($organism) > 0) {
-          $organism = $organism[0];
-        }
-      }
-    }
-    // Second, check if the full name includes the infraspecific name.
-    if (!$organism) {
-      foreach ($this->all_orgs as $item) {
-        $internal_sci_name = chado_get_organism_scientific_name($item);
-        if ($sci_name == $internal_sci_name) {
-          $organism = $item;
-        }
+      // We do the lookup in two steps so that there is no error message for
+      // missing (new) organisms from chado_get_organism().
+      $organism_ids = chado_get_organism_id_from_scientific_name($sci_name, []);
+      if ($organism_ids) {
+        $organism = chado_get_organism(['organism_id' => $organism_ids[0]], []);
       }
     }
     return $organism;
@@ -750,13 +732,15 @@ class TaxonomyImporter extends TripalImporter {
     $species = '';
     $infra = '';
     $values = [];
+    // Checks for Chado 1.3 infraspecific nomenclature columns in organism table.
+    $infra_available = chado_column_exists('organism', 'infraspecific_name');
 
     // Check if the scientific name has an infraspecific part or is just
     // a species name.
-    if (preg_match('/^(.+?)\s+(.+?)\s+(.+)$/', $sci_name, $matches)) {
+    if ($infra_available and preg_match('/^(.+?)\s+(.+?)\s+(.+)$/', $sci_name, $matches)) {
       $genus = $matches[1];
       $species = $matches[2];
-      $infra = $matches[3];
+      $full_infra = $matches[3];
 
       // Get the CV term for the rank.
       $type = chado_get_cvterm([
@@ -766,13 +750,13 @@ class TaxonomyImporter extends TripalImporter {
 
       // Remove the rank from the infraspecific name.
       $abbrev = chado_abbreviate_infraspecific_rank($rank);
-      $infra = preg_replace("/$abbrev/", "", $infra);
+      $infra = preg_replace("/$abbrev/", "", $full_infra);
       $infra = trim($infra);
 
       $values = [
         'genus' => $genus,
         'species' => $species,
-        'abbreviation' => $genus[0] . '. ' . $species,
+        'abbreviation' => $genus[0] . '. ' . $species . ' ' . $full_infra,
         'type_id' => $type->cvterm_id,
         'infraspecific_name' => $infra,
       ];
@@ -784,12 +768,15 @@ class TaxonomyImporter extends TripalImporter {
       if (preg_match('/^(.+?)\s+(.+?)$/', $sci_name, $matches)) {
         $genus = $matches[1];
         $species = $matches[2];
-        $infra = '';
         $values = [
           'genus' => $genus,
           'species' => $species,
           'abbreviation' => $genus[0] . '. ' . $species,
         ];
+        if ($infra_available) {
+          $values['type_id'] = NULL;
+          $values['infraspecific_name'] = NULL;
+        }
         $organism = chado_insert_record('organism', $values);
         $organism = (object) $organism;
       }
