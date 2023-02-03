@@ -33,6 +33,9 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
    */
   public function testGFFImporterSimpleTest()
   {
+    // GFF3 Specifications document: http://gmod.org/wiki/GFF3
+    
+    // Public schema connection
     $public = \Drupal::database();
 
     // Installs up the chado with the test chado data
@@ -40,7 +43,6 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
 
     // Keep track of the schema name in case we need it
     $schema_name = $chado->getSchemaName();
-
 
     // Test to ensure cvterms are found in the cvterms table
     $cvterms_count_query = $chado->query("SELECT count(*) as c1 FROM {1:cvterm}");
@@ -68,7 +70,8 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
 
 
     // Verify that gene is now in the cvterm table (which gets imported from SO obo)
-    $result_gene_cvterm = $chado->query("SELECT * FROM {1:cvterm} WHERE name = 'gene' LIMIT 1;");
+    $result_gene_cvterm = $chado->query("SELECT * FROM {1:cvterm} 
+      WHERE name = 'gene' LIMIT 1;");
     $cvterm_object = null;
     $cvterm_object = $result_gene_cvterm->fetchObject();
     $this->assertNotEquals($cvterm_object, null);
@@ -132,7 +135,8 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     $gff3_importer->run();
     $gff3_importer->postRun();
 
-    // This check determines if scaffold1 was added to the features table (this was done manually above)
+    // This check determines if scaffold1 was added to the features table 
+    // (this was done manually above)
     $results = $chado->query("SELECT * FROM {1:feature} WHERE uniquename='scaffold1';");
     $results_object = $results->fetchObject();
     $scaffold_feature_id = $results_object->feature_id;
@@ -140,24 +144,30 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     unset($results);
     unset($results_object);
 
-    // This checks to ensure the test_gene_001 (gene) feature was inserted into the feature table
-    $results = $chado->query("SELECT * FROM {1:feature} WHERE uniquename='test_gene_001';");
+    // This checks to ensure the test_gene_001 (gene) feature was inserted 
+    // into the feature table
+    $results = $chado->query("SELECT * FROM {1:feature} 
+      WHERE uniquename='test_gene_001';");
     $results_object = $results->fetchObject();
     $gene_feature_id = $results_object->feature_id;
     $this->assertEquals($results_object->uniquename, 'test_gene_001');
     unset($results);
     unset($results_object);
 
-    // This checks to see whether the test_mrna_001.1 (mrna) feature got inserted into the feature table
-    $results = $chado->query("SELECT * FROM {1:feature} WHERE uniquename='test_mrna_001.1';");
+    // This checks to see whether the test_mrna_001.1 (mrna) feature got 
+    // inserted into the feature table
+    $results = $chado->query("SELECT * FROM {1:feature} 
+      WHERE uniquename='test_mrna_001.1';");
     $results_object = $results->fetchObject();
     $mrna_feature_id = $results_object->feature_id;
     $this->assertEquals($results_object->uniquename, 'test_mrna_001.1');
     unset($results);
     unset($results_object);
 
-    // This checks to see whether the test_protein_001.1 (polypeptide) feature got inserted into the feature table
-    $results = $chado->query("SELECT * FROM {1:feature} WHERE uniquename='test_protein_001.1';");
+    // This checks to see whether the test_protein_001.1 (polypeptide) feature 
+    // got inserted into the feature table
+    $results = $chado->query("SELECT * FROM {1:feature} 
+      WHERE uniquename='test_protein_001.1';");
     $results_object = $results->fetchObject();
     $polypeptide_feature_id = $results_object->feature_id;
     $this->assertEquals($results_object->uniquename, 'test_protein_001.1');
@@ -166,7 +176,8 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
 
     // Do checks on the featureprop table as well
     // Ensures the bio type value got added
-    $results = $chado->query("SELECT * FROM {1:featureprop} WHERE feature_id = :feature_id AND value LIKE :value;", [
+    $results = $chado->query("SELECT * FROM {1:featureprop} 
+      WHERE feature_id = :feature_id AND value LIKE :value;", [
       ':feature_id' => $gene_feature_id,
       ':value' => 'protein_coding'
     ]);
@@ -182,14 +193,16 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
 
 
     // Ensures the GAP value got added
-    $results = $chado->query("SELECT * FROM {1:featureprop} WHERE feature_id = :feature_id AND value LIKE :value;", [
+    $results = $chado->query("SELECT * FROM {1:featureprop} 
+      WHERE feature_id = :feature_id AND value LIKE :value;", [
       ':feature_id' => $gene_feature_id,
       ':value' => 'test_gap_1'
     ]);
     $has_exception = false;
     try {
       $results_object = $results->fetchObject();
-    } catch (\Exception $ex) {
+    } 
+    catch (\Exception $ex) {
       $has_exception = true;
     }
     $this->assertEquals($has_exception, false, "GAP value was not added.");
@@ -197,14 +210,16 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     unset($results_object);
 
     // Ensures the NOTE value got added
-    $results = $chado->query("SELECT * FROM {1:featureprop} WHERE feature_id = :feature_id AND value LIKE :value;", [
+    $results = $chado->query("SELECT * FROM {1:featureprop} 
+      WHERE feature_id = :feature_id AND value LIKE :value;", [
       ':feature_id' => $gene_feature_id,
       ':value' => 'test_gene_001_note'
     ]);
     $has_exception = false;
     try {
       $results_object = $results->fetchObject();
-    } catch (\Exception $ex) {
+    } 
+    catch (\Exception $ex) {
       $has_exception = true;
     }
     $this->assertEquals($has_exception, false, "NOTE value was not added.");
@@ -258,12 +273,14 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $gff3_importer->prepareFiles();
       $gff3_importer->run();
       $gff3_importer->postRun();
-    } catch (\Exception $ex) {
+    } 
+    catch (\Exception $ex) {
       $message = $ex->getMessage();
       $has_exception = true;
     }
     // TODO
-    // $this->assertEquals($has_exception, true, "Duplicate ID was not detected and did not throw an error which it should have done.");
+    // $this->assertEquals($has_exception, true, "Duplicate ID was not detected 
+    // and did not throw an error which it should have done.");
 
     /**
      * Run the GFF loader on gff_tag_unescaped_character.gff for testing.
@@ -310,12 +327,14 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $gff3_importer->prepareFiles();
       $gff3_importer->run();
       $gff3_importer->postRun();
-    } catch (\Exception $ex) {
+    } 
+    catch (\Exception $ex) {
       $message = $ex->getMessage();
       $has_exception = true;
     }
     // TODO
-    // $this->assertEquals($has_exception, true, "Should not have saved the unescaped character");
+    // $this->assertEquals($has_exception, true, "Should not have saved the 
+    // unescaped character");
 
     /**
      * Run the GFF loader on gff_invalidstartend.gff for testing.
@@ -361,7 +380,8 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $gff3_importer->prepareFiles();
       $gff3_importer->run();
       $gff3_importer->postRun();
-    } catch (\Exception $ex) {
+    } 
+    catch (\Exception $ex) {
       $message = $ex->getMessage();
       $has_exception = true;
     }
@@ -413,11 +433,13 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $gff3_importer->prepareFiles();
       $gff3_importer->run();
       $gff3_importer->postRun();
-    } catch (\Exception $ex) {
+    } 
+    catch (\Exception $ex) {
       $message = $ex->getMessage();
       $has_exception = true;
     }
-    $this->assertEquals($has_exception, true, "Should not complete when there is invalid phase value (in this case character a) but did throw error.");
+    $this->assertEquals($has_exception, true, "Should not complete when there 
+      is invalid phase value (in this case character a) but did throw error.");
 
     /**
      * Run the GFF loader on gff_phase_invalid_number.gff for testing.
@@ -464,11 +486,14 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $gff3_importer->prepareFiles();
       $gff3_importer->run();
       $gff3_importer->postRun();
-    } catch (\Exception $ex) {
+    } 
+    catch (\Exception $ex) {
       $message = $ex->getMessage();
       $has_exception = true;
     }
-    $this->assertEquals($has_exception, true, "Should not complete when there is invalid phase value (in this case a number > 2) but did not throw error which should have happened.");
+    $this->assertEquals($has_exception, true, "Should not complete when there 
+      is invalid phase value (in this case a number > 2) but did not throw 
+      error which should have happened.");
 
     
     /**
@@ -515,12 +540,14 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $gff3_importer->prepareFiles();
       $gff3_importer->run();
       $gff3_importer->postRun();
-    } catch (\Exception $ex) {
+    } 
+    catch (\Exception $ex) {
       $message = $ex->getMessage();
       $has_exception = true;
     }
     // TODO
-    // $this->assertEquals($has_exception, false, "This is a valid phase file that should not produce an exception but did.");
+    // $this->assertEquals($has_exception, false, "This is a valid phase 
+    //  file that should not produce an exception but did.");
 
 
 
@@ -573,7 +600,8 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $gff3_importer->prepareFiles();
       $gff3_importer->run();
       $gff3_importer->postRun();
-    } catch (\Exception $ex) {
+    } 
+    catch (\Exception $ex) {
       $message = $ex->getMessage();
       // print_r($ex->__toString());
       $has_exception = true;
@@ -590,7 +618,8 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
      */  
 
 
-    // $results = $chado->query("SELECT * FROM {1:feature} WHERE uniquename LIKE 'FRAEX38873_v2_000000010'");
+    // $results = $chado->query("SELECT * FROM {1:feature} 
+    // WHERE uniquename LIKE 'FRAEX38873_v2_000000010'");
     // foreach($results as $row) {
     //   print_r($row);
     // }
@@ -633,16 +662,21 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $gff3_importer->prepareFiles();
       $gff3_importer->run();
       $gff3_importer->postRun();
-    } catch (\Exception $ex) {
+    } 
+    catch (\Exception $ex) {
       $message = $ex->getMessage();
       $has_exception = true;
     }
 
-    $results = $chado->query("SELECT count(*) as c1 FROM {1:feature} WHERE uniquename = '>FRAEX38873_v2_000000010';");
+    $results = $chado->query("SELECT count(*) as c1 FROM {1:feature} 
+      WHERE uniquename = '>FRAEX38873_v2_000000010';");
+    
     foreach($results as $row) {
-      $this->assertEquals($row->c1, 1, 'A feature with uniquename >FRAEX38873_v2_000000010 should have been added but was not found.');
+      $this->assertEquals($row->c1, 1, 'A feature with uniquename 
+        >FRAEX38873_v2_000000010 should have been added but was not found.');
     }
-    $this->assertEquals($has_exception, false, "This should not fail and the right arrow should be added.");
+    $this->assertEquals($has_exception, false, "This should not fail and the 
+      right arrow should be added.");
 
 
     /**
@@ -689,37 +723,45 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $gff3_importer->run();
       $gff3_importer->postRun();
 
-      $results = $chado->query("SELECT * FROM {1:analysisfeature} WHERE significance = :significance LIMIT 1", [
+      $results = $chado->query("SELECT * FROM {1:analysisfeature} 
+        WHERE significance = :significance LIMIT 1", [
         ':significance' => 2
       ]);
       foreach ($results as $row) {
         // print_r($row);
-        $this->assertEquals($row->significance,2, 'No significance value of 2 could be found in the db. Import failed.');
+        $this->assertEquals($row->significance,2, 'No significance value of 2 
+          could be found in the db. Import failed.');
       }
       unset($results);
 
-      $results = $chado->query("SELECT * FROM {1:analysisfeature} WHERE significance = :significance LIMIT 1", [
+      $results = $chado->query("SELECT * FROM {1:analysisfeature} 
+        WHERE significance = :significance LIMIT 1", [
         ':significance' => 2.5
       ]);
       foreach ($results as $row) {
         // print_r($row);
-        $this->assertEquals($row->significance,2.5, 'No significance value of 2.5 could be found in the db. Import failed.');
+        $this->assertEquals($row->significance,2.5, 'No significance value of 2.5 
+        could be found in the db. Import failed.');
       }
       unset($results);
 
-      $results = $chado->query("SELECT * FROM {1:analysisfeature} WHERE significance = :significance LIMIT 1", [
+      $results = $chado->query("SELECT * FROM {1:analysisfeature} 
+        WHERE significance = :significance LIMIT 1", [
         ':significance' => -2.5
       ]);
       foreach ($results as $row) {
         // print_r($row);
-        $this->assertEquals($row->significance,-2.5, 'No significance value of -2.5 could be found in the db. Import failed.');
+        $this->assertEquals($row->significance,-2.5, 'No significance value of 
+        -2.5 could be found in the db. Import failed.');
       }
       unset($results);
-    } catch (\Exception $ex) {
+    } 
+    catch (\Exception $ex) {
       $message = $ex->getMessage();
       $has_exception = true;
     }
-    $this->assertEquals($has_exception,false,'An exception occurred while importing gff_score which should not have happened');
+    $this->assertEquals($has_exception,false,'An exception occurred while 
+      importing gff_score which should not have happened');
 
 
     /**
@@ -766,16 +808,17 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $gff3_importer->prepareFiles();
       $gff3_importer->run();
       $gff3_importer->postRun();
-      
     } 
     catch (\Exception $ex) {
       $message = $ex->getMessage();
       $has_exception = true;
     }
-    $this->assertEquals($has_exception, true, 'An invalid seqid in the gff_seqid_invalid_character should have caused an exception but did not.');
+    $this->assertEquals($has_exception, true, 'An invalid seqid in the 
+      gff_seqid_invalid_character should have caused an 
+      exception but did not.');
 
     /**
-     * Run the GFF loader on gff_strand.gff for testing.
+     * Run the GFF loader on gff_strand_invalid.gff for testing.
      *
      * This tests whether the GFF loader interprets the strand values
      */ 
@@ -817,13 +860,315 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $gff3_importer->prepareFiles();
       $gff3_importer->run();
       $gff3_importer->postRun();
-      
     } 
     catch (\Exception $ex) {
       $message = $ex->getMessage();
       $has_exception = true;
     }
-    $this->assertEquals($has_exception, true, 'An invalid strand in the gff_strand_invalid.gff file should have caused an exception but did not.');
+    $this->assertEquals($has_exception, true, 'An invalid strand in the 
+      gff_strand_invalid.gff file should have caused an 
+      exception but did not.');
 
+
+    /**
+     * Run the GFF loader on gff_strand.gff for testing.
+     *
+     * This tests whether the GFF loader interprets the strand values
+     */ 
+    $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
+    $run_args = [
+      'files' => [
+        0 => [
+          'file_path' => __DIR__ . '/../../../fixtures/gff3_loader/gff_strand.gff'
+        ]
+      ],
+      'schema_name' => $schema_name,
+      'analysis_id' => $analysis_id,
+      'organism_id' => $organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'line_number' => NULL, // Previous error without this
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+      'skip_protein' => NULL,
+    ];
+
+    $file_details = [
+      'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_strand.gff',
+    ];
+
+    $has_exception = false;
+    try {
+      $gff3_importer->create($run_args, $file_details);
+      $gff3_importer->prepareFiles();
+      $gff3_importer->run();
+      $gff3_importer->postRun();
+      
+      // Test that integer values for strand that get placed in the db
+      // Strand data gets saved in chado.featureloc
+      $results = $chado->query('SELECT * FROM chado.featureloc fl 
+        LEFT JOIN chado.feature f ON (fl.feature_id = f.feature_id)
+        WHERE uniquename = :uniquename LIMIT 1', 
+        array(
+          ':uniquename' => 'FRAEX38873_v2_000000010'
+        )
+      );
+
+      foreach ($results as $row) {
+        $this->assertEquals($row->strand, 1); // +
+      }
+
+      $results = $chado->query('SELECT * FROM chado.featureloc fl 
+        LEFT JOIN chado.feature f ON (fl.feature_id = f.feature_id)
+        WHERE uniquename = :uniquename LIMIT 1', 
+        array(
+          ':uniquename' => 'FRAEX38873_v2_000000010.1'
+        )
+      );
+
+      foreach ($results as $row) {
+        $this->assertEquals($row->strand,-1); // -
+      } 
+      
+      $results = $chado->query('SELECT * FROM chado.featureloc fl 
+        LEFT JOIN chado.feature f ON (fl.feature_id = f.feature_id)
+        WHERE uniquename = :uniquename LIMIT 1', 
+        array(
+          ':uniquename' => 'FRAEX38873_v2_000000010.2'
+        )
+      );
+
+      foreach ($results as $row) {
+        $this->assertEquals($row->strand, 0); // ?
+      }
+      
+      $results = $chado->query('SELECT * FROM chado.featureloc fl 
+        LEFT JOIN chado.feature f ON (fl.feature_id = f.feature_id)
+        WHERE uniquename = :uniquename LIMIT 1', 
+        array(
+          ':uniquename' => 'FRAEX38873_v2_000000010.3'
+        )
+      );
+
+      foreach ($results as $row) {
+        $this->assertEquals($row->strand, 0); // .
+      } 
+
+    } 
+    catch (\Exception $ex) {
+      $message = $ex->getMessage();
+      $has_exception = true;
+    }
+    $this->assertEquals($has_exception, false, 'The gff_strand.gff produced an 
+      exception which should not happen since it is a valid file.');
+
+
+    /**
+     * Run the GFF loader on gff_tag_parent_verification.gff for testing.
+     *
+     * This tests whether the GFF loader adds Parent attributes
+     * The GFF loader should allow it
+     */  
+    $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
+    $run_args = [
+      'files' => [
+        0 => [
+          'file_path' => __DIR__ . '/../../../fixtures/gff3_loader/gff_tag_parent_verification.gff'
+        ]
+      ],
+      'schema_name' => $schema_name,
+      'analysis_id' => $analysis_id,
+      'organism_id' => $organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'line_number' => NULL, // Previous error without this
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+      'skip_protein' => NULL,
+    ];
+
+    $file_details = [
+      'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_tag_parent_verification.gff',
+    ];
+
+    $has_exception = false;
+    try {
+      $gff3_importer->create($run_args, $file_details);
+      $gff3_importer->prepareFiles();
+      $gff3_importer->run();
+      $gff3_importer->postRun();
+      $results = $chado->query("SELECT COUNT(*) as c1 FROM 
+      (SELECT * FROM {1:feature_relationship} fr
+      LEFT JOIN {1:feature} f ON (fr.object_id = f.feature_id)
+      WHERE f.uniquename = 'FRAEX38873_v2_000000010' LIMIT 1
+      ) as table1;",[]);
+
+      foreach ($results as $row) {
+        $this->assertEquals($row->c1, 1);
+      }
+    } 
+    catch (\Exception $ex) {
+      $message = $ex->getMessage();
+      $has_exception = true;
+    }
+    $this->assertEquals($has_exception, false, 'This file 
+      gff_tag_parent_verification.gff is a valid file and should not produce 
+      an exception but did.');      
+    
+
+  /**
+   * Run the GFF loader on gff_tagvalue_encoded_character.gff for testing.
+   *
+   * This tests whether the GFF loader adds IDs that contain encoded character. 
+   * The GFF loader should allow it
+   */    
+    $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
+    $run_args = [
+      'files' => [
+        0 => [
+          'file_path' => __DIR__ . '/../../../fixtures/gff3_loader/gff_tagvalue_encoded_character.gff'
+        ]
+      ],
+      'schema_name' => $schema_name,
+      'analysis_id' => $analysis_id,
+      'organism_id' => $organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'line_number' => NULL, // Previous error without this
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+      'skip_protein' => NULL,
+    ];
+
+    $file_details = [
+      'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_tagvalue_encoded_character.gff',
+    ];
+
+    $has_exception = false;
+    try {
+      $gff3_importer->create($run_args, $file_details);
+      $gff3_importer->prepareFiles();
+      $gff3_importer->run();
+      $gff3_importer->postRun();
+
+      $results = $chado->query("SELECT COUNT(*) as c1 FROM {1:feature} 
+      WHERE uniquename = 'FRAEX38873_v2_000000010,20';",[]);
+
+      foreach ($results as $row) {
+        $this->assertEquals($row->c1, 1);
+      }  
+    } 
+    catch (\Exception $ex) {
+      $message = $ex->getMessage();
+      $has_exception = true;
+    }
+    $this->assertEquals($has_exception, false, 'This file 
+      gff_tagvalue_encoded_character.gff is a valid file and should not produce 
+      an exception but did.');      
+    
+    /**
+     * Run the GFF loader on gff_tagvalue_comma_character.gff for testing.
+     *
+     * This tests whether the GFF loader adds tag values contain comma seperation 
+     * character. 
+     * The GFF loader should allow it
+     */    
+    $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
+    $run_args = [
+      'files' => [
+        0 => [
+          'file_path' => __DIR__ . '/../../../fixtures/gff3_loader/gff_tagvalue_comma_character.gff'
+        ]
+      ],
+      'schema_name' => $schema_name,
+      'analysis_id' => $analysis_id,
+      'organism_id' => $organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'line_number' => NULL, // Previous error without this
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+      'skip_protein' => NULL,
+    ];
+
+    $file_details = [
+      'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_tagvalue_comma_character.gff',
+    ];
+
+    $has_exception = false;
+    try {
+      $gff3_importer->create($run_args, $file_details);
+      $gff3_importer->prepareFiles();
+      $gff3_importer->run();
+      $gff3_importer->postRun();
+
+      $results = $chado->query("SELECT COUNT(*) as c1 FROM {1:featureprop} 
+        WHERE value ILIKE :value",[
+        ':value' => 'T'
+      ]);
+      foreach ($results as $row) {
+        $this->assertEquals($row->c1, 1);
+      }
+
+      $results = $chado->query("SELECT COUNT(*) as c1 FROM {1:featureprop} 
+        WHERE value ILIKE :value",[
+        ':value' => 'EST'
+      ]);
+      foreach ($results as $row) {
+        $this->assertEquals($row->c1, 1);
+      }
+
+    } 
+    catch (\Exception $ex) {
+      $message = $ex->getMessage();
+      // print_r($message);
+      $has_exception = true;
+    }
+    $this->assertEquals($has_exception, false, 'This file 
+      gff_tagvalue_comma_character.gff should not produce 
+      an exception but did.');      
+
+    // TODO: A variation of this where the tagvalue has encoded comma, which 
+    // should store the actual value
   }
 }
