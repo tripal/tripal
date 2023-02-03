@@ -1204,18 +1204,171 @@ class ChadoUpgrader extends ChadoTaskBase {
     $new_tables = $this->connection
       ->query($sql_query, [':schema' => $ref_schema->getSchemaName()])
       ->fetchAllAssoc('relname');
-    $processed_new_tables = [];
-    $new_table_definitions = [];
-    $skip_table_column = [];
+    $context = [
+      'processed_new_tables' => [],
+      'new_table_definitions' => [],
+      'skip_table_column' => [],
+    ];
 
     // Check for existing tables with columns that can be updated through
     // specific functions (@see hook_tripal_chado_column_upgrade_alter())
     // and add them to the upgradeQueries task list.
-    $this->prepareUpgradeTables_existingTables($chado_column_upgrade, $old_tables);
+    $this->prepareUpgradeTables_existingTables($chado_column_upgrade, $context, $old_tables);
 
     // Check for missing or changed tables.
     // 1. Add missing tables, upgrade columns on existing table,
     //    remove column defaults, all constraints and indexes.
+    $this->prepareUpgradeTables_newTablesStep1($chado_column_upgrade, $context, $new_tables, $old_tables);
+
+    // 2. Adds indexes and table constraints without foreign keys.
+    $this->prepareUpgradeTables_newTablesStep2($chado_column_upgrade, $context, $new_tables, $old_tables);
+
+    // 3. Adds foreign key constraints.
+    $this->prepareUpgradeTables_newTablesStep3($chado_column_upgrade, $context, $new_tables, $old_tables);
+
+    // Report table changes.
+    if (!empty($old_tables)) {
+      if ($this->parameters['cleanup']) {
+        foreach ($old_tables as $old_table_name => $old_table) {
+          $sql_query =
+            "DROP TABLE IF EXISTS "
+            . $chado_schema->getQuotedSchemaName()
+            . ".$old_table_name CASCADE;"
+          ;
+          $this->upgradeQueries['#cleanup'][] = $sql_query;
+        }
+        $this->logger->warning(
+          t(
+            "The following tables have been removed:\n%tables",
+            ['%tables' => implode(', ', array_keys($old_tables))]
+          )
+        );
+      }
+      else {
+        $this->logger->warning(
+          t(
+            "The following tables are not part of the new Chado schema specifications but have been left unchanged. If they are useless, they could be removed:\n%tables",
+            ['%tables' => implode(', ', array_keys($old_tables))]
+          )
+        );
+      }
+    }
+    if (!empty($new_tables)) {
+      $this->logger->notice(
+        t(
+          "The following schema tables were upgraded:\n%tables",
+          ['%tables' => implode(', ', array_keys($new_tables))]
+        )
+      );
+    }
+    if (empty($old_tables) && empty($new_tables)) {
+      $this->logger->notice(t("All tables were already up-to-date."));
+    }
+  }
+
+  /**
+   * Check for existing tables with columns that can be updated through
+   * specific functions (@see hook_tripal_chado_column_upgrade_alter())
+   * and add them to the upgradeQueries task list.
+   *
+   * @param array $chado_column_upgrade
+   *   An array describing column-specific upgrade procedures. For the specific
+   *   structure of this array see prepareUpgradeTables() above.
+   * @param array $context
+   *   An array providing a continuous context between methods.
+   *   It consists of the following keys:
+   *     - processed_new_tables: an array providing a list of processed tables.
+   *     - new_table_definitions: an array providing a cached set of table definitions.
+   *     - skip_table_column: an array of table columns which should be skipped
+   *       since they have already been processed.
+   * @param array $tables
+   *   An array where the keys are table names in the current schema which is
+   *   undergoing an upgrade. The values are objects specifying additional info
+   *   about these tables.
+   */
+  private function prepareUpgradeTables_existingTables(&$chado_column_upgrade, &$context, $tables, ) {
+    $chado_schema = $this->outputSchemas[0];
+    $ref_schema = $this->inputSchemas[0];
+
+    foreach (array_keys($tables) as $table_name) {
+
+      // Initialize updateQueries section for this table.
+      if (!isset($this->upgradeQueries[$table_name])) {
+        $this->upgradeQueries[$table_name] = [];
+      }
+
+      // Check column update tasks ($chado_column_upgrade) for specific updates
+      // (e.g. column renaming, value alteration, ...).
+      if (array_key_exists($table_name, $chado_column_upgrade)) {
+
+        // Get the table definition to use as a reference.
+        $table_definition = $chado_schema->schema()->getTableDef(
+          $table_name,
+          [ 'source' => 'database', 'format' => 'default' ]
+        );
+
+        // Using thetable definition, check each column for column-sepcific changes.
+        foreach ($table_definition['columns'] as $column => $column_def) {
+          if (array_key_exists($column, $chado_column_upgrade[$table_name])) {
+
+            // Init upgrade array.
+            if (!isset($this->upgradeQueries[$table_name])) {
+              $this->upgradeQueries[$table_name] = [];
+            }
+
+            // Get update queries.
+            // NOTE: The update key of $chado_column_upgrade for a given table
+            // and column should be the name of a function which can be executed
+            // to retrieve update SQL queries.
+            $function_name = $chado_column_upgrade[$table_name][$column]['update'];
+            // Once we confirm that this function exists...
+            if (function_exists($function_name)) {
+              // We will execute it with the schema name for our current and
+              // reference chado instance and the cleanup parameters.
+              $upgrade_sql_queries = $function_name(
+                $chado_schema->getSchemaName(),
+                $ref_schema->getSchemaName(),
+                $this->parameters['cleanup']
+              );
+
+              // Then the resulting SQL queries can be saved in the update task list.
+              $this->upgradeQueries[$table_name][] = $upgrade_sql_queries;
+            }
+
+            // Mark column as processed.
+            $context['skip_table_column'] += $chado_column_upgrade[$table_name][$column]['skip'];
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Step 1: Add missing tables, upgrade columns on existing table,
+   * remove column defaults, all constraints and indexes to the upgradeQueries task list.
+   *
+   * @param array $chado_column_upgrade
+   *   An array describing column-specific upgrade procedures. For the specific
+   *   structure of this array see prepareUpgradeTables() above.
+   * @param array $context
+   *   An array providing a continuous context between methods.
+   *   It consists of the following keys:
+   *     - processed_new_tables: an array providing a list of processed tables.
+   *     - new_table_definitions: an array providing a cached set of table definitions.
+   *     - skip_table_column: an array of table columns which should be skipped
+   *       since they have already been processed.
+   * @param array $new_tables
+   *   An array where the keys are table names in the current schema which is
+   *   undergoing an upgrade. The values are objects specifying additional info
+   *   about these tables.
+   * @param array $old_tables
+   *   An array where the keys are table names in the reference schema.
+   *   The values are objects specifying additional info about these tables.
+   */
+  private function prepareUpgradeTables_newTablesStep1(&$chado_column_upgrade, &$context, $new_tables, $old_tables) {
+    $chado_schema = $this->outputSchemas[0];
+    $ref_schema = $this->inputSchemas[0];
+
     foreach ($new_tables as $new_table_name => $new_table) {
       $this->upgradeQueries[$new_table_name] =
         $this->upgradeQueries[$new_table_name]
@@ -1232,8 +1385,8 @@ class ChadoUpgrader extends ChadoTaskBase {
       );
 
       // Check if table should be skipped.
-      if (array_key_exists($new_table_name, $skip_table_column)
-          && empty($skip_table_column[$new_table_name])) {
+      if (array_key_exists($new_table_name, $context['skip_table_column'])
+          && empty($context['skip_table_column'][$new_table_name])) {
         continue;
       }
 
@@ -1354,7 +1507,7 @@ class ChadoUpgrader extends ChadoTaskBase {
           ;
 
           $this->upgradeQueries[$new_table_name][] = $sql_query;
-          $processed_new_tables[] = $new_table_name;
+          $context['processed_new_tables'][] = $new_table_name;
         }
 
         // Remove all old indexes.
@@ -1370,7 +1523,7 @@ class ChadoUpgrader extends ChadoTaskBase {
         }
 
         // Saves table definition.
-        $new_table_definitions[$new_table_name] = $new_table_definition;
+        $context['new_table_definitions'][$new_table_name] = $new_table_definition;
 
         // Processed: remove from $old_tables for change report.
         unset($old_tables[$new_table_name]);
@@ -1385,10 +1538,10 @@ class ChadoUpgrader extends ChadoTaskBase {
           . ".$new_table_name EXCLUDING DEFAULTS EXCLUDING CONSTRAINTS EXCLUDING INDEXES INCLUDING COMMENTS);"
         ;
         $this->upgradeQueries[$new_table_name][] = $sql_query;
-        $processed_new_tables[] = $new_table_name;
+        $context['processed_new_tables'][] = $new_table_name;
 
         // Saves table definition.
-        $new_table_definitions[$new_table_name] = $new_table_definition;
+        $context['new_table_definitions'][$new_table_name] = $new_table_definition;
       }
 
       // Add comment.
@@ -1401,12 +1554,38 @@ class ChadoUpgrader extends ChadoTaskBase {
       ;
       $this->upgradeQueries[$new_table_name][] = $sql_query;
     }
+  }
 
-    // 2. Adds indexes and table constraints without foreign keys.
+  /**
+   * Step 2: Adds indexes and table constraints without foreign keys to the
+   * upgradeQueries task list.
+   *
+   * @param array $chado_column_upgrade
+   *   An array describing column-specific upgrade procedures. For the specific
+   *   structure of this array see prepareUpgradeTables() above.
+   * @param array $context
+   *   An array providing a continuous context between methods.
+   *   It consists of the following keys:
+   *     - processed_new_tables: an array providing a list of processed tables.
+   *     - new_table_definitions: an array providing a cached set of table definitions.
+   *     - skip_table_column: an array of table columns which should be skipped
+   *       since they have already been processed.
+   * @param array $new_tables
+   *   An array where the keys are table names in the current schema which is
+   *   undergoing an upgrade. The values are objects specifying additional info
+   *   about these tables.
+   * @param array $old_tables
+   *   An array where the keys are table names in the reference schema.
+   *   The values are objects specifying additional info about these tables.
+   */
+  private function prepareUpgradeTables_newTablesStep2(&$chado_column_upgrade, &$context, $new_tables, $old_tables) {
+    $chado_schema = $this->outputSchemas[0];
+    $ref_schema = $this->inputSchemas[0];
+
     foreach ($new_tables as $new_table_name => $new_table) {
       // Check if table should be skipped.
-      if (array_key_exists($new_table_name, $skip_table_column)
-          && empty($skip_table_column[$new_table_name])) {
+      if (array_key_exists($new_table_name, $context['skip_table_column'])
+          && empty($context['skip_table_column'][$new_table_name])) {
         continue;
       }
 
@@ -1416,7 +1595,7 @@ class ChadoUpgrader extends ChadoTaskBase {
       }
 
       $alter_sql = [];
-      $new_table_def = $new_table_definitions[$new_table_name];
+      $new_table_def = $context['new_table_definitions'][$new_table_name];
       $new_cstr_def = $new_table_def['constraints'];
       $index_to_skip = [];
 
@@ -1489,12 +1668,37 @@ class ChadoUpgrader extends ChadoTaskBase {
         }
       }
     }
+  }
 
-    // 3. Adds foreign key constraints.
+  /**
+   * Step 3: Adds foreign key constraints to the upgradeQueries task list.
+   *
+   * @param array $chado_column_upgrade
+   *   An array describing column-specific upgrade procedures. For the specific
+   *   structure of this array see prepareUpgradeTables() above.
+   * @param array $context
+   *   An array providing a continuous context between methods.
+   *   It consists of the following keys:
+   *     - processed_new_tables: an array providing a list of processed tables.
+   *     - new_table_definitions: an array providing a cached set of table definitions.
+   *     - skip_table_column: an array of table columns which should be skipped
+   *       since they have already been processed.
+   * @param array $new_tables
+   *   An array where the keys are table names in the current schema which is
+   *   undergoing an upgrade. The values are objects specifying additional info
+   *   about these tables.
+   * @param array $old_tables
+   *   An array where the keys are table names in the reference schema.
+   *   The values are objects specifying additional info about these tables.
+   */
+  private function prepareUpgradeTables_newTablesStep3(&$chado_column_upgrade, &$context, $new_tables, $old_tables) {
+    $chado_schema = $this->outputSchemas[0];
+    $ref_schema = $this->inputSchemas[0];
+
     foreach ($new_tables as $new_table_name => $new_table) {
       // Check if table should be skipped.
-      if (array_key_exists($new_table_name, $skip_table_column)
-          && empty($skip_table_column[$new_table_name])) {
+      if (array_key_exists($new_table_name, $context['skip_table_column'])
+          && empty($context['skip_table_column'][$new_table_name])) {
         continue;
       }
 
@@ -1504,7 +1708,7 @@ class ChadoUpgrader extends ChadoTaskBase {
       }
 
       $alter_sql = [];
-      $new_table_def = $new_table_definitions[$new_table_name];
+      $new_table_def = $context['new_table_definitions'][$new_table_name];
       $new_cstr_def = $new_table_def['constraints'];
       $index_to_skip = [];
 
@@ -1532,113 +1736,6 @@ class ChadoUpgrader extends ChadoTaskBase {
           . ';'
         ;
         $this->upgradeQueries[$upgq_id][] = $sql_query;
-      }
-    }
-
-    // Report table changes.
-    if (!empty($old_tables)) {
-      if ($this->parameters['cleanup']) {
-        foreach ($old_tables as $old_table_name => $old_table) {
-          $sql_query =
-            "DROP TABLE IF EXISTS "
-            . $chado_schema->getQuotedSchemaName()
-            . ".$old_table_name CASCADE;"
-          ;
-          $this->upgradeQueries['#cleanup'][] = $sql_query;
-        }
-        $this->logger->warning(
-          t(
-            "The following tables have been removed:\n%tables",
-            ['%tables' => implode(', ', array_keys($old_tables))]
-          )
-        );
-      }
-      else {
-        $this->logger->warning(
-          t(
-            "The following tables are not part of the new Chado schema specifications but have been left unchanged. If they are useless, they could be removed:\n%tables",
-            ['%tables' => implode(', ', array_keys($old_tables))]
-          )
-        );
-      }
-    }
-    if (!empty($new_tables)) {
-      $this->logger->notice(
-        t(
-          "The following schema tables were upgraded:\n%tables",
-          ['%tables' => implode(', ', array_keys($new_tables))]
-        )
-      );
-    }
-    if (empty($old_tables) && empty($new_tables)) {
-      $this->logger->notice(t("All tables were already up-to-date."));
-    }
-  }
-
-  /**
-   * Check for existing tables with columns that can be updated through
-   * specific functions (@see hook_tripal_chado_column_upgrade_alter())
-   * and add them to the upgradeQueries task list.
-   *
-   * @param array $chado_column_upgrade
-   *   An array describing column-specific upgrade procedures. For the specific
-   *   structure of this array see prepareUpgradeTables() above.
-   * @param array $tables
-   *   An array where the keys are table names in the current schema which is
-   *   undergoing an upgrade. The values are objects specifying additional info
-   *   about these tables.
-   */
-  private function prepareUpgradeTables_existingTables(&$chado_column_upgrade, $tables) {
-
-    foreach (array_keys($tables) as $table_name) {
-
-      // Initialize updateQueries section for this table.
-      if (!isset($this->upgradeQueries[$table_name])) {
-        $this->upgradeQueries[$table_name] = [];
-      }
-
-      // Check column update tasks ($chado_column_upgrade) for specific updates
-      // (e.g. column renaming, value alteration, ...).
-      if (array_key_exists($table_name, $chado_column_upgrade)) {
-
-        // Get the table definition to use as a reference.
-        $table_definition = $chado_schema->schema()->getTableDef(
-          $table_name,
-          [ 'source' => 'database', 'format' => 'default' ]
-        );
-
-        // Using thetable definition, check each column for column-sepcific changes.
-        foreach ($table_definition['columns'] as $column => $column_def) {
-          if (array_key_exists($column, $chado_column_upgrade[$table_name])) {
-
-            // Init upgrade array.
-            if (!isset($this->upgradeQueries[$table_name])) {
-              $this->upgradeQueries[$table_name] = [];
-            }
-
-            // Get update queries.
-            // NOTE: The update key of $chado_column_upgrade for a given table
-            // and column should be the name of a function which can be executed
-            // to retrieve update SQL queries.
-            $function_name = $chado_column_upgrade[$table_name][$column]['update'];
-            // Once we confirm that this function exists...
-            if (function_exists($function_name)) {
-              // We will execute it with the schema name for our current and
-              // reference chado instance and the cleanup parameters.
-              $upgrade_sql_queries = $function_name(
-                $chado_schema->getSchemaName(),
-                $ref_schema->getSchemaName(),
-                $this->parameters['cleanup']
-              );
-
-              // Then the resulting SQL queries can be saved in the update task list.
-              $this->upgradeQueries[$table_name][] = $upgrade_sql_queries;
-            }
-
-            // Mark column as processed.
-            $skip_table_column += $chado_column_upgrade[$table_name][$column]['skip'];
-          }
-        }
       }
     }
   }
