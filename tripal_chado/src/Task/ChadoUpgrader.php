@@ -1367,22 +1367,25 @@ class ChadoUpgrader extends ChadoTaskBase {
    */
   private function prepareUpgradeTables_newTablesStep1(&$chado_column_upgrade, &$context, $new_tables, $old_tables) {
     $chado_schema = $this->outputSchemas[0];
+    $chado_schema_name = $chado_schema->getQuotedSchemaName();
     $ref_schema = $this->inputSchemas[0];
+    $ref_schema_name = $ref_schema->getQuotedSchemaName();
 
+    // For each table in the schema to be upgraded...
     foreach ($new_tables as $new_table_name => $new_table) {
-      $this->upgradeQueries[$new_table_name] =
-        $this->upgradeQueries[$new_table_name]
-        ?? []
-      ;
+
+      // Initialize an entry in the upgradeQueries task list for the new table
+      // if the key is not already set.
+      $this->upgradeQueries[$new_table_name] ??= [];
 
       // Get new table definition.
+      // Note: We don't use the cache to retrieve since this is the first loop
+      // for the new tables so we know it's not set yet.
       $new_table_definition = $ref_schema->schema()->getTableDef(
         $new_table_name,
-        [
-          'source' => 'database',
-          'format' => 'default',
-        ]
+        [ 'source' => 'database', 'format' => 'default', ]
       );
+
 
       // Check if table should be skipped.
       if (array_key_exists($new_table_name, $context['skip_table_column'])
@@ -1390,9 +1393,11 @@ class ChadoUpgrader extends ChadoTaskBase {
         continue;
       }
 
+      // Check if the current table from the reference schema (i.e. new table),
+      // is also in the schema to be updated (i.e. old tables).
       if (array_key_exists($new_table_name, $old_tables)) {
 
-        // New table exists in old schema, compare.
+        // It is in both schema so now we want to compare them, looking for differences.
         $old_table = $old_tables[$new_table_name];
 
         // Get old table definition.
@@ -1408,31 +1413,31 @@ class ChadoUpgrader extends ChadoTaskBase {
 
         // Start comparison.
         $alter_sql = [];
-        // Compare columns.
-        foreach (
-          $new_table_definition['columns'] as $new_column => $new_column_def
-        ) {
-          // Replace schema name if there is one.
+        // Compare columns: for each column defined in the reference schema...
+        foreach ($new_table_definition['columns'] as $new_column => $new_column_def) {
+
+          // Replace schema name in the column type if there is one.
           $new_column_type = str_replace(
-            $ref_schema->getQuotedSchemaName() . '.',
-            $chado_schema->getQuotedSchemaName() . '.',
-            $new_table_definition['columns'][$new_column]['type']
+            $ref_schema_name . '.',
+            $chado_schema_name . '.',
+            $new_column_def['type']
           );
 
           // Check if column exists in old table.
           if (array_key_exists($new_column, $old_table_definition['columns'])) {
             // Column exists, compare.
+            $old_column_def = $old_table_definition['columns'][$new_column];
             // Data type.
-            $old_type = $old_table_definition['columns'][$new_column]['type'];
+            $old_type = $old_column_def['type'];
 
             if ($old_type != $new_column_type) {
               $alter_sql[] = "ALTER COLUMN $new_column TYPE $new_column_type";
             }
             // NULL option.
-            $old_not_null = $old_table_definition['columns'][$new_column]['not null'];
-            $new_not_null = $new_table_definition['columns'][$new_column]['not null'];
+            $old_not_null = $old_column_def['not null'];
+            $new_not_null = $new_column_def['not null'];
             if ($old_not_null != $new_not_null) {
-              if ($new_table_definition['columns'][$new_column]['not null']) {
+              if ($new_not_null) {
                 $alter_sql[] = "ALTER COLUMN $new_column SET NOT NULL";
               }
               else {
@@ -1440,9 +1445,7 @@ class ChadoUpgrader extends ChadoTaskBase {
               }
             }
             // No DEFAULT value at the time (added later).
-            if (
-              !empty($old_table_definition['columns'][$new_column]['default'])
-            ) {
+            if (!empty($old_column_def['default'])) {
               $alter_sql[] = "ALTER COLUMN $new_column DROP DEFAULT";
             }
             // Remove processed column from old table data.
@@ -1452,13 +1455,8 @@ class ChadoUpgrader extends ChadoTaskBase {
             // Column does not exist, add (without default as it will be added
             // later).
             $alter_sql[] =
-              "ADD COLUMN $new_column "
-              . $new_column_type
-              . ($new_table_definition['columns'][$new_column]['not null']
-                  ? ' NOT NULL'
-                  : ' NULL'
-                )
-            ;
+              "ADD COLUMN $new_column " . $new_column_type
+              . ($new_not_null ? ' NOT NULL' : ' NULL' ) ;
           }
         }
         // Report old columns still there.
@@ -1501,9 +1499,8 @@ class ChadoUpgrader extends ChadoTaskBase {
         // Alter table.
         if (!empty($alter_sql)) {
           $sql_query =
-            "ALTER TABLE " . $chado_schema->getQuotedSchemaName() . ".$new_table_name\n  "
-            . implode(",\n  ", $alter_sql)
-            . ';'
+            "ALTER TABLE " . $chado_schema_name . ".$new_table_name\n  "
+            . implode(",\n  ", $alter_sql) . ';'
           ;
 
           $this->upgradeQueries[$new_table_name][] = $sql_query;
@@ -1511,12 +1508,9 @@ class ChadoUpgrader extends ChadoTaskBase {
         }
 
         // Remove all old indexes.
-        foreach (
-          $old_table_definition['indexes'] as $old_index_name => $old_index_def
-        ) {
+        foreach ($old_table_definition['indexes'] as $old_index_name => $old_index_def) {
           $sql_query =
-            "DROP INDEX IF EXISTS "
-            . $chado_schema->getQuotedSchemaName()
+            "DROP INDEX IF EXISTS " . $chado_schema_name
             . ".$old_index_name;"
           ;
           $this->upgradeQueries[$new_table_name][] = $sql_query;
@@ -1532,9 +1526,9 @@ class ChadoUpgrader extends ChadoTaskBase {
         // Does not exist, add it.
         $sql_query =
           "CREATE TABLE "
-          . $chado_schema->getQuotedSchemaName()
+          . $chado_schema_name
           . ".$new_table_name (LIKE "
-          . $ref_schema->getQuotedSchemaName()
+          . $ref_schema_name
           . ".$new_table_name EXCLUDING DEFAULTS EXCLUDING CONSTRAINTS EXCLUDING INDEXES INCLUDING COMMENTS);"
         ;
         $this->upgradeQueries[$new_table_name][] = $sql_query;
@@ -1545,14 +1539,15 @@ class ChadoUpgrader extends ChadoTaskBase {
       }
 
       // Add comment.
-      $sql_query =
-        "COMMENT ON TABLE "
-        . $chado_schema->getQuotedSchemaName()
-        . ".$new_table_name IS "
-        . $this->connection->quote($new_table->comment)
-        . ';'
-      ;
-      $this->upgradeQueries[$new_table_name][] = $sql_query;
+      if ($new_table->comment !== NULL) {
+        $sql_query =
+          "COMMENT ON TABLE "
+          . $chado_schema_name
+          . ".$new_table_name IS "
+          . $this->connection->quote($new_table->comment)
+          . ';';
+        $this->upgradeQueries[$new_table_name][] = $sql_query;
+      }
     }
   }
 
@@ -2221,21 +2216,23 @@ class ChadoUpgrader extends ChadoTaskBase {
       ->fetchAll()
     ;
     foreach ($column_comments as $column_comment) {
-      $this->upgradeQueries['#comments'][] =
-        'COMMENT ON COLUMN '
-        . $column_comment->relname
-        . '.'
-        . $column_comment->attname
-        . ' IS '
-        . $this->connection->quote($column_comment->description)
-        . ';'
-      ;
-      if (!array_key_exists($column_comment->relname, $column_with_comment)) {
-        $column_with_comment[$column_comment->relname] = [];
+      if ($column_comment->description !== NULL) {
+        $this->upgradeQueries['#comments'][] =
+          'COMMENT ON COLUMN '
+          . $column_comment->relname
+          . '.'
+          . $column_comment->attname
+          . ' IS '
+          . $this->connection->quote($column_comment->description)
+          . ';'
+        ;
+        if (!array_key_exists($column_comment->relname, $column_with_comment)) {
+          $column_with_comment[$column_comment->relname] = [];
+        }
+        // Keep track of what is commented.
+        $column_with_comment[$column_comment->relname][$column_comment->attname]
+          = TRUE;
       }
-      // Keep track of what is commented.
-      $column_with_comment[$column_comment->relname][$column_comment->attname]
-        = TRUE;
     }
 
     // Drop old comments.
