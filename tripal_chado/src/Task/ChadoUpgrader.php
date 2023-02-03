@@ -580,35 +580,13 @@ class ChadoUpgrader extends ChadoTaskBase {
     }
     else {
       // No, create a new reference schema.
-      $ref_schema->schema()->createSchema();
+      $installer = \Drupal::service('tripal_chado.installer');
+      $installer->setParameters([
+        'output_schemas' => [  $ref_schema->getSchemaName()  ],
+        'version' => $version,
+      ]);
+      $success = $installer->performTask();
 
-      // Apply SQL file containing schema definitions.
-      $module_path = \Drupal::service('extension.list.module')->getPath('tripal_chado');
-      $file_path =
-        $module_path
-        . '/chado_schema/chado-only-'
-        . $version
-        . '.sql'
-      ;
-
-      // Run SQL file defining Chado schema.
-      $success = $ref_schema->executeSqlFile(
-        $file_path,
-        ['chado' => $ref_schema->getQuotedSchemaName(),]
-      );
-      if ($success) {
-        // Initialize schema with minimal data.
-        $file_path =
-          $module_path
-          . '/chado_schema/initialize-'
-          . $version
-          . '.sql'
-        ;
-        $success = $this->executeSqlFile(
-          $file_path,
-          ['chado' => $ref_schema->getQuotedSchemaName(),]
-        );
-      }
       if (!$success) {
         // Failed to instantiate ref schema. Drop any partial ref schema.
         try {
