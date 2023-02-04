@@ -3,7 +3,6 @@
 namespace Drupal\tripal\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
-use Drupal\tripal\TripalContentTermsInterface;
 
 /**
  * Defines the TripalContentTerms entity.
@@ -19,7 +18,7 @@ use Drupal\tripal\TripalContentTermsInterface;
  *     plural = "@count Tripal content terms",
  *   ),
  *   handlers = {
- *     "list_builder" = "Drupal\tripal\Controller\TripalContentTermsListBuilder",
+ *     "list_builder" = "Drupal\tripal\ListBuilders\TripalContentTermsListBuilder",
  *     "form" = {
  *       "add" = "Drupal\tripal\Form\TripalContentTermsForm",
  *       "edit" = "Drupal\tripal\Form\TripalContentTermsForm",
@@ -35,11 +34,10 @@ use Drupal\tripal\TripalContentTermsInterface;
  *   config_export = {
  *     "id",
  *     "label",
+ *     "description",
  *     "vocabularies"
  *   },
  *   links = {
- *     "add-form" = "/admin/tripal/config/terms/add",
- *     "edit-form" = "/admin/tripal/config/terms/{config}",
  *     "delete-form" = "/admin/tripal/config/terms/{config}/delete",
  *   }
  * )
@@ -73,6 +71,13 @@ class TripalContentTerms extends ConfigEntityBase implements TripalContentTermsI
    */
   protected $vocabularies;
 
-  // Your specific configuration property get/set methods go here,
-  // implementing the interface.
+  /**
+   * Retrieves the current description for the term mapping setup.
+   *
+   * @return string
+   */
+  public function description() {
+    return $this->description;
+  }
+
 }

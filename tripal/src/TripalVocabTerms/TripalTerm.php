@@ -189,6 +189,10 @@ class TripalTerm {
    */
   public function setVocabulary(string $vocabulary) {
 
+    if (!$vocabulary) {
+      return;
+    }
+
     $manager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
     $vocab = $manager->loadCollection($vocabulary);
     if (!$vocab) {

@@ -14,6 +14,7 @@ use Drupal\Core\Render\Element;
 use Drupal\Core\Config\FileStorage;
 use Drupal\Core\Url;
 
+require_once 'src/api/tripal.api.php';
 require_once 'src/api/tripal.entities.api.php';
 require_once 'src/api/tripal.terms.api.php';
 require_once 'src/api/tripal.quotas.api.php';
@@ -548,11 +549,18 @@ function tripal_check_new_fields($bundle_name) {
  * Implements hook_rebuild().
  */
 function tripal_rebuild() {
+  tripal_rebuild_views();
+  tripal_load_configuration('tripal', 'tripal_content_types');
+  tripal_load_configuration('tripal', 'tripal_content_terms');
+}
 
-  //
-  // Make sure the CustomTables view is present. If not then add it.
-  //
-
+/**
+ * Used by the hook_rebuild() function to recreate views from default.
+ *
+ * If the user deletes one of the views that are created on install of the
+ * Tripal Chado module then this will restore them when the cache is cleared.
+ */
+function tripal_rebuild_views() {
   // First get the config file.
   $dir = \Drupal::service('extension.list.module')->getPath('tripal');
   $fileStorage = new FileStorage($dir);

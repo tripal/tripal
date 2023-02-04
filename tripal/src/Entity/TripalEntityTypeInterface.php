@@ -23,8 +23,6 @@ interface TripalEntityTypeInterface extends ConfigEntityInterface {
    * @param integer $id
    *   The index of the machine name of the Tripal Entity Type.
    *
-   * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
-   *   The called Tripal Entity Type entity.
    */
   public function setID($id);
 
@@ -36,16 +34,34 @@ interface TripalEntityTypeInterface extends ConfigEntityInterface {
    */
   public function getName();
 
+
   /**
    * Sets the machine name of the Tripal Entity Type.
    *
    * @param string $name
    *   The machine name of the Tripal Entity Type.
    *
-   * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
-   *   The called Tripal Entity Type entity.
    */
   public function setName($name);
+
+
+  /**
+   * Gets the machine name synonyms of the Tripal Entity Type (e.g. bio_data_1).
+   *
+   * @return string
+   *   Machine name synonyms of the Tripal Entity Type.
+   */
+  public function getSynonyms();
+
+
+  /**
+   * Sets the machine name synonyms of the Tripal Entity Type.
+   *
+   * @param string $name
+   *   The machine name of the Tripal Entity Type.
+   *
+   */
+  public function setSynonyms($name);
 
   /**
    * Gets the Tripal Entity Type label (e.g. gene).
@@ -61,8 +77,6 @@ interface TripalEntityTypeInterface extends ConfigEntityInterface {
    * @param string $label
    *   The Tripal Entity Type label.
    *
-   * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
-   *   The called Tripal Entity Type entity.
    */
   public function setLabel($label);
 
@@ -80,8 +94,6 @@ interface TripalEntityTypeInterface extends ConfigEntityInterface {
    * @param string $termIdSpace
    *   The new Tripal Controlled Vocabulary Term ID Space
    *
-   * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
-   *   The called Tripal Entity Type entity.
    */
   public function setTermIdSpace($termIdSpace);
 
@@ -99,8 +111,6 @@ interface TripalEntityTypeInterface extends ConfigEntityInterface {
    * @param string $termIdSpace
    *   The new Tripal Controlled Vocabulary Term Accession
    *
-   * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
-   *   The called Tripal Entity Type entity.
    */
   public function setTermAccession($termAccession);
 
@@ -126,8 +136,6 @@ interface TripalEntityTypeInterface extends ConfigEntityInterface {
    * @param string $help_text
    *   The Tripal Entity Type help text.
    *
-   * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
-   *   The called Tripal Entity Type entity.
    */
   public function setHelpText($help_text);
 
@@ -145,8 +153,6 @@ interface TripalEntityTypeInterface extends ConfigEntityInterface {
    * @param string $category
    *   The Tripal Entity Type category.
    *
-   * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
-   *   The called Tripal Entity Type entity.
    */
   public function setCategory($category);
 
@@ -164,8 +170,6 @@ interface TripalEntityTypeInterface extends ConfigEntityInterface {
    * @param string $title_format
    *   The Tripal Entity Type title format.
    *
-   * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
-   *   The called Tripal Entity Type entity.
    */
   public function setTitleFormat($title_format);
 
@@ -183,8 +187,6 @@ interface TripalEntityTypeInterface extends ConfigEntityInterface {
    * @param string $url_format
    *   The Tripal Entity Type URL format.
    *
-   * @return \Drupal\tripal\Entity\TripalEntityTypeInterface
-   *   The called Tripal Entity Type entity.
    */
   public function setURLFormat($url_format);
 

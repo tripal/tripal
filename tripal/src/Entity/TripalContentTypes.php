@@ -3,7 +3,6 @@
 namespace Drupal\tripal\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
-use Drupal\Core\Config\Entity\ConfigEntityInterface;
 
 /**
  * Defines the TripalContentTypes entity.
@@ -19,7 +18,7 @@ use Drupal\Core\Config\Entity\ConfigEntityInterface;
  *     plural = "@count Tripal content types",
  *   ),
  *   handlers = {
- *     "list_builder" = "Drupal\tripal\Controller\TripalContentTypesListBuilder",
+ *     "list_builder" = "Drupal\tripal\ListBuilders\TripalContentTypesListBuilder",
  *     "form" = {
  *       "add" = "Drupal\tripal\Form\TripalContentTypesForm",
  *       "edit" = "Drupal\tripal\Form\TripalContentTypesForm",
@@ -35,16 +34,15 @@ use Drupal\Core\Config\Entity\ConfigEntityInterface;
  *   config_export = {
  *     "id",
  *     "label",
+ *     "description",
  *     "content_types"
  *   },
  *   links = {
- *     "add-form" = "/admin/tripal/config/types/add",
- *     "edit-form" = "/admin/tripal/config/types/{config}",
- *     "delete-form" = "/admin/tripal/config/types/{config}/delete",
+ *     "delete-form" = "/admin/tripal/config/content_types/{config}/delete",
  *   }
  * )
  */
-class TripalContentTypes extends ConfigEntityBase implements ConfigEntityInterface {
+class TripalContentTypes extends ConfigEntityBase implements TripalContentTypesInterface {
 
   /**
    * The TripalContentTypesConfig ID.
@@ -73,6 +71,12 @@ class TripalContentTypes extends ConfigEntityBase implements ConfigEntityInterfa
    */
   protected $content_types;
 
-  // Your specific configuration property get/set methods go here,
-  // implementing the interface.
+  /**
+   * Retrieves the current description for the content type configuration.
+   *
+   * @return string
+   */
+  public function description() {
+    return $this->description;
+  }
 }

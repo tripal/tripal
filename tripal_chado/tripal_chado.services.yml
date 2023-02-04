@@ -7,7 +7,7 @@ services:
     class: Drupal\tripal_chado\Services\ChadoCustomTableManager
   tripal_chado.materialized_views:
     class: Drupal\tripal_chado\Services\ChadoMviewsManager
-  tripal_chado.terms_init:
+  tripal_chado.terms:
     class: Drupal\tripal_chado\Services\ChadoTerms
   tripal_chado.cloner:
     class: Drupal\tripal_chado\Task\ChadoCloner

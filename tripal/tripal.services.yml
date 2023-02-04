@@ -25,6 +25,6 @@ services:
     class: Drupal\tripal\TripalImporter\PluginManagers\TripalImporterManager
     parent: default_plugin_manager
   tripal.fields:
-    class: Drupal\tripal\Services\TripalFieldsManager
-  tripal.content_types_init:
+    class: Drupal\tripal\Services\TripalFields
+  tripal.content_types:
     class: Drupal\tripal\Services\TripalContentTypes

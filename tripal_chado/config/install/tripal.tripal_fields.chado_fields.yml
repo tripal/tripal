@@ -1,6 +1,6 @@
 id: 'chado_fields'
 label: 'Chado Fields'
-description: 'Content fields provided by the Tripal Chado module'
+description: 'Default content type fields configurations provided by the Tripal Chado module'
 fields:
 
     -   name: organism_abbreviation
@@ -337,9 +337,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: analysis
-            base_column: sourcename
-            max_length: 255
+                base_table: analysis
+                base_column: sourcename
+                max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -364,9 +364,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: analysis
-            base_column: sourceversion
-            max_length: 255
+                base_table: analysis
+                base_column: sourceversion
+                max_length: 255
         settings: 
             termIdSpace: IAO
             termAccession: 0000129
@@ -391,8 +391,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: analysis
-            base_column: sourceuri
+                base_table: analysis
+                base_column: sourceuri
         settings: 
             termIdSpace: data
             termAccession: "1047"
@@ -417,9 +417,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: project
-            base_column: name
-            max_length: 255
+                base_table: project
+                base_column: name
+                max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -444,8 +444,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: project
-            base_column: description
+                base_table: project
+                base_column: description
         settings: 
             termIdSpace: schema
             termAccession: description
@@ -470,8 +470,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: study
-            base_column: name
+                base_table: study
+                base_column: name
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -496,8 +496,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: study
-            base_column: description
+                base_table: study
+                base_column: description
         settings: 
             termIdSpace: schema
             termAccession: description
@@ -522,9 +522,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: contact
-            base_column: name
-            max_length: 255
+                base_table: contact
+                base_column: name
+                max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -549,9 +549,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: contact
-            base_column: description
-            max_length: 255
+                base_table: contact
+                base_column: description
+                max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: description
@@ -604,8 +604,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: protocol
-            base_column: name
+                base_table: protocol
+                base_column: name
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -620,7 +620,7 @@ fields:
               region: content
               weight: 10
  
-    -   name: protocol_URI
+    -   name: protocol_uri
         content_type: protocol
         label: URI
         type: chado_text_type
@@ -630,8 +630,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: protocol
-            base_column: uri
+                base_table: protocol
+                base_column: uri
         settings: 
             termIdSpace: data
             termAccession: "1047"
@@ -656,8 +656,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: protocol
-            base_column: protocoldescription
+                base_table: protocol
+                base_column: protocoldescription
         settings: 
             termIdSpace: schema
             termAccession: description
@@ -682,8 +682,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: protocol
-            base_column: hardwaredescription
+                base_table: protocol
+                base_column: hardwaredescription
         settings: 
             termIdSpace: EFO
             termAccession: 0000548
@@ -708,8 +708,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: protocol
-            base_column: softwaredescription
+                base_table: protocol
+                base_column: softwaredescription
         settings: 
             termIdSpace: SWO
             termAccession: "0000001"
@@ -762,9 +762,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: feature
-            base_column: name
-            max_length: 255
+                base_table: feature
+                base_column: name
+                max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -789,8 +789,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: feature
-            base_column: uniquename
+                base_table: feature
+                base_column: uniquename
         settings: 
             termIdSpace: data
             termAccession: 0842
@@ -815,8 +815,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: feature
-            base_column: residues
+                base_table: feature
+                base_column: residues
         settings: 
             termIdSpace: data
             termAccession: "2044"
@@ -841,8 +841,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: feature
-            base_column: seqlen
+                base_table: feature
+                base_column: seqlen
         settings: 
             termIdSpace: data
             termAccession: "1249"
@@ -867,7 +867,7 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: feature
+                base_table: feature
         settings: 
             termIdSpace: OBI
             termAccession: "0100026"
@@ -920,9 +920,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: feature
-            base_column: name
-            max_length: 255
+                base_table: feature
+                base_column: name
+                max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -947,8 +947,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: feature
-            base_column: uniquename
+                base_table: feature
+                base_column: uniquename
         settings: 
             termIdSpace: data
             termAccession: 0842
@@ -973,8 +973,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: feature
-            base_column: residues
+                base_table: feature
+                base_column: residues
         settings: 
             termIdSpace: data
             termAccession: "2044"
@@ -999,8 +999,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: feature
-            base_column: seqlen
+                base_table: feature
+                base_column: seqlen
         settings: 
             termIdSpace: data
             termAccession: "1249"
@@ -1053,9 +1053,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: phylotree
-            base_column: name
-            max_length: 255
+                base_table: phylotree
+                base_column: name
+                max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -1080,8 +1080,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: phylotree
-            base_column: comment
+                base_table: phylotree
+                base_column: comment
         settings: 
             termIdSpace: schema
             termAccession: comment
@@ -1134,9 +1134,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: featuremap
-            base_column: name
-            max_length: 255
+                base_table: featuremap
+                base_column: name
+                max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -1161,8 +1161,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: featuremap
-            base_column: description
+                base_table: featuremap
+                base_column: description
         settings: 
             termIdSpace: schema
             termAccession: description
@@ -1215,9 +1215,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: library
-            base_column: name
-            max_length: 255
+                base_table: library
+                base_column: name
+                max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -1242,8 +1242,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: library
-            base_column: uniquename
+                base_table: library
+                base_column: uniquename
         settings: 
             termIdSpace: data
             termAccession: 0842
@@ -1296,9 +1296,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: analysis
-            base_column: name
-            max_length: 255
+                base_table: analysis
+                base_column: name
+                max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -1323,8 +1323,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: analysis
-            base_column: description
+                base_table: analysis
+                base_column: description
         settings: 
             termIdSpace: schema
             termAccession: description
@@ -1349,9 +1349,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: analysis
-            base_column: program
-            max_length: 255
+                base_table: analysis
+                base_column: program
+                max_length: 255
         settings: 
             termIdSpace: SWO
             termAccession: "0000001"
@@ -1376,9 +1376,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: analysis
-            base_column: programversion
-            max_length: 255
+                base_table: analysis
+                base_column: programversion
+                max_length: 255
         settings: 
             termIdSpace: IAO
             termAccession: 0000129
@@ -1404,9 +1404,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: analysis
-            base_column: sourcename
-            max_length: 255
+                base_table: analysis
+                base_column: sourcename
+                max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -1431,9 +1431,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: analysis
-            base_column: sourceversion
-            max_length: 255
+                base_table: analysis
+                base_column: sourceversion
+                max_length: 255
         settings: 
             termIdSpace: IAO
             termAccession: 0000129
@@ -1458,8 +1458,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: analysis
-            base_column: sourceuri
+                base_table: analysis
+                base_column: sourceuri
         settings: 
             termIdSpace: data
             termAccession: "1047"
@@ -1512,9 +1512,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: analysis
-            base_column: name
-            max_length: 255
+                base_table: analysis
+                base_column: name
+                max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -1539,8 +1539,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: analysis
-            base_column: description
+                base_table: analysis
+                base_column: description
         settings: 
             termIdSpace: schema
             termAccession: description
@@ -1565,9 +1565,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: analysis
-            base_column: program
-            max_length: 255
+                base_table: analysis
+                base_column: program
+                max_length: 255
         settings: 
             termIdSpace: SWO
             termAccession: "0000001"
@@ -1592,9 +1592,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: analysis
-            base_column: programversion
-            max_length: 255
+                base_table: analysis
+                base_column: programversion
+                max_length: 255
         settings: 
             termIdSpace: IAO
             termAccession: 0000129
@@ -1619,9 +1619,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: analysis
-            base_column: sourcename
-            max_length: 255
+                base_table: analysis
+                base_column: sourcename
+                max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -1646,9 +1646,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: analysis
-            base_column: sourceversion
-            max_length: 255
+                base_table: analysis
+                base_column: sourceversion
+                max_length: 255
         settings: 
             termIdSpace: IAO
             termAccession: 0000129
@@ -1673,8 +1673,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: analysis
-            base_column: sourceuri
+                base_table: analysis
+                base_column: sourceuri
         settings: 
             termIdSpace: data
             termAccession: "1047"
@@ -1727,9 +1727,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: project
-            base_column: name
-            max_length: 255
+                base_table: project
+                base_column: name
+                max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -1754,8 +1754,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: project
-            base_column: description
+                base_table: project
+                base_column: description
         settings: 
             termIdSpace: schema
             termAccession: description
@@ -1808,9 +1808,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: featuremap
-            base_column: name
-            max_length: 255
+                base_table: featuremap
+                base_column: name
+                max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -1835,8 +1835,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: featuremap
-            base_column: description
+                base_table: featuremap
+                base_column: description
         settings: 
             termIdSpace: schema
             termAccession: description
@@ -1889,9 +1889,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: feature
-            base_column: name
-            max_length: 255
+                base_table: feature
+                base_column: name
+                max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -1916,8 +1916,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: feature
-            base_column: uniquename
+                base_table: feature
+                base_column: uniquename
         settings: 
             termIdSpace: data
             termAccession: 0842
@@ -1942,8 +1942,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: feature
-            base_column: residues
+                base_table: feature
+                base_column: residues
         settings: 
             termIdSpace: data
             termAccession: "2044"
@@ -1968,8 +1968,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: feature
-            base_column: seqlen
+                base_table: feature
+                base_column: seqlen
         settings: 
             termIdSpace: data
             termAccession: "1249"
@@ -2022,9 +2022,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: feature
-            base_column: name
-            max_length: 255
+                base_table: feature
+                base_column: name
+                max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -2049,8 +2049,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: feature
-            base_column: uniquename
+                base_table: feature
+                base_column: uniquename
         settings: 
             termIdSpace: data
             termAccession: 0842
@@ -2075,8 +2075,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: feature
-            base_column: residues
+                base_table: feature
+                base_column: residues
         settings: 
             termIdSpace: data
             termAccession: "2044"
@@ -2101,8 +2101,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: feature
-            base_column: seqlen
+                base_table: feature
+                base_column: seqlen
         settings: 
             termIdSpace: data
             termAccession: "1249"
@@ -2128,8 +2128,8 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: feature
-            type_table: feature
-            type_column: type_id
+                type_table: feature
+                type_column: type_id
         settings: 
             termIdSpace: SO
             termAccession: "0001060"
@@ -2155,9 +2155,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: feature
-            base_column: name
-            max_length: 255
+                base_table: feature
+                base_column: name
+                max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -2182,8 +2182,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: feature
-            base_column: uniquename
+                base_table: feature
+                base_column: uniquename
         settings: 
             termIdSpace: data
             termAccession: 0842
@@ -2208,8 +2208,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: feature
-            base_column: residues
+                base_table: feature
+                base_column: residues
         settings: 
             termIdSpace: data
             termAccession: "2044"
@@ -2234,8 +2234,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: feature
-            base_column: seqlen
+                base_table: feature
+                base_column: seqlen
         settings: 
             termIdSpace: data
             termAccession: "1249"
@@ -2288,9 +2288,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: feature
-            base_column: name
-            max_length: 255
+                base_table: feature
+                base_column: name
+                max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -2315,8 +2315,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: feature
-            base_column: uniquename
+                base_table: feature
+                base_column: uniquename
         settings: 
             termIdSpace: data
             termAccession: 0842
@@ -2341,8 +2341,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: feature
-            base_column: residues
+                base_table: feature
+                base_column: residues
         settings: 
             termIdSpace: data
             termAccession: "2044"
@@ -2367,8 +2367,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: feature
-            base_column: seqlen
+                base_table: feature
+                base_column: seqlen
         settings: 
             termIdSpace: data
             termAccession: "1249"
@@ -2421,9 +2421,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: stock
-            base_column: name
-            max_length: 255
+                base_table: stock
+                base_column: name
+                max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -2448,8 +2448,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: stock
-            base_column: uniquename
+                base_table: stock
+                base_column: uniquename
         settings: 
             termIdSpace: data
             termAccession: 0842
@@ -2474,8 +2474,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: stock
-            base_column: description
+                base_table: stock
+                base_column: description
         settings: 
             termIdSpace: schema
             termAccession: description
@@ -2529,9 +2529,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: stock
-            base_column: name
-            max_length: 255
+                base_table: stock
+                base_column: name
+                max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -2556,8 +2556,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: stock
-            base_column: uniquename
+                base_table: stock
+                base_column: uniquename
         settings: 
             termIdSpace: data
             termAccession: 0842
@@ -2582,8 +2582,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: stock
-            base_column: description
+                base_table: stock
+                base_column: description
         settings: 
             termIdSpace: schema
             termAccession: description
@@ -2636,9 +2636,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: stock
-            base_column: name
-            max_length: 255
+                base_table: stock
+                base_column: name
+                max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -2663,8 +2663,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: stock
-            base_column: uniquename
+                base_table: stock
+                base_column: uniquename
         settings: 
             termIdSpace: data
             termAccession: 0842
@@ -2689,8 +2689,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: stock
-            base_column: description
+                base_table: stock
+                base_column: description
         settings: 
             termIdSpace: schema
             termAccession: description
@@ -2743,9 +2743,9 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: stock
-            base_column: name
-            max_length: 255
+                base_table: stock
+                base_column: name
+                max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -2770,8 +2770,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: stock
-            base_column: uniquename
+                base_table: stock
+                base_column: uniquename
         settings: 
             termIdSpace: data
             termAccession: 0842
@@ -2796,8 +2796,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: stock
-            base_column: description
+                base_table: stock
+                base_column: description
         settings: 
             termIdSpace: schema
             termAccession: description
@@ -2850,8 +2850,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: biomaterial
-            base_column: name
+                base_table: biomaterial
+                base_column: name
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -2876,8 +2876,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: biomaterial
-            base_column: description
+                base_table: biomaterial
+                base_column: description
         settings: 
             termIdSpace: schema
             termAccession: description
@@ -2902,8 +2902,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: assay
-            base_column: arrayidentifier
+                base_table: assay
+                base_column: arrayidentifier
         settings: 
             termIdSpace: data
             termAccession: 0842
@@ -2928,8 +2928,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: assay
-            base_column: arraybatchidentifier
+                base_table: assay
+                base_column: arraybatchidentifier
         settings: 
             termIdSpace: local
             termAccession: array_batch_identifier
@@ -2954,8 +2954,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: assay
-            base_column: name
+                base_table: assay
+                base_column: name
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -2980,8 +2980,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: assay
-            base_column: description
+                base_table: assay
+                base_column: description
         settings: 
             termIdSpace: schema
             termAccession: description
@@ -2997,8 +2997,8 @@ fields:
               weight: 25
 
 
-    -   name: assay_design_name                                
-        content_type: assay_design
+    -   name: array_design_name                                
+        content_type: array_design
         label: Name
         type: chado_text_type
         description: The name of the item.
@@ -3007,8 +3007,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: arraydesign
-            base_column: name
+                base_table: arraydesign
+                base_column: name
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -3023,8 +3023,8 @@ fields:
               region: content
               weight: 10
 
-    -   name: assay_design_version_num                                
-        content_type: assay_design
+    -   name: array_design_version_num                                
+        content_type: array_design
         label: Array Version
         type: chado_text_type
         description: A version number is an information content entity which is a sequence of characters borne by part of each of a class of manufactured products or its packaging and indicates its order within a set of other products having the same name.
@@ -3033,8 +3033,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: arraydesign
-            base_column: version
+                base_table: arraydesign
+                base_column: version
         settings: 
             termIdSpace: IAO
             termAccession: 0000129
@@ -3049,8 +3049,8 @@ fields:
               region: content
               weight: 15
 
-    -   name: assay_design_description                                
-        content_type: assay_design
+    -   name: array_design_description                                
+        content_type: array_design
         label: Description
         type: chado_text_type
         description: A description of the item.
@@ -3059,8 +3059,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: arraydesign
-            base_column: description
+                base_table: arraydesign
+                base_column: description
         settings: 
             termIdSpace: schema
             termAccession: description
@@ -3075,8 +3075,8 @@ fields:
               region: content
               weight: 20
 
-    -   name: assay_design_dimensions                                
-        content_type: assay_design
+    -   name: array_design_dimensions                                
+        content_type: array_design
         label: Array Dimensions
         type: chado_text_type
         description: The dimensions of an array.
@@ -3085,8 +3085,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: arraydesign
-            base_column: array_dimensions
+                base_table: arraydesign
+                base_column: array_dimensions
         settings: 
             termIdSpace: local
             termAccession: array_dimensions
@@ -3101,8 +3101,8 @@ fields:
               region: content
               weight: 25
 
-    -   name: assay_design_element_dims                                
-        content_type: assay_design
+    -   name: array_design_element_dims                                
+        content_type: array_design
         label: Element Dimensions
         type: chado_text_type
         description: The dimensions of an element.
@@ -3111,8 +3111,8 @@ fields:
         storage_settings: 
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-            base_table: arraydesign
-            base_column: element_dimensions
+                base_table: arraydesign
+                base_column: element_dimensions
         settings: 
             termIdSpace: local
             termAccession: element_dimensions
@@ -3127,8 +3127,8 @@ fields:
               region: content
               weight: 30
 
-    -   name: assay_design_substrate_type                                
-        content_type: assay_design
+    -   name: array_design_substrate_type                                
+        content_type: array_design
         label: Substrate Type
         type: schema__additional_type
         description: Controlled terms for descriptors of types of array substrates.
@@ -3155,8 +3155,8 @@ fields:
               region: content
               weight: 10
 
-    -   name: assay_design_platform_type                                
-        content_type: assay_design
+    -   name: array_design_platform_type                                
+        content_type: array_design
         label: Platform Type
         type: schema__additional_type
         description: The specific version (manufacturer, model, etc.) of a technology that is used to carry out a laboratory or computational experiment.

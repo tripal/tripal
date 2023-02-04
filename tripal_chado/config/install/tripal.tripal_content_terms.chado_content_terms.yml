@@ -1,6 +1,6 @@
 id: 'chado_content_terms'
-label: 'Chado Managed Terms'
-description: 'Terms for Content Types and Chado Fields'
+label: 'Chado CV Terms'
+description: 'Default controlled vocabulary terms required by the Tripal Chado module.'
 vocabularies:
     -   name: 'germplasm_ontology'
         label: 'GCP germplasm ontology'

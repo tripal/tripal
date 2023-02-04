@@ -1,6 +1,6 @@
 id: 'chado_content_types'
 label: 'Chado Content Types'
-description: 'Content types provided by the Tripal Chado module'
+description: 'Default content types configurations provided by the Tripal Chado module'
 content_types:
 
     -   label: Organism
@@ -76,14 +76,14 @@ content_types:
     -   label: Physical Map
         term: data:1280
         category: Genomic  
-        name: physmap 
+        name: physical_map 
         synonyms: 
             - bio_data_11    
               
     -   label: DNA Library
         term: NCIT:C16223
         category: Genomic
-        name: DNA_library
+        name: dna_library
         synonyms: 
             - bio_data_12
         
@@ -118,14 +118,14 @@ content_types:
     -   label: QTL
         term: SO:0000771
         category: Genetic
-        name: qtl
+        name: QTL
         synonyms: 
             - bio_data_17
         
     -   label: Sequence Variant
         term: SO:0001060
         category: Genetic
-        name: seqvar
+        name: sequence_variant
         synonyms: 
             - bio_data_18
 
@@ -139,7 +139,7 @@ content_types:
     -   label: Heritable Phenotypic Marker
         term: SO:0001500
         category: Genetic
-        name: phenotype_marker
+        name: phenotypic_marker 
         synonyms: 
             - bio_data_20
         

@@ -18,7 +18,7 @@ class TripalEntityTypeListBuilder extends ConfigEntityListBuilder {
   public function buildHeader() {
     $header['type-category'] = $this->t('Category');
     $header['type-label'] = $this->t('Label');
-    $header['type-id'] = $this->t('Machine name');
+    $header['type-name'] = $this->t('Machine name');
     $header['term'] = $this->t('Term');
     return $header + parent::buildHeader();
   }
@@ -39,7 +39,7 @@ class TripalEntityTypeListBuilder extends ConfigEntityListBuilder {
     )->toString();
 
     // Add in the machine name.
-    $data['type-id'] = $entity->id();
+    $data['type-name'] = $entity->getName();
 
     // Add in the term with link.
     $data['term'] = '';

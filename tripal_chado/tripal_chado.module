@@ -67,34 +67,9 @@ function tripal_chado_rebuild_views() {
 }
 
 /**
- * Used by the hook_rebuild() to recreate chado term mappings from default.
- */
-function tripal_chado_rebuild_chado_term_mappings() {
-
-  $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
-  $dir = \Drupal::service('extension.list.module')->getPath('tripal_chado');
-  $fileStorage = new FileStorage($dir);
-
-  $mapping = $storage->load('core_mapping');
-  if (!$mapping) {
-    $config = $fileStorage->read('config/install/tripal_chado.chado_term_mapping.core_mapping');
-    $mapping = $storage->create($config);
-    $mapping->save();
-  }
-
-  $storage = \Drupal::entityTypeManager()->getStorage('tripal_content_terms');
-  $mapping = $storage->load('chado_content_terms');
-  if (!$mapping) {
-    $config = $fileStorage->read('config/install/tripal.tripal_content_terms.chado_content_terms');
-    $mapping = $storage->create($config);
-    $mapping->save();
-  }
-}
-
-/**
  * Implements hook_rebuild().
  */
 function tripal_chado_rebuild() {
   tripal_chado_rebuild_views();
-  tripal_chado_rebuild_chado_term_mappings();
+  tripal_load_configuration('tripal_chado', 'chado_term_mapping');
 }

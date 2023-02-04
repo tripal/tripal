@@ -8,7 +8,7 @@ use Drupal\field\Entity\FieldStorageConfig;
 /**
  * Provides an tripalStorage plugin manager.
  */
-class TripalFieldsManager {
+class TripalFields {
 
   /**
    * Constructor
@@ -35,6 +35,10 @@ class TripalFieldsManager {
     $new_defs['name'] = 'tripal_entity.change.me';
     if (array_key_exists('name', $field_def) and !empty($field_def['name'])) {
       $new_defs['name'] = $field_def['name'];
+    }
+    $new_defs['content_type'] = '';
+    if (array_key_exists('content_type', $field_def) and !empty($field_def['content_type'])) {
+      $new_defs['content_type'] = $field_def['content_type'];
     }
     $new_defs['label'] = $new_defs['name'];
     if (array_key_exists('label', $field_def) and !empty($field_def['label'])) {
@@ -157,27 +161,34 @@ class TripalFieldsManager {
    * Validates a field definition array.
    *
    * This function can be used to check a field definition prior to adding
-   * the field to a bundle.  It is also called automatically prior to adding
-   * a new field to a content type.
+   * the field to a Tripal content type..
    *
    * @param array $field_def
-       A field definition array to which any default values should
-   *   be added.
+   *   A definition array for the field.
    * @return bool
    *   True if the array passes validation checks. False otherwise.
    */
-  public function validateFieldDef($field_def, $logger) : bool {
+  public function validate($field_def, $logger) : bool {
 
+    if (!array_key_exists('content_type', $field_def)) {
+      $logger->error('The field is missing the "content_type" property.');
+      return False;
+    }
     // Check if the type already exists.
     $entityTypes = \Drupal::entityTypeManager()
       ->getStorage('tripal_entity_type')
       ->loadByProperties(['name' => $field_def['content_type']]);
-    if (!empty($entityTypes)) {
-      $logger->error('The specified entity type does not exist: ' . $field_def['content_type']);
+    if (empty($entityTypes)) {
+      $logger->error('The specified entity type, "' . $field_def['content_type'] . '", for field "' . $field_def['name'] . '", does not exist.');
+      return False;
     }
 
     if (!array_key_exists('name', $field_def)) {
       $logger->error('The field is missing the "name" property.');
+      return False;
+    }
+    if (!array_key_exists('content_type', $field_def)) {
+      $logger->error('The field is missing the "content_type" property.');
       return False;
     }
     if (!array_key_exists('type', $field_def)) {
@@ -214,14 +225,13 @@ class TripalFieldsManager {
     foreach ($config_list as $config_item) {
       $config = $config_factory->get($config_item);
       $label = $config->get('label');
-      $logger->notice("Attaching fields to Tripal content types from:" . $label);
+      $logger->notice("Attaching fields to Tripal content types from: " . $label);
       $fields = $config->get('fields');
 
       // Iterate through each field in the config file.
       foreach ($fields as $field) {
-        $this->attachFields($fields, $logger);
         $tripal_fields = \Drupal::service('tripal.fields');
-        $tripal_fields->addBundleField($field);
+        $tripal_fields->addBundleField($field, $logger);
       }
     }
   }
@@ -323,16 +333,20 @@ class TripalFieldsManager {
   public function addBundleField($field_def, $logger) : bool {
 
     // Make sure the field definition is valid.
-    if (!$this->validateFieldDef($field_def, $logger)) {
+    if (!$this->validate($field_def, $logger)) {
       return FALSE;
     }
+
+    // Get the entitytype
+    $entity_type = array_pop(\Drupal::entityTypeManager()
+      ->getStorage('tripal_entity_type')
+      ->loadByProperties(['name' => $field_def['content_type']]));
 
     // Set defaults for the field if they are not already set.
     $field_def = $this->setFieldDefDefaults($field_def);
 
     // Get the bundle and field id.
-    $bundle = $field_def['content_type'];
-    $field_id = 'tripal_entity' . '.' . $bundle . '.' . $field_def['name'];
+    $field_id = 'tripal_entity' . '.' . $entity_type->getId() . '.' . $field_def['name'];
 
     try {
 
@@ -356,7 +370,7 @@ class TripalFieldsManager {
       if (!$field instanceof FieldConfig) {
         $field = FieldConfig::create([
           'field_storage' => $field_storage,
-          'bundle' => $bundle,
+          'bundle' => $entity_type->getId(),
           'label' => $field_def['label'],
         ]);
         $field->setLabel($field_def['label']);
@@ -368,30 +382,37 @@ class TripalFieldsManager {
 
         // Add field to the default display modes.
         $entity_display = \Drupal::service('entity_display.repository');
-        $view_modes = $entity_display->getViewModeOptionsByBundle('tripal_entity', $bundle);
+        $view_modes = $entity_display->getViewModeOptionsByBundle('tripal_entity', $entity_type->getId());
         foreach (array_keys($view_modes) as $view_mode) {
           \Drupal::service('entity_display.repository')
-            ->getViewDisplay('tripal_entity', $bundle, $view_mode)
+            ->getViewDisplay('tripal_entity', $entity_type->getId(), $view_mode)
             ->setComponent($field_def['name'], $field_def['display']['view'][$view_mode])
             ->save();
         }
-        $from_modes = $entity_display->getFormModeOptionsByBundle('tripal_entity', $bundle);
+        $from_modes = $entity_display->getFormModeOptionsByBundle('tripal_entity', $entity_type->getId());
         foreach (array_keys($from_modes) as $form_mode) {
           \Drupal::service('entity_display.repository')
-            ->getFormDisplay('tripal_entity', $bundle, $form_mode)
+            ->getFormDisplay('tripal_entity', $entity_type->getId(), $form_mode)
             ->setComponent($field_def['name'], $field_def['display']['form'][$form_mode])
             ->save();
         }
+
+        $logger->notice(t('Added field, "@field", to content type: "@type".',
+            ['@field' => $field_def['name'], '@type' => $entity_type->getName()]));
       }
-     }
-     catch (\Exception $e) {
-       $logger->error(t('Error adding field @field_name to @bundle:<br>@error', [
+      else {
+        $logger->notice(t('Skipping addition of field, "@field", to content type: "@type" as it is already added.',
+            ['@field' => $field_def['name'], '@type' => $entity_type->getName()]));
+      }
+    }
+    catch (\Exception $e) {
+      $logger->error(t('Error adding field, "@field_name", to "@bundle": @error', [
          '@field_name' => $field_def['name'],
-         '@bundle' => $bundle,
+         '@bundle' => $entity_type->getName(),
          '@error' => $e->getMessage(),
-       ]));
-       return False;
-     }
+      ]));
+      return False;
+    }
     return True;
   }
 }

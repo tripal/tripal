@@ -13,6 +13,7 @@ tripal.tripal_content_terms.*:
     description:
       type: string
       label: 'Description'
+      nullable: false
     vocabularies:
       type: sequence
       label: 'Vocabularies'
@@ -116,6 +117,7 @@ tripal.tripal_content_types.*:
      description:
        type: string
        label: 'Description'
+       nullable: false
      content_types:
          type: sequence
          label: 'Content Types'

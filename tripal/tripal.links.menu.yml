@@ -86,15 +86,7 @@ tripal.files:
   title: 'Tripal Managed Files'
   parent: tripal.admin
   weight: -60
-
-# -- Configuration for Tripal Content Ontology Terms link.
-entity.tripal_content_terms.collection:
-  route_name: entity.tripal_content_terms.collection
-  title: 'Tripal Content Terms'
-  parent: tripal.admin
-  description: "Tripal content is very ontology-focused in it's design with all content types defined by ontology terms rather then their primary storage. These ontologies and their terms can be managed here."
-  weight: 80
-
+  
 # -- Root link for Tripal managed data storage (i.e. Tripal DBX)
 tripal.storage:
   route_name: tripal.storage
@@ -102,6 +94,14 @@ tripal.storage:
   description: "Tripal is designed to access biological data in any data storage back-end with specific data store functionality provided by additional modules (e.g. Tripal Chado interfaces with the GMOD Chado schema). All available storage backends and their administrative tools are found here."
   parent: tripal.admin
   weight: 90
+  
+# -- Root link for Tripal managed configurations
+tripal.config:
+  route_name: tripal.config
+  title: 'Configuration'
+  description: "Both core Tripal and extension modules can provide default configuration models. Here you can view and sometimes edit those defaults.."
+  parent: tripal.admin
+  weight: 95
 
 # -- Root link for Tripal extension listing.
 tripal.extension:
@@ -110,6 +110,23 @@ tripal.extension:
   description: "Tripal is very modular and provides a number of APIs for developers to extend the core functionality. The configuration and management pages for all Tripal extension modules can be found here."
   parent: tripal.admin
   weight: 100
+
+
+# -- Configuration for Tripal Content Ontology Terms link.
+entity.tripal_content_terms.collection:
+  route_name: entity.tripal_content_terms.collection
+  title: 'Tripal Content Terms'
+  parent: tripal.config
+  description: "Tripal content is very ontology-focused in it's design with all content types defined by ontology terms rather then their primary storage. These ontologies and their terms can be managed here."
+  weight: 10
+
+# -- Configuration for Tripal Content Types link.
+entity.tripal_content_types.collection:
+  title: 'Tripal Content Types'
+  parent: tripal.config
+  description: 'Manage default configurations for Tripal content types.'
+  route_name: entity.tripal_content_types.collection
+  weight: 20
 
 ##
 # Tripal Managed File Menu
@@ -138,3 +155,4 @@ tripal.files_usage:
   parent: tripal.files
   description: "Provides information on Tripal managed files currently available."
   weight: 100
+ 

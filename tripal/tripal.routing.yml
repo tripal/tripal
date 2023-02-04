@@ -30,6 +30,15 @@ tripal.storage:
   requirements:
     _permission: 'administer tripal'
 
+# Tripal Config.
+tripal.config:
+  path: 'admin/tripal/config'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'Tripal Configuration'
+  requirements:
+    _permission: 'administer tripal'
+
 # Tripal Extensions.
 tripal.extension:
   path: 'admin/tripal/extension'
@@ -521,14 +530,23 @@ entity.tripal_content_terms.delete_form:
     _permission: 'administer tripal'
 
 ##
-# Tripal Content Term Config entity.
+# Tripal Content Types Config entity.
 ##
 
-# entity.tripal_content_terms.collection:
-#   path: '/admin/tripal/config/terms'
-# entity.tripal_content_terms.add_form:
-#   path: '/admin/tripal/config/terms/add'
-# entity.tripal_content_terms.edit_form:
-#   path: '/admin/tripal/config/terms/{tripal_content_terms}'
-# entity.tripal_content_terms.delete_form:
-#   path: '/admin/tripal/config/terms/{tripal_content_terms}/delete'
+# Content Type Configuration listing.
+entity.tripal_content_types.collection:
+  path: '/admin/tripal/config/content_types'
+  defaults:
+    _entity_list: 'tripal_content_types'
+    _title: 'Tripal Content Types Configuration'
+  requirements:
+    _permission: 'administer tripal'
+    
+# Delete Type Configuration.
+entity.tripal_content_types.delete_form:
+  path: '/admin/tripal/config/content_types/{tripal_content_types}/delete'
+  defaults:
+    _entity_form: 'tripal_content_types.delete'
+    _title: 'Delete Content Type'
+  requirements:
+    _permission: 'administer tripal'

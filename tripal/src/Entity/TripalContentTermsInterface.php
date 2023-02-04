@@ -1,6 +1,5 @@
 <?php
-
-namespace Drupal\tripal;
+namespace Drupal\tripal\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
 

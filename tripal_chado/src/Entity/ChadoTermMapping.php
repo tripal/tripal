@@ -3,7 +3,6 @@
 namespace Drupal\tripal_chado\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
-use Drupal\tripal_chado\Entity\ChadoTermMappingInterface;
 
 /**
  * Defines the Chado Term Mapping Configuration entity.

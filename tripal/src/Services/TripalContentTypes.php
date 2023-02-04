@@ -26,10 +26,10 @@ class TripalContentTypes {
     foreach ($config_list as $config_item) {
       $config = $config_factory->get($config_item);
       $label = $config->get('label');
-      $logger->notice("Creating Tripal content types from" . $label);
+      $logger->notice("Creating Tripal content types from: " . $label);
       $content_types = $config->get('content_types');
       foreach ($content_types as $content_type) {
-        $this->createContentType($content_type, $logger);
+        $content_type = $this->createContentType($content_type, $logger);
       }
     }
   }
@@ -87,6 +87,46 @@ class TripalContentTypes {
     return $id->getTerm($accession);
   }
 
+  /**
+   * Validates a Tripal content type definition array.
+   *
+   * This function can be used to check a definition prior to adding
+   * the content type.
+   *
+   * @param array $details
+   *   A definition array for the content type.
+   * @return bool
+   *   True if the array passes validation checks. False otherwise.
+   */
+  public function validate($details, $logger) {
+
+    if (!array_key_exists('term', $details) or !$details['term']) {
+      $logger->error(t('Creation of content type, "@type", failed. No term provided.',
+          ['@type' => $details['label']]));
+      return FALSE;
+    }
+
+    if (!array_key_exists('name', $details) or !$details['name']) {
+      $logger->error(t('Creation of content type, "@type", failed. No name provided.',
+          ['@type' => $details['label']]));
+      return FALSE;
+    }
+
+    if (!array_key_exists('label', $details) or !$details['label']) {
+      $logger->error(t('Creation of content type, "@type", failed. No label provided.',
+          ['@type' => $details['label']]));
+      return FALSE;
+    }
+
+    if (!array_key_exists('category', $details) or !$details['category']) {
+      $logger->error(t('Creation of content type, "@type", failed. No category provided.',
+          ['@type' => $details['label']]));
+      return FALSE;
+    }
+
+    return TRUE;
+  }
+
 
   /**
    * Creates the content type.
@@ -99,24 +139,23 @@ class TripalContentTypes {
    *      together.
    *    - term: a tripal term object which should be associated with the
    *      content type.
-   *    - name: the machine name of the content type.
+   *    - id: the machine name of the content type.
    *    - synonms: (optional) a list of synonyms for this content type.
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger object to which messages will be logged.
    *
    * @return \Drupal\tripal\Entity\TripalEntityType
    */
-  private function createContentType($details, $logger) {
+  public function createContentType($details, $logger) {
 
     $entityType = NULL;
     $bundle = '';
 
-    // We can't continue of we don't have a term.
-    if (!array_key_exists('term', $details) or !$details['term']) {
-      $logger->error(t('Creation of content type, "@type", failed. No term provided.',
-          ['@type' => $details['label']]));
-      return NULL;
+    // Make sure the field definition is valid.
+    if (!$this->validate($details, $logger)) {
+      return FALSE;
     }
+
 
     // Get the term object and make sure it's valid.
     list($termIdSpace, $termAccession) = explode(':', $details['term']);
@@ -128,7 +167,7 @@ class TripalContentTypes {
       return NULL;
     }
 
-    // Check if the type already exists.
+    // Check if the entity type already exists.
     $entityTypes = \Drupal::entityTypeManager()
       ->getStorage('tripal_entity_type')
       ->loadByProperties(['label' => $details['label']]);
@@ -144,7 +183,7 @@ class TripalContentTypes {
         $entityType->save();
         $logger->notice(t('Content type, "@type", created.',
             ['@type' => $details['label']]));
-        $bundle = $entityType->getName();
+        $bundle = $entityType->getID();
       }
       else {
         $logger->error(t('Creation of content type, "@type", failed. The provided details were: ',

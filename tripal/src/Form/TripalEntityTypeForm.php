@@ -34,7 +34,7 @@ class TripalEntityTypeForm extends EntityForm {
       $machine_name = 'bio_data_' . ($max_index + 1);
     }
     else {
-      $machine_name = $tripal_entity_type->id();
+      $machine_name = $tripal_entity_type->getName();
     }
 
     // We need to choose a term if this is a new content type.

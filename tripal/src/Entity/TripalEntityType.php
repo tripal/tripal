@@ -33,8 +33,10 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
  *   admin_permission = "manage tripal content types",
  *   bundle_of = "tripal_entity",
  *   entity_keys = {
- *     "id" = "name",
+ *     "id" = "id",
+ *     "name" = "name",
  *     "label" = "label",
+ *     "synonums" = "synonyms"
  *   },
  *   links = {
  *     "canonical" = "/admin/structure/bio_data/{tripal_entity_type}",
@@ -54,7 +56,8 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
  *     "title_format",
  *     "url_format",
  *     "hide_empty_field",
- *     "ajax_field"
+ *     "ajax_field",
+ *     "synonyms",
  *   }
  * )
  */
@@ -73,16 +76,6 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    * @var string
    */
   protected $name;
-
-  /**
-   * A list of strings as alternative machine names.
-   *
-   * This will be used to store the `bio_data_x` names that
-   * were used in Tripal v3.
-   *
-   * @var array
-   */
-  protected $synonyms;
 
   /**
    * The Tripal Content type label.
@@ -146,6 +139,17 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    * @var boolean
    */
   protected $ajax_field;
+
+
+  /**
+   * A list of strings as alternative machine names.
+   *
+   * This will be used to store the `bio_data_x` names that
+   * were used in Tripal v3.
+   *
+   * @var array
+   */
+  protected $synonyms;
 
   // --------------------------------------------------------------------------
   //                             CREATE + SAVE
@@ -247,13 +251,15 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    */
   public function validate() {
 
+    if ($this->name === NULL) {
+      throw new \Exception("The name is required when creating a TripalEntityType.");
+    }
     if ($this->label === NULL) {
       throw new \Exception("The label is required when creating a TripalEntityType.");
     }
     if ($this->help_text === NULL) {
       throw new \Exception("The help text is required when creating a TripalEntityType.");
     }
-
     if ($this->termIdSpace === NULL) {
       throw new \Exception("The Term ID Space is required when creating a TripalEntityType.");
     }
@@ -295,7 +301,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    * {@inheritdoc}
    */
   public function id() {
-    return $this->name;
+    return $this->id;
   }
 
   /**
@@ -324,6 +330,20 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    */
   public function setName($name) {
     $this->name = $name;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getSynonyms() {
+    return $this->synonyms;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setSynonyms($synonyms) {
+    $this->synonyms = $synonyms;
   }
 
   /**
