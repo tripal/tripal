@@ -550,3 +550,25 @@ entity.tripal_content_types.delete_form:
     _title: 'Delete Content Type'
   requirements:
     _permission: 'administer tripal'
+    
+##
+# Tripal Fields Config entity.
+##
+
+# Content Type Configuration listing.
+entity.tripal_fields.collection:
+  path: '/admin/tripal/config/fields'
+  defaults:
+    _entity_list: 'tripal_fields'
+    _title: 'Tripal Fields Configuration'
+  requirements:
+    _permission: 'administer tripal'
+    
+# Delete Fields Configuration.
+entity.tripal_fields.delete_form:
+  path: '/admin/tripal/config/fields/{tripal_fields}/delete'
+  defaults:
+    _entity_form: 'tripal_fields.delete'
+    _title: 'Delete Fields'
+  requirements:
+    _permission: 'administer tripal'

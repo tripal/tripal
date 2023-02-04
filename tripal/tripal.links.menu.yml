@@ -128,6 +128,14 @@ entity.tripal_content_types.collection:
   route_name: entity.tripal_content_types.collection
   weight: 20
 
+# -- Configuration for Tripal Content Types link.
+entity.tripal_fields.collection:
+  title: 'Tripal Fields'
+  parent: tripal.config
+  description: 'Manage default configurations for fields attached to Tripal content types.'
+  route_name: entity.tripal_fields.collection
+  weight: 20
+
 ##
 # Tripal Managed File Menu
 ##

@@ -45,7 +45,7 @@ content_types:
         synonyms: 
             - bio_data_6
 
-    -   label:  Protocol
+    -   label: Protocol
         term: sep:00101
         category: General
         name: protocol

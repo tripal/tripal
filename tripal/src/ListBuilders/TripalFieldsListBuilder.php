@@ -7,9 +7,9 @@ use Drupal\Core\Entity\EntityInterface;
 
 
 /**
- * Provides a list of Tripal Content Terms
+ * Provides a listing of Content Types configurations.
  */
-class TripalContentTermsListBuilder extends ConfigEntityListBuilder {
+class TripalFieldsListBuilder extends ConfigEntityListBuilder {
 
   /**
    * {@inheritdoc}

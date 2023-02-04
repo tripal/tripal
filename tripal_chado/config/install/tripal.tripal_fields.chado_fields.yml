@@ -1124,8 +1124,8 @@ fields:
               region: content
               weight: 10
               
-    -   name: physmap_name            
-        content_type: physmap
+    -   name: physical_map_name            
+        content_type: physical_map
         label: Name
         type: chado_string_type
         description: The name of the item.
@@ -1151,8 +1151,8 @@ fields:
               region: content
               weight: 10
               
-    -   name: physmap_description            
-        content_type: physmap
+    -   name: physical_map_description            
+        content_type: physical_map
         label: Description
         type: chado_text_type
         description: A description of the item.
@@ -1177,8 +1177,8 @@ fields:
               region: content
               weight: 15
 
-    -   name: physmap_unit_type            
-        content_type: physmap
+    -   name: physical_map_unit_type            
+        content_type: physical_map
         label: Unit Type
         type: schema__additional_type
         description: A unit of measurement is a standardized quantity of a physical quality.
@@ -1205,7 +1205,7 @@ fields:
               region: content
               weight: 10
               
-    -   name: physmap_name            
+    -   name: dna_library_name            
         content_type: DNA_library
         label: Name
         type: chado_string_type
@@ -2012,8 +2012,8 @@ fields:
               region: content
               weight: 10
 
-    -   name: seqvar_name            
-        content_type: seqvar
+    -   name: sequence_variant_name            
+        content_type: sequence_variant
         label: Name
         type: chado_string_type
         description: The name of the item.
@@ -2039,8 +2039,8 @@ fields:
               region: content
               weight: 10
 
-    -   name: seqvar_uniquene_name           
-        content_type: seqvar
+    -   name: sequence_variant_uniquene_name           
+        content_type: sequence_variant
         label: Unique Name
         type: chado_text_type
         description: A name that uniquely identifies the sequence variant within the organism.
@@ -2065,8 +2065,8 @@ fields:
               region: content
               weight: 15
               
-    -   name: seqvar_sequence           
-        content_type: seqvar
+    -   name: sequence_variant_sequence           
+        content_type: sequence_variant
         label: Sequence
         type: chado_text_type
         description: One or more molecular sequences, possibly with associated annotation.
@@ -2091,8 +2091,8 @@ fields:
               region: content
               weight: 20
               
-    -   name: seqvar_sequence_length           
-        content_type: seqvar
+    -   name: sequence_variant_sequence_length           
+        content_type: sequence_variant
         label: Sequence Length
         type: chado_integer_type
         description: The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.
@@ -2117,8 +2117,8 @@ fields:
               region: content
               weight: 25
 
-    -   name: seqvar_type           
-        content_type: seqvar
+    -   name: sequence_variant_type           
+        content_type: sequence_variant
         label: Type
         type: schema__additional_type
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
@@ -2278,8 +2278,8 @@ fields:
               region: content
               weight: 10
 
-    -   name: phenotype_marker_name                       
-        content_type: phenotype_marker
+    -   name: phenotypic_marker_name                       
+        content_type: phenotypic_marker
         label: Name
         type: chado_string_type
         description: The name of the item.
@@ -2305,8 +2305,8 @@ fields:
               region: content
               weight: 10
 
-    -   name: phenotype_marker_unique_name                       
-        content_type: phenotype_marker
+    -   name: phenotypic_marker_unique_name                       
+        content_type: phenotypic_marker
         label: Uniquen Name
         type: chado_text_type
         description: A name that uniquely identifies the heritable phenotypic marker within the organism.
@@ -2331,8 +2331,8 @@ fields:
               region: content
               weight: 15
 
-    -   name: phenotype_marker_sequence                       
-        content_type: phenotype_marker
+    -   name: phenotypic_marker_sequence                       
+        content_type: phenotypic_marker
         label: Sequence
         type: chado_text_type
         description: One or more molecular sequences, possibly with associated annotation.
@@ -2357,8 +2357,8 @@ fields:
               region: content
               weight: 20
 
-    -   name: phenotype_marker_seqlen                       
-        content_type: phenotype_marker
+    -   name: phenotypic_marker_seqlen                       
+        content_type: phenotypic_marker
         label: Sequence Length
         type: chado_integer_type
         description: The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.
@@ -2383,8 +2383,8 @@ fields:
               region: content
               weight: 25
 
-    -   name: phenotype_marker_type                       
-        content_type: phenotype_marker
+    -   name: phenotypic_marker_type                       
+        content_type: phenotypic_marker
         label: Type
         type: schema__additional_type
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
