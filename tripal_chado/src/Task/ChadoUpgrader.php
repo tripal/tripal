@@ -580,12 +580,34 @@ class ChadoUpgrader extends ChadoTaskBase {
     }
     else {
       // No, create a new reference schema.
-      $installer = \Drupal::service('tripal_chado.installer');
-      $installer->setParameters([
-        'output_schemas' => [  $ref_schema->getSchemaName()  ],
-        'version' => $version,
-      ]);
-      $success = $installer->performTask();
+      $ref_schema->schema()->createSchema();
+
+      // Apply SQL file containing schema definitions.
+      $module_path = \Drupal::service('extension.list.module')->getPath('tripal_chado');
+      $file_path =
+        $module_path
+        . '/chado_schema/chado-only-'
+        . $version
+        . '.sql';
+
+      // Run SQL file defining Chado schema.
+      $success = $ref_schema->executeSqlFile(
+        $file_path,
+        ['chado' => $ref_schema->getQuotedSchemaName(),]
+      );
+      if ($success) {
+        // Initialize schema with minimal data.
+        $file_path =
+          $module_path
+          . '/chado_schema/initialize-'
+          . $version
+          . '.sql'
+        ;
+        $success = $ref_schema->executeSqlFile(
+          $file_path,
+          ['chado' => $ref_schema->getQuotedSchemaName(),]
+        );
+      }
 
       if (!$success) {
         // Failed to instantiate ref schema. Drop any partial ref schema.
@@ -1413,52 +1435,18 @@ class ChadoUpgrader extends ChadoTaskBase {
 
         // Start comparison.
         $alter_sql = [];
-        // Compare columns: for each column defined in the reference schema...
-        foreach ($new_table_definition['columns'] as $new_column => $new_column_def) {
 
-          // Replace schema name in the column type if there is one.
-          $new_column_type = str_replace(
-            $ref_schema_name . '.',
-            $chado_schema_name . '.',
-            $new_column_def['type']
-          );
+        // Compare columns between two schema.
+        $column_alter_sql = $this->prepareUpgradeTables_newTablesStep1_compareColumns(
+          $new_table_definition['columns'],
+          $old_table_definition['columns'],
+          [
+            'ref_schema_name' => $ref_schema_name,
+            'chado_schema_name' => $chado_schema_name,
+          ]
+        );
+        $alter_sql = array_merge($alter_sql, $column_alter_sql);
 
-          // Check if column exists in old table.
-          if (array_key_exists($new_column, $old_table_definition['columns'])) {
-            // Column exists, compare.
-            $old_column_def = $old_table_definition['columns'][$new_column];
-            // Data type.
-            $old_type = $old_column_def['type'];
-
-            if ($old_type != $new_column_type) {
-              $alter_sql[] = "ALTER COLUMN $new_column TYPE $new_column_type";
-            }
-            // NULL option.
-            $old_not_null = $old_column_def['not null'];
-            $new_not_null = $new_column_def['not null'];
-            if ($old_not_null != $new_not_null) {
-              if ($new_not_null) {
-                $alter_sql[] = "ALTER COLUMN $new_column SET NOT NULL";
-              }
-              else {
-                $alter_sql[] = "ALTER COLUMN $new_column DROP NOT NULL";
-              }
-            }
-            // No DEFAULT value at the time (added later).
-            if (!empty($old_column_def['default'])) {
-              $alter_sql[] = "ALTER COLUMN $new_column DROP DEFAULT";
-            }
-            // Remove processed column from old table data.
-            unset($old_table_definition['columns'][$new_column]);
-          }
-          else {
-            // Column does not exist, add (without default as it will be added
-            // later).
-            $alter_sql[] =
-              "ADD COLUMN $new_column " . $new_column_type
-              . ($new_not_null ? ' NOT NULL' : ' NULL' ) ;
-          }
-        }
         // Report old columns still there.
         if (!empty($old_table_definition['columns'])) {
           $old_col_def = $old_table_definition['columns'];
@@ -1549,6 +1537,75 @@ class ChadoUpgrader extends ChadoTaskBase {
         $this->upgradeQueries[$new_table_name][] = $sql_query;
       }
     }
+  }
+
+  /**
+   * Step 1a: Compare columns for a single table between schema.
+   *
+   * @param array $new_table_columns
+   *   An araay of the columns in a specific table in the reference schema. This
+   *   array matches the format of the columns indec returned in the table definition.
+   * @param array $old_table_columns
+   *  An array of the columns in the same table in the schema to be updated.  This
+   *   array matches the format of the columns indec returned in the table definition.
+   * @param array $context
+   *   An array of elements providing context. Specifically,
+   *    - ref_schema_name: the name of the reference schema
+   *    - chado_schema_name: the name of the schema to be updated
+   * @return array
+   *   An array of SQL statements to alter the columns in the schema to be
+   *   updated to match the reference schema.
+   */
+  private function prepareUpgradeTables_newTablesStep1_compareColumns(&$new_table_columns, &$old_table_columns, $context) {
+
+    // Compare columns for each column defined in the reference schema...
+    foreach ($new_table_columns as $new_column => $new_column_def) {
+
+      // Replace schema name in the column type if there is one.
+      $new_column_type = str_replace(
+        $context['ref_schema_name'] . '.',
+        $context['chado_schema_name'] . '.',
+        $new_column_def['type']
+      );
+
+      // Check if column exists in old table.
+      if (array_key_exists($new_column, $old_table_columns)) {
+        // Column exists, compare.
+        $old_column_def = $old_table_columns[$new_column];
+        // Data type.
+        $old_type = $old_column_def['type'];
+
+        if ($old_type != $new_column_type) {
+          $alter_sql[] = "ALTER COLUMN $new_column TYPE $new_column_type";
+        }
+        // NULL option.
+        $old_not_null = $old_column_def['not null'];
+        $new_not_null = $new_column_def['not null'];
+        if ($old_not_null != $new_not_null) {
+          if ($new_not_null) {
+            $alter_sql[] = "ALTER COLUMN $new_column SET NOT NULL";
+          }
+          else {
+            $alter_sql[] = "ALTER COLUMN $new_column DROP NOT NULL";
+          }
+        }
+        // No DEFAULT value at the time (added later).
+        if (!empty($old_column_def['default'])) {
+          $alter_sql[] = "ALTER COLUMN $new_column DROP DEFAULT";
+        }
+        // Remove processed column from old table data.
+        unset($old_table_columns[$new_column]);
+      }
+      else {
+        // Column does not exist, add (without default as it will be added
+        // later).
+        $alter_sql[] =
+          "ADD COLUMN $new_column " . $new_column_type
+          . ($new_not_null ? ' NOT NULL' : ' NULL' ) ;
+      }
+    }
+
+    return $alter_sql;
   }
 
   /**
