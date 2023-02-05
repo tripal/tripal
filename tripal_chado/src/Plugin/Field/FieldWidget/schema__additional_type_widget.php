@@ -136,6 +136,7 @@ class schema__additional_type_widget extends ChadoWidgetBase {
          $cvterm_id = $term->getInternalId();
          $values[$delta]['type_id'] = $cvterm_id;
          $values[$delta]['value'] = $term->getName();
+         $values[$delta]['term_name'] = $term->getName();
        }
     }
 

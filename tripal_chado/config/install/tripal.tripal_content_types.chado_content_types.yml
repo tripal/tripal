@@ -1,4 +1,4 @@
-name: 'chado_content_types'
+id: 'chado_content_types'
 label: 'Chado Content Types'
 description: 'Default content types configurations provided by the Tripal Chado module'
 content_types:

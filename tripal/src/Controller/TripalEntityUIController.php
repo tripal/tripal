@@ -43,7 +43,7 @@ class TripalEntityUIController extends ControllerBase {
       $bundles[$category]['members'][] = [
         'title' => $entity->getLabel(),
         'help' => $entity->getHelpText(),
-        'url' => Url::fromRoute('entity.tripal_entity.add_form', ['tripal_entity_type' => $entity->getName()]),
+        'url' => Url::fromRoute('entity.tripal_entity.add_form', ['tripal_entity_type' => $entity->id()]),
       ];
     }
 

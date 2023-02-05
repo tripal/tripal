@@ -35,8 +35,7 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
  *   entity_keys = {
  *     "id" = "id",
  *     "name" = "name",
- *     "label" = "label",
- *     "synonums" = "synonyms"
+ *     "label" = "label"
  *   },
  *   links = {
  *     "canonical" = "/admin/structure/bio_data/{tripal_entity_type}",
@@ -76,7 +75,6 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    * @var string
    */
   protected $name;
-
   /**
    * The Tripal Content type label.
    *
@@ -186,12 +184,6 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
         unset($values['term']);
         $values['termIdSpace'] = $term->getIdSpace();
         $values['termAccession'] = $term->getAccession();
-
-        // Since we have a term object, we can use the definition to set the
-        // help text if it's not already set.
-        if (!array_key_exists('help_text', $values)) {
-          $values['help_text'] = $term->getDefinition();
-        }
       }
       else {
         $class_name_passed_in = get_class($values['term']);
@@ -226,7 +218,6 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
        $config = \Drupal::service('config.factory')->getEditable('tripal.settings');
        $max_id = $config->get('tripal_entity_type.max_id');
        $this->id = $max_id + 1;
-       $this->name = $this->name;
        $config->set('tripal_entity_type.max_id', $this->id)->save();
      }
 
@@ -410,12 +401,6 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
   public function setTerm(TripalTerm $term) {
     $this->termIdSpace = $term->getIdSpace();
     $this->termAccession = $term->getAccession();
-
-    // Since we have a term object, we can use the definition to set the
-    // help text if it's not already set.
-    if ($this->help_text === NULL) {
-      $this->help_text = $term->getDefinition();
-    }
   }
 
   /**
@@ -623,12 +608,10 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
       'required' => TRUE,
     ];
 
-    $instances = \Drupal::service('entity_field.manager')
-      ->getFieldDefinitions('tripal_entity', $this->name);
-    foreach ($instances as $instance_name => $instance) {
+    $fields = \Drupal::service('entity_field.manager')->getFieldDefinitions('tripal_entity', $this->id);
+    foreach ($fields as $field_name => $field) {
 
       $use_field = TRUE;
-      $field_name = $instance->getName();
 
       // Remove base fields.
       if (in_array($field_name, ['id', 'type', 'uid', 'term_id', 'title', 'status', 'created', 'changed'])) {
@@ -637,7 +620,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
 
       // If only required fields should be returned,
       // skip this field if it's not required.
-      if (!$instance->isRequired() and $options['required only']) {
+      if (!$field->isRequired() and $options['required only']) {
         continue;
       }
 
@@ -650,11 +633,11 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
         // Build the token from the field information.
         $token = '[' . $field_name . ']';
         $tokens[$token] = [
-          'label' => $instance->getLabel(),
-          'description' => $instance->getDescription(),
+          'label' => $field->getLabel(),
+          'description' => $field->getDescription(),
           'token' => $token,
           'field_name' => $field_name,
-          'required' => $instance->isRequired(),
+          'required' => $field->isRequired(),
         ];
       }
     }

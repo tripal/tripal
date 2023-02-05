@@ -32,7 +32,7 @@ class schema__additional_type extends ChadoFieldItemBase {
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
-    return 'term_name';
+    return 'value';
   }
 
   /**

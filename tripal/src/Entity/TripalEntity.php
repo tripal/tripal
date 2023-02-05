@@ -292,43 +292,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       return $string;
     }
 
-    // @todo UPGRADE THIS CODE ONCE TRIPAL FIELDS HAVE BEEN ADDED
-    //
-    // If the fields are not loaded for the entity then we want to load them
-    // but we won't do a field_attach_load() as that will load all of the
-    // fields. For syncing (publishing) of content loading all fields for
-    // all synced entities causes extreme slowness, so we'll only attach
-    // the necessary fields for replacing tokens.
-    // $attach_fields = [];
-    //
-    // foreach ($used_tokens as $token) {
-    //   $token = preg_replace('/[\[\]]/', '', $token);
-    //   $elements = explode(',', $token);
-    //   $field_name = array_shift($elements);
-    //
-    //   if (!property_exists($entity, $field_name) or empty($entity->{$field_name})) {
-    //     $field = field_info_field($field_name);
-    //     $storage = $field['storage'];
-    //     $attach_fields[$storage['type']]['storage'] = $storage;
-    //     $attach_fields[$storage['type']]['fields'][] = $field;
-    //   }
-    // }
-    //
-    // // If we have any fields that need attaching, then do so now.
-    // if (count(array_keys($attach_fields)) > 0) {
-    //   foreach ($attach_fields as $storage_type => $details) {
-    //     $field_ids = [];
-    //     $storage = $details['storage'];
-    //     $fields = $details['fields'];
-    //     foreach ($fields as $field) {
-    //       $field_ids[$field['id']] = [$entity->id];
-    //     }
-    //     $entities = [$entity->id => $entity];
-    //     module_invoke($storage['module'], 'field_storage_load', 'TripalEntity',
-    //       $entities, FIELD_LOAD_CURRENT, $field_ids, []);
-    //   }
-    // }
-
     // Now that all necessary fields are attached process the tokens.
     foreach ($used_tokens as $token) {
       $token = preg_replace('/[\[\]]/', '', $token);
