@@ -22,9 +22,9 @@
     {% for type in category.members  %}
       <li class="clearfix">
         <a href="{{type.url}}">
-          <span class="label">{{ type.title }}</span>
-          <div class="description">{{ type.help }}</div>
+          <span class="label">{{ type.title }}</span>          
         </a>
+        <div class="description">{{ type.help }}</div>
       </li>
     {% endfor %}
   </ul>
