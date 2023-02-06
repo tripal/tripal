@@ -35,7 +35,11 @@ function tripal_chado_install() {
 
   }
 
-  tripal_insert_variable('bundle_category', 'Bundles can be categorized to allow for grouping');
+  // Add any cv terms that are needed.
+  tripal_chado_add_terms();
+
+  // Initialize any variables that are needed.
+  tripal_chado_set_variables();
 }
 
 /**
@@ -116,6 +120,79 @@ function tripal_chado_tripal_cv_obo_schema() {
     ),
     'primary key' => array('obo_id'),
   );
+}
+
+/**
+ * Define any CV terms needed by this module.
+ */
+function tripal_chado_add_terms() {
+  // This group of terms supports the various chado_linker__xxx fields
+  // For chado_linker__analysis field.
+  chado_insert_cvterm([
+    'id' => 'NCIT:C25391',
+    'name' => 'Analysis',
+    'cv_name' => 'ncit',
+    'definition' => 'Examination and interpretation; the process of identifying an issue to be understood and'
+                  . ' addressed, modelling the issue, investigating the model results, interpreting the results,'
+                  . ' and possibly making a recommendation. The concept also refers to the examination and study'
+                  . ' of a whole in terms of the parts composing it.',
+  ]);
+  // For chado_linker__assay field.
+  chado_insert_cvterm([
+    'id' => 'NCIT:C60819',
+    'name' => 'Assay',
+    'cv_name' => 'ncit',
+    'definition' => 'A qualitative or quantitative analysis performed to determine the amount of a particular'
+                  . ' constituent in a sample or the biological or pharmacological properties of a drug.',
+  ]);
+  // For chado_linker__biomaterial field.
+  chado_insert_cvterm([
+    'id' => 'NCIT:C43376',
+    'name' => 'Biologically-Derived Material',
+    'cv_name' => 'ncit',
+    'definition' => 'Natural substances derived from living organisms such as cells, tissues, proteins, and DNA.',
+  ]);
+  // For chado_linker__feature field.
+  chado_insert_cvterm([
+    'id' => 'NCIT:C73619',
+    'name' => 'Feature',
+    'cv_name' => 'ncit',
+    'definition' => 'A prominent or identifiable aspect, region, or site of interest',
+  ]);
+  // For chado_linker__stock field.
+  chado_insert_cvterm([
+    'id' => 'NCIT:C48288',
+    'name' => 'Stock',
+    'cv_name' => 'ncit',
+    'definition' => 'The merchandise that a shop has on hand.',
+  ]);
+  // For chado_linker__study field.
+  chado_insert_cvterm([
+    'id' => 'NCIT:C63536',
+    'name' => 'Study',
+    'cv_name' => 'ncit',
+    'definition' => 'A detailed examination, analysis, or critical inspection of a subject designed to discover facts about it.',
+  ]);
+  // For summary when too many records.
+  chado_insert_cvterm([
+    'id' => 'NCIT:C25463',
+    'name' => 'Count',
+    'cv_name' => 'ncit',
+    'definition' => 'Determining the number or amount of something.',
+  ]);
+}
+
+/**
+ * Initialize variables need by this module.
+ */
+function tripal_chado_set_variables() {
+  tripal_insert_variable('bundle_category', 'Bundles can be categorized to allow for grouping');
+
+  // Default maximum record limit for chado_linker__xxx fields
+  variable_set('chado_linker_load_limit', 500);
+
+  // Default maximum display height for chado_linker__xxx fields
+  variable_set('chado_linker_max_height', 200);
 }
 
 /**
@@ -2122,65 +2199,13 @@ function tripal_chado_update_7340() {
  */
 function tripal_chado_update_7341() {
   try {
-    // For chado_linker__analysis field.
-    chado_insert_cvterm([
-      'id' => 'NCIT:C25391',
-      'name' => 'Analysis',
-      'cv_name' => 'ncit',
-      'definition' => 'Examination and interpretation; the process of identifying an issue to be understood and'
-                    . ' addressed, modelling the issue, investigating the model results, interpreting the results,'
-                    . ' and possibly making a recommendation. The concept also refers to the examination and study'
-                    . ' of a whole in terms of the parts composing it.',
-    ]);
-    // For chado_linker__assay field.
-    chado_insert_cvterm([
-      'id' => 'NCIT:C60819',
-      'name' => 'Assay',
-      'cv_name' => 'ncit',
-      'definition' => 'A qualitative or quantitative analysis performed to determine the amount of a particular'
-                    . ' constituent in a sample or the biological or pharmacological properties of a drug.',
-    ]);
-    // For chado_linker__biomaterial field.
-    chado_insert_cvterm([
-      'id' => 'NCIT:C43376',
-      'name' => 'Biologically-Derived Material',
-      'cv_name' => 'ncit',
-      'definition' => 'Natural substances derived from living organisms such as cells, tissues, proteins, and DNA.',
-    ]);
-    // For chado_linker__feature field.
-    chado_insert_cvterm([
-      'id' => 'NCIT:C73619',
-      'name' => 'Feature',
-      'cv_name' => 'ncit',
-      'definition' => 'A prominent or identifiable aspect, region, or site of interest',
-    ]);
-    // For chado_linker__stock field.
-    chado_insert_cvterm([
-      'id' => 'NCIT:C48288',
-      'name' => 'Stock',
-      'cv_name' => 'ncit',
-      'definition' => 'The merchandise that a shop has on hand.',
-    ]);
-    // For chado_linker__study field.
-    chado_insert_cvterm([
-      'id' => 'NCIT:C63536',
-      'name' => 'Study',
-      'cv_name' => 'ncit',
-      'definition' => 'A detailed examination, analysis, or critical inspection of a subject designed to discover facts about it.',
-    ]);
-    // For summary when too many records.
-    chado_insert_cvterm([
-      'id' => 'NCIT:C25463',
-      'name' => 'Count',
-      'cv_name' => 'ncit',
-      'definition' => 'Determining the number or amount of something.',
-    ]);
+    // Terms added by this update are: NCIT:C25391 'Analysis', NCIT:C60819 'Assay',
+    // NCIT:C43376 'Biologically-Derived Material', NCIT:C73619 'Feature',
+    // NCIT:C48288 'Stock', NCIT:C63536 'Study', NCIT:C25463 'Count'
+    tripal_chado_add_terms();
 
-    // Default maximum record limit for chado_linker__xxx fields
-    variable_set('chado_linker_load_limit', 500);
-
-    // Default maximum display height for chado_linker__xxx fields
-    variable_set('chado_linker_max_height', 200);
+    // Initialize variables: chado_linker_load_limit, chado_linker_max_height
+    tripal_chado_set_variables();
 
   } catch (\PDOException $e) {
     $error = $e->getMessage();
