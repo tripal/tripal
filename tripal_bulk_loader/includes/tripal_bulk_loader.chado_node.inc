@@ -40,6 +40,7 @@ function tripal_bulk_loader_form($node, $form_state) {
 
   $results = db_select('tripal_bulk_loader_template', 't')
     ->fields('t', ['template_id', 'name'])
+    ->orderBy('name')
     ->execute();
   $templates = [];
   foreach ($results as $template) {
