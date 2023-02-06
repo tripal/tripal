@@ -422,9 +422,9 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   }
 
   /**
-   * Retruns an associative array of property type value for the enitty.
+   * Returns an associative array of property type value for the entity.
    *
-   * The array is keyed in the following leveles:
+   * The array is keyed in the following levels:
    * - 1st: Tripal Stroage Plugin ID
    * - 2nd: Field name
    * - 3rd: Delta value of the field item.
@@ -648,7 +648,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           $delta = $item->getName();
           $tsid = $item->tripalStorageId();
 
-          // reate a new properties array for this field item.
+          // Create a new properties array for this field item.
           $prop_values = [];
           $prop_types = [];
           foreach ($values[$tsid][$field_name][$delta] as $key => $info) {
@@ -667,7 +667,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * {@inheritdoc}
    */
   public function validate() {
-    // Let the parent class do it's validations and return the violoations list.
+    // Let the parent class do its validations and return the violations list.
     $violations = parent::validate();
 
     // Create a values array appropriate for `loadValues()`

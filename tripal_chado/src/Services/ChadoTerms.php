@@ -77,7 +77,7 @@ class ChadoTerms {
         }
         // A vocabulary can borrow a term from another IdSpace
         // If so, that IdSpace should have been created prior to
-        // this vocubulary using it.
+        // this vocabulary using it.
         if (!array_key_exists('isBorrowed', $idSpace_info) or
             $idSpace_info['urlPrefix']['isBorrowed'] !== True) {
           $idspace->setDefaultVocabulary($vocab_info['name']);

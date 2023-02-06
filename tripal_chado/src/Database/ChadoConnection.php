@@ -13,7 +13,7 @@ use Drupal\tripal_chado\Database\ChadoSchema;
  * schema and tables. It provides both static and instance methods. Static
  * methods are designed to work regardless any specific Chado schema while
  * instance methods work on a given Chado schema instance specified when the
- * ChadoSchema object is instanciated. Default schema used for instances is
+ * ChadoSchema object is instantiated. Default schema used for instances is
  * 'chado'.
  *
  * If you need the Drupal-style array definition for any table, use the

@@ -58,7 +58,7 @@ trait ChadoTestTrait  {
    * It should be set if not set in any test function that adds schema names to
    * $testSchemas: `self::$db = self::$db ?? \Drupal::database();`
    * This connection will be used during ::tearDownAfterClass when it will not
-   * be possible to instanciate a new connection so it needs to be instanciated
+   * be possible to instantiate a new connection so it needs to be instantiated
    * before, when a test schema is created.
    *
    * @var \Drupal\Core\Database\Driver\pgsql\Connection

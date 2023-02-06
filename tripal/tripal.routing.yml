@@ -43,7 +43,7 @@ tripal.config:
 tripal.extension:
   path: 'admin/tripal/extension'
   defaults:
-    _controller: '\Drupal\tripal\Controller\TripalController::tripalExtensions'
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
     _title: 'Extensions'
   requirements:
     _permission: 'administer tripal'

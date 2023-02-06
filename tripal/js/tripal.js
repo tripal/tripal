@@ -107,7 +107,7 @@
     this.id = id;
     this.hide_empty_field = hide_empty_field;
     
-    // Get the pane that this field beongs to (if one exists).
+    // Get the pane that this field belongs to (if one exists).
     this.pane = this.getPane(); 
   }
 
