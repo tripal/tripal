@@ -2140,6 +2140,13 @@ function tripal_chado_update_7341() {
       'definition' => 'A qualitative or quantitative analysis performed to determine the amount of a particular'
                     . ' constituent in a sample or the biological or pharmacological properties of a drug.',
     ]);
+    // For chado_linker__biomaterial field.
+    chado_insert_cvterm([
+      'id' => 'NCIT:C43376',
+      'name' => 'Biologically-Derived Material',
+      'cv_name' => 'ncit',
+      'definition' => 'Natural substances derived from living organisms such as cells, tissues, proteins, and DNA.',
+    ]);
     // For chado_linker__feature field.
     chado_insert_cvterm([
       'id' => 'NCIT:C73619',

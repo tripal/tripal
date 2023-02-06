@@ -665,6 +665,28 @@ function tripal_chado_bundle_fields_info_linker(&$info, $details, $entity_type, 
     ];
   }
 
+  // BIOMATERIALS
+  // supports biomaterial as either prefix or suffix of linker table name
+  $biomaterial_table = $table_name . '_biomaterial';
+  if (!chado_table_exists($biomaterial_table)) {
+    $biomaterial_table = 'biomaterial_' . $table_name;
+  }
+  if (chado_table_exists($biomaterial_table)) {
+    $schema = chado_get_schema($biomaterial_table);
+    $pkey = $schema['primary key'][0];
+    $field_name = $table_name . '_biomaterial';
+    $field_type = 'chado_linker__biomaterial';
+    $info[$field_name] = [
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'locked' => FALSE,
+      'storage' => [
+        'type' => 'field_chado_storage',
+      ],
+    ];
+  }
+
   // CONTACTS
   $contact_table = $table_name . '_contact';
   if (chado_table_exists($contact_table)) {
@@ -2507,6 +2529,46 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
         'default' => [
           'label' => 'inline',
           'type' => 'chado_linker__assay_formatter',
+          'settings' => [],
+        ],
+      ],
+    ];
+  }
+
+  // BIOMATERIALS
+  // supports biomaterial as either prefix or suffix of linker table name
+  $biomaterial_table = $table_name . '_biomaterial';
+  if (!chado_table_exists($biomaterial_table)) {
+    $biomaterial_table = 'biomaterial_' . $table_name;
+  }
+  if (chado_table_exists($biomaterial_table)) {
+    $field_name = $table_name . '_biomaterial';
+    $info[$field_name] = $info[$field_name] = [
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Biomaterial',
+      'description' => 'Associates a biomaterial with this record',
+      'required' => FALSE,
+      'settings' => [
+        'auto_attach' => FALSE,
+        'chado_table' => $biomaterial_table,
+        'base_table' => $table_name,
+        'chado_column' => 'biomaterial_id',
+        'term_accession' => 'C43376',
+        'term_vocabulary' => 'NCIT',
+        'term_name' => 'Biologically-Derived Material ',
+      ],
+      'widget' => [
+        'type' => 'chado_linker__biomaterial_widget',
+        'settings' => [
+          'display_label' => 1,
+        ],
+      ],
+      'display' => [
+        'default' => [
+          'label' => 'inline',
+          'type' => 'chado_linker__biomaterial_formatter',
           'settings' => [],
         ],
       ],
