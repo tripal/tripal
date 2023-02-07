@@ -1,0 +1,7 @@
+#tripal-chado-sequence-format {
+	height: 200px; 
+	max-width: 500px; 
+	overflow: scroll;
+        line-height: normal !important;
+        border: 1px solid;
+}
