@@ -63,6 +63,13 @@ abstract class TripalDbxSchema extends PgSchema {
   protected $quotedDefaultSchema = '';
 
   /**
+   * Tells if builtin functions have been (temporarily) loaded.
+   *
+   * @var bool
+   */
+  protected $initialized = FALSE;
+
+  /**
    * TripalDbx service object.
    *
    * This provides in-class access to the non-schema specific Tripal DBX API
@@ -134,6 +141,56 @@ abstract class TripalDbxSchema extends PgSchema {
 
     $this->defaultSchema = $schema_name;
     $this->quotedDefaultSchema = $this->connection->getQuotedSchemaName();
+  }
+
+  /**
+   * 
+   */
+  public function initialize() {
+    if (!$this->initialized) {
+      $check_func_sql_query = "
+        SELECT COUNT(1) AS \"funcs\"
+        FROM pg_proc p
+          JOIN pg_namespace n ON (p.pronamespace = n.oid)
+        WHERE
+          n.oid = pg_my_temp_schema()
+          AND p.proname IN ('tripal_get_table_ddl', 'tripal_clone_schema')
+      ";
+      $is_initialized = (bool) $this->connection->query($check_func_sql_query)->fetchField();
+      if (!$is_initialized) {
+        // Load functions.
+        $logger = \Drupal::service('tripal.logger');
+        $sql_cloner_path =
+          \Drupal::service('extension.list.module')->getPath('tripal')
+          . '/src/TripalDBX/pg-clone-schema/clone_schema.sql'
+        ;
+        // Retrieve the SQL file.
+        $sql = file_get_contents($sql_cloner_path);
+        if (!$sql) {
+          $message = "Failed to load PostgreSQL cloning functions: unable to read '$sql_cloner_path' file content.";
+          $logger->error($message);
+        }
+
+        // Remove starting comments (not the ones in functions).
+        $sql = preg_replace('/^--[^\n]*\n(?:\s*\n)*/m', '', $sql);
+        $this->connection->query(
+          $sql,
+          [],
+          [
+            'allow_delimiter_in_query' => TRUE,
+          ]
+        );
+
+        // Check functions were installed.
+        $func_count = $this->connection->query($check_func_sql_query)->fetch();
+        if (!$func_count || ($func_count->funcs < 2)) {
+          $message =
+            "Failed to load PostgreSQL cloning functions ($sql_cloner_path).";
+          $logger->error($message);
+        }
+      }
+      $this->initialized = TRUE;
+    }
   }
 
   /**
@@ -899,11 +956,11 @@ EOD;
     $cache_key = $this->defaultSchema . '/' . $table_name;
     if (!isset($db_ddls[$cache_key])) {
       $schema_name = $this->defaultSchema;
-      $drupal_schema = $this->tripalDbxApi->getDrupalSchemaName();
+      $this->initialize();
 
       $sql_query = "
         SELECT
-          $drupal_schema.tripal_get_table_ddl(:schema, :table, TRUE)
+          pg_temp.tripal_get_table_ddl(:schema, :table, TRUE)
           AS \"definition\";
       ";
       $result = $this->connection->query(

@@ -73,9 +73,6 @@ function tripal_uninstall() {
     ->getEditable('tripaldbx.settings');
   $config->delete();
 
-  // Remove the Tripal DBX Cloner functions from the Drupal schema.
-  tripal_uninstall_cloner();
-
 }
 
 ///**
@@ -124,6 +121,36 @@ function tripal_uninstall() {
 //
 //  tripal_add_variables();
 //}
+
+/**
+ * Implements hook_requirements().
+ */
+function tripal_requirements($phase) {
+  $checks = [];
+  // Make sure the current install does not use per-table prefixes.
+  $connection_options = \Drupal::database()->getConnectionOptions();
+  if (!empty($connection_options['extra_prefix'])
+      || ((!empty($connection_options['prefix']))
+          && (is_array($connection_options['prefix']))
+          && (1 < count($connection_options['prefix']))
+      )
+  ) {
+    $checks['tripal_no_per_table_prefix'] = [
+      'title' => t('Database table prefixes'),
+      'description' => t('Current Tripal version is not compatible with per-table prefixing. You may edit your site settings.php and remove per-table prefixing and just set $database array key "prefix" to a string value (which can be empty). Note: you may ignore this warning if you only use this module on database connections without per-table prefixes.'),
+      'severity' => REQUIREMENT_WARNING,
+    ];
+  }
+  else {
+    $checks['tripal_no_per_table_prefix'] = [
+      'title' => t('Database table prefixes'),
+      'description' => t('Current Tripal version is not compatible with per-table prefixing. Your settings are not showing the use of per-table prefixing.'),
+      'severity' => REQUIREMENT_OK,
+    ];
+  }
+  
+  return $checks;
+}
 
 /**
  * Implementation of hook_schema().
@@ -695,6 +722,17 @@ function tripal_update_8401() {
     $db->query('ALTER INDEX tripal_admin_notfications____pkey RENAME TO tripal_admin_notifications____pkey;');
     $messenger->addMessage('Renamed index tripal_admin_notfications____pkey to tripal_admin_notifications____pkey.');
   }
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Removes PostgreSQL schema clonging functions.
+ */
+function tripal_update_8402() {
+  // Remove the Tripal DBX Cloner functions from the Drupal schema.
+  tripal_uninstall_cloner();
+  $messenger->addMessage('Removed PostgreSQL schema clonging functions');
 }
 
 /**
