@@ -189,10 +189,10 @@ function tripal_chado_set_variables() {
   tripal_insert_variable('bundle_category', 'Bundles can be categorized to allow for grouping');
 
   // Default maximum record limit for chado_linker__xxx fields
-  variable_set('chado_linker_load_limit', 500);
+  variable_set('tripal_field_max_delta', 200);
 
   // Default maximum display height for chado_linker__xxx fields
-  variable_set('chado_linker_max_height', 200);
+  variable_set('tripal_field_max_height', 200);
 }
 
 /**
@@ -2204,7 +2204,7 @@ function tripal_chado_update_7341() {
     // NCIT:C48288 'Stock', NCIT:C63536 'Study', NCIT:C25463 'Count'
     tripal_chado_add_terms();
 
-    // Initialize variables: chado_linker_load_limit, chado_linker_max_height
+    // Initialize variables: tripal_field_max_delta, tripal_field_max_height
     tripal_chado_set_variables();
 
   } catch (\PDOException $e) {

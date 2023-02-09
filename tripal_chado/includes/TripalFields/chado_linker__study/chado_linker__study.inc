@@ -148,15 +148,15 @@ class chado_linker__study extends ChadoField {
     }
 
     // Evaluate how many linked records there are, and if too many just show a summary.
-    $load_limit = variable_get('chado_linker_load_limit', 500);
-    if (array_key_exists('chado_linker_load_limit', $this->instance['settings'])) {
-      $load_limit = $this->instance['settings']['chado_linker_load_limit'];
+    $tripal_field_max_delta = variable_get('tripal_field_max_delta', 200);
+    if (array_key_exists('tripal_field_max_delta', $this->instance['settings'])) {
+      $tripal_field_max_delta = $this->instance['settings']['tripal_field_max_delta'];
     }
     $sql1 = 'SELECT COUNT(*) FROM {'.$linker_table.'} WHERE '.$fkey_lcolumn.' = :fkey_lcolumn_id';
     $args1 = [':fkey_lcolumn_id' => $record->$fkey_lcolumn];
     $count = chado_query($sql1, $args1)->fetchField();
 
-    if ($count <= $load_limit) {
+    if ($count <= $tripal_field_max_delta) {
       // Handle type_id and rank only when they exist in the linker table.
       $type_sql = '';
       if (chado_column_exists($linker_table, 'type_id')) {

@@ -47,8 +47,8 @@ class chado_linker__featuremap_formatter extends ChadoFieldFormatter {
     else {
       // This configurable cell styling implements a maximum height
       // for the content, if taller there is a scrollbar.
-      $max_height = variable_get('chado_linker_max_height', 200);
-      $cell_begin = '<div class="chado-linker--cell" style="max-height:' . $max_height . 'px">';
+      $tripal_field_max_height = variable_get('tripal_field_max_height', 200);
+      $cell_begin = '<div class="chado-linker--cell" style="max-height:' . $tripal_field_max_height . 'px">';
       $cell_end = '</div>';
 
       foreach ($items as $delta => $item) {
