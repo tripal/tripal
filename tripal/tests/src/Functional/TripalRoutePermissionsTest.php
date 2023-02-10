@@ -38,8 +38,11 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
       'Data Loaders' => 'admin/tripal/loaders',
       'Data Collections' => 'admin/tripal/data-collections',
       'Tripal Managed Files' => 'admin/tripal/files',
-      'Tripal Content Terms' => 'admin/tripal/config/terms',
       'Data Storage' => 'admin/tripal/storage',
+      'Configuration' => 'admin/tripal/config',
+      'Tripal Content Terms' => 'admin/tripal/config/terms',
+      'Tripal Content Types' => 'admin/tripal/config/content_types',
+      'Tripal Fields' => 'admin/tripal/config/fields',
       'Extensions' => 'admin/tripal/extension',
     ];
 
@@ -236,10 +239,12 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
     // -- Content Type.
     $values = [];
     $values['label'] = 'Freddyopolis-' . uniqid();
+    $values['name'] = 'freddyopolis';
     $values['termIdSpace'] = 'FRED';
     $values['termAccession'] = '1g2h3j4k5';
     $values['help_text'] = 'This is just random text to meet the requirement of this field.';
     $values['category'] = 'Testing';
+    $values['synonyms'] = ['bio_data_xx'];
     $content_type_obj = \Drupal\tripal\Entity\TripalEntityType::create($values);
     $this->assertIsObject($content_type_obj, "Unable to create a test content type.");
     $content_type_obj->save();

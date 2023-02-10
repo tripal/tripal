@@ -8,19 +8,35 @@ use Drupal\tripal\Entity\TripalEntityType;
 
 class TripalContentTypes {
 
+  /**
+   * The ID of the term IdSpace plugin
+   *
+   * @var string
+   */
+  protected $id_space_plugin;
+
+  /**
+   * The ID of the term vocabulary plugin
+   *
+   * @var string
+   */
+  protected $vocab_plugin;
+
 
   /**
    * Instantiates a new TripalContentTypes object.
    */
   public function __construct() {
-
+    $this->id_space_plugin = 'null_id_space';
+    $this->vocab_plugin = 'null_vocabulary';
   }
 
   /**
-   * Installs the module's Tripal content types.
+   * Installs content types using all appropriate YAML files.
    *
+   * The YAML config file prefix is tripal.tripal_content_types.*
    */
-  public function loadConfig($logger) {
+  public function install($logger) {
     $config_factory = \Drupal::service('config.factory');
     $config_list = $config_factory->listAll('tripal.tripal_content_types');
     foreach ($config_list as $config_item) {
@@ -44,9 +60,9 @@ class TripalContentTypes {
    */
   private function getIdSpace($name) {
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    $idSpace = $idsmanager->loadCollection($name, 'chado_id_space');
+    $idSpace = $idsmanager->loadCollection($name, $this->id_space_plugin);
     if (!$idSpace) {
-      $idSpace = $idsmanager->createCollection($name, 'chado_id_space');
+      $idSpace = $idsmanager->createCollection($name, $this->id_space_plugin);
     }
     return $idSpace;
   }
@@ -62,9 +78,9 @@ class TripalContentTypes {
    */
   private function getVocabulary($name) {
     $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
-    $vocabulary = $vmanager->loadCollection($name, 'chado_vocabulary');
+    $vocabulary = $vmanager->loadCollection($name, $this->vocab_plugin);
     if (!$vocabulary) {
-      $vocabulary = $vmanager->createCollection($name, 'chado_vocabulary');
+      $vocabulary = $vmanager->createCollection($name, $this->vocab_plugin);
     }
     return $vocabulary;
   }
@@ -113,8 +129,8 @@ class TripalContentTypes {
     }
 
     if (!array_key_exists('label', $details) or !$details['label']) {
-      $logger->error(t('Creation of content type, "@type", failed. No label provided.',
-          ['@type' => $details['label']]));
+      $logger->error(t('Creation of content type with name "@name", failed. No label provided.',
+          ['@name' => $details['name']]));
       return FALSE;
     }
 
@@ -124,7 +140,39 @@ class TripalContentTypes {
       return FALSE;
     }
 
+    if (!array_key_exists('help_text', $details) or !$details['help_text']) {
+      $logger->error(t('Creation of content type, "@type", failed. No help_text provided.',
+          ['@type' => $details['label']]));
+      return FALSE;
+    }
+
+    if (array_key_exists('synonyms', $details) and !is_array($details['synonyms'])) {
+      $logger->error(t('Creation of content type, "@type", failed. The synonyms should be an array.',
+          ['@type' => $details['label']]));
+      return FALSE;
+    }
+
     return TRUE;
+  }
+
+  /**
+   * Sets the plugin used for accessing CV terms.
+   *
+   * @param string $id_space_plugin
+   *   The ID for the term IdSpace plugin.
+   */
+  public function setIdSpacePlugin($id_space_plugin) {
+    $this->id_space_plugin = $id_space_plugin;
+  }
+
+  /**
+   * Sets the plugin used for accessing CV terms.
+   *
+   * @param string $id_space_plugin
+   *   The ID for the term IdSpace plugin.
+   */
+  public function setVocabPlugin($vocab_plugin) {
+    $this->vocab_plugin = $vocab_plugin;
   }
 
 
@@ -143,6 +191,7 @@ class TripalContentTypes {
    *    - synonms: (optional) a list of synonyms for this content type.
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger object to which messages will be logged.
+   *
    *
    * @return \Drupal\tripal\Entity\TripalEntityType
    */

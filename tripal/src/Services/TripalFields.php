@@ -217,7 +217,7 @@ class TripalFields {
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger object to which messages will be logged.
    */
-  public function loadConfig($logger) {
+  public function install($logger) {
     $config_factory = \Drupal::service('config.factory');
     $config_list = $config_factory->listAll('tripal.tripal_fields');
 

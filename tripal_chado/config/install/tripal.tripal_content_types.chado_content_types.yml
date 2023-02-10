@@ -51,7 +51,7 @@ content_types:
         title_format: "[contact_name]"
         url_format: "contact/[TripalEntity__entity_id]"
         synonyms: 
-            -bio_data_5        
+            - bio_data_5        
 
     -   label: Publication
         term: TPUB:0000002

@@ -140,6 +140,10 @@ tripal.tripal_content_types.*:
                  type: string
                  label: "A machine readable content type id (a.k.a., the bundle ID or Entity Type ID)"
                  nullable: false
+               help_text:
+                 type: string
+                 label: "Text used to describe to the end-user what this content type is used for"
+                 nullable: false
                url_format:
                  type: string
                  label: "A tokenzied string for the URL of the content type. Field names in square brackets can be used as tokens."
@@ -153,7 +157,9 @@ tripal.tripal_content_types.*:
                  label: "Synonyms"
                  nullable: true
                  sequence:
-                    type: sequence
+                    type: string
+                    label: "Synonym name"
+              
                     
 tripal.tripal_fields.*:
    type: config_entity

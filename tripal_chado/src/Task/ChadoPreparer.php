@@ -160,13 +160,16 @@ class ChadoPreparer extends ChadoTaskBase {
 
       $this->setProgress(0.4);
       $this->logger->notice("Creating Content Types...");
+      /** @var \Drupal\tripal\Services\TripalContentTypes $content_type_setup **/
       $content_type_setup = \Drupal::service('tripal.content_types');
-      $content_type_setup->loadConfig($this->logger);
+      $content_type_setup->setIdSpacePlugin('chado_id_space');
+      $content_type_setup->setVocabPlugin('chado_vocabulary');
+      $content_type_setup->install($this->logger);
 
       $this->setProgress(0.5);
       $this->logger->notice("Adding Fields...");
       $fields = \Drupal::service('tripal.fields');
-      $fields->loadConfig($this->logger);
+      $fields->install($this->logger);
 
       $this->setProgress(0.6);
       $this->logger->notice("Importing Ontologies...");

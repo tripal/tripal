@@ -35,3 +35,9 @@ tripal.bio_data.*:
     ajax_field:
       type: boolean
       label: 'AJAX Field Loading'
+    synonyms:
+      type: sequence
+      label: 'Synonyms'
+      sequence:
+        type: string
+        label: 'Synonym Name'

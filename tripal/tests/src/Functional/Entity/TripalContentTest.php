@@ -21,19 +21,23 @@ class TripalContentTest extends TripalTestBrowserBase {
     // Setting the default values:
     $random = $this->getRandomGenerator();
     // Provides a title with ~8 latin capitalized words.
-    $values['label'] = $random->sentences(8,TRUE);
+    $values['label'] = $random->sentences(8, TRUE);
+    // Provides a content type name
+    $values['name'] = $random->sentences(8, TRUE);
     // Provides a category with ~3 latin capitalized words.
-    $values['category'] = $random->sentences(3,TRUE);
+    $values['category'] = $random->sentences(3, TRUE);
     // Provides a title with ~8 latin capitalized words.
     $values['help_text'] = $random->sentences(25);
     // Provides a title with ~8 latin capitalized words.
-    $values['title_format'] = $random->sentences(8,TRUE);
+    $values['title_format'] = $random->sentences(8, TRUE);
     // Provides a category with ~3 latin capitalized words separated by '/'.
-    $values['url_format'] = str_replace(' ', '/', $random->sentences(3,TRUE));
+    $values['url_format'] = str_replace(' ', '/', $random->sentences(3, TRUE));
+    // Provides a content type synonym
+    $values['synonyms'] = [$random->sentences(8, TRUE)];
 
     // Create a mock term to provide to the entity.
-    $term_idspace = $random->sentences(3,TRUE);
-    $term_accession = $random->sentences(3,TRUE);
+    $term_idspace = $random->sentences(3, TRUE);
+    $term_accession = $random->sentences(3, TRUE);
     $term = $this->createMock('\Drupal\tripal\TripalVocabTerms\TripalTerm');
     $term->expects($this->any())
       ->method('getIdSpace')->will($this->returnValue($term_idspace));
