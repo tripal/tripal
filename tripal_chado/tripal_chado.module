@@ -42,15 +42,16 @@ require_once 'api/ChadoRecord.inc';
 // Chado module specific API functions
 require_once 'api/modules/tripal_chado.analysis.api.inc';
 require_once 'api/modules/tripal_chado.assay.api.inc';
+require_once 'api/modules/tripal_chado.biomaterial.api.inc';
 require_once 'api/modules/tripal_chado.contact.api.inc';
 require_once 'api/modules/tripal_chado.cv.api.inc';
 require_once 'api/modules/tripal_chado.db.api.inc';
 require_once 'api/modules/tripal_chado.feature.api.inc';
 require_once 'api/modules/tripal_chado.featuremap.api.inc';
 require_once 'api/modules/tripal_chado.organism.api.inc';
+require_once 'api/modules/tripal_chado.phylotree.api.inc';
 require_once 'api/modules/tripal_chado.pub.api.inc';
 require_once 'api/modules/tripal_chado.stock.api.inc';
-require_once 'api/modules/tripal_chado.phylotree.api.inc';
 require_once 'api/modules/tripal_chado.study.api.inc';
 require_once 'api/modules/tripal_chado.module.DEPRECATED.api.inc';
 
@@ -577,6 +578,14 @@ function tripal_chado_menu() {
     'page arguments' => array(6),
     'access arguments' => array('access content'),
     'file' => 'api/modules/tripal_chado.assay.api.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/storage/chado/auto_name/biomaterial/%'] = array(
+    'page callback' => 'chado_autocomplete_biomaterial',
+    'page arguments' => array(6),
+    'access arguments' => array('access content'),
+    'file' => 'api/modules/tripal_chado.biomaterial.api.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
   );

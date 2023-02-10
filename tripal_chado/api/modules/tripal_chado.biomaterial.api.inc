@@ -1,21 +1,21 @@
 <?php
 /**
  * @file
- * Provides API functions specifically for managing project
+ * Provides API functions specifically for managing biomaterial
  * records in Chado.
  */
 
 /**
- * @defgroup tripal_project_api Chado Project
+ * @defgroup tripal_biomaterial_api Chado Biomaterial
  * @ingroup tripal_chado_api
  * @{
- * Provides API functions specifically for managing project
+ * Provides API functions specifically for managing biomaterial
  * records in Chado.
  * @}
  */
 
 /**
- * Used for autocomplete in forms for identifying projects
+ * Used for autocomplete in forms for identifying biomaterials
  *
  * @param $string
  *   The string to search for.
@@ -23,16 +23,16 @@
  * @return
  *   A json array of terms that begin with the provided string.
  *
- * @ingroup tripal_project_api
+ * @ingroup tripal_biomaterial_api
  */
-function chado_autocomplete_project($string = '') {
+function chado_autocomplete_biomaterial($string = '') {
   $items = [];
   $sql = "
     SELECT
-      P.project_id as id, P.name
-    FROM {project} P
-    WHERE lower(P.name) like lower(:str)
-    ORDER by P.name
+      B.biomaterial_id as id, B.name
+    FROM {biomaterial} B
+    WHERE lower(B.name) like lower(:str)
+    ORDER by B.name
     LIMIT 25 OFFSET 0
   ";
   $records = chado_query($sql, [':str' => $string . '%']);
