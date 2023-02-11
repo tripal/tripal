@@ -180,7 +180,6 @@ fields:
         settings: 
             termIdSpace: OBI
             termAccession: "0100026"
-            fixed_value: ~
         display: 
           view:
             default:
@@ -582,7 +581,6 @@ fields:
         settings: 
             termIdSpace: local
             termAccession: contact
-            fixed_value: ~
         display: 
           view:
             default:
@@ -740,7 +738,6 @@ fields:
         settings: 
             termIdSpace: sep
             termAccession: "00101"
-            fixed_value: ~
         display: 
           view:
             default:
@@ -1193,7 +1190,6 @@ fields:
         settings: 
             termIdSpace: data
             termAccession: "1280"
-            fixed_value: ~
         display: 
           view:
             default:
@@ -1867,7 +1863,6 @@ fields:
         settings: 
             termIdSpace: data
             termAccession: "1278"
-            fixed_value: ~
         display: 
           view:
             default:
@@ -3143,7 +3138,6 @@ fields:
         settings: 
             termIdSpace: EFO
             termAccession: 0000269
-            fixed_value: ~
         display: 
           view:
             default:
@@ -3171,7 +3165,6 @@ fields:
         settings: 
             termIdSpace: EFO
             termAccession: 0000269
-            fixed_value: ~
         display: 
           view:
             default:

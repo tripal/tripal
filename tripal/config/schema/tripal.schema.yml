@@ -186,6 +186,10 @@ tripal.tripal_fields.*:
                  type: string
                  label: 'The field name. It must '
                  nullable: false
+               content_type:
+                 type: string
+                 label: 'The name of the content type this field should be attached to'
+                 nullable: false
                label:
                  type: string
                  label: 'Label'
@@ -229,6 +233,10 @@ tripal.tripal_fields.*:
                      type: string
                      label: "Term Accession"
                      nullable: false
+                   fixed_value:
+                     type: string
+                     label: "A fixed value for the field that cannot be changed."
+                     nullable: true
                display:
                  type: mapping
                  label: 'Display'
