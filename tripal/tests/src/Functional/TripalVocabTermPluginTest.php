@@ -356,7 +356,7 @@ class TripalVocabTermPluginTest extends BrowserTestBase {
     $this->assertTrue($dummy->isValid(), 'The dummy TripalTerm reports it is not valid when it is.');
 
     //
-    // Inserting (Saving) Terms to Chado.
+    // Inserting (Saving) Terms.
     //
 
     // We need to save the comment term first s this is used
@@ -427,7 +427,7 @@ class TripalVocabTermPluginTest extends BrowserTestBase {
     $this->assertTrue($parents['GO:0008150'][1]->getName() == 'is_a', 'The getTerm->getParents function did not return parents in the correct format (type).');
 
     //
-    // Updating (Saving) Terms in Chado.
+    // Updating (Saving) Terms.
     //
 
     // Remove all optional attributes and save.
