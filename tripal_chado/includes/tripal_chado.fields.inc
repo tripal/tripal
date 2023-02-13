@@ -846,6 +846,27 @@ function tripal_chado_bundle_fields_info_linker(&$info, $details, $entity_type, 
   //     );
   //   }
 
+  // ORGANISMS
+  $organism_table = 'organism_' . $table_name;
+  if (!chado_table_exists($organism_table)) {
+    $project_table = $table_name . '_organism';
+  }
+  if (chado_table_exists($organism_table)) {
+    $schema = chado_get_schema($organism_table);
+    $pkey = $schema['primary key'][0];
+    $field_name = $table_name . '_organism';
+    $field_type = 'chado_linker__organism';
+    $info[$field_name] = [
+      'field_name' => $field_name,
+      'type' => $field_type,
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'locked' => FALSE,
+      'storage' => [
+        'type' => 'field_chado_storage',
+      ],
+    ];
+  }
+
   // PROJECTS
   // supports project as either prefix or suffix of linker table name
   $project_table = 'project_' . $table_name;
@@ -2922,6 +2943,45 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
   //     );
   //   }
 
+  // ORGANISMS
+  $organism_table = 'organism_' . $table_name;
+  if (!chado_table_exists($organism_table)) {
+    $organism_table = $table_name . '_organism';
+  }
+  if (chado_table_exists($organism_table)) {
+    $field_name = $table_name . '_organism';
+    $info[$field_name] = $info[$field_name] = [
+      'field_name' => $field_name,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Organism',
+      'description' => 'Associates an organism with this record',
+      'required' => FALSE,
+      'settings' => [
+        'auto_attach' => FALSE,
+        'chado_table' => $organism_table,
+        'base_table' => $table_name,
+        'chado_column' => 'organism_id',
+        'term_accession' => 'C14250',
+        'term_vocabulary' => 'NCIT',
+        'term_name' => 'organism',
+      ],
+      'widget' => [
+        'type' => 'chado_linker__organism_widget',
+        'settings' => [
+          'display_label' => 1,
+        ],
+      ],
+      'display' => [
+        'default' => [
+          'label' => 'inline',
+          'type' => 'chado_linker__organism_formatter',
+          'settings' => [],
+        ],
+      ],
+    ];
+  }
+
   // PROJECTS
   // supports project as either prefix or suffix of linker table name
   $project_table = 'project_' . $table_name;
@@ -3159,7 +3219,8 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       'entity_type' => $entity_type,
       'bundle' => $bundle->name,
       'label' => 'Relationship',
-      'description' => 'Other records with relationships to this record.',
+      'description' => 'Other records with relationships to this record. Either Subject or'
+        . ' Object can be left blank to refer to the current content.',
       'required' => FALSE,
       'settings' => [
         'auto_attach' => FALSE,
