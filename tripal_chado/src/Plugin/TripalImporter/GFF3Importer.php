@@ -191,7 +191,7 @@ class GFF3Importer extends ChadoImporterBase {
    * file (e.g. 'chromosome'), if the GFF file contains a '##sequence-region'
    * line that describes the landmark sequences. Default = ''
    */
-  private $landmark_type = '';
+  private $default_landmark_type = '';
 
   /**
    * The results object for the landmark type cvterm.
@@ -544,7 +544,7 @@ class GFF3Importer extends ChadoImporterBase {
     $this->target_type = $arguments['target_type'];
     $this->create_target = $arguments['create_target'];
     $this->start_line = $arguments['line_number'];
-    $this->landmark_type = $arguments['landmark_type'];
+    $this->default_landmark_type = $arguments['landmark_type'];
     $this->alt_id_attr = $arguments['alt_id_attr'];
     $this->create_organism = $arguments['create_organism'];
     $this->re_mrna = $arguments['re_mrna'];
@@ -642,11 +642,11 @@ class GFF3Importer extends ChadoImporterBase {
     }
 
     // If a landmark type was provided then get that object.
-    if ($this->landmark_type) {
+    if ($this->default_landmark_type) {
       $this->landmark_cvterm = $chado->select('1:cvterm', 'c')
       ->fields('c')
       ->condition('cv_id', $this->feature_cv->cv_id)
-      ->condition('name', $this->landmark_type)
+      ->condition('name', $this->default_landmark_type)
       ->execute()
       ->fetchObject();
 
@@ -654,13 +654,13 @@ class GFF3Importer extends ChadoImporterBase {
       $num_found = $chado->select('1:cvterm', 'c')
       ->fields('c')
       ->condition('cv_id', $this->feature_cv->cv_id)
-      ->condition('name', $this->landmark_type)
+      ->condition('name', $this->default_landmark_type)
       ->countQuery()
       ->execute()
       ->fetchField();
 
       if ($num_found == 0) {
-        throw new \Exception(t('Cannot find landmark feature type \'' . $this->landmark_type . '\'.'));
+        throw new \Exception(t('Cannot find landmark feature type \'' . $this->default_landmark_type . '\'.'));
       }
     }
 
@@ -1518,7 +1518,7 @@ class GFF3Importer extends ChadoImporterBase {
    */
   private function findLandmark($landmark_name) {
     $chado = $this->getChadoConnection();
-    $landmark_type = $this->landmark_type;
+    $landmark_type = $this->default_landmark_type;
 
     // Before performing a database query check to see if
     // this landmark is already in our lookup list.
@@ -1564,7 +1564,7 @@ class GFF3Importer extends ChadoImporterBase {
       $rid = $region_matches[1];
       $landmark = $this->findLandmark($rid);
       if (!$landmark) {
-        if (!$this->landmark_type) {
+        if (!$this->default_landmark_type) {
           throw new \Exception(t('The landmark, ' . $rid . ', cannot be added becuase no landmark ' .
               'type was provided. Please redo the importer job and specify a landmark type.'));
         }
@@ -1959,7 +1959,7 @@ class GFF3Importer extends ChadoImporterBase {
           $this->insertHeaderLandmark($this->seq_region_headers[$uniquename]);
         }
         // Second, if a landmark_type is provided then just add the landmark feature.
-        else if ($this->landmark_type) {
+        else if ($this->default_landmark_type) {
           $this->insertLandmark($uniquename);
         }
         else {
