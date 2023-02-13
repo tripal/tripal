@@ -423,17 +423,16 @@ class sbo__relationship_widget extends ChadoFieldWidget {
         // constructor for the current field. There may be more than one name field
         // so we want to check all. Special case for organism where lookup is complicated.
         else {
-          if ($base_table == 'organism') {
+          $sql = 'SELECT ' . $fkey_rcolumn . ' FROM {' . $base_table . '} WHERE ' . implode("||' '||", $this->base_name_columns) . '=:keyword';
+          $subject = chado_query($sql, [':keyword' => $subject_name])->fetchAll();
+          if (count($subject) == 1) {
+            $subject_id = $subject[0]->$fkey_rcolumn;
+          }
+          // Handle special case of looking up organism by its scientific name.
+          if ((!$subject_id) and ($base_table == 'organism')) {
             $organism_id = chado_get_organism_id_from_scientific_name($subject_name, []);
             if (count($organism_id) == 1) {
               $subject_id = $organism_id[0];
-            }
-          }
-          else {
-            $sql = 'SELECT ' . $fkey_rcolumn . ' FROM {' . $base_table . '} WHERE ' . implode("||' '||", $this->base_name_columns) . '=:keyword';
-            $subject = chado_query($sql, [':keyword' => $subject_name])->fetchAll();
-            if (count($subject) == 1) {
-              $subject_id = $subject[0]->$fkey_rcolumn;
             }
           }
           if (!$subject_id) {
@@ -459,17 +458,16 @@ class sbo__relationship_widget extends ChadoFieldWidget {
         // constructor for the current field. There may be more than one name field
         // so we want to check all. Special case for organism where lookup is complicated.
         else {
-          if ($base_table == 'organism') {
+          $sql = 'SELECT ' . $fkey_rcolumn . ' FROM {' . $base_table . '} WHERE ' . implode("||' '||", $this->base_name_columns) . '=:keyword';
+          $object = chado_query($sql, [':keyword' => $object_name])->fetchAll();
+          if (count($object) == 1) {
+            $object_id = $object[0]->$fkey_rcolumn;
+          }
+          // Handle special case of looking up organism by its scientific name.
+          if ((!object_id) and ($base_table == 'organism')) {
             $organism_id = chado_get_organism_id_from_scientific_name($object_name, []);
             if (count($organism_id) == 1) {
               $object_id = $organism_id[0];
-            }
-          }
-          else {
-            $sql = 'SELECT ' . $fkey_rcolumn . ' FROM {' . $base_table . '} WHERE ' . implode("||' '||", $this->base_name_columns) . '=:keyword';
-            $object = chado_query($sql, [':keyword' => $object_name])->fetchAll();
-            if (count($object) == 1) {
-              $object_id = $object[0]->$fkey_rcolumn;
             }
           }
           if (!$object_id) {
