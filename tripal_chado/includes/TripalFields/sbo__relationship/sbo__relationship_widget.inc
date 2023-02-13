@@ -464,7 +464,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
             $object_id = $object[0]->$fkey_rcolumn;
           }
           // Handle special case of looking up organism by its scientific name.
-          if ((!object_id) and ($base_table == 'organism')) {
+          if ((!$object_id) and ($base_table == 'organism')) {
             $organism_id = chado_get_organism_id_from_scientific_name($object_name, []);
             if (count($organism_id) == 1) {
               $object_id = $organism_id[0];
