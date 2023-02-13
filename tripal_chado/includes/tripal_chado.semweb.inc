@@ -2213,6 +2213,7 @@ function tripal_chado_semweb_form($form, &$form_state, $chado_table = NULL) {
     //       ->condition('table_name', $chado_table)
     //       ->execute()
     //       ->fetchField();
+    $cv_default = NULL;
     $columns = $schema['fields'];
     $headers = [
       'Field Name',
@@ -2330,11 +2331,12 @@ function tripal_chado_semweb_edit_form($form, &$form_state, $table = NULL, $colu
   ];
   if ($term_name) {
     $form['terms_list'] = [
-      '#type' => 'fieldset',
+      '#type' => 'radios',
       '#title' => t('Matching Terms'),
       '#description' => t('Please select the term that best matches the
           content type you want to create. If the same term exists in
           multiple vocabularies you will see more than one option below.'),
+      '#after_build' => ['tripal_chado_semweb_edit_form_options_descriptions'],
     ];
     $match = [
       'name' => $term_name,
@@ -2342,32 +2344,39 @@ function tripal_chado_semweb_edit_form($form, &$form_state, $table = NULL, $colu
     $terms = chado_generate_var('cvterm', $match, ['return_array' => TRUE]);
     $terms = chado_expand_var($terms, 'field', 'cvterm.definition');
     $num_terms = 0;
+    $options = [];
+    $options_descriptions = [];
+    $default_value = NULL;
+
     foreach ($terms as $term) {
-      // Save the user a click by setting the default value as 1 if there's
+      // Save the user a click by setting the default value if there's
       // only one matching term.
-      $default = FALSE;
-      $attrs = [];
       if ($num_terms == 0 and count($terms) == 1) {
-        $default = TRUE;
-        $attrs = ['checked' => 'checked'];
+        $default_value = $num_terms;
       }
-      $form['terms_list']['term-' . $term->cvterm_id] = [
-        '#type' => 'radio',
-        '#title' => $term->name,
-        '#default_value' => $default,
-        '#attributes' => $attrs,
-        '#description' => '<b>Vocabulary:</b> ' . $term->cv_id->name . ' (' . $term->dbxref_id->db_id->name . ') ' . $term->cv_id->definition .
-          '<br><b>Term: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
-          '<br><b>Definition:</b>  ' . $term->definition,
-      ];
+      $term_element_name = 'term-' . $term->cvterm_id;
+      $options[$term_element_name] = $term->name;
+      $options_descriptions[$term_element_name] =
+        '<b>Vocabulary:</b> ' . $term->cv_id->name . ' (' . $term->dbxref_id->db_id->name . ') ' . $term->cv_id->definition .
+        '<br><b>Term: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
+        '<br><b>Definition:</b>  ' . $term->definition;
       $num_terms++;
     }
+
+    // Add the options and their individual descriptions, and set default value.
+    $form['terms_list']['#options'] = $options;
+    $form['terms_list']['#options_descriptions'] = $options_descriptions;
+    if (!is_null($default_value)) {
+      $form['terms_list']['#default_value'] = $default_value;
+    }
+
     if ($num_terms == 0) {
       $form['terms_list']['none'] = [
         '#type' => 'item',
         '#markup' => '<i>' . t('There is no term that matches the entered text.') . '</i>',
       ];
     }
+
     // Add in the button for the cases of no terms or too many.
     $form['submit_button'] = [
       '#type' => 'submit',
@@ -2389,6 +2398,27 @@ function tripal_chado_semweb_edit_form($form, &$form_state, $table = NULL, $colu
   return $form;
 }
 
+/**
+ * Callback to add a #description to an individual radio in a 'radios' group.
+ *
+ * Starting with drupal 8 we can add descriptions to individual elements in a 'radios'
+ * form element, but for drupal 7 we need a callback to implement this.
+ * 
+ * @return
+ *   Updated form element.
+ *
+ * @ingroup tripal_terms_api
+ *
+ */
+function tripal_chado_semweb_edit_form_options_descriptions($element, &$form_state) {
+  foreach (element_children($element) as $key) {
+    if (array_key_exists('#options_descriptions', $element) and array_key_exists($key, $element['#options_descriptions'])) {
+      $element[$key]['#description'] = t('!description', ['!description' => $element['#options_descriptions'][$key]]);
+    }
+  }
+  return $element;
+}
+
 
 /**
  * Implements hook_form_validate()
@@ -2406,22 +2436,16 @@ function tripal_chado_semweb_edit_form_validate($form, &$form_state) {
       $num_selected = 0;
       foreach ($form_state['values'] as $key => $value) {
         $matches = [];
-        if (preg_match("/^term-(\d+)$/", $key, $matches) and
-          $form_state['values']['term-' . $matches[1]]) {
+        if (preg_match("/^term-(\d+)$/", $value, $matches)) {
           $cvterm_id = $matches[1];
           $num_selected++;
         }
       }
       if ($num_selected == 0) {
-        form_set_error('', 'Please select at least one term.');
+        form_set_error('', 'Please select a term.');
       }
       else {
-        if ($num_selected > 1) {
-          form_set_error('term-' . $cvterm_id, 'Please select only one term from the list below.');
-        }
-        else {
-          $form_state['values']['#selected_cvterm_id'] = $cvterm_id;
-        }
+        $form_state['values']['#selected_cvterm_id'] = $cvterm_id;
       }
     }
     else {

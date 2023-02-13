@@ -87,7 +87,7 @@ class schema__additional_type_widget extends ChadoFieldWidget {
       $default_name = '';
       if ($type_id) {
         $cvterm = chado_generate_var('cvterm', ['cvterm_id' => $type_id]);
-        $default_name = $cvterm->name;
+        $default_name = $cvterm->name . " [id: $type_id]";
       }
       tripal_get_term_lookup_form($widget, $form_state, $default_name,
         $element['#title'], $element['#description'], $element['#required'],

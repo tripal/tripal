@@ -364,7 +364,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       return;
     }
 
-    // Do not proceed if subject ID or object ID does not exist.
+    // Do not proceed if subject ID key or object ID key does not exist.
     if (!key_exists($subject_id_key, $fkeys[$base_table]['columns']) ||
       !key_exists($object_id_key, $fkeys[$base_table]['columns'])) {
       return;
@@ -372,7 +372,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
 
     // Validation is occurring in the field::validate() but we need to know if
     // it finds errors. As such, I'm calling it here to check. Also,
-    // field::validate() doesn't seem to always show it's errors OR stop form
+    // field::validate() doesn't seem to always show its errors OR stop form
     // submission so we need to ensure that happens here.
     // sbo__relationship::validate($entity_type, $entity, $langcode, $items, &$errors)
     $errors = $this->field_instance->validateItem($form_state['values'][$field_name][$langcode][$delta], $element['#chado_record_id']);
@@ -413,43 +413,61 @@ class sbo__relationship_widget extends ChadoFieldWidget {
       // Get the subject ID.
       $subject_id = '';
       $fkey_rcolumn = $fkeys[$base_table]['columns'][$subject_id_key];
-      $matches = [];
-      // First check if it's in the textfield due to use of the autocomplete.
-      if (preg_match('/\[id: (\d+)\]/', $subject_name, $matches)) {
-        $subject_id = $matches[1];
-      }
-      // Otherwise we need to look it up using the name field determined in the
-      // constructor for the current field. There may be more then one name field
-      // (e.g. organism: genus + species) so we want to check both.
-      else {
-        $sql = 'SELECT ' . $fkey_rcolumn . ' FROM {' . $base_table . '} WHERE ' . implode('||', $this->base_name_columns) . '=:keyword';
-        $subject = chado_query($sql, [':keyword' => $subject_name])->fetchAll();
-        if (count($subject) > 0) {
-          $subject_id = $subject[0]->$fkey_rcolumn;
+      if ($subject_name) {
+        $matches = [];
+        // First check if it's in the textfield due to use of the autocomplete.
+        if (preg_match('/\[id: (\d+)\]/', $subject_name, $matches)) {
+          $subject_id = $matches[1];
         }
+        // Otherwise we need to look it up using the name field determined in the
+        // constructor for the current field. There may be more than one name field
+        // (e.g. organism: genus + species) so we want to check both.
+        else {
+          $sql = 'SELECT ' . $fkey_rcolumn . ' FROM {' . $base_table . '} WHERE ' . implode("||' '||", $this->base_name_columns) . '=:keyword';
+          $subject = chado_query($sql, [':keyword' => $subject_name])->fetchAll();
+          if (count($subject) == 1) {
+            $subject_id = $subject[0]->$fkey_rcolumn;
+          }
+          else {
+            form_set_error('sbo__relationship][' . $langcode . '][' . $delta . '][subject_name', 'The subject does not exist');
+          }
+        }
+      }
+      // If blank, subject defaults to current content id.
+      elseif ($object_name and $chado_record_id) {
+        $subject_id = $chado_record_id;
       }
 
       // Get the object ID.
       $object_id = '';
       $fkey_rcolumn = $fkeys[$base_table]['columns'][$object_id_key];
-      $matches = [];
-      // First check if it's in the textfield due to use of the autocomplete.
-      if (preg_match('/\[id: (\d+)\]/', $object_name, $matches)) {
-        $object_id = $matches[1];
-      }
-      // Otherwise we need to look it up using the name field determined in the
-      // constructor for the current field. There may be more then one name field
-      // (e.g. organism: genus + species) so we want to check both.
-      else {
-        $sql = 'SELECT ' . $fkey_rcolumn . ' FROM {' . $base_table . '} WHERE ' . implode('||', $this->base_name_columns) . '=:keyword';
-        $object = chado_query($sql, [':keyword' => $object_name])->fetchAll();
-        if (count($object) > 0) {
-          $object_id = $object[0]->$fkey_rcolumn;
+      if ($object_name) {
+        $matches = [];
+        // First check if it's in the textfield due to use of the autocomplete.
+        if (preg_match('/\[id: (\d+)\]/', $object_name, $matches)) {
+          $object_id = $matches[1];
         }
+        // Otherwise we need to look it up using the name field determined in the
+        // constructor for the current field. There may be more than one name field
+        // (e.g. organism: genus + species) so we want to check both.
+        elseif ($object_name) {
+          $sql = 'SELECT ' . $fkey_rcolumn . ' FROM {' . $base_table . '} WHERE ' . implode("||' '||", $this->base_name_columns) . '=:keyword';
+          $object = chado_query($sql, [':keyword' => $object_name])->fetchAll();
+          if (count($object) == 1) {
+            $object_id = $object[0]->$fkey_rcolumn;
+          }
+          else {
+            form_set_error('sbo__relationship][' . $langcode . '][' . $delta . '][object_name', 'The object does not exist');
+          }
+        }
+      }
+      // If blank, object defaults to current content id.
+      elseif ($subject_name and $chado_record_id) {
+        $object_id = $chado_record_id;
       }
 
       // If we have all three values required for a relationship
-      // then set them as the chado field storage expects them to be set.
+      // then set them, as the chado field storage expects them to be set.
       if ($subject_id && $object_id && $type_id) {
         // Set the IDs according to the values that were determined above.
         $form_state['values'][$field_name][$langcode][$delta]['value'] = 'value must be set but is not used';
@@ -461,9 +479,9 @@ class sbo__relationship_widget extends ChadoFieldWidget {
         }
       }
       // Otherwise, maybe we are creating the entity...
-      // The storage API sohuld handle this case and automagically add the key in once
+      // The storage API should handle this case and automagically add the key in once
       // the chado record is created... so all we need to do is set the other columns.
-      elseif ($subject_name && $object_id && $type_id) {
+      elseif ($object_id && $type_id) {
         $form_state['values'][$field_name][$langcode][$delta]['value'] = 'value must be set but is not used';
         $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key] = $object_id;
         $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__type_id'] = $type_id;
@@ -471,7 +489,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
           $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__rank'] = $form_state['values'][$field_name][$langcode][$delta]['_weight'];
         }
       }
-      elseif ($subject_id && $object_name && $type_id) {
+      elseif ($subject_id && $type_id) {
         $form_state['values'][$field_name][$langcode][$delta]['value'] = 'value must be set but is not used';
         $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $subject_id_key] = $subject_id;
         $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__type_id'] = $type_id;
@@ -479,7 +497,7 @@ class sbo__relationship_widget extends ChadoFieldWidget {
           $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__rank'] = $form_state['values'][$field_name][$langcode][$delta]['_weight'];
         }
       }
-      // Otherwise, we don't have a vallue to insert so leave them blank.
+      // Otherwise, we don't have a value to insert so leave them blank.
       else {
         $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $subject_id_key] = '';
         $form_state['values'][$field_name][$langcode][$delta]['chado-' . $field_table . '__' . $object_id_key] = '';
@@ -666,7 +684,7 @@ function theme_sbo__relationship_instance_settings($variables) {
 }
 
 /**
- * An Ajax callback for the relationshp widget.
+ * An Ajax callback for the relationship widget.
  */
 function sbo__relationship_widget_form_ajax_callback(&$form, $form_state) {
   // Get the triggering element
@@ -687,7 +705,7 @@ function sbo__relationship_widget_form_ajax_callback(&$form, $form_state) {
 }
 
 /**
- * An Ajax callback for the relationshp instance setting form.
+ * An Ajax callback for the relationship instance setting form.
  */
 function sbo__relationship_instance_settings_form_ajax_callback(&$form, &$form_state) {
   $acpath = $form['instance']['settings']['relationships']['option2_parent']['#autocomplete_path'];
