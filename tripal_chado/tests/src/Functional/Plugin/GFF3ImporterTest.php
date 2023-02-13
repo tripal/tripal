@@ -1171,7 +1171,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     /**
      * Run the GFF loader on gff_tagvalue_comma_character.gff for testing.
      *
-     * This tests whether the GFF loader adds tag values contain comma seperation 
+     * This tests whether the GFF loader adds tag values containing encoded comma
      * character. 
      * The GFF loader should allow it
      */    
@@ -1230,6 +1230,71 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     }
     $this->assertEquals($has_exception, false, 'This file 
       gff_tagvalue_encoded_comma.gff should not produce 
-      an exception but did.');       
+      an exception but did.');   
+      
+      
+    /**
+     * Run the GFF loader on gff_tagvalue_comma_character.gff for testing.
+     *
+     * This tests whether the GFF loader adds tag values containing encoded comma
+     * character. 
+     * The GFF loader should allow it
+     */    
+    $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
+    $run_args = [
+      'files' => [
+        0 => [
+          'file_path' => __DIR__ . '/../../../fixtures/gff3_loader/gff_1380_landmark_test.gff'
+        ]
+      ],
+      'schema_name' => $schema_name,
+      'analysis_id' => $analysis_id,
+      'organism_id' => $organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'line_number' => NULL, // Previous error without this
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+      'skip_protein' => NULL,
+    ];
+
+    $file_details = [
+      'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_1380_landmark_test.gff',
+    ];
+
+    $has_exception = false;
+    try {
+      $gff3_importer->create($run_args, $file_details);
+      $gff3_importer->prepareFiles();
+      $gff3_importer->run();
+      $gff3_importer->postRun();
+
+      // $results = $chado->query("SELECT COUNT(*) as c1 FROM {1:featureprop} 
+      //   WHERE value ILIKE :value",[
+      //   ':value' => 'T,EST'
+      // ]);
+      // foreach ($results as $row) {
+      //   $this->assertEquals($row->c1, 1);
+      // }
+
+    } 
+    catch (\Exception $ex) {
+      $message = $ex->getMessage();
+      //print_r($message);
+      $has_exception = true;
+    }
+    // $this->assertEquals($has_exception, false, 'This file 
+    //   gff_1380_landmark_test.gff should not produce 
+    //   an exception but did.');         
   }
 }

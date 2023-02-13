@@ -2462,7 +2462,8 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    $sql = "SELECT name, uniquename, feature_id FROM {feature} WHERE uniquename in (:landmarks[])";
+    $sql = "SELECT name, uniquename, feature_id FROM {feature} 
+      WHERE uniquename in (:landmarks[]) AND organism_id = :organism_id";
     $i = 0;
     $total = 0;
     $batch_num = 1;
@@ -2480,7 +2481,10 @@ class GFF3Importer extends ChadoImporterBase {
       // If we've reached the size of the batch then let's do the select.
       if ($i == $batch_size or $total == $num_landmarks) {
         if (count($names) > 0) {
-          $args = [':landmarks[]' => $names];
+          $args = [
+            ':landmarks[]' => $names,
+            ':organism_id' => $this->organism_id
+          ];
           // $results = chado_query($sql, $args);
           $results = $chado->query($sql, $args);
           while ($f = $results->fetchObject()) {
