@@ -1,4 +1,3 @@
-![PHPUnit Tests](https://github.com/tripal/tripal/workflows/PHPUnit%20Tests/badge.svg)
 [![All Contributors](https://img.shields.io/badge/all_contributors-14-orange.svg?style=flat-square)](#contributors)
 [![Documentation Status](https://readthedocs.org/projects/tripal/badge/?version=latest)](https://tripal.readthedocs.io/en/latest/?badge=latest)
 
@@ -11,21 +10,32 @@ Welcome to the home of Tripal Development! If you are thinking to yourself "What
 
 # Current Status
 
- - Recommended Version: ![GitHub release (latest by date)](https://img.shields.io/github/v/release/tripal/tripal?color=brightgreen)
+ - Tripal 4.0-alpha1 has been released!
+    - Use this version to explore Tripal 4 and begin upgrading or creating extension modules!
+    - Upgrade path from Tripal 3 will be developed in future alpha releases.
+    - Note: Tripal 3 sites should be upgraded before November 2023 to keep security support by Drupal.
  - Development:
     - [![Tripal 3](https://img.shields.io/badge/dev-7.x--3.x-yellow)](https://github.com/tripal/tripal): Focus is on bug fixes
-    - [![Tripal 4](https://img.shields.io/badge/dev-7.x--4.x-yellow)](https://github.com/tripal/t4d8): Full upgrade to Drupal 8/9 (development in [T4D8 Repository](https://github.com/tripal/t4d8)).
+    - [![Tripal 4](https://img.shields.io/badge/dev-7.x--4.x-yellow)](https://github.com/tripal/tripal/tree/4.x): Full upgrade to Drupal 9/10 (alpha1 released!).
  - Tripal ![Tripal 1.x](https://img.shields.io/badge/unsupported-7.x--1.x-red) and ![Tripal 2.x](https://img.shields.io/badge/unsupported-7.x--2.x-red) are no longer supported by the Project Management Committee, although we will accept community submitted fixes for Tripal 2.x.
+ 
+ ## Tripal 4 Testing Status
+ 
+![Target Drupal Version 9.5.x-dev](https://img.shields.io/badge/Target%20Drupal%20Version-9.5.x-informational)
 
- # Resources
+![PostgreSQL 13+](https://img.shields.io/badge/PostreSQL-13+-success)
 
-  - For information on **how to use Tripal** through the Administrative Interface: [Tripal Users Guide](https://tripal.readthedocs.io/en/latest/user_guide.html)
-  - For help **extending Tripal** or understanding how it works: [Tripal Developers Guide](https://tripal.readthedocs.io/en/latest/dev_guide.html)
-  - To check if another group already developed the functionality you need: [Listing of **Available Extension Modules**](https://tripal.readthedocs.io/en/latest/extensions.html)
-  - Tripal is developed by a world-wide community! See the [description of our **Governance Structure**](https://tripal.readthedocs.io/en/latest/contributing/governance.html)
-  - If you are the head of a research group looking to fund Tripal Development: [Guide to **Funding Proposal** Development](https://tripal.readthedocs.io/en/latest/contributing/funding.html)
-  - For how to **install Tripal**, follow the instructions in the online Tripal User's Guide for [Tripal v2](https://tripal.info/tutorials/v2.x/installation) or [Tripal v3](https://tripal.readthedocs.io/en/latest/user_guide.html).
-  - For how to **upgrade from Tripal 2 to Tripal 3**, follow the [Upgrade Instructions](https://tripal.readthedocs.io/en/latest/user_guide/install_tripal/upgrade_from_tripal2.html) in the Tripal v3 User's Guide.
+ | Drupal      | 9.3.x                                                                                                                                                                        | 9.4.x                                                                                                                                                                        | 9.5.x                                                                                                                                                                        | 10.0.x                                                                                                                                                                         |
+|-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **PHP 8.0** | [![PHPUnit](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8_D9_3x.yml/badge.svg)](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8_D9_3x.yml)     | [![PHPUnit](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8_D9_4x.yml/badge.svg)](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8_D9_4x.yml)     | [![PHPUnit](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8_D9_5x.yml/badge.svg)](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8_D9_5x.yml)     |                                                                                                                                                                                |
+| **PHP 8.1** | [![PHPUnit](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8.1_D9_3x.yml/badge.svg)](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8.1_D9_3x.yml) | [![PHPUnit](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8.1_D9_4x.yml/badge.svg)](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8.1_D9_4x.yml) | [![PHPUnit](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8.1_D9_5x.yml/badge.svg)](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8.1_D9_5x.yml) | [![PHPUnit](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8.1_D10_0x.yml/badge.svg)](https://github.com/tripal/t4d8/actions/workflows/MAIN-phpunit-php8.1_D10_0x.yml) |
+
+# Documentation
+
+- [Tripal 3](https://tripal.readthedocs.io/en/latest/)
+- [Tripal 4](https://tripaldoc.readthedocs.io/en/latest/)
+   - [Requirements](https://tripaldoc.readthedocs.io/en/latest/install/requirements.html)
+   - Use [Tripal Docker](https://tripaldoc.readthedocs.io/en/latest/install/docker.html) to explore or develop extension modules.
 
 # Contribution
 
@@ -39,10 +49,8 @@ Looking to contribute? That's Amazing -Welcome!!! Here's a quick run-down to get
  - For **documentation** contributions, click the "Edit on Github" link at the top of the page you want to improve! [Instructions for our flavour of ReadtheDocs can be found on ReadtheDocs](https://tripal.readthedocs.io/en/latest/contributing/documentation.html).
  - See our quickstart if you need help on how to submit a PR: [ReadtheDocs, how to create a PR](https://tripal.readthedocs.io/en/latest/contributing/pull_requests.html#how-to-create-a-pr).
  - Click on issues > New Issue for helpful issue templates.
- - For Tripal 4 (Drupal 8/9), see the [T4D8 repository](https://github.com/tripal/t4d8).
 
 For more detailed guidelines see our [full Contribution Documentation](https://tripal.readthedocs.io/en/latest/contributing/pull_requests.html)!
-
 
 # Github Communication Tips
 
@@ -60,30 +68,6 @@ For more detailed guidelines see our [full Contribution Documentation](https://t
 # Code of Conduct
 
 Be nice! If that’s insufficient, Tripal community defers to https://www.contributor-covenant.org/
-
-# Required Dependencies
-* Drupal:
-  * Drupal 7.x
-  * Drupal core modules: Search, Path and PHP modules.
-  * Drupal contributed modules:
-    * [Views](http://drupal.org/project/views)
-    * [Entity API](http://drupal.org/project/entity)
-* PostgreSQL 9.3 or higher (9.5 required for Chado 1.2 to 1.3 upgrade)
-* PHP 5.5+
-* UNIX/Linux
-
-# Development Testing
-
-To run PHP unit tests on your local system, run `composer install` to install developer-specific requirements.  Next, create a `.env` file in your `/Tests/` directory that defines the `DRUPAL_ROOT` variable, for example
-
-```
-DRUPAL_ROOT=/var/www/html
-```
-Then run PHPUnit from your root Tripal directory.
-
-PHPUnit tests will also be run in the Travis CI build.
-
-Read our [testing guidelines](https://tripal.readthedocs.io/en/latest/contributing/tests.html).
 
 ## Contributors
 

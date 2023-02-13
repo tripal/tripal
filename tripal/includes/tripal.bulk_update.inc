@@ -25,7 +25,9 @@ function tripal_update_all_urls_and_titles($bundle_id, $update, $type) {
     $elements = explode(',', $bundle_token[0]);
     $field_name = array_shift($elements);
     $field_array = field_info_field($field_name);
-    $fields[] = $field_array['id'];
+    if ($field_array) {
+      $fields[] = $field_array['id'];
+    }
   }
 
   $i = 1;
@@ -54,7 +56,7 @@ function tripal_update_all_urls_and_titles($bundle_id, $update, $type) {
       }
     }
     // Check if 50 items have been updated, if so print message.
-    if ($i <= $num_entities) {
+    if (($i % 50 == 0) or ($i == $num_entities)) {
       $mem = number_format(memory_get_usage());
       print $i . "/" . $num_entities . " entities have been updated. Memory usage: $mem bytes.\r";
     }
