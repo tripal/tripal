@@ -66,7 +66,9 @@ class schema__publication_widget extends ChadoFieldWidget {
     if (array_key_exists('values', $form_state) and
       array_key_exists($field_name, $form_state['values'])) {
       $title = $form_state['values'][$field_name]['und'][$delta]['pub_title'];
-      $pub_id = $form_state['values'][$field_name]['und'][$delta]['accession'];
+      if (array_key_exists('accession', $form_state['values'][$field_name]['und'][$delta])) {
+        $pub_id = $form_state['values'][$field_name]['und'][$delta]['accession'];
+      }
     }
 
     $widget['#table_name'] = $field_table;

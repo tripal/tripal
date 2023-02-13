@@ -2731,7 +2731,8 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
       'entity_type' => $entity_type,
       'bundle' => $bundle->name,
       'label' => 'Relationship',
-      'description' => 'Other records with relationships to this record.',
+      'description' => 'Other records with relationships to this record. Either Subject or'
+        . ' Object can be left blank to refer to the current content.',
       'required' => FALSE,
       'settings' => [
         'auto_attach' => FALSE,

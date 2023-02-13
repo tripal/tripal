@@ -291,8 +291,8 @@ class sbo__relationship_widgetTest extends TripalTestCase {
         'chado-' . $base_table . '_relationship__' . $expect['object_key'] => $entity1->chado_record->{$base_table . '_id'},
       ];
       if ($base_table == 'organism') {
-        $initial_values['subject_name'] = $entity2->chado_record->species;
-        $initial_values['object_name'] = $entity1->chado_record->species;
+        $initial_values['subject_name'] = $entity2->chado_record->genus . ' ' . $entity2->chado_record->species;
+        $initial_values['object_name'] = $entity1->chado_record->genus . ' ' . $entity1->chado_record->species;
       }
 
       // Mock objects.
@@ -390,8 +390,8 @@ class sbo__relationship_widgetTest extends TripalTestCase {
         'chado-' . $base_table . '_relationship__' . $expect['object_key'] => NULL,
       ];
       if ($base_table == 'organism') {
-        $initial_values['subject_name'] = $entity2->chado_record->species;
-        $initial_values['object_name'] = $entity1->chado_record->species;
+        $initial_values['subject_name'] = $entity2->chado_record->genus . ' ' . $entity2->chado_record->species;
+        $initial_values['object_name'] = $entity1->chado_record->genus . ' ' . $entity1->chado_record->species;
       }
 
       // Mock objects.
@@ -446,7 +446,7 @@ class sbo__relationship_widgetTest extends TripalTestCase {
   }
 
   /**
-   * Case: WidgetValidate on new relationship missing subject.
+   * Case: WidgetValidate on new relationship missing subject. Missing defaults to current record.
    *
    * @group        widget
    * @group        sbo__relationship
@@ -482,15 +482,15 @@ class sbo__relationship_widgetTest extends TripalTestCase {
         'subject_name' => '',
         'type_name' => $cvterm->name,
         'vocabulary' => $cvterm->cv_id,
-        'object_name' => $entity1->chado_record->name,
+        'object_name' => $entity2->chado_record->name,
         // Both the form and load set the chado values
         // so we will set them here as well.
         'chado-' . $base_table . '_relationship__' . $expect['subject_key'] => NULL,
         'chado-' . $base_table . '_relationship__type_id' => $cvterm->cvterm_id,
-        'chado-' . $base_table . '_relationship__' . $expect['object_key'] => $entity1->chado_record->{$base_table . '_id'},
+        'chado-' . $base_table . '_relationship__' . $expect['object_key'] => $entity2->chado_record->{$base_table . '_id'},
       ];
       if ($base_table == 'organism') {
-        $initial_values['object_name'] = $entity1->chado_record->species;
+        $initial_values['object_name'] = $entity2->chado_record->genus . ' ' . $entity2->chado_record->species;
       }
 
       // Mock objects.
@@ -532,9 +532,9 @@ class sbo__relationship_widgetTest extends TripalTestCase {
       $errors = form_get_errors();
       // @debug print "Errors: " . print_r($errors, TRUE)."\n";
 
-      $this->assertNotEmpty(
+      $this->assertEmpty(
         $errors,
-        "There should be form errors when subject is not supplied. Initial values: "
+        "There should be no form errors when subject missing and object is present, subject defaults to current content. Initial values: "
         . print_r($initial_values, TRUE) . " But these were registered: "
         . print_r($errors, TRUE)
       );
@@ -545,7 +545,7 @@ class sbo__relationship_widgetTest extends TripalTestCase {
   }
 
   /**
-   * Case: WidgetValidate on new relationship missing object.
+   * Case: WidgetValidate on new relationship missing object. Missing defaults to current record.
    *
    * @group widget
    * @group sbo__relationship
@@ -589,7 +589,7 @@ class sbo__relationship_widgetTest extends TripalTestCase {
         'chado-' . $base_table . '_relationship__' . $expect['object_key'] => NULL,
       ];
       if ($base_table == 'organism') {
-        $initial_values['subject_name'] = $entity2->chado_record->species;
+        $initial_values['subject_name'] = $entity2->chado_record->genus . ' ' . $entity2->chado_record->species;
       }
 
       // Mock objects.
@@ -631,9 +631,9 @@ class sbo__relationship_widgetTest extends TripalTestCase {
       $errors = form_get_errors();
       // @debug print "Errors: " . print_r($errors, TRUE)."\n";
 
-      $this->assertNotEmpty(
+      $this->assertEmpty(
         $errors,
-        "There should be form errors when the object is not supplied. Initial values: "
+        "There should be no form errors when subject is present and object is missing, object defaults to current content. Initial values: "
         . print_r($initial_values, TRUE) . " But these were registered: "
         . print_r($errors, TRUE)
       );
@@ -687,8 +687,8 @@ class sbo__relationship_widgetTest extends TripalTestCase {
         'chado-' . $base_table . '_relationship__' . $expect['object_key'] => $entity1->chado_record->{$base_table . '_id'},
       ];
       if ($base_table == 'organism') {
-        $initial_values['subject_name'] = $entity2->chado_record->species;
-        $initial_values['object_name'] = $entity1->chado_record->species;
+        $initial_values['subject_name'] = $entity2->chado_record->genus . ' ' . $entity2->chado_record->species;
+        $initial_values['object_name'] = $entity1->chado_record->genus . ' ' . $entity1->chado_record->species;
       }
 
       // Mock objects.

@@ -1,11 +1,11 @@
 ---
-name: Feature request
+name: Tripal 4 Feature request
 about: Suggest an idea for this project
 
 ---
 
 
-## Feature Request/Discussion
+## Tripal 4 Feature Request
 <!---
 INSTRUCTIONS: The following template is meant to structure your feature request. 
   Please keep in mind, this issue may evolve into discussion for an extension module
