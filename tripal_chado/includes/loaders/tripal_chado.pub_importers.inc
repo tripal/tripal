@@ -1545,12 +1545,14 @@ function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
   $citation = chado_generate_var('pubprop', $values);
   if ($citation) {
     $citation = chado_expand_var($citation, 'field', 'pubprop.value', $options);
-    if (count($citation) > 1) {
+    // If multiple citations, it will be an array of objects.
+    if (is_array($citation) and (count($citation) > 1)) {
       tripal_report_error('tripal_pub', TRIPAL_ERROR, "Publication has multiple citations already: %pub_id",
         ['%pub_id' => $pubid]);
       return FALSE;
     }
-    elseif (count($citation) == 1 and $skip_existing == TRUE) {
+    // If only one citation, it will be an object and not an array of objects.
+    elseif ($skip_existing == TRUE) {
       // skip this publication, it already has a citation
       return FALSE;
     }
@@ -1584,7 +1586,8 @@ function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
   ];
   $authors = chado_generate_var('pubprop', $values);
   $authors = chado_expand_var($authors, 'field', 'pubprop.value', $options);
-  if (count($authors) > 1) {
+  // If multiple author lists, $authors will be an array of objects instead of a single object.
+  if (is_array($authors) and (count($authors) > 1)) {
     tripal_report_error('tripal_pub', TRIPAL_ERROR, "Publication has multiple author lists. It should have only one list: %pub_id",
       ['%pub_id' => $pubid]);
     return FALSE;
