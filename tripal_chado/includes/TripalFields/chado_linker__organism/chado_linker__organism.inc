@@ -185,9 +185,6 @@ class chado_linker__organism extends ChadoField {
     $args1 = [':fkey_lcolumn_id' => $record->$fkey_lcolumn];
     $count = chado_query($sql1, $args1)->fetchField();
 
-//$caller = debug_backtrace()[1]['function'];
-ob_start(); var_dump($args1); $astring = ob_get_clean(); //@@@
-file_put_contents( "/dev/shm/0211l", "CP1 sql1=\"$sql1\" args1=\"$astring\"count=\"$count\"\n", FILE_APPEND ); //@@@
     if ($count <= $tripal_field_max_delta) {
       $options = [
         'return_array' => 1,
@@ -213,11 +210,7 @@ file_put_contents( "/dev/shm/0211l", "CP1 sql1=\"$sql1\" args1=\"$astring\"count
           // Organism is a bit of a special case to construct the displayed
           // name, use the api function for this.
           $organism = $organism_linker->organism_id;
-ob_start(); var_dump($organism); $astring = ob_get_clean(); //@@@
-file_put_contents( "/dev/shm/0211l", "CP2 organism=\"$astring\"\n", FILE_APPEND ); //@@@
           $scientific_name = chado_get_organism_scientific_name($organism);
-file_put_contents( "/dev/shm/0211l", "CP3 scientific_name=\"$scientific_name\"\n", FILE_APPEND ); //@@@
-file_put_contents( "/dev/shm/0211l", "CP4 comment_term=\"$comment_term\" comment=\"$organism->comment\"\n", FILE_APPEND ); //@@@
           $entity->{$field_name}['und'][$i] = [
             'value' => [
               $name_term => $scientific_name,
