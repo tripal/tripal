@@ -53,7 +53,8 @@ class ChadoSequenceWidgetDefault extends ChadoWidgetBase {
     // Remove any empty values that aren't mapped to a record id.
     foreach ($values as $val_key => $value) {
       $values[$val_key]['residues'] = preg_replace('/\s/', '', $value['residues']);
-      $values[$val_key]['seqlen'] = strlen(values[$val_key]['residues']);
+      $values[$val_key]['seqlen'] = strlen($values[$val_key]['residues']);
+      $values[$val_key]['md5checksum'] = md5($values[$val_key]['residues']);
      
     }
     return $values;

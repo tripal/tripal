@@ -5,6 +5,7 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
+#use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
 use Drupal\core\Form\FormStateInterface;
 use Drupal\core\Field\FieldDefinitionInterface;
 
@@ -58,11 +59,13 @@ class ChadoSequenceDefault extends ChadoFieldItemBase {
     $settings = $field_definition->getSetting('storage_plugin_settings');
 
     // Get the property terms by using the Chado table columns they map to.
+
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
     $record_id_term = 'SIO:000729';
     $residues_term = $mapping->getColumnTermId('feature', 'residues');
     $seqlen_term = $mapping->getColumnTermId('feature', 'seqlen');
+    $md5checksum_term = $mapping->getColumnTermId('feature', 'md5checksum');
 
     // Return the properties for this field.
     $properties = [];
@@ -80,6 +83,11 @@ class ChadoSequenceDefault extends ChadoFieldItemBase {
     $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'seqlen', $seqlen_term, [
       'action' => 'store',
       'chado_column' => 'seqlen',
+      'chado_table' => 'feature'
+    ]);
+    $properties[] =  new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'md5checksum', $md5checksum_term, [
+      'action' => 'store',
+      'chado_column' => 'md5checksum',
       'chado_table' => 'feature'
     ]);
     return $properties;
