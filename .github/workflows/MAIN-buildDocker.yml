@@ -2,9 +2,9 @@ name: Build and Publish Docker image
 on:
   push:
     branches:
-      - 9.x-4.x
+      - 4.x
       - 4v40g-0-test-docker-build
-      - tv4g0-328-dockerUpdateLatestTag
+      - tv4g0-issue1420-fixDockerBuild
 
 jobs:
   push_to_registry:
