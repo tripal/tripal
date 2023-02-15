@@ -5,7 +5,7 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
-#use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoBpCharStoragePropertyType;
 use Drupal\core\Form\FormStateInterface;
 use Drupal\core\Field\FieldDefinitionInterface;
 
@@ -85,7 +85,7 @@ class ChadoSequenceDefault extends ChadoFieldItemBase {
       'chado_column' => 'seqlen',
       'chado_table' => 'feature'
     ]);
-    $properties[] =  new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'md5checksum', $md5checksum_term, [
+    $properties[] =  new ChadoBpCharStoragePropertyType($entity_type_id, self::$id, 'md5checksum', $md5checksum_term, [
       'action' => 'store',
       'chado_column' => 'md5checksum',
       'chado_table' => 'feature'
