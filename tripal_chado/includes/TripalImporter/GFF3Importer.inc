@@ -1841,8 +1841,9 @@ class GFF3Importer extends TripalImporter {
         }
         else {
           throw new Exception(t('The landmark (reference) sequence, !landmark, is not in the database'
-              . ' and not specified in the GFF3 file. Please either pre-load the landmark sequences or'
-              . ' set a "Landmark Type" in the GFF importer.',
+              . ' and not specified in the GFF3 file. Please either pre-load the landmark sequences,'
+              . ' set a "Landmark Type" in the GFF importer, or check the "Landmark types are defined'
+              . ' in the GFF3 file" checkbox.',
               ['!landmark' => $uniquename]));
         }
       }
