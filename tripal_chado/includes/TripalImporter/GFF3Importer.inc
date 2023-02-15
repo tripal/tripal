@@ -25,7 +25,6 @@ class GFF3Importer extends TripalImporter {
    */
   public static $file_types = ['gff', 'gff3'];
 
-
   /**
    * Provides information to the user about the file upload.  Typically this
    * may include a description of the file types allowed.
@@ -162,13 +161,31 @@ class GFF3Importer extends TripalImporter {
    * file (e.g. 'chromosome'), if the GFF file contains a '##sequence-region'
    * line that describes the landmark sequences. Default = ''
    */
-  private $landmark_type = '';
+  private $default_landmark_type = '';
 
   /**
-   * The ChadoRecord object for the landmark type cvterm.
+   * An associative array to specify the ontology term for each
+   * landmark individually, when the GFF file has multiple different
+   * types of landmarks. Key is landmark name, value is type name.
    */
-  private $landmark_cvterm = NULL;
+  private $landmark_types = [];
 
+  /**
+   * When true, try to look up landmark types from those specified
+   * in the GFF file.
+   **/
+  private $gff3_landmark_lookup = false;
+
+  /**
+   * The ChadoRecord object for the default landmark type cvterm.
+   */
+  private $default_landmark_cvterm = NULL;
+
+  /**
+   * The ChadoRecord objects for any defined landmark types, the
+   * key is the type name, value is the ChadoRecord object.
+   */
+  private $landmark_cvterms = [];
 
   /**
    * Regular expression to pull out the mRNA name.
@@ -306,14 +323,24 @@ class GFF3Importer extends TripalImporter {
       '#required' => TRUE,
       '#options' => $organisms,
     ];
-    $form['landmark_type'] = [
+    $form['default_landmark_type'] = [
       '#title' => t('Landmark Type'),
       '#type' => 'textfield',
       '#description' => t("Optional. Use this field to specify a Sequence Ontology type
-       for the landmark sequences in the GFF fie (e.g. 'chromosome'). This is only needed if
-       the landmark features (first column of the GFF3 file) are not already in the database.."),
+       for the landmark sequences in the GFF file (e.g. 'chromosome'). This is only needed if
+       the landmark features (first column of the GFF3 file) are not already in the database.
+       If they are new and they are defined in the GFF3 file, leave this blank and check the
+       box below."),
     ];
-
+    $form['gff3_landmark_lookup'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Landmark types are defined in the GFF3 file'),
+      '#required' => FALSE,
+      '#description' => t('If landmark sequence ontology types are defined in the GFF3 file,
+       leave the box above empty, and the loader will use the definitions in your file.
+       These look like "Chr1 . chromosome 1 2345 . . . ID=Chr1" or "ctg1 . contig 1 345 . . . ID=ctg1"'),
+      '#default_value' => 0,
+    ];
 
     $form['proteins'] = [
       '#type' => 'fieldset',
@@ -430,9 +457,6 @@ class GFF3Importer extends TripalImporter {
       you may specify the name of the attribute to use for the name."),
     ];
 
-
-
-
     return $form;
   }
 
@@ -449,7 +473,8 @@ class GFF3Importer extends TripalImporter {
     $refresh = 0; //$form_state['values']['refresh'];
     $remove = 0; //$form_state['values']['remove'];
     $line_number = trim($form_state['values']['line_number']);
-    $landmark_type = trim($form_state['values']['landmark_type']);
+    $default_landmark_type = trim($form_state['values']['default_landmark_type']);
+    $gff3_landmark_lookup = $form_state['values']['gff3_landmark_lookup'];
     $alt_id_attr = trim($form_state['values']['alt_id_attr']);
     $re_mrna = trim($form_state['values']['re_mrna']);
     $re_protein = trim($form_state['values']['re_protein']);
@@ -459,8 +484,11 @@ class GFF3Importer extends TripalImporter {
       form_set_error('line_number', t("Please provide an integer line number greater than zero."));
     }
 
-    if (!($re_mrna and $re_protein) and ($re_mrna or $re_protein)) {
-      form_set_error('re_uname', t("You must provide both a regular expression for mRNA and a replacement string for protein"));
+    if (!$re_mrna and $re_protein) {
+      form_set_error('re_mrna', t("You must provide both a regular expression for mRNA and a replacement string for protein"));
+    }
+    elseif ($re_mrna and !$re_protein) {
+      form_set_error('re_protein', t("You must provide both a regular expression for mRNA and a replacement string for protein"));
     }
 
     // check the regular expression to make sure it is valid
@@ -470,12 +498,18 @@ class GFF3Importer extends TripalImporter {
     $result = preg_replace("/" . $re_mrna . "/", $re_protein, NULL);
     restore_error_handler();
     if ($result_re === FALSE) {
-      form_set_error('re_mrna', 'Invalid regular expression.');
+      form_set_error('re_mrna', t('Invalid regular expression.'));
     }
     else {
       if ($result === FALSE) {
-        form_set_error('re_protein', 'Invalid replacement string.');
+        form_set_error('re_protein', t('Invalid replacement string.'));
       }
+    }
+
+    // Cannot specify landmark type using both methods.
+    if ($default_landmark_type and $gff3_landmark_lookup) {
+      form_set_error('default_landmark_type', t('This checkbox cannot be used if a landmark'
+                    . ' type is entered in the box above.'));
     }
   }
 
@@ -489,13 +523,14 @@ class GFF3Importer extends TripalImporter {
     // Set the private member variables of this class using the loader inputs.
     $this->organism_id = $arguments['organism_id'];
     $this->analysis_id = $arguments['analysis_id'];
-    $this->add_only = $arguments['add_only'];
-    $this->update = $arguments['update'];
+    $this->add_only = isset($arguments['add_only'])?$arguments['add_only']:NULL;
+    $this->update = isset($arguments['update'])?$arguments['update']:NULL;
     $this->target_organism_id = $arguments['target_organism_id'];
     $this->target_type = $arguments['target_type'];
     $this->create_target = $arguments['create_target'];
     $this->start_line = $arguments['line_number'];
-    $this->landmark_type = $arguments['landmark_type'];
+    $this->default_landmark_type = $arguments['default_landmark_type'];
+    $this->gff3_landmark_lookup = $arguments['gff3_landmark_lookup'];
     $this->alt_id_attr = $arguments['alt_id_attr'];
     $this->create_organism = $arguments['create_organism'];
     $this->re_mrna = $arguments['re_mrna'];
@@ -551,16 +586,17 @@ class GFF3Importer extends TripalImporter {
       throw new Exception(t("Cannot find the specified organism for this GFF3 file."));
     }
 
-    // If a landmark type was provided then get that object.
-    if ($this->landmark_type) {
-      $this->landmark_cvterm = new ChadoRecord('cvterm');
-      $this->landmark_cvterm->setValues([
+    // If a default landmark type was provided then get that object.
+    if ($this->default_landmark_type) {
+      $this->default_landmark_cvterm = new ChadoRecord('cvterm');
+      $this->default_landmark_cvterm->setValues([
           'cv_id' => $this->feature_cv->getValue('cv_id'),
-          'name' => $this->landmark_type,
+          'name' => $this->default_landmark_type,
       ]);
-      $num_found = $this->landmark_cvterm->find();
+      $num_found = $this->default_landmark_cvterm->find();
       if ($num_found == 0) {
-        throw new Exception(t('Cannot find landmark feature type \'%landmark_type\'.', ['%landmark_type' => $this->landmark_type]));
+        throw new Exception(t('Cannot find landmark feature type \'%landmark_type\'.',
+          ['%landmark_type' => $this->default_landmark_type]));
       }
     }
 
@@ -987,6 +1023,14 @@ class GFF3Importer extends TripalImporter {
       }
     }
 
+    // When enabled, store the first observed occurrence of each
+    // landmark, as this should be the definition of the landmark type.
+    if ($this->gff3_landmark_lookup) {
+      if (!array_key_exists($ret['landmark'], $this->landmark_types)) {
+        $this->landmark_types[$ret['landmark']] = $ret['type'];
+      }
+    }
+
     $tags = [];
     $attr_name = '';
     $attr_uniquename = '';
@@ -1372,11 +1416,12 @@ class GFF3Importer extends TripalImporter {
       if (!$landmark) {
         $rstart = $region_matches[2];
         $rend = $region_matches[3];
-        if (!$this->landmark_type) {
-          throw new Exception(t('The landmark, !landmark, cannot be added because no landmark type was provided. Please redo the importer job and specify a landmark type.',
+        if (!$this->default_landmark_type) {
+          throw new Exception(t('The landmark, !landmark, cannot be added because no landmark'
+              . ' type was provided. Please redo the importer job and specify a landmark type.',
               ['!landmark' => $rid]));
         }
-        $this->insertLandmark($rid);
+        $this->insertLandmark($rid, $this->default_landmark_cvterm->getValue('cvterm_id'));
       }
     }
   }
@@ -1384,14 +1429,14 @@ class GFF3Importer extends TripalImporter {
   /**
    * Loads a single landmark by name.
    */
-  private function insertLandmark($name) {
+  private function insertLandmark($name, $cvterm_id) {
     $feature = new ChadoRecord('feature');
     $residues = '';
     $feature->setValues([
       'organism_id' => $this->organism->getValue('organism_id'),
       'uniquename' => $name,
       'name' => $name,
-      'type_id' => $this->landmark_cvterm->getValue('cvterm_id'),
+      'type_id' => $cvterm_id,
       'md5checksum' => md5($residues),
       'is_analysis' => FALSE,
       'is_obsolete' => FALSE,
@@ -1482,8 +1527,9 @@ class GFF3Importer extends TripalImporter {
   private function prepareFeature($gff_feature, &$feature_cvterms, &$featureprop_cvterms) {
 
     // Add the landmark if it doesn't exist in the landmark list.
-    if (!array_key_exists($gff_feature['landmark'], $this->landmarks)) {
-      $this->landmarks[$gff_feature['landmark']] = FALSE;
+    $landmark_name = $gff_feature['landmark'];
+    if (!array_key_exists($landmark_name, $this->landmarks)) {
+      $this->landmarks[$landmark_name] = FALSE;
     }
 
     // Organize DBs and DBXrefs for faster access later on.
@@ -1766,15 +1812,37 @@ class GFF3Importer extends TripalImporter {
       // find or add it.
       if ($feature_id === FALSE) {
         // First see if there is a definition in the headers region.
-        if (array_key_exists($uniquename, $this->seq_region_headers)) {
+        if (array_key_exists($uniquename, $this->seq_region_headers) and ($this->default_landmark_type)) {
           $this->insertHeaderLandmark($this->seq_region_headers[$uniquename]);
         }
-        // Second, if a landmark_type is provided then just add the landmark feature.
-        else if ($this->landmark_type) {
-          $this->insertLandmark($uniquename);
+        // Second, if a default landmark type is provided then just add the landmark feature.
+        else if ($this->default_landmark_type) {
+          $this->insertLandmark($uniquename, $this->default_landmark_cvterm->getValue('cvterm_id'));
+        }
+        // Third, use the definition from the GFF3 if this was enabled.
+        else if (array_key_exists($uniquename, $this->landmark_types)) {
+          $cvterm_name = $this->landmark_types[$uniquename];
+          // On first occurrence, look up this cv term.
+          if (!array_key_exists($cvterm_name, $this->landmark_cvterms)) {
+            $this->landmark_cvterms[$cvterm_name] = new ChadoRecord('cvterm');
+            $this->landmark_cvterms[$cvterm_name]->setValues([
+              'cv_id' => $this->feature_cv->getValue('cv_id'),
+              'name' => $cvterm_name,
+            ]);
+            $num_found = $this->landmark_cvterms[$cvterm_name]->find();
+            if ($num_found == 0) {
+              throw new Exception(t('Cannot find landmark feature type \'%landmark_type\''
+                . ' for landmark \'%landmark_name\'.',
+                ['%landmark_type' => $cvterm_name, '%landmark_name' => $uniquename]));
+            }
+          }
+          $cvterm_id = $this->landmark_cvterms[$cvterm_name]->getValue('cvterm_id');
+          $this->insertLandmark($uniquename, $cvterm_id);
         }
         else {
-          throw new Exception(t('The landmark (reference) sequence, !landmark, is not in the database and not specified in the GFF3 file. Please either pre-load the landmark sequences or set a "Landmark Type" in the GFF importer.',
+          throw new Exception(t('The landmark (reference) sequence, !landmark, is not in the database'
+              . ' and not specified in the GFF3 file. Please either pre-load the landmark sequences or'
+              . ' set a "Landmark Type" in the GFF importer.',
               ['!landmark' => $uniquename]));
         }
       }
@@ -2276,11 +2344,11 @@ class GFF3Importer extends TripalImporter {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
     $organism_id = $this->organism->getID();
-    $landmark_cvterm = $this->landmark_cvterm;
+    $default_landmark_cvterm = $this->default_landmark_cvterm;
 
     $sql = "SELECT name, uniquename, feature_id FROM {feature} "
          . "WHERE uniquename IN (:landmarks) AND organism_id=:organism_id";
-    if ($landmark_cvterm) {
+    if ($default_landmark_cvterm) {
       $sql .= " AND type_id=:type_id";
     }
     $i = 0;
@@ -2301,8 +2369,8 @@ class GFF3Importer extends TripalImporter {
       if ($i == $batch_size or $total == $num_landmarks) {
         if (count($names) > 0) {
           $args = [':landmarks' => $names, ':organism_id' => $organism_id];
-          if ($landmark_cvterm) {
-            $args[':type_id'] = $landmark_cvterm->getValue('cvterm_id');
+          if ($default_landmark_cvterm) {
+            $args[':type_id'] = $default_landmark_cvterm->getValue('cvterm_id');
           }
           $results = chado_query($sql, $args);
           while ($f = $results->fetchObject()) {
