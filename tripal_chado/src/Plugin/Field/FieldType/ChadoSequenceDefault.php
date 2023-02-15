@@ -65,7 +65,7 @@ class ChadoSequenceDefault extends ChadoFieldItemBase {
     $record_id_term = 'SIO:000729';
     $residues_term = $mapping->getColumnTermId('feature', 'residues');
     $seqlen_term = $mapping->getColumnTermId('feature', 'seqlen');
-    $md5checksum_term = $mapping->getColumnTermId('feature', 'md5checksum');
+#    $md5checksum_term = $mapping->getColumnTermId('feature', 'md5checksum');
 
     // Return the properties for this field.
     $properties = [];
@@ -85,11 +85,11 @@ class ChadoSequenceDefault extends ChadoFieldItemBase {
       'chado_column' => 'seqlen',
       'chado_table' => 'feature'
     ]);
-    $properties[] =  new ChadoBpCharStoragePropertyType($entity_type_id, self::$id, 'md5checksum', $md5checksum_term, [
-      'action' => 'store',
-      'chado_column' => 'md5checksum',
-      'chado_table' => 'feature'
-    ]);
+#    $properties[] =  new ChadoBpCharStoragePropertyType($entity_type_id, self::$id, 'md5checksum', $md5checksum_term, [
+#      'action' => 'store',
+#      'chado_column' => 'md5checksum',
+#      'chado_table' => 'feature'
+#    ]);
     return $properties;
   }
 }
