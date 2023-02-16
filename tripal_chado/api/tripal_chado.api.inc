@@ -240,7 +240,6 @@ function chado_publish_records($values, $job = NULL) {
     try {
       // Keep track of how many we've published so far
       // before clearing our chunk,
-      $num_actually_published = $num_actually_published + $i;
       $i = 0;
       while ($record = $records->fetchObject()) {
 
@@ -286,8 +285,9 @@ function chado_publish_records($values, $job = NULL) {
         }
 
         $i++;
+        $num_actually_published++;
         if ($report_progress) {
-          $job->setItemsHandled($i);
+          $job->setItemsHandled($num_actually_published);
         }
       }
     } catch (Exception $e) {
@@ -307,9 +307,6 @@ function chado_publish_records($values, $job = NULL) {
     // Commit our current chunk.
     unset($transaction);
   }
-
-  // Add the last number published to our total.
-  $num_actually_published = $num_actually_published + $i;
 
   tripal_report_error($message_type, TRIPAL_INFO,
     "Successfully published !count !type record(s).",
