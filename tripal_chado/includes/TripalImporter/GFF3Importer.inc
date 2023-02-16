@@ -521,8 +521,8 @@ class GFF3Importer extends TripalImporter {
 
     // Cannot specify landmark type using both methods.
     if ($default_landmark_type and $gff3_landmark_lookup) {
-      form_set_error('default_landmark_type', t('This checkbox cannot be used if a landmark'
-                    . ' type is entered in the box above.'));
+      form_set_error('default_landmark_type', t('The checkbox cannot be checked if a landmark'
+                    . ' type is entered in this box.'));
     }
   }
 
