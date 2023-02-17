@@ -1,6 +1,12 @@
 {
   "name": "tripal/tripal",
   "description": "Tripal is a toolkit to facilitate construction of online genomic, genetic (and other biological) websites.",
+  "repositories" : [
+    {
+      "type" : "vcs",
+      "url": "https://github.com/fzaninotto/Faker.git"
+    }
+  ],
   "require-dev": {
     "doctrine/instantiator": "2.0.*",
     "statonlab/tripal-test-suite": "1.*"
