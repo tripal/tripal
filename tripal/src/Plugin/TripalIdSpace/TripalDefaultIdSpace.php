@@ -36,6 +36,12 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
    * {@inheritDoc}
    */
   public function getParent($child) {
+    // Don't get values for an ID space that isn't valid.
+    if (!$this->is_valid) {
+      return NULL;
+    }
+
+    $this->messageLogger->warning('The TripalDefaultIdSpace::getParent() function is currently not implemented');
   }
 
   /**
@@ -228,12 +234,14 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
    * {@inheritDoc}
    */
   public function destroy() {
+    $this->messageLogger->warning('The TripalDefaultIdSpace::destory() function is currently not implemented');
   }
 
   /**
    * {@inheritDoc}
    */
   public function removeTerm($accession) {
+    $this->messageLogger->warning('The TripalDefaultIdSpace::removeTerm() function is currently not implemented');
   }
 
   /**

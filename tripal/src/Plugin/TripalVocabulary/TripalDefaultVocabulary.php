@@ -92,7 +92,7 @@ class TripalDefaultVocabulary extends TripalVocabularyBase {
     // Make sure the name of this collection does not exceeed the allowed size in Chado.
     $name = $this->getName();
     if (!empty($name) AND (strlen($name) > 255)) {
-      $this->messageLogger->error('TripalDefaultVocabular: The vocabulary name must not be longer than @size characters. ' +
+      $this->messageLogger->error('TripalDefaultVocabulary: The vocabulary name must not be longer than @size characters. ' +
           'The value provided was: @value',
 	  ['@size' => 255, '@value' => $this->getName()]);
       $this->is_valid = FALSE;
@@ -119,6 +119,14 @@ class TripalDefaultVocabulary extends TripalVocabularyBase {
    * {@inheritDoc}
    */
   public function destroy() {
+    $this->messageLogger->warning('The TripalDefaultVocabulary::destroy() function is currently not implemented');
+  }
+
+    /**
+   * {@inheritdoc}
+   */
+  public function getTerms($name, $exact = True){
+    $this->messageLogger->warning('The TripalDefaultVocabulary::getTerms() function is currently not implemented');
   }
 
   /**

@@ -121,6 +121,7 @@ class ChadoVocabulary extends TripalVocabularyBase {
     // Let's let the collection be deleted as far as
     // Tripal is concerned but leave the record in Chado.
     // So, do nothing here.
+    $this->messageLogger->warning('The ChadoVocabulary::destroy() function is currently not implemented');
   }
 
 
@@ -254,7 +255,7 @@ class ChadoVocabulary extends TripalVocabularyBase {
    * {@inheritdoc}
    */
   public function getTerms($name, $exact = True){
-
+    $this->messageLogger->warning('The ChadoVocabulary::getTerms() function is currently not implemented');
   }
 
   /**
