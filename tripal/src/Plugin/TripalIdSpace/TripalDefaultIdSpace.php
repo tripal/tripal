@@ -15,7 +15,7 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
  */
 class TripalDefaultIdSpace extends TripalIdSpaceBase {
   /**
-   * A simple boolean to prevent Chado queries if the ID space isn't valid.
+   * A simple boolean to prevent queries if the ID space isn't valid.
    *
    * @var bool
    */

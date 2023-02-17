@@ -5,7 +5,7 @@ namespace Drupal\tripal\Plugin\TripalVocabulary;
 use Drupal\tripal\TripalVocabTerms\TripalVocabularyBase;
 
 /**
- * Chado implementation of the TripalVocabularyBase.
+ * Default implementation of the TripalVocabularyBase.
  *
  *  @TripalVocabulary(
  *    id = "tripal_default_vocabulary",
