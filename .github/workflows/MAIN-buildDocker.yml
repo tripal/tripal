@@ -9,8 +9,10 @@ on:
 jobs:
   push_to_registry:
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       fail-fast: false
+      matrix:
         php-version:
           - "8.0"
           - "8.1"
@@ -29,7 +31,6 @@ jobs:
           - php-version: "8.1"
             pgsql-version: "13"
             drupal-version: "9.2.x-dev"
-    continue-on-error: true
     name: Docker Build (drupal${{ matrix.drupalversion }})
     steps:
       - uses: actions/checkout@v2
