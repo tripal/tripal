@@ -162,9 +162,7 @@ class ChadoPreparer extends ChadoTaskBase {
       $this->logger->notice("Creating Content Types...");
       /** @var \Drupal\tripal\Services\TripalContentTypes $content_type_setup **/
       $content_type_setup = \Drupal::service('tripal.content_types');
-      $content_type_setup->setIdSpacePlugin('chado_id_space');
-      $content_type_setup->setVocabPlugin('chado_vocabulary');
-      $content_type_setup->install($this->logger);
+      $content_type_setup->install();
 
       $this->setProgress(0.5);
       $this->logger->notice("Adding Fields...");

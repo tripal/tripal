@@ -1394,7 +1394,7 @@ fields:
         content_type: genome_assembly
         label: Data Source Name
         type: chado_string_type
-        description: The name of the source where raw genomic data was obtained for this analysis.
+        description: The name of the source where data was obtained for this analysis.
         cardinality: 1
         required: false
         storage_settings: 
@@ -1605,11 +1605,11 @@ fields:
               region: content
               weight: 25   
 
-    -   name: genome_annotation_name            
+    -   name: genome_annotation_src_name            
         content_type: genome_annotation
         label: Name
         type: chado_string_type
-        description: The name of the item.
+        description: The name of the source where data was obtained for this analysis.
         cardinality: 1
         required: false
         storage_settings: 
@@ -1636,7 +1636,7 @@ fields:
         content_type: genome_annotation
         label: Data Source Version
         type: chado_string_type
-        description: The name of the source where data was obtained for this analysis.
+        description: The version number of the data source (if applicable).
         cardinality: 1
         required: false
         storage_settings: 

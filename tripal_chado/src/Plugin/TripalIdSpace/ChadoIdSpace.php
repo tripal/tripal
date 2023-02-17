@@ -237,9 +237,10 @@ class ChadoIdSpace extends TripalIdSpaceBase {
     $query->join('1:dbxref', 'DBX', '"CVT".dbxref_id = "DBX".dbxref_id');
     $query->join('1:cv', 'CV', '"CV".cv_id = "CVT".cv_id');
     $query->join('1:db', 'DB', '"DB".db_id = "DBX".db_id');
-    $query->fields('CVT', ['cvterm_id', 'name', 'definition', 'is_obsolete', 'is_relationshiptype'])
-      ->condition('DB.name', $this->getName(), '=')
-      ->condition('DBX.accession', $accession, '=');
+    $query->fields('CVT', ['cvterm_id', 'name', 'definition', 'is_obsolete', 'is_relationshiptype']);
+    $query->fields('CV', ['name']);
+    $query->condition('DB.name', $this->getName(), '=');
+    $query->condition('DBX.accession', $accession, '=');
     $cvterm = $query->execute()->fetchObject();
     // @debug print "CVTERM looked up by ChadoIdSpace->getTerm() in db: ".$chado->getSchemaName().". " . print_r($cvterm, TRUE) . "\n";
 
@@ -251,7 +252,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
       'definition' => $cvterm->definition,
       'accession' => $accession,
       'idSpace' => $this->getName(),
-      'vocabulary' => $this->getDefaultVocabulary(),
+      'vocabulary' => $cvterm->CV_name ? $cvterm->CV_name : $this->getDefaultVocabulary(),
       'is_obsolete' => $cvterm->is_obsolete == 1 ? True : False,
       'is_relationship_type' => $cvterm->is_relationshiptype == 1 ? True : False,
     ]);

@@ -28,3 +28,6 @@ services:
     class: Drupal\tripal\Services\TripalFields
   tripal.content_types:
     class: Drupal\tripal\Services\TripalContentTypes
+    arguments: ['@tripal.collection_plugin_manager.idspace', 
+                '@tripal.collection_plugin_manager.vocabulary',
+                '@tripal.logger']    

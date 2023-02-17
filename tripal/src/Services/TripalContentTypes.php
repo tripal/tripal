@@ -2,33 +2,57 @@
 
 namespace Drupal\tripal\Services;
 
-use Drupal\Core\Database\Database;
 use Drupal\tripal\Entity\TripalEntityType;
+use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager;
+use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalVocabularyManager;
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\tripal\Services\TripalLogger;
 
-
-class TripalContentTypes {
-
-  /**
-   * The ID of the term IdSpace plugin
-   *
-   * @var string
-   */
-  protected $id_space_plugin;
+class TripalContentTypes implements ContainerInjectionInterface  {
 
   /**
-   * The ID of the term vocabulary plugin
+   * The IdSpace service
    *
-   * @var string
+   * @var \Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager $idSpaceManager
    */
-  protected $vocab_plugin;
+  protected $idSpaceManager;
+
+  /**
+   * The vocabulary service
+   *
+   * @var \Drupal\tripal\TripalVocabTerms\PluginManagers\TripalVocabularyManager $vocabularyManager
+   */
+  protected $vocabularyManager;
+
+  /**
+   * A logger object.
+   *
+   * @var TripalLogger $logger
+   */
+  protected $logger;
 
 
   /**
    * Instantiates a new TripalContentTypes object.
    */
-  public function __construct() {
-    $this->id_space_plugin = 'null_id_space';
-    $this->vocab_plugin = 'null_vocabulary';
+  public function __construct(TripalIdSpaceManager $idSpaceManager,
+      TripalVocabularyManager $vocabularyManager, TripalLogger $logger) {
+
+    $this->idSpaceManager = $idSpaceManager;
+    $this->vocabularyManager = $vocabularyManager;
+    $this->logger = $logger;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static (
+      $container->get('tripal.collection_plugin_manager.idspace'),
+      $container->get('tripal.collection_plugin_manager.vocabulary'),
+      $container->get('tripal.logger')
+    );
   }
 
   /**
@@ -36,71 +60,32 @@ class TripalContentTypes {
    *
    * The YAML config file prefix is tripal.tripal_content_types.*
    */
-  public function install($logger) {
+  public function install() {
+
+    // Get the list of all configurations that match the config schema name.
     $config_factory = \Drupal::service('config.factory');
     $config_list = $config_factory->listAll('tripal.tripal_content_types');
+
+    // Iterate through the configurations and create the content types.
     foreach ($config_list as $config_item) {
       $config = $config_factory->get($config_item);
       $label = $config->get('label');
-      $logger->notice("Creating Tripal content types from: " . $label);
+      $this->logger->notice("Creating Tripal content types from: " . $label);
+
+      // Iterate through each of the content types in the config.
       $content_types = $config->get('content_types');
       foreach ($content_types as $content_type) {
-        $content_type = $this->createContentType($content_type, $logger);
+
+        // Replace the term ID with a term object
+        list($termIdSpace, $termAccession) = explode(':', $content_type['term']);
+        $idspace = $this->idSpaceManager->loadCollection($termIdSpace);
+        $term =  $idspace->getTerm($termAccession);
+        $content_type['term'] = $term;
+
+        // Add the content type
+        $content_type = $this->createContentType($content_type);
       }
     }
-  }
-
-  /**
-   * Gets a controlled vocabulary IDspace object.
-   *
-   * @param string $name
-   *   The name of the IdSpace
-   *
-   * @return \Drupal\tripal\TripalVocabTerms\TripalIdSpaceBase
-   */
-  private function getIdSpace($name) {
-    $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-    $idSpace = $idsmanager->loadCollection($name, $this->id_space_plugin);
-    if (!$idSpace) {
-      $idSpace = $idsmanager->createCollection($name, $this->id_space_plugin);
-    }
-    return $idSpace;
-  }
-
-
-  /**
-   * Gets a controlled voabulary object.
-   *
-   * @param string $name
-   *   The name of the vocabulary
-   *
-   * @return \Drupal\tripal\TripalVocabTerms\TripalVocabularyBase
-   */
-  private function getVocabulary($name) {
-    $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
-    $vocabulary = $vmanager->loadCollection($name, $this->vocab_plugin);
-    if (!$vocabulary) {
-      $vocabulary = $vmanager->createCollection($name, $this->vocab_plugin);
-    }
-    return $vocabulary;
-  }
-
-  /**
-   * Gets a term by its idSpace and accession
-   *
-   * @param string $idSpace
-   *   The Id space name for the term.
-   * @param string $accession
-   *   The accession for the term.
-   * @return TripalTerm|NULL
-   *   A tripal term object.
-   */
-  private function getTerm($idSpace, $accession, $vocabulary = NULL) {
-    $id = $this->getIdSpace($idSpace);
-    if ($vocabulary) {
-      $id->setDefaultVocabulary($vocabulary);
-    }
-    return $id->getTerm($accession);
   }
 
   /**
@@ -114,65 +99,57 @@ class TripalContentTypes {
    * @return bool
    *   True if the array passes validation checks. False otherwise.
    */
-  public function validate($details, $logger) {
-
-    if (!array_key_exists('term', $details) or !$details['term']) {
-      $logger->error(t('Creation of content type, "@type", failed. No term provided.',
-          ['@type' => $details['label']]));
-      return FALSE;
-    }
+  public function validate($details) {
 
     if (!array_key_exists('name', $details) or !$details['name']) {
-      $logger->error(t('Creation of content type, "@type", failed. No name provided.',
+      $this->logger->error(t('Creation of content type, "@type", failed. No name provided.',
           ['@type' => $details['label']]));
       return FALSE;
     }
 
     if (!array_key_exists('label', $details) or !$details['label']) {
-      $logger->error(t('Creation of content type with name "@name", failed. No label provided.',
+      $this->logger->error(t('Creation of content type with name "@name", failed. No label provided.',
           ['@name' => $details['name']]));
       return FALSE;
     }
 
+    if (!array_key_exists('term', $details) or !$details['term']) {
+      $this->logger->error(t('Creation of content type, "@type", failed. No term provided.',
+          ['@type' => $details['label']]));
+      return FALSE;
+    }
+
+    if (get_class($details['term']) != 'Drupal\tripal\TripalVocabTerms\TripalTerm') {
+      $this->logger->error(t('Creation of content type, "@type", failed. The provided term was not valid TripalTerm object.',
+          ['@type' => $details['label'], '@term' => $details['label']]));
+      return FALSE;
+    }
+
+    if (!$details['term']->isValid()) {
+      $this->logger->error(t('Creation of content type, "@type", failed. The provided term was not valid.',
+          ['@type' => $details['label'], '@term' => $details['label']]));
+      return FALSE;
+    }
+
     if (!array_key_exists('category', $details) or !$details['category']) {
-      $logger->error(t('Creation of content type, "@type", failed. No category provided.',
+      $this->logger->error(t('Creation of content type, "@type", failed. No category provided.',
           ['@type' => $details['label']]));
       return FALSE;
     }
 
     if (!array_key_exists('help_text', $details) or !$details['help_text']) {
-      $logger->error(t('Creation of content type, "@type", failed. No help_text provided.',
+      $this->logger->error(t('Creation of content type, "@type", failed. No help_text provided.',
           ['@type' => $details['label']]));
       return FALSE;
     }
 
     if (array_key_exists('synonyms', $details) and !is_array($details['synonyms'])) {
-      $logger->error(t('Creation of content type, "@type", failed. The synonyms should be an array.',
+      $this->logger->error(t('Creation of content type, "@type", failed. The synonyms should be an array.',
           ['@type' => $details['label']]));
       return FALSE;
     }
 
     return TRUE;
-  }
-
-  /**
-   * Sets the plugin used for accessing CV terms.
-   *
-   * @param string $id_space_plugin
-   *   The ID for the term IdSpace plugin.
-   */
-  public function setIdSpacePlugin($id_space_plugin) {
-    $this->id_space_plugin = $id_space_plugin;
-  }
-
-  /**
-   * Sets the plugin used for accessing CV terms.
-   *
-   * @param string $id_space_plugin
-   *   The ID for the term IdSpace plugin.
-   */
-  public function setVocabPlugin($vocab_plugin) {
-    $this->vocab_plugin = $vocab_plugin;
   }
 
 
@@ -185,35 +162,25 @@ class TripalContentTypes {
    *    - label: the human-readable label to be used for the content type.
    *    - category: a human-readable category to group like content types
    *      together.
-   *    - term: a tripal term object which should be associated with the
-   *      content type.
+   *    - name: the machine-name of the content type.
+   *    - help_text: a brief description for how this content type is used.
+   *    - url_format: a tokenized string for specifying the format of the URL.
+   *    - title_format: a tokenized string for the title.
+   *    - term: a TripalTerm object that the content type is associated with.
    *    - id: the machine name of the content type.
    *    - synonms: (optional) a list of synonyms for this content type.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   A logger object to which messages will be logged.
    *
    *
    * @return \Drupal\tripal\Entity\TripalEntityType
    */
-  public function createContentType($details, $logger) {
+  public function createContentType($details) {
 
     $entityType = NULL;
     $bundle = '';
 
     // Make sure the field definition is valid.
-    if (!$this->validate($details, $logger)) {
-      return FALSE;
-    }
-
-
-    // Get the term object and make sure it's valid.
-    list($termIdSpace, $termAccession) = explode(':', $details['term']);
-    $term = $this->getTerm($termIdSpace, $termAccession);
-    $details['term'] = $term;
-    if (!$term->isValid()) {
-      $logger->error(t('Creation of content type, "@type", failed. The provided term, "@term", was not valid.',
-          ['@type' => $details['label'], '@term' => $term->getTermId()]));
-      return NULL;
+    if (!$this->validate($details)) {
+      return $entityType;
     }
 
     // Check if the entity type already exists.
@@ -221,7 +188,7 @@ class TripalContentTypes {
       ->getStorage('tripal_entity_type')
       ->loadByProperties(['label' => $details['label']]);
     if (!empty($entityTypes)) {
-      $logger->notice(t('Skipping content type, "@type", as it already exists.',
+      $this->logger->notice(t('Skipping content type, "@type", as it already exists.',
           ['@type' => $details['label']]));
       $bundle = array_pop(array_keys($entityTypes));
       $entityType = $entityTypes[$bundle];
@@ -230,12 +197,12 @@ class TripalContentTypes {
       $entityType = TripalEntityType::create($details);
       if (is_object($entityType)) {
         $entityType->save();
-        $logger->notice(t('Content type, "@type", created.',
+        $this->logger->notice(t('Content type, "@type", created.',
             ['@type' => $details['label']]));
         $bundle = $entityType->getID();
       }
       else {
-        $logger->error(t('Creation of content type, "@type", failed. The provided details were: ',
+        $this->logger->error(t('Creation of content type, "@type", failed. The provided details were: ',
             ['@type' => $details['label']]) . print_r($details));
       }
     }
@@ -258,7 +225,7 @@ class TripalContentTypes {
       ];
       $view_display = $storage->create($view_details, 'entity_view_display');
       if (!$view_display->save()) {
-        $logger->error(t('Creation of content type, "@type", default view mode failed. The provided details were: ',
+        $this->logger->error(t('Creation of content type, "@type", default view mode failed. The provided details were: ',
             ['@type' => $details['label']]) . print_r($details));
       }
     }

@@ -4,6 +4,8 @@ namespace Drupal\Tests\tripal\Functional\Entity;
 
 use Drupal\Tests\tripal\Functional\TripalTestBrowserBase;
 use Drupal\Core\Url;
+use Drupal\tripal\TripalVocabTerms\TripalTerm;
+
 
 /**
  * Tests the basic functions of the TripalContentTypes Service..
@@ -19,9 +21,25 @@ class TripalContentTypesTest extends TripalTestBrowserBase {
   public function testTripalContentTypes() {
     $logger = \Drupal::service('tripal.logger');
 
+    // Create the vocabulary term needed for testing the content type.
+    // We'll use the default Tripal plugins.
+    $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+    $vmanager = \Drupal::service('tripal.collection_plugin_manager.vocabulary');
+    $idspace = $idsmanager->createCollection('OBI', "tripal_default_id_space");
+    $vocab = $vmanager->createCollection('OBI', "tripal_default_vocabulary");
+    $term = new TripalTerm([
+      'name' => 'organism',
+      'idSpace' => 'OBI',
+      'vocabulary' => 'OBI',
+      'accession' => '0100026',
+      'definition' => '',
+    ]);
+    $idspace->saveTerm($term);
+
+    // Createa good content type array.
     $good = [
       'label' => 'Organism',
-      'term' => 'OBI:0100026',
+      'term' => $term,
       'help_text' => 'Use the organism page for an individual living system, such as animal, plant, bacteria or virus,',
       'category' => 'General',
       'name' => 'organism',
@@ -32,6 +50,8 @@ class TripalContentTypesTest extends TripalTestBrowserBase {
 
     /** @var \Drupal\tripal\Services\TripalContentTypes $content_type_setup **/
     $content_type_setup = \Drupal::service('tripal.content_types');
+    $content_type_setup->setIdSpacePlugin('tripal_default_id_space');
+    $content_type_setup->setVocabPlugin('tripal_default_vocabulary');
 
     // Test the public validate routine to make sure it fails when it should.
     $is_valid = $content_type_setup->validate($good, $logger);
@@ -69,7 +89,7 @@ class TripalContentTypesTest extends TripalTestBrowserBase {
     $this->assertFalse($is_valid, "A content type definition with a malformed synonyms list should fail the validation check but it passed.");
 
 
-    //$content_type = $content_type_setup->createContentType($good, $logger);
-
+    $content_type = $content_type_setup->createContentType($good);
+    $content_typ
   }
 }
