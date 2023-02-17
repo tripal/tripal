@@ -49,8 +49,7 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
 
     // Make sure the description is not too long.
     if (empty($prefix)) {
-      $this->messageLogger->error('TripalDefaultIdSpace: You must provide a urlprefix when calling setURLPrefix().',
-          ['@size' => 255, '@value' => $prefix]);
+      $this->messageLogger->error('TripalDefaultIdSpace: You must provide a urlprefix when calling setURLPrefix().');
       return False;
     }
     if (strlen($prefix) > 255) {
@@ -217,12 +216,12 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
     if (!empty($name) AND (strlen($name) > 255)) {
       $this->messageLogger->error('TripalDefaultIdSpace: The IdSpace name must not be longer than @size characters. ' +
         'The value provided was: @value', ['@size' => 255, '@value' => $name]);
-      return;
+      $this->is_valid = FALSE;
+      return FALSE;
     }
 
     $this->is_valid = TRUE;
-
-    return $this->is_valid;
+    return TRUE;
   }
 
   /**
@@ -249,9 +248,8 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
 
     // Make sure the description is not too long.
     if (empty($description)) {
-      $this->messageLogger->error('TripalDefaultIdSpace: You must provide a description when calling setDescription().',
-          ['@size' => 255, '@value' => $description]);
-        return False;
+      $this->messageLogger->error('TripalDefaultIdSpace: You must provide a description when calling setDescription().');
+      return False;
     }
     if (strlen($description) > 255) {
       $this->messageLogger->error('TripalDefaultIdSpace: The description for the vocabulary ID space must not be longer than @size characters. ' +
@@ -437,9 +435,9 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
   }
 
   /**
-   * Retrieve a tern record from tripal_terms table.
+   * Retrieve a term record from tripal_terms table.
    *
-   * This function uses the db.name (IdSpace), cv.name (vocabulary)
+   * This function uses the IdSpace, vocabulary,
    * and accession values to uniquely identify a term.
    *
    * @param TripalTerm $term

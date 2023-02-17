@@ -38,20 +38,14 @@ class TripalDefaultVocabulary extends TripalVocabularyBase {
   }
 
   /**
-   * Loads a Vocabulary record from Chado.
-   *
-   * This function queries the `cv` table of Chado to get the values
-   * for the vocabulary.
+   * Loads the vocabulary record.
    *
    * @return
-   *   An associative array containing the columns of the `db1 table
-   *   of Chado or NULL if the db could not be found.
+   *   An associative array containing the list of vocabularies.
    */
   protected function loadVocab() {
 
     $conn = \Drupal::service('database');
-
-    // Get the Chado `db` record for this ID space.
     $query = $conn->select('tripal_terms_vocabs', 'vocabs')
       ->condition('name', $this->getName(), '=')
       ->fields('vocabs', ['name', 'label', 'url', 'idspaces']);
@@ -83,6 +77,11 @@ class TripalDefaultVocabulary extends TripalVocabularyBase {
    * {@inheritDoc}
    */
   public function recordExists() {
+   $cv = $this->loadVocab();
+   if ($cv and $cv['name'] == $this->getName()) {
+      return True;
+    }
+    return False;
   }
 
   /**
@@ -136,8 +135,7 @@ class TripalDefaultVocabulary extends TripalVocabularyBase {
       return False;
     }
 
-    // This value goes to the Chado `db.url` column, so check its size
-    // to make sure it doesn't exceed it.
+    // Don't exceed the expected size of the URL for the database.
     if (strlen($url) > 255) {
       $this->messageLogger->error('TripalDefaultVocabulary: The vocabulary name must not be longer than @size characters. ' +
           'The value provided was: @value',
@@ -152,7 +150,7 @@ class TripalDefaultVocabulary extends TripalVocabularyBase {
       return False;
     }
 
-    // Update the record in the Chado `db` table for the URL for all ID spaces.
+    // Update the record in the table for the URL for all ID spaces.
     $conn = \Drupal::service('database');
     $update = $conn->update('tripal_terms_vocabs');
     $update = $update->fields(['url' => $url]);
@@ -185,8 +183,7 @@ class TripalDefaultVocabulary extends TripalVocabularyBase {
 
     // Make sure the label is not too long.
     if (empty($label)) {
-      $this->messageLogger->error('TripalDeafultVocabulary: You must provide a label when calling setLabel().',
-          ['@size' => 255, '@value' => $label]);
+      $this->messageLogger->error('TripalDeafultVocabulary: You must provide a label when calling setLabel().');
       return False;
     }
     if (strlen($label) > 255) {
@@ -197,14 +194,14 @@ class TripalDefaultVocabulary extends TripalVocabularyBase {
     }
 
 
-    // Update the record in the Chado `cv` table.
+    // Update the record.
     $chado = \Drupal::service('database');
     $update = $chado->update('tripal_terms_vocabs');
     $update = $update->fields(['label' => $label]);
     $update = $update->condition('name', $this->getName(), '=');
     $num_updated = $update->execute();
     if ($num_updated != 1) {
-      $this->logInvalidCondition('TripalDeafultVocabulary: The label could not be updated for the vocabulary.');
+      $this->messageLogger->error('TripalDefaultVocabulary: The label could not be updated for the vocabulary.');
       return False;
     }
     return True;
@@ -236,14 +233,21 @@ class TripalDefaultVocabulary extends TripalVocabularyBase {
    */
   public function addIdSpace($idSpace) {
 
-    $idspaces = $this->getIdSpaceNames();
-    $idspaces[] = $idSpace;
-
-    $conn = \Drupal::service('database');
-    $update = $conn->update('tripal_terms_vocabs');
-    $update = $update->fields(['idspaces' => serialize($idspaces)]);
-    $update = $update->condition('name', $this->getName(), '=');
-    $update->execute();
+    // Get the ID collection for this idSpace and if it exists 
+    // then add the idSpace to our list.
+    $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
+    $id = $idsmanager->loadCollection($idSpace);
+    if ($id) {
+      $id_spaces = $this->getIdSpacesCache();
+      $id_spaces[] = $idSpace;
+      $conn = \Drupal::service('database');
+      $update = $conn->update('tripal_terms_vocabs');
+      $update = $update->fields(['idspaces' => serialize($idspaces)]);
+      $update = $update->condition('name', $this->getName(), '=');
+      $update->execute();
+      return True;
+    }
+    return False;
   }
 
   /**

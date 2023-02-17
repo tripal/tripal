@@ -75,12 +75,12 @@ class ChadoIdSpace extends TripalIdSpaceBase {
           'The value provided was: @value',
           ['@size' => $this->db_def['fields']['name']['size'],
            '@value' => $this->getName()]);
-      return;
+      $this->is_valid = FALSE;
+      return FALSE;
     }
 
-    $this->is_valid = True;
-
-    return $this->is_valid;
+    $this->is_valid = TRUE;
+    return TRUE;
   }
 
   /**

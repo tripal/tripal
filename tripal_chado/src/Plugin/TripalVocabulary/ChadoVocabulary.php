@@ -375,7 +375,7 @@ class ChadoVocabulary extends TripalVocabularyBase {
       ->condition('name', $this->getName(), '=');
     $num_updated = $query->execute();
     if ($num_updated != 1) {
-      $this->logInvalidCondition('ChadoVocabulary: The label could not be updated for the vocabulary.');
+      $this->messageLogger->error('ChadoVocabulary: The label could not be updated for the vocabulary.');
       return False;
     }
     return True;
