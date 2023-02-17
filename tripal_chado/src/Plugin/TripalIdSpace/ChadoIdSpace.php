@@ -75,12 +75,12 @@ class ChadoIdSpace extends TripalIdSpaceBase {
           'The value provided was: @value',
           ['@size' => $this->db_def['fields']['name']['size'],
            '@value' => $this->getName()]);
-      return;
+      $this->is_valid = FALSE;
+      return FALSE;
     }
 
-    $this->is_valid = True;
-
-    return $this->is_valid;
+    $this->is_valid = TRUE;
+    return TRUE;
   }
 
   /**
@@ -125,6 +125,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
     // Let's let the collection be deleted as far as
     // Tripal is concerned but leave the record in Chado.
     // So, do nothing here.
+    $this->messageLogger->warning('The ChadoIdSpace::destroy() function is currently not implemented');
   }
 
   /**
@@ -163,7 +164,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
     if (!$this->is_valid) {
       return NULL;
     }
-
+    $this->messageLogger->warning('The ChadoIdSpace::getParent() function is currently not implemented');
   }
 
   /**
@@ -891,7 +892,7 @@ class ChadoIdSpace extends TripalIdSpaceBase {
    * {@inheritdoc}
    */
   public function removeTerm($accession) {
-
+    $this->messageLogger->warning('The ChadoIdSpace::removeTerm() function is currently not implemented');
   }
 
   /**
