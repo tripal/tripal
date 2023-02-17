@@ -437,7 +437,7 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
   }
 
   /**
-   * Retrieve a tern record from tripal_terms table.
+   * Retrieve a term record from tripal_terms table.
    *
    * This function uses the db.name (IdSpace), cv.name (vocabulary)
    * and accession values to uniquely identify a term.
