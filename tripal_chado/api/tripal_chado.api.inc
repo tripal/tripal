@@ -224,7 +224,7 @@ function chado_publish_records($values, $job = NULL) {
   // Perform the query in chunks.
   $sql = $select . $from . $where . ' LIMIT ' . $chunk_size;
   $more_records_to_publish = TRUE;
-  $num_actually_published = 0; // the full number of records published.
+  $total_records_published = 0;
   $i = 0; //reset on each chunk.
   while ($more_records_to_publish) {
 
@@ -285,9 +285,9 @@ function chado_publish_records($values, $job = NULL) {
         }
 
         $i++;
-        $num_actually_published++;
+        $total_records_published++;
         if ($report_progress) {
-          $job->setItemsHandled($num_actually_published);
+          $job->setItemsHandled($total_records_published);
         }
       }
     } catch (Exception $e) {
@@ -310,7 +310,7 @@ function chado_publish_records($values, $job = NULL) {
 
   tripal_report_error($message_type, TRIPAL_INFO,
     "Successfully published !count !type record(s).",
-    ['!count' => $num_actually_published, '!type' => $bundle->label], $message_opts);
+    ['!count' => $total_records_published, '!type' => $bundle->label], $message_opts);
 
   return TRUE;
 }
