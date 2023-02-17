@@ -246,8 +246,8 @@ class TripalDefaultVocabulary extends TripalVocabularyBase {
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
     $id = $idsmanager->loadCollection($idSpace);
     if ($id) {
-      $id_spaces = $this->getIdSpaceNames();
-      $id_spaces[] = $idSpace;
+      $idspaces = $this->getIdSpaceNames();
+      $idspaces[] = $idSpace;
       $conn = \Drupal::service('database');
       $update = $conn->update('tripal_terms_vocabs');
       $update = $update->fields(['idspaces' => serialize($idspaces)]);
