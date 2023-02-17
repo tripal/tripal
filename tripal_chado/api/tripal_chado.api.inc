@@ -238,8 +238,6 @@ function chado_publish_records($values, $job = NULL) {
     // are already in one.
     $transaction = db_transaction();
     try {
-      // Keep track of how many we've published so far
-      // before clearing our chunk,
       $i = 0;
       while ($record = $records->fetchObject()) {
 
