@@ -95,11 +95,12 @@ class TripalDefaultVocabulary extends TripalVocabularyBase {
     if (!empty($name) AND (strlen($name) > 255)) {
       $this->messageLogger->error('TripalDefaultVocabular: The vocabulary name must not be longer than @size characters. ' +
           'The value provided was: @value',
-          ['@size' => 255, '@value' => $this->getName()]);
+	  ['@size' => 255, '@value' => $this->getName()]);
+      $this->is_valid = FALSE;
+      return FALSE;
     }
     $this->is_valid = TRUE;
-
-    return $this->is_valid;
+    return TRUE;
   }
 
   /**

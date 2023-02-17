@@ -72,11 +72,12 @@ class ChadoVocabulary extends TripalVocabularyBase {
           'The value provided was: @value',
           ['@size' => $this->cv_def['fields']['name']['size'],
            '@value' => $this->getName()]);
+      $this->is_valid = FALSE;
+      return FALSE;
 
     }
-    $this->is_valid = True;
-
-    return $this->is_valid;
+    $this->is_valid = TRUE;
+    return TRUE;
   }
 
   /**
