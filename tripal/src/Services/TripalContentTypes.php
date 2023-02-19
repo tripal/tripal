@@ -7,7 +7,6 @@ use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager;
 use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalVocabularyManager;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\tripal\Services\TripalLogger;
 
 class TripalContentTypes implements ContainerInjectionInterface  {
 

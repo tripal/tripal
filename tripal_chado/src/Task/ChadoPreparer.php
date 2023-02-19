@@ -166,8 +166,9 @@ class ChadoPreparer extends ChadoTaskBase {
 
       $this->setProgress(0.5);
       $this->logger->notice("Adding Fields...");
+      /** @var \Drupal\tripal\Services\TripalFields $fields **/
       $fields = \Drupal::service('tripal.fields');
-      $fields->install($this->logger);
+      $fields->install();
 
       $this->setProgress(0.6);
       $this->logger->notice("Importing Ontologies...");

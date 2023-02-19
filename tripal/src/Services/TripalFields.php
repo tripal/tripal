@@ -4,17 +4,35 @@ namespace Drupal\tripal\Services;
 use Drupal\tripal\Entity\TripalEntity;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides an tripalStorage plugin manager.
  */
-class TripalFields {
+class TripalFields implements ContainerInjectionInterface  {
+
+  /**
+   * A logger object.
+   *
+   * @var TripalLogger $logger
+   */
+  protected $logger;
 
   /**
    * Constructor
    */
-  public function __construct() {
+  public function __construct(TripalLogger $logger) {
+    $this->logger = $logger;
+  }
 
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static (
+      $container->get('tripal.logger')
+    );
   }
 
   /**
@@ -168,10 +186,10 @@ class TripalFields {
    * @return bool
    *   True if the array passes validation checks. False otherwise.
    */
-  public function validate($field_def, $logger) : bool {
+  public function validate($field_def) : bool {
 
     if (!array_key_exists('content_type', $field_def)) {
-      $logger->error('The field is missing the "content_type" property.');
+      $this->logger->error('The field is missing the "content_type" property.');
       return False;
     }
     // Check if the type already exists.
@@ -179,33 +197,33 @@ class TripalFields {
       ->getStorage('tripal_entity_type')
       ->loadByProperties(['name' => $field_def['content_type']]);
     if (empty($entityTypes)) {
-      $logger->error('The specified entity type, "' . $field_def['content_type'] . '", for field "' . $field_def['name'] . '", does not exist.');
+      $this->logger->error('The specified entity type, "' . $field_def['content_type'] . '", for field "' . $field_def['name'] . '", does not exist.');
       return False;
     }
 
     if (!array_key_exists('name', $field_def)) {
-      $logger->error('The field is missing the "name" property.');
+      $this->logger->error('The field is missing the "name" property.');
       return False;
     }
     if (!array_key_exists('content_type', $field_def)) {
-      $logger->error('The field is missing the "content_type" property.');
+      $this->logger->error('The field is missing the "content_type" property.');
       return False;
     }
     if (!array_key_exists('type', $field_def)) {
-      $logger->error('The field is missing the "type" property.');
+      $this->logger->error('The field is missing the "type" property.');
       return False;
     }
     if (!array_key_exists('storage_settings', $field_def)) {
-      $logger->error('The field is missing the "storage_settings" property');
+      $this->logger->error('The field is missing the "storage_settings" property');
       return False;
     }
     if (!array_key_exists('storage_plugin_id', $field_def['storage_settings'])) {
-      $logger->error('The field is missing the "storage_plugin_id" of the "settings" property');
+      $this->logger->error('The field is missing the "storage_plugin_id" of the "settings" property');
       return False;
     }
     if (empty($field_def['storage_settings']['storage_plugin_id'])) {
       // @todo verify the name of the plugin is a real plugin.
-      $logger->error('You must set the "storage_plugin_id" property.');
+      $this->logger->error('You must set the "storage_plugin_id" property.');
       return False;
     }
     return True;
@@ -213,11 +231,8 @@ class TripalFields {
 
   /**
    * Attaches fields to Tripal content types.
-   *
-   * @param \Psr\Log\LoggerInterface $logger
-   *   A logger object to which messages will be logged.
    */
-  public function install($logger) {
+  public function install() {
     $config_factory = \Drupal::service('config.factory');
     $config_list = $config_factory->listAll('tripal.tripal_fields');
 
@@ -225,13 +240,13 @@ class TripalFields {
     foreach ($config_list as $config_item) {
       $config = $config_factory->get($config_item);
       $label = $config->get('label');
-      $logger->notice("Attaching fields to Tripal content types from: " . $label);
+      $this->logger->notice("Attaching fields to Tripal content types from: " . $label);
       $fields = $config->get('fields');
 
       // Iterate through each field in the config file.
       foreach ($fields as $field) {
         $tripal_fields = \Drupal::service('tripal.fields');
-        $tripal_fields->addBundleField($field, $logger);
+        $tripal_fields->addBundleField($field);
       }
     }
   }
@@ -330,10 +345,10 @@ class TripalFields {
    * @return bool
    *   True if the field was added successfully. False otherwise.
    */
-  public function addBundleField($field_def, $logger) : bool {
+  public function addBundleField($field_def) : bool {
 
     // Make sure the field definition is valid.
-    if (!$this->validate($field_def, $logger)) {
+    if (!$this->validate($field_def)) {
       return FALSE;
     }
 
@@ -397,16 +412,16 @@ class TripalFields {
             ->save();
         }
 
-        $logger->notice(t('Added field, "@field", to content type: "@type".',
+        $this->logger->notice(t('Added field, "@field", to content type: "@type".',
             ['@field' => $field_def['name'], '@type' => $entity_type->getName()]));
       }
       else {
-        $logger->notice(t('Skipping addition of field, "@field", to content type: "@type" as it is already added.',
+        $this->logger->notice(t('Skipping addition of field, "@field", to content type: "@type" as it is already added.',
             ['@field' => $field_def['name'], '@type' => $entity_type->getName()]));
       }
     }
     catch (\Exception $e) {
-      $logger->error(t('Error adding field, "@field_name", to "@bundle": @error', [
+      $this->logger->error(t('Error adding field, "@field_name", to "@bundle": @error', [
          '@field_name' => $field_def['name'],
          '@bundle' => $entity_type->getName(),
          '@error' => $e->getMessage(),
