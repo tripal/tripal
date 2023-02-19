@@ -2074,10 +2074,10 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
     // Batch update: https://www.alibabacloud.com/blog/how-does-postgresql-implement-batch-update-deletion-and-insertion_596030
-    $init_sql = "UPDATE {feature}
+    $init_sql = "UPDATE {1:feature}
         SET name=tmp.name from (values\n";
 
-    $fin_sql = ") as tmp (name,feature_id) where {feature}.feature_id::text=tmp.feature_id\n";
+    $fin_sql = ") as tmp (name,feature_id) where {1:feature}.feature_id::text=tmp.feature_id\n";
 
     $i = 0;
     $total = 0;
@@ -2123,7 +2123,7 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    $sql = "SELECT uniquename, name, type_id, organism_id, feature_id FROM {feature} WHERE uniquename in (:uniquenames[])";
+    $sql = "SELECT uniquename, name, type_id, organism_id, feature_id FROM {1:feature} WHERE uniquename in (:uniquenames[])";
     $i = 0;
     $total = 0;
     $batch_num = 1;
@@ -2186,13 +2186,13 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    $sql1 = "DELETE from {featureprop} WHERE feature_id IN (:feature_ids[])";
-    $sql2 = "DELETE from {featureloc} WHERE feature_id IN (:feature_ids[])";
-    $sql3 = "DELETE from {feature_cvterm} WHERE feature_id IN (:feature_ids[])";
-    $sql4 = "DELETE from {feature_dbxref} WHERE feature_id IN (:feature_ids[])";
-    $sql5 = "DELETE from {feature_synonym} WHERE feature_id IN (:feature_ids[])";
-    $sql6 = "DELETE from {feature_relationship} WHERE subject_id IN (:feature_ids[])";
-    $sql7 = "DELETE from {analysisfeature} WHERE feature_id IN (:feature_ids[])";
+    $sql1 = "DELETE from {1:featureprop} WHERE feature_id IN (:feature_ids[])";
+    $sql2 = "DELETE from {1:featureloc} WHERE feature_id IN (:feature_ids[])";
+    $sql3 = "DELETE from {1:feature_cvterm} WHERE feature_id IN (:feature_ids[])";
+    $sql4 = "DELETE from {1:feature_dbxref} WHERE feature_id IN (:feature_ids[])";
+    $sql5 = "DELETE from {1:feature_synonym} WHERE feature_id IN (:feature_ids[])";
+    $sql6 = "DELETE from {1:feature_relationship} WHERE subject_id IN (:feature_ids[])";
+    $sql7 = "DELETE from {1:analysisfeature} WHERE feature_id IN (:feature_ids[])";
     $i = 0;
     $total = 0;
     $batch_num = 1;
@@ -3063,7 +3063,7 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    $init_sql = "SELECT synonym_id, name FROM {synonym} WHERE \n";
+    $init_sql = "SELECT synonym_id, name FROM {1:synonym} WHERE \n";
     $i = 0;
     $j = 0;
     $total = 0;
