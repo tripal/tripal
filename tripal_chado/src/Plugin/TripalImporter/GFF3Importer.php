@@ -194,6 +194,18 @@ class GFF3Importer extends ChadoImporterBase {
   private $default_landmark_type = '';
 
   /**
+   * $this->landmark_types which is an associative array. 
+   * The key is the landmark name, and the value is the type name.
+   */
+  private $landmark_types = [];
+
+  /**
+   * $this->landmark_types_type_ids which is an associative array. 
+   * The key is the type, and the value is the type_id.
+   */
+  private $landmark_types_type_ids = [];  
+
+  /**
    * The results object for the landmark type cvterm.
    */
   private $landmark_cvterm = NULL;
@@ -1584,7 +1596,9 @@ class GFF3Importer extends ChadoImporterBase {
       'organism_id' => $this->organism->organism_id,
       'uniquename' => $name,
       'name' => $name,
-      'type_id' => $this->landmark_cvterm->cvterm_id,
+      // ORIGINAL CODE FROM STEPHEN
+      // 'type_id' => $this->landmark_cvterm->cvterm_id,
+      'type_id' => $this->getLandmarkTypeID($name),
       'md5checksum' => md5($residues),
       'is_analysis' => 0,
       'is_obsolete' => 0,
@@ -1671,10 +1685,21 @@ class GFF3Importer extends ChadoImporterBase {
    * Prepare the database prior to working with the feature.
    */
   private function prepareFeature($gff_feature, &$feature_cvterms, &$featureprop_cvterms) {
-
     // Add the landmark if it doesn't exist in the landmark list.
     if (!array_key_exists($gff_feature['landmark'], $this->landmarks)) {
       $this->landmarks[$gff_feature['landmark']] = FALSE;
+
+      // Check whether landmark_id matches the feature type
+      // Keep track of the landmark types using the class variable
+      // landmark_types
+      $landmark_id = $gff_feature['attrs']['ID'][0];
+      if ($landmark_id == $gff_feature['landmark']) {
+        $this->landmark_types[$landmark_id] = $gff_feature['type'];
+      }
+      else {
+        $this->landmark_types[$landmark_id] = $this->default_landmark_type;
+      }
+
     }
 
     // Organize DBs and DBXrefs for faster access later on.
@@ -2451,7 +2476,79 @@ class GFF3Importer extends ChadoImporterBase {
   }
 
   /**
-   *
+   * This function goes through each landmark found, looks up the landmark_types
+   * and then gets the type_id for the landmark if it's not already cached.
+   * If it is already cached, it does not perform a lookup.
+   */
+  private function cacheLandmarksTypeIDs() {
+    $chado = $this->getChadoConnection();
+    // Get landmark type_ids and cache them
+    foreach ($this->landmarks as $landmark_name => $feature_id) {
+      // If there is no cached type_id for this landmark via landmark_types_type_ids
+
+      // Determine the cvterm_name for the landmark
+      $type = NULL;
+      // If there is a type from the landmark_types that match, use this
+      if (isset($this->landmark_types[$landmark_name])) {
+        $type = $this->landmark_types[$landmark_name];
+      }
+      // Else use the default landmark_type
+      else {
+        $type = $this->default_landmark_type;
+      }
+      if ($type == NULL) {
+        $error_msg = 'Could not determine a type for landmark name: ' . $landmark_name;
+        $error_msg .= '. There was no default landmark type to force either.';
+        throw new \Exception(t($error_msg));
+      }
+
+      // If there is no cached type_id for this landmark type, try to lookup and cache
+      if (!isset($this->landmark_types_type_ids[$type])) {
+        $sql_landmark_type_id = "SELECT cvterm_id FROM cvterm WHERE name = :name";
+        $args_type = array(':name' => $type);
+        $results_type_ids = $chado->query($sql_landmark_type_id, $args_type);
+        $rowsCount = 0;
+        foreach ($results_type_ids as $row) {
+          $rowsCount++;
+          $this->landmark_types_type_ids[$type] = $row->cvterm_id;
+        }
+        // If the database lookup was not successful
+        if ($rowsCount == 0) {
+          // Try to default to the default landmark type cvterm object
+          if (isset($this->landmark_cvterm)) {
+            $this->landmark_types_type_ids[$type] = $this->landmark_cvterm->cvterm_id;
+          }
+          // Else if the default could not be found (if default landmark is empty in the form)
+          else {
+            $error_msg = 'Could not lookup cvterm / type id for landmark type: ' . $type . '.';
+            $error_msg .= ' Also since there is no default landmark type specified, could not force a default landmark type_id.';
+            throw new \Exception(t($error_msg));
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * This looks up the landmark type_id by utilizing the landmark_types associate
+   * array cached values and then checks the landmark_types_type_ids associate 
+   * array cached values.
+   */
+  function getLandmarkTypeID($landmark_name) {
+    // If there is a type from the landmark_types that match, use this
+    if (isset($this->landmark_types[$landmark_name])) {
+      $type = $this->landmark_types[$landmark_name];
+    }
+    // Else use the default landmark_type
+    else {
+      $type = $this->default_landmark_type;
+    }
+
+    return $this->landmark_types_type_ids[$type];
+  }
+
+  /**
+   * 
    */
   private function findLandmarks() {
     $chado = $this->getChadoConnection();
@@ -2462,12 +2559,14 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setItemsHandled(0);
     $this->setTotalItems($num_batches);
 
-    $sql = "SELECT name, uniquename, feature_id FROM {feature} 
-      WHERE uniquename in (:landmarks[]) AND organism_id = :organism_id";
+    // Perform cache of Landmarks Type IDs
+    $this->cacheLandmarksTypeIDs();
+
+    $sql = "SELECT name, uniquename, feature_id FROM {1:feature} 
+      WHERE uniquename = :landmark AND type_id = :type_id AND organism_id = :organism_id";
     $i = 0;
     $total = 0;
     $batch_num = 1;
-    $names = [];
     foreach ($this->landmarks as $landmark_name => $feature_id) {
       $i++;
       $total++;
@@ -2475,15 +2574,18 @@ class GFF3Importer extends ChadoImporterBase {
       // Only do an insert if this dbxref doesn't already exist in the databse.
       // and this dbxref is from a Dbxref attribute not an Ontology_term attr.
       if (!$feature_id) {
-        $names[] = $landmark_name;
+        $name = $landmark_name;
       }
 
       // If we've reached the size of the batch then let's do the select.
       if ($i == $batch_size or $total == $num_landmarks) {
-        if (count($names) > 0) {
+        if (isset($name)) {
+          // Get the cached type_id
+          $type_id = $this->getLandmarkTypeID($landmark_name);
           $args = [
-            ':landmarks[]' => $names,
-            ':organism_id' => $this->organism_id
+            ':landmark' => $name,
+            ':organism_id' => $this->organism_id,
+            ':type_id' => $type_id
           ];
           // $results = chado_query($sql, $args);
           $results = $chado->query($sql, $args);
@@ -2496,9 +2598,48 @@ class GFF3Importer extends ChadoImporterBase {
 
         // Now reset all of the varables for the next batch.
         $i = 0;
-        $names = [];
+        $name = NULL;
       }
-    }
+    }    
+
+    // ORIGINAL CODE FROM STEPHEN
+    // $sql = "SELECT name, uniquename, feature_id FROM {1:feature} 
+    //   WHERE uniquename in (:landmarks[]) AND organism_id = :organism_id";
+    // $i = 0;
+    // $total = 0;
+    // $batch_num = 1;
+    // $names = [];
+    // foreach ($this->landmarks as $landmark_name => $feature_id) {
+    //   $i++;
+    //   $total++;
+
+    //   // Only do an insert if this dbxref doesn't already exist in the databse.
+    //   // and this dbxref is from a Dbxref attribute not an Ontology_term attr.
+    //   if (!$feature_id) {
+    //     $names[] = $landmark_name;
+    //   }
+
+    //   // If we've reached the size of the batch then let's do the select.
+    //   if ($i == $batch_size or $total == $num_landmarks) {
+    //     if (count($names) > 0) {
+    //       $args = [
+    //         ':landmarks[]' => $names,
+    //         ':organism_id' => $this->organism_id
+    //       ];
+    //       // $results = chado_query($sql, $args);
+    //       $results = $chado->query($sql, $args);
+    //       while ($f = $results->fetchObject()) {
+    //         $this->landmarks[$f->uniquename] = $f->feature_id;
+    //       }
+    //     }
+    //     $this->setItemsHandled($batch_num);
+    //     $batch_num++;
+
+    //     // Now reset all of the varables for the next batch.
+    //     $i = 0;
+    //     $names = [];
+    //   }
+    // }
   }
 
   /**

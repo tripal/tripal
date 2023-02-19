@@ -121,7 +121,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'target_type' => NULL,
       'start_line' => NULL,
       'line_number' => NULL, // Previous error without this
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
       'skip_protein' => NULL,
     ];
@@ -257,7 +257,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'target_type' => NULL,
       'start_line' => NULL,
       'line_number' => NULL, // Previous error without this
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
       'skip_protein' => NULL,
     ];
@@ -312,7 +312,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'target_type' => NULL,
       'start_line' => NULL,
       'line_number' => NULL, // Previous error without this
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
       'skip_protein' => NULL,
     ];
@@ -365,7 +365,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'target_type' => NULL,
       'start_line' => NULL,
       'line_number' => NULL, // Previous error without this
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
       'skip_protein' => NULL,
     ];
@@ -418,7 +418,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'target_type' => NULL,
       'start_line' => NULL,
       'line_number' => NULL, // Previous error without this
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
       'skip_protein' => NULL,
     ];
@@ -471,7 +471,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'target_type' => NULL,
       'start_line' => NULL,
       'line_number' => NULL, // Previous error without this
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
       'skip_protein' => NULL,
     ];
@@ -525,7 +525,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'target_type' => NULL,
       'start_line' => NULL,
       'line_number' => NULL, // Previous error without this
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
       'skip_protein' => NULL,
     ];
@@ -585,7 +585,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'target_type' => NULL,
       'start_line' => NULL,
       'line_number' => NULL, // Previous error without this
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
       'skip_protein' => NULL,
     ];
@@ -647,7 +647,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'target_type' => NULL,
       'start_line' => NULL,
       'line_number' => NULL, // Previous error without this
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
       'skip_protein' => NULL,
     ];
@@ -665,8 +665,13 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     } 
     catch (\Exception $ex) {
       $message = $ex->getMessage();
+      // echo $message . "\n";
+      // echo $ex->getTraceAsString();
       $has_exception = true;
     }
+
+    $this->assertEquals($has_exception, false, "This should not fail and the 
+    right arrow should be added.");
 
     $results = $chado->query("SELECT count(*) as c1 FROM {1:feature} 
       WHERE uniquename = '>FRAEX38873_v2_000000010';");
@@ -675,8 +680,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $this->assertEquals($row->c1, 1, 'A feature with uniquename 
         >FRAEX38873_v2_000000010 should have been added but was not found.');
     }
-    $this->assertEquals($has_exception, false, "This should not fail and the 
-      right arrow should be added.");
+
 
 
     /**
@@ -707,7 +711,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'target_type' => NULL,
       'start_line' => NULL,
       'line_number' => NULL, // Previous error without this
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
       'skip_protein' => NULL,
     ];
@@ -793,7 +797,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'target_type' => NULL,
       'start_line' => NULL,
       'line_number' => NULL, // Previous error without this
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
       'skip_protein' => NULL,
     ];
@@ -845,7 +849,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'target_type' => NULL,
       'start_line' => NULL,
       'line_number' => NULL, // Previous error without this
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
       'skip_protein' => NULL,
     ];
@@ -898,7 +902,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'target_type' => NULL,
       'start_line' => NULL,
       'line_number' => NULL, // Previous error without this
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
       'skip_protein' => NULL,
     ];
@@ -1002,7 +1006,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'target_type' => NULL,
       'start_line' => NULL,
       'line_number' => NULL, // Previous error without this
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
       'skip_protein' => NULL,
     ];
@@ -1065,7 +1069,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'target_type' => NULL,
       'start_line' => NULL,
       'line_number' => NULL, // Previous error without this
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
       'skip_protein' => NULL,
     ];
@@ -1126,7 +1130,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'target_type' => NULL,
       'start_line' => NULL,
       'line_number' => NULL, // Previous error without this
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
       'skip_protein' => NULL,
     ];
@@ -1198,7 +1202,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'target_type' => NULL,
       'start_line' => NULL,
       'line_number' => NULL, // Previous error without this
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
       'skip_protein' => NULL,
     ];
