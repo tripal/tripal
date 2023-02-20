@@ -15,7 +15,7 @@ fields:
             storage_plugin_settings:
                 base_table: organism
                 base_column: abbreviation
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: local
             termAccession: abbreviation
@@ -42,7 +42,7 @@ fields:
             storage_plugin_settings:
                 base_table: organism
                 base_column: genus
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: TAXRANK
             termAccession: "0000005"
@@ -69,7 +69,7 @@ fields:
             storage_plugin_settings:
                 base_table: organism
                 base_column: species
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: TAXRANK
             termAccession: "0000006"
@@ -96,7 +96,7 @@ fields:
             storage_plugin_settings:
                 base_table: organism
                 base_column: common_name
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: NCBITaxon
             termAccession: common_name
@@ -123,7 +123,7 @@ fields:
             storage_plugin_settings:
                 base_table: organism
                 base_column: infraspecific_name
-                max_length: 1024
+            max_length: 1024
         settings: 
             termIdSpace: TAXRANK
             termAccession: "0000045"
@@ -204,7 +204,7 @@ fields:
             storage_plugin_settings:
                 base_table: analysis
                 base_column: name
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -257,7 +257,7 @@ fields:
             storage_plugin_settings:
                 base_table: analysis
                 base_column: program
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: SWO
             termAccession: "0000001"
@@ -284,7 +284,7 @@ fields:
             storage_plugin_settings:
                 base_table: analysis
                 base_column: programversion
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: IAO
             termAccession: 0000129
@@ -311,7 +311,7 @@ fields:
             storage_plugin_settings:
                 base_table: analysis
                 base_column: algorithm
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: IAO
             termAccession: "0000064"
@@ -338,7 +338,7 @@ fields:
             storage_plugin_settings:
                 base_table: analysis
                 base_column: sourcename
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -365,7 +365,7 @@ fields:
             storage_plugin_settings:
                 base_table: analysis
                 base_column: sourceversion
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: IAO
             termAccession: 0000129
@@ -418,7 +418,7 @@ fields:
             storage_plugin_settings:
                 base_table: project
                 base_column: name
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -523,7 +523,7 @@ fields:
             storage_plugin_settings:
                 base_table: contact
                 base_column: name
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -550,7 +550,7 @@ fields:
             storage_plugin_settings:
                 base_table: contact
                 base_column: description
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: description
@@ -761,7 +761,7 @@ fields:
             storage_plugin_settings:
                 base_table: feature
                 base_column: name
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -919,7 +919,7 @@ fields:
             storage_plugin_settings:
                 base_table: feature
                 base_column: name
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -1052,7 +1052,7 @@ fields:
             storage_plugin_settings:
                 base_table: phylotree
                 base_column: name
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -1133,7 +1133,7 @@ fields:
             storage_plugin_settings:
                 base_table: featuremap
                 base_column: name
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -1213,7 +1213,7 @@ fields:
             storage_plugin_settings:
                 base_table: library
                 base_column: name
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -1294,7 +1294,7 @@ fields:
             storage_plugin_settings:
                 base_table: analysis
                 base_column: name
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -1347,7 +1347,7 @@ fields:
             storage_plugin_settings:
                 base_table: analysis
                 base_column: program
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: SWO
             termAccession: "0000001"
@@ -1374,7 +1374,7 @@ fields:
             storage_plugin_settings:
                 base_table: analysis
                 base_column: programversion
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: IAO
             termAccession: 0000129
@@ -1402,7 +1402,7 @@ fields:
             storage_plugin_settings:
                 base_table: analysis
                 base_column: sourcename
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -1429,7 +1429,7 @@ fields:
             storage_plugin_settings:
                 base_table: analysis
                 base_column: sourceversion
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: IAO
             termAccession: 0000129
@@ -1510,7 +1510,7 @@ fields:
             storage_plugin_settings:
                 base_table: analysis
                 base_column: name
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -1563,7 +1563,7 @@ fields:
             storage_plugin_settings:
                 base_table: analysis
                 base_column: program
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: SWO
             termAccession: "0000001"
@@ -1590,7 +1590,7 @@ fields:
             storage_plugin_settings:
                 base_table: analysis
                 base_column: programversion
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: IAO
             termAccession: 0000129
@@ -1617,7 +1617,7 @@ fields:
             storage_plugin_settings:
                 base_table: analysis
                 base_column: sourcename
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -1644,7 +1644,7 @@ fields:
             storage_plugin_settings:
                 base_table: analysis
                 base_column: sourceversion
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: IAO
             termAccession: 0000129
@@ -1725,7 +1725,7 @@ fields:
             storage_plugin_settings:
                 base_table: project
                 base_column: name
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -1806,7 +1806,7 @@ fields:
             storage_plugin_settings:
                 base_table: featuremap
                 base_column: name
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -1886,7 +1886,7 @@ fields:
             storage_plugin_settings:
                 base_table: feature
                 base_column: name
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -2019,7 +2019,7 @@ fields:
             storage_plugin_settings:
                 base_table: feature
                 base_column: name
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -2152,7 +2152,7 @@ fields:
             storage_plugin_settings:
                 base_table: feature
                 base_column: name
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -2285,7 +2285,7 @@ fields:
             storage_plugin_settings:
                 base_table: feature
                 base_column: name
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -2418,7 +2418,7 @@ fields:
             storage_plugin_settings:
                 base_table: stock
                 base_column: name
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -2526,7 +2526,7 @@ fields:
             storage_plugin_settings:
                 base_table: stock
                 base_column: name
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -2633,7 +2633,7 @@ fields:
             storage_plugin_settings:
                 base_table: stock
                 base_column: name
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name
@@ -2740,7 +2740,7 @@ fields:
             storage_plugin_settings:
                 base_table: stock
                 base_column: name
-                max_length: 255
+            max_length: 255
         settings: 
             termIdSpace: schema
             termAccession: name

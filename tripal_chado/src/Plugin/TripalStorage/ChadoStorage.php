@@ -218,7 +218,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       throw new \Exception($e);
     }
 
-    // Now set the record Ids of the properties.
     return TRUE;
   }
 
@@ -510,15 +509,16 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    * @{inheritdoc}
    */
   public function deleteValues($values) : bool {
-
-    return FALSE;
+    $logger = \Drupal::service('tripal.logger');
+    $logger->warning('The ChadoStorage::deleteValues() function is currently not implemented');
   }
 
   /**
    * @{inheritdoc}
    */
   public function findValues($match) {
-
+    $logger = \Drupal::service('tripal.logger');
+    $logger->warning('The ChadoStorage::findValues() function is currently not implemented');
   }
 
 

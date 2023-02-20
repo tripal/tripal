@@ -4,6 +4,7 @@ tripal_chado.settings:
     default_schema:
       type: string
       label: 'Default Chado schema name'
+
 tripal_chado.chado_term_mapping.*:
   type: config_entity
   mapping:
@@ -54,12 +55,18 @@ field.storage.tripal_entity.*:
       type: field.storage_settings.*
       label: 'Tripal Field Storage Settings'
       mapping:
-        storage_plugin_id:
-          type: string
-          label: 'Tripal Storage Plugin Machine Name'
         max_length:
           type: integer
           label: 'Storage Maximum length'
+        termIdSpace:
+          type: string
+          label: 'Term ID Space'
+        termAccession:
+          type: string
+          label: 'Term Accession'
+        storage_plugin_id:
+          type: string
+          label: 'Tripal Storage Plugin Machine Name'
         storage_plugin_settings:
           type: field.storage.tripal_entity.*.settings.storage_plugin_settings.*
           label: 'Tripal Storage-specific Settings'
@@ -67,21 +74,19 @@ field.storage.tripal_entity.*:
             base_table:
               type: string
               label: 'Chado Base Table'
-            property_settings:
-              type: sequence
-              sequence:
-                type: mapping
-                mapping:
-                  action:
-                    type: string
-                    label: 'Action (e.g. store)'
-                  chado_table:
-                    type: string
-                    label: 'Chado Table (e.g. feature)'
-                  chado_column:
-                    type: string
-                    label: 'Chado Column (e.g. uniquename)'
-
+            base_column:
+              type: string
+              label: 'Chado Base Table column'
+            type_table:
+              type: string
+              label: 'Chado Type Table'
+            type_column:
+              type: string
+              label: 'Chado Type Table Column'
+            prop_table:
+              type: string
+              label: 'Chado Type Property Table'
+              
 tripal.tripal_fields.chado_fields:
    type: tripal.tripal_fields.*
    label: 'Tripal Content Types'
@@ -107,10 +112,6 @@ tripal.tripal_fields.chado_fields:
                         base_column: 
                             type: string
                             label: "The name of the column in the Chado table where the value of this field is stored."
-                            nullable: true
-                        max_length:
-                            type: integer
-                            label: "For the chado_string_type field, this setting indicates the maximum size of the string."
                             nullable: true
                         type_table: 
                             type: string

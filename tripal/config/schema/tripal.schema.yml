@@ -82,12 +82,22 @@ field.storage.tripal_entity.*:
       type: field.storage_settings.*
       label: 'Tripal Field Storage Settings'
       mapping:
-        storage_plugin_id:
-          type: string
-          label: 'Tripal Storage Plugin Machine Name'
         max_length:
           type: integer
           label: 'Storage Maximum length'
+        termIdSpace:
+          type: string
+          label: 'Term ID Space'
+        termAccession:
+          type: string
+          label: 'Term Accession'
+        storage_plugin_id:
+          type: string
+          label: 'Tripal Storage Plugin Machine Name'
+        storage_plugin_settings:
+          type: field.storage.tripal_entity.*.settings.storage_plugin_settings.*
+          label: 'Tripal Storage-specific Settings'
+                     
 
 field.field.tripal_entity.*.*:
   type: field.field.*.*.*
@@ -95,6 +105,9 @@ field.field.tripal_entity.*.*:
     settings:
       type: field.settings
       mapping:
+        max_delta:
+          type: integer
+          label: 'The maximum number of records to retreive for this field when querying'
         termIdSpace:
           type: string
           label: 'Term ID Space'

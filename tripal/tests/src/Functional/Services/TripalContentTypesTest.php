@@ -19,7 +19,6 @@ class TripalContentTypesTest extends TripalTestBrowserBase {
    * Tests the TripalContentTypes class public functions.
    */
   public function testTripalContentTypes() {
-    $logger = \Drupal::service('tripal.logger');
 
     // Create the vocabulary term needed for testing the content type.
     // We'll use the default Tripal IdSpace and Vocabulary plugins.
@@ -48,60 +47,60 @@ class TripalContentTypesTest extends TripalTestBrowserBase {
       'synonyms' => ['bio_data_1']
     ];
 
-    /** @var \Drupal\tripal\Services\TripalContentTypes $content_type_setup **/
-    $content_type_setup = \Drupal::service('tripal.content_types');
+    /** @var \Drupal\tripal\Services\TripalContentTypes $content_type_service **/
+    $content_type_service = \Drupal::service('tripal.content_types');
 
-    // Test the public validate routine to make sure it fails when it should.
-    $is_valid = $content_type_setup->validate($good, $logger);
+    // Test creating a good content type.
+    $is_valid = $content_type_service->validate($good);
     $this->assertTrue($is_valid, "A good content type definition failed validation check.");
-    $content_type = $content_type_setup->createContentType($good);
+    $content_type = $content_type_service->createContentType($good);
     $this->assertTrue(!is_null($content_type), "Failed to create a content type with avalid definition.");
 
     // Test that when a value is missing it fails validation.
     $bad = $good;
     unset($bad['term']);
-    $is_valid = $content_type_setup->validate($bad, $logger);
+    $is_valid = $content_type_service->validate($bad);
     $this->assertFalse($is_valid, "A content type definition missing the 'term' should fail the validation check but it passed.");
-    $content_type = $content_type_setup->createContentType($bad);
+    $content_type = $content_type_service->createContentType($bad);
     $this->assertTrue(is_null($content_type), "Created a content type when the term is incorret.");
 
     $bad = $good;
     unset($bad['name']);
-    $is_valid = $content_type_setup->validate($bad, $logger);
+    $is_valid = $content_type_service->validate($bad);
     $this->assertFalse($is_valid, "A content type definition missing the 'name' should fail the validation check but it passed.");
-    $content_type = $content_type_setup->createContentType($bad);
+    $content_type = $content_type_service->createContentType($bad);
     $this->assertTrue(is_null($content_type), "Created a content type when the name is incorret.");
 
 
     $bad = $good;
     unset($bad['label']);
-    $is_valid = $content_type_setup->validate($bad, $logger);
+    $is_valid = $content_type_service->validate($bad);
     $this->assertFalse($is_valid, "A content type definition missing the 'label' should fail the validation check but it passed.");
-    $content_type = $content_type_setup->createContentType($bad);
+    $content_type = $content_type_service->createContentType($bad);
     $this->assertTrue(is_null($content_type), "Created a content type when the label is incorret.");
 
 
     $bad = $good;
     unset($bad['category']);
-    $is_valid = $content_type_setup->validate($bad, $logger);
+    $is_valid = $content_type_service->validate($bad);
     $this->assertFalse($is_valid, "A content type definition missing the 'category' should fail the validation check but it passed.");
-    $content_type = $content_type_setup->createContentType($bad);
+    $content_type = $content_type_service->createContentType($bad);
     $this->assertTrue(is_null($content_type), "Created a content type when the category is incorret.");
 
 
     $bad = $good;
     unset($bad['help_text']);
-    $is_valid = $content_type_setup->validate($bad, $logger);
+    $is_valid = $content_type_service->validate($bad);
     $this->assertFalse($is_valid, "A content type definition missing the 'help_text' should fail the validation check but it passed.");
-    $content_type = $content_type_setup->createContentType($bad);
+    $content_type = $content_type_service->createContentType($bad);
     $this->assertTrue(is_null($content_type), "Created a content type when the help_text is incorret.");
 
 
     $bad = $good;
     $bad['synonyms'] = 'xyz';
-    $is_valid = $content_type_setup->validate($bad, $logger);
+    $is_valid = $content_type_service->validate($bad);
     $this->assertFalse($is_valid, "A content type definition with a malformed synonyms list should fail the validation check but it passed.");
-    $content_type = $content_type_setup->createContentType($bad);
+    $content_type = $content_type_service->createContentType($bad);
     $this->assertTrue(is_null($content_type), "Created a content type when the synonyms are incorret.");
 
   }

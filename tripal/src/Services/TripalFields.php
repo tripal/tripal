@@ -2,6 +2,8 @@
 namespace Drupal\tripal\Services;
 
 use Drupal\tripal\Entity\TripalEntity;
+use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager;
+use Drupal\tripal\TripalVocabTerms\PluginManagers\TripalVocabularyManager;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
@@ -13,6 +15,20 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class TripalFields implements ContainerInjectionInterface  {
 
   /**
+   * The IdSpace service
+   *
+   * @var \Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager $idSpaceManager
+   */
+  protected $idSpaceManager;
+
+  /**
+   * The vocabulary service
+   *
+   * @var \Drupal\tripal\TripalVocabTerms\PluginManagers\TripalVocabularyManager $vocabularyManager
+   */
+  protected $vocabularyManager;
+
+  /**
    * A logger object.
    *
    * @var TripalLogger $logger
@@ -22,7 +38,11 @@ class TripalFields implements ContainerInjectionInterface  {
   /**
    * Constructor
    */
-  public function __construct(TripalLogger $logger) {
+  public function __construct(TripalIdSpaceManager $idSpaceManager,
+      TripalVocabularyManager $vocabularyManager, TripalLogger $logger) {
+
+    $this->idSpaceManager = $idSpaceManager;
+    $this->vocabularyManager = $vocabularyManager;
     $this->logger = $logger;
   }
 
@@ -31,6 +51,8 @@ class TripalFields implements ContainerInjectionInterface  {
    */
   public static function create(ContainerInterface $container) {
     return new static (
+      $container->get('tripal.collection_plugin_manager.idspace'),
+      $container->get('tripal.collection_plugin_manager.vocabulary'),
       $container->get('tripal.logger')
     );
   }
@@ -87,35 +109,10 @@ class TripalFields implements ContainerInjectionInterface  {
       $new_defs['cardinality'] = $field_def['cardinality'];
     }
 
-    // Storage Settings
-    // Get the defaults for the storage setting for this field type.
+    // Determine the field class.
     $field_types = \Drupal::service('plugin.manager.field.field_type');
     $field_type_def = $field_types->getDefinition($new_defs['type']);
     $field_class = $field_type_def['class'];
-    $default_storage_settings = $field_class::defaultStorageSettings();
-    $new_defs['storage_settings'] = [];
-    $new_defs['storage_settings']['storage_plugin_id'] = '';
-    $new_defs['storage_settings']['storage_plugin_settings'] = [
-      // The properties should be specific to the storage back-end so no
-      // defaults are set.
-      'property_settings' => [],
-      // Copy the cardinality and required values for Drupal into the storage
-      // settings for the Tripal field.
-      'cardinality' => $new_defs['cardinality'],
-      'required' => $new_defs['required']
-    ];
-    foreach ($default_storage_settings as $setting_name => $value) {
-      $new_defs['storage_settings'][$setting_name] = $value;
-    }
-
-    // Now copy over any user-provided settings if they are supported.
-    if (array_key_exists('storage_settings', $field_def)) {
-      foreach ($field_def['storage_settings'] as $setting_name => $value) {
-        if (array_key_exists($setting_name, $new_defs['storage_settings'])) {
-          $new_defs['storage_settings'][$setting_name] = $value;
-        }
-      }
-    }
 
     // Field Settings
     // Available settings include: "name", "label", "termIdSpace",
@@ -139,10 +136,34 @@ class TripalFields implements ContainerInjectionInterface  {
       }
     }
 
+    // Storage Settings
+    // Get the defaults for the storage setting for this field type.
+    $default_storage_settings = $field_class::defaultStorageSettings();
+
+    $new_defs['storage_settings']['storage_plugin_id'] = '';
+    $new_defs['storage_settings']['storage_plugin_settings'] = [];
+    foreach ($default_storage_settings as $setting_name => $value) {
+      $new_defs['storage_settings'][$setting_name] = $value;
+    }
+
+    // Now copy over any user-provided settings if they are supported.
+    if (array_key_exists('storage_settings', $field_def)) {
+      foreach ($field_def['storage_settings'] as $setting_name => $value) {
+        if (array_key_exists($setting_name, $new_defs['storage_settings'])) {
+          $new_defs['storage_settings'][$setting_name] = $value;
+        }
+      }
+    }
+
+    // Copy the termIdSpace and termAccession to the storage settings.
+    $new_defs['storage_settings']['termIdSpace'] = $new_defs['settings']['termIdSpace'];
+    $new_defs['storage_settings']['termAccession'] = $new_defs['settings']['termAccession'];
+
     // View Display Settings
     // Available view settings: label, weight @todo add more
     // Available form settings: 'region' @todo add more
     $new_defs['display']['view']['default'] = [
+      'region' => 'content',
       'label' => 'above',
       'weight' => 10
     ];
@@ -151,6 +172,7 @@ class TripalFields implements ContainerInjectionInterface  {
     ];
     $new_defs['display']['form']['default'] = [
       'region' => 'content',
+      'weight' => 10
     ];
 
     if (array_key_exists('display', $field_def)) {
@@ -190,7 +212,7 @@ class TripalFields implements ContainerInjectionInterface  {
 
     if (!array_key_exists('content_type', $field_def)) {
       $this->logger->error('The field is missing the "content_type" property.');
-      return False;
+      return FALSE;
     }
     // Check if the type already exists.
     $entityTypes = \Drupal::entityTypeManager()
@@ -198,34 +220,61 @@ class TripalFields implements ContainerInjectionInterface  {
       ->loadByProperties(['name' => $field_def['content_type']]);
     if (empty($entityTypes)) {
       $this->logger->error('The specified entity type, "' . $field_def['content_type'] . '", for field "' . $field_def['name'] . '", does not exist.');
-      return False;
+      return FALSE;
     }
-
-    if (!array_key_exists('name', $field_def)) {
+    if (!array_key_exists('name', $field_def) or empty($field_def['name'])) {
       $this->logger->error('The field is missing the "name" property.');
-      return False;
+      return FALSE;
     }
-    if (!array_key_exists('content_type', $field_def)) {
+    if (!array_key_exists('content_type', $field_def) or empty($field_def['content_type'])) {
       $this->logger->error('The field is missing the "content_type" property.');
-      return False;
+      return FALSE;
     }
-    if (!array_key_exists('type', $field_def)) {
+    if (!array_key_exists('type', $field_def) or empty($field_def['type'])) {
       $this->logger->error('The field is missing the "type" property.');
-      return False;
+      return FALSE;
     }
-    if (!array_key_exists('storage_settings', $field_def)) {
+    else {
+      $field_types = \Drupal::service('plugin.manager.field.field_type')->getDefinitions();
+      if (!in_array($field_def['type'], array_keys($field_types))) {
+        $this->logger->error('The field type, ' . $field_def['type'] . ' is not a valide field type.');
+        return FALSE;
+      }
+    }
+    if (!array_key_exists('storage_settings', $field_def) or empty($field_def['storage_settings'])) {
       $this->logger->error('The field is missing the "storage_settings" property');
-      return False;
+      return FALSE;
     }
     if (!array_key_exists('storage_plugin_id', $field_def['storage_settings'])) {
-      $this->logger->error('The field is missing the "storage_plugin_id" of the "settings" property');
-      return False;
+      $this->logger->error('The field is missing the "storage_plugin_id" of the "storage_settings" property');
+      return FALSE;
+    }
+    if (!array_key_exists('termIdSpace', $field_def['settings'])) {
+      $this->logger->error('The field is missing the "termIdSpace" of the "settings" property');
+      return FALSE;
+    }
+    if (!array_key_exists('termAccession', $field_def['settings'])) {
+      $this->logger->error('The field is missing the "termAccession" of the "settings" property');
+      return FALSE;
     }
     if (empty($field_def['storage_settings']['storage_plugin_id'])) {
       // @todo verify the name of the plugin is a real plugin.
       $this->logger->error('You must set the "storage_plugin_id" property.');
-      return False;
+      return FALSE;
     }
+
+    // Make sure the term exists.
+    $idSpace = $this->idSpaceManager->loadCollection($field_def['settings']['termIdSpace']);
+    if (!$idSpace) {
+      $this->logger->error('The term Id Space is not known. Check the "termIdSpace" element.');
+      return FALSE;
+    }
+    $term = $idSpace->getTerm($field_def['settings']['termAccession']);
+    if (!$term) {
+      $this->logger->error('The term accession is not known in the Term Id Space. Check the "termIdSpace" and "termAccession" elements.');
+      return FALSE;
+    }
+
     return True;
   }
 
@@ -245,8 +294,7 @@ class TripalFields implements ContainerInjectionInterface  {
 
       // Iterate through each field in the config file.
       foreach ($fields as $field) {
-        $tripal_fields = \Drupal::service('tripal.fields');
-        $tripal_fields->addBundleField($field);
+        $this->addBundleField($field);
       }
     }
   }
@@ -303,43 +351,42 @@ class TripalFields implements ContainerInjectionInterface  {
    * An example field defintion:
    *
    * @code
-   * $species = [
-   *   'name' => 'taxrank__species',
+   * $fields_service = \Drupal::service('tripal.fields');
+   * $field_def = [
+   *   'name' => 'organism_genus',
    *   'content_type' => 'organism',
-   *   'label' => 'Species',
+   *   'label' => 'Genus',
    *   'type' => 'tripal_string_type',
-   *   'description' => 'The organism species name',
+   *   'description' => "The genus name of the organism.",
    *   'cardinality' => 1,
-   *   'required' => True,
+   *   'required' => TRUE,
    *   'storage_settings' => [
-   *     'max_length' => 255,
-   *     'storage_plugin_id' => 'chado_storage',
-   *     'storage_plugin_settings' => [
-   *       // This setting is specific to the Chado Storage Backend.
-   *       'value' => ['store' => 'organism.species']
+   *     'storage_plugin_id' => 'tripal_default_storage',
+   *     'storage_plugin_settings'=> [
    *     ],
+   *     'max_length' => 255,
    *   ],
    *   'settings' => [
    *     'termIdSpace' => 'TAXRANK',
-   *     'termAccession' => '0000006',
+   *     'termAccession' => "0000005",
    *   ],
    *   'display' => [
    *     'view' => [
    *       'default' => [
    *         'region' => 'content',
    *         'label' => 'above',
-   *         'weight' => 11,
+   *         'weight' => 15
    *       ],
    *     ],
    *     'form' => [
-   *       'default' => [
-   *         'region' => 'content',
-   *         'weight' => 11,
+   *       'default'=> [
+   *         'region'=> 'content',
+   *         'weight' => 15
    *       ],
    *     ],
    *   ],
    * ];
-   * $tripal_fields->addBundleField('bio_data_1', $species);
+   * $fields_service->addBundleField($field_def);
    * @endcode
    *
    * @return bool
@@ -353,9 +400,10 @@ class TripalFields implements ContainerInjectionInterface  {
     }
 
     // Get the entitytype
-    $entity_type = array_pop(\Drupal::entityTypeManager()
+    $entity_types = \Drupal::entityTypeManager()
       ->getStorage('tripal_entity_type')
-      ->loadByProperties(['name' => $field_def['content_type']]));
+      ->loadByProperties(['name' => $field_def['content_type']]);
+    $entity_type = array_pop($entity_types);
 
     // Set defaults for the field if they are not already set.
     $field_def = $this->setFieldDefDefaults($field_def);
@@ -421,13 +469,14 @@ class TripalFields implements ContainerInjectionInterface  {
       }
     }
     catch (\Exception $e) {
+      print_r([$e->getMessage()]);
       $this->logger->error(t('Error adding field, "@field_name", to "@bundle": @error', [
          '@field_name' => $field_def['name'],
          '@bundle' => $entity_type->getName(),
          '@error' => $e->getMessage(),
       ]));
-      return False;
+      return FALSE;
     }
-    return True;
+    return TRUE;
   }
 }
