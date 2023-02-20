@@ -81,6 +81,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     // $chado->executeSqlFile(__DIR__ . '/../../../fixtures/gff3_loader/landmarks.sql');
 
     // Manually insert landmarks into features table
+    $chado->query("INSERT INTO {1:feature} (dbxref_id, organism_id, name, uniquename, residues, seqlen, md5checksum, type_id, is_analysis, is_obsolete, timeaccessioned, timelastmodified) VALUES (NULL, 1, 'scaffold00001', 'scaffold00001', '', 0, 'd41d8cd98f00b204e9800998ecf8427e', 474, false, false, '2022-11-26 05:39:59.809424', '2022-11-26 05:39:59.809424');");
     $chado->query("INSERT INTO {1:feature} (dbxref_id, organism_id, name, uniquename, residues, seqlen, md5checksum, type_id, is_analysis, is_obsolete, timeaccessioned, timelastmodified) VALUES (NULL, 1, 'scaffold1', 'scaffold1', 'CAACAAGAAGTAAGCATAGGTTAATTATCATCCACGCATATTAATCAAGAATCGATGCTCGATTAATGTTTTTGAATTGACAAACAAAAGTTTTGTAAAAAGGACTTGTTGGTGGTGGTGGGGTGGTGGTGATGGTGTGGTGGGTAGGTCGCTGGTCGTCGCCGGCGTGGTGGAAGTCTCGCTGGCCGGTGTCTCGGCGGTCTGGTGGCGGCTGGTGGCGGTAGTTGTGAGTTTTTTCTTTCTTTTTTTGTTTTTTTTTTTTACTTTTTACTTTTTTTTCGTCTTGAACAAATTAAAAATAGAGTTTGTTTGTATTTGGTTATTATTTATTGATAAGGGTATATTCGTCCTGTTTGGTCTTGATGTAATAAAATTAAATTAATTTACGGGCTTCAACTAATAAACTCCTTCATGTTGGTTTGAACTAATAAAAAAAGGGGAAATTTGCTAGACACCCCTAATTTTGGACTTATATGGGTAGAAGTCCTAGTTGCTAGATGAATATAGGCCTAGGTCCATCCACATAAAAAAATAATATAAATTAAATAATAAAAATAATATATAGACATAAGTACCCTTATTGAATAAACATATTTTAGGGGATTCAGTTATATACGTAAAGTTGGGAAATCAAATCCCACTAATCACGATTGAAGGCAGAGTATCGTGTAAGACGTTTGGAAAACATATCTTAGTCGATTCCAGTGGAATATGAGATCA', 720, '83578d8afdaec399c682aa6c0ddd29c9', 474, false, false, '2022-11-28 21:44:51.006276', '2022-11-28 21:44:51.006276');");
     $chado->query("INSERT INTO {1:feature} (dbxref_id, organism_id, name, uniquename, residues, seqlen, md5checksum, type_id, is_analysis, is_obsolete, timeaccessioned, timelastmodified) VALUES (NULL, 1, 'Contig10036', 'Contig10036', '', 0, 'd41d8cd98f00b204e9800998ecf8427e', 474, false, false, '2022-11-26 05:39:55.810798', '2022-11-26 05:39:55.810798')");
     $chado->query("INSERT INTO {1:feature} (dbxref_id, organism_id, name, uniquename, residues, seqlen, md5checksum, type_id, is_analysis, is_obsolete, timeaccessioned, timelastmodified) VALUES (NULL, 1, 'Contig1', 'Contig1', '', 0, 'd41d8cd98f00b204e9800998ecf8427e', 474, false, false, '2022-11-26 05:39:57.335594', '2022-11-26 05:39:57.335594');");
@@ -1238,9 +1239,9 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       
       
     /**
-     * Run the GFF loader on gff_tagvalue_comma_character.gff for testing.
+     * Run the GFF loader on gff_1380_landmark_test.gff for testing.
      *
-     * This tests whether the GFF loader adds tag values containing encoded comma
+     * This tests whether the GFF loader adds landmarks directly from the GFF file
      * character. 
      * The GFF loader should allow it
      */    
@@ -1283,22 +1284,89 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $gff3_importer->run();
       $gff3_importer->postRun();
 
-      // $results = $chado->query("SELECT COUNT(*) as c1 FROM {1:featureprop} 
-      //   WHERE value ILIKE :value",[
-      //   ':value' => 'T,EST'
-      // ]);
-      // foreach ($results as $row) {
-      //   $this->assertEquals($row->c1, 1);
-      // }
+      $results = $chado->query("SELECT count(*) as c1 FROM {1:feature} 
+        WHERE uniquename ILIKE :value",[
+        ':value' => 'chr1_h1'
+      ]);
+      foreach ($results as $row) {
+        $this->assertEquals($row->c1, 1);
+      }
 
     } 
     catch (\Exception $ex) {
       $message = $ex->getMessage();
-      //print_r($message);
+      // print_r($message);
       $has_exception = true;
     }
+    $this->assertEquals($has_exception, false, 'This file 
+      gff_1380_landmark_test.gff should not produce 
+      an exception but did.');
+      
+    // /**
+    //  * Run the GFF loader on Citrus GFF3 for testing.
+    //  *
+    //  * This tests whether the GFF loader adds Citrus data
+    //  * character. 
+    //  * The GFF loader should allow it
+    //  */    
+    // $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
+    // $run_args = [
+    //   'files' => [
+    //     0 => [
+    //       'file_path' => __DIR__ . '/../../../fixtures/gff3_loader/gff_Citrus_sinensis-orange1.1g015632m.g.gff3'
+    //     ]
+    //   ],
+    //   'schema_name' => $schema_name,
+    //   'analysis_id' => $analysis_id,
+    //   'organism_id' => $organism_id,
+    //   'use_transaction' => 1,
+    //   'add_only' => 0,
+    //   'update' => 1,
+    //   'create_organism' => 0,
+    //   'create_target' => 0,
+    //   // regexps for mRNA and protein.
+    //   're_mrna' => NULL,
+    //   're_protein' => NULL,
+    //   // optional
+    //   'target_organism_id' => NULL,
+    //   'target_type' => NULL,
+    //   'start_line' => NULL,
+    //   'line_number' => NULL, // Previous error without this
+    //   'landmark_type' => 'supercontig',
+    //   'alt_id_attr' => NULL,
+    //   'skip_protein' => NULL,
+    // ];
+
+    // $file_details = [
+    //   'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_Citrus_sinensis-orange1.1g015632m.g.gff3',
+    // ];
+
+    // $has_exception = false;
+    // try {
+    //   $gff3_importer->create($run_args, $file_details);
+    //   $gff3_importer->prepareFiles();
+    //   $gff3_importer->run();
+    //   $gff3_importer->postRun();
+
+    //   // $results = $chado->query("SELECT count(*) as c1 FROM {1:feature} 
+    //   //   WHERE uniquename ILIKE :value",[
+    //   //   ':value' => 'chr1_h1'
+    //   // ]);
+    //   // foreach ($results as $row) {
+    //   //   $this->assertEquals($row->c1, 1);
+    //   // }
+
+    // } 
+    // catch (\Exception $ex) {
+    //   $message = $ex->getMessage();
+    //   print_r($message);
+    //   $has_exception = true;
+    // }
     // $this->assertEquals($has_exception, false, 'This file 
-    //   gff_1380_landmark_test.gff should not produce 
-    //   an exception but did.');         
+    //   gff_Citrus_sinensis-orange1.1g015632m.g.gff3 should not produce 
+    //   an exception but did.');
+      
+
+   
   }
 }

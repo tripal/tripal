@@ -359,10 +359,10 @@ class GFF3Importer extends ChadoImporterBase {
     ];
 
     $form['landmark_type'] = [
-      '#title' => t('Landmark Type'),
+      '#title' => t('Default Landmark Type'),
       '#type' => 'textfield',
       '#description' => t("Optional. Use this field to specify a Sequence Ontology type
-       for the landmark sequences in the GFF fie (e.g. 'chromosome'). This is only needed if
+       for the default landmark sequences in the GFF fie (e.g. 'chromosome'). This is only needed if
        the landmark features (first column of the GFF3 file) are not already in the database."),
     ];
 
@@ -1985,6 +1985,10 @@ class GFF3Importer extends ChadoImporterBase {
         }
         // Second, if a landmark_type is provided then just add the landmark feature.
         else if ($this->default_landmark_type) {
+          $this->insertLandmark($uniquename);
+        }
+        // Third, if a landmark_type is provided from the GFF file
+        else if (array_key_exists($uniquename, $this->landmark_types)) {
           $this->insertLandmark($uniquename);
         }
         else {
