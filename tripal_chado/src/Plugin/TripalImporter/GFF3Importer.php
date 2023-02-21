@@ -1983,12 +1983,12 @@ class GFF3Importer extends ChadoImporterBase {
         if (array_key_exists($uniquename, $this->seq_region_headers)) {
           $this->insertHeaderLandmark($this->seq_region_headers[$uniquename]);
         }
-        // Second, if a landmark_type is provided then just add the landmark feature.
-        else if ($this->default_landmark_type) {
+        // Second, if a landmark_type is provided from the GFF file
+        else if (array_key_exists($uniquename, $this->landmark_types)) {
           $this->insertLandmark($uniquename);
         }
-        // Third, if a landmark_type is provided from the GFF file
-        else if (array_key_exists($uniquename, $this->landmark_types)) {
+        // Third, if a landmark_type is provided then just add the landmark feature.
+        else if ($this->default_landmark_type) {
           $this->insertLandmark($uniquename);
         }
         else {
