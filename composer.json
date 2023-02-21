@@ -5,11 +5,15 @@
     {
       "type" : "vcs",
       "url": "https://github.com/fzaninotto/Faker.git"
+    },
+    {
+      "type" : "git",
+      "url": "https://github.com/dsenalik/TripalTestSuite"
     }
   ],
   "require-dev": {
     "doctrine/instantiator": "1.* || 2.*",
-    "statonlab/tripal-test-suite": "1.*"
+    "statonlab/tripal-test-suite": "dev-147-add-php8-support"
   },
   "autoload": {
     "files": [
