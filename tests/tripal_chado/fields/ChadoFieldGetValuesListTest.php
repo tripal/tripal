@@ -412,7 +412,7 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
 
     // If we weren't told the related table then we assume this is a simple column (not a foreign key).
     if ($fk_table === FALSE) {
-      $column_type = $schema[$fixed_column]['type'];
+      $column_type = $schema['fields'][$fixed_column]['type'];
       if (($column_type == 'int')) {
         $fake_value = $faker->randomNumber();
       }
