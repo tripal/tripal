@@ -3,7 +3,7 @@ name: PHPUnit-Tests
 
 # Controls when the action will run.
 # Run this workflow every time a new commit is pushed to your repository
-on: push
+on: [push, pull_request]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -130,6 +130,7 @@ jobs:
           POSTGRES_CONNECTION_STRING: 'pgsql://postgres:dbpass@localhost:5432/test_db'
           ACCOUNT_NAME: tripaladmin
           ACCOUNT_PASS: somereallysecurepassword
+          COMPOSER_AUTH: '{"github-oauth":{"github.com":"${{ secrets.API_SPRING }}"}}'
         run: |
           cd $DRUPAL_ROOT/sites/all/modules/tripal
           composer require --dev mheap/phpunit-github-actions-printer
