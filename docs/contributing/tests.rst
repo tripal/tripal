@@ -136,7 +136,8 @@ An ideal test operates *independently* of other tests: by default, unit tests ru
       foreach ($results as $result) {
         $this->assertNotFalse($result);
         $this->assertNotNull($result);
-        $this->assertObjectHasAttribute('genus', $result);
+        $properties = get_object_vars($result);
+        $this->assertArrayHasKey('genus', $properties);
         $this->assertEquals($genus_string, $result->genus);
       }
     }
