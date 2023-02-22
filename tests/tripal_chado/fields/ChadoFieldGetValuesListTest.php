@@ -74,7 +74,7 @@ class ChadoFieldGetValuesListTest extends TripalTestCase {
       // less then the limit, we will go ahead with the test.
       // @note: this tests all fields on TravisCI since there is no pre-existing data.
       if (sizeof($values) < 200) {
-        $this->assertContains($fake_value, $values, "\nThe following array should but does not contain our fake value ('$fake_value'): '" . implode("', '", $values) . '.');
+        $this->assertContains($fake_value, $values, "\nThe following array should but does not contain our fake value '$fake_value': ['" . implode("', '", $values) . "'].");
       }
     }
 
