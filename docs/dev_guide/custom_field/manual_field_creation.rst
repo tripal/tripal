@@ -292,7 +292,7 @@ Now, we're at a good stopping point with our field! We can close out our if($rec
 
 elementInfo() function
 ~~~~~~~~~~~~~~~~~~~~~~
-The elementInfo() function is necessary to integrate your new field with Drupal Views and Tripal Web Services.  Drupal needs to know what data elements your field provides and Tripal needs to know what vocabulary terms to use for each of the data elements.  Related to vocabulary terms, all fields are assigned an ontology term for the field itself.  Every field has to have one.  But when a field provides more than just a single data value it must also provide vocabulary terms for any sub elements as well.  Our obi__organism field provides the genus, species, etc. sub elements and, therefore, we need to describe these to Drupal and Tripal.  The elementInfo() function from the obi_organism field is as follows:
+The elementInfo() function is necessary to integrate your new field with Drupal Views and Tripal Web Services.  Drupal needs to know what data elements your field provides and Tripal needs to know what vocabulary terms to use for each of the data elements.  Related to vocabulary terms, all fields are assigned an ontology term for the field itself.  Every field has to have an one.   But when a field provides more than just a single data value it must also provide vocabulary terms for any sub elements as well.  Our obi__organism field provides the genus, species, etc. sub elements and, therefore, we need to describe these to Drupal and Tripal.  The elementInfo() function from the obi_organism field is as follows:
 
 .. code-block:: php
 
