@@ -38,7 +38,7 @@ First we provide the name, when we want to run the workflow (i.e. on push and PR
       runs-on: ubuntu-latest
 
 
-We want our tests to be run twice, one for PHP 7.1 and another for PHP 7.1. This is done by specifing a matrix build which can be done as follows:
+We want our tests to be run four times, for each of PHP 7.1, 7.2, 8.0, and 8.1. This is done by specifing a matrix build which can be done as follows:
 
 .. code-block:: yaml
 
@@ -51,7 +51,7 @@ We want our tests to be run twice, one for PHP 7.1 and another for PHP 7.1. This
       # Matrix Build for this job.
       strategy:
         matrix:
-          php-versions: ['7.1', '7.2']
+          php-versions: ['7.1', '7.2', '8.0', '8.1']
 
       # Name the matrix build so we can tell them apart.
       name: PHPUnit Testing (PHP ${{ matrix.php-versions }})
