@@ -130,7 +130,7 @@ jobs:
           POSTGRES_CONNECTION_STRING: 'pgsql://postgres:dbpass@localhost:5432/test_db'
           ACCOUNT_NAME: tripaladmin
           ACCOUNT_PASS: somereallysecurepassword
-          COMPOSER_AUTH: '{"github-oauth":{"github.com":"${{ secrets.API_SPRING }}"}}'
+          COMPOSER_AUTH: '{"github-oauth":{"github.com":"${{ secrets.PUBLIC_API_READONLY }}"}}'
         run: |
           cd $DRUPAL_ROOT/sites/all/modules/tripal
           composer require --dev mheap/phpunit-github-actions-printer

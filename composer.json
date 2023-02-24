@@ -9,7 +9,7 @@
   ],
   "require-dev": {
     "doctrine/instantiator": "1.* || 2.*",
-    "statonlab/tripal-test-suite": "1.*"
+    "statonlab/tripal-test-suite": "1.7.*"
   },
   "autoload": {
     "files": [
