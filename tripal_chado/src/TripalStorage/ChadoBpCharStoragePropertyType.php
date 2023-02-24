@@ -2,11 +2,11 @@
 
 namespace Drupal\tripal_chado\TripalStorage;
 
-use Drupal\tripal\TripalStorage\BpCharStoragePropertyType;
+use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
 
 /**
  * Defines the variable character Tripal storage property type.
  */
-class ChadoBpCharStoragePropertyType extends BpCharStoragePropertyType {
+class ChadoBpCharStoragePropertyType extends VarCharStoragePropertyType {
 
 }
