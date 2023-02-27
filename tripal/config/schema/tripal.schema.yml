@@ -234,6 +234,17 @@ tripal.tripal_fields.*:
                    storage_plugin_settings:
                       type: mapping
                       label: 'Storage Plugin Settings'
+                   termIdSpace:
+                     type: string
+                     label: "Term Id Space"
+                     nullable: false
+                   termAccession:
+                     type: string
+                     label: "Term Accession"
+                     nullable: false
+                   max_length:
+                     type: integer
+                     label: "The maximum size of the field vlaue."                     
                settings:
                  type: mapping
                  label: 'Settings'
