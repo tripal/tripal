@@ -65,6 +65,14 @@ class ChadoSequenceChecksumDefault extends ChadoFieldItemBase {
     $record_id_term = 'SIO:000729';
     $md5checksum_term = $mapping->getColumnTermId('feature', 'md5checksum');
 
+    // Get the length of the database fields so we don't go over the size limit.
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+    $feature_def = $schema->getTableDef('feature', ['format' => 'Drupal']);
+    $md5_checksum_len = $feature_def['fields']['smd5_checksum']['size'];
+
+
+
     // Return the properties for this field.
     $properties = [];
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
@@ -73,7 +81,7 @@ class ChadoSequenceChecksumDefault extends ChadoFieldItemBase {
         'chado_table' => 'feature',
         'chado_column' => 'feature_id'
     ]);
-    $properties[] =  new ChadoBpCharStoragePropertyType($entity_type_id, self::$id, 'md5checksum', $md5checksum_term, '32', [
+    $properties[] =  new ChadoBpCharStoragePropertyType($entity_type_id, self::$id, 'md5checksum', $md5checksum_term, $md5_checksum_len, [
       'action' => 'store',
       'chado_column' => 'md5checksum',
       'chado_table' => 'feature'
