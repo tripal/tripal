@@ -14,7 +14,7 @@ jobs:
     # Matrix Build for this job.
     strategy:
       matrix:
-        php-versions: ['7.1', '7.2', '8.0', '8.1']
+        php-versions: ['7.1', '7.2', '8.0', '8.1', '8.2']
     # Name the matrix build so we can tell them apart.
     name: PHPUnit Testing of Tripal Core (PHP ${{ matrix.php-versions }})
 
