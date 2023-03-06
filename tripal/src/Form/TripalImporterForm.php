@@ -265,7 +265,7 @@ class TripalImporterForm implements FormInterface {
       $form_state->setErrorByName('file_local', t("You must provide a file."));
     }
 
-    // Now allow the loader to do validation of it's form additions.
+    // Now allow the loader to do validation of its form additions.
     $importer->formValidate($form, $form_state);
   }
 }

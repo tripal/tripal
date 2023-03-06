@@ -281,7 +281,7 @@ class PersistentDatabaseSharedLockBackendTest extends KernelTestBase {
     $success = $this->sharedLocker->acquire($lock_name, 180);
     $this->assertTrue($success, 'Could acquire a lock.');
 
-    // Make sure stet lock was not released.
+    // Make sure state lock was not released.
     $this->assertFalse($other_locker->lockMayBeAvailable(PersistentDatabaseSharedLockBackend::STATE_KEY_EXCLUSIVE), 'States still locked.');
     $this->assertFalse($this->sharedLocker->lockMayBeAvailable(PersistentDatabaseSharedLockBackend::STATE_KEY_EXCLUSIVE), 'States still locked even from current shared lock.');
     $this->assertFalse($this->internalLocker->lockMayBeAvailable(PersistentDatabaseSharedLockBackend::STATE_KEY_EXCLUSIVE), 'States not available even from current internal lock.');

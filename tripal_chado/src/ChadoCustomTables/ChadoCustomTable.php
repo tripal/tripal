@@ -263,7 +263,7 @@ class ChadoCustomTable {
 
       // If the table name is different in the provided schema but the user is not
       // forcing a change then this shouldn't be allowed. We don't want to update
-      // the saved schema with a table name mistmatch.
+      // the saved schema with a table name mismatch.
       if ($force == False and $this->table_name != $table_schema['table']) {
         $logger->error('Cannot change the name of the table in the schema without forcing it..');
         return False;

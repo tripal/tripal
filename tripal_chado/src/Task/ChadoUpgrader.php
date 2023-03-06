@@ -567,7 +567,7 @@ class ChadoUpgrader extends ChadoTaskBase {
     $ref_schema = $this->inputSchemas[0];
     $version = $this->parameters['version'];
 
-    // Check if the schema alread exists.
+    // Check if the schema already exists.
     if ($ref_schema->schema()->schemaExists()) {
       // Yes, check minimal structure.
       if (!$ref_schema->schema()->tableExists('chadoprop')) {
@@ -610,7 +610,7 @@ class ChadoUpgrader extends ChadoTaskBase {
         );
       }
       if (!$success) {
-        // Failed to instanciate ref schema. Drop any partial ref schema.
+        // Failed to instantiate ref schema. Drop any partial ref schema.
         try {
           $ref_schema->schema()->dropSchema();
         }
@@ -661,7 +661,7 @@ class ChadoUpgrader extends ChadoTaskBase {
     $ref_schema = $this->inputSchemas[0];
 
     // Get tables that are in current Chado schema and still exist in new
-    // verison.
+    // version.
     $sql_query = "
       SELECT
         DISTINCT c.relname
@@ -1132,7 +1132,7 @@ class ChadoUpgrader extends ChadoTaskBase {
       ->fetchAll()
     ;
     // We use internal PG connection to create functions as function body
-    // contains ';' which is forbiden in Drupal DB queries.
+    // contains ';' which is forbidden in Drupal DB queries.
     foreach ($proto_funcs as $proto_func) {
       // Drop previous version if exists (as it may have a different return
       // type and cause problems).
@@ -1454,7 +1454,7 @@ class ChadoUpgrader extends ChadoTaskBase {
       $this->upgradeQueries[$new_table_name][] = $sql_query;
     }
 
-    // Second loop adds indexes and table contraints without foreign keys.
+    // Second loop adds indexes and table constraints without foreign keys.
     foreach ($new_tables as $new_table_name => $new_table) {
       // Check if table should be skipped.
       if (array_key_exists($new_table_name, $skip_table_column)
@@ -1483,7 +1483,7 @@ class ChadoUpgrader extends ChadoTaskBase {
           $alter_sql[] =
             "ADD CONSTRAINT $new_constraint_name $constraint_def"
           ;
-          // Skip impplicit indexes.
+          // Skip implicit indexes.
           if (preg_match('/(?:^|\s)(?:UNIQUE|PRIMARY\s+KEY)(?:\s|$)/', $constraint_def)) {
             $index_to_skip[$new_constraint_name] = TRUE;
           }
@@ -1542,7 +1542,7 @@ class ChadoUpgrader extends ChadoTaskBase {
       }
     }
 
-    // Third loop adds foreign key contraints.
+    // Third loop adds foreign key constraints.
     foreach ($new_tables as $new_table_name => $new_table) {
       // Check if table should be skipped.
       if (array_key_exists($new_table_name, $skip_table_column)

@@ -583,7 +583,7 @@ function chado_get_base_tables($chado_schema = NULL) {
 /**
  * Get information about which Chado base table a cvterm is mapped to.
  *
- * Vocbulary terms that represent content types in Tripal must be mapped to
+ * Vocabulary terms that represent content types in Tripal must be mapped to
  * Chado tables.  A cvterm can only be mapped to one base table in Chado.
  * This function will return an object that contains the chado table and
  * foreign key field to which the cvterm is mapped.  The 'chado_table' property
@@ -598,7 +598,7 @@ function chado_get_base_tables($chado_schema = NULL) {
  *     - accession:  the accession for the term.
  *     - bundle_id:  the ID for the bundle to which a term is associated.
  *   The 'vocabulary' and 'accession' must be used together, the 'cvterm_id' can
- *   be used on it's own.
+ *   be used on its own.
  * @return object
  *   An object containing the chado_table and chado_field properties or NULL if
  *   if no mapping was found for the term.

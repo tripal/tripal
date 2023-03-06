@@ -201,7 +201,7 @@ class ChadoPreparer extends ChadoTaskBase {
 
       // Rethrow Exception:
       // Make sure to include the original stack trace
-      // in order to actually facillitate debugging.
+      // in order to actually facilitate debugging.
       throw new TaskException(
         "Failed to complete schema integration (i.e. Prepare) task.\n"
         . $e->getMessage() . "\n"
@@ -617,7 +617,7 @@ class ChadoPreparer extends ChadoTaskBase {
 
 
   /**
-   * Creates a view showing the link between an organism & it's analysis through
+   * Creates a view showing the link between an organism & its analysis through
    * associated features.
    *
    */
@@ -972,7 +972,7 @@ class ChadoPreparer extends ChadoTaskBase {
   }
 
   /**
-   * A helper function for inserting OBO recrods into the `tripal_cv_obo` table.
+   * A helper function for inserting OBO records into the `tripal_cv_obo` table.
    *
    * @param array $obo
    *   An associative array with elements needed for each record.

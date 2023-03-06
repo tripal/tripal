@@ -110,18 +110,31 @@ class ChadoSchema extends TripalDbxSchema {
     if (isset($schema['referring_tables'])) {
       foreach ($schema['referring_tables'] as $tablename) {
 
-        // Ignore the cvterm tables, relationships, chadoprop tables.
-        if ($tablename == 'cvterm_dbxref' || $tablename == 'cvterm_relationship' ||
-          $tablename == 'cvtermpath' || $tablename == 'cvtermprop' || $tablename == 'chadoprop' ||
-          $tablename == 'cvtermsynonym' || preg_match('/_relationship$/', $tablename) ||
-          preg_match('/_cvterm$/', $tablename) ||
-          // Ignore prop tables
-          preg_match('/prop$/', $tablename) || preg_match('/prop_.+$/', $tablename) ||
-          // Ignore nd_tables
-          preg_match('/^nd_/', $tablename)) {
-          continue;
+        $is_base_table = TRUE;
+
+        // Ignore the cvterm tables + chadoprop tables.
+        if (in_array($tablename, ['cvterm_dbxref', 'cvterm_relationship', 'cvtermpath', 'cvtermprop', 'chadoprop', 'cvtermsynonym'])) {
+          $is_base_table = FALSE;
         }
-        else {
+        // Ignore relationship linked tables.
+        elseif (preg_match('/_relationship$/', $tablename)) {
+          $is_base_table = FALSE;
+        }
+        // Ignore cvterm annotation linking tables.
+        elseif (preg_match('/_cvterm$/', $tablename)) {
+          $is_base_table = FALSE;
+        }
+        // Ignore property tables.
+        elseif (preg_match('/prop$/', $tablename) || preg_match('/prop_.+$/', $tablename)) {
+          $is_base_table = FALSE;
+        }
+        // Ignore natural diversity tables.
+        elseif (preg_match('/^nd_/', $tablename)) {
+          $is_base_table = FALSE;
+        }
+
+        // If it's not any of the above then add it to the list.
+        if ($is_base_table === TRUE) {
           array_push($base_tables, $tablename);
         }
       }
@@ -168,7 +181,7 @@ class ChadoSchema extends TripalDbxSchema {
   /**
    * Get information about which Chado base table a cvterm is mapped to.
    *
-   * Vocbulary terms that represent content types in Tripal must be mapped to
+   * Vocabulary terms that represent content types in Tripal must be mapped to
    * Chado tables.  A cvterm can only be mapped to one base table in Chado.
    * This function will return an object that contains the chado table and
    * foreign key field to which the cvterm is mapped.  The 'chado_table'
@@ -184,7 +197,7 @@ class ChadoSchema extends TripalDbxSchema {
    *     - accession:  the accession for the term.
    *     - bundle_id:  the ID for the bundle to which a term is associated.
    *   The 'vocabulary' and 'accession' must be used together, the 'cvterm_id'
-   *   can be used on it's own.
+   *   can be used on its own.
    *
    * @return
    *   An object containing the chado_table and chado_field properties or NULL

@@ -39,7 +39,7 @@ class ChadoCustomTableForm extends FormBase {
     $default_force_drop = 0;
     $default_chado_schema = $chado->getSchemaName();
 
-    // If this is an edit then set the form detafauls differently.
+    // If this is an edit then set the form defaults differently.
     if (strcmp($action, 'Edit') == 0) {
 
       $custom_table = $custom_tables->loadById($table_id);

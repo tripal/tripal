@@ -21,15 +21,15 @@ tripal.tripal_content_terms.*:
         mapping:
           name:
             type: string
-            label: 'Vocbulary Name'
+            label: 'Vocabulary Name'
             nullable: false
           label:
             type: string
-            label: 'Vocbulary Label'
+            label: 'Vocabulary Label'
             nullable: false
           url:
             type: string
-            label: 'Vocbulary URL'
+            label: 'Vocabulary URL'
             nullable: false
           idSpaces:
             type: sequence

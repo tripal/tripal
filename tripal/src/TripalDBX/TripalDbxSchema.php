@@ -9,7 +9,7 @@ use Drupal\tripal\TripalDBX\Exceptions\SchemaException;
 /**
  * Tripal DBX API Schema class.
  *
- * NOTE: This class should not be instanciated directly but rather it should
+ * NOTE: This class should not be instantiated directly but rather it should
  * be accessed through a TripalDbxConnection object using the schema() method.
  *
  * This class provides a Tripal-specific implementation of the Drupal Schema
@@ -106,14 +106,14 @@ abstract class TripalDbxSchema extends PgSchema {
    *
    * Overrides default constructor to manage the Tripal DBX managed schema name.
    *
-   * The TripalDbxSchema object should be instanciated by the
+   * The TripalDbxSchema object should be instantiated by the
    * TripalDbxConnection::schema() method in order to avoid issues when the
    * default Tripal DBX managed schema name is changed in the TripalDbxConnection
    * object which could lead to issues.
    *
-   * If you choose to instanciate a TripalDbxSchema object yourself, you are
+   * If you choose to instantiate a TripalDbxSchema object yourself, you are
    * responsible to not change the Tripal DBX managed schema name of the connection
-   * object used to instanciate this TripalDbxSchema.
+   * object used to instantiate this TripalDbxSchema.
    *
    * @param \Drupal\tripal\TripalDBX\TripalDbxConnection $connection
    *   A Tripal DBX connection object.
@@ -747,7 +747,7 @@ EOD;
     ;
 
     $tables = [];
-    // Get original schema to differenciate base and custom.
+    // Get original schema to differentiate base and custom.
     $schema_def = $this->getSchemaDef(['source' => 'file']);
 
     // Check if tables should be filtered according to their origin

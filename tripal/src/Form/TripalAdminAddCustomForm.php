@@ -125,7 +125,7 @@ class TripalAdminAddCustomForm extends ConfigFormBase {
     $quota = $form_state->getValue('quota');
     $expiration = $form_state->getValue('expiration');
 
-    // if the 2nd element of the qutoa string occupied by a valid suffix we need to check to see
+    // if the 2nd element of the quota string occupied by a valid suffix we need to check to see
     // what we have to multiply the value by (1024 for GB 1024^2 for TB because
     // we assume that the initial number is already in MB)
     $matches = [];

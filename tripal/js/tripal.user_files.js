@@ -63,7 +63,7 @@
   }
   
   /**
-   * Expands a node in the CV tree browser and loads it's children via AJAX.
+   * Expands a node in the CV tree browser and loads its children via AJAX.
    */
   function expandNode(item){
     item.removeClass('tree-node-closed');
