@@ -168,7 +168,7 @@ class ChadoRecordTest extends TripalTestCase {
     $record = new \ChadoRecord($table);
 
     $record->setValue($table . '_id', 'unfindable');
-    $this->expectException(Exception);
+    $this->expectException(\Exception::class);
     $found = $record->find();
   }
 
@@ -254,7 +254,7 @@ class ChadoRecordTest extends TripalTestCase {
     $this->assertNotEmpty($result, 'we couldnt insert our record on a save!');
 
     //If we insert again, it should fail
-    $this->expectException(EXCEPTION);
+    $this->expectException(\Exception::class);
     $record->insert();
   }
 

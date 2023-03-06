@@ -34,7 +34,8 @@ class TripalChadoOrganismAPITest extends TripalTestCase {
     foreach ($results as $result) {
       $this->assertNotFalse($result);
       $this->assertNotNull($result);
-      $this->assertObjectHasAttribute('genus', $result);
+      $properties = get_object_vars($result);
+      $this->assertArrayHasKey('genus', $properties);
       $this->assertEquals($genus_string, $result->genus);
     }
   }
