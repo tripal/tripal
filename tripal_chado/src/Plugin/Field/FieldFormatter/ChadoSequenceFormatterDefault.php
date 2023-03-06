@@ -29,9 +29,12 @@ class ChadoSequenceFormatterDefault extends ChadoFormatterBase {
     $elements['#attached']['library'][] = 'tripal_chado/tripal_chado.field.ChadoSequenceFormatterDefault';
 
     foreach($items as $delta => $item) {
-      $elements[$delta] = [
-        "#markup" => "<pre id='tripal-chado-sequence-format'>" . wordwrap($item->get('residues')->getString(),50,'<br>',TRUE) . "</pre>",
-      ];
+      $residues = $item->get('residues')->getString();
+      if (!empty($residues)) {
+        $elements[$delta] = [
+          "#markup" => "<pre id='tripal-chado-sequence-format'>" . wordwrap($residues,50,'<br>',TRUE) . "</pre>",
+        ];
+      }
     }
 
     return $elements;
