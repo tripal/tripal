@@ -23,9 +23,9 @@ class ChadoSchema extends TripalDbxSchema {
       ?? $this->connection->getVersion()
       ?? $DEFAULT_VERSION
     ;
-dpm($source, 'source for getSchemaDef in t_c/src/Database/ChadoSchema.php'); //@@@
-dpm($format, 'format for getSchemaDef in t_c/src/Database/ChadoSchema.php'); //@@@
-dpm($version, 'version for getSchemaDef in t_c/src/Database/ChadoSchema.php'); //@@@
+//dpm($source, 'source for getSchemaDef in t_c/src/Database/ChadoSchema.php'); //@@@
+//dpm($format, 'format for getSchemaDef in t_c/src/Database/ChadoSchema.php'); //@@@
+//dpm($version, 'version for getSchemaDef in t_c/src/Database/ChadoSchema.php'); //@@@
     if (!empty($parameters['clear'])) {
       $schema_structure = [];
     }
@@ -45,7 +45,7 @@ dpm($version, 'version for getSchemaDef in t_c/src/Database/ChadoSchema.php'); /
 
     // Check cache and compute if needed.
     if (empty($schema_structure[$cache_key])) {
-dpm($cache_key, 'cache empty for getSchemaDef in t_c/src/Database/ChadoSchema.php'); //@@@
+//dpm($cache_key, 'cache empty for getSchemaDef in t_c/src/Database/ChadoSchema.php'); //@@@
       if ('file' == $source) {
         $filename =
           \Drupal::service('extension.list.module')->getPath('tripal_chado')
@@ -53,7 +53,7 @@ dpm($cache_key, 'cache empty for getSchemaDef in t_c/src/Database/ChadoSchema.ph
           . $version
           . '.yml'
         ;
-dpm($filename, 'filename for getSchemaDef in t_c/src/Database/ChadoSchema.php'); //@@@
+//dpm($filename, 'filename for getSchemaDef in t_c/src/Database/ChadoSchema.php'); //@@@
         // Make sure we got a valid version format.
         if (!preg_match('/^\\d\\.\\d$/', $version)
             || !file_exists($filename)
@@ -62,7 +62,7 @@ dpm($filename, 'filename for getSchemaDef in t_c/src/Database/ChadoSchema.php');
         }
         $schema_structure[$cache_key] =
           Yaml::parse(file_get_contents($filename));
-dpm($schema_structure[$cache_key]['project'], 'project for getSchemaDef in t_c/src/Database/ChadoSchema.php'); //@@@
+//dpm($schema_structure[$cache_key]['project'], 'project for getSchemaDef in t_c/src/Database/ChadoSchema.php'); //@@@
       }
       elseif ('database' == $source) {
         // Use Schema object to fetch each table structures from database.
