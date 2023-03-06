@@ -45,7 +45,7 @@ class TripalChadoPropertyAPITest extends TripalTestCase {
     $this->assertNotEmpty($result);
     $this->assertEquals($value, $result->value);
     $this->assertEquals($term->cvterm_id, $result->type_id);
-    $this->assertEquals('0', $result->rank);
+    $this->assertEquals(0, $result->rank);
 
   }
 

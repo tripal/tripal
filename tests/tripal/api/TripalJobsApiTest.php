@@ -27,7 +27,8 @@ class TripalJobsApiTest extends TripalTestCase {
     $job2 = tripal_get_job($job->job_id);
 
     $this->assertNotEmpty($job2);
-    $this->assertObjectHasAttribute('job_id', $job2);
+    $properties = get_object_vars($job2);
+    $this->assertArrayHasKey('job_id', $properties);
     $this->assertEquals($job2->job_id, $job->job_id);
   }
 
