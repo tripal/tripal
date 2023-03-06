@@ -422,7 +422,7 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
         // For text fields that were not handled by a TripalField class we
         // want to automatically expand those fields.
         else {
-          if ($schema['fields'][$field_column]['type'] == 'text') {
+          if ($record and $schema['fields'][$field_column]['type'] == 'text') {
             $record = chado_expand_var($record, 'field', "$field_table.$field_column");
             $entity->{$field_name}['und'][0]['value'] = $record->$field_column;
             // Text fields that have a text_processing == 1 setting need a
