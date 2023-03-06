@@ -84,14 +84,7 @@ class obi__organism extends ChadoFieldItemBase {
 
     $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
     $base_pkey_col = $base_schema_def['primary key'];
-    $base_fk_col = NULL;
-    if (isset($base_schema_def['foreign keys']['organism']['columns'])) {
-      $base_fk_col = array_keys($base_schema_def['foreign keys']['organism']['columns'])[0];
-    }
-    else {
-      throw new \Exception(t('base table @base_table does not support adding this field',
-        ['@base_table' => $base_table]));
-    }
+    $base_fk_col = array_keys($base_schema_def['foreign keys']['organism']['columns'])[0];
 
     // Get the property terms by using the Chado table columns they map to.
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
