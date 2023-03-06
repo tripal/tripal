@@ -81,10 +81,10 @@ class obi__organism extends ChadoFieldItemBase {
       ];
     }
     $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
-ob_start(); var_dump($base_schema_def); $astring = ob_get_clean(); //@@@
-file_put_contents( "/dev/shm/0304a", "CP1 base_schema_def=\"$astring\"\n", FILE_APPEND ); //@@@
+//ob_start(); var_dump($base_schema_def); $astring = ob_get_clean(); //@@@
+//file_put_contents( "/dev/shm/0304a", "CP1 base_schema_def=\"$astring\"\n", FILE_APPEND ); //@@@
 
-dpm($base_schema_def, 'base_schema_def'); //@@@
+//dpm($base_schema_def, 'base_schema_def'); //@@@
     $base_pkey_col = $base_schema_def['primary key'];
     $base_fk_col = array_keys($base_schema_def['foreign keys']['organism']['columns'])[0];
 
