@@ -8,11 +8,12 @@
  *
  ***** RUN USING DRUSH ****
  * Example Usage:
- *   drush php-script modules/t4d8/tripal_chado/chado_schema/generate_chado_schema_yaml.php -v 1.3 > file
+ *   drush php-script modules/t4d8/tripal_chado/chado_schema/generate_chado_schema_yaml.php > file
  */
 
 
 $version = $arguments['v'];
+$safe_version = preg_replace('/\./', '_', $version);
 
 // Iterate through the tables of Chado and use the Schema module to
 // generate a schema array for each table.
