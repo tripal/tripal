@@ -13,8 +13,8 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  *
  * @FieldWidget(
  *   id = "chado_sequence_widget_default",
- *   label = @Translation("Chado Sequence Widget"),
- *   description = @Translation("The default chado sequence widget."),
+ *   label = @Translation("Chado Sequence Residues Widget"),
+ *   description = @Translation("The default chado sequence widget which allows curators to manually enter sequence residues on the content edit page."),
  *   field_types = {
  *     "chado_sequence_default"
  *   }
@@ -49,7 +49,7 @@ class ChadoSequenceWidgetDefault extends ChadoWidgetBase {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
-    
+
     // Remove any empty values that aren't mapped to a record id.
     foreach ($values as $val_key => $value) {
       $values[$val_key]['residues'] = preg_replace('/\s/', '', $value['residues']);

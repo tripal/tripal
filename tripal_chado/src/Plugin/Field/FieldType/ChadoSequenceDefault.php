@@ -13,8 +13,8 @@ use Drupal\core\Field\FieldDefinitionInterface;
  *
  * @FieldType(
  *   id = "chado_sequence_default",
- *   label = @Translation("Chado Feature Sequence"),
- *   description = @Translation("A chado feature sequence"),
+ *   label = @Translation("Chado Sequence Residues"),
+ *   description = @Translation("Manages sequence residues for content types storing data in the chado feature table."),
  *   default_widget = "chado_sequence_widget_default",
  *   default_formatter = "chado_sequence_formatter_default"
  * )
@@ -45,6 +45,7 @@ class ChadoSequenceDefault extends ChadoFieldItemBase {
    */
   public static function defaultStorageSettings() {
     $settings = parent::defaultStorageSettings();
+    $settings['storage_plugin_settings']['base_table'] = 'feature';
     return $settings;
   }
 
