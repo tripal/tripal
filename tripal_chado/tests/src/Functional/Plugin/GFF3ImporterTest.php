@@ -1313,11 +1313,45 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
         $this->assertEquals($row->c1, 1);
       } 
       
-      // TODO: Ask Stephen how to make sense of the feature_relationship
-      // $results = $chado->query("SELECT * FROM {1:feature_relationship} fr LEFT JOIN {1:cvterm} c ON c.cvterm_id = fr.type_id");
-      // foreach ($results as $row) {
-      //   print_r($row);
-      // }    
+      // Check to make sure landmark exists in featureloc table
+      $results = $chado->query("SELECT count(*) as c1 FROM {1:featureloc} fl 
+       LEFT JOIN {1:feature} f 
+       ON fl.feature_id = f.feature_id
+       WHERE uniquename = :landmark_name", 
+       [':landmark_name' => 'chr1_h1']);
+      foreach ($results as $row) {
+        $this->assertEquals($row->c1, 1);
+      }
+
+      // Check to make sure landmark exists in featureloc table
+      $results = $chado->query("SELECT count(*) as c1 FROM {1:featureloc} fl 
+       LEFT JOIN {1:feature} f 
+       ON fl.feature_id = f.feature_id
+       WHERE uniquename = :landmark_name", 
+       [':landmark_name' => 'chr2_h1']);
+      foreach ($results as $row) {
+        $this->assertEquals($row->c1, 1);
+      }
+
+      // Check to make sure landmark exists in featureloc table
+      $results = $chado->query("SELECT count(*) as c1 FROM {1:featureloc} fl 
+       LEFT JOIN {1:feature} f 
+       ON fl.feature_id = f.feature_id
+       WHERE uniquename = :landmark_name", 
+       [':landmark_name' => 'chr3_h1']);
+      foreach ($results as $row) {
+        $this->assertEquals($row->c1, 1);
+      } 
+      
+      // Check to make sure landmark exists in featureloc table
+      $results = $chado->query("SELECT count(*) as c1 FROM {1:featureloc} fl 
+       LEFT JOIN {1:feature} f 
+       ON fl.feature_id = f.feature_id
+       WHERE uniquename = :landmark_name", 
+       [':landmark_name' => 'chr4_h1']);
+      foreach ($results as $row) {
+        $this->assertEquals($row->c1, 1);
+      }         
 
     } 
     catch (\Exception $ex) {
@@ -1331,72 +1365,108 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     
       
     // TODO: Ask Stephen about the $cds['organism_id'] undefined error
-    // /**
-    //  * Run the GFF loader on Citrus GFF3 for testing.
-    //  *
-    //  * This tests whether the GFF loader adds Citrus data
-    //  * character. 
-    //  * The GFF loader should allow it
-    //  */    
-    // $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
-    // $run_args = [
-    //   'files' => [
-    //     0 => [
-    //       'file_path' => __DIR__ . '/../../../fixtures/gff3_loader/gff_Citrus_sinensis-orange1.1g015632m.g.gff3'
-    //     ]
-    //   ],
-    //   'schema_name' => $schema_name,
-    //   'analysis_id' => $analysis_id,
-    //   'organism_id' => $organism_id,
-    //   'use_transaction' => 1,
-    //   'add_only' => 0,
-    //   'update' => 1,
-    //   'create_organism' => 0,
-    //   'create_target' => 0,
-    //   // regexps for mRNA and protein.
-    //   're_mrna' => NULL,
-    //   're_protein' => NULL,
-    //   // optional
-    //   'target_organism_id' => NULL,
-    //   'target_type' => NULL,
-    //   'start_line' => NULL,
-    //   'line_number' => NULL, // Previous error without this
-    //   'landmark_type' => 'supercontig',
-    //   'alt_id_attr' => NULL,
-    //   'skip_protein' => NULL,
-    // ];
+    /**
+     * Run the GFF loader on Citrus GFF3 for testing.
+     *
+     * This tests whether the GFF loader adds Citrus data
+     * character. 
+     * The GFF loader should allow it
+     */    
+    $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
+    $run_args = [
+      'files' => [
+        0 => [
+          'file_path' => __DIR__ . '/../../../fixtures/gff3_loader/gff_Citrus_sinensis-orange1.1g015632m.g.gff3'
+        ]
+      ],
+      'schema_name' => $schema_name,
+      'analysis_id' => $analysis_id,
+      'organism_id' => $organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      // regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      // optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'line_number' => NULL, // Previous error without this
+      'landmark_type' => 'supercontig',
+      'alt_id_attr' => NULL,
+      'skip_protein' => NULL,
+    ];
 
-    // $file_details = [
-    //   'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_Citrus_sinensis-orange1.1g015632m.g.gff3',
-    // ];
+    $file_details = [
+      'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_Citrus_sinensis-orange1.1g015632m.g.gff3',
+    ];
 
-    // $has_exception = false;
-    // try {
-    //   $gff3_importer->create($run_args, $file_details);
-    //   $gff3_importer->prepareFiles();
-    //   $gff3_importer->run();
-    //   $gff3_importer->postRun();
+    $has_exception = false;
+    try {
+      $gff3_importer->create($run_args, $file_details);
+      $gff3_importer->prepareFiles();
+      $gff3_importer->run();
+      $gff3_importer->postRun();
 
-    //   // $results = $chado->query("SELECT count(*) as c1 FROM {1:feature} 
-    //   //   WHERE uniquename ILIKE :value",[
-    //   //   ':value' => 'chr1_h1'
-    //   // ]);
-    //   // foreach ($results as $row) {
-    //   //   $this->assertEquals($row->c1, 1);
-    //   // }
+      // Check to make sure landmark (scaffold0001) exists in featureloc table
+      $results = $chado->query("SELECT count(*) as c1 FROM {1:featureloc} fl 
+       LEFT JOIN {1:feature} f 
+       ON fl.feature_id = f.feature_id
+       LEFT JOIN {1:cvterm} c
+       ON c.cvterm_id = f.type_id
+       WHERE uniquename = :landmark_name", 
+       [':landmark_name' => 'scaffold00001']);
+      foreach ($results as $row) {
+        $this->assertEquals($row->c1, 1);
+      } 
 
-    // } 
-    // catch (\Exception $ex) {
-    //   $message = $ex->getMessage();
-    //   print_r($message);
-    //   print_r($ex->getTraceAsString());
-    //   $has_exception = true;
-    // }
-    // $this->assertEquals($has_exception, false, 'This file 
-    //   gff_Citrus_sinensis-orange1.1g015632m.g.gff3 should not produce 
-    //   an exception but did.');
+      // Check to make sure feature orange1.1g015632m.g of type name gene
+      $results = $chado->query("SELECT count(*) as c1 FROM 
+        (SELECT * FROM {1:feature} f 
+          LEFT JOIN {1:cvterm} c
+          ON c.cvterm_id = f.type_id
+          WHERE uniquename = :landmark_name
+          AND c.name = :name
+        ) as table1", 
+       [
+        ':landmark_name' => 'orange1.1g015632m.g',
+        ':name' => 'gene'
+       ]);
+      foreach ($results as $row) {
+        $this->assertEquals($row->c1, 1);
+        // print_r($row);
+      }       
+
+      // Check to make sure feature orange1.1g015632m.g of type name gene
+      $results = $chado->query("SELECT count(*) as c1 FROM 
+        (SELECT * FROM {1:feature} f 
+          LEFT JOIN {1:cvterm} c
+          ON c.cvterm_id = f.type_id
+          WHERE uniquename = :landmark_name
+          AND c.name = :name
+        ) as table1", 
+       [
+        ':landmark_name' => 'PAC:18136217',
+        ':name' => 'mRNA'
+       ]);
+      foreach ($results as $row) {
+        $this->assertEquals($row->c1, 1);
+        // print_r($row);
+      }
+
+    } 
+    catch (\Exception $ex) {
+      $message = $ex->getMessage();
+      print_r($message);
+      print_r($ex->getTraceAsString());
+      $has_exception = true;
+    }
+    $this->assertEquals($has_exception, false, 'This file 
+      gff_Citrus_sinensis-orange1.1g015632m.g.gff3 should not produce 
+      an exception but did.');
       
-
-   
   }
 }

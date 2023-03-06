@@ -1855,6 +1855,11 @@ class GFF3Importer extends ChadoImporterBase {
           $uname = preg_replace("/" . $this->re_mrna . "/", $this->re_protein, $parent_name);
         }
 
+        // Modified by Rish due to undefined errors in unit testing
+        if (!isset($cds['organism_id'])) {
+          $cds['organism_id'] = NULL;
+        }
+
         // Now create the protein feature.
         $feature = [
           'line' => $cds['line'],
@@ -3362,6 +3367,10 @@ class GFF3Importer extends ChadoImporterBase {
         $sql .= "(:feature_id_$i, :analysis_id_$i, :significance_$i),\n";
         $args[":feature_id_$i"] = $feature_id;
         $args[":analysis_id_$i"] = $this->analysis->analysis_id;
+        // Modified by Rish due to undefined errors in unit testing
+        if (!isset($feature['score'])) {
+          $feature['score'] = '.';
+        }
         if (strcmp($feature['score'], '.') != 0) {
           $args[":significance_$i"] = $feature['score'];
         }
