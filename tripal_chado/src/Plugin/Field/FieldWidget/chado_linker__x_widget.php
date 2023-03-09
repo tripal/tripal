@@ -27,54 +27,40 @@ class chado_linker__x_widget extends ChadoWidgetBase {
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
 
-    // Get the field settings.
-    $field_definition = $items[$delta]->getFieldDefinition();
-    $field_settings = $field_definition->getSettings();
+    // Get the list of contacts.
+    $contacts = [];
+    $chado = \Drupal::service('tripal_chado.database');
+    $query = $chado->select('contact', 'c');
+    $query->leftJoin('cvterm', 'cvt', 'c.type_id = cvt.cvterm_id');
+    $query->fields('c', ['contact_id', 'name', 'description']);
+    $query->addField('cvt', 'name', 'contact_type');
+    $query->orderBy('name', 'contact_type');
+    $results = $query->execute();
+    while ($contact = $results->fetchObject()) {
+      $contact_name = $contact->name;
+      if ($contact->contact_type) {
+        $contact_name .= ' (' . $contact->contact_type . ')';
+      }
+      $contacts[$contact->contact_id] = $contact_name;
+    }
 
-    // Get the default values.
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
-    $prop_id = $item_vals['prop_id'] ?? 0;
-    $linker_id = $item_vals['linker_id'] ?? 0;
-    $default_value = $item_vals['value'] ?? '';
-    $term_id = NULL;
-    if ($field_settings['termIdSpace'] and $field_settings['termAccession']) {
-      $idSpace_manager = \Drupal::service('tripal.collection_plugin_manager.idspace');
-      $idSpace = $idSpace_manager->loadCollection($field_settings['termIdSpace']);
-
-      $term = $idSpace->getTerm($field_settings['termAccession']);
-      $term_id = $term->getInternalId();
-    }
+    $contact_id = $item_vals['contact_id'] ?? 0;
 
     $elements = [];
     $elements['record_id'] = [
       '#type' => 'value',
       '#default_value' => $record_id,
     ];
-    $elements['prop_id'] = [
-      '#type' => 'value',
-      '#default_value' => $prop_id,
+    $elements['contact_id'] = $element + [
+      '#type' => 'select',
+      '#options' => $contacts,
+      '#default_value' => $contact_id,
+      '#placeholder' => $this->getSetting('placeholder'),
+      '#empty_option' => '-- Select --',
     ];
-    $elements['linker_id'] = [
-      '#type' => 'value',
-      '#value' => $linker_id,
-    ];
-//    $elements['type_id'] = [
-//      '#type' => 'value',
-//      '#value' => $term_id,
-//    ];
-    $elements['value'] = $element + [
-      '#type' => 'textarea',
-      '#default_value' => $default_value,
-      '#title' => '',
-      '#description' => '',
-      '#rows' => '',
-      '#required' => FALSE,
-    ];
-//    $elements['rank'] = [
-//      '#type' => 'value',
-//      '#value' => $delta,
-//    ];
+
     return $elements;
   }
 
@@ -88,7 +74,6 @@ class chado_linker__x_widget extends ChadoWidgetBase {
     $storage_settings = $this->getFieldSetting('storage_plugin_settings');
     $linker_table = $storage_settings['linker_table'];
 //    $rank_term = $this->sanitizeKey($mapping->getColumnTermId($linker_table, 'rank'));
-
     // Remove any empty values that aren't mapped to a record id.
     foreach ($values as $val_key => $value) {
       if ($value['value'] == '' and $value['record_id'] == 0) {
