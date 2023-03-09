@@ -81,7 +81,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       if (!array_key_exists($field_name, $this->property_types[$entity_type])) {
         $this->property_types[$entity_type][$field_name] = [];
       }
-      if (array_key_exists($key, $this->property_types[$entity_type])) {
+      if (array_key_exists($key, $this->property_types[$entity_type][$field_name])) {
         $logger->error('Cannot add a property type, "@prop", as it already exists',
             ['@prop' => $entity_type . '.' . $field_name . '.' . $key]);
         return FALSE;
@@ -116,7 +116,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       $key = $type->getKey();
       if (array_key_exists($entity_type, $this->property_types)) {
         if (array_key_exists($field_type, $this->property_types[$entity_type])) {
-          if (array_key_exists($key, $this->property_types[$entity_type])) {
+          if (array_key_exists($key, $this->property_types[$entity_type][$field_type])) {
             unset($this->property_types[$entity_type][$field_type][$key]);
           }
         }
