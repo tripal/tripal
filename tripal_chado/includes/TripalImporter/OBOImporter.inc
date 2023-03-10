@@ -484,10 +484,12 @@ class OBOImporter extends TripalImporter {
         form_set_error('obo_name', 'The vocabulary name must be different from existing vocabularies');
       }
       // Make sure the file exists. First check if it is a relative path
-      $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $obo_file;
-      if (!file_exists($dfile)) {
-        if (!file_exists($obo_file)) {
-          form_set_error('obo_file', t('The specified path, !path, does not exist or cannot be read.', ['!path' => $dfile]));
+      if ($obo_file) {
+        $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $obo_file;
+        if (!file_exists($dfile)) {
+          if (!file_exists($obo_file)) {
+            form_set_error('obo_file', t('The specified path, !path, does not exist or cannot be read.', ['!path' => $dfile]));
+          }
         }
       }
       if (!$obo_url and !$obo_file) {
