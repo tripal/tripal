@@ -474,12 +474,12 @@ class OBOImporter extends ChadoImporterBase {
     $public = \Drupal::database();
 
     $obo_id = $form_state->getValue('obo_id');
-    $obo_name = trim($form_state->getValue('obo_name'));
-    $obo_url = trim($form_state->getValue('obo_url'));
-    $obo_file = trim($form_state->getValue('obo_file'));
-    $uobo_name = trim($form_state->getValue('uobo_name'));
-    $uobo_url = trim($form_state->getValue('uobo_url'));
-    $uobo_file = trim($form_state->getValue('uobo_file'));
+    $obo_name = trim($form_state->getValue('obo_name')??'');
+    $obo_url = trim($form_state->getValue('obo_url')??'');
+    $obo_file = trim($form_state->getValue('obo_file')??'');
+    $uobo_name = trim($form_state->getValue('uobo_name')??'');
+    $uobo_url = trim($form_state->getValue('uobo_url')??'');
+    $uobo_file = trim($form_state->getValue('uobo_file')??'');
     // Make sure if the name is changed it doesn't conflict with another OBO.
     if ($form_state->getTriggeringElement()['#name'] == 'update_obo' ) {
 
