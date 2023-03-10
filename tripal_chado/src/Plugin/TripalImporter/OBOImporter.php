@@ -480,10 +480,8 @@ class OBOImporter extends ChadoImporterBase {
     $uobo_name = trim($form_state->getValue('uobo_name'));
     $uobo_url = trim($form_state->getValue('uobo_url'));
     $uobo_file = trim($form_state->getValue('uobo_file'));
-
     // Make sure if the name is changed it doesn't conflict with another OBO.
-    if ($form_state->getTriggeringElement()['#name'] == 'update_obo_details'  or
-        $form_state->getTriggeringElement()['#name'] == 'update_load_obo') {
+    if ($form_state->getTriggeringElement()['#name'] == 'update_obo' ) {
 
       // Get the current record
       $vocab = $public->select('tripal_cv_obo', 't')
@@ -495,11 +493,13 @@ class OBOImporter extends ChadoImporterBase {
         $form_state->setErrorByName('uobo_name', t('The vocabulary name must be different from existing vocabularies'));
       }
       // Make sure the file exists. First check if it is a relative path
-      $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $uobo_file;
-      if (!file_exists($dfile)) {
-        if (!file_exists($uobo_file)) {
-          $form_state->setErrorByName('uobo_file',
-              t('The specified path, @path, does not exist or cannot be read.'), ['@path' => $dfile]);
+      if ($uobo_file) {
+        $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $uobo_file;
+        if (!file_exists($dfile)) {
+          if (!file_exists($uobo_file)) {
+            $form_state->setErrorByName('uobo_file',
+                t('The specified path, @path, does not exist or cannot be read.', ['@path' => $dfile]));
+          }
         }
       }
       if (!$uobo_url and !$uobo_file) {
@@ -520,11 +520,13 @@ class OBOImporter extends ChadoImporterBase {
         $form_state->setErrorByName('obo_name', t('The vocabulary name must be different from existing vocabularies'));
       }
       // Make sure the file exists. First check if it is a relative path
-      $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $obo_file;
-      if (!file_exists($dfile)) {
-        if (!file_exists($obo_file)) {
-          $form_state->setErrorByName('obo_file',
-              t('The specified path, @path, does not exist or cannot be read.'), ['@path' => $dfile]);
+      if ($obo_file) {
+        $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $obo_file;
+        if (!file_exists($dfile)) {
+          if (!file_exists($obo_file)) {
+            $form_state->setErrorByName('obo_file',
+                t('The specified path, @path, does not exist or cannot be read.', ['@path' => $dfile]));
+          }
         }
       }
       if (!$obo_url and !$obo_file) {
