@@ -487,7 +487,7 @@ class OBOImporter extends TripalImporter {
       $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $obo_file;
       if (!file_exists($dfile)) {
         if (!file_exists($obo_file)) {
-          form_set_error('obo_file', t('The specified path, !path, does not exist or cannot be read.'), ['!path' => $dfile]);
+          form_set_error('obo_file', t('The specified path, !path, does not exist or cannot be read.', ['!path' => $dfile]));
         }
       }
       if (!$obo_url and !$obo_file) {
