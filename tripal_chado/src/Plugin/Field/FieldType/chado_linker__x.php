@@ -86,80 +86,84 @@ class chado_linker__x extends ChadoFieldItemBase {
     $link_fk_col = array_keys($link_schema_def['foreign keys'][$base_table]['columns'])[0];
     // to-do check here in reverse direction for fk_col????
     $link_obj_col = 'contact_id';
+    $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
+    $object_pkey_col = object_schema_def['primary key'];
 
     // Get the property terms by using the Chado table columns they map to.
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
     $record_id_term = 'local:contact';
     $link_term = $mapping->getColumnTermId($linker_table, $link_fk_col);
-    $object_term = $mapping->getColumnTermId($object_table, $link_obj_col);
+    $object_pkey_term = $mapping->getColumnTermId($object_table, $object_pkey_col);  // @@@ same as $link_obj_col
+//    $object_term = $mapping->getColumnTermId($object_table, $link_obj_col);
     $value_term = $mapping->getColumnTermId($object_table, 'name');
 //    $value_term = $mapping->getColumnTermId($linker_table, 'value');
 //    $rank_term = $mapping->getColumnTermId($linker_table, 'rank');
 //    $type_id_term = $mapping->getColumnTermId($linker_table, 'type_id');
 
     // Create the property types.
-    $x = [
-      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
-        'action' => 'store_id',
-        'drupal_store' => TRUE,
-        'chado_table' => $base_table,
-        'chado_column' => $base_pkey_col,
-      ]),
-
-      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', $record_id_term, [
-        'action' => 'store_pkey',
-        'drupal_store' => TRUE,
-        'chado_table' => $linker_table,
-        'chado_column' => $link_pkey_col,
-      ]),
-      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'subject_id', $link_term, [
-        'action' => 'store_link',
-        'drupal_store' => TRUE,
-        'chado_table' => $linker_table,
-        'chado_column' => $link_fk_col,
-      ]),
-//      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', $link_term, [
-//        'action' => 'store',
-//        'chado_table' => $linker_table,
-//        'chado_column' => $link_fk_col,
-//      ]),
-
-      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'object_id', $object_term, [
-        'action' => 'store_link',
-        'drupal_store' => TRUE,
-        'chado_table' => $linker_table,
-        'chado_column' => $link_obj_col,
-      ]),
-//      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'object_id', $object_term, [
-//        'action' => 'store',
-//        'chado_table' => $linker_table,
-//        'chado_column' => $link_obj_col,
-//      ]),
-
-      new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, [
-        'action' => 'join',
-        'path' => $base_table . '.project_id>' . $linker_table . '.project_id'
-          . ';' . $linker_table . '.contact_id>' . $object_table . '.contact_id',
-        'chado_table' => $object_table,
-        'chado_column' => 'name',
-        'as' => 'value',
-        'delete_if_empty' => TRUE,
-        'empty_value' => ''
-      ]),
-//      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'rank', $rank_term,  [
-//        'action' => 'store',
-//        'chado_table' => $linker_table,
-//        'chado_column' => 'rank'
-//      ]),
-//      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'type_id', $type_id_term, [
-//        'action' => 'store',
-//        'chado_table' => $linker_table,
-//        'chado_column' => 'type_id'
-//      ]),
-
+    $properties = [];
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
+      'action' => 'store_id',
+      'drupal_store' => TRUE,
+      'chado_table' => $base_table,
+      'chado_column' => $base_pkey_col,
     ];
-    return $x;
+
+    // These three records define the values in the linker table.
+    // type_id and rank are not in all linker tables
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', $record_id_term, [
+      'action' => 'store_pkey',
+      'drupal_store' => TRUE,
+      'chado_table' => $linker_table,
+      'linked_table' => $object_table,
+      'chado_column' => $link_pkey_col,
+    ];
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'subject_id', $link_term, [
+      'action' => 'store_link',
+      'drupal_store' => TRUE,
+      'chado_table' => $linker_table,
+      'chado_column' => $link_fk_col,
+    ];
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'object_id', $object_term, [
+      'action' => 'store_link',
+      'drupal_store' => TRUE,
+      'chado_table' => $linker_table,
+      'chado_column' => $link_obj_col,
+    ];
+    // to-do type_id and rank added conditionally
+//    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'rank', $rank_term,  [
+//      'action' => 'store',
+//      'chado_table' => $linker_table,
+//      'chado_column' => 'rank'
+//    ];
+//    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'type_id', $type_id_term, [
+//      'action' => 'store',
+//      'chado_table' => $linker_table,
+//      'chado_column' => 'type_id'
+//    ];
+
+    // The $object_table is what the linker table is pointing to.
+
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'object_pkey_id', $object_pkey_id, [
+      'action' => 'store_id',
+      'drupal_store' => TRUE,
+      'chado_table' => $object_table,
+      'linked_table' => $object_table,
+      'chado_column' => $object_pkey_col,
+    ];
+    $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, [
+      'action' => 'join',
+      'path' => $base_table . '.project_id>' . $linker_table . '.project_id'
+        . ';' . $linker_table . '.contact_id>' . $object_table . '.contact_id',
+      'chado_table' => $object_table,
+      'chado_column' => 'name',
+      'as' => 'value',
+      'delete_if_empty' => TRUE,
+      'empty_value' => ''
+    ];
+
+    return $properties;
   }
 
   /**
