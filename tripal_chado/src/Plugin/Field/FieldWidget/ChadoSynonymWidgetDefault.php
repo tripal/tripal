@@ -105,12 +105,22 @@ public function formElement(FieldItemListInterface $items, $delta, array $elemen
       $pub_id = $biodb->insert('pub')->fields(['uniquename' => $uniquename,'type_id' => $type_id])->execute();
     }
 
-    // Remove any empty values that aren't mapped to a record id.
+    //Remove any empty values that aren't mapped to a record id.
     foreach ($values as $val_key => $value) {
-      # if i need to change the format for name to be sgml, i can do it here
-      $values[$val_key]['synonym_sgml'] = $value['name'];
-      $values[$val_key]['syn_type_id'] = $type_id;
-      $values[$val_key]['pub_id'] = $pub_id;
+      if ($value['value'] == '' and $value['record_id'] == 0) {
+        unset($values[$val_key]);
+      }
+    }
+
+    foreach ($values as $val_key => $value) {
+      if (isset($values[$val_key]['name'])){
+        # if i need to change the format for name to be sgml, i can do it here
+        $values[$val_key]['synonym_sgml'] = $value['name'];
+        $values[$val_key]['syn_type_id'] = $type_id;
+        $values[$val_key]['pub_id'] = $pub_id;
+      }else{
+dpm($values[$val_key]['name'],'!isset');
+      }
     }
     return $values;
   }
