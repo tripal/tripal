@@ -57,9 +57,9 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     return $chado;
   }
 
-	/**
-	 * @{inheritdoc}
-	 */
+  /**
+   * @{inheritdoc}
+   */
   public function addTypes($types) {
     $logger = \Drupal::service('tripal.logger');
 
@@ -106,8 +106,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
   }
 
   /**
-	 * @{inheritdoc}
-	 */
+   * @{inheritdoc}
+   */
   public function removeTypes($types) {
 
     foreach ($types as $type) {
@@ -134,6 +134,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    * @return integer
    */
   private function insertChadoRecord(&$records, $chado_table, $delta, $record) {
+
     $chado = $this->getChadoConnection();
     $schema = $chado->schema();
     $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
@@ -143,6 +144,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     $insert = $chado->insert('1:' . $chado_table);
     $insert->fields($record['fields']);
     $record_id = $insert->execute();
+
     if (!$record_id) {
       throw new \Exception($this->t('Failed to insert a record in the Chado "@table" table. Record: @record',
           ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
@@ -154,8 +156,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
   }
 
   /**
-	 * @{inheritdoc}
-	 */
+   * @{inheritdoc}
+   */
   public function insertValues(&$values) : bool {
     $chado = $this->getChadoConnection();
     $logger = \Drupal::service('tripal.logger');
@@ -260,6 +262,36 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     return FALSE;
   }
 
+  /**
+   * Indicates if a record has a remaining REPLACE_BASE_RECORD_ID condition.
+   * If this exists, it is removed, and TRUE is returned to indicate that
+   * this should be an insert. Otherwise FALSE is returned, $record is not
+   * modified, and this should be an update.
+   *
+   * @param array $record
+   * @return boolean
+   */
+  private function isNewRecord(&$record) {
+    $new_record = TRUE;
+    if (array_key_exists('conditions', $record)) {
+      foreach ($record['conditions'] as $chado_column => $cond_value) {
+        // If cond_value is an array, it is because of the
+        // REPLACE_BASE_RECORD_ID marker, so remove this.
+        if (is_array($cond_value)) {
+          unset($record['conditions'][$chado_column]);
+        }
+        // Otherwise a condition is present, so not a new record.
+        else {
+          $new_record = FALSE;
+        }
+      }
+//      if (count($record['conditions']) == 0) {  //@@@ don't need?
+//        unset($record['conditions']);
+//      }
+    }
+    return $new_record;
+  }
+
 
 
   /**
@@ -314,13 +346,20 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       foreach ($records as $chado_table => $deltas) {
         foreach ($deltas as $delta => $record) {
 
-          // If this is the base table then do an update.
+          // If this is the base table then do an update, except when we still
+          // have a REPLACE_BASE_RECORD_ID condition, then it is an insert.
           if (in_array($chado_table, array_keys($base_tables))) {
             if (!array_key_exists('conditions', $record)) {
               throw new \Exception($this->t('Cannot update record in the Chado "@table" table due to missing conditions. Record: @record',
                   ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
             }
-            $this->updateChadoRecord($records, $chado_table, $delta, $record);
+            if ($this->isNewRecord($record)) {
+              $new_id = $this->insertChadoRecord($records, $chado_table, $delta, $record);
+              $base_tables[$chado_table] = $new_id;
+            }
+            else {
+              $this->updateChadoRecord($records, $chado_table, $delta, $record);
+            }
             continue;
           }
         }
@@ -336,6 +375,17 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           // Skip base table records.
           if (in_array($chado_table, array_keys($base_tables))) {
             continue;
+          }
+
+          // If we inserted rather than updated a base table, we need
+          // to replace values one last time.
+          foreach ($record['fields'] as $chado_column => $val) {
+            if (is_array($val) and $val[0] == 'REPLACE_BASE_RECORD_ID') {
+              $base_table = $val[1];
+              if (array_key_exists($base_table, $base_tables) and $base_tables[$base_table] != 0) {
+                $records[$chado_table][$delta]['fields'][$chado_column] = $base_tables[$base_table];
+              }
+            }
           }
 
           // Skip records that don't have a condition set. This means they
@@ -573,12 +623,12 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           if ($action == 'store_id') {
             $insert_table_pkey = $base_table_pkey;
             // linked_table should == chado_table but be different from base_table
-            #if (array_key_exists('linked_table', $prop_storage_settings) 
-            #       and ($prop_storage_settings['linked_table'] == $chado_table) 
+            #if (array_key_exists('linked_table', $prop_storage_settings)
+            #       and ($prop_storage_settings['linked_table'] == $chado_table)
             #       and ($prop_storage_settings['linked_table'] != $base_table)) {
-            if($chado_table != $base_table){
+            if ($chado_table != $base_table) {
               #$linked_table = $prop_storage_settings['linked_table'];
-              $linked_table = $chado_table; 
+              $linked_table = $chado_table;
               $linked_table_def = $schema->getTableDef($linked_table, ['format' => 'drupal']);
               $linked_table_pkey = $linked_table_def['primary key'];
               $insert_table_pkey = $linked_table_pkey;
@@ -596,8 +646,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             $link_table_pkey = $base_table_pkey;
             $link_table = $base_table;
             if (array_key_exists('linked_table', $prop_storage_settings)
-               and $prop_storage_settings['linked_table'] != $chado_table
-               and $prop_storage_settings['linked_table'] != $base_table) {
+               and ($prop_storage_settings['linked_table'] != $chado_table)
+               and ($prop_storage_settings['linked_table'] != $base_table)) {
               $link_table = $prop_storage_settings['linked_table'];
               $link_table_def = $schema->getTableDef($link_table, ['format' => 'drupal']);
               $link_table_pkey = $link_table_def['primary key'];
@@ -654,8 +704,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             $link_table_pkey = $link_table_def['primary key'];
             // if linked_table exists then set link_table to linked_table
             if (array_key_exists('linked_table', $prop_storage_settings)
-               and $prop_storage_settings['linked_table'] != $chado_table
-               and $prop_storage_settings['linked_table'] != $base_table) {
+               and ($prop_storage_settings['linked_table'] != $chado_table)
+               and ($prop_storage_settings['linked_table'] != $link_table)) {
               $link_table = $prop_storage_settings['linked_table'];
               $link_table_def = $schema->getTableDef($link_table, ['format' => 'drupal']);
               $link_table_pkey = $link_table_def['primary key'];
@@ -877,7 +927,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           // The link action will connect a linking table to the base table.
           if ($action == 'store_link') {
 
-           // default: set link table as base_table
+            // default: set link table as base_table
             $link_table = $storage_plugin_settings['base_table'];
 
             if (array_key_exists('linked_table', $prop_storage_settings)
