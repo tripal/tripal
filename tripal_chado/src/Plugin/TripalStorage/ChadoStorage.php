@@ -154,6 +154,51 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
   }
 
   /**
+   * Selects a single record in a Chado table, or if it doesn't
+   *   already exist, then it is inserted.
+   * @param array $records
+   * @param string $chado_table
+   * @param integer $delta
+   * @param array $record
+   * @throws \Exception
+   * @return integer
+   */
+  private function selectOrInsertChadoRecord(&$records, $chado_table, $delta, $record) {
+    $record_id = NULL;
+    $chado = $this->getChadoConnection();
+    $schema = $chado->schema();
+    $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
+    $pkey = $table_def['primary key'];
+
+    try {
+      // If there are no conditions, then try to select using the
+      // fields, by converting them to conditions.
+      if (!$this->hasValidConditions($record)) {
+        $temp_record = $record;
+        foreach ($record['fields'] as $chado_column => $val) {
+          $temp_record['conditions'][$chado_column] = $val;
+        }
+        $temp_record['fields'] = [];
+        $this->selectChadoRecord($records, [], $chado_table, $delta, $temp_record);
+      }
+      else {
+        $this->selectChadoRecord($records, [], $chado_table, $delta, $record);
+      }
+      $record_id = $records[$chado_table][$delta]['fields'][$pkey];
+      // Update the record array to include the record id.
+      $records[$chado_table][$delta]['conditions'][$pkey] = $record_id;
+    }
+    catch (\Exception $ignored) {
+    }
+
+    // If the record does not exist, then insert it.
+    if (!$record_id) {
+      $record_id = $this->insertChadoRecord($records, $chado_table, $delta, $record);
+    }
+    return $record_id;
+  }
+
+  /**
    * @{inheritdoc}
    */
   public function insertValues(&$values) : bool {
@@ -348,7 +393,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           if (in_array($chado_table, array_keys($base_tables))) {
 
             if ($this->isNewRecord($record, $chado_table)) {
-              $new_id = $this->insertChadoRecord($records, $chado_table, $delta, $record);
+              $new_id = $this->selectOrInsertChadoRecord($records, $chado_table, $delta, $record);
               $base_tables[$chado_table][$delta] = $new_id;
             }
             else {
@@ -377,13 +422,11 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             if (is_array($val) and $val[0] == 'REPLACE_BASE_RECORD_ID') {
               $base_table = $val[1];
               $base_delta = $val[2];
-dpm("CP04", "final replace chado_table $chado_table delta $delta chado_column $chado_column base_table $base_table base_delta $base_delta"); //@@@
               if (array_key_exists($base_table, $base_tables)
                   and array_key_exists($base_delta, $base_tables[$base_table])
                   and $base_tables[$base_table][$base_delta] != 0) {
                 $records[$chado_table][$delta]['fields'][$chado_column] = $base_tables[$base_table][$base_delta];
               }
-else { dpm($val, 'CP05 val'); dpm($base_tables, "CP05 REPLACE FAIL fields base_table $base_table chado_table $chado_table delta $delta base_delta $base_delta "); } //@@@
             }
           }
 
@@ -439,7 +482,7 @@ else { dpm($val, 'CP05 val'); dpm($base_tables, "CP05 REPLACE FAIL fields base_t
     }
 
     // If we are selecting on the base table and we don't have a proper
-    // condition then throw and error.
+    // condition then throw an error.
     if (!$this->hasValidConditions($record)) {
       throw new \Exception($this->t('Cannot select record in the Chado "@table" table due to unset conditions. Record: @record',
           ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
@@ -474,6 +517,10 @@ else { dpm($val, 'CP05 val'); dpm($base_tables, "CP05 REPLACE FAIL fields base_t
     // Add the select condition
     foreach ($record['conditions'] as $chado_column => $value) {
       if (!empty($value)) {
+if (is_array($value)) {
+      throw new \Exception($this->t('Unresolved condition placeholder in the Chado "@table" table. Record: @record',
+          ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
+}
         $select->condition('ct.'.$chado_column, $value);
       }
     }
@@ -1102,7 +1149,7 @@ else { dpm($val, 'CP05 val'); dpm($base_tables, "CP05 REPLACE FAIL fields base_t
       'right_alias' => $ralias,
     ];
 
-    // We're done recursing if we only have no elements left in the path
+    // We're done recursing if we have no elements left in the path
     if (count($path_arr) == 0) {
       $records[$parent_table][$delta]['joins'][$right_table][$parent_column]['columns'][] = [$chado_column, $as];
       return;
@@ -1149,7 +1196,7 @@ else { dpm($val, 'CP05 val'); dpm($base_tables, "CP05 REPLACE FAIL fields base_t
       // If the field requires a value but doesn't have one then it may be
       // a problem.
       if ($info['not null'] == TRUE and !$col_val) {
-        // If the column  has a default value then it's not a problem.
+        // If the column has a default value then it's not a problem.
         if (array_key_exists('default', $info)) {
           continue;
         }
