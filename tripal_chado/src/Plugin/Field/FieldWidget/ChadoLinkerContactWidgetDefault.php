@@ -11,15 +11,15 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  * Plugin implementation of default Tripal string type widget.
  *
  * @FieldWidget(
- *   id = "chado_linker__x_widget",
- *   label = @Translation("Chado X"),
- *   description = @Translation("Add a property or attribute to the content type."),
+ *   id = "chado_linker_contact_default_widget",
+ *   label = @Translation("Chado Contact"),
+ *   description = @Translation("Add a linked Chado contact to the content type."),
  *   field_types = {
- *     "chado_linker__x"
+ *     "chado_linker_contact_default"
  *   }
  * )
  */
-class chado_linker__x_widget extends ChadoWidgetBase {
+class ChadoLinkerContactWidgetDefault extends ChadoWidgetBase {
 
 
   /**

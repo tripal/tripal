@@ -19,27 +19,17 @@ use Drupal\Core\Ajax\ReplaceCommand;
  * Plugin implementation of Tripal string field type.
  *
  * @FieldType(
- *   id = "chado_linker__x",
- *   label = @Translation("Chado X"),
+ *   id = "chado_linker_contact_default",
+ *   label = @Translation("Chado Contact"),
  *   description = @Translation("Add a linked Chado contact to the content type."),
- *   default_widget = "chado_linker__x_widget",
- *   default_formatter = "chado_linker__x_formatter"
+ *   default_widget = "ChadoLinkerContactWidgetDefault",
+ *   default_formatter = "ChadoLinkerContactFormatterDefault"
  * )
  */
-class chado_linker__x extends ChadoFieldItemBase {
+class ChadoLinkerContactDefault extends ChadoFieldItemBase {
 
-  public static $id = "chado_linker__x";
+  public static $id = "chado_linker_contact_default";
   public static $object_table = 'contact';
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function defaultFieldSettings() {
-    $settings = parent::defaultFieldSettings();
-    $settings['termIdSpace'] = 'local';
-    $settings['termAccession'] = 'contact';
-    return $settings;
-  }
 
   /**
    * {@inheritdoc}
@@ -48,6 +38,18 @@ class chado_linker__x extends ChadoFieldItemBase {
     $settings = parent::defaultStorageSettings();
     $settings['storage_plugin_settings']['base_table'] = '';
     $settings['storage_plugin_settings']['linker_table'] = '';
+    $settings['storage_plugin_settings']['object_table'] = self::$object_table;
+    return $settings;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function defaultFieldSettings() {
+    $settings = parent::defaultFieldSettings();
+    // CV Term is 'Communication Contact'
+    $settings['termIdSpace'] = 'TCONTACT';
+    $settings['termAccession'] = '0000018';
     return $settings;
   }
 
@@ -63,11 +65,11 @@ class chado_linker__x extends ChadoFieldItemBase {
     $base_table = $settings['base_table'];
     $linker_table = $settings['linker_table'];
     $object_table = self::$object_table;
+    $record_id_term = 'TCONTACT:0000018';
 
     // If we don't have a base table then we're not ready to specify the
     // properties for this field.
     if (!$base_table or !$linker_table) {
-      $record_id_term = 'local:contact';
       return [
         new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
           'action' => 'store_id',
@@ -79,32 +81,44 @@ class chado_linker__x extends ChadoFieldItemBase {
     // Get the base table columns needed for this field.
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
+
     $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
     $base_pkey_col = $base_schema_def['primary key'];
+
     $link_schema_def = $schema->getTableDef($linker_table, ['format' => 'Drupal']);
     $link_pkey_col = $link_schema_def['primary key'];
+    // the following should be the same as $base_pkey_col
     $link_fk_col = array_keys($link_schema_def['foreign keys'][$base_table]['columns'])[0];
     // to-do check here in reverse direction for fk_col???? schema_def has a list of ['referring_tables']
-    $link_obj_col = 'contact_id';
+    $link_obj_col = 'contact_id';  // should be the same as $object_pkey_col
+
     $object_schema_def = $schema->getTableDef($object_table, ['format' => 'Drupal']);
     $object_pkey_col = $object_schema_def['primary key'];
 
     // Get the property terms by using the Chado table columns they map to.
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
-    $record_id_term = 'local:contact';
-// change link_term to subject_term
-    $link_term = $mapping->getColumnTermId($linker_table, $link_fk_col);
-    $object_pkey_term = $mapping->getColumnTermId($object_table, $object_pkey_col);  // @@@ same as $link_obj_col
-    $object_term = $mapping->getColumnTermId($object_table, $link_obj_col);
-    $value_term = $mapping->getColumnTermId($object_table, 'name');
+// change link_term to subject_term?
+    $link_term = $mapping->getColumnTermId($linker_table, $link_fk_col);  // same as $record_id_term? No this is NCIT:C47885
+    $object_pkey_term = $mapping->getColumnTermId($object_table, $object_pkey_col);  // @@@ same as $link_obj
+    $object_term = $mapping->getColumnTermId($object_table, $link_obj_col);  // @@@ local:contact
+    $value_col = 'name';  // to-do move this up higher
+    $value_term = $mapping->getColumnTermId($object_table, $value_col);
 //    $value_term = $mapping->getColumnTermId($linker_table, 'value');
 //    $rank_term = $mapping->getColumnTermId($linker_table, 'rank');
 //    $type_id_term = $mapping->getColumnTermId($linker_table, 'type_id');
 
     // Create the property types.
+    // action      property          term               chado_table    chado_column      linked_table
+    // ----------  ----------------  -----------------  -------------  ----------------  -------------
+    // store_id    'record_pkey_id'  $record_id_term    $base_table    $base_pkey_col
+    // store_pkey  'linker_pkey_id'  $record_id_term    $linker_table  $link_pkey_col    $object_table
+    // store_link  'subject_id'      $link_term         $linker_table  $linker_fk_col
+    // store_link  'object_id'       $object_term       $linker_table  $link_obj_col
+    // store_oid?  'object_pkey_id'  $object_pkey_term  $object_table  $object_pkey_col  $object_table
+//file_put_contents( "/dev/shm/0311terms", "CP1 terms record_id_term=\"$record_id_term\" link_term=\"$link_term\" object_term=\"$object_term\" object_pkey_term=\"$object_pkey_term\" value_term=\"$value_term\"\n", FILE_APPEND ); //@@@
     $properties = [];
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_pkey_id', $record_id_term, [
       'action' => 'store_id',
       'drupal_store' => TRUE,
       'chado_table' => $base_table,
@@ -113,14 +127,13 @@ class chado_linker__x extends ChadoFieldItemBase {
 
     // These three records define the values in the linker table.
     // type_id and rank are not in all linker tables
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_id', $record_id_term, [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_pkey_id', $record_id_term, [
       'action' => 'store_pkey',
       'drupal_store' => TRUE,
       'chado_table' => $linker_table,
-      'linked_table' => $object_table,
       'chado_column' => $link_pkey_col,
     ]);
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'subject_id', $link_term, [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'subject_id', $record_id_term, [  //$link_term, [
       'action' => 'store_link',
       'drupal_store' => TRUE,
       'chado_table' => $linker_table,
@@ -130,6 +143,7 @@ class chado_linker__x extends ChadoFieldItemBase {
       'action' => 'store_link',
       'drupal_store' => TRUE,
       'chado_table' => $linker_table,
+      'linked_table' => $object_table,
       'chado_column' => $link_obj_col,
     ]);
     // to-do type_id and rank added conditionally
@@ -147,21 +161,22 @@ class chado_linker__x extends ChadoFieldItemBase {
     // The $object_table is what the linker table is pointing to.
 
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'object_pkey_id', $object_pkey_term, [
-      'action' => 'store_id',
+      'action' => 'store_oid',
       'drupal_store' => TRUE,
       'chado_table' => $object_table,
-      'linked_table' => $object_table,
+//      'linked_table' => $object_table,
       'chado_column' => $object_pkey_col,
     ]);
+
+    // The displayed value
     $properties[] = new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'value', $value_term, [
       'action' => 'join',
       'path' => $base_table . '.project_id>' . $linker_table . '.project_id'
         . ';' . $linker_table . '.contact_id>' . $object_table . '.contact_id',
-      'chado_table' => $object_table,
       'chado_column' => 'name',
       'as' => 'value',
-      'delete_if_empty' => TRUE,
-      'empty_value' => ''
+//      'delete_if_empty' => TRUE,
+//      'empty_value' => ''
     ]);
 
     return $properties;
@@ -196,11 +211,15 @@ class chado_linker__x extends ChadoFieldItemBase {
 //      'data-disable-refocus' => 'true',
 //    ];
 
-    $linker_tables = $this->getLinkerTables($base_table, $object_table);
     $linker_is_disabled = FALSE;
+    $linker_tables = [];
     $default_linker_table = array_key_exists('linker_table', $storage_settings) ? $storage_settings['linker_table'] : '';
     if ($default_linker_table) {
       $linker_is_disabled = TRUE;
+      $linker_tables = [$default_linker_table => $default_linker_table];
+    }
+    else {
+      $linker_tables = $this->getLinkerTables($base_table, $object_table);
     }
     $elements['storage_plugin_settings']['linker_table'] = [
       '#type' => 'select',
@@ -329,7 +348,7 @@ class chado_linker__x extends ChadoFieldItemBase {
    *   The form state object.
    */
   public function storageSettingsFormAjaxCallback($form, &$form_state) {
-    $form_state->setRebuild(TRUE);  // to-do test if this is really needed
+//    $form_state->setRebuild(TRUE);  // to-do test if this is really needed
     $response = new AjaxResponse();
     $response->addCommand(new ReplaceCommand('#edit-linker_table', $form['settings']['storage_plugin_settings']['linker_table']));
     return $response;
