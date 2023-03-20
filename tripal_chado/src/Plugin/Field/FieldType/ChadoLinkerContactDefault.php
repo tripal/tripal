@@ -22,8 +22,8 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *   id = "chado_linker_contact_default",
  *   label = @Translation("Chado Contact"),
  *   description = @Translation("Add a linked Chado contact to the content type."),
- *   default_widget = "ChadoLinkerContactWidgetDefault",
- *   default_formatter = "ChadoLinkerContactFormatterDefault"
+ *   default_widget = "chado_linker_contact_widget_default",
+ *   default_formatter = "chado_linker_contact_formatter_default"
  * )
  */
 class ChadoLinkerContactDefault extends ChadoFieldItemBase {

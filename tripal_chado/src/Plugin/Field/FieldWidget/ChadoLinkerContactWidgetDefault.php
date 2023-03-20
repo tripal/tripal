@@ -11,7 +11,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  * Plugin implementation of default Tripal string type widget.
  *
  * @FieldWidget(
- *   id = "chado_linker_contact_default_widget",
+ *   id = "chado_linker_contact_widget_default",
  *   label = @Translation("Chado Contact"),
  *   description = @Translation("Add a linked Chado contact to the content type."),
  *   field_types = {
