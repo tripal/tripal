@@ -1440,16 +1440,16 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
         // print_r($row);
       }       
 
-      // Check to make sure feature orange1.1g015632m.g of type name gene
+      // Check to make sure feature orange1.1g015632m.g of type name mRNA
       $results = $chado->query("SELECT count(*) as c1 FROM 
         (SELECT * FROM {1:feature} f 
           LEFT JOIN {1:cvterm} c
           ON c.cvterm_id = f.type_id
-          WHERE uniquename = :landmark_name
+          WHERE uniquename = :unique_name
           AND c.name = :name
         ) as table1", 
        [
-        ':landmark_name' => 'PAC:18136217',
+        ':unique_name' => 'PAC:18136217',
         ':name' => 'mRNA'
        ]);
       foreach ($results as $row) {
@@ -1457,11 +1457,45 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
         // print_r($row);
       }
 
+      // Check to make sure feature PAC:18136217-cds of type name CDS
+      $results = $chado->query("SELECT count(*) as c1 FROM 
+        (SELECT * FROM {1:feature} f 
+          LEFT JOIN {1:cvterm} c
+          ON c.cvterm_id = f.type_id
+          WHERE f.name = :feature_name
+          AND c.name = :name
+        ) as table1", 
+       [
+        ':feature_name' => 'PAC:18136217-cds',
+        ':name' => 'CDS'
+       ]);
+      foreach ($results as $row) {
+        $this->assertEquals($row->c1, 12);
+        // print_r($row);
+      }   
+      
+      // Check to make sure feature PAC:18136225-protein of type name protein/polypeptide
+      // $results = $chado->query("SELECT count(*) as c1 FROM 
+      //   (SELECT * FROM {1:feature} f 
+      //     LEFT JOIN {1:cvterm} c
+      //     ON c.cvterm_id = f.type_id
+      //     WHERE f.name = :feature_name
+      //     AND c.name = :name
+      //   ) as table1", 
+      //  [
+      //   ':feature_name' => 'PAC:18136225-protein',
+      //   ':name' => 'polypeptide'
+      //  ]);
+      // foreach ($results as $row) {
+      //   // $this->assertEquals($row->c1, 1);
+      //   print_r($row);
+      // }        
+
     } 
     catch (\Exception $ex) {
       $message = $ex->getMessage();
-      print_r($message);
-      print_r($ex->getTraceAsString());
+      // print_r($message);
+      // print_r($ex->getTraceAsString());
       $has_exception = true;
     }
     $this->assertEquals($has_exception, false, 'This file 

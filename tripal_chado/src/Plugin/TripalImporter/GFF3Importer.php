@@ -2489,7 +2489,7 @@ class GFF3Importer extends ChadoImporterBase {
    * and then gets the type_id for the landmark if it's not already cached.
    * If it is already cached, it does not perform a lookup.
    */
-  private function cacheLandmarksTypeIDs() {
+  private function findLandmarksTypeIDs() {
     $chado = $this->getChadoConnection();
     // Get landmark type_ids and cache them
     foreach ($this->landmarks as $landmark_name => $feature_id) {
@@ -2569,13 +2569,57 @@ class GFF3Importer extends ChadoImporterBase {
     $this->setTotalItems($num_batches);
 
     // Perform cache of Landmarks Type IDs
-    $this->cacheLandmarksTypeIDs();
+    $this->findLandmarksTypeIDs();
 
-    $sql = "SELECT name, uniquename, feature_id FROM {1:feature} 
-      WHERE uniquename = :landmark AND type_id = :type_id AND organism_id = :organism_id";
+    // RISH FIRST VERSION 1 - It works but batch logic does not work / performance hit.
+    // $sql = "SELECT name, uniquename, feature_id FROM {1:feature} 
+    //   WHERE uniquename = :landmark AND type_id = :type_id AND organism_id = :organism_id";
+    // $i = 0;
+    // $total = 0;
+    // $batch_num = 1;
+    // foreach ($this->landmarks as $landmark_name => $feature_id) {
+    //   $i++;
+    //   $total++;
+
+    //   // Only do an insert if this dbxref doesn't already exist in the databse.
+    //   // and this dbxref is from a Dbxref attribute not an Ontology_term attr.
+    //   if (!$feature_id) {
+    //     $name = $landmark_name;
+    //   }
+
+    //   // If we've reached the size of the batch then let's do the select.
+    //   if ($i == $batch_size or $total == $num_landmarks) {
+    //     if (isset($name)) {
+    //       // Get the cached type_id
+    //       $type_id = $this->getLandmarkTypeID($landmark_name);
+    //       $args = [
+    //         ':landmark' => $name,
+    //         ':organism_id' => $this->organism_id,
+    //         ':type_id' => $type_id
+    //       ];
+    //       // $results = chado_query($sql, $args);
+    //       $results = $chado->query($sql, $args);
+    //       while ($f = $results->fetchObject()) {
+    //         $this->landmarks[$f->uniquename] = $f->feature_id;
+    //       }
+    //     }
+    //     $this->setItemsHandled($batch_num);
+    //     $batch_num++;
+
+    //     // Now reset all of the varables for the next batch.
+    //     $i = 0;
+    //     $name = NULL;
+    //   }
+    // }  
+    
+    // NEW CODE WITH BATCH PROCESSING
+    $init_sql = "SELECT name, uniquename, feature_id FROM {1:feature} WHERE \n";
     $i = 0;
+    $j = 0;
     $total = 0;
     $batch_num = 1;
+    $sql = '';
+    $names = [];
     foreach ($this->landmarks as $landmark_name => $feature_id) {
       $i++;
       $total++;
@@ -2583,20 +2627,22 @@ class GFF3Importer extends ChadoImporterBase {
       // Only do an insert if this dbxref doesn't already exist in the databse.
       // and this dbxref is from a Dbxref attribute not an Ontology_term attr.
       if (!$feature_id) {
-        $name = $landmark_name;
+        $names[] = $landmark_name;
       }
 
       // If we've reached the size of the batch then let's do the select.
       if ($i == $batch_size or $total == $num_landmarks) {
-        if (isset($name)) {
-          // Get the cached type_id
-          $type_id = $this->getLandmarkTypeID($landmark_name);
-          $args = [
-            ':landmark' => $name,
-            ':organism_id' => $this->organism_id,
-            ':type_id' => $type_id
-          ];
-          // $results = chado_query($sql, $args);
+        foreach ($names as $name) {
+          $j++;
+          $sql .= "(uniquename = :landmark_$j AND type_id = :type_id_$j AND organism_id = :organism_id_$j) OR\n";
+          $type_id = $this->getLandmarkTypeID($name);
+          $args[":landmark_$j"] = $name;
+          $args[":type_id_$j"] = $type_id;
+          $args[":organism_id_$j"] = $this->organism_id;
+        }
+        if (count($names) > 0) {
+          $sql = rtrim($sql, " OR\n");
+          $sql = $init_sql . $sql;
           $results = $chado->query($sql, $args);
           while ($f = $results->fetchObject()) {
             $this->landmarks[$f->uniquename] = $f->feature_id;
@@ -2606,10 +2652,13 @@ class GFF3Importer extends ChadoImporterBase {
         $batch_num++;
 
         // Now reset all of the varables for the next batch.
+        $sql = '';
         $i = 0;
-        $name = NULL;
+        $j = 0;
+        $args = [];
+        $names = [];
       }
-    }    
+    }
 
     // ORIGINAL CODE FROM STEPHEN
     // $sql = "SELECT name, uniquename, feature_id FROM {1:feature} 
