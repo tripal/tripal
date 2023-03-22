@@ -101,7 +101,6 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
     $link_pkey_col = $link_schema_def['primary key'];
     // the following should be the same as $base_pkey_col
     $link_fk_col = array_keys($link_schema_def['foreign keys'][$base_table]['columns'])[0];
-    // to-do check here in reverse direction for fk_col???? schema_def has a list of ['referring_tables']
     $link_object_col = $object_pkey_col;
     $link_base_term = $mapping->getColumnTermId($linker_table, $link_fk_col);  // same as $record_id_term? No this is NCIT:C47885
     $link_object_term = $mapping->getColumnTermId($linker_table, $link_object_col);
@@ -111,11 +110,11 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
     $rank_term = $mapping->getColumnTermId($linker_table, 'rank');
     $type_id_term = $mapping->getColumnTermId($linker_table, 'type_id');
 
-
-//  keys base_pkey_col="project_id" object_pkey_col="contact_id" link_pkey_col="project_contact_id"
-//    link_fk_col="project_id" link_object_col="contact_id"
-//  terms record_id_term="TCONTACT:0000018" link_base_term="NCIT:C47885"
-//    link_object_term="local:contact" object_pkey_term="local:contact" value_term="schema:name"
+    // Examples of columns and terms when using this field on a project page:
+    // Keys: base_pkey_col="project_id" object_pkey_col="contact_id" link_pkey_col="project_contact_id"
+    //    link_fk_col="project_id" link_object_col="contact_id"
+    // Terms: record_id_term="TCONTACT:0000018" link_base_term="NCIT:C47885"
+    //    link_object_term="local:contact" object_pkey_term="local:contact" value_term="schema:name"
     $properties = [];
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_pkey_id', $record_id_term, [
       'action' => 'store_id',
@@ -124,7 +123,7 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
       'chado_column' => $base_pkey_col,
     ]);
 
-    // Define the link between the base table and the linker table.
+    // Define the linker table that links the base table to the object table.
     // Note that type_id and rank are not in all linker tables.
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_pkey_id', $record_id_term, [
       'action' => 'store_pkey',
@@ -132,6 +131,7 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
       'chado_table' => $linker_table,
       'chado_column' => $link_pkey_col,
     ]);
+    // Define the link between the base table and the linker table.
     $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'subject_id', $link_base_term, [
       'action' => 'store_link',
       'drupal_store' => TRUE,
@@ -140,15 +140,8 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
       'right_table' => $linker_table,
       'right_table_id' => $link_object_col,
     ]);
-
     // Define the link between the linker table and the object table.
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'linker_object_id', $record_id_term, [
-      'action' => 'store_pkey',
-      'drupal_store' => TRUE,
-      'chado_table' => $linker_table,
-      'chado_column' => $link_pkey_col,
-    ]);
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'subject_id', $link_object_term, [
+    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'object_id', $link_object_term, [
       'action' => 'store_link',
       'drupal_store' => TRUE,
       'left_table' => $linker_table,
