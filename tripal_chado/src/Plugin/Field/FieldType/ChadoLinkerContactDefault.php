@@ -137,10 +137,6 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
       'drupal_store' => TRUE,
       'left_table' => $base_table,
       'left_table_id' => $base_pkey_col,
-    ]);
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'object_id', $link_object_term, [
-      'action' => 'store_link',
-      'drupal_store' => TRUE,
       'right_table' => $linker_table,
       'right_table_id' => $link_object_col,
     ]);
@@ -157,10 +153,6 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
       'drupal_store' => TRUE,
       'left_table' => $linker_table,
       'left_table_id' => $linker_object_col,
-    ]);
-    $properties[] = new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'object_id', $object_pkey_term, [
-      'action' => 'store_link',
-      'drupal_store' => TRUE,
       'right_table' => $object_table,
       'right_table_id' => $object_pkey_col,
     ]);
