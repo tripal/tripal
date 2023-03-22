@@ -73,6 +73,7 @@ class ChadoLinkerContactWidgetDefault extends ChadoWidgetBase {
 
     $storage_settings = $this->getFieldSetting('storage_plugin_settings');
     $linker_table = $storage_settings['linker_table'];
+// to-do handle type_id and rank when present
 //    $rank_term = $this->sanitizeKey($mapping->getColumnTermId($linker_table, 'rank'));
     // Remove any empty values that aren't mapped to a record id.
     foreach ($values as $val_key => $value) {
