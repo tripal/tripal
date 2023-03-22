@@ -820,14 +820,14 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             // this property.  Let's set it to be replaced in the hopes that
             // some other property has already been inserted and has the ID.
             if ($record_id == 0) {
-              $records[$chado_table][0]['conditions'][$chado_table_pkey] = ['REPLACE_BASE_RECORD_ID', $base_table];
-              if (!array_key_exists($base_table, $base_record_ids)) {
-                $base_record_ids[$base_table] = $record_id;
+              $records[$chado_table][0]['conditions'][$chado_table_pkey] = ['REPLACE_BASE_RECORD_ID', $chado_table];
+              if (!array_key_exists($chado_table, $base_record_ids)) {
+                $base_record_ids[$chado_table] = $record_id;
               }
             }
             else {
               $records[$chado_table][0]['conditions'][$chado_table_pkey] = $record_id;
-              $base_record_ids[$base_table] = $record_id;
+              $base_record_ids[$chado_table] = $record_id;
             }
           }
           // This  action is to store the linked table primary key value.
