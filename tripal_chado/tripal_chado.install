@@ -127,6 +127,10 @@ function tripal_chado_tripal_cv_obo_schema() {
  */
 function tripal_chado_add_terms() {
   // This group of terms supports the various chado_linker__xxx fields
+  chado_insert_cv(
+    'ncit',
+    'The NCIt OBO Edition project aims to increase integration of the NCIt with OBO Library ontologies. NCIt is a reference terminology that includes broad coverage of the cancer domain, including cancer related diseases, findings and abnormalities. NCIt OBO Edition releases should be considered experimental.'
+  );
   // For chado_linker__analysis field.
   chado_insert_cvterm([
     'id' => 'NCIT:C25391',
