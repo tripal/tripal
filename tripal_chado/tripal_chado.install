@@ -35,9 +35,6 @@ function tripal_chado_install() {
 
   }
 
-  // Add any cv terms that are needed.
-  tripal_chado_add_terms();
-
   // Initialize any variables that are needed.
   tripal_chado_set_variables();
 }
@@ -123,14 +120,10 @@ function tripal_chado_tripal_cv_obo_schema() {
 }
 
 /**
- * Define any CV terms needed by this module.
+ * Define any CV terms needed by linker fields.
  */
-function tripal_chado_add_terms() {
+function tripal_chado_add_linker_terms() {
   // This group of terms supports the various chado_linker__xxx fields
-  chado_insert_cv(
-    'ncit',
-    'The NCIt OBO Edition project aims to increase integration of the NCIt with OBO Library ontologies. NCIt is a reference terminology that includes broad coverage of the cancer domain, including cancer related diseases, findings and abnormalities. NCIt OBO Edition releases should be considered experimental.'
-  );
   // For chado_linker__analysis field.
   chado_insert_cvterm([
     'id' => 'NCIT:C25391',
@@ -2206,7 +2199,7 @@ function tripal_chado_update_7341() {
     // Terms added by this update are: NCIT:C25391 'Analysis', NCIT:C60819 'Assay',
     // NCIT:C43376 'Biologically-Derived Material', NCIT:C73619 'Feature',
     // NCIT:C48288 'Stock', NCIT:C63536 'Study', NCIT:C25463 'Count'
-    tripal_chado_add_terms();
+    tripal_chado_add_linker_terms();
 
     // Initialize variables: tripal_field_max_delta, tripal_field_max_height
     tripal_chado_set_variables();
