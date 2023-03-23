@@ -113,15 +113,7 @@ jobs:
           patch -p1 < ../tripal/tripal_chado_views/views-sql-compliant-three-tier-naming-1971160-30.patch
           echo "==> Install Tripal"
           cd $DRUPAL_ROOT
-          $DRUSH en -y tripal
-          echo "==> Install tripal_chado"
-          $DRUSH en -y tripal_chado
-          echo "==> Install tripal_chado_views"
-          $DRUSH en -y tripal_chado_views
-          echo "==> Install tripal_ws"
-          $DRUSH en -y tripal_ws
-          echo "==> Install tripal_ds"
-          $DRUSH en -y tripal_ds
+          $DRUSH en -y tripal tripal_chado tripal_chado_views tripal_ws tripal_ds
           echo "==> Install Chado"
           $DRUSH eval "module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.install'); tripal_chado_load_drush_submit('Install Chado v1.3');"
           $DRUSH trp-run-jobs --username=$ACCOUNT_NAME
