@@ -2570,49 +2570,8 @@ class GFF3Importer extends ChadoImporterBase {
 
     // Perform cache of Landmarks Type IDs
     $this->findLandmarksTypeIDs();
-
-    // RISH FIRST VERSION 1 - It works but batch logic does not work / performance hit.
-    // $sql = "SELECT name, uniquename, feature_id FROM {1:feature} 
-    //   WHERE uniquename = :landmark AND type_id = :type_id AND organism_id = :organism_id";
-    // $i = 0;
-    // $total = 0;
-    // $batch_num = 1;
-    // foreach ($this->landmarks as $landmark_name => $feature_id) {
-    //   $i++;
-    //   $total++;
-
-    //   // Only do an insert if this dbxref doesn't already exist in the databse.
-    //   // and this dbxref is from a Dbxref attribute not an Ontology_term attr.
-    //   if (!$feature_id) {
-    //     $name = $landmark_name;
-    //   }
-
-    //   // If we've reached the size of the batch then let's do the select.
-    //   if ($i == $batch_size or $total == $num_landmarks) {
-    //     if (isset($name)) {
-    //       // Get the cached type_id
-    //       $type_id = $this->getLandmarkTypeID($landmark_name);
-    //       $args = [
-    //         ':landmark' => $name,
-    //         ':organism_id' => $this->organism_id,
-    //         ':type_id' => $type_id
-    //       ];
-    //       // $results = chado_query($sql, $args);
-    //       $results = $chado->query($sql, $args);
-    //       while ($f = $results->fetchObject()) {
-    //         $this->landmarks[$f->uniquename] = $f->feature_id;
-    //       }
-    //     }
-    //     $this->setItemsHandled($batch_num);
-    //     $batch_num++;
-
-    //     // Now reset all of the varables for the next batch.
-    //     $i = 0;
-    //     $name = NULL;
-    //   }
-    // }  
     
-    // NEW CODE WITH BATCH PROCESSING
+    // NEW IMPROVED CODE WITH BATCH PROCESSING
     $init_sql = "SELECT name, uniquename, feature_id FROM {1:feature} WHERE \n";
     $i = 0;
     $j = 0;
@@ -2660,44 +2619,6 @@ class GFF3Importer extends ChadoImporterBase {
       }
     }
 
-    // ORIGINAL CODE FROM STEPHEN
-    // $sql = "SELECT name, uniquename, feature_id FROM {1:feature} 
-    //   WHERE uniquename in (:landmarks[]) AND organism_id = :organism_id";
-    // $i = 0;
-    // $total = 0;
-    // $batch_num = 1;
-    // $names = [];
-    // foreach ($this->landmarks as $landmark_name => $feature_id) {
-    //   $i++;
-    //   $total++;
-
-    //   // Only do an insert if this dbxref doesn't already exist in the databse.
-    //   // and this dbxref is from a Dbxref attribute not an Ontology_term attr.
-    //   if (!$feature_id) {
-    //     $names[] = $landmark_name;
-    //   }
-
-    //   // If we've reached the size of the batch then let's do the select.
-    //   if ($i == $batch_size or $total == $num_landmarks) {
-    //     if (count($names) > 0) {
-    //       $args = [
-    //         ':landmarks[]' => $names,
-    //         ':organism_id' => $this->organism_id
-    //       ];
-    //       // $results = chado_query($sql, $args);
-    //       $results = $chado->query($sql, $args);
-    //       while ($f = $results->fetchObject()) {
-    //         $this->landmarks[$f->uniquename] = $f->feature_id;
-    //       }
-    //     }
-    //     $this->setItemsHandled($batch_num);
-    //     $batch_num++;
-
-    //     // Now reset all of the varables for the next batch.
-    //     $i = 0;
-    //     $names = [];
-    //   }
-    // }
   }
 
   /**
