@@ -37,7 +37,7 @@ class chado_linker__biomaterial_widget extends ChadoFieldWidget {
     $name_label = '';
     // Not always present, i.e. chado.assay_biomaterial has a channel_id and rank column
     $linker_channel_id = '';
-    $linker_rank = 0;
+    $linker_rank = '';
 
     $name_term = chado_get_semweb_term('biomaterial', 'name');
 
@@ -50,9 +50,9 @@ class chado_linker__biomaterial_widget extends ChadoFieldWidget {
       $fk_value = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__' . $fkey_lcolumn, $fk_value);
       $record_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__' . $pkey, $record_id);
       $biomaterial_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__biomaterial_id', $biomaterial_id);
-//      // Not always present
-//      $linker_channel_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__channel_id', $linker_channel_id);
-//      $linker_rank = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__rank', $linker_rank);
+      // These values are not present for all linker tables
+      $linker_channel_id = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__channel_id', $linker_channel_id) ?? '';
+      $linker_rank = tripal_get_field_item_keyval($items, $delta, 'chado-' . $field_table . '__rank', $linker_rank) ?? 0;
     }
 
     // Check $form_state['values'] to see if an AJAX call set the values.
