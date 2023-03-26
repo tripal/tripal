@@ -12,7 +12,7 @@ use Drupal\tripal_biodb\Exception\ParameterException;
  *
  * Usage:
  * @code
- * // Where 'chado' is the name of the Chado schema to instanciate.
+ * // Where 'chado' is the name of the Chado schema to instantiate.
  * $installer = \Drupal::service('tripal_chado.installer');
  * $installer->setParameters([
  *   'output_schemas' => ['chado'],

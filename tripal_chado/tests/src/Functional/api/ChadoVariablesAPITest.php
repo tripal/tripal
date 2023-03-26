@@ -95,7 +95,7 @@ class ChadoVariablesAPITest extends BrowserTestBase {
 			"The object returned should match the record we asked for.");
 
 		// EXPAND.
-		// -- FORIEGN KEY.
+		// -- FOREIGN KEY.
 		// Above we chose not to expand the organism_id so check it did not.
 		$this->assertEquals($organism_id, $var->organism_id,
 			"The organism_id should not be expanded: " . print_r($var->organism_id, TRUE));

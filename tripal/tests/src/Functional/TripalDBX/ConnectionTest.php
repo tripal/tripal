@@ -40,14 +40,14 @@ class ConnectionTest extends KernelTestBase {
 
     // Get original config from Drupal real installation.
     // This is done by getting a connection to the real database first.
-    // Then instanciate a new config factory that will use that database through
+    // Then instantiate a new config factory that will use that database through
     // a new instance of config storage using that database.
     // Get Drupal real database.
     $drupal_db = \Drupal\Core\Database\Database::getConnection(
       'default',
       'simpletest_original_default'
     );
-    // Instanciate a new config storage.
+    // Instantiate a new config storage.
     $config_storage = new \Drupal\Core\Config\DatabaseStorage(
       $drupal_db,
       'config'
@@ -56,7 +56,7 @@ class ConnectionTest extends KernelTestBase {
     $event_dispatcher = \Drupal::service('event_dispatcher');
     // Get a typed config (note: this will use the test config storage).
     $typed_config = \Drupal::service('config.typed');
-    // Instanciate a new config factory.
+    // Instantiate a new config factory.
     $config_factory = new \Drupal\Core\Config\ConfigFactory(
       $config_storage,
       $event_dispatcher,
@@ -249,7 +249,7 @@ class ConnectionTest extends KernelTestBase {
     $this->assertNotEmpty($issue, 'Reserved schema name not allowed.');
     // But the connection should be created.
     $dbmock = $this->getConnectionMock($schema_name);
-    $this->assertEquals($schema_name, $dbmock->getSchemaName(), 'Connection instanciated.');
+    $this->assertEquals($schema_name, $dbmock->getSchemaName(), 'Connection instantiated.');
   }
 
   /**
@@ -274,7 +274,7 @@ class ConnectionTest extends KernelTestBase {
     $this->assertNotEmpty($issue, 'Reserved schema name not allowed.');
     // But the connection should be created.
     $dbmock = $this->getConnectionMock($schema_name);
-    $this->assertEquals($schema_name, $dbmock->getSchemaName(), 'Connection instanciated.');
+    $this->assertEquals($schema_name, $dbmock->getSchemaName(), 'Connection instantiated.');
   }
 
   /**

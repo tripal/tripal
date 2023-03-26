@@ -479,7 +479,7 @@ function chado_generate_var($table, $values, $base_options = [], $schema_name = 
  *  $feature = chado_expand_var($feature, 'table', 'featureprop');
  * @endcode
  *
- * If a field is requested, it's value is added where it normally is expected
+ * If a field is requested, its value is added where it normally is expected
  * in the record.  If a table is requested then a new key/value element is
  * added to the record. The key is the table's name and the value is an
  * array of records (of the same type created by chado_generate_var()). For
@@ -915,8 +915,8 @@ function chado_expand_var($object, $type, $to_expand, $table_options = [], $sche
 
   // Move expandable arrays downwards -------------------------------
   // If the type was either table or foreign key then a new chado variable was
-  // generated this variable will have it's own expandable array's which need to
-  // be moved down and merged with the base objects expandable arrays.
+  // generated. This variable will have its own expandable arrays which need to
+  // be moved down and merged with the base object's expandable arrays.
 
   // Thus, check all nested objects for expandable arrays
   // and if they have them, move them downwards.
@@ -929,7 +929,7 @@ function chado_expand_var($object, $type, $to_expand, $table_options = [], $sche
         // Move expandable fields downwards.
         if (isset($field_value->expandable_fields) and is_array($field_value->expandable_fields)) {
 
-          // If the current object has it's own expandable fields then merge them.
+          // If the current object has its own expandable fields then merge them.
           if (isset($object->expandable_fields)) {
             $object->expandable_fields = array_merge(
               $object->expandable_fields,
@@ -949,7 +949,7 @@ function chado_expand_var($object, $type, $to_expand, $table_options = [], $sche
         // Move expandable foreign keys downwards.
         if (isset($field_value->expandable_foreign_keys) and is_array($field_value->expandable_foreign_keys)) {
 
-          // If the current object has it's own expandable foreign keys then
+          // If the current object has its own expandable foreign keys then
           // merge them.
           if (isset($object->expandable_foreign_keys)) {
             $object->expandable_foreign_keys = array_merge(
@@ -969,7 +969,7 @@ function chado_expand_var($object, $type, $to_expand, $table_options = [], $sche
         // Move expandable tables downwards.
         if (isset($field_value->expandable_tables) and is_array($field_value->expandable_tables)) {
 
-          // If the current object has it's own expandable tables then merge them.
+          // If the current object has its own expandable tables then merge them.
           if (isset($object->expandable_tables)) {
             $object->expandable_tables = array_merge(
               $object->expandable_tables,

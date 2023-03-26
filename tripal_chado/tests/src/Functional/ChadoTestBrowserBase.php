@@ -198,7 +198,7 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
     ///
     // Create the fields for the Organism content type.
     //
-    // We need these becaue the content type won't save properly. Techincally,
+    // We need these because the content type won't save properly. Technically,
     // we only need the required fields, but to mimic reality we'll add them
     // all.
     $this->createTripalField('bio_data_1', [
@@ -287,12 +287,12 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
 
 
 //     // Make sure that the entity has all of the fields.
-//     $this->assertTrue($entity->hasField('bio_data_1_taxrank_0000005'), "The organism enity is missing the bio_data_1_taxrank_0000005 field");
-//     $this->assertTrue($entity->hasField('bio_data_1_taxrank_0000006'), "The organism enity is missing the bio_data_1_taxrank_0000006 field");
-//     $this->assertTrue($entity->hasField('bio_data_1_taxrank_0000045'), "The organism enity is missing the bio_data_1_taxrank_0000045 field");
-//     $this->assertTrue($entity->hasField('bio_data_1_local_abbreviation'), "The organism enitty is missing the bio_data_1_local_abbreviation field");
-//     $this->assertTrue($entity->hasField('bio_data_1_ncbitaxon_common_name'), "The organism enitty is missing the bio_data_1_ncbitaxon_common_name field");
-//     $this->assertTrue($entity->hasField('bio_data_1_schema_description'), "The organism enitty is missing the bio_data_1_schema_description field");
+//     $this->assertTrue($entity->hasField('bio_data_1_taxrank_0000005'), "The organism entity is missing the bio_data_1_taxrank_0000005 field");
+//     $this->assertTrue($entity->hasField('bio_data_1_taxrank_0000006'), "The organism entity is missing the bio_data_1_taxrank_0000006 field");
+//     $this->assertTrue($entity->hasField('bio_data_1_taxrank_0000045'), "The organism entity is missing the bio_data_1_taxrank_0000045 field");
+//     $this->assertTrue($entity->hasField('bio_data_1_local_abbreviation'), "The organism entity is missing the bio_data_1_local_abbreviation field");
+//     $this->assertTrue($entity->hasField('bio_data_1_ncbitaxon_common_name'), "The organism entity is missing the bio_data_1_ncbitaxon_common_name field");
+//     $this->assertTrue($entity->hasField('bio_data_1_schema_description'), "The organism entity is missing the bio_data_1_schema_description field");
 
 //     // Set field property values.
 //     $entity->bio_data_1_taxrank_0000005->value =  $genus;

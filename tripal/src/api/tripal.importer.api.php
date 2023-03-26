@@ -57,7 +57,7 @@ function hook_importer_start($importer) {
 /**
  * Implements hook_importer_finish().
  *
- * This hook is executed once a TripalImporter has completed but it's run
+ * This hook is executed once a TripalImporter has completed both its run
  * and post run activities.  This allows modules to implement specific actions
  * once loaders are completed.
  *
@@ -138,7 +138,7 @@ function tripal_run_importer($import_id, TripalJob $job = NULL) {
       $function($importer);
     }
 
-    // @todo uncooment the section below once these functions are available.
+    // @todo uncomment the section below once these functions are available.
 
     // Check for tables with new cvterms
 //     $logger->notice("Remapping Chado Controlled vocabularies to Tripal Terms...");

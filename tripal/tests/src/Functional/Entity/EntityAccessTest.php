@@ -43,7 +43,7 @@ class EntityAccessTest extends BrowserTestBase {
   public function testTripalEntityAccessControlHandler() {
 
     // One user per permission to check.
-    $user_unpriviledged = $this->drupalCreateUser([]);
+    $user_unprivileged = $this->drupalCreateUser([]);
     $user_view = $this->drupalCreateUser(['view tripal content entities']);
     $user_edit = $this->drupalCreateUser(['edit tripal content entities']);
     $user_delete = $this->drupalCreateUser(['delete tripal content entities']);
@@ -74,8 +74,8 @@ class EntityAccessTest extends BrowserTestBase {
     $entity_type_interface = \Drupal::entityTypeManager()->getDefinition('tripal_entity');
     $access_check_obj = new \Drupal\Tests\tripal\Functional\Entity\Subclass\TripalEntityAccessControlHandlerFake($entity_type_interface);
 
-    $result = $access_check_obj->returnProtectedCheckAccess($entity, 'view', $user_unpriviledged);
-    $this->assertInstanceOf(AccessResultNeutral::class, $result, "An unpriviledged user should NOT be allowed to VIEW the entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity, 'view', $user_unprivileged);
+    $this->assertInstanceOf(AccessResultNeutral::class, $result, "An unprivileged user should NOT be allowed to VIEW the entity.");
     $result = $access_check_obj->returnProtectedCheckAccess($entity, 'view', $user_view);
     $this->assertInstanceOf(AccessResultAllowed::class, $result, "A user with view permission should be allowed to VIEW the entity.");
     $result = $access_check_obj->returnProtectedCheckAccess($entity, 'view', $user_edit);
@@ -85,8 +85,8 @@ class EntityAccessTest extends BrowserTestBase {
     $result = $access_check_obj->returnProtectedCheckAccess($entity, 'view', $user_add);
     $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with add permission should NOT be allowed to VIEW the entity.");
 
-    $result = $access_check_obj->returnProtectedCheckAccess($entity, 'update', $user_unpriviledged);
-    $this->assertInstanceOf(AccessResultNeutral::class, $result, "An unpriviledged user should NOT be allowed to UPDATE the entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity, 'update', $user_unprivileged);
+    $this->assertInstanceOf(AccessResultNeutral::class, $result, "An unprivileged user should NOT be allowed to UPDATE the entity.");
     $result = $access_check_obj->returnProtectedCheckAccess($entity, 'update', $user_view);
     $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with view permission should NOT be allowed to UPDATE the entity.");
     $result = $access_check_obj->returnProtectedCheckAccess($entity, 'update', $user_edit);
@@ -96,8 +96,8 @@ class EntityAccessTest extends BrowserTestBase {
     $result = $access_check_obj->returnProtectedCheckAccess($entity, 'update', $user_add);
     $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with add permission should NOT be allowed to UPDATE the entity.");
 
-    $result = $access_check_obj->returnProtectedCheckAccess($entity, 'delete', $user_unpriviledged);
-    $this->assertInstanceOf(AccessResultNeutral::class, $result, "An unpriviledged user should NOT be allowed to DELETE the entity.");
+    $result = $access_check_obj->returnProtectedCheckAccess($entity, 'delete', $user_unprivileged);
+    $this->assertInstanceOf(AccessResultNeutral::class, $result, "An unprivileged user should NOT be allowed to DELETE the entity.");
     $result = $access_check_obj->returnProtectedCheckAccess($entity, 'delete', $user_view);
     $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with view permission should be allowed to DELETE the entity.");
     $result = $access_check_obj->returnProtectedCheckAccess($entity, 'delete', $user_edit);
@@ -107,8 +107,8 @@ class EntityAccessTest extends BrowserTestBase {
     $result = $access_check_obj->returnProtectedCheckAccess($entity, 'delete', $user_add);
     $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with add permission should NOT be allowed to DELETE the entity.");
 
-    $result = $access_check_obj->returnProtectedCheckCreateAccess($user_unpriviledged);
-    $this->assertInstanceOf(AccessResultNeutral::class, $result, "An unpriviledged user should NOT be allowed to CREATE the entity.");
+    $result = $access_check_obj->returnProtectedCheckCreateAccess($user_unprivileged);
+    $this->assertInstanceOf(AccessResultNeutral::class, $result, "An unprivileged user should NOT be allowed to CREATE the entity.");
     $result = $access_check_obj->returnProtectedCheckCreateAccess($user_view);
     $this->assertInstanceOf(AccessResultNeutral::class, $result, "A user with view permission should NOT be allowed to CREATE the entity.");
     $result = $access_check_obj->returnProtectedCheckCreateAccess($user_edit);

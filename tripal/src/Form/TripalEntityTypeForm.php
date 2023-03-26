@@ -48,7 +48,7 @@ class TripalEntityTypeForm extends EntityForm {
     // As mentioned above, the term cannot be changed later!
     // As such, if this is not a new content type then we will only take into
     // account the set term (not the form state) and disable the field.
-    // NOTE: we go this route because only showin the field on the add page
+    // NOTE: we go this route because only showing the field on the add page
     // causes a validation error.
     else {
       $vocab_label = $term_name = $term_accession = '';

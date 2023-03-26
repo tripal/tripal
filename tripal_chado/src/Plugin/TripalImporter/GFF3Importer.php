@@ -1415,7 +1415,7 @@ class GFF3Importer extends ChadoImporterBase {
       $ret['skipped'] = TRUE;
     }
 
-    // Add the target. If the type_id is missing then remove the targeet
+    // Add the target. If the type_id is missing then remove the target
     // and we'll skip it.
     $ret['target'] = $attr_target;
     if (!array_key_exists('type', $ret['target']) or empty($ret['target'])) {
@@ -1714,7 +1714,7 @@ class GFF3Importer extends ChadoImporterBase {
 
     // We want to make sure the Ontology_term attribute dbxrefs are
     // also easily looked up... but we do not want to create them
-    // if they do not exist the precense of the 'cvterm' key will
+    // if they do not exist the presence of the 'cvterm' key will
     // tell the loadDbxrefs() function to not create the term.
     foreach ($gff_feature['terms'] as $index => $info) {
       if (!array_key_exists($info['db'], $this->db_lookup)) {
@@ -2062,7 +2062,7 @@ class GFF3Importer extends ChadoImporterBase {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $args = [];
@@ -2176,7 +2176,7 @@ class GFF3Importer extends ChadoImporterBase {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $i = 0;
         $names = [];
       }
@@ -2233,7 +2233,7 @@ class GFF3Importer extends ChadoImporterBase {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $i = 0;
         $feature_ids = [];
       }
@@ -2293,7 +2293,7 @@ class GFF3Importer extends ChadoImporterBase {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $j = 0;
@@ -2362,7 +2362,7 @@ class GFF3Importer extends ChadoImporterBase {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $j = 0;
@@ -2420,7 +2420,7 @@ class GFF3Importer extends ChadoImporterBase {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $j = 0;
@@ -2741,7 +2741,7 @@ class GFF3Importer extends ChadoImporterBase {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $args = [];
@@ -2798,7 +2798,7 @@ class GFF3Importer extends ChadoImporterBase {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $j = 0;
@@ -2859,7 +2859,7 @@ class GFF3Importer extends ChadoImporterBase {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $j = 0;
@@ -2934,7 +2934,7 @@ class GFF3Importer extends ChadoImporterBase {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $args = [];
@@ -2996,7 +2996,7 @@ class GFF3Importer extends ChadoImporterBase {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $args = [];
@@ -3057,7 +3057,7 @@ class GFF3Importer extends ChadoImporterBase {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $args = [];
@@ -3169,7 +3169,7 @@ class GFF3Importer extends ChadoImporterBase {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $j = 0;
@@ -3218,7 +3218,7 @@ class GFF3Importer extends ChadoImporterBase {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $args = [];
@@ -3279,7 +3279,7 @@ class GFF3Importer extends ChadoImporterBase {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $j = 0;
@@ -3313,7 +3313,7 @@ class GFF3Importer extends ChadoImporterBase {
         $name = $uniquename;
       }
 
-      // If the row has a parent then generate a unqiue ID
+      // If the row has a parent then generate a unique ID
       elseif (array_key_exists('Parent', $attrs)) {
         $uniquename = $attrs['Parent'][0] . "-" . $type . "-" .
           $landmark_name . ":" . ($fmin + 1) . ".." . $fmax;
@@ -3438,7 +3438,7 @@ class GFF3Importer extends ChadoImporterBase {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $args = [];
