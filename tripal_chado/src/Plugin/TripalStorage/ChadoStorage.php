@@ -573,7 +573,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
 
           // If this is the record_id property then set its value.
           if ($action == 'store_id') {
-            $record_id = $records[$chado_table][0]['conditions'][$base_table_pkey];
+            $record_id = $records[$chado_table][0]['conditions'][$chado_table_pkey];
             $values[$field_name][$delta][$key]['value']->setValue($record_id);
           }
           // If this is the linked record_id property then set its value.
