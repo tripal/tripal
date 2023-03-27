@@ -218,10 +218,6 @@ class ChadoStorageFieldsTest extends ChadoTestBrowserBase {
    */
   public function testLinkerTableDoubleHop() {
 
-    $this->markTestIncomplete(
-      'This functionality behind this test is not implemented yet.'
-    );
-
     // Setup
     // --------------------------------
     $connection = $this->getTestSchema();
@@ -388,6 +384,7 @@ class ChadoStorageFieldsTest extends ChadoTestBrowserBase {
     // NOTE: The feature was added in the prep for this test
     // but there are no analysis records.
     $propertyValues['base_id']->setValue($feature_id);
+    print "We set the value of the base_id to $feature_id before using insertValues().";
     $propertyValues['program']->setValue('NCBI Blast');
     $propertyValues['programversion']->setValue('v2.13.0');
     // Setup the right structure for insertValues (see TripalStorageInterface::insertValues)
