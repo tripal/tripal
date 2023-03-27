@@ -117,13 +117,13 @@ class ChadoStorageFieldsTest extends ChadoTestBrowserBase {
     ]);
 
     // We will want a STOCK record to use in testing.
+    $type_id = $this->getCvtermID('rdfs', 'type');
     $stock_info = [
       'name' => 'test_stock_name',
       'uniquename' => 'test_stock_uname',
       'type_id' => $type_id,
       'organism_id' => $this->organism_id,
     ];
-    $type_id = $this->getCvtermID('SO', '0000704');
     $query = $connection->insert('1:stock');
     $query->fields($stock_info);
     $stock_id = $query->execute();
