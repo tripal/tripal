@@ -113,15 +113,15 @@ class ChadoVariablesAPITest extends BrowserTestBase {
 
 		// -- TABLE.
 		$expanded = chado_expand_var($var, 'table', 'featureprop', [], 'testchado');
-		$this->assertObjectHasAttribute('featureprop', $var,
+		$this->assertTrue(property_exists($var, 'featureprop'),
 			"The feature properties should be present once expanded.");
 
 		// -- FIELD.
 		// By default the residues field is not expanded...
-		$this->assertObjectNotHasAttribute('residues', $var,
+		$this->assertFalse(property_exists($var, 'residues'),
 			"The residues should be missing by default.");
 		$expanded = chado_expand_var($var, 'field', 'feature.residues', [], 'testchado');
-		$this->assertObjectHasAttribute('residues', $var,
+		$this->assertTrue(property_exists($var, 'residues'),
 			"The residues should be present once expanded.");
 	}
 }
