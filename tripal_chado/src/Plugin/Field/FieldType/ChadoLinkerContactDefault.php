@@ -67,6 +67,7 @@ class ChadoLinkerContactDefault extends ChadoFieldItemBase {
     $linker_table = $settings['linker_table'];
     $object_table = self::$object_table;
     $record_id_term = 'TCONTACT:0000018';
+
     // If we don't have a base table then we're not ready to specify the
     // properties for this field.
     if (!$base_table or !$linker_table) {
