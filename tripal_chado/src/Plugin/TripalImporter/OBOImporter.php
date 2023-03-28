@@ -471,7 +471,6 @@ class OBOImporter extends ChadoImporterBase {
    * {@inheritdoc}
    */
   public function formValidate($form, &$form_state) {
-    $public = \Drupal::database();
 
     $obo_id = $form_state->getValue('obo_id');
     $obo_name = trim($form_state->getValue('obo_name') ?? '');
@@ -480,62 +479,101 @@ class OBOImporter extends ChadoImporterBase {
     $uobo_name = trim($form_state->getValue('uobo_name') ?? '');
     $uobo_url = trim($form_state->getValue('uobo_url') ?? '');
     $uobo_file = trim($form_state->getValue('uobo_file') ?? '');
-    // Make sure if the name is changed it doesn't conflict with another OBO.
+
+    // Possible triggering element #name values:
+    //   'op' from the default submit 'Import OBO File'
+    //   'update_obo' and 'obo_id' from 'Update Ontology Details'
+    //   'delete_obo' and 'obo_id' two times from 'Delete Ontology'
+
+    // Submitted with 'Update Ontology Details' button
     if ($form_state->getTriggeringElement()['#name'] == 'update_obo' ) {
 
-      // Get the current record
-      $vocab = $public->select('tripal_cv_obo', 't')
-        ->fields('t', ['obo_id', 'name', 'path'])
-        ->condition('name', $uobo_name)
-        ->execute()
-        ->fetchObject();
-      if ($vocab and $vocab->obo_id != $obo_id) {
+      // Make sure if the name is changed it doesn't conflict with another OBO.
+      $vocab_id = $this->getVocabID($uobo_name);
+      if ($vocab_id and $vocab_id != $obo_id) {
         $form_state->setErrorByName('uobo_name', t('The vocabulary name must be different from existing vocabularies'));
       }
-      // Make sure the file exists. First check if it is a relative path
-      if ($uobo_file) {
-        $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $uobo_file;
-        if (!file_exists($dfile)) {
-          if (!file_exists($uobo_file)) {
-            $form_state->setErrorByName('uobo_file',
-                t('The specified path, @path, does not exist or cannot be read.', ['@path' => $dfile]));
-          }
-        }
+      // If file specified, make sure it exists, either as a relative or absolute path.
+      if (!$this->formValidateFile($uobo_file)) {
+        $form_state->setErrorByName('uobo_file',
+            t('The specified path, @path, does not exist or cannot be read.', ['@path' => $uobo_file]));
       }
       if (!$uobo_url and !$uobo_file) {
-        $form_state->setErrorByName('uobo_url', t('Please provide a URL or a path for the vocabulary.'));
+        $form_state->setErrorByName('uobo_url', t('Please provide either a URL or a path for the vocabulary.'));
       }
       if ($uobo_url and $uobo_file) {
         $form_state->setErrorByName('uobo_url', t('Please provide only a URL or a path for the vocabulary, but not both.'));
       }
     }
-    if ($form_state->getTriggeringElement()['#name'] == 'add_new_obo') {
-      // Get the current record
-      $vocab = $public->select('tripal_cv_obo', 't')
-        ->fields('t', ['obo_id', 'name', 'path'])
-        ->condition('name', $obo_name)
-        ->execute()
-        ->fetchObject();
-      if ($vocab) {
+
+    // Submitted with 'Import OBO File' button
+    if ($form_state->getTriggeringElement()['#name'] == 'op') {
+      if (!$obo_name) {
+        $form_state->setErrorByName('obo_name', t('Please provide a name for the vocabulary'));
+      }
+      // Generate error if supplied vocabulary name already exists.
+      $vocab_id = $this->getVocabID($obo_name);
+      if ($vocab_id) {
         $form_state->setErrorByName('obo_name', t('The vocabulary name must be different from existing vocabularies'));
       }
-      // Make sure the file exists. First check if it is a relative path
-      if ($obo_file) {
-        $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $obo_file;
-        if (!file_exists($dfile)) {
-          if (!file_exists($obo_file)) {
-            $form_state->setErrorByName('obo_file',
-                t('The specified path, @path, does not exist or cannot be read.', ['@path' => $dfile]));
-          }
-        }
+      // If file specified, make sure it exists, either as a relative or absolute path.
+      if (!$this->formValidateFile($obo_file)) {
+        $form_state->setErrorByName('obo_file',
+            t('The specified path, @path, does not exist or cannot be read.', ['@path' => $obo_file]));
       }
       if (!$obo_url and !$obo_file) {
-        $form_state->setErrorByName('obo_url', t('Please provide a URL or a path for the vocabulary.'));
+        $form_state->setErrorByName('obo_url', t('Please provide either a URL or a path for the vocabulary.'));
       }
       if ($obo_url and $obo_file) {
         $form_state->setErrorByName('obo_url', t('Please provide only a URL or a path for the vocabulary, but not both.'));
       }
     }
+  }
+
+  /**
+   * Returns the obo_id in the tripal_cv_obo table
+   * from the supplied vocabulary name.
+   *
+   * @param string $vocab_name
+   *   The name of the vocabulary to query in the
+   *   public.tripal_cv_obo table.
+   * @return int
+   *   The obo_id value of the vocabulary, or NULL if this
+   *   vocabulary does not exist.
+   */
+  private function getVocabID($vocab_name) {
+    $obo_id = NULL;
+    $public = \Drupal::database();
+    $vocab = $public->select('tripal_cv_obo', 't')
+      ->fields('t', ['obo_id', 'name', 'path'])
+      ->condition('name', $vocab_name)
+      ->execute()
+      ->fetchObject();
+    if ($vocab) {
+      $obo_id = $vocab->obo_id;
+    }
+    return $obo_id;
+  }
+
+  /**
+   * Validates that the passed file specifier exists either as
+   * specified, or when the default base path is prepended.
+   * Valid also if no file is specified.
+   *
+   * @param string $file
+   *   A file on the local filesystem.
+   * @return bool
+   *   Returns TRUE if $file exists or if $file evaluates to FALSE.
+   *   Returns FALSE if file identifier does not exist.
+   */
+  private function formValidateFile($file) {
+    if ($file) {
+      $checkpath = $_SERVER['DOCUMENT_ROOT'] . base_path() . $file;
+      if (!file_exists($checkpath) and !file_exists($file)) {
+        return FALSE;
+      }
+    }
+    return TRUE;
   }
 
   /**
