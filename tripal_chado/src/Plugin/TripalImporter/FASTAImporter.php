@@ -319,7 +319,7 @@ class FASTAImporter extends ChadoImporterBase {
 
     dpm($form_state_values);
     $organism_id = $form_state_values['organism_id'];
-    $type = trim($form_state_values['seqtype']);
+    $type = explode(' (', trim($form_state_values['seqtype']))[0];
     $method = trim($form_state_values['method']);
     $match_type = trim($form_state_values['match_type']);
     $re_name = trim($form_state_values['re_name']);
@@ -605,7 +605,8 @@ class FASTAImporter extends ChadoImporterBase {
 
         // Get the feature name if a regular expression is provided.
         $name = "";
-        if ($re_name) {
+        // if ($re_name) { // OLD T3 code that does not work as intended
+        if (isset($re_name) && $re_name != "") {
           if (!preg_match("/$re_name/", $defline, $matches)) {
             // $this->logMessage("Regular expression for the feature name finds nothing. Line !line.",
             //   ['!line' => $i], TRIPAL_ERROR);
