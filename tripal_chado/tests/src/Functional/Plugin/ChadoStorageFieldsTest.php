@@ -308,6 +308,15 @@ class ChadoStorageFieldsTest extends ChadoTestBrowserBase {
         'chado_table' => 'analysisfeature',
         'chado_column' => 'analysisfeature_id',
       ]),
+      // Keeps track of the analysis_id and also indicates that the analysis table is a base table
+      // and should be handled before records in analysisfeature.
+      // NEEDS TO BE BEFORE THE store_link!
+      'analysis_id' => new ChadoIntStoragePropertyType($this->content_type, $field_name, 'analysis_id', $test_term_string, [
+        'action' => 'store_id',
+        'drupal_store' => TRUE,
+        'chado_table' => 'analysis',
+        'chado_column' => 'analysis_id'
+      ]),
       // Generate `JOIN {analysis} ON analysisfeature.analysis_id = analysis.analysis_id`
       // Will also store the analysisfeature.analysis_id so no need for drupal_store => TRUE.
       'second_hop' => new ChadoIntStoragePropertyType($this->content_type, $field_name, 'second_hop', $test_term_string, [
@@ -316,14 +325,6 @@ class ChadoStorageFieldsTest extends ChadoTestBrowserBase {
         'left_table_id' => 'analysis_id',
         'right_table' => 'analysis',
         'right_table_id' => 'analysis_id'
-      ]),
-      // Keeps track of the analysis_id and also indicates that the analysis table is a base table
-      // and should be handled before records in analysisfeature.
-      'analysis_id' => new ChadoIntStoragePropertyType($this->content_type, $field_name, 'analysis_id', $test_term_string, [
-        'action' => 'store_id',
-        'drupal_store' => TRUE,
-        'chado_table' => 'analysis',
-        'chado_column' => 'analysis_id'
       ]),
       // Now we are going to store all the core columns of the analysis table to
       // ensure we can meet the unique and not null requirements of the table.

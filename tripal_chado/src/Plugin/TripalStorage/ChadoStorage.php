@@ -140,9 +140,21 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
     $pkey = $table_def['primary key'];
 
-    // Insert the record.
+    // NOTE: Sometime the primary key is added to the fields without
+    // a value in buildChadoRecords. We want to remove those here
+    // before trying to insert the record.
+    $fields = [];
+    foreach ($record['fields'] as $key => $value) {
+      if (is_array($value) AND $value[0] === 'REPLACE_BASE_RECORD_ID') {
+        continue;
+      }
+      $fields[$key] = $value;
+    }
+
+    // Now we can insert the record *fingers crossed!*
+    // @debug print "Table: $chado_table; Record: " . print_r($record, TRUE);
     $insert = $chado->insert('1:' . $chado_table);
-    $insert->fields($record['fields']);
+    $insert->fields($fields);
     $record_id = $insert->execute();
 
     if (!$record_id) {
@@ -177,6 +189,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           $build['base_tables'][$base_table] = $record_id;
         }
       }
+      // @debug print_r($build);
 
       // Second: Insert non base table records.
       foreach ($records as $chado_table => $deltas) {
@@ -205,6 +218,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           foreach ($record['fields'] as $column => $val) {
             if (is_array($val) and $val[0] == 'REPLACE_BASE_RECORD_ID') {
               $base_table = $val[1];
+              // @debug print "\nWorking on $chado_table.$column to sub in $base_table record_id.\n";
               $records[$chado_table][$delta]['fields'][$column] = $build['base_tables'][$base_table];
               $record['fields'][$column] = $build['base_tables'][$base_table];
             }
@@ -867,7 +881,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           // ................................................................
           if ($action == 'store_pkey') {
             $link_record_id = $prop_value->getValue();
-            $records[$chado_table][$delta]['fields'][$chado_table_pkey] = $link_record_id;
             $records[$chado_table][$delta]['conditions'][$chado_table_pkey] = $link_record_id;
           }
           // STORE LINK: performs a join between two tables, one of which is a
@@ -879,9 +892,31 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             $left_table_id = $chado_table_pkey;
             $right_table = $prop_storage_settings['right_table'];
             $right_table_id = $prop_storage_settings['right_table_id'];
-            // We do not need to add fields or conditions for the store_link
-            // as these will be handled by the associated store_id and store_pkey.
-            // As such, we just need to add the join here!
+            // Now using the tables with a store_id, determine which side of this
+            // relationship is a base/core table. This will be used for the
+            // fields below to ensure the ID is replaced.
+            $link_base = $left_table;
+            if (array_key_exists($right_table, $base_record_ids)) {
+              $link_base = $right_table;
+            }
+            // We need to make sure that both ids are in a fields list. One side
+            // will be handled by the store_id but since we don't know which
+            // side, we just check both.
+            //  -- Left.
+            if (!array_key_exists($left_table, $records)) {
+              $records[$left_table] = [$delta => ['fields' => []]];
+            }
+            if (!array_key_exists($left_table_id, $records[$left_table][$delta]['fields'])) {
+              $records[$left_table][$delta]['fields'][$left_table_id] = ['REPLACE_BASE_RECORD_ID', $link_base];
+            }
+            //  -- Right.
+            if (!array_key_exists($right_table, $records)) {
+              $records[$right_table] = [$delta => ['fields' => []]];
+            }
+            if (!array_key_exists($right_table_id, $records[$right_table][$delta]['fields'])) {
+              $records[$right_table][$delta]['fields'][$right_table_id] = ['REPLACE_BASE_RECORD_ID', $link_base];
+            }
+            // Now, we just need to add the join here!
             $as = $left_table . "_link_" . $right_table;
             $path_arr = ["$left_table.$left_table_id>$right_table.$right_table_id"];
             $this->addChadoRecordJoins($records, $left_table_id, $as, $delta, $path_arr);
