@@ -384,7 +384,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         $string = str_replace('[' . $token . ']', '', $string);
       }
       else {
-        $string = str_replace('[' . $token . ']', $value, $string);
+        $string = str_replace('[' . $token . ']', $value ?? '', $string);
       }
     }
 
