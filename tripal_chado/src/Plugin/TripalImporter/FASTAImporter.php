@@ -347,42 +347,52 @@ class FASTAImporter extends ChadoImporterBase {
     }
 
     if ($re_name and !$re_uname and strcmp($match_type, 'Unique name') == 0) {
-      form_set_error('re_uname', t("You must provide a regular expression to identify the sequence unique name"));
+      // form_set_error('re_uname', t("You must provide a regular expression to identify the sequence unique name"));
+      \Drupal::messenger()->addError(t("You must provide a regular expression to identify the sequence unique name"));
     }
 
     if (!$re_name and $re_uname and strcmp($match_type, 'Name') == 0) {
-      form_set_error('re_name', t("You must provide a regular expression to identify the sequence name"));
+      // form_set_error('re_name', t("You must provide a regular expression to identify the sequence name"));
+      \Drupal::messenger()->addError(t("You must provide a regular expression to identify the sequence name"));
     }
 
     // make sure if a relationship is specified that all fields are provided.
 
     if (($rel_type or $re_subject) and !$parent_type) {
-      form_set_error('parent_type', t("Please provide a SO term for the parent"));
+      // form_set_error('parent_type', t("Please provide a SO term for the parent"));
+      \Drupal::messenger()->addError(t("Please provide a SO term for the parent"));
     }
     if (($parent_type or $re_subject) and !$rel_type) {
-      form_set_error('rel_type', t("Please select a relationship type"));
+      // form_set_error('rel_type', t("Please select a relationship type"));
+      \Drupal::messenger()->addError(t("Please select a relationship type"));
     }
 
     // make sure if a database is specified that all fields are provided
     if ($db_id and !$re_accession) {
-      form_set_error('re_accession', t("Please provide a regular expression for the accession"));
+      // form_set_error('re_accession', t("Please provide a regular expression for the accession"));
+      \Drupal::messenger()->addError(t("Please provide a regular expression for the accession"));
     }
     if ($re_accession and !$db_id) {
-      form_set_error('db_id', t("Please select a database"));
+      // form_set_error('db_id', t("Please select a database"));
+      \Drupal::messenger()->addError(t("Please select a database"));
     }
 
     // Check to make sure the regexps are valid.
     if ($re_name && @preg_match("/$re_name/", null) === false) {
-      form_set_error('re_name', t("please provide a valid regular expression for the feature name."));
+      // form_set_error('re_name', t("please provide a valid regular expression for the feature name."));
+      \Drupal::messenger()->addError(t("please provide a valid regular expression for the feature name."));
     }
     if ($re_uname && @preg_match("/$re_uname/", null) === false) {
-      form_set_error('re_uname', t("please provide a valid regular expression for the feature unique name."));
+      // form_set_error('re_uname', t("please provide a valid regular expression for the feature unique name."));
+      \Drupal::messenger()->addError(t("please provide a valid regular expression for the feature unique name."));
     }
     if ($re_accession && @preg_match("/$re_accession/", null) === false) {
-      form_set_error('re_accession', t("please provide a valid regular expression for the external database accession."));
+      // form_set_error('re_accession', t("please provide a valid regular expression for the external database accession."));
+      \Drupal::messenger()->addError(t("please provide a valid regular expression for the external database accession."));
     }
     if ($re_subject && @preg_match("/$re_subject/", null) === false) {
-      form_set_error('re_subject', t("please provide a valid regular expression for the relationship parent."));
+      // form_set_error('re_subject', t("please provide a valid regular expression for the relationship parent."));
+      \Drupal::messenger()->addError(t("please provide a valid regular expression for the relationship parent."));
     }
 
     // check to make sure the types exists
@@ -401,7 +411,8 @@ class FASTAImporter extends ChadoImporterBase {
       ])->fetchObject();
 
     if (!$cvterm) {
-      form_set_error('type', t("The Sequence Ontology (SO) term selected for the sequence type is not available in the database. Please check spelling or select another."));
+      // form_set_error('type', t("The Sequence Ontology (SO) term selected for the sequence type is not available in the database. Please check spelling or select another."));
+      \Drupal::messenger()->addError(t("The Sequence Ontology (SO) term selected for the sequence type is not available in the database. Please check spelling or select another."));
     }
 
     if ($rel_type) {
@@ -411,7 +422,8 @@ class FASTAImporter extends ChadoImporterBase {
         ':synonym' => $parent_type,
       ])->fetchObject();
       if (!$cvterm) {
-        form_set_error('parent_type', t("The Sequence Ontology (SO) term selected for the parent relationship is not available in the database. Please check spelling or select another."));
+        // form_set_error('parent_type', t("The Sequence Ontology (SO) term selected for the parent relationship is not available in the database. Please check spelling or select another."));
+        \Drupal::messenger()->addError(t("The Sequence Ontology (SO) term selected for the parent relationship is not available in the database. Please check spelling or select another."));
       }
     }
   }
