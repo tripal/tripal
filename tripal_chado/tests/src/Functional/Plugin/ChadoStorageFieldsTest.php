@@ -229,6 +229,7 @@ class ChadoStorageFieldsTest extends ChadoTestBrowserBase {
     // This is just a fake field name for our test.
     // The field does not actually need to exist for this test.
     $field_name = 'testlinkerfield';
+    $other_field = 'testotherfeaturefield';
 
     // The term does not need to be unique for this test
     // as such we will use the same term for all properties for ease
@@ -255,14 +256,8 @@ class ChadoStorageFieldsTest extends ChadoTestBrowserBase {
     // We will want a feature record to use in testing.
     // Add the gene record.
     $gene_type_id = $this->getCvtermID('SO', '0000704');
-    $query = $connection->insert('1:feature');
-    $query->fields([
-      'name' => 'test_gene_name',
-      'uniquename' => 'test_gene_uname',
-      'type_id' => $gene_type_id,
-      'organism_id' => $this->organism_id,
-    ]);
-    $feature_id = $query->execute();
+    $gene_uname = 'testGene4LinkerTableTest';
+    $gene_organism_id = $this->organism_id;
 
     // Creating the Types + Values.
     // --------------------------------
@@ -272,6 +267,25 @@ class ChadoStorageFieldsTest extends ChadoTestBrowserBase {
     // and that wants to save an analysis (program + programversion) associated
     // with the feature for a given Tripal content page.
     $propertyTypes = [
+      // These are properties that would be supplied by other fields.
+      // .................................................................
+      'feature_type' => new ChadoIntStoragePropertyType($this->content_type, $other_field, 'feature_type', $test_term_string, [
+        'action' => 'store',
+        'chado_table' => 'feature',
+        'chado_column' => 'type_id'
+      ]),
+      'feature_organism' => new ChadoIntStoragePropertyType($this->content_type, $other_field, 'feature_organism', $test_term_string, [
+        'action' => 'store',
+        'chado_table' => 'feature',
+        'chado_column' => 'organism_id'
+      ]),
+      'feature_uname' => new ChadoVarCharStoragePropertyType($this->content_type, $other_field, 'feature_uname', $test_term_string, 255, [
+        'action' => 'store',
+        'chado_table' => 'feature',
+        'chado_column' => 'uniquename'
+      ]),
+      // These are properties supplied by the linker field.
+      // .................................................................
       // Keeps track of the feature record our hypothetical field cares about.
       'base_id' => new ChadoIntStoragePropertyType($this->content_type, $field_name, 'base_id', $test_term_string, [
         'action' => 'store_id',
@@ -346,7 +360,7 @@ class ChadoStorageFieldsTest extends ChadoTestBrowserBase {
       "Unable to retrieve the PropertyTypes after adding $field_name."
     );
     $this->assertCount(
-      7,
+      10,
       $retrieved_types,
       "Did not revieve the expected number of PropertyTypes after adding $field_name."
     );
@@ -382,10 +396,11 @@ class ChadoStorageFieldsTest extends ChadoTestBrowserBase {
     // create the linkage using this field
     // -------------------------------------
     // Set the values in our propertyValue classes.
-    // NOTE: The feature was added in the prep for this test
-    // but there are no analysis records.
-    $propertyValues['base_id']->setValue($feature_id);
-    // @debug print "We set the value of the base_id to $feature_id before using insertValues().";
+    // NOTE: None of the records exist for this test.
+    // Specifically,no feature, analysisfeature, analysis.
+    $propertyValues['feature_type']->setValue($gene_type_id);
+    $propertyValues['feature_organism']->setValue($gene_organism_id);
+    $propertyValues['feature_uname']->setValue($gene_uname);
     $propertyValues['program']->setValue('NCBI Blast');
     $propertyValues['programversion']->setValue('v2.13.0');
     // Setup the right structure for insertValues (see TripalStorageInterface::insertValues)
