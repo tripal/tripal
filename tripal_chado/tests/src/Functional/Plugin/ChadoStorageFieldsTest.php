@@ -307,6 +307,7 @@ class ChadoStorageFieldsTest extends ChadoTestBrowserBase {
       // and should be handled before records in analysisfeature.
       'analysis_id' => new ChadoIntStoragePropertyType($this->content_type, $field_name, 'analysis_id', $test_term_string, [
         'action' => 'store_id',
+        'drupal_store' => TRUE,
         'chado_table' => 'analysis',
         'chado_column' => 'analysis_id'
       ]),
@@ -384,7 +385,7 @@ class ChadoStorageFieldsTest extends ChadoTestBrowserBase {
     // NOTE: The feature was added in the prep for this test
     // but there are no analysis records.
     $propertyValues['base_id']->setValue($feature_id);
-    print "We set the value of the base_id to $feature_id before using insertValues().";
+    // @debug print "We set the value of the base_id to $feature_id before using insertValues().";
     $propertyValues['program']->setValue('NCBI Blast');
     $propertyValues['programversion']->setValue('v2.13.0');
     // Setup the right structure for insertValues (see TripalStorageInterface::insertValues)
