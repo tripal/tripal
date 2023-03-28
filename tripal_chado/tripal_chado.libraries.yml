@@ -4,3 +4,8 @@ tripal_chado.chado_table:
       css/chado_table.css: {}
   js:
     js/chado_table.js: {}
+
+tripal_chado.field.ChadoSequenceFormatterDefault:
+  css:
+    component:
+      src/Plugin/Field/FieldFormatter/ChadoSequenceFormatterDefault.css: {} 
