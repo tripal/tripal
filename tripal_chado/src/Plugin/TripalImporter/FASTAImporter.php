@@ -316,6 +316,8 @@ class FASTAImporter extends ChadoImporterBase {
 
     $form_state_values = $form_state->getValues();
 
+
+    dpm($form_state_values);
     $organism_id = $form_state_values['organism_id'];
     $type = trim($form_state_values['seqtype']);
     $method = trim($form_state_values['method']);
@@ -394,7 +396,7 @@ class FASTAImporter extends ChadoImporterBase {
       // form_set_error('re_subject', t("please provide a valid regular expression for the relationship parent."));
       \Drupal::messenger()->addError(t("please provide a valid regular expression for the relationship parent."));
     }
-
+    
     // check to make sure the types exists
     $cvtermsql = "
       SELECT CVT.cvterm_id
@@ -515,7 +517,7 @@ class FASTAImporter extends ChadoImporterBase {
   private function loadFasta($file_path, $organism_id, $type, $re_name, $re_uname, $re_accession,
                              $db_id, $rel_type, $re_subject, $parent_type, $method, $analysis_id, $match_type) {
 
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
 
     // First get the type for this sequence.
     $cvtermsql = "
@@ -741,7 +743,7 @@ class FASTAImporter extends ChadoImporterBase {
                                     $rel_type, $parent_type, $analysis_id, $organism_id, $cvterm, $source, $method, $re_name,
                                     $match_type, $parentcvterm, $relcvterm, $seq_start, $seq_end) {
 
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     // Check to see if this feature already exists if the match_type is 'Name'.
     if (strcmp($match_type, 'Name') == 0) {
       // $values = [
@@ -808,7 +810,7 @@ class FASTAImporter extends ChadoImporterBase {
         //     '!type' => drupal_strtolower($match_type),
         //   ], TRIPAL_WARNING);
         $this->logger->error("Feature already exists '$name' ('$uname') while matching on " . 
-          drupal_strtolower($match_type) . ". Skipping insert.");
+          strtolower($match_type) . ". Skipping insert.");
         return 0;
       }
     }
@@ -877,7 +879,7 @@ class FASTAImporter extends ChadoImporterBase {
     if (!isset($feature) and (strcmp($method, 'Update only') == 0 or strcmp($method, 'Insert and update') == 0)) {
       // $this->logMessage("Failed to find feature '!name' ('!uname') while matching on " . drupal_strtolower($match_type) . ".",
       //   ['!name' => $name, '!uname' => $uname], TRIPAL_ERROR);
-      $this->logger->error("Failed to find feature '$name' ('$uname') while matching on " . drupal_strtolower($match_type) . ".");
+      $this->logger->error("Failed to find feature '$name' ('$uname') while matching on " . strtolower($match_type) . ".");
       return 0;
     }
 
@@ -1144,7 +1146,7 @@ class FASTAImporter extends ChadoImporterBase {
    * @param $seq_end
    */
   private function loadFastaResidues($fh, $feature_id, $seq_start, $seq_end) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     // First position the file at the beginning of the sequence
     fseek($fh, $seq_start, SEEK_SET);
     $chunk_size = 100000000;
