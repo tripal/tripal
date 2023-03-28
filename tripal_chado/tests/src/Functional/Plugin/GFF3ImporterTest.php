@@ -919,9 +919,10 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     catch (\Exception $ex) {
       $message = $ex->getMessage();
       $has_exception = true;
-    }
-    $this->assertEquals($has_exception, false, 'The gff_strand.gff produced an 
+      $this->assertEquals($has_exception, false, 'The gff_strand.gff produced an 
       exception which should not happen since it is a valid file. ' . $message);
+    }
+
 
 
     /**
