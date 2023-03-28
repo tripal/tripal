@@ -164,6 +164,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     $schema = $chado->schema();
 
     $build = $this->buildChadoRecords($values, TRUE);
+    // @debug print_r($build);
     $records = $build['records'];
 
     $transaction_chado = $chado->startTransaction();
@@ -866,6 +867,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           // ................................................................
           if ($action == 'store_pkey') {
             $link_record_id = $prop_value->getValue();
+            $records[$chado_table][$delta]['fields'][$chado_table_pkey] = $link_record_id;
             $records[$chado_table][$delta]['conditions'][$chado_table_pkey] = $link_record_id;
           }
           // STORE LINK: performs a join between two tables, one of which is a
@@ -880,8 +882,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             // We do not need to add fields or conditions for the store_link
             // as these will be handled by the associated store_id and store_pkey.
             // As such, we just need to add the join here!
-            $as = $left_table . "_link_" . $right_table
-            $path_arr = ["$left_table.$left_table_id=$right_table.$right_table_id"];
+            $as = $left_table . "_link_" . $right_table;
+            $path_arr = ["$left_table.$left_table_id>$right_table.$right_table_id"];
             $this->addChadoRecordJoins($records, $left_table_id, $as, $delta, $path_arr);
           }
           // STORE: indicates that the value of this property can be loaded and
@@ -936,6 +938,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     // before chado storage was called.
     // Note: We have not yet done any querying ;-p
     // -----------------------------------------------------------------------
+    // @debug print_r($records);
     foreach ($records as $table_name => $deltas) {
       foreach ($deltas as $delta => $record) {
         // First for all the fields...
