@@ -11,7 +11,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
 /**
  * Agricola publication parser
  *
- *  @TripalImporter(
+ *  @TripalPubParser(
  *    id = "tripal_pub_parser_bibtex",
  *    label = @Translation("BibTex"),
  *    description = @Translation("Parses data from the a BibTex file."),

@@ -11,7 +11,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
 /**
  * Agricola publication parser
  *
- *  @TripalImporter(
+ *  @TripalPubParser(
  *    id = "tripal_pub_parser_pmid",
  *    label = @Translation("PMID"),
  *    description = @Translation("Retrieves and parses data from the NIH PubMed database."),

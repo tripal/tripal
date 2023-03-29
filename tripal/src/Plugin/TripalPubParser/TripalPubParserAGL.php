@@ -11,7 +11,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
 /**
  * Agricola publication parser
  *
- *  @TripalImporter(
+ *  @TripalPubParser(
  *    id = "tripal_pub_parser_agl",
  *    label = @Translation("Agricola"),
  *    description = @Translation("Retrieves and parses data from the USDA National Library Agricola database."),

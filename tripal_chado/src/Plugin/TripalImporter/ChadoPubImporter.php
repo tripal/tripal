@@ -61,10 +61,14 @@ class ChadoPubImporter extends ChadoImporterBase {
     // Always call the parent form to ensure Chado is handled properly.
     $form = parent::form($form, $form_state);
 
-    $x = new \Drupal\tripal\TripalPubParser\Interfaces\TripalPubParserInterface();
-    // get the list of plugins. //@@@ to-do - how to look these up?
-$plugins = [ 'NAL' => t('National Agricultural Library (Agricola)'),
-             'PMID' => t('PubMed Publication Database') ];
+    // Retrieve a list of available pub parser plugins.
+    $pub_parser_manager = \Drupal::service('tripal.pub_parser');
+    $pub_parser_defs = $pub_parser_manager->getDefinitions();
+    $plugins = [];
+    foreach ($pub_parser_defs as $plugin_id => $def) {
+      $plugin_label = $def['label']->getUntranslatedString();
+      $plugins[$plugin_label] = $plugin_label;
+    }
 
     $form['plugin_id'] = [
       '#title' => t('Select a source of publications'),

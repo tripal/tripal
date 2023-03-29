@@ -59,7 +59,7 @@ interface TripalPubParserInterface extends PluginInspectionInterface  {
    *   The criteria used by the parser to retreive and parse results.
    *
    * @return array
-   *   The unfform publication information array.
+   *   The uniform publication information array.
    */
   public function run(array $criteria);
 
