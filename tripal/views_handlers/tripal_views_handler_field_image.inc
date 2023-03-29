@@ -50,7 +50,7 @@ class tripal_views_handler_field_image extends tripal_views_handler_field {
   function render($values) {
     $value = $this->get_value($values);
     // Handle single value fields:
-    if (count($value == 1)) {
+    if ($value and count($value) == 1) {
       $fid = $value[0]['fid'];
       if ($fid) {
         $file = file_load($fid);
