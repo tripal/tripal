@@ -506,26 +506,46 @@ class OBOImporter extends ChadoImporterBase {
       }
     }
 
-    // Submitted with 'Import OBO File' button
+    // Submitted with 'Import OBO File' button. This is used both for
+    // reloading a saved ontology and for loading a new ontology.
     if ($form_state->getTriggeringElement()['#name'] == 'op') {
-      if (!$obo_name) {
-        $form_state->setErrorByName('obo_name', t('Please provide a name for the vocabulary'));
+      if ($uobo_name and $obo_name) {
+        $form_state->setErrorByName('obo_name', t('New and existing ontologies are both selected, please select only one'));
       }
-      // Generate error if supplied vocabulary name already exists.
-      $vocab_id = $this->getVocabID($obo_name);
-      if ($vocab_id) {
-        $form_state->setErrorByName('obo_name', t('The vocabulary name must be different from existing vocabularies'));
+      // Generate error if supplied new vocabulary name already exists.
+      if ($obo_name) {
+        $vocab_id = $this->getVocabID($obo_name);
+        if ($vocab_id) {
+          $form_state->setErrorByName('obo_name', t('The vocabulary name must be different from existing vocabularies'));
+        }
       }
-      // If file specified, make sure it exists, either as a relative or absolute path.
-      if (!$this->formValidateFile($obo_file)) {
-        $form_state->setErrorByName('obo_file',
-            t('The specified path, @path, does not exist or cannot be read.', ['@path' => $obo_file]));
+      if ($uobo_name) {
+        // Validate the update existing ontology section
+        if (!$uobo_url and !$uobo_file) {
+          $form_state->setErrorByName('uobo_url', t('Please provide either a URL or a path for the vocabulary.'));
+        }
+        if ($uobo_url and $uobo_file) {
+          $form_state->setErrorByName('uobo_url', t('Please provide only a URL or a path for the vocabulary, but not both.'));
+        }
+        // If file specified, make sure it exists, either as a relative or absolute path.
+        if (!$this->formValidateFile($uobo_file)) {
+          $form_state->setErrorByName('uobo_file',
+              t('The specified path, @path, does not exist or cannot be read.', ['@path' => $uobo_file]));
+        }
       }
-      if (!$obo_url and !$obo_file) {
-        $form_state->setErrorByName('obo_url', t('Please provide either a URL or a path for the vocabulary.'));
-      }
-      if ($obo_url and $obo_file) {
-        $form_state->setErrorByName('obo_url', t('Please provide only a URL or a path for the vocabulary, but not both.'));
+      else {
+        // Validate the load new ontology section
+        if (!$obo_url and !$obo_file) {
+          $form_state->setErrorByName('obo_url', t('Please provide either a URL or a path for the vocabulary.'));
+        }
+        if ($obo_url and $obo_file) {
+          $form_state->setErrorByName('obo_url', t('Please provide only a URL or a path for the vocabulary, but not both.'));
+        }
+        // If file specified, make sure it exists, either as a relative or absolute path.
+        if (!$this->formValidateFile($obo_file)) {
+          $form_state->setErrorByName('obo_file',
+              t('The specified path, @path, does not exist or cannot be read.', ['@path' => $obo_file]));
+        }
       }
     }
   }
