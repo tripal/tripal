@@ -3,6 +3,7 @@
 namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
+use Drupal\tripal\TripalPubParser\Interfaces\TripalPubParserInterface;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
@@ -45,6 +46,37 @@ class ChadoPubImporter extends ChadoImporterBase {
    * the URL for the loader.
    */
   public static $machine_name = 'chado_pub_loader';
+
+  /**
+   * A brief description for this loader. This description will be
+   * presented to the site user.
+   */
+  public static $description = 'Import publications into Chado';
+
+  /**
+   * {@inheritDoc}
+   */
+  public function form($form, &$form_state) {
+    $chado = \Drupal::service('tripal_chado.database');
+    // Always call the parent form to ensure Chado is handled properly.
+    $form = parent::form($form, $form_state);
+
+    $x = new \Drupal\tripal\TripalPubParser\Interfaces\TripalPubParserInterface();
+    // get the list of plugins. //@@@ to-do - how to look these up?
+$plugins = [ 'NAL' => t('National Agricultural Library (Agricola)'),
+             'PMID' => t('PubMed Publication Database') ];
+
+    $form['plugin_id'] = [
+      '#title' => t('Select a source of publications'),
+      '#type' => 'radios',
+      '#description' => t("Choose one of the following sources for loading publications."),
+      '#required' => TRUE,
+      '#options' => $plugins,
+      '#default_value' => 'NAL',
+    ];
+
+    return $form;
+  }
 
   /**
    * {@inheritDoc}

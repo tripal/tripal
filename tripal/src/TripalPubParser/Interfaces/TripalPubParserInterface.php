@@ -26,7 +26,6 @@ interface TripalPubParserInterface extends PluginInspectionInterface  {
    */
   public function form($form, &$form_state);
 
-
   /**
    * Handles submission of the form elements.
    *
