@@ -13,20 +13,21 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *
  *  @TripalPubParser(
  *    id = "tripal_pub_parser_bibtex",
- *    label = @Translation("BibTex"),
- *    select_text = @Translation("Upload a BibTex format file"),
- *    description = @Translation("Parses data from the an uploaded BibTex file."),
+ *    label = @Translation("Upload a BibTex format file"),
+ *    description = @Translation("Parses data from the an uploaded BibTex file"),
  *  )
  */
 class TripalPubParserBibTex extends TripalPubParserBase {
 
-  public function formSubmit($form, $form_state) {
+  public function formSubmit($form, &$form_state) {
   }
 
-  public function form($form, $form_state) {
+  public function form($form, &$form_state) {
+    // Add form elements specific to this parser.
+    return $form;
   }
 
-  public function formValidate($form, $form_state) {
+  public function formValidate($form, &$form_state) {
   }
 
   public function run(array $criteria) {
