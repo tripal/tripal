@@ -14,7 +14,8 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *  @TripalPubParser(
  *    id = "tripal_pub_parser_bibtex",
  *    label = @Translation("BibTex"),
- *    description = @Translation("Parses data from the a BibTex file."),
+ *    select_text = @Translation("Upload a BibTex format file"),
+ *    description = @Translation("Parses data from the an uploaded BibTex file."),
  *  )
  */
 class TripalPubParserBibTex extends TripalPubParserBase {

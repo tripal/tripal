@@ -66,14 +66,16 @@ class ChadoPubImporter extends ChadoImporterBase {
     $pub_parser_defs = $pub_parser_manager->getDefinitions();
     $plugins = [];
     foreach ($pub_parser_defs as $plugin_id => $def) {
-      $plugin_label = $def['label']->getUntranslatedString();
-      $plugins[$plugin_label] = $plugin_label;
+      $plugin_key = $def['label']->getUntranslatedString();
+      $plugin_value = $def['select_text']->getUntranslatedString();
+      $plugins[$plugin_key] = $plugin_value;
     }
+    asort($plugins);
 
     $form['plugin_id'] = [
       '#title' => t('Select a source of publications'),
       '#type' => 'radios',
-      '#description' => t("Choose one of the following sources for loading publications."),
+      '#description' => t("Choose one of the sources above for loading publications."),
       '#required' => TRUE,
       '#options' => $plugins,
       '#default_value' => 'NAL',

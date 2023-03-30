@@ -9,15 +9,16 @@ use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
 
 /**
- * Agricola publication parser
+ * PubMed publication parser
  *
  *  @TripalPubParser(
- *    id = "tripal_pub_parser_agl",
- *    label = @Translation("Agricola"),
- *    description = @Translation("Retrieves and parses data from the USDA National Library Agricola database."),
+ *    id = "tripal_pub_parser_pubmed",
+ *    label = @Translation("PubMed"),
+ *    select_text = @Translation("NIH PubMed database"),
+ *    description = @Translation("Retrieves and parses publication data from the NIH PubMed database."),
  *  )
  */
-class TripalPubParserAGL extends TripalPubParserBase {
+class TripalPubParserPubmed extends TripalPubParserBase {
 
   public function formSubmit($form, $form_state) {
   }

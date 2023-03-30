@@ -12,12 +12,13 @@ use Drupal\Core\Ajax\ReplaceCommand;
  * Agricola publication parser
  *
  *  @TripalPubParser(
- *    id = "tripal_pub_parser_pmid",
- *    label = @Translation("PMID"),
- *    description = @Translation("Retrieves and parses data from the NIH PubMed database."),
+ *    id = "tripal_pub_parser_agricola",
+ *    label = @Translation("Agricola"),
+ *    select_text = @Translation("National Agricultural Library Agricola database"),
+ *    description = @Translation("Retrieves and parses data from the USDA National Agricultural Library Agricola database."),
  *  )
  */
-class TripalPubParserPMID extends TripalPubParserBase {
+class TripalPubParserAgricola extends TripalPubParserBase {
 
   public function formSubmit($form, $form_state) {
   }
