@@ -888,38 +888,35 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           // in this property is the left_table_id indicated in other key/value pairs.
           // ................................................................
           if ($action == 'store_link') {
-            $left_table = $chado_table;
-            $left_table_id = $chado_table_pkey;
-            $right_table = $prop_storage_settings['right_table'];
-            $right_table_id = $prop_storage_settings['right_table_id'];
-            // Now using the tables with a store_id, determine which side of this
+            // Using the tables with a store_id, determine which side of this
             // relationship is a base/core table. This will be used for the
             // fields below to ensure the ID is replaced.
-            $link_base = $left_table;
-            if (array_key_exists($right_table, $base_record_ids)) {
-              $link_base = $right_table;
+            // Start by assuming the left table is the base/core table
+            // (e.g. feature.feature_id = featureprop.feature_id).
+            $link_base = $chado_table;
+            $link_base_id = $chado_table_pkey;
+            $linker = $prop_storage_settings['right_table'];
+            $linker_id = $prop_storage_settings['right_table_id'];
+            // Then check if the right table has a store_id and if so, use it instead.
+            // (e.g. analysisfeature.analysis_id = analysis.analysis_id)
+            if (array_key_exists($prop_storage_settings['right_table'], $base_record_ids)) {
+              $link_base = $prop_storage_settings['right_table'];
+              $link_base_id = $prop_storage_settings['right_table_id'];
+              $linker = $chado_table;
+              $linker_id = $chado_table_pkey;
             }
-            // We need to make sure that both ids are in a fields list. One side
-            // will be handled by the store_id but since we don't know which
-            // side, we just check both.
-            //  -- Left.
-            if (!array_key_exists($left_table, $records)) {
-              $records[$left_table] = [$delta => ['fields' => []]];
-            }
-            if (!array_key_exists($left_table_id, $records[$left_table][$delta]['fields'])) {
-              $records[$left_table][$delta]['fields'][$left_table_id] = ['REPLACE_BASE_RECORD_ID', $link_base];
-            }
-            //  -- Right.
-            if (!array_key_exists($right_table, $records)) {
-              $records[$right_table] = [$delta => ['fields' => []]];
-            }
-            if (!array_key_exists($right_table_id, $records[$right_table][$delta]['fields'])) {
-              $records[$right_table][$delta]['fields'][$right_table_id] = ['REPLACE_BASE_RECORD_ID', $link_base];
+            // We want to ensure that the linker table has a field added with
+            // the link to replace the ID once it's available.
+            $records[$linker] = $records[$linker] ?? [$delta => ['fields' => []]];
+            $records[$linker][$delta] = $records[$linker][$delta] ?? ['fields' => []];
+            $records[$linker][$delta]['fields'] = $records[$linker][$delta]['fields'] ?? [];
+            if (!array_key_exists($linker_id, $records[$linker][$delta]['fields'])) {
+              $records[$linker][$delta]['fields'][$linker_id] = ['REPLACE_BASE_RECORD_ID', $link_base];
             }
             // Now, we just need to add the join here!
-            $as = $left_table . "_link_" . $right_table;
-            $path_arr = ["$left_table.$left_table_id>$right_table.$right_table_id"];
-            $this->addChadoRecordJoins($records, $left_table_id, $as, $delta, $path_arr);
+            $as = $linker . "2" . $link_base . '_' . $delta;
+            $path_arr = ["$linker.$linker_id>$link_base.$link_base_id"];
+            $this->addChadoRecordJoins($records, $linker_id, $as, $delta, $path_arr);
           }
           // STORE: indicates that the value of this property can be loaded and
           // stored in the Chado table indicated by this property.
@@ -1009,6 +1006,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       }
     }
 
+    // @debug print_r($records);
     return [
       'base_tables' => $base_record_ids,
       'records' => $records
