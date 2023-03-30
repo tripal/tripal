@@ -18,10 +18,10 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *    description = @Translation("Imports publications into Chado"),
  *    file_types = {"bib", "bibtex"},
  *    upload_description = @Translation("Please provide the data file."),
- *    upload_title = @Translation("BibTex File"),
+ *    upload_title = @Translation("Upload data file"),
+ *    button_text = @Translation("Select Source"),
  *    use_analysis = False,
  *    require_analysis = False,
- *    button_text = @Translation("Import Publications"),
  *    file_upload = False,
  *    file_load = False,
  *    file_remote = False,
@@ -71,7 +71,6 @@ class ChadoPubImporter extends ChadoImporterBase {
       $plugins[$plugin_key] = $plugin_value;
     }
     asort($plugins);
-//dpm($plugins, 'plugins');
 
     $form['plugin_id'] = [
       '#title' => t('Select a source of publications'),
@@ -93,18 +92,10 @@ class ChadoPubImporter extends ChadoImporterBase {
       '#suffix' => '</span>',
     ];
 
-    // The remainder of the form is only populated after
-    // the publication source is selected.
-    $plugin_id = $form_state->getValue(['plugin_id']);
-    if ($plugin_id) {
-      // The plugin manager defines form elements used by
-      // all plugins.
-      $form = $pub_parser_manager->form($form, $form_state);
-
-      // The active plugin defines form elements specific
-      // to itself.
-      $form = $this->formPlugin($form, $form_state);
-    }
+    // The remainder of the form is only populated if
+    // plugin_id has been selected. The plugin base
+    // class and the selected plugin can each add elements.
+    $form = $this->formPlugin($form, $form_state);
 
     return $form;
   }
@@ -143,13 +134,21 @@ class ChadoPubImporter extends ChadoImporterBase {
    */
   private function formPlugin($form, &$form_state) {
 
-    // Instantiate the selected plugin.
+    // Add elements only after a plugin has been selected.
     $plugin_id = $form_state->getValue(['plugin_id']);
-    $pub_parser_manager = \Drupal::service('tripal.pub_parser');
-    $plugin = $pub_parser_manager->createInstance($plugin_id, []);
+    if ($plugin_id) {
+      // Instantiate the selected plugin
+      $pub_parser_manager = \Drupal::service('tripal.pub_parser');
+      $plugin = $pub_parser_manager->createInstance($plugin_id, []);
 
-    // Call the plugin to add any form elements that it needs.
-    $form = $plugin->form($form, $form_state);
+      // The plugin manager defines form elements used by
+      // all pub_parser plugins.
+      $form = $pub_parser_manager->form($form, $form_state);
+
+      // The selected plugin defines form elements specific
+      // to itself.
+      $form = $plugin->form($form, $form_state);
+    }
 
     return $form;
   }
