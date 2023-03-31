@@ -310,7 +310,7 @@ class GFF3Importer extends TripalImporter {
       '#title' => t('Landmark Type'),
       '#type' => 'textfield',
       '#description' => t("Optional. Use this field to specify a Sequence Ontology type
-       for the landmark sequences in the GFF fie (e.g. 'chromosome'). This is only needed if
+       for the landmark sequences in the GFF file (e.g. 'chromosome'). This is only needed if
        the landmark features (first column of the GFF3 file) are not already in the database.."),
     ];
 

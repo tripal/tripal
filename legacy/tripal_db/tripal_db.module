@@ -11,7 +11,7 @@
  * Provides functions for managing chado database references which link chado content, such
  * as features and stocks, to records/pages in external databases/websites. For example,
  * you might have a feature record in your site which is also in the NCBI website and by
- * adding a database refrence to your feature, an automatic link to the content at NCBI
+ * adding a database reference to your feature, an automatic link to the content at NCBI
  * is created.
  * @}
  */

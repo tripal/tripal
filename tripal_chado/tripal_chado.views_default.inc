@@ -16,7 +16,7 @@ function tripal_chado_views_default_views() {
   $view = tripal_chado_defaultview_admin_custom_tables();
   $views[$view->name] = $view;
 
-  // Default Trial materialized views view.
+  // Default Tripal materialized views view.
   $view = tripal_chado_defaultview_admin_mviews();
   $views[$view->name] = $view;
 
@@ -263,9 +263,9 @@ function tripal_chado_defaultview_admin_mviews() {
   $handler->display->display_options['header']['area']['label'] = 'Description';
   $handler->display->display_options['header']['area']['empty'] = TRUE;
   $handler->display->display_options['header']['area']['content'] = '<p>Materialized Views (MViews) are custom tables populated with a defined SQL statement. Because Chado is highly normalized and highly constrained it serves as a wonderful data storage platform, but unfortunately some queries may be slow. MViews alleviate slowness by aggregating data into tables that are more easy to query. Use MViews to create tables for custom search pages or custom Tripal module development.</p>
-  <p>MViews behaves in the following way:</p>
+  <p>MViews behave in the following way:</p>
   <ul>
-  <li>The SQL statement defined for an MVIEW will be used to populate the table</li>
+  <li>The SQL statement defined for an MView will be used to populate the table</li>
   <li>Altering the table structure of an MView will cause the MView table to be dropped and recreated. All records in the MView will be lost.</li>
   <li>Altering the query of an existing view will not change the MView table. No records will be lost.</li>
   <li>Repopulating an MView that is already populated will result in replacement of all records.</li>
@@ -553,7 +553,7 @@ function tripal_chado_defaultview_admin_cvs_listing() {
   $handler->display->display_options['fields']['nothing_3']['exclude'] = TRUE;
   $handler->display->display_options['fields']['nothing_3']['alter']['text'] = 'Add Term';
   $handler->display->display_options['fields']['nothing_3']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['nothing_3']['alter']['path'] = 'aadmin/tripal/loaders/chado_vocabs/chado_cv/[cv_id]/cvterm/add';
+  $handler->display->display_options['fields']['nothing_3']['alter']['path'] = 'admin/tripal/loaders/chado_vocabs/chado_cv/[cv_id]/cvterm/add';
   /* Field: Global: Custom text */
   $handler->display->display_options['fields']['nothing_2']['id'] = 'nothing_2';
   $handler->display->display_options['fields']['nothing_2']['table'] = 'views';

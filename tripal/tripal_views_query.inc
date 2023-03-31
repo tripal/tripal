@@ -38,7 +38,7 @@ class tripal_views_query extends views_plugin_query {
     $this->where = [];
     $this->order = [];
 
-    // Creqte the TripalFieldQuery object.
+    // Create the TripalFieldQuery object.
     $this->query = new TripalFieldQuery();
     $this->cquery = new TripalFieldQuery();
     $this->cquery->count();

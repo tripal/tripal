@@ -60,7 +60,7 @@ class TripalContentService_v0_1 extends TripalWebService {
       $bquery->orderBy('tb.label', 'ASC');
       $bundles = $bquery->execute();
 
-      // Iterate through the terms convert the santized name to the real label.
+      // Iterate through the terms convert the sanitized name to the real label.
       $i = 0;
       $ctype_lookup = [];
       $found = FALSE;

@@ -268,7 +268,7 @@ function tripal_chado_field_storage_pre_load($entity_type, $entities, $age,
                                              $fields, $options) {
 
 
-  // Itereate through the entities and add in the Chado record.
+  // Iterate through the entities and add in the Chado record.
   foreach ($entities as $id => $entity) {
 
     // Only deal with Tripal Entities.
