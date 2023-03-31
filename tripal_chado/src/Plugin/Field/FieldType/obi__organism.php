@@ -69,6 +69,19 @@ class obi__organism extends ChadoFieldItemBase {
     // Get the base table columns needed for this field.
     $settings = $field_definition->getSetting('storage_plugin_settings');
     $base_table = $settings['base_table'];
+
+    // If we don't have a base table then we're not ready to specify the
+    // properties for this field.
+    if (!$base_table) {
+      $record_id_term = 'OBI:0100026';
+      return [
+        new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
+          'action' => 'store_id',
+          'drupal_store' => TRUE,
+        ])
+      ];
+    }
+
     $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
     $base_pkey_col = $base_schema_def['primary key'];
     $base_fk_col = array_keys($base_schema_def['foreign keys']['organism']['columns'])[0];
