@@ -32,7 +32,7 @@ function tripal_chado_vocab_get_vocabularies() {
     return FALSE;
   }
 
-  // Make sure the materiailzd view is present.
+  // Make sure the materialized view is present.
   if (!chado_table_exists('db2cv_mview')) {
     drupal_set_message('Please update the database using "drush updatedb" before continuing');
     return FALSE;
@@ -85,7 +85,7 @@ function tripal_chado_vocab_get_vocabulary($vocabulary) {
     return FALSE;
   }
 
-  // Make sure the materiailzd view is present.
+  // Make sure the materialized view is present.
   if (!chado_table_exists('db2cv_mview')) {
     drupal_set_message('Please update the database using "drush updatedb" before continuing');
     return FALSE;

@@ -350,7 +350,7 @@ function tripal_chado_add_analysis_organism_mview() {
   $view_name = 'analysis_organism';
   $comment = t('This view is for associating an organism (via it\'s associated features) to an analysis.');
 
-  // this is the SQL used to identify the organism to which an analsysis
+  // this is the SQL used to identify the organism to which an analysis
   // has been used.  This is obtained though the analysisfeature -> feature -> organism
   // joins
   $sql = "
