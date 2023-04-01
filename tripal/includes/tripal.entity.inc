@@ -256,7 +256,7 @@ function tripal_entity_info_alter(&$entity_info) {
 
   if (array_key_exists('TripalEntity', $entity_info)) {
     // Dynamically add in the bundles. Bundles are alternative groups of fields
-    // or configuration associated with an entity type .We want to dynamically
+    // or configuration associated with an entity type. We want to dynamically
     // add the bundles to the entity.
     $bundles = db_select('tripal_bundle', 'tb')
       ->fields('tb')
@@ -376,7 +376,7 @@ function tripal_field_property_get($entity, array $options, $field_name, $entity
 
       // All Tripal/ChadoFields should have a value key. Only the information
       // stored in this value key should be displayed on the page, available
-      // via web services or indexed for searching. This is there is no value
+      // via web services or indexed for searching. Thus if there is no value
       // key, we will not index anything.
       if (!isset($data['value'])) {
         return NULL;

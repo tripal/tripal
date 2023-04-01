@@ -2672,7 +2672,7 @@ function tripal_chado_bundle_instances_info_linker(&$info, $entity_type, $bundle
 
   // EXPRESSION
   // TODO: this should only show up on gene or mRNA and the GO must be
-  // laoded or this field will crash things.
+  // loaded or this field will crash things.
   //   $expression_table = $table_name . '_expression';
   //   if (chado_table_exists($expression_table)) {
   //     $field_name = 'go__gene_expression';

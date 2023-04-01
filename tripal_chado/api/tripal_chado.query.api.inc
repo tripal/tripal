@@ -160,7 +160,7 @@
  *   with
  * care. If any user input will be used in the query make sure to put a
  * placeholder in your SQL string and then define the value in the arguments
- * array. This will make sure that the user input is santized and safe through
+ * array. This will make sure that the user input is sanitized and safe through
  * type-checking and escaping. The following code shows an example of how to
  * use user input resulting from a form and would be called withing the form
  * submit function.

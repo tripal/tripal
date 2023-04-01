@@ -17,7 +17,7 @@ class TripalFieldQuery extends EntityFieldQuery {
    * want to filter based on on other Drupal tables. The most important
    * example for this would be Drupal Views.  These variables are only meant
    * to be used by the tripal_field_storage_query() function as that is the
-   * only storage system that should be doing quries on the tripal_entity
+   * only storage system that should be doing queries on the tripal_entity
    * table itself.
    */
   public $relationships = [];
@@ -25,7 +25,7 @@ class TripalFieldQuery extends EntityFieldQuery {
   public $relationshipConditions = [];
 
   /**
-   * Adds a relationsihp via a table join to the tripal_entity table
+   * Adds a relationship via a table join to the tripal_entity table
    *
    * This is specific for Drupal schema tables and is useful for Views
    * integration when non Tripal Storage API fields are attached to an entity.
@@ -172,7 +172,7 @@ class TripalFieldQuery extends EntityFieldQuery {
   }
 
   /**
-   * Overides the EntityFieldQuery::queryCallback function.
+   * Overrides the EntityFieldQuery::queryCallback function.
    */
   public function queryCallback() {
 

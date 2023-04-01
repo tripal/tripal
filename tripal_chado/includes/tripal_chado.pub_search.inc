@@ -459,7 +459,7 @@ function tripal_chado_pub_search_form_validate($form, &$form_state) {
   $to_year = $form_state['values']['to_year'];
   $op = $form_state['values']['op'];
 
-  // no need to vlaidate on a reset
+  // no need to validate on a reset
   if ($op == 'Reset') {
     return;
   }
