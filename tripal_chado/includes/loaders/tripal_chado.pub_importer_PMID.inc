@@ -64,7 +64,7 @@ function tripal_pub_remote_validate_form_PMID($form, $form_state) {
  * A hook for performing the search on the PubMed database.
  *
  * @param $search_array
- *   An array containing the serach criteria for the serach
+ *   An array containing the search criteria for the search
  * @param $num_to_retrieve
  *   Indicates the maximum number of publications to retrieve from the remote
  *   database
@@ -290,7 +290,7 @@ function tripal_pub_PMID_search_init($search_str, $retmax) {
  *   Any additional arguments to add the efetch query URL
  *
  * @return
- *  An array containing the total_records in the dataaset, the search string
+ *  An array containing the total_records in the dataset, the search string
  *  and an array of the publications that were retrieved.
  *
  * @ingroup tripal_pub

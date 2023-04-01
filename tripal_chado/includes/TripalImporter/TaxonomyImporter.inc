@@ -98,7 +98,7 @@ class TaxonomyImporter extends TripalImporter {
   public static $cardinality = 0;
 
   /**
-   * Holds the list of all orgainsms currently in Chado. This list
+   * Holds the list of all organisms currently in Chado. This list
    * is needed when checking to see if an organism has already been
    * loaded.
    */

@@ -22,7 +22,7 @@ function tripal_pub_importers_list() {
     drupal_set_message(t('The Tripal Pub vocabulary is currently not loaded. ' .
       'This vocabulary is required to be loaded before importing of ' .
       'publications.  <br>Please !import',
-      ['!import' => l('load the Tripal Publication vocabulary', 'aadmin/tripal/loaders/chado_vocabs/obo_loader')]), 'warning');
+      ['!import' => l('load the Tripal Publication vocabulary', 'admin/tripal/loaders/chado_vocabs/obo_loader')]), 'warning');
   }
 
   // clear out the session variable when we view the list.
@@ -96,7 +96,7 @@ function tripal_pub_importers_list() {
     'caption' => '',
     'sticky' => TRUE,
     'colgroups' => [],
-    'empty' => 'There are no currently importers',
+    'empty' => 'There are currently no importers',
   ];
 
   $page .= theme_table($table);

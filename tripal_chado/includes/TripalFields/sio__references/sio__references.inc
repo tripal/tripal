@@ -136,7 +136,7 @@ class sio__references extends ChadoField {
         }
 
 
-        // Build the SQL to find records assocaited with this publication.
+        // Build the SQL to find records associated with this publication.
         $ref_schema = chado_get_schema($reference_table);
         $ref_pkey = $ref_schema['primary key'][0];
         $select = "SELECT REF.* ";
@@ -148,7 +148,7 @@ class sio__references extends ChadoField {
           $from .= "INNER JOIN {cvterm} CVT on REF.type_id = CVT.cvterm_id ";
         }
 
-        // Get the mapping of the refrence table to a CV term in case the
+        // Get the mapping of the reference table to a CV term in case the
         // records in the table don't have a type_id.
         $ref_mapping = db_select('chado_cvterm_mapping', 'CVM')
           ->fields('CVM')

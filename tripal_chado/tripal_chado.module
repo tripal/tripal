@@ -81,7 +81,7 @@ function tripal_chado_set_globals() {
   // These global variables are meant to be accessed by all Tripal
   // modules to find the chado version installed and if Chado is local.
   // These variables are stored as globals rather than using the
-  // drupal_set_variable functions because the Drupal functions make databaes
+  // drupal_set_variable functions because the Drupal functions make database
   // queries and for long running loaders we don't want those queries
   // repeatedly.
   $GLOBALS["chado_is_installed"]  = chado_is_installed();

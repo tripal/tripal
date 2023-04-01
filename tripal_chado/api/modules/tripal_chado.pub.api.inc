@@ -613,7 +613,7 @@ function _chado_execute_pub_importer_publish($publish, $job, $message_type, $mes
         chado_publish_records(['bundle_name' => $bundle->name], $job);
       }
       // Note: we won't publish contacts as Tripal v2 did because there is
-      // no consisten way to do that. Each site my use a different term for
+      // no consistent way to do that. Each site my use a different term for
       // different contact content types (e.g. all as one 'Contact' type or
       // specific such as 'Person', 'Organization', etc.).
     }
