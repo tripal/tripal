@@ -86,7 +86,7 @@ function tripal_pub_remote_validate_form_AGL($form, $form_state) {
  * A hook for performing the search on the AGL database.
  *
  * @param $search_array
- *   An array containing the serach criteria for the serach
+ *   An array containing the search criteria for the search
  * @param $num_to_retrieve
  *   Indicates the maximum number of publications to retrieve from the remote
  *   database
@@ -430,7 +430,7 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
  *   been retrieved by tripal_pub_AGL_count() function.
  *
  * @return
- *  An array containing the total_records in the dataaset, the search string
+ *  An array containing the total_records in the dataset, the search string
  *  and an array of the publications that were retrieved.
  *
  * @ingroup tripal_pub
@@ -548,7 +548,7 @@ function tripal_pub_AGL_count($yazc, $search_str) {
     return 0;
   }
 
-  // get the total number of results from the serach
+  // get the total number of results from the search
   $count = yaz_hits($yazc);
   return $count;
 }
