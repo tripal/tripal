@@ -160,6 +160,7 @@ function tripal_schema() {
 
   // Adds a table for definitions of publication importers.
   $schema['tripal_pub_import'] = tripal_tripal_pub_import_schema();
+
   return $schema;
 }
 

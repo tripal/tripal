@@ -5,21 +5,22 @@ namespace Drupal\tripal_chado\Plugin\TripalImporter;
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 use Drupal\tripal\TripalPubParser\Interfaces\TripalPubParserInterface;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
+use Drupal\Core\Render\Markup;
+use Drupal\Core\Link;
+use Drupal\Core\Url;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
 
+// cf. src/Entity/ChadoTermMapping.php
 /**
  * ChadoPubImporter implementation of the TripalImporterBase.
  *
  *  @TripalImporter(
  *    id = "chado_pub_loader",
- *    label = @Translation("Chado Publication Loader"),
- *    description = @Translation("Imports publications into Chado"),
- *    file_types = {"bib", "bibtex"},
- *    upload_description = @Translation("Please provide the data file."),
- *    upload_title = @Translation("Upload data file"),
- *    button_text = @Translation("Select Source"),
+ *    label = @Translation("Chado Bulk Publication Importer"),
+ *    description = @Translation("Create and modify importers that can connect to and retrieve publications from remote databases or local files."),
+ *    button_text = @Translation("Add New Loader"),
  *    use_analysis = False,
  *    require_analysis = False,
  *    file_upload = False,
@@ -57,45 +58,10 @@ class ChadoPubImporter extends ChadoImporterBase {
    * {@inheritDoc}
    */
   public function form($form, &$form_state) {
-    $chado = \Drupal::service('tripal_chado.database');
     // Always call the parent form to ensure Chado is handled properly.
     $form = parent::form($form, $form_state);
 
-    // Retrieve a sorted list of available pub parser plugins.
-    $pub_parser_manager = \Drupal::service('tripal.pub_parser');
-    $pub_parser_defs = $pub_parser_manager->getDefinitions();
-    $plugins = [];
-    foreach ($pub_parser_defs as $plugin_id => $def) {
-      $plugin_key = $def['id'];
-      $plugin_value = $def['label']->render();
-      $plugins[$plugin_key] = $plugin_value;
-    }
-    asort($plugins);
-
-    $form['plugin_id'] = [
-      '#title' => t('Select a source of publications'),
-      '#type' => 'radios',
-      '#description' => t("Choose one of the sources above for loading publications."),
-      '#required' => TRUE,
-      '#options' => $plugins,
-      '#default_value' => NULL,
-      '#ajax' => [
-        'callback' =>  [$this, 'formAjaxCallback'],
-        'wrapper' => 'edit-parser',
-      ],
-    ];
-
-    // A placeholder for the plugin form elements populated
-    // by the AJAX callback.
-    $form['pub_parser'] = [
-      '#prefix' => '<span id="edit-pub_parser">',
-      '#suffix' => '</span>',
-    ];
-
-    // The remainder of the form is only populated if
-    // plugin_id has been selected. The plugin base
-    // class and the selected plugin can each add elements.
-    $form = $this->formPlugin($form, $form_state);
+    $form = $this->tripal_pub_importers_list($form, $form_state);
 
     return $form;
   }
@@ -104,6 +70,12 @@ class ChadoPubImporter extends ChadoImporterBase {
    * {@inheritDoc}
    */
   public function formSubmit($form, &$form_state) {
+    $trigger = $form_state->getTriggeringElement()['#name'];
+    // 'op' is default submit; 'add_new_loader' we have defined for second submit
+//    if ($trigger == 'add_new_loader') {
+      $form_state->setRedirect('/admin/tripal/loaders/chado_pub_loader_edit');
+      return;
+//    }
   }
 
   /**
@@ -125,49 +97,104 @@ class ChadoPubImporter extends ChadoImporterBase {
   }
 
   /**
-   * Retrieves form elements from a plugin.
+   * A function to generate a table containing the list of publication importers
    *
-   * @param array $form
-   *   The form array.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state object.
+   * @ingroup tripal_pub
    */
-  private function formPlugin($form, &$form_state) {
+  function tripal_pub_importers_list($form, &$form_state) {
 
-    // Add elements only after a plugin has been selected.
-    $plugin_id = $form_state->getValue(['plugin_id']);
-    if ($plugin_id) {
-      // Instantiate the selected plugin
-      $pub_parser_manager = \Drupal::service('tripal.pub_parser');
-      $plugin = $pub_parser_manager->createInstance($plugin_id, []);
-
-      // The plugin manager defines form elements used by
-      // all pub_parser plugins.
-      $form = $pub_parser_manager->form($form, $form_state);
-
-      // The selected plugin defines form elements specific
-      // to itself.
-      $form = $plugin->form($form, $form_state);
+    // Check to make sure that the tripal_pub vocabulary is loaded. If not, then
+    // warn the user that they should load it before continuing.
+$chado = \Drupal::service('tripal_chado.database');
+//    $chado = $this->getChadoConnection();
+    $query = $chado->select('cv')
+      ->condition('name', 'tripal_pub', '=');
+    $count = $query->countQuery()->execute()->fetchField();
+    if (!$count) {
+      \Drupal::messenger()->addWarning(t('The Tripal Pub vocabulary is currently not loaded. ' .
+        'This vocabulary is required to be loaded before importing of ' .
+        'publications.  <br>Please !import',
+        ['!import' => Link::fromTextAndUrl('load the Tripal Publication vocabulary',
+          Url::fromUri('internal:/admin/tripal/loaders/chado_vocabs/obo_loader'))->toString()])
+      );
     }
 
+// tv3 had this
+//  // clear out the session variable when we view the list.
+//  unset($_SESSION['tripal_pub_import']);
+
+    $headers = [
+      '',
+      'Importer Name',
+      'Database',
+      'Search String',
+      'Disabled',
+      'Create Contact',
+      '',
+    ];
+    $rows = [];
+
+    $public = \Drupal::service('database');
+    $query = $public->select('tripal_pub_import', 'I')
+      ->fields('I')
+      ->orderBy('I.name', 'ASC');
+    $importers = $query->execute();
+
+    while ($importer = $importers->fetchObject()) {
+      $criteria = unserialize($importer->criteria);
+      $num_criteria = $criteria['num_criteria'];
+      $criteria_str = '';
+      for ($i = 1; $i <= $num_criteria; $i++) {
+        $search_terms = $criteria['criteria'][$i]['search_terms'];
+        $scope = $criteria['criteria'][$i]['scope'];
+        $is_phrase = $criteria['criteria'][$i]['is_phrase'];
+        $operation = $criteria['criteria'][$i]['operation'];
+        $criteria_str .= "$operation ($scope: $search_terms) ";
+      }
+
+      $rows[] = [
+        [
+          'data' => Link::fromTextAndUrl(t('Edit/Test'), Url::fromUri("internal:/admin/tripal/loaders/pub/edit/$importer->pub_import_id"))->toString() . '<br>' .
+            Link::fromTextAndUrl(t('Import Pubs'), Url::fromUri("internal:/admin/tripal/loaders/pub/submit/$importer->pub_import_id"))->toString(),
+          'nowrap' => 'nowrap',
+        ],
+        $importer->name,
+        $criteria['remote_db'],
+        $criteria_str,
+        $importer->disabled ? 'Yes' : 'No',
+        $importer->do_contact ? 'Yes' : 'No',
+        Link::fromTextAndUrl(t('Delete'), Url::fromUri("internal:/admin/tripal/loaders/pub/delete/$importer->pub_import_id"))->toString(),
+      ];
+    }
+
+    // to-do this is from tripal 3 version, should it be modified?
+    $page = '<p>' . t(
+        "A publication importer is used to create a set of search criteria that can be used
+       to query a remote database, find publications that match the specified criteria
+       and then import those publications into the Chado database. An example use case would
+       be to peridocially add new publications to this Tripal site that have appeared in PubMed
+       in the last 30 days.  You can import publications in one of two ways:
+       <ol>
+        <li>Create a new importer by clicking the 'Add New Importer' button below, and after
+            saving it should appear in the list below.
+            Click the link labeled 'Import Pubs' to schedule a job to import the publications</li>
+        <li>The first method only performs the import once.  However, you can schedule the
+            importer to run periodically by adding a cron job. </li>
+       </ol><br>");
+
+    $form['loaders']['description'] = [
+      '#type' => 'markup',
+      '#markup' => $page,
+    ];
+    $form['loaders']['table'] = [
+      '#type' => 'tableselect',
+      '#header' => $headers,
+      '#options' => $rows,
+      '#sticky' => TRUE,
+      '#empty' => 'There are currently no importers',
+    ];
+
     return $form;
-  }
-
-  /**
-   * Ajax callback for the ChadoPubImporter::form() function.
-   * This adds form elements appropriate for the selected parser plugin.
-   *
-   * @param array $form
-   *   The form array.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state object.
-   */
-  public function formAjaxCallback($form, &$form_state) {
-
-    $response = new AjaxResponse();
-    $response->addCommand(new ReplaceCommand('#edit-pub_parser', $form['pub_parser']));
-
-    return $response;
   }
 
 }
