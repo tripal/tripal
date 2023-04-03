@@ -34,7 +34,6 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
  *   bundle_of = "tripal_entity",
  *   entity_keys = {
  *     "id" = "id",
- *     "name" = "name",
  *     "label" = "label"
  *   },
  *   links = {
@@ -69,12 +68,6 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    */
   protected $id;
 
-  /**
-   * The Tripal Content machine name.
-   *
-   * @var string
-   */
-  protected $name;
   /**
    * The Tripal Content type label.
    *
@@ -307,20 +300,6 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    */
   public function setID($id) {
     $this->id = $id;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getName() {
-    return $this->name;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setName($name) {
-    $this->name = $name;
   }
 
   /**
