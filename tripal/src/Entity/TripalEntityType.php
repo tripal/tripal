@@ -235,9 +235,6 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    */
   public function validate() {
 
-    if ($this->name === NULL) {
-      throw new \Exception("The name is required when creating a TripalEntityType.");
-    }
     if ($this->label === NULL) {
       throw new \Exception("The label is required when creating a TripalEntityType.");
     }
