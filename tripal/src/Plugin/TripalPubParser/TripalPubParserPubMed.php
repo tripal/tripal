@@ -39,7 +39,6 @@ class TripalPubParserPubmed extends TripalPubParserBase {
               'target' => 'blank',
             ]]))->toString()
       . '.';
-dpm($description, 'description'); //@@@
 
     $form['pub_parser']['ncbi_api_key'] = [
       '#title' => t('(Optional) NCBI API key:'),
