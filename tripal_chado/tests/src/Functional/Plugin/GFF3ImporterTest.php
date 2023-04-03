@@ -879,7 +879,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
         $this->assertEquals($row->strand, 1); // +
       }
 
-      $results = $chado->query('SELECT * FROM {1.featureloc} fl 
+      $results = $chado->query('SELECT * FROM {1:featureloc} fl 
         LEFT JOIN chado.feature f ON (fl.feature_id = f.feature_id)
         WHERE uniquename = :uniquename LIMIT 1', 
         array(
