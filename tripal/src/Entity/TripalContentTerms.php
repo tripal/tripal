@@ -5,7 +5,8 @@ namespace Drupal\tripal\Entity;
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 
 /**
- * Defines the TripalContentTerms entity.
+ * Provides a UI for YML-based term creation.
+ * Each instance of this entity is a single configuration for terms in your site.
  *
  * @ConfigEntityType(
  *   id = "tripal_content_terms",
