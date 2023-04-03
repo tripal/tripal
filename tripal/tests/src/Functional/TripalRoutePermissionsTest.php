@@ -82,6 +82,7 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
     // We use try/catch here because WebAssert throws exceptions which are not very readable.
     $assert = $this->assertSession();
     $html = $this->drupalGet('admin/tripal');
+    // @debug print_r($html);
     unset($urls['Tripal']);
     foreach ($urls as $label => $path) {
       // -- Find links with the label.
