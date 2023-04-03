@@ -5,270 +5,271 @@ content_types:
 
     -   label: Organism
         term: OBI:0100026
-        help_text: Use the organism page for an individual living system, such as animal, plant, bacteria or virus,
+        help_text: Use the organism page for an individual living system, such as animal, plant, bacteria or virus, 
         category: General
-        # machine name not yet supported #name: organism
+        name: organism
         title_format: "[organism_genus] [organism_species] [organism_infraspecific_type] [organism_infraspecific_name]"
         url_format: "organism/[TripalEntity__entity_id]"
-        synonyms:
+        synonyms: 
             - bio_data_1
 
     -   label:  Analysis
         term: operation:2945
         help_text: Use the analysis page to for an individual analysis, workflow or pipeline that was performed using statistical or computational means.
         category: General
-        # machine name not yet supported #name: analysis
+        name: analysis
         title_format: "[analysis_name]"
         url_format: "analysis/[TripalEntity__entity_id]"
-        synonyms:
+        synonyms: 
             - bio_data_2
 
     -   label: Project
         term: NCIT:C47885
         help_text: Use the project page to provide information about a project that many be linked to multiple sub components such as studies or analyses.
         category: General
-        # machine name not yet supported #name: project
+        name: project
         title_format: "[project_name]"
         url_format: "project/[TripalEntity__entity_id]"
-        synonyms:
+        synonyms: 
             - bio_data_3
-
+              
     -   label: Study
         term: SIO:001066
         help_text: Use the study page for a systematic investigation.
         category: General
-        # machine name not yet supported #name: study
+        name: study
         title_format: "[study_name]"
         url_format: "study/[TripalEntity__entity_id]"
-        synonyms:
+        synonyms: 
             - bio_data_4
-
+        
     -   label: Contact
         term: local:contact
         help_text: Use the contage page a person or institution that can be linked as a responsible party for data or results.
         category: General
-        # machine name not yet supported #name: contact
+        name: contact
         title_format: "[contact_name]"
         url_format: "contact/[TripalEntity__entity_id]"
-        synonyms:
-            - bio_data_5
+        synonyms: 
+            - bio_data_5        
 
     -   label: Publication
         term: TPUB:0000002
         help_text: Use the publication page for books, journal articles, or other citable work.
         category: General
-        # machine name not yet supported #name: pub
+        name: pub
         title_format: "[publication_title]"
         url_format: "pub/[TripalEntity__entity_id]"
-        synonyms:
+        synonyms: 
             - bio_data_6
 
     -   label: Protocol
         term: sep:00101
         help_text: Use the protocol page for a parameterizable description of a process.
         category: General
-        # machine name not yet supported #name: protocol
+        name: protocol
         title_format: "[protocol_name]"
         url_format: "protocol/[TripalEntity__entity_id]"
-        synonyms:
+        synonyms: 
             - bio_data_7
-
+        
     -   label: Gene
         term: SO:0000704
         help_text: Use the gene page for a region (or regions) that includes all of the sequence elements necessary to encode a functional transcript. A gene may include regulatory regions, transcribed regions and/or other functional sequence regions.
         category: Genomic
-        # machine name not yet supported #name: gene
+        name: gene
         title_format: "[gene_name]"
         url_format: "gene/[TripalEntity__entity_id]"
-        synonyms:
+        synonyms: 
             - bio_data_8
 
     -   label: mRNA
         term: SO:0000234
         help_text: Use the mRNA page for a messenger RNA whic is the intermediate molecule between DNA and protein. It includes UTR and coding sequences. It does not contain introns.
         category: Genomic
-        # machine name not yet supported #name: mRNA
+        name: mRNA
         title_format: "[mrna_name]"
         url_format: "mRNA/[TripalEntity__entity_id]"
-        synonyms:
+        synonyms: 
             - bio_data_9
-
+            
     -   label: Phylogenetic Tree
         term: data:0872
         help_text: Use the phylogenetic tree page for data or plotting of phylogenetic trees. Usually includes information such as topology, lengths (in time or in expected amounts of variance) and a confidence interval for each length.
         category: Genomic
-        # machine name not yet supported #name: phylotree
+        name: phylotree
         title_format: "[phylotree_name]"
         url_format: "phylotree/[TripalEntity__entity_id]"
-        synonyms:
+        synonyms: 
             - bio_data_10
-
+              
     -   label: Physical Map
         term: data:1280
         help_text: Use the physical map page for a map of annotated with physical features or landmarks such as restriction sites, cloned DNA fragments, genes or genetic markers, along with the physical distances between them. Distance in a physical map is measured in base pairs. A physical map might be ordered relative to a reference map (typically a genetic map) in the process of genome sequencing.
-        category: Genomic
-        # machine name not yet supported #name: physical_map
+        category: Genomic  
+        name: physical_map 
         title_format: "[physical_map_name]"
         url_format: "physical_map/[TripalEntity__entity_id]"
-        synonyms:
-            - bio_data_11
-
+        synonyms: 
+            - bio_data_11    
+              
     -   label: DNA Library
         term: NCIT:C16223
         help_text: Use the DNA library page for a collection of DNA molecules that have been cloned in vectors.
         category: Genomic
-        # machine name not yet supported #name: dna_library
+        name: dna_library
         title_format: "[dna_library_name]"
         url_format: "dna_library/[TripalEntity__entity_id]"
-        synonyms:
+        synonyms: 
             - bio_data_12
-
+        
     -   label: Genome Assembly
         term: operation:0525
         help_text: Use the genome assembly page for an analyses specifcally for genome assembly. Such an analysis typically involves one or more workflows of bioinormatics tools to generate the assembly.
-        category: Genomic
-        # machine name not yet supported #name:  genome_assembly
+        category: Genomic 
+        name:  genome_assembly
         title_format: "[genome_assembly_name]"
         url_format: "genome_assembly/[TripalEntity__entity_id]"
-        synonyms:
-            - bio_data_13
+        synonyms: 
+            - bio_data_13     
 
     -   label: Genome Annotation
         term: operation:0362
         help_text: Use the genome annotation page for an analyses specifcally for genome annotation. Such an analysis typically involves one or more workflows of bioinormatics tools to generate the structural and functional annotations of the genome.
         category: Genomic
-        # machine name not yet supported #name: genome_annotation
+        name: genome_annotation
         title_format: "[genome_annotation_name]"
         url_format: "genome_annotation/[TripalEntity__entity_id]"
-        synonyms:
+        synonyms: 
             - bio_data_14
-
+        
     -   label: Genome Project
         term: local:Genome Project
         help_text: Use the genome project page to provide information about a genome assembly and annotation project that many be linked to multiple sub analyses.
         category: Genomic
-        # machine name not yet supported #name: genome_project
+        name: genome_project
         title_format: "[genome_project_name]"
         url_format: "genome_project/[TripalEntity__entity_id]"
-        synonyms:
+        synonyms: 
             - bio_data_15
-
+            
     -   label: Genetic Map
         term: data:1278
         help_text: Use a genetic map page for a map showing the relative positions of genetic markers in a nucleic acid sequence, based on estimation of non-physical distance such as recombination frequencies.
         category: Genetic
-        # machine name not yet supported #name: genetic_map
+        name: genetic_map
         title_format: "[genetic_map_name]"
         url_format: "genetic_map/[TripalEntity__entity_id]"
-        synonyms:
+        synonyms: 
             - bio_data_16
-
+            
     -   label: QTL
         term: SO:0000771
         help_text: Use a QTL page for a quantitative trait locus (QTL), which is a polymorphic locus which contains alleles that differentially affect the expression of a continuously distributed phenotypic trait. Usually it is a marker described by statistical association to quantitative variation in the particular phenotypic trait that is thought to be controlled by the cumulative action of alleles at multiple loci.
         category: Genetic
-        # machine name not yet supported #name: QTL
+        name: QTL
         title_format: "[qtl_name]"
         url_format: "QTL/[TripalEntity__entity_id]"
-        synonyms:
+        synonyms: 
             - bio_data_17
-
+        
     -   label: Sequence Variant
         term: SO:0001060
         help_text: Use the sequence variant page for a non exact copy of a sequence feature or genome exhibiting one or more sequence alteration.
         category: Genetic
-        # machine name not yet supported #name: sequence_variant
+        name: sequence_variant
         title_format: "[sequence_variant_name]"
         url_format: "sequence_variant/[TripalEntity__entity_id]"
-        synonyms:
+        synonyms: 
             - bio_data_18
 
     -   label: Genetic Marker
         term: SO:0001645
         help_text: Use the genetic marker page for a measurable sequence feature that varies within a population.
         category: Genetic
-        # machine name not yet supported #name: genetic_marker
+        name: genetic_marker
         title_format: "[genetic_marker_name]"
         url_format: "genetic_marker/[TripalEntity__entity_id]"
-        synonyms:
+        synonyms: 
             - bio_data_19
-
+        
     -   label: Heritable Phenotypic Marker
         term: SO:0001500
         help_text: Use the heritable phenotypic marker page for a sequence region characterized as a single heritable trait in a phenotype screen. The heritable phenotype may be mapped to a chromosome but generally has not been characterized to a specific gene locus.
         category: Genetic
-        # machine name not yet supported #name: phenotypic_marker
+        name: phenotypic_marker 
         title_format: "[phenotypic_marker_name]"
         url_format: "phenotypic_marker/[TripalEntity__entity_id]"
-        synonyms:
+        synonyms: 
             - bio_data_20
-
+        
     -   label: Germplasm Accession
         term: CO_010:0000044
         help_text: Use the germplasm accession page for a living genetic resources such as seeds or tissues that are maintained for the purpose of animal and plant breeding, and preservation.
         category: Germplasm
-        # machine name not yet supported #name: germplasm
+        name: germplasm
         title_format: "[germplasm_name]"
         url_format: "germplasm/[TripalEntity__entity_id]"
-        synonyms:
+        synonyms: 
             - bio_data_21
-
+        
     -   label: Breeding Cross
         term: CO_010:0000255
         help_text: Use the breeding cross page for information about a cross between two germplasm in a breeding application.
         category: Germplasm
-        # machine name not yet supported #name: breeding_cross
+        name: breeding_cross
         title_format: "[breeding_cross_name]"
         url_format: "breeding_cross/[TripalEntity__entity_id]"
-        synonyms:
+        synonyms: 
             - bio_data_22
-
+        
     -   label: Germplasm Variety
         term: CO_010:0000029
         help_text: Use the germplasm variety page for information about specific variety of germplasm.
         category: Germplasm
-        # machine name not yet supported #name: germplasm_variety
+        name: germplasm_variety
         title_format: "[germplasm_variety_name]"
         url_format: "germplasm_variety/[TripalEntity__entity_id]"
-        synonyms:
+        synonyms: 
             - bio_data_23
-
+        
     -   label: Recombinant Inbred Line
         term: CO_010:0000162
         help_text: Use the recombinant inbred line page to describe a collection of germplasm that were created by crossing and can be used to map quantitative trait loci.
         category: Germplasm
-        # machine name not yet supported #name: RIL
+        name: RIL
         title_format: "[ril_name]"
         url_format: "RIL/[TripalEntity__entity_id]"
-        synonyms:
+        synonyms: 
             - bio_data_24
-
+        
     -   label: Biological Sample
         term: sep:00195
         help_text: Use the biological sample page for any material taken from a biological system for use in a systematic study.
         category: Expression
-        # machine name not yet supported #name: biosample
+        name: biosample
         title_format: "[biosample_name]"
         url_format: "biosample/[TripalEntity__entity_id]"
-        synonyms:
+        synonyms: 
             - bio_data_25
-
+        
     -   label: Assay
         term: OBI:0000070
-        help_text: Use the assay page to describe an experimental approach used to measure the characteristics of an item.
+        help_text: Use the assay page to describe an experimental approach used to measure the characteristics of an item. 
         category: Expression
-        # machine name not yet supported #name: assay
+        name: assay
         title_format: "[assay_name]"
         url_format: "assay/[TripalEntity__entity_id]"
-        synonyms:
+        synonyms: 
             - bio_data_26
-
+        
     -   label: Array Design
         term: EFO:0000269
         help_text: Use the array design page to describe the systematic arrangement of similar objects, usually in rows and columns, used by intstrument to perform an assay.
         category: Expression
-        # machine name not yet supported #name: array_design
+        name: array_design
         title_format: "[array_design_name]"
         url_format: "array_design/[TripalEntity__entity_id]"
-        synonyms:
+        synonyms: 
             - bio_data_27
+        
