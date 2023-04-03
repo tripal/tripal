@@ -868,7 +868,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       // Test that integer values for strand that get placed in the db
       // Strand data gets saved in {1:featureloc}
       $results = $chado->query('SELECT * FROM {1:featureloc} fl 
-        LEFT JOIN chado.feature f ON (fl.feature_id = f.feature_id)
+        LEFT JOIN {1:feature} f ON (fl.feature_id = f.feature_id)
         WHERE uniquename = :uniquename LIMIT 1', 
         array(
           ':uniquename' => 'FRAEX38873_v2_000000010'
@@ -880,7 +880,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       }
 
       $results = $chado->query('SELECT * FROM {1:featureloc} fl 
-        LEFT JOIN chado.feature f ON (fl.feature_id = f.feature_id)
+        LEFT JOIN {1:feature} f ON (fl.feature_id = f.feature_id)
         WHERE uniquename = :uniquename LIMIT 1', 
         array(
           ':uniquename' => 'FRAEX38873_v2_000000010.1'
@@ -892,7 +892,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       } 
       
       $results = $chado->query('SELECT * FROM {1:featureloc} fl 
-        LEFT JOIN chado.feature f ON (fl.feature_id = f.feature_id)
+        LEFT JOIN {1:feature} f ON (fl.feature_id = f.feature_id)
         WHERE uniquename = :uniquename LIMIT 1', 
         array(
           ':uniquename' => 'FRAEX38873_v2_000000010.2'
@@ -904,7 +904,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       }
       
       $results = $chado->query('SELECT * FROM {1:featureloc} fl 
-        LEFT JOIN chado.feature f ON (fl.feature_id = f.feature_id)
+        LEFT JOIN {1:feature} f ON (fl.feature_id = f.feature_id)
         WHERE uniquename = :uniquename LIMIT 1', 
         array(
           ':uniquename' => 'FRAEX38873_v2_000000010.3'
