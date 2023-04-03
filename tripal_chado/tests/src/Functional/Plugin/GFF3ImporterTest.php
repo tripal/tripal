@@ -866,8 +866,8 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $gff3_importer->postRun();
       
       // Test that integer values for strand that get placed in the db
-      // Strand data gets saved in chado.featureloc
-      $results = $chado->query('SELECT * FROM chado.featureloc fl 
+      // Strand data gets saved in {1:featureloc}
+      $results = $chado->query('SELECT * FROM {1:featureloc} fl 
         LEFT JOIN chado.feature f ON (fl.feature_id = f.feature_id)
         WHERE uniquename = :uniquename LIMIT 1', 
         array(
@@ -879,7 +879,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
         $this->assertEquals($row->strand, 1); // +
       }
 
-      $results = $chado->query('SELECT * FROM chado.featureloc fl 
+      $results = $chado->query('SELECT * FROM {1.featureloc} fl 
         LEFT JOIN chado.feature f ON (fl.feature_id = f.feature_id)
         WHERE uniquename = :uniquename LIMIT 1', 
         array(
@@ -891,7 +891,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
         $this->assertEquals($row->strand,-1); // -
       } 
       
-      $results = $chado->query('SELECT * FROM chado.featureloc fl 
+      $results = $chado->query('SELECT * FROM {1:featureloc} fl 
         LEFT JOIN chado.feature f ON (fl.feature_id = f.feature_id)
         WHERE uniquename = :uniquename LIMIT 1', 
         array(
@@ -903,7 +903,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
         $this->assertEquals($row->strand, 0); // ?
       }
       
-      $results = $chado->query('SELECT * FROM chado.featureloc fl 
+      $results = $chado->query('SELECT * FROM {1:featureloc} fl 
         LEFT JOIN chado.feature f ON (fl.feature_id = f.feature_id)
         WHERE uniquename = :uniquename LIMIT 1', 
         array(
