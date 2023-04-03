@@ -316,8 +316,6 @@ class FASTAImporter extends ChadoImporterBase {
 
     $form_state_values = $form_state->getValues();
 
-
-    dpm($form_state_values);
     $organism_id = $form_state_values['organism_id'];
     $type = explode(' (', trim($form_state_values['seqtype']))[0];
     $method = trim($form_state_values['method']);
@@ -540,13 +538,13 @@ class FASTAImporter extends ChadoImporterBase {
 
     // Second, if there is a parent type then get that.
     $parentcvterm = NULL;
-    if ($parent_type) {
+    if (isset($parent_type) && $parent_type != "") {
       $parentcvterm = $chado->query($cvtermsql, [
         ':cvname' => 'sequence',
         ':name' => $parent_type,
         ':synonym' => $parent_type,
       ])->fetchObject();
-      if (!$parentcvterm) {
+      if (!isset($parentcvterm)) {
         // $this->logMessage("Cannot find the parent term type: '!type'",
         //   ['!type' => $parentcvterm], TRIPAL_ERROR);
         $this->logger->notice("Cannot find the parent term type: '$parentcvterm'");
@@ -556,7 +554,7 @@ class FASTAImporter extends ChadoImporterBase {
 
     // Third, if there is a relationship type then get that.
     $relcvterm = NULL;
-    if ($rel_type) {
+    if (isset($rel_type) && $rel_type != "") {
       $relcvterm = $chado->query($cvtermsql, [
         ':cvname' => 'sequence',
         ':name' => $rel_type,
@@ -612,7 +610,9 @@ class FASTAImporter extends ChadoImporterBase {
             //   ['!line' => $i], TRIPAL_ERROR);
             $this->logger->error("Regular expression for the feature name finds nothing. Line $i."); 
           }
-          elseif (strlen($matches[1]) > $feature_tbl['fields']['name']['length']) {
+          // OLD TRIPAL 3 CODE
+          // elseif (strlen($matches[1]) > $feature_tbl['fields']['name']['length']) {
+          elseif (strlen($matches[1]) > $feature_tbl['fields']['name']['size']) {  
             // $this->logMessage("Regular expression retrieves a value too long for the feature name. Line !line.",
             //   ['!line' => $i], TRIPAL_WARNING);
             $this->logger->warning("Regular expression retrieves a value too long for the feature name. Line $i."); 
@@ -626,7 +626,9 @@ class FASTAImporter extends ChadoImporterBase {
         // then use the first word as the name, otherwise we don't set the name.
         elseif (strcmp($match_type, 'Name') == 0) {
           if (preg_match("/^\s*(.*?)[\s\|].*$/", $defline, $matches)) {
-            if (strlen($matches[1]) > $feature_tbl['fields']['name']['length']) {
+            // OLD TRIPAL 3 CODE
+            // if (strlen($matches[1]) > $feature_tbl['fields']['name']['length']) {
+            if (strlen($matches[1]) > $feature_tbl['fields']['name']['size']) {  
               // $this->logMessage("Regular expression retrieves a feature name too long for the feature name. Line !line.",
               //   ['!line' => $i], TRIPAL_WARNING);
               $this->logger->warning("Regular expression retrieves a feature name too long for the feature name. Line $i.");          
@@ -669,7 +671,9 @@ class FASTAImporter extends ChadoImporterBase {
         $accession = "";
         if (!empty($re_accession)) {
           preg_match("/$re_accession/", $defline, $matches);
-          if (strlen($matches[1]) > $dbxref_tbl['fields']['accession']['length']) {
+          // OLD TRIPAL 3 CODE
+          // if (strlen($matches[1]) > $dbxref_tbl['fields']['accession']['length']) {
+          if (strlen($matches[1]) > $dbxref_tbl['fields']['accession']['size']) {  
             // tripal_report_error('trp-fasta', TRIPAL_WARNING, "WARNING: Regular expression retrieves an accession too long for the feature name. " .
             //   "Cannot add cross reference. Line %line.", [
             //   '%line' => $i,
