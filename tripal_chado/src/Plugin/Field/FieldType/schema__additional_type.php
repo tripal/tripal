@@ -42,7 +42,7 @@ class schema__additional_type extends ChadoFieldItemBase {
     $settings = parent::defaultFieldSettings();
     // If a fixed value is set, then the field will will always use the
     // same value and the user will not be allowed the change it using the
-    // widget.  This is necessary content types that correspond to Chado
+    // widget.  This is necessary for content types that correspond to Chado
     // tables with a type_id that should always match the content type (e.g.
     // gene).
     $settings['fixed_value'] = FALSE;
@@ -84,9 +84,9 @@ class schema__additional_type extends ChadoFieldItemBase {
     }
 
     // Get the the connecting information about the base table and the
-    // the table where the type is stored.  If the base table has a `type_id`
-    // column then the base table and the type table are the same. If the
-    // we are using a prop table to store the type_id then the type table and
+    // table where the type is stored. If the base table has a `type_id`
+    // column then the base table and the type table are the same. If we
+    // are using a prop table to store the type_id then the type table and
     // base table will be different.
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
@@ -149,7 +149,7 @@ class schema__additional_type extends ChadoFieldItemBase {
       'chado_column' => $type_column,
       'empty_value' => 0
     ]);
-    // This fields needs the term name, idspace and accessession for proper
+    // This field needs the term name, idspace and accession for proper
     // display of the type.
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'term_name', $name_term, 128, [
       'action' => 'join',
