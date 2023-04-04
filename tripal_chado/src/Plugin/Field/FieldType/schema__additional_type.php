@@ -68,8 +68,20 @@ class schema__additional_type extends ChadoFieldItemBase {
     // Get the Chado table and column this field maps to.
     $storage_settings = $field_definition->getSetting('storage_plugin_settings');
     $base_table = $storage_settings['base_table'];
-    $type_table = $storage_settings['type_table'];
-    $type_column = $storage_settings['type_column'];
+    $type_table = $storage_settings['type_table'] ?? '';
+    $type_column = $storage_settings['type_column'] ?? '';
+
+    // If we don't have a base table then we're not ready to specify the
+    // properties for this field.
+    if (!$base_table or !$type_table) {
+      $record_id_term = 'SIO:000729';
+      return [
+        new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
+          'action' => 'store_id',
+          'drupal_store' => TRUE,
+        ])
+      ];
+    }
 
     // Get the the connecting information about the base table and the
     // the table where the type is stored.  If the base table has a `type_id`
