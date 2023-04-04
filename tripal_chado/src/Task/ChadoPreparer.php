@@ -177,6 +177,11 @@ class ChadoPreparer extends ChadoTaskBase {
 
       $this->setProgress(0.7);
       $this->logger->notice("Creating default content types...");
+      /** @var \Drupal\tripal\Services\TripalContentTypes $content_type_setup **/
+      $content_type_setup = \Drupal::service('tripal.tripalentitytype_collection');
+      $content_type_setup->install();
+      // The following now only select the Tripal content type created
+      // by the above service and then use it to attach fields.
       $this->createGeneralContentTypes();
       $this->createGenomicContentTypes();
       $this->createGeneticContentTypes();
@@ -1030,87 +1035,22 @@ class ChadoPreparer extends ChadoTaskBase {
     $entityType = NULL;
     $bundle = '';
 
-    $term = $details['term'];
-    if (!array_key_exists('term', $details) or !$details['term']) {
-      $this->logger->error(t('Creation of content type, "@type", failed. No term provided.',
-          ['@type' => $details['label']]));
-      return NULL;
-    }
-    if (!$term->isValid()) {
-      $this->logger->error(t('Creation of content type, "@type", failed. The provided term, "@term", was not valid.',
-          ['@type' => $details['label'], '@term' => $term->getTermId()]));
-      return NULL;
-    }
-
     // Check if the type already exists.
+    // It should as we are currently switching to the YAML route of creating
+    // content types and thus this method no longer creates
+    // but rather should only select.
     $entityTypes = \Drupal::entityTypeManager()
       ->getStorage('tripal_entity_type')
       ->loadByProperties(['label' => $details['label']]);
     if (!empty($entityTypes)) {
-      $this->logger->notice(t('Skipping content type, "@type", as it already exists.',
-          ['@type' => $details['label']]));
-      $bundle = array_pop(array_keys($entityTypes));
-      $entityType = $entityTypes[$bundle];
+      $entityType = array_pop($entityTypes);
     }
     else {
-      $entityType = TripalEntityType::create($details);
-      if (is_object($entityType)) {
-        $entityType->save();
-        $this->logger->notice(t('Content type, "@type", created.',
-            ['@type' => $details['label']]));
-        $bundle = $entityType->getName();
-      }
-      else {
-        $this->logger->error(t('Creation of content type, "@type", failed. The provided details were: ',
-            ['@type' => $details['label']]) . print_r($details));
-      }
+      $this->logger->error(t('We expected the content type, "@type", to already exist but it did not.',
+          ['@type' => $details['label']]));
+      return NULL;
     }
 
-    // Create the default view mode for this new content type.
-    $storage = \Drupal::entityTypeManager()->getStorage('entity_view_display');
-    $view_display = $storage->load('tripal_entity.' . $bundle . '.default');
-    if (!$view_display) {
-      $view_details = [
-        'langcode' => 'en',
-        'status' => True,
-        'dependencies' => [
-          'module' => ['tripal']
-        ],
-        'targetEntityType' => 'tripal_entity',
-        'bundle' => $bundle,
-        'mode' => 'default',
-        'content' => [],
-        'hidden' => [],
-      ];
-      $view_display = $storage->create($view_details, 'entity_view_display');
-      if (!$view_display->save()) {
-        $this->logger->error(t('Creation of content type, "@type", default view mode failed. The provided details were: ',
-            ['@type' => $details['label']]) . print_r($details));
-      }
-    }
-
-    // Create the default form mode for this new content type.
-    $storage = \Drupal::entityTypeManager()->getStorage('entity_form_display');
-    $form_display = $storage->load('tripal_entity.' . $bundle . '.default');
-    if (!$form_display) {
-      $form_details = [
-        'langcode' => 'en',
-        'status' => True,
-        'dependencies' => [
-          'module' => ['tripal']
-        ],
-        'targetEntityType' => 'tripal_entity',
-        'bundle' => $bundle,
-        'mode' => 'default',
-        'content' => [],
-        'hidden' => [],
-      ];
-      $form_display = $storage->create($form_details, 'entity_view_display');
-      if (!$form_display->save()) {
-        $this->logger->error(t('Creation of content type, "@type", default form mode failed. The provided details were: ',
-            ['@type' => $details['label']]) . print_r($details));
-      }
-    }
     return $entityType;
   }
 
