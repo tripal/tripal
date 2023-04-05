@@ -552,6 +552,7 @@ function tripal_rebuild() {
 
   tripal_load_configuration('tripal', 'tripalentitytype_collection');
   tripal_load_configuration('tripal', 'tripal_content_terms');
+  tripal_load_configuration('tripal', 'tripalfield_collection');
 
   //
   // Make sure the CustomTables view is present. If not then add it.

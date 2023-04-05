@@ -171,3 +171,142 @@ tripal.tripalentitytype_collection.*:
                #   sequence:
                #      type: string
                #      label: "Synonym name"
+
+## For TripalFieldCollection functionality
+## focused on using YML files to describe TripalFields
+## to be created for the given site.
+tripal.tripalfield_collection.*:
+   type: config_entity
+   label: 'Tripal Field Collection'
+   mapping:
+     id:
+       type: string
+       label: 'ID'
+       nullable: false
+     label:
+       type: label
+       label: 'Label'
+       nullable: false
+     description:
+       type: string
+       label: 'Description'
+     fields:
+         type: sequence
+         label: 'Fields'
+         sequence:
+           type: mapping
+           mapping:
+               name:
+                 type: string
+                 label: 'The field name.'
+                 nullable: false
+               content_type:
+                 type: string
+                 label: 'The name of the content type this field should be attached to'
+                 nullable: false
+               label:
+                 type: string
+                 label: 'Label'
+                 nullable: false
+               type:
+                 type: string
+                 label: 'Type'
+                 nullable: false
+               description:
+                 type: string
+                 label: 'Description'
+                 nullable: false
+               cardinality:
+                 type: integer
+                 label: 'Cardinality'
+                 nullable: false
+               required:
+                 type: boolean
+                 label: 'Required'
+                 nullable: false
+               storage_settings:
+                 type: mapping
+                 label: 'Storage Settings'
+                 mapping:
+                   storage_plugin_id:
+                     type: string
+                     label: 'Storage Plugin ID'
+                     nullable: false
+                   storage_plugin_settings:
+                      type: mapping
+                      label: 'Storage Plugin Settings'
+                   termIdSpace:
+                     type: string
+                     label: "Term Id Space"
+                     nullable: false
+                   termAccession:
+                     type: string
+                     label: "Term Accession"
+                     nullable: false
+                   max_length:
+                     type: integer
+                     label: "The maximum size of the field vlaue."
+               settings:
+                 type: mapping
+                 label: 'Settings'
+                 mapping:
+                   termIdSpace:
+                     type: string
+                     label: "Term Id Space"
+                     nullable: false
+                   termAccession:
+                     type: string
+                     label: "Term Accession"
+                     nullable: false
+                   fixed_value:
+                     type: string
+                     label: "A fixed value for the field that cannot be changed."
+                     nullable: true
+               display:
+                 type: mapping
+                 label: 'Display'
+                 mapping:
+                   view:
+                     type: sequence
+                     label: 'View'
+                     sequence:
+                       type: mapping
+                       mapping:
+                         name:
+                           type: string
+                           label: 'Display'
+                           nullable: false
+                         region:
+                           type: string
+                           label: 'Region'
+                           nullable: false
+                         label:
+                           type: string
+                           label: 'Label'
+                           nullable: false
+                         weight:
+                           type: integer
+                           label: 'Weight'
+                           nullable: false
+                   form:
+                     type: sequence
+                     label: 'View'
+                     sequence:
+                       type: mapping
+                       mapping:
+                         name:
+                           type: string
+                           label: 'Display'
+                           nullable: false
+                         region:
+                           type: string
+                           label: 'Region'
+                           nullable: false
+                         label:
+                           type: string
+                           label: 'Label'
+                           nullable: false
+                         weight:
+                           type: integer
+                           label: 'Weight'
+                           nullable: false
