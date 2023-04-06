@@ -8,18 +8,18 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
- * Plugin implementation of default Tripal string type formatter.
+ * Plugin implementation of default Tripal additional type formatter.
  *
  * @FieldFormatter(
- *   id = "schema__additional_type_formatter",
+ *   id = "chado_additional_type_formatter_default",
  *   label = @Translation("Chado Type Reference Formatter"),
  *   description = @Translation("A Chado type reference formatter"),
  *   field_types = {
- *     "schema__additional_type"
+ *     "chado_additional_type_default"
  *   }
  * )
  */
-class schema__additional_type_formatter extends ChadoFormatterBase {
+class chado_additional_type_formatter_default extends ChadoFormatterBase {
 
   /**
    * {@inheritDoc}

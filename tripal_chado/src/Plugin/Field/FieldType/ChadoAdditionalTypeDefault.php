@@ -13,19 +13,19 @@ use Drupal\core\Form\FormStateInterface;
 use Drupal\core\Field\FieldDefinitionInterface;
 
 /**
- * Plugin implementation of Tripal string field type.
+ * Plugin implementation of Tripal additional type field type.
  *
  * @FieldType(
- *   id = "schema__additional_type",
+ *   id = "chado_additional_type_default",
  *   label = @Translation("Chado Type Reference"),
  *   description = @Translation("A Chado type reference"),
- *   default_widget = "schema__additional_type_widget",
- *   default_formatter = "schema__additional_type_formatter"
+ *   default_widget = "chado_additional_type_widget_default",
+ *   default_formatter = "chado_additional_type_formatter_default"
  * )
  */
-class schema__additional_type extends ChadoFieldItemBase {
+class chado_additional_type_default extends ChadoFieldItemBase {
 
-  public static $id = "schema__additional_type";
+  public static $id = "chado_additional_type_default";
 
 
   /**

@@ -8,18 +8,18 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
- * Plugin implementation of default Tripal string type formatter.
+ * Plugin implementation of default Tripal organism formatter.
  *
  * @FieldFormatter(
- *   id = "obi__organism_formatter",
+ *   id = "chado_organism_formatter_default",
  *   label = @Translation("Chado Organism Reference Formatter"),
  *   description = @Translation("A chado organism reference formatter"),
  *   field_types = {
- *     "obi__organism"
+ *     "chado_organism_default"
  *   }
  * )
  */
-class obi__organism_formatter extends ChadoFormatterBase {
+class chado_organism_formatter_default extends ChadoFormatterBase {
 
   /**
    * {@inheritdoc}

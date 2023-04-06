@@ -10,19 +10,19 @@ use Drupal\core\Form\FormStateInterface;
 use Drupal\core\Field\FieldDefinitionInterface;
 
 /**
- * Plugin implementation of Tripal string field type.
+ * Plugin implementation of Tripal organism field type.
  *
  * @FieldType(
- *   id = "obi__organism",
+ *   id = "chado_organism_default",
  *   label = @Translation("Chado Organism Reference"),
  *   description = @Translation("A chado organism reference"),
- *   default_widget = "obi__organism_widget",
- *   default_formatter = "obi__organism_formatter"
+ *   default_widget = "chado_organism_widget_default",
+ *   default_formatter = "chado_organism_formatter_default"
  * )
  */
-class obi__organism extends ChadoFieldItemBase {
+class chado_organism_default extends ChadoFieldItemBase {
 
-  public static $id = "obi__organism";
+  public static $id = "chado_organism_default";
 
   /**
    * {@inheritdoc}

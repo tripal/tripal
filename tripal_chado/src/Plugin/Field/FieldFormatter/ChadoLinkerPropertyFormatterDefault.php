@@ -9,18 +9,18 @@ use Drupal\Core\Link;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
- * Plugin implementation of default Tripal string type formatter.
+ * Plugin implementation of default Tripal linker property formatter.
  *
  * @FieldFormatter(
- *   id = "chado_linker__prop_formatter",
+ *   id = "chado_linker_property_formatter_default",
  *   label = @Translation("Chado Property"),
  *   description = @Translation("Add a property or attribute to the content type."),
  *   field_types = {
- *     "chado_linker__prop"
+ *     "chado_linker_property_default"
  *   }
  * )
  */
-class chado_linker__prop_formatter extends ChadoFormatterBase {
+class chado_linker_property_formatter_default extends ChadoFormatterBase {
 
   /**
    * {@inheritdoc}

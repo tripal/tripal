@@ -9,18 +9,18 @@ use Drupal\Core\Form\FormValidator;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
- * Plugin implementation of default Tripal string type widget.
+ * Plugin implementation of default Tripal additional type widget.
  *
  * @FieldWidget(
- *   id = "schema__additional_type_widget",
+ *   id = "chado_additional_type_widget_default",
  *   label = @Translation("Chado Type Reference Widget"),
  *   description = @Translation("A chado type reference widget"),
  *   field_types = {
- *     "schema__additional_type"
+ *     "chado_additional_type_default"
  *   }
  * )
  */
-class schema__additional_type_widget extends ChadoWidgetBase {
+class chado_additional_type_widget_default extends ChadoWidgetBase {
 
   /**
    * {@inheritdoc}
