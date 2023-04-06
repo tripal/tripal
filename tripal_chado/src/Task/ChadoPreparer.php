@@ -1418,7 +1418,7 @@ class ChadoPreparer extends ChadoTaskBase {
     // Use the same method as Tripal v3 for creating field names.
     $field_name = strtolower($entityType->getName() . '_' . $dbcol_term->getIdSpace() . '__' . preg_replace('/[^\w]/', '_', $dbcol_term->getName()));
     $field_name = substr($field_name, 0, 32);
-    $field_type = 'ChadoAdditionalTypeDefault';
+    $field_type = 'chado_additional_type_default';
 
     // Is the field required? Ensure we match the database.
     $is_required = FALSE;
