@@ -6,16 +6,16 @@ use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 use Drupal\tripal\Entity\TripalEntity;
 
 /**
- * Tests for the the chado_linker__prop field.
+ * Tests for the the ChadoLinkerPropertyDefault field.
  *
- * @coversDefaultClass \Drupal\tripal_chado\Plugin\FieldType\chado_linker__prop
+ * @coversDefaultClass \Drupal\tripal_chado\Plugin\FieldType\ChadoLinkerPropertyDefault
  *
  * @group Tripal
  * @group Tripal Chado
  * @group Tripal Chado ChadoStorage
  * @group Tripal Chado Fields
  */
-class TripalField_chado_linker__propTest extends ChadoTestBrowserBase {
+class TripalField_ChadoLinkerPropertyDefaultTest extends ChadoTestBrowserBase {
 
   /**
    * {@inheritdoc}
@@ -35,7 +35,7 @@ class TripalField_chado_linker__propTest extends ChadoTestBrowserBase {
   }
 
   /**
-   * Tests the chado_linker__prop field
+   * Tests the ChadoLinkerPropertyDefault field
    *
    */
   public function testChadoLinkerPropField() {
@@ -55,10 +55,10 @@ class TripalField_chado_linker__propTest extends ChadoTestBrowserBase {
       'chado_id_space', 'chado_vocabulary'
     );
 
-    // Add the chado_linker__prop to the content type.
+    // Add the ChadoLinkerPropertyDefault to the content type.
     $this->createTripalField('bio_data_1', [
       'field_name' => 'bio_data_1_local_note',
-      'field_type' => 'chado_linker__prop',
+      'field_type' => 'chado_linker_property_default',
       'term' => $note_term,
       'is_required' => FALSE,
       'cardinality' => -1,
@@ -99,7 +99,7 @@ class TripalField_chado_linker__propTest extends ChadoTestBrowserBase {
 
     // Make sure the field has a record ID.
     $organism_id = $note_items->get(0)->get("record_id")->getValue();
-    $this->assertNotNull($organism_id, "The chado_linker__prop did not set a record_id");
+    $this->assertNotNull($organism_id, "The ChadoLinkerPropertyDefault did not set a record_id");
 
     // Chado should have the value.
     $query = $this->chado->select('1:organismprop', 'OP');
@@ -107,7 +107,7 @@ class TripalField_chado_linker__propTest extends ChadoTestBrowserBase {
     $query->condition('organism_id', $organism_id);
     $query->condition('value', 'note1');
     $organismprop_id = $query->execute()->fetchField();
-    $this->assertNotNull($organismprop_id, "The chado_linker__prop did not insert the record into Chado");
+    $this->assertNotNull($organismprop_id, "The ChadoLinkerPropertyDefault did not insert the record into Chado");
     $organism_id = $query->execute()->fetchField();
     */
 
