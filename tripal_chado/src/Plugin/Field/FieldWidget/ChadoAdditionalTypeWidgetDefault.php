@@ -20,7 +20,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  *   }
  * )
  */
-class chado_additional_type_widget_default extends ChadoWidgetBase {
+class ChadoAdditionalTypeWidgetDefault extends ChadoWidgetBase {
 
   /**
    * {@inheritdoc}

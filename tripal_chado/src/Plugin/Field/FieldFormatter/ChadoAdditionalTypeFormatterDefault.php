@@ -19,7 +19,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
  *   }
  * )
  */
-class chado_additional_type_formatter_default extends ChadoFormatterBase {
+class ChadoAdditionalTypeFormatterDefault extends ChadoFormatterBase {
 
   /**
    * {@inheritDoc}

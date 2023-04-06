@@ -19,7 +19,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  *   }
  * )
  */
-class chado_linker_property_widget_default extends ChadoWidgetBase {
+class ChadoLinkerPropertyWidgetDefault extends ChadoWidgetBase {
 
 
   /**

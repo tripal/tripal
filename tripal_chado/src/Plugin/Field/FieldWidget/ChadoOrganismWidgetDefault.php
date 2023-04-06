@@ -19,7 +19,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  *   }
  * )
  */
-class chado_organism_widget_default extends ChadoWidgetBase {
+class ChadoOrganismWidgetDefault extends ChadoWidgetBase {
 
 
   /**

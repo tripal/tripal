@@ -20,7 +20,7 @@ use Drupal\core\Field\FieldDefinitionInterface;
  *   default_formatter = "chado_organism_formatter_default"
  * )
  */
-class chado_organism_default extends ChadoFieldItemBase {
+class ChadoOrganismDefault extends ChadoFieldItemBase {
 
   public static $id = "chado_organism_default";
 
