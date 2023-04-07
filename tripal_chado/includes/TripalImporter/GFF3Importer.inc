@@ -1276,7 +1276,7 @@ class GFF3Importer extends TripalImporter {
       $ret['skipped'] = TRUE;
     }
 
-    // Add the target. If the type_id is missing then remove the targeet
+    // Add the target. If the type_id is missing then remove the target
     // and we'll skip it.
     $ret['target'] = $attr_target;
     if (!array_key_exists('type', $ret['target']) or empty($ret['target'])) {
