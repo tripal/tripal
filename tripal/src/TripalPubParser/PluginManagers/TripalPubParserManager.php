@@ -212,8 +212,8 @@ $criteria = [];
             '#name' => 'remove',
             '#value' => t('Remove'),
             '#ajax' => [
-              'callback' => "tripal_pubs_setup_form_ajax_update",
-              'wrapper' => 'tripal-pubs-importer-setup',
+              'callback' => "tripal_pub_setup_form_ajax_update",
+              'wrapper' => 'tripal-pub-importer-setup',
               'effect' => 'fade',
               'method' => 'replace',
               'prevent' => 'click',
@@ -235,8 +235,8 @@ $criteria = [];
           '#name' => 'add',
           '#value' => t('Add'),
           '#ajax' => [
-            'callback' => "tripal_pubs_setup_form_ajax_update",
-            'wrapper' => 'tripal-pubs-importer-setup',
+            'callback' => "tripal_pub_setup_form_ajax_update",
+            'wrapper' => 'tripal-pub-importer-setup',
             'effect' => 'fade',
             'method' => 'replace',
             'prevent' => 'click',
@@ -267,7 +267,7 @@ $criteria = [];
       '#type' => 'table',
       '#header' => $headers,
       '#rows' => $rows,
-      '#prefix' => '<div id="tripal-pubs-importer-setup">',
+      '#prefix' => '<div id="tripal-pub-importer-setup">',
       '#suffix' => '</div>',
       '#empty' => '',
     ];
@@ -284,6 +284,7 @@ $criteria = [];
    * @ingroup tripal_pub
    */
   public function tripal_pub_setup_form_ajax_button_validate($form, &$form_state) {
+dpm("tripal_pub_setup_form_ajax_button_validate() called");
     $form_state['rebuild'] = TRUE;
   }
 
@@ -294,6 +295,7 @@ $criteria = [];
    * @ingroup tripal_pub
    */
   public function tripal_pub_setup_form_ajax_button_submit($form, &$form_state) {
+dpm("tripal_pub_setup_form_ajax_button_submit() called");
     // do nothing
   }
 
