@@ -40,5 +40,4 @@ class TripalPubParser extends Plugin {
    */
   public $description;
 
-
 }

@@ -8,7 +8,7 @@ use Drupal\Core\Form\FormStateInterface;
 /**
  * Defines an interface for tripal importer plugins.
  */
-interface TripalPubParserInterface extends PluginInspectionInterface  {
+interface TripalPubParserInterface extends PluginInspectionInterface {
 
 
   /**
