@@ -111,14 +111,6 @@ tripal.config:
   parent: tripal.admin
   weight: 95
 
-# -- Root link for Tripal extension listing.
-tripal.extension:
-  route_name: tripal.extension
-  title: 'Extensions'
-  description: "Tripal is very modular and provides a number of APIs for developers to extend the core functionality. The configuration and management pages for all Tripal extension modules can be found here."
-  parent: tripal.admin
-  weight: 100
-
 # -- Configuration for Tripal Content Types link.
 entity.tripalentitytype_collection.collection:
   title: 'Tripal Content Type Collection'
@@ -126,6 +118,22 @@ entity.tripalentitytype_collection.collection:
   description: 'Manage default configurations for Tripal content types which specify the details of content types automatically created in this site.'
   route_name: entity.tripalentitytype_collection.collection
   weight: 20
+
+# -- Configuration for Tripal Field link.
+entity.tripalfield_collection.collection:
+  title: 'Tripal Field Collection'
+  parent: tripal.config
+  description: 'Manage default configurations for Tripal Fields which specify the details of fields automatically created in this site.'
+  route_name: entity.tripalfield_collection.collection
+  weight: 30
+
+# -- Root link for Tripal extension listing.
+tripal.extension:
+  route_name: tripal.extension
+  title: 'Extensions'
+  description: "Tripal is very modular and provides a number of APIs for developers to extend the core functionality. The configuration and management pages for all Tripal extension modules can be found here."
+  parent: tripal.admin
+  weight: 100
 
 ##
 # Tripal Managed File Menu

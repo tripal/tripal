@@ -548,9 +548,35 @@ entity.tripal_content_terms.delete_form:
 # Tripal Entity Type Collection entity.
 ##
 
-# Commented out since these are created automatically by the entity.
-# Added here for people who are looking.
-# entity.tripal_content_types.collection:
-#   path: '/admin/tripal/config/tripalentitytype-collection'
-# entity.tripal_content_types.delete_form:
-#   path: '/admin/tripal/config/tripalentitytype-collection/{config}/delete'
+entity.tripalentitytype_collection.collection:
+  path: '/admin/tripal/config/tripalentitytype-collection'
+  defaults:
+    _entity_list: 'tripalentitytype_collection'
+  requirements:
+    _permission: 'administer tripal'
+
+entity.tripalentitytype_collection.delete_form:
+  path: '/admin/tripal/config/tripalentitytype-collection/{tripalentitytype_collection}/delete'
+  defaults:
+    _entity_form: 'tripalentitytype_collection.delete'
+    _title: 'Delete Configuration'
+  requirements:
+    _permission: 'administer tripal'
+##
+# Tripal Field Collection entity.
+##
+
+entity.tripalfield_collection.collection:
+  path: '/admin/tripal/config/tripalfield-collection'
+  defaults:
+    _entity_list: 'tripalfield_collection'
+  requirements:
+    _permission: 'administer tripal'
+
+entity.tripalfield_collection.delete_form:
+  path: '/admin/tripal/config/tripalfield-collection/{tripalfield_collection}/delete'
+  defaults:
+    _entity_form: 'tripalfield_collection.delete'
+    _title: 'Delete Configuration'
+  requirements:
+    _permission: 'administer tripal'
