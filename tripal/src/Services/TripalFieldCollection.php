@@ -433,7 +433,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
       if (!$field instanceof FieldConfig) {
         $field = FieldConfig::create([
           'field_storage' => $field_storage,
-          'bundle' => $entity_type->getId(),
+          'bundle' => $field_def['content_type'],
           'label' => $field_def['label'],
         ]);
         $field->setLabel($field_def['label']);

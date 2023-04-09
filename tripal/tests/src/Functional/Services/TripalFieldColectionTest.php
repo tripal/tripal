@@ -20,7 +20,7 @@ class TripalFieldCollectionTest extends TripalTestBrowserBase {
    */
   public function testTripalFieldCollection() {
 
-    \Drupal::state()->set('is_a_test_environment', TRUE);
+    //\Drupal::state()->set('is_a_test_environment', TRUE);
 
     // Create the vocabulary term needed for testing the content type.
     // We'll use the default Tripal IdSpace and Vocabulary plugins.
