@@ -88,12 +88,22 @@ field.storage.tripal_entity.*:
       type: field.storage_settings.*
       label: 'Tripal Field Storage Settings'
       mapping:
-        storage_plugin_id:
+        termIdSpace:
           type: string
-          label: 'Tripal Storage Plugin Machine Name'
+          label: 'Term ID Space'
+        termAccession:
+          type: string
+          label: 'Term Accession'
         max_length:
           type: integer
           label: 'Storage Maximum length'
+        storage_plugin_id:
+          type: string
+          label: 'Tripal Storage Plugin Machine Name'
+        storage_plugin_settings:
+          type: field.storage.tripal_entity.*.settings.storage_plugin_settings.*
+          label: 'Tripal Storage-specific Settings'
+
 
 ## Adds term ID Space and Accession keys
 ## to the existing Drupal Fields

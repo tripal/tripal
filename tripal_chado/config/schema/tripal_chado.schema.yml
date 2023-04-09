@@ -4,6 +4,7 @@ tripal_chado.settings:
     default_schema:
       type: string
       label: 'Default Chado schema name'
+
 tripal_chado.chado_term_mapping.*:
   type: config_entity
   mapping:
