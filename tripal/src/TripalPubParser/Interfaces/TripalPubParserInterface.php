@@ -12,7 +12,7 @@ interface TripalPubParserInterface extends PluginInspectionInterface {
 
 
   /**
-   * Provides form elements to be added for specifying criteria for parsing..
+   * Provides form elements to be added for specifying criteria for parsing.
    *
    * These form elements are added after the file uploader section that
    * is automaticaly provided by the TripalImporter.

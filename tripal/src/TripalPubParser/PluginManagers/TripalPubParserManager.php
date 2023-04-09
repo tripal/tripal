@@ -285,7 +285,7 @@ $criteria = [];
    */
   public function tripal_pub_setup_form_ajax_button_validate($form, &$form_state) {
 dpm("tripal_pub_setup_form_ajax_button_validate() called");
-    $form_state['rebuild'] = TRUE;
+    $form_state->setRebuild(TRUE);
   }
 
   /**

@@ -12,7 +12,6 @@ use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
 
-// cf. src/Entity/ChadoTermMapping.php
 /**
  * ChadoPubImporterEdit implementation of the TripalImporterBase.
  *
@@ -120,26 +119,31 @@ class ChadoPubImporterEdit extends ChadoImporterBase {
   /**
    * {@inheritDoc}
    */
-  public function formSubmit($form, &$form_state) {
-    dpm('Editor Submit not implemented'); //@@@
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  public function postRun() {
-  }
-
-  /**
-   * {@inheritDoc}
-   */
   public function formValidate($form, &$form_state) {
+$trigger = $form_state->getTriggeringElement()['#name'];
+dpm($trigger, 'Editor Validate not implemented'); //@@@
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public function formSubmit($form, &$form_state) {
+$trigger = $form_state->getTriggeringElement()['#name'];
+dpm($trigger, 'Editor Submit not implemented'); //@@@
+    // Disable the parent submit
+    $form_state->setRebuild(True);
   }
 
   /**
    * {@inheritDoc}
    */
   public function run() {
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public function postRun() {
   }
 
   /**
