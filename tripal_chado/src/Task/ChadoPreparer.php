@@ -168,7 +168,7 @@ class ChadoPreparer extends ChadoTaskBase {
       $this->setProgress(0.7);
       $this->logger->notice("Adding Fields to Tripal Content Types...");
       /** @var \Drupal\tripal\Services\TripalFields $fields **/
-      $fields = \Drupal::service('tripal.fields');
+      $fields = \Drupal::service('tripal.tripalfield_collection');
       $fields->install();
 
       $this->setProgress(0.8);

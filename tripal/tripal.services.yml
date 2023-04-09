@@ -24,7 +24,7 @@ services:
   tripal.importer:
     class: Drupal\tripal\TripalImporter\PluginManagers\TripalImporterManager
     parent: default_plugin_manager
-  tripal.fields:
+  tripal.tripalfield_collection:
     class: Drupal\tripal\Services\TripalFieldCollection
     arguments: ['@tripal.collection_plugin_manager.idspace',
                 '@tripal.collection_plugin_manager.vocabulary',
