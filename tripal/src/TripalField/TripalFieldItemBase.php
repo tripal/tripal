@@ -25,7 +25,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $settings = [
       'termIdSpace' => '',
       'termAccession' => '',
-      'max_delta' => 100
+      # 'max_delta' => 100
     ];
     return $settings + parent::defaultFieldSettings();
   }
