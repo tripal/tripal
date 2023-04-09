@@ -97,23 +97,14 @@ class TripalStringTypeItem extends TripalFieldItemBase {
    */
   public static function tripalTypes($field_definition) {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
-    $max_length = $field_definition->getSetting('max_length');
+    $storage_settings = $field_definition->getSettings();
+    $termIdSpace = $storage_settings['termIdSpace'];
+    $termAccession = $storage_settings['termAccession'];
+    $max_length = $storage_settings['max_length'];
 
     return [
-      new VarCharStoragePropertyType($entity_type_id, self::$id, "value", $max_length),
+      new VarCharStoragePropertyType($entity_type_id, self::$id, "value", $termIdSpace . ':' . $termAccession, $max_length),
     ];
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function tripalValuesTemplate($field_definition) {
-    $entity = $this->getEntity();
-    $entity_type_id = $entity->getEntityTypeId();
-    $entity_id = $entity->id();
-
-    return [
-      new StoragePropertyValue($entity_type_id, self::$id, "value", $entity_id),
-    ];
-  }
 }
