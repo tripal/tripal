@@ -19,6 +19,9 @@ class TripalFieldCollectionTest extends TripalTestBrowserBase {
    * Tests the TripalContentTypes class public functions.
    */
   public function testTripalFieldCollection() {
+
+    \Drupal::state()->set('is_a_test_environment', TRUE);
+
     // Create the vocabulary term needed for testing the content type.
     // We'll use the default Tripal IdSpace and Vocabulary plugins.
     $idsmanager = \Drupal::service('tripal.collection_plugin_manager.idspace');
@@ -40,19 +43,19 @@ class TripalFieldCollectionTest extends TripalTestBrowserBase {
       'term' => $term,
       'help_text' => 'Use the organism page for an individual living system, such as animal, plant, bacteria or virus,',
       'category' => 'General',
-      'name' => 'organism',
-      'title_format' => "[organism_genus] [organism_species] [organism_infraspecific_type] [organism_infraspecific_name]",
-      'url_format' => "organism/[TripalEntity__entity_id]",
-      'synonyms' => ['bio_data_1']
+      'name' => 'bio_data_1',
+      #'title_format' => "[organism_genus] [organism_species] [organism_infraspecific_type] [organism_infraspecific_name]",
+      #'url_format' => "organism/[TripalEntity__entity_id]",
+      #'synonyms' => ['bio_data_1']
     ];
     /** @var \Drupal\tripal\Services\TripalContentTypes $content_type_setup **/
-    $content_type_service = \Drupal::service('tripal.content_types');
+    $content_type_service = \Drupal::service('tripal.tripalentitytype_collection');
     $content_type = $content_type_service->createContentType($ct_details);
     $this->assertTrue(!is_null($content_type), "Failed to create a content type with avalid definition.");
 
 
     /** @var \Drupal\tripal\Services\TripalFieldCollection $fields_service **/
-    $fields_service = \Drupal::service('tripal.fields');
+    $fields_service = \Drupal::service('tripal.tripalfield_collection');
 
     $idspace = $idsmanager->createCollection('TAXRANK', "tripal_default_id_space");
     $vocab = $vmanager->createCollection('TAXRANK', "tripal_default_vocabulary");
@@ -66,7 +69,7 @@ class TripalFieldCollectionTest extends TripalTestBrowserBase {
     $idspace->saveTerm($term);
     $field_def = [
       'name' => 'organism_genus',
-      'content_type' => 'organism',
+      'content_type' => 'bio_data_1',
       'label' => 'Genus',
       'type' => 'tripal_string_type',
       'description' => "The genus name of the organism.",
