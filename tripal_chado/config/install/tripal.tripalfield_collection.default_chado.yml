@@ -2141,7 +2141,7 @@ fields:
               weight: 10
 
     -   name: genetic_marker_name
-        content_type: bio_data_8tic_marker
+        content_type: bio_data_19
         label: Name
         type: chado_string_type
         description: The name of the item.
@@ -2168,7 +2168,7 @@ fields:
               weight: 10
 
     -   name: genetic_marker_unique_name
-        content_type: bio_data_8tic_marker
+        content_type: bio_data_19
         label: Unique Name
         type: chado_text_type
         description: A name that uniquely identifies the genetic marker within the organism.
@@ -2194,7 +2194,7 @@ fields:
               weight: 15
 
     -   name: genetic_marker_sequence
-        content_type: bio_data_8tic_marker
+        content_type: bio_data_19
         label: Sequence
         type: chado_text_type
         description: One or more molecular sequences, possibly with associated annotation.
@@ -2220,7 +2220,7 @@ fields:
               weight: 20
 
     -   name: genetic_marker_sequence_length
-        content_type: bio_data_8tic_marker
+        content_type: bio_data_19
         label: Sequence Length
         type: chado_integer_type
         description: The size (length) of a sequence, subsequence or region in a sequence,or range(s) of lengths.
@@ -2246,7 +2246,7 @@ fields:
               weight: 25
 
     -   name: genetic_marker_type
-        content_type: bio_data_8tic_marker
+        content_type: bio_data_19
         label: Type
         type: schema__additional_type
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
@@ -2622,7 +2622,7 @@ fields:
               weight: 10
 
     -   name: germplasm_variety_name
-        content_type: bio_data_21_variety
+        content_type: bio_data_23
         label: Name
         type: chado_string_type
         description: The name of the item.
@@ -2649,7 +2649,7 @@ fields:
               weight: 10
 
     -   name: germplasm_variety_unique_name
-        content_type: bio_data_21_variety
+        content_type: bio_data_23
         label: Unique Name
         type: chado_text_type
         description: A name that uniquely identifies the germplasm variety within this organism.
@@ -2675,7 +2675,7 @@ fields:
               weight: 15
 
     -   name: germplasm_variety_description
-        content_type: bio_data_21_variety
+        content_type: bio_data_23
         label: Description
         type: chado_text_type
         description: A description of the item.
@@ -2701,7 +2701,7 @@ fields:
               weight: 20
 
     -   name: germplasm_variety_type
-        content_type: bio_data_21_variety
+        content_type: bio_data_23
         label: Type
         type: schema__additional_type
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.

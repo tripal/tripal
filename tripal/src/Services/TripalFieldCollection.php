@@ -283,7 +283,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
    */
   public function install() {
     $config_factory = \Drupal::service('config.factory');
-    $config_list = $config_factory->listAll('tripal.tripal_fields');
+    $config_list = $config_factory->listAll('tripal.tripalfield_collection');
 
     // Iterate through the configuration items.
     foreach ($config_list as $config_item) {
