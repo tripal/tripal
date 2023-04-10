@@ -97,10 +97,6 @@ field.storage.tripal_entity.*:
         max_length:
           type: integer
           label: 'Storage Maximum length'
-        fixed_value:
-          type: string
-          label: "A fixed value for the field that cannot be changed."
-          nullable: true
         storage_plugin_id:
           type: string
           label: 'Tripal Storage Plugin Machine Name'
@@ -124,6 +120,10 @@ field.field.tripal_entity.*.*:
         termAccession:
           type: string
           label: 'Term Accession'
+        fixed_value:
+          type: string
+          label: "A fixed value for the field that cannot be changed."
+          nullable: true
 
 ## For TripalEntityTypeCollection functionality
 ## focused on using YML files to describe TripalEntityTypes
