@@ -205,7 +205,7 @@ RUN service apache2 start \
 ## Configuration files & Activation script
 RUN mv /app/tripaldocker/init_scripts/supervisord.conf /etc/supervisord.conf \
   && mv /app/tripaldocker/default_files/000-default.conf /etc/apache2/sites-available/000-default.conf \
-  && echo "\$settings['trusted_host_patterns'] = [ '^localhost$', '^127\.0\.0\.1$', '\$_SERVER[\'SERVER_NAME\'] ];" >> /var/www/drupal9/web/sites/default/settings.php \
+  && echo "\$settings['trusted_host_patterns'] = [ '^localhost$', '^127\.0\.0\.1$', '\$_SERVER[\'SERVER_NAME\']' ];" >> /var/www/drupal9/web/sites/default/settings.php \
   && mv /app/tripaldocker/init_scripts/init.sh /usr/bin/init.sh \
   && chmod +x /usr/bin/init.sh \
   && mv /app/tripaldocker/default_files/xdebug/xdebug_toggle.sh /usr/bin/xdebug_toggle.sh \
