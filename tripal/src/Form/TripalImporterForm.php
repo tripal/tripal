@@ -118,12 +118,13 @@ class TripalImporterForm implements FormInterface {
       $form = array_merge($form, $importer_form);
     }
 
-
-    $form['button'] = [
-      '#type' => 'submit',
-      '#value' => $importer_def['button_text'],
-      '#weight' => 10,
-    ];
+    if (isset($importer_def['button_text']) and $importer_def['button_text']) {
+      $form['button'] = [
+        '#type' => 'submit',
+        '#value' => $importer_def['button_text'],
+        '#weight' => 10,
+      ];
+    }
 
     return $form;
   }
