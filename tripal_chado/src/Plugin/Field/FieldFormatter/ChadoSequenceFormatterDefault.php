@@ -8,12 +8,12 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
- * Plugin implementation of Default Tripal field formatter for sequence data 
+ * Plugin implementation of Default Tripal field formatter for sequence data
  *
  * @FieldFormatter(
  *   id = "chado_sequence_formatter_default",
- *   label = @Translation("Chado Sequence Formatter"),
- *   description = @Translation("A chado sequence formatter"),
+ *   label = @Translation("Chado Sequence Residues Display"),
+ *   description = @Translation("Displays chado sequence residues from the feature table on the page."),
  *   field_types = {
  *     "chado_sequence_default"
  *   }
@@ -29,9 +29,12 @@ class ChadoSequenceFormatterDefault extends ChadoFormatterBase {
     $elements['#attached']['library'][] = 'tripal_chado/tripal_chado.field.ChadoSequenceFormatterDefault';
 
     foreach($items as $delta => $item) {
-      $elements[$delta] = [
-        "#markup" => "<pre id='tripal-chado-sequence-format'>" . wordwrap($item->get('residues')->getString(),50,'<br>',TRUE) . "</pre>",
-      ];
+      $residues = $item->get('residues')->getString();
+      if (!empty($residues)) {
+        $elements[$delta] = [
+          "#markup" => "<pre id='tripal-chado-sequence-format'>" . wordwrap($residues,50,'<br>',TRUE) . "</pre>",
+        ];
+      }
     }
 
     return $elements;
