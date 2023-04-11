@@ -461,7 +461,7 @@ class OBOImporter extends ChadoImporterBase {
         \Drupal::messenger()->addMessage(t("The vocabulary @vocab has been added.", ['@vocab' => $obo_name]));
       }
       else {
-        $form_state['rebuild'] = TRUE;
+        $form_state->setRebuild(True);
         \Drupal::messenger()->addError(t("The vocabulary @vocab could not be added.", ['@vocab' => $obo_name]));
       }
     }
