@@ -163,13 +163,8 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       ':feature_id' => $gene_feature_id,
       ':value' => 'protein_coding'
     ]);
-    $has_exception = false;
-    try {
-      $results_object = $results->fetchObject();
-    } catch (\Exception $ex) {
-      $has_exception = true;
-    }
-    $this->assertEquals($has_exception, false, "biotype value was not added.");
+    $results_object = $results->fetchObject();
+    $this->assertEquals($results_object->value, 'protein_coding');
     unset($results);
     unset($results_object);
 
@@ -180,14 +175,8 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       ':feature_id' => $gene_feature_id,
       ':value' => 'test_gap_1'
     ]);
-    $has_exception = false;
-    try {
-      $results_object = $results->fetchObject();
-    } 
-    catch (\Exception $ex) {
-      $has_exception = true;
-    }
-    $this->assertEquals($has_exception, false, "GAP value was not added.");
+    $results_object = $results->fetchObject();
+    $this->assertEquals($results_object->value, 'test_gap_1');
     unset($results);
     unset($results_object);
 
@@ -197,17 +186,12 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       ':feature_id' => $gene_feature_id,
       ':value' => 'test_gene_001_note'
     ]);
-    $has_exception = false;
-    try {
-      $results_object = $results->fetchObject();
-    } 
-    catch (\Exception $ex) {
-      $has_exception = true;
-    }
-    $this->assertEquals($has_exception, false, "NOTE value was not added.");
+    $results_object = $results->fetchObject();
+    $this->assertEquals($results_object->value, 'test_gene_001_note');
     unset($results);
     unset($results_object);
 
+    // TODO: To complete
     /**
      * Run the GFF loader on gff_duplicate_ids.gff for testing.
      *
@@ -359,8 +343,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $message = $ex->getMessage();
       $has_exception = true;
     }
-    // TODO
-    // $this->assertEquals($has_exception, true, "Should not complete when there is invalid start and end values but did throw error.");
+    $this->assertEquals($has_exception, false, "The GFF3 loader should reverse the values automatically but somehow produced an exception which is an error");
 
     /**
      * Run the GFF loader on gff_phase_invalid_character.gff for testing.
@@ -469,9 +452,8 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
 
     
     /**
-     * Test that when checked, explicit proteins are created when specified within
-     * the GFF file. Explicit proteins will not respect the skip_protein argument
-     * and will therefore be added to the database.
+     * Test that when checked, when phase is specified for CDS
+     * TODO: Maybe create a test for phase being a . for a CDS which should in theory fail?
      */
     $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
     $run_args = [
@@ -504,20 +486,29 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     $file_details = [
       'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_phase.gff',
     ];
+    
+    $gff3_importer->create($run_args, $file_details);
+    $gff3_importer->prepareFiles();
+    $gff3_importer->run();
+    $gff3_importer->postRun();
 
-    $has_exception = false;
-    try {
-      $gff3_importer->create($run_args, $file_details);
-      $gff3_importer->prepareFiles();
-      $gff3_importer->run();
-      $gff3_importer->postRun();
-    } 
-    catch (\Exception $ex) {
-      $message = $ex->getMessage();
-      $has_exception = true;
-    }
+    $results = $chado->query("SELECT * FROM {1:feature} WHERE uniquename = :uniquename", [
+      ':uniquename' => 'FRAEX38873_v2_000000010.1.cds1'
+    ]);
+    $results_object = $results->fetchObject();
+    $feature_id = $results_object->feature_id;
+
+    $results = $chado->query("SELECT * FROM {1:featureloc} WHERE feature_id = :feature_id AND
+      strand = 1", [
+        ':feature_id' => $feature_id
+    ]);
+    $results_object = $results->fetchObject();
+    $strand_value = $results_object->strand;
+    $this->assertEquals($strand_value, 1, "Strand value should have been 1 but another value
+      was found.");
 
     /**
+     * @TODO
      * Add a skip protein option.  Test that when checked, implicit proteins are
      * not created, but that they are created when unchecked.
      */
@@ -668,52 +659,42 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_score.gff',
     ];
 
-    $has_exception = false;
-    try {
-      $gff3_importer->create($run_args, $file_details);
-      $gff3_importer->prepareFiles();
-      $gff3_importer->run();
-      $gff3_importer->postRun();
+    $gff3_importer->create($run_args, $file_details);
+    $gff3_importer->prepareFiles();
+    $gff3_importer->run();
+    $gff3_importer->postRun();
 
-      $results = $chado->query("SELECT * FROM {1:analysisfeature} 
-        WHERE significance = :significance LIMIT 1", [
-        ':significance' => 2
-      ]);
-      foreach ($results as $row) {
-        // print_r($row);
-        $this->assertEquals($row->significance,2, 'No significance value of 2 
-          could be found in the db. Import failed.');
-      }
-      unset($results);
-
-      $results = $chado->query("SELECT * FROM {1:analysisfeature} 
-        WHERE significance = :significance LIMIT 1", [
-        ':significance' => 2.5
-      ]);
-      foreach ($results as $row) {
-        $this->assertEquals($row->significance,2.5, 'No significance value of 2.5 
+    $results = $chado->query("SELECT * FROM {1:analysisfeature} 
+      WHERE significance = :significance LIMIT 1", [
+      ':significance' => 2
+    ]);
+    foreach ($results as $row) {
+      // print_r($row);
+      $this->assertEquals($row->significance,2, 'No significance value of 2 
         could be found in the db. Import failed.');
-      }
-      unset($results);
-
-      $results = $chado->query("SELECT * FROM {1:analysisfeature} 
-        WHERE significance = :significance LIMIT 1", [
-        ':significance' => -2.5
-      ]);
-      foreach ($results as $row) {
-        // print_r($row);
-        $this->assertEquals($row->significance,-2.5, 'No significance value of 
-        -2.5 could be found in the db. Import failed.');
-      }
-      unset($results);
-    } 
-    catch (\Exception $ex) {
-      $message = $ex->getMessage();
-      $has_exception = true;
     }
-    $this->assertEquals($has_exception,false,'An exception occurred while 
-      importing gff_score which should not have happened');
+    unset($results);
 
+    $results = $chado->query("SELECT * FROM {1:analysisfeature} 
+      WHERE significance = :significance LIMIT 1", [
+      ':significance' => 2.5
+    ]);
+    foreach ($results as $row) {
+      $this->assertEquals($row->significance,2.5, 'No significance value of 2.5 
+      could be found in the db. Import failed.');
+    }
+    unset($results);
+
+    $results = $chado->query("SELECT * FROM {1:analysisfeature} 
+      WHERE significance = :significance LIMIT 1", [
+      ':significance' => -2.5
+    ]);
+    foreach ($results as $row) {
+      // print_r($row);
+      $this->assertEquals($row->significance,-2.5, 'No significance value of 
+      -2.5 could be found in the db. Import failed.');
+    }
+    unset($results);
 
     /**
      * Run the GFF loader on gff_seqid_invalid_character.gff for testing.
@@ -858,72 +839,60 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_strand.gff',
     ];
 
-    $has_exception = false;
-    try {
-      $gff3_importer->create($run_args, $file_details);
-      $gff3_importer->prepareFiles();
-      $gff3_importer->run();
-      $gff3_importer->postRun();
-      
-      // Test that integer values for strand that get placed in the db
-      // Strand data gets saved in {1:featureloc}
-      $results = $chado->query('SELECT * FROM {1:featureloc} fl 
-        LEFT JOIN {1:feature} f ON (fl.feature_id = f.feature_id)
-        WHERE uniquename = :uniquename LIMIT 1', 
-        array(
-          ':uniquename' => 'FRAEX38873_v2_000000010'
-        )
-      );
+    $gff3_importer->create($run_args, $file_details);
+    $gff3_importer->prepareFiles();
+    $gff3_importer->run();
+    $gff3_importer->postRun();
+    
+    // Test that integer values for strand that get placed in the db
+    // Strand data gets saved in {1:featureloc}
+    $results = $chado->query('SELECT * FROM {1:featureloc} fl 
+      LEFT JOIN {1:feature} f ON (fl.feature_id = f.feature_id)
+      WHERE uniquename = :uniquename LIMIT 1', 
+      array(
+        ':uniquename' => 'FRAEX38873_v2_000000010'
+      )
+    );
 
-      foreach ($results as $row) {
-        $this->assertEquals($row->strand, 1); // +
-      }
-
-      $results = $chado->query('SELECT * FROM {1:featureloc} fl 
-        LEFT JOIN {1:feature} f ON (fl.feature_id = f.feature_id)
-        WHERE uniquename = :uniquename LIMIT 1', 
-        array(
-          ':uniquename' => 'FRAEX38873_v2_000000010.1'
-        )
-      );
-
-      foreach ($results as $row) {
-        $this->assertEquals($row->strand,-1); // -
-      } 
-      
-      $results = $chado->query('SELECT * FROM {1:featureloc} fl 
-        LEFT JOIN {1:feature} f ON (fl.feature_id = f.feature_id)
-        WHERE uniquename = :uniquename LIMIT 1', 
-        array(
-          ':uniquename' => 'FRAEX38873_v2_000000010.2'
-        )
-      );
-
-      foreach ($results as $row) {
-        $this->assertEquals($row->strand, 0); // ?
-      }
-      
-      $results = $chado->query('SELECT * FROM {1:featureloc} fl 
-        LEFT JOIN {1:feature} f ON (fl.feature_id = f.feature_id)
-        WHERE uniquename = :uniquename LIMIT 1', 
-        array(
-          ':uniquename' => 'FRAEX38873_v2_000000010.3'
-        )
-      );
-
-      foreach ($results as $row) {
-        $this->assertEquals($row->strand, 0); // .
-      } 
-
-    } 
-    catch (\Exception $ex) {
-      $message = $ex->getMessage();
-      $has_exception = true;
-      $this->assertEquals($has_exception, false, 'The gff_strand.gff produced an 
-      exception which should not happen since it is a valid file. ' . $message);
+    foreach ($results as $row) {
+      $this->assertEquals($row->strand, 1); // +
     }
 
+    $results = $chado->query('SELECT * FROM {1:featureloc} fl 
+      LEFT JOIN {1:feature} f ON (fl.feature_id = f.feature_id)
+      WHERE uniquename = :uniquename LIMIT 1', 
+      array(
+        ':uniquename' => 'FRAEX38873_v2_000000010.1'
+      )
+    );
 
+    foreach ($results as $row) {
+      $this->assertEquals($row->strand,-1); // -
+    } 
+    
+    $results = $chado->query('SELECT * FROM {1:featureloc} fl 
+      LEFT JOIN {1:feature} f ON (fl.feature_id = f.feature_id)
+      WHERE uniquename = :uniquename LIMIT 1', 
+      array(
+        ':uniquename' => 'FRAEX38873_v2_000000010.2'
+      )
+    );
+
+    foreach ($results as $row) {
+      $this->assertEquals($row->strand, 0); // ?
+    }
+    
+    $results = $chado->query('SELECT * FROM {1:featureloc} fl 
+      LEFT JOIN {1:feature} f ON (fl.feature_id = f.feature_id)
+      WHERE uniquename = :uniquename LIMIT 1', 
+      array(
+        ':uniquename' => 'FRAEX38873_v2_000000010.3'
+      )
+    );
+
+    foreach ($results as $row) {
+      $this->assertEquals($row->strand, 0); // .
+    } 
 
     /**
      * Run the GFF loader on gff_tag_parent_verification.gff for testing.
@@ -963,30 +932,19 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_tag_parent_verification.gff',
     ];
 
-    $has_exception = false;
-    try {
-      $gff3_importer->create($run_args, $file_details);
-      $gff3_importer->prepareFiles();
-      $gff3_importer->run();
-      $gff3_importer->postRun();
-      $results = $chado->query("SELECT COUNT(*) as c1 FROM 
-      (SELECT * FROM {1:feature_relationship} fr
-      LEFT JOIN {1:feature} f ON (fr.object_id = f.feature_id)
-      WHERE f.uniquename = 'FRAEX38873_v2_000000010' LIMIT 1
-      ) as table1;",[]);
+    $gff3_importer->create($run_args, $file_details);
+    $gff3_importer->prepareFiles();
+    $gff3_importer->run();
+    $gff3_importer->postRun();
+    $results = $chado->query("SELECT COUNT(*) as c1 FROM 
+    (SELECT * FROM {1:feature_relationship} fr
+    LEFT JOIN {1:feature} f ON (fr.object_id = f.feature_id)
+    WHERE f.uniquename = 'FRAEX38873_v2_000000010' LIMIT 1
+    ) as table1;",[]);
 
-      foreach ($results as $row) {
-        $this->assertEquals($row->c1, 1);
-      }
-    } 
-    catch (\Exception $ex) {
-      $message = $ex->getMessage();
-      $has_exception = true;
+    foreach ($results as $row) {
+      $this->assertEquals($row->c1, 1);
     }
-    $this->assertEquals($has_exception, false, 'This file 
-      gff_tag_parent_verification.gff is a valid file and should not produce 
-      an exception but did.');      
-    
 
   /**
    * Run the GFF loader on gff_tagvalue_encoded_character.gff for testing.
@@ -1026,27 +984,17 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_tagvalue_encoded_character.gff',
     ];
 
-    $has_exception = false;
-    try {
-      $gff3_importer->create($run_args, $file_details);
-      $gff3_importer->prepareFiles();
-      $gff3_importer->run();
-      $gff3_importer->postRun();
+    $gff3_importer->create($run_args, $file_details);
+    $gff3_importer->prepareFiles();
+    $gff3_importer->run();
+    $gff3_importer->postRun();
 
-      $results = $chado->query("SELECT COUNT(*) as c1 FROM {1:feature} 
-      WHERE uniquename = 'FRAEX38873_v2_000000010,20';",[]);
+    $results = $chado->query("SELECT COUNT(*) as c1 FROM {1:feature} 
+    WHERE uniquename = 'FRAEX38873_v2_000000010,20';",[]);
 
-      foreach ($results as $row) {
-        $this->assertEquals($row->c1, 1);
-      }  
-    } 
-    catch (\Exception $ex) {
-      $message = $ex->getMessage();
-      $has_exception = true;
+    foreach ($results as $row) {
+      $this->assertEquals($row->c1, 1);
     }
-    $this->assertEquals($has_exception, false, 'This file 
-      gff_tagvalue_encoded_character.gff is a valid file and should not produce 
-      an exception but did.');      
     
     /**
      * Run the GFF loader on gff_tagvalue_comma_character.gff for testing.
@@ -1087,37 +1035,26 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_tagvalue_comma_character.gff',
     ];
 
-    $has_exception = false;
-    try {
-      $gff3_importer->create($run_args, $file_details);
-      $gff3_importer->prepareFiles();
-      $gff3_importer->run();
-      $gff3_importer->postRun();
+    $gff3_importer->create($run_args, $file_details);
+    $gff3_importer->prepareFiles();
+    $gff3_importer->run();
+    $gff3_importer->postRun();
 
-      $results = $chado->query("SELECT COUNT(*) as c1 FROM {1:featureprop} 
-        WHERE value ILIKE :value",[
-        ':value' => 'T'
-      ]);
-      foreach ($results as $row) {
-        $this->assertEquals($row->c1, 1);
-      }
-
-      $results = $chado->query("SELECT COUNT(*) as c1 FROM {1:featureprop} 
-        WHERE value ILIKE :value",[
-        ':value' => 'EST'
-      ]);
-      foreach ($results as $row) {
-        $this->assertEquals($row->c1, 1);
-      }
-
-    } 
-    catch (\Exception $ex) {
-      $message = $ex->getMessage();
-      $has_exception = true;
+    $results = $chado->query("SELECT COUNT(*) as c1 FROM {1:featureprop} 
+      WHERE value ILIKE :value",[
+      ':value' => 'T'
+    ]);
+    foreach ($results as $row) {
+      $this->assertEquals($row->c1, 1);
     }
-    $this->assertEquals($has_exception, false, 'This file 
-      gff_tagvalue_comma_character.gff should not produce 
-      an exception but did.');      
+
+    $results = $chado->query("SELECT COUNT(*) as c1 FROM {1:featureprop} 
+      WHERE value ILIKE :value",[
+      ':value' => 'EST'
+    ]);
+    foreach ($results as $row) {
+      $this->assertEquals($row->c1, 1);
+    }
 
     /**
      * Run the GFF loader on gff_tagvalue_comma_character.gff for testing.
@@ -1158,30 +1095,20 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_tagvalue_encoded_comma.gff',
     ];
 
-    $has_exception = false;
-    try {
-      $gff3_importer->create($run_args, $file_details);
-      $gff3_importer->prepareFiles();
-      $gff3_importer->run();
-      $gff3_importer->postRun();
 
-      $results = $chado->query("SELECT COUNT(*) as c1 FROM {1:featureprop} 
-        WHERE value ILIKE :value",[
-        ':value' => 'T,EST'
-      ]);
-      foreach ($results as $row) {
-        $this->assertEquals($row->c1, 1);
-      }
+    $gff3_importer->create($run_args, $file_details);
+    $gff3_importer->prepareFiles();
+    $gff3_importer->run();
+    $gff3_importer->postRun();
 
-    } 
-    catch (\Exception $ex) {
-      $message = $ex->getMessage();
-      $has_exception = true;
+    $results = $chado->query("SELECT COUNT(*) as c1 FROM {1:featureprop} 
+      WHERE value ILIKE :value",[
+      ':value' => 'T,EST'
+    ]);
+    foreach ($results as $row) {
+      $this->assertEquals($row->c1, 1);
     }
-    $this->assertEquals($has_exception, false, 'This file 
-      gff_tagvalue_encoded_comma.gff should not produce 
-      an exception but did.');   
-      
+    
       
     /**
      * Run the GFF loader on gff_1380_landmark_test.gff for testing.
@@ -1222,91 +1149,81 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_1380_landmark_test.gff',
     ];
 
-    $has_exception = false;
-    try {
-      $gff3_importer->create($run_args, $file_details);
-      $gff3_importer->prepareFiles();
-      $gff3_importer->run();
-      $gff3_importer->postRun();
 
-      // Check that the chr1_h1 feature (which is a landmark was added to feature table)
-      $results = $chado->query("SELECT count(*) as c1 FROM {1:feature} 
-        WHERE uniquename ILIKE :value",[
-        ':value' => 'chr1_h1'
-      ]);
-      foreach ($results as $row) {
-        $this->assertEquals($row->c1, 1);
-      }
+    $gff3_importer->create($run_args, $file_details);
+    $gff3_importer->prepareFiles();
+    $gff3_importer->run();
+    $gff3_importer->postRun();
 
-      // Get the type_id for chromosome
-      $chromosome_type_id = NULL;
-      $results = $chado->query("SELECT * FROM {1:cvterm} WHERE name = 'chromosome';");
-      foreach ($results as $row) {
-        $chromosome_type_id = $row->cvterm_id;
-      }
-
-      // Check if the same chr1_h1 has type_id of chromosome_type_id
-      $results = $chado->query("SELECT count(*) as c1 FROM {1:feature} 
-        WHERE uniquename ILIKE :value AND type_id = :type_id",[
-        ':value' => 'chr1_h1',
-        ':type_id' => $chromosome_type_id
-      ]);
-
-      foreach ($results as $row) {
-        $this->assertEquals($row->c1, 1);
-      } 
-      
-      // Check to make sure landmark exists in featureloc table
-      $results = $chado->query("SELECT count(*) as c1 FROM {1:featureloc} fl 
-       LEFT JOIN {1:feature} f 
-       ON fl.feature_id = f.feature_id
-       WHERE uniquename = :landmark_name", 
-       [':landmark_name' => 'chr1_h1']);
-      foreach ($results as $row) {
-        $this->assertEquals($row->c1, 1);
-      }
-
-      // Check to make sure landmark exists in featureloc table
-      $results = $chado->query("SELECT count(*) as c1 FROM {1:featureloc} fl 
-       LEFT JOIN {1:feature} f 
-       ON fl.feature_id = f.feature_id
-       WHERE uniquename = :landmark_name", 
-       [':landmark_name' => 'chr2_h1']);
-      foreach ($results as $row) {
-        $this->assertEquals($row->c1, 1);
-      }
-
-      // Check to make sure landmark exists in featureloc table
-      $results = $chado->query("SELECT count(*) as c1 FROM {1:featureloc} fl 
-       LEFT JOIN {1:feature} f 
-       ON fl.feature_id = f.feature_id
-       WHERE uniquename = :landmark_name", 
-       [':landmark_name' => 'chr3_h1']);
-      foreach ($results as $row) {
-        $this->assertEquals($row->c1, 1);
-      } 
-      
-      // Check to make sure landmark exists in featureloc table
-      $results = $chado->query("SELECT count(*) as c1 FROM {1:featureloc} fl 
-       LEFT JOIN {1:feature} f 
-       ON fl.feature_id = f.feature_id
-       WHERE uniquename = :landmark_name", 
-       [':landmark_name' => 'chr4_h1']);
-      foreach ($results as $row) {
-        $this->assertEquals($row->c1, 1);
-      }         
-
-    } 
-    catch (\Exception $ex) {
-      $message = $ex->getMessage();
-      $has_exception = true;
+    // Check that the chr1_h1 feature (which is a landmark was added to feature table)
+    $results = $chado->query("SELECT count(*) as c1 FROM {1:feature} 
+      WHERE uniquename ILIKE :value",[
+      ':value' => 'chr1_h1'
+    ]);
+    foreach ($results as $row) {
+      $this->assertEquals($row->c1, 1);
     }
-    $this->assertEquals($has_exception, false, 'This file 
-      gff_1380_landmark_test.gff should not produce 
-      an exception but did.');
+
+    // Get the type_id for chromosome
+    $chromosome_type_id = NULL;
+    $results = $chado->query("SELECT * FROM {1:cvterm} WHERE name = 'chromosome';");
+    foreach ($results as $row) {
+      $chromosome_type_id = $row->cvterm_id;
+    }
+
+    // Check if the same chr1_h1 has type_id of chromosome_type_id
+    $results = $chado->query("SELECT count(*) as c1 FROM {1:feature} 
+      WHERE uniquename ILIKE :value AND type_id = :type_id",[
+      ':value' => 'chr1_h1',
+      ':type_id' => $chromosome_type_id
+    ]);
+
+    foreach ($results as $row) {
+      $this->assertEquals($row->c1, 1);
+    } 
+    
+    // Check to make sure landmark exists in featureloc table
+    $results = $chado->query("SELECT count(*) as c1 FROM {1:featureloc} fl 
+      LEFT JOIN {1:feature} f 
+      ON fl.feature_id = f.feature_id
+      WHERE uniquename = :landmark_name", 
+      [':landmark_name' => 'chr1_h1']);
+    foreach ($results as $row) {
+      $this->assertEquals($row->c1, 1);
+    }
+
+    // Check to make sure landmark exists in featureloc table
+    $results = $chado->query("SELECT count(*) as c1 FROM {1:featureloc} fl 
+      LEFT JOIN {1:feature} f 
+      ON fl.feature_id = f.feature_id
+      WHERE uniquename = :landmark_name", 
+      [':landmark_name' => 'chr2_h1']);
+    foreach ($results as $row) {
+      $this->assertEquals($row->c1, 1);
+    }
+
+    // Check to make sure landmark exists in featureloc table
+    $results = $chado->query("SELECT count(*) as c1 FROM {1:featureloc} fl 
+      LEFT JOIN {1:feature} f 
+      ON fl.feature_id = f.feature_id
+      WHERE uniquename = :landmark_name", 
+      [':landmark_name' => 'chr3_h1']);
+    foreach ($results as $row) {
+      $this->assertEquals($row->c1, 1);
+    } 
+    
+    // Check to make sure landmark exists in featureloc table
+    $results = $chado->query("SELECT count(*) as c1 FROM {1:featureloc} fl 
+      LEFT JOIN {1:feature} f 
+      ON fl.feature_id = f.feature_id
+      WHERE uniquename = :landmark_name", 
+      [':landmark_name' => 'chr4_h1']);
+    foreach ($results as $row) {
+      $this->assertEquals($row->c1, 1);
+    }
     
       
-    // TODO: Ask Stephen about the $cds['organism_id'] undefined error
+    
     /**
      * Run the GFF loader on Citrus GFF3 for testing.
      *
@@ -1346,83 +1263,71 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       'file_local' => __DIR__ . '/../../../fixtures/gff3_loader/gff_Citrus_sinensis-orange1.1g015632m.g.gff3',
     ];
 
-    $has_exception = false;
-    try {
-      $gff3_importer->create($run_args, $file_details);
-      $gff3_importer->prepareFiles();
-      $gff3_importer->run();
-      $gff3_importer->postRun();
 
-      // Check to make sure landmark (scaffold0001) exists in featureloc table
-      $results = $chado->query("SELECT count(*) as c1 FROM {1:featureloc} fl 
-       LEFT JOIN {1:feature} f 
-       ON fl.feature_id = f.feature_id
-       LEFT JOIN {1:cvterm} c
-       ON c.cvterm_id = f.type_id
-       WHERE uniquename = :landmark_name", 
-       [':landmark_name' => 'scaffold00001']);
-      foreach ($results as $row) {
-        $this->assertEquals($row->c1, 1);
-      } 
+    $gff3_importer->create($run_args, $file_details);
+    $gff3_importer->prepareFiles();
+    $gff3_importer->run();
+    $gff3_importer->postRun();
 
-      // Check to make sure feature orange1.1g015632m.g of type name gene
-      $results = $chado->query("SELECT count(*) as c1 FROM 
-        (SELECT * FROM {1:feature} f 
-          LEFT JOIN {1:cvterm} c
-          ON c.cvterm_id = f.type_id
-          WHERE uniquename = :landmark_name
-          AND c.name = :name
-        ) as table1", 
-       [
-        ':landmark_name' => 'orange1.1g015632m.g',
-        ':name' => 'gene'
-       ]);
-      foreach ($results as $row) {
-        $this->assertEquals($row->c1, 1);
-      }       
-
-      // Check to make sure feature orange1.1g015632m.g of type name mRNA
-      $results = $chado->query("SELECT count(*) as c1 FROM 
-        (SELECT * FROM {1:feature} f 
-          LEFT JOIN {1:cvterm} c
-          ON c.cvterm_id = f.type_id
-          WHERE uniquename = :unique_name
-          AND c.name = :name
-        ) as table1", 
-       [
-        ':unique_name' => 'PAC:18136217',
-        ':name' => 'mRNA'
-       ]);
-      foreach ($results as $row) {
-        $this->assertEquals($row->c1, 1);
-        // print_r($row);
-      }
-
-      // Check to make sure feature PAC:18136217-cds of type name CDS
-      $results = $chado->query("SELECT count(*) as c1 FROM 
-        (SELECT * FROM {1:feature} f 
-          LEFT JOIN {1:cvterm} c
-          ON c.cvterm_id = f.type_id
-          WHERE f.name = :feature_name
-          AND c.name = :name
-        ) as table1", 
-       [
-        ':feature_name' => 'PAC:18136217-cds',
-        ':name' => 'CDS'
-       ]);
-      foreach ($results as $row) {
-        $this->assertEquals($row->c1, 12);
-      }   
-          
-
+    // Check to make sure landmark (scaffold0001) exists in featureloc table
+    $results = $chado->query("SELECT count(*) as c1 FROM {1:featureloc} fl 
+      LEFT JOIN {1:feature} f 
+      ON fl.feature_id = f.feature_id
+      LEFT JOIN {1:cvterm} c
+      ON c.cvterm_id = f.type_id
+      WHERE uniquename = :landmark_name", 
+      [':landmark_name' => 'scaffold00001']);
+    foreach ($results as $row) {
+      $this->assertEquals($row->c1, 1);
     } 
-    catch (\Exception $ex) {
-      $message = $ex->getMessage();
-      $has_exception = true;
+
+    // Check to make sure feature orange1.1g015632m.g of type name gene
+    $results = $chado->query("SELECT count(*) as c1 FROM 
+      (SELECT * FROM {1:feature} f 
+        LEFT JOIN {1:cvterm} c
+        ON c.cvterm_id = f.type_id
+        WHERE uniquename = :landmark_name
+        AND c.name = :name
+      ) as table1", 
+      [
+      ':landmark_name' => 'orange1.1g015632m.g',
+      ':name' => 'gene'
+      ]);
+    foreach ($results as $row) {
+      $this->assertEquals($row->c1, 1);
+    }       
+
+    // Check to make sure feature orange1.1g015632m.g of type name mRNA
+    $results = $chado->query("SELECT count(*) as c1 FROM 
+      (SELECT * FROM {1:feature} f 
+        LEFT JOIN {1:cvterm} c
+        ON c.cvterm_id = f.type_id
+        WHERE uniquename = :unique_name
+        AND c.name = :name
+      ) as table1", 
+      [
+      ':unique_name' => 'PAC:18136217',
+      ':name' => 'mRNA'
+      ]);
+    foreach ($results as $row) {
+      $this->assertEquals($row->c1, 1);
+      // print_r($row);
     }
-    $this->assertEquals($has_exception, false, 'This file 
-      gff_Citrus_sinensis-orange1.1g015632m.g.gff3 should not produce 
-      an exception but did.');
-      
+
+    // Check to make sure feature PAC:18136217-cds of type name CDS
+    $results = $chado->query("SELECT count(*) as c1 FROM 
+      (SELECT * FROM {1:feature} f 
+        LEFT JOIN {1:cvterm} c
+        ON c.cvterm_id = f.type_id
+        WHERE f.name = :feature_name
+        AND c.name = :name
+      ) as table1", 
+      [
+      ':feature_name' => 'PAC:18136217-cds',
+      ':name' => 'CDS'
+      ]);
+    foreach ($results as $row) {
+      $this->assertEquals($row->c1, 12);
+    }
   }
 }
