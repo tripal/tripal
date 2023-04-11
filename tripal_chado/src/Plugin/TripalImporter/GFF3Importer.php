@@ -550,8 +550,8 @@ class GFF3Importer extends ChadoImporterBase {
     // Set the private member variables of this class using the loader inputs.
     $this->organism_id = $arguments['organism_id'];
     $this->analysis_id = $arguments['analysis_id'];
-    $this->add_only = $arguments['add_only'];
-    $this->update = $arguments['update'];
+    $this->add_only = $arguments['add_only'] ?? 0;
+    $this->update = $arguments['update'] ?? 0;
     $this->target_organism_id = $arguments['target_organism_id'];
     $this->target_type = $arguments['target_type'];
     $this->create_target = $arguments['create_target'];
@@ -1292,8 +1292,8 @@ class GFF3Importer extends ChadoImporterBase {
           }
         }
         else {
-          throw new \Exception(t('The "Target" attribute is incorreclty formatted for the 
-          feature "' . $ret['uniquename'] . '"'));
+          throw new \Exception(t('The "Target" attribute "%attribute" is incorrectly formatted for the
+            feature "%feature"', ['%attribute' => $tags[$tag_name][0], '%feature' => $ret['uniquename']]));
         }
       }
       elseif (strcmp($tag_name, 'target_organism') == 0) {
