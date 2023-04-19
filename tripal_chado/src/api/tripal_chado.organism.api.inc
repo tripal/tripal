@@ -206,8 +206,8 @@ function chado_get_organism_select_options($syncd_only = TRUE, $show_common_name
   $chado = \Drupal::service('tripal_chado.database');
   $sql = "
     SELECT organism_id, genus, species, type_id,
-      (REPLACE ((SELECT name FROM {cvterm} CVT WHERE CVT.cvterm_id = type_id AND CVT.cv_id =
-        (SELECT cv_id FROM {cv} WHERE name='taxonomic_rank')), 'no_rank', '')) AS infraspecific_type,
+      (REPLACE ((SELECT name FROM {1:cvterm} CVT WHERE CVT.cvterm_id = type_id AND CVT.cv_id =
+        (SELECT cv_id FROM {1:cv} WHERE name='taxonomic_rank')), 'no_rank', '')) AS infraspecific_type,
       infraspecific_name, common_name
     FROM {1:organism}
     ORDER BY genus, species, infraspecific_type, infraspecific_name
@@ -280,7 +280,7 @@ function chado_get_organism_image_url($organism) {
     return $url;
   }
 
-  // If we don't find the file using the genus ans species then look for the
+  // If we don't find the file using the genus and species then look for the
   // image with the node ID in the name. This method was used for Tripal 1.1
   // and 2.x-alpha version.
   $image_name = $nid . ".jpg";
