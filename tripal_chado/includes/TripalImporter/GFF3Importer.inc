@@ -406,7 +406,7 @@ class GFF3Importer extends TripalImporter {
     ];
     $form['targets']['target_organism_id'] = [
       '#title' => t('Target Organism'),
-      '#type' => t('select'),
+      '#type' => 'select',
       '#description' => t("Optional. Choose the organism to which target sequences belong.
         Select this only if target sequences belong to a different organism than the
         one specified above. And only choose an organism here if all of the target sequences
@@ -417,7 +417,7 @@ class GFF3Importer extends TripalImporter {
     ];
     $form['targets']['target_type'] = [
       '#title' => t('Target Type'),
-      '#type' => t('textfield'),
+      '#type' => 'textfield',
       '#description' => t("Optional. If the unique name for a target sequence is not unique (e.g. a protein
        and an mRNA have the same name) then you must specify the type for all targets in the GFF file. If
        the targets are of different types then the type must be specified using the 'target_type=type' attribute
@@ -434,13 +434,13 @@ class GFF3Importer extends TripalImporter {
     ];
 
     // Advanced Options
-    $form['advanced'] = [
+    $form['additional_options'] = [
       '#type' => 'fieldset',
       '#title' => t('Additional Options'),
       '#collapsible' => TRUE,
       '#collapsed' => FALSE,
     ];
-    $form['advanced']['create_organism'] = [
+    $form['additional_options']['create_organism'] = [
       '#type' => 'checkbox',
       '#title' => t('Create organism'),
       '#required' => FALSE,
@@ -451,7 +451,7 @@ class GFF3Importer extends TripalImporter {
        Otherwise lines with an organism attribute where the organism is not present in the database will be skipped.'),
     ];
 
-    $form['advanced']['line_number'] = [
+    $form['additional_options']['line_number'] = [
       '#type' => 'textfield',
       '#title' => t('Start Line Number'),
       '#required' => TRUE,
@@ -461,9 +461,9 @@ class GFF3Importer extends TripalImporter {
       '#default_value' => 1,
     ];
 
-    $form['advanced']['alt_id_attr'] = [
+    $form['additional_options']['alt_id_attr'] = [
       '#title' => t('ID Attribute'),
-      '#type' => t('textfield'),
+      '#type' => 'textfield',
       '#description' => t("Optional. Sometimes lines in the GFF file are missing the
       required ID attribute that specifies the unique name of the feature, but there
       may be another attribute that can uniquely identify the feature.  If so,
@@ -497,11 +497,8 @@ class GFF3Importer extends TripalImporter {
       form_set_error('line_number', t("Please provide an integer line number greater than zero."));
     }
 
-    if (!$re_mrna and $re_protein) {
+    if (!($re_mrna and $re_protein) and ($re_mrna or $re_protein)) {
       form_set_error('re_mrna', t("You must provide both a regular expression for mRNA and a replacement string for protein"));
-    }
-    elseif ($re_mrna and !$re_protein) {
-      form_set_error('re_protein', t("You must provide both a regular expression for mRNA and a replacement string for protein"));
     }
 
     // check the regular expression to make sure it is valid
@@ -552,7 +549,7 @@ class GFF3Importer extends TripalImporter {
 
     // Check to see if the file is located local to Drupal
     $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $this->gff_file;
-    if (!file_exists($dfile)) {
+    if (file_exists($dfile)) {
       $this->gff_file = $dfile;
     }
     // If the file is not local to Drupal check if it exists on the system.
@@ -764,7 +761,7 @@ class GFF3Importer extends TripalImporter {
     }
 
     $sel_cvterm_sql = "
-      SELECT CVT.cvterm_id, CVT.name
+      SELECT CVT.cvterm_id, CVT.name, CVTS.synonym
       FROM {cvterm} CVT
         LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
       WHERE CVT.cv_id = :cv_id and
@@ -931,7 +928,7 @@ class GFF3Importer extends TripalImporter {
       if (count($db) == 0) {
         $values = [
           'name' => $dbname,
-          'description' => 'Added automatically by the Triapl GFF loader.',
+          'description' => 'Added automatically by the Tripal GFF loader.',
         ];
         $success = chado_insert_record('db', $values, array(
           'skip_validation' => TRUE,
@@ -1656,7 +1653,6 @@ class GFF3Importer extends TripalImporter {
     $this->setItemsHandled(0);
     $this->setTotalItems(count(array_keys($this->proteins)));
 
-
     // Second, iterate through the protein list and for any parents that
     // don't already have a protein we need to create one.
     $i = 0;
@@ -1737,7 +1733,7 @@ class GFF3Importer extends TripalImporter {
   /**
    * Adds a new target feature to the feature list.
    *
-   * @param $gff_feature
+   * @param array $gff_feature
    *   The feature array created by the parseFeature function.
    */
   private function addTargetFeature($gff_feature) {
@@ -1952,7 +1948,7 @@ class GFF3Importer extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $args = [];
@@ -2010,7 +2006,6 @@ class GFF3Importer extends TripalImporter {
     }
   }
 
-
   /**
    * Check if the features exist in the database.
    */
@@ -2066,12 +2061,13 @@ class GFF3Importer extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $i = 0;
         $names = [];
       }
     }
   }
+
   /**
    * Deletes all anciallary data about a feature so we can re-insert it.
    */
@@ -2121,7 +2117,7 @@ class GFF3Importer extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $i = 0;
         $feature_ids = [];
       }
@@ -2180,7 +2176,7 @@ class GFF3Importer extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $j = 0;
@@ -2188,6 +2184,7 @@ class GFF3Importer extends TripalImporter {
       }
     }
   }
+
   /**
    *
    */
@@ -2247,7 +2244,7 @@ class GFF3Importer extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $j = 0;
@@ -2260,7 +2257,6 @@ class GFF3Importer extends TripalImporter {
    *
    */
   private function findDbxrefs() {
-
     $batch_size = 1000;
     $num_dbxrefs = count(array_keys($this->dbxref_lookup));
     $num_batches = (int) ($num_dbxrefs / $batch_size) + 1;
@@ -2305,7 +2301,7 @@ class GFF3Importer extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $j = 0;
@@ -2369,6 +2365,7 @@ class GFF3Importer extends TripalImporter {
       $this->setItemsHandled($j);
     }
   }
+
   /**
    *
    */
@@ -2426,7 +2423,7 @@ class GFF3Importer extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $i = 0;
         $j = 0;
         $names = [];
@@ -2475,7 +2472,7 @@ class GFF3Importer extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $j = 0;
@@ -2532,7 +2529,7 @@ class GFF3Importer extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $j = 0;
@@ -2592,7 +2589,7 @@ class GFF3Importer extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $j = 0;
@@ -2666,7 +2663,7 @@ class GFF3Importer extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $args = [];
@@ -2725,7 +2722,7 @@ class GFF3Importer extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $j = 0;
@@ -2786,7 +2783,7 @@ class GFF3Importer extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $args = [];
@@ -2890,7 +2887,7 @@ class GFF3Importer extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $j = 0;
@@ -2938,7 +2935,7 @@ class GFF3Importer extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $args = [];
@@ -2997,7 +2994,7 @@ class GFF3Importer extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $j = 0;
@@ -3009,10 +3006,10 @@ class GFF3Importer extends TripalImporter {
   /**
    * Determines the names for a feature using the ID and name attributes.
    *
-   * @param $feature_attrs
+   * @param array $feature_attrs
    *   The associative array of attributes for the feature.
    *
-   * @param $type
+   * @param string $type
    *   The type of feature.
    *
    * @return array
@@ -3031,7 +3028,7 @@ class GFF3Importer extends TripalImporter {
         $name = $uniquename;
       }
 
-      // If the row has a parent then generate a unqiue ID
+      // If the row has a parent then generate a unique ID
       elseif (array_key_exists('Parent', $attrs)) {
         $uniquename = $attrs['Parent'][0] . "-" . $type . "-" .
           $landmark_name . ":" . ($fmin + 1) . ".." . $fmax;
@@ -3150,7 +3147,7 @@ class GFF3Importer extends TripalImporter {
         $this->setItemsHandled($batch_num);
         $batch_num++;
 
-        // Now reset all of the varables for the next batch.
+        // Now reset all of the variables for the next batch.
         $sql = '';
         $i = 0;
         $args = [];
