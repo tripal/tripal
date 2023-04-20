@@ -86,7 +86,7 @@ class ChadoAdditionalTypeDefault extends ChadoFieldItemBase {
       ];
     }
 
-    // Get the the connecting information about the base table and the
+    // Get the connecting information about the base table and the
     // table where the type is stored. If the base table has a `type_id`
     // column then the base table and the type table are the same. If we
     // are using a prop table to store the type_id then the type table and
@@ -191,19 +191,17 @@ class ChadoAdditionalTypeDefault extends ChadoFieldItemBase {
    */
   public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
     $elements = parent::storageSettingsForm($form, $form_state, $has_data);
-dpm($elements, 'elements from PARENT form');
-dpm($form, 'current form');
     $base_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
     $type_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'type_table']);
-    $type_col = $form_state->getValue(['settings', 'storage_plugin_settings', 'type_col']);
+    $type_column = $form_state->getValue(['settings', 'storage_plugin_settings', 'type_column']);
     // In the form, table and column will be selected together as a single unit
     $type_select = '';
-    if ($type_table and $type_col) {
-      $type_select = $type_table . self::$table_column_delimiter . $type_col;
+    if ($type_table and $type_column) {
+      $type_select = $type_table . self::$table_column_delimiter . $type_column;
     }
 
-    // Add an ajax callback to the base table select so that when it is
-    // selected, the type table select can be populated with candidate tables.
+    // Add an ajax callback to the base table select (from the parent form) so that
+    // when it is selected, the type table select can be populated with candidate tables.
     $elements['storage_plugin_settings']['base_table']['#ajax'] = [
       'callback' =>  [$this, 'storageSettingsFormTypeFKeyAjaxCallback'],
       'event' => 'change',
@@ -213,7 +211,7 @@ dpm($form, 'current form');
       ],
     ];
 
-    $elements['storage_plugin_settings']['type_fkey_ref'] = [
+    $elements['storage_plugin_settings']['type_fkey'] = [
       '#type' => 'select',
       '#title' => t('Type Table and Column'),
       '#description' => t('Select the table and column that specifies the type for this field. ' .
@@ -223,29 +221,12 @@ dpm($form, 'current form');
       '#default_value' => $type_select,
       '#required' => TRUE,
       '#disabled' => !$base_table,
-      '#prefix' => '<div id="edit-type_fkey_ref">',
+      '#prefix' => '<div id="edit-type_fkey">',
       '#suffix' => '</div>',
-      '#element_validate' => [[static::class, 'storageSettingsFormValidate']],
     ];
 
-    // @@@ testing only- Add a custom submit to the parent form
-    $elements['storage_plugin_settings']['submit'] = [
-      '#type' => 'submit',
-      '#value' => 'Test submit',
-      '#name' => 'test_submit',
-      '#submit' => [[static::class, 'submitForm']],
-    ];
-//    $elements['actions']['storage_plugin_settings']['submit']['#submit'] = [[static::class, 'submitForm']];
-//dpm($elements, 'Elements'); //@@@
     return $elements;
   }
-
-/**
- * Implements hook_form_submit().
- */
-function storageSettingsForm_form_submit($form, &$form_state) {
-  dpm("CP51 hook_form_submit");
-}
 
   /**
    * Form element validation handler for type table and column
@@ -257,45 +238,22 @@ function storageSettingsForm_form_submit($form, &$form_state) {
    */
   public static function storageSettingsFormValidate(array $form, FormStateInterface $form_state) {
     $settings = $form_state->getValue('settings');
-dpm($settings, 'Validate Was Called !!!!!');
     if (!array_key_exists('storage_plugin_settings', $settings)) {
       return;
     }
 
     // The type table and column are selected as a single value. Separate
     // them, and validate and store each separately.
-    $type_fkey_ref = $settings['storage_plugin_settings']['type_fkey_ref'];
-    $parts = explode(self::$table_column_delimiter, $type_fkey_ref);
+    $type_fkey = $settings['storage_plugin_settings']['type_fkey'];
+    $parts = explode(self::$table_column_delimiter, $type_fkey);
     if (count($parts) != 2 or !$parts[0] or !$parts[1]) {
-      $form_state->setErrorByName('storage_plugin_settings][type_fkey_ref',
+      $form_state->setErrorByName('storage_plugin_settings][type_fkey',
           'An invalid table and column was selected');
     }
 
-    // We can't store these parts in the form state until type_id is specified
-//    $form_state->setValue(['settings','storage_plugin_settings','type_table'], $parts[0]);
-//    $form_state->setValue(['settings','storage_plugin_settings','type_col'], $parts[1]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function submitForm(array $form, FormStateInterface &$form_state) {
-    $settings = $form_state->getValue('settings');
-dpm($settings, 'submitForm Was Called @@@@@');
-    if (array_key_exists('storage_plugin_settings', $settings)) {
-      $type_fkey_ref = $settings['storage_plugin_settings']['type_fkey_ref'];
-      $parts = explode(self::$table_column_delimiter, $type_fkey_ref);
-      $form_state->setValue(['settings', 'storage_plugin_settings', 'type_table'], $parts[0]);
-      $form_state->setValue(['settings', 'storage_plugin_settings', 'type_col'], $parts[1]);
-    }
-    return parent::submitForm($form, $form_state);
-  }
-  /**
-   * {@inheritdoc}
-   */
-  public static function submit(array $form, FormStateInterface &$form_state) {
-    $settings = $form_state->getValue('settings');
-dpm($settings, 'submit Was Called ^^^^^^');
+    // Store the separated table and column in their settings variables
+    $form_state->setValue(['settings','storage_plugin_settings','type_table'], $parts[0]);
+    $form_state->setValue(['settings','storage_plugin_settings','type_column'], $parts[1]);
   }
 
   /**
@@ -366,7 +324,7 @@ dpm($settings, 'submit Was Called ^^^^^^');
    */
   public function storageSettingsFormTypeFKeyAjaxCallback($form, &$form_state) {
     $response = new AjaxResponse();
-    $response->addCommand(new ReplaceCommand('#edit-type_fkey_ref', $form['settings']['storage_plugin_settings']['type_fkey_ref']));
+    $response->addCommand(new ReplaceCommand('#edit-type_fkey', $form['settings']['storage_plugin_settings']['type_fkey']));
     return $response;
   }
 
