@@ -147,30 +147,27 @@ function chado_get_organism($identifiers, $options = []) {
 function chado_get_organism_scientific_name($organism) {
   $name = $organism->genus . ' ' . $organism->species;
 
-  // For Chado v1.3 we have a type_id and infraspecific name.
-  if (property_exists($organism, 'type_id')) {
-    $rank = '';
-    // For organism objects crated using chado_generate_var.
-    if (is_object($organism->type_id)) {
-      if ($organism->type_id) {
-        $rank = $organism->type_id->name;
-      }
+  $rank = '';
+  // For organism objects created using chado_generate_var.
+  if (is_object($organism->type_id)) {
+    if ($organism->type_id) {
+      $rank = $organism->type_id->name;
     }
-    else {
-      $rank_term = chado_get_cvterm(['cvterm_id' => $organism->type_id]);
-      if ($rank_term) {
-        $rank = $rank_term->name;
-      }
+  }
+  else {
+    $rank_term = chado_get_cvterm(['cvterm_id' => $organism->type_id]);
+    if ($rank_term) {
+      $rank = $rank_term->name;
     }
+  }
 
-    if ($rank) {
-      $rank = chado_abbreviate_infraspecific_rank($rank);
-      $name .= ' ' . $rank . ' ' . $organism->infraspecific_name;
-    }
-    else {
-      if ($organism->infraspecific_name) {
-        $name .= ' ' . $organism->infraspecific_name;
-      }
+  if ($rank) {
+    $rank = chado_abbreviate_infraspecific_rank($rank);
+    $name .= ' ' . $rank . ' ' . $organism->infraspecific_name;
+  }
+  else {
+    if ($organism->infraspecific_name) {
+      $name .= ' ' . $organism->infraspecific_name;
     }
   }
   return $name;
@@ -179,8 +176,8 @@ function chado_get_organism_scientific_name($organism) {
 /**
  * Returns a list of organisms to use in select lists.
  *
- * @param $syncd_only
- *   Legacy Tripal 2 parameter, no longer supported. Must be FALSE.
+ * @param $published_only
+ *   Only return organisms that have been published within Tripal.
  *
  * @param $show_common_name
  *   When true, include the organism common name, if present, in parentheses.
@@ -191,14 +188,13 @@ function chado_get_organism_scientific_name($organism) {
  *
  * @ingroup tripal_organism_api
  */
-function chado_get_organism_select_options($syncd_only = TRUE, $show_common_name = FALSE) {
+function chado_get_organism_select_options($published_only = FALSE, $show_common_name = FALSE) {
   $org_list = [];
   $org_list[] = 'Select an organism';
 
-  if ($syncd_only) {
-    // Tripal 2 legacy parameter is no longer supported
-    throw new \Exception(t('Passing TRUE for the :param parameter is no longer supported for :func in Tripal 4',
-      [':param' => 'syncd_only', ':func' => 'chado_get_organism_select_options()']));
+  if ($published_only) {
+    throw new \Exception(t('Passing TRUE for the :param parameter is not yet implemented for :func',
+      [':param' => 'published_only', ':func' => 'chado_get_organism_select_options()']));
     return;
   }
 
