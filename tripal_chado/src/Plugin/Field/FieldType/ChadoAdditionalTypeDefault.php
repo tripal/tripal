@@ -11,6 +11,8 @@ use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\core\Form\FormStateInterface;
 use Drupal\core\Field\FieldDefinitionInterface;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\ReplaceCommand;
 
 /**
  * Plugin implementation of Tripal additional type field type.
@@ -25,8 +27,9 @@ use Drupal\core\Field\FieldDefinitionInterface;
  */
 class ChadoAdditionalTypeDefault extends ChadoFieldItemBase {
 
-  public static $id = "chado_additional_type_default";
-
+  public static $id = 'chado_additional_type_default';
+  // delimiter between table name and column name in form select
+  public static $table_column_delimiter = "\u{2192}";  # right arrow
 
   /**
    * {@inheritdoc}
@@ -42,7 +45,7 @@ class ChadoAdditionalTypeDefault extends ChadoFieldItemBase {
     $settings = parent::defaultFieldSettings();
     // If a fixed value is set, then the field will will always use the
     // same value and the user will not be allowed the change it using the
-    // widget.  This is necessary for content types that correspond to Chado
+    // widget. This is necessary for content types that correspond to Chado
     // tables with a type_id that should always match the content type (e.g.
     // gene).
     $settings['fixed_value'] = FALSE;
@@ -181,6 +184,182 @@ class ChadoAdditionalTypeDefault extends ChadoFieldItemBase {
    */
   public static function setTypePropertyValue() {
 
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
+    $elements = parent::storageSettingsForm($form, $form_state, $has_data);
+dpm($elements, 'elements from PARENT form');
+    $base_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
+    $type_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'type_table']);
+    $type_col = $form_state->getValue(['settings', 'storage_plugin_settings', 'type_col']);
+    // In the form, table and column will be selected together as a single unit
+    $type_select = '';
+    if ($type_table and $type_col) {
+      $type_select = $type_table . self::$table_column_delimiter . $type_col;
+    }
+
+    // Add an ajax callback to the base table select so that when it is
+    // selected, the type table select can be populated with candidate tables.
+    $elements['storage_plugin_settings']['base_table']['#ajax'] = [
+      'callback' =>  [$this, 'storageSettingsFormTypeFKeyAjaxCallback'],
+      'event' => 'change',
+      'progress' => [
+        'type' => 'throbber',
+        'message' => $this->t('Retrieving type table names...'),
+      ],
+    ];
+
+    $elements['storage_plugin_settings']['type_fkey_ref'] = [
+      '#type' => 'select',
+      '#title' => t('Type Table and Column'),
+      '#description' => t('Select the table and column that specifies the type for this field. ' .
+        'This can be either from the base table, or from a different table with a foreign ' .
+        'key to the base table.'),
+      '#options' => $this->getTypeFkeys($base_table),
+      '#default_value' => $type_select,
+      '#required' => TRUE,
+      '#disabled' => !$base_table,
+      '#prefix' => '<div id="edit-type_fkey_ref">',
+      '#suffix' => '</div>',
+      '#element_validate' => [[static::class, 'storageSettingsFormValidate']],
+    ];
+
+    // Add a custom submit to the parent form
+    $elements['storage_plugin_settings']['submit'] = [
+      '#type' => 'submit',
+      '#value' => 'Test submit',
+      '#name' => 'test_submit',
+      '#submit' => [[static::class, 'submitForm']],
+    ];
+//    $elements['actions']['storage_plugin_settings']['submit']['#submit'] = [[static::class, 'submitForm']];
+//dpm($elements, 'Elements'); //@@@
+    return $elements;
+  }
+
+/**
+ * Implements hook_form_submit().
+ */
+function storageSettingsForm_form_submit($form, &$form_state) {
+  dpm("CP51 hook_form_submit");
+}
+
+  /**
+   * Form element validation handler for type table and column
+   *
+   * @param array $form
+   *   The form where the settings form is being included in.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state of the (entire) configuration form.
+   */
+  public static function storageSettingsFormValidate(array $form, FormStateInterface $form_state) {
+    $settings = $form_state->getValue('settings');
+dpm($settings, 'Validate Was Called !!!!!');
+    if (!array_key_exists('storage_plugin_settings', $settings)) {
+      return;
+    }
+
+    // The type table and column are selected as a single value. Separate
+    // them, and validate and store each separately.
+    $type_fkey_ref = $settings['storage_plugin_settings']['type_fkey_ref'];
+    $parts = explode(self::$table_column_delimiter, $type_fkey_ref);
+    if (count($parts) != 2 or !$parts[0] or !$parts[1]) {
+      $form_state->setErrorByName('storage_plugin_settings][type_fkey_ref',
+          'An invalid table and column was selected');
+    }
+return;
+    // Can't store these until type_id is specified!!!!
+    $form_state->setValue(['settings','storage_plugin_settings','type_table'], $parts[0]);
+    $form_state->setValue(['settings','storage_plugin_settings','type_col'], $parts[1]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function submitForm(array $form, FormStateInterface &$form_state) {
+    $settings = $form_state->getValue('settings');
+dpm($settings, 'Submit Was Called @@@@@');
+    if (array_key_exists('storage_plugin_settings', $settings)) {
+      $type_fkey_ref = $settings['storage_plugin_settings']['type_fkey_ref'];
+      $parts = explode(self::$table_column_delimiter, $type_fkey_ref);
+      $form_state->setValue(['settings', 'storage_plugin_settings', 'type_table'], $parts[0]);
+      $form_state->setValue(['settings', 'storage_plugin_settings', 'type_col'], $parts[1]);
+    }
+    return parent::submitForm($form, $form_state);
+  }
+
+  /**
+   * Return a list of candidate type tables. This is done
+   * by returning tables that have a foreign key to our
+   * $base_table, and have a column with a foreign key
+   * to cvterm. These tables+columns are returned in an
+   * alphabetized list ready to use in a form select,
+   * with the base table, if present, included at the top.
+   *
+   * @param string $base_table
+   *   The Chado base table being used for this field.
+   */
+  protected function getTypeFKeys($base_table) {
+    $type_fkeys = [];
+
+    // On the initial presentation of the form, the base table
+    // is not yet know. We will return here again from the ajax
+    // callback once that has been selected.
+    if (!$base_table) {
+      $type_fkeys[''] = '-- Select base table first --';
+    }
+    else {
+      $chado = \Drupal::service('tripal_chado.database');
+      $schema = $chado->schema();
+
+      // Get a list of tables with foreign keys to selected $base_table.
+      $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+      $fkey_list = preg_split('/[ ,]+/', ($base_schema_def['referring_tables']??''));
+      asort($fkey_list);
+
+      // Include the base table at the top of the sorted list
+      // since it is the most likely table to select.
+      array_unshift($fkey_list, $base_table);
+
+      // For each of these tables, if there is a column with a foreign key to the
+      // cvterm table, return table+column, formatted for use in the form select.
+      foreach ($fkey_list as $type_table) {
+        $type_schema_def = $schema->getTableDef($type_table, ['format' => 'Drupal']);
+        if (isset($type_schema_def['foreign keys']['cvterm']['columns'])) {
+          foreach ($type_schema_def['foreign keys']['cvterm']['columns'] as $column_name => $table) {
+            $fkey = $type_table . self::$table_column_delimiter . $column_name;
+            $type_fkeys[$fkey] = $fkey;
+          }
+        }
+      }
+
+      // If no foreign keys were found, we can't use this field
+      // for this base table. Add a message.
+      if (!count($type_fkeys)) {
+        $type_fkeys[''] = '-- No options available for this base table --';
+      }
+      if (count($type_fkeys) > 1) {
+        $type_fkeys = ['' => '- Select table and column -'] + $type_fkeys;
+      }
+    }
+    return $type_fkeys;
+  }
+
+  /**
+   * Ajax callback to update the type table+column select. This is needed
+   * because the select can't be populated until we know the base table.
+   *
+   * @param array $form
+   *   The form array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   */
+  public function storageSettingsFormTypeFKeyAjaxCallback($form, &$form_state) {
+    $response = new AjaxResponse();
+    $response->addCommand(new ReplaceCommand('#edit-type_fkey_ref', $form['settings']['storage_plugin_settings']['type_fkey_ref']));
+    return $response;
   }
 
 }
