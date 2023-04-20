@@ -192,6 +192,7 @@ class ChadoAdditionalTypeDefault extends ChadoFieldItemBase {
   public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
     $elements = parent::storageSettingsForm($form, $form_state, $has_data);
 dpm($elements, 'elements from PARENT form');
+dpm($form, 'current form');
     $base_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'base_table']);
     $type_table = $form_state->getValue(['settings', 'storage_plugin_settings', 'type_table']);
     $type_col = $form_state->getValue(['settings', 'storage_plugin_settings', 'type_col']);
@@ -227,7 +228,7 @@ dpm($elements, 'elements from PARENT form');
       '#element_validate' => [[static::class, 'storageSettingsFormValidate']],
     ];
 
-    // Add a custom submit to the parent form
+    // @@@ testing only- Add a custom submit to the parent form
     $elements['storage_plugin_settings']['submit'] = [
       '#type' => 'submit',
       '#value' => 'Test submit',
@@ -269,10 +270,10 @@ dpm($settings, 'Validate Was Called !!!!!');
       $form_state->setErrorByName('storage_plugin_settings][type_fkey_ref',
           'An invalid table and column was selected');
     }
-return;
-    // Can't store these until type_id is specified!!!!
-    $form_state->setValue(['settings','storage_plugin_settings','type_table'], $parts[0]);
-    $form_state->setValue(['settings','storage_plugin_settings','type_col'], $parts[1]);
+
+    // We can't store these parts in the form state until type_id is specified
+//    $form_state->setValue(['settings','storage_plugin_settings','type_table'], $parts[0]);
+//    $form_state->setValue(['settings','storage_plugin_settings','type_col'], $parts[1]);
   }
 
   /**
@@ -280,7 +281,7 @@ return;
    */
   public static function submitForm(array $form, FormStateInterface &$form_state) {
     $settings = $form_state->getValue('settings');
-dpm($settings, 'Submit Was Called @@@@@');
+dpm($settings, 'submitForm Was Called @@@@@');
     if (array_key_exists('storage_plugin_settings', $settings)) {
       $type_fkey_ref = $settings['storage_plugin_settings']['type_fkey_ref'];
       $parts = explode(self::$table_column_delimiter, $type_fkey_ref);
@@ -288,6 +289,13 @@ dpm($settings, 'Submit Was Called @@@@@');
       $form_state->setValue(['settings', 'storage_plugin_settings', 'type_col'], $parts[1]);
     }
     return parent::submitForm($form, $form_state);
+  }
+  /**
+   * {@inheritdoc}
+   */
+  public static function submit(array $form, FormStateInterface &$form_state) {
+    $settings = $form_state->getValue('settings');
+dpm($settings, 'submit Was Called ^^^^^^');
   }
 
   /**
