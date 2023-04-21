@@ -145,6 +145,7 @@ function tripal_phylogeny_ajax_get_tree_json($phylotree_id)
         f.feature_id, f.name AS feature_name,
         cvt.name AS cvterm_name,
         o.organism_id, o.common_name, o.abbreviation, o.genus, o.species,
+        fs.stock_id AS stock_id,
         fo.organism_id AS fo_organism_id, fo.common_name AS fo_common_name,
         fo.abbreviation AS fo_abbreviation, fo.genus as fo_genus, fo.species AS fo_species
       FROM {phylonode} n
@@ -153,6 +154,7 @@ function tripal_phylogeny_ajax_get_tree_json($phylotree_id)
         LEFT OUTER JOIN {organism} fo             ON f.organism_id = fo.organism_id
         LEFT OUTER JOIN {phylonode_organism} po   ON po.phylonode_id = n.phylonode_id
         LEFT OUTER JOIN {organism} o              ON PO.organism_id = o.organism_id
+        LEFT OUTER JOIN {feature_stock} fs        ON fs.feature_id = f.feature_id
       WHERE n.phylotree_id = :phylotree_id
     ";
   }
@@ -193,7 +195,14 @@ function tripal_phylogeny_ajax_get_tree_json($phylotree_id)
         if (module_exists('tripal_phylogeny')) {
           $node['feature_nid'] = (int)$r->feature_nid;
         } else {
-          $entity_id = chado_get_record_entity_by_table('feature', $r->feature_id);
+          // If not linked directly to a feature, leaf nodes can also be linked to
+          // stock entities through an intermediate feature.
+          if ($r->stock_id) {
+            $entity_id = chado_get_record_entity_by_table('stock', $r->stock_id);
+          }
+          else {
+            $entity_id = chado_get_record_entity_by_table('feature', $r->feature_id);
+          }
           $node['feature_eid'] = (int)$entity_id;
         }
       }
@@ -214,11 +223,15 @@ function tripal_phylogeny_ajax_get_tree_json($phylotree_id)
         // If the node does not have a name but is linked to an organism
         // then set the name to be that of the genus and species.
         if (!$r->name) {
-          $node['name'] = $r->genus . ' ' . $r->species;
+          if (function_exists('chado_get_organism_scientific_name')) {
+            $node['name'] = chado_get_organism_scientific_name(chado_get_organism(['organism_id' => $r->organism_id], []));
+          } else {
+            $node['name'] = $r->genus . ' ' . $r->species;
+          }
         }
       }
       // Add in the organism fields when they are available via the
-      // the phylonode.feature_id FK relationship.
+      // phylonode.feature_id FK relationship.
       if ($r->fo_organism_id) {
         $node['fo_organism_id'] = (int)$r->fo_organism_id;
         $node['fo_common_name'] = $r->fo_common_name;

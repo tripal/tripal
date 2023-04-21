@@ -33,11 +33,17 @@ class operation__phylotree_vis_formatter extends ChadoFieldFormatter {
       $phylotree = chado_expand_var($phylotree, 'field', 'phylotree.comment');
       module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.phylotree');
       tripal_phylogeny_prepare_tree_viewer($phylotree);
+      if ($phylotree->type_id->name == 'Species tree') {
+        $comment_markup = 'Click a species to view its species page.';
+      }
+      else {
+        $comment_markup = 'Click a node label to view its page.';
+      }
 
       if ($phylotree->has_nodes) {
         $element[0]['comment'] = [
           '#type' => 'markup',
-          '#markup' => 'Click a species to view its species page.',
+          '#markup' => $comment_markup,
         ];
         $ajax_loader = url(drupal_get_path('module', 'tripal') . '/theme/images/ajax-loader.gif');
         $element[0]['phylogram'] = [
