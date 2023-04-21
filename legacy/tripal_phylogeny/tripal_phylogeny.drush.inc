@@ -116,9 +116,9 @@ function tripal_phylogeny_drush_command() {
 }
 
 /**
- * Deletes a phylotree record.
+ * Inserts a phylotree record.
  *
- * Executed when 'drush trp-delete-phylotree' is called.
+ * Executed when 'drush trp-insert-phylotree' is called.
  *
  * @ingroup tripal_drush
  */
@@ -137,7 +137,7 @@ function drush_tripal_phylogeny_trp_insert_phylotree() {
     'sync' => drush_get_option('sync'),
     'match' => drush_get_option('match'),
     'name_re' => drush_get_option('name_re'),
-    'load_now' => TRUE,
+    'load_later' => FALSE,
   ];
   $errors = [];
   $warnings = [];
@@ -175,7 +175,7 @@ function drush_tripal_phylogeny_trp_update_phylotree() {
     'sync' => drush_get_option('sync'),
     'match' => drush_get_option('match'),
     'name_re' => drush_get_option('name_re'),
-    'load_now' => TRUE,
+    'load_later' => FALSE,
   ];
 
   if (!$options['phylotree_id'] and $options['name']) {

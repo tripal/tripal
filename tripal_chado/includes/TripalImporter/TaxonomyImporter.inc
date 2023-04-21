@@ -18,7 +18,8 @@ class TaxonomyImporter extends TripalImporter {
    * A brief description for this loader.  This description will be
    * presented to the site user.
    */
-  public static $description = 'Imports new organisms from NCBI using taxonomy IDs, or loads taxonomic details about existing organisms.';
+  public static $description = 'Imports new organisms from NCBI using taxonomy IDs, ' .
+                               'or loads taxonomic details about existing organisms.';
 
   /**
    * An array containing the extensions of allowed file types.
@@ -131,9 +132,18 @@ class TaxonomyImporter extends TripalImporter {
         the taxonomic tree for the species loaded.'),
     ];
 
+    // No space before 'Taxonomy Tree' for backwards compatibility.
+    $form['tree_name'] = [
+      '#type' => 'textfield',
+      '#title' => t('Tree Name'),
+      '#description' => t('If a tree with this name exists, it will be rebuilt,
+        otherwise a new tree will be created with this name.'),
+      '#default_value' => variable_get('site_name', '') . 'Taxonomy Tree',
+    ];
+
     $form['ncbi_api_key'] = [
       '#type' => 'textfield',
-      '#title' => t('(Optional) NCBI API key:'),
+      '#title' => t('(Optional) NCBI API key'),
       '#description' => t('Tripal imports Taxonomy information using NCBI\'s ')
         . l('EUtils API', 'https://www.ncbi.nlm.nih.gov/books/NBK25500/')
         . t(', which limits users and programs to a maximum of 3 requests per second without an API key. '
@@ -156,7 +166,7 @@ class TaxonomyImporter extends TripalImporter {
 
     $form['taxonomy_ids'] = [
       '#type' => 'textarea',
-      '#title' => 'Taxonomy ID',
+      '#title' => 'NCBI Taxonomy ID',
       '#description' => t('Please provide a list of NCBI taxonomy IDs separated
         by spaces, tabs or new lines.
         The information about these organisms will be downloaded and new organism
@@ -167,12 +177,24 @@ class TaxonomyImporter extends TripalImporter {
       '#type' => 'checkbox',
       '#title' => 'Import details for existing species.',
       '#description' => t('The NCBI Taxonomic Importer examines the organisms
-        currently present in the database and queries NCBI for the
+        currently present in this site\'s database, and queries NCBI for the
         taxonomic details.  If the importer is able to match the
-        genus and species with NCBI the species details will be imported,
+        genus and species with NCBI, the species details will be imported,
         and a page containing the taxonomic tree will be created.'),
       '#default_value' => 1,
     ];
+
+    $form['root_taxon'] = [
+      '#type' => 'textfield',
+      '#title' => t('(Optional) Root Taxon'),
+      '#description' => t('An optional top level taxon for this tree.
+        For NCBI lineage, the top level is "cellular organisms". Specify
+        a taxon here to use as the tree root, for example at the order
+        or family level. This can also be used to generate a tree using
+        a subset of the site\'s organisms.'),
+      '#default_value' => '',
+    ];
+
     return $form;
   }
 
@@ -209,40 +231,60 @@ class TaxonomyImporter extends TripalImporter {
   public function run() {
     global $site_name;
 
-
     $arguments = $this->arguments['run_args'];
+    $tree_name = $arguments['tree_name'];
     $taxonomy_ids = $arguments['taxonomy_ids'];
+    $root_taxon = $arguments['root_taxon'];
     $import_existing = $arguments['import_existing'];
 
     // Get the list of all organisms as we'll need this to lookup existing
-    // organisms.
+    // organisms. Include lookup of NCBI taxid, if present.
+    $sql_common = "
+    , (SELECT X.accession FROM {dbxref} X
+       LEFT JOIN {organism_dbxref} OD ON OD.dbxref_id = X.dbxref_id
+       LEFT JOIN {db} DB ON X.db_id = DB.db_id
+       WHERE OD.organism_id = O.organism_id
+       AND DB.name = 'NCBITaxon') AS ncbitaxid
+    , (SELECT OP.value from {organismprop} OP WHERE
+       type_id = (SELECT cvterm_id FROM {cvterm} WHERE name = 'lineage'
+       AND cv_id = (SELECT cv_id FROM {cv} WHERE name = 'organism_property'))
+       AND OP.organism_id = O.organism_id) AS lineage
+    ";
     if (chado_get_version() > 1.2) {
       $sql = "
-        SELECT O.*, CVT.name as type
+        SELECT O.*, CVT.name AS type
+        $sql_common
         FROM {organism} O
-         LEFT JOIN {cvterm} CVT ON CVT.cvterm_id = O.type_id
-        ORDER BY O.genus, O.species
+          LEFT JOIN {cvterm} CVT ON CVT.cvterm_id = O.type_id
+        ORDER BY O.genus, O.species, CVT.name, O.infraspecific_name
       ";
     }
     else {
       $sql = "
-        SELECT O.*, '' as type
+        SELECT O.*, '' AS type
+        $sql_common
         FROM {organism} O
         ORDER BY O.genus, O.species
       ";
     }
     $results = chado_query($sql);
     while ($item = $results->fetchObject()) {
+      // If $root_taxon is specified, and lineage is already stored in chado,
+      // then we can filter out undesired organisms here when processing a
+      // sub-tree, and avoid an unnecessary query to NCBI later.
+      if (($root_taxon) and ($item->lineage) and !preg_match("/$root_taxon/i", $item->lineage)) {
+        continue;
+      }
       $this->all_orgs[] = $item;
     }
 
     // Get the phylotree object.
     $this->logMessage('Initializing Tree...');
-    $this->phylotree = $this->initTree();
+    $this->phylotree = $this->initTree($tree_name);
     $this->logMessage('Rebuilding Tree...');
-    $this->tree = $this->rebuildTree();
+    $this->tree = $this->rebuildTree($root_taxon);
 
-    // Clean out the phnylondes for this tree in the event this is a reload
+    // Clean out the phylonodes for this tree in the event this is a reload.
     chado_delete_record('phylonode', ['phylotree_id' => $this->phylotree->phylotree_id]);
 
     // Get the taxonomy IDs provided by the user (if any).
@@ -266,37 +308,43 @@ class TaxonomyImporter extends TripalImporter {
     // If the user wants to import new taxonomy IDs then do that.
     if ($taxonomy_ids) {
       $this->logMessage('Importing Taxonomy IDs...');
-      $api_key = variable_get('tripal_taxon_importer_ncbi_api_key', NULL);
-      $sleep_time = 333334;
-      if (!empty($api_key)) {
-        $sleep_time = 100000;
-      }
 
       foreach ($tax_ids as $tax_id) {
         $start = microtime(TRUE);
         $tax_id = trim($tax_id);
-        $result = $this->importRecord($tax_id);
+        $result = $this->importRecord($tax_id, $root_taxon);
 
         // Only addItemsHandled if the importRecord was a success.
         if ($result) {
           $this->addItemsHandled(1);
         }
 
-        $remaining_sleep = $sleep_time - ((int) (1e6 * (microtime(TRUE) - $start)));
-        if ($remaining_sleep > 0) {
-          usleep($remaining_sleep);
-        }
       }
     }
 
     // If the user wants to update existing records then do that.
     if ($import_existing) {
       $this->logMessage('Updating Existing...');
-      $this->updateExisting();
+      $this->updateExisting($root_taxon);
     }
 
+    // These are options for the tripal_report_error function. We do not
+    // want to log messages to the watchdog but we do for the job and to
+    // the terminal.
+    $options['message_type'] = 'tripal_phylogeny';
+    $options['message_opts'] = [
+      'watchdog' => FALSE,
+      'print' => TRUE,
+    ];
+    // Pass through the job, needed for log output to show up on the "jobs page".
+    if (property_exists($this, 'job')) {
+      $options['message_opts']['job'] = $this->job;
+    }
+
+    // This importer imports only species (taxonomy) trees.
+    $options['leaf_type'] = 'taxonomy';
+
     // Now import the tree.
-    $options = ['taxonomy' => 1];
     chado_phylogeny_import_tree($this->tree, $this->phylotree, $options);
   }
 
@@ -310,16 +358,18 @@ class TaxonomyImporter extends TripalImporter {
    * @return
    *   Returns the phylotree object.
    */
-  private function initTree() {
+  private function initTree($tree_name = NULL) {
     // Add the taxonomy tree record into the phylotree table. If the tree
     // already exists then don't insert it again.
-    $site_name = variable_get('site_name');
-    $tree_name = $site_name . 'Taxonomy Tree';
+    if (!$tree_name) {
+      $site_name = variable_get('site_name');
+      $tree_name = $site_name . 'Taxonomy Tree';
+    }
     $phylotree = chado_select_record('phylotree', ['*'], ['name' => $tree_name]);
     if (count($phylotree) == 0) {
       // Add the taxonomic tree.
       $phylotree = [
-        'name' => $site_name . 'Taxonomy Tree',
+        'name' => $tree_name,
         'description' => 'A phylogenetic tree based on taxonomic rank.',
         'leaf_type' => 'taxonomy',
         'tree_file' => '/dev/null',
@@ -344,12 +394,12 @@ class TaxonomyImporter extends TripalImporter {
   /**
    * Iterates through all existing organisms and rebuilds the taxonomy tree.
    *
-   * The phloytree API doesn't support adding nodes to existing trees only
+   * The phloytree API doesn't support adding nodes to existing trees, only
    * importing whole trees. So, we must rebuild the tree using the current
    * organisms and then we can add to it.
    *
    */
-  private function rebuildTree() {
+  private function rebuildTree($root_taxon = NULL) {
     $lineage_nodes[] = [];
 
     // Get the "rank" cvterm. It requires that the TAXRANK vocabulary is loaded.
@@ -394,11 +444,18 @@ class TaxonomyImporter extends TripalImporter {
       $phylonode = $result->fetchObject();
 
       // Next get the lineage for this organism.
-      $lineage = $this->getProperty($organism->organism_id, 'lineage');
-      if (!$lineage) {
+      $lineageprop = $this->getProperty($organism->organism_id, 'lineage');
+      if (!$lineageprop) {
         continue;
       }
-      $lineage_depth = preg_split('/;\s*/', $lineage->value);
+      $lineage = $lineageprop->value;
+
+      // If a root taxon is specified, remove everything above it in
+      // the lineage. This taxon will then become the tree root.
+      if ($root_taxon) {
+        $lineage = preg_replace("/^.*($root_taxon)/i", '$1', $lineage);
+      }
+      $lineage_depth = preg_split('/;\s*/', $lineage);
 
       // Now rebuild the tree by first creating the nodes for the full
       // lineage and then adding the organism as a leaf node.
@@ -431,7 +488,6 @@ class TaxonomyImporter extends TripalImporter {
           }
           $phylonode = $phylonode[0];
           $lineage_nodes[$child] = $phylonode;
-
 
           $values = [
             'phylonode_id' => $phylonode->phylonode_id,
@@ -499,11 +555,12 @@ class TaxonomyImporter extends TripalImporter {
   }
 
   /**
-   * Imports details from NCBI Taxonomy for organisms that alrady exist.
+   * Imports details from NCBI Taxonomy for organisms that already exist.
    */
-  private function updateExisting() {
+  private function updateExisting($root_taxon = NULL) {
 
     $total = count($this->all_orgs);
+    $omitted_organisms = [];
     $api_key = variable_get('tripal_taxon_importer_ncbi_api_key', NULL);
     $sleep_time = 333334;
     if (!empty($api_key)) {
@@ -513,63 +570,96 @@ class TaxonomyImporter extends TripalImporter {
     foreach ($this->all_orgs as $organism) {
       // If the organism record is marked as new then let's skip it because
       // it was newly added and should have the updated information already.
-      if ($organism->is_new) {
+      if ((property_exists($organism, 'is_new')) and ($organism->is_new)) {
         continue;
       }
-
-      // TODO: we should check if the organism already has a taxonomy ID.
-      // if so we should use that instead of the scientific name.
-
-      $start = microtime(TRUE);
-      // Build the query string to get the information about this species.
       $sci_name = chado_get_organism_scientific_name($organism);
-      $sci_name = urlencode($sci_name);
-      $search_url = "https://www.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?" .
-        "db=taxonomy" .
-        "&term=$sci_name";
 
-      if (!empty($api_key)) {
-        $search_url .= "&api_key=" . $api_key;
+      // If the organism already has a taxonomy ID, query to NCBI not needed.
+      if ($organism->ncbitaxid) {
+        $taxid = $organism->ncbitaxid;
       }
+      else {
+        // Build the query string to get the information about this species.
+        $sci_name_escaped = urlencode($sci_name);
+        $search_url = "https://www.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?" .
+          "db=taxonomy" .
+          "&term=$sci_name_escaped";
 
-      // Get the search response from NCBI.
-      $rfh = fopen($search_url, "r");
-      $xml_text = '';
+        if (!empty($api_key)) {
+          $search_url .= "&api_key=" . $api_key;
+        }
+        $rfh = NULL;
+        // Query NCBI. To accomodate occasional glitches, retry up to three times.
+        $retries = 3;
+        while (($retries > 0) and (!$rfh)) {
+          $start = microtime(TRUE);
+          // Get the search response from NCBI.
+          $rfh = fopen($search_url, "r");
+          // If error, delay then retry
+          if ((!$rfh) and ($retries)) {
+            $this->logMessage("Error contacting NCBI to look up !sci_name, will retry",
+                              ['!sci_name' => $sci_name_escaped], TRIPAL_WARNING);
+          }
+          $retries--;
+          $remaining_sleep = $sleep_time - ((int) (1e6 * (microtime(TRUE) - $start)));
+          if ($remaining_sleep > 0) {
+            usleep($remaining_sleep);
+          }
+        }
 
-      if (!$rfh) {
+        if (!$rfh) {
+          $this->logMessage("Could not look up !sci_name", ['!sci_name' => $sci_name_escaped], TRIPAL_WARNING);
+          continue;
+        }
+        $xml_text = '';
+        while (!feof($rfh)) {
+          $xml_text .= fread($rfh, 255);
+        }
+        fclose($rfh);
 
-        $this->logMessage("Could not look up !sci_name", ['!sci_name' => $sci_name], TRIPAL_WARNING);
-        continue;
-      }
-      while (!feof($rfh)) {
-        $xml_text .= fread($rfh, 255);
-      }
-      fclose($rfh);
-
-      $remaining_sleep = $sleep_time - ((int) (1e6 * (microtime(TRUE) - $start)));
-      if ($remaining_sleep > 0) {
-        usleep($remaining_sleep);
-      }
-
-      // Parse the XML to get the taxonomy ID
-      $result = FALSE;
-      $start = microtime(TRUE);
-      $xml = new SimpleXMLElement($xml_text);
-      if ($xml) {
-        $taxid = (string) $xml->IdList->Id;
-        if ($taxid) {
-          $result = $this->importRecord($taxid, $organism);
+        // Parse the XML to get the taxonomy ID
+        $result = FALSE;
+        $taxid = NULL;
+        $xml = new SimpleXMLElement($xml_text);
+        if ($xml) {
+          // On rare occasions there is no full match, but NCBI returns
+          // a partial match which yields an incorrect taxid, so compare
+          // to our original query to make sure hit is to the full query.
+          if (isset($xml->TranslationStack)) {
+            $matched = (string) $xml->TranslationStack->TermSet->Term;
+            $matched = preg_replace('/\[All Names\]/', '', $matched);
+            if ($matched == $sci_name) {
+              $taxid = (string) $xml->IdList->Id;
+            }
+            else {
+              $this->logMessage("Partial match \"@matched\" to query \"@query\", no taxid available",
+                ['@matched' => $matched, '@query' => $sci_name], TRIPAL_WARNING);
+            }
+          }
         }
       }
 
-      if ($result) {
-        $this->addItemsHandled(1);
+      // There are various valid reasons an organism may not have an
+      // NCBI taxonomy ID, however if this ID is missing, then this
+      // organism will be absent in the tree.
+      if ($taxid) {
+        $result = $this->importRecord($taxid, $root_taxon, $organism);
+        if ($result) {
+          $this->addItemsHandled(1);
+        }
       }
-
-      $remaining_sleep = $sleep_time - ((int) (1e6 * (microtime(TRUE) - $start)));
-      if ($remaining_sleep > 0) {
-        usleep($remaining_sleep);
+      else {
+        // Save a list of problematic organisms for a final warning message.
+        $omitted_organisms[] = $sci_name;
       }
+    }
+    if (count($omitted_organisms)) {
+      $omitted_list = implode('", "', $omitted_organisms);
+      $this->logMessage('The following !count organisms do not have an NCBI taxonomy ID, '
+                        . 'and have not been included in the tree: !omitted_list',
+                        ['!count' => count($omitted_organisms),
+                         '!omitted_list' => $omitted_list], TRIPAL_WARNING);
     }
   }
 
@@ -612,33 +702,15 @@ class TaxonomyImporter extends TripalImporter {
     // If the caller did not provide an organism then we want to try and
     // add one. But, it only makes sense to add one if this record
     // is of rank species.
-    // First check if the full name (including the infrasepcific name)
-    // are all present in the genus and species name.  This would have
-    // been the Chado v1.2 (or less) of storing species.
+    // The api lookup function called here handles Chado v1.2 where infraspecific
+    // name is appended to the species, as well as Chado v1.3 where we have
+    // more columns in the organism table.
     if (!$organism) {
-      $sql = "
-          SELECT organism_id
-          FROM {organism}
-          WHERE concat(genus, ' ', species) = :sci_name
-        ";
-      $results = chado_query($sql, [':sci_name' => $sci_name]);
-      $item = $results->fetchObject();
-      if ($item) {
-        $columns = ['*'];
-        $values = ['organism_id' => $item->organism_id];
-        $organism = chado_select_record('organism', $columns, $values);
-        if (count($organism) > 0) {
-          $organism = $organism[0];
-        }
-      }
-    }
-    // Second, check if the full name includes the infraspecific name.
-    if (!$organism) {
-      foreach ($this->all_orgs as $item) {
-        $internal_sci_name = chado_get_organism_scientific_name($item);
-        if ($sci_name == $internal_sci_name) {
-          $organism = $item;
-        }
+      // We do the lookup in two steps so that there is no error message for
+      // missing (new) organisms from chado_get_organism().
+      $organism_ids = chado_get_organism_id_from_scientific_name($sci_name, []);
+      if ($organism_ids) {
+        $organism = chado_get_organism(['organism_id' => $organism_ids[0]], []);
       }
     }
     return $organism;
@@ -660,13 +732,15 @@ class TaxonomyImporter extends TripalImporter {
     $species = '';
     $infra = '';
     $values = [];
+    // Checks for Chado 1.3 infraspecific nomenclature columns in organism table.
+    $infra_available = chado_column_exists('organism', 'infraspecific_name');
 
     // Check if the scientific name has an infraspecific part or is just
     // a species name.
-    if (preg_match('/^(.+?)\s+(.+?)\s+(.+)$/', $sci_name, $matches)) {
+    if ($infra_available and preg_match('/^(.+?)\s+(.+?)\s+(.+)$/', $sci_name, $matches)) {
       $genus = $matches[1];
       $species = $matches[2];
-      $infra = $matches[3];
+      $full_infra = $matches[3];
 
       // Get the CV term for the rank.
       $type = chado_get_cvterm([
@@ -676,13 +750,13 @@ class TaxonomyImporter extends TripalImporter {
 
       // Remove the rank from the infraspecific name.
       $abbrev = chado_abbreviate_infraspecific_rank($rank);
-      $infra = preg_replace("/$abbrev/", "", $infra);
+      $infra = preg_replace("/$abbrev/", "", $full_infra);
       $infra = trim($infra);
 
       $values = [
         'genus' => $genus,
         'species' => $species,
-        'abbreviation' => $genus[0] . '. ' . $species,
+        'abbreviation' => $genus[0] . '. ' . $species . ' ' . $full_infra,
         'type_id' => $type->cvterm_id,
         'infraspecific_name' => $infra,
       ];
@@ -694,12 +768,15 @@ class TaxonomyImporter extends TripalImporter {
       if (preg_match('/^(.+?)\s+(.+?)$/', $sci_name, $matches)) {
         $genus = $matches[1];
         $species = $matches[2];
-        $infra = '';
         $values = [
           'genus' => $genus,
           'species' => $species,
           'abbreviation' => $genus[0] . '. ' . $species,
         ];
+        if ($infra_available) {
+          $values['type_id'] = NULL;
+          $values['infraspecific_name'] = NULL;
+        }
         $organism = chado_insert_record('organism', $values);
         $organism = (object) $organism;
       }
@@ -717,11 +794,13 @@ class TaxonomyImporter extends TripalImporter {
    *
    * @param $taxid
    *   The NCBI Taxonomy ID.
+   * @param $root_taxon
+   *   An optional taxon name for the root node if generating a sub-tree.
    * @param $organism
    *   The organism object to which this taxonomy belongs.  If the organism
    *   is NULL then it will be created.
    */
-  private function importRecord($taxid, $organism = NULL) {
+  private function importRecord($taxid, $root_taxon = NULL, $organism = NULL) {
     $adds_organism = $organism ? FALSE : TRUE;
 
     // Get the "rank" cvterm. It requires that the TAXRANK vocabulary is loaded.
@@ -736,21 +815,33 @@ class TaxonomyImporter extends TripalImporter {
       "&id=$taxid";
 
     $api_key = variable_get('tripal_taxon_importer_ncbi_api_key', NULL);
+    $sleep_time = 333334;
     if (!empty($api_key)) {
+      $sleep_time = 100000;
       $fetch_url .= "&api_key=" . $api_key;
     }
 
-    // Get the search response from NCBI.
+    // Query NCBI. To accomodate occasional glitches, retry up to three times.
     $xml = FALSE;
-    $rfh = fopen($fetch_url, "r");
-    if ($rfh) {
-      $xml_text = '';
-      while (!feof($rfh)) {
-        $xml_text .= fread($rfh, 255);
-      }
-      fclose($rfh);
+    $rfh = NULL;
+    $retries = 3;
+    while (($retries > 0) and (!$rfh)) {
+      $start = microtime(TRUE);
+      $rfh = fopen($fetch_url, "r");
+      if ($rfh) {
+        $xml_text = '';
+        while (!feof($rfh)) {
+          $xml_text .= fread($rfh, 255);
+        }
+        fclose($rfh);
 
-      $xml = new SimpleXMLElement($xml_text);
+        $xml = new SimpleXMLElement($xml_text);
+      }
+      $retries--;
+      $remaining_sleep = $sleep_time - ((int) (1e6 * (microtime(TRUE) - $start)));
+      if ($remaining_sleep > 0) {
+        usleep($remaining_sleep);
+      }
     }
 
     if ($xml) {
@@ -759,11 +850,37 @@ class TaxonomyImporter extends TripalImporter {
       // Get the genus and species from the xml.
       $parent = (string) $taxon->ParentTaxId;
       $rank = (string) $taxon->Rank;
+      $lineage = (string) $taxon->Lineage;
+
+      // If an alternate root node taxon is specified, check for its
+      // presence in the lineage. If absent, this organism will not be
+      // included in the tree.
+      if (($root_taxon) and !preg_match("/$root_taxon/i", $lineage)) {
+        return FALSE;
+      }
+
+      // NCBI cultivars may contain escaped single quotes.
+      // Here we just delete them.
       $sci_name = (string) $taxon->ScientificName;
+      $sci_name = preg_replace('/&#039;/', '', $sci_name);
+
+      // If we have a heterotypic synonym, the $sci_name from NCBI may
+      // be different than what is stored in chado. To keep the site
+      // consistent, use the name from chado for the tree.
+      if ($organism) {
+        $chado_name = chado_get_organism_scientific_name($organism);
+        if ($chado_name != $sci_name) {
+          $this->logMessage("Substituting site taxon \"@chado_name\" for NCBI taxon \"@sci_name\","
+                            . " taxid @taxid, organism_id @organism_id",
+            ['@chado_name' => $chado_name, '@sci_name' => $sci_name,
+             '@taxid' => $taxid, '@organism_id' => $organism->organism_id], TRIPAL_WARNING);
+          $sci_name = $chado_name;
+        }
+      }
       //$this->logMessage(' - Importing @sci_name', array('@sci_name' => $sci_name));
 
       // If we don't have an organism record provided then see if there
-      // is one provided by Chado, if not, the try to add one.
+      // is one provided by Chado, if not, then try to add one.
       if (!$organism) {
         $organism = $this->findOrganism($taxid, $sci_name);
         if (!$organism) {
@@ -774,11 +891,10 @@ class TaxonomyImporter extends TripalImporter {
         }
       }
 
-      // Associate the Dbxref with the organism.
+      // Associate the dbxref with the organism.
       $this->addDbxref($organism->organism_id, $taxid);
 
       // Get properties for this organism.
-      $lineage = (string) $taxon->Lineage;
       $genetic_code = (string) $taxon->GeneticCode->GCId;
       $genetic_code_name = (string) $taxon->GeneticCode->GCName;
       $mito_genetic_code = (string) $taxon->MitoGeneticCode->MGCId;
@@ -810,7 +926,7 @@ class TaxonomyImporter extends TripalImporter {
               $this->addProperty($organism->organism_id, 'synonym', $name, $name_ranks[$type]);
               break;
             case 'CommonName':
-              // If we had to add the organism then include the commone name too.
+              // If we had to add the organism then include the common name too.
               if ($adds_organism) {
                 $organism->common_name = $name;
                 $values = ['organism_id' => $organism->id];
@@ -836,14 +952,28 @@ class TaxonomyImporter extends TripalImporter {
         }
       }
 
+      // If a root taxon is specified, remove everything above it in
+      // the lineage. This taxon will then become the tree root.
+      if ($root_taxon) {
+        $lineage = preg_replace("/^.*($root_taxon)/i", '$1', $lineage);
+      }
+
       // Generate a nested array structure that can be used for importing the tree.
       $lineage_depth = preg_split('/;\s*/', $lineage);
       $parent = $this->tree;
       $i = 1;
+      $passed_root = $root_taxon?0:1;
       foreach ($taxon->LineageEx->children() as $child) {
         $tid = (string) $child->TaxID;
         $name = (string) $child->ScientificName;
         $node_rank = (string) $child->Rank;
+        // If $root_taxon is defined, skip higher ranks until it is seen.
+        if (($root_taxon) and ($name == $root_taxon)) {
+          $passed_root = 1;
+        }
+        if (!$passed_root) {
+          continue;
+        }
         $node = [
           'name' => $name,
           'depth' => $i,
@@ -884,7 +1014,11 @@ class TaxonomyImporter extends TripalImporter {
       chado_assign_phylogeny_tree_indices($this->tree);
       return TRUE;
     }
-    return FALSE;
+    else {
+      $this->logMessage("Error contacting NCBI to look up taxid !taxid",
+                        ['!taxid' => $taxid], TRIPAL_WARNING);
+      return FALSE;
+    }
   }
 
   /**
@@ -903,16 +1037,21 @@ class TaxonomyImporter extends TripalImporter {
       // the node name matches the correct name for the lineage at this
       // depth. If it matches then it is inside of this branch set that
       // we will place the node.
-      for ($j = 0; $j < count($branch_set); $j++) {
-        // If this node already exists in the tree then return.
-        if ($branch_set[$j]['name'] == $node['name'] and
-          $branch_set[$j]['depth'] = $node['depth']) {
-          return;
-        }
-        // Otherwise, set the branch to be the current branch and continue.
-        if ($branch_set[$j]['name'] == $lineage_depth[$i - 1]) {
-          $branch_set = &$branch_set[$j]['branch_set'];
-          break;
+      // Skip if branch_set is NULL, this can be the case if we are
+      // processing the first subspecies for a given species which had
+      // been defined earlier.
+      if ($branch_set) {
+        for ($j = 0; $j < count($branch_set); $j++) {
+          // If this node already exists in the tree then return.
+          if ($branch_set[$j]['name'] == $node['name'] and
+            $branch_set[$j]['depth'] == $node['depth']) {
+            return;
+          }
+          // Otherwise, set the branch to be the current branch and continue.
+          if (isset($branch_set[$j]['name']) and ($branch_set[$j]['name'] == $lineage_depth[$i - 1])) {
+            $branch_set = &$branch_set[$j]['branch_set'];
+            break;
+          }
         }
       }
     }
@@ -943,7 +1082,6 @@ class TaxonomyImporter extends TripalImporter {
     $property = [
       'type_name' => $term_name,
       'cv_name' => 'organism_property',
-      'value' => $value,
       'rank' => $rank,
     ];
 

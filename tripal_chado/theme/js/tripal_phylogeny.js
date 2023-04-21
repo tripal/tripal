@@ -6,6 +6,7 @@
 
   // Will be dynamically sized.
   var height = 0;
+  var tooltip;
 
   // Store our function as a property of Drupal.behaviors.
   Drupal.behaviors.TripalPhylotree = {
@@ -64,6 +65,18 @@
       var txt = el.find('text');
       txt.attr('font-weight', 'bold');
     }
+    else {
+      // interior node, only show tooltip if there is text associated
+      if (d.name) {
+        var mx = d3.event.layerX;
+        var my = d3.event.layerY;
+        tooltip
+          .style("opacity", 0.9)
+          .style("left",(mx + 20) + "px")
+          .style("top", (my - 10) + "px")
+          .html(d.name);
+      }
+    }
   };
 
   // Callback for mouseout event on graph node d.
@@ -78,8 +91,13 @@
       txt.attr('font-weight', 'normal');
     }
     else {
-      // restore interior nodes to white
+      // restore interior nodes to white, remove tooltip
       circle.attr('fill', 'white');
+      tooltip
+        .style("opacity", 0.0)
+        .style("top", 0 + "px")
+        .style("left", 0 + "px")
+        .html('');
     }
   };
 
@@ -97,9 +115,9 @@
       }
     }
     else {
+      // leaf node
       if(d.feature_eid) {
         window.location.href = baseurl + '/bio_data/' + d.feature_eid;
-
         return;
       }
       // If this node is not associated with a feature but it has an
@@ -111,7 +129,6 @@
       if (!d.feature_id && d.organism_eid) {
         window.location.replace(baseurl + '/bio_data/' + d.organism_eid);
       }
-      // leaf node
     }
   };
 
@@ -130,6 +147,18 @@
       'skipTicks' : tree_options['skipTicks'],
       'phylogram_scale' : tree_options['phylogram_scale']
     });
+
+    // Create a tooltip, used for mousover on interior notes
+    tooltip = d3.select('#phylogram')
+      .append('div')
+      .style('opacity', 0)
+      .attr('class', 'tooltip')
+      .style('border-style', 'solid')
+      .style('border-color', '#B4B4B4')
+      .style('background-color', '#E4E4E4')
+      .style('border-width', '1px')
+      .style('border-radius', '5px')
+      .style('padding', '5px')
   }
 
   /* graphHeight() generate graph height based on leaf nodes */
