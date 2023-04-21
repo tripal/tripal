@@ -64,7 +64,7 @@ class NewickImporter extends TripalImporter {
     // 1) as elements of the $node object.  This occurs when editing an existing phylotree
     // 2) in the $form_state['values'] array which occurs on a failed validation or
     //    ajax callbacks from non submit form elements
-    // 3) in the $form_state['input'[ array which occurs on ajax callbacks from submit
+    // 3) in the $form_state['input'] array which occurs on ajax callbacks from submit
     //    form elements and the form is being rebuilt
     //
     // set form field defaults
@@ -79,6 +79,7 @@ class NewickImporter extends TripalImporter {
     $tree_file = '';
     $name_re = '';
     $match = '';
+    $load_later = FALSE;  // Default is to combine tree import with current job
 
     // If we are re constructing the form from a failed validation or ajax callback
     // then use the $form_state['values'] values.
@@ -149,19 +150,30 @@ class NewickImporter extends TripalImporter {
     $form['name_re'] = [
       '#title' => t('Feature Name Regular Expression'),
       '#type' => 'textfield',
-      '#description' => t('If this is a phylogenetic (non taxonomic) tree, then
-          the tree nodes will be automatically associated with features. However,
+      '#description' => t('The tree nodes will be automatically associated with
+          features, or in the case of taxonomic trees, with organisms. However,
           if the nodes in the tree file are not exactly as the names of features
-          but have enough information to uniquely identify the feature then you
-          may provide a regular expression that the importer will use to extract
-          the feature names from the node names.'),
+          or organisms but have enough information to uniquely identify them,
+          then you may provide a regular expression that the importer will use to
+          extract the appropriate names from the node names. For example, remove
+          a prefix ABC_ with ^ABC_(.*)$'),
       '#default_value' => $name_re,
     ];
     $form['match'] = [
       '#title' => t('Use Unique Feature Name'),
       '#type' => 'checkbox',
-      '#description' => t('If this is a phylogenetic (non taxonomic tree) and the nodes ' . 'should match the unique name of the feature rather than the name of the feature ' . 'then select this box. If unselected the loader will try to match the feature ' . 'using the feature name.'),
+      '#description' => t('If this is a phylogenetic (non taxonomic) tree and the nodes ' .
+        'should match the unique name of the feature rather than the name of the feature ' .
+        'then select this box. If unselected the loader will try to match the feature ' .
+        'using the feature name.'),
       '#default_value' => $match,
+    ];
+    $form['load_later'] = [
+      '#title' => t('Run Tree Import as a Separate Job'),
+      '#type' => 'checkbox',
+      '#description' => t('Check if tree loading should be performed as a separate job. ' .
+        'If not checked, tree loading will be combined with this job.'),
+      '#default_value' => $load_later,
     ];
 
     return $form;
@@ -182,6 +194,7 @@ class NewickImporter extends TripalImporter {
       'dbxref' => trim($values["dbxref"]),
       'match' => $values["match"],
       'name_re' => $values["name_re"],
+      'load_later' => $values["load_later"],
     ];
 
     $errors = [];
@@ -223,7 +236,12 @@ class NewickImporter extends TripalImporter {
       'dbxref' => $arguments["dbxref"],
       'match' => $arguments["match"],
       'name_re' => $arguments["name_re"],
+      'load_later' => $arguments["load_later"],
     ];
+    // pass through the job, needed for log output to show up on the "jobs page"
+    if (property_exists($this, 'job')) {
+      $options['job'] = $this->job;
+    }
     $errors = [];
     $warnings = [];
     chado_insert_phylotree($options, $errors, $warnings);
