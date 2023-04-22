@@ -65,28 +65,6 @@ class FASTAImporterTest extends ChadoTestBrowserBase
       ])
       ->execute();
       
-    
-
-    // TRIPAL 3 - OLD CODE
-    // $run_args = [
-    //     'analysis_id' => $analysis->analysis_id,
-    //     'organism_id' => $organism->organism_id,
-    //     'seqtype' => 'polypeptide',
-    //     'parent_type' => "mRNA",
-    //     'rel_type' => "derives_from",
-    //     'method' => '2',
-    //     'match_type' => '1',
-    //     're_name' => "",
-    //     're_uname' => "",
-    //     're_accession' => "",
-    //     'db_id' => "",
-    //     're_subject' => "",
-    //     'match_type' => "1",
-    // ];
-
-    // $importer->create($run_args, $file);
-    // $importer->prepareFiles();
-    // $importer->run();
 
     // Perform the FASTA test by creating an instance of the FASTA loader
     $importer_manager = \Drupal::service('tripal.importer');
@@ -122,6 +100,19 @@ class FASTAImporterTest extends ChadoTestBrowserBase
     $fasta_importer->prepareFiles();
     $fasta_importer->run();
     $fasta_importer->postRun();
+
+    // $results = $chado->query("SELECT * FROM {1:feature}", []);
+    // foreach ($results as $row) {
+    //   print_r($row);
+    // }
+
+    $results = $chado->query("SELECT count(*) as c1 FROM {1:feature} WHERE name = :name", [
+      ':name' => 'orange1.1g017341m'
+    ]);
+
+    $results_object = $results->fetchObject();
+    $this->assertEquals($results_object->c1, 1, 'There should have been one feature named orange1.1g017341m');
+    
 
   }
 
