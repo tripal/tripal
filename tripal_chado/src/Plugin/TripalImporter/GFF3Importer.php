@@ -476,6 +476,8 @@ class GFF3Importer extends ChadoImporterBase {
       '#description' => t('Enter the line number in the GFF file where you would like to begin processing.  The
       first line is line number 1.  This option is useful for examining loading problems with large GFF files.'),
       '#size' => 10,
+      '#default_value' => 1,
+      '#required' => TRUE,
     ];
 
     $form['additional_options']['alt_id_attr'] = [
