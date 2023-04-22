@@ -98,7 +98,7 @@ class chado_linker__contact extends ChadoField {
           $description_term => [
             'searchable' => TRUE,
             'label' => 'Contact Description',
-            'help' => 'A descriptoin of the contact.',
+            'help' => 'A description of the contact.',
             'operations' => ['contains'],
             'sortable' => TRUE,
             'type' => 'xs:string',
@@ -129,6 +129,11 @@ class chado_linker__contact extends ChadoField {
     $type_term = chado_get_semweb_term('contact', 'type_id');
     $name_term = chado_get_semweb_term('contact', 'name');
     $description_term = chado_get_semweb_term('contact', 'description');
+
+    // Set some defaults for the empty record.
+    $entity->{$field_name}['und'][0] = [
+      'value' => [],
+    ];
 
     // Get the FK that links to the base record.
     $schema = chado_get_schema($field_table);

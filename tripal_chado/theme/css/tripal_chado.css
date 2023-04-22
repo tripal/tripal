@@ -18,6 +18,12 @@
   width:100%;
 }
 
+.chado-linker--cell {
+  max-height: 200px;
+  overflow: auto;
+  overflow-wrap: break-word;
+}
+
 .primary-dbxref-widget-links,
 .secondary-dbxref-widget-links {
    clear: both;

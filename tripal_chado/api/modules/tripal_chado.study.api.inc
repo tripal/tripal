@@ -1,21 +1,21 @@
 <?php
 /**
  * @file
- * Provides API functions specifically for managing project
+ * Provides API functions specifically for managing study
  * records in Chado.
  */
 
 /**
- * @defgroup tripal_project_api Chado Project
+ * @defgroup tripal_study_api Chado Study
  * @ingroup tripal_chado_api
  * @{
- * Provides API functions specifically for managing project
- * records in Chado.
+ * Provides API functions for working with study records in Chado that
+ * go beyond the generic Chado API functions.
  * @}
  */
 
 /**
- * Used for autocomplete in forms for identifying projects
+ * Used for autocomplete in forms for identifying studies
  *
  * @param $string
  *   The string to search for.
@@ -23,16 +23,16 @@
  * @return
  *   A json array of terms that begin with the provided string.
  *
- * @ingroup tripal_project_api
+ * @ingroup tripal_study_api
  */
-function chado_autocomplete_project($string = '') {
+function chado_autocomplete_study($string = '') {
   $items = [];
   $sql = "
     SELECT
-      P.project_id as id, P.name
-    FROM {project} P
-    WHERE lower(P.name) like lower(:str)
-    ORDER by P.name
+      S.study_id as id, S.name
+    FROM {study} S
+    WHERE lower(S.name) like lower(:str)
+    ORDER by S.name
     LIMIT 25 OFFSET 0
   ";
   $records = chado_query($sql, [':str' => $string . '%']);
