@@ -101,11 +101,6 @@ class FASTAImporterTest extends ChadoTestBrowserBase
     $fasta_importer->run();
     $fasta_importer->postRun();
 
-    // $results = $chado->query("SELECT * FROM {1:feature}", []);
-    // foreach ($results as $row) {
-    //   print_r($row);
-    // }
-
     $results = $chado->query("SELECT count(*) as c1 FROM {1:feature} WHERE name = :name", [
       ':name' => 'orange1.1g017341m'
     ]);
@@ -113,7 +108,79 @@ class FASTAImporterTest extends ChadoTestBrowserBase
     $results_object = $results->fetchObject();
     $this->assertEquals($results_object->c1, 1, 'There should have been one feature named orange1.1g017341m');
     
+    $results = $chado->query("SELECT count(*) as c1 FROM {1:feature} WHERE name = :name", [
+      ':name' => 'orange1.1g022797m'
+    ]);
 
+    $results_object = $results->fetchObject();
+    $this->assertEquals($results_object->c1, 1, 'There should have been one feature named orange1.1g017341m');
+    
+    $results = $chado->query("SELECT count(*) as c1 FROM {1:feature} WHERE name = :name", [
+      ':name' => 'orange1.1g022799m'
+    ]);
+
+    $results_object = $results->fetchObject();
+    $this->assertEquals($results_object->c1, 1, 'There should have been one feature named orange1.1g017341m');
+    
+    // Check the type_id
+    $results = $chado->query("SELECT * FROM {1:feature} as f 
+      LEFT JOIN {1:cvterm} as cvterm ON (f.type_id = cvterm.cvterm_id) 
+      WHERE f.name = :name", [
+      ':name' => 'orange1.1g022799m'
+    ]);
+
+    $results_object = $results->fetchObject();
+    $this->assertEquals($results_object->name, 'polypeptide', 'CVTERM name should have been a polypeptide but returned a different name');
+    $this->assertEquals($results_object->seqlen, 2325, 'Seqlen column should have returned 2325 but returned another value');
+
+    // Get the feature_id
+    $feature_id = $results_object->feature_id;
+    $results = $chado->query('SELECT * FROM {1:analysisfeature} WHERE feature_id = :feature_id', [
+      ':feature_id' => $feature_id
+    ]);
+    $results_object = $results->fetchObject();
+    $this->assertEquals($results_object->feature_id, $feature_id, 'Did not find a feature_id that matched');
+
+    // Test scaffold from Citrus Sinensis (trimmed version)
+    $run_args = [
+      'files' => [
+        0 => [
+          'file_path' => __DIR__ . '/../../../fixtures/fasta_loader/Citrus_sinensis-scaffold00001-trimmed.fasta'
+        ]
+      ],
+      'schema_name' => $schema_name,
+      'analysis_id' => $analysis_id,
+      'organism_id' => $organism_id,
+      'seqtype' => 'polypeptide',
+      'parent_type' => "mRNA",
+      'rel_type' => "derives_from",
+      'method' => '2',
+      'match_type' => '1',
+      're_name' => "",
+      're_uname' => "",
+      're_accession' => "",
+      'db_id' => "",
+      're_subject' => "",
+      'match_type' => "1",
+    ];
+
+    $file_details = [
+      'file_local' => __DIR__ . '/../../../fixtures/fasta_loader/Citrus_sinensis-scaffold00001-trimmed.fasta',
+    ];
+
+    $fasta_importer->create($run_args, $file_details);
+    $fasta_importer->prepareFiles();
+    $fasta_importer->run();
+    $fasta_importer->postRun();
+
+    $results = $chado->query("SELECT count(*) as c1 FROM {1:feature} WHERE name = :name", [
+      ':name' => 'scaffold00001'
+    ]);
+
+    $results_object = $results->fetchObject();
+    $this->assertEquals($results_object->c1, 1, 'There should have been one feature named scaffold00001');
+    
+    
   }
 
 }
