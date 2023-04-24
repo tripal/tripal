@@ -567,14 +567,14 @@ class GFF3Importer extends ChadoImporterBase {
     }
     // If the file is not local to Drupal check if it exists on the system.
     else if (!file_exists($this->gff_file)) {
-      throw new \Exception(t("Cannot find the file: !file", ['!file' => $this->gff_file]));
+      throw new \Exception(t("Cannot find the file: %file", ['%file' => $this->gff_file]));
     }
 
     // Open the GFF3 file.
     $this->logger->notice("Opening @gff_file", ['@gff_file' => $this->gff_file]);
     $this->gff_file_h = fopen($this->gff_file, 'r');
     if (!$this->gff_file_h) {
-      throw new \Exception(t("Cannot open file: !file", ['!file' => $this->gff_file]));
+      throw new \Exception(t("Cannot open file: %file", ['%file' => $this->gff_file]));
     }
 
     // Get the feature property CV object
@@ -694,7 +694,7 @@ class GFF3Importer extends ChadoImporterBase {
       ->fetchField();
 
       if ($num_found == 0) {
-        throw new \Exception(t("Cannot find the specified target type, !type.", ['!type' => $this->target_type]));
+        throw new \Exception(t("Cannot find the specified target type, %type.", ['%type' => $this->target_type]));
       }
       $this->target_type_id = $target_type->cvterm_id;
     }
@@ -1154,8 +1154,8 @@ class GFF3Importer extends ChadoImporterBase {
 
     // Check to make sure strand has a valid character
     if (preg_match('/[\+-\?\.]/',$ret['strand']) == false) {
-      throw new \Exception(t('Invalid strand detected on line !line,
-        strand can only be +-?.',['!line' => $line]));
+      throw new \Exception(t('Invalid strand detected on line %line,
+        strand can only be +-?.', ['%line' => $line]));
     }
 
     // Format the strand for chado
@@ -1174,8 +1174,8 @@ class GFF3Importer extends ChadoImporterBase {
 
 
     if (preg_match('/[012\.]/',$ret['phase']) == false) {
-      throw new \Exception(t('Invalid phase detected on line !line,
-        phase can only be 0,1,2 or . (period)',['!line' => $line]));
+      throw new \Exception(t('Invalid phase detected on line %line,
+        phase can only be 0,1,2 or . (period)', ['%line' => $line]));
     }
 
 
@@ -1207,8 +1207,8 @@ class GFF3Importer extends ChadoImporterBase {
         continue;
       }
       if (!preg_match('/^[^\=]+\=.+$/', $attr)) {
-        throw new \Exception(t('Attribute is not correctly formatted on line !line_num: !attr',
-          ['!line_num' => $this->current_line, '!attr' => $attr]));
+        throw new \Exception(t('Attribute is not correctly formatted on line %line_num: %attr',
+          ['%line_num' => $this->current_line, '%attr' => $attr]));
       }
 
       // Break apart each attribute into key/value pairs.
@@ -1586,9 +1586,9 @@ class GFF3Importer extends ChadoImporterBase {
       $landmark = $this->findLandmark($rid);
       if (!$landmark) {
         if (!$this->default_landmark_type) {
-          throw new \Exception(t('The landmark, !landmark, cannot be added becuase no landmark ' .
+          throw new \Exception(t('The landmark, %landmark, cannot be added because no landmark ' .
               'type was provided. Please redo the importer job and specify a landmark type.',
-              ['!landmark' => $rid]));
+              ['%landmark' => $rid]));
         }
         $this->insertLandmark($rid);
       }
@@ -1974,8 +1974,8 @@ class GFF3Importer extends ChadoImporterBase {
   private function getCachedFeature($findex) {
     $retval = fseek($this->gff_cache_file, $findex);
     if ($retval == -1) {
-      throw new \Exception(t('Cannot seek to file location, !$findex, in cache file !file.',
-        ['!findex' => $findex, '!file' -> $this->gff_cache_file]));
+      throw new \Exception(t('Cannot seek to file location, %findex, in cache file %file.',
+        ['%findex' => $findex, '%file' -> $this->gff_cache_file]));
     }
     $feature = fgets($this->gff_cache_file);
     $feature = unserialize($feature);
@@ -2003,11 +2003,11 @@ class GFF3Importer extends ChadoImporterBase {
           $this->insertLandmark($uniquename);
         }
         else {
-          throw new \Exception(t('The landmark (reference) sequence, !landmark,
+          throw new \Exception(t('The landmark (reference) sequence, %landmark,
             is not in the database and not specified in the GFF3 file.
             Please either pre-load the landmark sequences or set a "Landmark Type"
             in the GFF importer',
-            ['!landmark' => $uniquename]));
+            ['%landmark' => $uniquename]));
         }
       }
     }
@@ -2513,9 +2513,9 @@ class GFF3Importer extends ChadoImporterBase {
         $type = $this->default_landmark_type;
       }
       if ($type == NULL) {
-        $error_msg = 'Could not determine a type for landmark name: !landmark_name';
+        $error_msg = 'Could not determine a type for landmark name: %landmark_name';
         $error_msg .= '. There was no default landmark type to force either.';
-        throw new \Exception(t($error_msg, ['!landmark_name' => $landmark_name]));
+        throw new \Exception(t($error_msg, ['%landmark_name' => $landmark_name]));
       }
 
       // If there is no cached type_id for this landmark type, try to lookup and cache
@@ -2536,9 +2536,9 @@ class GFF3Importer extends ChadoImporterBase {
           }
           // Else if the default could not be found (if default landmark is empty in the form)
           else {
-            $error_msg = 'Could not lookup cvterm / type id for landmark type: !type.';
+            $error_msg = 'Could not lookup cvterm / type id for landmark type: %type.';
             $error_msg .= ' Also since there is no default landmark type specified, could not force a default landmark type_id.';
-            throw new \Exception(t($error_msg, ['!type' => $type]));
+            throw new \Exception(t($error_msg, ['%type' => $type]));
           }
         }
       }
@@ -3303,8 +3303,8 @@ class GFF3Importer extends ChadoImporterBase {
         // Do nothing.
       }
       else {
-        throw new \Exception(t("A feature with the same ID exists multiple times: !uname",
-          ['!uname' => $uniquename]));
+        throw new \Exception(t("A feature with the same ID exists multiple times: %uname",
+          ['%uname' => $uniquename]));
       }
     }
     return [
