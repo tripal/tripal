@@ -461,7 +461,7 @@ class OBOImporter extends ChadoImporterBase {
         \Drupal::messenger()->addMessage(t("The vocabulary @vocab has been added.", ['@vocab' => $obo_name]));
       }
       else {
-        $form_state['rebuild'] = TRUE;
+        $form_state->setRebuild(True);
         \Drupal::messenger()->addError(t("The vocabulary @vocab could not be added.", ['@vocab' => $obo_name]));
       }
     }
@@ -471,69 +471,129 @@ class OBOImporter extends ChadoImporterBase {
    * {@inheritdoc}
    */
   public function formValidate($form, &$form_state) {
-    $public = \Drupal::database();
 
     $obo_id = $form_state->getValue('obo_id');
-    $obo_name = trim($form_state->getValue('obo_name'));
-    $obo_url = trim($form_state->getValue('obo_url'));
-    $obo_file = trim($form_state->getValue('obo_file'));
-    $uobo_name = trim($form_state->getValue('uobo_name'));
-    $uobo_url = trim($form_state->getValue('uobo_url'));
-    $uobo_file = trim($form_state->getValue('uobo_file'));
+    $obo_name = trim($form_state->getValue('obo_name') ?? '');
+    $obo_url = trim($form_state->getValue('obo_url') ?? '');
+    $obo_file = trim($form_state->getValue('obo_file') ?? '');
+    $uobo_name = trim($form_state->getValue('uobo_name') ?? '');
+    $uobo_url = trim($form_state->getValue('uobo_url') ?? '');
+    $uobo_file = trim($form_state->getValue('uobo_file') ?? '');
 
-    // Make sure if the name is changed it doesn't conflict with another OBO.
-    if ($form_state->getTriggeringElement()['#name'] == 'update_obo_details'  or
-        $form_state->getTriggeringElement()['#name'] == 'update_load_obo') {
+    // Possible triggering element #name values:
+    //   'op' from the default submit 'Import OBO File'
+    //   'update_obo' and 'obo_id' from 'Update Ontology Details'
+    //   'delete_obo' and 'obo_id' two times from 'Delete Ontology'
 
-      // Get the current record
-      $vocab = $public->select('tripal_cv_obo', 't')
-        ->fields('t', ['obo_id', 'name', 'path'])
-        ->condition('name', $uobo_name)
-        ->execute()
-        ->fetchObject();
-      if ($vocab and $vocab->obo_id != $obo_id) {
+    // Submitted with 'Update Ontology Details' button
+    if ($form_state->getTriggeringElement()['#name'] == 'update_obo' ) {
+
+      // Make sure if the name is changed it doesn't conflict with another OBO.
+      $vocab_id = $this->getVocabID($uobo_name);
+      if ($vocab_id and $vocab_id != $obo_id) {
         $form_state->setErrorByName('uobo_name', t('The vocabulary name must be different from existing vocabularies'));
       }
-      // Make sure the file exists. First check if it is a relative path
-      $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $uobo_file;
-      if (!file_exists($dfile)) {
-        if (!file_exists($uobo_file)) {
-          $form_state->setErrorByName('uobo_file',
-              t('The specified path, @path, does not exist or cannot be read.'), ['@path' => $dfile]);
-        }
+      // If file specified, make sure it exists, either as a relative or absolute path.
+      if (!$this->formValidateFile($uobo_file)) {
+        $form_state->setErrorByName('uobo_file',
+            t('The specified path, @path, does not exist or cannot be read.', ['@path' => $uobo_file]));
       }
       if (!$uobo_url and !$uobo_file) {
-        $form_state->setErrorByName('uobo_url', t('Please provide a URL or a path for the vocabulary.'));
+        $form_state->setErrorByName('uobo_url', t('Please provide either a URL or a path for the vocabulary.'));
       }
       if ($uobo_url and $uobo_file) {
         $form_state->setErrorByName('uobo_url', t('Please provide only a URL or a path for the vocabulary, but not both.'));
       }
     }
-    if ($form_state->getTriggeringElement()['#name'] == 'add_new_obo') {
-      // Get the current record
-      $vocab = $public->select('tripal_cv_obo', 't')
-        ->fields('t', ['obo_id', 'name', 'path'])
-        ->condition('name', $obo_name)
-        ->execute()
-        ->fetchObject();
-      if ($vocab) {
-        $form_state->setErrorByName('obo_name', t('The vocabulary name must be different from existing vocabularies'));
+
+    // Submitted with 'Import OBO File' button. This is used both for
+    // reloading a saved ontology and for loading a new ontology.
+    if ($form_state->getTriggeringElement()['#name'] == 'op') {
+      if ($uobo_name and $obo_name) {
+        $form_state->setErrorByName('obo_name', t('New and existing ontologies are both selected, please select only one'));
       }
-      // Make sure the file exists. First check if it is a relative path
-      $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $obo_file;
-      if (!file_exists($dfile)) {
-        if (!file_exists($obo_file)) {
-          $form_state->setErrorByName('obo_file',
-              t('The specified path, @path, does not exist or cannot be read.'), ['@path' => $dfile]);
+      // Generate error if supplied new vocabulary name already exists.
+      if ($obo_name) {
+        $vocab_id = $this->getVocabID($obo_name);
+        if ($vocab_id) {
+          $form_state->setErrorByName('obo_name', t('The vocabulary name must be different from existing vocabularies'));
         }
       }
-      if (!$obo_url and !$obo_file) {
-        $form_state->setErrorByName('obo_url', t('Please provide a URL or a path for the vocabulary.'));
+      if ($uobo_name) {
+        // Validate the update existing ontology section
+        if (!$uobo_url and !$uobo_file) {
+          $form_state->setErrorByName('uobo_url', t('Please provide either a URL or a path for the vocabulary.'));
+        }
+        if ($uobo_url and $uobo_file) {
+          $form_state->setErrorByName('uobo_url', t('Please provide only a URL or a path for the vocabulary, but not both.'));
+        }
+        // If file specified, make sure it exists, either as a relative or absolute path.
+        if (!$this->formValidateFile($uobo_file)) {
+          $form_state->setErrorByName('uobo_file',
+              t('The specified path, @path, does not exist or cannot be read.', ['@path' => $uobo_file]));
+        }
       }
-      if ($obo_url and $obo_file) {
-        $form_state->setErrorByName('obo_url', t('Please provide only a URL or a path for the vocabulary, but not both.'));
+      else {
+        // Validate the load new ontology section
+        if (!$obo_url and !$obo_file) {
+          $form_state->setErrorByName('obo_url', t('Please provide either a URL or a path for the vocabulary.'));
+        }
+        if ($obo_url and $obo_file) {
+          $form_state->setErrorByName('obo_url', t('Please provide only a URL or a path for the vocabulary, but not both.'));
+        }
+        // If file specified, make sure it exists, either as a relative or absolute path.
+        if (!$this->formValidateFile($obo_file)) {
+          $form_state->setErrorByName('obo_file',
+              t('The specified path, @path, does not exist or cannot be read.', ['@path' => $obo_file]));
+        }
       }
     }
+  }
+
+  /**
+   * Returns the obo_id in the tripal_cv_obo table
+   * from the supplied vocabulary name.
+   *
+   * @param string $vocab_name
+   *   The name of the vocabulary to query in the
+   *   public.tripal_cv_obo table.
+   * @return int
+   *   The obo_id value of the vocabulary, or NULL if this
+   *   vocabulary does not exist.
+   */
+  private function getVocabID($vocab_name) {
+    $obo_id = NULL;
+    $public = \Drupal::database();
+    $vocab = $public->select('tripal_cv_obo', 't')
+      ->fields('t', ['obo_id', 'name', 'path'])
+      ->condition('name', $vocab_name)
+      ->execute()
+      ->fetchObject();
+    if ($vocab) {
+      $obo_id = $vocab->obo_id;
+    }
+    return $obo_id;
+  }
+
+  /**
+   * Validates that the passed file specifier exists either as
+   * specified, or when the default base path is prepended.
+   * Valid also if no file is specified.
+   *
+   * @param string $file
+   *   A file on the local filesystem.
+   * @return bool
+   *   Returns TRUE if $file exists or if $file evaluates to FALSE.
+   *   Returns FALSE if file identifier does not exist.
+   */
+  private function formValidateFile($file) {
+    if ($file) {
+      $checkpath = $_SERVER['DOCUMENT_ROOT'] . base_path() . $file;
+      if (!file_exists($checkpath) and !file_exists($file)) {
+        return FALSE;
+      }
+    }
+    return TRUE;
   }
 
   /**
