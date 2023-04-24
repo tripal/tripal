@@ -4,6 +4,8 @@ on:
   push:
     branches-ignore:
       - 9.x-4.x
+  pull_request:
+    types: [opened, synchronize]
 
 jobs:
   run-tests:
