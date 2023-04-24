@@ -1323,6 +1323,113 @@ class GFF3ImporterTest extends TripalTestCase {
     $this->assertEquals($name, $query);
   }
 
+  /**
+   * The GFF importer should create new landmarks if they are defined in the
+   * GFF file and the corresponding checkbox is checked, or fail if not checked.
+   *
+   * @group gff
+   * @ticket 1324
+   */
+  public function testGFFImporterCreatesLandmarkFromGFFDefinition() {
+
+    $gff_file1 = ['file_local' => __DIR__ . '/../data/gff_newlandmark1.gff'];
+    // second file same exact landmarks as the first, except landmark types are swapped.
+    $gff_file2 = ['file_local' => __DIR__ . '/../data/gff_newlandmark2.gff'];
+    $analysis = factory('chado.analysis')->create();
+    $organism = factory('chado.organism')->create();
+    $run_args = [
+      //The new argument
+      'skip_protein' => 1,
+      ///
+      'analysis_id' => $analysis->analysis_id,
+      'organism_id' => $organism->organism_id,
+      'use_transaction' => 1,
+      'add_only' => 0,
+      'update' => 1,
+      'create_organism' => 0,
+      'create_target' => 0,
+      'gff3_landmark_lookup' => 0,
+      ///regexps for mRNA and protein.
+      're_mrna' => NULL,
+      're_protein' => NULL,
+      //optional
+      'target_organism_id' => NULL,
+      'target_type' => NULL,
+      'start_line' => NULL,
+      'landmark_type' => NULL,
+      'alt_id_attr' => NULL,
+    ];
+
+    // Test with gff3_landmark_lookup checkbox not selected,
+    // this should fail because the landmarks don't exist.
+    $isException = false;
+    try {
+      $this->runGFFLoader($run_args, $gff_file1);
+    }
+    catch(\Exception $ex) {
+      $isException = true;
+    }
+    $this->assertEquals($isException, true);
+
+    // Test with gff3_landmark_lookup selected, new landmarks of
+    // appropriate different types should be created.
+    $run_args['gff3_landmark_lookup'] = 1;
+    $this->runGFFLoader($run_args, $gff_file1);
+
+    $identifier = [
+      'cv_id' => ['name' => 'sequence'],
+      'name' => 'ultracontig',
+    ];
+    $ultracontig_type_id = tripal_get_cvterm($identifier);
+    $identifier = [
+      'cv_id' => ['name' => 'sequence'],
+      'name' => 'chromosome',
+    ];
+    $chromosome_type_id = tripal_get_cvterm($identifier);
+
+    $name = 'landmark1';
+    $query = db_select('chado.feature', 'f')
+      ->fields('f', ['uniquename'])
+      ->condition('f.uniquename', $name)
+      ->condition('f.type_id', $ultracontig_type_id->cvterm_id)
+      ->execute()
+      ->fetchField();
+    $this->assertEquals($name, $query);
+
+    $name = 'landmark2';
+    $query = db_select('chado.feature', 'f')
+      ->fields('f', ['uniquename'])
+      ->condition('f.uniquename', $name)
+      ->condition('f.type_id', $chromosome_type_id->cvterm_id)
+      ->execute()
+      ->fetchField();
+    $this->assertEquals($name, $query);
+
+    // Test with a second file which has identical landmarks,
+    // but with different types, swapped relative to the first
+    // file. These should be created a second time under these
+    // new type_id values.
+    $this->runGFFLoader($run_args, $gff_file2);
+
+    $name = 'landmark1';
+    $query = db_select('chado.feature', 'f')
+      ->fields('f', ['uniquename'])
+      ->condition('f.uniquename', $name)
+      ->condition('f.type_id', $chromosome_type_id->cvterm_id)
+      ->execute()
+      ->fetchField();
+    $this->assertEquals($name, $query);
+
+    $name = 'landmark2';
+    $query = db_select('chado.feature', 'f')
+      ->fields('f', ['uniquename'])
+      ->condition('f.uniquename', $name)
+      ->condition('f.type_id', $ultracontig_type_id->cvterm_id)
+      ->execute()
+      ->fetchField();
+    $this->assertEquals($name, $query);
+  }
+
   private function runGFFLoader($run_args, $file) {
     // silent(function ($run_args, $file) {
     module_load_include('inc', 'tripal_chado', 'includes/TripalImporter/GFF3Importer');
