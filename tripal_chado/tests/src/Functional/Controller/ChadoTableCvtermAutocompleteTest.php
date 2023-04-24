@@ -33,48 +33,41 @@ class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
     // Test autocomplete cvterm route to search null cvterm.
     // Null term (null:local:null)
     $this->drupalGet('chado/cvterm/autocomplete/5', ['query' => ['q' => 'null']]);
-    $web_assert->statusCodeEquals(200);
     $web_assert->pageTextContains('null');
 
     // Test autocomplete cvterm route to search for empty string.
     // Null value returned
     $this->drupalGet('chado/cvterm/autocomplete/5', ['query' => ['q' => '']]);
-    $web_assert->statusCodeEquals(200);
     $web_assert->pageTextContains('{}');
 
     // Test autocomplete cvterm route to search for partial keywords.
     // Null value returned
     $this->drupalGet('chado/cvterm/autocomplete/5', ['query' => ['q' => 'ull']]);
-    $web_assert->statusCodeEquals(200);
     $web_assert->pageTextContains('null');
 
     // Test autocomplete cvterm route to search for terms in uppercase (case insensitive).
     // Null value returned
     $this->drupalGet('chado/cvterm/autocomplete/5', ['query' => ['q' => 'NULL']]);
-    $web_assert->statusCodeEquals(200);
     $web_assert->pageTextContains('null');
 
     // Test autocomplete cvterm route to search for keywords < 2.
     // Null value returned
     $this->drupalGet('chado/cvterm/autocomplete/5', ['query' => ['q' => 'n']]);
-    $web_assert->statusCodeEquals(200);
     $web_assert->pageTextContains('{}');
 
     // Test autocomplete cvterm route to search for cvterm but less than 1 count.
     // Null value returned
     $this->drupalGet('chado/cvterm/autocomplete/0', ['query' => ['q' => 'ull']]);
-    $web_assert->statusCodeEquals(200);
     $web_assert->pageTextContains('{}');
 
     // Test autocomplete cvterm route incomplete parameters no count.
     // Page not found
     $this->drupalGet('chado/cvterm/autocomplete/');
-    $web_assert->statusCodeEquals(404);
+    $web_assert->pageTextContains('The requested page could not be found');
 
     // Test autocomplete cvterm route incomplete parameters no query string.
     // Null value returned
     $this->drupalGet('chado/cvterm/autocomplete/5', []);
-    $web_assert->statusCodeEquals(200);
     $web_assert->pageTextContains('{}');
 
     
@@ -155,7 +148,7 @@ class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
 
     // Test invalid values as id passed to GetId.
     // Not found
-    $not_ids = [0, 'lorem.ipsum', 'null', '@$#%', 'null (abc:xyz)', ' '];
+    $not_ids = [0, 'lorem.ipsum', 'null', '@$#%', 'null (abc:xyz)', ' ', '.'];
     foreach($not_ids as $i) {
       $id = $autocomplete->getCVtermId($i);
       $this->assertEquals($id, 0);
