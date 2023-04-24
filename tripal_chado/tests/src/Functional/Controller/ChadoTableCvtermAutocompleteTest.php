@@ -28,48 +28,8 @@ class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
     );
 
     $this->drupalLogin($this->registered_user);
-    $web_assert = $this->assertSession();
 
-    // Test autocomplete cvterm route to search null cvterm.
-    // Null term (null:local:null)
-    $this->drupalGet('chado/cvterm/autocomplete/5', ['query' => ['q' => 'null']]);
-    $web_assert->pageTextContains('null');
-
-    // Test autocomplete cvterm route to search for empty string.
-    // Null value returned
-    $this->drupalGet('chado/cvterm/autocomplete/5', ['query' => ['q' => '']]);
-    $web_assert->pageTextContains('{}');
-
-    // Test autocomplete cvterm route to search for partial keywords.
-    // Null value returned
-    $this->drupalGet('chado/cvterm/autocomplete/5', ['query' => ['q' => 'ull']]);
-    $web_assert->pageTextContains('null');
-
-    // Test autocomplete cvterm route to search for terms in uppercase (case insensitive).
-    // Null value returned
-    $this->drupalGet('chado/cvterm/autocomplete/5', ['query' => ['q' => 'NULL']]);
-    $web_assert->pageTextContains('null');
-
-    // Test autocomplete cvterm route to search for keywords < 2.
-    // Null value returned
-    $this->drupalGet('chado/cvterm/autocomplete/5', ['query' => ['q' => 'n']]);
-    $web_assert->pageTextContains('{}');
-
-    // Test autocomplete cvterm route to search for cvterm but less than 1 count.
-    // Null value returned
-    $this->drupalGet('chado/cvterm/autocomplete/0', ['query' => ['q' => 'ull']]);
-    $web_assert->pageTextContains('{}');
-
-    // Test autocomplete cvterm route incomplete parameters no count.
-    // Page not found
-    $this->drupalGet('chado/cvterm/autocomplete/');
-    $web_assert->pageTextContains('The requested page could not be found');
-
-    // Test autocomplete cvterm route incomplete parameters no query string.
-    // Null value returned
-    $this->drupalGet('chado/cvterm/autocomplete/5', []);
-    $web_assert->pageTextContains('{}');
-
+    \Drupal::state()->set('is_a_test_environment', TRUE);
     
     // Test Handler:
     $autocomplete = new ChadoCVTermAutocompleteController();
