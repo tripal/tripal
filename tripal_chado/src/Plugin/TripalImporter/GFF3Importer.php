@@ -241,7 +241,7 @@ class GFF3Importer extends ChadoImporterBase {
    * "organism=[genus]:[species]", where [genus] is the organism's genus and
    * [species] is the species name. Check this box to automatically add the
    * organism to the database if it does not already exists. Otherwise lines
-   * with an oraganism attribute where the organism is not present in the
+   * with an organism attribute where the organism is not present in the
    * database will be skipped.
    */
   private $create_organism = FALSE;
@@ -350,7 +350,7 @@ class GFF3Importer extends ChadoImporterBase {
       '#description' => t("Choose an existing organism to which the entries in the GFF file will be associated."),
       '#required' => TRUE,
       '#options' => $organisms,
-      '#empty_option' => t('- Select -'),
+      '#default_value' => 0,
     ];
 
     $form['landmark_type'] = [
