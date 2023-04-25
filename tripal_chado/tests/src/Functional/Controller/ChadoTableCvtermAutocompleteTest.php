@@ -29,8 +29,12 @@ class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
 
     $this->drupalLogin($this->registered_user);
 
+    // Ensure we see all logging in tests.
     \Drupal::state()->set('is_a_test_environment', TRUE);
-    
+
+    // Create a new test schema for us to use.
+    $connection = $this->createTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
+
     // Test Handler:
     $autocomplete = new ChadoCVTermAutocompleteController();
     // Prepare a Request:$request entry. Search for null term
@@ -83,10 +87,11 @@ class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
 
 
     // Test exact term and 1 suggestion (exact match).
-    $null_cvterm_id = \Drupal::service('tripal_chado.database')
-      ->query("SELECT cvterm_id FROM {1:cvterm} WHERE name = 'null' LIMIT 1")
-      ->fetchField();
-
+    $query = $connection->select('1:cvterm', 'c');
+    $query->condition('c.name', 'null', '=');
+    $query->fields('c', ['cvterm_id']);
+    $null_cvterm_id = $query->execute()->fetchField();
+    
     $request = Request::create(
       'chado/cvterm/autocomplete/5',
       'GET',
