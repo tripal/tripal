@@ -34,7 +34,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'target_organism_id' => NULL,
       'target_type' => NULL,
       'start_line' => NULL,
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
     ];
     $this->loadLandmarks($analysis, $organism, $fasta);
@@ -76,7 +76,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'target_organism_id' => NULL,
       'target_type' => NULL,
       'start_line' => NULL,
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
     ];
 
@@ -164,7 +164,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'target_organism_id' => NULL,
       'target_type' => NULL,
       'start_line' => NULL,
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
     ];
 
@@ -207,7 +207,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'target_organism_id' => NULL,
       'target_type' => NULL,
       'start_line' => NULL,
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
     ];
 
@@ -247,7 +247,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'target_organism_id' => NULL,
       'target_type' => NULL,
       'start_line' => NULL,
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
     ];
 
@@ -291,7 +291,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'target_organism_id' => NULL,
       'target_type' => NULL,
       'start_line' => NULL,
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
     ];
 
@@ -335,7 +335,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'target_organism_id' => NULL,
       'target_type' => NULL,
       'start_line' => NULL,
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
     ];
 
@@ -374,7 +374,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'target_organism_id' => NULL,
       'target_type' => NULL,
       'start_line' => NULL,
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
     ];
 
@@ -417,7 +417,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'target_organism_id' => NULL,
       'target_type' => NULL,
       'start_line' => NULL,
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
     ];
 
@@ -459,7 +459,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'target_organism_id' => NULL,
       'target_type' => NULL,
       'start_line' => NULL,
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
     ];
 
@@ -503,7 +503,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'target_organism_id' => NULL,
       'target_type' => NULL,
       'start_line' => NULL,
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
     ];
 
@@ -558,7 +558,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'target_organism_id' => NULL,
       'target_type' => NULL,
       'start_line' => NULL,
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
     ];
 
@@ -601,7 +601,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'target_organism_id' => NULL,
       'target_type' => NULL,
       'start_line' => NULL,
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
     ];
 
@@ -686,7 +686,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'target_organism_id' => NULL,
       'target_type' => NULL,
       'start_line' => NULL,
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
     ];
 
@@ -739,7 +739,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'target_organism_id' => NULL,
       'target_type' => NULL,
       'start_line' => NULL,
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
     ];
 
@@ -781,7 +781,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'target_organism_id' => NULL,
       'target_type' => NULL,
       'start_line' => NULL,
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
     ];
 
@@ -826,7 +826,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'target_organism_id' => $organism->organism_id,
       'target_type' => NULL,
       'start_line' => NULL,
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
     ];
     $this->loadLandmarks($analysis, $organism, $fasta);
@@ -1186,7 +1186,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'target_organism_id' => NULL,
       'target_type' => NULL,
       'start_line' => NULL,
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
     ];
     $this->loadLandmarks($analysis, $organism);
@@ -1239,7 +1239,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'target_organism_id' => NULL,
       'target_type' => NULL,
       'start_line' => NULL,
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
     ];
     $this->loadLandmarks($analysis, $organism);
@@ -1307,7 +1307,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'target_organism_id' => NULL,
       'target_type' => NULL,
       'start_line' => NULL,
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
     ];
     $this->loadLandmarks($analysis, $organism);
@@ -1356,7 +1356,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'target_organism_id' => NULL,
       'target_type' => NULL,
       'start_line' => NULL,
-      'landmark_type' => NULL,
+      'landmark_type' => 'supercontig',
       'alt_id_attr' => NULL,
     ];
 

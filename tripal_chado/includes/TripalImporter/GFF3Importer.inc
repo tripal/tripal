@@ -341,30 +341,40 @@ class GFF3Importer extends TripalImporter {
       '#required' => TRUE,
       '#options' => $organisms,
     ];
-    $form['landmarks'] = [
-      '#type' => 'fieldset',
-      '#title' => t('Landmarks'),
-      '#collapsible' => TRUE,
-      '#collapsed' => FALSE,
-    ];
-    $form['landmarks']['default_landmark_type'] = [
-      '#title' => t('Landmark Type'),
+
+    $form['landmark_type'] = [
+      '#title' => t('Default Landmark Type'),
       '#type' => 'textfield',
       '#description' => t("Optional. Use this field to specify a Sequence Ontology type
-       for the landmark sequences in the GFF file (e.g. 'chromosome'). This is only needed if
-       the landmark features (first column of the GFF3 file) are not already in the database.
-       If they are new and they are defined in the GFF3 file, leave this blank and check the
-       box below."),
-    ];
-    $form['landmarks']['gff3_landmark_lookup'] = [
-      '#type' => 'checkbox',
-      '#title' => t('Landmark types are defined in the GFF3 file'),
-      '#required' => FALSE,
-      '#description' => t('If landmark sequence ontology types are defined in the GFF3 file,
-       leave the box above empty, and the loader will use the definitions in your file.
-       These look like "Chr1 . chromosome 1 2345 . . . ID=Chr1" or "ctg1 . contig 1 345 . . . ID=ctg1"'),
-      '#default_value' => 0,
-    ];
+       for the default landmark sequences in the GFF fie (e.g. 'chromosome'). This is only needed if
+       the landmark features (first column of the GFF3 file) are not already in the database."),
+    ];    
+
+    // DOUG'S ADDITIONS
+    // $form['landmarks'] = [
+    //   '#type' => 'fieldset',
+    //   '#title' => t('Landmarks'),
+    //   '#collapsible' => TRUE,
+    //   '#collapsed' => FALSE,
+    // ];
+    // $form['landmarks']['default_landmark_type'] = [
+    //   '#title' => t('Landmark Type'),
+    //   '#type' => 'textfield',
+    //   '#description' => t("Optional. Use this field to specify a Sequence Ontology type
+    //    for the landmark sequences in the GFF file (e.g. 'chromosome'). This is only needed if
+    //    the landmark features (first column of the GFF3 file) are not already in the database.
+    //    If they are new and they are defined in the GFF3 file, leave this blank and check the
+    //    box below."),
+    // ];
+    // $form['landmarks']['gff3_landmark_lookup'] = [
+    //   '#type' => 'checkbox',
+    //   '#title' => t('Landmark types are defined in the GFF3 file'),
+    //   '#required' => FALSE,
+    //   '#description' => t('If landmark sequence ontology types are defined in the GFF3 file,
+    //    leave the box above empty, and the loader will use the definitions in your file.
+    //    These look like "Chr1 . chromosome 1 2345 . . . ID=Chr1" or "ctg1 . contig 1 345 . . . ID=ctg1"'),
+    //   '#default_value' => 0,
+    // ];
 
     $form['proteins'] = [
       '#type' => 'fieldset',
@@ -497,7 +507,9 @@ class GFF3Importer extends TripalImporter {
     $refresh = 0; //$form_state['values']['refresh'];
     $remove = 0; //$form_state['values']['remove'];
     $line_number = trim($form_state['values']['line_number']);
-    $default_landmark_type = trim($form_state['values']['default_landmark_type']);
+    // DOUG'S CODE
+    // $default_landmark_type = trim($form_state['values']['default_landmark_type']);
+    $landmark_type = trim($form_state['values']['landmark_type']);
     $gff3_landmark_lookup = $form_state['values']['gff3_landmark_lookup'];
     $alt_id_attr = trim($form_state['values']['alt_id_attr']);
     $re_mrna = trim($form_state['values']['re_mrna']);
@@ -527,11 +539,12 @@ class GFF3Importer extends TripalImporter {
       }
     }
 
+    // DOUG'S CODE
     // Cannot specify landmark type using both methods.
-    if ($default_landmark_type and $gff3_landmark_lookup) {
-      form_set_error('default_landmark_type', t('The checkbox cannot be checked if a landmark'
-                    . ' type is entered in this box.'));
-    }
+    // if ($default_landmark_type and $gff3_landmark_lookup) {
+    //   form_set_error('default_landmark_type', t('The checkbox cannot be checked if a landmark'
+    //                 . ' type is entered in this box.'));
+    // }
   }
 
   /**
@@ -550,8 +563,10 @@ class GFF3Importer extends TripalImporter {
     $this->target_type = $arguments['target_type'];
     $this->create_target = $arguments['create_target'];
     $this->start_line = $arguments['line_number'];
-    $this->default_landmark_type = $arguments['default_landmark_type'];
-    $this->gff3_landmark_lookup = $arguments['gff3_landmark_lookup'];
+    // DOUG'S CODE
+    // $this->default_landmark_type = $arguments['default_landmark_type'];
+    // $this->gff3_landmark_lookup = $arguments['gff3_landmark_lookup'];
+    $this->default_landmark_type = $arguments['landmark_type'];
     $this->alt_id_attr = $arguments['alt_id_attr'];
     $this->create_organism = $arguments['create_organism'];
     $this->re_mrna = $arguments['re_mrna'];
@@ -1048,12 +1063,13 @@ class GFF3Importer extends TripalImporter {
     // as this should be the definition of the landmark type and length.
     // Because we can't confidently autodetect what features are landmark
     // definitions, this is an opt-in behavior.
-    if ($this->gff3_landmark_lookup) {
-      if (!array_key_exists($ret['landmark'], $this->landmark_types)) {
-        $seqlen = $ret['stop'] - $ret['start'] + 1;
-        $this->store_landmark_type($ret['landmark'], $ret['type'], $seqlen);
-      }
-    }
+    // DOUG'S CODE
+    // if ($this->gff3_landmark_lookup) {
+    //   if (!array_key_exists($ret['landmark'], $this->landmark_types)) {
+    //     $seqlen = $ret['stop'] - $ret['start'] + 1;
+    //     $this->store_landmark_type($ret['landmark'], $ret['type'], $seqlen);
+    //   }
+    // }
 
     $tags = [];
     $attr_name = '';
