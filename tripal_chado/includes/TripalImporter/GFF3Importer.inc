@@ -2476,7 +2476,7 @@ class GFF3Importer extends TripalImporter {
     $this->findLandmarksTypeIDs();
     
     // NEW IMPROVED CODE WITH BATCH PROCESSING
-    $init_sql = "SELECT name, uniquename, feature_id FROM {1:feature} WHERE \n";
+    $init_sql = "SELECT name, uniquename, feature_id FROM {feature} WHERE \n";
     $i = 0;
     $j = 0;
     $total = 0;
@@ -2554,7 +2554,7 @@ class GFF3Importer extends TripalImporter {
 
       // If there is no cached type_id for this landmark type, try to lookup and cache
       if (!isset($this->landmark_types_type_ids[$type])) {
-        $sql_landmark_type_id = "SELECT cvterm_id FROM {1:cvterm} WHERE name = :name";
+        $sql_landmark_type_id = "SELECT cvterm_id FROM {cvterm} WHERE name = :name";
         $args_type = array(':name' => $type);
         $results_type_ids = chado_query($sql_landmark_type_id, $args_type);
         $rowsCount = 0;
