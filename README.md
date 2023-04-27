@@ -59,7 +59,7 @@ This upgrade to Drupal 9 is a community effort. As such, we NEED YOUR HELP!
   - We prefer [automated testing](https://tripaldoc.readthedocs.io/en/latest/dev_guide/testing.html) for all Pull Requests (PRs) and are happy to guide you through the process!
     - Just comment on the issue if you need help designing tests
     - If you need help implementing tests see our [documentation](https://tripaldoc.readthedocs.io/en/latest/dev_guide/testing.html)
-  - If more documentation would be helpful, [please create an issue at](https://github.com/tripal/tripal_doc) and we'll add it.
+  - If more documentation would be helpful, [please create an issue here](https://github.com/tripal/tripal_doc) and we'll add it.
 
 ## Documentation
 
