@@ -39,7 +39,7 @@ This project uses Code Climate to determine the quality of our codebase and the 
 - Finish implementing Chado Storage for fields ([#1350](https://github.com/tripal/tripal/issues/1350), [#1351](https://github.com/tripal/tripal/issues/1351))
 - Drush generator/updator for fields
 - Update existing core fields
-- Finish Chado Vocabs/ID Spaces/Terms [#1354](https://github.com/tripal/tripal/issues/1354))
+- Finish Chado Vocabs/ID Spaces/Terms ([#1354](https://github.com/tripal/tripal/issues/1354))
 - Legacy API
 - Move data type specific functionality into extension modules ([#1357](https://github.com/tripal/tripal/issues/1357))
 
@@ -59,7 +59,7 @@ This upgrade to Drupal 9 is a community effort. As such, we NEED YOUR HELP!
   - We prefer [automated testing](https://tripaldoc.readthedocs.io/en/latest/dev_guide/testing.html) for all Pull Requests (PRs) and are happy to guide you through the process!
     - Just comment on the issue if you need help designing tests
     - If you need help implementing tests see our [documentation](https://tripaldoc.readthedocs.io/en/latest/dev_guide/testing.html)
-  - If more documentation would be helpful, [please create an issue here](https://github.com/tripal/tripal_doc) and we'll add it.
+  - If more documentation would be helpful, [please create an issue here](https://github.com/tripal/tripal_doc/issues) and we'll add it.
 
 ## Documentation
 
