@@ -147,77 +147,83 @@ function chado_get_organism($identifiers, $options = []) {
 function chado_get_organism_scientific_name($organism) {
   $name = $organism->genus . ' ' . $organism->species;
 
-  // For Chado v1.3 we have a type_id and infraspecific name.
-  if (property_exists($organism, 'type_id')) {
-    $rank = '';
-    // For organism objects crated using chado_generate_var.
-    if (is_object($organism->type_id)) {
-      if ($organism->type_id) {
-        $rank = $organism->type_id->name;
-      }
+  $rank = '';
+  // For organism objects created using chado_generate_var.
+  if (is_object($organism->type_id)) {
+    if ($organism->type_id) {
+      $rank = $organism->type_id->name;
     }
-    else {
-      $rank_term = chado_get_cvterm(['cvterm_id' => $organism->type_id]);
-      if ($rank_term) {
-        $rank = $rank_term->name;
-      }
+  }
+  else {
+    $rank_term = chado_get_cvterm(['cvterm_id' => $organism->type_id]);
+    if ($rank_term) {
+      $rank = $rank_term->name;
     }
+  }
 
-    if ($rank) {
-      $rank = chado_abbreviate_infraspecific_rank($rank);
-      $name .= ' ' . $rank . ' ' . $organism->infraspecific_name;
-    }
-    else {
-      if ($organism->infraspecific_name) {
-        $name .= ' ' . $organism->infraspecific_name;
-      }
+  if ($rank) {
+    $rank = chado_abbreviate_infraspecific_rank($rank);
+    $name .= ' ' . $rank . ' ' . $organism->infraspecific_name;
+  }
+  else {
+    if ($organism->infraspecific_name) {
+      $name .= ' ' . $organism->infraspecific_name;
     }
   }
   return $name;
 }
 
 /**
- * Returns a list of organisms that are currently synced with Drupal to use in
- * select lists.
+ * Returns a list of organisms to use in select lists.
  *
- * @param $syncd_only
- *   Whether or not to return all chado organisms or just those sync'd with
- *   drupal. Defaults to TRUE (only sync'd organisms).
+ * @param $published_only
+ *   Only return organisms that have been published within Tripal.
+ *
+ * @param $show_common_name
+ *   When true, include the organism common name, if present, in parentheses.
  *
  * @return
- *   An array of organisms sync'd with Drupal where each value is the organism
+ *   An array of organisms where each value is the organism
  *   scientific name and the keys are organism_id's.
  *
  * @ingroup tripal_organism_api
  */
-function chado_get_organism_select_options($syncd_only = TRUE) {
+function chado_get_organism_select_options($published_only = FALSE, $show_common_name = FALSE) {
   $org_list = [];
   $org_list[] = 'Select an organism';
 
-  if ($syncd_only) {
-    $sql = "
-      SELECT *
-      FROM [chado_organism] CO
-        INNER JOIN {organism} O ON O.organism_id = CO.organism_id
-      ORDER BY O.genus, O.species
-    ";
-    $orgs = chado_query($sql);
+  if ($published_only) {
+    throw new \Exception(t('Passing TRUE for the :param parameter is not yet implemented for :func',
+      [':param' => 'published_only', ':func' => 'chado_get_organism_select_options()']));
+    return;
+  }
 
-    // Iterate through the organisms and build an array of those that are synced.
-    foreach ($orgs as $org) {
-      $org_list[$org->organism_id] = $org->genus . ' ' . $org->species;
+  // Retrieve all organisms
+  $chado = \Drupal::service('tripal_chado.database');
+  $sql = "
+    SELECT organism_id, genus, species, type_id,
+      (REPLACE ((SELECT name FROM {1:cvterm} CVT WHERE CVT.cvterm_id = type_id AND CVT.cv_id =
+        (SELECT cv_id FROM {1:cv} WHERE name='taxonomic_rank')), 'no_rank', '')) AS infraspecific_type,
+      infraspecific_name, common_name
+    FROM {1:organism}
+    ORDER BY genus, species, infraspecific_type, infraspecific_name
+  ";
+  $orgs = $chado->query($sql);
+
+  // Iterate through the organisms and build an array of their names.
+  foreach ($orgs as $org) {
+    $org_list[$org->organism_id] = $org->genus . ' ' . $org->species;
+    // Include abbreviated infraspecific nomenclature in name when present,
+    // e.g. subspecies becomes subsp.
+    if ($org->infraspecific_type or $org->infraspecific_name) {
+      $org_list[$org->organism_id] = chado_get_organism_scientific_name($org);
+    }
+    // Append common name when requested and when present.
+    if ($show_common_name and $org->common_name) {
+      $org_list[$org->organism_id] .= ' (' . $org->common_name . ')';
     }
   }
-  else {
-    // use this SQL statement for getting the organisms
-    $csql = "SELECT * FROM {organism} ORDER BY genus, species";
-    $orgs = chado_query($csql);
 
-    // Iterate through the organisms and build an array of those that are synced.
-    foreach ($orgs as $org) {
-      $org_list[$org->organism_id] = $org->genus . ' ' . $org->species;
-    }
-  }
   return $org_list;
 }
 
@@ -270,7 +276,7 @@ function chado_get_organism_image_url($organism) {
     return $url;
   }
 
-  // If we don't find the file using the genus ans species then look for the
+  // If we don't find the file using the genus and species then look for the
   // image with the node ID in the name. This method was used for Tripal 1.1
   // and 2.x-alpha version.
   $image_name = $nid . ".jpg";
