@@ -1,0 +1,5 @@
+##gff-version 3
+chr1_h1	.	chromosome	1	339755681	.	.	.	ID=chr1_h1;Name=chr1_h1
+chr2_h1	.	chromosome	1	270168396	.	.	.	ID=chr2_h1;Name=chr2_h1
+chr3_h1	.	chromosome	1	133856195	.	.	.	ID=chr3_h1;Name=chr3_h1
+chr4_h1	.	chromosome	1	55278592	.	.	.	ID=chr4_h1;Name=chr4_h1
