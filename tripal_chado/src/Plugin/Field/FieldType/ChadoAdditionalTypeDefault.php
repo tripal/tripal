@@ -28,13 +28,15 @@ use Drupal\Core\Ajax\ReplaceCommand;
 class ChadoAdditionalTypeDefault extends ChadoFieldItemBase {
 
   public static $id = 'chado_additional_type_default';
+
   // delimiter between table name and column name in form select
-  public static $table_column_delimiter = "\u{2192}";  # right arrow
+  public static $table_column_delimiter = " \u{2192} ";  # right arrow
 
   /**
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
+    // Overrides the default of 'value'
     return 'term_name';
   }
 
@@ -211,6 +213,7 @@ class ChadoAdditionalTypeDefault extends ChadoFieldItemBase {
       ],
     ];
 
+    // Element to select combined table and column for the additional type.
     $elements['storage_plugin_settings']['type_fkey'] = [
       '#type' => 'select',
       '#title' => t('Type Table and Column'),
@@ -223,6 +226,7 @@ class ChadoAdditionalTypeDefault extends ChadoFieldItemBase {
       '#disabled' => !$base_table,
       '#prefix' => '<div id="edit-type_fkey">',
       '#suffix' => '</div>',
+      '#element_validate' => [[static::class, 'storageSettingsFormValidate']],
     ];
 
     return $elements;
@@ -250,10 +254,11 @@ class ChadoAdditionalTypeDefault extends ChadoFieldItemBase {
       $form_state->setErrorByName('storage_plugin_settings][type_fkey',
           'An invalid table and column was selected');
     }
-
-    // Store the separated table and column in their settings variables
-    $form_state->setValue(['settings','storage_plugin_settings','type_table'], $parts[0]);
-    $form_state->setValue(['settings','storage_plugin_settings','type_column'], $parts[1]);
+    else {
+      // Store the separated table and column in their respective settings variables
+      $form_state->setValue(['settings','storage_plugin_settings','type_table'], $parts[0]);
+      $form_state->setValue(['settings','storage_plugin_settings','type_column'], $parts[1]);
+    }
   }
 
   /**
