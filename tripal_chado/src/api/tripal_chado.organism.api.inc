@@ -255,7 +255,7 @@ function chado_get_organism_select_options($published_only = FALSE, $show_common
  *
  * @return
  *   If the type parameter is 'url' (the default) then the fully qualified
- *   url to the image is returend. If no image is present then NULL is returned.
+ *   url to the image is returned. If no image is present then NULL is returned.
  *
  * @ingroup tripal_organism_api
  */
