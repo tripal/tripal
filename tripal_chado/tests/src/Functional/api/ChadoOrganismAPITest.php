@@ -59,14 +59,14 @@ class ChadoOrganismAPITest extends BrowserTestBase {
             'common_name' => 'False Tripal',
             'abbreviation' => 'T. ' . self::$species . ' subsp. sativus',
            ];
-    $dbq = chado_insert_record('1:organism', $org, [], 'testchado');
-    $this->assertNotEquals(FALSE, $dbq, 'test_chado_get_organism() unable to insert test organism 1.');
+    $dbq = chado_insert_record('organism', $org, [], 'testchado');
+    $this->assertNotNull($dbq, 'test_chado_get_organism() unable to insert test organism 1.');
     self::$organism_ids[0] = $dbq['organism_id'];
 
     $org['infraspecific_name'] = 'selvaticus';
     $org['abbreviation'] = 'T. ' . self::$species . ' subsp. selvaticus';
-    $dbq = chado_insert_record('1:organism', $org, [], 'testchado');
-    $this->assertNotEquals(FALSE, $dbq, 'test_chado_get_organism() unable to insert test organism 2.');
+    $dbq = chado_insert_record('organism', $org, [], 'testchado');
+    $this->assertNotNull($dbq, 'test_chado_get_organism() unable to insert test organism 2.');
     self::$organism_ids[1] = $dbq['organism_id'];
   }
 
@@ -100,27 +100,27 @@ class ChadoOrganismAPITest extends BrowserTestBase {
 
     // Empty array for $identifiers = Should fail
     $identifiers = [];
-    $org = chado_get_organism($identifiers, $options);
+    $org = chado_get_organism($identifiers, $options, 'testchado');
     $this->assertNull($org, 'test_chado_get_organism() did not flag invalid $identifiers (empty array)');
 
     // Organism that does not exist = Should fail
     $identifiers = ['genus' => 'Wrong', 'species' => 'incorrect'];
-    $org = chado_get_organism($identifiers, $options);
+    $org = chado_get_organism($identifiers, $options, 'testchado');
     $this->assertNull($org, 'test_chado_get_organism() returned an organism from invalid $identifiers');
 
     // Get organism from organism_id = Should succeed
     $identifiers = ['organism_id' => self::$organism_ids[0]];
-    $org = chado_get_organism($identifiers, $options);
+    $org = chado_get_organism($identifiers, $options, 'testchado');
     $this->assertIsObject($org, 'test_chado_get_organism() did not return the organism with organism_id='.self::$organism_ids[0]);
 
     // Ambiguous $identifiers = Should fail
     $identifiers = ['genus' => 'Tripalus', 'species' => self::$species];
-    $org = chado_get_organism($identifiers, $options);
+    $org = chado_get_organism($identifiers, $options, 'testchado');
     $this->assertNull($org, 'test_chado_get_organism() returned an organism from ambiguous $identifiers');
 
     // Unambiguous $identifiers = Should succeed
     $identifiers = ['genus' => 'Tripalus', 'species' => self::$species, 'type_id' => 2863, 'infraspecific_name' => 'selvaticus'];
-    $org = chado_get_organism($identifiers, $options);
+    $org = chado_get_organism($identifiers, $options, 'testchado');
     $this->assertIsObject($org, 'test_chado_get_organism() did not return an organism from unambiguous $identifiers');
   }
 
@@ -134,7 +134,7 @@ class ChadoOrganismAPITest extends BrowserTestBase {
     // Get organism from organism_id = Should succeed
     $options = [];
     $identifiers = ['organism_id' => self::$organism_ids[1]];
-    $org = chado_get_organism($identifiers, $options);
+    $org = chado_get_organism($identifiers, $options, 'testchado');
     $this->assertIsObject($org, 'test_chado_get_organism_scientific_name() did not return the organism with organism_id='.self::$organism_ids[1]);
 
     // Get scientific name = Should succeed

@@ -32,6 +32,8 @@
  *   An array of options. Supported keys include:
  *     - Any keys supported by chado_generate_var(). See that function
  *      definition for additional details.
+ * @param string $schema_name
+ *   The name of the schema to pull the variable from.
  *
  * NOTE: the $identifier parameter can really be any array similar to $values
  * passed into chado_select_record(). It should fully specify the organism
@@ -44,7 +46,7 @@
  *
  * @ingroup tripal_organism_api
  */
-function chado_get_organism($identifiers, $options = []) {
+function chado_get_organism($identifiers, $options = [], $schema_name = 'chado') {
 
   // Set Defaults.
   if (!isset($options['include_fk'])) {
@@ -78,13 +80,15 @@ function chado_get_organism($identifiers, $options = []) {
   }
 
   // If one of the identifiers is property then use chado_get_record_with_property().
+// @to-do chado_get_record_with_property() does not exist in Tripal 4
   if (isset($identifiers['property'])) {
     $property = $identifiers['property'];
     unset($identifiers['property']);
     $organism = chado_get_record_with_property(
       ['table' => 'organism', 'base_records' => $identifiers],
       ['type_name' => $property],
-      $options
+      $options,
+      $schema_name
     );
   }
 
@@ -96,7 +100,8 @@ function chado_get_organism($identifiers, $options = []) {
     $organism = chado_generate_var(
       'organism',
       $identifiers,
-      $options
+      $options,
+      $schema_name
     );
   }
 
