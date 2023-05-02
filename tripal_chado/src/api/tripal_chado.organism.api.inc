@@ -32,6 +32,7 @@
  *   An array of options. Supported keys include:
  *     - Any keys supported by chado_generate_var(). See that function
  *      definition for additional details.
+ *
  * @param string $schema_name
  *   The name of the schema to pull the variable from.
  *
@@ -80,15 +81,26 @@ function chado_get_organism($identifiers, $options = [], $schema_name = 'chado')
   }
 
   // If one of the identifiers is property then use chado_get_record_with_property().
-// @to-do chado_get_record_with_property() does not exist in Tripal 4
   if (isset($identifiers['property'])) {
     $property = $identifiers['property'];
     unset($identifiers['property']);
-    $organism = chado_get_record_with_property(
-      ['table' => 'organism', 'base_records' => $identifiers],
-      ['type_name' => $property],
-      $options,
-      $schema_name
+// @to-do chado_get_record_with_property() does not exist in Tripal 4
+    tripal_report_error(
+      'tripal_organism_api',
+      TRIPAL_ERROR,
+      "chado_get_organism: chado_get_record_with_property() is not yet implemented in Tripal 4",
+//        You did not pass in anything to identify the organism you want. The identifier
+//        is expected to be an array with the key matching a column name in the organism table
+//        (ie: organism_id or name). You passed in %identifier.",
+      [
+//        '%identifier' => print_r($identifiers, TRUE),
+      ]
+    );
+//    $organism = chado_get_record_with_property(
+//      ['table' => 'organism', 'base_records' => $identifiers],
+//      ['type_name' => $property],
+//      $options,
+//      $schema_name
     );
   }
 
@@ -144,12 +156,15 @@ function chado_get_organism($identifiers, $options = [], $schema_name = 'chado')
  * @param $organism
  *   An organism object.
  *
+ * @param string $schema_name
+ *   The name of the schema to pull the variable from.
+ *
  * @return
  *   The full scientific name of the organism.
  *
  * @ingroup tripal_organism_api
  */
-function chado_get_organism_scientific_name($organism) {
+function chado_get_organism_scientific_name($organism, $schema_name = 'chado') {
   $name = $organism->genus . ' ' . $organism->species;
 
   $rank = '';
@@ -160,7 +175,7 @@ function chado_get_organism_scientific_name($organism) {
     }
   }
   else {
-    $rank_term = chado_get_cvterm(['cvterm_id' => $organism->type_id]);
+    $rank_term = chado_get_cvterm(['cvterm_id' => $organism->type_id], [], $schema_name);
     if ($rank_term) {
       $rank = $rank_term->name;
     }

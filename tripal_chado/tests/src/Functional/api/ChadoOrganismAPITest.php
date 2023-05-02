@@ -138,7 +138,7 @@ class ChadoOrganismAPITest extends BrowserTestBase {
     $this->assertIsObject($org, 'test_chado_get_organism_scientific_name() did not return the organism with organism_id='.self::$organism_ids[1]);
 
     // Get scientific name = Should succeed
-    $name = chado_get_organism_scientific_name($org);
+    $name = chado_get_organism_scientific_name($org, 'testchado');
     $expect = 'Tripalus '.self::$species.' subsp. selvaticus';
     $this->assertEquals($name, $expect, 'test_chado_get_organism_scientific_name() did not return the correct scientific name');
   }
