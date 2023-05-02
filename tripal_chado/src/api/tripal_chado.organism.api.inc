@@ -101,7 +101,7 @@ function chado_get_organism($identifiers, $options = [], $schema_name = 'chado')
 //      ['type_name' => $property],
 //      $options,
 //      $schema_name
-    );
+//    );
   }
 
   // Else we have a simple case and we can just use chado_generate_var to get 
