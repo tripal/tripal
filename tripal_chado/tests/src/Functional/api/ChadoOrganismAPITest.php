@@ -59,13 +59,13 @@ class ChadoOrganismAPITest extends BrowserTestBase {
             'common_name' => 'False Tripal',
             'abbreviation' => 'T. ' . self::$species . ' subsp. sativus',
            ];
-    $dbq = chado_insert_record('organism', $org, [], 'chado');
+    $dbq = chado_insert_record('1:organism', $org, [], 'testchado');
     $this->assertNotEquals(FALSE, $dbq, 'test_chado_get_organism() unable to insert test organism 1.');
     self::$organism_ids[0] = $dbq['organism_id'];
 
     $org['infraspecific_name'] = 'selvaticus';
     $org['abbreviation'] = 'T. ' . self::$species . ' subsp. selvaticus';
-    $dbq = chado_insert_record('organism', $org, [], 'chado');
+    $dbq = chado_insert_record('1:organism', $org, [], 'testchado');
     $this->assertNotEquals(FALSE, $dbq, 'test_chado_get_organism() unable to insert test organism 2.');
     self::$organism_ids[1] = $dbq['organism_id'];
   }
@@ -80,20 +80,11 @@ class ChadoOrganismAPITest extends BrowserTestBase {
   }
 
   /**
-   * Tests chado.organism associated functions.
+   * Tests the chado_get_organism() API function.
    *
    * @group tripal-chado
    * @group chado-organism
    */
-  // @@@
-  // function chado_get_organism($identifiers, $options = []) {
-  // function chado_get_organism_scientific_name($organism) {
-  // function chado_get_organism_select_options($published_only = FALSE, $show_common_name = FALSE) {
-  // function chado_get_organism_image_url($organism) {
-  // function chado_autocomplete_organism($text) {
-  // function chado_abbreviate_infraspecific_rank($rank) {
-  // function chado_unabbreviate_infraspecific_rank($rank) {
-
   public function test_chado_get_organism() {
 
     // Invalid $identifiers ($identifiers must be an array) = Should fail, and in fact causes an exception
@@ -132,4 +123,31 @@ class ChadoOrganismAPITest extends BrowserTestBase {
     $org = chado_get_organism($identifiers, $options);
     $this->assertIsObject($org, 'test_chado_get_organism() did not return an organism from unambiguous $identifiers');
   }
+
+  /**
+   * Tests the chado_get_organism_scientific_name() API function.
+   *
+   * @group tripal-chado
+   * @group chado-organism
+   */
+  public function test_chado_get_organism_scientific_name() {
+    // Get organism from organism_id = Should succeed
+    $options = [];
+    $identifiers = ['organism_id' => self::$organism_ids[1]];
+    $org = chado_get_organism($identifiers, $options);
+    $this->assertIsObject($org, 'test_chado_get_organism_scientific_name() did not return the organism with organism_id='.self::$organism_ids[1]);
+
+    // Get scientific name = Should succeed
+    $name = chado_get_organism_scientific_name($org);
+    $expect = 'Tripalus '.self::$species.' subsp. selvaticus';
+    $this->assertEquals($name, $expect, 'test_chado_get_organism_scientific_name() did not return the correct scientific name');
+  }
+  // @@@ TO-DO list
+  // x function chado_get_organism($identifiers, $options = []) {
+  // x function chado_get_organism_scientific_name($organism) {
+  //   function chado_get_organism_select_options($published_only = FALSE, $show_common_name = FALSE) {
+  //   function chado_get_organism_image_url($organism) {
+  //   function chado_autocomplete_organism($text) {
+  //   function chado_abbreviate_infraspecific_rank($rank) {
+  //   function chado_unabbreviate_infraspecific_rank($rank) {
 }
