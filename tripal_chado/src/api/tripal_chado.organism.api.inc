@@ -165,8 +165,20 @@ function chado_get_organism($identifiers, $options = [], $schema_name = 'chado')
  * @ingroup tripal_organism_api
  */
 function chado_get_organism_scientific_name($organism, $schema_name = 'chado') {
-  $name = $organism->genus . ' ' . $organism->species;
+  // Validation
+  if (!is_object($organism)) {
+    tripal_report_error(
+      'tripal_organism_api',
+      TRIPAL_ERROR,
+      "chado_get_organism_scientific_name: passed organism parameter is not an object.
+        You passed in %identifier.",
+      [
+        '%identifier' => print_r($organism, TRUE),
+      ]
+    );
+  }
 
+  $name = $organism->genus . ' ' . $organism->species;
   $rank = '';
   // For organism objects created using chado_generate_var.
   if (is_object($organism->type_id)) {
