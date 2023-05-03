@@ -214,13 +214,16 @@ function chado_get_organism_scientific_name($organism, $schema_name = 'chado') {
  * @param $show_common_name
  *   When true, include the organism common name, if present, in parentheses.
  *
+ * @param string $schema_name
+ *   The name of the schema to pull the variable from.
+ *
  * @return
  *   An array of organisms where each value is the organism
  *   scientific name and the keys are organism_id's.
  *
  * @ingroup tripal_organism_api
  */
-function chado_get_organism_select_options($published_only = FALSE, $show_common_name = FALSE) {
+function chado_get_organism_select_options($published_only = FALSE, $show_common_name = FALSE, $schema_name = 'chado') {
   $org_list = [];
   $org_list[] = 'Select an organism';
 
@@ -248,7 +251,7 @@ function chado_get_organism_select_options($published_only = FALSE, $show_common
     // Include abbreviated infraspecific nomenclature in name when present,
     // e.g. subspecies becomes subsp.
     if ($org->infraspecific_type or $org->infraspecific_name) {
-      $org_list[$org->organism_id] = chado_get_organism_scientific_name($org);
+      $org_list[$org->organism_id] = chado_get_organism_scientific_name($org, $schema_name);
     }
     // Append common name when requested and when present.
     if ($show_common_name and $org->common_name) {

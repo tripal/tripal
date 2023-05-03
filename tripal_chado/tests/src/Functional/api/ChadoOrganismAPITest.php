@@ -110,7 +110,7 @@ class ChadoOrganismAPITest extends BrowserTestBase {
     $this->assertEquals($name, $expect, 'test_chado_get_organism_scientific_name() did not return the correct scientific name '.$name.' but expected '.$expect);
 
     // Test organism select options with default parameters and test that an array is returned = should succeed
-    $select_options = chado_get_organism_select_options();
+    $select_options = chado_get_organism_select_options(FALSE, FALSE, self::$schemaName);
     $this->assertIsArray($select_options, 'test_chado_get_organism_select_options() did not return an array');
 
     // Test that the array contains at least the two test organisms = should succeed
