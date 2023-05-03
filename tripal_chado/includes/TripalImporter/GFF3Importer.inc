@@ -170,11 +170,11 @@ class GFF3Importer extends TripalImporter {
    */
   private $landmark_types = [];
 
-    /**
-   * $this->landmark_types_type_ids which is an associative array. 
+  /**
+   * $this->landmark_types_type_ids which is an associative array.
    * The key is the type, and the value is the type_id.
    */
-  private $landmark_types_type_ids = [];  
+  private $landmark_types_type_ids = [];
 
   /**
    * The results object for the landmark type cvterm.
@@ -348,7 +348,7 @@ class GFF3Importer extends TripalImporter {
       '#description' => t("Optional. Use this field to specify a Sequence Ontology type
        for the default landmark sequences in the GFF fie (e.g. 'chromosome'). This is only needed if
        the landmark features (first column of the GFF3 file) are not already in the database."),
-    ];    
+    ];
 
     // DOUG'S ADDITIONS
     // $form['landmarks'] = [
@@ -1911,9 +1911,9 @@ class GFF3Importer extends TripalImporter {
           $this->insertLandmark($uniquename);
         }
         else {
-          throw new \Exception(t('The landmark (reference) sequence, ' . $uniquename . ', 
-            is not in the database and not specified in the GFF3 file. 
-            Please either pre-load the landmark sequences or set a "Landmark Type" 
+          throw new \Exception(t('The landmark (reference) sequence, ' . $uniquename . ',
+            is not in the database and not specified in the GFF3 file.
+            Please either pre-load the landmark sequences or set a "Landmark Type"
             in the GFF importer.'));
         }
       }
@@ -2455,11 +2455,11 @@ class GFF3Importer extends TripalImporter {
         }
       }
     }
-  }  
+  }
 
   /**
    * This looks up the landmark type_id by utilizing the landmark_types associate
-   * array cached values and then checks the landmark_types_type_ids associate 
+   * array cached values and then checks the landmark_types_type_ids associate
    * array cached values.
    */
   function getLandmarkTypeID($landmark_name) {
@@ -2476,7 +2476,7 @@ class GFF3Importer extends TripalImporter {
   }
 
   /**
-   * 
+   *
    */
   private function findLandmarks() {
     $batch_size = 1000;
@@ -2488,7 +2488,7 @@ class GFF3Importer extends TripalImporter {
 
     // Perform cache of Landmarks Type IDs
     $this->findLandmarksTypeIDs();
-    
+
     // NEW IMPROVED CODE WITH BATCH PROCESSING
     $init_sql = "SELECT name, uniquename, feature_id FROM {feature} WHERE \n";
     $i = 0;

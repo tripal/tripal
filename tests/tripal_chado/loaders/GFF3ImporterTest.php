@@ -39,8 +39,8 @@ class GFF3ImporterTest extends TripalTestCase {
     // $results = chado_query("SELECT * FROM {cvterm} WHERE name = 'supercontig' LIMIT 1;");
     // foreach ($results as $row) {
     //   print_r($row);
-    // } 
-    // throw new Exception('DEBUG');   
+    // }
+    // throw new Exception('DEBUG');
   }
 
   // public function testGFFImporterCheckCVTERMSupercontig() {
@@ -59,7 +59,7 @@ class GFF3ImporterTest extends TripalTestCase {
    */
   public function testGFFImporter() {
     $gff_file = ['file_local' => __DIR__ . '/../data/small_gene.gff'];
-    $fasta = ['file_local' => __DIR__ . '/../data/short_scaffold.fasta'];    
+    $fasta = ['file_local' => __DIR__ . '/../data/short_scaffold.fasta'];
     $analysis = factory('chado.analysis')->create();
     $organism = factory('chado.organism')->create();
     $run_args = [
@@ -84,7 +84,7 @@ class GFF3ImporterTest extends TripalTestCase {
     $this->runGFFLoader($run_args, $gff_file);
 
     // This protein is an explicit protein / polypeptide imported from the GFF
-    // file. 
+    // file.
     $name = 'test_protein_001.1';
     $query = db_select('chado.feature', 'f')
       ->fields('f', ['uniquename'])
@@ -97,9 +97,9 @@ class GFF3ImporterTest extends TripalTestCase {
   /**
    * Run the GFF loader on gff_tag_unescaped_character.gff for testing.
    *
-   * This tests whether the GFF loader adds IDs that contain a comma. 
+   * This tests whether the GFF loader adds IDs that contain a comma.
    * The GFF loader should allow it
-   */  
+   */
   public function testGFFImporterUnescapedTagWithComma() {
     $gff_file = ['file_local' => __DIR__ . '/../data/gff_tag_unescaped_character.gff'];
     $analysis = factory('chado.analysis')->create();
@@ -123,7 +123,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'alt_id_attr' => NULL,
     ];
 
-  
+
     $this->loadLandmarks($analysis, $organism);
     // This should throw an error based on the tag name having the comma
     $hasException = false;
@@ -142,11 +142,11 @@ class GFF3ImporterTest extends TripalTestCase {
    *
    * This tests whether the GFF loader adds Alias attributes
    * The GFF loader should allow it
-   */  
+   */
   public function testGFFImporterTagAliasVerification() {
     $gff_file = ['file_local' =>
       __DIR__ . '/../data/small_gene.gff'];
-    $fasta = ['file_local' => __DIR__ . '/../data/short_scaffold.fasta'];      
+    $fasta = ['file_local' => __DIR__ . '/../data/short_scaffold.fasta'];
     $analysis = factory('chado.analysis')->create();
     $organism = factory('chado.organism')->create();
     $run_args = [
@@ -168,7 +168,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'alt_id_attr' => NULL,
     ];
 
-  
+
     $this->loadLandmarks($analysis, $organism, $fasta);
     $this->runGFFLoader($run_args, $gff_file);
 
@@ -186,7 +186,7 @@ class GFF3ImporterTest extends TripalTestCase {
    *
    * This tests whether the GFF loader adds Parent attributes
    * The GFF loader should allow it
-   */  
+   */
   public function testGFFImporterTagParentVerification() {
     $gff_file = ['file_local' =>
       __DIR__ . '/../data/gff_tag_parent_verification.gff'];
@@ -211,7 +211,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'alt_id_attr' => NULL,
     ];
 
-  
+
     $this->loadLandmarks($analysis, $organism);
     $this->runGFFLoader($run_args, $gff_file);
 
@@ -227,11 +227,11 @@ class GFF3ImporterTest extends TripalTestCase {
   /**
    * Run the GFF loader on gff_tagvalue_unescaped_character.gff for testing.
    *
-   * This tests whether the GFF loader adds IDs that contain a comma. 
+   * This tests whether the GFF loader adds IDs that contain a comma.
    * The GFF loader should allow it
-   */  
+   */
   public function testGFFImporterEscapedTagValueWithEncodedCharacter() {
-    $gff_file = ['file_local' => 
+    $gff_file = ['file_local' =>
       __DIR__ . '/../data/gff_tagvalue_encoded_character.gff'];
     $analysis = factory('chado.analysis')->create();
     $organism = factory('chado.organism')->create();
@@ -254,11 +254,11 @@ class GFF3ImporterTest extends TripalTestCase {
       'alt_id_attr' => NULL,
     ];
 
-  
+
     $this->loadLandmarks($analysis, $organism);
     $this->runGFFLoader($run_args, $gff_file);
 
-    $results = db_query("SELECT * FROM chado.feature 
+    $results = db_query("SELECT * FROM chado.feature
       WHERE uniquename = 'FRAEX38873_v2_000000010,20';",array());
 
     $this->assertEquals($results->rowCount(), 1);
@@ -268,9 +268,9 @@ class GFF3ImporterTest extends TripalTestCase {
   /**
    * Run the GFF loader on gff_tagvalue_unescaped_character.gff for testing.
    *
-   * This tests whether the GFF loader adds IDs that contain a comma. 
+   * This tests whether the GFF loader adds IDs that contain a comma.
    * The GFF loader should allow it
-   */  
+   */
   public function testGFFImporterUnescapedTagValueWithComma() {
     $gff_file = ['file_local' => __DIR__ . '/../data/gff_tagvalue_unescaped_character.gff'];
     $analysis = factory('chado.analysis')->create();
@@ -294,7 +294,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'alt_id_attr' => NULL,
     ];
 
-  
+
     $this->loadLandmarks($analysis, $organism);
     // This should throw an error based on the tag name having the comma
     $hasException = false;
@@ -311,11 +311,11 @@ class GFF3ImporterTest extends TripalTestCase {
   /**
    * Run the GFF loader on gff_seqid_invalid_character.gff for testing.
    * Seqids seem to also be called landmarks within GFF loader.
-   * This tests whether the GFF loader has any issues with characters like  
+   * This tests whether the GFF loader has any issues with characters like
    * single quotes.
-   */  
+   */
   public function testGFFImporterSeqidWithInvalidCharacter() {
-    $gff_file = ['file_local' => 
+    $gff_file = ['file_local' =>
       __DIR__ . '/../data/gff_seqid_invalid_character.gff'];
     $analysis = factory('chado.analysis')->create();
     $organism = factory('chado.organism')->create();
@@ -338,7 +338,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'alt_id_attr' => NULL,
     ];
 
-  
+
     $this->loadLandmarks($analysis, $organism);
     // This will produce an exception due to quote character in Seqid
     $hasException = false;
@@ -356,9 +356,9 @@ class GFF3ImporterTest extends TripalTestCase {
   /**
    * Run the GFF loader on gff_unescaped_ids.gff for testing.
    *
-   * This tests whether the GFF loader adds IDs that contain whitespaces. 
+   * This tests whether the GFF loader adds IDs that contain whitespaces.
    * The GFF loader should allow it
-   */  
+   */
   public function testGFFImporterUnescapedWhitespaceID() {
     $gff_file = ['file_local' => __DIR__ . '/../data/gff_unescaped_ids.gff'];
     $analysis = factory('chado.analysis')->create();
@@ -382,12 +382,12 @@ class GFF3ImporterTest extends TripalTestCase {
       'alt_id_attr' => NULL,
     ];
 
-  
+
     $this->loadLandmarks($analysis, $organism);
     // This should go through just fine
     $this->runGFFLoader($run_args, $gff_file);
 
-    $results = db_query("SELECT * FROM chado.feature WHERE uniquename = 
+    $results = db_query("SELECT * FROM chado.feature WHERE uniquename =
       'FRAEX38873_v2_000000010 SPACED';");
     $this->assertEquals($results->rowCount(), 1);
   }
@@ -395,9 +395,9 @@ class GFF3ImporterTest extends TripalTestCase {
   /**
    * Run the GFF loader on gff_rightarrow_ids.gff for testing.
    *
-   * This tests whether the GFF loader fails if ID contains  
+   * This tests whether the GFF loader fails if ID contains
    * arrow >. It should not fail.
-   */  
+   */
   public function testGFFImporterRightArrowID() {
     $gff_file = ['file_local' => __DIR__ . '/../data/gff_rightarrow_id.gff'];
     $analysis = factory('chado.analysis')->create();
@@ -421,12 +421,12 @@ class GFF3ImporterTest extends TripalTestCase {
       'alt_id_attr' => NULL,
     ];
 
- 
+
     $this->loadLandmarks($analysis, $organism);
     // This will produce an exception due to right arrow in ID
     $this->runGFFLoader($run_args, $gff_file);
 
-    $results = db_query("SELECT * FROM chado.feature 
+    $results = db_query("SELECT * FROM chado.feature
       WHERE uniquename = '>FRAEX38873_v2_000000010';");
 
     // We expect this record to get inserted.
@@ -437,10 +437,10 @@ class GFF3ImporterTest extends TripalTestCase {
   /**
    * Run the GFF loader on gff_duplicate_ids.gff for testing.
    *
-   * This tests whether the GFF loader detects duplicate IDs which makes a 
-   * GFF file invalid since IDs should be unique. The GFF loader should throw 
+   * This tests whether the GFF loader detects duplicate IDs which makes a
+   * GFF file invalid since IDs should be unique. The GFF loader should throw
    * and exception which this test checks for
-   */  
+   */
   public function testGFFImporterDuplicateIDsExceptionCheck() {
     $gff_file = ['file_local' => __DIR__ . '/../data/gff_duplicate_ids.gff'];
     $analysis = factory('chado.analysis')->create();
@@ -465,7 +465,7 @@ class GFF3ImporterTest extends TripalTestCase {
     ];
 
     $hasException = false;
-    try {    
+    try {
       $this->loadLandmarks($analysis, $organism);
       // This will produce an exception of duplicate feature ID
       $this->runGFFLoader($run_args, $gff_file);
@@ -481,8 +481,8 @@ class GFF3ImporterTest extends TripalTestCase {
   /**
    * Run the GFF loader on gff_invalidstartend.gff for testing.
    *
-   * This tests whether the GFF loader fixes start end values 
-   */  
+   * This tests whether the GFF loader fixes start end values
+   */
   public function testGFFImporterInvalidStartEnd() {
     $gff_file = ['file_local' => __DIR__ . '/../data/gff_invalidstartend.gff'];
     $analysis = factory('chado.analysis')->create();
@@ -506,7 +506,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'alt_id_attr' => NULL,
     ];
 
-   
+
     $this->loadLandmarks($analysis, $organism);
     // This will produce an exception of duplicate feature ID
     $this->runGFFLoader($run_args, $gff_file);
@@ -515,7 +515,7 @@ class GFF3ImporterTest extends TripalTestCase {
       ->fields('f', ['uniquename'])
       ->condition('f.uniquename', 'FRAEX38873_v2_000000010')
       ->execute()
-      ->fetchAll();    
+      ->fetchAll();
 
     // We expect the feature to still be added to the database
     // since the GFF Loader caters for reversing backward numbers
@@ -526,7 +526,7 @@ class GFF3ImporterTest extends TripalTestCase {
    * Run the GFF loader on gff_score.gff for testing.
    *
    * This tests whether the GFF loader interprets the score values
-   */  
+   */
   public function testGFFImporterScoreTest() {
     $gff_file = ['file_local' => __DIR__ . '/../data/gff_score.gff'];
     $analysis = factory('chado.analysis')->create();
@@ -550,7 +550,7 @@ class GFF3ImporterTest extends TripalTestCase {
       'alt_id_attr' => NULL,
     ];
 
-   
+
     $this->loadLandmarks($analysis, $organism);
     $this->runGFFLoader($run_args, $gff_file);
 
@@ -566,14 +566,14 @@ class GFF3ImporterTest extends TripalTestCase {
     ));
     foreach ($results as $row){
       $this->assertEquals($row->significance,2.5);
-    } 
-    
+    }
+
     // Test that negative score values get placed in the db
     $results = db_query('SELECT * FROM chado.analysisfeature WHERE significance = -2.5 LIMIT 1', array(
     ));
     foreach ($results as $row){
       $this->assertEquals($row->significance,-2.5);
-    }     
+    }
 
   }
 
@@ -581,7 +581,7 @@ class GFF3ImporterTest extends TripalTestCase {
    * Run the GFF loader on gff_strand.gff for testing.
    *
    * This tests whether the GFF loader interprets the strand values
-   */  
+   */
   public function testGFFImporterInvalidStrandTest() {
     $gff_file = ['file_local' => __DIR__ . '/../data/gff_strand_invalid.gff'];
     $analysis = factory('chado.analysis')->create();
@@ -605,9 +605,9 @@ class GFF3ImporterTest extends TripalTestCase {
       'alt_id_attr' => NULL,
     ];
 
-   
+
     $this->loadLandmarks($analysis, $organism);
-    
+
     $isException = false;
     try {
       $this->runGFFLoader($run_args, $gff_file);
@@ -624,7 +624,7 @@ class GFF3ImporterTest extends TripalTestCase {
    * Run the GFF loader on gff_strand.gff for testing.
    *
    * This tests whether the GFF loader interprets the strand values
-   */  
+   */
   public function testGFFImporterStrandTest() {
     $gff_file = ['file_local' => __DIR__ . '/../data/gff_strand.gff'];
     $analysis = factory('chado.analysis')->create();
@@ -648,27 +648,27 @@ class GFF3ImporterTest extends TripalTestCase {
       'alt_id_attr' => NULL,
     ];
 
-   
+
     $this->loadLandmarks($analysis, $organism);
     $this->runGFFLoader($run_args, $gff_file);
 
     // Test that integer values for strand that get placed in the db
     // Strand data gets saved in chado.featureloc
-    $results = db_query('SELECT * FROM chado.featureloc fl 
+    $results = db_query('SELECT * FROM chado.featureloc fl
       LEFT JOIN chado.feature f ON (fl.feature_id = f.feature_id)
-      WHERE uniquename = :uniquename LIMIT 1', 
+      WHERE uniquename = :uniquename LIMIT 1',
       array(
         ':uniquename' => 'FRAEX38873_v2_000000010'
       )
     );
 
     foreach ($results as $row) {
-      $this->assertEquals($row->strand, 1); // +
+      $this->assertEquals($row->strand, 1); //
     }
 
-    $results = db_query('SELECT * FROM chado.featureloc fl 
+    $results = db_query('SELECT * FROM chado.featureloc fl
       LEFT JOIN chado.feature f ON (fl.feature_id = f.feature_id)
-      WHERE uniquename = :uniquename LIMIT 1', 
+      WHERE uniquename = :uniquename LIMIT 1',
       array(
         ':uniquename' => 'FRAEX38873_v2_000000010.1'
       )
@@ -676,11 +676,11 @@ class GFF3ImporterTest extends TripalTestCase {
 
     foreach ($results as $row) {
       $this->assertEquals($row->strand,-1); // -
-    } 
-    
-    $results = db_query('SELECT * FROM chado.featureloc fl 
+    }
+
+    $results = db_query('SELECT * FROM chado.featureloc fl
       LEFT JOIN chado.feature f ON (fl.feature_id = f.feature_id)
-      WHERE uniquename = :uniquename LIMIT 1', 
+      WHERE uniquename = :uniquename LIMIT 1',
       array(
         ':uniquename' => 'FRAEX38873_v2_000000010.2'
       )
@@ -689,10 +689,10 @@ class GFF3ImporterTest extends TripalTestCase {
     foreach ($results as $row) {
       $this->assertEquals($row->strand, 0); // ?
     }
-    
-    $results = db_query('SELECT * FROM chado.featureloc fl 
+
+    $results = db_query('SELECT * FROM chado.featureloc fl
       LEFT JOIN chado.feature f ON (fl.feature_id = f.feature_id)
-      WHERE uniquename = :uniquename LIMIT 1', 
+      WHERE uniquename = :uniquename LIMIT 1',
       array(
         ':uniquename' => 'FRAEX38873_v2_000000010.3'
       )
@@ -700,7 +700,7 @@ class GFF3ImporterTest extends TripalTestCase {
 
     foreach ($results as $row) {
       $this->assertEquals($row->strand, 0); // .
-    }     
+    }
 
   }
 
@@ -709,7 +709,7 @@ class GFF3ImporterTest extends TripalTestCase {
    *
    * This tests whether the GFF loader interprets the phase values correctly
    * for CDS rows.
-   */  
+   */
   public function testGFFImporterPhaseTest() {
     $gff_file = ['file_local' => __DIR__ . '/../data/gff_phase.gff'];
     $analysis = factory('chado.analysis')->create();
@@ -733,11 +733,11 @@ class GFF3ImporterTest extends TripalTestCase {
       'alt_id_attr' => NULL,
     ];
 
-   
+
     $this->loadLandmarks($analysis, $organism);
     $this->runGFFLoader($run_args, $gff_file);
 
-    $results = db_query("SELECT * FROM chado.feature 
+    $results = db_query("SELECT * FROM chado.feature
       WHERE uniquename = :uniquename LIMIT 1", array(
       ':uniquename' => 'FRAEX38873_v2_000000010.1.cds1'
       )
@@ -747,14 +747,14 @@ class GFF3ImporterTest extends TripalTestCase {
     // by the uniquename specified
     $this->assertEquals($results->rowCount(), 1);
 
-    $results = db_query("SELECT * FROM chado.featureloc 
+    $results = db_query("SELECT * FROM chado.featureloc
       WHERE phase = 1 LIMIT 1", array(
       )
     );
 
     // Check to make sure it returns a single row (implying a match)
     // by phase value 1
-    $this->assertEquals($results->rowCount(), 1);    
+    $this->assertEquals($results->rowCount(), 1);
   }
 
   /**
@@ -762,7 +762,7 @@ class GFF3ImporterTest extends TripalTestCase {
    *
    * This tests whether the GFF loader interprets the phase values correctly
    * for CDS rows when a number outside of the range 0,1,2 is specified.
-   */  
+   */
   public function testGFFImporterInvalidPhaseNumberTest() {
     $gff_file = ['file_local' => __DIR__ . '/../data/gff_phase_invalid_number.gff'];
     $analysis = factory('chado.analysis')->create();
@@ -804,7 +804,7 @@ class GFF3ImporterTest extends TripalTestCase {
    *
    * This tests whether the GFF loader interprets the phase values correctly
    * for CDS rows when a character outside of the range 0,1,2 is specified.
-   */  
+   */
   public function testGFFImporterInvalidPhaseCharacterTest() {
     $gff_file = ['file_local' => __DIR__ . '/../data/gff_phase_invalid_character.gff'];
     $analysis = factory('chado.analysis')->create();
@@ -1198,7 +1198,7 @@ class GFF3ImporterTest extends TripalTestCase {
     $this->assertEquals(720, strlen($scaffold->residues));
     $this->assertEquals('83578d8afdaec399c682aa6c0ddd29c9', $scaffold->md5checksum);
   }
-  
+
   /**
    * Test that when checked, explicit proteins are created when specified within
    * the GFF file. Explicit proteins will not respect the skip_protein argument
@@ -1370,9 +1370,9 @@ class GFF3ImporterTest extends TripalTestCase {
    * Run the GFF loader on gff_1380_landmark_test.gff for testing.
    *
    * This tests whether the GFF loader adds landmarks directly from the GFF file
-   * character. 
+   * character.
    * The GFF loader should allow it
-   */ 
+   */
   function testGFFImporterLandmarkTest() {
     $analysis = factory('chado.analysis')->create();
     $organism= factory('chado.organism')->create();
@@ -1406,7 +1406,7 @@ class GFF3ImporterTest extends TripalTestCase {
 
 
     // Check that the chr1_h1 feature (which is a landmark was added to feature table)
-    $results = chado_query("SELECT count(*) as c1 FROM {feature} 
+    $results = chado_query("SELECT count(*) as c1 FROM {feature}
       WHERE uniquename ILIKE :value",[
       ':value' => 'chr1_h1'
     ]);
@@ -1422,7 +1422,7 @@ class GFF3ImporterTest extends TripalTestCase {
     }
 
     // Check if the same chr1_h1 has type_id of chromosome_type_id
-    $results = chado_query("SELECT count(*) as c1 FROM {feature} 
+    $results = chado_query("SELECT count(*) as c1 FROM {feature}
       WHERE uniquename ILIKE :value AND type_id = :type_id",[
       ':value' => 'chr1_h1',
       ':type_id' => $chromosome_type_id
@@ -1430,48 +1430,48 @@ class GFF3ImporterTest extends TripalTestCase {
 
     foreach ($results as $row) {
       $this->assertEquals($row->c1, 1);
-    } 
-    
+    }
+
     // Check to make sure landmark exists in featureloc table
-    $results = chado_query("SELECT count(*) as c1 FROM {featureloc} fl 
-      LEFT JOIN {feature} f 
+    $results = chado_query("SELECT count(*) as c1 FROM {featureloc} fl
+      LEFT JOIN {feature} f
       ON fl.feature_id = f.feature_id
-      WHERE uniquename = :landmark_name", 
+      WHERE uniquename = :landmark_name",
       [':landmark_name' => 'chr1_h1']);
     foreach ($results as $row) {
       $this->assertEquals($row->c1, 1);
     }
 
     // Check to make sure landmark exists in featureloc table
-    $results = chado_query("SELECT count(*) as c1 FROM {featureloc} fl 
-      LEFT JOIN {feature} f 
+    $results = chado_query("SELECT count(*) as c1 FROM {featureloc} fl
+      LEFT JOIN {feature} f
       ON fl.feature_id = f.feature_id
-      WHERE uniquename = :landmark_name", 
+      WHERE uniquename = :landmark_name",
       [':landmark_name' => 'chr2_h1']);
     foreach ($results as $row) {
       $this->assertEquals($row->c1, 1);
     }
 
     // Check to make sure landmark exists in featureloc table
-    $results = chado_query("SELECT count(*) as c1 FROM {featureloc} fl 
-      LEFT JOIN {feature} f 
+    $results = chado_query("SELECT count(*) as c1 FROM {featureloc} fl
+      LEFT JOIN {feature} f
       ON fl.feature_id = f.feature_id
-      WHERE uniquename = :landmark_name", 
+      WHERE uniquename = :landmark_name",
       [':landmark_name' => 'chr3_h1']);
     foreach ($results as $row) {
       $this->assertEquals($row->c1, 1);
-    } 
-    
+    }
+
     // Check to make sure landmark exists in featureloc table
-    $results = chado_query("SELECT count(*) as c1 FROM {featureloc} fl 
-      LEFT JOIN {feature} f 
+    $results = chado_query("SELECT count(*) as c1 FROM {featureloc} fl
+      LEFT JOIN {feature} f
       ON fl.feature_id = f.feature_id
-      WHERE uniquename = :landmark_name", 
+      WHERE uniquename = :landmark_name",
       [':landmark_name' => 'chr4_h1']);
     foreach ($results as $row) {
       $this->assertEquals($row->c1, 1);
-    } 
-  } 
+    }
+  }
 
   // /**
   //  * The GFF importer should create new landmarks if they are defined in the
