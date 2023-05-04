@@ -2,6 +2,7 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
@@ -11,15 +12,16 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  *
  * @FieldType(
  *   id = "chado_local_source_data_default",
- *   label = @Translation("Chado local analysis source data"),
- *   description = @Translation("The local source data used for this analysis"),
+ *   label = @Translation("Chado Local Source Data"),
+ *   description = @Translation("The source and version of data used for this analysis"),
  *   default_widget = "chado_local_source_data_widget_default",
- *   default_formatter = "chado_local_source_data_formatter_default"
+ *   default_formatter = "chado_local_source_data_formatter_default",
+ *   cardinality = 1,
  * )
  */
 class ChadoLocalSourceDataDefault extends ChadoFieldItemBase {
 
-  public static $id = "chado_local_source_data_default";
+  public static $id = 'chado_local_source_data_default';
 
   /**
    * {@inheritdoc}
@@ -39,7 +41,7 @@ class ChadoLocalSourceDataDefault extends ChadoFieldItemBase {
     return $settings;
   }
 
-  /**  
+  /**
    * {@inheritdoc}
    */
   public static function defaultStorageSettings() {
@@ -65,7 +67,7 @@ class ChadoLocalSourceDataDefault extends ChadoFieldItemBase {
     $src_uri_term = $mapping->getColumnTermId('analysis', 'sourceuri');
     $src_name_term = $mapping->getColumnTermId('analysis', 'sourcename');
     $src_vers_term = $mapping->getColumnTermId('analysis', 'sourceversion');
-    
+
     // Get property terms using Chado table columns they map to. Return the properties for this field.
     $properties = [];
 
@@ -92,8 +94,8 @@ class ChadoLocalSourceDataDefault extends ChadoFieldItemBase {
       'chado_table' => 'analysis',
       'chado_column' => 'sourceversion',
     ]);
-   
-    return($properties);    
+
+    return($properties);
   }
 
 }

@@ -11,7 +11,7 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  *
  * @FieldWidget(
  *   id = "chado_local_source_data_widget_default",
- *   label = @Translation("Chado analysis local source data Widget default"),
+ *   label = @Translation("Chado Local Source Data Widget Default"),
  *   description = @Translation("The default chado local source data widget which allows curators to manually enter analysis source on the content edit page."),
  *   field_types = {
  *     "chado_local_source_data_default"
@@ -56,11 +56,11 @@ class ChadoLocalSourceDataWidgetDefault extends ChadoWidgetBase {
    * {@inheritDoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
-    
+
     // Remove any empty values that aren't mapped to a record id.
     foreach ($values as $val_key => $value) {
-      $values[$val_key]['sourceuri'] = $value['sourceuri'];      
-      $values[$val_key]['sourcename'] = $value['sourcename'];      
+      $values[$val_key]['sourceuri'] = $value['sourceuri'];
+      $values[$val_key]['sourcename'] = $value['sourcename'];
       $values[$val_key]['sourceversion'] = $value['sourceversion'];
     }
     return $values;
