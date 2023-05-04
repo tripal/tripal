@@ -48,6 +48,14 @@ class ChadoLocalSourceDataFormatterDefault extends ChadoFormatterBase {
         }
         $content .= "<dt>Source URI</dt><dd>" . $url . "</dd>";
       }
+      $sourcename_val = $item->get( 'sourcename' )->getString() ;
+      if ( !empty( $sourcename_val ) ) {
+        $content .= "<dt>Source Name</dt><dd>: " . $sourcename_val . " </dd>";
+      }
+      $sourceversion_val = $item->get( 'sourceversion' )->getString() ;
+      if ( !empty( $sourceversion_val ) ) {
+        $content .= "<dt>Source Version</dt><dd>: " . $sourceversion_val . " </dd>";
+      }
       $content .= "</dl>";
     }
     $elements[$delta] = [
