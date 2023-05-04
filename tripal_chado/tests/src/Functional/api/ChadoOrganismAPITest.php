@@ -153,6 +153,8 @@ class ChadoOrganismAPITest extends BrowserTestBase {
       '' => '',
       'subsp' => 'subspecies',
       'subsp.' => 'subspecies',
+      'ssp' => 'subspecies',
+      'ssp.' => 'subspecies',
       'var' => 'varietas',
       'var.' => 'varietas',
       'subvar' => 'subvarietas',
@@ -164,6 +166,7 @@ class ChadoOrganismAPITest extends BrowserTestBase {
       'subf' => 'subforma',
       'subf.' => 'subforma',
       'anything_else' => 'anything_else',
+      'anything_else.' => 'anything_else.',
     ];
 
     foreach ($expected_abbreviated as $full => $abbreviation) {
