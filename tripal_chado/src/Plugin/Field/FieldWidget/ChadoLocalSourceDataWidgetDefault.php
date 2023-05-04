@@ -32,6 +32,15 @@ class ChadoLocalSourceDataWidgetDefault extends ChadoWidgetBase {
       '#type' => 'value',
       '#default_value' => $item_vals['record_id'] ?? 0,
     ];
+<<<<<<< HEAD
+=======
+
+    $elements['programversion'] =  [
+      '#title' => "Software version",
+      '#type' => 'textfield',
+      '#default_value' => $item_vals['programversion'] ?? '',
+    ];
+>>>>>>> b73440286faed0b3cf68dec7fdff3e2bb4528450
     $elements['sourceuri'] =  [
       '#title' => "Local Source URI",
       '#type' => 'textfield',

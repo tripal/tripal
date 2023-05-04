@@ -76,6 +76,14 @@ class ChadoLocalSourceDataDefault extends ChadoFieldItemBase {
       'chado_table' => 'analysis',
       'chado_column' => 'analysis_id',
     ]);
+<<<<<<< HEAD
+=======
+    $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'programversion', $prog_vers_term, 100, [
+      'action' => 'store',
+      'chado_table' => 'analysis',
+      'chado_column' => 'programversion',
+    ]);
+>>>>>>> b73440286faed0b3cf68dec7fdff3e2bb4528450
     $properties[] = new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, 'sourceuri', $src_uri_term, 100, [
       'action' => 'store',
       'chado_table' => 'analysis',

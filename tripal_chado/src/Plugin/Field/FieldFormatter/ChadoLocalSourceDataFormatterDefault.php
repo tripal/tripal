@@ -31,6 +31,13 @@ class ChadoLocalSourceDataFormatterDefault extends ChadoFormatterBase {
 
     foreach($items as $delta => $item) {
       $content = "<dl class=\"tripal-dl\">";
+<<<<<<< HEAD
+=======
+      $prog_vers_val = $item->get( 'programversion' )->getString() ;
+      if ( !empty( $prog_vers_val ) ) {
+        $content .= "<dt>Software version</dt><dd>: " . $prog_vers_val . " </dd>";
+      }
+>>>>>>> b73440286faed0b3cf68dec7fdff3e2bb4528450
       $sourcename_val = $item->get( 'sourcename' )->getString() ;
       if ( !empty( $sourcename_val ) ) {
         $content .= "<dt>Source Name</dt><dd>: " . $sourcename_val . " </dd>";
