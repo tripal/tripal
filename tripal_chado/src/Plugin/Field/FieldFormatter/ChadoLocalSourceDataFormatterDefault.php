@@ -3,6 +3,8 @@
 namespace Drupal\tripal_chado\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Link;
+use Drupal\Core\Url;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
@@ -11,7 +13,7 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
  * @FieldFormatter(
  *   id = "chado_local_source_data_formatter_default",
  *   label = @Translation("Chado Local Source Data Formatter"),
- *   description = @Translation("Analysis local source data formatter default"),
+ *   description = @Translation("Analysis source name, version, and uri formatter"),
  *   field_types = {
  *     "chado_local_source_data_default"
  *   }
@@ -30,17 +32,21 @@ class ChadoLocalSourceDataFormatterDefault extends ChadoFormatterBase {
 
     foreach($items as $delta => $item) {
       $content = "<dl class=\"tripal-dl\">";
-      $sourcename_val = $item->get( 'sourcename' )->getString() ;
+      $sourcename_val = $item->get('sourcename')->getString() ;
       if ( !empty( $sourcename_val ) ) {
-        $content .= "<dt>Source Name</dt><dd>: " . $sourcename_val . " </dd>";
+        $content .= "<dt>Source Name</dt><dd>" . $sourcename_val . "</dd>";
       }
-      $sourceversion_val = $item->get( 'sourceversion' )->getString() ;
+      $sourceversion_val = $item->get('sourceversion')->getString() ;
       if ( !empty( $sourceversion_val ) ) {
-        $content .= "<dt>Source Version</dt><dd>: " . $sourceversion_val . " </dd>";
+        $content .= "<dt>Source Version</dt><dd>" . $sourceversion_val . "</dd>";
       }
-      $sourceuri_val = $item->get( 'sourceuri' )->getString() ;
+      $sourceuri_val = $item->get('sourceuri')->getString() ;
       if ( !empty( $sourceuri_val ) ) {
-        $content .= "<dt>Source URI</dt><dd>: " . $sourceuri_val . " </dd>";
+        $url = $sourceuri_val;
+        if (preg_match('|://|', $sourceuri_val ) {
+          $url = Link::fromTextAndUrl($sourceuri_val, Url::fromUri($sourceuri_val, []))->toString();
+        }
+        $content .= "<dt>Source URI</dt><dd>" . $url . "</dd>";
       }
       $content .= "</dl>";
     }
@@ -48,7 +54,8 @@ class ChadoLocalSourceDataFormatterDefault extends ChadoFormatterBase {
       '#type' => 'markup',
       '#markup' => $content,
     ];
-    
+
     return $elements;
   }
+
 }
