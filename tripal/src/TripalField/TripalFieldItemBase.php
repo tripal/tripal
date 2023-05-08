@@ -25,7 +25,7 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $settings = [
       'termIdSpace' => '',
       'termAccession' => '',
-      'max_delta' => 100
+      # 'max_delta' => 100
     ];
     return $settings + parent::defaultFieldSettings();
   }
@@ -35,6 +35,8 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
    */
   public static function defaultStorageSettings() {
     $settings = [
+      'termIdSpace' => '',
+      'termAccession' => '',
       'storage_plugin_id' => '',
       'storage_plugin_settings' => [],
     ];
