@@ -2522,7 +2522,7 @@ class GFF3Importer extends ChadoImporterBase {
 
       // If there is no cached type_id for this landmark type, try to lookup and cache
       if (!isset($this->landmark_types_type_ids[$type])) {
-        $sql_landmark_type_id = "SELECT cvterm_id FROM cvterm WHERE name = :name";
+        $sql_landmark_type_id = "SELECT cvterm_id FROM {1:cvterm} WHERE name = :name";
         $args_type = array(':name' => $type);
         $results_type_ids = $chado->query($sql_landmark_type_id, $args_type);
         $rowsCount = 0;
