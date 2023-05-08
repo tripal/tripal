@@ -350,7 +350,7 @@ class GFF3Importer extends ChadoImporterBase {
       '#description' => t("Choose an existing organism to which the entries in the GFF file will be associated."),
       '#required' => TRUE,
       '#options' => $organisms,
-      '#default_value' => 0,
+      '#empty_option' => t('- Select -'),
     ];
 
     $form['landmark_type'] = [
