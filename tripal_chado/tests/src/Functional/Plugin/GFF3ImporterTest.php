@@ -243,6 +243,8 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $message = $ex->getMessage();
       $has_exception = true;
     }
+    $this->assertEquals($has_exception, true, "This should have detected an exception since there are
+      duplicated IDs in this GFF file but no exception was returned.");
 
     /**
      * Run the GFF loader on gff_tag_unescaped_character.gff for testing.
@@ -294,6 +296,8 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $message = $ex->getMessage();
       $has_exception = true;
     }
+    
+    $this->assertEquals($has_exception, false, 'Unescaped tag should not throw an error but did.');
 
     /**
      * Run the GFF loader on gff_invalidstartend.gff for testing.
