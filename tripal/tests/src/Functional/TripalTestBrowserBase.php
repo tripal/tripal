@@ -95,7 +95,7 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
     ];
 
     /**
-     * @var \Drupal\tripal\Services\TripalFieldsManager $tripal_fields
+     * @var \Drupal\tripal\Services\TripalFieldCollection $tripal_fields
      */
     $tripal_fields = \Drupal::service('tripal.tripalfield_collection');
     $tripal_fields->addBundleField($entity_type, $field);

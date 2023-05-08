@@ -409,7 +409,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
     $field_def = $this->setFieldDefDefaults($field_def);
 
     // Get the bundle and field id.
-    $field_id = 'tripal_entity' . '.' . $entity_type->getId() . '.' . $field_def['name'];
+    $field_id = 'tripal_entity' . '.' . 'bio_data_' . $entity_type->getId() . '.' . $field_def['name'];
 
     try {
 
@@ -445,17 +445,18 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
 
         // Add field to the default display modes.
         $entity_display = \Drupal::service('entity_display.repository');
-        $view_modes = $entity_display->getViewModeOptionsByBundle('tripal_entity', $entity_type->getId());
+        $bundle_id = 'bio_data_' . $entity_type->getId();
+        $view_modes = $entity_display->getViewModeOptionsByBundle('tripal_entity', $bundle_id);
         foreach (array_keys($view_modes) as $view_mode) {
           \Drupal::service('entity_display.repository')
-            ->getViewDisplay('tripal_entity', $entity_type->getId(), $view_mode)
+            ->getViewDisplay('tripal_entity', $bundle_id, $view_mode)
             ->setComponent($field_def['name'], $field_def['display']['view'][$view_mode])
             ->save();
         }
-        $from_modes = $entity_display->getFormModeOptionsByBundle('tripal_entity', $entity_type->getId());
-        foreach (array_keys($from_modes) as $form_mode) {
+        $form_modes = $entity_display->getFormModeOptionsByBundle('tripal_entity', $bundle_id);
+        foreach (array_keys($form_modes) as $form_mode) {
           \Drupal::service('entity_display.repository')
-            ->getFormDisplay('tripal_entity', $entity_type->getId(), $form_mode)
+            ->getFormDisplay('tripal_entity', $bundle_id, $form_mode)
             ->setComponent($field_def['name'], $field_def['display']['form'][$form_mode])
             ->save();
         }

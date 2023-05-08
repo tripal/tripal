@@ -1795,7 +1795,7 @@ fields:
               weight: 10
 
     -   name: genetic_map_name
-        content_type: bio_data_8tic_map
+        content_type: bio_data_16
         label: Name
         type: chado_string_type
         description: The name of the item.
@@ -1822,7 +1822,7 @@ fields:
               weight: 10
 
     -   name: genetic_map_description
-        content_type: bio_data_8tic_map
+        content_type: bio_data_16
         label: Description
         type: chado_text_type
         description: A description of the item.
@@ -1848,7 +1848,7 @@ fields:
               weight: 15
 
     -   name: genetic_map_unit_type
-        content_type: bio_data_8tic_map
+        content_type: bio_data_16
         label: Unit Type
         type: schema__additional_type
         description: A unit of measurement is a standardized quantity of a physical quality.
