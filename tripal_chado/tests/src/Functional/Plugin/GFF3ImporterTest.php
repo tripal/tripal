@@ -297,7 +297,7 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $has_exception = true;
     }
     $this->assertEquals($has_exception, false, 'Unescaped tag should not throw an error but did.');
-
+  // @TODO check that the feature with the comma in the ID was inserted properly.
     /**
      * Run the GFF loader on gff_invalidstartend.gff for testing.
      *
