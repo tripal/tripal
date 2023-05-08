@@ -30,10 +30,6 @@ abstract class ChadoImporterBase extends TripalImporterBase {
    * Requires you to call the parent::form in your form.
    */
   public function getChadoConnection() {
-
-    /**
-     * @var \Drupal\tripal_chado\Database\ChadoConnection $chado
-     */
     $chado = \Drupal::service('tripal_chado.database');
 
     // Get the chado schema name if available.
