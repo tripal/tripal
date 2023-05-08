@@ -225,7 +225,6 @@ function chado_get_organism_scientific_name($organism, $schema_name = 'chado') {
  */
 function chado_get_organism_select_options($published_only = FALSE, $show_common_name = FALSE, $schema_name = 'chado') {
   $org_list = [];
-  $org_list[] = 'Select an organism';
 
   if ($published_only) {
     throw new \Exception(t('Passing TRUE for the :param parameter is not yet implemented for :func',
