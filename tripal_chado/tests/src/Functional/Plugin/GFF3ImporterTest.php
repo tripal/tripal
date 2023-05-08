@@ -296,7 +296,6 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $message = $ex->getMessage();
       $has_exception = true;
     }
-    
     $this->assertEquals($has_exception, false, 'Unescaped tag should not throw an error but did.');
 
     /**
@@ -348,6 +347,9 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
       $has_exception = true;
     }
     $this->assertEquals($has_exception, false, "The GFF3 loader should reverse the values automatically but somehow produced an exception which is an error");
+    // @TODO Add additional assertions for start and end to ensure the loader does the reverse correctly
+
+
 
     /**
      * Run the GFF loader on gff_phase_invalid_character.gff for testing.
@@ -457,7 +459,6 @@ class GFF3ImporterTest extends ChadoTestBrowserBase
     
     /**
      * Test that when checked, when phase is specified for CDS
-     * TODO: Maybe create a test for phase being a . for a CDS which should in theory fail?
      */
     $gff3_importer = $importer_manager->createInstance('chado_gff3_loader');
     $run_args = [
