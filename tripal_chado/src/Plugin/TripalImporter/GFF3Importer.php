@@ -1484,12 +1484,6 @@ class GFF3Importer extends ChadoImporterBase {
       if (array_key_exists($uniquename, $this->features)) {
         $findex = $this->features[$uniquename]['findex'];
         $feature = $this->getCachedFeature($findex);
-        // print_r($feature);
-        // TODO: SEE IF THIS BREAKS THINGS
-        // DEBUG: THIS CODE LOGIC NEEDS DOUBLE CHECKING - ASK STEPHEN
-        // if (empty($feature['feature_id'])) {
-        //   $feature['feature_id'] = NULL;
-        // }
         $feature_id = $feature['feature_id'];
       }
       else {
@@ -1546,7 +1540,7 @@ class GFF3Importer extends ChadoImporterBase {
       ->condition('uniquename', $landmark_name);
 
     if($landmark_type) {
-      $landmark_select->condition('type_id', $landmark_type->getValue('cvterm_id'));
+      $landmark_select->condition('type_id', $this->landmark_cvterm->cvterm_id);
     }
 
     // Make sure we only match on one landmark.
