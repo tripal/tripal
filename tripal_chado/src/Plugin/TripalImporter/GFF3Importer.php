@@ -373,7 +373,7 @@ class GFF3Importer extends ChadoImporterBase {
       '#title' => t('Skip automatic protein creation'),
       '#required' => FALSE,
       '#description' => t('The GFF loader will automatically create a protein feature for each transcript in the GFF file if a protein feature is missing in the GFF file. Check this box to disable this functionality. Protein features that are specifically present in the GFF will always be created.'),
-      '#default_value' => 0,
+      '#empty_option' => t('- Select -'),
     ];
 
     $form['proteins']['re_mrna'] = [
@@ -1794,15 +1794,17 @@ class GFF3Importer extends ChadoImporterBase {
       $feature = $this->getCachedFeature($findex);
       $type = $feature['type'];
       if ($type == 'cds' or $type == 'protein' or $type == 'polypeptide') {
-        foreach (explode(',', $feature['parent']) as $parent_name) {
-          if (!array_key_exists($parent_name, $this->proteins)) {
-            $this->proteins[$parent_name] = [];
-          }
-          if ($type == 'cds') {
-            $this->proteins[$parent_name]['cds'][] = $findex;
-          }
-          if ($type == 'protein' or $type == 'polypeptide') {
-            $this->proteins[$parent_name]['protein'] = $findex;
+        if (isset($feature['parent'])) {
+          foreach (explode(',', $feature['parent']) as $parent_name) {
+            if (!array_key_exists($parent_name, $this->proteins)) {
+              $this->proteins[$parent_name] = [];
+            }
+            if ($type == 'cds') {
+              $this->proteins[$parent_name]['cds'][] = $findex;
+            }
+            if ($type == 'protein' or $type == 'polypeptide') {
+              $this->proteins[$parent_name]['protein'] = $findex;
+            }
           }
         }
       }
