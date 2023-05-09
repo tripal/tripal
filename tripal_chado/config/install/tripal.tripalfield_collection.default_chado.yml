@@ -1,0 +1,3177 @@
+id: 'default_chado'
+label: 'Default Chado Fields'
+description: 'Default fields configurations provided by the Tripal Chado module'
+fields:
+
+    -   name: organism_abbreviation
+        content_type: bio_data_1
+        label: Abbreviation
+        type: chado_string_type
+        description: A shortened name (or abbreviation) for the organism (e.g. O.sativa).
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: organism
+                base_column: abbreviation
+            max_length: 255
+        settings:
+            termIdSpace: local
+            termAccession: abbreviation
+        display:
+            view:
+                default:
+                    region: content
+                    label: above
+                    weight: 10
+            form:
+                default:
+                    region: content
+                    weight: 10
+
+    -   name: organism_genus
+        content_type: bio_data_1
+        label: Genus
+        type: chado_string_type
+        description: "The genus name of the organism."
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: organism
+                base_column: genus
+            max_length: 255
+        settings:
+            termIdSpace: TAXRANK
+            termAccession: "0000005"
+        display:
+            view:
+                default:
+                    region: content
+                    label: above
+                    weight: 15
+            form:
+                default:
+                    region: content
+                    weight: 15
+
+    -   name: organism_species
+        content_type: bio_data_1
+        label: Species
+        type: chado_string_type
+        description: "The species name of the organism"
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: organism
+                base_column: species
+            max_length: 255
+        settings:
+            termIdSpace: TAXRANK
+            termAccession: "0000006"
+        display:
+            view:
+                default:
+                    region: content
+                    label: above
+                    weight: 20
+            form:
+                default:
+                    region: content
+                    weight: 20
+
+    -   name: organism_common_name
+        content_type: bio_data_1
+        label: Common Name
+        type: chado_string_type
+        description: "The common name for the organism"
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: organism
+                base_column: common_name
+            max_length: 255
+        settings:
+            termIdSpace: NCBITaxon
+            termAccession: common_name
+        display:
+            view:
+                default:
+                    region: content
+                    label: above
+                    weight: 25
+            form:
+                default:
+                    region: content
+                    weight: 25
+
+    -   name: organism_infraspecific_name
+        content_type: bio_data_1
+        label: Infraspecies
+        type: chado_string_type
+        description: "The infraspecfic name for the organism."
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: organism
+                base_column: infraspecific_name
+            max_length: 1024
+        settings:
+            termIdSpace: TAXRANK
+            termAccession: "0000045"
+        display:
+            view:
+                default:
+                    region: content
+                    label: above
+                    weight: 30
+            form:
+                default:
+                    region: content
+                    weight: 30
+
+    -   name: organism_comment
+        content_type: bio_data_1
+        label: Description
+        type: chado_text_type
+        description: A description of the organism.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: organism
+                base_column: comment
+        settings:
+            termIdSpace: schema
+            termAccession: description
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 35
+          form:
+            default:
+              region: content
+              weight: 35
+
+    -   name: organism_infraspecific_type
+        content_type: bio_data_1
+        label: Infraspecific Type
+        type: chado_additional_type_default
+        description: The connector type (e.g. subspecies, varietas, forma, etc.) for the infraspecific name.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: organism
+                type_table: organism
+                type_column: type_id
+        settings:
+            termIdSpace: OBI
+            termAccession: "0100026"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+
+    -   name: analysis_name
+        content_type: bio_data_2
+        label: Name
+        type: chado_string_type
+        description: The name of the analysis.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: name
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: analysis_description
+        content_type: bio_data_2
+        label: Description
+        type: chado_text_type
+        description: A description of the analysis.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: description
+        settings:
+            termIdSpace: schema
+            termAccession: description
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: analysis_software
+        content_type: bio_data_2
+        label: Program, Pipeline, Workflow or Method Name
+        type: chado_string_type
+        description: The program name (e.g. blastx, blastp, sim4, genscan. If the analysis was not derived from a software package then provide a very brief description of the pipeline, workflow or method.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: program
+            max_length: 255
+        settings:
+            termIdSpace: SWO
+            termAccession: "0000001"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 20
+          form:
+            default:
+              region: content
+              weight: 20
+
+    -   name: analysis_program_version
+        content_type: bio_data_2
+        label: Software Version
+        type: chado_string_type
+        description: The version of the program, pipeline or method used to perform this analysis. (e.g. TBLASTX 2.0MP-WashU [09-Nov-2000]. Enter "n/a" if no version is available or applicable.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: programversion
+            max_length: 255
+        settings:
+            termIdSpace: IAO
+            termAccession: 0000129
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 25
+          form:
+            default:
+              region: content
+              weight: 25
+
+    -   name: analysis_algorithm
+        content_type: bio_data_2
+        label: Algorithm
+        type: chado_string_type
+        description: The name of the algorithm used to produce the dataset if different from the program.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: algorithm
+            max_length: 255
+        settings:
+            termIdSpace: IAO
+            termAccession: "0000064"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 30
+          form:
+            default:
+              region: content
+              weight: 30
+
+    -   name: analysis_source
+        content_type: bio_data_2
+        label: Data Source Name
+        type: chado_string_type
+        description: The name of the source where data was obtained for this analysis.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: sourcename
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 35
+          form:
+            default:
+              region: content
+              weight: 35
+
+    -   name: analysis_source_version
+        content_type: bio_data_2
+        label: Data Source Version
+        type: chado_string_type
+        description: The version number of the data source (if applicable).
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: sourceversion
+            max_length: 255
+        settings:
+            termIdSpace: IAO
+            termAccession: 0000129
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 40
+          form:
+            default:
+              region: content
+              weight: 40
+
+    -   name: analysis_source_uri
+        content_type: bio_data_2
+        label: Data Source URI
+        type: chado_text_type
+        description: The URI (e.g. web URL) where the source data can be retrieved.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: sourceuri
+        settings:
+            termIdSpace: data
+            termAccession: "1047"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 45
+          form:
+            default:
+              region: content
+              weight: 45
+
+    -   name: project_name
+        content_type: bio_data_3
+        label: Name
+        type: chado_string_type
+        description: The name of the item.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: project
+                base_column: name
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: project_description
+        content_type: bio_data_3
+        label: Description
+        type: chado_text_type
+        description: A description of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: project
+                base_column: description
+        settings:
+            termIdSpace: schema
+            termAccession: description
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: study_name
+        content_type: bio_data_4
+        label: Name
+        type: chado_text_type
+        description: The name of the item.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: study
+                base_column: name
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: study_description
+        content_type: bio_data_4
+        label: Description
+        type: chado_text_type
+        description: A description of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: study
+                base_column: description
+        settings:
+            termIdSpace: schema
+            termAccession: description
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: contact_name
+        content_type: bio_data_5
+        label: Name
+        type: chado_string_type
+        description: The name of the item.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: contact
+                base_column: name
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: contact_description
+        content_type: bio_data_5
+        label: Description
+        type: chado_string_type
+        description: A description of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: contact
+                base_column: description
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: description
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: contact_type
+        content_type: bio_data_5
+        label: Contact Type
+        type: chado_additional_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: contact
+                type_table: contact
+                type_column: type_id
+        settings:
+            termIdSpace: local
+            termAccession: contact
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: protocol_name
+        content_type: bio_data_7
+        label: Name
+        type: chado_text_type
+        description: The name of the item.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: protocol
+                base_column: name
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: protocol_uri
+        content_type: bio_data_7
+        label: URI
+        type: chado_text_type
+        description: The name of a biological or bioinformatics database.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: protocol
+                base_column: uri
+        settings:
+            termIdSpace: data
+            termAccession: "1047"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: protocol_description
+        content_type: bio_data_7
+        label: Description
+        type: chado_text_type
+        description: A description of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: protocol
+                base_column: protocoldescription
+        settings:
+            termIdSpace: schema
+            termAccession: description
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 20
+          form:
+            default:
+              region: content
+              weight: 20
+
+    -   name: protocol_instrument
+        content_type: bio_data_7
+        label: Instrument
+        type: chado_text_type
+        description: An instrument is a device which provides a mechanical or electronic function.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: protocol
+                base_column: hardwaredescription
+        settings:
+            termIdSpace: EFO
+            termAccession: 0000548
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 25
+          form:
+            default:
+              region: content
+              weight: 25
+
+    -   name: protocol_software
+        content_type: bio_data_7
+        label: Software
+        type: chado_text_type
+        description: Computer software, or generally just software, is any set of machine-readable instructions (most often in the form of a computer program) that conform to a given syntax (sometimes referred to as a language) that is interpretable by a given processor and that directs a computer's processor to perform specific operations.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: protocol
+                base_column: softwaredescription
+        settings:
+            termIdSpace: SWO
+            termAccession: "0000001"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 30
+          form:
+            default:
+              region: content
+              weight: 30
+
+    -   name: protocol_type
+        content_type: bio_data_7
+        label: Protocol Type
+        type: chado_additional_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: protocol
+                type_table: protocol
+                type_column: type_id
+        settings:
+            termIdSpace: sep
+            termAccession: "00101"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: gene_name
+        content_type: bio_data_8
+        label: Name
+        type: chado_string_type
+        description: The name of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: name
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: gene_uniquename
+        content_type: bio_data_8
+        label: Unique Name
+        type: chado_text_type
+        description: A name that uniquely identifies the gene within the organism.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: uniquename
+        settings:
+            termIdSpace: data
+            termAccession: 0842
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: gene_sequence
+        content_type: bio_data_8
+        label: Sequence
+        type: chado_text_type
+        description: One or more molecular sequences, possibly with associated annotation.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: residues
+        settings:
+            termIdSpace: data
+            termAccession: "2044"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 20
+          form:
+            default:
+              region: content
+              weight: 20
+
+    -   name: gene_length
+        content_type: bio_data_8
+        label: Sequence Length
+        type: chado_integer_type
+        description: The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: seqlen
+        settings:
+            termIdSpace: data
+            termAccession: "1249"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 25
+          form:
+            default:
+              region: content
+              weight: 25
+
+    -   name: gene_organism
+        content_type: bio_data_8
+        label: Organism
+        type: chado_organism_default
+        description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+        settings:
+            termIdSpace: OBI
+            termAccession: "0100026"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: gene_type
+        content_type: bio_data_8
+        label: Type
+        type: chado_additional_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                type_table: feature
+                type_column: type_id
+        settings:
+            termIdSpace: SO
+            termAccession: "0000704"
+            fixed_value: SO:0000704
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: mrna_name
+        content_type: bio_data_9
+        label: Name
+        type: chado_string_type
+        description: The name of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: name
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: mrna_uniquename
+        content_type: bio_data_9
+        label: Unique Name
+        type: chado_text_type
+        description: A name that uniquely identifies the mRNA within the organism.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: uniquename
+        settings:
+            termIdSpace: data
+            termAccession: 0842
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: mrna_sequence
+        content_type: bio_data_9
+        label: Sequence
+        type: chado_text_type
+        description: One or more molecular sequences, possibly with associated annotation.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: residues
+        settings:
+            termIdSpace: data
+            termAccession: "2044"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 20
+          form:
+            default:
+              region: content
+              weight: 20
+
+    -   name: mrna_sequence_length
+        content_type: bio_data_9
+        label: Sequence Length
+        type: chado_integer_type
+        description: The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: seqlen
+        settings:
+            termIdSpace: data
+            termAccession: "1249"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 25
+          form:
+            default:
+              region: content
+              weight: 25
+
+    -   name: mrna_type
+        content_type: bio_data_9
+        label: Type
+        type: chado_additional_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                type_table: feature
+                type_column: type_id
+        settings:
+            termIdSpace: SO
+            termAccession: "0000234"
+            fixed_value: SO:0000234
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: pylotree_name
+        content_type: bio_data_10
+        label: Name
+        type: chado_string_type
+        description: The name of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: phylotree
+                base_column: name
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: phylotree_comment
+        content_type: bio_data_10
+        label: Notes
+        type: chado_text_type
+        description: Comments, typically from users.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: phylotree
+                base_column: comment
+        settings:
+            termIdSpace: schema
+            termAccession: comment
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: pylotree_type
+        content_type: bio_data_10
+        label: Type
+        type: chado_additional_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: phylotree
+                type_table: phylotree
+                type_column: type_id
+        settings:
+            termIdSpace: data
+            termAccession: 0872
+            fixed_value: data:0872
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: physical_map_name
+        content_type: bio_data_11
+        label: Name
+        type: chado_string_type
+        description: The name of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                base_column: name
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: physical_map_description
+        content_type: bio_data_11
+        label: Description
+        type: chado_text_type
+        description: A description of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                base_column: description
+        settings:
+            termIdSpace: schema
+            termAccession: description
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: physical_map_unit_type
+        content_type: bio_data_11
+        label: Unit Type
+        type: chado_additional_type_default
+        description: A unit of measurement is a standardized quantity of a physical quality.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                type_table: featuremap
+                type_column: unittype_id
+        settings:
+            termIdSpace: data
+            termAccession: "1280"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: dna_library_name
+        content_type: bio_data_12
+        label: Name
+        type: chado_string_type
+        description: The name of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: library
+                base_column: name
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: dna_library_uniquename
+        content_type: bio_data_12
+        label: Unique Name
+        type: chado_text_type
+        description: A name that uniquely identifies the DNA library on this site.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: library
+                base_column: uniquename
+        settings:
+            termIdSpace: data
+            termAccession: 0842
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: dna_library_type
+        content_type: bio_data_12
+        label: Library Type
+        type: chado_additional_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: library
+                type_table: library
+                type_column: type_id
+        settings:
+            termIdSpace: NCIT
+            termAccession: C16223
+            fixed_value: NCIT:C16223
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: genome_assembly_name
+        content_type: bio_data_13
+        label: Name
+        type: chado_string_type
+        description: The name of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: name
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: genome_assembly_description
+        content_type: bio_data_13
+        label: Description
+        type: chado_text_type
+        description: A description of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: description
+        settings:
+            termIdSpace: schema
+            termAccession: description
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: genome_assembly_software
+        content_type: bio_data_13
+        label: Program, Pipeline, Workflow or Method Name
+        type: chado_string_type
+        description: The program name (e.g. blastx, blastp, sim4, genscan. If the analysis was not derived from a software package then provide a very brief description of the pipeline, workflow or method.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: program
+            max_length: 255
+        settings:
+            termIdSpace: SWO
+            termAccession: "0000001"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 20
+          form:
+            default:
+              region: content
+              weight: 20
+
+    -   name: genome_assembly_program_version
+        content_type: bio_data_13
+        label: Program Version
+        type: chado_string_type
+        description: The version of the program, pipeline, workflow or method used to perform this analysis. (e.g. TBLASTX 2.0MP-WashU [09-Nov-2000]. Enter "n/a" if no version is available or applicable.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: programversion
+            max_length: 255
+        settings:
+            termIdSpace: IAO
+            termAccession: 0000129
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 25
+          form:
+            default:
+              region: content
+              weight: 25
+
+
+    -   name: genome_assembly_source_name
+        content_type: bio_data_13
+        label: Data Source Name
+        type: chado_string_type
+        description: The name of the source where data was obtained for this analysis.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: sourcename
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 35
+          form:
+            default:
+              region: content
+              weight: 35
+
+    -   name: genome_assembly_source_version
+        content_type: bio_data_13
+        label: Data Source Version
+        type: chado_string_type
+        description: The version number of the data source (if applicable).
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: sourceversion
+            max_length: 255
+        settings:
+            termIdSpace: IAO
+            termAccession: 0000129
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 40
+          form:
+            default:
+              region: content
+              weight: 40
+
+    -   name: genome_assembly_uri
+        content_type: bio_data_13
+        label: Data Source URI
+        type: chado_text_type
+        description: The URI (e.g. web URL) where the source data can be retrieved.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: sourceuri
+        settings:
+            termIdSpace: data
+            termAccession: "1047"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 45
+          form:
+            default:
+              region: content
+              weight: 45
+
+    -   name: genome_assembly_type
+        content_type: bio_data_13
+        label: Type
+        type: chado_additional_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                type_table: analysisprop
+                type_column: type_id
+        settings:
+            termIdSpace: operation
+            termAccession: "0525"
+            fixed_value: operation:0525
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: genome_annotation_name
+        content_type: bio_data_14
+        label: Name
+        type: chado_string_type
+        description: The name of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: name
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: genome_annotation_description
+        content_type: bio_data_14
+        label: Description
+        type: chado_text_type
+        description: A description of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: description
+        settings:
+            termIdSpace: schema
+            termAccession: description
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: genome_annotation_software
+        content_type: bio_data_14
+        label: Program, Pipeline, Workflow or Method Name
+        type: chado_string_type
+        description: The program name (e.g. blastx, blastp, sim4, genscan. If the analysis was not derived from a software package then provide a very brief description of the pipeline, workflow or method.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: program
+            max_length: 255
+        settings:
+            termIdSpace: SWO
+            termAccession: "0000001"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 20
+          form:
+            default:
+              region: content
+              weight: 20
+
+    -   name: genome_annotation_prog_version
+        content_type: bio_data_14
+        label: Program Version
+        type: chado_string_type
+        description: The version of the program, pipeline, workflow or method used to perform this analysis. (e.g. TBLASTX 2.0MP-WashU [09-Nov-2000]. Enter "n/a" if no version is available or applicable.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: programversion
+            max_length: 255
+        settings:
+            termIdSpace: IAO
+            termAccession: 0000129
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 25
+          form:
+            default:
+              region: content
+              weight: 25
+
+    -   name: genome_annotation_src_name
+        content_type: bio_data_14
+        label: Name
+        type: chado_string_type
+        description: The name of the source where data was obtained for this analysis.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: sourcename
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 35
+          form:
+            default:
+              region: content
+              weight: 35
+
+    -   name: genome_annotation_src_version
+        content_type: bio_data_14
+        label: Data Source Version
+        type: chado_string_type
+        description: The version number of the data source (if applicable).
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: sourceversion
+            max_length: 255
+        settings:
+            termIdSpace: IAO
+            termAccession: 0000129
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 40
+          form:
+            default:
+              region: content
+              weight: 40
+
+    -   name: genome_annotation_uri
+        content_type: bio_data_14
+        label: Data Source URI
+        type: chado_text_type
+        description: The URI (e.g. web URL) where the source data can be retrieved.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                base_column: sourceuri
+        settings:
+            termIdSpace: data
+            termAccession: "1047"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 45
+          form:
+            default:
+              region: content
+              weight: 45
+
+    -   name: genome_annotation_type
+        content_type: bio_data_14
+        label: Type
+        type: chado_additional_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: analysis
+                type_table: analysisprop
+                type_column: type_id
+        settings:
+            termIdSpace: operation
+            termAccession: "0362"
+            fixed_value: operation:0362
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: genome_project_name
+        content_type: bio_data_15
+        label: Name
+        type: chado_string_type
+        description: The name of the item.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: project
+                base_column: name
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: genome_project_description
+        content_type: bio_data_15
+        label: Description
+        type: chado_text_type
+        description: A description of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: project
+                base_column: description
+        settings:
+            termIdSpace: schema
+            termAccession: description
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: genome_project_type
+        content_type: bio_data_15
+        label: Type
+        type: chado_additional_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: project
+                type_table: projectprop
+                type_column: type_id
+        settings:
+            termIdSpace: local
+            termAccession: Genome Project
+            fixed_value: local:Genome Project
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: genetic_map_name
+        content_type: bio_data_16
+        label: Name
+        type: chado_string_type
+        description: The name of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                base_column: name
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: genetic_map_description
+        content_type: bio_data_16
+        label: Description
+        type: chado_text_type
+        description: A description of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                base_column: description
+        settings:
+            termIdSpace: schema
+            termAccession: description
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: genetic_map_unit_type
+        content_type: bio_data_16
+        label: Unit Type
+        type: chado_additional_type_default
+        description: A unit of measurement is a standardized quantity of a physical quality.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: featuremap
+                type_table: featuremap
+                type_column: unittype_id
+        settings:
+            termIdSpace: data
+            termAccession: "1278"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: qtl_name
+        content_type: bio_data_17
+        label: Name
+        type: chado_string_type
+        description: The name of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: name
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: qtl_unique_name
+        content_type: bio_data_17
+        label: Uniquen Name
+        type: chado_text_type
+        description: A name that uniquely identifies the QTL within the organism.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: uniquename
+        settings:
+            termIdSpace: data
+            termAccession: 0842
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: qtl_sequence
+        content_type: bio_data_17
+        label: Sequence
+        type: chado_text_type
+        description: One or more molecular sequences, possibly with associated annotation.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: residues
+        settings:
+            termIdSpace: data
+            termAccession: "2044"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 20
+          form:
+            default:
+              region: content
+              weight: 20
+
+    -   name: qtl_sequence_length
+        content_type: bio_data_17
+        label: Sequence Length
+        type: chado_integer_type
+        description: The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: seqlen
+        settings:
+            termIdSpace: data
+            termAccession: "1249"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 25
+          form:
+            default:
+              region: content
+              weight: 25
+
+    -   name: qtl_type
+        content_type: bio_data_17
+        label: Type
+        type: chado_additional_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                type_table: feature
+                type_column: type_id
+        settings:
+            termIdSpace: SO
+            termAccession: "0000771"
+            fixed_value: SO:0000771
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: sequence_variant_name
+        content_type: bio_data_18
+        label: Name
+        type: chado_string_type
+        description: The name of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: name
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: sequence_variant_uniquene_name
+        content_type: bio_data_18
+        label: Unique Name
+        type: chado_text_type
+        description: A name that uniquely identifies the sequence variant within the organism.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: uniquename
+        settings:
+            termIdSpace: data
+            termAccession: 0842
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: sequence_variant_sequence
+        content_type: bio_data_18
+        label: Sequence
+        type: chado_text_type
+        description: One or more molecular sequences, possibly with associated annotation.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: residues
+        settings:
+            termIdSpace: data
+            termAccession: "2044"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 20
+          form:
+            default:
+              region: content
+              weight: 20
+
+    -   name: sequence_variant_sequence_length
+        content_type: bio_data_18
+        label: Sequence Length
+        type: chado_integer_type
+        description: The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: seqlen
+        settings:
+            termIdSpace: data
+            termAccession: "1249"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 25
+          form:
+            default:
+              region: content
+              weight: 25
+
+    -   name: sequence_variant_type
+        content_type: bio_data_18
+        label: Type
+        type: chado_additional_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                type_table: feature
+                type_column: type_id
+        settings:
+            termIdSpace: SO
+            termAccession: "0001060"
+            fixed_value: SO:0001060
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: genetic_marker_name
+        content_type: bio_data_19
+        label: Name
+        type: chado_string_type
+        description: The name of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: name
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: genetic_marker_unique_name
+        content_type: bio_data_19
+        label: Unique Name
+        type: chado_text_type
+        description: A name that uniquely identifies the genetic marker within the organism.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: uniquename
+        settings:
+            termIdSpace: data
+            termAccession: 0842
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: genetic_marker_sequence
+        content_type: bio_data_19
+        label: Sequence
+        type: chado_text_type
+        description: One or more molecular sequences, possibly with associated annotation.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: residues
+        settings:
+            termIdSpace: data
+            termAccession: "2044"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 20
+          form:
+            default:
+              region: content
+              weight: 20
+
+    -   name: genetic_marker_sequence_length
+        content_type: bio_data_19
+        label: Sequence Length
+        type: chado_integer_type
+        description: The size (length) of a sequence, subsequence or region in a sequence,or range(s) of lengths.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: seqlen
+        settings:
+            termIdSpace: data
+            termAccession: "1249"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 25
+          form:
+            default:
+              region: content
+              weight: 25
+
+    -   name: genetic_marker_type
+        content_type: bio_data_19
+        label: Type
+        type: chado_additional_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                type_table: feature
+                type_column: type_id
+        settings:
+            termIdSpace: SO
+            termAccession: "0001645"
+            fixed_value: SO:0001645
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: phenotypic_marker_name
+        content_type: bio_data_20
+        label: Name
+        type: chado_string_type
+        description: The name of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: name
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: phenotypic_marker_unique_name
+        content_type: bio_data_20
+        label: Uniquen Name
+        type: chado_text_type
+        description: A name that uniquely identifies the heritable phenotypic marker within the organism.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: uniquename
+        settings:
+            termIdSpace: data
+            termAccession: 0842
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: phenotypic_marker_sequence
+        content_type: bio_data_20
+        label: Sequence
+        type: chado_text_type
+        description: One or more molecular sequences, possibly with associated annotation.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: residues
+        settings:
+            termIdSpace: data
+            termAccession: "2044"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 20
+          form:
+            default:
+              region: content
+              weight: 20
+
+    -   name: phenotypic_marker_seqlen
+        content_type: bio_data_20
+        label: Sequence Length
+        type: chado_integer_type
+        description: The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: seqlen
+        settings:
+            termIdSpace: data
+            termAccession: "1249"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 25
+          form:
+            default:
+              region: content
+              weight: 25
+
+    -   name: phenotypic_marker_type
+        content_type: bio_data_20
+        label: Type
+        type: chado_additional_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                type_table: feature
+                type_column: type_id
+        settings:
+            termIdSpace: SO
+            termAccession: "0001500"
+            fixed_value: SO:0001500
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: germplasm_name
+        content_type: bio_data_21
+        label: Name
+        type: chado_string_type
+        description: The name of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: name
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: germplasm_unique_name
+        content_type: bio_data_21
+        label: Unique Name
+        type: chado_text_type
+        description: A name that uniquely identifies the germplasm within this organism.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: uniquename
+        settings:
+            termIdSpace: data
+            termAccession: 0842
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: germplasm_description
+        content_type: bio_data_21
+        label: Description
+        type: chado_text_type
+        description: A description of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: description
+        settings:
+            termIdSpace: schema
+            termAccession: description
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 20
+          form:
+            default:
+              region: content
+              weight: 20
+
+    -   name: germplasm_type
+        content_type: bio_data_21
+        label: Type
+        type: chado_additional_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                type_table: stock
+                type_column: type_id
+        settings:
+            termIdSpace: CO_010
+            termAccession: "0000044"
+            fixed_value: CO_010:0000044
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+
+    -   name: breeding_cross_name
+        content_type: bio_data_22
+        label: Name
+        type: chado_string_type
+        description: The name of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: name
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: breeding_cross_unique_name
+        content_type: bio_data_22
+        label: Unique Name
+        type: chado_text_type
+        description: A name that uniquely identifies the breeding cross within this organism.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: uniquename
+        settings:
+            termIdSpace: data
+            termAccession: 0842
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: breeding_cross_description
+        content_type: bio_data_22
+        label: Description
+        type: chado_text_type
+        description: A description of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: description
+        settings:
+            termIdSpace: schema
+            termAccession: description
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 20
+          form:
+            default:
+              region: content
+              weight: 20
+
+    -   name: breeding_cross_type
+        content_type: bio_data_22
+        label: Type
+        type: chado_additional_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                type_table: stock
+                type_column: type_id
+        settings:
+            termIdSpace: CO_010
+            termAccession: "0000255"
+            fixed_value: CO_010:0000255
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: germplasm_variety_name
+        content_type: bio_data_23
+        label: Name
+        type: chado_string_type
+        description: The name of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: name
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: germplasm_variety_unique_name
+        content_type: bio_data_23
+        label: Unique Name
+        type: chado_text_type
+        description: A name that uniquely identifies the germplasm variety within this organism.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: uniquename
+        settings:
+            termIdSpace: data
+            termAccession: 0842
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: germplasm_variety_description
+        content_type: bio_data_23
+        label: Description
+        type: chado_text_type
+        description: A description of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: description
+        settings:
+            termIdSpace: schema
+            termAccession: description
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 20
+          form:
+            default:
+              region: content
+              weight: 20
+
+    -   name: germplasm_variety_type
+        content_type: bio_data_23
+        label: Type
+        type: chado_additional_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                type_table: stock
+                type_column: type_id
+        settings:
+            termIdSpace: CO_010
+            termAccession: 0000029
+            fixed_value: CO_010:0000029
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: ril_name
+        content_type: bio_data_24
+        label: Name
+        type: chado_string_type
+        description: The name of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: name
+            max_length: 255
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: ril_unique_name
+        content_type: bio_data_24
+        label: Unique Name
+        type: chado_text_type
+        description: A name that uniquely identifies the RIL within this organism.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: uniquename
+        settings:
+            termIdSpace: data
+            termAccession: 0842
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: ril_description
+        content_type: bio_data_24
+        label: Description
+        type: chado_text_type
+        description: A description of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: description
+        settings:
+            termIdSpace: schema
+            termAccession: description
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 20
+          form:
+            default:
+              region: content
+              weight: 20
+
+    -   name: ril_type
+        content_type: bio_data_24
+        label: Type
+        type: chado_additional_type_default
+        description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                type_table: stock
+                type_column: type_id
+        settings:
+            termIdSpace: CO_010
+            termAccession: "0000162"
+            fixed_value: CO_010:0000162
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: biosample_name
+        content_type: bio_data_25
+        label: Name
+        type: chado_text_type
+        description: The name of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: biomaterial
+                base_column: name
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: biosample_description
+        content_type: bio_data_25
+        label: Description
+        type: chado_text_type
+        description: A description of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: biomaterial
+                base_column: description
+        settings:
+            termIdSpace: schema
+            termAccession: description
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: assay_unique_name
+        content_type: bio_data_26
+        label: Unique Name
+        type: chado_text_type
+        description: A text token, number or something else which identifies an entity, but which may not be persistent (stable) or unique (the same identifier may identify multiple things).
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: assay
+                base_column: arrayidentifier
+        settings:
+            termIdSpace: data
+            termAccession: 0842
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: assay_batch_id
+        content_type: bio_data_26
+        label: Array Batch Identifier
+        type: chado_text_type
+        description: A unique identifier for an array batch.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: assay
+                base_column: arraybatchidentifier
+        settings:
+            termIdSpace: local
+            termAccession: array_batch_identifier
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: assay_name
+        content_type: bio_data_26
+        label: Name
+        type: chado_text_type
+        description: The name of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: assay
+                base_column: name
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 20
+          form:
+            default:
+              region: content
+              weight: 20
+
+    -   name: assay_description
+        content_type: bio_data_26
+        label: Description
+        type: chado_text_type
+        description: A description of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: assay
+                base_column: description
+        settings:
+            termIdSpace: schema
+            termAccession: description
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 25
+          form:
+            default:
+              region: content
+              weight: 25
+
+
+    -   name: array_design_name
+        content_type: bio_data_27
+        label: Name
+        type: chado_text_type
+        description: The name of the item.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: arraydesign
+                base_column: name
+        settings:
+            termIdSpace: schema
+            termAccession: name
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: array_design_version_num
+        content_type: bio_data_27
+        label: Array Version
+        type: chado_text_type
+        description: A version number is an information content entity which is a sequence of characters borne by part of each of a class of manufactured products or its packaging and indicates its order within a set of other products having the same name.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: arraydesign
+                base_column: version
+        settings:
+            termIdSpace: IAO
+            termAccession: 0000129
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 15
+          form:
+            default:
+              region: content
+              weight: 15
+
+    -   name: array_design_description
+        content_type: bio_data_27
+        label: Description
+        type: chado_text_type
+        description: A description of the item.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: arraydesign
+                base_column: description
+        settings:
+            termIdSpace: schema
+            termAccession: description
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 20
+          form:
+            default:
+              region: content
+              weight: 20
+
+    -   name: array_design_dimensions
+        content_type: bio_data_27
+        label: Array Dimensions
+        type: chado_text_type
+        description: The dimensions of an array.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: arraydesign
+                base_column: array_dimensions
+        settings:
+            termIdSpace: local
+            termAccession: array_dimensions
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 25
+          form:
+            default:
+              region: content
+              weight: 25
+
+    -   name: array_design_element_dims
+        content_type: bio_data_27
+        label: Element Dimensions
+        type: chado_text_type
+        description: The dimensions of an element.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: arraydesign
+                base_column: element_dimensions
+        settings:
+            termIdSpace: local
+            termAccession: element_dimensions
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 30
+          form:
+            default:
+              region: content
+              weight: 30
+
+    -   name: array_design_substrate_type
+        content_type: bio_data_27
+        label: Substrate Type
+        type: chado_additional_type_default
+        description: Controlled terms for descriptors of types of array substrates.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: arraydesign
+                type_table: arraydesign
+                type_column: substratetype_id
+        settings:
+            termIdSpace: EFO
+            termAccession: 0000269
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
+    -   name: array_design_platform_type
+        content_type: bio_data_27
+        label: Platform Type
+        type: chado_additional_type_default
+        description: The specific version (manufacturer, model, etc.) of a technology that is used to carry out a laboratory or computational experiment.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: arraydesign
+                type_table: arraydesign
+                type_column: platformtype_id
+        settings:
+            termIdSpace: EFO
+            termAccession: 0000269
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
