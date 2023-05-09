@@ -35,6 +35,8 @@ class ChadoOrganismAPITest extends BrowserTestBase {
    *   chado_get_organism()
    *   chado_get_organism_scientific_name()
    *   chado_get_organism_select_options()
+   *   chado_abbreviate_infraspecific_rank()
+   *   chado_unabbreviate_infraspecific_rank()
    *
    * @group tripal-chado
    * @group chado-organism
@@ -79,7 +81,7 @@ class ChadoOrganismAPITest extends BrowserTestBase {
     }
     $this->assertNull($org, 'test_chado_get_organism() did not flag invalid $identifiers (not an array)');
 
-    // Test empty array for $identifiers = Should fail
+    // Test using an empty array for $identifiers = Should fail
     $identifiers = [];
     $org = chado_get_organism($identifiers, [], self::$schemaName);
     $this->assertNull($org, 'test_chado_get_organism() did not flag invalid $identifiers (empty array)');
@@ -125,19 +127,7 @@ class ChadoOrganismAPITest extends BrowserTestBase {
     $this->assertArrayHasKey($organism_ids[1], $select_options, 'test_chado_get_organism_select_options() the returned array does not contain the expected organism id '.$organism_ids[1]);
     $this->assertEquals($expect, $select_options[$organism_ids[1]], 'test_chado_get_organism_select_options() the array element does not contain the expected organism text '.$expect);
 
-    putenv('TRIPAL_SUPPRESS_ERRORS=FALSE');
-  }
-
-  /**
-   * Tests the following organism API functions:
-   *   chado_abbreviate_infraspecific_rank()
-   *   chado_unabbreviate_infraspecific_rank()
-   *
-   * @group tripal-chado
-   * @group chado-organism
-   */
-  public function test_chado_organism_abbreviations() {
-
+    // Data to test abbreviation of infraspecific rank
     $expected_abbreviated = [
       'no_rank' => '',
       'subspecies' => 'subsp.',
@@ -149,6 +139,7 @@ class ChadoOrganismAPITest extends BrowserTestBase {
       'anything_else' => 'anything_else',
     ];
 
+    // Data to test unabbreviation of infraspecific rank
     $expected_unabbreviated = [
       '' => '',
       'subsp' => 'subspecies',
@@ -169,15 +160,19 @@ class ChadoOrganismAPITest extends BrowserTestBase {
       'anything_else.' => 'anything_else.',
     ];
 
+    // Test abbreviation of infraspecific rank
     foreach ($expected_abbreviated as $full => $abbreviation) {
       $result = chado_abbreviate_infraspecific_rank($full);
       $this->assertEqual($result, $abbreviation, 'test_chado_abbreviate_infraspecific_rank() did not properly abbreviate '.$full.' returned '.$result);
     }
 
+    // Test unabbreviation of infraspecific rank
     foreach ($expected_unabbreviated as $abbreviation => $full) {
       $result = chado_unabbreviate_infraspecific_rank($full);
       $this->assertEqual($result, $full, 'test_chado_unabbreviate_infraspecific_rank() did not properly unabbreviate '.$abbreviation.' returned '.$result);
     }
+
+    putenv('TRIPAL_SUPPRESS_ERRORS=FALSE');
   }
 
   // @to-do
