@@ -41,7 +41,7 @@ class ChadoOrganismAPITest extends BrowserTestBase {
    * @group tripal-chado
    * @group chado-organism
    */
-  public function test_chado_get_organism() {
+  public function test_chado_organism_api_functions() {
 
     putenv('TRIPAL_SUPPRESS_ERRORS=TRUE');
 
