@@ -1040,7 +1040,7 @@ fields:
               region: content
               weight: 10
 
-    -   name: pylotree_name
+    -   name: phylotree_name
         content_type: bio_data_10
         label: Name
         type: chado_string_type
@@ -1093,7 +1093,7 @@ fields:
               region: content
               weight: 15
 
-    -   name: pylotree_type
+    -   name: phylotree_type
         content_type: bio_data_10
         label: Type
         type: chado_additional_type_default
