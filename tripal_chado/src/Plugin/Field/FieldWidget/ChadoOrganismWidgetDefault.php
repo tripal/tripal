@@ -8,18 +8,18 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
- * Plugin implementation of default Tripal string type widget.
+ * Plugin implementation of default Tripal organism widget.
  *
  * @FieldWidget(
- *   id = "obi__organism_widget",
+ *   id = "chado_organism_widget_default",
  *   label = @Translation("Chado Organism Reference Widget"),
  *   description = @Translation("A chado organism reference widget"),
  *   field_types = {
- *     "obi__organism"
+ *     "chado_organism_default"
  *   }
  * )
  */
-class obi__organism_widget extends ChadoWidgetBase {
+class ChadoOrganismWidgetDefault extends ChadoWidgetBase {
 
 
   /**

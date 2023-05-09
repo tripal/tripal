@@ -43,7 +43,7 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    *
    * @param array $values
    *   Associative array 5-levels deep.
-   *   The 1st level is the field name (e.g. obi__organism).
+   *   The 1st level is the field name (e.g. ChadoOrganismDefault).
    *   The 2nd level is the delta value (e.g. 0).
    *   The 3rd level is a field key name (i.e. record_id + value).
    *   The 4th level must contain the following three keys/value pairs
@@ -63,7 +63,7 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    *
    * @param array $values
    *   Associative array 5-levels deep.
-   *   The 1st level is the field name (e.g. obi__organism).
+   *   The 1st level is the field name (e.g. ChadoOrganismDefault).
    *   The 2nd level is the delta value (e.g. 0).
    *   The 3rd level is a field key name (i.e. record_id + value).
    *   The 4th level must contain the following three keys/value pairs
@@ -83,7 +83,7 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    *
    * @param array $values
    *   Associative array 5-levels deep.
-   *   The 1st level is the field name (e.g. obi__organism).
+   *   The 1st level is the field name (e.g. ChadoOrganismDefault).
    *   The 2nd level is the delta value (e.g. 0).
    *   The 3rd level is a field key name (i.e. record_id + value).
    *   The 4th level must contain the following three keys/value pairs

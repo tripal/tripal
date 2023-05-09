@@ -167,7 +167,7 @@ fields:
     -   name: organism_infraspecific_type
         content_type: bio_data_1
         label: Infraspecific Type
-        type: schema__additional_type
+        type: chado_additional_type_default
         description: The connector type (e.g. subspecies, varietas, forma, etc.) for the infraspecific name.
         cardinality: 1
         required: false
@@ -568,7 +568,7 @@ fields:
     -   name: contact_type
         content_type: bio_data_5
         label: Contact Type
-        type: schema__additional_type
+        type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: false
@@ -725,7 +725,7 @@ fields:
     -   name: protocol_type
         content_type: bio_data_7
         label: Protocol Type
-        type: schema__additional_type
+        type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -857,7 +857,7 @@ fields:
     -   name: gene_organism
         content_type: bio_data_8
         label: Organism
-        type: obi__organism
+        type: chado_organism_default
         description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
         cardinality: 1
         required: true
@@ -882,7 +882,7 @@ fields:
     -   name: gene_type
         content_type: bio_data_8
         label: Type
-        type: schema__additional_type
+        type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -1015,7 +1015,7 @@ fields:
     -   name: mrna_type
         content_type: bio_data_9
         label: Type
-        type: schema__additional_type
+        type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -1096,7 +1096,7 @@ fields:
     -   name: pylotree_type
         content_type: bio_data_10
         label: Type
-        type: schema__additional_type
+        type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: false
@@ -1177,7 +1177,7 @@ fields:
     -   name: physical_map_unit_type
         content_type: bio_data_11
         label: Unit Type
-        type: schema__additional_type
+        type: chado_additional_type_default
         description: A unit of measurement is a standardized quantity of a physical quality.
         cardinality: 1
         required: false
@@ -1257,7 +1257,7 @@ fields:
     -   name: dna_library_type
         content_type: bio_data_12
         label: Library Type
-        type: schema__additional_type
+        type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -1473,7 +1473,7 @@ fields:
     -   name: genome_assembly_type
         content_type: bio_data_13
         label: Type
-        type: schema__additional_type
+        type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -1688,7 +1688,7 @@ fields:
     -   name: genome_annotation_type
         content_type: bio_data_14
         label: Type
-        type: schema__additional_type
+        type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -1769,7 +1769,7 @@ fields:
     -   name: genome_project_type
         content_type: bio_data_15
         label: Type
-        type: schema__additional_type
+        type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -1850,7 +1850,7 @@ fields:
     -   name: genetic_map_unit_type
         content_type: bio_data_16
         label: Unit Type
-        type: schema__additional_type
+        type: chado_additional_type_default
         description: A unit of measurement is a standardized quantity of a physical quality.
         cardinality: 1
         required: false
@@ -1982,7 +1982,7 @@ fields:
     -   name: qtl_type
         content_type: bio_data_17
         label: Type
-        type: schema__additional_type
+        type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -2115,7 +2115,7 @@ fields:
     -   name: sequence_variant_type
         content_type: bio_data_18
         label: Type
-        type: schema__additional_type
+        type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -2248,7 +2248,7 @@ fields:
     -   name: genetic_marker_type
         content_type: bio_data_19
         label: Type
-        type: schema__additional_type
+        type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -2381,7 +2381,7 @@ fields:
     -   name: phenotypic_marker_type
         content_type: bio_data_20
         label: Type
-        type: schema__additional_type
+        type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -2488,7 +2488,7 @@ fields:
     -   name: germplasm_type
         content_type: bio_data_21
         label: Type
-        type: schema__additional_type
+        type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -2596,7 +2596,7 @@ fields:
     -   name: breeding_cross_type
         content_type: bio_data_22
         label: Type
-        type: schema__additional_type
+        type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -2703,7 +2703,7 @@ fields:
     -   name: germplasm_variety_type
         content_type: bio_data_23
         label: Type
-        type: schema__additional_type
+        type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -2810,7 +2810,7 @@ fields:
     -   name: ril_type
         content_type: bio_data_24
         label: Type
-        type: schema__additional_type
+        type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
         cardinality: 1
         required: true
@@ -3125,7 +3125,7 @@ fields:
     -   name: array_design_substrate_type
         content_type: bio_data_27
         label: Substrate Type
-        type: schema__additional_type
+        type: chado_additional_type_default
         description: Controlled terms for descriptors of types of array substrates.
         cardinality: 1
         required: false
@@ -3152,7 +3152,7 @@ fields:
     -   name: array_design_platform_type
         content_type: bio_data_27
         label: Platform Type
-        type: schema__additional_type
+        type: chado_additional_type_default
         description: The specific version (manufacturer, model, etc.) of a technology that is used to carry out a laboratory or computational experiment.
         cardinality: 1
         required: true
