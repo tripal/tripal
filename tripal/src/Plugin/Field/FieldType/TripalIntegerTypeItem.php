@@ -28,22 +28,12 @@ class TripalIntegerTypeItem extends TripalFieldItemBase {
    */
   public static function tripalTypes($field_definition) {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
+    $storage_settings = $field_definition->getSettings();
+    $termIdSpace = $storage_settings['termIdSpace'];
+    $termAccession = $storage_settings['termAccession'];
 
     return [
-      new IntStoragePropertyType($entity_type_id, self::$id, "value"),
-    ];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function tripalValuesTemplate($field_definition) {
-    $entity = $this->getEntity();
-    $entity_type_id = $entity->getEntityTypeId();
-    $entity_id = $entity->id();
-
-    return [
-      new StoragePropertyValue($entity_type_id, self::$id, "value", $entity_id),
+      new IntStoragePropertyType($entity_type_id, self::$id, "value", $termIdSpace . ':' . $termAccession),
     ];
   }
 }

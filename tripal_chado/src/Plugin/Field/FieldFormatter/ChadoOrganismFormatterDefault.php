@@ -8,32 +8,31 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
 
 /**
- * Plugin implementation of default Tripal string type formatter.
+ * Plugin implementation of default Tripal organism formatter.
  *
  * @FieldFormatter(
- *   id = "schema__additional_type_formatter",
- *   label = @Translation("Chado Type Reference Formatter"),
- *   description = @Translation("A Chado type reference formatter"),
+ *   id = "chado_organism_formatter_default",
+ *   label = @Translation("Chado Organism Reference Formatter"),
+ *   description = @Translation("A chado organism reference formatter"),
  *   field_types = {
- *     "schema__additional_type"
+ *     "chado_organism_default"
  *   }
  * )
  */
-class schema__additional_type_formatter extends ChadoFormatterBase {
+class ChadoOrganismFormatterDefault extends ChadoFormatterBase {
 
   /**
-   * {@inheritDoc}
+   * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = [];
 
     foreach($items as $delta => $item) {
       $elements[$delta] = [
-        "#markup" => $item->get('term_name')->getString()
+        "#markup" => $item->get('label')->getString()
       ];
     }
 
     return $elements;
   }
-
 }

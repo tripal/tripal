@@ -180,7 +180,180 @@ function tripal_schema() {
 
   // Adds a table for administrative notifications on the dashboard.
   $schema['tripal_admin_notifications'] = tripal_tripal_admin_notifications_schema();
+
+  $schema['tripal_terms'] = tripal_tripal_terms_schema();
+  $schema['tripal_terms_idspaces'] = tripal_tripal_terms_idspaces_schema();
+  $schema['tripal_terms_vocabs'] = tripal_tripal_terms_vocabs_schema();
   return $schema;
+}
+
+/**
+ *
+ */
+function tripal_tripal_terms_vocabs_schema() {
+  return [
+    'fields' => [
+      'vocab_id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'name' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'label' => [
+        'type' => 'varchar',
+        'length' => 1024,
+        'not null' => FALSE,
+      ],
+      'url' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+      ],
+      'idspaces' => [
+        'type' => 'text',
+        'not null' => FALSE,
+      ],
+    ],
+    'indexes' => [
+      'name' => ['name'],
+    ],
+    'unique keys' => [
+      'label_unq1' => ['name'],
+    ],
+    'primary key' => ['vocab_id'],
+  ];
+}
+
+/**
+ *
+ */
+function tripal_tripal_terms_idspaces_schema() {
+  return [
+    'fields' => [
+      'idspace_id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'name' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'description' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+      ],
+      'urlprefix' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+      ],
+      'default_vocab' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+      ],
+    ],
+    'indexes' => [
+      'name' => ['name'],
+    ],
+    'unique keys' => [
+      'label_unq1' => ['name'],
+    ],
+    'primary key' => ['idspace_id'],
+  ];
+}
+
+/**
+ *
+ */
+function tripal_tripal_terms_schema() {
+  // @todo: Storing parents and synonyms in a text field will make it
+  // slow to lookup terms by those names.  Since this table is just to
+  // provide some sort of default storage so that Tripal can work without
+  // Chado it may not be that big of a deal.  But if there is a case
+  // where this table is used for storing massive numbers of terms it
+  // will need to be optimized.
+  return [
+    'fields' => [
+      'term_id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'name' => [
+        'type' => 'varchar',
+        'length' => 1024,
+        'not null' => TRUE,
+      ],
+      'definition' => [
+        'type' => 'text',
+        'not null' => FALSE,
+      ],
+      'accession' => [
+        'type' => 'varchar',
+        'length' => 1024,
+        'not null' => TRUE,
+      ],
+      'is_obsolete' => [
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1,
+      ],
+      'is_relationship_type' => [
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1,
+      ],
+      'id_space' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'vocabulary' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'parents' => [
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => FALSE,
+      ],
+      'altIds' => [
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => FALSE,
+      ],
+      'synonyms' => [
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => FALSE,
+      ],
+      'properties' => [
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => FALSE,
+      ],
+    ],
+    'indexes' => [
+      'term_id' => ['term_id'],
+      'name' => ['name'],
+      'vocabulary' => ['vocabulary'],
+      'id_space' => ['id_space'],
+      'name_vocab' => ['name', 'id_space', 'vocabulary'],
+    ],
+    'unique keys' => [
+      'term_full_accession' => ['id_space', 'accession'],
+    ],
+    'primary key' => ['term_id'],
+  ];
 }
 
 /**
@@ -743,7 +916,7 @@ function tripal_install_cloner() {
   $db = \Drupal::database();
 
   $sql_cloner_path =
-    drupal_get_path('module', 'tripal')
+    \Drupal::service('extension.path.resolver')->getPath('module', 'tripal')
     . '/src/TripalDBX/pg-clone-schema/clone_schema.sql';
 
   // Replaces "public." in SQL if it is not the default Drupal schema.
@@ -803,7 +976,7 @@ function tripal_uninstall_cloner() {
   $db = \Drupal::database();
 
   $sql_uninstall_cloner_path =
-    drupal_get_path('module', 'tripal')
+    \Drupal::service('extension.path.resolver')->getPath('module', 'tripal')
     . '/src/TripalDBX/pg-clone-schema/clone_schema_uninstall.sql';
 
   // Replaces "public." in SQL if it is not the default Drupal schema.

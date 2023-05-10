@@ -10,19 +10,19 @@ use Drupal\core\Form\FormStateInterface;
 use Drupal\core\Field\FieldDefinitionInterface;
 
 /**
- * Plugin implementation of Tripal string field type.
+ * Plugin implementation of Tripal organism field type.
  *
  * @FieldType(
- *   id = "obi__organism",
+ *   id = "chado_organism_default",
  *   label = @Translation("Chado Organism Reference"),
  *   description = @Translation("A chado organism reference"),
- *   default_widget = "obi__organism_widget",
- *   default_formatter = "obi__organism_formatter"
+ *   default_widget = "chado_organism_widget_default",
+ *   default_formatter = "chado_organism_formatter_default"
  * )
  */
-class obi__organism extends ChadoFieldItemBase {
+class ChadoOrganismDefault extends ChadoFieldItemBase {
 
-  public static $id = "obi__organism";
+  public static $id = "chado_organism_default";
 
   /**
    * {@inheritdoc}
@@ -69,6 +69,19 @@ class obi__organism extends ChadoFieldItemBase {
     // Get the base table columns needed for this field.
     $settings = $field_definition->getSetting('storage_plugin_settings');
     $base_table = $settings['base_table'];
+
+    // If we don't have a base table then we're not ready to specify the
+    // properties for this field.
+    if (!$base_table) {
+      $record_id_term = 'OBI:0100026';
+      return [
+        new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
+          'action' => 'store_id',
+          'drupal_store' => TRUE,
+        ])
+      ];
+    }
+
     $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
     $base_pkey_col = $base_schema_def['primary key'];
     $base_fk_col = array_keys($base_schema_def['foreign keys']['organism']['columns'])[0];

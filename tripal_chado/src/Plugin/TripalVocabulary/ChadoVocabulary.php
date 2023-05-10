@@ -72,11 +72,12 @@ class ChadoVocabulary extends TripalVocabularyBase {
           'The value provided was: @value',
           ['@size' => $this->cv_def['fields']['name']['size'],
            '@value' => $this->getName()]);
+      $this->is_valid = FALSE;
+      return FALSE;
 
     }
-    $this->is_valid = True;
-
-    return $this->is_valid;
+    $this->is_valid = TRUE;
+    return TRUE;
   }
 
   /**
@@ -120,6 +121,7 @@ class ChadoVocabulary extends TripalVocabularyBase {
     // Let's let the collection be deleted as far as
     // Tripal is concerned but leave the record in Chado.
     // So, do nothing here.
+    $this->messageLogger->warning('The ChadoVocabulary::destroy() function is currently not implemented');
   }
 
 
@@ -253,7 +255,7 @@ class ChadoVocabulary extends TripalVocabularyBase {
    * {@inheritdoc}
    */
   public function getTerms($name, $exact = True){
-
+    $this->messageLogger->warning('The ChadoVocabulary::getTerms() function is currently not implemented');
   }
 
   /**
@@ -374,7 +376,7 @@ class ChadoVocabulary extends TripalVocabularyBase {
       ->condition('name', $this->getName(), '=');
     $num_updated = $query->execute();
     if ($num_updated != 1) {
-      $this->logInvalidCondition('ChadoVocabulary: The label could not be updated for the vocabulary.');
+      $this->messageLogger->error('ChadoVocabulary: The label could not be updated for the vocabulary.');
       return False;
     }
     return True;
