@@ -3,7 +3,7 @@ name: PHPUnit
 on:
   push:
     branches:
-      - 9.x-4.x
+      - 4.x
 
 env:
   DRUPALVER: 9.4.x-dev

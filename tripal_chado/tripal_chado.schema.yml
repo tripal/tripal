@@ -1,4 +1,4 @@
-field.widget.settings.obi__organism_default_widget:
+field.widget.settings.chado_organism_default_widget:
   type: mapping
   label: 'Organism: Select List widget settings'
   mapping:
