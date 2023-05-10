@@ -3,7 +3,7 @@
 namespace Drupal\Tests\tripal_chado;
 
 use Drupal\Core\Url;
-use Drupal\Tests\BrowserTestBase;
+use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
 use Drupal\Core\Database\Database;
 use Drupal\tripal_chado\api\ChadoSchema;
 
