@@ -49,7 +49,8 @@ class ChadoOrganismAPITest extends ChadoTestBrowserBase {
     putenv('TRIPAL_SUPPRESS_ERRORS=TRUE');
 
     // Create a Test Chado schema which contains the expected cvterms added during the prepare step.
-    $this->schemaName = $this->createTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
+    $connection = $this->createTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
+    $this->schemaName = $connection->getSchemaName();
 
     // Lookup cvterm_id for 'subspecies'
     $cvterm = chado_get_cvterm(['name' => 'subspecies'], [], $this->schemaName);
