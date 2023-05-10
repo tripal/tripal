@@ -49,10 +49,10 @@ class ChadoOrganismAPITest extends ChadoTestBrowserBase {
     putenv('TRIPAL_SUPPRESS_ERRORS=TRUE');
 
     // Create a Test Chado schema which contains the expected cvterms added during the prepare step.
-    self::$schemaName = $this->createTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
+    $this->schemaName = $this->createTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
 
     // Lookup cvterm_id for 'subspecies'
-    $cvterm = chado_get_cvterm(['name' => 'subspecies'], [], self::$schemaName);
+    $cvterm = chado_get_cvterm(['name' => 'subspecies'], [], $this->schemaName);
     $this->assertNotNull($cvterm, 'Unable to retrieve cvterm for "subspecies" using chado_get_cvterm()');
     $subspecies_id = $cvterm->cvterm_id;
 
@@ -67,13 +67,13 @@ class ChadoOrganismAPITest extends ChadoTestBrowserBase {
             'common_name' => 'False Tripal',
             'abbreviation' => 'T. ' . $species . ' subsp. sativus',
            ];
-    $dbq = chado_insert_record('organism', $org, [], self::$schemaName);
+    $dbq = chado_insert_record('organism', $org, [], $this->schemaName);
     $this->assertNotNull($dbq, 'Unable to insert test organism 1.');
     $organism_ids[0] = $dbq['organism_id'];
 
     $org['infraspecific_name'] = 'selvaticus';
     $org['abbreviation'] = 'T. ' . $species . ' subsp. selvaticus';
-    $dbq = chado_insert_record('organism', $org, [], self::$schemaName);
+    $dbq = chado_insert_record('organism', $org, [], $this->schemaName);
     $this->assertNotNull($dbq, 'Unable to insert test organism 2.');
     $organism_ids[1] = $dbq['organism_id'];
 
@@ -89,38 +89,38 @@ class ChadoOrganismAPITest extends ChadoTestBrowserBase {
 
     // Test using an empty array for $identifiers = Should fail
     $identifiers = [];
-    $org = chado_get_organism($identifiers, [], self::$schemaName);
+    $org = chado_get_organism($identifiers, [], $this->schemaName);
     $this->assertNull($org, 'Did not flag invalid $identifiers passed to chado_get_organism() (empty array)');
 
     // Test retrieving organism that does not exist = Should fail
     $identifiers = ['genus' => 'Wrong', 'species' => 'incorrect'];
-    $org = chado_get_organism($identifiers, [], self::$schemaName);
+    $org = chado_get_organism($identifiers, [], $this->schemaName);
     $this->assertNull($org, 'Returned an organism from invalid $identifiers passed to chado_get_organism()');
 
     // Get organism from organism_id = Should succeed
     $identifiers = ['organism_id' => $organism_ids[0]];
-    $org = chado_get_organism($identifiers, [], self::$schemaName);
+    $org = chado_get_organism($identifiers, [], $this->schemaName);
     $this->assertIsObject($org, 'Did not return the organism with organism_id='
                           . $organism_ids[0] . ' using chado_get_organism()');
 
     // Test ambiguous $identifiers = Should fail
     $identifiers = ['genus' => 'Tripalus', 'species' => $species];  // subspecies not specified, thus ambiguous
-    $org = chado_get_organism($identifiers, [], self::$schemaName);
+    $org = chado_get_organism($identifiers, [], $this->schemaName);
     $this->assertNull($org, 'Returned an organism from ambiguous $identifiers passed to chado_get_organism()');
 
     // Test unambiguous $identifiers = Should succeed
     $identifiers = ['genus' => 'Tripalus', 'species' => $species, 'type_id' => $subspecies_id, 'infraspecific_name' => 'selvaticus'];
-    $org = chado_get_organism($identifiers, [], self::$schemaName);
+    $org = chado_get_organism($identifiers, [], $this->schemaName);
     $this->assertIsObject($org, 'Did not return an organism from unambiguous $identifiers passed to chado_get_organism()');
 
     // Test getting scientific name = Should succeed
-    $name = chado_get_organism_scientific_name($org, self::$schemaName);
+    $name = chado_get_organism_scientific_name($org, $this->schemaName);
     $expect = 'Tripalus ' . $species . ' subsp. selvaticus';
     $this->assertEquals($name, $expect, 'Did not return the expected scientific name ' . $expect
                         . ' instead returned ' . $name . ' using chado_get_organism_scientific_name()');
 
     // Test organism select options with default parameters and test that an array is returned = should succeed
-    $select_options = chado_get_organism_select_options(FALSE, FALSE, self::$schemaName);
+    $select_options = chado_get_organism_select_options(FALSE, FALSE, $this->schemaName);
     $this->assertIsArray($select_options, 'Did not return an array from chado_get_organism_select_options()');
 
     // Test that the array contains at least the two test organisms = should succeed
