@@ -4340,49 +4340,49 @@ COMMENT ON COLUMN public.tripal_entity__bio_data_9_schema_name.delta IS 'The seq
 
 
 
-CREATE TABLE public.tripal_entity__schema__additionaltype (
+CREATE TABLE public.tripal_entity__chado_additional_type_default (
     bundle character varying(128) DEFAULT ''::character varying NOT NULL,
     deleted smallint DEFAULT 0 NOT NULL,
     entity_id bigint NOT NULL,
     revision_id bigint NOT NULL,
     langcode character varying(32) DEFAULT ''::character varying NOT NULL,
     delta bigint NOT NULL,
-    schema__additionaltype_value integer,
-    schema__additionaltype_record_id integer,
-    CONSTRAINT tripal_entity__schema__additionaltype_delta_check CHECK ((delta >= 0)),
-    CONSTRAINT tripal_entity__schema__additionaltype_entity_id_check CHECK ((entity_id >= 0)),
-    CONSTRAINT tripal_entity__schema__additionaltype_revision_id_check CHECK ((revision_id >= 0))
+    chado_additional_type_default_value integer,
+    chado_additional_type_default_record_id integer,
+    CONSTRAINT tripal_entity__chado_additional_type_default_delta_check CHECK ((delta >= 0)),
+    CONSTRAINT tripal_entity__chado_additional_type_default_entity_id_check CHECK ((entity_id >= 0)),
+    CONSTRAINT tripal_entity__chado_additional_type_default_revision_id_check CHECK ((revision_id >= 0))
 );
 
 
-ALTER TABLE public.tripal_entity__schema__additionaltype OWNER TO drupal;
+ALTER TABLE public.tripal_entity__chado_additional_type_default OWNER TO drupal;
 
 
-COMMENT ON TABLE public.tripal_entity__schema__additionaltype IS 'Data storage for tripal_entity field schema__additionaltype.';
-
-
-
-COMMENT ON COLUMN public.tripal_entity__schema__additionaltype.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
+COMMENT ON TABLE public.tripal_entity__chado_additional_type_default IS 'Data storage for tripal_entity field chado_additional_type_default.';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__schema__additionaltype.deleted IS 'A boolean indicating whether this data item has been deleted';
+COMMENT ON COLUMN public.tripal_entity__chado_additional_type_default.bundle IS 'The field instance bundle to which this row belongs, used when deleting a field instance';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__schema__additionaltype.entity_id IS 'The entity id this data is attached to';
+COMMENT ON COLUMN public.tripal_entity__chado_additional_type_default.deleted IS 'A boolean indicating whether this data item has been deleted';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__schema__additionaltype.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
+COMMENT ON COLUMN public.tripal_entity__chado_additional_type_default.entity_id IS 'The entity id this data is attached to';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__schema__additionaltype.langcode IS 'The language code for this data item.';
+COMMENT ON COLUMN public.tripal_entity__chado_additional_type_default.revision_id IS 'The entity revision id this data is attached to, which for an unversioned entity type is the same as the entity id';
 
 
 
-COMMENT ON COLUMN public.tripal_entity__schema__additionaltype.delta IS 'The sequence number for this data item, used for multi-value fields';
+COMMENT ON COLUMN public.tripal_entity__chado_additional_type_default.langcode IS 'The language code for this data item.';
+
+
+
+COMMENT ON COLUMN public.tripal_entity__chado_additional_type_default.delta IS 'The sequence number for this data item, used for multi-value fields';
 
 
 

@@ -35,6 +35,82 @@ function tripal_chado_help($route_name, RouteMatchInterface $route_match) {
 }
 
 /**
+ * Implements hook_config_schema_info_alter().
+ *
+ * Specifically, we are altering config schema set in the tripal module.
+ * We use this approach to ensure we are extending the existing schema
+ * which makes these changes available to extension modules defining their
+ * own yml files.
+ */
+function tripal_chado_config_schema_info_alter(&$definitions) {
+
+  // ADDITIONS TO TRIPAL FIELDS.
+  $definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping']['storage_plugin_settings']['mapping']['base_table'] = [
+    'type' => 'string',
+    'label' => 'Field Base Chado Table',
+    'nullable' => false
+  ];
+  $definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping']['storage_plugin_settings']['mapping']['base_column'] = [
+    'type' => 'string',
+    'label' => 'Field Base Chado Column',
+    'nullable' => false
+  ];
+  // Specific to the schema__additional_type field.
+  // Indicates the table where the type_id column is used to differentiate the type.
+  $definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping']['storage_plugin_settings']['mapping']['type_table'] = [
+    'type' => 'string',
+    'label' => 'Table containing Type ID',
+    'nullable' => false
+  ];
+  // Indicates the column used as a foreign key to the cvterm table where the type is linked.
+  $definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping']['storage_plugin_settings']['mapping']['type_column'] = [
+    'type' => 'string',
+    'label' => 'Column Linking to CVTerm table',
+    'nullable' => false
+  ];
+  // Specific to the chado_linker__prop field.
+  // Indicates the table that contains the property columns.
+  $definitions['field.storage.tripal_entity.*']['mapping']['settings']['mapping']['storage_plugin_settings']['mapping']['prop_table'] = [
+    'type' => 'string',
+    'label' => 'Table containing property columns',
+    'nullable' => false
+  ];
+
+  // ADDITIONS TO TRIPAL FIELD COLLECTION -YML FIELD CREATION.
+  // Adds the Base table and column information needed for all Chado fields.
+  $definitions['tripal.tripalfield_collection.*']['mapping']['fields']['sequence']['mapping']['storage_settings']['mapping']['storage_plugin_settings']['mapping']['base_table'] = [
+    'type' => 'string',
+    'label' => 'Field Base Chado Table',
+    'nullable' => false
+  ];
+  $definitions['tripal.tripalfield_collection.*']['mapping']['fields']['sequence']['mapping']['storage_settings']['mapping']['storage_plugin_settings']['mapping']['base_column'] = [
+    'type' => 'string',
+    'label' => 'Field Base Chado Column',
+    'nullable' => false
+  ];
+  // Specific to the schema__additional_type field.
+  // Indicates the table where the type_id column is used to differentiate the type.
+  $definitions['tripal.tripalfield_collection.*']['mapping']['fields']['sequence']['mapping']['storage_settings']['mapping']['storage_plugin_settings']['mapping']['type_table'] = [
+    'type' => 'string',
+    'label' => 'Table containing Type ID',
+    'nullable' => false
+  ];
+  // Indicates the column used as a foreign key to the cvterm table where the type is linked.
+  $definitions['tripal.tripalfield_collection.*']['mapping']['fields']['sequence']['mapping']['storage_settings']['mapping']['storage_plugin_settings']['mapping']['type_column'] = [
+    'type' => 'string',
+    'label' => 'Column Linking to CVTerm table',
+    'nullable' => false
+  ];
+  // Specific to the chado_linker__prop field.
+  // Indicates the table that contains the property columns.
+  $definitions['tripal.tripalfield_collection.*']['mapping']['fields']['sequence']['mapping']['storage_settings']['mapping']['storage_plugin_settings']['mapping']['prop_table'] = [
+    'type' => 'string',
+    'label' => 'Table containing property columns',
+    'nullable' => false
+  ];
+}
+
+/**
  * Used by the hook_rebuild() function to recreate views from default.
  *
  * If the user deletes one of the views that are created on install of the

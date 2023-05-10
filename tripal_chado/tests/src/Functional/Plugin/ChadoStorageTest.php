@@ -448,9 +448,9 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     // Value: genus: Oryza, species: sativa, common_name: rice,
     //   abbreviation: O.sativa, infraspecific_name: Japonica,
     //   type: species_group (TAXRANK:0000010), comment: 'This is rice'
-    $field_name = 'obi__organism';
+    $field_name = 'chado_organism_default';
     $field_label = 'Organism';
-    $field_type = 'obi__organism';
+    $field_type = 'ChadoOrganismDefault';
     $field_term_string = 'obi:organism';
     $chado_table = 'feature';
     $chado_column = 'organism_id';
@@ -574,11 +574,11 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     // Value: genus: Oryza, species: sativa, common_name: rice,
     //   abbreviation: O.sativa, infraspecific_name: Japonica,
     //   type: species_group (TAXRANK:0000010), comment: 'This is rice'
-    $this->assertEquals($this->organism_id, $values['obi__organism'][0]['organism_id']['value']->getValue(), 'The organism value was not loaded properly.');
-    $this->assertEquals('Oryza', $values['obi__organism'][0]['genus']['value']->getValue(), 'The organism genus was not loaded properly.');
-    $this->assertEquals('sativa', $values['obi__organism'][0]['species']['value']->getValue(), 'The organism species was not loaded properly.');
-    $this->assertEquals('Japonica', $values['obi__organism'][0]['infraspecific_name']['value']->getValue(), 'The organism infraspecific name was not loaded properly.');
-    $this->assertEquals('species_group', $values['obi__organism'][0]['infraspecific_type']['value']->getValue(), 'The organism infraspecific type was not loaded properly.');
-    $this->assertEquals("<i>Oryza sativa</i> species_group Japonica", $values['obi__organism'][0]['label']['value']->getValue(), 'The organism label was not loaded properly.');
+    $this->assertEquals($this->organism_id, $values['chado_organism_default'][0]['organism_id']['value']->getValue(), 'The organism value was not loaded properly.');
+    $this->assertEquals('Oryza', $values['chado_organism_default'][0]['genus']['value']->getValue(), 'The organism genus was not loaded properly.');
+    $this->assertEquals('sativa', $values['chado_organism_default'][0]['species']['value']->getValue(), 'The organism species was not loaded properly.');
+    $this->assertEquals('Japonica', $values['chado_organism_default'][0]['infraspecific_name']['value']->getValue(), 'The organism infraspecific name was not loaded properly.');
+    $this->assertEquals('species_group', $values['chado_organism_default'][0]['infraspecific_type']['value']->getValue(), 'The organism infraspecific type was not loaded properly.');
+    $this->assertEquals("<i>Oryza sativa</i> species_group Japonica", $values['chado_organism_default'][0]['label']['value']->getValue(), 'The organism label was not loaded properly.');
   }
 }
