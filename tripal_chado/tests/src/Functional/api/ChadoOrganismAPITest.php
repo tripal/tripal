@@ -14,7 +14,7 @@ use Drupal\tripal_chado\api\ChadoSchema;
  * @group Tripal Chado
  * @group Tripal API
  */
-class ChadoOrganismAPITest extends BrowserTestBase {
+class ChadoOrganismAPITest extends ChadoTestBrowserBase {
 
   protected $defaultTheme = 'stable';
 
