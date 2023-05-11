@@ -8,7 +8,7 @@ use Drupal\Core\Database\Database;
 use Drupal\tripal_chado\api\ChadoSchema;
 
 /**
- * Testing the tripal_chado/api/tripal_chado.organism.api.inc functions.
+ * Testing the tripal_chado/api/tripal_chado.organism.api.php functions.
  *
  * @group Tripal
  * @group Tripal Chado
