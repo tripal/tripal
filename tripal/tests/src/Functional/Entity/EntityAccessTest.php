@@ -15,7 +15,7 @@ use Drupal\Core\Access\AccessResultForbidden;
  * @group Tripal Permissions
  */
 class EntityAccessTest extends BrowserTestBase {
-    protected $defaultTheme = 'stable';
+    protected $defaultTheme = 'stark';
 
     protected static $modules = ['tripal'];
 

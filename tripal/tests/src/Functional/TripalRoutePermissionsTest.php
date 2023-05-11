@@ -17,7 +17,7 @@ use Drupal\Core\Url;
 class TripalRoutePermissionsTest extends BrowserTestBase {
 
   // protected $htmlOutputEnabled = TRUE;
-  protected $defaultTheme = 'stable';
+  protected $defaultTheme = 'stark';
 
   protected static $modules = ['tripal', 'file', 'field_ui'];
 
