@@ -33,6 +33,9 @@
  *     - Any keys supported by chado_generate_var(). See that function
  *      definition for additional details.
  *
+ * @param string $schema_name
+ *   The name of the schema to pull the variable from.
+ *
  * NOTE: the $identifier parameter can really be any array similar to $values
  * passed into chado_select_record(). It should fully specify the organism
  * record to be returned.
@@ -44,7 +47,7 @@
  *
  * @ingroup tripal_organism_api
  */
-function chado_get_organism($identifiers, $options = []) {
+function chado_get_organism($identifiers, $options = [], $schema_name = 'chado') {
 
   // Set Defaults.
   if (!isset($options['include_fk'])) {
@@ -81,11 +84,24 @@ function chado_get_organism($identifiers, $options = []) {
   if (isset($identifiers['property'])) {
     $property = $identifiers['property'];
     unset($identifiers['property']);
-    $organism = chado_get_record_with_property(
-      ['table' => 'organism', 'base_records' => $identifiers],
-      ['type_name' => $property],
-      $options
+// @to-do chado_get_record_with_property() does not exist in Tripal 4
+    tripal_report_error(
+      'tripal_organism_api',
+      TRIPAL_ERROR,
+      "chado_get_organism: chado_get_record_with_property() is not yet implemented in Tripal 4",
+//        You did not pass in anything to identify the organism you want. The identifier
+//        is expected to be an array with the key matching a column name in the organism table
+//        (ie: organism_id or name). You passed in %identifier.",
+      [
+//        '%identifier' => print_r($identifiers, TRUE),
+      ]
     );
+//    $organism = chado_get_record_with_property(
+//      ['table' => 'organism', 'base_records' => $identifiers],
+//      ['type_name' => $property],
+//      $options,
+//      $schema_name
+//    );
   }
 
   // Else we have a simple case and we can just use chado_generate_var to get 
@@ -96,7 +112,8 @@ function chado_get_organism($identifiers, $options = []) {
     $organism = chado_generate_var(
       'organism',
       $identifiers,
-      $options
+      $options,
+      $schema_name
     );
   }
 
@@ -139,14 +156,29 @@ function chado_get_organism($identifiers, $options = []) {
  * @param $organism
  *   An organism object.
  *
+ * @param string $schema_name
+ *   The name of the schema to pull the variable from.
+ *
  * @return
  *   The full scientific name of the organism.
  *
  * @ingroup tripal_organism_api
  */
-function chado_get_organism_scientific_name($organism) {
-  $name = $organism->genus . ' ' . $organism->species;
+function chado_get_organism_scientific_name($organism, $schema_name = 'chado') {
+  // Validation
+  if (!is_object($organism)) {
+    tripal_report_error(
+      'tripal_organism_api',
+      TRIPAL_ERROR,
+      "chado_get_organism_scientific_name: passed organism parameter is not an object.
+        You passed in %identifier.",
+      [
+        '%identifier' => print_r($organism, TRUE),
+      ]
+    );
+  }
 
+  $name = $organism->genus . ' ' . $organism->species;
   $rank = '';
   // For organism objects created using chado_generate_var.
   if (is_object($organism->type_id)) {
@@ -155,7 +187,7 @@ function chado_get_organism_scientific_name($organism) {
     }
   }
   else {
-    $rank_term = chado_get_cvterm(['cvterm_id' => $organism->type_id]);
+    $rank_term = chado_get_cvterm(['cvterm_id' => $organism->type_id], [], $schema_name);
     if ($rank_term) {
       $rank = $rank_term->name;
     }
@@ -182,13 +214,16 @@ function chado_get_organism_scientific_name($organism) {
  * @param $show_common_name
  *   When true, include the organism common name, if present, in parentheses.
  *
+ * @param string $schema_name
+ *   The name of the schema to pull the variable from.
+ *
  * @return
  *   An array of organisms where each value is the organism
  *   scientific name and the keys are organism_id's.
  *
  * @ingroup tripal_organism_api
  */
-function chado_get_organism_select_options($published_only = FALSE, $show_common_name = FALSE) {
+function chado_get_organism_select_options($published_only = FALSE, $show_common_name = FALSE, $schema_name = 'chado') {
   $org_list = [];
 
   if ($published_only) {
@@ -215,7 +250,7 @@ function chado_get_organism_select_options($published_only = FALSE, $show_common
     // Include abbreviated infraspecific nomenclature in name when present,
     // e.g. subspecies becomes subsp.
     if ($org->infraspecific_type or $org->infraspecific_name) {
-      $org_list[$org->organism_id] = chado_get_organism_scientific_name($org);
+      $org_list[$org->organism_id] = chado_get_organism_scientific_name($org, $schema_name);
     }
     // Append common name when requested and when present.
     if ($show_common_name and $org->common_name) {
@@ -234,7 +269,7 @@ function chado_get_organism_select_options($published_only = FALSE, $show_common
  *
  * @return
  *   If the type parameter is 'url' (the default) then the fully qualified
- *   url to the image is returend. If no image is present then NULL is returned.
+ *   url to the image is returned. If no image is present then NULL is returned.
  *
  * @ingroup tripal_organism_api
  */
@@ -358,6 +393,9 @@ function chado_abbreviate_infraspecific_rank($rank) {
     case 'subvariety':
       $abb = 'subvar.';
       break;
+    case 'cultivar':
+      $abb = 'cv.';
+      break;
     case 'forma':
       $abb = 'f.';
       break;
@@ -368,4 +406,42 @@ function chado_abbreviate_infraspecific_rank($rank) {
       $abb = $rank;
   }
   return $abb;
+}
+
+/**
+ * A handy function to expand the infraspecific rank from an abbreviation.
+ *
+ * @param $rank
+ *   The rank below species or its abbreviation.
+ *   A period at the end of the abbreviation is optional.
+ *
+ * @return
+ *   The proper unabbreviated form for the rank.
+ *
+ * @ingroup tripal_organism_api
+ */
+function chado_unabbreviate_infraspecific_rank($rank) {
+  if (preg_match('/^subsp\.?$/', $rank)) {
+    $rank = 'subspecies';
+  }
+  elseif (preg_match('/^ssp\.?$/', $rank)) {
+    $rank = 'subspecies';
+  }
+  elseif (preg_match('/^var\.?$/', $rank)) {
+    $rank = 'varietas';
+  }
+  elseif (preg_match('/^subvar\.?$/', $rank)) {
+    $rank = 'subvarietas';
+  }
+  elseif (preg_match('/^cv\.?$/', $rank)) {
+    $rank = 'cultivar';
+  }
+  elseif (preg_match('/^f\.?$/', $rank)) {
+    $rank = 'forma';
+  }
+  elseif (preg_match('/^subf\.?$/', $rank)) {
+    $rank = 'subforma';
+  }
+  // if none of the above matched, rank is returned unchanged
+  return $rank;
 }
