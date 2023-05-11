@@ -8,6 +8,7 @@ MAINTAINER Lacey-Anne Sanderson <laceyannesanderson@gmail.com>
 ARG drupalversion='9.3.x-dev'
 ARG modules='devel devel_php'
 ARG chadoschema='chado'
+ARG installchado=TRUE
 
 # Label docker image
 LABEL drupal.version=${drupalversion}
@@ -195,8 +196,10 @@ RUN service apache2 start \
   && mkdir -p /var/www/drupal9/web/modules/contrib \
   && cp -R /app /var/www/drupal9/web/modules/contrib/tripal \
   && vendor/bin/drush en tripal tripal_biodb tripal_chado ${modules} -y \
-  && vendor/bin/drush trp-install-chado --schema-name=${chadoschema} \
-  && vendor/bin/drush trp-prep-chado --schema-name=${chadoschema} \
+  && if [ "$installchado" = "TRUE" ]; then \
+    vendor/bin/drush trp-install-chado --schema-name=${chadoschema} \
+    && vendor/bin/drush trp-prep-chado --schema-name=${chadoschema}; \
+    fi \
   && service apache2 stop \
   && service postgresql stop
 
@@ -209,7 +212,7 @@ RUN mv /app/tripaldocker/init_scripts/supervisord.conf /etc/supervisord.conf \
   && mv /app/tripaldocker/init_scripts/init.sh /usr/bin/init.sh \
   && chmod +x /usr/bin/init.sh \
   && mv /app/tripaldocker/default_files/xdebug/xdebug_toggle.sh /usr/bin/xdebug_toggle.sh \
-  && echo "\$config['system.logging']['error_level'] = 'verbose';" >> /var/www/drupal9/web/sites/default/settings.php 
+  && echo "\$config['system.logging']['error_level'] = 'verbose';" >> /var/www/drupal9/web/sites/default/settings.php
 
 ## Make global commands.
 RUN ln -s /var/www/drupal9/vendor/phpunit/phpunit/phpunit /usr/local/bin/ \
