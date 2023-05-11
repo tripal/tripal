@@ -17,7 +17,7 @@ use Drupal\tripal_chado\api\DrupalSchemaExtended;
  */
 class ChadoCustomTablesAPITest extends BrowserTestBase {
 
-  protected $defaultTheme = 'stable';
+  protected $defaultTheme = 'stark';
 
   /**
    * Modules to enable.
@@ -31,7 +31,7 @@ class ChadoCustomTablesAPITest extends BrowserTestBase {
    */
   protected static $schemaName = 'testchado';
 
-  
+
   /**
    * Tests chado.cv associated functions.
    *
@@ -72,7 +72,7 @@ class ChadoCustomTablesAPITest extends BrowserTestBase {
 
     // // This code will probably be broken since I reverted back to the standard
     // // code which does not have the argument isFunctionalTest = TRUE in the functions.
-    // // $chado_schema = chado_get_schema_name('chado'); // Todo - is this really how we want to get the schema name? 
+    // // $chado_schema = chado_get_schema_name('chado'); // Todo - is this really how we want to get the schema name?
     // // Does not seem like it would work with multi-chado instances.
     // global $chado_dot;
     // $chado_dot = "";
@@ -88,6 +88,6 @@ class ChadoCustomTablesAPITest extends BrowserTestBase {
     // $this->assertFalse($connection->schema()->tableExists($table_name), 'ERROR: The custom table was not deleted.');
 
 
-  }  
+  }
 
 }
