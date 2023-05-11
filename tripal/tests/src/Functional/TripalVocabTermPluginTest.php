@@ -17,7 +17,7 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
 class TripalVocabTermPluginTest extends BrowserTestBase {
 
   // protected $htmlOutputEnabled = TRUE;
-  protected $defaultTheme = 'stable';
+  protected $defaultTheme = 'stark';
 
   protected static $modules = ['tripal'];
 

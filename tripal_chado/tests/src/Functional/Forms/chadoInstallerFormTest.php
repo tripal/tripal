@@ -14,7 +14,7 @@ use Drupal\Tests\BrowserTestBase;
  */
 class chadoInstallerFormTest extends BrowserTestBase {
 
-  protected $defaultTheme = 'stable';
+  protected $defaultTheme = 'stark';
 
   /**
    * Modules to enable.
