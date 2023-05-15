@@ -46,13 +46,6 @@ jobs:
             --build-arg drupalversion="${{ matrix.drupal-version }}" \
             --build-arg chadoschema='testchado' ./ \
             --file tripaldocker/Dockerfile-php8.1-pgsql13
-      - name: Build Dockerfile-php8.1-pgsql13 for Drupal 10
-        if: ${{ matrix.php-version == '8.1' && matrix.drupal-version == '10.0.x-dev' && matrix.pgsql-version == '13'}}
-        run: |
-          docker build --tag=tripaldocker:localdocker \
-            --build-arg drupalversion="${{ matrix.drupal-version }}" \
-            --build-arg installchado=FALSE ./ \
-            --file tripaldocker/Dockerfile-php8.1-pgsql13
       - name: Build Dockerfile-php8-pgsql13
         if: ${{ matrix.php-version == '8.0' && matrix.pgsql-version == '13'}}
         run: |
