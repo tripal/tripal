@@ -927,8 +927,38 @@ abstract class TripalDbxConnection extends PgConnection {
           $sql
         );
       }
+      // In updates we have to replace the schema-prefixed table name in
+      // the escapeTables() method. That results in there being the following
+      // case in here: where our chado is in testchado,
+      // we may see {testchado.chadotable} at this point in the code.
+      // Here we want to remove the surrounding curly brackets.
+      $match_pattern = '#\{'
+        . '(' . TripalDbx::SCHEMA_NAME_REGEXP . ')'
+        . '\.'
+        . '(' . TripalDbx::TABLE_NAME_REGEXP . ')'
+        . '\}#';
+      if (preg_match($match_pattern, $sql, $matches) === 1) {
+        $sql = preg_replace_callback(
+          $match_pattern,
+          function ($matches) {
+            // For example, if given {testchado.chadotable}
+            // then return "testchado"."chadotable".
+            return
+              $this->identifierQuotes[0]
+              . $matches[1]
+              . $this->identifierQuotes[1]
+              . '.'
+              . $this->identifierQuotes[0]
+              . $matches[2]
+              . $this->identifierQuotes[1]
+            ;
+          },
+          $sql
+        );
+      }
     }
 
+    // Finally let Drupal deal with any remaining table prefixing that is needed.
     return parent::prefixTables($sql);
   }
 
