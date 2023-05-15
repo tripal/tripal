@@ -334,34 +334,6 @@ abstract class TripalDbxConnection extends PgConnection {
     // Get option array.
     $connection_options = $database->getConnectionOptions();
     $this->databaseName = $connection_options['database'];
-    // Check if a Tripal DBX managed schema name has been specified.
-    if (!empty($schema_name)) {
-      // We must use this PostgreSQL schema instead of the Drupal one as default
-      // for this database connection. To do so, we use the schema name as a
-      // prefix (which is supported by Drupal PostgreSQL implementation).
-      // Note: if the schema name is not valid, an exception will be thrown by
-      // setSchemaName() at the end of this constructor.
-      $connection_options['prefix'] = $schema_name . '.';
-      // Add search_path to avoid the use of Drupal schema by mistake.
-      [$start_quote, $end_quote] = $this->identifierQuotes;
-      // Set Tripal DBX managed schema name first.
-      $connection_options['init_commands']['search_path'] =
-        'SET search_path='
-        . $start_quote
-        . $schema_name
-        . $end_quote
-      ;
-      // Then add Drupal schema.
-      $drupal_schema = $this->tripalDbxApi->getDrupalSchemaName();
-      if (!empty($drupal_schema)) {
-        $connection_options['init_commands']['search_path'] .=
-          ','
-          . $start_quote
-          . $drupal_schema
-          . $end_quote
-        ;
-      }
-    }
 
     // Get a new connection distinct from Drupal's to avoid search_path issues.
     $connection = static::openNewPdoConnection($database);
@@ -851,18 +823,6 @@ abstract class TripalDbxConnection extends PgConnection {
   }
 
   /**
-   * {@inheritdoc}
-   */
-  public function escapeTable($table) {
-    // We need to prefix tables in extra schemas now as escapeTable() removes
-    // any ':' in the table name.
-    if (preg_match('#^\d+:#', $table)) {
-      $table = $this->prefixTables('{' . $table . '}');
-    }
-    return parent::escapeTable($table);
-  }
-
-  /**
    * Appends a database prefix to all tables in a query.
    *
    * OVERRIDES \Drupal\Core\Database\Connection:prefixTables().
@@ -1022,7 +982,7 @@ abstract class TripalDbxConnection extends PgConnection {
     if (('default' == $table) && $use_tdbx_schema) {
       $table = '1';
     }
-    $use_cross_schema = ($use_cross_schema || $this->shouldUseTripalDbxSchema());
+    $use_cross_schema = ($use_tdbx_schema || $this->shouldUseTripalDbxSchema());
 
     if ($use_cross_schema && !empty($this->usedSchemas[1])) {
       return $this->usedSchemas[1] . '.';
