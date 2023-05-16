@@ -473,6 +473,7 @@ abstract class TripalDbxConnection extends PgConnection {
     // Resets some members.
     $this->usedSchemas = ['' , '', ];
     $this->schema = NULL;
+    $this->version = NULL;
 
     // Set instance schema name.
     $this->usedSchemas[1] = $schema_name;
