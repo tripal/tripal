@@ -167,13 +167,12 @@ class ChadoCloner extends ChadoTaskBase {
       $this->state->set(static::STATE_KEY_DATA_PREFIX . $this->id, $data);
 
       // Clone schema.
-      $drupal_schema = $tripal_dbx->getDrupalSchemaName();
       $args = [
         ':source' => $source_schema->getSchemaName(),
         ':target' => $target_schema->getSchemaName(),
       ];
       $sql_query =
-        "SELECT $drupal_schema.tripal_clone_schema(:source, :target, TRUE, FALSE);"
+        "SELECT pg_temp.tripal_clone_schema(:source, :target, TRUE, FALSE);"
       ;
       $this->connection->query($sql_query, $args);
       $this->logger->info("Schema cloning completed\n");
