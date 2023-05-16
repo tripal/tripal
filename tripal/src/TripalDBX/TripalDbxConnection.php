@@ -892,13 +892,13 @@ abstract class TripalDbxConnection extends PgConnection {
             }
           }
           else {
+            // Note: Cannot include $sql here since it's not in scope.
             throw new ConnectionException(
               "Invalid schema specification '{"
               . $matches[1]
               . ":"
               . $matches[2]
-              . "}' in statement:\n"
-              . $sql
+              . "}'."
             );
           }
           return $prefixed;
