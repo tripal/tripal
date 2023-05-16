@@ -108,14 +108,14 @@ class ConnectionTest extends KernelTestBase {
     // Create a mock for the abstract class.
     $dbmock = $this->getMockBuilder(\Drupal\tripal\TripalDBX\TripalDbxConnection::class)
       ->setConstructorArgs([$schema_name, $database, $logger])
-      ->setMethods(['getTripalDbxClass', 'findVersion', 'getAvailableInstances'])
+      ->onlyMethods(['getTripalDbxClass', 'findVersion', 'getAvailableInstances'])
       ->getMockForAbstractClass();
+
     $dbmock
       ->expects($this->any())
       ->method('getTripalDbxClass')
       ->with('Schema')
-      ->willReturn('\Drupal\Tests\tripal\Functional\TripalDBX\Subclass\TripalDbxSchemaFake')
-    ;
+      ->willReturn('\Drupal\Tests\tripal\Functional\TripalDBX\Subclass\TripalDbxSchemaFake');
 
     // Return initialized mock.
     return $dbmock;
@@ -144,7 +144,7 @@ class ConnectionTest extends KernelTestBase {
     // Create a mock for the abstract class.
     $dbmock = $this->getMockBuilder(\Drupal\tripal\TripalDBX\TripalDbxConnection::class)
       ->disableOriginalConstructor()
-      ->setMethods(['setTarget', 'setKey', 'setSchemaName'])
+      ->onlyMethods(['setTarget', 'setKey', 'setSchemaName'])
       ->getMockForAbstractClass()
     ;
 
@@ -184,7 +184,7 @@ class ConnectionTest extends KernelTestBase {
   public function testConnectionConstructorTestSchemaDefaultKey() {
     $dbmock = $this->getConnectionMock('test');
     $this->assertEquals('test', $dbmock->getSchemaName(), 'Schema name.');
-    $this->assertEquals('test', $dbmock->getQuotedSchemaName(), 'Quoted schema name.');
+    $this->assertEquals('"test"', $dbmock->getQuotedSchemaName(), 'Quoted schema name.');
   }
 
   /**

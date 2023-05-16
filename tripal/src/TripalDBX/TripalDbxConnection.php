@@ -534,8 +534,12 @@ abstract class TripalDbxConnection extends PgConnection {
    *   empty string if not set.
    */
   public function getQuotedSchemaName() :string {
-    [$start_quote, $end_quote] = $this->identifierQuotes;
-    return $start_quote . $this->usedSchemas[0] . $end_quote;
+    $quoted_schema_name = '';
+    if (array_key_exists(1, $this->usedSchemas)) {
+      [$start_quote, $end_quote] = $this->identifierQuotes;
+      $quoted_schema_name = $start_quote . $this->usedSchemas[1] . $end_quote;
+    }
+    return $quoted_schema_name;
   }
 
   /**
