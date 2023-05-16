@@ -535,7 +535,7 @@ abstract class TripalDbxConnection extends PgConnection {
    */
   public function getQuotedSchemaName() :string {
     $quoted_schema_name = '';
-    if (array_key_exists(1, $this->usedSchemas)) {
+    if (array_key_exists(1, $this->usedSchemas) and !empty($this->usedSchemas[1])) {
       [$start_quote, $end_quote] = $this->identifierQuotes;
       $quoted_schema_name = $start_quote . $this->usedSchemas[1] . $end_quote;
     }
@@ -605,7 +605,7 @@ abstract class TripalDbxConnection extends PgConnection {
    * Clears the extra schemas list.
    */
   public function clearExtraSchemas() :void {
-    array_splice($this->usedSchemas, 0, 2);
+    $this->usedSchemas = array_splice($this->usedSchemas, 0, 2);
   }
 
   /**
