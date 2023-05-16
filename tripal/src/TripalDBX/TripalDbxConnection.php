@@ -889,12 +889,28 @@ abstract class TripalDbxConnection extends PgConnection {
           // If this is not a known schema then throw an exception.
           else {
             // Note: Cannot include $sql here since it's not in scope.
+            // Add available schema info for easier debugging since this can
+            // be thrown if the schema exists but just was not set for the primary
+            // schema (key 1) and for unset Extra Schema (key 2,3,4).
+            $schema_note = [];
+            foreach ($this->usedSchemas as $key => $name) {
+              if (!empty($name)) {
+                $schema_note[] = "$name ($key)";
+              }
+            }
+            if (!empty($schema_note)) {
+              $schema_note_rendered = 'Available schema set for this connection: ' . implode(', ', $schema_note);
+            }
+            else {
+              $schema_note_rendered = 'No schema set for this connection.';
+            }
             throw new ConnectionException(
               "Invalid schema specification '{"
               . $matches[1]
               . ":"
               . $matches[2]
-              . "}'."
+              . "}'. "
+              . $schema_note_rendered
             );
           }
           return $prefixed;
