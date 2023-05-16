@@ -211,7 +211,7 @@ class ConnectionTest extends KernelTestBase {
     $db = \Drupal::database();
     $dbmock = $this->getConnectionMock('test', $db);
     $this->assertEquals('test', $dbmock->getSchemaName(), 'Schema name.');
-    $this->assertEquals('test', $dbmock->getQuotedSchemaName(), 'Quoted schema name.');
+    $this->assertEquals('"test"', $dbmock->getQuotedSchemaName(), 'Quoted schema name.');
     $this->assertNotEmpty($dbmock->getDatabaseName(), 'Database name.');
   }
 
@@ -418,7 +418,7 @@ class ConnectionTest extends KernelTestBase {
     $version = $dbmock->getVersion();
     $this->assertEquals('42', $version, 'Version in cache. No ::findVersion call.');
     $quoted_name = $dbmock->getQuotedSchemaName();
-    $this->assertEquals('first', $quoted_name, 'Quoted schema name.');
+    $this->assertEquals('"first"', $quoted_name, 'Quoted schema name.');
     $extra_index = $dbmock->addExtraSchema('other');
     $this->assertEquals(2, $extra_index, 'Extra schema index number.');
     $extra_schemas = $dbmock->getExtraSchemas();
