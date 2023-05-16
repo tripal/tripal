@@ -583,7 +583,7 @@ class ConnectionTest extends KernelTestBase {
 
     // Test prefixing with an unexisting/not set extra schema.
     $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
-    $this->expectExceptionMessage('Invalid extra schema');
+    $this->expectExceptionMessage('Invalid schema');
     $prefix_test = $dbmock->prefixTables(
       'Z {drupal_table}, {0:drupal_table2}, {1:tdbx1_table}, {2:tdbx2_table}, {1:tdbx1_table2}'
     );
@@ -804,7 +804,7 @@ class ConnectionTest extends KernelTestBase {
 
     // Test prefixing with an unexisting/not set extra schema.
     $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
-    $this->expectExceptionMessage('Invalid extra schema');
+    $this->expectExceptionMessage('Invalid schema');
     $prefix_test = $dbmock->prefixTables(
       'Z {drupal_table}, {0:drupal_table2}, {1:tdbx1_table}, {2:tdbx2_table}, {1:tdbx1_table2}'
     );

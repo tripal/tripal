@@ -867,35 +867,26 @@ abstract class TripalDbxConnection extends PgConnection {
       $sql = preg_replace_callback(
         '#\{(\d+):(' . TripalDbx::TABLE_NAME_REGEXP . ')\}#',
         function ($matches) {
-          if (0 == $matches[1])
-          {
-            // Use default schema, keep curly brackets for parent call
-            // replacements.
+          // If the schema key is 0 then it indicates to use the drupal prefixing.
+          // As such., we will just remove the schema prefix and keet the curly
+          // brackets for the parent call replacements.
+          if (0 == $matches[1]) {
             $prefixed = '{' . $matches[2] . '}';
           }
-          elseif (isset($this->usedSchemas[$matches[1]])) {
-            // Check if schema name is empty.
-            if (empty($this->usedSchemas[$matches[1]])) {
-              // No schema quote, just table quote.
-              $prefixed =
-                $this->identifierQuotes[0]
-                . $matches[2]
-                . $this->identifierQuotes[1]
-              ;
-            }
-            else {
-              // Quote schema.
-              $prefixed =
-                $this->identifierQuotes[0]
-                . $this->usedSchemas[$matches[1]]
-                . $this->identifierQuotes[1]
-                . '.'
-                . $this->identifierQuotes[0]
-                . $matches[2]
-                . $this->identifierQuotes[1]
-              ;
-            }
+          // Next, check that the schema key we are given is associated with a
+          // known schema...
+          elseif (array_key_exists($matches[1], $this->usedSchemas) AND !empty($this->usedSchemas[ $matches[1] ])) {
+            // Quote schema.
+            $prefixed =
+              $this->identifierQuotes[0]
+              . $this->usedSchemas[$matches[1]]
+              . $this->identifierQuotes[1]
+              . '.'
+              . $this->identifierQuotes[0]
+              . $matches[2]
+              . $this->identifierQuotes[1];
           }
+          // If this is not a known schema then throw an exception.
           else {
             // Note: Cannot include $sql here since it's not in scope.
             throw new ConnectionException(
