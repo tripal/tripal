@@ -507,7 +507,7 @@ abstract class TripalDbxConnection extends PgConnection {
    *   Current Tripal DBX managed schema name or an empty string if not set.
    */
   public function getSchemaName() :string {
-    return $this->usedSchemas[1];
+    return $this->usedSchemas[1] ?? '';
   }
 
   /**
