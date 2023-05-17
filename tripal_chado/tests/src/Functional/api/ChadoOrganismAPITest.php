@@ -176,14 +176,14 @@ class ChadoOrganismAPITest extends ChadoTestBrowserBase {
     // Test abbreviation of infraspecific rank
     foreach ($expected_abbreviated as $full => $abbreviation) {
       $result = chado_abbreviate_infraspecific_rank($full);
-      $this->assertEqual($result, $abbreviation, 'Did not properly abbreviate ' . $full
+      $this->assertEquals($result, $abbreviation, 'Did not properly abbreviate ' . $full
                          . ' returned ' . $result . ' using chado_abbreviate_infraspecific_rank()');
     }
 
     // Test unabbreviation of infraspecific rank
     foreach ($expected_unabbreviated as $abbreviation => $full) {
       $result = chado_unabbreviate_infraspecific_rank($full);
-      $this->assertEqual($result, $full, 'Did not properly unabbreviate ' . $abbreviation
+      $this->assertEquals($result, $full, 'Did not properly unabbreviate ' . $abbreviation
                          . ' returned ' . $result . ' using chado_unabbreviate_infraspecific_rank()');
     }
 
