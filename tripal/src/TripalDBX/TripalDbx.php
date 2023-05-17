@@ -536,14 +536,21 @@ class TripalDbx {
   public function cloneSchema(
     string $source_schema,
     string $target_schema,
-    ?\Drupal\Core\Database\Driver\pgsql\Connection $db = NULL
+    ?object $db = NULL
   ) :void {
-    $db = $db ?? \Drupal::database();
-    // Make sure we got the cloning PostgreSQL function.
-    $db->schema()->initialize();
+
+    // Initialize database if one is not supplied.
+    //$db = $db ?? \Drupal::database();
+
+    // Make sure we have the cloning PostgreSQL function.
+    if (method_exists($db->schema(), 'initialize')) {
+      $db->schema()->initialize();
+    }
+    else {
+      throw new \Exception('Cloning a schema requires access to the initialize method for your schema. Please pass in a Tripal DBX connection with this method implemented (e.g. Chado implementation).');
+    }
 
     // Clone schema.
-    $tripaldbx = \Drupal::service('tripal.dbx');
     $sql_query =
       "SELECT pg_temp.tripal_clone_schema(:source_schema, :target_schema, TRUE, FALSE);"
     ;

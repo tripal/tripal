@@ -166,15 +166,20 @@ class ChadoCloner extends ChadoTaskBase {
       $data = ['db_size' => $db_size, 'chado_size' => $chado_size];
       $this->state->set(static::STATE_KEY_DATA_PREFIX . $this->id, $data);
 
+      // Get a Chado connection object to our source schema to pass into
+      // the cloneSchema method of the Tripal DBX API. We need to do this to
+      // ensure the database used has the schema->initialize() method which
+      // is needed to have the cloning functions available.
+      // Note: $this->connection is a typical Drupal database connection without
+      // the initialize functionality we need.
+      $chado_connection = \Drupal::service('tripal_chado.database');
+      $chado_connection->setSchemaName( $source_schema->getSchemaName() );
       // Clone schema.
-      $args = [
-        ':source' => $source_schema->getSchemaName(),
-        ':target' => $target_schema->getSchemaName(),
-      ];
-      $sql_query =
-        "SELECT pg_temp.tripal_clone_schema(:source, :target, TRUE, FALSE);"
-      ;
-      $this->connection->query($sql_query, $args);
+      $tripal_dbx->cloneSchema(
+        $source_schema->getSchemaName(),
+        $target_schema->getSchemaName(),
+        $chado_connection
+      );
       $this->logger->info("Schema cloning completed\n");
 
       // Check target schema exists.
