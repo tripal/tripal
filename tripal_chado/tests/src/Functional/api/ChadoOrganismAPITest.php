@@ -16,7 +16,7 @@ use Drupal\tripal_chado\api\ChadoSchema;
  */
 class ChadoOrganismAPITest extends ChadoTestBrowserBase {
 
-  protected $defaultTheme = 'stable';
+  protected $defaultTheme = 'stark';
 
   /**
    * Modules to enable.
