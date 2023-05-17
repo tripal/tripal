@@ -97,9 +97,13 @@ class TripalDbx {
     if (!isset(static::$drupalSchema)) {
 
       // Get Drupal connection details.
-      $connection_options = \Drupal::database()->getConnectionOptions();
-      if ($connection_options['driver'] != 'pgsql') {
+      $drupal_database = \Drupal::database();
+      $connection_options = $drupal_database->getConnectionOptions();
+      if (array_key_exists('driver', $connection_options) AND ($connection_options['driver'] != 'pgsql')) {
         // Not using PostgreSQL. There might be something wrong!
+        // @todo we may want to evaluate this further as it does tie our Drupal
+        // database to being in pgsql. It doesn't support the case where Drupal
+        // is in a separate database from Chado and thus may be of a different type.
         $schema_name = '';
       }
       else {
