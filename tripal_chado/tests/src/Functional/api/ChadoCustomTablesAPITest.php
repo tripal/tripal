@@ -9,7 +9,7 @@ use Drupal\tripal_chado\api\ChadoSchema;
 use Drupal\tripal_chado\api\DrupalSchemaExtended;
 
 /**
- * Testing the tripal_chado/api/tripal_chado.schema.api.inc functions.
+ * Testing the tripal_chado/api/tripal_chado.custom_tables.api.php functions.
  *
  * @group Tripal
  * @group Tripal Chado
