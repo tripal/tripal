@@ -241,8 +241,10 @@ class TaxonomyImporter extends ChadoImporterBase {
   public function formValidate($form, &$form_state) {
     global $user;
 
-    $import_existing = $form_state['values']['import_existing'];
-    $taxonomy_ids = $form_state['values']['taxonomy_ids'];
+    $form_state_values = $form_state->getValues();
+
+    $import_existing = $form_state_values['import_existing'];
+    $taxonomy_ids = $form_state_values['taxonomy_ids'];
 
     // make sure that we have numeric values, one per line.
     if ($taxonomy_ids) {
@@ -255,9 +257,13 @@ class TaxonomyImporter extends ChadoImporterBase {
         }
       }
       if (count($bad_ids) > 0) {
-        form_set_error('taxonomy_ids',
-          t('Taxonomy IDs must be numeric. The following are not valid: "@ids".',
-            ['@ids' => implode('", "', $bad_ids)]));
+        // form_set_error('taxonomy_ids',
+        //   t('Taxonomy IDs must be numeric. The following are not valid: "@ids".',
+        //     ['@ids' => implode('", "', $bad_ids)]));
+        \Drupal::messenger()->addError(
+          t('Taxonomy IDs must be numeric. The following are not valid: "%ids".', 
+          ['%ids' => implode('", "', $bad_ids)])
+        );    
       }
     }
   }
@@ -267,6 +273,8 @@ class TaxonomyImporter extends ChadoImporterBase {
    */
   public function run() {
     global $site_name;
+
+    $chado = $this->getChadoConnection();
 
     $arguments = $this->arguments['run_args'];
     $tree_name = $arguments['tree_name'];
@@ -304,7 +312,7 @@ class TaxonomyImporter extends ChadoImporterBase {
         ORDER BY O.genus, O.species
       ";
     }
-    $results = chado_query($sql);
+    $results = $chado->query($sql);
     while ($item = $results->fetchObject()) {
       // If $root_taxon is specified, and lineage is already stored in chado,
       // then we can filter out undesired organisms here when processing a
@@ -316,9 +324,9 @@ class TaxonomyImporter extends ChadoImporterBase {
     }
 
     // Get the phylotree object.
-    $this->logMessage('Initializing Tree...');
+    $this->logger->notice('Initializing Tree...');
     $this->phylotree = $this->initTree($tree_name);
-    $this->logMessage('Rebuilding Tree...');
+    $this->logger->notice('Rebuilding Tree...');
     $this->tree = $this->rebuildTree($root_taxon);
 
     // Clean out the phylonodes for this tree in the event this is a reload.
@@ -344,7 +352,7 @@ class TaxonomyImporter extends ChadoImporterBase {
 
     // If the user wants to import new taxonomy IDs then do that.
     if ($taxonomy_ids) {
-      $this->logMessage('Importing Taxonomy IDs...');
+      $this->logger->notice('Importing Taxonomy IDs...');
 
       foreach ($tax_ids as $tax_id) {
         $start = microtime(TRUE);
@@ -361,7 +369,7 @@ class TaxonomyImporter extends ChadoImporterBase {
 
     // If the user wants to update existing records then do that.
     if ($import_existing) {
-      $this->logMessage('Updating Existing...');
+      $this->logger->notice('Updating Existing...');
       $this->updateExisting($root_taxon);
     }
 
@@ -437,6 +445,7 @@ class TaxonomyImporter extends ChadoImporterBase {
    *
    */
   private function rebuildTree($root_taxon = NULL) {
+    $chado = $this->getChadoConnection();
     $lineage_nodes[] = [];
 
     // Get the "rank" cvterm. It requires that the TAXRANK vocabulary is loaded.
@@ -474,7 +483,7 @@ class TaxonomyImporter extends ChadoImporterBase {
         ':phylotree_id' => $this->phylotree->phylotree_id,
         ':organism_id' => $organism->organism_id,
       ];
-      $result = chado_query($sql, $args);
+      $result = $chado->query($sql, $args);
       if (!$result) {
         continue;
       }
@@ -635,8 +644,8 @@ class TaxonomyImporter extends ChadoImporterBase {
           $rfh = fopen($search_url, "r");
           // If error, delay then retry
           if ((!$rfh) and ($retries)) {
-            $this->logMessage("Error contacting NCBI to look up !sci_name, will retry",
-                              ['!sci_name' => $sci_name_escaped], TRIPAL_WARNING);
+            $this->logger->warning("Error contacting NCBI to look up !sci_name, will retry",
+                              ['!sci_name' => $sci_name_escaped]);
           }
           $retries--;
           $remaining_sleep = $sleep_time - ((int) (1e6 * (microtime(TRUE) - $start)));
@@ -646,7 +655,7 @@ class TaxonomyImporter extends ChadoImporterBase {
         }
 
         if (!$rfh) {
-          $this->logMessage("Could not look up !sci_name", ['!sci_name' => $sci_name_escaped], TRIPAL_WARNING);
+          $this->logger->warning("Could not look up !sci_name", ['!sci_name' => $sci_name_escaped]);
           continue;
         }
         $xml_text = '';
@@ -670,8 +679,8 @@ class TaxonomyImporter extends ChadoImporterBase {
               $taxid = (string) $xml->IdList->Id;
             }
             else {
-              $this->logMessage("Partial match \"@matched\" to query \"@query\", no taxid available",
-                ['@matched' => $matched, '@query' => $sci_name], TRIPAL_WARNING);
+              $this->logger->warning("Partial match \"@matched\" to query \"@query\", no taxid available",
+                ['@matched' => $matched, '@query' => $sci_name]);
             }
           }
         }
@@ -693,10 +702,10 @@ class TaxonomyImporter extends ChadoImporterBase {
     }
     if (count($omitted_organisms)) {
       $omitted_list = implode('", "', $omitted_organisms);
-      $this->logMessage('The following !count organisms do not have an NCBI taxonomy ID, '
+      $this->logger->warning('The following !count organisms do not have an NCBI taxonomy ID, '
                         . 'and have not been included in the tree: !omitted_list',
                         ['!count' => count($omitted_organisms),
-                          '!omitted_list' => $omitted_list], TRIPAL_WARNING);
+                          '!omitted_list' => $omitted_list]);
     }
   }
 
@@ -907,10 +916,10 @@ class TaxonomyImporter extends ChadoImporterBase {
       if ($organism) {
         $chado_name = chado_get_organism_scientific_name($organism);
         if ($chado_name != $sci_name) {
-          $this->logMessage("Substituting site taxon \"@chado_name\" for NCBI taxon \"@sci_name\","
+          $this->logger->warning("Substituting site taxon \"@chado_name\" for NCBI taxon \"@sci_name\","
                             . " taxid @taxid, organism_id @organism_id",
             ['@chado_name' => $chado_name, '@sci_name' => $sci_name,
-              '@taxid' => $taxid, '@organism_id' => $organism->organism_id], TRIPAL_WARNING);
+              '@taxid' => $taxid, '@organism_id' => $organism->organism_id]);
           $sci_name = $chado_name;
         }
       }
@@ -1052,8 +1061,8 @@ class TaxonomyImporter extends ChadoImporterBase {
       return TRUE;
     }
     else {
-      $this->logMessage("Error contacting NCBI to look up taxid !taxid",
-                        ['!taxid' => $taxid], TRIPAL_WARNING);
+      $this->logger->warning("Error contacting NCBI to look up taxid !taxid",
+                        ['!taxid' => $taxid]);
       return FALSE;
     }
   }
