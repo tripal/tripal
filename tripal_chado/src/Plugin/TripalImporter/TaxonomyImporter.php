@@ -285,22 +285,22 @@ class TaxonomyImporter extends ChadoImporterBase {
     // Get the list of all organisms as we'll need this to lookup existing
     // organisms. Include lookup of NCBI taxid, if present.
     $sql_common = "
-    , (SELECT X.accession FROM {dbxref} X
-        LEFT JOIN {organism_dbxref} OD ON OD.dbxref_id = X.dbxref_id
-        LEFT JOIN {db} DB ON X.db_id = DB.db_id
+    , (SELECT X.accession FROM {1:dbxref} X
+        LEFT JOIN {1:organism_dbxref} OD ON OD.dbxref_id = X.dbxref_id
+        LEFT JOIN {1:db} DB ON X.db_id = DB.db_id
         WHERE OD.organism_id = O.organism_id
         AND DB.name = 'NCBITaxon') AS ncbitaxid
-    , (SELECT OP.value from {organismprop} OP WHERE
-        type_id = (SELECT cvterm_id FROM {cvterm} WHERE name = 'lineage'
-        AND cv_id = (SELECT cv_id FROM {cv} WHERE name = 'organism_property'))
+    , (SELECT OP.value from {1:organismprop} OP WHERE
+        type_id = (SELECT cvterm_id FROM {1:cvterm} WHERE name = 'lineage'
+        AND cv_id = (SELECT cv_id FROM {1:cv} WHERE name = 'organism_property'))
         AND OP.organism_id = O.organism_id) AS lineage
     ";
     if (chado_get_version() > 1.2) {
       $sql = "
         SELECT O.*, CVT.name AS type
         $sql_common
-        FROM {organism} O
-          LEFT JOIN {cvterm} CVT ON CVT.cvterm_id = O.type_id
+        FROM {1:organism} O
+          LEFT JOIN {1:cvterm} CVT ON CVT.cvterm_id = O.type_id
         ORDER BY O.genus, O.species, CVT.name, O.infraspecific_name
       ";
     }
@@ -308,7 +308,7 @@ class TaxonomyImporter extends ChadoImporterBase {
       $sql = "
         SELECT O.*, '' AS type
         $sql_common
-        FROM {organism} O
+        FROM {1:organism} O
         ORDER BY O.genus, O.species
       ";
     }
@@ -475,8 +475,8 @@ class TaxonomyImporter extends ChadoImporterBase {
       // First get the phylonode record for this organism.
       $sql = "
         SELECT P.*
-        FROM {phylonode} P
-          INNER JOIN {phylonode_organism} PO on PO.phylonode_id = P.phylonode_id
+        FROM {1:phylonode} P
+          INNER JOIN {1:phylonode_organism} PO on PO.phylonode_id = P.phylonode_id
         WHERE P.phylotree_id = :phylotree_id AND PO.organism_id = :organism_id
       ";
       $args = [
