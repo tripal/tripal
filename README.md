@@ -2,26 +2,40 @@
 
 # Tripal 4 (Drupal 9 + 10)
 
-                   _   _                 _____                 _                                  _   
-         /\       | | (_)               |  __ \               | |                                | |  
+                   _   _                 _____                 _                                  _
+         /\       | | (_)               |  __ \               | |                                | |
         /  \   ___| |_ ___   _____      | |  | | _____   _____| | ___  _ __  _ __ ___   ___ _ __ | |_
        / /\ \ / __| __| \ \ / / _ \     | |  | |/ _ \ \ / / _ \ |/ _ \| '_ \| '_ ` _ \ / _ \ '_ \| __|
       / ____ \ (__| |_| |\ V /  __/     | |__| |  __/\ V /  __/ | (_) | |_) | | | | | |  __/ | | | |_
      /_/    \_\___|\__|_| \_/ \___|     |_____/ \___| \_/ \___|_|\___/| .__/|_| |_| |_|\___|_| |_|\__|
-                                                                      | |                             
-                                                                      |_|                             
+                                                                      | |
+                                                                      |_|
 
 
 ## Compatibility
 
-![Target Drupal Version 9.4.x-dev](https://img.shields.io/badge/Target%20Drupal%20Version-9.4.x-informational)
+![Target Drupal Version 10.0.x-dev](https://img.shields.io/badge/Target%20Drupal%20Version-10.0.x-informational)
 
 ![PostgreSQL 13](https://img.shields.io/badge/PostreSQL-13-success)
 
-| Drupal      | 9.2.x                                                                                                                                                                    | 9.3.x                                                                                                                                                                        | 9.4.x                                                                                                                                                                        | 9.5.x                                                                                                                                                                        | 10.0.x                                                                                                                                                                         |
-|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **PHP 8.0** | [![PHPUnit](https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8_D9_2x.yml/badge.svg)](https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8_D9_2x.yml) | [![PHPUnit](https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8_D9_3x.yml/badge.svg)](https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8_D9_3x.yml)     | [![PHPUnit](https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8_D9_4x.yml/badge.svg)](https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8_D9_4x.yml)     | [![PHPUnit](https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8_D9_5x.yml/badge.svg)](https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8_D9_5x.yml)     |                                                                                                                                                                                |
-| **PHP 8.1** |                                                                                                                                                                          | [![PHPUnit](https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D9_3x.yml/badge.svg)](https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D9_3x.yml) | [![PHPUnit](https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D9_4x.yml/badge.svg)](https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D9_4x.yml) | [![PHPUnit](https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D9_5x.yml/badge.svg)](https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D9_5x.yml) | [![PHPUnit](https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D10_0x.yml/badge.svg)](https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D10_0x.yml) |
+| Drupal      | 9.4.x           | 9.5.x           | 10.0.x          | 10.1.x          |
+|-------------|-----------------|-----------------|-----------------|-----------------|
+| **PHP 8.0** | ![Grid1A-Badge] | ![Grid1B-Badge] |                 |                 |
+| **PHP 8.1** | ![Grid2A-Badge] | ![Grid2B-Badge] | ![Grid2C-Badge] | ![Grid2D-Badge] |
+| **PHP 8.2** | ![Grid3A-Badge] | ![Grid3B-Badge] | ![Grid3C-Badge] | ![Grid3D-Badge] |
+
+[Grid1A-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.0_D9_4x.yml/badge.svg
+[Grid1B-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.0_D9_5x.yml/badge.svg
+
+[Grid2A-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D9_4x.yml/badge.svg
+[Grid2B-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D9_5x.yml/badge.svg
+[Grid2C-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D10_0x.yml/badge.svg
+[Grid2D-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D10_1x.yml/badge.svg
+
+[Grid3A-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.2_D9_4x.yml/badge.svg
+[Grid3B-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.2_D9_5x.yml/badge.svg
+[Grid3C-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.2_D10_0x.yml/badge.svg
+[Grid3D-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.2_D10_1x.yml/badge.svg
 
 ### Code Coverage
 
