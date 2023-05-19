@@ -20,8 +20,6 @@ jobs:
         pgsql-version:
           - "13"
         drupal-version:
-          - "9.2.x-dev"
-          - "9.3.x-dev"
           - "9.4.x-dev"
           - "9.5.x-dev"
           - "10.0.x-dev"
@@ -29,9 +27,6 @@ jobs:
           - php-version: "8.0"
             pgsql-version: "13"
             drupal-version: "10.0.x-dev"
-          - php-version: "8.1"
-            pgsql-version: "13"
-            drupal-version: "9.2.x-dev"
 
     steps:
       # Check out the repo
@@ -40,18 +35,11 @@ jobs:
       # Here we fully build a docker using the current checked out code
       # to ensure we have not broken the install/build process.
       - name: Build Dockerfile-php8.1-pgsql13
-        if: ${{ matrix.php-version == '8.1' && matrix.drupal-version != '10.0.x-dev' && matrix.pgsql-version == '13'}}
+        if: ${{ matrix.php-version == '8.1' && matrix.pgsql-version == '13'}}
         run: |
           docker build --tag=tripaldocker:localdocker \
             --build-arg drupalversion="${{ matrix.drupal-version }}" \
             --build-arg chadoschema='testchado' ./ \
-            --file tripaldocker/Dockerfile-php8.1-pgsql13
-      - name: Build Dockerfile-php8.1-pgsql13 for Drupal 10
-        if: ${{ matrix.php-version == '8.1' && matrix.drupal-version == '10.0.x-dev' && matrix.pgsql-version == '13'}}
-        run: |
-          docker build --tag=tripaldocker:localdocker \
-            --build-arg drupalversion="${{ matrix.drupal-version }}" \
-            --build-arg installchado=FALSE ./ \
             --file tripaldocker/Dockerfile-php8.1-pgsql13
       - name: Build Dockerfile-php8-pgsql13
         if: ${{ matrix.php-version == '8.0' && matrix.pgsql-version == '13'}}

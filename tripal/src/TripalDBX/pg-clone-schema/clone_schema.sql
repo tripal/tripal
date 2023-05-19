@@ -1,6 +1,6 @@
--- =============================================
--- Install PostgreSQL pg-clone-schema for Tripal
--- =============================================
+-- =======================================================
+-- Temporary install PostgreSQL pg-clone-schema for Tripal
+-- =======================================================
 -- This script originaly comes from
 -- https://github.com/denishpatel/pg-clone-schema
 -- and https://wiki.postgresql.org/wiki/Clone_schema (original version).
@@ -31,9 +31,9 @@
 -- \set aschema sample
 -- select rt.tbls_regular as tbls_regular, ut.unlogged_tables as tbls_unlogged, pt.partitions as tbls_child, pn.parents as tbls_parents, rt.tbls_regular + ut.unlogged_tables + pt.partitions + pn.parents as tbls_total, se.sequences as sequences, ix.indexes as indexes, vi.views as views, pv.pviews as pub_views, mv.mats as mat_views, fn.functions as functions, ty.types as types, tf.trigfuncs, tr.triggers as triggers, co.collations as collations, dom.domains as domains from (select count(*) as tbls_regular from pg_class c, pg_tables t, pg_namespace n where t.schemaname = :'aschema' and t.tablename = c.relname and c.relkind = 'r' and n.oid = c.relnamespace and n.nspname = t.schemaname and c.relpersistence = 'p' and c.relispartition is false) rt, (select count(distinct (t.schemaname, t.tablename)) as unlogged_tables from pg_tables t, pg_class c where t.schemaname = :'aschema' and t.tablename = c.relname and c.relkind = 'r' and c.relpersistence = 'u' ) ut, (SELECT count(*) as sequences FROM pg_class c, pg_namespace n where n.oid = c.relnamespace and c.relkind = 'S' and n.nspname = :'aschema') se, (select count(*) as indexes from pg_class c, pg_namespace n, pg_indexes i where n.nspname = :'aschema' and n.oid = c.relnamespace and c.relkind <> 'p' and n.nspname = i.schemaname and c.relname = i.tablename) ix, (select count(*) as views from pg_views where schemaname = :'aschema') vi, (select count(*) as pviews from pg_views where schemaname = 'public') pv, (select count(c.relname) as parents from pg_class c join pg_namespace n on (c.relnamespace = n.oid)  where n.nspname = :'aschema' and c.relkind = 'p') pn, (SELECT count(*) as partitions FROM pg_inherits JOIN pg_class AS c ON (inhrelid=c.oid) JOIN pg_class as p ON (inhparent=p.oid) JOIN pg_namespace pn ON pn.oid = p.relnamespace JOIN pg_namespace cn ON cn.oid = c.relnamespace WHERE pn.nspname = :'aschema' and c.relkind = 'r') pt, (SELECT count(*) as functions FROM pg_proc p INNER JOIN pg_namespace ns ON (p.pronamespace = ns.oid) WHERE ns.nspname = :'aschema') fn, (SELECT count(*) as types FROM pg_type t LEFT JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace WHERE (t.typrelid = 0 OR (SELECT c.relkind = 'c' FROM pg_catalog.pg_class c WHERE c.oid = t.typrelid)) AND NOT EXISTS(SELECT 1 FROM pg_catalog.pg_type el WHERE el.oid = t.typelem AND el.typarray = t.oid) AND n.nspname = :'aschema') ty, (SELECT count(*) as trigfuncs FROM pg_catalog.pg_proc p LEFT JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace LEFT JOIN pg_catalog.pg_language l ON l.oid = p.prolang WHERE pg_catalog.pg_get_function_result(p.oid) = 'trigger' and n.nspname = :'aschema') tf, (SELECT count(distinct (trigger_schema, trigger_name, event_object_table, action_statement, action_orientation, action_timing)) as triggers  FROM information_schema.triggers WHERE trigger_schema = :'aschema') tr, (select count(distinct(n.nspname, c.relname)) as mats from pg_class c, pg_namespace n where c.relnamespace = n.oid and c.relkind = 'm') mv, (SELECT count(*) as collations FROM pg_collation c JOIN pg_namespace n ON (c.collnamespace = n.oid) JOIN pg_authid a ON (c.collowner = a.oid) WHERE n.nspname = :'aschema') co, (SELECT count(*) as domains FROM pg_catalog.pg_type t LEFT JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace WHERE t.typtype = 'd' AND n.nspname OPERATOR(pg_catalog.~) '^(:aschema)$' COLLATE pg_catalog.default) dom;
 
--- SELECT * FROM public.get_table_ddl('sample', 'address', True);
+-- SELECT * FROM pg_temp.get_table_ddl('sample', 'address', True);
 
-CREATE OR REPLACE FUNCTION public.tripal_get_table_ddl(
+CREATE OR REPLACE FUNCTION pg_temp.tripal_get_table_ddl(
   in_schema varchar,
   in_table varchar,
   bfkeys  boolean
@@ -174,7 +174,7 @@ $$;
 
 -- DROP FUNCTION clone_schema(text, text, boolean, boolean);
 
-CREATE OR REPLACE FUNCTION public.tripal_clone_schema(
+CREATE OR REPLACE FUNCTION pg_temp.tripal_clone_schema(
     source_schema text,
     dest_schema text,
     include_recs boolean,
@@ -184,7 +184,7 @@ $BODY$
 
 --  This function will clone all sequences, tables, data, views & functions from any existing schema to a new one
 -- SAMPLE CALL:
--- SELECT tripal_clone_schema('sample', 'sample_clone2', True, False);
+-- SELECT pg_temp.tripal_clone_schema('sample', 'sample_clone2', True, False);
 
 DECLARE
   src_oid          oid;
@@ -498,7 +498,7 @@ BEGIN
     IF relknd = 'r' THEN
       IF ddl_only THEN
         IF data_type = 'USER-DEFINED' THEN
-          SELECT * INTO buffer3 FROM public.tripal_get_table_ddl(quote_ident(source_schema), tblname, False);
+          SELECT * INTO buffer3 FROM pg_temp.tripal_get_table_ddl(quote_ident(source_schema), tblname, False);
           buffer3 := REPLACE(buffer3, quote_ident(source_schema) || '.', quote_ident(dest_schema) || '.');
           -- RAISE INFO '%', buffer3;
         ELSE
@@ -507,7 +507,7 @@ BEGIN
 
       ELSE
         IF data_type = 'USER-DEFINED' THEN
-          SELECT * INTO buffer3 FROM public.tripal_get_table_ddl(quote_ident(source_schema), tblname, False);
+          SELECT * INTO buffer3 FROM pg_temp.tripal_get_table_ddl(quote_ident(source_schema), tblname, False);
           buffer3 := REPLACE(buffer3, quote_ident(source_schema) || '.', quote_ident(dest_schema) || '.');
           -- RAISE INFO '%', buffer3;
           EXECUTE buffer3;
@@ -1335,4 +1335,4 @@ END;
 
 $BODY$
   LANGUAGE plpgsql VOLATILE  COST 100;
--- ALTER FUNCTION public.clone_schema(text, text, boolean, boolean) OWNER TO postgres;
+-- ALTER FUNCTION pg_temp.clone_schema(text, text, boolean, boolean) OWNER TO postgres;
