@@ -22,7 +22,7 @@
 |-------------|-----------------|-----------------|-----------------|-----------------|
 | **PHP 8.0** | ![Grid1A-Badge] | ![Grid1B-Badge] |                 |                 |
 | **PHP 8.1** | ![Grid2A-Badge] | ![Grid2B-Badge] | ![Grid2C-Badge] | ![Grid2D-Badge] |
-| **PHP 8.2** | ![Grid3A-Badge] | ![Grid3B-Badge] | ![Grid3C-Badge] | ![Grid3D-Badge] |
+| **PHP 8.2** |                 |                 | ![Grid3C-Badge] | ![Grid3D-Badge] |
 
 [Grid1A-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.0_D9_4x.yml/badge.svg
 [Grid1B-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.0_D9_5x.yml/badge.svg
@@ -32,8 +32,6 @@
 [Grid2C-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D10_0x.yml/badge.svg
 [Grid2D-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.1_D10_1x.yml/badge.svg
 
-[Grid3A-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.2_D9_4x.yml/badge.svg
-[Grid3B-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.2_D9_5x.yml/badge.svg
 [Grid3C-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.2_D10_0x.yml/badge.svg
 [Grid3D-Badge]: https://github.com/tripal/tripal/actions/workflows/MAIN-phpunit-php8.2_D10_1x.yml/badge.svg
 

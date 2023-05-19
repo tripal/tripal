@@ -1,5 +1,5 @@
 
-name: PHPUnit
+name: PHPUnit Matrixed
 on:
   push:
     branches-ignore:

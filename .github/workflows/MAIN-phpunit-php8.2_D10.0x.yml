@@ -19,3 +19,5 @@ jobs:
           php-version: '8.2'
           pgsql-version: '13'
           drupal-version: '10.0.x-dev'
+          build-image: true
+          dockerfile: "UseTripalDockerBackupClause"
