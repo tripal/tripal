@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains tripal_entity.page.inc.
+ * Contains tripal_entity.page.php.
  *
  * Page callback for Tripal Content entities.
  */
