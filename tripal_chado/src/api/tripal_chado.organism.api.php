@@ -33,6 +33,9 @@
  *     - Any keys supported by chado_generate_var(). See that function
  *      definition for additional details.
  *
+ * @param string $schema_name
+ *   The name of the schema to pull the variable from.
+ *
  * NOTE: the $identifier parameter can really be any array similar to $values
  * passed into chado_select_record(). It should fully specify the organism
  * record to be returned.
@@ -44,7 +47,7 @@
  *
  * @ingroup tripal_organism_api
  */
-function chado_get_organism($identifiers, $options = []) {
+function chado_get_organism($identifiers, $options = [], $schema_name = 'chado') {
 
   // Set Defaults.
   if (!isset($options['include_fk'])) {
@@ -81,11 +84,24 @@ function chado_get_organism($identifiers, $options = []) {
   if (isset($identifiers['property'])) {
     $property = $identifiers['property'];
     unset($identifiers['property']);
-    $organism = chado_get_record_with_property(
-      ['table' => 'organism', 'base_records' => $identifiers],
-      ['type_name' => $property],
-      $options
+// @to-do chado_get_record_with_property() does not exist in Tripal 4
+    tripal_report_error(
+      'tripal_organism_api',
+      TRIPAL_ERROR,
+      "chado_get_organism: chado_get_record_with_property() is not yet implemented in Tripal 4",
+//        You did not pass in anything to identify the organism you want. The identifier
+//        is expected to be an array with the key matching a column name in the organism table
+//        (ie: organism_id or name). You passed in %identifier.",
+      [
+//        '%identifier' => print_r($identifiers, TRUE),
+      ]
     );
+//    $organism = chado_get_record_with_property(
+//      ['table' => 'organism', 'base_records' => $identifiers],
+//      ['type_name' => $property],
+//      $options,
+//      $schema_name
+//    );
   }
 
   // Else we have a simple case and we can just use chado_generate_var to get 
@@ -96,7 +112,8 @@ function chado_get_organism($identifiers, $options = []) {
     $organism = chado_generate_var(
       'organism',
       $identifiers,
-      $options
+      $options,
+      $schema_name
     );
   }
 
@@ -139,85 +156,108 @@ function chado_get_organism($identifiers, $options = []) {
  * @param $organism
  *   An organism object.
  *
+ * @param string $schema_name
+ *   The name of the schema to pull the variable from.
+ *
  * @return
  *   The full scientific name of the organism.
  *
  * @ingroup tripal_organism_api
  */
-function chado_get_organism_scientific_name($organism) {
+function chado_get_organism_scientific_name($organism, $schema_name = 'chado') {
+  // Validation
+  if (!is_object($organism)) {
+    tripal_report_error(
+      'tripal_organism_api',
+      TRIPAL_ERROR,
+      "chado_get_organism_scientific_name: passed organism parameter is not an object.
+        You passed in %identifier.",
+      [
+        '%identifier' => print_r($organism, TRUE),
+      ]
+    );
+  }
+
   $name = $organism->genus . ' ' . $organism->species;
+  $rank = '';
+  // For organism objects created using chado_generate_var.
+  if (is_object($organism->type_id)) {
+    if ($organism->type_id) {
+      $rank = $organism->type_id->name;
+    }
+  }
+  else {
+    $rank_term = chado_get_cvterm(['cvterm_id' => $organism->type_id], [], $schema_name);
+    if ($rank_term) {
+      $rank = $rank_term->name;
+    }
+  }
 
-  // For Chado v1.3 we have a type_id and infraspecific name.
-  if (property_exists($organism, 'type_id')) {
-    $rank = '';
-    // For organism objects crated using chado_generate_var.
-    if (is_object($organism->type_id)) {
-      if ($organism->type_id) {
-        $rank = $organism->type_id->name;
-      }
-    }
-    else {
-      $rank_term = chado_get_cvterm(['cvterm_id' => $organism->type_id]);
-      if ($rank_term) {
-        $rank = $rank_term->name;
-      }
-    }
-
-    if ($rank) {
-      $rank = chado_abbreviate_infraspecific_rank($rank);
-      $name .= ' ' . $rank . ' ' . $organism->infraspecific_name;
-    }
-    else {
-      if ($organism->infraspecific_name) {
-        $name .= ' ' . $organism->infraspecific_name;
-      }
+  if ($rank) {
+    $rank = chado_abbreviate_infraspecific_rank($rank);
+    $name .= ' ' . $rank . ' ' . $organism->infraspecific_name;
+  }
+  else {
+    if ($organism->infraspecific_name) {
+      $name .= ' ' . $organism->infraspecific_name;
     }
   }
   return $name;
 }
 
 /**
- * Returns a list of organisms that are currently synced with Drupal to use in
- * select lists.
+ * Returns a list of organisms to use in select lists.
  *
- * @param $syncd_only
- *   Whether or not to return all chado organisms or just those sync'd with
- *   drupal. Defaults to TRUE (only sync'd organisms).
+ * @param $published_only
+ *   Only return organisms that have been published within Tripal.
+ *
+ * @param $show_common_name
+ *   When true, include the organism common name, if present, in parentheses.
+ *
+ * @param string $schema_name
+ *   The name of the schema to pull the variable from.
  *
  * @return
- *   An array of organisms sync'd with Drupal where each value is the organism
+ *   An array of organisms where each value is the organism
  *   scientific name and the keys are organism_id's.
  *
  * @ingroup tripal_organism_api
  */
-function chado_get_organism_select_options($syncd_only = TRUE) {
+function chado_get_organism_select_options($published_only = FALSE, $show_common_name = FALSE, $schema_name = 'chado') {
   $org_list = [];
-  $org_list[] = 'Select an organism';
 
-  if ($syncd_only) {
-    $sql = "
-      SELECT *
-      FROM [chado_organism] CO
-        INNER JOIN {organism} O ON O.organism_id = CO.organism_id
-      ORDER BY O.genus, O.species
-    ";
-    $orgs = chado_query($sql);
+  if ($published_only) {
+    throw new \Exception(t('Passing TRUE for the :param parameter is not yet implemented for :func',
+      [':param' => 'published_only', ':func' => 'chado_get_organism_select_options()']));
+    return;
+  }
 
-    // Iterate through the organisms and build an array of those that are synced.
-    foreach ($orgs as $org) {
-      $org_list[$org->organism_id] = $org->genus . ' ' . $org->species;
+  // Retrieve all organisms
+  $chado = \Drupal::service('tripal_chado.database');
+  $sql = "
+    SELECT organism_id, genus, species, type_id,
+      (REPLACE ((SELECT name FROM {1:cvterm} CVT WHERE CVT.cvterm_id = type_id AND CVT.cv_id =
+        (SELECT cv_id FROM {1:cv} WHERE name='taxonomic_rank')), 'no_rank', '')) AS infraspecific_type,
+      infraspecific_name, common_name
+    FROM {1:organism}
+    ORDER BY genus, species, infraspecific_type, infraspecific_name
+  ";
+  $orgs = $chado->query($sql);
+
+  // Iterate through the organisms and build an array of their names.
+  foreach ($orgs as $org) {
+    $org_list[$org->organism_id] = $org->genus . ' ' . $org->species;
+    // Include abbreviated infraspecific nomenclature in name when present,
+    // e.g. subspecies becomes subsp.
+    if ($org->infraspecific_type or $org->infraspecific_name) {
+      $org_list[$org->organism_id] = chado_get_organism_scientific_name($org, $schema_name);
+    }
+    // Append common name when requested and when present.
+    if ($show_common_name and $org->common_name) {
+      $org_list[$org->organism_id] .= ' (' . $org->common_name . ')';
     }
   }
-  else {
-    // use this SQL statement for getting the organisms
-    $csql = "SELECT * FROM {organism} ORDER BY genus, species";
-    $orgs = chado_query($csql);
 
-    // Iterate through the organisms and build an array of those that are synced.
-    foreach ($orgs as $org) {
-      $org_list[$org->organism_id] = $org->genus . ' ' . $org->species;
-    }
-  }
   return $org_list;
 }
 
@@ -229,7 +269,7 @@ function chado_get_organism_select_options($syncd_only = TRUE) {
  *
  * @return
  *   If the type parameter is 'url' (the default) then the fully qualified
- *   url to the image is returend. If no image is present then NULL is returned.
+ *   url to the image is returned. If no image is present then NULL is returned.
  *
  * @ingroup tripal_organism_api
  */
@@ -270,7 +310,7 @@ function chado_get_organism_image_url($organism) {
     return $url;
   }
 
-  // If we don't find the file using the genus ans species then look for the
+  // If we don't find the file using the genus and species then look for the
   // image with the node ID in the name. This method was used for Tripal 1.1
   // and 2.x-alpha version.
   $image_name = $nid . ".jpg";
@@ -353,6 +393,9 @@ function chado_abbreviate_infraspecific_rank($rank) {
     case 'subvariety':
       $abb = 'subvar.';
       break;
+    case 'cultivar':
+      $abb = 'cv.';
+      break;
     case 'forma':
       $abb = 'f.';
       break;
@@ -363,4 +406,42 @@ function chado_abbreviate_infraspecific_rank($rank) {
       $abb = $rank;
   }
   return $abb;
+}
+
+/**
+ * A handy function to expand the infraspecific rank from an abbreviation.
+ *
+ * @param $rank
+ *   The rank below species or its abbreviation.
+ *   A period at the end of the abbreviation is optional.
+ *
+ * @return
+ *   The proper unabbreviated form for the rank.
+ *
+ * @ingroup tripal_organism_api
+ */
+function chado_unabbreviate_infraspecific_rank($rank) {
+  if (preg_match('/^subsp\.?$/', $rank)) {
+    $rank = 'subspecies';
+  }
+  elseif (preg_match('/^ssp\.?$/', $rank)) {
+    $rank = 'subspecies';
+  }
+  elseif (preg_match('/^var\.?$/', $rank)) {
+    $rank = 'varietas';
+  }
+  elseif (preg_match('/^subvar\.?$/', $rank)) {
+    $rank = 'subvarietas';
+  }
+  elseif (preg_match('/^cv\.?$/', $rank)) {
+    $rank = 'cultivar';
+  }
+  elseif (preg_match('/^f\.?$/', $rank)) {
+    $rank = 'forma';
+  }
+  elseif (preg_match('/^subf\.?$/', $rank)) {
+    $rank = 'subforma';
+  }
+  // if none of the above matched, rank is returned unchanged
+  return $rank;
 }

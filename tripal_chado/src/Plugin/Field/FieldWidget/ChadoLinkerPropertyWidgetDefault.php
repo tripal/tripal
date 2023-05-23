@@ -8,18 +8,18 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
- * Plugin implementation of default Tripal string type widget.
+ * Plugin implementation of default Tripal linker property widget.
  *
  * @FieldWidget(
- *   id = "chado_linker__prop_widget",
+ *   id = "chado_linker_property_widget_default",
  *   label = @Translation("Chado Property"),
  *   description = @Translation("Add a property or attribute to the content type."),
  *   field_types = {
- *     "chado_linker__prop"
+ *     "chado_linker_property_default"
  *   }
  * )
  */
-class chado_linker__prop_widget extends ChadoWidgetBase {
+class ChadoLinkerPropertyWidgetDefault extends ChadoWidgetBase {
 
 
   /**

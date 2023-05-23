@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tripal_biodb\Functional\Database;
+namespace Drupal\Tests\tripal\Functional\TripalDBX;
 
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\tripal\TripalDBX\TripalDbx;
@@ -262,7 +262,24 @@ class TripalDbxFunctionalTest extends KernelTestBase {
     $this->assertGreaterThan($ini_size, $new_size, 'Test schema 2 has grown.');
 
     // Clone schema.
-    $tripaldbx->cloneSchema($test_schema2, $test_schema);
+    //   We fist need some mock objects for this.
+    //   1. Create the Connection mock.
+    $dbmock = $this->getMockBuilder(\Drupal\tripal\TripalDBX\TripalDbxConnection::class)
+     ->setConstructorArgs([$test_schema])
+     ->onlyMethods(['getTripalDbxClass', 'findVersion', 'getAvailableInstances', 'schema'])
+     ->getMockForAbstractClass();
+    //    2. Create the schema mock using the connection mock.
+    $scmock = $this->getMockBuilder(\Drupal\tripal\TripalDBX\TripalDbxSchema::class)
+      ->setConstructorArgs([$dbmock])
+      ->getMockForAbstractClass();
+    //    3. Ensure the Connection returns the schema mock as it's schema object.
+    $dbmock
+      ->expects($this->any())
+     ->method('schema')
+     ->willReturn($scmock);
+
+    //   Now we actually try out cloning.
+    $tripaldbx->cloneSchema($test_schema2, $test_schema, $dbmock);
     $exists = $tripaldbx->schemaExists($test_schema);
     $this->assertTrue($exists, 'Test schema 2 has been cloned into test schema.');
     $exists = $tripaldbx->schemaExists($test_schema2);

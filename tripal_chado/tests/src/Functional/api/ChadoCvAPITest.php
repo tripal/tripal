@@ -8,7 +8,7 @@ use Drupal\tripal_chado\api\ChadoSchema;
 use Drupal\Core\Test\FunctionalTestSetupTrait;
 
 /**
- * Testing the tripal_chado/api/tripal_chado.schema.api.inc functions.
+ * Testing the tripal_chado/api/tripal_chado.cv.api.php functions.
  *
  * @group Tripal
  * @group Tripal Chado

@@ -12,7 +12,7 @@ use Drupal\Core\Url;
  * require database specific implementations.
  */
 class TripalImporterTest extends BrowserTestBase {
-  protected $defaultTheme = 'stable';
+  protected $defaultTheme = 'stark';
 
   protected static $modules = ['tripal'];
 
