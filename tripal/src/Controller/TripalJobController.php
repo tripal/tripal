@@ -7,6 +7,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Drupal\Core\Render\Markup;
+use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\tripal\Services\TripalJob;
 use Drupal\Entity\User;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -147,7 +148,7 @@ class TripalJobController extends ControllerBase{
 
     // Set the title of the page.
     $request = \Drupal::request();
-    if ($route = $request->attributes->get(\Symfony\Cmf\Component\Routing\RouteObjectInterface::ROUTE_OBJECT)) {
+    if ($route = $request->attributes->get(RouteObjectInterface::ROUTE_OBJECT)) {
       $route->setDefault('_title', 'Job Details: ' . $job->getJobName());
     }
 

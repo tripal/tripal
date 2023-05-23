@@ -35,6 +35,7 @@ class TripalDbxUnitTest extends UnitTestCase {
   protected $proModuleHandler;
   protected $moduleHandler;
   protected $proTripalDbxDb;
+  protected $tripalDbxDb;
   protected $tripaldbx;
 
   /**
@@ -179,8 +180,8 @@ class TripalDbxUnitTest extends UnitTestCase {
     $tripaldbx = new TripalDbx();
 
     // Try to get Drupal schema.
-    $this->expectException(\Drupal\tripal\TripalDBX\Exceptions\ConnectionException::class);
     $drupal_schema = $tripaldbx->getDrupalSchemaName();
+    $this->assertEmpty($drupal_schema, "We should not get a Drupal schema here.");
   }
 
   /**
