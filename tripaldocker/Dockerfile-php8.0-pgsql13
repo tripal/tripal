@@ -1,11 +1,11 @@
-FROM php:8.1-apache-bullseye
+FROM php:8.0-apache-bullseye
 
 ## Base of this image is from Official DockerHub PHP image.
 ## Heavily influenced by https://github.com/statonlab/docker-containers
 
 MAINTAINER Lacey-Anne Sanderson <laceyannesanderson@gmail.com>
 
-ARG drupalversion='9.4.x-dev'
+ARG drupalversion='9.3.x-dev'
 ARG modules='devel devel_php'
 ARG chadoschema='chado'
 ARG installchado=TRUE
@@ -16,7 +16,7 @@ LABEL drupal.stability="development"
 LABEL tripal.version="4.x-dev"
 LABEL tripal.stability="development"
 LABEL os.version="bullseye"
-LABEL php.version="8.1"
+LABEL php.version="8.0"
 LABEL postgresql.version="13"
 
 COPY . /app
@@ -225,4 +225,3 @@ WORKDIR /var/www/drupal9/web
 EXPOSE 80 5432 9003
 
 ENTRYPOINT ["init.sh"]
-
