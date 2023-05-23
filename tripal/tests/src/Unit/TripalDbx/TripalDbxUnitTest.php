@@ -35,6 +35,7 @@ class TripalDbxUnitTest extends UnitTestCase {
   protected $proModuleHandler;
   protected $moduleHandler;
   protected $proTripalDbxDb;
+  protected $tripalDbxDb;
   protected $tripaldbx;
 
   /**
