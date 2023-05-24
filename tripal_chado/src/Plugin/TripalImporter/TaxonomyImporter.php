@@ -295,7 +295,7 @@ class TaxonomyImporter extends ChadoImporterBase {
         AND cv_id = (SELECT cv_id FROM {1:cv} WHERE name = 'organism_property'))
         AND OP.organism_id = O.organism_id) AS lineage
     ";
-    if (chado_get_version() > 1.2) {
+    if (chado_get_version(FALSE, FALSE, $this->chado_schema_main) > 1.2) {
       $sql = "
         SELECT O.*, CVT.name AS type
         $sql_common
@@ -330,7 +330,7 @@ class TaxonomyImporter extends ChadoImporterBase {
     $this->tree = $this->rebuildTree($root_taxon);
 
     // Clean out the phylonodes for this tree in the event this is a reload.
-    chado_delete_record('phylonode', ['phylotree_id' => $this->phylotree->phylotree_id]);
+    chado_delete_record('phylonode', ['phylotree_id' => $this->phylotree->phylotree_id], NULL, $this->chado_schema_main);
 
     // Get the taxonomy IDs provided by the user (if any).
     $tax_ids = [];
@@ -410,7 +410,7 @@ class TaxonomyImporter extends ChadoImporterBase {
       $site_name = \Drupal::state()->get('site_name');
       $tree_name = $site_name . 'Taxonomy Tree';
     }
-    $phylotree = chado_select_record('phylotree', ['*'], ['name' => $tree_name]);
+    $phylotree = chado_select_record('phylotree', ['*'], ['name' => $tree_name], NULL, $this->chado_schema_main);
     if (count($phylotree) == 0) {
       // Add the taxonomic tree.
       $phylotree = [
@@ -452,7 +452,7 @@ class TaxonomyImporter extends ChadoImporterBase {
     $rank_cvterm = chado_get_cvterm([
       'name' => 'rank',
       'cv_id' => ['name' => 'local'],
-    ]);
+    ], [], $this->chado_schema_main);
 
     // The taxonomic tree must have a root, so create that first.
     $tree = [
@@ -469,7 +469,7 @@ class TaxonomyImporter extends ChadoImporterBase {
     $total = count($this->all_orgs);
     $j = 1;
     foreach ($this->all_orgs as $organism) {
-      $sci_name = chado_get_organism_scientific_name($organism);
+      $sci_name = chado_get_organism_scientific_name($organism, $this->chado_schema_main);
       //$this->logMessage("- " . ($j++) . " of $total. Adding @organism", array('@organism' => $sci_name));
 
       // First get the phylonode record for this organism.
@@ -526,7 +526,7 @@ class TaxonomyImporter extends ChadoImporterBase {
             'label' => $child,
           ];
           $columns = ['*'];
-          $phylonode = chado_select_record('phylonode', $columns, $values);
+          $phylonode = chado_select_record('phylonode', $columns, $values, NULL, $this->chado_schema_main);
           if (count($phylonode) == 0) {
             $lineage_nodes[$child] = NULL;
             $lineage_good = FALSE;
@@ -540,7 +540,7 @@ class TaxonomyImporter extends ChadoImporterBase {
             'type_id' => $rank_cvterm->cvterm_id,
           ];
           $columns = ['*'];
-          $phylonodeprop = chado_select_record('phylonodeprop', $columns, $values);
+          $phylonodeprop = chado_select_record('phylonodeprop', $columns, $values, NULL, $this->chado_schema_main);
         }
         $name = $child;
         $node_rank = (string) $child->Rank;
@@ -576,7 +576,7 @@ class TaxonomyImporter extends ChadoImporterBase {
       }
 
       // Now add in the leaf node
-      $sci_name = chado_get_organism_scientific_name($organism);
+      $sci_name = chado_get_organism_scientific_name($organism, $this->chado_schema_main);
       $node = [
         'name' => $sci_name,
         'depth' => $i,
@@ -619,7 +619,7 @@ class TaxonomyImporter extends ChadoImporterBase {
       if ((property_exists($organism, 'is_new')) and ($organism->is_new)) {
         continue;
       }
-      $sci_name = chado_get_organism_scientific_name($organism);
+      $sci_name = chado_get_organism_scientific_name($organism, $this->chado_schema_main);
 
       // If the organism already has a taxonomy ID, query to NCBI not needed.
       if ($organism->ncbitaxid) {
@@ -729,16 +729,16 @@ class TaxonomyImporter extends ChadoImporterBase {
       'accession' => $taxid,
     ];
     $columns = ['dbxref_id'];
-    $dbxref = chado_select_record('dbxref', $columns, $values);
+    $dbxref = chado_select_record('dbxref', $columns, $values, NULL, $this->chado_schema_main);
     if (count($dbxref) > 0) {
       $columns = ['organism_id'];
       $values = ['dbxref_id' => $dbxref[0]->dbxref_id];
-      $organism_dbxref = chado_select_record('organism_dbxref', $columns, $values);
+      $organism_dbxref = chado_select_record('organism_dbxref', $columns, $values, NULL, $this->chado_schema_main);
       if (count($organism_dbxref) > 0) {
         $organism_id = $organism_dbxref[0]->organism_id;
         $columns = ['*'];
         $values = ['organism_id' => $organism_id];
-        $organism = chado_select_record('organism', $columns, $values);
+        $organism = chado_select_record('organism', $columns, $values, NULL, $this->chado_schema_main);
         if (count($organism) > 0) {
           $organism = $organism[0];
         }
@@ -756,7 +756,7 @@ class TaxonomyImporter extends ChadoImporterBase {
       // missing (new) organisms from chado_get_organism().
       $organism_ids = chado_get_organism_id_from_scientific_name($sci_name, []);
       if ($organism_ids) {
-        $organism = chado_get_organism(['organism_id' => $organism_ids[0]], []);
+        $organism = chado_get_organism(['organism_id' => $organism_ids[0]], [], $this->chado_schema_main);
       }
     }
     return $organism;
@@ -779,7 +779,7 @@ class TaxonomyImporter extends ChadoImporterBase {
     $infra = '';
     $values = [];
     // Checks for Chado 1.3 infraspecific nomenclature columns in organism table.
-    $infra_available = chado_column_exists('organism', 'infraspecific_name');
+    $infra_available = chado_column_exists('organism', 'infraspecific_name', $this->chado_schema_main);
 
     // Check if the scientific name has an infraspecific part or is just
     // a species name.
@@ -792,7 +792,7 @@ class TaxonomyImporter extends ChadoImporterBase {
       $type = chado_get_cvterm([
         'name' => preg_replace('/ /', '_', $rank),
         'cv_id' => ['name' => 'taxonomic_rank'],
-      ]);
+      ], [], $this->chado_schema_main);
 
       // Remove the rank from the infraspecific name.
       $abbrev = chado_abbreviate_infraspecific_rank($rank);
@@ -869,7 +869,7 @@ class TaxonomyImporter extends ChadoImporterBase {
     $rank_cvterm = chado_get_cvterm([
       'name' => 'rank',
       'cv_id' => ['name' => 'local'],
-    ]);
+    ], [], $this->chado_schema_main);
 
     // Get the details for this taxonomy.
     $fetch_url = "https://www.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?" .
@@ -930,7 +930,7 @@ class TaxonomyImporter extends ChadoImporterBase {
       // be different than what is stored in chado. To keep the site
       // consistent, use the name from chado for the tree.
       if ($organism) {
-        $chado_name = chado_get_organism_scientific_name($organism);
+        $chado_name = chado_get_organism_scientific_name($organism, $this->chado_schema_main);
         if ($chado_name != $sci_name) {
           $this->logger->warning("Substituting site taxon \"@chado_name\" for NCBI taxon \"@sci_name\","
                             . " taxid @taxid, organism_id @organism_id",
@@ -992,7 +992,7 @@ class TaxonomyImporter extends ChadoImporterBase {
               if ($adds_organism) {
                 $organism->common_name = $name;
                 $values = ['organism_id' => $organism->id];
-                chado_update_record('organism', $values, $organism);
+                chado_update_record('organism', $values, $organism, NULL, $this->chado_schema_main);
               }
             case 'Includes':
               $this->addProperty($organism->organism_id, 'other_name', $name, $name_ranks[$type]);
@@ -1147,7 +1147,7 @@ class TaxonomyImporter extends ChadoImporterBase {
       'rank' => $rank,
     ];
 
-    return chado_get_property($record, $property);
+    return chado_get_property($record, $property, $this->chado_schema_main);
   }
 
   /**
@@ -1180,9 +1180,9 @@ class TaxonomyImporter extends ChadoImporterBase {
     ];
     // Delete all properties of this type if the rank is zero.
     if ($rank == 0) {
-      chado_delete_property($record, $property);
+      chado_delete_property($record, $property, $this->chado_schema_main);
     }
-    chado_insert_property($record, $property);
+    chado_insert_property($record, $property, [], $this->chado_schema_main);
   }
 
   /**
@@ -1192,19 +1192,19 @@ class TaxonomyImporter extends ChadoImporterBase {
    */
   private function addDbxref($organism_id, $taxId) {
     $chado = $this->getChadoConnection();
-    $db = chado_get_db(['name' => 'NCBITaxon']);
+    $db = chado_get_db(['name' => 'NCBITaxon'], [], $this->chado_schema_main);
     $values = [
       'db_id' => $db->db_id,
       'accession' => $taxId,
     ];
-    $dbxref = chado_insert_dbxref($values, $this->chado_schema_main);
+    $dbxref = chado_insert_dbxref($values, [], $this->chado_schema_main);
 
     $values = [
       'dbxref_id' => $dbxref->dbxref_id,
       'organism_id' => $organism_id,
     ];
 
-    if (!chado_select_record('organism_dbxref', ['organism_dbxref_id'], $values)) {
+    if (!chado_select_record('organism_dbxref', ['organism_dbxref_id'], $values, NULL, $this->chado_schema_main)) {
       // chado_insert_record('organism_dbxref', $values);
       $chado->insert('1:organism_dbxref')
       ->fields($values)
