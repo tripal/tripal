@@ -390,6 +390,7 @@ class TaxonomyImporter extends ChadoImporterBase {
     $options['leaf_type'] = 'taxonomy';
 
     // Now import the tree.
+    // TODO [RISH] - Discuss with Stephen the tripal_chado.phylotree.api.php (notes in clickup - May 2023)
     chado_phylogeny_import_tree($this->tree, $this->phylotree, $options);
   }
 
