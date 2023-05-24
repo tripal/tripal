@@ -771,7 +771,7 @@ class TaxonomyImporter extends ChadoImporterBase {
    *   The rank of the organism as provied by NCBI Taxonomy.
    */
   private function addOrganism($sci_name, $rank) {
-
+    $chado = $this->getChadoConnection();
     $organism = NULL;
     $matches = [];
     $genus = '';
@@ -806,8 +806,16 @@ class TaxonomyImporter extends ChadoImporterBase {
         'type_id' => $type->cvterm_id,
         'infraspecific_name' => $infra,
       ];
-      $organism = chado_insert_record('organism', $values);
-      $organism = (object) $organism;
+      // $organism = chado_insert_record('organism', $values);
+      // $organism = (object) $organism;
+      $organism_id = $chado->insert('1:organism')
+        ->fields($values)
+        ->execute();
+      $organism = $chado->select('1:organism', 'o')
+        ->fields('o')
+        ->condition('organism_id', $organism_id)
+        ->execute()
+        ->fetchObject();
       $organism->type = $rank;
     }
     else {
@@ -823,8 +831,16 @@ class TaxonomyImporter extends ChadoImporterBase {
           $values['type_id'] = NULL;
           $values['infraspecific_name'] = NULL;
         }
-        $organism = chado_insert_record('organism', $values);
-        $organism = (object) $organism;
+        // $organism = chado_insert_record('organism', $values);
+        // $organism = (object) $organism;
+        $organism_id = $chado->insert('1:organism')
+        ->fields($values)
+        ->execute();
+        $organism = $chado->select('1:organism', 'o')
+        ->fields('o')
+        ->condition('organism_id', $organism_id)
+        ->execute()
+        ->fetchObject();
       }
     }
     if ($organism) {
@@ -1175,12 +1191,13 @@ class TaxonomyImporter extends ChadoImporterBase {
    * @param unknown $taxId
    */
   private function addDbxref($organism_id, $taxId) {
+    $chado = $this->getChadoConnection();
     $db = chado_get_db(['name' => 'NCBITaxon']);
     $values = [
       'db_id' => $db->db_id,
       'accession' => $taxId,
     ];
-    $dbxref = chado_insert_dbxref($values);
+    $dbxref = chado_insert_dbxref($values, $this->chado_schema_main);
 
     $values = [
       'dbxref_id' => $dbxref->dbxref_id,
@@ -1188,7 +1205,10 @@ class TaxonomyImporter extends ChadoImporterBase {
     ];
 
     if (!chado_select_record('organism_dbxref', ['organism_dbxref_id'], $values)) {
-      chado_insert_record('organism_dbxref', $values);
+      // chado_insert_record('organism_dbxref', $values);
+      $chado->insert('1:organism_dbxref')
+      ->fields($values)
+      ->execute();
     }
   }
 
