@@ -19,40 +19,48 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
  *   }
  * )
  */
-class ChadoSourceDataFormatterDefault extends ChadoFormatterBase {
+class ChadoSourceDataFormatterDefault extends ChadoFormatterBase
+{
 
-  /**
-  * {@inheritdoc}
-  */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
-    $elements = [];
+    /**
+     * {@inheritdoc}
+     */
+    public function viewElements(FieldItemListInterface $items, $langcode)
+    {
+        $elements = [];
+        $content = '';
 
-    $content = 'The source data is not provided.';
-    foreach($items as $delta => $item) {
-        $content = "<dl class=\"tripal-dl\">";
-        $sourcename_val = $item->get('sourcename')->getString() ;
-        if ( !empty( $sourcename_val ) ) {
-          $content .= "<dt>Source Name:</dt><dd>" . $sourcename_val . "</dd>";
+        foreach ($items as $delta => $item) {
+            $sourcename_val = $item->get('sourcename')->getString();
+            if (!empty($sourcename_val)) {
+                $content .= "<dt>Source Name:</dt><dd>" . $sourcename_val . "</dd>";
+            }
+            $sourceversion_val = $item->get('sourceversion')->getString();
+            if (!empty($sourceversion_val)) {
+                $content .= "<dt>Source Version:</dt><dd>" . $sourceversion_val . "</dd>";
+            }
+            $sourceuri_val = $item->get('sourceuri')->getString();
+            if (!empty($sourceuri_val)) {
+                $url = $sourceuri_val;
+                if (preg_match('|://|', $sourceuri_val)) {
+                    $url = Link::fromTextAndUrl($sourceuri_val, Url::fromUri($sourceuri_val, []))->toString();
+                }
+                $content .= "<dt>Source URI:</dt><dd>" . $url . "</dd>";
+            }
         }
-        $sourceversion_val = $item->get('sourceversion')->getString() ;
-        if ( !empty( $sourceversion_val ) ) {
-          $content .= "<dt>Source Version:</dt><dd>" . $sourceversion_val . "</dd>";
+
+        if ($content) {
+            $content = "<dl class=\"tripal-dl\">" . $content . "</dl>";
+        } else {
+            $content = 'The data source is not provided.';
         }
-        $sourceuri_val = $item->get('sourceuri')->getString() ;
-        if ( !empty( $sourceuri_val ) ) {
-          $url = $sourceuri_val;
-          if (preg_match('|://|', $sourceuri_val)) {
-            $url = Link::fromTextAndUrl($sourceuri_val, Url::fromUri($sourceuri_val, []))->toString();
-          }
-          $content .= "<dt>Source URI:</dt><dd>" . $url . "</dd>";
-        }
-        $content .= "</dl>";
-      }
-      $elements[$delta] = [
-        '#type' => 'markup',
-        '#markup' => $content,
-      ];
-  
-      return $elements;
-    }  
+
+        // The cardinality of this field is always 1, so only create element for $delta of zero.
+        $elements[0] = [
+            '#type' => 'markup',
+            '#markup' => $content,
+        ];
+
+        return $elements;
+    }
 }
