@@ -19,24 +19,21 @@ use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
  *   cardinality = 1,
  * )
  */
-class ChadoSourceDataDefault extends ChadoFieldItemBase
-{
+class ChadoSourceDataDefault extends ChadoFieldItemBase {
 
   public static $id = "chado_source_data_default";
 
   /**
    * {@inheritdoc}
    */
-  public static function mainPropertyName()
-  {
+  public static function mainPropertyName()  {
     return 'sourcename';
   }
 
   /**
-  * {@inheritdoc}
+   * {@inheritdoc}
    */
-  public static function defaultFieldSettings()
-  {
+  public static function defaultFieldSettings()  {
     $settings = parent::defaultFieldSettings();
     $settings['termIdSpace'] = 'local';
     $settings['termAccession'] = 'source_data';
@@ -47,8 +44,7 @@ class ChadoSourceDataDefault extends ChadoFieldItemBase
   /**  
    * {@inheritdoc}
    */
-  public static function defaultStorageSettings()
-  {
+  public static function defaultStorageSettings() {
     $settings = parent::defaultStorageSettings();
     $settings['storage_plugin_settings']['base_table'] = 'analysis';
     return $settings;
@@ -57,8 +53,7 @@ class ChadoSourceDataDefault extends ChadoFieldItemBase
   /**
    * {@inheritdoc}
    */
-  public static function tripalTypes($field_definition)
-  {
+  public static function tripalTypes($field_definition)  {
 
     // Create variables for easy access to settings.
     $entity_type_id = $field_definition->getTargetEntityTypeId();

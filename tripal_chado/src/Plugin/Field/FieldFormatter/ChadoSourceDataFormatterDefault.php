@@ -19,14 +19,12 @@ use Drupal\tripal_chado\TripalField\ChadoFormatterBase;
  *   }
  * )
  */
-class ChadoSourceDataFormatterDefault extends ChadoFormatterBase
-{
+class ChadoSourceDataFormatterDefault extends ChadoFormatterBase {
 
   /**
    * {@inheritdoc}
    */
-  public function viewElements(FieldItemListInterface $items, $langcode)
-  {
+  public function viewElements(FieldItemListInterface $items, $langcode)  {
     $elements = [];
     $content = '';
 
