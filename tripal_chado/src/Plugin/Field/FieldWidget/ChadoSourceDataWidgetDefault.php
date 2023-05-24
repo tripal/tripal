@@ -18,12 +18,14 @@ use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
  *   }
  * )
  */
-class ChadoSourceDataWidgetDefault extends ChadoWidgetBase {
+class ChadoSourceDataWidgetDefault extends ChadoWidgetBase
+{
 
   /**
    * {@inheritdoc}
    */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
+  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state)
+  {
 
     $item_vals = $items[$delta]->getValue();
 
@@ -65,7 +67,8 @@ class ChadoSourceDataWidgetDefault extends ChadoWidgetBase {
   /**
    * {@inheritDoc}
    */
-  public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+  public function massageFormValues(array $values, array $form, FormStateInterface $form_state)
+  {
 
     // Remove any empty values that aren't mapped to a record id.
     foreach ($values as $val_key => $value) {
