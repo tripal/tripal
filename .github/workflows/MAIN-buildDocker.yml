@@ -16,21 +16,27 @@ jobs:
         php-version:
           - "8.0"
           - "8.1"
+          - "8.2"
         pgsql-version:
           - "13"
         drupal-version:
-          - "9.2.x-dev"
-          - "9.3.x-dev"
           - "9.4.x-dev"
           - "9.5.x-dev"
           - "10.0.x-dev"
+          - "10.1.x-dev"
         exclude:
+          - php-version: "8.2"
+            pgsql-version: "13"
+            drupal-version: "9.4.x-dev"
+          - php-version: "8.2"
+            pgsql-version: "13"
+            drupal-version: "9.5.x-dev"
           - php-version: "8.0"
             pgsql-version: "13"
             drupal-version: "10.0.x-dev"
-          - php-version: "8.1"
+          - php-version: "8.0"
             pgsql-version: "13"
-            drupal-version: "9.2.x-dev"
+            drupal-version: "10.1.x-dev"
     name: Docker Build (drupal${{ matrix.drupal-version }})
     steps:
       - uses: actions/checkout@v2
