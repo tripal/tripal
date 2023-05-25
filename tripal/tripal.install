@@ -897,12 +897,13 @@ function tripal_update_8401() {
 /**
  * Implements hook_update_N().
  *
- * Removes PostgreSQL schema clonging functions.
+ * Removes PostgreSQL schema cloning functions.
  */
 function tripal_update_8402() {
   // Remove the Tripal DBX Cloner functions from the Drupal schema.
   tripal_uninstall_cloner();
-  $messenger->addMessage('Removed PostgreSQL schema clonging functions');
+  $messenger = \Drupal::messenger();
+  $messenger->addMessage('Removed PostgreSQL schema cloning functions');
 }
 
 /**
