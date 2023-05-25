@@ -42,10 +42,22 @@ jobs:
       - uses: actions/checkout@v2
         name: Check out code
       - uses: mr-smithers-excellent/docker-build-push@v5
-        name: Build & push Docker image
+        name: Build & push Full matrix of Docker images
         with:
           image: tripalproject/tripaldocker
           tags: drupal${{ matrix.drupal-version }}-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}
+          dockerfile: tripaldocker/Dockerfile-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          buildArgs: "drupalversion=${{ matrix.drupal-version }}"
+          labels: 'tripal.branch=4.x,drupal.version.label="${{ matrix.label }}",php.version.label="${{ matrix.php-version }}", postgresql.version.label="${{ matrix.pgsql-version }}"'
+      - uses: mr-smithers-excellent/docker-build-push@v5
+        name: Build & push Docker image Drupal focused Docker images.
+        if: ${{ matrix.php-version == '8.1' && matrix.pgsql-version == '13'}}
+        with:
+          image: tripalproject/tripaldocker
+          tags: drupal${{ matrix.drupal-version }}
           dockerfile: tripaldocker/Dockerfile-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}
           registry: docker.io
           username: ${{ secrets.DOCKERHUB_USERNAME }}
