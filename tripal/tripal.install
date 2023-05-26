@@ -939,35 +939,16 @@ function tripal_update_8401() {
 }
 
 /**
- * Adds the tripal_pub_import table TEMPORARY
- */
-function tripal_update_8402() {
-  $db = \Drupal::database();
-  $transaction = $db->startTransaction();
-  try {
-    if (!$db->schema()->tableExists('tripal_pub_import')) {
-      $schema = [];
-      $schema['tripal_pub_import'] = tripal_tripal_pub_import_schema();
-      $db->schema()->createTable('tripal_pub_import', $schema['tripal_pub_import']);
-    }
-  }
-  catch (\PDOException $e) {
-    $transaction->rollback();
-    $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not add the tripal_pub_import table:' . $error);
-  }
-}
-
-/**
  * Adds schema cloning functionality.
  * Implements hook_update_N().
  *
- * Removes PostgreSQL schema clonging functions.
+ * Removes PostgreSQL schema cloning functions.
  */
 function tripal_update_8402() {
   // Remove the Tripal DBX Cloner functions from the Drupal schema.
   tripal_uninstall_cloner();
-  $messenger->addMessage('Removed PostgreSQL schema clonging functions');
+  $messenger = \Drupal::messenger();
+  $messenger->addMessage('Removed PostgreSQL schema cloning functions');
 }
 
 /**
@@ -1025,5 +1006,25 @@ function tripal_uninstall_cloner() {
     $message =
       "Failed to uninstall Tripal SQL cloner functions. You may have to remove them manually using '$sql_uninstall_cloner_path'.";
     $logger->warning($message);
+  }
+}
+
+/**
+ * Adds the tripal_pub_import table TEMPORARY
+ */
+function tripal_update_8403() {
+  $db = \Drupal::database();
+  $transaction = $db->startTransaction();
+  try {
+    if (!$db->schema()->tableExists('tripal_pub_import')) {
+      $schema = [];
+      $schema['tripal_pub_import'] = tripal_tripal_pub_import_schema();
+      $db->schema()->createTable('tripal_pub_import', $schema['tripal_pub_import']);
+    }
+  }
+  catch (\PDOException $e) {
+    $transaction->rollback();
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not add the tripal_pub_import table:' . $error);
   }
 }
