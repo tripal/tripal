@@ -796,7 +796,7 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
               if (($re) and (preg_match("/$re/", $organism_name, $matches))) {
                 $organism_name = $matches[1];
               }
-              $organism_id = chado_phylogeny_lookup_organism_by_name($organism_name);
+              $organism_id = chado_phylogeny_lookup_organism_by_name($organism_name, $schema_name);
               if ($organism_id) {
                 $tree['organism_id'] = $organism_id;
                 $n_associated++;
@@ -873,12 +873,12 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
  *
  * @ingroup tripal_phylotree_api
  */
-function chado_phylogeny_lookup_organism_by_name($name) {
+function chado_phylogeny_lookup_organism_by_name($name, $schema_name = 'chado') {
   // Spaces in names are often replaced with underscores in newick files.
   $name = trim(preg_replace('/_/', ' ', $name ));
 
   // Call api function to look up organism_id, case insensitive.
-  $organism_id = chado_get_organism_id_from_scientific_name($name, []);
+  $organism_id = chado_get_organism_id_from_scientific_name($name, [], $schema_name);
 
   // The unique constraint on the organism table ensures we get
   // either zero or one record returned.
@@ -1029,7 +1029,7 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $j
     if ($format == 'newick') {
       // TODO: [RISH] Discussed with Stephen Ficklin 24th May 2023
       // To be upgraded at a later time
-      
+
       // // Parse the tree into the expected nested node format.
       // module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.phylotree_newick');
       // $tree = tripal_phylogeny_parse_newick_file($file_name);
