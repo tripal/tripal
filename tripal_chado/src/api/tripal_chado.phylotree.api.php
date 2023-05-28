@@ -1024,15 +1024,20 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $j
     "insertions/updates is rolled back and will not be found in the database\n\n";
   try {
 
+
     // Parse the file according to the format indicated.
     if ($format == 'newick') {
-      // Parse the tree into the expected nested node format.
-      module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.phylotree_newick');
-      $tree = tripal_phylogeny_parse_newick_file($file_name);
+      // TODO: [RISH] Discussed with Stephen Ficklin 24th May 2023
+      // To be upgraded at a later time
+      
+      // // Parse the tree into the expected nested node format.
+      // module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.phylotree_newick');
+      // $tree = tripal_phylogeny_parse_newick_file($file_name);
 
-      // Assign the right and left indices to the tree nodes.
-      chado_assign_phylogeny_tree_indices($tree);
+      // // Assign the right and left indices to the tree nodes.
+      // chado_assign_phylogeny_tree_indices($tree);
     }
+
     // Iterate through the tree nodes and add them to Chado in accordance
     // with the details in the $options array.
     chado_phylogeny_import_tree($tree, $phylotree, $options, [], NULL, $schema_name);
