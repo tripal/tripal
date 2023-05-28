@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Provides API functions specificially for managing feature
+ * Provides API functions specifically for managing feature
  * records in Chado.
  */
 
@@ -9,7 +9,7 @@
  * @defgroup tripal_organism_api Chado Organism
  * @ingroup tripal_chado_api
  * @{
- * Provides API functions specificially for managing organism
+ * Provides API functions specifically for managing organism
  * records in Chado.
  * @}
  */
@@ -19,10 +19,11 @@
  *
  * @param $identifier
  *   An array with the key stating what the identifier is. Supported keys (only
- *   on of the following unique keys is required):
+ *   one of the following unique keys is required):
  *    - organism_id: the chado organism.organism_id primary key.
- *    - genus & species: the chado organism.genus field & organism.species
- *   field. There are also some specially handled keys. They are:
+ *    - genus & species: the chado organism.genus field & organism.species field.
+ *    - scientific_name: Full taxonomic name, can include infraspecific nomenclature.
+ *   There are also some specially handled keys. They are:
  *    - property: An array/object describing the property to select records
  *   for.
  *      It should at least have either a type_name (if unique across cvs) or
@@ -51,7 +52,7 @@ function chado_get_organism($identifiers, $options = [], $schema_name = 'chado')
 
   // Set Defaults.
   if (!isset($options['include_fk'])) {
-    // Tells chado_generate_var not to follow any foreign keys.
+    // Tells chado_generate_var to not follow any foreign keys.
     $options['include_fk'] = [];
   }
 
@@ -80,32 +81,41 @@ function chado_get_organism($identifiers, $options = [], $schema_name = 'chado')
     );
   }
 
+  // If the scientific_name identifier is used, we look up organism_id from that.
+  if (isset($identifiers['scientific_name'])) {
+    $scientific_name = $identifiers['scientific_name'];
+    unset($identifiers['scientific_name']);
+    $organism_ids = chado_get_organism_id_from_scientific_name($scientific_name, $options, $schema_name);
+    if (count($organism_ids) == 1) {
+      $identifiers['organism_id'] = $organism_ids[0];
+    }
+    else {
+      tripal_report_error(
+        'tripal_organism_api',
+        TRIPAL_ERROR,
+          "chado_get_organism: The specified scientific name did not uniquely identify an organism.
+            You passed in %scientific_name.",
+        [
+            '%scientific_name' => $scientific_name,
+        ]
+      );
+      return NULL;
+    }
+  }
+
   // If one of the identifiers is property then use chado_get_record_with_property().
   if (isset($identifiers['property'])) {
     $property = $identifiers['property'];
     unset($identifiers['property']);
-// @to-do chado_get_record_with_property() does not exist in Tripal 4
-    tripal_report_error(
-      'tripal_organism_api',
-      TRIPAL_ERROR,
-      "chado_get_organism: chado_get_record_with_property() is not yet implemented in Tripal 4",
-//        You did not pass in anything to identify the organism you want. The identifier
-//        is expected to be an array with the key matching a column name in the organism table
-//        (ie: organism_id or name). You passed in %identifier.",
-      [
-//        '%identifier' => print_r($identifiers, TRUE),
-      ]
+    $organism = chado_get_record_with_property(
+      ['table' => 'organism', 'base_records' => $identifiers],
+      ['type_name' => $property],
+      $options
     );
-//    $organism = chado_get_record_with_property(
-//      ['table' => 'organism', 'base_records' => $identifiers],
-//      ['type_name' => $property],
-//      $options,
-//      $schema_name
-//    );
   }
 
   // Else we have a simple case and we can just use chado_generate_var to get 
-  // the analysis.
+  // the organism.
   else {
 
     // Try to get the organism
@@ -135,7 +145,7 @@ function chado_get_organism($identifiers, $options = [], $schema_name = 'chado')
     tripal_report_error(
       'tripal_organism_api',
       TRIPAL_ERROR,
-      "chado_get_organism: chado_generate_var() failed to return a organism based on the identifiers
+      "chado_get_organism: chado_generate_var() failed to return an organism based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look
         for a chado_generate_var error for additional clues. You passed in %identifier.",
       [
@@ -179,25 +189,34 @@ function chado_get_organism_scientific_name($organism, $schema_name = 'chado') {
   }
 
   $name = $organism->genus . ' ' . $organism->species;
-  $rank = '';
-  // For organism objects created using chado_generate_var.
-  if (is_object($organism->type_id)) {
-    if ($organism->type_id) {
-      $rank = $organism->type_id->name;
-    }
-  }
-  else {
-    $rank_term = chado_get_cvterm(['cvterm_id' => $organism->type_id], [], $schema_name);
-    if ($rank_term) {
-      $rank = $rank_term->name;
-    }
-  }
 
-  if ($rank) {
-    $rank = chado_abbreviate_infraspecific_rank($rank);
-    $name .= ' ' . $rank . ' ' . $organism->infraspecific_name;
-  }
-  else {
+  // For Chado v1.3 we have a type_id and infraspecific name.
+  if (property_exists($organism, 'type_id')) {
+    $rank = '';
+    // For organism objects created using chado_generate_var.
+    if (is_object($organism->type_id)) {
+      if ($organism->type_id) {
+        $rank = $organism->type_id->name;
+      }
+    }
+    // For db query where we explicitly supply infraspecific_type
+    elseif (property_exists($organism, 'infraspecific_type')) {
+      $rank = $organism->infraspecific_type;
+    }
+    else {
+      $rank_term = chado_get_cvterm(['cvterm_id' => $organism->type_id],[],$schema_name);
+      if ($rank_term) {
+        $rank = $rank_term->name;
+      }
+    }
+
+    if ($rank) {
+      $rank = chado_abbreviate_infraspecific_rank($rank);
+      // rank will now be an empty string if it had been the "no_rank" cv term
+      if ($rank) {
+        $name .= ' ' . $rank;
+      }
+    }   
     if ($organism->infraspecific_name) {
       $name .= ' ' . $organism->infraspecific_name;
     }
@@ -206,10 +225,136 @@ function chado_get_organism_scientific_name($organism, $schema_name = 'chado') {
 }
 
 /**
+ * Returns organism_id values of organisms matching the specified full
+ * scientific name, abbreviation, or common name of an organism.
+ *
+ * @param $name
+ *   The organism name to be queried. Infraspecific type can be abbreviated.
+ *
+ * @param $options
+ *   An array of options. The following keys are available:
+ *     - check_abbreviation: If TRUE and the $name did not match the
+ *         scientific name, then check the abbreviation.
+ *     - check_common_name: If TRUE and the $name did not match the
+ *         scientific name, then check the common name.
+ *     - case_sensitive: If TRUE then all searches should be case
+ *         sensitive. Default is FALSE.
+ *   If no options are specified, search is for a match of $name to
+ *     the scientific_name only, case insensitive.
+ *
+ * @return
+ *   Array of matching organism_id values.
+ *
+ * @ingroup tripal_organism_api
+ */
+function chado_get_organism_id_from_scientific_name($name, $options = [], $schema_name = 'chado') {
+  $organism_ids = [];
+
+  // Handle missing $name by returning empty array.
+  if (!$name) {
+    return $organism_ids;
+  }
+
+  // By default, search is case insensitive because this function may
+  // be used to handle input from users or from data files in loaders.
+  $sql_for_lower = '';
+  if (!in_array('case_sensitive', $options, true)) {
+    $name = strtolower($name);
+    $sql_for_lower = 'LOWER';
+  }
+
+  // Check scientific name first, and if a match is found, nothing
+  // else specified by $options will be checked.
+  // Scientific name is the combination of genus, species,
+  // and optionally infraspecific nomenclature added with Chado 1.3
+  // For Chado 1.2 and earlier, infraspecific nomenclature had to
+  // be stored in the species column, so limit the split accordingly.
+  // There is a unique constraint, so expect zero or one match here.
+  $infra_present = false;
+  $limit = 2;
+  if (chado_column_exists('organism', 'infraspecific_name', $schema_name)) {
+    $infra_present = true;
+    $limit = 4;
+  }
+  $parts = preg_split('/\s+/', $name, $limit);
+  // $name could be a single word, so make sure this is defined.
+  if (!array_key_exists(1, $parts)) {
+    $parts[1] = '';
+  }
+  $sql = 'SELECT organism_id FROM {1:organism} WHERE '.$sql_for_lower.'(genus) = :genus'
+       . ' AND '.$sql_for_lower.'(species) = :species';
+  $args = [ ':genus' => $parts[0], ':species' => $parts[1] ];
+  if ($infra_present) {
+    // When there is no infraspecific name, we can either use the "no_rank"
+    // taxonomic term in the type_id column, or else use NULL.
+    $sql .= ' AND ( type_id = (SELECT cvterm_id FROM {1:cvterm}'
+         . ' WHERE '.$sql_for_lower.'(name) = :infraspecific_type'
+         . ' AND cv_id = (SELECT cv_id FROM {1:cv} WHERE name = :taxonomic_rank))';
+    if (!array_key_exists(2, $parts)) {
+      $parts[2] = 'no_rank';
+      $sql .= " OR type_id IS NULL";
+    }
+    else {
+      $parts[2] = chado_unabbreviate_infraspecific_rank($parts[2]);
+    }
+    $sql .= ")";
+    $args[':infraspecific_type'] = $parts[2];
+    $args[':taxonomic_rank'] = 'taxonomic_rank';
+
+    // Infraspecific name, if present.
+    if (array_key_exists(3, $parts)) {
+      $sql .= ' AND '.$sql_for_lower.'(infraspecific_name) = :infraspecific_name';
+      $args[':infraspecific_name'] = $parts[3];
+    }
+    else {
+      // Infraspecific name not present, so this column
+      // must be either an empty string or NULL.
+      $sql .= " AND ( infraspecific_name = '' ) IS NOT FALSE";
+    }
+  }
+  $results = chado_query($sql, $args, $schema_name);
+  while ($organism = $results->fetchField()) {
+    if (!in_array($organism, $organism_ids)) {
+      $organism_ids[] = $organism;
+    }
+  }
+
+  // Check other search modes only when no match was found for scientific name.
+  if (empty($organism_ids)) {
+    // Try to find $name in the abbreviation column. This does not
+    // have a unique constraint, so there may be more than one match.
+    if (in_array('check_abbreviation', $options, true)) {
+      $sql = 'SELECT organism_id FROM {1:organism} WHERE '.$sql_for_lower.'(abbreviation) = :name';
+      $args = [':name' => $name];
+      $results = chado_query($sql, $args, $schema_name);
+      while ($organism = $results->fetchField()) {
+        $organism_ids[] = $organism;
+      }
+    }
+
+    // Try to find $name in the common_name column. This does not
+    // have a unique constraint, so there may be more than one match.
+    if (in_array('check_common_name', $options, true)) {
+      $sql = 'SELECT organism_id FROM {1:organism} WHERE '.$sql_for_lower.'(common_name) = :name';
+      $args = [':name' => $name];
+      $results = chado_query($sql, $args, $schema_name);
+      while ($organism = $results->fetchField()) {
+        if (!in_array($organism, $organism_ids)) {
+          $organism_ids[] = $organism;
+        }
+      }
+    }
+  }
+
+  return $organism_ids;
+}
+
+/**
  * Returns a list of organisms to use in select lists.
  *
- * @param $published_only
- *   Only return organisms that have been published within Tripal.
+ * @param $syncd_only
+ *   Whether or not to return all chado organisms or just those sync'd with
+ *   drupal. Defaults to TRUE (only sync'd organisms). For Tripal v3 you want FALSE here.
  *
  * @param $show_common_name
  *   When true, include the organism common name, if present, in parentheses.
@@ -223,33 +368,49 @@ function chado_get_organism_scientific_name($organism, $schema_name = 'chado') {
  *
  * @ingroup tripal_organism_api
  */
-function chado_get_organism_select_options($published_only = FALSE, $show_common_name = FALSE, $schema_name = 'chado') {
-  $org_list = [];
-
-  if ($published_only) {
-    throw new \Exception(t('Passing TRUE for the :param parameter is not yet implemented for :func',
-      [':param' => 'published_only', ':func' => 'chado_get_organism_select_options()']));
-    return;
-  }
-
-  // Retrieve all organisms
+function chado_get_organism_select_options($syncd_only = TRUE, $show_common_name = FALSE, $schema_name = 'chado') {
   $chado = \Drupal::service('tripal_chado.database');
-  $sql = "
-    SELECT organism_id, genus, species, type_id,
-      (REPLACE ((SELECT name FROM {1:cvterm} CVT WHERE CVT.cvterm_id = type_id AND CVT.cv_id =
-        (SELECT cv_id FROM {1:cv} WHERE name='taxonomic_rank')), 'no_rank', '')) AS infraspecific_type,
-      infraspecific_name, common_name
-    FROM {1:organism}
-    ORDER BY genus, species, infraspecific_type, infraspecific_name
-  ";
-  $orgs = $chado->query($sql);
+  // This flag indicates whether infraspecific nomenclature (chado 1.3) is available on this site.
+  $infra_present = chado_column_exists('organism', 'infraspecific_name', $schema_name);
+
+  $org_list = [];
+  $org_list[] = 'Select an organism';
+
+  if ($syncd_only) {
+    // Retrieve only synced organisms, relevant only for Tripal v2 sites
+    $sql = "
+      SELECT O.*
+      FROM [chado_organism] CO
+        INNER JOIN {1:organism} O ON O.organism_id = CO.organism_id
+      ORDER BY O.genus, O.species
+    ";
+  }
+  else {
+  // Retrieve all organisms
+    $sql = "
+      SELECT *
+      FROM {organism}
+      ORDER BY genus, species
+    ";
+    if ($infra_present) {
+      $sql = "
+        SELECT organism_id, genus, species, type_id,
+          (REPLACE ((SELECT name FROM {1:cvterm} CVT WHERE CVT.cvterm_id = type_id AND CVT.cv_id =
+            (SELECT cv_id FROM {1:cv} WHERE name='taxonomic_rank')), 'no_rank', '')) AS infraspecific_type,
+          infraspecific_name, common_name
+        FROM {1:organism}
+        ORDER BY genus, species, infraspecific_type, infraspecific_name
+      ";
+    }
+  }
+  $orgs = chado_query($sql, $schema_name);
 
   // Iterate through the organisms and build an array of their names.
   foreach ($orgs as $org) {
     $org_list[$org->organism_id] = $org->genus . ' ' . $org->species;
     // Include abbreviated infraspecific nomenclature in name when present,
     // e.g. subspecies becomes subsp.
-    if ($org->infraspecific_type or $org->infraspecific_name) {
+    if ($infra_present and ($org->infraspecific_type or $org->infraspecific_name)) {
       $org_list[$org->organism_id] = chado_get_organism_scientific_name($org, $schema_name);
     }
     // Append common name when requested and when present.
@@ -269,7 +430,7 @@ function chado_get_organism_select_options($published_only = FALSE, $show_common
  *
  * @return
  *   If the type parameter is 'url' (the default) then the fully qualified
- *   url to the image is returned. If no image is present then NULL is returned.
+ *   url to the image is returend. If no image is present then NULL is returned.
  *
  * @ingroup tripal_organism_api
  */
@@ -335,7 +496,7 @@ function chado_get_organism_image_url($organism) {
  *
  * @ingroup tripal_organism_api
  */
-function chado_autocomplete_organism($text) {
+function chado_autocomplete_organism($text, $schema_name = 'chado') {
   $matches = [];
   $genus = $text;
   $species = '';
@@ -350,8 +511,14 @@ function chado_autocomplete_organism($text) {
     $sql .= "AND lower(species) like lower(:species) ";
     $args[':species'] = $species . '%';
   }
-  $sql .= "ORDER BY genus, species ";
-  $sql .= "LIMIT 25 OFFSET 0 ";
+  $sql .= "ORDER BY genus, species";
+  // if present in this site's version of chado, include infraspecific nomenclature in sorting
+  if (chado_column_exists('organism', 'infraspecific_name', $schema_name)) {
+    $sql .= ", REPLACE ((SELECT name FROM {1:cvterm} CVT WHERE CVT.cvterm_id = type_id" .
+            " AND CVT.cv_id = (SELECT cv_id FROM {1:cv} WHERE name='taxonomic_rank')), 'no_rank', '')," .
+            " infraspecific_name";
+  }
+  $sql .= " LIMIT 25 OFFSET 0";
   $results = chado_query($sql, $args);
   $items = [['args' => [$sql => $args]]];
   foreach ($results as $organism) {
