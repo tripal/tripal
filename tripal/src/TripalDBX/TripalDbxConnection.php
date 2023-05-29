@@ -699,10 +699,10 @@ abstract class TripalDbxConnection extends PgConnection {
 
     if (!is_numeric($this->version) && !empty($this->usedSchemas[1])) {
       // Get the version of the schema.
-      $this->version = $this->findVersion();
+      $this->version = (string) $this->findVersion();
     }
 
-    return $this->version;
+    return $this->version ?? '';
   }
 
   /**
