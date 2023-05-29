@@ -36,7 +36,24 @@ class TripalDbx {
    * with PHP string interpolation.
    */
   public const SCHEMA_NAME_REGEXP =
-    '/^[a-z_\\xA0-\\xFF][a-z_\\xA0-\\xFF0-9]{0,63}$/i';
+    '[a-zA-Z_\\xA0-\\xFF][a-zA-Z_\\xA0-\\xFF0-9]{0,63}';
+
+  /**
+   * Table name validation regular expression.
+   *
+   * Table name must be all lowercase with no special characters with the
+   * exception of underscores and diacritical marks (which can be uppercase).
+   * ref.:
+   * https://www.postgresql.org/docs/9.5/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS
+   * It should also not contain any space and must not begin with "pg_".
+   * Note: capital letter could be used but are silently converted to
+   * lowercase by PostgreSQL. Here, we want to avoid ambiguity so we forbid
+   * uppercase. We also prevent the use of dollar sign in names '$' while it
+   * should be valid, in order to stick to SQL standard and prevent issues
+   * with PHP string interpolation.
+   */
+  public const TABLE_NAME_REGEXP =
+    '[a-zA-Z_\\xA0-\\xFF][a-zA-Z_\\xA0-\\xFF0-9]{0,63}';
 
   /**
    * The Drupal schema name.
@@ -59,6 +76,11 @@ class TripalDbx {
   /**
    * Get Drupal schema name.
    *
+   * This function may return an empty string if the Drupal schema was not
+   * found. It can happen if Drupal is stored in a different database
+   * (and using a different connection) than the Chado (or biological schema)
+   * one.
+   *
    * Use:
    * @code
    *   $tripaldbx = \Drupal::service('tripal.dbx');
@@ -66,7 +88,8 @@ class TripalDbx {
    * @endcode
    *
    * @return string
-   *   The name (non-empty string) of the schema used by Drupal installation.
+   *   The name of the schema used by Drupal installation or an empty string if
+   *   not found/available.
    */
   public function getDrupalSchemaName() :string {
 
@@ -74,37 +97,47 @@ class TripalDbx {
     if (!isset(static::$drupalSchema)) {
 
       // Get Drupal connection details.
-      $connection_options = \Drupal::database()->getConnectionOptions();
-
-      // Check if Drupal has been installed in a specific schema other than
-      // 'public'. If it is the case, Drupal database configuration 'prefix'
-      // parameter will contain the schema name followed by a dot.
-      if (!empty($connection_options['prefix']['default'])
-          && (FALSE !== strrpos($connection_options['prefix']['default'], '.'))) {
-        $schema_name = substr($connection_options['prefix']['default'], 0, -1);
+      $drupal_database = \Drupal::database();
+      $connection_options = $drupal_database->getConnectionOptions();
+      if (array_key_exists('driver', $connection_options) AND ($connection_options['driver'] != 'pgsql')) {
+        // Not using PostgreSQL. There might be something wrong!
+        // @todo we may want to evaluate this further as it does tie our Drupal
+        // database to being in pgsql. It doesn't support the case where Drupal
+        // is in a separate database from Chado and thus may be of a different type.
+        $schema_name = '';
       }
       else {
-        // Otherwise, it should be the first schema used by PostgreSQL
-        // (current_schema()) but we make sure the PostgreSQL "search_path" has
-        // not been altered by looking for a table rather specific to Drupal
-        // 'key_value'.
-        $db = \Drupal::database();
-        $sql_query = "
-          SELECT table_schema AS \"schema\"
-          FROM information_schema.tables
-          WHERE
-            table_name = 'key_value'
-            AND table_schema = current_schema()
-            AND table_catalog = :database_name;
-        ";
-        $args = [
-          ':database_name' => $connection_options['database'],
-        ];
-        $result = $db->query($sql_query, $args)->fetch();
-        if (!$result) {
-          throw new ConnectionException("Unable to determine Drupal's schema name.");
+        // Check if Drupal has been installed in a specific schema other than
+        // 'public'. If it is the case, Drupal database configuration 'prefix'
+        // parameter will contain the schema name followed by a dot.
+        if (!empty($connection_options['prefix']['default'])
+            && (FALSE !== strrpos($connection_options['prefix']['default'], '.'))) {
+          $schema_name = substr($connection_options['prefix']['default'], 0, -1);
         }
-        $schema_name = $result->schema;
+        else {
+          // Otherwise, it should be the first schema used by PostgreSQL
+          // (current_schema()) but we make sure the PostgreSQL "search_path" has
+          // not been altered by looking for a table rather specific to Drupal
+          // 'key_value'.
+          $sql_query = "
+            SELECT table_schema AS \"schema\"
+            FROM information_schema.tables
+            WHERE
+              table_name = 'key_value'
+              AND table_schema = current_schema()
+              AND table_catalog = :database_name;
+          ";
+          $args = [
+            ':database_name' => $connection_options['database'],
+          ];
+          $result = \Drupal::database()->query($sql_query, $args)->fetch();
+          if ($result) {
+            $schema_name = $result->schema;
+          }
+          else {
+            $schema_name = '';
+          }
+        }
       }
       static::$drupalSchema = $schema_name;
     }
@@ -190,7 +223,7 @@ class TripalDbx {
       ;
     }
     // -- Check it matches the set regex (i.e. does not contain illegal characters).
-    elseif (!preg_match(static::SCHEMA_NAME_REGEXP, $schema_name)) {
+    elseif (!preg_match('#^' . static::SCHEMA_NAME_REGEXP . '$#', $schema_name)) {
       $issue =
         'The schema name must not begin with a number and only contain lower case letters, numbers, underscores and diacritical marks.'
       ;
@@ -503,15 +536,23 @@ class TripalDbx {
   public function cloneSchema(
     string $source_schema,
     string $target_schema,
-    ?\Drupal\Core\Database\Driver\pgsql\Connection $db = NULL
+    ?object $db = NULL
   ) :void {
-    $db = $db ?? \Drupal::database();
+
+    // Initialize database if one is not supplied.
+    //$db = $db ?? \Drupal::database();
+
+    // Make sure we have the cloning PostgreSQL function.
+    if (method_exists($db->schema(), 'initialize')) {
+      $db->schema()->initialize();
+    }
+    else {
+      throw new \Exception('Cloning a schema requires access to the initialize method for your schema. Please pass in a Tripal DBX connection with this method implemented (e.g. Chado implementation).');
+    }
 
     // Clone schema.
-    $tripaldbx = \Drupal::service('tripal.dbx');
-    $drupal_schema = $tripaldbx->getDrupalSchemaName();
     $sql_query =
-      "SELECT $drupal_schema.tripal_clone_schema(:source_schema, :target_schema, TRUE, FALSE);"
+      "SELECT pg_temp.tripal_clone_schema(:source_schema, :target_schema, TRUE, FALSE);"
     ;
     $args = [
       ':source_schema' => $source_schema,

@@ -34,4 +34,11 @@ class TripalCollectionPluginBase extends PluginBase {
    */
   private $name;
 
+  /**
+   * An instance of the TripalLogger.
+   *
+   * @var object \Drupal\tripal\Services\TripalLogger
+   */
+  protected $messageLogger = NULL;
+
 }
