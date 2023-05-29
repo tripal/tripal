@@ -62,8 +62,8 @@ use Drupal\tripal\TripalDBX\Exceptions\ConnectionException;
  *   and offers, beside others, the follwing methods: addIndex(),
  *   addPrimaryKey(), addUniqueKey(), createTable(), dropField(), dropIndex(),
  *   dropPrimaryKey(), dropTable(), dropUniqueKey(), fieldExists(),
- *   findPrimaryKeyColumns(), findTables(), indexExists(), renameTable(),
- *   tableExists() and more from the documentation.
+ *   findPrimaryKeyColumns(), findTables(), indexExists(), renameTable()
+ *   and more from the documentation.
  *
  * A couple of methods have been added to this class to complete the above list.
  *
@@ -697,12 +697,12 @@ abstract class TripalDbxConnection extends PgConnection {
    */
   public function getVersion() :string {
 
-    if ((NULL === $this->version) && !empty($this->usedSchemas[1])) {
+    if (!is_numeric($this->version) && !empty($this->usedSchemas[1])) {
       // Get the version of the schema.
       $this->version = $this->findVersion();
     }
 
-    return $this->version ?? '';
+    return $this->version;
   }
 
   /**
