@@ -75,6 +75,12 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    */
   protected $is_prepared;
 
+  /**
+   * An instance of the Drupal messenger.
+   *
+   * @var object \Drupal\Core\Messenger\Messenger
+   */
+  protected $messenger = NULL;
 
   /**
    * Stores the last percentage that progress was reported.

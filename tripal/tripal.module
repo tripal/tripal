@@ -14,6 +14,7 @@ use Drupal\Core\Render\Element;
 use Drupal\Core\Config\FileStorage;
 use Drupal\Core\Url;
 
+require_once 'src/api/tripal.api.php';
 require_once 'src/api/tripal.entities.api.php';
 require_once 'src/api/tripal.terms.api.php';
 require_once 'src/api/tripal.quotas.api.php';
@@ -48,14 +49,14 @@ function tripal_theme() {
 
   $theme['tripal_entity'] = array(
     'render element' => 'elements',
-    'file' => 'templates/tripal_entity.page.inc',
+    'file' => 'templates/tripal_entity.page.php',
     'template' => 'tripal_entity',
   );
 
   $theme['tripal_entity_content_add_list'] = [
     'render element' => 'types',
     'variables' => ['types' => NULL],
-    'file' => 'templates/tripal_entity.page.inc',
+    'file' => 'templates/tripal_entity.page.php',
   ];
 
   return $theme;
@@ -548,6 +549,10 @@ function tripal_check_new_fields($bundle_name) {
  * Implements hook_rebuild().
  */
 function tripal_rebuild() {
+
+  tripal_load_configuration('tripal', 'tripalentitytype_collection');
+  tripal_load_configuration('tripal', 'tripal_content_terms');
+  tripal_load_configuration('tripal', 'tripalfield_collection');
 
   //
   // Make sure the CustomTables view is present. If not then add it.

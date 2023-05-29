@@ -14,6 +14,13 @@ class TripalJob {
    */
   protected $job = NULL;
 
+  /**
+   * An instance of the Drupal messenger.
+   *
+   * @var object \Drupal\Core\Messenger\Messenger
+   */
+  protected $messenger = NULL;
+
 
   /**
    * The number of items that this importer needs to process. A progress

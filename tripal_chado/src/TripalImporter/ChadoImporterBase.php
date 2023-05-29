@@ -18,6 +18,13 @@ abstract class ChadoImporterBase extends TripalImporterBase {
   protected $chado_schema_main;
 
   /**
+   * An instance of the Drupal messenger.
+   *
+   * @var object \Drupal\Core\Messenger\Messenger
+   */
+  protected $messenger = NULL;
+
+  /**
    * {@inheritdoc}
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition) {
@@ -30,10 +37,6 @@ abstract class ChadoImporterBase extends TripalImporterBase {
    * Requires you to call the parent::form in your form.
    */
   public function getChadoConnection() {
-
-    /**
-     * @var \Drupal\tripal_chado\Database\ChadoConnection $chado
-     */
     $chado = \Drupal::service('tripal_chado.database');
 
     // Get the chado schema name if available.

@@ -268,6 +268,15 @@ class ChadoInstaller extends ChadoTaskBase {
       $data = ['progress' => 1.];
       $this->state->set(static::STATE_KEY_DATA_PREFIX . $this->id, $data);
 
+      // If this is the first installed schema then we want to set it as the default.
+      // The default schema is stored in the settings for tripal_chado.
+      $config = \Drupal::service('config.factory')
+        ->getEditable('tripal_chado.settings');
+      $default_schema = $config->get('default_schema');
+      if (empty($default_schema)) {
+        $config->set('default_schema', $target_schema->getSchemaName())->save();
+      }
+
       // Check target schema exists.
       if ($target_schema->schema()->schemaExists()) {
         $task_success = TRUE;

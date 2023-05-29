@@ -145,6 +145,9 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
       return NULL;
     }
     $cvterm =  $result->fetchObject();
+    if (!$cvterm) {
+      return NULL;
+    }
 
     $term =  new TripalTerm([
       'name' => $cvterm->name,
