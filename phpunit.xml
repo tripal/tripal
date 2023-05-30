@@ -18,6 +18,21 @@
       <directory suffix=".php">tripal_chado/src</directory>
       <file>tripal_chado/tripal_chado.module</file>
     </include>
+    <exclude>
+      <!-- Exclude Interface classes from coverage -->
+      <directory suffix="Interface.php">tripal/src/Entity</directory>
+      <directory suffix="Interface.php">tripal/src/TripalField/Interfaces</directory>
+      <directory suffix="Interface.php">tripal/src/*/Interfaces</directory>
+      <file>tripal/src/TripalContentTermsInterface.php</file>
+      <directory suffix="Interface.php">tripal_biodb/src/Lock</directory>
+      <directory suffix="Interface.php">tripal_biodb/src/Task</directory>
+      <!-- Exclude Annotation classes from coverage -->
+      <directory suffix=".php">tripal/src/Plugin/Annotation</directory>
+      <directory suffix=".php">tripal/src/*/Annotation</directory>
+      <!-- Exclude Exception classes from coverage -->
+      <directory suffix=".php">tripal/src/TripalDBX/Exceptions</directory>
+      <directory suffix=".php">tripal_biodb/src/Exception</directory>
+    </exclude>
   </coverage>
   <php>
     <!-- Set error reporting to E_ALL. -->
