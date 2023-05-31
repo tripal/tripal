@@ -227,9 +227,9 @@ function tripal_chado_field_storage_write_table($table_name, $values, $base_tabl
     }
 
     // If this table_name is a linker table then we want to be sure to add in
-    // the value for the $base_record_id it it isn't set.  This would only
+    // the value for the $base_record_id if it isn't set.  This would only
     // occur on an insert.
-    if (array_key_exists($base_table, $fkeys) and $base_table != $table_name) {
+    if ($fkeys and array_key_exists($base_table, $fkeys) and $base_table != $table_name) {
       foreach ($fkeys[$base_table]['columns'] as $lkey => $rkey) {
         if ($rkey == $base_pkey and !array_key_exists($lkey, $values) or empty($values[$lkey])) {
           $values[$lkey] = $base_record_id;
