@@ -58,7 +58,7 @@ class ChadoPubImporter extends ChadoImporterBase {
    * {@inheritDoc}
    */
   public function form($form, &$form_state) {
-    // Always call the parent form to ensure Chado is handled properly.
+    // Call the parent form to provide the Chado schema selector.
     $form = parent::form($form, $form_state);
 
     $form = $this->tripal_pub_importers_list($form, $form_state);
@@ -71,7 +71,7 @@ class ChadoPubImporter extends ChadoImporterBase {
    */
   public function formSubmit($form, &$form_state) {
     $trigger = $form_state->getTriggeringElement()['#name'];
-    // 'op' is default submit; 'add_new_loader' we have defined for second submit
+    // 'op' is $trigger for default submit; 'add_new_loader' we have defined for second submit
 //    if ($trigger == 'add_new_loader') {
       $form_state->setRedirect('/admin/tripal/loaders/chado_pub_loader_edit');
       return;
@@ -105,6 +105,7 @@ class ChadoPubImporter extends ChadoImporterBase {
 
     // Check to make sure that the tripal_pub vocabulary is loaded. If not, then
     // warn the user that they should load it before continuing.
+dpm('call chado'); //@@@
 $chado = \Drupal::service('tripal_chado.database');
 //    $chado = $this->getChadoConnection();
     $query = $chado->select('cv')

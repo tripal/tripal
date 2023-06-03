@@ -90,7 +90,7 @@ $criteria = [];
       '#attributes' => ['style' => 'float: right;'],
     ];
 
-    // Add in the section where the test results will appear
+    // Add a placeholder for the section where the test results will appear
     $form['pub_parser']['results'] = [
       '#markup' => '<div id="tripal-pub-importer-test-section"></div>',
     ];
@@ -100,7 +100,7 @@ $criteria = [];
 
   /**
    * A helper function for the importer setup form that adds the criteria to
-   * the form that belong to the importer.
+   * the form that belongs to the importer.
    *
    * @param $form
    *   The form
@@ -139,10 +139,17 @@ $criteria = [];
     ];
 
     $headers = ['Operation', 'Scope', 'Search Terms', '', ''];
-    $rows = [];
+
+    // Add the table to the form
+    $form['pub_parser']['table'] = [
+      '#type' => 'table',
+      '#header' => $headers,
+      '#prefix' => '<div id="tripal-pub-importer-setup">',
+      '#suffix' => '</div>',
+    ];
 
     for ($i = 1; $i <= $num_criteria; $i++) {
-
+      $row = [];
       $search_terms = '';
       $scope = '';
       $is_phrase = '';
@@ -168,51 +175,51 @@ $criteria = [];
         $operation = isset($_SESSION['tripal_pub_import']['criteria'][$i]['operation']) ? $_SESSION['tripal_pub_import']['criteria'][$i]['operation'] : $operation;
       }
 
-      // If the form_state has variables then use those.  This happens when an error occurs on the form or the
-      // form is resubmitted using AJAX
+      // If the form_state has variables then use those. This happens when an
+      // error occurs on the form, or the form is resubmitted using AJAX.
       $operation = $form_state->getValue("operation-$i") ?? $operation;
       $scope = $form_state->getValue("scope-$i") ?? $scope;
       $search_terms = $form_state->getValue("search_terms-$i") ?? $search_terms;
       $is_phrase = $form_state->getValue("is_phrase-$i") ?? $is_phrase;
 
-//      $rows[$i]['#attributes'] = ['vertical-align' => 'top'];  // Align vertically to top - @todo this doesn't work
-      $rows[$i]["operation-$i"] = [
+//      $row['#attributes'] = ['vertical-align' => 'top'];  // Align vertically to top - @todo this doesn't work
+      $row["operation-$i"] = [
         '#type' => 'select',
         '#options' => $i==1?$first_op_choices:$op_choices,
         '#default_value' => $operation,
       ];
-      $rows[$i]["scope-$i"] = [
+      $row["scope-$i"] = [
         '#type' => 'select',
         '#description' => t('Please select the fields to search for this term.'),
         '#description_display' => 'after',
         '#options' => $scope_choices,
         '#default_value' => $scope,
       ];
-      $rows[$i]["search_terms-$i"] = [
+      $row["search_terms-$i"] = [
         '#type' => 'textfield',
         '#description' => t('<span style="white-space: normal">Please provide a list of words for searching. You may use
           conjunctions such as "AND" or "OR" to separate words if they are expected in
-          the same scope, but do not mix ANDs and ORs.  Check the "Is Phrase" checkbox to use conjunctions as part of the text to search</span>'),
+          the same scope, but do not mix ANDs and ORs. Check the "Is Phrase" checkbox to use conjunctions as part of the text to search</span>'),
         '#description_display' => 'after',
         '#default_value' => $search_terms,
         '#required' => TRUE,
         '#maxlength' => 2048,
       ];
-      $rows[$i]["is_phrase-$i"] = [
+      $row["is_phrase-$i"] = [
         '#type' => 'checkbox',
         '#title' => t('Is Phrase?'),
         '#default_value' => $is_phrase,
       ];
 
-      // If last row of table
+      // If last row of the table
       if ($i == $num_criteria) {
         if ($i > 1) {
-          $rows[$i]["remove-$i"] = [
+          $row["remove-$i"] = [
             '#type' => 'button',
             '#name' => 'remove',
             '#value' => t('Remove'),
             '#ajax' => [
-              'callback' => "tripal_pub_setup_form_ajax_update",
+              'callback' => 'tripal_pub_setup_form_ajax_update',
               'wrapper' => 'tripal-pub-importer-setup',
               'effect' => 'fade',
               'method' => 'replace',
@@ -220,22 +227,22 @@ $criteria = [];
             ],
             // When this button is clicked, the form will be validated and submitted.
             // Therefore, we set custom submit and validate functions to override the
-            // default form submit.  In the validate function we set the form_state
-            // to rebuild the form so the submit function never actually gets called,
+            // default form submit. In the validate function we set the form_state to
+            // rebuild the form so that the submit function never actually gets called,
             // but we need it or Drupal will run the default validate anyway.
-            // we also set #limit_validation_errors to empty so fields that
-            // are required that don't have values won't generate warnings.
+            // We also set #limit_validation_errors to empty so fields that are
+            // required that don't have values won't generate warnings.
             '#submit' => ['tripal_pub_setup_form_ajax_button_submit'],
             '#validate' => ['tripal_pub_setup_form_ajax_button_validate'],
             '#limit_validation_errors' => [],
           ];
         }
-        $rows[$i]["add-$i"] = [
+        $row["add-$i"] = [
           '#type' => 'button',
           '#name' => 'add',
           '#value' => t('Add'),
           '#ajax' => [
-            'callback' => "tripal_pub_setup_form_ajax_update",
+            'callback' => 'tripal_pub_setup_form_ajax_update',
             'wrapper' => 'tripal-pub-importer-setup',
             'effect' => 'fade',
             'method' => 'replace',
@@ -243,34 +250,19 @@ $criteria = [];
           ],
           // When this button is clicked, the form will be validated and submitted.
           // Therefore, we set custom submit and validate functions to override the
-          // default form submit.  In the validate function we set the form_state
-          // to rebuild the form so the submit function never actually gets called,
+          // default form submit. In the validate function we set the form_state to
+          // rebuild the form so that the submit function never actually gets called,
           // but we need it or Drupal will run the default validate anyway.
           // we also set #limit_validation_errors to empty so fields that
           // are required that don't have values won't generate warnings.
+//@to-do this submit function is not being called - why?
           '#submit' => ['tripal_pub_setup_form_ajax_button_submit'],
           '#validate' => ['tripal_pub_setup_form_ajax_button_validate'],
           '#limit_validation_errors' => [],
         ];
       }
+      $form['pub_parser']['table'][$i] = $row;
     } // for $i
-
-    // Render the criteria fields into a table format
-    foreach ($rows as $index => $row) {
-      foreach ($row as $key => $value) {
-        $rows[$index][$key] = render($value);
-      }
-    }
-
-    // Add the table to the form
-    $form['pub_parser']['table'] = [
-      '#type' => 'table',
-      '#header' => $headers,
-      '#rows' => $rows,
-      '#prefix' => '<div id="tripal-pub-importer-setup">',
-      '#suffix' => '</div>',
-      '#empty' => '',
-    ];
 
     return $form;
   }
@@ -284,7 +276,8 @@ $criteria = [];
    * @ingroup tripal_pub
    */
   public function tripal_pub_setup_form_ajax_button_validate($form, &$form_state) {
-dpm("tripal_pub_setup_form_ajax_button_validate() called");
+$trigger = $form_state->getTriggeringElement()['#name'];
+dpm($trigger, "tripal_pub_setup_form_ajax_button_validate() called, not yet implemented");
     $form_state->setRebuild(TRUE);
   }
 
@@ -295,7 +288,8 @@ dpm("tripal_pub_setup_form_ajax_button_validate() called");
    * @ingroup tripal_pub
    */
   public function tripal_pub_setup_form_ajax_button_submit($form, &$form_state) {
-dpm("tripal_pub_setup_form_ajax_button_submit() called");
+$trigger = $form_state->getTriggeringElement()['#name'];
+dpm($trigger, "tripal_pub_setup_form_ajax_button_submit() called, not yet implemented");
     // do nothing
   }
 
