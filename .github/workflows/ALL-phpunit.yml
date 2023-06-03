@@ -1,5 +1,5 @@
 
-name: PHPUnit
+name: PHPUnit Matrixed
 on:
   push:
     branches-ignore:
@@ -17,42 +17,40 @@ jobs:
         php-version:
           - "8.0"
           - "8.1"
+          - "8.2"
         pgsql-version:
           - "13"
         drupal-version:
-          - "9.2.x-dev"
-          - "9.3.x-dev"
           - "9.4.x-dev"
           - "9.5.x-dev"
           - "10.0.x-dev"
+          - "10.1.x-dev"
         exclude:
+          - php-version: "8.2"
+            pgsql-version: "13"
+            drupal-version: "9.4.x-dev"
+          - php-version: "8.2"
+            pgsql-version: "13"
+            drupal-version: "9.5.x-dev"
           - php-version: "8.0"
             pgsql-version: "13"
             drupal-version: "10.0.x-dev"
-          - php-version: "8.1"
+          - php-version: "8.0"
             pgsql-version: "13"
-            drupal-version: "9.2.x-dev"
+            drupal-version: "10.1.x-dev"
 
     steps:
       # Check out the repo
       - name: Checkout Repository
-        uses: actions/checkout@v2
-      # Here we fully  build a docker using the current checked out code
+        uses: actions/checkout@v3
+      # Here we fully build a docker using the current checked out code
       # to ensure we have not broken the install/build process.
-      - name: Build Dockerfile-php8.1-pgsql13
-        if: ${{ matrix.php-version == '8.1' && matrix.pgsql-version == '13'}}
+      - name: Build Docker Image
         run: |
           docker build --tag=tripaldocker:localdocker \
             --build-arg drupalversion="${{ matrix.drupal-version }}" \
             --build-arg chadoschema='testchado' ./ \
-            --file tripaldocker/Dockerfile-php8.1-pgsql13
-      - name: Build Dockerfile-php8-pgsql13
-        if: ${{ matrix.php-version == '8.0' && matrix.pgsql-version == '13'}}
-        run: |
-          docker build --tag=tripaldocker:localdocker \
-            --build-arg drupalversion="${{ matrix.drupal-version }}" \
-            --build-arg chadoschema='testchado' ./ \
-            --file tripaldocker/Dockerfile-php8-pgsql13
+            --file tripaldocker/Dockerfile-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version}}
       # Just spin up docker the good ol' fashion way.
       - name: Spin up Local Docker
         run: |

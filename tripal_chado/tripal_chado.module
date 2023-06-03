@@ -8,14 +8,14 @@
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Config\FileStorage;
 
-require_once 'src/api/tripal_chado.schema.api.inc';
-require_once 'src/api/tripal_chado.custom_tables.api.inc';
-require_once 'src/api/tripal_chado.mviews.api.inc';
-require_once 'src/api/tripal_chado.query.api.inc';
-require_once 'src/api/tripal_chado.variables.api.inc';
-require_once 'src/api/tripal_chado.organism.api.inc';
-require_once 'src/api/tripal_chado.db.api.inc';
-require_once 'src/api/tripal_chado.cv.api.inc';
+require_once 'src/api/tripal_chado.schema.api.php';
+require_once 'src/api/tripal_chado.custom_tables.api.php';
+require_once 'src/api/tripal_chado.mviews.api.php';
+require_once 'src/api/tripal_chado.query.api.php';
+require_once 'src/api/tripal_chado.variables.api.php';
+require_once 'src/api/tripal_chado.organism.api.php';
+require_once 'src/api/tripal_chado.db.api.php';
+require_once 'src/api/tripal_chado.cv.api.php';
 require_once 'src/legacyFunctions.php';
 
 /**
@@ -122,7 +122,7 @@ function tripal_chado_rebuild_views() {
   // Make sure the Views are present.
   //
   $storage = \Drupal::entityTypeManager()->getStorage('view');
-  $dir = drupal_get_path('module', 'tripal_chado');
+  $dir = \Drupal::service('extension.path.resolver')->getPath('module', 'tripal_chado');
   $fileStorage = new FileStorage($dir);
 
   // The chado_custom_tables view.

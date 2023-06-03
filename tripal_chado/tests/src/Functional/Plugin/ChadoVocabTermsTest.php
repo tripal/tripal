@@ -178,6 +178,22 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
        )";
     \Drupal::service('tripal_chado.database')->query($create_sql);
 
+    // Setting up to check that dependency injection worked properly.
+    // Since the database connection and logger are protected properties, we cannot test them directly.
+    // As such, we will use PHP closures to access these properties for testing.
+    //  -- Create a variable to store a copy of this test object for use within the closure.
+    $that = $this;
+    //  -- Create a closure (i.e. a function tied to a variable) that does not need any parameters.
+    //     Within this function we will want all of the assertions we will use to test the private methods.
+    //     Also, $this within the function will actually be the plugin object that you bind later (mind blown).
+    // This closure will be used below to do the actual testing once we have a plugin object to bind.
+    $assertDependencyInjectionClosure = function ()  use ($that){
+      $that->assertIsObject($this->connection,
+        "The connection object in our plugin was not set properly.");
+      $that->assertIsObject($this->messageLogger,
+        "The message logging object in our plugin was not set properly.");
+    };
+
     //
     // Testing ChadoIdSpace Functionality
     //
@@ -193,6 +209,12 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     $this->assertEmpty($db['description'], 'The description should not be set by the ChadoIdSpace object just yet.');
     $this->assertEmpty($db['urlprefix'], 'The URL prefix should not be set by the ChadoIdSpace object just yet.');
     $this->assertEmpty($db['url'], 'The URL should not be set by the ChadoIdSpace object just yet.');
+
+    // Check Dependency Injection by binding our assertion closure to the $GO object.
+    // This is what makes the plugin available inside the function.
+    $doAssertDIidspace = $assertDependencyInjectionClosure->bindTo($GO, get_class($GO));
+    //  -- Finally, call our bound closure function to run the assertions on our plugin.
+    $doAssertDIidspace();
 
     // Set the description to make sure it gets set in Chado.
     $GO->setDescription($GO_description);
@@ -249,10 +271,18 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
     // Make sure the Vocabulary doesn't yet exist.
     $cv = $this->getCV($GO_cc_namespace);
     $this->assertEmpty($cv, 'The Chado cv has a conflicting record.');
+
+    // Create the vocab.
     $cc = $vmanager->createCollection($GO_cc_namespace, "chado_vocabulary");
     $cv = $this->getCV($GO_cc_namespace);
     $this->assertTrue($cv['name'] == $GO_cc_namespace, 'The name was not set correctly by the ChadoVocabulary object.');
     $this->assertEmpty($cv['definition'], 'The definition should not be set by the ChadoVocabulary object just yet.');
+
+    // Check Dependency Injection by binding our assertion closure to the $cc object.
+    // This is what makes the plugin available inside the function.
+    $doAssertDIvocab = $assertDependencyInjectionClosure->bindTo($cc, get_class($cc));
+    //  -- Finally, call our bound closure function to run the assertions on our plugin.
+    $doAssertDIvocab();
 
     // Set the definition to make sure it gets set in Chado.
     $cc->setLabel($GO_cc_label);
@@ -888,5 +918,6 @@ class ChadoVocabTermsTest extends ChadoTestBrowserBase {
 
     // Try to save a term that doesn't belong to the idSpace
     $this->assertFalse($rdfs_id->saveTerm($dummy), 'A term that did not belong to an idSpace should not have been saved.');
+
   }
 }

@@ -10,12 +10,12 @@ use Drupal\Component\Plugin\PluginInspectionInterface;
 interface TripalCollectionPluginInterface extends PluginInspectionInterface {
 
   /**
-   * Creates this collection.
+   * Creates the records needed for this collection.
    *
    * This must only be called once on this new collection instance that has
    * just been created by its collection plugin manager.
    */
-  public function create();
+  public function createRecord();
 
   /**
    * Destroys this collection.

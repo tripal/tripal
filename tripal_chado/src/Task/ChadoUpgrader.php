@@ -75,6 +75,16 @@ class ChadoUpgrader extends ChadoTaskBase {
   protected $bioTool;
 
   /**
+   * TripalDbx service object.
+   *
+   * This provides in-class access to the non-schema specific Tripal DBX API
+   * methods.
+   *
+   * @var object \Drupal\tripal\TripalDBX\TripalDbx
+   */
+  protected $tripalDbxApi = NULL;
+
+  /**
    * {@inheritdoc}
    */
   public function __construct(
