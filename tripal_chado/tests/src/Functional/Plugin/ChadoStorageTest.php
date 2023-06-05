@@ -14,7 +14,7 @@ use Drupal\Tests\tripal_chado\Functional\MockClass\FieldConfigMock;
  *
  * @group Tripal
  * @group Tripal Chado
- * @group Tripal Chado ChadoStorage
+ * @group ChadoStorage
  */
 class ChadoStorageTest extends ChadoTestBrowserBase {
 

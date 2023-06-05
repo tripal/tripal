@@ -7,6 +7,7 @@ use Drupal\tripal\TripalStorage\StoragePropertyTypeBase;
 
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 
 use Drupal\Tests\tripal_chado\Functional\MockClass\FieldConfigMock;
 
@@ -15,9 +16,8 @@ use Drupal\Tests\tripal_chado\Functional\MockClass\FieldConfigMock;
  * Specifically, each test method will focus on the properties used for
  * a specific type of field.
  *
- * @group Tripal
  * @group Tripal Chado
- * @group Tripal ChadoStorage
+ * @group ChadoStorage
  */
 class ChadoStorageFieldsTest extends ChadoTestBrowserBase {
 
@@ -214,7 +214,8 @@ class ChadoStorageFieldsTest extends ChadoTestBrowserBase {
    * Tests double join situations such as with linker tables.
    * The specific example used will be feature > analysisfeature > analysis.
    *
-   * @group current-focus
+   * @group store_link
+   * @group store_id
    */
   public function testLinkerTableDoubleHop() {
 
@@ -416,5 +417,203 @@ class ChadoStorageFieldsTest extends ChadoTestBrowserBase {
     $success = $chado_storage->insertValues($values);
 
     $this->assertTrue($success, 'We were not able to insert the data.');
+  }
+
+    /**
+   * Tests single join situations such as with property tables.
+   * The specific example used will be feature > featureprop.
+   *
+   * @group store_link
+   * @group store_id
+   */
+  public function testPropertyTableSingleHop() {
+
+    // Setup
+    // --------------------------------
+    $connection = $this->getTestSchema();
+
+    // Get plugin managers we need for our testing.
+    $storage_manager = \Drupal::service('tripal.storage');
+    $chado_storage = $storage_manager->createInstance('chado_storage');
+
+    // This is just a fake field name for our test.
+    // The field does not actually need to exist for this test.
+    $fieldA_name = 'testpropertyfieldA';
+    $fieldB_name = 'testpropertyfieldB';
+    $other_field = 'testotherfeaturefield';
+
+    // The term does not need to be unique for this test
+    // as such we will use the same term for all properties for ease
+    // and performance of this test.
+    $test_term_string = 'rdfs:type';
+
+    // We also need FieldConfig classes for loading values.
+    // We're going to use Drupal's FieldConfigMock to simulate it for us.
+    // by using setMock we can set the specific settings we will need to use for our tests.
+    $fieldAconfig = new FieldConfigMock([
+      'field_name' => $fieldA_name,
+      'entity_type' => $this->content_type
+    ]);
+    $fieldAconfig->setMock([
+      'label' => $fieldA_name,
+      'settings' => [
+        'storage_plugin_id' => 'chado_storage',
+        'storage_plugin_settings' => [
+          'base_table' => 'feature',
+        ],
+      ],
+    ]);
+    $fieldBconfig = new FieldConfigMock([
+      'field_name' => $fieldB_name,
+      'entity_type' => $this->content_type
+    ]);
+    $fieldBconfig->setMock([
+      'label' => $fieldB_name,
+      'settings' => [
+        'storage_plugin_id' => 'chado_storage',
+        'storage_plugin_settings' => [
+          'base_table' => 'feature',
+        ],
+      ],
+    ]);
+
+    // Values of fields to use in testing. terms are in the DB but records are not.
+    // Define the gene record.
+    $gene_type_id = $this->getCvtermID('SO', '0000704');
+    $gene_uname = 'testGene4PropTableTest';
+    $gene_organism_id = $this->organism_id;
+    // Define the featureprop records.
+    //  -- Comment: tests multiple properties of the same type.
+    $propA_type_id = $this->getCvtermID('rdfs', 'comment');
+    $propA_values[] = ['Note 1', 'Note 2', 'Note 3'];
+    //  -- Species Group: tests a second property type.
+    $propB_type_id = $this->getCvtermID('TAXRANK', '0000010');
+    $propB_values[] = ['postgresquelus'];
+
+    // Creating the Types + Values.
+    // --------------------------------
+    // Here we define all the properties that you would normally define in the
+    // ChadoFieldItemBase::tripalTypes() method.
+    // This example is specific to a field whose base_table was set to feature
+    // and that wants to save 2 different types of properties
+    // of the feature for a given Tripal content page.
+    $propertyTypes = [
+      // These are properties that would be supplied by other fields.
+      // .................................................................
+      'feature_type' => new ChadoIntStoragePropertyType($this->content_type, $other_field, 'feature_type', $test_term_string, [
+        'action' => 'store',
+        'chado_table' => 'feature',
+        'chado_column' => 'type_id'
+      ]),
+      'feature_organism' => new ChadoIntStoragePropertyType($this->content_type, $other_field, 'feature_organism', $test_term_string, [
+        'action' => 'store',
+        'chado_table' => 'feature',
+        'chado_column' => 'organism_id'
+      ]),
+      'feature_uname' => new ChadoVarCharStoragePropertyType($this->content_type, $other_field, 'feature_uname', $test_term_string, 255, [
+        'action' => 'store',
+        'chado_table' => 'feature',
+        'chado_column' => 'uniquename'
+      ]),
+    ];
+    // These are properties supplied by the property fields.
+    // Since they are two and they should be identical except for field name and
+    // key in the array, we are going to use a loop here to add them.
+    foreach(['A' => $fieldA_name, 'B' => $fieldB_name] as $key_prefix => $field_name) {
+      // Keeps track of the feature record our hypothetical field cares about.
+      $propertyTypes[$key_prefix . '_base_id'] = new ChadoIntStoragePropertyType($this->content_type, $field_name, 'base_id', $test_term_string, [
+        'action' => 'store_id',
+        'drupal_store' => TRUE,
+        'chado_table' => 'feature',
+        'chado_column' => 'feature_id'
+      ]);
+      // Generate `JOIN {featureprop} ON feature.feature_id = featureprop.feature_id`
+      // Will also store the feature.feature_id so no need for drupal_store => TRUE.
+      $propertyTypes[$key_prefix . '_first_hop'] = new ChadoIntStoragePropertyType($this->content_type, $field_name, 'first_hop', $test_term_string, [
+        'action' => 'store_link',
+        'left_table' => 'feature',
+        'left_table_id' => 'feature_id',
+        'right_table' => 'featureprop',
+        'right_table_id' => 'feature_id'
+      ]);
+      // Store the primary key for the prop table.
+      $propertyTypes[$key_prefix . '_prop_id'] = new ChadoIntStoragePropertyType($this->content_type, $field_name, 'prop_id',  $test_term_string, [
+        'action' => 'store_pkey',
+        'chado_table' => 'featureprop',
+        'chado_column' => 'featureprop_id',
+      ]);
+      // Now we are going to store all the core columns of the featureprop table to
+      // ensure we can meet the unique and not null requirements of the table.
+      $propertyTypes[$key_prefix . '_type_id'] = new ChadoIntStoragePropertyType($this->content_type, $field_name, 'type_id', $test_term_string, [
+        'action' => 'store',
+        'chado_table' => 'featureprop',
+        'chado_column' => 'type_id'
+      ]);
+      $propertyTypes[$key_prefix . '_value'] = new ChadoTextStoragePropertyType($this->content_type, $field_name, 'value', $test_term_string, [
+        'action' => 'store',
+        'chado_table' => 'featureprop',
+        'chado_column' => 'value'
+      ]);
+      $propertyTypes[$key_prefix . '_rank'] = new ChadoIntStoragePropertyType($this->content_type, $field_name, 'rank', $test_term_string, [
+        'action' => 'store',
+        'chado_table' => 'featureprop',
+        'chado_column' => 'rank'
+      ]);
+    }
+
+    // Now confirm they were created.
+    foreach ($propertyTypes as $name => $type) {
+      $this->assertIsObject(
+        $type,
+        "Unable to create $name property type: not an object."
+      );
+      $this->assertInstanceOf(
+        StoragePropertyTypeBase::class,
+        $type,
+        "Unable to create $name property type: does not inherit from StoragePropertyTypeBase."
+      );
+    }
+
+    // Now add them to Chado storage.
+    /*
+    $chado_storage->addTypes($propertyTypes);
+    $retrieved_types = $chado_storage->getTypes();
+    $this->assertIsArray(
+      $retrieved_types,
+      "Unable to retrieve the PropertyTypes after adding $field_name."
+    );
+    $this->assertCount(
+      10,
+      $retrieved_types,
+      "Did not revieve the expected number of PropertyTypes after adding $field_name."
+    );
+
+    // Now we ned to create the value objects.
+    $propertyValues = [];
+    foreach ($propertyTypes as $name => $type) {
+      $propertyValues[$name] = new StoragePropertyValue(
+        $this->content_type,
+        $field_name,
+        $type->getKey(),
+        $test_term_string,
+        $this->content_entity_id,
+      );
+
+      // Test that we were able to create them properly.
+      $this->assertIsObject(
+        $propertyValues[$name],
+        "Unable to create $name property type: not an object."
+      );
+      $this->assertInstanceOf(
+        StoragePropertyValue::class,
+        $propertyValues[$name],
+        "Unable to create $name property type: does not inherit from StoragePropertyValue."
+      );
+      $this->assertTrue(
+        empty($propertyValues[$name]->getValue()),
+        "The $field_name $name property should not have a value."
+      );
+    }
+    */
   }
 }
