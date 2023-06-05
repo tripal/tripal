@@ -13,6 +13,7 @@ use Drupal\tripal_chado\api\ChadoSchema;
  * @group Tripal
  * @group Tripal Chado
  * @group Tripal API
+ * @group Tripal Organism
  */
 class ChadoOrganismAPITest extends ChadoTestBrowserBase {
 
@@ -34,6 +35,7 @@ class ChadoOrganismAPITest extends ChadoTestBrowserBase {
    * Tests the following organism API functions:
    *   chado_get_organism()
    *   chado_get_organism_scientific_name()
+   *   chado_get_organism_id_from_scientific_name()
    *   chado_get_organism_select_options()
    *   chado_abbreviate_infraspecific_rank()
    *   chado_unabbreviate_infraspecific_rank()
@@ -79,7 +81,7 @@ class ChadoOrganismAPITest extends ChadoTestBrowserBase {
     $organism_ids[1] = $dbq['organism_id'];
 
     // Test invalid $identifiers ($identifiers must be an array) = Should fail, and in fact causes an exception
-    $identifiers = 1;  // not an array
+    $identifiers = 'not-an-array';
     try {
       $org = chado_get_organism($identifiers, []);
     }
@@ -115,20 +117,43 @@ class ChadoOrganismAPITest extends ChadoTestBrowserBase {
     $this->assertIsObject($org, 'Did not return an organism from unambiguous $identifiers passed to chado_get_organism()');
 
     // Test getting scientific name = Should succeed
-    $name = chado_get_organism_scientific_name($org, $this->schemaName);
     $expect = 'Tripalus ' . $species . ' subsp. selvaticus';
+    $name = chado_get_organism_scientific_name($org, $this->schemaName);
     $this->assertEquals($name, $expect, 'Did not return the expected scientific name ' . $expect
                         . ' instead returned ' . $name . ' using chado_get_organism_scientific_name()');
 
-    // Test organism select options with default parameters, and test that an array is returned = should succeed
+    // Get organism object from scientific name = Should succeed
+    $identifiers = ['scientific_name' => $expect];
+    $org = chado_get_organism($identifiers, [], $this->schemaName);
+    $this->assertIsObject($org, 'Did not return the organism with scientific_name '
+                          . $name . ' using chado_get_organism()');
+
+    // Get organism_id from scientific name = Should succeed
+    $found_ids = chado_get_organism_id_from_scientific_name($name, [], $this->schemaName);
+    $this->assertIsArray($found_ids, 'Did not return an array from chado_get_organism_id_from_scientific_name()');
+    $this->assertEquals($found_ids[0], $organism_ids[1], 'Did not return the expected organism_id from scientific name '
+                        . $name . ' using chado_get_organism_id_from_scientific_name()');
+    // Test get organism_id from common name = Should succeed
+    $found_ids = chado_get_organism_id_from_scientific_name($name, ['check_common_name' => 1], $this->schemaName);
+    $this->assertIsArray($found_ids, 'Did not return an array from chado_get_organism_id_from_scientific_name()');
+    $this->assertEquals($found_ids[0], $organism_ids[1], 'Did not return the expected organism_id from common name '
+                        . $name . ' using chado_get_organism_id_from_scientific_name()');
+    // Test get organism_id from non-existing name = Should fail for all options
+    $name = 'Imaginarium nomen';
+    $found_ids = chado_get_organism_id_from_scientific_name($name, ['check_common_name' => 1, 'check_abbreviation' => 1], $this->schemaName);
+    $this->assertIsArray($found_ids, 'Did not return an array from chado_get_organism_id_from_scientific_name()');
+    $this->assertEquals(count($found_ids), 0, 'Returned an organism_id for a non-existing name '
+                        . $name . ' using chado_get_organism_id_from_scientific_name()');
+
+    // Test organism select options with default parameters, and test that an array is returned = Should succeed
     $select_options = chado_get_organism_select_options(FALSE, FALSE, $this->schemaName);
     $this->assertIsArray($select_options, 'Did not return an array from chado_get_organism_select_options()');
 
-    // Test that the array contains at least the two test organisms = should succeed
+    // Test that the array contains at least the two test organisms = Should succeed
     $count = count($select_options);
     $this->assertGreaterThanOrEqual(2, $count, 'Did not return at least two organisms from chado_get_organism_select_options()');
 
-    // Test that both of the test organisms are in the returned array = should succeed
+    // Test that both of the test organisms are in the returned array = Should succeed
     $expect = 'Tripalus ' . $species . ' subsp. sativus';
     $this->assertArrayHasKey($organism_ids[0], $select_options, 'Returned array does not contain the expected organism id '
                              . $organism_ids[0] . ' using chado_get_organism_select_options()');
