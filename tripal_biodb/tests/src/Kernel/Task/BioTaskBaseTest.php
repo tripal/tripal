@@ -1,10 +1,10 @@
 <?php
 
-namespace Drupal\Tests\tripal_biodb\Functional\Task;
+namespace Drupal\Tests\tripal_biodb\Kernel\Task;
 
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\tripal_biodb\Task\BioTaskBase;
-use Drupal\Tests\tripal_biodb\Functional\Database\Subclass\BioConnectionFake;
+use Drupal\Tests\tripal\Kernel\TripalDBX\Subclass\TripalDbxConnection;
 
 /**
  * Tests for tasks.
@@ -15,7 +15,7 @@ use Drupal\Tests\tripal_biodb\Functional\Database\Subclass\BioConnectionFake;
  * @group Tripal BioDb
  * @group Tripal BioDb Task
  */
-class BioTaskBaseFunctionalTest extends KernelTestBase {
+class BioTaskBaseKernelTest extends KernelTestBase {
 
   /**
    * Test members.
@@ -61,7 +61,7 @@ class BioTaskBaseFunctionalTest extends KernelTestBase {
       ->expects($this->any())
       ->method('getTripalDbxClass')
       ->with('Connection')
-      ->willReturn('\Drupal\Tests\tripal_biodb\Functional\Database\Subclass\BioConnectionFake')
+      ->willReturn('\Drupal\Tests\tripal\Kernel\TripalDBX\Subclass\TripalDbxConnection')
     ;
 
     // Parameters.
@@ -85,7 +85,7 @@ class BioTaskBaseFunctionalTest extends KernelTestBase {
     //   ->expects($this->any())
     //   ->method('getTripalDbxClass')
     //   ->with('Connection')
-    //   ->willReturn('\Drupal\Tests\tripal_biodb\Functional\Database\Subclass\BioConnectionFake')
+    //   ->willReturn('\Drupal\Tests\tripal\Kernel\TripalDBX\Subclass\TripalDbxConnection')
     // ;
 
     // Check default values.
