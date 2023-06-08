@@ -614,7 +614,7 @@ class ChadoUpgrader extends ChadoTaskBase {
           . $version
           . '.sql'
         ;
-        $success = $this->executeSqlFile(
+        $success = $ref_schema->executeSqlFile(
           $file_path,
           ['chado' => $ref_schema->getQuotedSchemaName(),]
         );
