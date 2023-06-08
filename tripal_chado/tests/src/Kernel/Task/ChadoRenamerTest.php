@@ -1,8 +1,8 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Functional\Task;
+namespace Drupal\Tests\tripal_chado\Kernel\Task;
 
-use Drupal\Tests\tripal_chado\Functional\ChadoTestKernelBase;
+use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\tripal_chado\Task\ChadoRenamer;
 
 
@@ -16,7 +16,7 @@ use Drupal\tripal_chado\Task\ChadoRenamer;
  * @group Tripal Chado Task
  * @group Tripal Chado Renamer
  */
-class ChadoRenamerFunctionalTest extends ChadoTestKernelBase {
+class ChadoRenamerTest extends ChadoTestKernelBase {
 
   /**
    * Tests task.

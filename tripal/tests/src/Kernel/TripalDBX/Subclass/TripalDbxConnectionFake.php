@@ -1,9 +1,9 @@
 <?php
 
-namespace Drupal\Tests\tripal\Functional\TripalDBX\Subclass;
+namespace Drupal\Tests\tripal\Kernel\TripalDBX\Subclass;
 
 use Drupal\tripal\TripalDBX\TripalDbxConnection;
-use Drupal\Tests\tripal\Functional\TripalDBX\Subclass\TripalDbxSchemaFake;
+use Drupal\Tests\tripal\Kernel\TripalDBX\Subclass\TripalDbxSchemaFake;
 
 /**
  * Fake connection class.
