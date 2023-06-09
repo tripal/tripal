@@ -48,12 +48,17 @@
  *
  * @ingroup tripal_organism_api
  */
-function chado_get_organism($identifiers, $options = [], $schema_name = 'chado') {
+function chado_get_organism($identifiers, $options = [], $schema_name = NULL) {
 
-  // Set Defaults.
+  // Set default options.
   if (!isset($options['include_fk'])) {
     // Tells chado_generate_var not to follow any foreign keys.
     $options['include_fk'] = [];
+  }
+
+  // Set default schema.
+  if (!$schema_name) {
+    $schema_name = \Drupal::config('tripal_chado.settings')->get('default_schema');
   }
 
   // Error Checking of parameters.
@@ -186,7 +191,12 @@ function chado_get_organism($identifiers, $options = [], $schema_name = 'chado')
  *
  * @ingroup tripal_organism_api
  */
-function chado_get_organism_scientific_name($organism, $schema_name = 'chado') {
+function chado_get_organism_scientific_name($organism, $schema_name = NULL) {
+  // Set default schema.
+  if (!$schema_name) {
+    $schema_name = \Drupal::config('tripal_chado.settings')->get('default_schema');
+  }
+
   // Validation
   if (!is_object($organism)) {
     tripal_report_error(
@@ -245,8 +255,13 @@ function chado_get_organism_scientific_name($organism, $schema_name = 'chado') {
  *
  * @ingroup tripal_organism_api
  */
-function chado_get_organism_select_options($published_only = FALSE, $show_common_name = FALSE, $schema_name = 'chado') {
+function chado_get_organism_select_options($published_only = FALSE, $show_common_name = FALSE, $schema_name = NULL) {
   $org_list = [];
+
+  // Set default schema.
+  if (!$schema_name) {
+    $schema_name = \Drupal::config('tripal_chado.settings')->get('default_schema');
+  }
 
   if ($published_only) {
     throw new \Exception(t('Passing TRUE for the :param parameter is not yet implemented for :func',

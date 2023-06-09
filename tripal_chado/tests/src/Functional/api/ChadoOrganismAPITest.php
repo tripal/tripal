@@ -104,7 +104,15 @@ class ChadoOrganismAPITest extends ChadoTestBrowserBase {
     $identifiers = ['organism_id' => $organism_ids[0]];
     $org = chado_get_organism($identifiers, [], $this->schemaName);
     $this->assertIsObject($org, 'Did not return the organism with organism_id='
-                          . $organism_ids[0] . ' using chado_get_organism()');
+                          . $organism_ids[0] . ' using chado_get_organism() and schema '
+                          . $this->schemaName . ' is specified');
+
+    // Get organism from organism_id without specifying schema = Should succeed
+    // This is testing the default schema lookup in the API functions.
+    $identifiers = ['organism_id' => $organism_ids[0]];
+    $org = chado_get_organism($identifiers, []);
+    $this->assertIsObject($org, 'Did not return the organism with organism_id='
+                          . $organism_ids[0] . ' using chado_get_organism() and using default schema');
 
     // Test ambiguous $identifiers = Should fail
     $identifiers = ['genus' => 'Tripalus', 'species' => $species];  // subspecies not specified, thus ambiguous
