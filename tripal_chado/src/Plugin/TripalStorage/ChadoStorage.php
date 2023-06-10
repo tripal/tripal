@@ -1097,6 +1097,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
         // violation.
         $match = $query->execute()->fetchObject();
         if ($match) {
+
           // Add a constraint violation if we have a match and the
           // record_id is 0. This would be an insert but a record already
           // exists. Or, if the record_id isn't the same as the  matched
