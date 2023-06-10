@@ -1079,21 +1079,24 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           if (array_key_exists($col, $record['fields'])) {
             $col_val = $record['fields'][$col];
           }
-          // There is an issue with postgreSQL that if the value is allowed
-          // to be null but it is in a unique constraint then it will allow
-          // it to be inserted because a Null != NULL. So, skip checking
-          // these columns in the unique constraint if they are empty.
+          // If there is not a NOT NULL constraint on this column, then
+          // we need to handle empty values specially, since they might
+          // be stored as either NULL or as an empty string in the
+          // database table. Create a condition that checks for both.
           if ($table_def['fields'][$col]['not null'] == FALSE and !$col_val) {
-            continue;
+            $query->condition($query->orConditionGroup()
+              ->condition($col, '', '=')
+              ->isNull($col));
           }
-          $query->condition($col, $col_val);
+          else {
+            $query->condition($col, $col_val);
+          }
         }
 
         // If we have matching record, check for a unique constraint
         // violation.
         $match = $query->execute()->fetchObject();
         if ($match) {
-
           // Add a constraint violation if we have a match and the
           // record_id is 0. This would be an insert but a record already
           // exists. Or, if the record_id isn't the same as the  matched
