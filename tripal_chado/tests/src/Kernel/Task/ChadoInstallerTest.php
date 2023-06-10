@@ -1,8 +1,8 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Functional\Task;
+namespace Drupal\Tests\tripal_chado\Kernel\Task;
 
-use Drupal\Tests\tripal_chado\Functional\ChadoTestKernelBase;
+use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\tripal_chado\Task\ChadoInstaller;
 
 
@@ -16,7 +16,7 @@ use Drupal\tripal_chado\Task\ChadoInstaller;
  * @group Tripal Chado Task
  * @group Tripal Chado Installer
  */
-class ChadoInstallerFunctionalTest extends ChadoTestKernelBase {
+class ChadoInstallerTest extends ChadoTestKernelBase {
 
   /**
    * Tests task.
