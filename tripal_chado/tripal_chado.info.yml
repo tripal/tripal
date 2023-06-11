@@ -1,8 +1,9 @@
 name: 'Tripal Chado'
 type: module
 description: 'Chado integration for Tripal.'
-core_version_requirement: ^9.2 || ^10
+core_version_requirement: ^9.4 || ^10
 package: 'Tripal'
+version: 4.0.alpha2
 dependencies:
   - tripal:tripal
   - tripal:tripal_biodb
