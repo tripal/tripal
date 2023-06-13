@@ -6,6 +6,7 @@ use Drupal\KernelTests\KernelTestBase;
 
 /**
  * Tests for configuration in Yaml files.
+ * These tests do not currently cover any code.
  *
  * @group Tripal
  * @group Tripal Config
@@ -31,10 +32,11 @@ class configTest extends KernelTestBase {
   }
 
   /**
-   * Tests version and core_version_requirements for consistency
-   * across submodules.
+   * When we update the version of Tripal, we need to remember to
+   * do it in all three yaml files. This function confirms that
+   * version and also core_version_requirements are consistent in
+   * each of the sub-modules' *.info.yml files.
    *
-   * @cover ::__tripal_version
    */
   public function testConfigYaml() {
     $previous_module = NULL;
@@ -42,21 +44,21 @@ class configTest extends KernelTestBase {
     $previous_core_version_requirement = NULL;
     foreach (self::$modules as $module) {
       $moduleObj = \Drupal::service('module_handler')->getModule($module);
-      $info = \Drupal::service('info_parser')->parse($moduleObj->getPathname());
-      $version = $info['version'] ?? NULL;
-      $core_version_requirement = $info['core_version_requirement'] ?? NULL;
+      $moduleInfo = \Drupal::service('info_parser')->parse($moduleObj->getPathname());
+      $version = $moduleInfo['version'] ?? NULL;
+      $core_version_requirement = $moduleInfo['core_version_requirement'] ?? NULL;
+      // Verify that values are present.
       $this->assertNotNull($version, 'No "version" was specified in ' . $module . '.info.yml');
       $this->assertNotNull($core_version_requirement, 'No "core_version_requirement" was specified in ' . $module . '.info.yml');
-      // On second and later modules, verify that returned values match those from the previous module.
+      // On second and later modules, verify that returned values match those
+      // from the previous module (the consistency check).
       if ($previous_module) {
-        $this->assertEqual($version, $previous_version, 'version for module "'
-                           . $module . '" "' . $version
-                           . '" is different than for module "'
-                           . $previous_module . '" "' . $previous_version . '"');
-        $this->assertEqual($core_version_requirement, $previous_core_version_requirement, 'core_version_requirement for module "'
-                           . $module . '" "' . $core_version_requirement
-                           . '" is different than for module "'
-                           . $previous_module . '" "' . $previous_core_version_requirement . '"');
+        $this->assertEqual($version, $previous_version,
+                           'version for module "'
+                           . $previous_module . '" is different than for module "' . $module . '"');
+        $this->assertEqual($core_version_requirement, $previous_core_version_requirement,
+                           'core_version_requirement for module "'
+                           . $previous_module . '" is different than for module "' . $module . '"');
       }
       $previous_module = $module;
       $previous_version = $version;
