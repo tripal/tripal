@@ -16,7 +16,7 @@ class configTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected static $modules = ['tripal', 'tripal_chado', 'tripal_biodb'];
+  protected static $modules = ['tripal', 'tripal_biodb', 'tripal_chado'];
 
   /**
    * {@inheritdoc}
