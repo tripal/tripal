@@ -277,6 +277,9 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       else if ($type instanceof TextStoragePropertyType) {
         $properties[$type->getKey()] = DataDefinition::create("string");
       }
+      else if ($type instanceof BoolStoragePropertyType) {
+        $properties[$type->getKey()] = DataDefinition::create("string");
+      }
       else {
         throw new RuntimeException("Unknown Tripal Property Type class.");
       }
@@ -311,6 +314,12 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       else if ($type instanceof TextStoragePropertyType) {
         $column = [
           "type" => "text",
+        ];
+        $schema["columns"][$type->getKey()] = $column;
+      }
+      else if ($type instanceof BoolStoragePropertyType) {
+        $column = [
+          "type" => "boolean",
         ];
         $schema["columns"][$type->getKey()] = $column;
       }
