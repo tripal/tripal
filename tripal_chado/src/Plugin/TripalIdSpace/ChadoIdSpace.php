@@ -42,6 +42,13 @@ class ChadoIdSpace extends TripalIdSpaceBase implements ContainerFactoryPluginIn
   protected $messageLogger = NULL;
 
   /**
+   * The database connection for querying Chado.
+   *
+   * @var Drupal\tripal_chado\Database\ChadoConnection
+   */
+  protected $connection;
+
+  /**
    * A simple boolean to prevent Chado queries if the ID space isn't valid.
    *
    * @var bool
