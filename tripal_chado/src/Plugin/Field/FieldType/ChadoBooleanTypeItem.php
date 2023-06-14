@@ -38,28 +38,22 @@ class ChadoBooleanTypeItem extends ChadoFieldItemBase {
    * {@inheritdoc}
    */
   public static function tripalTypes($field_definition) {
-dpm("CP6"); //@@@
     $entity_type_id = $field_definition->getTargetEntityTypeId();
     $settings = $field_definition->getSetting('storage_plugin_settings');
 
     // Get the base table columns needed for this field.
     $base_table = $settings['base_table'];
-$base_table = 'analysis'; dpm($base_table, 'base_table'); //@@@
-//    $base_column = $settings['base_column'];
-$base_column = 'is_obsolete'; dpm($base_column, 'base_column'); //@@@
+    $base_column = $settings['base_column'];
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
     $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
     $base_pkey_col = $base_schema_def['primary key'];
-dpm($base_pkey_col, 'base_pkey_col'); //@@@
 
     // Get the property terms by using the Chado table columns they map to.
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
     $record_id_term = 'SIO:000729';
     $value_term = $mapping->getColumnTermId($base_table, $base_column);
-$value_term = 'local:is_obsolete';
-dpm($value_term, 'value_term'); //@@@
 
     return [
       new ChadoBoolStoragePropertyType($entity_type_id, self::$id,'record_id', $record_id_term, [

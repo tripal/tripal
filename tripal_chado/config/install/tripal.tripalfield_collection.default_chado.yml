@@ -1282,6 +1282,58 @@ fields:
               region: content
               weight: 10
 
+    -   name: dna_library_organism
+        content_type: bio_data_12
+        label: Organism
+        type: chado_organism_default
+        description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+        settings:
+            termIdSpace: OBI
+            termAccession: "0100026"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 20
+          form:
+            default:
+              region: content
+              weight: 20
+
+    -   name: dna_library_is_obsolete
+        content_type: bio_data_12
+        label: Is Obsolete
+        type: chado_boolean_type_default
+        description: Designates if this library is obsolete and no longer available or of interest.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: library
+                base_column: is_obsolete
+        settings:
+            termIdSpace: local
+            termAccession: is_obsolete
+            fixed_value: local:is_obsolete
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 90
+          form:
+            default:
+              region: content
+              weight: 90
+
     -   name: genome_assembly_name
         content_type: bio_data_13
         label: Name
