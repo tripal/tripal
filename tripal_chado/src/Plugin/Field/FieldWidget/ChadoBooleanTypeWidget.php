@@ -30,7 +30,7 @@ class ChadoBooleanTypeWidget extends TripalBooleanTypeWidget {
     $element = parent::formElement($items, $delta, $element, $form, $form_state);
     $element['record_id'] = [
       '#type' => 'value',
-      '#default_value' => $item_vals['record_id'] ?? 0,
+      '#default_value' => isset($item_vals['record_id']) ? true : false,
     ];
     return $element;
   }

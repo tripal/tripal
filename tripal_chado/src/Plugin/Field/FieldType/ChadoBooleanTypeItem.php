@@ -38,14 +38,14 @@ class ChadoBooleanTypeItem extends ChadoFieldItemBase {
    * {@inheritdoc}
    */
   public static function tripalTypes($field_definition) {
-dpm("CP5"); //@@@
+dpm("CP6"); //@@@
     $entity_type_id = $field_definition->getTargetEntityTypeId();
     $settings = $field_definition->getSetting('storage_plugin_settings');
 
     // Get the base table columns needed for this field.
     $base_table = $settings['base_table'];
 $base_table = 'analysis'; dpm($base_table, 'base_table'); //@@@
-    $base_column = $settings['base_column'];
+//    $base_column = $settings['base_column'];
 $base_column = 'is_obsolete'; dpm($base_column, 'base_column'); //@@@
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
