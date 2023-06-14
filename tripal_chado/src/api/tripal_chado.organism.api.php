@@ -63,27 +63,17 @@ function chado_get_organism($identifiers, $options = [], $schema_name = NULL) {
 
   // Error Checking of parameters.
   if (!is_array($identifiers)) {
-    tripal_report_error(
-      'tripal_organism_api',
-      TRIPAL_ERROR,
-      "chado_get_organism: The identifier passed in is expected to be an array with the key
-        matching a column name in the organism table (ie: organism_id or name). You passed in %identifier.",
-      [
-        '%identifier' => print_r($identifiers, TRUE),
-      ]
-    );
+    $logger = \Drupal::service('tripal.logger');
+    $logger->error("chado_get_organism: The identifier passed in is expected to be an array with the key matching"
+                   . " a column name in the organism table (e.g. organism_id or name). You passed in %identifier.",
+                   ['%identifier' => print_r($identifiers, TRUE)]);
   }
   elseif (empty($identifiers)) {
-    tripal_report_error(
-      'tripal_organism_api',
-      TRIPAL_ERROR,
-      "chado_get_organism: You did not pass in anything to identify the organism you want. The identifier
-        is expected to be an array with the key matching a column name in the organism table
-        (ie: organism_id or name). You passed in %identifier.",
-      [
-        '%identifier' => print_r($identifiers, TRUE),
-      ]
-    );
+    $logger = \Drupal::service('tripal.logger');
+    $logger->error("chado_get_organism: You did not pass in anything to identify the organism you want. The"
+                   . " identifier is expected to be an array with the key matching a column name in the"
+                   . " organism table (e.g. organism_id or name). You passed in %identifier.",
+                   ['%identifier' => print_r($identifiers, TRUE)]);
   }
 
   // If the scientific_name identifier is used, we look up organism_id from that.
@@ -95,15 +85,10 @@ function chado_get_organism($identifiers, $options = [], $schema_name = NULL) {
       $identifiers['organism_id'] = $organism_ids[0];
     }
     else {
-      tripal_report_error(
-        'tripal_organism_api',
-        TRIPAL_ERROR,
-        "chado_get_organism: The specified scientific name did not uniquely identify an organism.
-          You passed in %scientific_name.",
-        [
-          '%scientific_name' => $scientific_name,
-        ]
-      );
+      $logger = \Drupal::service('tripal.logger');
+      $logger->error("chado_get_organism: The specified scientific name did not uniquely identify"
+                    . " an organism. You passed in %scientific_name.",
+                    ['%scientific_name' => $scientific_name]);
       return NULL;
     }
   }
@@ -113,17 +98,8 @@ function chado_get_organism($identifiers, $options = [], $schema_name = NULL) {
     $property = $identifiers['property'];
     unset($identifiers['property']);
 // @to-do chado_get_record_with_property() does not exist in Tripal 4
-    tripal_report_error(
-      'tripal_organism_api',
-      TRIPAL_ERROR,
-      "chado_get_organism: chado_get_record_with_property() is not yet implemented in Tripal 4",
-//        You did not pass in anything to identify the organism you want. The identifier
-//        is expected to be an array with the key matching a column name in the organism table
-//        (ie: organism_id or name). You passed in %identifier.",
-      [
-//        '%identifier' => print_r($identifiers, TRUE),
-      ]
-    );
+    $logger = \Drupal::service('tripal.logger');
+    $logger->error("chado_get_organism: chado_get_record_with_property() is not yet implemented in Tripal 4", []);
 //    $organism = chado_get_record_with_property(
 //      ['table' => 'organism', 'base_records' => $identifiers],
 //      ['type_name' => $property],
@@ -146,29 +122,21 @@ function chado_get_organism($identifiers, $options = [], $schema_name = NULL) {
 
   // Ensure the organism is singular. If it's an array then it is not singular.
   if (is_array($organism)) {
-    tripal_report_error(
-      'tripal_organism_api',
-      TRIPAL_ERROR,
-      "chado_get_organism: The identifiers you passed in were not unique. You passed in %identifier.",
-      [
-        '%identifier' => print_r($identifiers, TRUE),
-      ]
-    );
+    $logger = \Drupal::service('tripal.logger');
+    $logger->error("chado_get_organism: The identifiers you passed in were not unique."
+                   . " You passed in %identifier.",
+                   ['%identifier' => print_r($identifiers, TRUE)]);
   }
 
   // Report an error if $organism is FALSE since then chado_generate_var has
   // failed.
   elseif ($organism === FALSE) {
-    tripal_report_error(
-      'tripal_organism_api',
-      TRIPAL_ERROR,
-      "chado_get_organism: chado_generate_var() failed to return a organism based on the identifiers
-        you passed in. You should check that your identifiers are correct, as well as, look
-        for a chado_generate_var error for additional clues. You passed in %identifier.",
-      [
-        '%identifier' => print_r($identifiers, TRUE),
-      ]
-    );
+    $logger = \Drupal::service('tripal.logger');
+    $logger->error("chado_get_organism: chado_generate_var() failed to return a organism based on"
+                   . " the identifiers you passed in. You should check that your identifiers are"
+                   . " correct, as well as, look for a chado_generate_var error for additional"
+                   . " clues. You passed in %identifier.",
+                   ['%identifier' => print_r($identifiers, TRUE)]);
   }
 
   // Else, as far we know, everything is fine so give them their organism :)
@@ -199,15 +167,10 @@ function chado_get_organism_scientific_name($organism, $schema_name = NULL) {
 
   // Validation
   if (!is_object($organism)) {
-    tripal_report_error(
-      'tripal_organism_api',
-      TRIPAL_ERROR,
-      "chado_get_organism_scientific_name: passed organism parameter is not an object.
-        You passed in %identifier.",
-      [
-        '%identifier' => print_r($organism, TRUE),
-      ]
-    );
+    $logger = \Drupal::service('tripal.logger');
+    $logger->error("chado_get_organism_scientific_name: passed organism parameter is not"
+                   . " an object. You passed in %identifier.",
+                   ['%identifier' => print_r($organism, TRUE)]);
   }
 
   $name = $organism->genus . ' ' . $organism->species;
