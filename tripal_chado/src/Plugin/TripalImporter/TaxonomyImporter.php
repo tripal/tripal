@@ -276,6 +276,22 @@ class TaxonomyImporter extends ChadoImporterBase {
 
     $chado = $this->getChadoConnection();
 
+    // TRIPAL 4 - Could not find a genetic_code record even after importing TAXRANK - Ask Stephen
+    $genetic_code_cvterm = chado_get_cvterm([
+      'name' => 'genetic_code',
+      'cv_id' => ['name' => 'organism_property'],
+    ], [], $this->chado_schema_main);
+
+    // If genetic code cvterm not found, try to create it in organism_property CV
+    // This cvterm is used in code further down in code
+    if(!isset($genetic_code_cvterm)) {
+      chado_insert_cvterm([     
+        'name' => 'genetic_code',
+        'cv_name' => 'organism_property'
+      ], [], $this->chado_schema_main);
+    }
+
+
     $arguments = $this->arguments['run_args'];
     $tree_name = $arguments['tree_name'];
     $taxonomy_ids = $arguments['taxonomy_ids'];
@@ -295,23 +311,23 @@ class TaxonomyImporter extends ChadoImporterBase {
         AND cv_id = (SELECT cv_id FROM {1:cv} WHERE name = 'organism_property'))
         AND OP.organism_id = O.organism_id) AS lineage
     ";
-    if (chado_get_version(FALSE, FALSE, $this->chado_schema_main) > 1.2) {
-      $sql = "
-        SELECT O.*, CVT.name AS type
-        $sql_common
-        FROM {1:organism} O
-          LEFT JOIN {1:cvterm} CVT ON CVT.cvterm_id = O.type_id
-        ORDER BY O.genus, O.species, CVT.name, O.infraspecific_name
-      ";
-    }
-    else {
+    // if (chado_get_version(FALSE, FALSE, $this->chado_schema_main) > 1.2) {
+    //   $sql = "
+    //     SELECT O.*, CVT.name AS type
+    //     $sql_common
+    //     FROM {1:organism} O
+    //       LEFT JOIN {1:cvterm} CVT ON CVT.cvterm_id = O.type_id
+    //     ORDER BY O.genus, O.species, CVT.name, O.infraspecific_name
+    //   ";
+    // }
+    // else {
       $sql = "
         SELECT O.*, '' AS type
         $sql_common
         FROM {1:organism} O
         ORDER BY O.genus, O.species
       ";
-    }
+    // }
     $results = $chado->query($sql);
     while ($item = $results->fetchObject()) {
       // If $root_taxon is specified, and lineage is already stored in chado,
@@ -391,7 +407,8 @@ class TaxonomyImporter extends ChadoImporterBase {
 
     // Now import the tree.
     // TODO [RISH] - Discuss with Stephen the tripal_chado.phylotree.api.php (notes in clickup - May 2023)
-    chado_phylogeny_import_tree($this->tree, $this->phylotree, $options);
+    print_r("function chado_phylogeny_import_tree called\n");
+    chado_phylogeny_import_tree($this->tree, $this->phylotree, $options, [], NULL, $this->chado_schema_main);
   }
 
 
@@ -424,7 +441,7 @@ class TaxonomyImporter extends ChadoImporterBase {
       ];
       $errors = [];
       $warnings = [];
-      $success = tripal_insert_phylotree($phylotree, $errors, $warnings);
+      $success = chado_insert_phylotree($phylotree, $errors, $warnings);
       if (!$success) {
         throw new Exception("Cannot add the Taxonomy Tree record.");
       }
@@ -452,8 +469,11 @@ class TaxonomyImporter extends ChadoImporterBase {
     // Get the "rank" cvterm. It requires that the TAXRANK vocabulary is loaded.
     $rank_cvterm = chado_get_cvterm([
       'name' => 'rank',
-      'cv_id' => ['name' => 'local'],
+      'cv_id' => ['name' => 'local'], // TRIPAL 3
     ], [], $this->chado_schema_main);
+    // if (!isset($rank_cvterm)) {
+    //   throw new \Exception("Could not find TAXRANK vocabulary and thus rank cvterm. Please load the vocabulary.");
+    // }
 
     // The taxonomic tree must have a root, so create that first.
     $tree = [
@@ -485,10 +505,10 @@ class TaxonomyImporter extends ChadoImporterBase {
         ':organism_id' => $organism->organism_id,
       ];
       $result = $chado->query($sql, $args);
-      if (!$result) {
+      if (!$result) { // POSSIBLE BUG: MIGHT BE A BUG???
         continue;
       }
-      $phylonode = $result->fetchObject();
+      $phylonode = $result->fetchObject(); // POSSIBLE BUG: Why would we fetch if the result is empty? based on the previous if empty clause
 
       // Next get the lineage for this organism.
       $lineageprop = $this->getProperty($organism->organism_id, 'lineage');
@@ -544,6 +564,8 @@ class TaxonomyImporter extends ChadoImporterBase {
           $phylonodeprop = chado_select_record('phylonodeprop', $columns, $values, NULL, $this->chado_schema_main);
         }
         $name = $child;
+        print_r($child);
+        print_r("\n");
         $node_rank = (string) $child->Rank;
         $node = [
           'name' => $name,
@@ -668,7 +690,7 @@ class TaxonomyImporter extends ChadoImporterBase {
         // Parse the XML to get the taxonomy ID
         $result = FALSE;
         $taxid = NULL;
-        $xml = new SimpleXMLElement($xml_text);
+        $xml = new \SimpleXMLElement($xml_text);
         if ($xml) {
           // On rare occasions there is no full match, but NCBI returns
           // a partial match which yields an incorrect taxid, so compare
@@ -898,7 +920,7 @@ class TaxonomyImporter extends ChadoImporterBase {
         }
         fclose($rfh);
 
-        $xml = new SimpleXMLElement($xml_text);
+        $xml = new \SimpleXMLElement($xml_text);
       }
       $retries--;
       $remaining_sleep = $sleep_time - ((int) (1e6 * (microtime(TRUE) - $start)));
@@ -1147,7 +1169,6 @@ class TaxonomyImporter extends ChadoImporterBase {
       'cv_name' => 'organism_property',
       'rank' => $rank,
     ];
-
     return chado_get_property($record, $property, $this->chado_schema_main);
   }
 
@@ -1179,6 +1200,7 @@ class TaxonomyImporter extends ChadoImporterBase {
       'cv_name' => 'organism_property',
       'value' => $value,
     ];
+    
     // Delete all properties of this type if the rank is zero.
     if ($rank == 0) {
       chado_delete_property($record, $property, $this->chado_schema_main);

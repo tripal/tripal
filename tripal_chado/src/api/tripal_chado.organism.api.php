@@ -272,7 +272,7 @@ function chado_get_organism_id_from_scientific_name($name, $options = [], $schem
   // There is a unique constraint, so expect zero or one match here.
   $infra_present = false;
   $limit = 2;
-  if (chado_column_exists('organism', 'infraspecific_name', $schema_name)) {
+  if (chado_column_exists('organism', 'infraspecific_name')) {
     $infra_present = true;
     $limit = 4;
   }
@@ -281,15 +281,15 @@ function chado_get_organism_id_from_scientific_name($name, $options = [], $schem
   if (!array_key_exists(1, $parts)) {
     $parts[1] = '';
   }
-  $sql = 'SELECT organism_id FROM {1:organism} WHERE '.$sql_for_lower.'(genus) = :genus'
+  $sql = 'SELECT organism_id FROM {organism} WHERE '.$sql_for_lower.'(genus) = :genus'
        . ' AND '.$sql_for_lower.'(species) = :species';
   $args = [ ':genus' => $parts[0], ':species' => $parts[1] ];
   if ($infra_present) {
     // When there is no infraspecific name, we can either use the "no_rank"
     // taxonomic term in the type_id column, or else use NULL.
-    $sql .= ' AND ( type_id = (SELECT cvterm_id FROM {1:cvterm}'
+    $sql .= ' AND ( type_id = (SELECT cvterm_id FROM {cvterm}'
          . ' WHERE '.$sql_for_lower.'(name) = :infraspecific_type'
-         . ' AND cv_id = (SELECT cv_id FROM {1:cv} WHERE name = :taxonomic_rank))';
+         . ' AND cv_id = (SELECT cv_id FROM {cv} WHERE name = :taxonomic_rank))';
     if (!array_key_exists(2, $parts)) {
       $parts[2] = 'no_rank';
       $sql .= " OR type_id IS NULL";
@@ -312,7 +312,7 @@ function chado_get_organism_id_from_scientific_name($name, $options = [], $schem
       $sql .= " AND ( infraspecific_name = '' ) IS NOT FALSE";
     }
   }
-  $results = chado_query($sql, $args, $schema_name);
+  $results = chado_query($sql, $args, [], $schema_name);
   while ($organism = $results->fetchField()) {
     if (!in_array($organism, $organism_ids)) {
       $organism_ids[] = $organism;
@@ -324,9 +324,9 @@ function chado_get_organism_id_from_scientific_name($name, $options = [], $schem
     // Try to find $name in the abbreviation column. This does not
     // have a unique constraint, so there may be more than one match.
     if (in_array('check_abbreviation', $options, true)) {
-      $sql = 'SELECT organism_id FROM {1:organism} WHERE '.$sql_for_lower.'(abbreviation) = :name';
+      $sql = 'SELECT organism_id FROM {organism} WHERE '.$sql_for_lower.'(abbreviation) = :name';
       $args = [':name' => $name];
-      $results = chado_query($sql, $args, $schema_name);
+      $results = chado_query($sql, $args, [], $schema_name);
       while ($organism = $results->fetchField()) {
         $organism_ids[] = $organism;
       }
@@ -335,9 +335,9 @@ function chado_get_organism_id_from_scientific_name($name, $options = [], $schem
     // Try to find $name in the common_name column. This does not
     // have a unique constraint, so there may be more than one match.
     if (in_array('check_common_name', $options, true)) {
-      $sql = 'SELECT organism_id FROM {1:organism} WHERE '.$sql_for_lower.'(common_name) = :name';
+      $sql = 'SELECT organism_id FROM {organism} WHERE '.$sql_for_lower.'(common_name) = :name';
       $args = [':name' => $name];
-      $results = chado_query($sql, $args, $schema_name);
+      $results = chado_query($sql, $args, [], $schema_name);
       while ($organism = $results->fetchField()) {
         if (!in_array($organism, $organism_ids)) {
           $organism_ids[] = $organism;
@@ -381,7 +381,7 @@ function chado_get_organism_select_options($syncd_only = TRUE, $show_common_name
     $sql = "
       SELECT O.*
       FROM [chado_organism] CO
-        INNER JOIN {1:organism} O ON O.organism_id = CO.organism_id
+        INNER JOIN {organism} O ON O.organism_id = CO.organism_id
       ORDER BY O.genus, O.species
     ";
   }
@@ -395,15 +395,15 @@ function chado_get_organism_select_options($syncd_only = TRUE, $show_common_name
     if ($infra_present) {
       $sql = "
         SELECT organism_id, genus, species, type_id,
-          (REPLACE ((SELECT name FROM {1:cvterm} CVT WHERE CVT.cvterm_id = type_id AND CVT.cv_id =
-            (SELECT cv_id FROM {1:cv} WHERE name='taxonomic_rank')), 'no_rank', '')) AS infraspecific_type,
+          (REPLACE ((SELECT name FROM {cvterm} CVT WHERE CVT.cvterm_id = type_id AND CVT.cv_id =
+            (SELECT cv_id FROM {cv} WHERE name='taxonomic_rank')), 'no_rank', '')) AS infraspecific_type,
           infraspecific_name, common_name
-        FROM {1:organism}
+        FROM {organism}
         ORDER BY genus, species, infraspecific_type, infraspecific_name
       ";
     }
   }
-  $orgs = chado_query($sql, $schema_name);
+  $orgs = chado_query($sql, [], [], $schema_name);
 
   // Iterate through the organisms and build an array of their names.
   foreach ($orgs as $org) {
@@ -519,7 +519,7 @@ function chado_autocomplete_organism($text, $schema_name = 'chado') {
             " infraspecific_name";
   }
   $sql .= " LIMIT 25 OFFSET 0";
-  $results = chado_query($sql, $args);
+  $results = chado_query($sql, $args, [], $schema_name);
   $items = [['args' => [$sql => $args]]];
   foreach ($results as $organism) {
     $name = chado_get_organism_scientific_name($organism);

@@ -821,6 +821,9 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
     }
 
     // Insert the new node and then add its assigned phylonode_id to the node.
+    print_r("Phylonode chado insert\n");
+    print_r($values);
+    print_r("\n");
     $phylonode = chado_insert_record('phylonode', $values, [], $schema_name);
     $tree['phylonode_id'] = $phylonode['phylonode_id'];
 
@@ -831,6 +834,9 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
         'phylonode_id' => $tree['phylonode_id'],
         'organism_id' => $tree['organism_id'],
       ];
+      print_r("[1] Phylonode organism chado insert\n");
+      print_r($values);
+      print_r("\n");
       $pylonode_organism = chado_insert_record('phylonode_organism', $values, [], $schema_name);
     }
 
@@ -842,6 +848,10 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
           'type_id' => $type_id,
           'value' => $value,
         ];
+        print_r("[2] Phylonode organism chado insert\n");
+        print_r($tree['properties']);
+        print_r($values);
+        print_r("\n");
         $pylonode_organism = chado_insert_record('phylonodeprop', $values, [], $schema_name);
       }
     }
@@ -1018,7 +1028,10 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $j
     return FALSE;
   }
 
-  $transaction = db_transaction();
+  // $transaction = db_transaction(); // OLD T3
+  $chado = \Drupal::service('tripal_chado.database');
+  $chado->setSchemaName($schema_name);
+  $transaction_chado = $chado->startTransaction();
   print "\nNOTE: Loading of this tree file is performed using a database transaction. \n" .
     "If the load fails or is terminated prematurely then the entire set of \n" .
     "insertions/updates is rolled back and will not be found in the database\n\n";
@@ -1042,7 +1055,8 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $j
     // with the details in the $options array.
     chado_phylogeny_import_tree($tree, $phylotree, $options, [], NULL, $schema_name);
   } catch (Exception $e) {
-    $transaction->rollback();
+    // $transaction->rollback(); // OLD T3
+    $transaction_chado->rollback();
     watchdog_exception($options['message_type'], $e);
   }
 }
