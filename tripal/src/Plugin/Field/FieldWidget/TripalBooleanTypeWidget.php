@@ -26,10 +26,9 @@ class TripalBooleanTypeWidget extends TripalWidgetBase {
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
     $element['value'] = $element + [
-      '#type' => 'textfield',
-      '#default_value' => $items[$delta]->value ?? '',
+      '#type' => 'checkbox',
+      '#default_value' => $items[$delta]->value ?? 0,
       '#placeholder' => $this->getSetting('placeholder'),
-      '#attributes' => ['class' => ['js-text-full', 'text-full']],
     ];
     return $element;
   }

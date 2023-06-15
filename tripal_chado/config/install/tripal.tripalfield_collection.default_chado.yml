@@ -865,6 +865,7 @@ fields:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: feature
+                base_column: organism_id
         settings:
             termIdSpace: OBI
             termAccession: "0100026"
@@ -1292,7 +1293,8 @@ fields:
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
-                base_table: feature
+                base_table: library
+                base_column: organism_id
         settings:
             termIdSpace: OBI
             termAccession: "0100026"
