@@ -1310,7 +1310,7 @@ fields:
     -   name: dna_library_is_obsolete
         content_type: bio_data_12
         label: Is Obsolete
-        type: chado_boolean_type_default
+        type: chado_boolean_type
         description: Designates if this library is obsolete and no longer available or of interest.
         cardinality: 1
         required: true
