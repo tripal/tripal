@@ -898,7 +898,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
             // entire record should be removed on an update and not inserted.
             $delete_if_empty = array_key_exists('delete_if_empty',$prop_storage_settings) ? $prop_storage_settings['delete_if_empty'] : FALSE;
             if ($delete_if_empty) {
-              $records[$chado_table][$delta]['delete_if_empty'][] = $key;
+              $records[$chado_table][$delta]['delete_if_empty'][] = $chado_column;
             }
           }
           if ($action == 'join') {
