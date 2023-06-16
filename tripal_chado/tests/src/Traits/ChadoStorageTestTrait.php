@@ -76,6 +76,9 @@ trait ChadoStorageTestTrait {
     // Ensure we see all logging in tests.
     \Drupal::state()->set('is_a_test_environment', TRUE);
 
+    // Grab the container.
+    $container = \Drupal::getContainer();
+
     // Create a new test schema for us to use.
     $this->chado_connection = $this->createTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
 
@@ -86,6 +89,15 @@ trait ChadoStorageTestTrait {
     // Dummy class made by the mock builder which means if any methods are
     // called on it, they will return NULL.
     $this->mock_term = $this->createMock(\Drupal\tripal\TripalVocabTerms\TripalTerm::class);
+    // Create a mock ID space to return our mock term when asked.
+    $mock_idspace = $this->createMock(\Drupal\tripal\TripalVocabTerms\Interfaces\TripalIdSpaceInterface::class);
+    $mock_idspace->method('getTerm')
+      ->willReturn($this->mock_term);
+    // Create a mock Tripal ID Space service to return our mock idspace when asked.
+    $mock_idspace_service = $this->createMock(\Drupal\tripal\TripalVocabTerms\PluginManagers\TripalIdSpaceManager::class);
+    $mock_idspace_service->method('loadCollection')
+      ->willReturn($mock_idspace);
+    $container->set('tripal.collection_plugin_manager.idspace', $mock_idspace_service);
 
     // Get plugin managers we need for our testing.
     $storage_manager = \Drupal::service('tripal.storage');
