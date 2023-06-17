@@ -185,49 +185,72 @@ trait ChadoStorageTestTrait {
   /**
    * Create PropertyType objects based on defined fields.
    *
-   * @param string $field_name
-   *   The key of the field defined in the $fields array for which you would like
+   * Note: Includes assertions to be sure property types were created as
+   * expected.
+   *
+   * @param string $field_names
+   *   An array of field name keys as defined in the $fields array for which you would like
    *   to create propertyTypes for.
+   * @param int $expected_total_properties
+   *   The total number of property types you expect to be created.
    */
-  public function createPropertyTypes($field_name) {
+  public function createPropertyTypes($field_names, $expected_total_properties) {
 
+    // @todo currently these are hard coded but we should likely handle that differently.
     $content_type = 'entity_test';
     $test_term_string = 'rdfs:type';
 
-    $field_details = $this->fields[$field_name];
+    // For each of the fields we were asked to create properties...
+    foreach ($field_names as $field_name) {
 
-    foreach ($field_details['properties'] as $property_key => $property_options) {
-      $propertyTypeClass = $property_options['propertyType class'];
-      if (str_ends_with($propertyTypeClass, 'ChadoVarCharStoragePropertyType')) {
-        $type = new $propertyTypeClass(
-          $content_type,
-          $field_name,
-          $property_key,
-          $test_term_string,
-          255,
-          $property_options
+      // Grab the defaults from the fields array.
+      $field_details = $this->fields[$field_name];
+
+      // Then for each defined property, we will create it and check it.
+      foreach ($field_details['properties'] as $property_key => $property_options) {
+
+        // Get the property type class we should be using to create our property.
+        $propertyTypeClass = $property_options['propertyType class'];
+
+        // Note: varchar properties have an extra parameter so must be handled
+        // separately. We use ends with since the property class should include
+        // the namespace.
+        if (str_ends_with($propertyTypeClass, 'ChadoVarCharStoragePropertyType')) {
+          $type = new $propertyTypeClass(
+            $content_type,
+            $field_name,
+            $property_key,
+            $test_term_string,
+            255,
+            $property_options
+          );
+        }
+        else {
+          $type = new $propertyTypeClass(
+            $content_type,
+            $field_name,
+            $property_key,
+            $test_term_string,
+            $property_options
+          );
+        }
+        $this->assertIsObject(
+          $type,
+          "Unable to create $property_key property type: not an object."
         );
-      }
-      else {
-        $type = new $propertyTypeClass(
-          $content_type,
-          $field_name,
-          $property_key,
-          $test_term_string,
-          $property_options
+        $this->assertInstanceOf(
+          StoragePropertyTypeBase::class,
+          $type,
+          "Unable to create $property_key property type: does not inherit from StoragePropertyTypeBase."
         );
+
+        // Set it in the protected propertyTypes array for use in tests.
+        $this->propertyTypes[$property_key] = $type;
       }
-      $this->assertIsObject(
-        $type,
-        "Unable to create $property_key property type: not an object."
-      );
-      $this->assertInstanceOf(
-        StoragePropertyTypeBase::class,
-        $type,
-        "Unable to create $property_key property type: does not inherit from StoragePropertyTypeBase."
-      );
-      $this->propertyTypes[$property_key] = $type;
     }
+
+    $this->assertCount($expected_total_properties, $this->propertyTypes,
+      "We did not have the expected number of property types created on our behalf.");
   }
 
   /**
