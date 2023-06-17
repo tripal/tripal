@@ -188,7 +188,7 @@ trait ChadoStorageTestTrait {
    * Note: Includes assertions to be sure property types were created as
    * expected.
    *
-   * @param string $field_names
+   * @param array $field_names
    *   An array of field name keys as defined in the $fields array for which you would like
    *   to create propertyTypes for.
    * @param int $expected_total_properties
@@ -259,56 +259,71 @@ trait ChadoStorageTestTrait {
    *
    * NOTE: You must have called createPropertyTypes() for this field first.
    *
-   * @param string $field_name
-   *   The key of the field defined in the $fields array for which you would like
-   *   to create propertyValues for.
-   * @param integer $num_values
-   *   The total number of values you expect to set for this field. For example,
-   *   for a property field with 3 properties then this would be 3.
+   * @param array $field_names
+   *   An array of field name keys as defined in the $fields array for which you would like
+   *   to create propertyTypes for.
+   * @param array $expectations
+   *   The expectations array from the data provider. It must have the following
+   *   keys:
+   *   [
+   *     'number of fields' => <the total number of fields in $field_names>
+   *     <field name> => [
+   *       'number of values' => <the number of values per delta created for this field>
+   *     ],
+   *   ]
    */
-  public function createDataStoreValues(string $field_name, int $num_values = 1) {
-    $this->dataStoreValues[$field_name] = [];
+  public function createDataStoreValues(array $field_names, array $expectations) {
 
-    $this->assertArrayHasKey($field_name, $this->fieldConfig_mock,
-      "We expected there to already be a mock field config for $field_name but there was not.");
+    foreach ($field_names as $field_name) {
 
-    for ($delta = 0; $delta < $num_values; $delta++) {
-      $this->dataStoreValues[$field_name][$delta] = [];
-      foreach ($this->fields[$field_name]['properties'] as $property_key => $property_options) {
+      $this->dataStoreValues[$field_name] = [];
 
-        // Create the propertyValue.
-        $this->propertyValues[$property_key] = new StoragePropertyValue(
-          $this->content_type,
-          $field_name,
-          $property_key,
-          $this->term_string,
-          $this->content_entity_id
-        );
-        $this->assertArrayHasKey($property_key, $this->propertyValues,
-          "We were unable to create/set the property value for $field_name.$property_key.");
-        $this->assertIsObject($this->propertyValues[$property_key],
-          "Unable to create $property_key property type: not an object.");
-        $this->assertInstanceOf(StoragePropertyValue::class, $this->propertyValues[$property_key],
-          "Unable to create $property_key property type: does not inherit from StoragePropertyValue.");
-        $this->assertTrue( empty($this->propertyValues[$property_key]->getValue()),
-          "The $field_name $property_key property should not have a value.");
+      $this->assertArrayHasKey($field_name, $this->fieldConfig_mock,
+        "We expected there to already be a mock field config for $field_name but there was not.");
 
-        $this->assertArrayHasKey($property_key, $this->propertyTypes,
-          "We expected there to already be a property type for $field_name.$property_key but there was not.");
+      $num_values = $expectations[$field_name]['number of values'];
 
-        // Add the property Value + Type + Field Config to the values array.
-        $this->dataStoreValues[$field_name][$delta][$property_key] = [
-          'value' => $this->propertyValues[$property_key],
-          'type' => $this->propertyTypes[$property_key],
-          'definition' => $this->fieldConfig_mock[$field_name],
-        ];
+      for ($delta = 0; $delta < $num_values; $delta++) {
+        $this->dataStoreValues[$field_name][$delta] = [];
+        foreach ($this->fields[$field_name]['properties'] as $property_key => $property_options) {
+
+          // Create the propertyValue.
+          $this->propertyValues[$property_key] = new StoragePropertyValue(
+            $this->content_type,
+            $field_name,
+            $property_key,
+            $this->term_string,
+            $this->content_entity_id
+          );
+          $this->assertArrayHasKey($property_key, $this->propertyValues,
+            "We were unable to create/set the property value for $field_name.$property_key.");
+          $this->assertIsObject($this->propertyValues[$property_key],
+            "Unable to create $property_key property type: not an object.");
+          $this->assertInstanceOf(StoragePropertyValue::class, $this->propertyValues[$property_key],
+            "Unable to create $property_key property type: does not inherit from StoragePropertyValue.");
+          $this->assertTrue( empty($this->propertyValues[$property_key]->getValue()),
+            "The $field_name $property_key property should not have a value.");
+
+          $this->assertArrayHasKey($property_key, $this->propertyTypes,
+            "We expected there to already be a property type for $field_name.$property_key but there was not.");
+
+          // Add the property Value + Type + Field Config to the values array.
+          $this->dataStoreValues[$field_name][$delta][$property_key] = [
+            'value' => $this->propertyValues[$property_key],
+            'type' => $this->propertyTypes[$property_key],
+            'definition' => $this->fieldConfig_mock[$field_name],
+          ];
+        }
+        $this->assertCount(sizeof($this->fields[$field_name]['properties']), $this->dataStoreValues[$field_name][$delta],
+          "There was a different number of property arrays for $field_name[$delta] than expected in our dataStoreValues.");
       }
-      $this->assertCount(sizeof($this->fields[$field_name]['properties']), $this->dataStoreValues[$field_name][$delta],
-        "There was a different number of property arrays for $field_name[$delta] than expected in our dataStoreValues.");
+
+      $this->assertCount($num_values, $this->dataStoreValues[$field_name],
+        "There was a different number of delta for $field_name field than expected in our dataStoreValues.");
     }
 
-    $this->assertCount($num_values, $this->dataStoreValues[$field_name],
-      "There was a different number of delta for $field_name field than expected in our dataStoreValues.");
+    $this->assertCount($expectations['number of fields'], $this->dataStoreValues,
+      "There was a different number of fields in our dataStoreValues then we expected.");
   }
 
   /**
@@ -404,5 +419,42 @@ trait ChadoStorageTestTrait {
       "Unable to retrieve the PropertyTypes after adding $field_name_string.");
     $this->assertCount($expected_total_properties, $retrieved_types,
       "Did not revieve the expected number of PropertyTypes after adding $field_name_string.");
+  }
+
+  /**
+   * Set expected values from data provider in the dataStoreValues propertyValue objects.
+   *
+   * @param array $field_names
+   *   A simple array of all the field names in the expectations array. This is
+   *   required because there are some non-field name keys in the expectations
+   *   array.
+   *
+   * @param $expectations
+   *  This is expected to be provided to a test via a dataProvider. It should
+   *  have the following format:
+   *    [
+   *      <name of field> => [
+   *        'values' => [
+   *          <delta> => [
+   *            <property key> => <value for that property key>
+   *          ],
+   *        ],
+   *      ]
+   *    ]
+   */
+  public function setExpectedValues($field_names, $expectations) {
+
+    foreach ($field_names as $field_name) {
+      foreach($expectations[$field_name]['values'] as $delta => $values) {
+        foreach($values as $property_key => $val) {
+
+          $this->dataStoreValues[$field_name][$delta][$property_key]['value']->setValue($val);
+
+          $retrieved_val = $this->dataStoreValues[$field_name][$delta][$property_key]['value']->getValue();
+          $this->assertEquals($val, $retrieved_val,
+            "We were unable to retrieve the value for $property_key right after we set it.");
+        }
+      }
+    }
   }
 }

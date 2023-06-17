@@ -256,40 +256,29 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
    */
   public function testInsertValues($field_names, $expectations) {
 
-    // Prep: Lookup static values in expectations.
+    // Do the prep dependant on the dataprovider expectations
+    // ------------------------------------------
+    // Lookup static values in expectations.
     // This couldn't be done in the data provider as there was no database yet.
     $this->lookupStaticValuesFromDataProvider($field_names, $expectations);
     // Create the property types based on our fields array.
     $this->createPropertyTypes($field_names, $expectations['total number of properties']);
     // Add the types to chado storage.
     $this->addPropertyTypes2ChadoStorage($field_names, $expectations['total number of properties']);
+    // Create the property values + format them for testing with *Values methods.
+    $this->createDataStoreValues($field_names, $expectations);
+    // Set the values in the propertyValue objects.
+    $this->setExpectedValues($field_names, $expectations);
 
-    // 3. Create the property values + format them for testing with *Values methods.
-    foreach ($field_names as $field_name) {
-      $this->createDataStoreValues($field_name, $expectations[$field_name]['number of values']);
-    }
-    $this->assertCount($expectations['number of fields'], $this->dataStoreValues,
-      "There was a different number of fields in our dataStoreValues then we expected.");
-
-    // 4. Set the values in the propertyValue objects.
-    foreach ($field_names as $field_name) {
-      foreach($expectations[$field_name]['values'] as $delta => $values) {
-        foreach($values as $property_key => $val) {
-
-          $this->dataStoreValues[$field_name][$delta][$property_key]['value']->setValue($val);
-
-          $retrieved_val = $this->dataStoreValues[$field_name][$delta][$property_key]['value']->getValue();
-          $this->assertEquals($val, $retrieved_val,
-            "We were unable to retrieve the value for $property_key right after we set it.");
-        }
-      }
-    }
-
-    // 5. Use ChadoStorage insertValues to create the records.
+    // Here starts the test proper:
+    // ------------------------------------------
+    // Use ChadoStorage insertValues to create the records.
     $success = $this->chadoStorage->insertValues($this->dataStoreValues);
     $this->assertTrue($success, 'We were not able to insert the data.');
 
-    // 6. Check that the base feature record was created in the database as expected.
+    // Check that the base feature record was created in the database as expected.
+    // Note: makes some assumptions based on knowing the data provider for
+    // better readability of the tests.
     $field_name = 'testotherfeaturefield';
     $query = $this->chado_connection->select('1:feature', 'f')
       ->fields('f', ['feature_id', 'type_id', 'organism_id', 'uniquename'])
@@ -310,7 +299,9 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
       $feature_id = $record->feature_id;
     }
 
-    // 7. Check that the featureprop records were created in the database as expected.
+    // Check that the featureprop records were created in the database as expected.
+    // Note: makes some assumptions based on knowing the data provider for
+    // better readability of the tests.
     $field_name = 'testpropertyfieldA';
     $query = $this->chado_connection->select('1:featureprop', 'prop')
       ->fields('prop', ['feature_id', 'type_id', 'value', 'rank'])
