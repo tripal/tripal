@@ -258,23 +258,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
 
     // Prep: Lookup static values in expectations.
     // This couldn't be done in the data provider as there was no database yet.
-    foreach ($field_names as $field_name) {
-      foreach($expectations[$field_name]['static values'] as $args) {
-        switch ($args['type']) {
-          case 'organism':
-            foreach(array_keys($expectations[$field_name]['values']) as $delta) {
-              $expectations[$field_name]['values'][$delta][ $args['property_key'] ] = $this->organism_id;
-            }
-            break;
-          case 'cvterm lookup':
-            $cvterm_id = $this->getCvtermID($args['idspace'], $args['accession']);
-            foreach(array_keys($expectations[$field_name]['values']) as $delta) {
-              $expectations[$field_name]['values'][$delta][ $args['property_key'] ] = $cvterm_id;
-            }
-            break;
-        }
-      }
-    }
+    $this->lookupStaticValuesFromDataProvider($field_names, $expectations);
 
     // 1. Create the property types based on our fields array.
     foreach ($field_names as $field_name) {

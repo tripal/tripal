@@ -7,10 +7,18 @@ use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\tripal\TripalStorage\StoragePropertyTypeBase;
 
 /**
- * Provides functions and member variables to be used
- * when testing Chado Storage. This allows for less
- * duplication of setup and more focus on the particular
+ * Provides functions and member variables to be used when testing Chado Storage.
+ * This allows for less duplication of setup and more focus on the particular
  * use cases within the test classes themselves.
+ *
+ * How to write kernel tests for a given field:
+ * 1. Create a test class where the name of the class is the same as the field
+ *    but with "Test" appended to the end. This class should extend
+ *    ChadoTestKernelBase.
+ * 2. The first line in your class should be to use this trait
+ *      use ChadoStorageTestTrait;
+ * 3. Define the fields and properties for the field you are testing using the
+ *    $fields protected variable. See the format for this variable below.
  */
 trait ChadoStorageTestTrait {
 
@@ -47,6 +55,7 @@ trait ChadoStorageTestTrait {
    *    'base_table' => (base chado table for this field),
    *  ]
    */
+  // protected array $fields;
   // DEFINED IN TEST CLASSES. protected array $fields = [];
 
   /**
@@ -277,5 +286,75 @@ trait ChadoStorageTestTrait {
 
     $this->assertCount($num_values, $this->dataStoreValues[$field_name],
       "There was a different number of delta for $field_name field than expected in our dataStoreValues.");
+  }
+
+  /**
+   * Lookup Static variables provided by data providers.
+   *
+   * Data providers are a great way to test multiple combinations for a given field.
+   * However, you cannot access services within a data provider. As such, you should
+   * define any values needing lookup as static variables and then call this
+   * function at the top of your test to have them looked up.
+   *
+   * You can expect this method to lookup a value based on its type definition
+   * and then add it to the values array for that field as follows:
+   *   $expectations[<name of field>]['values][<delta>][<property key] = <value looked up>
+   *
+   * Note: If a field has more then one delta then the same static values will
+   * be set for each one.
+   *
+   * @param array $field_names
+   *   A simple array of all the field names in the expectations array. This is
+   *   required because there are some non-field name keys in the expectations
+   *   array.
+   *
+   * @param $expectations
+   *  This is expected to be provided to a test via a dataProvider. It should
+   *  have the following format:
+   *    [
+   *      <name of field> => [
+   *        ...
+   *        'static values' => [
+   *          <first static value definition>,
+   *          <second static value definition>,
+   *          ...
+   *        ]
+   *      ],
+   *    ]
+   *  Where a static value defininition depends on the type. The following
+   *  types are supported:
+   *    - Lookup a CVterm ID based on the ID Space and accession:
+   *        [
+   *          'type' => 'cvterm lookup',
+   *          'idspace' => <ID Space>,
+   *          'accession' => <accession>,
+   *          'property_key' => <Key of the property to add to the field values>,
+   *        ]
+   *    - Provide the organism ID set in the setUp() method. For this one
+   *      there must be a $organism_id protected variable.
+   *        [
+   *          'type' => 'organism',
+   *          'property_key' => <Key of the property to add to the field values>,
+   *        ]
+   */
+  public function lookupStaticValuesFromDataProvider(array $field_names, array &$expectations) {
+
+    foreach ($field_names as $field_name) {
+      foreach($expectations[$field_name]['static values'] as $args) {
+        switch ($args['type']) {
+          case 'organism':
+            foreach(array_keys($expectations[$field_name]['values']) as $delta) {
+              $expectations[$field_name]['values'][$delta][ $args['property_key'] ] = $this->organism_id;
+            }
+            break;
+          case 'cvterm lookup':
+            $cvterm_id = $this->getCvtermID($args['idspace'], $args['accession']);
+            foreach(array_keys($expectations[$field_name]['values']) as $delta) {
+              $expectations[$field_name]['values'][$delta][ $args['property_key'] ] = $cvterm_id;
+            }
+            break;
+        }
+      }
+    }
   }
 }
