@@ -259,18 +259,10 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     // Prep: Lookup static values in expectations.
     // This couldn't be done in the data provider as there was no database yet.
     $this->lookupStaticValuesFromDataProvider($field_names, $expectations);
-
-    // 1. Create the property types based on our fields array.
+    // Create the property types based on our fields array.
     $this->createPropertyTypes($field_names, $expectations['total number of properties']);
-
-
-    // 2. Add the types to chado storage.
-    $this->chadoStorage->addTypes($this->propertyTypes);
-    $retrieved_types = $this->chadoStorage->getTypes();
-    $this->assertIsArray($retrieved_types,
-      "Unable to retrieve the PropertyTypes after adding " . implode(' + ', $field_names) . ".");
-    $this->assertCount($expectations['total number of properties'], $retrieved_types,
-      "Did not revieve the expected number of PropertyTypes after adding testpropertyfieldA + testotherfeaturefield.");
+    // Add the types to chado storage.
+    $this->addPropertyTypes2ChadoStorage($field_names, $expectations['total number of properties']);
 
     // 3. Create the property values + format them for testing with *Values methods.
     foreach ($field_names as $field_name) {

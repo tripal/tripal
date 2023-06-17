@@ -380,4 +380,29 @@ trait ChadoStorageTestTrait {
       }
     }
   }
+
+  /**
+   * Add Types to ChadoStorage + check.
+   *
+   * Note: Includes assertions to be sure property types were added as
+   * expected.
+   *
+   * @param string $field_names
+   *   An array of field name keys as defined in the $fields array for which
+   *   propertyTypes fohave already been created for.
+   * @param int $expected_total_properties
+   *   The total number of property types you expect to be created.
+   */
+  public function addPropertyTypes2ChadoStorage($field_names, $expected_total_properties) {
+
+    $this->chadoStorage->addTypes($this->propertyTypes);
+
+    $retrieved_types = $this->chadoStorage->getTypes();
+
+    $field_name_string = implode(' + ', $field_names);
+    $this->assertIsArray($retrieved_types,
+      "Unable to retrieve the PropertyTypes after adding $field_name_string.");
+    $this->assertCount($expected_total_properties, $retrieved_types,
+      "Did not revieve the expected number of PropertyTypes after adding $field_name_string.");
+  }
 }
