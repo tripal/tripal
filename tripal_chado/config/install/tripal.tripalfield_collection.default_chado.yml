@@ -908,6 +908,33 @@ fields:
               region: content
               weight: 10
 
+    -   name: gene_is_obsolete
+        content_type: bio_data_8
+        label: Is Obsolete
+        type: chado_boolean_type
+        description: Designates that this gene is obsolete and no longer available or of interest.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: is_obsolete
+        settings:
+            termIdSpace: local
+            termAccession: is_obsolete
+            fixed_value: local:is_obsolete
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 90
+          form:
+            default:
+              region: content
+              weight: 90
+
     -   name: mrna_name
         content_type: bio_data_9
         label: Name
@@ -1313,7 +1340,7 @@ fields:
         content_type: bio_data_12
         label: Is Obsolete
         type: chado_boolean_type
-        description: Designates if this library is obsolete and no longer available or of interest.
+        description: Designates that this library is obsolete and no longer available or of interest.
         cardinality: 1
         required: true
         storage_settings:

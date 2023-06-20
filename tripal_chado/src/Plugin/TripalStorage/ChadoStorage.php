@@ -1245,6 +1245,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
    *   An array to which any new violations can be added.
    */
   public function validateTypes($values, $chado_table, $record_id, $record, &$violations) {
+dpm($values, 'validateTypes values'); //@@@
 
     $schema = $this->connection->schema();
     $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
@@ -1271,7 +1272,11 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
         }
       }
       else if ($info['type'] == 'boolean') {
-        if (!is_bool($col_val)) {
+$v = is_bool($col_val);
+dpm($col_val, 'ChadoStorage col_val '.($v?'is_boolean':'not_boolean')); //@@@
+        if (!is_bool($col_val)
+and (!preg_match('/^[01]$/', $col_val))  //@@@
+) {
           $bad_types[$col] = 'Boolean';
         }
       }
@@ -1297,7 +1302,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
     if (count($bad_types) > 0) {
       // Documentation for how to create a violation is here
       // https://github.com/symfony/validator/blob/6.1/ConstraintViolation.php
-      $message = 'The item cannot be saved because the following values are of the wrong type.';
+      $message = 'The item cannot be saved because the following values are of the wrong type: ';
       $params = [];
       foreach ($bad_types as $col => $col_type) {
         $message .=  ucfirst($col) . " should be $col_type. " ;

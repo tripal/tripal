@@ -25,9 +25,16 @@ class TripalBooleanTypeWidget extends TripalWidgetBase {
    * {@inheritdoc}
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
+dpm($items[$delta], "TripalBooleanTypeWidget items[$delta]"); //@@@
+$v = $items[$delta]->value;
+dpm($v, 'items[$delta]->value CP1'); //@@@
+$ib = is_bool($v);
+dpm($ib, 'is_bool'); //@@@
+$v = $v ?? false;
+dpm($v, 'items[$delta]->value CP2'); //@@@
     $element['value'] = $element + [
       '#type' => 'checkbox',
-      '#default_value' => $items[$delta]->value ?? 0,
+      '#default_value' => $items[$delta]->value ?? false,
       '#placeholder' => $this->getSetting('placeholder'),
     ];
     return $element;

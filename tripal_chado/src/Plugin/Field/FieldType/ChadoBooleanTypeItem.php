@@ -8,6 +8,7 @@ use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\core\Form\FormStateInterface;
 use Drupal\core\Field\FieldDefinitionInterface;
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
+use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoBoolStoragePropertyType;
 
 /**
@@ -56,7 +57,7 @@ class ChadoBooleanTypeItem extends ChadoFieldItemBase {
     $value_term = $mapping->getColumnTermId($base_table, $base_column);
 
     return [
-      new ChadoBoolStoragePropertyType($entity_type_id, self::$id,'record_id', $record_id_term, [
+      new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'record_id', $record_id_term, [
         'action' => 'store_id',
         'drupal_store' => TRUE,
         'chado_table' => $base_table,

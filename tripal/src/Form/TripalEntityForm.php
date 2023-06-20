@@ -33,6 +33,7 @@ class TripalEntityForm extends ContentEntityForm {
    */
   public function save(array $form, FormStateInterface $form_state) {
     $values = $form_state->getValues();
+dpm($values, "TripalEntityForm save 1 = should be boolean here"); //@@@
     $entity = $this->entity;
     $bundle = $entity->getType();
     $bundle_entity = \Drupal\tripal\Entity\TripalEntityType::load($bundle);
