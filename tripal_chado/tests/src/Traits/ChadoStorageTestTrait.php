@@ -450,11 +450,42 @@ trait ChadoStorageTestTrait {
 
           $this->dataStoreValues[$field_name][$delta][$property_key]['value']->setValue($val);
 
+          // @debug print "SETTING $field_name [ $delta ] $property_key: $val\n";
+
           $retrieved_val = $this->dataStoreValues[$field_name][$delta][$property_key]['value']->getValue();
           $this->assertEquals($val, $retrieved_val,
             "We were unable to retrieve the value for $property_key right after we set it.");
         }
       }
     }
+  }
+
+  /**
+   * DEBUGGING USE ONLY: Prints out a bunch of debugging information.
+   */
+  public function debugChadoStorageTestTraitArrays() {
+
+    print "\n\nDEBUGGING:\n";
+
+    print "\tData Store Values:\n";
+
+    foreach ($this->dataStoreValues as $field_name => $level1) {
+      print "\n\tFEILD: $field_name:\n";
+      foreach ($level1 as $delta => $level2) {
+        print "\t\tDelta: $delta\n";
+        foreach ($level2 as $property_key => $level3) {
+          print "\t\t\tProperty: $property_key\n";
+
+          $val = $level3['value']->getValue();
+          if ($val) {
+            print "\t\t\t\tValue: '$val'.\n";
+          }
+
+        }
+      }
+    }
+
+    print "\n\n";
+
   }
 }

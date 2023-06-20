@@ -217,6 +217,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
     $build = $this->buildChadoRecords($values, TRUE);
     $records = $build['records'];
 
+    // @debug print "Build Records: " . print_r($records, TRUE);
+
     $transaction_chado = $this->connection->startTransaction();
     try {
 

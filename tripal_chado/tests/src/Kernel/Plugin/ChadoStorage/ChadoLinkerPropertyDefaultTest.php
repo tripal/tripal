@@ -191,6 +191,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
   public function provideFieldExpectations() {
     $data = [];
 
+    // 1) Single Property Field + Feature Base
     $data[] = [
       'field_names' => [ 'testpropertyfieldA', 'testotherfeaturefield' ],
       'expections' => [
@@ -246,6 +247,33 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
       ],
     ];
 
+    // 2) Two Property Fields + Feature Base
+    // Same as 1) except with an added property field.
+    /** This fails as expected based on Issue #1398
+    $data[] = $data[0];
+    $data[1]['field_names'][] = 'testpropertyfieldB';
+    $data[1]['expections']['total number of properties'] = 15;
+    $data[1]['expections']['number of fields'] = 3;
+    $data[1]['expections']['testpropertyfieldB'] = [
+      'number of properties' => 6,
+      'number of values' => 1,
+      'static values' => [
+        [
+          'type' => 'cvterm lookup',
+          'idspace' => 'TAXRANK',
+          'accession' => '0000010',
+          'property_key' => 'B_type_id',
+        ],
+      ],
+      'values' => [
+        [
+          'B_value' => 'postgresquelus',
+          'B_rank' => 0,
+        ],
+      ]
+    ];
+    */
+
     return $data;
   }
 
@@ -270,6 +298,8 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     // Set the values in the propertyValue objects.
     $this->setExpectedValues($field_names, $expectations);
 
+    // @debug this->debugChadoStorageTestTraitArrays();
+
     // Here starts the test proper:
     // ------------------------------------------
     // Use ChadoStorage insertValues to create the records.
@@ -287,6 +317,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     $this->assertCount($expectations[$field_name]['number of values'], $records,
       "There should only be a single feature record created by our storage properties.");
     foreach ($records as $record) {
+      $delta = 0;
       $record_expect = $expectations[$field_name]['values'][$delta];
       $this->assertIsObject($record,
         "The returned feature record should be an object.");
@@ -302,32 +333,55 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     // Check that the featureprop records were created in the database as expected.
     // Note: makes some assumptions based on knowing the data provider for
     // better readability of the tests.
-    $field_name = 'testpropertyfieldA';
+
+    /*
+    DEBUGGING: Select all featureprop records and print them to the screen.
+
     $query = $this->chado_connection->select('1:featureprop', 'prop')
       ->fields('prop', ['feature_id', 'type_id', 'value', 'rank'])
       ->execute();
     $records = $query->fetchAll();
-    $this->assertCount($expectations[$field_name]['number of values'], $records,
-      "We did not get the expected number of featureprop record created by our storage properties for $field_name.");
-    foreach ($records as $record) {
+    print_r($records);
+    */
 
-      $this->assertIsObject($record,
-        "The returned featureprop record should be an object.");
+    // First we loop through the fields which would create featureprop records:
+    // Assumption: All fields not named testotherfeaturefield should produce
+    // featureprop records.
+    $featureprop_fields = array_filter($field_names, fn ($m) => $m != 'testotherfeaturefield');
+    foreach ($featureprop_fields as $field_name) {
+      // Next we loop through the expected values to check if they were actually inserted.
+      foreach ($expectations[$field_name]['values'] as $expected_record) {
+        // Note: The expected values in are keyed by property_key not chado column
+        // As such we need to translate that based on prior knowledge.
+        if ($field_name == 'testpropertyfieldA') {
+          $expected = [
+            'feature_id' => $feature_id,
+            'type_id' => $expected_record['A_type_id'],
+            'value' => $expected_record['A_value'],
+            'rank' => $expected_record['A_rank'],
+          ];
+        }
+        else {
+          $expected = [
+            'feature_id' => $feature_id,
+            'type_id' => $expected_record['B_type_id'],
+            'value' => $expected_record['B_value'],
+            'rank' => $expected_record['B_rank'],
+          ];
+        }
 
-      $delta = $record->rank;
-      $this->assertIsNumeric($record->rank, "The rank should be numeric");
-
-      $this->assertArrayHasKey($delta,  $expectations[$field_name]['values'],
-        "There was not a matching expected values array for this delta.");
-      $record_expect = $expectations[$field_name]['values'][$delta];
-
-      $this->assertEquals($record_expect['A_type_id'], $record->type_id,
-        "The featureprop record should have the type we set in our storage properties.");
-      $this->assertEquals($feature_id, $record->feature_id,
-        "The featureprop record should have same feature_id as the one we created.");
-      $this->assertEquals($record_expect['A_value'], $record->value,
-        "The value should match the one we set for that rank ($delta)");
+        // Now we use the unique key to select this particular value in order to
+        // ensure it is here and there is one one.
+        $query = $this->chado_connection->select('1:featureprop', 'prop')
+          ->fields('prop', ['feature_id', 'type_id', 'value', 'rank'])
+          ->condition('feature_id', $expected['feature_id'], '=')
+          ->condition('type_id', $expected['type_id'])
+          ->condition('rank', $expected['rank'])
+          ->execute();
+        $records = $query->fetchAll();
+        $this->assertCount(1, $records, "We expected to get exactly one record for:" . print_r($expected, TRUE));
+        $this->assertEquals($expected['value'], $records[0]->value, "We did not get the value we expected using the unique key." . print_r($expected, TRUE));
+      }
     }
-
   }
 }
