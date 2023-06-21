@@ -7,7 +7,7 @@ fields:
         content_type: bio_data_1
         label: Abbreviation
         type: chado_string_type
-        description: A shortened name (or abbreviation) for the organism (e.g. O.sativa).
+        description: A shortened name (or abbreviation) for the organism (e.g. O. sativa).
         cardinality: 1
         required: false
         storage_settings:
@@ -61,7 +61,7 @@ fields:
         content_type: bio_data_1
         label: Species
         type: chado_string_type
-        description: "The species name of the organism"
+        description: "The species name of the organism."
         cardinality: 1
         required: true
         storage_settings:
@@ -88,7 +88,7 @@ fields:
         content_type: bio_data_1
         label: Common Name
         type: chado_string_type
-        description: "The common name for the organism"
+        description: "The common name for the organism."
         cardinality: 1
         required: false
         storage_settings:
