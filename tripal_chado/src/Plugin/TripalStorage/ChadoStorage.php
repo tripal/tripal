@@ -1122,14 +1122,22 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
           if (array_key_exists($col, $record['fields'])) {
             $col_val = $record['fields'][$col];
           }
-          // If there is not a NOT NULL constraint on this column, then
-          // we need to handle empty values specially, since they might
-          // be stored as either NULL or as an empty string in the
-          // database table. Create a condition that checks for both.
+          // If there is not a NOT NULL constraint on this column,
+          // and it is of a string type, then we need to handle
+          // empty values specially, since they might be stored
+          // as either NULL or as an empty string in the database
+          // table. Create a condition that checks for both. For
+          // other types, e.g. integer, just check for null.
           if ($table_def['fields'][$col]['not null'] == FALSE and !$col_val) {
-            $query->condition($query->orConditionGroup()
-              ->condition($col, '', '=')
-              ->isNull($col));
+            if (in_array($table_def['fields'][$col]['type'],
+                ['character', 'character varying', 'text'])) {
+              $query->condition($query->orConditionGroup()
+                ->condition($col, '', '=')
+                ->isNull($col));
+            }
+            else {
+              $query->isNull($col);
+            }
           }
           else {
             $query->condition($col, $col_val);
