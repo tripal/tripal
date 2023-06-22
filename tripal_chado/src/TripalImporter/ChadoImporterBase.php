@@ -18,6 +18,13 @@ abstract class ChadoImporterBase extends TripalImporterBase {
   protected $chado_schema_main;
 
   /**
+   * An instance of the Drupal messenger.
+   *
+   * @var object \Drupal\Core\Messenger\Messenger
+   */
+  protected $messenger = NULL;
+
+  /**
    * {@inheritdoc}
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition) {

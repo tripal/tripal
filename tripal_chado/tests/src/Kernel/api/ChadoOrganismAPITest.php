@@ -1,28 +1,33 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado;
+namespace Drupal\Tests\tripal_chado\Kernel\Api;
 
-use Drupal\Core\Url;
-use Drupal\Tests\tripal_chado\Functional\ChadoTestBrowserBase;
-use Drupal\Core\Database\Database;
-use Drupal\tripal_chado\api\ChadoSchema;
+use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
+
 
 /**
+ * Tests for API functions dealing with organisms.
  * Testing the tripal_chado/api/tripal_chado.organism.api.php functions.
  *
  * @group Tripal
  * @group Tripal Chado
  * @group Tripal API
+ * @group Tripal Organism
  */
-class ChadoOrganismAPITest extends ChadoTestBrowserBase {
-
-  protected $defaultTheme = 'stable';
+class ChadoOrganismAPITest extends ChadoTestKernelBase {
 
   /**
    * Modules to enable.
    * @var array
    */
-  protected static $modules = ['tripal', 'tripal_chado'];
+  protected static $modules = ['tripal', 'tripal_biodb', 'tripal_chado'];
+
+  /**
+   * The test chado connection. It is also set in the container.
+   *
+   * @var ChadoConnection
+   */
+  protected $chado_connection;
 
   /**
    * Schema to do testing out of.
@@ -32,25 +37,26 @@ class ChadoOrganismAPITest extends ChadoTestBrowserBase {
 
   /**
    * Tests the following organism API functions:
-   *   chado_get_organism()
-   *   chado_get_organism_scientific_name()
-   *   chado_get_organism_select_options()
-   *   chado_abbreviate_infraspecific_rank()
-   *   chado_unabbreviate_infraspecific_rank()
-   *   @to-do: The following API functions do not have tests yet:
-   *   chado_get_organism_image_url($organism)
-   *   chado_autocomplete_organism($text)
+   * @cover ::chado_get_organism
+   * @cover ::chado_get_organism_scientific_name
+   * @cover ::chado_get_organism_id_from_scientific_name
+   * @cover ::chado_get_organism_select_options
+   * @cover ::chado_abbreviate_infraspecific_rank
+   * @cover ::chado_unabbreviate_infraspecific_rank
+   * to-do: The following API functions do not have tests yet:
+   *        chado_get_organism_image_url
+   *        chado_autocomplete_organism
    *
    * @group tripal-chado
    * @group chado-organism
    */
-  public function test_chado_organism_api_functions() {
+  public function testChadoOrganismAPIFunctions() {
 
     putenv('TRIPAL_SUPPRESS_ERRORS=TRUE');
 
-    // Create a Test Chado schema which contains the expected cvterms added during the prepare step.
-    $connection = $this->createTestSchema(ChadoTestBrowserBase::PREPARE_TEST_CHADO);
-    $this->schemaName = $connection->getSchemaName();
+    // Create a new test schema for us to use, and retrieve its name.
+    $this->chado_connection = $this->createTestSchema(ChadoTestKernelBase::PREPARE_TEST_CHADO);
+    $this->schemaName = $this->chado_connection->getSchemaName();
 
     // Lookup cvterm_id for 'subspecies'
     $cvterm = chado_get_cvterm(['name' => 'subspecies'], [], $this->schemaName);
@@ -79,7 +85,7 @@ class ChadoOrganismAPITest extends ChadoTestBrowserBase {
     $organism_ids[1] = $dbq['organism_id'];
 
     // Test invalid $identifiers ($identifiers must be an array) = Should fail, and in fact causes an exception
-    $identifiers = 1;  // not an array
+    $identifiers = 'not-an-array';
     try {
       $org = chado_get_organism($identifiers, []);
     }
@@ -102,7 +108,15 @@ class ChadoOrganismAPITest extends ChadoTestBrowserBase {
     $identifiers = ['organism_id' => $organism_ids[0]];
     $org = chado_get_organism($identifiers, [], $this->schemaName);
     $this->assertIsObject($org, 'Did not return the organism with organism_id='
-                          . $organism_ids[0] . ' using chado_get_organism()');
+                          . $organism_ids[0] . ' using chado_get_organism() and schema '
+                          . $this->schemaName . ' is specified');
+
+    // Get organism from organism_id without specifying schema = Should succeed
+    // This is testing the default schema lookup in the API functions.
+    $identifiers = ['organism_id' => $organism_ids[0]];
+    $org = chado_get_organism($identifiers, []);
+    $this->assertIsObject($org, 'Did not return the organism with organism_id='
+                          . $organism_ids[0] . ' using chado_get_organism() and using default schema');
 
     // Test ambiguous $identifiers = Should fail
     $identifiers = ['genus' => 'Tripalus', 'species' => $species];  // subspecies not specified, thus ambiguous
@@ -115,20 +129,43 @@ class ChadoOrganismAPITest extends ChadoTestBrowserBase {
     $this->assertIsObject($org, 'Did not return an organism from unambiguous $identifiers passed to chado_get_organism()');
 
     // Test getting scientific name = Should succeed
-    $name = chado_get_organism_scientific_name($org, $this->schemaName);
     $expect = 'Tripalus ' . $species . ' subsp. selvaticus';
+    $name = chado_get_organism_scientific_name($org, $this->schemaName);
     $this->assertEquals($name, $expect, 'Did not return the expected scientific name ' . $expect
                         . ' instead returned ' . $name . ' using chado_get_organism_scientific_name()');
 
-    // Test organism select options with default parameters, and test that an array is returned = should succeed
+    // Get organism object from scientific name = Should succeed
+    $identifiers = ['scientific_name' => $expect];
+    $org = chado_get_organism($identifiers, [], $this->schemaName);
+    $this->assertIsObject($org, 'Did not return the organism with scientific_name '
+                          . $name . ' using chado_get_organism()');
+
+    // Get organism_id from scientific name = Should succeed
+    $found_ids = chado_get_organism_id_from_scientific_name($name, [], $this->schemaName);
+    $this->assertIsArray($found_ids, 'Did not return an array from chado_get_organism_id_from_scientific_name()');
+    $this->assertEquals($found_ids[0], $organism_ids[1], 'Did not return the expected organism_id from scientific name '
+                        . $name . ' using chado_get_organism_id_from_scientific_name()');
+    // Test get organism_id from common name = Should succeed
+    $found_ids = chado_get_organism_id_from_scientific_name($name, ['check_common_name' => 1], $this->schemaName);
+    $this->assertIsArray($found_ids, 'Did not return an array from chado_get_organism_id_from_scientific_name()');
+    $this->assertEquals($found_ids[0], $organism_ids[1], 'Did not return the expected organism_id from common name '
+                        . $name . ' using chado_get_organism_id_from_scientific_name()');
+    // Test get organism_id from non-existing name = Should fail for all options
+    $name = 'Imaginarium nomen';
+    $found_ids = chado_get_organism_id_from_scientific_name($name, ['check_common_name' => 1, 'check_abbreviation' => 1], $this->schemaName);
+    $this->assertIsArray($found_ids, 'Did not return an array from chado_get_organism_id_from_scientific_name()');
+    $this->assertEquals(count($found_ids), 0, 'Returned an organism_id for a non-existing name '
+                        . $name . ' using chado_get_organism_id_from_scientific_name()');
+
+    // Test organism select options with default parameters, and test that an array is returned = Should succeed
     $select_options = chado_get_organism_select_options(FALSE, FALSE, $this->schemaName);
     $this->assertIsArray($select_options, 'Did not return an array from chado_get_organism_select_options()');
 
-    // Test that the array contains at least the two test organisms = should succeed
+    // Test that the array contains at least the two test organisms = Should succeed
     $count = count($select_options);
     $this->assertGreaterThanOrEqual(2, $count, 'Did not return at least two organisms from chado_get_organism_select_options()');
 
-    // Test that both of the test organisms are in the returned array = should succeed
+    // Test that both of the test organisms are in the returned array = Should succeed
     $expect = 'Tripalus ' . $species . ' subsp. sativus';
     $this->assertArrayHasKey($organism_ids[0], $select_options, 'Returned array does not contain the expected organism id '
                              . $organism_ids[0] . ' using chado_get_organism_select_options()');
@@ -176,15 +213,15 @@ class ChadoOrganismAPITest extends ChadoTestBrowserBase {
     // Test abbreviation of infraspecific rank
     foreach ($expected_abbreviated as $full => $abbreviation) {
       $result = chado_abbreviate_infraspecific_rank($full);
-      $this->assertEqual($result, $abbreviation, 'Did not properly abbreviate ' . $full
-                         . ' returned ' . $result . ' using chado_abbreviate_infraspecific_rank()');
+      $this->assertEquals($result, $abbreviation, 'Did not properly abbreviate ' . $full
+                          . ' returned ' . $result . ' using chado_abbreviate_infraspecific_rank()');
     }
 
     // Test unabbreviation of infraspecific rank
     foreach ($expected_unabbreviated as $abbreviation => $full) {
       $result = chado_unabbreviate_infraspecific_rank($full);
-      $this->assertEqual($result, $full, 'Did not properly unabbreviate ' . $abbreviation
-                         . ' returned ' . $result . ' using chado_unabbreviate_infraspecific_rank()');
+      $this->assertEquals($result, $full, 'Did not properly unabbreviate ' . $abbreviation
+                          . ' returned ' . $result . ' using chado_unabbreviate_infraspecific_rank()');
     }
 
     putenv('TRIPAL_SUPPRESS_ERRORS=FALSE');

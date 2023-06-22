@@ -22,9 +22,6 @@ function tripal_install() {
   $reserved_schema_patterns[$drupal_schema] = 'Drupal installation';
   $config->set('reserved_schema_patterns', $reserved_schema_patterns)->save();
 
-  // Add the Tripal DBX Cloner functions to the Drupal schema.
-  tripal_install_cloner();
-
   // Add the Data Search Menu for Tripal specific searches.
   $storage = Drupal::entityTypeManager()->getStorage('menu');
   $menu = $storage->load('data_search');
@@ -72,9 +69,6 @@ function tripal_uninstall() {
   $config = \Drupal::service('config.factory')
     ->getEditable('tripaldbx.settings');
   $config->delete();
-
-  // Remove the Tripal DBX Cloner functions from the Drupal schema.
-  tripal_uninstall_cloner();
 
 }
 
@@ -124,6 +118,36 @@ function tripal_uninstall() {
 //
 //  tripal_add_variables();
 //}
+
+/**
+ * Implements hook_requirements().
+ */
+function tripal_requirements($phase) {
+  $checks = [];
+  // Make sure the current install does not use per-table prefixes.
+  $connection_options = \Drupal::database()->getConnectionOptions();
+  if (!empty($connection_options['extra_prefix'])
+      || ((!empty($connection_options['prefix']))
+          && (is_array($connection_options['prefix']))
+          && (1 < count($connection_options['prefix']))
+      )
+  ) {
+    $checks['tripal_no_per_table_prefix'] = [
+      'title' => t('Database table prefixes'),
+      'description' => t('Current Tripal version is not compatible with per-table prefixing. You may edit your site settings.php and remove per-table prefixing and just set $database array key "prefix" to a string value (which can be empty). Note: you may ignore this warning if you only use this module on database connections without per-table prefixes.'),
+      'severity' => REQUIREMENT_WARNING,
+    ];
+  }
+  else {
+    $checks['tripal_no_per_table_prefix'] = [
+      'title' => t('Database table prefixes'),
+      'description' => t('Current Tripal version is not compatible with per-table prefixing. Your settings are not showing the use of per-table prefixing.'),
+      'severity' => REQUIREMENT_OK,
+    ];
+  }
+
+  return $checks;
+}
 
 /**
  * Implementation of hook_schema().
@@ -871,63 +895,15 @@ function tripal_update_8401() {
 }
 
 /**
- * Adds schema cloning functionality.
+ * Implements hook_update_N().
+ *
+ * Removes PostgreSQL schema cloning functions.
  */
-function tripal_install_cloner() {
-  $logger = \Drupal::service('tripal.logger');
-  $db = \Drupal::database();
-
-  $sql_cloner_path =
-    \Drupal::service('extension.path.resolver')->getPath('module', 'tripal')
-    . '/src/TripalDBX/pg-clone-schema/clone_schema.sql';
-
-  // Replaces "public." in SQL if it is not the default Drupal schema.
-  $tripaldbx = \Drupal::service('tripal.dbx');
-  $drupal_schema = $tripaldbx->getDrupalSchemaName();
-  if (empty($drupal_schema) || ('public' == $drupal_schema)) {
-    $replacements = [];
-    $drupal_schema = 'public';
-  }
-  else {
-    $replacements = [
-      'search' => [
-        '/public\\.tripal_get_table_ddl/',
-        '/public\\.tripal_clone_schema/',
-      ],
-      'replace' => [
-        $drupal_schema . '.tripal_get_table_ddl',
-        $drupal_schema . '.tripal_clone_schema',
-      ],
-    ];
-  }
-
-  $tripaldbx->runSqlFile($sql_cloner_path, $replacements, $db);
-
-  // Check functions were installed.
-  $function_names = ['tripal_get_table_ddl', 'tripal_clone_schema', ];
-  $sql_query = "
-    SELECT COUNT(1) AS \"funcs\"
-    FROM
-      pg_proc p
-      JOIN pg_namespace n ON (
-        n.oid = p.pronamespace
-        AND n.nspname = :schema
-      )
-    WHERE
-      p.proname IN (:function_names[])
-  ";
-  $args = [
-    ':function_names[]' => $function_names,
-    ':schema' => $drupal_schema,
-  ];
-  $result = $db->query($sql_query, $args)->fetch();
-
-  if (!$result || ($result->funcs < 2)) {
-    $message =
-      "Failed to install Tripal SQL cloner functions ($sql_cloner_path).";
-    $logger->error($message);
-    throw new \Exception($message);
-  }
+function tripal_update_8402() {
+  // Remove the Tripal DBX Cloner functions from the Drupal schema.
+  tripal_uninstall_cloner();
+  $messenger = \Drupal::messenger();
+  $messenger->addMessage('Removed PostgreSQL schema cloning functions');
 }
 
 /**

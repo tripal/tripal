@@ -566,7 +566,7 @@ class TaxonomyImporter extends ChadoImporterBase {
         $name = $child;
         print_r($child);
         print_r("\n");
-        $node_rank = (string) $child->Rank;
+        // $node_rank = (string) $child->Rank;
         $node = [
           'name' => $name,
           'depth' => $i,
