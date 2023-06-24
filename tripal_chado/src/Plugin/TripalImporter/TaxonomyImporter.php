@@ -469,11 +469,12 @@ class TaxonomyImporter extends ChadoImporterBase {
     // Get the "rank" cvterm. It requires that the TAXRANK vocabulary is loaded.
     $rank_cvterm = chado_get_cvterm([
       'name' => 'rank',
-      'cv_id' => ['name' => 'local'], // TRIPAL 3
+      // 'cv_id' => ['name' => 'local'], // TRIPAL 3
+      'cv_id' => ['name' => 'organism_property'], 
     ], [], $this->chado_schema_main);
-    // if (!isset($rank_cvterm)) {
-    //   throw new \Exception("Could not find TAXRANK vocabulary and thus rank cvterm. Please load the vocabulary.");
-    // }
+    if (!isset($rank_cvterm)) {
+      throw new \Exception("Could not find TAXRANK vocabulary and thus rank cvterm. Please load the vocabulary.");
+    }
 
     // The taxonomic tree must have a root, so create that first.
     $tree = [
@@ -891,7 +892,8 @@ class TaxonomyImporter extends ChadoImporterBase {
     // Get the "rank" cvterm. It requires that the TAXRANK vocabulary is loaded.
     $rank_cvterm = chado_get_cvterm([
       'name' => 'rank',
-      'cv_id' => ['name' => 'local'],
+      // 'cv_id' => ['name' => 'local'], // TRIPAL 3
+      'cv_id' => ['name' => 'organism_property'], 
     ], [], $this->chado_schema_main);
 
     // Get the details for this taxonomy.

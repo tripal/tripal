@@ -54,8 +54,9 @@
 function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $schema_name = 'chado') {
 
   if ($val_type != 'insert' and $val_type != 'update') {
-    tripal_report_error('tripal_phylogeny', TRIPAL_ERROR,
-                        "The $val_type argument must be either 'update or 'insert'.");
+    // tripal_report_error('tripal_phylogeny', TRIPAL_ERROR,
+    //                     "The $val_type argument must be either 'update or 'insert'.");
+    \Drupal::service('tripal.logger')->error("The $val_type argument must be either 'update or 'insert'.");
   }
 
   // Set Defaults.
@@ -335,7 +336,8 @@ function chado_insert_phylotree(&$options, &$errors, &$warnings, $schema_name = 
   $success = chado_validate_phylotree('insert', $options, $errors, $warnings, $schema_name);
   if (!$success) {
     foreach ($errors as $field => $message) {
-      tripal_report_error($options['message_type'], TRIPAL_ERROR, $message, [], $options['message_opts']);
+      // tripal_report_error($options['message_type'], TRIPAL_ERROR, $message, [], $options['message_opts']);
+      \Drupal::service('tripal.logger')->error($message);
     }
     return FALSE;
   }
@@ -352,15 +354,17 @@ function chado_insert_phylotree(&$options, &$errors, &$warnings, $schema_name = 
   $phylotree = chado_insert_record('phylotree', $values, [], $schema_name);
   if (!$phylotree) {
     drupal_set_message(t('Unable to add phylotree.'), 'warning');
-    tripal_report_error($options['message_type'], TRIPAL_WARNING,
-      'Insert phylotree: Unable to create phylotree where values: %values',
-      ['%values' => print_r($values, TRUE)], $options['message_opts']);
+    // tripal_report_error($options['message_type'], TRIPAL_WARNING,
+    //   'Insert phylotree: Unable to create phylotree where values: %values',
+    //   ['%values' => print_r($values, TRUE)], $options['message_opts']);
+    \Drupal::service('tripal.logger')->warning('Insert phylotree: Unable to create phylotree where values:' . print_r($values, TRUE));  
     return FALSE;
   }
   $phylotree_id = $phylotree['phylotree_id'];
-  tripal_report_error($options['message_type'], TRIPAL_INFO,
-    'Insert phylotree: Created phylotree with phylotree_id: %phylotree_id',
-    ['%phylotree_id' => $phylotree_id], $options['message_opts']);
+  // tripal_report_error($options['message_type'], TRIPAL_INFO,
+  //   'Insert phylotree: Created phylotree with phylotree_id: %phylotree_id',
+  //   ['%phylotree_id' => $phylotree_id], $options['message_opts']);
+  \Drupal::service('tripal.logger')->info("Insert phylotree: Created phylotree with phylotree_id: $phylotree_id");
   $options['phylotree_id'] = $phylotree_id;
 
   // If the tree_file is numeric then it is a Drupal managed file and
@@ -475,7 +479,8 @@ function chado_update_phylotree($phylotree_id, &$options, $schema_name = 'chado'
   $success = chado_validate_phylotree('update', $options, $errors, $warnings, $schema_name);
   if (!$success) {
     foreach ($errors as $field => $message) {
-      tripal_report_error($options['message_type'], TRIPAL_ERROR, $message, [], $options['message_opts']);
+      // tripal_report_error($options['message_type'], TRIPAL_ERROR, $message, [], $options['message_opts']);
+      \Drupal::service('tripal.logger')->error($message);
     }
     return FALSE;
   }
@@ -503,10 +508,11 @@ function chado_update_phylotree($phylotree_id, &$options, $schema_name = 'chado'
   $phylotree = chado_update_record('phylotree', $match, $values, ['return_record' => TRUE], $schema_name);
   if (!$phylotree) {
     drupal_set_message(t('Unable to update phylotree.'), 'warning');
-    tripal_report_error('tripal_phylogeny', TRIPAL_WARNING,
-      'Update phylotree: Unable to update phylotree where values: %values',
-      ['%values' => print_r($values, TRUE)], $options['message_opts']
-    );
+    // tripal_report_error('tripal_phylogeny', TRIPAL_WARNING,
+    //   'Update phylotree: Unable to update phylotree where values: %values',
+    //   ['%values' => print_r($values, TRUE)], $options['message_opts']
+    // );
+    \Drupal::service('tripal.logger')->warning('Update phylotree: Unable to update phylotree where values: ' . print_r($values, TRUE));
   }
 
   // If we have a tree file, then import the tree.
@@ -592,8 +598,9 @@ function chado_delete_phylotree($phylotree_id, $schema_name = 'chado') {
   // If we don't have a phylotree id for this node then this isn't a node of
   // type chado_phylotree or the entry in the chado_phylotree table was lost.
   if (!$phylotree_id) {
-    tripal_report_error('tripal_phylogeny', TRIPAL_ERROR,
-      'Please provide a phylotree_id to delete a tree.', [], []);
+    // tripal_report_error('tripal_phylogeny', TRIPAL_ERROR,
+    //   'Please provide a phylotree_id to delete a tree.', [], []);
+    \Drupal::service('tripal.logger')->error('Please provide a phylotree_id to delete a tree');
     return FALSE;
   }
 
@@ -761,31 +768,38 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
               $feature = chado_select_record('feature', $sel_columns, $sel_values, NULL, $schema_name);
               if (count($feature) > 1) {
                 // Found multiple features, cannot make an association.
-                tripal_report_error($options['message_type'], TRIPAL_WARNING,
-                  'Import phylotree: Warning, unable to associate to a feature, more than one feature matches the %matchtype: %value',
-                  ['%matchtype' => $options['match'], '%value' => $sel_values[$options['match']] ],
-                  $options['message_opts']
-                );
+                // tripal_report_error($options['message_type'], TRIPAL_WARNING,
+                //   'Import phylotree: Warning, unable to associate to a feature, more than one feature matches the %matchtype: %value',
+                //   ['%matchtype' => $options['match'], '%value' => $sel_values[$options['match']] ],
+                //   $options['message_opts']
+                // );
+                \Drupal::service('tripal.logger')->warning('Import phylotree: Warning, unable to associate to a feature, 
+                  more than one feature matches the ' . $options['match'] .  ': ' . $sel_values[$options['match']]);
               }
               else {
                 if (count($feature) == 1) {
                   $values['feature_id'] = $feature[0]->feature_id;
                   $n_associated++;
-                  tripal_report_error($options['message_type'], TRIPAL_INFO,
-                    'Import phylotree: Associated %value by %matchtype to feature_id: %fid',
-                    ['%matchtype' => $options['match'], '%value' => $sel_values[$options['match']],
-                     '%fid' => $values['feature_id'] ],
-                    $options['message_opts']
-                  );
+                  // tripal_report_error($options['message_type'], TRIPAL_INFO,
+                  //   'Import phylotree: Associated %value by %matchtype to feature_id: %fid',
+                  //   ['%matchtype' => $options['match'], '%value' => $sel_values[$options['match']],
+                  //    '%fid' => $values['feature_id'] ],
+                  //   $options['message_opts']
+                  // );
+                  \Drupal::service('tripal.logger')->info('Import phylotree: Associated ' . 
+                    $sel_values[$options['match']] . ' by ' . $options['match'] . 
+                    ' to feature_id: ' . $values['feature_id']);
                 }
                 else {
                   // Could not find a feature that matches the name or uniquename
                   $n_not_associated++;
-                  tripal_report_error($options['message_type'], TRIPAL_WARNING,
-                    'Import phylotree: Warning, unable to associate to a feature that matches the %matchtype: %value',
-                    ['%matchtype' => $options['match'], '%value' => $sel_values[$options['match']] ],
-                    $options['message_opts']
-                  );
+                  // tripal_report_error($options['message_type'], TRIPAL_WARNING,
+                  //   'Import phylotree: Warning, unable to associate to a feature that matches the %matchtype: %value',
+                  //   ['%matchtype' => $options['match'], '%value' => $sel_values[$options['match']] ],
+                  //   $options['message_opts']
+                  // );
+                  \Drupal::service('tripal.logger')->warning('Import phylotree: Warning, unable to associate to a 
+                    feature that matches the ' . $options['match'] . ': ' . $sel_values[$options['match']]);
                 }
               }
             }
@@ -800,19 +814,23 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
               if ($organism_id) {
                 $tree['organism_id'] = $organism_id;
                 $n_associated++;
-                tripal_report_error($options['message_type'], TRIPAL_INFO,
-                  'Import phylotree: Associated %name to organism_id: %organism_id',
-                  ['%name' => $tree['name'], '%organism_id' => $organism_id],
-                  $options['message_opts']
-                );
+                // tripal_report_error($options['message_type'], TRIPAL_INFO,
+                //   'Import phylotree: Associated %name to organism_id: %organism_id',
+                //   ['%name' => $tree['name'], '%organism_id' => $organism_id],
+                //   $options['message_opts']
+                // );
+                \Drupal::service('tripal.logger')->info('Import phylotree: Associated ' . $tree['name'] . 
+                  ' to organism_id: ' . $organism_id);
               }
               else {
                 $n_not_associated++;
-                tripal_report_error($options['message_type'], TRIPAL_WARNING,
-                  'Import phylotree: Warning, unable to associate to an organism that matches %name',
-                  ['%name' => $tree['name']],
-                  $options['message_opts']
-                );
+                // tripal_report_error($options['message_type'], TRIPAL_WARNING,
+                //   'Import phylotree: Warning, unable to associate to an organism that matches %name',
+                //   ['%name' => $tree['name']],
+                //   $options['message_opts']
+                // );
+                \Drupal::service('tripal.logger')->warning('Import phylotree: Warning, 
+                  unable to associate to an organism that matches ' . $tree['name']);
               }
             }
           }
@@ -822,8 +840,6 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
 
     // Insert the new node and then add its assigned phylonode_id to the node.
     print_r("Phylonode chado insert\n");
-    print_r($values);
-    print_r("\n");
     $phylonode = chado_insert_record('phylonode', $values, [], $schema_name);
     $tree['phylonode_id'] = $phylonode['phylonode_id'];
 
@@ -834,9 +850,6 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
         'phylonode_id' => $tree['phylonode_id'],
         'organism_id' => $tree['organism_id'],
       ];
-      print_r("[1] Phylonode organism chado insert\n");
-      print_r($values);
-      print_r("\n");
       $pylonode_organism = chado_insert_record('phylonode_organism', $values, [], $schema_name);
     }
 
@@ -849,9 +862,9 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
           'value' => $value,
         ];
         print_r("[2] Phylonode organism chado insert\n");
-        print_r($tree['properties']);
-        print_r($values);
-        print_r("\n");
+        // print_r($tree['properties']);
+        // print_r($values);
+        // print_r("\n");
         $pylonode_organism = chado_insert_record('phylonodeprop', $values, [], $schema_name);
       }
     }
@@ -863,12 +876,15 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
   }
   // Report summary status of association of leaf nodes at end of recursion.
   if (!$parent) {
-    tripal_report_error($options['message_type'], TRIPAL_INFO,
-      'Import phylotree summary: %n_associated nodes were successfully associated to '
-      . 'content, %n_not_associated nodes could not be associated',
-      ['%n_associated' => $n_associated, '%n_not_associated' => $n_not_associated],
-      $options['message_opts']
-      );
+    // tripal_report_error($options['message_type'], TRIPAL_INFO,
+    //   'Import phylotree summary: %n_associated nodes were successfully associated to '
+    //   . 'content, %n_not_associated nodes could not be associated',
+    //   ['%n_associated' => $n_associated, '%n_not_associated' => $n_not_associated],
+    //   $options['message_opts']
+    //   );
+    \Drupal::service('tripal.logger')->info('Import phylotree summary: ' . $n_associated . 
+      ' were successfully associated to' .
+      ' content, ' . $n_not_associated . 'nodes could not be associated');
   }
 }
 
@@ -918,25 +934,37 @@ function chado_phylogeny_get_node_types_vocab($options, $schema_name = 'chado') 
   ];
   $leaf = chado_generate_var('cvterm', $values, [], $schema_name);
   if (!$leaf) {
-    tripal_report_error($options['message_type'], TRIPAL_ERROR,
+    // tripal_report_error($options['message_type'], TRIPAL_ERROR,
+    //   "Could not find the leaf vocabulary term: 'phylo_leaf'. It should " .
+    //   "already be present as part of the tripal_phylogeny vocabulary.", [], $options['message_opts']);
+    \Drupal::service('tripal.logger')->error(
       "Could not find the leaf vocabulary term: 'phylo_leaf'. It should " .
-      "already be present as part of the tripal_phylogeny vocabulary.", [], $options['message_opts']);
+      "already be present as part of the tripal_phylogeny vocabulary."
+    );
     return FALSE;
   }
   $values['name'] = 'phylo_interior';
   $internal = chado_generate_var('cvterm', $values, [], $schema_name);
   if (!$internal) {
-    tripal_report_error($options['message_type'], TRIPAL_ERROR,
+    // tripal_report_error($options['message_type'], TRIPAL_ERROR,
+    //   "Could not find the leaf vocabulary term: 'phylo_interior'. It should " .
+    //   "already be present as part of the tripal_phylogeny vocabulary.", [], $options['message_opts']);
+    \Drupal::service('tripal.logger')->error(
       "Could not find the leaf vocabulary term: 'phylo_interior'. It should " .
-      "already be present as part of the tripal_phylogeny vocabulary.", [], $options['message_opts']);
+      "already be present as part of the tripal_phylogeny vocabulary."      
+    );
     return FALSE;
   }
   $values['name'] = 'phylo_root';
   $root = chado_generate_var('cvterm', $values, [], $schema_name);
   if (!$root) {
-    tripal_report_error($options['message_type'], TRIPAL_ERROR,
+    // tripal_report_error($options['message_type'], TRIPAL_ERROR,
+    //   "Could not find the leaf vocabulary term: 'phylo_root'. It should " .
+    //   "already be present as part of the tripal_phylogeny vocabulary.", [], $options['message_opts']);
+    \Drupal::service('tripal.logger')->error(
       "Could not find the leaf vocabulary term: 'phylo_root'. It should " .
-      "already be present as part of the tripal_phylogeny vocabulary.", [], $options['message_opts']);
+      "already be present as part of the tripal_phylogeny vocabulary."
+    );
     return FALSE;
   }
   $vocab = [
@@ -1011,8 +1039,11 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $j
   // required fields for creating a tree.
   if (!array_key_exists('phylotree_id', $options)) {
     if (!array_key_exists('name', $options)) {
-      tripal_report_error($options['message_type'], TRIPAL_ERROR,
-        'The phylotree_id is required for importing the tree.', [], $options['message_opts']);
+      // tripal_report_error($options['message_type'], TRIPAL_ERROR,
+      //   'The phylotree_id is required for importing the tree.', [], $options['message_opts']);
+      \Drupal::service('tripal.logger')->error(
+        'The phylotree_id is required for importing the tree.'
+      );     
       return FALSE;
     }
   }
@@ -1022,9 +1053,12 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $j
   $phylotree = chado_generate_var('phylotree', $values, [], $schema_name);
 
   if (!$phylotree) {
-    tripal_report_error($options['message_type'], TRIPAL_ERROR,
-      'Could not find the phylotree using the ID provided: %phylotree_id.',
-      ['%phylotree_id' => $options['phylotree_id']], $options['message_opts']);
+    // tripal_report_error($options['message_type'], TRIPAL_ERROR,
+    //   'Could not find the phylotree using the ID provided: %phylotree_id.',
+    //   ['%phylotree_id' => $options['phylotree_id']], $options['message_opts']);
+    \Drupal::service('tripal.logger')->error(
+      'Could not find the phylotree using the ID provided: ' . $options['phylotree_id'] . '.'
+    );
     return FALSE;
   }
 
