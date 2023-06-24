@@ -311,22 +311,23 @@ class TaxonomyImporter extends ChadoImporterBase {
         AND cv_id = (SELECT cv_id FROM {1:cv} WHERE name = 'organism_property'))
         AND OP.organism_id = O.organism_id) AS lineage
     ";
+    // We have standardized Tripal 4 to use 1.3, we don't need to check if it's higher than 1.2
     // if (chado_get_version(FALSE, FALSE, $this->chado_schema_main) > 1.2) {
-    //   $sql = "
-    //     SELECT O.*, CVT.name AS type
-    //     $sql_common
-    //     FROM {1:organism} O
-    //       LEFT JOIN {1:cvterm} CVT ON CVT.cvterm_id = O.type_id
-    //     ORDER BY O.genus, O.species, CVT.name, O.infraspecific_name
-    //   ";
-    // }
-    // else {
       $sql = "
-        SELECT O.*, '' AS type
+        SELECT O.*, CVT.name AS type
         $sql_common
         FROM {1:organism} O
-        ORDER BY O.genus, O.species
+          LEFT JOIN {1:cvterm} CVT ON CVT.cvterm_id = O.type_id
+        ORDER BY O.genus, O.species, CVT.name, O.infraspecific_name
       ";
+    // }
+    // else {
+      // $sql = "
+      //   SELECT O.*, '' AS type
+      //   $sql_common
+      //   FROM {1:organism} O
+      //   ORDER BY O.genus, O.species
+      // ";
     // }
     $results = $chado->query($sql);
     while ($item = $results->fetchObject()) {
@@ -406,8 +407,6 @@ class TaxonomyImporter extends ChadoImporterBase {
     $options['leaf_type'] = 'taxonomy';
 
     // Now import the tree.
-    // TODO [RISH] - Discuss with Stephen the tripal_chado.phylotree.api.php (notes in clickup - May 2023)
-    print_r("function chado_phylogeny_import_tree called\n");
     chado_phylogeny_import_tree($this->tree, $this->phylotree, $options, [], NULL, $this->chado_schema_main);
   }
 
@@ -565,9 +564,7 @@ class TaxonomyImporter extends ChadoImporterBase {
           $phylonodeprop = chado_select_record('phylonodeprop', $columns, $values, NULL, $this->chado_schema_main);
         }
         $name = $child;
-        print_r($child);
-        print_r("\n");
-        // $node_rank = (string) $child->Rank;
+        // $node_rank = (string) $child->Rank; // Removed because it's unused
         $node = [
           'name' => $name,
           'depth' => $i,
