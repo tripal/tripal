@@ -879,7 +879,7 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
     //   );
     \Drupal::service('tripal.logger')->info('Import phylotree summary: ' . $n_associated . 
       ' were successfully associated to' .
-      ' content, ' . $n_not_associated . 'nodes could not be associated');
+      ' content, ' . $n_not_associated . ' nodes could not be associated');
   }
 }
 
