@@ -839,7 +839,6 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
     }
 
     // Insert the new node and then add its assigned phylonode_id to the node.
-    print_r("Phylonode chado insert\n");
     $phylonode = chado_insert_record('phylonode', $values, [], $schema_name);
     $tree['phylonode_id'] = $phylonode['phylonode_id'];
 
@@ -861,10 +860,6 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
           'type_id' => $type_id,
           'value' => $value,
         ];
-        print_r("[2] Phylonode organism chado insert\n");
-        // print_r($tree['properties']);
-        // print_r($values);
-        // print_r("\n");
         $pylonode_organism = chado_insert_record('phylonodeprop', $values, [], $schema_name);
       }
     }
