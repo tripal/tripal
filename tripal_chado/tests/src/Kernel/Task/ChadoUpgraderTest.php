@@ -1,8 +1,8 @@
 <?php
 
-namespace Drupal\Tests\tripal_chado\Functional\Task;
+namespace Drupal\Tests\tripal_chado\Kernel\Task;
 
-use Drupal\Tests\tripal_chado\Functional\ChadoTestKernelBase;
+use Drupal\Tests\tripal_chado\Kernel\ChadoTestKernelBase;
 use Drupal\tripal_chado\Task\ChadoUpgrader;
 
 /**
@@ -15,7 +15,7 @@ use Drupal\tripal_chado\Task\ChadoUpgrader;
  * @group Tripal Chado Task
  * @group Tripal Chado Upgrader
  */
-class ChadoUpgraderFunctionalTest extends ChadoTestKernelBase {
+class ChadoUpgraderTest extends ChadoTestKernelBase {
 
   /**
    * Tests task.
@@ -24,6 +24,11 @@ class ChadoUpgraderFunctionalTest extends ChadoTestKernelBase {
    * @cover ::performTask
    */
   public function testPerformTaskUpgrader() {
+
+    $this->markTestIncomplete(
+      'This test has not been fully implemented yet.'
+    );
+
     // Create a temporary schema.
     $tripaldbx_db = $this->getTestSchema(ChadoTestKernelBase::INIT_DUMMY);
     // Test upgrader.
@@ -33,9 +38,7 @@ class ChadoUpgraderFunctionalTest extends ChadoTestKernelBase {
       'cleanup'  => TRUE,
       // 'filename'  => '/tmp/upgrade_test.sql',
     ]);
-    $this->markTestIncomplete(
-      'This test has not been fully implemented yet.'
-    );
+
     // There are issues with the given incomplete dummy schemas as objects are
     // missing during the upgrade process.
     $success = $upgrader->performTask();

@@ -46,12 +46,17 @@
  *
  * @ingroup tripal_chado_cv_api
  */
-function chado_get_cv($identifiers, $options = [], $schema_name = 'chado') {
+function chado_get_cv($identifiers, $options = [], $schema_name = NULL) {
 
-  // Set Defaults.
+  // Set default options.
   if (!isset($options['include_fk'])) {
     // Tells chado_generate_var not to follow any foreign keys.
     $options['include_fk'] = [];
+  }
+
+  // Set default schema.
+  if (!$schema_name) {
+    $schema_name = \Drupal::config('tripal_chado.settings')->get('default_schema');
   }
 
   // Error Checking of parameters.
@@ -131,7 +136,12 @@ function chado_get_cv($identifiers, $options = [], $schema_name = 'chado') {
  *
  * @ingroup tripal_chado_cv_api
  */
-function chado_get_cv_select_options($schema_name = 'chado') {
+function chado_get_cv_select_options($schema_name = NULL) {
+
+  // Set default schema.
+  if (!$schema_name) {
+    $schema_name = \Drupal::config('tripal_chado.settings')->get('default_schema');
+  }
 
   $results = chado_select_record(
     'cv',
@@ -190,12 +200,17 @@ function chado_get_cv_select_options($schema_name = 'chado') {
  *
  * @ingroup tripal_chado_cv_api
  */
-function chado_get_cvterm($identifiers, $options = [], $schema_name = 'chado') {
+function chado_get_cvterm($identifiers, $options = [], $schema_name = NULL) {
 
-  // Set Defaults.
+  // Set default options.
   if (!isset($options['include_fk'])) {
     // Tells chado_generate_var to only get the cv.
     $options['include_fk'] = ['cv_id' => TRUE];
+  }
+
+  // Set default schema.
+  if (!$schema_name) {
+    $schema_name = \Drupal::config('tripal_chado.settings')->get('default_schema');
   }
 
   // Error Checking of parameters.
@@ -331,7 +346,12 @@ function chado_get_cvterm($identifiers, $options = [], $schema_name = 'chado') {
  *
  * @ingroup tripal_chado_cv_api
  */
-function chado_get_cvterm_select_options($cv_id, $rel_type = FALSE, $schema_name = 'chado') {
+function chado_get_cvterm_select_options($cv_id, $rel_type = FALSE, $schema_name = NULL) {
+  // Set default schema.
+  if (!$schema_name) {
+    $schema_name = \Drupal::config('tripal_chado.settings')->get('default_schema');
+  }
+
   $columns = ['cvterm_id', 'name'];
   $values = ['cv_id' => $cv_id];
   if ($rel_type) {
@@ -369,7 +389,12 @@ function chado_get_cvterm_select_options($cv_id, $rel_type = FALSE, $schema_name
  *
  * @ingroup tripal_chado_cv_api
  */
-function chado_insert_cv($name, $definition, $options = [], $schema_name = 'chado') {
+function chado_insert_cv($name, $definition, $options = [], $schema_name = NULL) {
+
+  // Set default schema.
+  if (!$schema_name) {
+    $schema_name = \Drupal::config('tripal_chado.settings')->get('default_schema');
+  }
 
   // Insert/update values.
   $ins_values = [
@@ -450,7 +475,12 @@ function chado_insert_cv($name, $definition, $options = [], $schema_name = 'chad
  *
  * @ingroup tripal_chado_cv_api
  */
-function chado_insert_cvterm($term, $options = [], $schema_name = 'chado') {
+function chado_insert_cvterm($term, $options = [], $schema_name = NULL) {
+  // Set default schema.
+  if (!$schema_name) {
+    $schema_name = \Drupal::config('tripal_chado.settings')->get('default_schema');
+  }
+
   // Get the term properties.
   $id = (isset($term['id'])) ? $term['id'] : '';
   $name = '';
