@@ -65,6 +65,25 @@ trait ChadoTestTrait  {
    */
   protected static $db = NULL;
 
+  /**
+   * Returns the chado cvterm_id for the term with the given ID space + accession.
+   * This is completely independant of Tripal terms.
+   */
+  protected function getCvtermID($idspace, $accession) {
+
+    $connection = $this->getTestSchema();
+
+    $query = $connection->select('1:cvterm', 'cvt');
+    $query->fields('cvt', ['cvterm_id']);
+    $query->join('1:dbxref', 'dbx', 'cvt.dbxref_id = dbx.dbxref_id');
+    $query->join('1:db', 'db', 'db.db_id = dbx.db_id');
+    $query->condition('db.name', $idspace, '=');
+    $query->condition('dbx.accession', $accession, '=');
+    $result = $query->execute();
+
+    return $result->fetchField();
+
+  }
 
   /**
    * {@inheritdoc}
