@@ -364,7 +364,7 @@ class TripalDefaultIdSpace extends TripalIdSpaceBase {
   /**
    * {@inheritDoc}
    */
-  public function create() {
+  public function createRecord() {
     $conn = \Drupal::service('database');
 
     // Check if the record already exists in the database, if it

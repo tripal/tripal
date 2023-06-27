@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tripal\Functional\TripalDBX\Subclass;
+namespace Drupal\Tests\tripal\Kernel\TripalDBX\Subclass;
 
 use Drupal\tripal\TripalDBX\TripalDbxSchema;
 

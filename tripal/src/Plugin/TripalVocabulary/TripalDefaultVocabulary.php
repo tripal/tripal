@@ -218,7 +218,7 @@ class TripalDefaultVocabulary extends TripalVocabularyBase {
   /**
    * {@inheritDoc}
    */
-  public function create() {
+  public function createRecord() {
 
     // Check if the record already exists in the database, if it
     // doesn't then insert it.  We don't yet have the definition,

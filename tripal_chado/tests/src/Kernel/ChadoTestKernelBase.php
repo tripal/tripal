@@ -1,9 +1,10 @@
 <?php
-namespace Drupal\Tests\tripal_chado\Functional;
+namespace Drupal\Tests\tripal_chado\Kernel;
 
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\tripal\TripalDBX\TripalDbx;
 use Drupal\tripal_chado\Database\ChadoConnection;
+use Drupal\Tests\tripal_chado\Functional\ChadoTestTrait;
 
 /**
  * This is a base class for Chado tests.
