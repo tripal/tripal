@@ -319,8 +319,6 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
         $schema["columns"][$type->getKey()] = $column;
       }
       else if ($type instanceof BoolStoragePropertyType) {
-// @@@ line 68 in modules/contrib/tripal/tripal/tests/src/Kernel/TripalDBX/Subclass/TripalDbxSchemaFake.php type => int, size => tiny
-// @@@ line 64 & 70 modules/contrib/tripal/tripal/tests/fixtures/feature_parsed_drupal.php type => text
         $column = [
           "type" => "int",
           "size" => "tiny",

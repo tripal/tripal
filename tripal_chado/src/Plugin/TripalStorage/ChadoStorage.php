@@ -1285,7 +1285,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
         }
       }
       else if ($info['type'] == 'boolean') {
-//@@@ should an empty string be acceptable here?
         if (!is_bool($col_val) and !preg_match('/^[01]$/', $col_val)) {
           $bad_types[$col] = 'Boolean';
         }

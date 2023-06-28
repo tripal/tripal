@@ -1068,6 +1068,33 @@ fields:
               region: content
               weight: 10
 
+    -   name: mrna_is_obsolete
+        content_type: bio_data_9
+        label: Is Obsolete
+        type: chado_boolean_type
+        description: Indicates if this record is obsolete.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: is_obsolete
+        settings:
+            termIdSpace: local
+            termAccession: is_obsolete
+            fixed_value: local:is_obsolete
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 90
+          form:
+            default:
+              region: content
+              weight: 90
+
     -   name: phylotree_name
         content_type: bio_data_10
         label: Name
@@ -1335,33 +1362,6 @@ fields:
             default:
               region: content
               weight: 20
-
-    -   name: dna_library_is_obsolete
-        content_type: bio_data_12
-        label: Is Obsolete
-        type: chado_boolean_type
-        description: Indicates if this record is obsolete.
-        cardinality: 1
-        required: false
-        storage_settings:
-            storage_plugin_id: chado_storage
-            storage_plugin_settings:
-                base_table: library
-                base_column: is_obsolete
-        settings:
-            termIdSpace: local
-            termAccession: is_obsolete
-            fixed_value: local:is_obsolete
-        display:
-          view:
-            default:
-              region: content
-              label: above
-              weight: 90
-          form:
-            default:
-              region: content
-              weight: 90
 
     -   name: genome_assembly_name
         content_type: bio_data_13
@@ -2088,6 +2088,33 @@ fields:
               region: content
               weight: 10
 
+    -   name: qtl_is_obsolete
+        content_type: bio_data_17
+        label: Is Obsolete
+        type: chado_boolean_type
+        description: Indicates if this record is obsolete.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: is_obsolete
+        settings:
+            termIdSpace: local
+            termAccession: is_obsolete
+            fixed_value: local:is_obsolete
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 90
+          form:
+            default:
+              region: content
+              weight: 90
+
     -   name: sequence_variant_name
         content_type: bio_data_18
         label: Name
@@ -2220,6 +2247,33 @@ fields:
             default:
               region: content
               weight: 10
+
+    -   name: sequence_variant_is_obsolete
+        content_type: bio_data_18
+        label: Is Obsolete
+        type: chado_boolean_type
+        description: Indicates if this record is obsolete.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: is_obsolete
+        settings:
+            termIdSpace: local
+            termAccession: is_obsolete
+            fixed_value: local:is_obsolete
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 90
+          form:
+            default:
+              region: content
+              weight: 90
 
     -   name: genetic_marker_name
         content_type: bio_data_19
@@ -2354,6 +2408,33 @@ fields:
               region: content
               weight: 10
 
+    -   name: genetic_marker_is_obsolete
+        content_type: bio_data_19
+        label: Is Obsolete
+        type: chado_boolean_type
+        description: Indicates if this record is obsolete.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: is_obsolete
+        settings:
+            termIdSpace: local
+            termAccession: is_obsolete
+            fixed_value: local:is_obsolete
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 90
+          form:
+            default:
+              region: content
+              weight: 90
+
     -   name: phenotypic_marker_name
         content_type: bio_data_20
         label: Name
@@ -2487,6 +2568,33 @@ fields:
               region: content
               weight: 10
 
+    -   name: phenotypic_marker_is_obsolete
+        content_type: bio_data_20
+        label: Is Obsolete
+        type: chado_boolean_type
+        description: Indicates if this record is obsolete.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: is_obsolete
+        settings:
+            termIdSpace: local
+            termAccession: is_obsolete
+            fixed_value: local:is_obsolete
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 90
+          form:
+            default:
+              region: content
+              weight: 90
+
     -   name: germplasm_name
         content_type: bio_data_21
         label: Name
@@ -2594,6 +2702,32 @@ fields:
               region: content
               weight: 10
 
+    -   name: germplasm_is_obsolete
+        content_type: bio_data_21
+        label: Is Obsolete
+        type: chado_boolean_type
+        description: Indicates if this record is obsolete.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: is_obsolete
+        settings:
+            termIdSpace: local
+            termAccession: is_obsolete
+            fixed_value: local:is_obsolete
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 90
+          form:
+            default:
+              region: content
+              weight: 90
 
     -   name: breeding_cross_name
         content_type: bio_data_22
@@ -2702,6 +2836,33 @@ fields:
               region: content
               weight: 10
 
+    -   name: breeding_cross_is_obsolete
+        content_type: bio_data_22
+        label: Is Obsolete
+        type: chado_boolean_type
+        description: Indicates if this record is obsolete.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: is_obsolete
+        settings:
+            termIdSpace: local
+            termAccession: is_obsolete
+            fixed_value: local:is_obsolete
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 90
+          form:
+            default:
+              region: content
+              weight: 90
+
     -   name: germplasm_variety_name
         content_type: bio_data_23
         label: Name
@@ -2809,6 +2970,33 @@ fields:
               region: content
               weight: 10
 
+    -   name: germplasm_variety_is_obsolete
+        content_type: bio_data_23
+        label: Is Obsolete
+        type: chado_boolean_type
+        description: Indicates if this record is obsolete.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: is_obsolete
+        settings:
+            termIdSpace: local
+            termAccession: is_obsolete
+            fixed_value: local:is_obsolete
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 90
+          form:
+            default:
+              region: content
+              weight: 90
+
     -   name: ril_name
         content_type: bio_data_24
         label: Name
@@ -2915,6 +3103,33 @@ fields:
             default:
               region: content
               weight: 10
+
+    -   name: ril_is_obsolete
+        content_type: bio_data_24
+        label: Is Obsolete
+        type: chado_boolean_type
+        description: Indicates if this record is obsolete.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: stock
+                base_column: is_obsolete
+        settings:
+            termIdSpace: local
+            termAccession: is_obsolete
+            fixed_value: local:is_obsolete
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 90
+          form:
+            default:
+              region: content
+              weight: 90
 
     -   name: biosample_name
         content_type: bio_data_25

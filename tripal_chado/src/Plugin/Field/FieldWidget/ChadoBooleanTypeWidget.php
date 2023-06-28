@@ -28,10 +28,8 @@ class ChadoBooleanTypeWidget extends TripalBooleanTypeWidget {
 
     $item_vals = $items[$delta]->getValue();
     $element = parent::formElement($items, $delta, $element, $form, $form_state);
-// @@@ drupal validation accepts: boolean, 0, 1, '0', '1' but not ''
     $default_value = !empty($item_vals['record_id']);
     $element['record_id'] = [
-//@@@      '#type' => 'checkbox',
       '#default_value' => !empty($item_vals['record_id']),
     ];
     return $element;
