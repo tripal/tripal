@@ -912,7 +912,7 @@ fields:
         content_type: bio_data_8
         label: Is Obsolete
         type: chado_boolean_type
-        description: Designates that this gene is obsolete and no longer available or of interest.
+        description: Indicates if this record is obsolete.
         cardinality: 1
         required: false
         storage_settings:
@@ -1340,9 +1340,9 @@ fields:
         content_type: bio_data_12
         label: Is Obsolete
         type: chado_boolean_type
-        description: Designates that this library is obsolete and no longer available or of interest.
+        description: Indicates if this record is obsolete.
         cardinality: 1
-        required: true
+        required: false
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
