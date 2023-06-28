@@ -1259,7 +1259,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
    *   An array to which any new violations can be added.
    */
   public function validateTypes($values, $chado_table, $record_id, $record, &$violations) {
-dpm($values, 'validateTypes values'); //@@@
 
     $schema = $this->connection->schema();
     $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
@@ -1286,11 +1285,8 @@ dpm($values, 'validateTypes values'); //@@@
         }
       }
       else if ($info['type'] == 'boolean') {
-$v = is_bool($col_val);
-dpm($col_val, 'ChadoStorage col_val '.($v?'is_boolean':'not_boolean')); //@@@
-        if (!is_bool($col_val)
-and (!preg_match('/^[01]$/', $col_val))  //@@@
-) {
+//@@@ should an empty string be acceptable here?
+        if (!is_bool($col_val) and !preg_match('/^[01]$/', $col_val)) {
           $bad_types[$col] = 'Boolean';
         }
       }

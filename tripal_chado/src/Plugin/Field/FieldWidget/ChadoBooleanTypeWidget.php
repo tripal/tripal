@@ -27,30 +27,14 @@ class ChadoBooleanTypeWidget extends TripalBooleanTypeWidget {
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
 
     $item_vals = $items[$delta]->getValue();
-dpm($item_vals, 'ChadoBooleanTypeWidget item_vals'); //@@@
     $element = parent::formElement($items, $delta, $element, $form, $form_state);
-// drupal validation accepts: boolean, 0, 1, '0', '1' but not ''
-//    $default_value = array_key_exists('record_id', $item_vals) ? ($item_vals['record_id'] ? 1 : 0) : 0;
-    $default_value = array_key_exists('record_id', $item_vals) ? ($item_vals['record_id'] ? true : false) : false;
-dpm($default_value, 'default_value'); //@@@
+// @@@ drupal validation accepts: boolean, 0, 1, '0', '1' but not ''
+    $default_value = !empty($item_vals['record_id']);
     $element['record_id'] = [
-//      '#type' => 'checkbox',
-      '#default_value' => $default_value, //$item_vals['record_id'] ?? false,
+//@@@      '#type' => 'checkbox',
+      '#default_value' => !empty($item_vals['record_id']),
     ];
     return $element;
   }
 
-  /**
-   * {@inheritDoc}
-   */
-  public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
-dpm($values, 'massageFormValues values 1'); //@@@
-    // Convert to boolean.
-    foreach ($values as $val_key => $value) {
-dpm($value, 'massage '.$val_key); //@@@
-      $values[$val_key]['value'] = $value['value'] ? true : false;
-    }
-dpm($values, 'massageFormValues values 2'); //@@@
-    return $values;
-  }
 }
