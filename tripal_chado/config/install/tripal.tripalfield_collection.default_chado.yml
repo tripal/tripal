@@ -908,6 +908,33 @@ fields:
               region: content
               weight: 10
 
+    -   name: gene_is_analysis
+        content_type: bio_data_8
+        label: Is Analysis
+        type: chado_boolean_type
+        description: Indicates if this feature was predicted computationally using another feature.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: is_analysis
+        settings:
+            termIdSpace: local
+            termAccession: is_analysis
+            fixed_value: local:is_analysis
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 90
+          form:
+            default:
+              region: content
+              weight: 90
+
     -   name: gene_is_obsolete
         content_type: bio_data_8
         label: Is Obsolete
@@ -1067,6 +1094,33 @@ fields:
             default:
               region: content
               weight: 10
+
+    -   name: mrna_is_analysis
+        content_type: bio_data_9
+        label: Is Analysis
+        type: chado_boolean_type
+        description: Indicates if this feature was predicted computationally using another feature.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: is_analysis
+        settings:
+            termIdSpace: local
+            termAccession: is_analysis
+            fixed_value: local:is_analysis
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 90
+          form:
+            default:
+              region: content
+              weight: 90
 
     -   name: mrna_is_obsolete
         content_type: bio_data_9
@@ -2088,6 +2142,33 @@ fields:
               region: content
               weight: 10
 
+    -   name: qtl_is_analysis
+        content_type: bio_data_17
+        label: Is Analysis
+        type: chado_boolean_type
+        description: Indicates if this feature was predicted computationally using another feature.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: is_analysis
+        settings:
+            termIdSpace: local
+            termAccession: is_analysis
+            fixed_value: local:is_analysis
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 90
+          form:
+            default:
+              region: content
+              weight: 90
+
     -   name: qtl_is_obsolete
         content_type: bio_data_17
         label: Is Obsolete
@@ -2247,6 +2328,33 @@ fields:
             default:
               region: content
               weight: 10
+
+    -   name: sequence_variant_is_analysis
+        content_type: bio_data_18
+        label: Is Analysis
+        type: chado_boolean_type
+        description: Indicates if this feature was predicted computationally using another feature.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: is_analysis
+        settings:
+            termIdSpace: local
+            termAccession: is_analysis
+            fixed_value: local:is_analysis
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 90
+          form:
+            default:
+              region: content
+              weight: 90
 
     -   name: sequence_variant_is_obsolete
         content_type: bio_data_18
@@ -2408,6 +2516,33 @@ fields:
               region: content
               weight: 10
 
+    -   name: genetic_marker_is_analysis
+        content_type: bio_data_19
+        label: Is Analysis
+        type: chado_boolean_type
+        description: Indicates if this feature was predicted computationally using another feature.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: is_analysis
+        settings:
+            termIdSpace: local
+            termAccession: is_analysis
+            fixed_value: local:is_analysis
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 90
+          form:
+            default:
+              region: content
+              weight: 90
+
     -   name: genetic_marker_is_obsolete
         content_type: bio_data_19
         label: Is Obsolete
@@ -2567,6 +2702,33 @@ fields:
             default:
               region: content
               weight: 10
+
+    -   name: phenotypic_marker_is_analysis
+        content_type: bio_data_20
+        label: Is Analysis
+        type: chado_boolean_type
+        description: Indicates if this feature was predicted computationally using another feature.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: is_analysis
+        settings:
+            termIdSpace: local
+            termAccession: is_analysis
+            fixed_value: local:is_analysis
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 90
+          form:
+            default:
+              region: content
+              weight: 90
 
     -   name: phenotypic_marker_is_obsolete
         content_type: bio_data_20
