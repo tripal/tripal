@@ -40,9 +40,21 @@ class TripalPublish {
     $field_defs = $field_manager->getFieldDefinitions('tripal_entity', $bundle);
 
     $settings = [];
+    /** @var \Drupal\Core\Field\BaseFieldDefinition $field_definition **/
+    $field_definition = NULL;
     foreach ($field_defs as $field_name => $field_definition) {
-    
-      if (!empty($field_definition->getTargetBundle())) {     
+      print_r([$field_name, get_class($field_definition)]);
+      print_r($field_definition);
+
+
+      /** @var \Drupal\Core\Field\FieldTypePluginManager $field_type_manager **/
+      $field_type_manager = \Drupal::service('plugin.manager.field.field_type');
+      $field = $field_type_manager->createInstance($field_definition['field_type']);
+      print_r($field);
+
+
+
+      if (!empty($field_definition->getTargetBundle())) {
         $storage_definition = $field_definition->getFieldStorageDefinition();
         //dpm($storage_definition);
         // Only get settings that are Chado fields?
@@ -51,8 +63,8 @@ class TripalPublish {
         }
       }
     }
-    //dpm($settings);
-    
+    exit;
+
     // Get the table definitions (how ids are related and stuff)? E.g. how do we know how an
     // analysis relates to an analysysprop entry - obviously analysis_id but let's be sure.
 
@@ -99,7 +111,7 @@ dpm($td);
             'columns' => [$setting['type_column']],
             ''
           ];
-          // Get the information of the 
+          // Get the information of the
         }
         else {
           $columns = $type_tables[$setting['type_table']]['columns'];
@@ -122,7 +134,7 @@ dpm($td);
     // main base table (analysis). Will this ever be an actual case?
     // $first_table_name = array_shift($base_table_names);
     // foreach $
-    
+
     // // Handle additional type tables.
     // $type_table_names = array_keys($type_tables);
     // foreach ($type_table_names as $type_table_name) {
@@ -131,11 +143,11 @@ dpm($td);
 
     //dpm($base_tables);
     // $query = $connection->select('');
-    // select from table_columns=>base_table.base_column as $column 
-    
+    // select from table_columns=>base_table.base_column as $column
+
 
     //@ todo Apply any filters, including automatically filtering out already-published items
-    // 
+    //
 
     return $published;
   }
