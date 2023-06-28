@@ -1067,6 +1067,32 @@ fields:
               region: content
               weight: 25
 
+    -   name: mrna_organism
+        content_type: bio_data_9
+        label: Organism
+        type: chado_organism_default
+        description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: organism_id
+        settings:
+            termIdSpace: OBI
+            termAccession: "0100026"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
     -   name: mrna_type
         content_type: bio_data_9
         label: Type
@@ -2114,6 +2140,32 @@ fields:
               region: content
               weight: 25
 
+    -   name: qtl_organism
+        content_type: bio_data_17
+        label: Organism
+        type: chado_organism_default
+        description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: organism_id
+        settings:
+            termIdSpace: OBI
+            termAccession: "0100026"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
     -   name: qtl_type
         content_type: bio_data_17
         label: Type
@@ -2300,6 +2352,32 @@ fields:
             default:
               region: content
               weight: 25
+
+    -   name: sequence_variant_organism
+        content_type: bio_data_18
+        label: Organism
+        type: chado_organism_default
+        description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: organism_id
+        settings:
+            termIdSpace: OBI
+            termAccession: "0100026"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
 
     -   name: sequence_variant_type
         content_type: bio_data_18
@@ -2488,6 +2566,32 @@ fields:
               region: content
               weight: 25
 
+    -   name: genetic_marker_organism
+        content_type: bio_data_19
+        label: Organism
+        type: chado_organism_default
+        description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: organism_id
+        settings:
+            termIdSpace: OBI
+            termAccession: "0100026"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
     -   name: genetic_marker_type
         content_type: bio_data_19
         label: Type
@@ -2674,6 +2778,32 @@ fields:
             default:
               region: content
               weight: 25
+
+    -   name: phenotypic_marker_organism
+        content_type: bio_data_20
+        label: Organism
+        type: chado_organism_default
+        description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
+        cardinality: 1
+        required: true
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: organism_id
+        settings:
+            termIdSpace: OBI
+            termAccession: "0100026"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
 
     -   name: phenotypic_marker_type
         content_type: bio_data_20
