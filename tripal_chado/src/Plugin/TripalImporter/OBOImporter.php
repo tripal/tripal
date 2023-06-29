@@ -2370,8 +2370,10 @@ class OBOImporter extends ChadoImporterBase {
               $stanza['namespace'][0] = 'EDAM';
             }
             $namespace = $stanza['namespace'][0];
-            $cv = $this->all_cvs[$namespace];
-            $this->obo_namespaces[$namespace] = $cv->cv_id;
+            if (array_key_exists($namespace, $this->all_cvs)) {
+              $cv = $this->all_cvs[$namespace];
+              $this->obo_namespaces[$namespace] = $cv->cv_id;
+            }
           }
 
           // Before caching this stanza, check the term's name to
