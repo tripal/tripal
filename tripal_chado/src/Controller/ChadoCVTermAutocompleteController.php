@@ -105,4 +105,38 @@ class ChadoCVTermAutocompleteController extends ControllerBase {
 
     return $id;
   }
+
+  /**
+   * Given a cvterm id number, return the matching cvterm record using
+   * the format cvterm name (db.name:dbxref.accession).
+   * 
+   * @param integer $id
+   *   Cvterm id number to match.
+   * 
+   * @return string
+   *   Cvterm record in cvterm name (db.name:dbxref.accession) format.
+   */
+  public static function formatCVterm(int $id) {
+    $term = null;
+    
+    if ($id > 0) {
+      $sql = "
+        SELECT CONCAT(ct.name, ' (', db.name, ':', dx.accession, ')') 
+        FROM {1:cvterm} AS ct 
+          LEFT JOIN {1:dbxref} AS dx USING(dbxref_id) 
+          LEFT JOIN {1:db} USING(db_id)
+        WHERE ct.cvterm_id = :cvterm_id
+        LIMIT 1 
+      ";
+
+      $connection = \Drupal::service('tripal_chado.database');
+      $result = $connection->query($sql, [':cvterm_id' => $id]);
+
+      if($result) {
+        $term = $result->fetchField();
+      }
+    }
+
+    return $term;
+  }
 }

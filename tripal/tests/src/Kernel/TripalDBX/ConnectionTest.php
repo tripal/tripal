@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\tripal\Functional\TripalDBX;
+namespace Drupal\Tests\tripal\Kernel\TripalDBX;
 
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\tripal\TripalDBX\TripalDbxConnection;
@@ -115,7 +115,7 @@ class ConnectionTest extends KernelTestBase {
       ->expects($this->any())
       ->method('getTripalDbxClass')
       ->with('Schema')
-      ->willReturn('\Drupal\Tests\tripal\Functional\TripalDBX\Subclass\TripalDbxSchemaFake');
+      ->willReturn('\Drupal\Tests\tripal\Kernel\TripalDBX\Subclass\TripalDbxSchemaFake');
 
     // Return initialized mock.
     return $dbmock;
