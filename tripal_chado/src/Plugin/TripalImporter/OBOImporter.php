@@ -2432,8 +2432,10 @@ class OBOImporter extends ChadoImporterBase {
       // If this term has a namespace then we want to keep track of it.
       if (array_key_exists('namespace', $stanza)) {
         $namespace = $stanza['namespace'][0];
-        $cv = $this->all_cvs[$namespace];
-        $this->obo_namespaces[$namespace] = $cv->cv_id;
+        if (array_key_exists($namespace, $this->all_cvs)) {
+          $cv = $this->all_cvs[$namespace];
+          $this->obo_namespaces[$namespace] = $cv->cv_id;
+        }
       }
       $this->cacheTermStanza($stanza, $type);
       $this->setItemsHandled($num_read);
