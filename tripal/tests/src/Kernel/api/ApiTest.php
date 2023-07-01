@@ -44,7 +44,7 @@ class apiTest extends KernelTestBase {
     // Get the version using the API function to be tested.
     $tripal_version = tripal_version();
 
-    $this->assertEqual($check_version, $tripal_version, 'tripal_version() returned the wrong value');
+    $this->assertEquals($check_version, $tripal_version, 'tripal_version() returned the wrong value');
   }
 
 }
