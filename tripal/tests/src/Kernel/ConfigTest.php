@@ -53,10 +53,10 @@ class configTest extends KernelTestBase {
       // On second and later modules, verify that returned values match those
       // from the previous module (the consistency check).
       if ($previous_module) {
-        $this->assertEqual($version, $previous_version,
+        $this->assertEquals($version, $previous_version,
                            'version for module "'
                            . $previous_module . '" is different than for module "' . $module . '"');
-        $this->assertEqual($core_version_requirement, $previous_core_version_requirement,
+        $this->assertEquals($core_version_requirement, $previous_core_version_requirement,
                            'core_version_requirement for module "'
                            . $previous_module . '" is different than for module "' . $module . '"');
       }
