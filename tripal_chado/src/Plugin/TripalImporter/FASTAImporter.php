@@ -318,7 +318,7 @@ class FASTAImporter extends ChadoImporterBase {
 
     $organism_id = $form_state_values['organism_id'];
     $file_upload = $form_state_values['file_upload'];
-    $file_upload_existing = $form_state_values['file_upload_existing'];
+    $file_upload_existing = $form_state_values['file_upload_existing'] ?? null;
     $type = explode(' (', trim($form_state_values['seqtype']))[0];
     $method = trim($form_state_values['method']);
     $match_type = trim($form_state_values['match_type']);
