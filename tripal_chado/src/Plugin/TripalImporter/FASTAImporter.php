@@ -137,8 +137,6 @@ class FASTAImporter extends ChadoImporterBase {
       // TRIPAL 3 OLD CODE
       // '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/$cv_id",
       // TRIPAL 4 CODE
-      // '#autocomplete_route_name' => 'tripal.cvterm_autocomplete',
-      // '#autocomplete_route_parameters' => array('count' => 10),
       '#autocomplete_route_name' => 'tripal_chado.cvterm_autocomplete',
       '#autocomplete_route_parameters' => ['count' => 5]
     ];
@@ -317,7 +315,6 @@ class FASTAImporter extends ChadoImporterBase {
     $chado = \Drupal::service('tripal_chado.database');
 
     $form_state_values = $form_state->getValues();
-    dpm($form_state_values);
 
     $organism_id = $form_state_values['organism_id'];
     $file_upload = $form_state_values['file_upload'];
