@@ -315,8 +315,11 @@ class FASTAImporter extends ChadoImporterBase {
     $chado = \Drupal::service('tripal_chado.database');
 
     $form_state_values = $form_state->getValues();
+    dpm($form_state_values);
 
     $organism_id = $form_state_values['organism_id'];
+    $file_upload = $form_state_values['file_upload'];
+    $file_upload_existing = $form_state_values['file_upload_existing'];
     $type = explode(' (', trim($form_state_values['seqtype']))[0];
     $method = trim($form_state_values['method']);
     $match_type = trim($form_state_values['match_type']);
@@ -344,6 +347,27 @@ class FASTAImporter extends ChadoImporterBase {
 
     if ($match_type == 1) {
       $match_type = 'Unique name';
+    }
+
+    $file_existing = false;
+    if ($file_upload_existing == "0" || $file_upload_existing == "" || $file_upload_existing == null) {
+      // this means no existing file
+    }
+    else {
+      $file_existing = true;
+    }
+
+    $file_uploaded = false;
+    // If there is no file upload
+    if($file_upload == "" || $file_upload == "0") {
+      
+    }
+    else {
+      $file_uploaded = true;
+    }
+
+    if ($file_uploaded == false and $file_existing == false) {
+      \Drupal::messenger()->addError(t("You must upload a FASTA file or choose an existing FASTA file"));
     }
 
     if ($re_name and !$re_uname and strcmp($match_type, 'Unique name') == 0) {
