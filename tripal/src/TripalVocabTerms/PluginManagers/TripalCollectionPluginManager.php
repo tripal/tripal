@@ -78,7 +78,7 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
     if ($collection->isValid()) {
       $result = $db->insert($this->table)->fields(["name" => $name, "plugin_id" => $pluginId])->execute();
       if ($collection->recordExists() == False) {
-        $collection->create();
+        $collection->createRecord();
       }
       return $collection;
     }
@@ -167,7 +167,7 @@ class TripalCollectionPluginManager extends DefaultPluginManager {
     $collection = $this->createInstance($first["plugin_id"], ["collection_name" => $name]);
 
     if ($collection->isValid() and $collection->recordExists() == False) {
-      $collection->create();
+      $collection->createRecord();
     }
 
     return $collection;

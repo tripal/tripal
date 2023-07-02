@@ -65,12 +65,17 @@
  *
  * @ingroup tripal_chado_database_api
  */
-function chado_get_db($identifiers, $options = [], $schema_name = 'chado') {
+function chado_get_db($identifiers, $options = [], $schema_name = NULL) {
 
-  // Set Defaults.
+  // Set default options.
   if (!isset($options['include_fk'])) {
     // Tells chado_generate_var not to follow any foreign keys.
     $options['include_fk'] = [];
+  }
+
+  // Set default schema.
+  if (!$schema_name) {
+    $schema_name = \Drupal::config('tripal_chado.settings')->get('default_schema');
   }
 
   // Error Checking of parameters.
@@ -147,7 +152,12 @@ function chado_get_db($identifiers, $options = [], $schema_name = 'chado') {
  *
  * @ingroup tripal_chado_database_api
  */
-function chado_get_db_select_options($schema_name = 'chado') {
+function chado_get_db_select_options($schema_name = NULL) {
+
+  // Set default schema.
+  if (!$schema_name) {
+    $schema_name = \Drupal::config('tripal_chado.settings')->get('default_schema');
+  }
 
   $dbs = chado_query(
     "SELECT db_id, name FROM {db} ORDER BY name",
@@ -223,12 +233,17 @@ function chado_get_db_select_options($schema_name = 'chado') {
  *
  * @ingroup tripal_chado_database_api
  */
-function chado_get_dbxref($identifiers, $options = [], $schema_name = 'chado') {
+function chado_get_dbxref($identifiers, $options = [], $schema_name = NULL) {
 
-  // Set Defaults.
+  // Set default options.
   if (!isset($options['include_fk'])) {
     // Tells chado_generate_var not only expand the db.
     $options['include_fk'] = ['db_id' => TRUE];
+  }
+
+  // Set default schema.
+  if (!$schema_name) {
+    $schema_name = \Drupal::config('tripal_chado.settings')->get('default_schema');
   }
 
   // Error Checking of parameters.
@@ -316,8 +331,13 @@ function chado_get_dbxref($identifiers, $options = [], $schema_name = 'chado') {
  *
  * @ingroup tripal_chado_database_api
  */
-function chado_get_dbxref_url($dbxref, $options = [], $schema_name = 'chado') {
+function chado_get_dbxref_url($dbxref, $options = [], $schema_name = NULL) {
   $final_url = '';
+
+  // Set default schema.
+  if (!$schema_name) {
+    $schema_name = \Drupal::config('tripal_chado.settings')->get('default_schema');
+  }
 
   // Create the URL for the term.
   if ($dbxref->db_id->urlprefix) {
@@ -370,7 +390,12 @@ function chado_get_dbxref_url($dbxref, $options = [], $schema_name = 'chado') {
  *
  * @ingroup tripal_chado_database_api
  */
-function chado_insert_db($values, $options = [], $schema_name = 'chado') {
+function chado_insert_db($values, $options = [], $schema_name = NULL) {
+
+  // Set default schema.
+  if (!$schema_name) {
+    $schema_name = \Drupal::config('tripal_chado.settings')->get('default_schema');
+  }
 
   // Default Values.
   $dbname = $values['name'];
@@ -438,7 +463,12 @@ function chado_insert_db($values, $options = [], $schema_name = 'chado') {
  *
  * @ingroup tripal_chado_database_api
  */
-function chado_insert_dbxref($values, $options = [], $schema_name = 'chado') {
+function chado_insert_dbxref($values, $options = [], $schema_name = NULL) {
+
+  // Set default schema.
+  if (!$schema_name) {
+    $schema_name = \Drupal::config('tripal_chado.settings')->get('default_schema');
+  }
 
   $db_id = $values['db_id'];
   $accession = $values['accession'];
@@ -502,12 +532,17 @@ function chado_insert_dbxref($values, $options = [], $schema_name = 'chado') {
  *
  * @ingroup tripal_chado_database_api
  */
-function chado_associate_dbxref($basetable, $record_id, $dbxref, $options = [], $schema_name = 'chado') {
+function chado_associate_dbxref($basetable, $record_id, $dbxref, $options = [], $schema_name = NULL) {
   $linking_table = $basetable . '_dbxref';
   $foreignkey_name = $basetable . '_id';
 
-  // Default Values.
+  // Set default options.
   $options['insert_dbxref'] = (isset($options['insert_dbxref'])) ? $options['insert_dbxref'] : TRUE;
+
+  // Set default schema.
+  if (!$schema_name) {
+    $schema_name = \Drupal::config('tripal_chado.settings')->get('default_schema');
+  }
 
   // If the dbxref_id is set then we know it already exists.
   // Otherwise, select to check.
