@@ -440,7 +440,7 @@ class TaxonomyImporter extends ChadoImporterBase {
       ];
       $errors = [];
       $warnings = [];
-      $success = chado_insert_phylotree($phylotree, $errors, $warnings);
+      $success = chado_insert_phylotree($phylotree, $errors, $warnings, $this->chado_schema_main);
       if (!$success) {
         throw new Exception("Cannot add the Taxonomy Tree record.");
       }
