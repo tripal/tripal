@@ -114,8 +114,10 @@ class ChadoTableProjectAutocompleteTest extends ChadoTestBrowserBase {
         }
       }
       else {
-        $suggest = $autocomplete->handleAutocomplete($request, 0, $count);
-        $this->assertEquals($suggest, null);    
+        $suggest = $autocomplete->handleAutocomplete($request, 0, $count)
+          ->getContent();
+
+        $this->assertEquals($suggest, '[]');    
       }
     }
 

@@ -29,14 +29,14 @@ class ChadoProjectAutocompleteController extends ControllerBase {
    */
   public function handleAutocomplete(Request $request, int $type_id = 0, int $count = 5) {
     // Array to hold matching project records.
-    $response = null;
+    $response = [];
 
     if ($request->query->get('q')) {
       // Get typed in string input from the URL.
       $string = trim($request->query->get('q'));
 
-      if (strlen($string) > 1 && $count > 0) {
-        // Proceed to autocomplete when string is at least 2 characters
+      if (strlen($string) > 0 && $count > 0) {
+        // Proceed to autocomplete when string is at least a character
         // long and result count is set to a value greater than 0.
 
         // Transform string as a search keyword pattern.
@@ -72,9 +72,7 @@ class ChadoProjectAutocompleteController extends ControllerBase {
       }  
     }
     
-    if ($response) {
-      return new JsonResponse($response);
-    }
+    return new JsonResponse($response);
   }
 
   /**
