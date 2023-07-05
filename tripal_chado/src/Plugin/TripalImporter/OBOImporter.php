@@ -1180,6 +1180,7 @@ class OBOImporter extends ChadoImporterBase {
     // If we have the namespace but not the short name then we have to
     // do a few tricks to try and find it.
     if ($namespace and !$short_name) {
+      $chado = $this->getChadoConnection();
 
       // First see if we've seen this ontology before and get its currently
       // loaded database.
