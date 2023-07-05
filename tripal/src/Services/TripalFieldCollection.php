@@ -237,7 +237,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
     else {
       $field_types = \Drupal::service('plugin.manager.field.field_type')->getDefinitions();
       if (!in_array($field_def['type'], array_keys($field_types))) {
-        $this->logger->error('The field type, ' . $field_def['type'] . ' is not a valide field type.');
+        $this->logger->error('The field type, "' . $field_def['type'] . '", is not a valid field type.');
         return FALSE;
       }
     }
