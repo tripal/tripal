@@ -3,6 +3,7 @@ date: 20:03:2009 11:58
 saved-by: cjm
 auto-generated-by: cjm
 default-namespace: relationship
+ontology: OBO_REL
 remark: <p>This ontology contains logical relations to be shared across the different OBO ontologies. Each OBO ontology is free to extend this set with relations specific to the biology within that ontology</p><div class="notes"><p>In the definitions, variables c, d, ..., p, q, ... range over instances of continuants and processes respectively. C, D, ..., P, Q, ... range over the corresponding classes</p><p> For a discussion of instance-level relations and also of additional axioms needed to infer transitivity and other properties of the relations listed above see <a href="http://genomebiology.com/2005/6/5/R46">http://genomebiology.com/2005/6/5/R46</a> or the OBO relations page hosted at <a href="http://obo.sourceforge.net/relationship">http://obo.sourceforge.net/relationship</a></div>
 idspace: OBO_REL http://www.obofoundry.org/ro/ro.owl# "OBO Relation ontology official home on OBO Foundry"
 remark: cvs version $Revision: 1.14 $
