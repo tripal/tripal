@@ -921,6 +921,10 @@ class TaxonomyImporter extends ChadoImporterBase {
 
         $xml = new \SimpleXMLElement($xml_text);
       }
+      else {
+        $this->logger->warning("Error contacting NCBI to look up taxid %taxid, will retry",
+                               ['%taxid' => $taxid]);
+      }
       $retries--;
       $remaining_sleep = $sleep_time - ((int) (1e6 * (microtime(TRUE) - $start)));
       if ($remaining_sleep > 0) {
