@@ -726,7 +726,7 @@ class TaxonomyImporter extends ChadoImporterBase {
       $this->logger->warning('The following %count organisms do not have an NCBI taxonomy ID, '
                         . 'and have not been included in the tree: "@omitted_list"',
                         ['%count' => count($omitted_organisms),
-                         '@omitted_list' => $omitted_organisms]);
+                         '@omitted_list' => $omitted_list]);
     }
   }
 
