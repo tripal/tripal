@@ -957,7 +957,7 @@ class TaxonomyImporter extends ChadoImporterBase {
           $this->logger->warning("Substituting site taxon \"@chado_name\" for NCBI taxon \"@sci_name\","
                             . " taxid @taxid, organism_id @organism_id",
             ['@chado_name' => $chado_name, '@sci_name' => $sci_name,
-              '@taxid' => $taxid, '@organism_id' => $organism->organism_id]);
+             '@taxid' => $taxid, '@organism_id' => $organism->organism_id]);
           $sci_name = $chado_name;
         }
       }
