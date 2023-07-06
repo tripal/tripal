@@ -192,9 +192,9 @@ class TaxonomyImporter extends ChadoImporterBase {
           'target' => 'blank',
         ),
       ))->toString() . '.',
-      '#default_value' => \Drupal::state()->get('tripal_taxon_importer_ncbi_api_key', NULL),
+      '#default_value' => \Drupal::state()->get('tripal_ncbi_api_key', NULL),
       '#ajax' => array(
-        'callback' => 'tripal_taxon_importer_set_ncbi_api_key',
+        'callback' => [$this, 'tripal_taxon_importer_set_ncbi_api_key'],
         'wrapper' => 'ncbi_api_key',
       ),
       '#prefix' => '<div id="ncbi_api_key">',
@@ -628,7 +628,7 @@ class TaxonomyImporter extends ChadoImporterBase {
 
     $total = count($this->all_orgs);
     $omitted_organisms = [];
-    $api_key = \Drupal::state()->get('tripal_taxon_importer_ncbi_api_key', NULL);
+    $api_key = \Drupal::state()->get('tripal_ncbi_api_key', NULL);
     $sleep_time = 333334;
     if (!empty($api_key)) {
       $sleep_time = 100000;
@@ -898,7 +898,7 @@ class TaxonomyImporter extends ChadoImporterBase {
       "db=taxonomy" .
       "&id=$taxid";
 
-    $api_key = \Drupal::state()->get('tripal_taxon_importer_ncbi_api_key', NULL);
+    $api_key = \Drupal::state()->get('tripal_ncbi_api_key', NULL);
     $sleep_time = 333334;
     if (!empty($api_key)) {
       $sleep_time = 100000;
@@ -1251,7 +1251,7 @@ class TaxonomyImporter extends ChadoImporterBase {
   public function formSubmit($form, &$form_state) {
 
   }
-}
+
 
   /**
    * Ajax callback for the TaxonomyImporter::form() function.
@@ -1259,16 +1259,18 @@ class TaxonomyImporter extends ChadoImporterBase {
    * It is called when the user makes a change to the NCBI API key field and then
    * moves their cursor out of the field.
    *
-   * @param $form
+   * @param array $form
    *   The new form element.
-   * @param $form_state
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The state of the new form element.
    *
    * @return array
    *   The new api key field.
    */
-  function tripal_taxon_importer_set_ncbi_api_key($form, $form_state) {
-    \Drupal::state()->set('tripal_taxon_importer_ncbi_api_key', \Drupal\Component\Utility\HTML::escape($form_state['values']['ncbi_api_key']));
-    drupal_set_message('NCBI API key has been saved successfully!');
+  function tripal_taxon_importer_set_ncbi_api_key($form, &$form_state) {
+    $key_value = $form_state->getValue(['ncbi_api_key']);
+    \Drupal::state()->set('tripal_ncbi_api_key', \Drupal\Component\Utility\HTML::escape($key_value));
+    \Drupal::messenger()->addMessage(t('NCBI API key has been saved successfully!'));
     return $form['ncbi_api_key'];
   }
+}
