@@ -196,6 +196,7 @@ class TaxonomyImporter extends ChadoImporterBase {
       '#ajax' => array(
         'callback' => [$this, 'tripal_taxon_importer_set_ncbi_api_key'],
         'wrapper' => 'ncbi_api_key',
+        'disable-refocus' => true,
       ),
       '#prefix' => '<div id="ncbi_api_key">',
       '#suffix' => '</div>',
