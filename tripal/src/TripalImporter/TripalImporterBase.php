@@ -466,6 +466,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
       $ipercent = (int) $percent;
     }
     else {
+      $percent = 0;
       $ipercent = 0;
     }
 
