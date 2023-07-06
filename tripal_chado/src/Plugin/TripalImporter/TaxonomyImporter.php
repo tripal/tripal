@@ -261,9 +261,9 @@ class TaxonomyImporter extends ChadoImporterBase {
         //   t('Taxonomy IDs must be numeric. The following are not valid: "@ids".',
         //     ['@ids' => implode('", "', $bad_ids)]));
         \Drupal::messenger()->addError(
-          t('Taxonomy IDs must be numeric. The following are not valid: "%ids".', 
-          ['%ids' => implode('", "', $bad_ids)])
-        );    
+          t('Taxonomy IDs must be numeric. The following are not valid: "@ids".',
+          ['@ids' => implode('", "', $bad_ids)])
+        );
       }
     }
   }
@@ -285,7 +285,7 @@ class TaxonomyImporter extends ChadoImporterBase {
     // If genetic code cvterm not found, try to create it in organism_property CV
     // This cvterm is used in code further down in code
     if(!isset($genetic_code_cvterm)) {
-      chado_insert_cvterm([     
+      chado_insert_cvterm([
         'name' => 'genetic_code',
         'cv_name' => 'organism_property'
       ], [], $this->chado_schema_main);
@@ -469,7 +469,7 @@ class TaxonomyImporter extends ChadoImporterBase {
     $rank_cvterm = chado_get_cvterm([
       'name' => 'rank',
       // 'cv_id' => ['name' => 'local'], // TRIPAL 3
-      'cv_id' => ['name' => 'organism_property'], 
+      'cv_id' => ['name' => 'organism_property'],
     ], [], $this->chado_schema_main);
     if (!isset($rank_cvterm)) {
       throw new \Exception("Could not find TAXRANK vocabulary and thus rank cvterm. Please load the vocabulary.");
@@ -665,8 +665,8 @@ class TaxonomyImporter extends ChadoImporterBase {
           $rfh = fopen($search_url, "r");
           // If error, delay then retry
           if ((!$rfh) and ($retries)) {
-            $this->logger->warning("Error contacting NCBI to look up !sci_name, will retry",
-                              ['!sci_name' => $sci_name_escaped]);
+            $this->logger->warning("Error contacting NCBI to look up %sci_name, will retry",
+                              ['%sci_name' => $sci_name_escaped]);
           }
           $retries--;
           $remaining_sleep = $sleep_time - ((int) (1e6 * (microtime(TRUE) - $start)));
@@ -676,7 +676,7 @@ class TaxonomyImporter extends ChadoImporterBase {
         }
 
         if (!$rfh) {
-          $this->logger->warning("Could not look up !sci_name", ['!sci_name' => $sci_name_escaped]);
+          $this->logger->warning("Could not look up %sci_name", ['%sci_name' => $sci_name_escaped]);
           continue;
         }
         $xml_text = '';
@@ -700,8 +700,8 @@ class TaxonomyImporter extends ChadoImporterBase {
               $taxid = (string) $xml->IdList->Id;
             }
             else {
-              $this->logger->warning("Partial match \"@matched\" to query \"@query\", no taxid available",
-                ['@matched' => $matched, '@query' => $sci_name]);
+              $this->logger->warning("Partial match \"%matched\" to query \"%query\", no taxid available",
+                ['%matched' => $matched, '%query' => $sci_name]);
             }
           }
         }
@@ -723,10 +723,10 @@ class TaxonomyImporter extends ChadoImporterBase {
     }
     if (count($omitted_organisms)) {
       $omitted_list = implode('", "', $omitted_organisms);
-      $this->logger->warning('The following !count organisms do not have an NCBI taxonomy ID, '
-                        . 'and have not been included in the tree: !omitted_list',
-                        ['!count' => count($omitted_organisms),
-                          '!omitted_list' => $omitted_list]);
+      $this->logger->warning('The following %count organisms do not have an NCBI taxonomy ID, '
+                        . 'and have not been included in the tree: "@omitted_list"',
+                        ['%count' => count($omitted_organisms),
+                         '@omitted_list' => $omitted_organisms]);
     }
   }
 
@@ -890,7 +890,7 @@ class TaxonomyImporter extends ChadoImporterBase {
     $rank_cvterm = chado_get_cvterm([
       'name' => 'rank',
       // 'cv_id' => ['name' => 'local'], // TRIPAL 3
-      'cv_id' => ['name' => 'organism_property'], 
+      'cv_id' => ['name' => 'organism_property'],
     ], [], $this->chado_schema_main);
 
     // Get the details for this taxonomy.
@@ -1099,8 +1099,8 @@ class TaxonomyImporter extends ChadoImporterBase {
       return TRUE;
     }
     else {
-      $this->logger->warning("Error contacting NCBI to look up taxid !taxid",
-                        ['!taxid' => $taxid]);
+      $this->logger->warning("Error contacting NCBI to look up taxid %taxid",
+                        ['%taxid' => $taxid]);
       return FALSE;
     }
   }
@@ -1199,7 +1199,7 @@ class TaxonomyImporter extends ChadoImporterBase {
       'cv_name' => 'organism_property',
       'value' => $value,
     ];
-    
+
     // Delete all properties of this type if the rank is zero.
     if ($rank == 0) {
       chado_delete_property($record, $property, $this->chado_schema_main);
@@ -1246,9 +1246,9 @@ class TaxonomyImporter extends ChadoImporterBase {
    */
   public function formSubmit($form, &$form_state) {
 
-  }  
+  }
 }
-  
+
   /**
    * Ajax callback for the TaxonomyImporter::form() function.
    *
