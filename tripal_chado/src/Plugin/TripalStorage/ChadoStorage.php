@@ -217,6 +217,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
     $build = $this->buildChadoRecords($values, TRUE);
     $records = $build['records'];
 
+    // @debug print "Build Records: " . print_r($records, TRUE);
+
     $transaction_chado = $this->connection->startTransaction();
     try {
 
@@ -898,7 +900,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
             // entire record should be removed on an update and not inserted.
             $delete_if_empty = array_key_exists('delete_if_empty',$prop_storage_settings) ? $prop_storage_settings['delete_if_empty'] : FALSE;
             if ($delete_if_empty) {
-              $records[$chado_table][$delta]['delete_if_empty'][] = $key;
+              $records[$chado_table][$delta]['delete_if_empty'][] = $chado_column;
             }
           }
           if ($action == 'join') {
@@ -1283,7 +1285,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
         }
       }
       else if ($info['type'] == 'boolean') {
-        if (!is_bool($col_val)) {
+        if (!is_bool($col_val) and !preg_match('/^[01]$/', $col_val)) {
           $bad_types[$col] = 'Boolean';
         }
       }
@@ -1309,7 +1311,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
     if (count($bad_types) > 0) {
       // Documentation for how to create a violation is here
       // https://github.com/symfony/validator/blob/6.1/ConstraintViolation.php
-      $message = 'The item cannot be saved because the following values are of the wrong type.';
+      $message = 'The item cannot be saved because the following values are of the wrong type: ';
       $params = [];
       foreach ($bad_types as $col => $col_type) {
         $message .=  ucfirst($col) . " should be $col_type. " ;

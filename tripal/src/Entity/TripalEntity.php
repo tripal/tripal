@@ -477,7 +477,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * @param TripalEntity $entity
    *
    * @return array
-   *   The returned array has two elements: an an array of values as described
+   *   The returned array has two elements: an array of values as described
    *   above, and an array of TripalStorage objects,
    */
   public static function getValuesArray($entity) {
@@ -674,7 +674,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       $field_defs = $field_manager->getFieldDefinitions($entity_type_id, $bundle);
       foreach ($field_defs as $field_name => $field_def) {
 
-        // Createa  fieldItemlist and iterate through it.
+        // Create a fieldItemlist and iterate through it.
         $items = $field_type_manager->createFieldItemList($entity, $field_name, $entity->get($field_name)->getValue());
         foreach($items as $item) {
 
