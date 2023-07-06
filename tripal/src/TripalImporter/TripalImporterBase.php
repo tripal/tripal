@@ -461,8 +461,13 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
 
     // Now see if we need to report to the user the percent done.  A message
     // will be printed on the command-line if the job is run there.
-    $percent = ($this->num_handled / $this->total_items) * 100;
-    $ipercent = (int) $percent;
+    if ($this->total_items) {
+      $percent = ($this->num_handled / $this->total_items) * 100;
+      $ipercent = (int) $percent;
+    }
+    else {
+      $ipercent = 0;
+    }
 
     // If we've reached our interval then print update info.
     if ($ipercent > 0 and $ipercent != $this->reported and $ipercent % $this->interval == 0) {
