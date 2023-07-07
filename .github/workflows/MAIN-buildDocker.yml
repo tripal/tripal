@@ -56,8 +56,8 @@ jobs:
         if: ${{ matrix.install-chado == 'FALSE' }}
         with:
           image: tripalproject/tripaldocker
-          tags: drupal${{ matrix.drupal-version }}-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}
-          dockerfile: tripaldocker/Dockerfile-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}-noChado
+          tags: drupal${{ matrix.drupal-version }}-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}-noChado
+          dockerfile: tripaldocker/Dockerfile-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}
           registry: docker.io
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
