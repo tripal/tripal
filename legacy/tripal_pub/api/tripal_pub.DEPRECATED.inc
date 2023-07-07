@@ -182,7 +182,7 @@ function tripal_pub_import_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_updat
     ]
   );
 
-  return tripal_import_pub_by_dbxref($pub_dbxref, $do_contact, $do_udpate);
+  return tripal_import_pub_by_dbxref($pub_dbxref, $do_contact, $do_update);
 }
 
 /**
