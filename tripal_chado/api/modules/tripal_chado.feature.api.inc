@@ -493,7 +493,10 @@ function chado_get_feature_sequences($feature, $options) {
 
       // Get the reverse compliment if feature is on the reverse strand.
       $dir = 'forward';
-      $length = strlen($seq);
+      $length = 0;
+      if ($seq) {
+        $length = strlen($seq);
+      }
       if ($parent->strand < 0) {
         $seq = chado_reverse_compliment_sequence($seq);
         $dir = 'reverse';
