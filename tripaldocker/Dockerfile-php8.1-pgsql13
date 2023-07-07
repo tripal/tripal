@@ -1,11 +1,6 @@
 FROM php:8.1-apache-bullseye
 
-## Base of this image is from Official DockerHub PHP image.
-## Heavily influenced by https://github.com/statonlab/docker-containers
-
-MAINTAINER Lacey-Anne Sanderson <laceyannesanderson@gmail.com>
-
-ARG drupalversion='9.4.x-dev'
+ARG drupalversion='10.0.x-dev'
 ARG modules='devel devel_php'
 ARG chadoschema='chado'
 ARG installchado=TRUE
