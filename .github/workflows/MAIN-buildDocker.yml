@@ -41,7 +41,7 @@ jobs:
         name: Check out code
       - uses: mr-smithers-excellent/docker-build-push@v5
         name: Build & push Full matrix of Docker images
-        if: ${{ matrix.install-chado == "TRUE" }}
+        if: ${{ matrix.install-chado == 'TRUE' }}
         with:
           image: tripalproject/tripaldocker
           tags: drupal${{ matrix.drupal-version }}-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}
@@ -53,7 +53,7 @@ jobs:
           labels: 'tripal.branch=4.x,drupal.version.label="${{ matrix.label }}",php.version.label="${{ matrix.php-version }}", postgresql.version.label="${{ matrix.pgsql-version }}"'
       - uses: mr-smithers-excellent/docker-build-push@v5
         name: Build & push Full matrix of Docker images WITH NO CHADO
-        if: ${{ matrix.install-chado == "FALSE" }}
+        if: ${{ matrix.install-chado == 'FALSE' }}
         with:
           image: tripalproject/tripaldocker
           tags: drupal${{ matrix.drupal-version }}-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}
@@ -65,7 +65,7 @@ jobs:
           labels: 'tripal.branch=4.x,drupal.version.label="${{ matrix.label }}",php.version.label="${{ matrix.php-version }}", postgresql.version.label="${{ matrix.pgsql-version }}"'
       - uses: mr-smithers-excellent/docker-build-push@v5
         name: Build & push Docker image Drupal focused Docker images.
-        if: ${{ matrix.php-version == '8.1' && matrix.pgsql-version == '13' && matrix.install-chado == "TRUE" }}
+        if: ${{ matrix.php-version == '8.1' && matrix.pgsql-version == '13' && matrix.install-chado == 'TRUE' }}
         with:
           image: tripalproject/tripaldocker
           tags: drupal${{ matrix.drupal-version }}
@@ -77,7 +77,7 @@ jobs:
           labels: 'tripal.branch=4.x,drupal.version.label="${{ matrix.label }}",php.version.label="${{ matrix.php-version }}", postgresql.version.label="${{ matrix.pgsql-version }}"'
       - uses: mr-smithers-excellent/docker-build-push@v5
         name: Build latest using 10.0.x-dev, PHP 8.1, PgSQL 13
-        if: ${{ matrix.drupal-version == '10.0.x-dev' && matrix.php-version == '8.1' && matrix.pgsql-version == '13' && matrix.install-chado == "TRUE" }}
+        if: ${{ matrix.drupal-version == '10.0.x-dev' && matrix.php-version == '8.1' && matrix.pgsql-version == '13' && matrix.install-chado == 'TRUE' }}
         with:
           image: tripalproject/tripaldocker
           tags: latest
