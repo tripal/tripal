@@ -12,7 +12,7 @@
  *
  * @see chado_get_property().
  */
-function tripal_feature_analysis_get_property($analysis_id = NULL, $feature_id = NULL, $analysisfeature_id = NULL, $property, $cv_name = 'tripal') {
+function tripal_feature_analysis_get_property($analysis_id = NULL, $feature_id = NULL, $analysisfeature_id = NULL, $property = NULL, $cv_name = 'tripal') {
 
   tripal_report_error(
     'tripal_deprecated',

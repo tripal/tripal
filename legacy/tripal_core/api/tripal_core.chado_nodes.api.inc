@@ -1079,9 +1079,8 @@ function chado_cleanup_orphaned_nodes($table, $nentries = 25000,
  *
  * @ingroup tripal_legacy_chado_node_api
  */
-function chado_cleanup_orphaned_nodes_part($table, $job_id = NULL, $nentries,
+function chado_cleanup_orphaned_nodes_part($table, $job_id, $nentries,
                                            $offset, $linking_table, $node_type) {
-
   $count = 0;
 
   // Retrieve all of the entries in the linker table for a given node type
