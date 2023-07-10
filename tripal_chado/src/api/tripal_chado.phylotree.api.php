@@ -56,7 +56,7 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
   if ($val_type != 'insert' and $val_type != 'update') {
     // tripal_report_error('tripal_phylogeny', TRIPAL_ERROR,
     //                     "The $val_type argument must be either 'update or 'insert'.");
-    \Drupal::service('tripal.logger')->error("The $val_type argument must be either 'update or 'insert'.");
+    \Drupal::service('tripal.logger')->error("The \$val_type argument must be either 'update or 'insert'.");
   }
 
   // Set Defaults.
