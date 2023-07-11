@@ -216,7 +216,8 @@ class TripalLogger {
     $this->log2Job($message, $context);
 
     if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
-      $this->logger->notice($message, $context);
+      $message_str = $this->messageString($message, $context);
+      $this->logger->notice($message_str);
     }
 
     if (isset($options['drupal_set_message'])) {
@@ -253,7 +254,8 @@ class TripalLogger {
     $this->log2Job($message, $context);
 
     if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
-      $this->logger->info($message, $context);
+      $message_str = $this->messageString($message, $context);
+      $this->logger->info($message_str);
     }
 
     if (isset($options['drupal_set_message'])) {
@@ -299,7 +301,8 @@ class TripalLogger {
     $this->log2Job($message, $context);
 
     if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
-      $this->logger->error($message);
+      $message_str = $this->messageString($message, $context);
+      $this->logger->error($message_str);
     }
 
     if (isset($options['drupal_set_message'])) {
@@ -347,7 +350,8 @@ class TripalLogger {
     $this->log2Job($message, $context);
 
     if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
-      $this->logger->warning($message, $context);
+      $message_str = $this->messageString($message, $context);
+      $this->logger->warning($message_str);
     }
 
     if (isset($options['drupal_set_message'])) {
@@ -395,7 +399,8 @@ class TripalLogger {
     $this->log2Job($message, $context);
 
     if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
-      $this->logger->emergency($message, $context);
+      $message_str = $this->messageString($message, $context);
+      $this->logger->emergency($message_str);
     }
 
     if (isset($options['drupal_set_message'])) {
@@ -443,7 +448,8 @@ class TripalLogger {
     $this->log2Job($message, $context);
 
     if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
-      $this->logger->alert($message, $context);
+      $message_str = $this->messageString($message, $context);
+      $this->logger->alert($message_str);
     }
 
     if (isset($options['drupal_set_message'])) {
@@ -491,7 +497,8 @@ class TripalLogger {
     $this->log2Job($message, $context);
 
     if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
-      $this->logger->critical($message, $context);
+      $message_str = $this->messageString($message, $context);
+      $this->logger->critical($message_str);
     }
 
     if (isset($options['drupal_set_message'])) {
@@ -550,7 +557,8 @@ class TripalLogger {
       }
       $this->log2job('DEBUG: ' . $message, $context);
       if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
-        $this->logger->debug($message, $context);
+        $message_str = $this->messageString($message, $context);
+        $this->logger->debug($message_str);
       }
 
       $this->log2Server('DEBUG: ' . $message, $context, $options);
@@ -603,7 +611,8 @@ class TripalLogger {
     }
 
     if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
-      $this->logger->log($level, $message, $context);
+      $message_str = $this->messageString($message, $context);
+      $this->logger->log($level, $message_str);
     }
 
     if (isset($options['drupal_set_message'])) {
