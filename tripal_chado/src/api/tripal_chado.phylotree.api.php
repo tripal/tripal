@@ -920,53 +920,26 @@ function chado_phylogeny_lookup_organism_by_name($name, $schema_name = 'chado') 
  * @ingroup tripal_phylotree_api
  */
 function chado_phylogeny_get_node_types_vocab($options, $schema_name = 'chado') {
-  // Get the vocabulary terms used to describe nodes in the tree.
-  $values = [
-    'name' => 'phylo_leaf',
-    'cv_id' => [
-      'name' => 'tripal_phylogeny',
-    ],
-  ];
-  $leaf = chado_generate_var('cvterm', $values, [], $schema_name);
-  if (!$leaf) {
-    // tripal_report_error($options['message_type'], TRIPAL_ERROR,
-    //   "Could not find the leaf vocabulary term: 'phylo_leaf'. It should " .
-    //   "already be present as part of the tripal_phylogeny vocabulary.", [], $options['message_opts']);
-    \Drupal::service('tripal.logger')->error(
-      "Could not find the leaf vocabulary term: 'phylo_leaf'. It should " .
-      "already be present as part of the tripal_phylogeny vocabulary."
-    );
-    return FALSE;
+  // Get the three default vocabulary terms used to describe nodes in the tree.
+  $terms = ['leaf' => 'phylo_leaf', 'internal' => 'phylo_interior', 'root' => 'phylo_root'];
+  $vocab = [];
+  foreach ($terms as $key => $name) {
+    $values = [
+      'name' => $name,
+      'cv_id' => [
+        'name' => 'tripal_phylogeny',
+      ],
+    ];
+    $cvterm = chado_generate_var('cvterm', $values, [], $schema_name);
+    if (!$cvterm) {
+      \Drupal::service('tripal.logger')->error(
+        "Could not find the leaf vocabulary term: '%name'. It should " .
+        "already be present as part of the tripal_phylogeny vocabulary.",
+        ['%name' => $name], $options['message_opts']);
+      return FALSE;
+    }
+    $vocab[$key] = $cvterm;
   }
-  $values['name'] = 'phylo_interior';
-  $internal = chado_generate_var('cvterm', $values, [], $schema_name);
-  if (!$internal) {
-    // tripal_report_error($options['message_type'], TRIPAL_ERROR,
-    //   "Could not find the leaf vocabulary term: 'phylo_interior'. It should " .
-    //   "already be present as part of the tripal_phylogeny vocabulary.", [], $options['message_opts']);
-    \Drupal::service('tripal.logger')->error(
-      "Could not find the leaf vocabulary term: 'phylo_interior'. It should " .
-      "already be present as part of the tripal_phylogeny vocabulary."      
-    );
-    return FALSE;
-  }
-  $values['name'] = 'phylo_root';
-  $root = chado_generate_var('cvterm', $values, [], $schema_name);
-  if (!$root) {
-    // tripal_report_error($options['message_type'], TRIPAL_ERROR,
-    //   "Could not find the leaf vocabulary term: 'phylo_root'. It should " .
-    //   "already be present as part of the tripal_phylogeny vocabulary.", [], $options['message_opts']);
-    \Drupal::service('tripal.logger')->error(
-      "Could not find the leaf vocabulary term: 'phylo_root'. It should " .
-      "already be present as part of the tripal_phylogeny vocabulary."
-    );
-    return FALSE;
-  }
-  $vocab = [
-    'leaf' => $leaf,
-    'internal' => $internal,
-    'root' => $root,
-  ];
   return $vocab;
 }
 
