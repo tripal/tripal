@@ -20,7 +20,8 @@ use Drupal\core\Field\FieldDefinitionInterface;
  *   label = @Translation("Analysis"),
  *   description = @Translation("Application of analytical methods to existing data of a specific type"),
  *   default_widget = "chado_analysis_widget_default",
- *   default_formatter = "chado_analysis_formatter_default"
+ *   default_formatter = "chado_analysis_formatter_default",
+ *   cardinality = 1
  * )
  */
 class ChadoAnalysisDefault extends ChadoFieldItemBase {
