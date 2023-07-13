@@ -57,6 +57,18 @@ class ChadoAnalysisDefault extends ChadoFieldItemBase {
   /**
    * {@inheritdoc}
    */
+  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
+
+    // Add a validation to make sure the base table has a foreign
+    // key to analysis_id in the chado.analysis table.
+    $elements = parent::storageSettingsForm($form, $form_state, $has_data);
+    $elements['storage_plugin_settings']['base_table']['#element_validate'] = [[static::class, 'storageSettingsFormValidate']];
+    return $elements;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public static function tripalTypes($field_definition) {
     $entity_type_id = $field_definition->getTargetEntityTypeId();
 
@@ -85,10 +97,6 @@ class ChadoAnalysisDefault extends ChadoFieldItemBase {
     $analysis_table_def = $schema->getTableDef('analysis', ['format' => 'Drupal']);
     $base_pkey_col = $base_table_def['primary key'];
     $base_fkey_col = 'analysis_id';
-    $fkeys = $base_table_def['foreign keys']['analysis']['columns'] ?? [];
-    if (!in_array($base_fkey_col, $fkeys)) {
-// @@@ to-do how to generate error if analysis_id is not a foreign key for this base table?
-    }
 
     // Create variables to store the terms for the analysis.
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
@@ -121,4 +129,30 @@ class ChadoAnalysisDefault extends ChadoFieldItemBase {
     return $properties;
   }
 
+  /**
+   * Form element validation handler
+   *
+   * @param array $form
+   *   The form where the settings form is being included in.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state of the (entire) configuration form.
+   */
+  public static function storageSettingsFormValidate(array $form, FormStateInterface $form_state) {
+    $settings = $form_state->getValue('settings');
+    if (!array_key_exists('storage_plugin_settings', $settings)) {
+      return;
+    }
+    $base_table = $settings['storage_plugin_settings']['base_table'];
+
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+    $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+    $base_fkey_col = 'analysis_id';
+    $fkeys = $base_table_def['foreign keys']['analysis']['columns'] ?? [];
+    if (!in_array($base_fkey_col, $fkeys)) {
+      $form_state->setErrorByName('storage_plugin_settings][base_table',
+          'The selected base table does not have a foreign key to analysis.analysis_id,'
+          . ' this field cannot be used on this content type.');
+    }
+  }
 }
