@@ -999,7 +999,7 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $j
     $options['message_opts'] = [
       'watchdog' => FALSE,
       'job' => $job,
-      'print' => TRUE,
+      'drupal_set_message' => TRUE,
     ];
   }
 
@@ -1011,7 +1011,7 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $j
       //   'The phylotree_id is required for importing the tree.', [], $options['message_opts']);
       \Drupal::service('tripal.logger')->error(
         'The phylotree_id is required for importing the tree.'
-      );     
+      );
       return FALSE;
     }
   }
@@ -1038,7 +1038,6 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $j
     "If the load fails or is terminated prematurely then the entire set of \n" .
     "insertions/updates is rolled back and will not be found in the database\n\n";
   try {
-
 
     // Parse the file according to the format indicated.
     if ($format == 'newick') {

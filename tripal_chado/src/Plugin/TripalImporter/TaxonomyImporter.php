@@ -17,12 +17,9 @@ use Drupal\Core\Url;
  *    id = "chado_taxonomy_loader",
  *    label = @Translation("Taxonomy Loader"),
  *    description = @Translation("Import a Taxonomy into Chado"),
- *    file_types = {"gff","gff3"},
- *    upload_description = @Translation("Please provide the Taxonomy file."),
- *    upload_title = @Translation("Taxonomy File"),
  *    use_analysis = False,
  *    require_analysis = False,
- *    button_text = @Translation("Import Taxonomy file"),
+ *    button_text = @Translation("Import Taxonomy"),
  *    file_upload = False,
  *    file_load = False,
  *    file_remote = False,
@@ -169,13 +166,13 @@ class TaxonomyImporter extends ChadoImporterBase {
         the taxonomic tree for the species loaded.'),
     ];
 
-    // No space before 'Taxonomy Tree' for backwards compatibility.
+    // Note, Tripal 3 had no space before 'Taxonomy Tree'.
     $form['tree_name'] = [
       '#type' => 'textfield',
       '#title' => t('Tree Name'),
       '#description' => t('If a tree with this name exists, it will be rebuilt,
         otherwise a new tree will be created with this name.'),
-      '#default_value' => \Drupal::state()->get('site_name', '') . 'Taxonomy Tree',
+      '#default_value' => \Drupal::config('system.site')->get('name') . ' Taxonomy Tree',
     ];
 
     $form['ncbi_api_key'] = [
