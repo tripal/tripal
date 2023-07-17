@@ -20,7 +20,7 @@
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_modify_template_base_form($form, &$form_state = NULL, $mode) {
+function tripal_bulk_loader_modify_template_base_form($form, &$form_state = NULL, $mode = '') {
 
   // set the breadcrumb
   $breadcrumb = [];

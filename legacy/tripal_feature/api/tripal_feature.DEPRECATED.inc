@@ -12,7 +12,7 @@
  *
  * @see chado_get_property().
  */
-function tripal_feature_analysis_get_property($analysis_id = NULL, $feature_id = NULL, $analysisfeature_id = NULL, $property, $cv_name = 'tripal') {
+function tripal_feature_analysis_get_property($analysis_id = NULL, $feature_id = NULL, $analysisfeature_id = NULL, $property = NULL, $cv_name = 'tripal') {
 
   tripal_report_error(
     'tripal_deprecated',
@@ -60,7 +60,7 @@ function tripal_feature_analysis_get_property($analysis_id = NULL, $feature_id =
  *
  * @see chado_insert_property().
  */
-function tripal_feature_analysis_insert_property($analysis_id = NULL, $feature_id = NULL, $analysisfeature_id = NULL, $property, $value, $update_if_present = 0, $cv_name = 'tripal') {
+function tripal_feature_analysis_insert_property($analysis_id = NULL, $feature_id = NULL, $analysisfeature_id = NULL, $property = NULL, $value = NULL, $update_if_present = 0, $cv_name = 'tripal') {
 
   tripal_report_error(
     'tripal_deprecated',
@@ -113,7 +113,7 @@ function tripal_feature_analysis_insert_property($analysis_id = NULL, $feature_i
  *
  * @see chado_update_property().
  */
-function tripal_feature_analysis_update_property($analysis_id = NULL, $feature_id = NULL, $analysisfeature_id = NULL, $property, $value, $insert_if_missing = 0, $cv_name = 'tripal') {
+function tripal_feature_analysis_update_property($analysis_id = NULL, $feature_id = NULL, $analysisfeature_id = NULL, $property = NULL, $value = NULL, $insert_if_missing = 0, $cv_name = 'tripal') {
 
   tripal_report_error(
     'tripal_deprecated',
@@ -197,7 +197,7 @@ function tripal_feature_analysis_update_property_by_id($analysisfeatureprop_id, 
  *
  * @see chado_delete_property().
  */
-function tripal_feature_analysis_delete_property($analysis_id = NULL, $feature_id = NULL, $analysisfeature_id = NULL, $property, $cv_name = 'tripal') {
+function tripal_feature_analysis_delete_property($analysis_id = NULL, $feature_id = NULL, $analysisfeature_id = NULL, $property = NULL, $cv_name = 'tripal') {
 
   tripal_report_error(
     'tripal_deprecated',

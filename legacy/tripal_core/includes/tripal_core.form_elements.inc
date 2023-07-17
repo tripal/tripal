@@ -101,7 +101,7 @@ function theme_file_upload_combo($variables) {
  *
  * @ingroup tripal_legacy_core
  */
-function file_upload_combo_value_callback($element, $input = FALSE, &$form_state) {
+function file_upload_combo_value_callback($element, $input, &$form_state) {
   $values = [];
 
   if ($input == FALSE) {
@@ -199,7 +199,7 @@ function expand_sequence_combo($element, $form_state, $complete_form) {
  *
  * @ingroup tripal_legacy_core
  */
-function sequence_combo_value_callback($element, $input = FALSE, &$form_state) {
+function sequence_combo_value_callback($element, $input, &$form_state) {
   $upstream = $form['values'][$element['#name']]['upstream'];
   $downstream = $form['values'][$element['#name']]['downstream'];
 
