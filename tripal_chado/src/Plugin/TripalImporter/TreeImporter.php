@@ -227,8 +227,8 @@ class TreeImporter extends ChadoImporterBase {
       '#title' => t('Use Unique Feature Name'),
       '#type' => 'checkbox',
       '#description' => t('If this is a phylogenetic (non taxonomic) tree and the nodes ' .
-        'should match the unique name of the feature rather than the name of the feature ' .
-        'then select this box. If unselected the loader will try to match the feature ' .
+        'should match the unique name of the feature rather than the name of the feature, ' .
+        'then check this box. If unchecked, the loader will try to match the feature ' .
         'using the feature name.'),
       '#default_value' => $match,
     ];
@@ -253,7 +253,7 @@ class TreeImporter extends ChadoImporterBase {
     $options = [
       'name' => trim($values["tree_name"]),
       'description' => trim($values["description"]),
-      'analysis_id' => $values["analysis_id"] ?? NULL,
+      'analysis_id' => $values["analysis_id"],
       'leaf_type' => $values["leaf_type"],
       'format' => 'newick',
       'dbxref' => trim($values["dbxref"]),
@@ -295,7 +295,7 @@ class TreeImporter extends ChadoImporterBase {
     $options = [
       'name' => $arguments["tree_name"],
       'description' => $arguments["description"],
-      'analysis_id' => $arguments["analysis_id"] ?? 0,
+      'analysis_id' => $arguments["analysis_id"],
       'leaf_type' => $arguments["leaf_type"],
       'tree_file' => $this->arguments['files'][0]['file_path'],
       'format' => 'newick',

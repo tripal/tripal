@@ -56,7 +56,8 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
   if ($val_type != 'insert' and $val_type != 'update') {
     // tripal_report_error('tripal_phylogeny', TRIPAL_ERROR,
     //                     "The $val_type argument must be either 'update or 'insert'.");
-    \Drupal::service('tripal.logger')->error("The \$val_type argument must be either 'update or 'insert'.");
+    \Drupal::service('tripal.logger')->error("The \$val_type argument to"
+        . " chado_validate_phylotree() must be either 'update' or 'insert'.");
   }
 
   // Set Defaults.
@@ -70,7 +71,7 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
       $options['name_re'] = '^(.*)$';
     }
     // A dbxref is not required by Tripal but is required by the database
-    // field in the phylotree table.  Therefore, if the dbxref is not provided
+    // field in the phylotree table.  Therefore, if the dbxref is not provided,
     // we can set this to be the null database and null dbxref which
     // is represented as 'null:local:null'
     if (!array_key_exists('dbxref', $options)) {
@@ -100,6 +101,7 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
       return FALSE;
     }
   }
+  // else $val_type == 'update'
   else {
     // Does the phylotree ID exist and is it valid.
     if (!array_key_exists('phylotree_id', $options)) {
@@ -146,15 +148,15 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
     $analysis = chado_select_record('analysis',
       ['analysis_id'], ['analysis_id' => $options['analysis_id']], NULL, $schema_name);
     if (!$analysis) {
-      $errors['analysis_id'] = t('The analysis name provided does not exist.');
+      $errors['analysis_id'] = t('The analysis ID provided does not exist.');
       return FALSE;
     }
     $options['analysis_id'] = $analysis[0]->analysis_id;
   }
-  if (array_key_exists('analysis', $options) and $options['analysis']) {
+  elseif (array_key_exists('analysis', $options) and $options['analysis']) {
     $analysis = chado_select_record('analysis', ['analysis_id'], ['name' => $options['analysis']], NULL, $schema_name);
     if (!$analysis) {
-      $errors['analysis'] = t('The analysis ID provided does not exist.');
+      $errors['analysis'] = t('The analysis name provided does not exist.');
       return FALSE;
     }
     $options['analysis_id'] = $analysis[0]->analysis_id;
@@ -238,7 +240,7 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
   if (array_key_exists('name', $options) and $options['name']) {
     $sql = "
       SELECT *
-      FROM {phylotree} P
+      FROM {1:phylotree} P
       WHERE
         P.name = :name
     ";
@@ -249,7 +251,9 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
     }
     $result = chado_query($sql, $args, [], $schema_name)->fetchObject();
     if ($result) {
-      $errors['name'] = t("The tree name is in use by another tree. Please provide a different unique name for this tree.");
+      $errors['name'] = t('The tree name ":name" is in use by another tree.'
+          . ' Please provide a different unique name for this tree.',
+          [':name' => $options['name']]);
     }
   }
 
@@ -524,7 +528,7 @@ function chado_update_phylotree($phylotree_id, &$options, $schema_name = 'chado'
     // Make sure if we already have a file that we remove the old one.
     $sql = "
       SELECT FM.fid
-      FROM {file_managed} FM
+      FROM {1:file_managed} FM
         INNER JOIN {file_usage} FU on FM.fid = FU.fid
       WHERE FU.id = :id and FU.module = 'tripal_phylogeny'
     ";
