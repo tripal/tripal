@@ -143,13 +143,13 @@ class TripalLogger {
    */
   protected function log2Message($level, $message, $context = []) {
 
-    if (in_array($level, ['info', 'notice', 'debug'])) {
-      $status = \Drupal\Core\Messenger\MessengerInterface::TYPE_STATUS;
-    }
-    else if (in_array($level, ['critical', 'error', 'emergency'])) {
+    if (in_array($level, ['emergency', 'alert', 'critical', 'error'])) {
       $status = \Drupal\Core\Messenger\MessengerInterface::TYPE_ERROR;
     }
-    else if (in_array($level, ['alert', 'warning'])) {
+    else if (in_array($level, ['notice', 'info', 'debug'])) {
+      $status = \Drupal\Core\Messenger\MessengerInterface::TYPE_STATUS;
+    }
+    else if (in_array($level, ['warning'])) {
       $status = \Drupal\Core\Messenger\MessengerInterface::TYPE_WARNING;
     }
     else {
