@@ -143,7 +143,7 @@ class TripalLogger {
    */
   protected function log2Message($level, $message, $context = []) {
 
-    if (in_array($level, ['info', 'notice'])) {
+    if (in_array($level, ['info', 'notice', 'debug'])) {
       $status = \Drupal\Core\Messenger\MessengerInterface::TYPE_STATUS;
     }
     else if (in_array($level, ['critical', 'error', 'emergency'])) {
@@ -555,14 +555,15 @@ class TripalLogger {
         $function = $backtrace[$i];
         $message .= "  $i) " . $function['function'] . "\n";
       }
-      $this->log2job('DEBUG: ' . $message, $context);
-      if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
-        $message_str = $this->messageString($message, $context);
-        $this->logger->debug($message_str);
-      }
-
-      $this->log2Server('DEBUG: ' . $message, $context, $options);
     }
+
+    $this->log2job('DEBUG: ' . $message, $context);
+    if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
+      $message_str = $this->messageString($message, $context);
+      $this->logger->debug($message_str);
+    }
+
+    $this->log2Server('DEBUG: ' . $message, $context, $options);
   }
 
   /**
@@ -603,7 +604,8 @@ class TripalLogger {
   public function log($level, $message, $context = [], $options=[]) {
     if ($this->isSuppressed()) return;
 
-    if ($level != 'INFO' and $level != 'NOTICE') {
+    $level = strtolower($level);
+    if ($level != 'info' and $level != 'notice') {
       $this->log2Job(ucwords($level) . ': ' . $message, $context);
     }
     else {
