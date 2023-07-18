@@ -54,11 +54,10 @@
 function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $schema_name = 'chado') {
 
   if ($val_type != 'insert' and $val_type != 'update') {
-    // tripal_report_error('tripal_phylogeny', TRIPAL_ERROR,
-    //                     "The $val_type argument must be either 'update or 'insert'.");
     \Drupal::service('tripal.logger')->error("The \$val_type argument to"
         . " chado_validate_phylotree() must be either 'update' or 'insert'.");
   }
+  $chado = \Drupal::service('tripal_chado.database');
 
   // Set Defaults.
   if ($val_type == 'insert') {
@@ -70,7 +69,7 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
     if (!array_key_exists('name_re', $options) or (!$options['name_re'])) {
       $options['name_re'] = '^(.*)$';
     }
-    // A dbxref is not required by Tripal but is required by the database
+    // A dbxref is not required by Tripal, but is required by the database
     // field in the phylotree table.  Therefore, if the dbxref is not provided,
     // we can set this to be the null database and null dbxref which
     // is represented as 'null:local:null'
@@ -249,7 +248,7 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
       $sql .= " AND NOT P.phylotree_id = :phylotree_id";
       $args[':phylotree_id'] = $options['phylotree_id'];
     }
-    $result = chado_query($sql, $args, [], $schema_name)->fetchObject();
+    $result = $chado->query($sql, $args, [], $schema_name)->fetchObject();
     if ($result) {
       $errors['name'] = t('The tree name ":name" is in use by another tree.'
           . ' Please provide a different unique name for this tree.',
