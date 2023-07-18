@@ -146,11 +146,11 @@ class TripalLogger {
     if (in_array($level, ['emergency', 'alert', 'critical', 'error'])) {
       $status = \Drupal\Core\Messenger\MessengerInterface::TYPE_ERROR;
     }
-    else if (in_array($level, ['notice', 'info', 'debug'])) {
-      $status = \Drupal\Core\Messenger\MessengerInterface::TYPE_STATUS;
-    }
     else if (in_array($level, ['warning'])) {
       $status = \Drupal\Core\Messenger\MessengerInterface::TYPE_WARNING;
+    }
+    else if (in_array($level, ['notice', 'info', 'debug'])) {
+      $status = \Drupal\Core\Messenger\MessengerInterface::TYPE_STATUS;
     }
     else {
       // Any other type of status we just won't handle.
