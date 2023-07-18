@@ -545,8 +545,11 @@ class TripalLogger {
   public function debug($message, $context = [], $options=[]) {
     if ($this->isSuppressed()) return;
 
+    // If we are not set to return debugging information and the severity level
+    // is debug then don't report the error.
     // Get the backtrace and include in the error message, but only if the
     // TRIPAL_DEBUG environment variable is set.
+    // (In Tripal 3 this was added to all levels)
     if (getenv('TRIPAL_DEBUG') == 1) {
       $backtrace = debug_backtrace();
       $message .= "\nBacktrace:\n";
@@ -555,15 +558,15 @@ class TripalLogger {
         $function = $backtrace[$i];
         $message .= "  $i) " . $function['function'] . "\n";
       }
-    }
 
-    $this->log2job('DEBUG: ' . $message, $context);
-    if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
-      $message_str = $this->messageString($message, $context);
-      $this->logger->debug($message_str);
-    }
+      $this->log2job('DEBUG: ' . $message, $context);
+      if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
+        $message_str = $this->messageString($message, $context);
+        $this->logger->debug($message_str);
+      }
 
-    $this->log2Server('DEBUG: ' . $message, $context, $options);
+      $this->log2Server('DEBUG: ' . $message, $context, $options);
+    }
   }
 
   /**
