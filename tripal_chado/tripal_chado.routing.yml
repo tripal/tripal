@@ -146,3 +146,18 @@ tripal_chado.cvterm_autocomplete:
     _format: json
   requirements:
     _permission: 'access content'
+
+tripal_chado.project_autocomplete:
+  path: 'chado/project/autocomplete/{type_id}/{count}'
+  defaults:
+    _controller: '\Drupal\tripal_chado\Controller\ChadoProjectAutocompleteController::handleAutocomplete'
+    _title: 'Chado Project Autocomplete'
+    _format: json
+  requirements:
+    _permission: 'access content'
+  options:
+    parameters:
+      type_id:
+        type: integer
+      count:
+        type: integer
