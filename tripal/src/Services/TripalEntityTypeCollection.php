@@ -164,6 +164,7 @@ class TripalEntityTypeCollection implements ContainerInjectionInterface  {
    *    - label: the human-readable label to be used for the content type.
    *    - category: a human-readable category to group like content types
    *      together.
+   *    - name: the machine-name of the content type.
    *    - help_text: a brief description for how this content type is used.
    *    - url_format: a tokenized string for specifying the format of the URL.
    *    - title_format: a tokenized string for the title.
