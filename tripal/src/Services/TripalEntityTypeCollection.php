@@ -100,13 +100,11 @@ class TripalEntityTypeCollection implements ContainerInjectionInterface  {
    */
   public function validate($details) {
 
-    ## Name is currently autocreated as bio_data_#
-    ## but we will want to change this in a future PR.
-    # if (!array_key_exists('name', $details) or !$details['name']) {
-    #   $this->logger->error(t('Creation of content type, "@type", failed. No name provided.',
-    #       ['@type' => $details['label']]));
-    #   return FALSE;
-    # }
+    if (!array_key_exists('name', $details) or !$details['name']) {
+       $this->logger->error(t('Creation of content type, "@type", failed. No name provided.',
+           ['@type' => $details['label']]));
+       return FALSE;
+     }
 
     if (!array_key_exists('label', $details) or !$details['label']) {
       $this->logger->error(t('Creation of content type with failed since no label provided.'));
@@ -143,13 +141,11 @@ class TripalEntityTypeCollection implements ContainerInjectionInterface  {
       return FALSE;
     }
 
-    ## This will be added in a future PR
-    ## to keep track of the old bio_data_# used in previous versions of Tripal.
-    # if (array_key_exists('synonyms', $details) and !is_array($details['synonyms'])) {
-    #   $this->logger->error(t('Creation of content type, "@type", failed. The synonyms should be an array.',
-    #       ['@type' => $details['label']]));
-    #   return FALSE;
-    # }
+    if (array_key_exists('synonyms', $details) and !is_array($details['synonyms'])) {
+       $this->logger->error(t('Creation of content type, "@type", failed. The synonyms should be an array.',
+           ['@type' => $details['label']]));
+       return FALSE;
+    }
 
     return TRUE;
   }

@@ -116,7 +116,7 @@
    */
   TripalAjaxField.prototype.attach = function () {
     $.ajax({
-      url     : baseurl + '/bio_data/ajax/field_attach/' + this.id,
+      url     : baseurl + '/tripal/ajax/field_attach/' + this.id,
       dataType: 'json',
       type    : 'GET',
       success : this.setFieldContent.bind(this)
@@ -212,7 +212,7 @@ function tripal_navigate_field_pager(id, page) {
   jQuery('#' + id + '-spinner').show();
   jQuery.ajax({
     type   : 'GET',
-    url    : Drupal.settings['basePath'] + 'bio_data/ajax/field_attach/' + id,
+    url    : Drupal.settings['basePath'] + 'tripal/ajax/field_attach/' + id,
     data   : {'page': page},
     success: function (response) {
       jQuery('#' + id + ' .field-items').replaceWith(response['content']);

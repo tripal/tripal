@@ -37,11 +37,11 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
  *     "label" = "label",
  *   },
  *   links = {
- *     "canonical" = "/admin/structure/bio_data/{tripal_entity_type}",
- *     "add-form" = "/admin/structure/bio_data/add",
- *     "edit-form" = "/admin/structure/bio_data/manage/{tripal_entity_type}",
- *     "delete-form" = "/admin/structure/bio_data/manage/{tripal_entity_type}/delete",
- *     "collection" = "/admin/structure/bio_data"
+ *     "canonical" = "/admin/structure/tripal/{tripal_entity_type}",
+ *     "add-form" = "/admin/structure/tripal/add",
+ *     "edit-form" = "/admin/structure/tripal/manage/{tripal_entity_type}",
+ *     "delete-form" = "/admin/structure/tripal/manage/{tripal_entity_type}/delete",
+ *     "collection" = "/admin/structure/tripal"
  *   },
  *   config_export = {
  *     "id",
@@ -212,7 +212,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
        $config = \Drupal::service('config.factory')->getEditable('tripal.settings');
        $max_id = $config->get('tripal_entity_type.max_id');
        $this->id = $max_id + 1;
-       $this->name = 'bio_data_' . $this->id;
+       $this->name = $this->getName();
        $config->set('tripal_entity_type.max_id', $this->id)->save();
      }
 
@@ -716,4 +716,5 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
       return strnatcasecmp($b_value, $a_value);
     }
   }
+
 }

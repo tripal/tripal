@@ -44,10 +44,10 @@ class TripalEntityTypeCollectionTest extends TripalTestBrowserBase {
       'term' => $term,
       'help_text' => 'Use the organism page for an individual living system, such as animal, plant, bacteria or virus,',
       'category' => 'General',
-      # 'name' => 'organism',
+      'name' => 'organism',
       # 'title_format' => "[organism_genus] [organism_species] [organism_infraspecific_type] [organism_infraspecific_name]",
       # 'url_format' => "organism/[TripalEntity__entity_id]",
-      # 'synonyms' => ['bio_data_1']
+      'synonyms' => ['bio_data_1']
     ];
 
     /** @var \Drupal\tripal\Services\TripalEntityTypeCollection $content_type_service **/

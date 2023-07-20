@@ -39,7 +39,7 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
    * Creates a Tripal Field for testing purposes.
    *
    * @param string $entity_type
-   *   The machine name of the entity to add the field to (i.e. bio_data_5)
+   *   The machine name of the entity to add the field to (e.g., organism)
    * @param array $values
    *   These values are passed directly to the create() method. Suggested values are:
    *    - field_name (string)

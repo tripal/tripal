@@ -29,7 +29,7 @@ interface TripalEntityTypeInterface extends ConfigEntityInterface {
   public function setID($id);
 
   /**
-   * Gets the machine name of the Tripal Entity Type (e.g. bio_data_1).
+   * Gets the machine name of the Tripal Entity Type (e.g. organism).
    *
    * @return string
    *   Machine name of the Tripal Entity Type.

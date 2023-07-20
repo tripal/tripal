@@ -303,7 +303,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
    * Adds a field to a Tripal entity type.
    *
    * @param string $bundle
-   *   The bundle name (e.g. bio_data_1).
+   *   The bundle name (e.g. organism).
    * @param array $field_def
    *   An associative array providing the necessary information about a field
    *   instance for this entity type. The following key/values are supported
@@ -409,7 +409,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
     $field_def = $this->setFieldDefDefaults($field_def);
 
     // Get the bundle and field id.
-    $field_id = 'tripal_entity' . '.' . 'bio_data_' . $entity_type->getId() . '.' . $field_def['name'];
+    $field_id = 'tripal_entity' . '.' . $entity_type->getName() . '.' . $field_def['name'];
 
     try {
 
@@ -445,7 +445,7 @@ class TripalFieldCollection implements ContainerInjectionInterface  {
 
         // Add field to the default display modes.
         $entity_display = \Drupal::service('entity_display.repository');
-        $bundle_id = 'bio_data_' . $entity_type->getId();
+        $bundle_id = $entity_type->getName();
         $view_modes = $entity_display->getViewModeOptionsByBundle('tripal_entity', $bundle_id);
         foreach (array_keys($view_modes) as $view_mode) {
           \Drupal::service('entity_display.repository')

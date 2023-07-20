@@ -22,20 +22,8 @@ class TripalEntityTypeForm extends EntityForm {
 
     $tripal_entity_type = $this->entity;
     $tripal_entity_type->setDefaults();
+    $machine_name = $tripal_entity_type->getName();
 
-    // Determine the machine name for the content type.
-    // Note, there may be some discrepancy here if others happen to be creating
-    // content types at the same time. Here we are making a prediction but
-    // the TripalEntityType->save() method will create the id at the time of
-    // saving, not based on what we provide it here.
-    if ($tripal_entity_type->isNew()) {
-      $config = \Drupal::config('tripal.settings');
-      $max_index = $config->get('tripal_entity_type.max_id');
-      $machine_name = 'bio_data_' . ($max_index + 1);
-    }
-    else {
-      $machine_name = $tripal_entity_type->id();
-    }
 
     // We need to choose a term if this is a new content type.
     // The term cannot be changed later!

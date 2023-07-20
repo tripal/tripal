@@ -155,9 +155,6 @@ function theme_token_list($tokens) {
  * Refreshes the bundle such that new fields added by modules will be found
  * during cron.
  *
- * @param $bundle_name
- *   The name of the bundle to refresh (e.g. bio_data_4).
- *
  * @ingroup tripal_entities_api
  */
 function tripal_tripal_cron_notification() {
