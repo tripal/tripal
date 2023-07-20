@@ -62,14 +62,14 @@ class TripalContentTypesTest extends TripalTestBrowserBase {
     $is_valid = $content_type_service->validate($bad);
     $this->assertFalse($is_valid, "A content type definition missing the 'term' should fail the validation check but it passed.");
     $content_type = $content_type_service->createContentType($bad);
-    $this->assertTrue(is_null($content_type), "Created a content type when the term is incorret.");
+    $this->assertTrue(is_null($content_type), "Created a content type when the term is incorrect.");
 
     $bad = $good;
     unset($bad['name']);
     $is_valid = $content_type_service->validate($bad);
     $this->assertFalse($is_valid, "A content type definition missing the 'name' should fail the validation check but it passed.");
     $content_type = $content_type_service->createContentType($bad);
-    $this->assertTrue(is_null($content_type), "Created a content type when the name is incorret.");
+    $this->assertTrue(is_null($content_type), "Created a content type when the name is incorrect.");
 
 
     $bad = $good;
@@ -77,7 +77,7 @@ class TripalContentTypesTest extends TripalTestBrowserBase {
     $is_valid = $content_type_service->validate($bad);
     $this->assertFalse($is_valid, "A content type definition missing the 'label' should fail the validation check but it passed.");
     $content_type = $content_type_service->createContentType($bad);
-    $this->assertTrue(is_null($content_type), "Created a content type when the label is incorret.");
+    $this->assertTrue(is_null($content_type), "Created a content type when the label is incorrect.");
 
 
     $bad = $good;
@@ -85,7 +85,7 @@ class TripalContentTypesTest extends TripalTestBrowserBase {
     $is_valid = $content_type_service->validate($bad);
     $this->assertFalse($is_valid, "A content type definition missing the 'category' should fail the validation check but it passed.");
     $content_type = $content_type_service->createContentType($bad);
-    $this->assertTrue(is_null($content_type), "Created a content type when the category is incorret.");
+    $this->assertTrue(is_null($content_type), "Created a content type when the category is incorrect.");
 
 
     $bad = $good;
@@ -93,7 +93,7 @@ class TripalContentTypesTest extends TripalTestBrowserBase {
     $is_valid = $content_type_service->validate($bad);
     $this->assertFalse($is_valid, "A content type definition missing the 'help_text' should fail the validation check but it passed.");
     $content_type = $content_type_service->createContentType($bad);
-    $this->assertTrue(is_null($content_type), "Created a content type when the help_text is incorret.");
+    $this->assertTrue(is_null($content_type), "Created a content type when the help_text is incorrect.");
 
 
     $bad = $good;
@@ -101,7 +101,7 @@ class TripalContentTypesTest extends TripalTestBrowserBase {
     $is_valid = $content_type_service->validate($bad);
     $this->assertFalse($is_valid, "A content type definition with a malformed synonyms list should fail the validation check but it passed.");
     $content_type = $content_type_service->createContentType($bad);
-    $this->assertTrue(is_null($content_type), "Created a content type when the synonyms are incorret.");
+    $this->assertTrue(is_null($content_type), "Created a content type when the synonyms are incorrect.");
 
   }
 }
