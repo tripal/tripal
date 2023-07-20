@@ -57,7 +57,7 @@ class TripalEntityTypeCollection implements ContainerInjectionInterface  {
   /**
    * Installs content types using all appropriate YAML files.
    *
-   * The YAML config file prefix is tripal.tripal_content_types.*
+   * The YAML config file prefix is tripal.tripalentitytype_collection.*
    */
   public function install() {
 
