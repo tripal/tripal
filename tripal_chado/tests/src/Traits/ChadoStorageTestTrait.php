@@ -183,6 +183,55 @@ trait ChadoStorageTestTrait {
   }
 
   /**
+   * Tests the insertValues including creating property types and values.
+   *
+   * All fields and properties referenced in the values parameter
+   * must be defined in the $fields array.
+   *
+   * @param array $values
+   *    A nested array with the following format:
+   *   [
+   *     <field name> => [
+   *       <delta> => [
+   *         <propertykey> => <value>,
+   *         ...
+   *       ],
+   *     ],
+   *   ]
+   */
+  protected function chadoStorageTestInsertValues(array $values) {
+
+    // Get the list of fields we are testing from the values array.
+    $field_names = array_keys($values);
+
+    // Count total number of properties expected for the fields in the
+    // values array we are testing.
+    $total_num_properties = 0;
+    foreach ($field_names as $field_name) {
+      $this->assertArrayHasKey($field_name, $this->fields,
+        "The \$fields array is malformed. '$field_name' must exist as a key in the top level of the array.");
+      $this->assertArrayHasKey('properties', $this->fields[$field_name],
+        "The \$fields array is malformed. '$field_name' array must have a 'properties' key which defines all the properties for this field.");
+
+      $total_num_properties += count($this->fields[$field_name]['properties']);
+    }
+
+    // Create the property types based on our fields array.
+    $this->createPropertyTypes($field_names, $total_num_properties);
+    // Add the types to chado storage.
+    $this->addPropertyTypes2ChadoStorage($field_names, $total_num_properties);
+
+
+    // Create the property values + format them for testing with *Values methods.
+    $this->createDataStoreValues($field_names, $values);
+    // Set the values in the propertyValue objects.
+    $this->setExpectedValues($field_names, $values);
+
+    $success = $this->chadoStorage->insertValues($this->dataStoreValues);
+    $this->assertTrue($success, 'We were not able to insert the data.');
+  }
+
+  /**
    * Create PropertyType objects based on defined fields.
    *
    * Note: Includes assertions to be sure property types were created as
@@ -259,31 +308,36 @@ trait ChadoStorageTestTrait {
    *
    * NOTE: You must have called createPropertyTypes() for this field first.
    *
+   * All fields and properties referenced in the values parameter
+   * must be defined in the $fields array.
+   *
    * @param array $field_names
    *   An array of field name keys as defined in the $fields array for which you would like
    *   to create propertyTypes for.
-   * @param array $expectations
-   *   The expectations array from the data provider. It must have the following
-   *   keys:
+   * @param array $values
+   *   A nested array with the following format:
    *   [
-   *     'number of fields' => <the total number of fields in $field_names>
    *     <field name> => [
-   *       'number of values' => <the number of values per delta created for this field>
+   *       <delta> => [
+   *         <propertykey> => <value>,
+   *         ...
+   *       ],
    *     ],
    *   ]
    */
-  public function createDataStoreValues(array $field_names, array $expectations) {
+  public function createDataStoreValues(array $field_names, array $values) {
+
+    $num_fields = count($field_names);
 
     foreach ($field_names as $field_name) {
-
       $this->dataStoreValues[$field_name] = [];
 
       $this->assertArrayHasKey($field_name, $this->fieldConfig_mock,
         "We expected there to already be a mock field config for $field_name but there was not.");
 
-      $num_values = $expectations[$field_name]['number of values'];
+      $num_values = count($values[$field_name]);
 
-      for ($delta = 0; $delta < $num_values; $delta++) {
+      foreach ($values[$field_name] as $delta => $current_values) {
         $this->dataStoreValues[$field_name][$delta] = [];
         foreach ($this->fields[$field_name]['properties'] as $property_key => $property_options) {
 
@@ -315,14 +369,14 @@ trait ChadoStorageTestTrait {
           ];
         }
         $this->assertCount(sizeof($this->fields[$field_name]['properties']), $this->dataStoreValues[$field_name][$delta],
-          "There was a different number of property arrays for $field_name[$delta] than expected in our dataStoreValues.");
+          "There was a different number of property arrays for $field_name\[$delta\] than expected in our dataStoreValues.");
       }
 
       $this->assertCount($num_values, $this->dataStoreValues[$field_name],
         "There was a different number of delta for $field_name field than expected in our dataStoreValues.");
     }
 
-    $this->assertCount($expectations['number of fields'], $this->dataStoreValues,
+    $this->assertCount($num_fields, $this->dataStoreValues,
       "There was a different number of fields in our dataStoreValues then we expected.");
   }
 
@@ -429,24 +483,25 @@ trait ChadoStorageTestTrait {
    *   required because there are some non-field name keys in the expectations
    *   array.
    *
-   * @param $expectations
-   *  This is expected to be provided to a test via a dataProvider. It should
-   *  have the following format:
-   *    [
-   *      <name of field> => [
-   *        'values' => [
-   *          <delta> => [
-   *            <property key> => <value for that property key>
-   *          ],
-   *        ],
-   *      ]
-   *    ]
+   * All fields and properties referenced in the values parameter
+   * must be defined in the $fields array.
+   *
+   * @param array $values
+   *   A nested array with the following format:
+   *   [
+   *     <field name> => [
+   *       <delta> => [
+   *         <propertykey> => <value>,
+   *         ...
+   *       ],
+   *     ],
+   *   ]
    */
-  public function setExpectedValues($field_names, $expectations) {
+  public function setExpectedValues($field_names, $values) {
 
     foreach ($field_names as $field_name) {
-      foreach($expectations[$field_name]['values'] as $delta => $values) {
-        foreach($values as $property_key => $val) {
+      foreach($values[$field_name] as $delta => $current_values) {
+        foreach($current_values as $property_key => $val) {
 
           $this->dataStoreValues[$field_name][$delta][$property_key]['value']->setValue($val);
 
@@ -460,6 +515,16 @@ trait ChadoStorageTestTrait {
     }
   }
 
+  /**
+   * Empty out all property types, proeprty values and data store values.
+   * This should always be called between two test cases in the same test
+   * method to ensure you are starting fresh and seeing dependant interactions.
+   */
+  protected function cleanChadoStorageValues() {
+    $this->propertyTypes = [];
+    $this->propertyValues = [];
+    $this->dataStoreValues = [];
+  }
   /**
    * DEBUGGING USE ONLY: Prints out a bunch of debugging information.
    */
