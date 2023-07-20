@@ -12,6 +12,7 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
  *
  * @group Tripal
  * @group Tripal Content
+ * @group Tripal Content Types
  */
 class TripalContentTypesTest extends TripalTestBrowserBase {
 
@@ -56,6 +57,7 @@ class TripalContentTypesTest extends TripalTestBrowserBase {
     $content_type = $content_type_service->createContentType($good);
     $this->assertTrue(!is_null($content_type), "Failed to create a content type with a valid definition.");
 
+
     // Test that when a value is missing it fails validation.
     $bad = $good;
     unset($bad['term']);
@@ -63,6 +65,7 @@ class TripalContentTypesTest extends TripalTestBrowserBase {
     $this->assertFalse($is_valid, "A content type definition missing the 'term' should fail the validation check but it passed.");
     $content_type = $content_type_service->createContentType($bad);
     $this->assertTrue(is_null($content_type), "Created a content type when the term is incorrect.");
+
 
     $bad = $good;
     unset($bad['name']);
