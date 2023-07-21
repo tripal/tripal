@@ -119,9 +119,6 @@ class FASTAImporter extends ChadoImporterBase {
     ];
 
     // get the sequence ontology CV ID
-    // $values = ['name' => 'sequence'];
-    // $cv = chado_select_record('cv', ['cv_id'], $values);
-    // $cv_id = $cv[0]->cv_id;
     $cv_results = $chado->select('1:cv', 'cv')
       ->fields('cv')
       ->condition('name', 'sequence')
@@ -133,12 +130,8 @@ class FASTAImporter extends ChadoImporterBase {
       '#title' => t('Sequence Type'),
       '#required' => TRUE,
       '#description' => t('Please enter the Sequence Ontology (SO) term name that describes the sequences in the FASTA file (e.g. gene, mRNA, polypeptide, etc...)'),
-      // @TODO Implement an autocomplete form
-      // TRIPAL 3 OLD CODE
-      // '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/$cv_id",
-      // TRIPAL 4 CODE
       '#autocomplete_route_name' => 'tripal_chado.cvterm_autocomplete',
-      '#autocomplete_route_parameters' => ['count' => 5]
+      '#autocomplete_route_parameters' => ['count' => 5, 'cv_id' => $cv_id],
     ];
 
     $form['method'] = [
@@ -304,7 +297,10 @@ class FASTAImporter extends ChadoImporterBase {
                          products of genes, then use the SO term \'gene\' or \'transcript\' or equivalent. However,
                          this type must match the type for already loaded features.'),
       '#weight' => 7,
+      '#autocomplete_route_name' => 'tripal_chado.cvterm_autocomplete',
+      '#autocomplete_route_parameters' => ['count' => 5, 'cv_id' => $cv_id],
     ];
+
     return $form;
   }
 

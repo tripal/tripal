@@ -44,7 +44,7 @@ class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
       'GET',
       ['q' => 'null']
     );
-
+  
     $suggest = $autocomplete->handleAutocomplete($request)
       ->getContent();
 
@@ -57,7 +57,7 @@ class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
     }
 
     $this->assertTrue($null_found > 0);
-
+  
 
     // Test Get Id.
     // Each item in the result for term null should have
@@ -82,7 +82,7 @@ class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
 
     $suggest = $autocomplete->handleAutocomplete($request, 6)
       ->getContent();
-
+  
     $this->assertEquals(count(json_decode($suggest)), 6);
 
 
@@ -91,7 +91,7 @@ class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
     $query->condition('c.name', 'null', '=');
     $query->fields('c', ['cvterm_id']);
     $null_cvterm_id = $query->execute()->fetchField();
-
+  
     $request = Request::create(
       'chado/cvterm/autocomplete/5',
       'GET',
@@ -100,7 +100,7 @@ class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
 
     $suggest = $autocomplete->handleAutocomplete($request, 1)
       ->getContent();
-
+  
     foreach(json_decode($suggest) as $item) {
       // ChadoCVTermAutocompleteController::getCVtermId()
       $id = $autocomplete->getCVtermId($item->value);
@@ -126,7 +126,7 @@ class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
       $id = $autocomplete->getCVtermId($item->value);
       // Reverse value - get formatted term.
       $term = $autocomplete->formatCVterm($id);
-
+    
       $this->assertNotNull($term);
       $this->assertIsString($term);
       $this->assertEquals($term, $item->value);
