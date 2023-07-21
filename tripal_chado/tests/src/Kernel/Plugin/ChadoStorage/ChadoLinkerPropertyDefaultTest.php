@@ -19,10 +19,14 @@ use Drupal\Tests\tripal_chado\Functional\MockClass\FieldConfigMock;
  * Note: testotherfeaturefield is added to ensure we meet the unique constraint
  * on the base feature table and also to ensure we are testing multi-field functionality.
  *
+ * Note: We do not need to test invalid conditions for createValues() and
+ * updateValues() as these are only called after the entity has validated
+ * the system using validateValues(). Instead we test all invalid conditions
+ * are caught by validateValues().
+ *
  * Specific test cases
  *  Test the following for both single and multiple property fields:
  *   - Create Values in Chado using ChadoStorage when they don't yet exist.
- *   - [NOT IMPLEMENTED] Create Values in Chado using ChadoStorage when they violate unique constraint.
  *   - [NOT IMPLEMENTED] Load values in Chado using ChadoStorage when they don't yet exist.
  *   - [NOT IMPLEMENTED] Load values in Chado using ChadoStorage after we just inserted them.
  *   - [NOT IMPLEMENTED] Update values in Chado using ChadoStorage after we just inserted them.
@@ -192,43 +196,10 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
   }
 
   /**
-   * TEST CASE: Create Values in Chado using ChadoStorage when they don't yet exist.
-   *
-   * Currently tests ChadoStorage addTypes(), getTypes(), insertValues()
-   * methods for expectation sets provided by the data provider. This is
-   * written/tested to work once we uncomment the second expectation set.
-   *
-   * Assertions test that:
-   * - For each newly created property type described in $fields the result is
-   *   an object that is an instance of the StoragePropertyTypeBase class
-   *   (within createPropertyTypes).
-   * - At the end of createPropertyTypes() the number of properties created
-   *   matches the number of properties expected based on the data provider
-   *   (within createPropertyTypes).
-   * - ChadoStorage getTypes() returns an array with the same number of entries
-   *   as the array we passed into addTypes() (within addPropertyTypes2ChadoStorage).
-   * - We were able to create mock field config objects for use with the
-   *   insertValues() (within createDataStoreValues)
-   * - For each newly created property value based on the expectations from the
-   *   data provider, we were able to create an object of type StoragePropertyValue
-   *   with no default value set (within createDataStoreValues).
-   * - That for each field, we had the expected number of values in our data
-   *   store values array after creating the property values above
-   *   (within createDataStoreValues).
-   * - That at the end of createDataStoreValues we have the expected number of
-   *   fields in our data store values array (within createDataStoreValues).
-   * - That we were able to use getValue() on each property value object with a
-   *   default value described in the expectations array to retrieve the same
-   *   value we set using setValue() (within setExpectedValues).
-   * - That we were able to call insertValues() with our prepare data store
-   *   values array without it returning an error.
-   * - That the base feature record described by the other field now exists in
-   *   chado with the values we expect
-   * - Checks that each value from the expected values array matches exactly
-   *   one record in the featurepop table. This is selected based on the unique
-   *   key and then it's check the value is what we expect.
+   * TEST CASE: Create Values in Chado using ChadoStorage when
+   * the values don't yet exist and no unique constraint is violated.
    */
-  public function testInsertValues() {
+  public function testInsertValuesWhenTheyAreValid() {
 
     $rdfs_comment_cvtermID = $this->getCvtermID('rdfs', 'comment');
     $gene_cvtermID = $this->getCvtermID('SO', '0000704');

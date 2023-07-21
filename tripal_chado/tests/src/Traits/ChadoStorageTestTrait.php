@@ -188,6 +188,35 @@ trait ChadoStorageTestTrait {
    * All fields and properties referenced in the values parameter
    * must be defined in the $fields array.
    *
+   * Currently tests ChadoStorage addTypes(), getTypes(), insertValues()
+   * methods for expectation sets provided by the data provider. This is
+   * written/tested to work once we uncomment the second expectation set.
+   *
+   * Assertions test that:
+   * - For each newly created property type described in $fields the result is
+   *   an object that is an instance of the StoragePropertyTypeBase class
+   *   (within createPropertyTypes).
+   * - At the end of createPropertyTypes() the number of properties created
+   *   matches the number of properties expected based on the data provider
+   *   (within createPropertyTypes).
+   * - ChadoStorage getTypes() returns an array with the same number of entries
+   *   as the array we passed into addTypes() (within addPropertyTypes2ChadoStorage).
+   * - We were able to create mock field config objects for use with the
+   *   insertValues() (within createDataStoreValues)
+   * - For each newly created property value based on the expectations from the
+   *   data provider, we were able to create an object of type StoragePropertyValue
+   *   with no default value set (within createDataStoreValues).
+   * - That for each field, we had the expected number of values in our data
+   *   store values array after creating the property values above
+   *   (within createDataStoreValues).
+   * - That at the end of createDataStoreValues we have the expected number of
+   *   fields in our data store values array (within createDataStoreValues).
+   * - That we were able to use getValue() on each property value object with a
+   *   default value described in the expectations array to retrieve the same
+   *   value we set using setValue() (within setExpectedValues).
+   * - That we were able to call insertValues() with our prepare data store
+   *   values array without it returning an error.
+   *
    * @param array $values
    *    A nested array with the following format:
    *   [
