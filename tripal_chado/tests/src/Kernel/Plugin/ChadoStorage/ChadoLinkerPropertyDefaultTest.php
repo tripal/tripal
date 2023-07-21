@@ -26,11 +26,9 @@ use Drupal\Tests\tripal_chado\Functional\MockClass\FieldConfigMock;
  *
  * Specific test cases
  *  Test the following for both single and multiple property fields:
- *   - Create Values in Chado using ChadoStorage when they don't yet exist.
- *   - [NOT IMPLEMENTED] Load values in Chado using ChadoStorage when they don't yet exist.
- *   - [NOT IMPLEMENTED] Load values in Chado using ChadoStorage after we just inserted them.
+ *   - [SINGLE FIELD ONLY] Create Values in Chado using ChadoStorage when they don't yet exist.
+ *   - [SINGLE FIELD ONLY] Load values in Chado using ChadoStorage after we just inserted them.
  *   - [NOT IMPLEMENTED] Update values in Chado using ChadoStorage after we just inserted them.
- *   - [NOT IMPLEMENTED] Update values in Chado using ChadoStorage when they don't actually exist.
  *   - [NOT IMPLEMENTED] Delete values in Chado using ChadoStorage.
  *   - [NOT IMPLEMENTED] Ensure property field picks up records in Chado not added through field.
  *
@@ -196,17 +194,22 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
   }
 
   /**
-   * TEST CASE: Create Values in Chado using ChadoStorage when
-   * the values don't yet exist and no unique constraint is violated.
+   * Testing ChadoStorage on single property field with multiple values.
+   *
+   * Test Cases:
+   *   - Create Values in Chado using ChadoStorage when they don't yet exist.
+   *   - Load values in Chado using ChadoStorage after we just inserted them.
+   *   - [NOT IMPLEMENTED] Update values in Chado using ChadoStorage after we just inserted them.
+   *   - [NOT IMPLEMENTED] Delete values in Chado using ChadoStorage.
+   *   - [NOT IMPLEMENTED] Ensure property field picks up records in Chado not added through field.
    */
-  public function testInsertValuesWhenTheyAreValid() {
+  public function testInsertValuesForSingleField() {
 
     $rdfs_comment_cvtermID = $this->getCvtermID('rdfs', 'comment');
     $gene_cvtermID = $this->getCvtermID('SO', '0000704');
     $subspecies_cvtermID = $this->getCvtermID('SO', '0000704');
 
-    // Test Case: We can use ChadoStorage to insert values where
-    //   we have a single featureprop-based field with 3 values.
+    // Test Case: Insert valid values when they do not yet exist in Chado.
     // ---------------------------------------------------------
     $values = [
       'testpropertyfieldA' => [
@@ -260,21 +263,6 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
         "The feature record should have the unique name we set in our storage properties.");
     $feature_id = $record->feature_id;
 
-    // Check that the featureprop records were created in the database as expected.
-    // We use the unique key to select this particular value in order to
-    // ensure it is here and there is one one.
-    foreach ($values['testpropertyfieldA'] as $delta => $expected) {
-      $query = $this->chado_connection->select('1:featureprop', 'prop')
-        ->fields('prop', ['feature_id', 'type_id', 'value', 'rank'])
-        ->condition('feature_id', $feature_id, '=')
-        ->condition('type_id', $expected['A_type_id'])
-        ->condition('rank', $expected['A_rank'])
-        ->execute();
-      $records = $query->fetchAll();
-      $this->assertCount(1, $records, "We expected to get exactly one record for:" . print_r($expected, TRUE));
-      $this->assertEquals($expected['A_value'], $records[0]->value, "We did not get the value we expected using the unique key." . print_r($expected, TRUE));
-    }
-
     // Also check that there are only the expected number of records
     // in the featureprop table.
     $query = $this->chado_connection->select('1:featureprop', 'prop')
@@ -284,26 +272,88 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     $this->assertCount(3, $all_featureprop_records,
       "There were more records then we were expecting in the featureprop table: " . print_r($all_featureprop_records, TRUE));
 
-    // Test Case: We can use ChadoStorage to insert values where
-    //   we have a two featureprop-based fields:
-    //   where testpropertyfieldA has 3 values
-    //   and testpropertyfieldB has 1 value.
+    // Check that the featureprop records were created in the database as expected.
+    // We use the unique key to select this particular value in order to
+    // ensure it is here and there is one one.
+    foreach ($values['testpropertyfieldA'] as $delta => $expected) {
+      $query = $this->chado_connection->select('1:featureprop', 'prop')
+        ->fields('prop', ['featureprop_id', 'feature_id', 'type_id', 'value', 'rank'])
+        ->condition('feature_id', $feature_id, '=')
+        ->condition('type_id', $expected['A_type_id'])
+        ->condition('rank', $expected['A_rank'])
+        ->execute();
+      $records = $query->fetchAll();
+      $this->assertCount(1, $records, "We expected to get exactly one record for:" . print_r($expected, TRUE));
+      $this->assertEquals($expected['A_value'], $records[0]->value, "We did not get the value we expected using the unique key." . print_r($expected, TRUE));
+
+      $varname = 'prop' . $delta;
+      $$varname = $records[0];
+    }
+
+    // Test Case: Load values existing in Chado.
     // ---------------------------------------------------------
-    // First clean up after the last test.
+    // First we want to reset all the chado storage arrays to ensure we are
+    // doing a clean test. The values will purposefully remain in Chado but the
+    // Property Types, Property Values and Data Values will  be built from scratch.
     $this->cleanChadoStorageValues();
 
-    // Now add our second featureprop field to the values array.
-    /**
-     * This fails as expected based on Issue #1398.
-    $values['testpropertyfieldB'][0] = [
-      'B_type_id' => $subspecies_cvtermID,
-      'B_value' => 'postgresquelus',
-      'B_rank' => 0,
+    // For loading only the store id/pkey/link items should be populated.
+    $load_values = [
+      'testpropertyfieldA' => [
+        [
+          'A_record_id' => $feature_id,
+          'A_prop_id' => $prop0->featureprop_id,
+          'A_linker_id' => $feature_id,
+        ],
+        [
+          'A_record_id' => $feature_id,
+          'A_prop_id' => $prop1->featureprop_id,
+          'A_linker_id' => $feature_id,
+        ],
+        [
+          'A_record_id' => $feature_id,
+          'A_prop_id' => $prop2->featureprop_id,
+          'A_linker_id' => $feature_id,
+        ]
+      ],
+      'testotherfeaturefield' => [
+        [
+          'record_id' => $feature_id,
+        ]
+      ],
     ];
-    // We also add the feature_id for the gene to tell
-    // chadostorage it's already been inserted.
-    $values['testotherfeaturefield'][0]['record_id'] = $feature_id;
-    $this->chadoStorageTestInsertValues($values);
-    */
+    $retrieved_values = $this->chadoStorageTestLoadValues($load_values);
+
+    // Now test that the additional values have been loaded.
+    // @debug $this->debugChadoStorageTestTraitArrays();
+    foreach([0,1,2] as $delta) {
+      $retrieved = $retrieved_values['testpropertyfieldA'][$delta];
+      $varname = 'prop' . $delta;
+      $expected = $$varname;
+      $this->assertEquals(
+        $expected->type_id,
+        $retrieved['A_type_id']['value']->getValue(),
+        "The type for delta $delta did not match the one we retrieved from chado after insert."
+      );
+      $this->assertEquals(
+        $expected->value,
+        $retrieved['A_value']['value']->getValue(),
+        "The value for delta $delta did not match the one we retrieved from chado after insert."
+      );
+      $this->assertEquals(
+        $expected->rank,
+        $retrieved['A_rank']['value']->getValue(),
+        "The rank for delta $delta did not match the one we retrieved from chado after insert."
+      );
+    }
+
+    // Test Case: Update values in Chado using ChadoStorage.
+    // ---------------------------------------------------------
+
+    // Test Case: Delete values in Chado using ChadoStorage.
+    // ---------------------------------------------------------
+
+    // NOT YET IMPLEMENTED IN CHADOSTORAGE.
+
   }
 }

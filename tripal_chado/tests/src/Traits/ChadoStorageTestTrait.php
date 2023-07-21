@@ -189,22 +189,20 @@ trait ChadoStorageTestTrait {
    * must be defined in the $fields array.
    *
    * Currently tests ChadoStorage addTypes(), getTypes(), insertValues()
-   * methods for expectation sets provided by the data provider. This is
-   * written/tested to work once we uncomment the second expectation set.
+   * methods for the fields defined and the values provided.
    *
    * Assertions test that:
    * - For each newly created property type described in $fields the result is
    *   an object that is an instance of the StoragePropertyTypeBase class
    *   (within createPropertyTypes).
    * - At the end of createPropertyTypes() the number of properties created
-   *   matches the number of properties expected based on the data provider
-   *   (within createPropertyTypes).
+   *   matches the number of properties expected based on the fields array.
    * - ChadoStorage getTypes() returns an array with the same number of entries
    *   as the array we passed into addTypes() (within addPropertyTypes2ChadoStorage).
    * - We were able to create mock field config objects for use with the
-   *   insertValues() (within createDataStoreValues)
-   * - For each newly created property value based on the expectations from the
-   *   data provider, we were able to create an object of type StoragePropertyValue
+   *   loadValues() (within createDataStoreValues)
+   * - For each newly created property value based on the values array,
+   *   we were able to create an object of type StoragePropertyValue
    *   with no default value set (within createDataStoreValues).
    * - That for each field, we had the expected number of values in our data
    *   store values array after creating the property values above
@@ -258,6 +256,94 @@ trait ChadoStorageTestTrait {
 
     $success = $this->chadoStorage->insertValues($this->dataStoreValues);
     $this->assertTrue($success, 'We were not able to insert the data.');
+  }
+
+  /**
+   * Tests the loadValues including creating property types and values.
+   *
+   * All fields and properties referenced in the values parameter
+   * must be defined in the $fields array.
+   *
+   * Currently tests ChadoStorage addTypes(), getTypes(), loadValues()
+   * methods for the fields defined and the values provided.
+   *
+   * Assertions test that:
+   * - For each newly created property type described in $fields the result is
+   *   an object that is an instance of the StoragePropertyTypeBase class
+   *   (within createPropertyTypes).
+   * - At the end of createPropertyTypes() the number of properties created
+   *   matches the number of properties expected based on the fields array.
+   * - ChadoStorage getTypes() returns an array with the same number of entries
+   *   as the array we passed into addTypes() (within addPropertyTypes2ChadoStorage).
+   * - We were able to create mock field config objects for use with the
+   *   loadValues() (within createDataStoreValues)
+   * - For each newly created property value based on the values array,
+   *   we were able to create an object of type StoragePropertyValue
+   *   with no default value set (within createDataStoreValues).
+   * - That for each field, we had the expected number of values in our data
+   *   store values array after creating the property values above
+   *   (within createDataStoreValues).
+   * - That at the end of createDataStoreValues we have the expected number of
+   *   fields in our data store values array (within createDataStoreValues).
+   * - That we were able to use getValue() on each property value object with a
+   *   default value described in the expectations array to retrieve the same
+   *   value we set using setValue() (within setExpectedValues).
+   * - That we were able to call loadValues() with our prepare data store
+   *   values array without it returning an error.
+   *
+   * @param array $values
+   *    A nested array with the following format:
+   *   [
+   *     <field name> => [
+   *       <delta> => [
+   *         <propertykey> => <value>,
+   *         ...
+   *       ],
+   *     ],
+   *   ]
+   *
+   * @return array
+   *   An associative array 5-levels deep.
+   *    The 1st level is the field name (e.g. ChadoOrganismDefault).
+   *    The 2nd level is the delta value (e.g. 0).
+   *    The 3rd level is a field key name (e.g. record_id + value).
+   *    The 4th level must contain the following three keys/value pairs
+   *      - "value": a \Drupal\tripal\TripalStorage\StoragePropertyValue object
+   *      - "type": a\Drupal\tripal\TripalStorage\StoragePropertyType object
+   *      - "definition": a \Drupal\Field\Entity\FieldConfig object
+   */
+  protected function chadoStorageTestLoadValues(array $values) {
+
+    // Get the list of fields we are testing from the values array.
+    $field_names = array_keys($values);
+
+    // Count total number of properties expected for the fields in the
+    // values array we are testing.
+    $total_num_properties = 0;
+    foreach ($field_names as $field_name) {
+      $this->assertArrayHasKey($field_name, $this->fields,
+        "The \$fields array is malformed. '$field_name' must exist as a key in the top level of the array.");
+      $this->assertArrayHasKey('properties', $this->fields[$field_name],
+        "The \$fields array is malformed. '$field_name' array must have a 'properties' key which defines all the properties for this field.");
+
+      $total_num_properties += count($this->fields[$field_name]['properties']);
+    }
+
+    // Create the property types based on our fields array.
+    $this->createPropertyTypes($field_names, $total_num_properties);
+    // Add the types to chado storage.
+    $this->addPropertyTypes2ChadoStorage($field_names, $total_num_properties);
+
+
+    // Create the property values + format them for testing with *Values methods.
+    $this->createDataStoreValues($field_names, $values);
+    // Set the values in the propertyValue objects.
+    $this->setExpectedValues($field_names, $values);
+
+    $success = $this->chadoStorage->loadValues($this->dataStoreValues);
+    $this->assertTrue($success, 'We were not able to insert the data.');
+
+    return $this->dataStoreValues;
   }
 
   /**
