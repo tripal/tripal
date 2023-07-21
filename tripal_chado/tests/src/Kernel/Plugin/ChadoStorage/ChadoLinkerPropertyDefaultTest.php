@@ -28,7 +28,7 @@ use Drupal\Tests\tripal_chado\Functional\MockClass\FieldConfigMock;
  *  Test the following for both single and multiple property fields:
  *   - [SINGLE FIELD ONLY] Create Values in Chado using ChadoStorage when they don't yet exist.
  *   - [SINGLE FIELD ONLY] Load values in Chado using ChadoStorage after we just inserted them.
- *   - [NOT IMPLEMENTED] Update values in Chado using ChadoStorage after we just inserted them.
+ *   - [SINGLE FIELD ONLY] Update values in Chado using ChadoStorage after we just inserted them.
  *   - [NOT IMPLEMENTED] Delete values in Chado using ChadoStorage.
  *   - [NOT IMPLEMENTED] Ensure property field picks up records in Chado not added through field.
  *
@@ -199,7 +199,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
    * Test Cases:
    *   - Create Values in Chado using ChadoStorage when they don't yet exist.
    *   - Load values in Chado using ChadoStorage after we just inserted them.
-   *   - [NOT IMPLEMENTED] Update values in Chado using ChadoStorage after we just inserted them.
+   *   - Update values in Chado using ChadoStorage after we just inserted them.
    *   - [NOT IMPLEMENTED] Delete values in Chado using ChadoStorage.
    *   - [NOT IMPLEMENTED] Ensure property field picks up records in Chado not added through field.
    */
@@ -211,7 +211,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
 
     // Test Case: Insert valid values when they do not yet exist in Chado.
     // ---------------------------------------------------------
-    $values = [
+    $insert_values = [
       'testpropertyfieldA' => [
         [
           'A_type_id' => $rdfs_comment_cvtermID,
@@ -237,7 +237,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
         ]
       ],
     ];
-    $this->chadoStorageTestInsertValues($values);
+    $this->chadoStorageTestInsertValues($insert_values);
 
     // @debug $this->debugChadoStorageTestTraitArrays();
 
@@ -252,7 +252,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     $this->assertCount(1, $records,
       "There should only be a single feature record created by our storage properties.");
     $record = $records[0];
-    $record_expect = $values[$field_name][0];
+    $record_expect = $insert_values[$field_name][0];
     $this->assertIsObject($record,
       "The returned feature record should be an object.");
     $this->assertEquals($record_expect['feature_type'], $record->type_id,
@@ -275,7 +275,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
     // Check that the featureprop records were created in the database as expected.
     // We use the unique key to select this particular value in order to
     // ensure it is here and there is one one.
-    foreach ($values['testpropertyfieldA'] as $delta => $expected) {
+    foreach ($insert_values['testpropertyfieldA'] as $delta => $expected) {
       $query = $this->chado_connection->select('1:featureprop', 'prop')
         ->fields('prop', ['featureprop_id', 'feature_id', 'type_id', 'value', 'rank'])
         ->condition('feature_id', $feature_id, '=')
@@ -349,6 +349,44 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
 
     // Test Case: Update values in Chado using ChadoStorage.
     // ---------------------------------------------------------
+    // When updating we need all the store id/pkey/link records
+    // and all values of the other properties.
+    // array_merge alone seems not to be sufficient
+    $update_values = $insert_values;
+    foreach ($load_values as $field_name => $tmp) {
+      foreach ($tmp as $delta => $id_values) {
+        $update_values[$field_name][$delta] += $id_values;
+      }
+    }
+
+    // We then change a few non key related values...
+    $update_values['testpropertyfieldA'][1]['A_value'] = 'Changed Note to be more informative.';
+    $update_values['testpropertyfieldA'][2]['A_value'] = 'Something completely different. Not even a note at all.';
+    $this->chadoStorageTestUpdateValues($update_values);
+
+    // Now we check chado to see if these values were changed...
+    // Still the expected number of records in the featureprop table?
+    $query = $this->chado_connection->select('1:featureprop', 'prop')
+        ->fields('prop', ['feature_id', 'type_id', 'value', 'rank'])
+        ->execute();
+    $all_featureprop_records = $query->fetchAll();
+    $this->assertCount(3, $all_featureprop_records,
+      "There were more records then we were expecting in the featureprop table: " . print_r($all_featureprop_records, TRUE));
+
+    // Check that the featureprop records were created in the database as expected.
+    // We use the unique key to select this particular value in order to
+    // ensure it is here and there is one one.
+    foreach ($update_values['testpropertyfieldA'] as $delta => $expected) {
+      $query = $this->chado_connection->select('1:featureprop', 'prop')
+        ->fields('prop', ['featureprop_id', 'feature_id', 'type_id', 'value', 'rank'])
+        ->condition('feature_id', $feature_id, '=')
+        ->condition('type_id', $expected['A_type_id'])
+        ->condition('rank', $expected['A_rank'])
+        ->execute();
+      $records = $query->fetchAll();
+      $this->assertCount(1, $records, "We expected to get exactly one record for:" . print_r($expected, TRUE));
+      $this->assertEquals($expected['A_value'], $records[0]->value, "We did not get the value we expected using the unique key." . print_r($expected, TRUE));
+    }
 
     // Test Case: Delete values in Chado using ChadoStorage.
     // ---------------------------------------------------------
