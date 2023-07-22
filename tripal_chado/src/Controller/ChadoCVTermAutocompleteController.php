@@ -14,10 +14,12 @@ class ChadoCVTermAutocompleteController extends ControllerBase {
    * Contoller method, autocomplete cvterm name.
    *
    * @param Request request
+   *
    * @param int $count
    *   Desired number of matching names to suggest.
    *   Default to 5 items.
    *   Zero will disable autocomplete.
+   *
    * @param int $cv_id
    *   Limit the match of term to the CV with this cv_id.
    *   Zero, the default, will return matches to any CV.
