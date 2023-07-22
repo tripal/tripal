@@ -174,8 +174,9 @@ class NewickImporter extends ChadoImporterBase {
    * @see TripalImporter::formValidate()
    */
   public function formValidate($form, &$form_state) {
-
-    $values = $form_state['values'];
+    $chado = \Drupal::service('tripal_chado.database');
+    // $values = $form_state['values'];
+    $values = $form_state->getValues();
     $options = [
       'name' => trim($values["tree_name"]),
       'description' => trim($values["description"]),
@@ -191,7 +192,7 @@ class NewickImporter extends ChadoImporterBase {
     $errors = [];
     $warnings = [];
 
-    chado_validate_phylotree('insert', $options, $errors, $warnings);
+    chado_validate_phylotree('insert', $options, $errors, $warnings, $chado->getSchemaName());
 
     // Now set form errors if any errors were detected.
     if (count($errors) > 0) {
@@ -214,7 +215,7 @@ class NewickImporter extends ChadoImporterBase {
    * @see TripalImporter::run()
    */
   public function run() {
-
+    $chado = \Drupal::service('tripal_chado.database');
     $arguments = $this->arguments['run_args'];
 
     $options = [
@@ -235,7 +236,7 @@ class NewickImporter extends ChadoImporterBase {
     }
     $errors = [];
     $warnings = [];
-    chado_insert_phylotree($options, $errors, $warnings);
+    chado_insert_phylotree($options, $errors, $warnings, $chado->getSchemaName());
   }
 
   /**
