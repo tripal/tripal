@@ -181,16 +181,18 @@ class TreeImporter extends ChadoImporterBase {
     }
 
     $form['leaf_type'] = [
-      '#title' => t('Tree Type'),
+      '#title' => t('Tree Type (optional)'),
       '#type' => 'textfield',
       '#description' => t("Choose the tree type. The type is
         a valid Sequence Ontology (SO) term. For example, trees derived
         from protein sequences should use the SO term 'polypeptide'.
-        Alternatively, a phylotree can be used for representing a taxonomic
-        tree. In this case, the word 'taxonomy' should be used."),
-      '#required' => TRUE,
+        When left blank, the tree is assumed to represent a taxonomic tree."),
+      '#required' => FALSE,
       '#default_value' => $leaf_type,
-      '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/$cv_id",
+      '#autocomplete_route_name' => 'tripal_chado.cvterm_autocomplete',
+      '#autocomplete_route_parameters' => ['count' => 5],
+// To-Do: Change line above to this when pull #1585 is merged
+      '#autocomplete_route_parameters' => ['count' => 5, 'cv_id' => $cv_id],
     ];
 
     $form['dbxref'] = [
@@ -262,6 +264,12 @@ class TreeImporter extends ChadoImporterBase {
       'load_later' => $values["load_later"],
     ];
 
+    // When leaf_type is not specified on the form, default to 'taxonomy'
+    // for taxonomic (species) trees. In Tripal3 this had to be typed in.
+    if (!$options['leaf_type']) {
+      $options['leaf_type'] = 'taxonomy';
+    }
+
     $errors = [];
     $warnings = [];
 
@@ -304,6 +312,13 @@ class TreeImporter extends ChadoImporterBase {
       'name_re' => $arguments["name_re"],
       'load_later' => $arguments["load_later"],
     ];
+
+    // When leaf_type is not specified on the form, default to 'taxonomy'
+    // for taxonomic (species) trees. In Tripal3 this had to be typed in.
+    if (!$options['leaf_type']) {
+      $options['leaf_type'] = 'taxonomy';
+    }
+
     // pass through the job, needed for log output to show up on the "jobs page"
     if (property_exists($this, 'job')) {
       $options['job'] = $this->job;
