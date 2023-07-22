@@ -192,7 +192,7 @@ class TreeImporter extends ChadoImporterBase {
       '#autocomplete_route_name' => 'tripal_chado.cvterm_autocomplete',
       '#autocomplete_route_parameters' => ['count' => 5],
 // To-Do: Change line above to this when pull #1585 is merged
-      '#autocomplete_route_parameters' => ['count' => 5, 'cv_id' => $cv_id],
+//      '#autocomplete_route_parameters' => ['count' => 5, 'cv_id' => $cv_id],
     ];
 
     $form['dbxref'] = [
