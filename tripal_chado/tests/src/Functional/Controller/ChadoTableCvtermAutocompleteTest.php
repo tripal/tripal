@@ -118,8 +118,6 @@ class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
 
     // Compare with and without using only a specified cv_id.
     // We should receieve fewer suggestions when specifying the cv_id.
-    $n_all = 0;
-    $n_sequence = 0;
     $query = $connection->select('1:cv', 'cv');
     $query->condition('cv.name', 'sequence', '=');
     $query->fields('cv', ['cv_id']);
@@ -132,9 +130,7 @@ class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
     );
     $suggest = $autocomplete->handleAutocomplete($request, 10000)
       ->getContent();
-    foreach(json_decode($suggest) as $item) {
-      $n_all++;
-    }
+    $n_all = count(json_decode($suggest));
     $request = Request::create(
       'chado/cvterm/autocomplete/0/' . $sequence_cv_id,
       'GET',
@@ -142,9 +138,7 @@ class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
     );
     $suggest = $autocomplete->handleAutocomplete($request, 10000, $sequence_cv_id)
       ->getContent();
-    foreach(json_decode($suggest) as $item) {
-      $n_sequence++;
-    }
+    $n_sequence = count(json_decode($suggest));
     $this->assertGreaterThan(0, $n_all, 'Test with no CV limit returned no suggestions');
     $this->assertGreaterThan(0, $n_sequence, 'Test with CV limit returned no suggestions');
     $this->assertGreaterThan($n_sequence, $n_all, 'Limiting by CV did not reduce number of suggestions');
