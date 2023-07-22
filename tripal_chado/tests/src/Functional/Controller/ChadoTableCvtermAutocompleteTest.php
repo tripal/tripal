@@ -41,6 +41,8 @@ class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
 
     // Test Handler:
     $autocomplete = new ChadoCVTermAutocompleteController();
+    $this->assertNotNull($autocomplete, 'Failed to create the ChadoCVTermAutocompleteController');
+
     // Prepare a Request:$request entry. Search for null term
     // and suggest at least 5 items.
     $request = Request::create(
@@ -60,7 +62,7 @@ class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
       }
     }
 
-    $this->assertTrue($null_found > 0);
+    $this->assertTrue($null_found > 0, '"null" CV was not suggested');
 
 
     // Test Get Id.
@@ -70,8 +72,8 @@ class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
       // ChadoCVTermAutocompleteController::getCVtermId()
       $id = $autocomplete->getCVtermId($item->value);
 
-      $this->assertNotNull($id);
-      $this->assertIsInt($id);
+      $this->assertNotNull($id, 'NULL returned for cvterm_id');
+      $this->assertIsInt($id, 'non-integer cvterm_id returned as a suggestion');
     }
 
 
@@ -79,15 +81,14 @@ class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
     $request = Request::create(
       'chado/cvterm/autocomplete/5',
       'GET',
-      ['q' => 'ul']
+      ['q' => 'pro']
     );
-    // This will return > 6 terms ie. n[ul]l, vocab[ul]ary, pop[ul]ation, form[ul]a etc.
+    // There are more than 6 terms starting with "pro" i.e. [pro]perty [Pro]tein sequence, [pro]moter, etc.
     // but should only suggest exactly 6 items.
-
     $suggest = $autocomplete->handleAutocomplete($request, 6)
       ->getContent();
 
-    $this->assertEquals(count(json_decode($suggest)), 6);
+    $this->assertEquals(count(json_decode($suggest)), 6, 'Should have suggested 6 terms starting with "pro"');
 
 
     // Test exact term and 1 suggestion (exact match).
@@ -109,9 +110,9 @@ class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
       // ChadoCVTermAutocompleteController::getCVtermId()
       $id = $autocomplete->getCVtermId($item->value);
 
-      $this->assertNotNull($id);
-      $this->assertIsInt($id);
-      $this->assertEquals($id, $null_cvterm_id);
+      $this->assertNotNull($id, 'NULL returned as a suggestion for "null"');
+      $this->assertIsInt($id, 'non-integer cvterm_id returned as a suggestion');
+      $this->assertEquals($id, $null_cvterm_id, 'cvterm_id suggested does not match the "null" cvterm_id');
     }
 
 
@@ -154,7 +155,7 @@ class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
     $not_ids = [0, 'lorem.ipsum', 'null', '@$#%', 'null (abc:xyz)', ' ', '.'];
     foreach($not_ids as $i) {
       $id = $autocomplete->getCVtermId($i);
-      $this->assertEquals($id, 0);
+      $this->assertEquals($id, 0, 'Returned a cvterm_id for a non-existing CV term');
     }
 
 
@@ -165,9 +166,9 @@ class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
       // Reverse value - get formatted term.
       $term = $autocomplete->formatCVterm($id);
 
-      $this->assertNotNull($term);
-      $this->assertIsString($term);
-      $this->assertEquals($term, $item->value);
+      $this->assertNotNull($term, 'NULL returned for formatted CV term');
+      $this->assertIsString($term, 'Non-string value returned for formatted CV term');
+      $this->assertEquals($term, $item->value, 'Returned formatted CV term does not match expected value');
     }
   }
 }
