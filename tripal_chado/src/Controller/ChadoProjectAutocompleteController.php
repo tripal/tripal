@@ -40,7 +40,7 @@ class ChadoProjectAutocompleteController extends ControllerBase {
         // long and result count is set to a value greater than 0.
 
         // Transform string as a search keyword pattern.
-        $keyword = '%' . strtolower($string) . '%';
+        $keyword = strtolower($string) . '%';
 
         if ($type_id > 0) {
           // Restrict to type provided by type_id in the route parameter.

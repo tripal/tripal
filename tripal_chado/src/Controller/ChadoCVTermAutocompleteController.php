@@ -42,7 +42,7 @@ class ChadoCVTermAutocompleteController extends ControllerBase {
         // long and result count is set to a value greater than 0.
 
         // Transform string as a case-insensitive search keyword pattern.
-        $keyword = '%' . strtolower($string) . '%';
+        $keyword = strtolower($string) . '%';
 
         // Query cvterm (joins: dbxref - accession and db - dn name) for names matching
         // the keyword pattern and return each row in the format specified.
