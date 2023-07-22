@@ -1,0 +1,256 @@
+<?php
+
+namespace Drupal\tripal_chado\Plugin\TripalImporter;
+
+use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
+use Drupal\tripal\TripalVocabTerms\TripalTerm;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\InvokeCommand;
+use Drupal\Core\Ajax\ReplaceCommand;
+use Drupal\Core\Link;
+use Drupal\Core\Url;
+
+/**
+ * Taxonomy Importer implementation of the TripalImporterBase.
+ *
+ *  @TripalImporter(
+ *    id = "chado_newick_tree_loader",
+ *    label = @Translation("Newick Tree Loader"),
+ *    description = @Translation("Import Newick Tree into Chado"),
+ *    file_types = {"tree","txt"},
+ *    upload_description = @Translation("Please provide the Newick formatted tree file (one tree per file only).  The file must have a .txt or .tree extension"),
+ *    upload_title = @Translation("Newick Tree File"),
+ *    use_analysis = False,
+ *    require_analysis = False,
+ *    button_text = @Translation("Import Newick Tree file"),
+ *    file_upload = True,
+ *    file_load = False,
+ *    file_remote = False,
+ *    file_required = False,
+ *    cardinality = 1,
+ *    menu_path = "",
+ *    callback = "",
+ *    callback_module = "",
+ *    callback_path = "",
+ *  )
+ */
+class NewickImporter extends ChadoImporterBase {
+  /**
+   * @see TripalImporter::form()
+   */
+  public function form($form, &$form_state) {
+
+    $chado = \Drupal::service('tripal_chado.database');
+    // Always call the parent form to ensure Chado is handled properly.
+    $form = parent::form($form, $form_state);
+
+    // Default values can come in the following ways:
+    //
+    // 1) as elements of the $node object.  This occurs when editing an existing phylotree
+    // 2) in the $form_state['values'] array which occurs on a failed validation or
+    //    ajax callbacks from non submit form elements
+    // 3) in the $form_state['input'] array which occurs on ajax callbacks from submit
+    //    form elements and the form is being rebuilt
+    //
+    // set form field defaults
+    $phylotree = NULL;
+    $phylotree_id = NULL;
+    $tree_name = '';
+    $leaf_type = '';
+    $analysis_id = '';
+    $dbxref = '';
+    $comment = '';
+    $tree_required = TRUE;
+    $tree_file = '';
+    $name_re = '';
+    $match = '';
+    $load_later = FALSE;  // Default is to combine tree import with current job
+
+    $form_state_values = $form_state->getValues();
+    $form_state_input = $form_state->getUserInput();
+    // If we are re constructing the form from a failed validation or ajax callback
+    // then use the $form_state['values'] values.
+    if (isset($form_state_values['tree_name'])) {
+      $tree_name = $form_state_values['tree_name'];
+      $leaf_type = $form_state_values['leaf_type'];
+      $analysis_id = $form_state_values['analysis_id'];
+      $dbxref = $form_state_values['dbxref'];
+      $comment = $form_state_values['description'];
+    }
+    // If we are re building the form from after submission (from ajax call) then
+    // the values are in the $form_state['input'] array.
+    if (!empty($form_state_input)) {
+      $tree_name = $form_state_input['tree_name'];
+      $leaf_type = $form_state_input['leaf_type'];
+      $analysis_id = $form_state_input['analysis_id'];
+      $comment = $form_state_input['description'];
+      $dbxref = $form_state_input['dbxref'];
+    }
+
+    $form['tree_name'] = [
+      '#type' => 'textfield',
+      '#title' => t('Tree Name'),
+      '#required' => TRUE,
+      '#default_value' => $tree_name,
+      '#description' => t('Enter the name used to refer to this phylogenetic tree.'),
+      '#maxlength' => 255,
+    ];
+
+    $so_cv = chado_get_cv(['name' => 'sequence']);
+    $cv_id = $so_cv->cv_id;
+    if (!$so_cv) {
+      // drupal_set_message('The Sequence Ontolgoy does not appear to be imported.
+      //   Please import the Sequence Ontology before adding a tree.', 'error');
+      \Drupal::messenger()->addError(t("The Sequence Ontolgoy does not appear to be imported.
+         Please import the Sequence Ontology before adding a tree."));
+    }
+
+    $form['leaf_type'] = [
+      '#title' => t('Tree Type'),
+      '#type' => 'textfield',
+      '#description' => t("Choose the tree type. The type is
+        a valid Sequence Ontology (SO) term. For example, trees derived
+        from protein sequences should use the SO term 'polypeptide'.
+        Alternatively, a phylotree can be used for representing a taxonomic
+        tree. In this case, the word 'taxonomy' should be used."),
+      '#required' => TRUE,
+      '#default_value' => $leaf_type,
+      // '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/$cv_id",
+      '#autocomplete_route_name' => 'tripal_chado.cvterm_autocomplete',
+      '#autocomplete_route_parameters' => ['count' => 5]
+    ];
+
+    $form['dbxref'] = [
+      '#title' => t('Database Cross-Reference'),
+      '#type' => 'textfield',
+      '#description' => t("Enter a database cross-reference of the form
+        [DB name]:[accession]. The database name must already exist in the
+        database. If the accession does not exist it is automatically added."),
+      '#required' => FALSE,
+      '#default_value' => $dbxref,
+    ];
+
+    $form['description'] = [
+      '#type' => 'textarea',
+      '#title' => t('Description'),
+      '#required' => TRUE,
+      '#default_value' => $comment,
+      '#description' => t('Enter a description for this tree.'),
+    ];
+
+    $form['name_re'] = [
+      '#title' => t('Feature Name Regular Expression'),
+      '#type' => 'textfield',
+      '#description' => t('The tree nodes will be automatically associated with
+          features, or in the case of taxonomic trees, with organisms. However,
+          if the nodes in the tree file are not exactly as the names of features
+          or organisms but have enough information to uniquely identify them,
+          then you may provide a regular expression that the importer will use to
+          extract the appropriate names from the node names. For example, remove
+          a prefix ABC_ with ^ABC_(.*)$'),
+      '#default_value' => $name_re,
+    ];
+    $form['match'] = [
+      '#title' => t('Use Unique Feature Name'),
+      '#type' => 'checkbox',
+      '#description' => t('If this is a phylogenetic (non taxonomic) tree and the nodes ' .
+        'should match the unique name of the feature rather than the name of the feature ' .
+        'then select this box. If unselected the loader will try to match the feature ' .
+        'using the feature name.'),
+      '#default_value' => $match,
+    ];
+    $form['load_later'] = [
+      '#title' => t('Run Tree Import as a Separate Job'),
+      '#type' => 'checkbox',
+      '#description' => t('Check if tree loading should be performed as a separate job. ' .
+        'If not checked, tree loading will be combined with this job.'),
+      '#default_value' => $load_later,
+    ];
+
+    return $form;
+  }
+
+  /**
+   * @see TripalImporter::formValidate()
+   */
+  public function formValidate($form, &$form_state) {
+
+    $values = $form_state['values'];
+    $options = [
+      'name' => trim($values["tree_name"]),
+      'description' => trim($values["description"]),
+      'analysis_id' => $values["analysis_id"],
+      'leaf_type' => $values["leaf_type"],
+      'format' => 'newick',
+      'dbxref' => trim($values["dbxref"]),
+      'match' => $values["match"],
+      'name_re' => $values["name_re"],
+      'load_later' => $values["load_later"],
+    ];
+
+    $errors = [];
+    $warnings = [];
+
+    chado_validate_phylotree('insert', $options, $errors, $warnings);
+
+    // Now set form errors if any errors were detected.
+    if (count($errors) > 0) {
+      foreach ($errors as $field => $message) {
+        if ($field == 'name') {
+          $field = 'tree_name';
+        }
+        form_set_error($field, $message);
+      }
+    }
+    // Add any warnings if any were detected
+    if (count($warnings) > 0) {
+      foreach ($warnings as $field => $message) {
+        drupal_set_message($message, 'warning');
+      }
+    }
+  }
+
+  /**
+   * @see TripalImporter::run()
+   */
+  public function run() {
+
+    $arguments = $this->arguments['run_args'];
+
+    $options = [
+      'name' => $arguments["tree_name"],
+      'description' => $arguments["description"],
+      'analysis_id' => $arguments["analysis_id"],
+      'leaf_type' => $arguments["leaf_type"],
+      'tree_file' => $this->arguments['files'][0]['file_path'],
+      'format' => 'newick',
+      'dbxref' => $arguments["dbxref"],
+      'match' => $arguments["match"],
+      'name_re' => $arguments["name_re"],
+      'load_later' => $arguments["load_later"],
+    ];
+    // pass through the job, needed for log output to show up on the "jobs page"
+    if (property_exists($this, 'job')) {
+      $options['job'] = $this->job;
+    }
+    $errors = [];
+    $warnings = [];
+    chado_insert_phylotree($options, $errors, $warnings);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function postRun() {
+
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function formSubmit($form, &$form_state) {
+
+  }
+
+
+}
