@@ -9,7 +9,7 @@ content_types:
         category: General
         name: organism
         # title_format: "[organism_genus] [organism_species] [organism_infraspecific_type] [organism_infraspecific_name]"
-        # url_format: "organism/[TripalEntity__entity_id]"
+        url_format: "organism/[TripalEntity__entity_id]"
         synonyms: 
              - bio_data_1
 
@@ -19,7 +19,7 @@ content_types:
         category: General
         name: analysis
         # title_format: "[analysis_name]"
-        # url_format: "analysis/[TripalEntity__entity_id]"
+        url_format: "analysis/[TripalEntity__entity_id]"
         synonyms: 
              - bio_data_2
 
@@ -29,7 +29,7 @@ content_types:
         category: General
         name: project
         # title_format: "[project_name]"
-        # url_format: "project/[TripalEntity__entity_id]"
+        url_format: "project/[TripalEntity__entity_id]"
         synonyms: 
              - bio_data_3
               
@@ -39,7 +39,7 @@ content_types:
         category: General
         name: study
         # title_format: "[study_name]"
-        # url_format: "study/[TripalEntity__entity_id]"
+        url_format: "study/[TripalEntity__entity_id]"
         synonyms: 
              - bio_data_4
         
@@ -49,7 +49,7 @@ content_types:
         category: General
         name: contact
         # title_format: "[contact_name]"
-        # url_format: "contact/[TripalEntity__entity_id]"
+        url_format: "contact/[TripalEntity__entity_id]"
         synonyms: 
              - bio_data_5        
 
@@ -59,7 +59,7 @@ content_types:
         category: General
         name: pub
         # title_format: "[publication_title]"
-        # url_format: "pub/[TripalEntity__entity_id]"
+        url_format: "pub/[TripalEntity__entity_id]"
         synonyms: 
              - bio_data_6
 
@@ -69,7 +69,7 @@ content_types:
         category: General
         name: protocol
         # title_format: "[protocol_name]"
-        # url_format: "protocol/[TripalEntity__entity_id]"
+        url_format: "protocol/[TripalEntity__entity_id]"
         synonyms: 
              - bio_data_7
         
@@ -79,7 +79,7 @@ content_types:
         category: Genomic
         name: gene
         # title_format: "[gene_name]"
-        # url_format: "gene/[TripalEntity__entity_id]"
+        url_format: "gene/[TripalEntity__entity_id]"
         synonyms: 
              - bio_data_8
 
@@ -89,7 +89,7 @@ content_types:
         category: Genomic
         name: mRNA
         # title_format: "[mrna_name]"
-        # url_format: "mRNA/[TripalEntity__entity_id]"
+        url_format: "mRNA/[TripalEntity__entity_id]"
         synonyms: 
              - bio_data_9
             
@@ -99,7 +99,7 @@ content_types:
         category: Genomic
         name: phylotree
         # title_format: "[phylotree_name]"
-        # url_format: "phylotree/[TripalEntity__entity_id]"
+        url_format: "phylotree/[TripalEntity__entity_id]"
         synonyms: 
              - bio_data_10
               
@@ -109,7 +109,7 @@ content_types:
         category: Genomic  
         name: physical_map 
         # title_format: "[physical_map_name]"
-        # url_format: "physical_map/[TripalEntity__entity_id]"
+        url_format: "physical_map/[TripalEntity__entity_id]"
         synonyms: 
              - bio_data_11    
               
@@ -119,7 +119,7 @@ content_types:
         category: Genomic
         name: dna_library
         # title_format: "[dna_library_name]"
-        # url_format: "dna_library/[TripalEntity__entity_id]"
+        url_format: "dna_library/[TripalEntity__entity_id]"
         synonyms: 
              - bio_data_12
         
@@ -129,7 +129,7 @@ content_types:
         category: Genomic 
         name:  genome_assembly
         # title_format: "[genome_assembly_name]"
-        # url_format: "genome_assembly/[TripalEntity__entity_id]"
+        url_format: "genome_assembly/[TripalEntity__entity_id]"
         synonyms: 
              - bio_data_13     
 
@@ -139,7 +139,7 @@ content_types:
         category: Genomic
         name: genome_annotation
         # title_format: "[genome_annotation_name]"
-        # url_format: "genome_annotation/[TripalEntity__entity_id]"
+        url_format: "genome_annotation/[TripalEntity__entity_id]"
         synonyms: 
              - bio_data_14
         
@@ -149,7 +149,7 @@ content_types:
         category: Genomic
         name: genome_project
         # title_format: "[genome_project_name]"
-        # url_format: "genome_project/[TripalEntity__entity_id]"
+        url_format: "genome_project/[TripalEntity__entity_id]"
         synonyms: 
              - bio_data_15
             
@@ -159,7 +159,7 @@ content_types:
         category: Genetic
         name: genetic_map
         # title_format: "[genetic_map_name]"
-        # url_format: "genetic_map/[TripalEntity__entity_id]"
+        url_format: "genetic_map/[TripalEntity__entity_id]"
         synonyms: 
              - bio_data_16
             
@@ -169,7 +169,7 @@ content_types:
         category: Genetic
         name: QTL
         # title_format: "[qtl_name]"
-        # url_format: "QTL/[TripalEntity__entity_id]"
+        url_format: "QTL/[TripalEntity__entity_id]"
         synonyms: 
              - bio_data_17
         
@@ -179,7 +179,7 @@ content_types:
         category: Genetic
         name: sequence_variant
         # title_format: "[sequence_variant_name]"
-        # url_format: "sequence_variant/[TripalEntity__entity_id]"
+        url_format: "sequence_variant/[TripalEntity__entity_id]"
         synonyms: 
              - bio_data_18
 
@@ -189,7 +189,7 @@ content_types:
         category: Genetic
         name: genetic_marker
         # title_format: "[genetic_marker_name]"
-        # url_format: "genetic_marker/[TripalEntity__entity_id]"
+        url_format: "genetic_marker/[TripalEntity__entity_id]"
         synonyms: 
              - bio_data_19
         
@@ -199,7 +199,7 @@ content_types:
         category: Genetic
         name: phenotypic_marker 
         # title_format: "[phenotypic_marker_name]"
-        # url_format: "phenotypic_marker/[TripalEntity__entity_id]"
+        url_format: "phenotypic_marker/[TripalEntity__entity_id]"
         synonyms: 
              - bio_data_20
         
@@ -209,7 +209,7 @@ content_types:
         category: Germplasm
         name: germplasm
         # title_format: "[germplasm_name]"
-        # url_format: "germplasm/[TripalEntity__entity_id]"
+        url_format: "germplasm/[TripalEntity__entity_id]"
         synonyms: 
              - bio_data_21
         
@@ -219,7 +219,7 @@ content_types:
         category: Germplasm
         name: breeding_cross
         # title_format: "[breeding_cross_name]"
-        # url_format: "breeding_cross/[TripalEntity__entity_id]"
+        url_format: "breeding_cross/[TripalEntity__entity_id]"
         synonyms: 
              - bio_data_22
         
@@ -229,7 +229,7 @@ content_types:
         category: Germplasm
         name: germplasm_variety
         # title_format: "[germplasm_variety_name]"
-        # url_format: "germplasm_variety/[TripalEntity__entity_id]"
+        url_format: "germplasm_variety/[TripalEntity__entity_id]"
         synonyms: 
              - bio_data_23
         
@@ -239,7 +239,7 @@ content_types:
         category: Germplasm
         name: RIL
         # title_format: "[ril_name]"
-        # url_format: "RIL/[TripalEntity__entity_id]"
+        url_format: "RIL/[TripalEntity__entity_id]"
         synonyms: 
              - bio_data_24
         
@@ -249,7 +249,7 @@ content_types:
         category: Expression
         name: biosample
         # title_format: "[biosample_name]"
-        # url_format: "biosample/[TripalEntity__entity_id]"
+        url_format: "biosample/[TripalEntity__entity_id]"
         synonyms: 
              - bio_data_25
         
@@ -259,7 +259,7 @@ content_types:
         category: Expression
         name: assay
         # title_format: "[assay_name]"
-        # url_format: "assay/[TripalEntity__entity_id]"
+        url_format: "assay/[TripalEntity__entity_id]"
         synonyms: 
              - bio_data_26
         
@@ -269,7 +269,7 @@ content_types:
         category: Expression
         name: array_design
         # title_format: "[array_design_name]"
-        # url_format: "array_design/[TripalEntity__entity_id]"
+        url_format: "array_design/[TripalEntity__entity_id]"
         synonyms: 
              - bio_data_27
         

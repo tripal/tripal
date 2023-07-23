@@ -45,7 +45,7 @@ class TripalFieldCollectionTest extends TripalTestBrowserBase {
       'category' => 'General',
       'name' => 'organism',
       #'title_format' => "[organism_genus] [organism_species] [organism_infraspecific_type] [organism_infraspecific_name]",
-      #'url_format' => "organism/[TripalEntity__entity_id]",
+      'url_format' => "organism/[TripalEntity__entity_id]",
       'synonyms' => ['bio_data_1']
     ];
     /** @var \Drupal\tripal\Services\TripalContentTypes $content_type_setup **/
@@ -69,7 +69,7 @@ class TripalFieldCollectionTest extends TripalTestBrowserBase {
     $idspace->saveTerm($term);
     $field_def = [
       'name' => 'organism_genus',
-      'content_type' => 'bio_data_1',
+      'content_type' => 'organism',
       'label' => 'Genus',
       'type' => 'tripal_string_type',
       'description' => "The genus name of the organism.",

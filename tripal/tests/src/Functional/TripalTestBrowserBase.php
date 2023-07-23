@@ -177,7 +177,7 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
    * @param array $values
    *   These values are passed directly to the create() method. Suggested values are:
    *    - title (string)
-   *    - type (string; eg. bio_data_5)
+   *    - type (string; eg. organism)
    *    - user_id (integer)
    *    - status (boolean; TRUE if published)
    */

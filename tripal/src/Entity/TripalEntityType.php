@@ -29,7 +29,7 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
  *       "html" = "Drupal\tripal\Routing\TripalEntityTypeHtmlRouteProvider",
  *     },
  *   },
- *   config_prefix = "bio_data",
+ *   config_prefix = "content_type",
  *   admin_permission = "manage tripal content types",
  *   bundle_of = "tripal_entity",
  *   entity_keys = {

@@ -432,7 +432,7 @@ function tripal_shortcut_default_set($account) {
   //       'weight' => -25,
   //     ),
   //     array(
-  //       'link_path' => 'admin/content/bio_data',
+  //       'link_path' => 'admin/content/tripal',
   //       'link_title' => 'Find Tripal Content',
   //       'weight' => -20,
   //     ),

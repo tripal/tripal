@@ -48,7 +48,7 @@ use Symfony\Component\Routing\Route;
  *     "status" = "status",
  *   },
  *   links = {
- *     "canonical" = "/tripal/{tripal_entity_type}/{tripal_entity}",
+ *     "canonical" = "/tripal/{tripal_entity}",
  *     "add-page" = "/tripal/add",
  *     "add-form" = "/tripal/add/{tripal_entity_type}",
  *     "edit-form" = "/tripal/{tripal_entity}/edit",
@@ -154,35 +154,20 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    *   The alias to use. It can contain tokens the correspond to field values.
    *   Token should be be compatible with those returned by
    *   tripal_get_entity_tokens().
-   * @param array $cache
-   *   This array is used to store objects you want to cache for performance
-   *   reasons, as well as, cache related options. The following are supported:
-   *   - TripalEntityType $bundle
-   *       The bundle for the current entity.
    */
-  public function setAlias($path_alias = NULL, $cache = []) {
+  public function setAlias($path_alias = NULL) {
 
-    $system_path = "/" . $this->getType()->getName() . "/" . $this->getID();
-    $langcode = \Drupal::languageManager()->getCurrentLanguage()->getId();
+
+    $system_path = "/tripal/" . $this->getID();
 
     // If no alias was supplied then we should try to generate one using the
     // default format set by admins.
     if (!$path_alias) {
 
-      // Load the TripalEntityType entity for this TripalEntity (if it's not
-      // cached). First get the format for the url alias based on the bundle
-      // of the entity. Then replace all the tokens with values from the entity fields.
-      if (isset($cache['bundle'])) {
-        $bundle = $cache['bundle'];
-      }
-      else {
-        $bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
-      }
-
+      $bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
       $path_alias = $bundle->getURLFormat();
       $path_alias = $this->replaceTokens($path_alias,
         ['tripal_entity_type' => $bundle]);
-
     }
 
     // Ensure there is a leading slash.
@@ -197,7 +182,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     $path = \Drupal::entityTypeManager()->getStorage('path_alias')->create([
       'path' => $system_path,
       'alias' => $path_alias,
-      'langcode' => $langcode,
     ]);
     $path->save();
   }
@@ -721,17 +705,5 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     }
 
     return $violations;
-  }
-
-  /**
-   * {@inheritDoc}
-   * @see \Drupal\Core\Entity\EntityBase::urlRouteParameters()
-   */
-  public function urlRouteParameters($rel){
-    $uri_route_parameters = parent::urlRouteParameters($rel);
-    if ($rel == 'canonical') {
-      $uri_route_parameters['tripal_entity_type'] = $this->getType();
-    }
-    return $uri_route_parameters;
   }
 }

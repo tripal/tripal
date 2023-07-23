@@ -1,4 +1,4 @@
-tripal.bio_data.*:
+tripal.content_type.*:
   type: config_entity
   label: 'Tripal Content Type'
   mapping:

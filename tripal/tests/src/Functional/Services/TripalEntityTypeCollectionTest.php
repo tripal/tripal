@@ -46,7 +46,7 @@ class TripalEntityTypeCollectionTest extends TripalTestBrowserBase {
       'category' => 'General',
       'name' => 'organism',
       # 'title_format' => "[organism_genus] [organism_species] [organism_infraspecific_type] [organism_infraspecific_name]",
-      # 'url_format' => "organism/[TripalEntity__entity_id]",
+      'url_format' => "organism/[TripalEntity__entity_id]",
       'synonyms' => ['bio_data_1']
     ];
 
