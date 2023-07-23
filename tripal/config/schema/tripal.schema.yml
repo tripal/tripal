@@ -162,29 +162,29 @@ tripal.tripalentitytype_collection.*:
                  type: string
                  label: "Category"
                  nullable: false
-               # name:
-               #   type: string
-               #   label: "A machine readable content type id (a.k.a., the bundle ID or Entity Type ID)"
-               #   nullable: false
+               name:
+                 type: string
+                 label: "A machine readable content type id (a.k.a., the bundle ID or Entity Type ID)"
+                 nullable: false
                help_text:
                  type: string
                  label: "Text used to describe to the end-user what this content type is used for"
                  nullable: false
-               # url_format:
-               #   type: string
-               #   label: "A tokenzied string for the URL of the content type. Field names in square brackets can be used as tokens."
-               #   nullable: true
+               url_format:
+                 type: string
+                 label: "A tokenzied string for the URL of the content type. Field names in square brackets can be used as tokens."
+                 nullable: true
                # title_format:
                #   type: string
                #   label: "A tokenzied string for the title of the content type. Field names in square brackets can be used as tokens."
                #   nullable: true
-               # synonyms:
-               #   type: sequence
-               #   label: "Synonyms"
-               #   nullable: true
-               #   sequence:
-               #      type: string
-               #      label: "Synonym name"
+               synonyms:
+                 type: sequence
+                 label: "Synonyms"
+                 nullable: true
+                 sequence:
+                    type: string
+                    label: "Synonym name"
 
 ## For TripalFieldCollection functionality
 ## focused on using YML files to describe TripalFields
