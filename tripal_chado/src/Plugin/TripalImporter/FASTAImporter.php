@@ -355,7 +355,7 @@ class FASTAImporter extends ChadoImporterBase {
     $file_uploaded = false;
     // If there is no file upload
     if($file_upload == "" || $file_upload == "0") {
-      
+
     }
     else {
       $file_uploaded = true;

@@ -344,6 +344,13 @@ class GFF3Importer extends ChadoImporterBase {
     // get the list of organisms
     $organisms = chado_get_organism_select_options(FALSE, TRUE);
 
+    // get the sequence ontology CV ID
+    $cv_results = $chado->select('1:cv', 'cv')
+      ->fields('cv')
+      ->condition('name', 'sequence')
+      ->execute();
+    $cv_id = $cv_results->fetchObject()->cv_id;
+
     $form['organism_id'] = [
       '#title' => t('Existing Organism'),
       '#type' => 'select',
@@ -359,6 +366,8 @@ class GFF3Importer extends ChadoImporterBase {
       '#description' => t("Optional. Use this field to specify a Sequence Ontology type
        for the default landmark sequences in the GFF fie (e.g. 'chromosome'). This is only needed if
        the landmark features (first column of the GFF3 file) are not already in the database."),
+      '#autocomplete_route_name' => 'tripal_chado.cvterm_autocomplete',
+      '#autocomplete_route_parameters' => ['count' => 5, 'cv_id' => $cv_id],
     ];
 
     $form['proteins'] = [
@@ -435,6 +444,8 @@ class GFF3Importer extends ChadoImporterBase {
        the targets are of different types then the type must be specified using the 'target_type=type' attribute
        in the GFF file. This must be a valid Sequence Ontology (SO) term. If the matches in the GFF3 file
        use specific match types (e.g. cDNA_match, EST_match, etc.) then this can be left blank. "),
+      '#autocomplete_route_name' => 'tripal_chado.cvterm_autocomplete',
+      '#autocomplete_route_parameters' => ['count' => 5, 'cv_id' => $cv_id],
     ];
 
     $form['targets']['create_target'] = [
