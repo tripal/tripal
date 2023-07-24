@@ -412,14 +412,14 @@ class FASTAImporter extends ChadoImporterBase {
 
     // check to make sure the types exists
     $cv_autocomplete = new ChadoCVTermAutocompleteController();
-    $cvterm_id = $cv_autocomplete->getCVtermId($type);
+    $cvterm_id = $cv_autocomplete->getCVtermId($type, 'sequence');
     if (!$cvterm_id) {
       // form_set_error('type', t("The Sequence Ontology (SO) term selected for the sequence type is not available in the database. Please check spelling or select another."));
       \Drupal::messenger()->addError(t("The Sequence Ontology (SO) term selected for the sequence type is not available in the database. Please check spelling or select another."));
     }
 
     if ($rel_type) {
-      $cvterm_id = $cv_autocomplete->getCVtermId($parent_type);
+      $cvterm_id = $cv_autocomplete->getCVtermId($parent_type, 'sequence');
       if (!$cvterm_id) {
         // form_set_error('parent_type', t("The Sequence Ontology (SO) term selected for the parent relationship is not available in the database. Please check spelling or select another."));
         \Drupal::messenger()->addError(t("The Sequence Ontology (SO) term selected for the parent relationship is not available in the database. Please check spelling or select another."));
@@ -514,7 +514,7 @@ class FASTAImporter extends ChadoImporterBase {
 
     // First get the type for this sequence.
     $cv_autocomplete = new ChadoCVTermAutocompleteController();
-    $cvterm_id = $cv_autocomplete->getCVtermId($type);
+    $cvterm_id = $cv_autocomplete->getCVtermId($type, 'sequence');
     if (!$cvterm_id) {
       // $this->logMessage("Cannot find the term type: '!type'", ['!type' => $type], TRIPAL_ERROR);
       $this->logger->error("Cannot find the term type: ':type'",
@@ -540,7 +540,7 @@ class FASTAImporter extends ChadoImporterBase {
     // Second, if there is a parent type then get that.
     $parentcvterm = NULL;
     if (isset($parent_type) && $parent_type != "") {
-      $parentcvterm_id = $cv_autocomplete->getCVtermId($parent_type);
+      $parentcvterm_id = $cv_autocomplete->getCVtermId($parent_type, 'sequence');
       if (!$parentcvterm_id) {
         $this->logger->error("Cannot find the parent term type: ':parent_type'",
             [':parent_type' => $parent_type]);
