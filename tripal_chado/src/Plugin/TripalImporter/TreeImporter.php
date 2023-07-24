@@ -116,131 +116,10 @@ class TreeImporter extends ChadoImporterBase {
    * @see TripalImporter::form()
    */
   public function form($form, &$form_state) {
-    $chado = \Drupal::service('tripal_chado.database');
     // Always call the parent form to ensure Chado is handled properly.
     $form = parent::form($form, $form_state);
 
-    // Default values can come in the following ways:
-    //
-    // 1) as elements of the $node object.  This occurs when editing an existing phylotree
-    // 2) in the $form_state['values'] array which occurs on a failed validation or
-    //    ajax callbacks from non submit form elements
-    // 3) in the $form_state['input'] array which occurs on ajax callbacks from submit
-    //    form elements and the form is being rebuilt
-    //
-    // set form field defaults
-    $phylotree = NULL;
-    $phylotree_id = NULL;
-    $tree_name = '';
-    $leaf_type = '';
-    $analysis_id = '';
-    $dbxref = '';
-    $comment = '';
-    $tree_required = TRUE;
-    $tree_file = '';
-    $name_re = '';
-    $match = '';
-    $load_later = FALSE;  // Default is to combine tree import with current job
-
-    $form_state_values = $form_state->getValues();
-
-    // If we are re constructing the form from a failed validation or ajax callback
-    // then use the $form_state['values'] values.
-    if (array_key_exists('tree_name', $form_state_values)) {
-      $tree_name = $form_state_values['tree_name'];
-      $leaf_type = $form_state_values['leaf_type'];
-      $analysis_id = $form_state_values['analysis_id'];
-      $comment = $form_state_values['description'];
-      $dbxref = $form_state_values['dbxref'];
-    }
-
-    // If we are re building the form from after submission (from ajax call) then
-    // the values are in the $form_state_values['input'] array.
-    if (array_key_exists('input', $form_state_values) and !empty($form_state_values['input'])) {
-      $tree_name = $form_state_values['input']['tree_name'];
-      $leaf_type = $form_state_values['input']['leaf_type'];
-      $analysis_id = $form_state_values['input']['analysis_id'];
-      $comment = $form_state_values['input']['description'];
-      $dbxref = $form_state_values['input']['dbxref'];
-    }
-
-    $form['tree_name'] = [
-      '#type' => 'textfield',
-      '#title' => t('Tree Name'),
-      '#required' => TRUE,
-      '#default_value' => $tree_name,
-      '#description' => t('Enter the name used to refer to this phylogenetic tree.'),
-      '#maxlength' => 255,
-    ];
-
-    $so_cv = chado_get_cv(['name' => 'sequence']);
-    $cv_id = $so_cv->cv_id;
-    if (!$so_cv) {
-      drupal_set_message('The Sequence Ontolgoy does not appear to be imported.
-        Please import the Sequence Ontology before adding a tree.', 'error');
-    }
-
-    $form['leaf_type'] = [
-      '#title' => t('Tree Type (optional)'),
-      '#type' => 'textfield',
-      '#description' => t("Choose the tree type. The type is
-        a valid Sequence Ontology (SO) term. For example, trees derived
-        from protein sequences should use the SO term 'polypeptide'.
-        When left blank, the tree is assumed to represent a taxonomic tree."),
-      '#required' => FALSE,
-      '#default_value' => $leaf_type,
-      '#autocomplete_route_name' => 'tripal_chado.cvterm_autocomplete',
-      '#autocomplete_route_parameters' => ['count' => 5],
-// To-Do: Change line above to this when pull #1585 is merged
-//      '#autocomplete_route_parameters' => ['count' => 5, 'cv_id' => $cv_id],
-    ];
-
-    $form['dbxref'] = [
-      '#title' => t('Database Cross-Reference'),
-      '#type' => 'textfield',
-      '#description' => t("Enter a database cross-reference of the form
-        [DB name]:[accession]. The database name must already exist in the
-        database. If the accession does not exist it is automatically added."),
-      '#required' => FALSE,
-      '#default_value' => $dbxref,
-    ];
-
-    $form['description'] = [
-      '#type' => 'textarea',
-      '#title' => t('Description'),
-      '#required' => TRUE,
-      '#default_value' => $comment,
-      '#description' => t('Enter a description for this tree.'),
-    ];
-
-    $form['name_re'] = [
-      '#title' => t('Feature Name Regular Expression'),
-      '#type' => 'textfield',
-      '#description' => t('The tree nodes will be automatically associated with
-          features, or in the case of taxonomic trees, with organisms. However,
-          if the nodes in the tree file are not exactly as the names of features
-          or organisms but have enough information to uniquely identify them,
-          then you may provide a regular expression that the importer will use to
-          extract the appropriate names from the node names. For example, remove
-          a prefix ABC_ with ^ABC_(.*)$'),
-      '#default_value' => $name_re,
-    ];
-    $form['match'] = [
-      '#title' => t('Use Unique Feature Name'),
-      '#type' => 'checkbox',
-      '#description' => t('If this is a phylogenetic (non taxonomic) tree and the nodes ' .
-        'should match the unique name of the feature rather than the name of the feature, ' .
-        'then check this box. If unchecked, the loader will try to match the feature ' .
-        'using the feature name.'),
-      '#default_value' => $match,
-    ];
-    $form['load_later'] = [
-      '#title' => t('Run Tree Import as a Separate Job'),
-      '#type' => 'checkbox',
-      '#description' => t('Check if tree loading should be performed as a separate job. ' .
-        'If not checked, tree loading will be combined with this job.'),
-      '#default_value' => $load_later,
-    ];
+    $form = $this->newLoaderForm($form, $form_state);
 
     return $form;
   }
@@ -250,6 +129,8 @@ class TreeImporter extends ChadoImporterBase {
    */
   public function formValidate($form, &$form_state) {
 
+dpm('tree parent formValidate called'); //@@@
+if (0) { //@@@
     $values = $form_state->getValues();
     $schema = $values['schema_name'];
     $options = [
@@ -291,6 +172,56 @@ class TreeImporter extends ChadoImporterBase {
         $form_state->setErrorByName($field, $message);
       }
     }
+} //@@@
+  }
+
+  /**
+   * Form for loading a tree file.
+   *
+   * @param array $form
+   *   The form array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   */
+  public function newLoaderForm($form, &$form_state) {
+
+    // Retrieve a sorted list of available tree parser plugins.
+    $tree_parser_manager = \Drupal::service('tripal.tree_parser');
+    $tree_parser_defs = $tree_parser_manager->getDefinitions();
+    $plugins = [];
+    foreach ($tree_parser_defs as $plugin_id => $def) {
+      $plugin_key = $def['id'];
+      $plugin_value = $def['label']->render();
+      $plugins[$plugin_key] = $plugin_value;
+    }
+    asort($plugins);
+
+    $form['plugin_id'] = [
+      '#title' => t('Select the type of tree file to load'),
+      '#type' => 'radios',
+      '#description' => t("Choose one of the formats above for loading the tree file."),
+      '#required' => TRUE,
+      '#options' => $plugins,
+      '#default_value' => NULL,
+      '#ajax' => [
+        'callback' =>  [$this, 'formAjaxCallback'],
+        'wrapper' => 'edit-parser',
+      ],
+    ];
+
+    // A placeholder for the form elements for the selected plugin,
+    // to be populated by the AJAX callback.
+    $form['tree_parser'] = [
+      '#prefix' => '<span id="edit-tree_parser">',
+      '#suffix' => '</span>',
+    ];
+
+    // The placeholder will only be populated if a plugin, i.e.
+    // $form['plugin_id'], has been selected. Both the plugin base
+    // class and the selected plugin can each add form elements.
+    $form = $this->formPlugin($form, $form_state);
+
+    return $form;
   }
 
   /**
@@ -339,7 +270,55 @@ class TreeImporter extends ChadoImporterBase {
    * {@inheritdoc}
    */
   public function formSubmit($form, &$form_state) {
+    // Disable the parent submit
+    $form_state->setRebuild(True);
+  }
 
+  /**
+   * Retrieves form elements from a plugin.
+   *
+   * @param array $form
+   *   The form array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   */
+  private function formPlugin($form, &$form_state) {
+
+    // Add elements only after a plugin has been selected.
+    $plugin_id = $form_state->getValue(['plugin_id']);
+    if ($plugin_id) {
+
+      // Instantiate the selected plugin
+      $tree_parser_manager = \Drupal::service('tripal.tree_parser');
+      $plugin = $tree_parser_manager->createInstance($plugin_id, []);
+
+      // The plugin manager defines form elements used by
+      // all pub_parser plugins.
+      $form = $tree_parser_manager->form($form, $form_state);
+
+      // The selected plugin defines form elements specific
+      // to itself.
+      $form = $plugin->form($form, $form_state);
+    }
+
+    return $form;
+  }
+
+  /**
+   * Ajax callback for the ChadoTreeImporter::form() function.
+   * This adds form elements appropriate for the selected parser plugin.
+   *
+   * @param array $form
+   *   The form array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   */
+  public function formAjaxCallback($form, &$form_state) {
+
+    $response = new AjaxResponse();
+    $response->addCommand(new ReplaceCommand('#edit-tree_parser', $form['tree_parser']));
+
+    return $response;
   }
 
 }

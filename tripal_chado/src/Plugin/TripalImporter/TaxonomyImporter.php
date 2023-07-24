@@ -167,6 +167,8 @@ class TaxonomyImporter extends ChadoImporterBase {
     ];
 
     // Note, Tripal 3 had no space before 'Taxonomy Tree'.
+    // That is a minor typo, but fixing it means a second
+    // tree might be generated for a migrated Tripal 3 site.
     $form['tree_name'] = [
       '#type' => 'textfield',
       '#title' => t('Tree Name'),

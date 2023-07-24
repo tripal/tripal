@@ -1033,7 +1033,6 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $j
     return FALSE;
   }
 
-  // $transaction = db_transaction(); // OLD T3
   $chado = \Drupal::service('tripal_chado.database');
   $chado->setSchemaName($schema_name);
   $transaction_chado = $chado->startTransaction();
@@ -1058,9 +1057,8 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $j
     // Iterate through the tree nodes and add them to Chado in accordance
     // with the details in the $options array.
     chado_phylogeny_import_tree($tree, $phylotree, $options, [], NULL, $schema_name);
-  } catch (Exception $e) {
-    // $transaction->rollback(); // OLD T3
+  } catch (\Exception $e) {
     $transaction_chado->rollback();
-    watchdog_exception($options['message_type'], $e);
+    \Drupal::service('tripal.logger')->error($options['message_type'] . ': ' . $e->getMessage());
   }
 }

@@ -24,6 +24,9 @@ services:
   tripal.importer:
     class: Drupal\tripal\TripalImporter\PluginManagers\TripalImporterManager
     parent: default_plugin_manager
+  tripal.tree_parser:
+    class: Drupal\tripal\TripalTreeParser\PluginManagers\TripalTreeParserManager
+    parent: default_plugin_manager
   tripal.tripalfield_collection:
     class: Drupal\tripal\Services\TripalFieldCollection
     arguments: ['@tripal.collection_plugin_manager.idspace',
