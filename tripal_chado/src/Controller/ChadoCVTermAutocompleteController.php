@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
  */
 class ChadoCVTermAutocompleteController extends ControllerBase {
   /**
-   * Contoller method, autocomplete cvterm name.
+   * Controller method, autocomplete cvterm name.
    *
    * @param Request request
    *
