@@ -22,7 +22,7 @@ class TripalEntityTypeForm extends EntityForm {
 
     $tripal_entity_type = $this->entity;
     $tripal_entity_type->setDefaults();
-    $machine_name = $tripal_entity_type->getName();
+    $machine_name = preg_replace('[^\w]','_', ucwords($tripal_entity_type->label()));
 
 
     // We need to choose a term if this is a new content type.
@@ -88,11 +88,14 @@ class TripalEntityTypeForm extends EntityForm {
     $form['name'] = [
       '#type' => 'machine_name',
       '#default_value' => $machine_name,
+      '#description' => $this->t('A unique name for this content type. It must only contain lowercase ' .
+          'letters, numbers, and underscores.'),
+      '#maxlength' => 64,
       '#required' => TRUE,
       '#machine_name' => [
         'exists' => '\Drupal\tripal\Entity\TripalEntityType::load',
       ],
-      '#disabled' => TRUE,
+      '#disabled' => !$this->entity->isNew(),
     ];
 
     $form['term'] = [
