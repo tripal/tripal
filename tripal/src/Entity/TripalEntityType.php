@@ -240,10 +240,12 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     if ($this->label === NULL) {
       throw new \Exception("The label is required when creating a TripalEntityType.");
     }
+    if ($this->name === NULL) {
+      throw new \Exception("The name is required when creating a TripalEntityType.");
+    }
     if ($this->help_text === NULL) {
       throw new \Exception("The help text is required when creating a TripalEntityType.");
     }
-
     if ($this->termIdSpace === NULL) {
       throw new \Exception("The Term ID Space is required when creating a TripalEntityType.");
     }

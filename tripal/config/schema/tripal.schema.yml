@@ -174,10 +174,10 @@ tripal.tripalentitytype_collection.*:
                  type: string
                  label: "A tokenzied string for the URL of the content type. Field names in square brackets can be used as tokens."
                  nullable: true
-               # title_format:
-               #   type: string
-               #   label: "A tokenzied string for the title of the content type. Field names in square brackets can be used as tokens."
-               #   nullable: true
+               title_format:
+                 type: string
+                 label: "A tokenzied string for the title of the content type. Field names in square brackets can be used as tokens."
+                 nullable: true
                synonyms:
                  type: sequence
                  label: "Synonyms"
