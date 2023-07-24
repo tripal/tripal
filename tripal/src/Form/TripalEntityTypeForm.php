@@ -196,7 +196,7 @@ class TripalEntityTypeForm extends EntityForm {
     $form['url_settings']['msg'] = [
       '#type' => 'item',
       '#markup' => t('
-<p>hTe pattern below is used to specify the URL of content pages of this type. This allows you to present more friendly, informative URLs to your user.</p>
+<p>The pattern below is used to specify the URL of content pages of this type. This allows you to present more friendly, informative URLs to your user.</p>
 
 <p><strong>You must choose a combination of tokens that results in a unique path for each page!</strong></p>'),
     ];
