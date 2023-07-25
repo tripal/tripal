@@ -58,8 +58,8 @@ class TripalPublish {
 
     // Iterate over the field definitions for the bundle.
     /** @var \Drupal\Core\Field\BaseFieldDefinition $field_definition **/
+    $field_info = [];
     $field_definition = NULL;
-    $settings = [];
     foreach ($field_defs as $field_name => $field_definition) {
 
       if (!empty($field_definition->getTargetBundle())) {
@@ -73,23 +73,44 @@ class TripalPublish {
           $instance = $field_type_manager->createInstance($field_definition->getType(), $configuration);
           $prop_types = $instance->tripalTypes($field_definition);
           $field_class = get_class($instance);
-
-          /** @var \Drupal\tripal\TripalStorage\StoragePropertyTypeBase $prop_type **/
-          foreach ($prop_types as $prop_type) {
-            if ($prop_type->getSearchability() == TRUE) {
-              $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
-                  $field_class::$id, $prop_type->getKey(), $prop_type->getTerm()->getTermId(), NULL);
-              $search_values[$field_name][0][$prop_type->getKey()] = [
-                'type' => $prop_type,
-                'value' => $prop_value,
-                'operation' => '<>',
-                'definition' => $field_definition
-              ];
-            }
-          }
+          $storage->addTypes($bundle, $field_name, $prop_types);
+          $field_info[$field_name] = [
+            'definition' => $field_definition,
+            'class' => $field_class
+          ];
         }
       }
     }
-   $storage->findValues($search_values);
+
+
+    // Iterate through the property type that can uniquely identify an entity.
+    $required_types = $storage->getUniqueEntityTypes();
+    foreach ($required_types as $bundle_name => $field_names) {
+      foreach ($field_names as $field_name => $keys) {
+        foreach ($keys as $key => $prop_type) {
+
+          $field_definition = $field_info[$field_name]['definition'];
+          $field_class = $field_info[$field_name]['class'];
+          $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
+              $field_class::$id, $prop_type->getKey(), $prop_type->getTerm()->getTermId(), NULL);
+
+          // Query the list of unique property values
+    //       $field_table  = 'tripal_entity__' . $field_name;
+    //       $database = \Drupal::database();
+    //       $query = $database->select($field_table, 'ft');
+    //       $query->fields('mytable', ['field_1', 'field_2']);
+
+          // Add this field to the search values array.
+          $search_values[$field_name][0][$prop_type->getKey()] = [
+            'type' => $prop_type,
+            'value' => $prop_value,
+            'operation' => '<>',
+            'definition' => $field_definition
+          ];
+        }
+      }
+    }
+
+    $storage->findValues($search_values);
   }
 }

@@ -114,7 +114,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
 	/**
 	 * @{inheritdoc}
 	 */
-  public function addTypes($types) {
+  public function addTypes($bundle_name, $field_name, $types) {
 
     // Index the types by their entity type, field type and key.
     foreach ($types as $index => $type) {
@@ -124,22 +124,20 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
         return FALSE;
       }
 
-      $field_name = $type->getFieldType();
-      $entity_type = $type->getEntityType();
       $key = $type->getKey();
 
-      if (!array_key_exists($entity_type, $this->property_types)) {
-        $this->property_types[$entity_type] = [];
+      if (!array_key_exists($bundle_name, $this->property_types)) {
+        $this->property_types[$bundle_name] = [];
       }
-      if (!array_key_exists($field_name, $this->property_types[$entity_type])) {
-        $this->property_types[$entity_type][$field_name] = [];
+      if (!array_key_exists($field_name, $this->property_types[$bundle_name])) {
+        $this->property_types[$bundle_name][$field_name] = [];
       }
-      if (array_key_exists($key, $this->property_types[$entity_type])) {
+      if (array_key_exists($key, $this->property_types[$bundle_name])) {
         $this->logger->error('Cannot add a property type, "@prop", as it already exists',
-            ['@prop' => $entity_type . '.' . $field_name . '.' . $key]);
+            ['@prop' => $bundle_name . '.' . $field_name . '.' . $key]);
         return FALSE;
       }
-      $this->property_types[$entity_type][$field_name][$key] = $type;
+      $this->property_types[$bundle_name][$field_name][$key] = $type;
     }
   }
 
@@ -147,34 +145,44 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
    * @{inheritdoc}
    */
   public function getTypes() {
-    $types = [];
-    foreach ($this->property_types as $field_types) {
-      foreach ($field_types as $keys) {
-        foreach ($keys as $type) {
-          $types[] = $type;
-        }
-      }
-    }
-    return $types;
+    return $this->property_types;
   }
 
   /**
 	 * @{inheritdoc}
 	 */
-  public function removeTypes($types) {
+  public function removeTypes($bundle_name, $field_name, $types) {
 
     foreach ($types as $type) {
-      $entity_type = $type->getEntityType();
-      $field_type = $type->getFieldType();
       $key = $type->getKey();
-      if (array_key_exists($entity_type, $this->property_types)) {
-        if (array_key_exists($field_type, $this->property_types[$entity_type])) {
-          if (array_key_exists($key, $this->property_types[$entity_type])) {
-            unset($this->property_types[$entity_type][$field_type][$key]);
+      if (array_key_exists($bundle_name, $this->property_types)) {
+        if (array_key_exists($field_name, $this->property_types[$bundle_name])) {
+          if (array_key_exists($key, $this->property_types[$bundle_name][$field_name])) {
+            unset($this->property_types[$bundle_name][$field_name][$key]);
           }
         }
       }
     }
+  }
+
+  /**
+   *
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface::getUniqueEntityTypes()
+   */
+  public function getUniqueEntityTypes(){
+    $ret_types = [];
+    foreach ($this->property_types as $bundle_name => $field_names) {
+      foreach ($field_names as $field_name => $keys) {
+        foreach ($keys as $key => $prop_type) {
+          $storage_settings = $prop_type->getStorageSettings();
+          if ($storage_settings['action'] == 'store_id') {
+            $ret_types[$bundle_name][$field_name][$key] = $prop_type;
+          }
+        }
+      }
+    }
+    return $ret_types;
   }
 
   /**
@@ -447,6 +455,13 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
           ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
     }
 
+    // Add the record IDs as fields
+    foreach ($record['conditions'] as $chado_column => $value) {
+      if (is_array($value['value']) and in_array('REPLACE_BASE_RECORD_ID', array_values($value['value']))) {
+        $record['fields'][$chado_column] = '';
+      }
+    }
+
     // Select the fields in the chado table.
     $select = $this->connection->select('1:'.$chado_table, 'ct');
     $select->fields('ct', array_keys($record['fields']));
@@ -639,7 +654,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
     $build = $this->buildChadoRecords($values, FALSE);
     $records = $build['records'];
     $base_tables = $build['base_tables'];
-    print_r($records);
 
     $transaction_chado = $this->connection->startTransaction();
     try {
@@ -1502,4 +1516,5 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
 
     return $violations;
   }
+
 }

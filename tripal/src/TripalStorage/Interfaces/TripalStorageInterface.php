@@ -11,19 +11,27 @@ interface TripalStorageInterface extends PluginInspectionInterface {
 
   /**
    * Adds the given array of new property types to this tripal storage plugin.
-   *
+   * @param string $bundle_name
+   *   The name of the bundle that the field is attached to that the properties
+   *   belong to.
+   * @param string $field_name
+   *   The name of the field the properties belong to.
    * @param array $types
    *   Array of \Drupal\tripal\TripalStorage\StoragePropertyTypeBase objects.
    */
-  public function addTypes($types);
+  public function addTypes($bundle_name, $field_name, $types);
 
   /**
    * Removes the given array of property types from this tripal storage plugin.
-   *
+   * @param string $bundle_name
+   *   The name of the bundle that the field is attached to that the properties
+   *   belong to.
+   * @param string $field_name
+   *   The name of the field the properties belong to.
    * @param array $types
    *   Array of \Drupal\tripal\TripalStorage\StoragePropertyTypeBase objects.
    */
-  public function removeTypes($types);
+  public function removeTypes($bundle_name, $field_name, $types);
 
   /**
    * Returns a list of all property types added to this storage plugin type.
@@ -34,6 +42,15 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    *   have been added to this storage plugin type.
    */
   public function getTypes();
+
+
+  /**
+   * Returns a list of property types that can uniquely identify an entity.
+   *
+   * @return @array
+   *   Array of \Drupal\tripal\Base\StoragePropertyTypeBase objects.
+   */
+  public function getUniqueEntityTypes();
 
   /**
    * Inserts values in the field data store.
