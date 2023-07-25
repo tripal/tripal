@@ -46,7 +46,7 @@ class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
     // Prepare a Request:$request entry. Search for null term
     // and suggest at least 5 items.
     $request = Request::create(
-      'chado/cvterm/autocomplete/5',
+      'chado/cvterm/autocomplete/0/5',
       'GET',
       ['q' => 'null']
     );
@@ -79,13 +79,13 @@ class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
 
     // Test limit.
     $request = Request::create(
-      'chado/cvterm/autocomplete/5',
+      'chado/cvterm/autocomplete/0/5',
       'GET',
       ['q' => 'pro']
     );
     // There are more than 6 terms starting with "pro" i.e. [pro]perty [Pro]tein sequence, [pro]moter, etc.
     // but should only suggest exactly 6 items.
-    $suggest = $autocomplete->handleAutocomplete($request, 6)
+    $suggest = $autocomplete->handleAutocomplete($request, 0, 6)
       ->getContent();
 
     $this->assertEquals(count(json_decode($suggest)), 6, 'Should have suggested 6 terms starting with "pro"');
@@ -98,12 +98,12 @@ class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
     $null_cvterm_id = $query->execute()->fetchField();
 
     $request = Request::create(
-      'chado/cvterm/autocomplete/5',
+      'chado/cvterm/autocomplete/0/5',
       'GET',
       ['q' => 'null']
     );
 
-    $suggest = $autocomplete->handleAutocomplete($request, 1)
+    $suggest = $autocomplete->handleAutocomplete($request, 0, 1)
       ->getContent();
 
     foreach(json_decode($suggest) as $item) {
@@ -124,19 +124,19 @@ class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
     $sequence_cv_id = $query->execute()->fetchField();
 
     $request = Request::create(
-      'chado/cvterm/autocomplete/0',
+      'chado/cvterm/autocomplete/0/10000',
       'GET',
       ['q' => 'a']
     );
-    $suggest = $autocomplete->handleAutocomplete($request, 10000)
+    $suggest = $autocomplete->handleAutocomplete($request, 0, 10000)
       ->getContent();
     $n_all = count(json_decode($suggest));
     $request = Request::create(
-      'chado/cvterm/autocomplete/0/' . $sequence_cv_id,
+      'chado/cvterm/autocomplete/' . $sequence_cv_id . '/10000',
       'GET',
       ['q' => 'a']
     );
-    $suggest = $autocomplete->handleAutocomplete($request, 10000, $sequence_cv_id)
+    $suggest = $autocomplete->handleAutocomplete($request, $sequence_cv_id, 10000)
       ->getContent();
     $n_sequence = count(json_decode($suggest));
     $this->assertGreaterThan(0, $n_all, 'Test with no CV limit returned no suggestions');

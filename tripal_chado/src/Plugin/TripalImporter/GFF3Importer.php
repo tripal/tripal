@@ -368,7 +368,7 @@ class GFF3Importer extends ChadoImporterBase {
        for the default landmark sequences in the GFF fie (e.g. 'chromosome'). This is only needed if
        the landmark features (first column of the GFF3 file) are not already in the database."),
       '#autocomplete_route_name' => 'tripal_chado.cvterm_autocomplete',
-      '#autocomplete_route_parameters' => ['count' => 5, 'cv_id' => $cv_id],
+      '#autocomplete_route_parameters' => ['cv_id' => $cv_id, 'count' => 5],
     ];
 
     $form['proteins'] = [
@@ -446,7 +446,7 @@ class GFF3Importer extends ChadoImporterBase {
        in the GFF file. This must be a valid Sequence Ontology (SO) term. If the matches in the GFF3 file
        use specific match types (e.g. cDNA_match, EST_match, etc.) then this can be left blank. "),
       '#autocomplete_route_name' => 'tripal_chado.cvterm_autocomplete',
-      '#autocomplete_route_parameters' => ['count' => 5, 'cv_id' => $cv_id],
+      '#autocomplete_route_parameters' => ['cv_id' => $cv_id, 'count' => 5],
     ];
 
     $form['targets']['create_target'] = [
@@ -547,12 +547,12 @@ class GFF3Importer extends ChadoImporterBase {
 
     // check to make sure the types exists
     $cv_autocomplete = new ChadoCVTermAutocompleteController();
-    $landmark_type_id = $cv_autocomplete->getCVtermId($landmark_type, 'sequence');
+    $landmark_type_id = $cv_autocomplete->getCVtermId('sequence', $landmark_type);
     if (!$landmark_type_id) {
       \Drupal::messenger()->addError(t("The Sequence Ontology (SO) term selected for the landmark type is not available in the database. Please check spelling or select another."));
     }
     if ($target_type) {
-      $target_type_id = $cv_autocomplete->getCVtermId($target_type, 'sequence');
+      $target_type_id = $cv_autocomplete->getCVtermId('sequence', $target_type);
       if (!$target_type_id) {
         \Drupal::messenger()->addError(t("The Sequence Ontology (SO) term selected for the target type is not available in the database. Please check spelling or select another."));
       }

@@ -127,7 +127,7 @@ class FASTAImporter extends ChadoImporterBase {
       '#required' => TRUE,
       '#description' => t('Please enter the Sequence Ontology (SO) term name that describes the sequences in the FASTA file (e.g. gene, mRNA, polypeptide, etc...)'),
       '#autocomplete_route_name' => 'tripal_chado.cvterm_autocomplete',
-      '#autocomplete_route_parameters' => ['count' => 5, 'cv_id' => $cv_id],
+      '#autocomplete_route_parameters' => ['cv_id' => $cv_id, 'count' => 5],
     ];
 
     $form['method'] = [
@@ -294,7 +294,7 @@ class FASTAImporter extends ChadoImporterBase {
                          this type must match the type for already loaded features.'),
       '#weight' => 7,
       '#autocomplete_route_name' => 'tripal_chado.cvterm_autocomplete',
-      '#autocomplete_route_parameters' => ['count' => 5, 'cv_id' => $cv_id],
+      '#autocomplete_route_parameters' => ['cv_id' => $cv_id, 'count' => 5],
     ];
 
     return $form;
@@ -412,14 +412,14 @@ class FASTAImporter extends ChadoImporterBase {
 
     // check to make sure the types exists
     $cv_autocomplete = new ChadoCVTermAutocompleteController();
-    $cvterm_id = $cv_autocomplete->getCVtermId($type, 'sequence');
+    $cvterm_id = $cv_autocomplete->getCVtermId('sequence', $type);
     if (!$cvterm_id) {
       // form_set_error('type', t("The Sequence Ontology (SO) term selected for the sequence type is not available in the database. Please check spelling or select another."));
       \Drupal::messenger()->addError(t("The Sequence Ontology (SO) term selected for the sequence type is not available in the database. Please check spelling or select another."));
     }
 
     if ($rel_type) {
-      $cvterm_id = $cv_autocomplete->getCVtermId($parent_type, 'sequence');
+      $cvterm_id = $cv_autocomplete->getCVtermId('sequence', $parent_type);
       if (!$cvterm_id) {
         // form_set_error('parent_type', t("The Sequence Ontology (SO) term selected for the parent relationship is not available in the database. Please check spelling or select another."));
         \Drupal::messenger()->addError(t("The Sequence Ontology (SO) term selected for the parent relationship is not available in the database. Please check spelling or select another."));
@@ -514,7 +514,7 @@ class FASTAImporter extends ChadoImporterBase {
 
     // First get the type for this sequence.
     $cv_autocomplete = new ChadoCVTermAutocompleteController();
-    $cvterm_id = $cv_autocomplete->getCVtermId($type, 'sequence');
+    $cvterm_id = $cv_autocomplete->getCVtermId('sequence', $type);
     if (!$cvterm_id) {
       // $this->logMessage("Cannot find the term type: '!type'", ['!type' => $type], TRIPAL_ERROR);
       $this->logger->error("Cannot find the term type: ':type'",
