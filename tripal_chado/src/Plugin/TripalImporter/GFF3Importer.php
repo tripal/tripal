@@ -547,12 +547,12 @@ class GFF3Importer extends ChadoImporterBase {
 
     // check to make sure the types exists
     $cv_autocomplete = new ChadoCVTermAutocompleteController();
-    $landmark_type_id = $cv_autocomplete->getCVtermId('sequence', $landmark_type);
+    $landmark_type_id = $cv_autocomplete->getCVtermId($landmark_type, 'sequence');
     if (!$landmark_type_id) {
       \Drupal::messenger()->addError(t("The Sequence Ontology (SO) term selected for the landmark type is not available in the database. Please check spelling or select another."));
     }
     if ($target_type) {
-      $target_type_id = $cv_autocomplete->getCVtermId('sequence', $target_type);
+      $target_type_id = $cv_autocomplete->getCVtermId($target_type, 'sequence');
       if (!$target_type_id) {
         \Drupal::messenger()->addError(t("The Sequence Ontology (SO) term selected for the target type is not available in the database. Please check spelling or select another."));
       }
