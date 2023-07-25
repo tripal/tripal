@@ -196,22 +196,27 @@ if (0) { //@@@
     }
     asort($plugins);
 
+    // We want the file type selector right underneath the file element
+    // which has weight -15. Analysis does not have a weight. Our
+    // placeholder has weight +1. Advanced has weight +9.
     $form['plugin_id'] = [
+      '#weight' => -14,
       '#title' => t('Select the type of tree file to load'),
       '#type' => 'radios',
-      '#description' => t("Choose one of the formats above for loading the tree file."),
+      '#description' => t("Choose one of the formats above for loading the tree file. Currently only Newick format is supported"),
       '#required' => TRUE,
       '#options' => $plugins,
       '#default_value' => NULL,
       '#ajax' => [
         'callback' =>  [$this, 'formAjaxCallback'],
         'wrapper' => 'edit-parser',
-      ],
+      ]
     ];
 
     // A placeholder for the form elements for the selected plugin,
     // to be populated by the AJAX callback.
     $form['tree_parser'] = [
+      '#weight' => 1,
       '#prefix' => '<span id="edit-tree_parser">',
       '#suffix' => '</span>',
     ];

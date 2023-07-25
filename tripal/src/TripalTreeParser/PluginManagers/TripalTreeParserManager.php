@@ -53,6 +53,7 @@ class TripalTreeParserManager extends DefaultPluginManager {
     $load_later = FALSE;  // Default is to combine tree import with current job
 
     $form['tree_parser']['tree_name'] = [
+      '#weight' => 1,
       '#type' => 'textfield',
       '#title' => t('Tree Name'),
       '#required' => TRUE,
@@ -62,6 +63,7 @@ class TripalTreeParserManager extends DefaultPluginManager {
     ];
 
     $form['tree_parser']['leaf_type'] = [
+      '#weight' => 2,
       '#title' => t('Tree Type (optional)'),
       '#type' => 'textfield',
       '#description' => t("Choose the tree type. The type is
@@ -73,10 +75,20 @@ class TripalTreeParserManager extends DefaultPluginManager {
       '#autocomplete_route_name' => 'tripal_chado.cvterm_autocomplete',
       '#autocomplete_route_parameters' => ['count' => 5],
 // To-Do: Change line above to this when pull #1585 is merged
-//      '#autocomplete_route_parameters' => ['count' => 5, 'cv_id' => $cv_id],
+//      '#autocomplete_route_parameters' => ['cv_id' => $cv_id, 'count' => 5],
+    ];
+
+    $form['tree_parser']['description'] = [
+      '#weight' => 3,
+      '#type' => 'textarea',
+      '#title' => t('Description'),
+      '#required' => TRUE,
+      '#default_value' => $comment,
+      '#description' => t('Enter a description for this tree.'),
     ];
 
     $form['tree_parser']['dbxref'] = [
+      '#weight' => 4,
       '#title' => t('Database Cross-Reference'),
       '#type' => 'textfield',
       '#description' => t("Enter a database cross-reference of the form
@@ -86,15 +98,8 @@ class TripalTreeParserManager extends DefaultPluginManager {
       '#default_value' => $dbxref,
     ];
 
-    $form['tree_parser']['description'] = [
-      '#type' => 'textarea',
-      '#title' => t('Description'),
-      '#required' => TRUE,
-      '#default_value' => $comment,
-      '#description' => t('Enter a description for this tree.'),
-    ];
-
     $form['tree_parser']['load_later'] = [
+      '#weight' => 5,
       '#title' => t('Run Tree Import as a Separate Job'),
       '#type' => 'checkbox',
       '#description' => t('Check if tree loading should be performed as a separate job. ' .
@@ -115,7 +120,7 @@ class TripalTreeParserManager extends DefaultPluginManager {
    */
   public function tripal_tree_setup_form_ajax_button_validate($form, &$form_state) {
 $trigger = $form_state->getTriggeringElement()['#name'];
-dpm($trigger, "tripal_pub_setup_form_ajax_button_validate() called, not yet implemented");
+dpm($trigger, "trigger. tripal_tree_setup_form_ajax_button_validate() called, not yet implemented");
     $form_state->setRebuild(TRUE);
   }
 

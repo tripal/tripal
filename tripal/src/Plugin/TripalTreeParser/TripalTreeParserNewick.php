@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\tripal\Plugin\TripalTreeParserNewick;
+namespace Drupal\tripal\Plugin\TripalTreeParser;
 
 use Drupal\tripal\TripalTreeParser\TripalTreeParserBase;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
@@ -99,7 +99,7 @@ dpm('tree plugin formSubmit called'); //@@@
 
     // Add the validation function defined here
 //    $form['tree_parser']['match']['#validate'] = ['yyTripalTreeParserNewick::formValidate'];
-    $form['#validate'][] = 'TripalTreeParserNewick::formValidate';
+//    $form['#validate'][] = 'TripalTreeParserNewick::formValidate';  Drupal\Component\Plugin\Exception\PluginException: Plugin (tripal_tree_parser_newick) instance class "Drupal\tripal\Plugin\TripalTreeParser\TripalTreeParserNewick" does not exist. in Drupal\Component\Plugin\Factory\DefaultFactory::getPluginClass() (line 97 of /var/www/drupal9/web/core/lib/Drupal/Component/Plugin/Factory/DefaultFactory.php).
 
     return $form;
   }
