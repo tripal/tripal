@@ -59,8 +59,6 @@ class TripalEntityPublishForm extends FormBase {
       '#value' => t('Pubish'),
     ];
 
-    dpm("N");
-
     return $form;
   }
 

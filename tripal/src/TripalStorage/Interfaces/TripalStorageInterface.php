@@ -111,14 +111,24 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    * Finds and returns all property values stored in this storage plugin
    * implementation that matches the given match argument.
    *
-   * @param mixed $match
-   *   The value that is matched.
+   * @param array $values
+   *   Associative array 5-levels deep.
+   *   The 1st level is the field name (e.g. ChadoOrganismDefault).
+   *   The 2nd level is the delta value (e.g. 0).
+   *   The 3rd level is a field key name (i.e. record_id + value).
+   *   The 4th level must contain the following three keys/value pairs
+   *   - "value": a \Drupal\tripal\TripalStorage\StoragePropertyValue object
+   *   - "type": a\Drupal\tripal\TripalStorage\StoragePropertyType object
+   *   - "definition": a \Drupal\Field\Entity\FieldConfig object
+   *   When the function returns, any values retrieved from the data store
+   *   will be set in the StoragePropertyValue object.
    *
    * @return array
+   *   @todo fix this return value...
    *   Array of all \Drupal\tripal\TripalStorage\StoragePropertyValue objects
    *   that match.
    */
-  public function findValues($match);
+  public function findValues($values);
 
 
 
