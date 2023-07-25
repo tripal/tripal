@@ -118,5 +118,18 @@ class ChadoTableCvtermAutocompleteTest extends ChadoTestBrowserBase {
       $id = $autocomplete->getCVtermId($i);
       $this->assertEquals($id, 0);
     }
+
+
+    // Test format CVterm method.
+    foreach(json_decode($suggest) as $item) {
+      // ChadoCVTermAutocompleteController::getCVtermId()
+      $id = $autocomplete->getCVtermId($item->value);
+      // Reverse value - get formatted term.
+      $term = $autocomplete->formatCVterm($id);
+      
+      $this->assertNotNull($term);
+      $this->assertIsString($term);
+      $this->assertEquals($term, $item->value);
+    }
   }
 }

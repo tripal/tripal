@@ -3,8 +3,7 @@ on:
   push:
     branches:
       - 4.x
-      - 4v40g-0-test-docker-build
-      - tv4g0-issue1420-fixDockerBuild
+      - tv4g9-1572-expandDockerBuild
 
 jobs:
   push_to_registry:
@@ -16,52 +15,64 @@ jobs:
         php-version:
           - "8.0"
           - "8.1"
+          - "8.2"
         pgsql-version:
           - "13"
         drupal-version:
-          - "9.2.x-dev"
-          - "9.3.x-dev"
           - "9.4.x-dev"
           - "9.5.x-dev"
           - "10.0.x-dev"
+          - "10.1.x-dev"
         exclude:
+          - php-version: "8.2"
+            drupal-version: "9.4.x-dev"
+          - php-version: "8.2"
+            drupal-version: "9.5.x-dev"
           - php-version: "8.0"
-            pgsql-version: "13"
             drupal-version: "10.0.x-dev"
-          - php-version: "8.1"
-            pgsql-version: "13"
-            drupal-version: "9.2.x-dev"
+          - php-version: "8.0"
+            drupal-version: "10.1.x-dev"
     name: Docker Build (drupal${{ matrix.drupal-version }})
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         name: Check out code
       - uses: mr-smithers-excellent/docker-build-push@v5
-        name: Build & push Docker image (PHP 8.1 + PgSQL 13)
-        if: ${{ matrix.php-version == '8.1' && matrix.pgsql-version == '13'}}
+        name: Build & push Full matrix of Docker images
         with:
           image: tripalproject/tripaldocker
-          tags: drupal${{ matrix.drupal-version }}, drupal${{ matrix.drupal-version }}-php8.1-pgsql13
-          dockerfile: tripaldocker/Dockerfile-php8.1-pgsql13
+          tags: drupal${{ matrix.drupal-version }}-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}
+          dockerfile: tripaldocker/Dockerfile-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}
           registry: docker.io
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           buildArgs: "drupalversion=${{ matrix.drupal-version }}"
-          labels: 'tripal.branch=4.x,drupal.version.label="${{ matrix.label }}",php.version.label="8.1", postgresql.version.label="13"'
+          labels: 'tripal.branch=4.x,drupal.version.label="${{ matrix.label }}",php.version.label="${{ matrix.php-version }}", postgresql.version.label="${{ matrix.pgsql-version }}"'
       - uses: mr-smithers-excellent/docker-build-push@v5
-        name: Build & push Docker image (PHP 8.0 + PgSQL 13)
-        if: ${{ matrix.php-version == '8.0' && matrix.pgsql-version == '13'}}
+        name: Build & push Full matrix of Docker images WITH NO CHADO
         with:
           image: tripalproject/tripaldocker
-          tags: drupal${{ matrix.drupal-version }}-php8.0-pgsql13
-          dockerfile: tripaldocker/Dockerfile-php8-pgsql13
+          tags: drupal${{ matrix.drupal-version }}-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}-noChado
+          dockerfile: tripaldocker/Dockerfile-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          buildArgs: "drupalversion=${{ matrix.drupal-version }},installchado=FALSE"
+          labels: 'tripal.branch=4.x,drupal.version.label="${{ matrix.label }}",php.version.label="${{ matrix.php-version }}", postgresql.version.label="${{ matrix.pgsql-version }}"'
+      - uses: mr-smithers-excellent/docker-build-push@v5
+        name: Build & push Docker image Drupal focused Docker images.
+        if: ${{ matrix.php-version == '8.1' && matrix.pgsql-version == '13' }}
+        with:
+          image: tripalproject/tripaldocker
+          tags: drupal${{ matrix.drupal-version }}
+          dockerfile: tripaldocker/Dockerfile-php${{ matrix.php-version }}-pgsql${{ matrix.pgsql-version }}
           registry: docker.io
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           buildArgs: "drupalversion=${{ matrix.drupal-version }}"
-          labels: 'tripal.branch=4.x,drupal.version.label="${{ matrix.label }}",php.version.label="8.0", postgresql.version.label="13"'
+          labels: 'tripal.branch=4.x,drupal.version.label="${{ matrix.label }}",php.version.label="${{ matrix.php-version }}", postgresql.version.label="${{ matrix.pgsql-version }}"'
       - uses: mr-smithers-excellent/docker-build-push@v5
-        name: Build latest using 9.5.x-dev, PHP 8.1, PgSQL 13
-        if: ${{ matrix.drupal-version == '9.5.x-dev' && matrix.php-version == '8.1' && matrix.pgsql-version == '13'}}
+        name: Build latest using 10.0.x-dev, PHP 8.1, PgSQL 13
+        if: ${{ matrix.drupal-version == '10.0.x-dev' && matrix.php-version == '8.1' && matrix.pgsql-version == '13' }}
         with:
           image: tripalproject/tripaldocker
           tags: latest

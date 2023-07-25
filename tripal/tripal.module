@@ -50,14 +50,14 @@ function tripal_theme() {
 
   $theme['tripal_entity'] = array(
     'render element' => 'elements',
-    'file' => 'templates/tripal_entity.page.inc',
+    'file' => 'templates/tripal_entity.page.php',
     'template' => 'tripal_entity',
   );
 
   $theme['tripal_entity_content_add_list'] = [
     'render element' => 'types',
     'variables' => ['types' => NULL],
-    'file' => 'templates/tripal_entity.page.inc',
+    'file' => 'templates/tripal_entity.page.php',
   ];
 
   return $theme;

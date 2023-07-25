@@ -1,11 +1,6 @@
 FROM php:8.1-apache-bullseye
 
-## Base of this image is from Official DockerHub PHP image.
-## Heavily influenced by https://github.com/statonlab/docker-containers
-
-MAINTAINER Lacey-Anne Sanderson <laceyannesanderson@gmail.com>
-
-ARG drupalversion='9.4.x-dev'
+ARG drupalversion='10.0.x-dev'
 ARG modules='devel devel_php'
 ARG chadoschema='chado'
 ARG installchado=TRUE
@@ -65,7 +60,7 @@ RUN echo "listen_addresses='*'" >> /etc/postgresql/13/main/postgresql.conf \
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 
 ## Xdebug
-RUN pecl install xdebug-3.1.5 \
+RUN pecl install xdebug-3.2.1 \
     && docker-php-ext-enable xdebug \
     && cat /app/tripaldocker/default_files/xdebug/xdebug-coverage.ini >> /usr/local/etc/php/php.ini \
     && echo "error_reporting=E_ALL" >> /usr/local/etc/php/conf.d/error_reporting.ini \
