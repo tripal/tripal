@@ -20,8 +20,8 @@ use Drupal\Core\Url;
  *    file_types = {"tree","txt"},
  *    upload_description = @Translation("Please provide the Newick formatted tree file (one tree per file only).  The file must have a .txt or .tree extension"),
  *    upload_title = @Translation("Newick Tree File"),
- *    use_analysis = False,
- *    require_analysis = False,
+ *    use_analysis = True,
+ *    require_analysis = True,
  *    button_text = @Translation("Import Newick Tree file"),
  *    file_upload = True,
  *    file_load = False,
@@ -177,11 +177,17 @@ class NewickImporter extends ChadoImporterBase {
     $chado = \Drupal::service('tripal_chado.database');
     // $values = $form_state['values'];
     $values = $form_state->getValues();
+
+    // TRIPAL 4 - The type option is from an autocomplete which seems to include (SO:*) part
+    // Temporarily, remove this part
+    $leaf_type = $values["leaf_type"];
+    $leaf_type = explode(' ', $leaf_type)[0]; // splits the string by space and takes the first part
+
     $options = [
       'name' => trim($values["tree_name"]),
       'description' => trim($values["description"]),
       'analysis_id' => $values["analysis_id"],
-      'leaf_type' => $values["leaf_type"],
+      'leaf_type' => $leaf_type,
       'format' => 'newick',
       'dbxref' => trim($values["dbxref"]),
       'match' => $values["match"],
@@ -200,13 +206,15 @@ class NewickImporter extends ChadoImporterBase {
         if ($field == 'name') {
           $field = 'tree_name';
         }
-        form_set_error($field, $message);
+        // form_set_error($field, $message);
+        \Drupal::messenger()->addError(t("$field $message"));
       }
     }
     // Add any warnings if any were detected
     if (count($warnings) > 0) {
       foreach ($warnings as $field => $message) {
-        drupal_set_message($message, 'warning');
+        // drupal_set_message($message, 'warning');
+        \Drupal::messenger()->addWarning(t("$message"));
       }
     }
   }
@@ -218,11 +226,16 @@ class NewickImporter extends ChadoImporterBase {
     $chado = \Drupal::service('tripal_chado.database');
     $arguments = $this->arguments['run_args'];
 
+    // TRIPAL 4 - The type option is from an autocomplete which seems to include (SO:*) part
+    // Temporarily, remove this part
+    $leaf_type = $arguments["leaf_type"];
+    $leaf_type = explode(' ', $leaf_type)[0]; // splits the string by space and takes the first part
+
     $options = [
       'name' => $arguments["tree_name"],
       'description' => $arguments["description"],
       'analysis_id' => $arguments["analysis_id"],
-      'leaf_type' => $arguments["leaf_type"],
+      'leaf_type' => $leaf_type,
       'tree_file' => $this->arguments['files'][0]['file_path'],
       'format' => 'newick',
       'dbxref' => $arguments["dbxref"],

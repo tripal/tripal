@@ -1046,11 +1046,13 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $j
       // To be upgraded at a later time
 
       // // Parse the tree into the expected nested node format.
+      echo "Newick TODO TEST\n";
+      // T3 OLD CODE
       // module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.phylotree_newick');
-      // $tree = tripal_phylogeny_parse_newick_file($file_name);
-
+      // T4 - this file is added as an API file
+      $tree = tripal_phylogeny_parse_newick_file($file_name);
       // // Assign the right and left indices to the tree nodes.
-      // chado_assign_phylogeny_tree_indices($tree);
+      chado_assign_phylogeny_tree_indices($tree);
     }
 
     // Iterate through the tree nodes and add them to Chado in accordance
