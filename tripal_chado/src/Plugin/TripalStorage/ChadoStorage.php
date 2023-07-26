@@ -648,20 +648,77 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
   }
 
   /**
+   * Makes an identical copy of a values array.
+   *
+   * The values array is the same as received by the findValues, loadValues,
+   * deleteValues, insertValues, etc. funtions.
+   *
+   * @param array $values
+   *   The values array.
+   * @param array $options
+   *   Specifies options for cpying.  Set the `copy` key to include
+   *   one or more of the following: `definition`, `type`, `operation`,
+   *   `value` to copy only the parts of the values you want.
+   *
+   * @return array
+   *   A new exact duplicate of the values array with the value
+   *   objects clones.
+   */
+  private function copyValues($values, $options = ['copy' => ['definition', 'type', 'operation', 'value']]) {
+
+    $new_values = [];
+
+    foreach ($values as $field_name => $deltas) {
+      foreach ($deltas as $delta => $keys) {
+        foreach ($keys as $key => $info) {
+          if (in_array('definition', $options['copy'])) {
+            $new_values[$field_name][$delta][$key]['definition'] = $info['definition'];
+          }
+          if (in_array('type', $options['copy'])) {
+            $new_values[$field_name][$delta][$key]['type'] = $info['type'];
+          }
+          if (in_array('operation', $options['copy'])) {
+            $new_values[$field_name][$delta][$key]['operation'] = $info['operation'];
+          }
+          if (in_array('value', $options['copy'])) {
+            $new_values[$field_name][$delta][$key]['value'] = clone $info['value'];
+          }
+        }
+      }
+    }
+    return $new_values;
+  }
+
+  /**
    * @{inheritdoc}
    */
   public function findValues($values) {
     $build = $this->buildChadoRecords($values, FALSE);
     $records = $build['records'];
     $base_tables = $build['base_tables'];
+    $matched_records = [];
 
     $transaction_chado = $this->connection->startTransaction();
     try {
       foreach ($records as $chado_table => $deltas) {
         foreach ($deltas as $delta => $record) {
+
+          // Get all matching records as defined by the $records query array.
           $matches = $this->selectChadoRecords($records, $base_tables, $chado_table, $delta, $record);
           while ($match = $matches->fetchAssoc()) {
+
+            // copy the values array and the records array for this matched record.
+            $new_values = $this->copyValues($values);
+            $new_records = $records;
+
+            // Update the values in the copied record and prop value objects.
             print_r($match);
+            $new_records[$chado_table][$delta]['fields'] = $match;
+            $this->setPropValues($new_values, $new_records);
+            $this->setRecordIds($new_values, $new_records);
+
+            // Store the new values object for return .
+            $matched_records[] = $new_values;
           }
         }
       }
@@ -670,19 +727,19 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
       $transaction_chado->rollback();
       throw new \Exception($e);
     }
-    return TRUE;
+    return $matched_records;
   }
 
 
   /**
    * Sets the record_id properties after an insert.
    *
-  * @param array $values
-  *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
-  *
-  * @param array $records
-  *   The set of Chado records.
-  */
+   * @param array $values
+   *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue objects.
+   *
+   * @param array $records
+   *   The set of Chado records.
+   */
   protected function setRecordIds(&$values, $records) {
 
     $schema = $this->connection->schema();

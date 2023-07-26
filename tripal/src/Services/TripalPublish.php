@@ -111,6 +111,15 @@ class TripalPublish {
       }
     }
 
-    $storage->findValues($search_values);
+    $matched_records = $storage->findValues($search_values);
+    foreach ($matched_records as $record) {
+      foreach ($record as $field_name => $deltas) {
+        foreach ($deltas as $delta => $keys) {
+          foreach ($keys as $key => $info) {
+            print_r([$field_name, $key, $delta, $info['value']->getValue()]);
+          }
+        }
+      }
+    }
   }
 }
