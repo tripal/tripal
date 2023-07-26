@@ -104,7 +104,7 @@ class TripalImporterForm implements FormInterface {
     }
 
     // Add the analysis form element if needed. Each importer should add this
-    // appropriate for the data store it uses.
+    // if appropriate for the data store it uses.
     if ($importer_def['use_analysis']) {
       $analysis_form = $importer->addAnalysis($form, $form_state);
       if (is_array($analysis_form)) {
@@ -117,7 +117,6 @@ class TripalImporterForm implements FormInterface {
     if (is_array($importer_form)) {
       $form = array_merge($form, $importer_form);
     }
-
 
     $form['button'] = [
       '#type' => 'submit',

@@ -38,152 +38,26 @@ use Drupal\Core\Url;
 class TreeImporter extends ChadoImporterBase {
 
   /**
-   * The name of this loader.  This name will be presented to the site
-   * user.
-   */
-  public static $name = 'Chado Tree Loader';
-
-  /**
-   * The machine name for this loader. This name will be used to construct
-   * the URL for the loader.
-   */
-  public static $machine_name = 'chado_tree_loader';
-
-  /**
-   * A brief description for this loader.  This description will be
-   * presented to the site user.
-   */
-  public static $description = 'Load a phylogenetic or gene tree from a file.';
-
-  /**
-   * An array containing the extensions of allowed file types.
-   */
-  public static $file_types = ['newick', 'tree', 'txt'];
-
-  /**
-   * Provides information to the user about the file upload.  Typically this
-   * may include a description of the file types allowed.
-   */
-  public static $upload_description = 'Please provide the tree file (one tree per file only).  The file must have a .newick, .tree, or .txt extension.';
-
-  /**
-   * The title that should appear above the file upload section.
-   */
-  public static $upload_title = 'Tree File Upload';
-
-  /**
-   * Text that should appear on the button at the bottom of the importer
-   * form.
-   */
-  public static $button_text = 'Import Tree file';
-
-
-  /**
-   * Indicates the methods that the file uploader will support.
-   */
-  public static $methods = [
-    // Allow the user to upload a file to the server.
-    'file_upload' => TRUE,
-    // Allow the user to provide the path on the Tripal server for the file.
-    'file_local' => TRUE,
-    // Allow the user to provide a remote URL for the file.
-    'file_remote' => TRUE,
-  ];
-
-  /**
-   * Indicates if the file must be provided.  An example when it may not be
-   * necessary to require that the user provide a file for uploading if the
-   * loader keeps track of previous files and makes those available for
-   * selection.
-   */
-  public static $file_required = TRUE;
-
-  /**
-   * The array of arguments used for this loader.  Each argument should
-   * be a separate array containing a machine_name, name, and description
-   * keys.  This information is used to build the help text for the loader.
-   */
-  public static $argument_list = [];
-
-  /**
-   * Indicates how many files are allowed to be uploaded.  By default this is
-   * set to allow only one file.  Change to any positive number. A value of
-   * zero indicates an unlimited number of uploaded files are allowed.
-   */
-  public static $cardinality = 1;
-
-  /**
    * @see TripalImporter::form()
    */
   public function form($form, &$form_state) {
-    // Always call the parent form to ensure Chado is handled properly.
+    // Call the parent form to ensure Chado is handled properly.
     $form = parent::form($form, $form_state);
 
-    $form = $this->newLoaderForm($form, $form_state);
-
-    return $form;
-  }
-
-  /**
-   * @see TripalImporter::formValidate()
-   */
-  public function formValidate($form, &$form_state) {
-
-dpm('tree parent formValidate called'); //@@@
-if (0) { //@@@
-    $values = $form_state->getValues();
-    $schema = $values['schema_name'];
-    $options = [
-      'name' => trim($values["tree_name"]),
-      'description' => trim($values["description"]),
-      'analysis_id' => $values["analysis_id"],
-      'leaf_type' => $values["leaf_type"],
-      'format' => 'newick',
-      'dbxref' => trim($values["dbxref"]),
-      'match' => $values["match"],
-      'name_re' => $values["name_re"],
-      'load_later' => $values["load_later"],
-    ];
-
-    // When leaf_type is not specified on the form, default to 'taxonomy'
-    // for taxonomic (species) trees. In Tripal3 this had to be typed in.
-    if (!$options['leaf_type']) {
-      $options['leaf_type'] = 'taxonomy';
+    // If chado was not prepared, alert user and return.
+    $so_cv = chado_get_cv(['name' => 'sequence']);
+    if (!$so_cv) {
+      $message = t('The Sequence Ontology does not appear to be present.'
+               . ' This loader will not function correctly.'
+               . ' Please import the Sequence Ontology before adding a tree.');
+      $form = [
+        'error' => [
+          '#markup' => "<h1>$message</h1>",
+          '#weight' => -100,
+        ]
+      ] + $form;
+      return $form;
     }
-
-    $errors = [];
-    $warnings = [];
-
-    chado_validate_phylotree('insert', $options, $errors, $warnings, $schema);
-
-    // Now set form errors if any errors were detected.
-    if (count($errors) > 0) {
-      foreach ($errors as $field => $message) {
-        if ($field == 'name') {
-          $field = 'tree_name';
-        }
-        $form_state->setErrorByName($field, $message);
-      }
-    }
-    // Add any warnings if any were detected
-    // n.b. chado_validate_phylotree() does not currently return any warnings.
-    if (count($warnings) > 0) {
-      foreach ($warnings as $field => $message) {
-        $form_state->setErrorByName($field, $message);
-      }
-    }
-} //@@@
-  }
-
-  /**
-   * Form for loading a tree file.
-   *
-   * @param array $form
-   *   The form array.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The form state object.
-   */
-  public function newLoaderForm($form, &$form_state) {
 
     // Retrieve a sorted list of available tree parser plugins.
     $tree_parser_manager = \Drupal::service('tripal.tree_parser');
@@ -196,37 +70,78 @@ if (0) { //@@@
     }
     asort($plugins);
 
-    // We want the file type selector right underneath the file element
-    // which has weight -15. Analysis does not have a weight. Our
-    // placeholder has weight +1. Advanced has weight +9.
+    // We want the file format type selector right underneath the file
+    // element which has weight -15. Analysis does not have a weight.
+    // Our placeholder has weight +1. Advanced has weight +9.
     $form['plugin_id'] = [
       '#weight' => -14,
-      '#title' => t('Select the type of tree file to load'),
+      '#title' => t('Select the file format of the tree file'),
       '#type' => 'radios',
-      '#description' => t("Choose one of the formats above for loading the tree file. Currently only Newick format is supported"),
+      '#description' => t('Choose one of the formats above for loading the tree file.'
+                          . ' Currently only Newick format is supported'),
       '#required' => TRUE,
       '#options' => $plugins,
       '#default_value' => NULL,
       '#ajax' => [
-        'callback' =>  [$this, 'formAjaxCallback'],
-        'wrapper' => 'edit-parser',
-      ]
+        'callback' => [$this, 'formAjaxCallback'],
+        'wrapper' => 'edit-tree_parser',
+      ],
     ];
 
-    // A placeholder for the form elements for the selected plugin,
-    // to be populated by the AJAX callback.
+    // A placeholder for the form elements for the selected tree
+    // parser plugin, to be populated by formAjaxCallback().
     $form['tree_parser'] = [
       '#weight' => 1,
       '#prefix' => '<span id="edit-tree_parser">',
       '#suffix' => '</span>',
     ];
 
-    // The placeholder will only be populated if a plugin, i.e.
+    // The placeholder above will only be populated when a plugin, i.e.
     // $form['plugin_id'], has been selected. Both the plugin base
     // class and the selected plugin can each add form elements.
     $form = $this->formPlugin($form, $form_state);
 
+    // Form elements common to all tree importers
+    $form = $this->formCommon($form, $form_state);
+
     return $form;
+  }
+
+  /**
+   * @see TripalImporter::formValidate()
+   */
+  public function formValidate($form, &$form_state) {
+
+    $form_state_values = $form_state->getValues();
+    $dbxref = trim($form_state_values['dbxref'] ?? '');
+
+    // dbxref validation, make sure a colon is present and the db exists
+    if ($dbxref) {
+      if (!preg_match('/.:./', $dbxref)) {
+        $form_state->setErrorByName('dbxref',
+            t('The Database Cross-Reference must be of the format %format', ['%format' => 'DB name:accession']));
+      }
+      else {
+        $dbname = preg_replace('/:.*$/', '', $dbxref);
+        $db = chado_get_db(['name' => $dbname]);
+        if (!$db) {
+          $form_state->setErrorByName('dbxref',
+              t('The database %dbname does not exist in this site', ['%dbname' => $dbname]));
+        }
+      }
+    }
+
+    // Call plugin validation if a plugin has been selected.
+    $plugin_id = $form_state->getValue(['plugin_id']);
+    if ($plugin_id) {
+      // Instantiate the selected plugin
+      $tree_parser_manager = \Drupal::service('tripal.tree_parser');
+      $plugin = $tree_parser_manager->createInstance($plugin_id, []);
+
+      // The selected plugin has a formValidate() for just
+      // the form elements specific to itself.
+      $plugin->formValidate($form, $form_state);
+    }
   }
 
   /**
@@ -237,23 +152,19 @@ if (0) { //@@@
     $arguments = $this->arguments['run_args'];
     $schema = $arguments['schema_name'];
     $options = [
-      'name' => $arguments["tree_name"],
-      'description' => $arguments["description"],
-      'analysis_id' => $arguments["analysis_id"],
-      'leaf_type' => $arguments["leaf_type"],
+      'name' => $arguments['tree_name'],
+      'description' => $arguments['description'],
+      'analysis_id' => $arguments['analysis_id'],
+      // When leaf_type is not specified, default to 'taxonomy'
+      // for taxonomic (species) trees.
+      'leaf_type' => $arguments['leaf_type'] ?? 'taxonomy',
       'tree_file' => $this->arguments['files'][0]['file_path'],
       'format' => 'newick',
-      'dbxref' => $arguments["dbxref"],
-      'match' => $arguments["match"],
-      'name_re' => $arguments["name_re"],
-      'load_later' => $arguments["load_later"],
+      'dbxref' => $arguments['dbxref'],
+      'match' => $arguments['match'],
+      'name_re' => $arguments['name_re'],
+      'load_later' => $arguments['load_later'],
     ];
-
-    // When leaf_type is not specified on the form, default to 'taxonomy'
-    // for taxonomic (species) trees. In Tripal3 this had to be typed in.
-    if (!$options['leaf_type']) {
-      $options['leaf_type'] = 'taxonomy';
-    }
 
     // pass through the job, needed for log output to show up on the "jobs page"
     if (property_exists($this, 'job')) {
@@ -280,7 +191,83 @@ if (0) { //@@@
   }
 
   /**
-   * Retrieves form elements from a plugin.
+   * Form elements common to all tree importers.
+   *
+   * @param array $form
+   *   The form array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   */
+  private function formCommon($form, &$form_state) {
+
+    $form_state_values = $form_state->getValues();
+    $tree_name = $form_state_values['tree_name'] ?? '';
+    $leaf_type = $form_state_values['leaf_type'] ?? '';
+    $comment = $form_state_values['description'] ?? '';
+    $dbxref = $form_state_values['dbxref'] ?? '';
+    $load_later = $form_state_values['load_later'] ?? FALSE;  // Default is to combine tree import with current job
+
+    $form['tree_name'] = [
+      '#weight' => 2,
+      '#type' => 'textfield',
+      '#title' => t('Tree Name'),
+      '#required' => TRUE,
+      '#default_value' => $tree_name,
+      '#description' => t('Enter the name used to refer to this phylogenetic tree.'),
+      '#maxlength' => 255,
+    ];
+
+    $form['leaf_type'] = [
+      '#weight' => 3,
+      '#title' => t('Tree Type (optional)'),
+      '#type' => 'textfield',
+      '#required' => FALSE,
+      '#default_value' => $leaf_type,
+      '#description' => t("Choose the tree type. The type should be
+        a valid Sequence Ontology (SO) term. For example, trees derived
+        from protein sequences should use the SO term 'polypeptide'.
+        When left blank, the tree is assumed to represent a taxonomic tree."),
+      '#autocomplete_route_name' => 'tripal_chado.cvterm_autocomplete',
+      '#autocomplete_route_parameters' => ['count' => 5],
+// To-Do: Change line above to this when pull #1585 is merged
+//      '#autocomplete_route_parameters' => ['cv_id' => $cv_id, 'count' => 5],
+    ];
+
+    $form['description'] = [
+      '#weight' => 4,
+      '#type' => 'textarea',
+      '#title' => t('Description'),
+      '#required' => TRUE,
+      '#default_value' => $comment,
+      '#description' => t('Enter a description for this tree.'),
+    ];
+
+    $form['dbxref'] = [
+      '#weight' => 5,
+      '#title' => t('Database Cross-Reference'),
+      '#type' => 'textfield',
+      '#required' => FALSE,
+      '#default_value' => $dbxref,
+      '#description' => t("Enter a database cross-reference of the form %form.
+        The database name must already exist in your site's database.
+        If the accession does not exist it is automatically added.",
+        ['%form' => 'DB name:accession']),
+    ];
+
+    $form['load_later'] = [
+      '#weight' => 6,
+      '#title' => t('Run Tree Import as a Separate Job'),
+      '#type' => 'checkbox',
+      '#default_value' => $load_later,
+      '#description' => t('Check if tree loading should be performed as a separate job. ' .
+        'If not checked, tree loading will be combined with this job.'),
+    ];
+
+    return $form;
+  }
+
+  /**
+   * Form elements from a tree parser plugin specific to itself.
    *
    * @param array $form
    *   The form array.
@@ -297,12 +284,9 @@ if (0) { //@@@
       $tree_parser_manager = \Drupal::service('tripal.tree_parser');
       $plugin = $tree_parser_manager->createInstance($plugin_id, []);
 
-      // The plugin manager defines form elements used by
-      // all pub_parser plugins.
-      $form = $tree_parser_manager->form($form, $form_state);
+      // This plugin base class does not define any form elements.
 
-      // The selected plugin defines form elements specific
-      // to itself.
+      // The selected plugin defines form elements specific to itself.
       $form = $plugin->form($form, $form_state);
     }
 
@@ -319,7 +303,6 @@ if (0) { //@@@
    *   The form state object.
    */
   public function formAjaxCallback($form, &$form_state) {
-
     $response = new AjaxResponse();
     $response->addCommand(new ReplaceCommand('#edit-tree_parser', $form['tree_parser']));
 

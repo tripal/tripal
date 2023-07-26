@@ -21,13 +21,8 @@ use Drupal\Core\Ajax\ReplaceCommand;
  */
 class TripalTreeParserNewick extends TripalTreeParserBase {
 
-  public function formSubmit($form, &$form_state) {
-dpm('tree plugin formSubmit called'); //@@@
-  }
-
   public function form($form, &$form_state) {
-    // Add form elements specific to this parser.
-
+    // Add form elements specific to this tree parser.
 
     // Default values can come in the following ways:
     //
@@ -38,42 +33,35 @@ dpm('tree plugin formSubmit called'); //@@@
     //    form elements and the form is being rebuilt
     //
     // set form field defaults
-    $phylotree = NULL;
-    $phylotree_id = NULL;
-    $analysis_id = '';
-    $tree_required = TRUE;
-    $tree_file = '';
     $name_re = '';
     $match = '';
 
     $form_state_values = $form_state->getValues();
 
-    // If we are re constructing the form from a failed validation or ajax callback
+if (0) { //@@@
+    // If we are reconstructing the form from a failed validation or ajax callback
     // then use the $form_state['values'] values.
     if (array_key_exists('tree_name', $form_state_values)) {
+dpm('CP41 tree_name defined');
 //@@@ in parent form      $tree_name = $form_state_values['tree_name'];
       $leaf_type = $form_state_values['leaf_type'];
-      $analysis_id = $form_state_values['analysis_id'];
+//      $analysis_id = $form_state_values['analysis_id'];
       $comment = $form_state_values['description'];
       $dbxref = $form_state_values['dbxref'];
     }
 
-    // If we are re building the form from after submission (from ajax call) then
+    // If we are rebuilding the form from after submission (from ajax call) then
     // the values are in the $form_state_values['input'] array.
     if (array_key_exists('input', $form_state_values) and !empty($form_state_values['input'])) {
+dpm('CP42 input defined');
       $tree_name = $form_state_values['input']['tree_name'];
       $leaf_type = $form_state_values['input']['leaf_type'];
-      $analysis_id = $form_state_values['input']['analysis_id'];
+//      $analysis_id = $form_state_values['input']['analysis_id'];
       $comment = $form_state_values['input']['description'];
       $dbxref = $form_state_values['input']['dbxref'];
     }
-
-    $so_cv = chado_get_cv(['name' => 'sequence']);
-    $cv_id = $so_cv->cv_id;
-    if (!$so_cv) {
-      drupal_set_message('The Sequence Ontology does not appear to be imported.
-        Please import the Sequence Ontology before adding a tree.', 'error');
-    }
+dpm('CP43 ');
+} //@@@
 
     $form['tree_parser']['name_re'] = [
       '#title' => t('Feature Name Regular Expression'),
@@ -84,7 +72,7 @@ dpm('tree plugin formSubmit called'); //@@@
           or organisms but have enough information to uniquely identify them,
           then you may provide a regular expression that the importer will use to
           extract the appropriate names from the node names. For example, remove
-          a prefix ABC_ with ^ABC_(.*)$'),
+          a prefix ABC_ with %example', ['%example' => '^ABC_(.*)$']),
       '#default_value' => $name_re,
     ];
     $form['tree_parser']['match'] = [
@@ -97,39 +85,39 @@ dpm('tree plugin formSubmit called'); //@@@
       '#default_value' => $match,
     ];
 
-    // Add the validation function defined here
-//    $form['tree_parser']['match']['#validate'] = ['yyTripalTreeParserNewick::formValidate'];
-//    $form['#validate'][] = 'TripalTreeParserNewick::formValidate';  Drupal\Component\Plugin\Exception\PluginException: Plugin (tripal_tree_parser_newick) instance class "Drupal\tripal\Plugin\TripalTreeParser\TripalTreeParserNewick" does not exist. in Drupal\Component\Plugin\Factory\DefaultFactory::getPluginClass() (line 97 of /var/www/drupal9/web/core/lib/Drupal/Component/Plugin/Factory/DefaultFactory.php).
-
     return $form;
   }
 
   public function formValidate($form, &$form_state) {
-dpm('tree plugin *** formValidate called'); //@@@
+dpm('TripalTreeParserNewick PLUGIN formValidate called'); //@@@
     $values = $form_state->getValues();
     $schema = $values['schema_name'];
     $options = [
-      'name' => trim($values["tree_name"]),
-      'description' => trim($values["description"]),
-      'analysis_id' => $values["analysis_id"],
-      'leaf_type' => $values["leaf_type"],
+      'name' => trim($values['tree_name'] ?? ''),
+      'description' => trim($values['description'] ?? ''),
+      // When leaf_type is not specified on the form, default to 'taxonomy'
+      // for taxonomic (species) trees. In Tripal3 this had to be typed in.
+      'leaf_type' => $values['leaf_type'] ?? 'taxonomy',
       'format' => 'newick',
-      'dbxref' => trim($values["dbxref"]),
-      'match' => $values["match"],
-      'name_re' => $values["name_re"],
-      'load_later' => $values["load_later"],
+      'dbxref' => trim($values['dbxref'] ?? ''),
+      'match' => $values['match'] ?? '',
+      'name_re' => $values['name_re'] ?? '',
+      'load_later' => $values['load_later'] ?? '',
     ];
 
-    // When leaf_type is not specified on the form, default to 'taxonomy'
-    // for taxonomic (species) trees. In Tripal3 this had to be typed in.
-    if (!$options['leaf_type']) {
-      $options['leaf_type'] = 'taxonomy';
+    // check the regular expression to make sure it is valid
+    if ($options['name_re']) {
+      @ $result_re = preg_match('/' . $options['name_re'] . '/', NULL);
+      if (!$result_re) {
+        $form_state->setErrorByName('name_re',
+            t('The entered regular expression %re is not valid', ['%re' => $options['name_re']]));
+      }
     }
 
     $errors = [];
     $warnings = [];
 
-    chado_validate_phylotree('insert', $options, $errors, $warnings, $schema);
+//@@@    chado_validate_phylotree('insert', $options, $errors, $warnings, $schema);
 
     // Now set form errors if any errors were detected.
     if (count($errors) > 0) {
@@ -149,8 +137,12 @@ dpm('tree plugin *** formValidate called'); //@@@
     }
   }
 
+  public function formSubmit($form, &$form_state) {
+dpm('TripalTreeParserNewick plugin formSubmit() called'); //@@@
+  }
+
   public function run(array $criteria) {
-dpm('tree plugin run called'); //@@@
+dpm('TripalTreeParserNewick plugin run() called'); //@@@
   }
 
 }
