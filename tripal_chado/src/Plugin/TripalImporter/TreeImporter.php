@@ -77,15 +77,19 @@ class TreeImporter extends ChadoImporterBase {
       '#weight' => -14,
       '#title' => t('Select the file format of the tree file'),
       '#type' => 'radios',
-      '#description' => t('Choose one of the formats above for loading the tree file.'
-                          . ' Currently only Newick format is supported'),
       '#required' => TRUE,
       '#options' => $plugins,
-      '#default_value' => NULL,
-      '#ajax' => [
-        'callback' => [$this, 'formAjaxCallback'],
-        'wrapper' => 'edit-tree_parser',
-      ],
+      // If a second tree parser is created, elements here can be changed to the
+      // commented-out versions. The ajax callback can be enabled if there are
+      // any field elements specific to just one parser.
+      '#description' => t('Currently only Newick format is supported'),
+      '#default_value' => 'tripal_tree_parser_newick',  // Newick tree format
+      // '#description' => t('Choose one of the formats above for loading the tree file.'),
+      // '#default_value' => NULL,
+      // '#ajax' => [
+      //   'callback' => [$this, 'formAjaxCallback'],
+      //   'wrapper' => 'edit-tree_parser',
+      // ],
     ];
 
     // A placeholder for the form elements for the selected tree
@@ -113,21 +117,40 @@ class TreeImporter extends ChadoImporterBase {
   public function formValidate($form, &$form_state) {
 
     $form_state_values = $form_state->getValues();
-    $dbxref = trim($form_state_values['dbxref'] ?? '');
+    $schema = $form_state_values['schema_name'];
+    $options = [
+      'name' => trim($form_state_values['tree_name'] ?? ''),
+      'description' => trim($form_state_values['description'] ?? ''),
+      'leaf_type' => $form_state_values['leaf_type'] ?? '',
+      'format' => $form_state_values['plugin_id'] ?? '',
+      'dbxref' => trim($form_state_values['dbxref'] ?? ''),
+      'match' => $form_state_values['match'] ?? '',
+      'name_re' => $form_state_values['name_re'] ?? '',
+      'load_later' => $form_state_values['load_later'] ?? '',
+    ];
 
     // dbxref validation, make sure a colon is present and the db exists
-    if ($dbxref) {
-      if (!preg_match('/.:./', $dbxref)) {
+    if ($options['dbxref']) {
+      if (!preg_match('/.:./', $options['dbxref'])) {
         $form_state->setErrorByName('dbxref',
             t('The Database Cross-Reference must be of the format %format', ['%format' => 'DB name:accession']));
       }
       else {
-        $dbname = preg_replace('/:.*$/', '', $dbxref);
+        $dbname = preg_replace('/:.*$/', '', $options['dbxref']);
         $db = chado_get_db(['name' => $dbname]);
         if (!$db) {
           $form_state->setErrorByName('dbxref',
               t('The database %dbname does not exist in this site', ['%dbname' => $dbname]));
         }
+      }
+    }
+
+    // check the regular expression to make sure it is valid
+    if ($options['name_re']) {
+      @ $result_re = preg_match('/' . $options['name_re'] . '/', NULL);
+      if (!$result_re) {
+        $form_state->setErrorByName('name_re',
+            t('The entered regular expression %re is not valid', ['%re' => $options['name_re']]));
       }
     }
 
@@ -142,6 +165,39 @@ class TreeImporter extends ChadoImporterBase {
       // the form elements specific to itself.
       $plugin->formValidate($form, $form_state);
     }
+
+    // Prepare to call API validation
+    // When leaf_type is not specified on the form, default to 'taxonomy'
+    // for taxonomic (species) trees. In Tripal3 this had to be typed in.
+    if (!$options['leaf_type']) {
+      $options['leaf_type'] = 'taxonomy';
+    }
+    // API functions currently cannot handle the (DB:accession) suffix on the leaf_type
+    $options['leaf_type'] = preg_replace('/ \(.*\)/', '', $options['leaf_type']);
+    $options['format'] = preg_replace('/tripal_tree_parser_/', '', $options['format']);
+
+    // perform API validations
+    $errors = [];
+    $warnings = [];
+    chado_validate_phylotree('insert', $options, $errors, $warnings, $schema);
+
+    // Now set form errors if any errors were detected in the API validations
+    if (count($errors) > 0) {
+      foreach ($errors as $field => $message) {
+        if ($field == 'name') {
+          $field = 'tree_name';
+        }
+        $form_state->setErrorByName($field, $message);
+      }
+    }
+    // Add any warnings if any were detected in the API validations
+    // n.b. chado_validate_phylotree() does not currently return any warnings.
+    if (count($warnings) > 0) {
+      foreach ($warnings as $field => $message) {
+        $form_state->setErrorByName($field, $message);
+      }
+    }
+
   }
 
   /**
@@ -156,7 +212,7 @@ class TreeImporter extends ChadoImporterBase {
       'analysis_id' => $arguments['analysis_id'],
       'leaf_type' => $arguments['leaf_type'],
       'tree_file' => $this->arguments['files'][0]['file_path'],
-      'format' => 'newick',
+      'format' => $arguments['plugin_id'] ?? '',
       'dbxref' => $arguments['dbxref'],
       'match' => $arguments['match'],
       'name_re' => $arguments['name_re'],
@@ -170,6 +226,7 @@ class TreeImporter extends ChadoImporterBase {
     }
     // API functions currently cannot handle the (DB:accession) suffix on the leaf_type
     $options['leaf_type'] = preg_replace('/ \(.*\)/', '', $options['leaf_type']);
+    $options['format'] = preg_replace('/tripal_tree_parser_/', '', $options['format']);
 
     // pass through the job, needed for log output to show up on the "jobs page"
     if (property_exists($this, 'job')) {
@@ -208,6 +265,8 @@ class TreeImporter extends ChadoImporterBase {
     $tree_name = $form_state_values['tree_name'] ?? '';
     $leaf_type = $form_state_values['leaf_type'] ?? '';
     $comment = $form_state_values['description'] ?? '';
+    $name_re = $form_state_values['name_re'] ?? '';
+    $match = $form_state_values['match'] ?? '';
     $dbxref = $form_state_values['dbxref'] ?? '';
     $load_later = $form_state_values['load_later'] ?? FALSE;  // Default is to combine tree import with current job
 
@@ -244,6 +303,28 @@ class TreeImporter extends ChadoImporterBase {
       '#required' => TRUE,
       '#default_value' => $comment,
       '#description' => t('Enter a description for this tree.'),
+    ];
+
+    $form['name_re'] = [
+      '#title' => t('Feature Name Regular Expression'),
+      '#type' => 'textfield',
+      '#description' => t('The tree nodes will be automatically associated with
+          features, or in the case of taxonomic trees, with organisms. However,
+          if the nodes in the tree file are not exactly as the names of features
+          or organisms but have enough information to uniquely identify them,
+          then you may provide a regular expression that the importer will use to
+          extract the appropriate names from the node names. For example, remove
+          a prefix ABC_ with %example', ['%example' => '^ABC_(.*)$']),
+      '#default_value' => $name_re,
+    ];
+    $form['match'] = [
+      '#title' => t('Use Unique Feature Name'),
+      '#type' => 'checkbox',
+      '#description' => t('If this is a phylogenetic (non taxonomic) tree and the nodes ' .
+        'should match the unique name of the feature rather than the name of the feature, ' .
+        'then check this box. If unchecked, the loader will try to match the feature ' .
+        'using the feature name.'),
+      '#default_value' => $match,
     ];
 
     $form['dbxref'] = [
