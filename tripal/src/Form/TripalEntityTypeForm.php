@@ -22,8 +22,6 @@ class TripalEntityTypeForm extends EntityForm {
 
     $tripal_entity_type = $this->entity;
     $tripal_entity_type->setDefaults();
-    $machine_name = preg_replace('[^\w]','_', ucwords($tripal_entity_type->label()));
-
 
     // We need to choose a term if this is a new content type.
     // The term cannot be changed later!
@@ -85,9 +83,9 @@ class TripalEntityTypeForm extends EntityForm {
       '#required' => TRUE,
     ];
 
-    $form['name'] = [
+    $form['id'] = [
       '#type' => 'machine_name',
-      '#default_value' => $machine_name,
+      '#default_value' => $tripal_entity_type->id(),
       '#description' => $this->t('A unique name for this content type. It must only contain lowercase ' .
           'letters, numbers, and underscores.'),
       '#maxlength' => 64,
@@ -95,7 +93,7 @@ class TripalEntityTypeForm extends EntityForm {
       '#machine_name' => [
         'exists' => '\Drupal\tripal\Entity\TripalEntityType::load',
       ],
-      '#disabled' => !$this->entity->isNew(),
+      '#disabled' => TRUE,
     ];
 
     $form['term'] = [
@@ -223,14 +221,17 @@ class TripalEntityTypeForm extends EntityForm {
     $values = $form_state->getValues();
     $tripal_entity_type = $this->entity;
 
-    // Ensure the label is not already taken.
-    $entities = \Drupal::entityTypeManager()
-      ->getStorage('tripal_entity_type')
-      ->loadByProperties(['label' => $values['label']]);
-    unset($entities[ $values['name'] ]);
-    if (!empty($entities)) {
-      $form_state->setErrorByName('label',
-        $this->t('A Tripal Content type with the label :label already exists. Please choose a unique label.', [':label' => $values['label']]));
+    if ($tripal_entity_type->getLabel() != $values['label']) {
+
+      // Ensure the label is not already taken.
+      $entities = \Drupal::entityTypeManager()
+        ->getStorage('tripal_entity_type')
+        ->loadByProperties(['label' => $values['label']]);
+      unset($entities[ $values['label'] ]);
+      if (!empty($entities)) {
+        $form_state->setErrorByName('label',
+          $this->t('A Tripal Content type with the label :label already exists. Please choose a unique label.', [':label' => $values['label']]));
+      }
     }
 
     $term_str = $form_state->getValue('term');

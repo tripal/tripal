@@ -3,11 +3,8 @@ tripal.content_type.*:
   label: 'Tripal Content Type'
   mapping:
     id:
-      type: integer
-      label: 'ID'
-    name:
       type: string
-      label: 'Name'
+      label: 'ID'
     label:
       type: label
       label: 'Label'

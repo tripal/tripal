@@ -187,6 +187,7 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
     $random = $this->getRandomGenerator();
     // Provides a title with ~8 latin capitalized words.
     $values['title'] = $values['title'] ?? $random->sentences(8, TRUE);
+    $values['id'] = $values['id'] ?? $random->sentences(1, TRUE);
 
     // Creates a type if one is not provided.
     if (!isset($values['type'])) {

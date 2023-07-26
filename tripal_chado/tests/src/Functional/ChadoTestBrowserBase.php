@@ -105,12 +105,12 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
       'termIdSpace' => 'OBI',
       'termAccession' => '0100026',
       'category' => 'General',
-      'name' => 'organism',
+      'id' => 'organism',
       'help_text' => 'A material entity that is an individual living system, ' .
-      'such as animal, plant, bacteria or virus, that is capable of replicating ' .
-      'or reproducing, growth and maintenance in the right environment. An ' .
-      'organism may be unicellular or made up, like humans, of many billions ' .
-      'of cells divided into specialized tissues and organs.',
+        'such as animal, plant, bacteria or virus, that is capable of replicating ' .
+        'or reproducing, growth and maintenance in the right environment. An ' .
+        'organism may be unicellular or made up, like humans, of many billions ' .
+        'of cells divided into specialized tissues and organs.',
     ]);
 
     // Create the terms that are needed for this field.

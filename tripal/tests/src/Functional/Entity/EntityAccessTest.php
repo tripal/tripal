@@ -53,7 +53,7 @@ class EntityAccessTest extends BrowserTestBase {
     // -- Content Type.
     $values = [];
     $values['label'] = 'Freddyopolis-' . uniqid();
-    $values['name'] = 'freddy';
+    $values['id'] = 'freddy';
     $values['url_format'] = 'freddy/TripalEntity__entity_id';
     $values['title_format'] = '[freddy_name]';
     $values['termIdSpace'] = 'FRED';

@@ -23,7 +23,7 @@ class TripalContentTest extends TripalTestBrowserBase {
     // Provides a title with ~8 latin capitalized words.
     $values['label'] = $random->sentences(8,TRUE);
     // Provides a machine name for the content type.
-    $values['name'] = $random->sentences(8,TRUE);
+    $values['id'] = $random->sentences(1,TRUE);
     // Provides a category with ~3 latin capitalized words.
     $values['category'] = $random->sentences(3,TRUE);
     // Provides a title with ~8 latin capitalized words.
