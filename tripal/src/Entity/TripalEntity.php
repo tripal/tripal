@@ -526,7 +526,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
             'definition' => $item->getFieldDefinition(),
             'type' => $prop_type
           ];
-          $tripal_storages[$tsid]->addTypes($prop_type);
+          $tripal_storages[$tsid]->addTypes($entity->getType(), $field_name, [$prop_type]);
         }
         foreach ($prop_values as $prop_value) {
           $key = $prop_value->getKey();
