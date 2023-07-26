@@ -24,44 +24,10 @@ class TripalTreeParserNewick extends TripalTreeParserBase {
   public function form($form, &$form_state) {
     // Add form elements specific to this tree parser.
 
-    // Default values can come in the following ways:
-    //
-    // 1) as elements of the $node object.  This occurs when editing an existing phylotree
-    // 2) in the $form_state['values'] array which occurs on a failed validation or
-    //    ajax callbacks from non submit form elements
-    // 3) in the $form_state['input'] array which occurs on ajax callbacks from submit
-    //    form elements and the form is being rebuilt
-    //
-    // set form field defaults
-    $name_re = '';
-    $match = '';
-
     $form_state_values = $form_state->getValues();
 
-if (0) { //@@@
-    // If we are reconstructing the form from a failed validation or ajax callback
-    // then use the $form_state['values'] values.
-    if (array_key_exists('tree_name', $form_state_values)) {
-dpm('CP41 tree_name defined');
-//@@@ in parent form      $tree_name = $form_state_values['tree_name'];
-      $leaf_type = $form_state_values['leaf_type'];
-//      $analysis_id = $form_state_values['analysis_id'];
-      $comment = $form_state_values['description'];
-      $dbxref = $form_state_values['dbxref'];
-    }
-
-    // If we are rebuilding the form from after submission (from ajax call) then
-    // the values are in the $form_state_values['input'] array.
-    if (array_key_exists('input', $form_state_values) and !empty($form_state_values['input'])) {
-dpm('CP42 input defined');
-      $tree_name = $form_state_values['input']['tree_name'];
-      $leaf_type = $form_state_values['input']['leaf_type'];
-//      $analysis_id = $form_state_values['input']['analysis_id'];
-      $comment = $form_state_values['input']['description'];
-      $dbxref = $form_state_values['input']['dbxref'];
-    }
-dpm('CP43 ');
-} //@@@
+    $name_re = $form_state_values['name_re'] ?? '';
+    $match = $form_state_values['match'] ?? '';
 
     $form['tree_parser']['name_re'] = [
       '#title' => t('Feature Name Regular Expression'),
@@ -89,21 +55,26 @@ dpm('CP43 ');
   }
 
   public function formValidate($form, &$form_state) {
-dpm('TripalTreeParserNewick PLUGIN formValidate called'); //@@@
     $values = $form_state->getValues();
     $schema = $values['schema_name'];
     $options = [
       'name' => trim($values['tree_name'] ?? ''),
       'description' => trim($values['description'] ?? ''),
-      // When leaf_type is not specified on the form, default to 'taxonomy'
-      // for taxonomic (species) trees. In Tripal3 this had to be typed in.
-      'leaf_type' => $values['leaf_type'] ?? 'taxonomy',
+      'leaf_type' => $values['leaf_type'] ?? '',
       'format' => 'newick',
       'dbxref' => trim($values['dbxref'] ?? ''),
       'match' => $values['match'] ?? '',
       'name_re' => $values['name_re'] ?? '',
       'load_later' => $values['load_later'] ?? '',
     ];
+
+    // When leaf_type is not specified on the form, default to 'taxonomy'
+    // for taxonomic (species) trees. In Tripal3 this had to be typed in.
+    if (!$options['leaf_type']) {
+      $options['leaf_type'] = 'taxonomy';
+    }
+    // API functions currently cannot handle the (DB:accession) suffix on the leaf_type
+    $options['leaf_type'] = preg_replace('/ \(.*\)/', '', $options['leaf_type']);
 
     // check the regular expression to make sure it is valid
     if ($options['name_re']) {
@@ -114,12 +85,12 @@ dpm('TripalTreeParserNewick PLUGIN formValidate called'); //@@@
       }
     }
 
+    // perform API validations
     $errors = [];
     $warnings = [];
+    chado_validate_phylotree('insert', $options, $errors, $warnings, $schema);
 
-//@@@    chado_validate_phylotree('insert', $options, $errors, $warnings, $schema);
-
-    // Now set form errors if any errors were detected.
+    // Now set form errors if any errors were detected in the API validations
     if (count($errors) > 0) {
       foreach ($errors as $field => $message) {
         if ($field == 'name') {
@@ -128,7 +99,7 @@ dpm('TripalTreeParserNewick PLUGIN formValidate called'); //@@@
         $form_state->setErrorByName($field, $message);
       }
     }
-    // Add any warnings if any were detected
+    // Add any warnings if any were detected in the API validations
     // n.b. chado_validate_phylotree() does not currently return any warnings.
     if (count($warnings) > 0) {
       foreach ($warnings as $field => $message) {
@@ -138,11 +109,9 @@ dpm('TripalTreeParserNewick PLUGIN formValidate called'); //@@@
   }
 
   public function formSubmit($form, &$form_state) {
-dpm('TripalTreeParserNewick plugin formSubmit() called'); //@@@
   }
 
   public function run(array $criteria) {
-dpm('TripalTreeParserNewick plugin run() called'); //@@@
   }
 
 }

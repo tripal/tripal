@@ -148,16 +148,13 @@ class TreeImporter extends ChadoImporterBase {
    * @see TripalImporter::run()
    */
   public function run() {
-
     $arguments = $this->arguments['run_args'];
     $schema = $arguments['schema_name'];
     $options = [
       'name' => $arguments['tree_name'],
       'description' => $arguments['description'],
       'analysis_id' => $arguments['analysis_id'],
-      // When leaf_type is not specified, default to 'taxonomy'
-      // for taxonomic (species) trees.
-      'leaf_type' => $arguments['leaf_type'] ?? 'taxonomy',
+      'leaf_type' => $arguments['leaf_type'],
       'tree_file' => $this->arguments['files'][0]['file_path'],
       'format' => 'newick',
       'dbxref' => $arguments['dbxref'],
@@ -165,6 +162,14 @@ class TreeImporter extends ChadoImporterBase {
       'name_re' => $arguments['name_re'],
       'load_later' => $arguments['load_later'],
     ];
+
+    // When Tree Type on the form is left blank, we assume a taxonomic tree.
+    // Tripal 3 would assume 'polypeptide'.
+    if (!$options['leaf_type']) {
+      $leaf_type = 'taxonomy';
+    }
+    // API functions currently cannot handle the (DB:accession) suffix on the leaf_type
+    $options['leaf_type'] = preg_replace('/ \(.*\)/', '', $options['leaf_type']);
 
     // pass through the job, needed for log output to show up on the "jobs page"
     if (property_exists($this, 'job')) {
@@ -186,8 +191,7 @@ class TreeImporter extends ChadoImporterBase {
    * {@inheritdoc}
    */
   public function formSubmit($form, &$form_state) {
-    // Disable the parent submit
-    $form_state->setRebuild(True);
+
   }
 
   /**

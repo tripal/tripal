@@ -135,9 +135,9 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
       return FALSE;
     }
 
-    // If no leaf type is provided then use the polypeptide term.
+    // If no leaf type is provided then assume a taxonomic tree.
     if (!array_key_exists('leaf_type', $options) or !$options['leaf_type']) {
-      $options['leaf_type'] = 'polypeptide';
+      $options['leaf_type'] = 'taxonomy';
     }
   }
 
@@ -278,8 +278,8 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
  *                   should be associated.
  *     'leaf_type':  A sequence ontology term or the word 'taxonomy'. If the
  *                   type is 'taxonomy' then this tree represents a
- *                   taxonomic tree.  The default, if not specified, is the
- *                   term 'polypeptide'.
+ *                   taxonomic tree. The default, if not specified, is a
+ *                   taxonomic tree.
  *     'tree_file':  The path of the file containing the phylogenetic tree to
  *                   import or a Drupal managed_file numeric ID.
  *     'format':     The file format. Currently only 'newick' is supported.
@@ -324,6 +324,11 @@ function chado_insert_phylotree(&$options, &$errors, &$warnings, $schema_name = 
   $options['format'] = trim($options['format']);
   $options['tree_file'] = trim($options['tree_file']);
   $options['analysis_id'] = isset($options['analysis_id']) ? $options['analysis_id'] : NULL;
+
+  // If no leaf type is provided then assume a taxonomic tree.
+  if (!array_key_exists('leaf_type', $options) or !$options['leaf_type']) {
+    $options['leaf_type'] = 'taxonomy';
+  }
 
   // These are options for the tripal_report_error function. We do not
   // want to log messages to the watchdog but we do for the job and to
@@ -390,7 +395,7 @@ function chado_insert_phylotree(&$options, &$errors, &$warnings, $schema_name = 
     if (array_key_exists('load_later', $options) and $options['load_later']) {
       $args = [
         $real_file_path,
-        'newick',
+        $options['format'],
         [
           'phylotree_id' => $phylotree_id,
           'leaf_type' => $options['leaf_type'],
@@ -443,8 +448,8 @@ function chado_insert_phylotree(&$options, &$errors, &$warnings, $schema_name = 
  *                   should be associated.
  *     'leaf_type':  A sequence ontology term or the word 'taxonomy'. If the
  *                   type is 'taxonomy' then this tree represents a
- *                   taxonomic tree.  The default, if not specified, is the
- *                   term 'polypeptide'.
+ *                   taxonomic tree.  The default, if not specified, is a
+ *                   taxonomic tree.
  *     'tree_file':  The path of the file containing the phylogenetic tree to
  *                   import or a Drupal managed_file numeric ID.
  *     'format':     The file format. Currently only 'newick' is supported
@@ -557,7 +562,7 @@ function chado_update_phylotree($phylotree_id, &$options, $schema_name = 'chado'
     if (array_key_exists('load_later', $options) and $options['load_later']) {
       $args = [
         $real_file_path,
-        'newick',
+        $options['format'],
         [
           'phylotree_id' => $options['phylotree_id'],
           'leaf_type' => $options['leaf_type'],
@@ -696,7 +701,6 @@ function chado_assign_phylogeny_tree_indices(&$tree, &$index = 1) {
  * @ingroup tripal_phylotree_api
  */
 function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], $parent = NULL, $schema_name = 'chado') {
-
   // Used for final summary message at end of recursion.
   static $n_associated = 0;
   static $n_not_associated = 0;
@@ -721,11 +725,11 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
       $values['distance'] = $tree['length'];
     }
     // Set the type of node.
-    if ($tree['is_root']) {
+    if (array_key_exists('is_root', $tree) and $tree['is_root']) {
       $values['type_id'] = $vocab['root']->cvterm_id;
     }
     else {
-      if ($tree['is_internal']) {
+      if (array_key_exists('is_internal', $tree) and $tree['is_internal']) {
         $values['type_id'] = $vocab['internal']->cvterm_id;
         $values['parent_phylonode_id'] = $parent['phylonode_id'];
         // TODO: a feature may be associated here but it is recommended that it
@@ -801,8 +805,8 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
                   //   ['%matchtype' => $options['match'], '%value' => $sel_values[$options['match']] ],
                   //   $options['message_opts']
                   // );
-                  \Drupal::service('tripal.logger')->warning('Import phylotree: Warning, unable to associate to a 
-                    feature that matches the ' . $options['match'] . ': ' . $sel_values[$options['match']]);
+                  \Drupal::service('tripal.logger')->warning('Import phylotree: Warning, unable to associate to a'
+                      . ' feature that matches the ' . $options['match'] . ': ' . $sel_values[$options['match']]);
                 }
               }
             }
@@ -963,8 +967,7 @@ function chado_phylogeny_get_node_types_vocab($options, $schema_name = 'chado') 
  *     'phylotree_id': The imported nodes will be associated with this tree.
  *     'leaf_type':  A sequence ontology term or the word 'taxonomy'. If the
  *                   type is 'taxonomy' then this tree represents a
- *                   taxonomic tree.  The default, if not specified, is the
- *                   term 'polypeptide'.
+ *                   taxonomic tree. This is also the default when not specified.
  *     'name_re':    The value of this field can be a regular expression to pull
  *                   out the name of the feature or organism from the node label
  *                   in the input tree. If no value is provided the entire label
@@ -977,8 +980,9 @@ function chado_phylogeny_get_node_types_vocab($options, $schema_name = 'chado') 
 function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $job_id = NULL, $schema_name = 'chado') {
 
   // Set some option details.
-  if (!array_key_exists('leaf_type', $options)) {
-    $options['leaf_type'] = 'polypeptide';
+  // If no leaf type is provided then assume a taxonomic tree.
+  if (!array_key_exists('leaf_type', $options) or !$options['leaf_type']) {
+    $options['leaf_type'] = 'taxonomy';
   }
   if (!array_key_exists('match', $options)) {
     $options['match'] = 'name';
@@ -1043,15 +1047,12 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $j
 
     // Parse the file according to the format indicated.
     if ($format == 'newick') {
-      // TODO: [RISH] Discussed with Stephen Ficklin 24th May 2023
-      // To be upgraded at a later time
+      // Parse the tree into the expected nested node format.
+      \Drupal::moduleHandler()->loadInclude('tripal_chado', 'php', 'src/api/tripal_chado.phylotree_newick');
+      $tree = tripal_phylogeny_parse_newick_file($file_name);
 
-      // // Parse the tree into the expected nested node format.
-      // module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.phylotree_newick');
-      // $tree = tripal_phylogeny_parse_newick_file($file_name);
-
-      // // Assign the right and left indices to the tree nodes.
-      // chado_assign_phylogeny_tree_indices($tree);
+      // Assign the right and left indices to the tree nodes.
+      chado_assign_phylogeny_tree_indices($tree);
     }
 
     // Iterate through the tree nodes and add them to Chado in accordance
