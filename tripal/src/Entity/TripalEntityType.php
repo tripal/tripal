@@ -557,8 +557,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
       'required' => TRUE,
     ];
 
-    $instances = \Drupal::service('entity_field.manager')
-      ->getFieldDefinitions('tripal_entity', $this->name);
+    $instances = \Drupal::service('entity_field.manager')->getFieldDefinitions('tripal_entity', $this->id);
     foreach ($instances as $instance_name => $instance) {
 
       $use_field = TRUE;
