@@ -921,18 +921,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
     foreach ($records as $table_name => $deltas) {
       foreach ($deltas as $delta => $record) {
         foreach ($record['fields'] as $chado_column => $val) {
-          if (is_array($val['value']) and $val['value'][0] == 'REPLACE_BASE_RECORD_ID') {
-            $base_table = $val['value'][1]
-
-            // If the base record ID is 0 then this is an insert and we
-            // don't yet have the base record ID.  So, leave in the message
-            // to replace the ID so we can do so later.
-            if (array_key_exists($base_table, $base_record_ids) and $base_record_ids[$base_table] != 0) {
-              $records[$table_name][$delta]['fields'][$chado_column] = $base_record_ids[$base_table];
-            }            
-          }
-        }
-        foreach ($record['conditions'] as $chado_column => $val) {
           if (is_array($val) and $val[0] == 'REPLACE_BASE_RECORD_ID') {
             $base_table = $val[1];
 
@@ -940,7 +928,20 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
             // don't yet have the base record ID.  So, leave in the message
             // to replace the ID so we can do so later.
             if (array_key_exists($base_table, $base_record_ids) and $base_record_ids[$base_table] != 0) {
-              $records[$table_name][$delta]['conditions'][$chado_column] = $base_record_ids[$base_table];
+              $records[$table_name][$delta]['fields'][$chado_column] = $base_record_ids[$base_table];
+            }
+            
+          }
+        }
+        foreach ($record['conditions'] as $chado_column => $val) {
+          if (is_array($val['value']) and $val['value'][0] == 'REPLACE_BASE_RECORD_ID') {
+            $base_table = $val['value'][1];
+
+            // If the base record ID is 0 then this is an insert and we
+            // don't yet have the base record ID.  So, leave in the message
+            // to replace the ID so we can do so later.
+            if (array_key_exists($base_table, $base_record_ids) and $base_record_ids[$base_table] != 0) {
+              $records[$table_name][$delta]['conditions'][$chado_column]['value'] = $base_record_ids[$base_table];
             }
           }
         }
