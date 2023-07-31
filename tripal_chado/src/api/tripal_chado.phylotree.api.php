@@ -718,11 +718,13 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
       $values['distance'] = $tree['length'];
     }
     // Set the type of node.
-    if ($tree['is_root']) {
+    echo "DEBUG Check is_root\n";
+    if (isset($tree['is_root'])) {
       $values['type_id'] = $vocab['root']->cvterm_id;
     }
     else {
-      if ($tree['is_internal']) {
+      echo "DEBUG Check is_internal\n";
+      if (isset($tree['is_internal'])) {
         $values['type_id'] = $vocab['internal']->cvterm_id;
         $values['parent_phylonode_id'] = $parent['phylonode_id'];
         // TODO: a feature may be associated here but it is recommended that it
@@ -1053,6 +1055,7 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $j
       $tree = tripal_phylogeny_parse_newick_file($file_name);
       // // Assign the right and left indices to the tree nodes.
       chado_assign_phylogeny_tree_indices($tree);
+      print_r($tree);
     }
 
     // Iterate through the tree nodes and add them to Chado in accordance
