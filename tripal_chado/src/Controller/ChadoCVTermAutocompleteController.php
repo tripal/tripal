@@ -27,14 +27,14 @@ class ChadoCVTermAutocompleteController extends ControllerBase {
    */
   public function handleAutocomplete(Request $request, int $count = 5) {
     // Array to hold matching cvterm names.
-    $response = null;
+    $response = [];
     
     if ($request->query->get('q')) {
       // Get typed in string input from the URL.
       $string = trim($request->query->get('q'));
       
-      if (strlen($string) > 1 && $count > 0) {
-        // Proceed to autocomplete when string is at least 2 characters
+      if (strlen($string) > 0 && $count > 0) {
+        // Proceed to autocomplete when string is at least a character
         // long and result count is set to a value greater than 0.
 
         // Transform string as a search keyword pattern.
@@ -48,7 +48,7 @@ class ChadoCVTermAutocompleteController extends ControllerBase {
           FROM {1:cvterm} AS ct 
             LEFT JOIN {1:dbxref} AS dx USING(dbxref_id) 
             LEFT JOIN {1:db} USING(db_id)
-          WHERE ct.name LIKE :keyword ORDER BY ct.name ASC LIMIT %d
+          WHERE LOWER(ct.name) LIKE :keyword ORDER BY ct.name ASC LIMIT %d
         ", $count);
 
         // Prepare Chado database connection and execute sql query by providing value 
@@ -104,5 +104,39 @@ class ChadoCVTermAutocompleteController extends ControllerBase {
     }
 
     return $id;
+  }
+
+  /**
+   * Given a cvterm id number, return the matching cvterm record using
+   * the format cvterm name (db.name:dbxref.accession).
+   * 
+   * @param integer $id
+   *   Cvterm id number to match.
+   * 
+   * @return string
+   *   Cvterm record in cvterm name (db.name:dbxref.accession) format.
+   */
+  public static function formatCVterm(int $id) {
+    $term = null;
+    
+    if ($id > 0) {
+      $sql = "
+        SELECT CONCAT(ct.name, ' (', db.name, ':', dx.accession, ')') 
+        FROM {1:cvterm} AS ct 
+          LEFT JOIN {1:dbxref} AS dx USING(dbxref_id) 
+          LEFT JOIN {1:db} USING(db_id)
+        WHERE ct.cvterm_id = :cvterm_id
+        LIMIT 1 
+      ";
+
+      $connection = \Drupal::service('tripal_chado.database');
+      $result = $connection->query($sql, [':cvterm_id' => $id]);
+
+      if($result) {
+        $term = $result->fetchField();
+      }
+    }
+
+    return $term;
   }
 }

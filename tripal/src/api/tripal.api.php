@@ -53,3 +53,15 @@ function tripal_load_configuration($module, $config_type) {
     }
   }
 }
+
+/**
+ * Returns the current version of Tripal as defined in the tripal.info.yml file.
+ *
+ * @return string
+ *   The version string of Tripal, e.g. "4.0"
+ */
+function tripal_version() {
+  $tripal_module = \Drupal::service('module_handler')->getModule('tripal');
+  $tripal_info = \Drupal::service('info_parser')->parse($tripal_module->getPathname());
+  return $tripal_info['version'];
+}
