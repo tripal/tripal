@@ -114,7 +114,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
 	/**
 	 * @{inheritdoc}
 	 */
-  public function addTypes($types) {
+  public function addTypes($bundle_name, $field_name, $types) {
 
     // Index the types by their entity type, field type and key.
     foreach ($types as $index => $type) {
@@ -124,22 +124,20 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
         return FALSE;
       }
 
-      $field_name = $type->getFieldType();
-      $entity_type = $type->getEntityType();
       $key = $type->getKey();
 
-      if (!array_key_exists($entity_type, $this->property_types)) {
-        $this->property_types[$entity_type] = [];
+      if (!array_key_exists($bundle_name, $this->property_types)) {
+        $this->property_types[$bundle_name] = [];
       }
-      if (!array_key_exists($field_name, $this->property_types[$entity_type])) {
-        $this->property_types[$entity_type][$field_name] = [];
+      if (!array_key_exists($field_name, $this->property_types[$bundle_name])) {
+        $this->property_types[$bundle_name][$field_name] = [];
       }
-      if (array_key_exists($key, $this->property_types[$entity_type])) {
+      if (array_key_exists($key, $this->property_types[$bundle_name])) {
         $this->logger->error('Cannot add a property type, "@prop", as it already exists',
-            ['@prop' => $entity_type . '.' . $field_name . '.' . $key]);
+            ['@prop' => $bundle_name . '.' . $field_name . '.' . $key]);
         return FALSE;
       }
-      $this->property_types[$entity_type][$field_name][$key] = $type;
+      $this->property_types[$bundle_name][$field_name][$key] = $type;
     }
   }
 
@@ -161,16 +159,14 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
   /**
 	 * @{inheritdoc}
 	 */
-  public function removeTypes($types) {
+  public function removeTypes($bundle_name, $field_name, $types) {
 
     foreach ($types as $type) {
-      $entity_type = $type->getEntityType();
-      $field_type = $type->getFieldType();
       $key = $type->getKey();
-      if (array_key_exists($entity_type, $this->property_types)) {
-        if (array_key_exists($field_type, $this->property_types[$entity_type])) {
-          if (array_key_exists($key, $this->property_types[$entity_type])) {
-            unset($this->property_types[$entity_type][$field_type][$key]);
+      if (array_key_exists($bundle_name, $this->property_types)) {
+        if (array_key_exists($field_name, $this->property_types[$bundle_name])) {
+          if (array_key_exists($key, $this->property_types[$bundle_name][$field_name])) {
+            unset($this->property_types[$bundle_name][$field_name][$key]);
           }
         }
       }
@@ -203,7 +199,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
     }
 
     // Update the record array to include the record id.
-    $records[$chado_table][$delta]['conditions'][$pkey] = $record_id;
+    $records[$chado_table][$delta]['conditions'][$pkey]['value'] = $record_id;
     return $record_id;
   }
 
@@ -288,7 +284,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
   private function hasValidConditions($record) {
     $num_conditions = 0;
     foreach ($record['conditions'] as $chado_column => $cond_value) {
-      if (!empty($cond_value)) {
+      if (!empty($cond_value['value'])) {
         $num_conditions++;
       }
     }
@@ -337,7 +333,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
     $update = $this->connection->update('1:'.$chado_table);
     $update->fields($record['fields']);
     foreach ($record['conditions'] as $chado_column => $cond_value) {
-      $update->condition($chado_column, $cond_value);
+      $update->condition($chado_column, $cond_value['value']);
     }
     $rows_affected = $update->execute();
     if ($rows_affected == 0) {
@@ -475,9 +471,9 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
 
     // Add the select condition
     foreach ($record['conditions'] as $chado_column => $value) {
-      if (!empty($value)) {
-        $select->condition('ct.'.$chado_column, $value);
-      }
+      if (!empty($value['value'])) {
+        $select->condition('ct.'. $chado_column, $value['value'], $value['operation']);
+      }        
     }
 
     // Execute the query.
@@ -537,7 +533,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
 
     $delete = $this->connection->delete('1:'.$chado_table);
     foreach ($record['conditions'] as $chado_column => $cond_value) {
-      $delete->condition($chado_column, $cond_value);
+      $delete->condition($chado_column, $cond_value['value']);
     }
     $rows_affected = $delete->execute();
     if ($rows_affected == 0) {
@@ -620,17 +616,17 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
 
           // If this is the record_id property then set its value.
           if ($action == 'store_id') {
-            $record_id = $records[$chado_table][0]['conditions'][$base_table_pkey];
+            $record_id = $records[$chado_table][0]['conditions'][$base_table_pkey]['value'];
             $values[$field_name][$delta][$key]['value']->setValue($record_id);
           }
           // If this is the linked record_id property then set its value.
           if ($action == 'store_pkey') {
-            $record_id = $records[$chado_table][$delta]['conditions'][$chado_table_pkey];
+            $record_id = $records[$chado_table][$delta]['conditions'][$chado_table_pkey]['value'];
             $values[$field_name][$delta][$key]['value']->setValue($record_id);
           }
           // If this is a property managing a linked record ID then set it too.
           if ($action == 'store_link') {
-            $record_id = $records[$base_table][0]['conditions'][$base_table_pkey];
+            $record_id = $records[$base_table][0]['conditions'][$base_table_pkey]['value'];
             $values[$field_name][$delta][$key]['value']->setValue($record_id);
           }
         }
@@ -679,7 +675,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
             $base_table = $storage_plugin_settings['base_table'];
             $base_table_def = $schema->getTableDef($base_table, ['format' => 'drupal']);
             $base_table_pkey = $base_table_def['primary key'];
-            $link_id = $records[$base_table][0]['conditions'][$base_table_pkey];
+            $link_id = $records[$base_table][0]['conditions'][$base_table_pkey]['value'];
             $values[$field_name][$delta][$key]['value']->setValue($link_id);
           }
 
@@ -821,6 +817,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
           $definition = $info['definition'];
           $prop_type = $info['type'];
           $prop_value = $info['value'];
+          $operation = array_key_exists('operation', $info) ? $info['operation'] : '=';
 
           $field_label = $definition->getLabel();
           $field_settings = $definition->getSettings();
@@ -866,20 +863,20 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
             // this property.  Let's set it to be replaced in the hopes that
             // some other property has already been inserted and has the ID.
             if ($record_id == 0) {
-              $records[$chado_table][0]['conditions'][$chado_table_pkey] = ['REPLACE_BASE_RECORD_ID', $base_table];
+              $records[$chado_table][0]['conditions'][$chado_table_pkey] = ['value' => ['REPLACE_BASE_RECORD_ID', $base_table], 'operation' => $operation];
               if (!array_key_exists($base_table, $base_record_ids)) {
                 $base_record_ids[$base_table] = $record_id;
               }
             }
             else {
-              $records[$chado_table][0]['conditions'][$chado_table_pkey] = $record_id;
+              $records[$chado_table][0]['conditions'][$chado_table_pkey] = ['value' => $record_id, 'operation' => $operation];
               $base_record_ids[$base_table] = $record_id;
             }
           }
           // This  action is to store the linked table primary key value.
           if ($action == 'store_pkey') {
             $link_record_id = $prop_value->getValue();
-            $records[$chado_table][$delta]['conditions'][$chado_table_pkey] = $link_record_id;
+            $records[$chado_table][$delta]['conditions'][$chado_table_pkey] = ['value' => $link_record_id, 'operation' => $operation];
           }
           // The link action will connect a linking table to the base table.
           if ($action == 'store_link') {
