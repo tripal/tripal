@@ -128,4 +128,15 @@ class TripalCommands extends DrushCommands {
       tripal_launch_job(0, $new_job_id, $max_jobs, $single);
     }
   }
+  /**
+   * Returns the current version of Tripal that is installed
+   *
+   * @command tripal:version
+   * @aliases trp-version
+   * @usage drush trp-version
+   *   Returns the current Tripal version string.
+   */
+  public function tripalVersion() {
+    $this->output()->writeln(tripal_version());
+  }
 }

@@ -27,14 +27,14 @@ class ChadoCVTermAutocompleteController extends ControllerBase {
    */
   public function handleAutocomplete(Request $request, int $count = 5) {
     // Array to hold matching cvterm names.
-    $response = null;
+    $response = [];
     
     if ($request->query->get('q')) {
       // Get typed in string input from the URL.
       $string = trim($request->query->get('q'));
       
-      if (strlen($string) > 1 && $count > 0) {
-        // Proceed to autocomplete when string is at least 2 characters
+      if (strlen($string) > 0 && $count > 0) {
+        // Proceed to autocomplete when string is at least a character
         // long and result count is set to a value greater than 0.
 
         // Transform string as a search keyword pattern.
@@ -48,7 +48,7 @@ class ChadoCVTermAutocompleteController extends ControllerBase {
           FROM {1:cvterm} AS ct 
             LEFT JOIN {1:dbxref} AS dx USING(dbxref_id) 
             LEFT JOIN {1:db} USING(db_id)
-          WHERE ct.name LIKE :keyword ORDER BY ct.name ASC LIMIT %d
+          WHERE LOWER(ct.name) LIKE :keyword ORDER BY ct.name ASC LIMIT %d
         ", $count);
 
         // Prepare Chado database connection and execute sql query by providing value 
