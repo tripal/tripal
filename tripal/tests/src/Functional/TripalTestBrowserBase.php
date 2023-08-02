@@ -214,8 +214,7 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
    *
    * @param array $values
    *   These values are passed directly to the create() method. Suggested values are:
-   *    -     id (integer)
-   *    -     name (string)
+   *    -     id (string)
    *    -     label (label; string)
    *    -     termIdSpace (string)
    *    -     termAccession (string)
@@ -232,6 +231,7 @@ abstract class TripalTestBrowserBase extends BrowserTestBase {
     $random = $this->getRandomGenerator();
     // Provides a title with ~3 latin capitalized words.
     $values['label'] = $values['label'] ?? $random->sentences(3,TRUE);
+    $values['id'] = $values['id'] ?? $random->sentences(1,TRUE);
     // Provides a random non-unique 4 character string.
     $values['termIdSpace'] = $values['termIdSpace'] ?? $random->string(4);
     // Provides a random non-unique 10 character string.
