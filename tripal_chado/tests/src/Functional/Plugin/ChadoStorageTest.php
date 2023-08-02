@@ -254,7 +254,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
 
     // Now test ChadoStorage->addTypes()
     // param array $types = Array of \Drupal\tripal\TripalStorage\StoragePropertyTypeBase objects.
-    $chado_storage->addTypes($propertyTypes);
+    $chado_storage->addTypes($this->content_type, $field_name, $propertyTypes);
     $retrieved_types = $chado_storage->getTypes();
     $this->assertIsArray($retrieved_types, "Unable to retrieve the PropertyTypes after adding $field_name.");
     $this->assertCount(2, $retrieved_types, "Did not revieve the expected number of PropertyTypes after adding $field_name.");
@@ -366,7 +366,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
 
     // Now test ChadoStorage->addTypes()
     // param array $types = Array of \Drupal\tripal\TripalStorage\StoragePropertyTypeBase objects.
-    $chado_storage->addTypes($propertyTypes);
+    $chado_storage->addTypes($this->content_type, $field_name, $propertyTypes);
     $retrieved_types = $chado_storage->getTypes();
     $this->assertIsArray($retrieved_types, "Unable to retrieve the PropertyTypes after adding $field_name.");
     $this->assertCount(8, $retrieved_types, "Did not revieve the expected number of PropertyTypes after adding $field_name.");
@@ -527,7 +527,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
 
     // Now test ChadoStorage->addTypes()
     // param array $types = Array of \Drupal\tripal\TripalStorage\StoragePropertyTypeBase objects.
-    $chado_storage->addTypes($propertyTypes);
+    $chado_storage->addTypes($this->content_type, $field_name, $propertyTypes);
     $retrieved_types = $chado_storage->getTypes();
     $this->assertIsArray($retrieved_types, "Unable to retrieve the PropertyTypes after adding $field_name.");
     $this->assertCount(15, $retrieved_types, "Did not revieve the expected number of PropertyTypes after adding $field_name.");
