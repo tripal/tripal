@@ -582,7 +582,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
     $build = $this->buildChadoRecords($values, FALSE);
     $records = $build['records'];
     $base_tables = $build['base_tables'];
-    dpm($records);
 
     $transaction_chado = $this->connection->startTransaction();
     try {
@@ -712,7 +711,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
             $new_records = $records;
 
             // Update the values in the copied record and prop value objects.
-            print_r($match);
             $new_records[$chado_table][$delta]['fields'] = $match;
             $this->setPropValues($new_values, $new_records);
             $this->setRecordIds($new_values, $new_records);

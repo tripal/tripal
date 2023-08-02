@@ -7,64 +7,104 @@ use \Drupal\tripal\TripalStorage\StoragePropertyValue;
 class TripalPublish {
 
   /**
-   * The Tripal publish object.
+   * The id of the entity type (bundle)
+   *
+   * @var string $bundle
    */
-  protected $publish = NULL;
+  protected $bundle = '';
 
+  /**
+   * The id of the TripalStorage plugin.
+   * @var string $datastore.
+   */
+  protected $datastore = '';
+
+  /**
+   * A list of the fields and their information.
+   *
+   * This is to store the field information for fields that are attached
+   * to the bundle (entity type) that is being published.
+   *
+   * @var \Drupal\Core\Field\BaseFieldDefinition $field_definition
+   */
+  protected $field_info = [];
 
 
   /**
-   * The main publish function.
+   * Stores the bundle (entity type) object.
    *
-   * Publishes content to Tripal from Chado or another
-   * specified datastore that matches the provided
-   * filters.
+   * @var \Drupal\tripal\Entity\TripalEntityType $entity_type
+   **/
+  protected $entity_type = NULL;
+
+
+  /**
+   * The TripalStorage object.
+   *
+   * @var \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $storage_manager
+   **/
+  protected $storage = NULL;
+
+
+  /**
+   * Initializes the publisher service.
    *
    * @param string $bundle
-   *   The name of the bundle type to be published.
+   *   The id of the bundle or entity type.
    * @param string $datastore
-   *   The datastore that content will be published from. Can
-   *   be a one of the available Chado instances or a
-   *   custom datastore.
-   * @param array $filters
-   *   Filters that determine which content will be published.
-   *
-   * @return int
-   *   The number of items published, FALSE on failure (for now).
-   *
-   * @todo The filter and datastore parameters.
+   *   The id of the TripalStorage plugin.
    */
-  public function publish($bundle, $datastore, $filters) {
+  public function init($bundle, $datastore) {
 
-    // @TODO: remove this hardcoding once the $datastore argument is working.
-    $datastore = 'chado_storage';
+    $this->bundle = $bundle;
+    $this->datastore = $datastore;
+
+    // Get the bundle object so we can get settings such as the title format.
+    /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
+    $entity_types = \Drupal::entityTypeManager()
+      ->getStorage('tripal_entity_type')
+      ->loadByProperties(['name' => $bundle]);
+    if (!array_key_exists($bundle, $entity_types)) {
+      // @TODO: log an error and quit
+    }
+    $this->entity_type = $entity_types[$bundle];
 
     // Get the storage plugin used to publish.
-    /** @var \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager **/
     $storage_manager = \Drupal::service('tripal.storage');
-    $storage = $storage_manager->getInstance(['plugin_id' => $datastore]);
+    $this->storage = $storage_manager->getInstance(['plugin_id' => $datastore]);
+    if (!$this->storage) {
+      // @TODO: log an error and quit.
+    }
 
-    // Here we'll store the array of searchable properties. This should be the
-    // expected input format for the TripalStorageManager::findValues() function.
-    $search_values = [];
+    $this->setFieldInfo();
+  }
+
+
+  /**
+   * Populates the $field_info variable with field information
+   *
+   * @param string $bundle
+   *   The id of the bundle or entity type.
+   */
+  protected function setFieldInfo() {
 
     // Get the field manager, field definitions for the bundle type, and
     // the field type manager.
     /** @var \Drupal\Core\Entity\EntityFieldManager $field_manager **/
     $field_manager = \Drupal::service('entity_field.manager');
-    $field_defs = $field_manager->getFieldDefinitions('tripal_entity', $bundle);
+    $field_defs = $field_manager->getFieldDefinitions('tripal_entity', $this->bundle);
     /** @var \Drupal\Core\Field\FieldTypePluginManager $field_type_manager **/
     $field_type_manager = \Drupal::service('plugin.manager.field.field_type');
 
-    // Iterate over the field definitions for the bundle.
+    // Iterate over the field definitions for the bundle and collect the
+    // information so we can use it later.
     /** @var \Drupal\Core\Field\BaseFieldDefinition $field_definition **/
-    $field_info = [];
     $field_definition = NULL;
     foreach ($field_defs as $field_name => $field_definition) {
 
       if (!empty($field_definition->getTargetBundle())) {
         $storage_definition = $field_definition->getFieldStorageDefinition();
-        if ($storage_definition->getSetting('storage_plugin_id') == $datastore) {
+        if ($storage_definition->getSetting('storage_plugin_id') == $this->datastore) {
           $configuration = [
             'field_definition' => $field_definition,
             'name' => $field_name,
@@ -73,34 +113,38 @@ class TripalPublish {
           $instance = $field_type_manager->createInstance($field_definition->getType(), $configuration);
           $prop_types = $instance->tripalTypes($field_definition);
           $field_class = get_class($instance);
-          $storage->addTypes($bundle, $field_name, $prop_types);
-          $field_info[$field_name] = [
+          $this->storage->addTypes($this->bundle, $field_name, $prop_types);
+          $this->field_info[$field_name] = [
             'definition' => $field_definition,
-            'class' => $field_class
+            'class' => $field_class,
+            'prop_types' => $prop_types,
+            'instance' => $instance,
           ];
         }
       }
     }
+  }
 
+  /**
+   * Adds to the search values array the required proprty values.
+   *
+   * @param array $seach_values
+   */
+  protected function addRequiredValues(&$search_values) {
+    // Get the rquired field properties that will uniquely identify an entity.
+    // We only need to search on those properties.
+    $required_types = $this->storage->getUniqueEntityTypes();
 
-    // Iterate through the property type that can uniquely identify an entity.
-    $required_types = $storage->getUniqueEntityTypes();
-    foreach ($required_types as $bundle_name => $field_names) {
+    // Iterate through the property types that can uniquely identify an entity.
+    foreach ($required_types as $bundle => $field_names) {
       foreach ($field_names as $field_name => $keys) {
         foreach ($keys as $key => $prop_type) {
 
-          $field_definition = $field_info[$field_name]['definition'];
-          $field_class = $field_info[$field_name]['class'];
+          // Add this property value to the search values array.
+          $field_definition = $this->field_info[$field_name]['definition'];
+          $field_class = $this->field_info[$field_name]['class'];
           $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
               $field_class::$id, $prop_type->getKey(), $prop_type->getTerm()->getTermId(), NULL);
-
-          // Query the list of unique property values
-    //       $field_table  = 'tripal_entity__' . $field_name;
-    //       $database = \Drupal::database();
-    //       $query = $database->select($field_table, 'ft');
-    //       $query->fields('mytable', ['field_1', 'field_2']);
-
-          // Add this field to the search values array.
           $search_values[$field_name][0][$prop_type->getKey()] = [
             'type' => $prop_type,
             'value' => $prop_value,
@@ -110,16 +154,222 @@ class TripalPublish {
         }
       }
     }
+  }
 
-    $matched_records = $storage->findValues($search_values);
-    foreach ($matched_records as $record) {
-      foreach ($record as $field_name => $deltas) {
-        foreach ($deltas as $delta => $keys) {
-          foreach ($keys as $key => $info) {
-            print_r([$field_name, $key, $delta, $info['value']->getValue()]);
-          }
+  /**
+   * Adds to the search values array property values for tokens.
+   *
+   * Tokens are used in the title format and URL alias of entities.
+   *
+   * @param array $seach_values
+   */
+  protected function addTokenValues(&$search_values) {
+    // We also need to add in the properties required to build a
+    // title and URL alias.
+    $title_format = $this->entity_type->getTitleFormat();
+    $url_format = $this->entity_type->getURLFormat();
+    foreach ($this->field_info as $field_name => $field_info) {
+      if (preg_match("/\[$field_name\]/", $title_format) or
+          preg_match("/\[$field_name\]/", $url_format)) {
+
+        $field_definition = $field_info['definition'];
+        $field_class = $field_info['class'];
+
+        /** @var \Drupal\tripal\TripalStorage\StoragePropertyBase $prop_type **/
+        foreach ($field_info['prop_types'] as $prop_type) {
+
+          // Add this property value to the search values array.
+          $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
+              $field_class::$id, $prop_type->getKey(), $prop_type->getTerm()->getTermId(), NULL);
+          $search_values[$field_name][0][$prop_type->getKey()] = [
+            'type' => $prop_type,
+            'value' => $prop_value,
+            'operation' => '=',
+            'definition' => $field_definition
+          ];
         }
       }
     }
+  }
+
+  /**
+   *
+   * @param array $matches
+   *   The array of matches for each entity.
+   */
+  protected function getEntityTitles($matches) {
+    $titles = [];
+    $title_format = $this->entity_type->getTitleFormat();
+
+    // Iterate through the results and build the bulk SQL statements that
+    // will publish the records.
+    foreach ($matches as $record) {
+      $entity_title = $title_format;
+      foreach ($record as $field_name => $deltas) {
+        if (preg_match("/\[$field_name\]/", $title_format)) {
+          // There should only be one value for the fields that
+          // are used for title formats so default this to 0.
+          $delta = 0;
+          $field = $this->field_info[$field_name]['instance'];
+          $main_prop = $field->mainPropertyName();
+          $value = $record[$field_name][$delta][$main_prop]['value']->getValue();
+          $entity_title = trim(preg_replace("/\[$field_name\]/", $value,  $entity_title));
+        }
+      }
+      $titles[] = $entity_title;
+    }
+    return $titles;
+  }
+
+  /**
+   * Makes sure that we will not be adding any dupliate entities.
+   *
+   * @param array $matches
+   *   The array of matches for each entity.
+   * @param array $titles
+   *   The array of entity titles in the same order as the matches.
+   *
+   * @return array
+   *   An associative array of  of matched entities keyed by the
+   *   entity title with a value of the entity id.
+   */
+  protected function findEntities($matches, $titles) {
+    $database = \Drupal::database();
+
+    $batch_size = 1000;
+    $num_matches = count($matches);
+    $num_batches = (int) ($num_matches / $batch_size) + 1;
+    $entities = [];
+
+    $sql = "
+      SELECT id,type,title FROM tripal_entity\n
+      WHERE type = :type AND title in (:titles[])\n";
+
+    $i = 0;
+    $total = 0;
+    $batch_num = 1;
+    $args = [];
+    $batch_titles = [];
+    foreach ($matches as $match) {
+      $batch_titles[] = $titles[$i];
+      $total++;
+      $i++;
+
+      // If we've reached the size of the batch then let's do the insert.
+      if ($i == $batch_size or $total == $num_matches) {
+        $args = [
+          ':type' => $this->bundle,
+          ':titles[]' => $batch_titles
+        ];
+        $results = $database->query($sql, $args);
+        while ($result = $results->fetchAssoc()) {
+          $entities[$result['title']] = $result['id'];
+        }
+        $batch_num++;
+
+        // Now reset all of the variables for the next batch.
+        $i = 0;
+        $args = [];
+        $batch_titles = [];
+      }
+    }
+    return $entities;
+  }
+
+  /**
+   * Performs bulk insert of new entities into the tripal_entity table
+   *
+   * @param array $matches
+   *   The array of matches for each entity.
+   * @param array $titles
+   *   The array of entity titles in the same order as the matches.
+   */
+  protected function insertEntities($matches, $titles, $existing) {
+    $database = \Drupal::database();
+
+    $batch_size = 1000;
+    $num_matches = count($matches);
+    $num_batches = (int) ($num_matches / $batch_size) + 1;
+
+    $init_sql = "
+      INSERT INTO {tripal_entity}
+        (type, title, status, created, changed)
+      VALUES\n";
+
+    $i = 0;
+    $total = 0;
+    $batch_num = 1;
+    $sql = '';
+    $args = [];
+    foreach ($matches as $match) {
+      $title = $titles[$i];
+      $total++;
+      $i++;
+
+      // Add to the list of entities to insert only those
+      // that don't already exist.  We shouldn't have any that
+      // exist because the querying to find matches should have
+      // excluded existing records that are already bublished, but
+      // just in case.
+      if (!in_array($title, array_keys($existing))) {
+        $sql .= "(:type_$i, :title_$i, :status_$i, :created_$i, :changed_$i),\n";
+        $args[":type_$i"] = $this->bundle;
+        $args[":title_$i"] = $title;
+        $args[":status_$i"] = 1;
+        $args[":created_$i"] = time();
+        $args[":changed_$i"] = time();
+      }
+
+      // If we've reached the size of the batch then let's do the insert.
+      if ($i == $batch_size or $total == $num_matches) {
+        if (count($args) > 0) {
+          $sql = rtrim($sql, ",\n");
+          $sql = $init_sql . $sql;
+          $database->query($sql, $args);
+        }
+        $batch_num++;
+
+        // Now reset all of the variables for the next batch.
+        $sql = '';
+        $i = 0;
+        $args = [];
+      }
+    }
+  }
+
+  /**
+   * Publishes Tripal entities.
+   *
+   * Publishes content to Tripal from Chado or another
+   * specified datastore that matches the provided
+   * filters.
+   *
+   * @param array $filters
+   *   Filters that determine which content will be published.
+   *
+   * @return int
+   *   The number of items published, FALSE on failure (for now).
+   *
+   */
+  public function publish($filters = []) {
+
+    // Build the search values array
+    $search_values = [];
+    $this->addRequiredValues($search_values);
+    $this->addTokenValues($search_values);
+
+    // Perform the query to find matching records.
+    $matches = $this->storage->findValues($search_values);
+
+    // Get the titles for these entities
+    $titles = $this->getEntityTitles($matches);
+
+    // Find any entities that are already in the database.
+    $existing = $this->findEntities($matches, $titles);
+
+    // Insert new entities
+    $this->insertEntities($matches, $titles, $existing);
+
+    //
   }
 }

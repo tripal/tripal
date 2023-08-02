@@ -42,7 +42,6 @@ class TripalEntityPublishForm extends FormBase {
     // arsort($bundles);
     // $bundles['select'] = 'Select';
     // $bundles = array_reverse($bundles);
-    // dpm($bundles);
 
     $form['bundle'] = [
       '#title' => 'Content Type',

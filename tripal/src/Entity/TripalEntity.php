@@ -388,7 +388,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
       }
     }
 
-    return $string;
+    return trim($string);
   }
 
   /**
