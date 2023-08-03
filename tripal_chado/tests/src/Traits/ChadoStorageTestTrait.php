@@ -72,6 +72,10 @@ trait ChadoStorageTestTrait {
    * properties array.
    *
    * @var array
+   *   This is an array of property types 3 levels deep:
+   *     The 1st level is the bundle name (e.g. bio_data_1).
+   *     The 2st level is the field name (e.g. ChadoOrganismDefault).
+   *     The 3rd level is the property key => PropertyType object
    */
   protected array $propertyTypes = [];
 
@@ -233,20 +237,23 @@ trait ChadoStorageTestTrait {
 
     // Count total number of properties expected for the fields in the
     // values array we are testing.
-    $total_num_properties = 0;
+    $expected_property_counts = [
+      'total' => 0,
+    ];
     foreach ($field_names as $field_name) {
       $this->assertArrayHasKey($field_name, $this->fields,
         "The \$fields array is malformed. '$field_name' must exist as a key in the top level of the array.");
       $this->assertArrayHasKey('properties', $this->fields[$field_name],
         "The \$fields array is malformed. '$field_name' array must have a 'properties' key which defines all the properties for this field.");
 
-      $total_num_properties += count($this->fields[$field_name]['properties']);
+      $expected_property_counts['total'] += count($this->fields[$field_name]['properties']);
+      $expected_property_counts[$field_name] = count($this->fields[$field_name]['properties']);
     }
 
     // Create the property types based on our fields array.
-    $this->createPropertyTypes($field_names, $total_num_properties);
+    $this->createPropertyTypes($field_names, $expected_property_counts);
     // Add the types to chado storage.
-    $this->addPropertyTypes2ChadoStorage($field_names, $total_num_properties);
+    $this->addPropertyTypes2ChadoStorage($field_names, $expected_property_counts);
 
 
     // Create the property values + format them for testing with *Values methods.
@@ -319,20 +326,23 @@ trait ChadoStorageTestTrait {
 
     // Count total number of properties expected for the fields in the
     // values array we are testing.
-    $total_num_properties = 0;
+    $expected_property_counts = [
+      'total' => 0,
+    ];
     foreach ($field_names as $field_name) {
       $this->assertArrayHasKey($field_name, $this->fields,
         "The \$fields array is malformed. '$field_name' must exist as a key in the top level of the array.");
       $this->assertArrayHasKey('properties', $this->fields[$field_name],
         "The \$fields array is malformed. '$field_name' array must have a 'properties' key which defines all the properties for this field.");
 
-      $total_num_properties += count($this->fields[$field_name]['properties']);
+      $expected_property_counts['total'] += count($this->fields[$field_name]['properties']);
+      $expected_property_counts[$field_name] = count($this->fields[$field_name]['properties']);
     }
 
     // Create the property types based on our fields array.
-    $this->createPropertyTypes($field_names, $total_num_properties);
+    $this->createPropertyTypes($field_names, $expected_property_counts);
     // Add the types to chado storage.
-    $this->addPropertyTypes2ChadoStorage($field_names, $total_num_properties);
+    $this->addPropertyTypes2ChadoStorage($field_names, $expected_property_counts);
 
 
     // Create the property values + format them for testing with *Values methods.
@@ -408,20 +418,23 @@ trait ChadoStorageTestTrait {
 
     // Count total number of properties expected for the fields in the
     // values array we are testing.
-    $total_num_properties = 0;
+    $expected_property_counts = [
+      'total' => 0,
+    ];
     foreach ($field_names as $field_name) {
       $this->assertArrayHasKey($field_name, $this->fields,
         "The \$fields array is malformed. '$field_name' must exist as a key in the top level of the array.");
       $this->assertArrayHasKey('properties', $this->fields[$field_name],
         "The \$fields array is malformed. '$field_name' array must have a 'properties' key which defines all the properties for this field.");
 
-      $total_num_properties += count($this->fields[$field_name]['properties']);
+      $expected_property_counts['total'] += count($this->fields[$field_name]['properties']);
+      $expected_property_counts[$field_name] = count($this->fields[$field_name]['properties']);
     }
 
     // Create the property types based on our fields array.
-    $this->createPropertyTypes($field_names, $total_num_properties);
+    $this->createPropertyTypes($field_names, $expected_property_counts);
     // Add the types to chado storage.
-    $this->addPropertyTypes2ChadoStorage($field_names, $total_num_properties);
+    $this->addPropertyTypes2ChadoStorage($field_names, $expected_property_counts);
 
 
     // Create the property values + format them for testing with *Values methods.
@@ -444,16 +457,20 @@ trait ChadoStorageTestTrait {
    * @param array $field_names
    *   An array of field name keys as defined in the $fields array for which you would like
    *   to create propertyTypes for.
-   * @param int $expected_total_properties
-   *   The total number of property types you expect to be created.
+   * @param array $expected_property_counts
+   *   An array summarizing the number of properties we expect to create.
+   *   It consists of:
+   *    'total' => the total number of properties across all fields/bundles)
+   *    [field name] => the number of properties expected for this field
+   *        ...
    */
-  public function createPropertyTypes($field_names, $expected_total_properties) {
+  public function createPropertyTypes($field_names, $expected_property_counts) {
 
-    // @todo currently these are hard coded but we should likely handle that differently.
-    $content_type = 'entity_test';
+    // @todo find a better way than hard-coding this
     $test_term_string = 'rdfs:type';
 
     // For each of the fields we were asked to create properties...
+    $total_num_properties = 0;
     foreach ($field_names as $field_name) {
 
       // Grab the defaults from the fields array.
@@ -470,7 +487,7 @@ trait ChadoStorageTestTrait {
         // the namespace.
         if (str_ends_with($propertyTypeClass, 'ChadoVarCharStoragePropertyType')) {
           $type = new $propertyTypeClass(
-            $content_type,
+            $this->content_type,
             $field_name,
             $property_key,
             $test_term_string,
@@ -480,7 +497,7 @@ trait ChadoStorageTestTrait {
         }
         else {
           $type = new $propertyTypeClass(
-            $content_type,
+            $this->content_type,
             $field_name,
             $property_key,
             $test_term_string,
@@ -498,11 +515,15 @@ trait ChadoStorageTestTrait {
         );
 
         // Set it in the protected propertyTypes array for use in tests.
-        $this->propertyTypes[$property_key] = $type;
+        $this->propertyTypes[$this->content_type][$field_name][$property_key] = $type;
+        $total_num_properties++;
       }
+
+      $this->assertCount($expected_property_counts[$field_name], $this->propertyTypes[$this->content_type][$field_name],
+        "We did not have the expected number of property types created for $field_name.");
     }
 
-    $this->assertCount($expected_total_properties, $this->propertyTypes,
+    $this->assertEquals($expected_property_counts['total'], $total_num_properties,
       "We did not have the expected number of property types created on our behalf.");
   }
 
@@ -562,13 +583,13 @@ trait ChadoStorageTestTrait {
           $this->assertTrue( empty($this->propertyValues[$property_key]->getValue()),
             "The $field_name $property_key property should not have a value.");
 
-          $this->assertArrayHasKey($property_key, $this->propertyTypes,
+          $this->assertArrayHasKey($property_key, $this->propertyTypes[$this->content_type][$field_name],
             "We expected there to already be a property type for $field_name.$property_key but there was not.");
 
           // Add the property Value + Type + Field Config to the values array.
           $this->dataStoreValues[$field_name][$delta][$property_key] = [
             'value' => $this->propertyValues[$property_key],
-            'type' => $this->propertyTypes[$property_key],
+            'type' => $this->propertyTypes[$this->content_type][$field_name][$property_key],
             'definition' => $this->fieldConfig_mock[$field_name],
           ];
         }
@@ -663,19 +684,30 @@ trait ChadoStorageTestTrait {
    * @param string $field_names
    *   An array of field name keys as defined in the $fields array for which
    *   propertyTypes fohave already been created for.
-   * @param int $expected_total_properties
-   *   The total number of property types you expect to be created.
+   * @param array $expected_property_counts
+   *   An array summarizing the number of properties we expect to create.
+   *   It consists of:
+   *    'total' => the total number of properties across all fields/bundles)
+   *    [field name] => the number of properties expected for this field
+   *        ...
    */
-  public function addPropertyTypes2ChadoStorage($field_names, $expected_total_properties) {
+  public function addPropertyTypes2ChadoStorage($field_names, $expected_property_counts) {
 
-    $this->chadoStorage->addTypes($this->propertyTypes);
-
+    foreach ($this->propertyTypes[$this->content_type] as $field_name => $properties) {
+      $this->chadoStorage->addTypes($this->content_type, $field_name, $properties);
+    }
     $retrieved_types = $this->chadoStorage->getTypes();
 
     $field_name_string = implode(' + ', $field_names);
     $this->assertIsArray($retrieved_types,
       "Unable to retrieve the PropertyTypes after adding $field_name_string.");
-    $this->assertCount($expected_total_properties, $retrieved_types,
+    $total_num_properties = 0;
+    foreach ($retrieved_types[$this->content_type] as $field_name => $retrieved_properties) {
+      $this->assertCount($expected_property_counts[$field_name], $retrieved_properties,
+        "Did not revieve the expected number of PropertyTypes for $field_name after adding $field_name_string.");
+      $total_num_properties += count($retrieved_properties);
+    }
+    $this->assertEquals($expected_property_counts['total'], $total_num_properties,
       "Did not revieve the expected number of PropertyTypes after adding $field_name_string.");
   }
 
