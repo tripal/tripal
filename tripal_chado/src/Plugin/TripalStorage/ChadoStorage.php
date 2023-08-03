@@ -354,6 +354,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
 
     $build = $this->buildChadoRecords($values, TRUE);
     $records = $build['records'];
+
     $base_tables = $build['base_tables'];
     $transaction_chado = $this->connection->startTransaction();
     try {
@@ -473,7 +474,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
     foreach ($record['conditions'] as $chado_column => $value) {
       if (!empty($value['value'])) {
         $select->condition('ct.'. $chado_column, $value['value'], $value['operation']);
-      }        
+      }
     }
 
     // Execute the query.
@@ -546,7 +547,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
     }
 
     // Unset the record Id for this deleted record.
-    $records[$chado_table][$delta]['conditions'][$pkey] = 0;
+    $records[$chado_table][$delta]['conditions'][$pkey]['value'] = 0;
   }
 
   /**
@@ -930,7 +931,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
             if (array_key_exists($base_table, $base_record_ids) and $base_record_ids[$base_table] != 0) {
               $records[$table_name][$delta]['fields'][$chado_column] = $base_record_ids[$base_table];
             }
-            
+
           }
         }
         foreach ($record['conditions'] as $chado_column => $val) {
