@@ -780,17 +780,20 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
 
           // If this is the record_id property then set its value.
           if ($action == 'store_id') {
-            $record_id = $records[$chado_table][0]['conditions'][$base_table_pkey]['value'];
+            //$record_id = $records[$chado_table][0]['conditions'][$base_table_pkey]['value'];
+            $record_id = $records[$chado_table][0]['fields'][$base_table_pkey];
             $values[$field_name][$delta][$key]['value']->setValue($record_id);
           }
           // If this is the linked record_id property then set its value.
           if ($action == 'store_pkey') {
-            $record_id = $records[$chado_table][$delta]['conditions'][$chado_table_pkey]['value'];
+            //$record_id = $records[$chado_table][$delta]['conditions'][$chado_table_pkey]['value'];
+            $record_id = $records[$chado_table][$delta]['fields'][$chado_table_pkey];
             $values[$field_name][$delta][$key]['value']->setValue($record_id);
           }
           // If this is a property managing a linked record ID then set it too.
           if ($action == 'store_link') {
-            $record_id = $records[$base_table][0]['conditions'][$base_table_pkey]['value'];
+            //$record_id = $records[$base_table][0]['conditions'][$base_table_pkey]['value'];
+            $record_id = $records[$base_table][0]['fields'][$base_table_pkey];
             $values[$field_name][$delta][$key]['value']->setValue($record_id);
           }
         }

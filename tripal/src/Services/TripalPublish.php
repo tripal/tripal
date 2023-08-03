@@ -45,6 +45,13 @@ class TripalPublish {
    **/
   protected $storage = NULL;
 
+  /**
+   *  A list of property types that are required to uniquely identify an entity.
+   *
+   * @var array $required_types
+   */
+  protected $required_types = [];
+
 
   /**
    * Initializes the publisher service.
@@ -77,6 +84,10 @@ class TripalPublish {
     }
 
     $this->setFieldInfo();
+
+    // Get the rquired field properties that will uniquely identify an entity.
+    // We only need to search on those properties.
+    $this->required_types = $this->storage->getUniqueEntityTypes();
   }
 
 
@@ -131,12 +142,9 @@ class TripalPublish {
    * @param array $seach_values
    */
   protected function addRequiredValues(&$search_values) {
-    // Get the rquired field properties that will uniquely identify an entity.
-    // We only need to search on those properties.
-    $required_types = $this->storage->getUniqueEntityTypes();
 
     // Iterate through the property types that can uniquely identify an entity.
-    foreach ($required_types as $bundle => $field_names) {
+    foreach ($this->required_types as $bundle => $field_names) {
       foreach ($field_names as $field_name => $keys) {
         foreach ($keys as $key => $prop_type) {
 
@@ -338,6 +346,94 @@ class TripalPublish {
   }
 
   /**
+   * Inserts records into the field tables for entities.
+   *
+   * @param string $field_name
+   *   The name of the field
+   * @param array $matches
+   *   The array of matches for each entity.
+   * @param array $titles
+   *   The array of entity titles in the same order as the matches.
+   * @param array $entities
+   *   An associative array of entities to which fields should be associated.
+   * @param array $existing
+   *   An associative array of entities that already existed that
+   *   should be skipped
+   */
+  public function insertField($field_name, $matches, $titles, $entities, $existing) {
+
+    $database = \Drupal::database();
+    $field_table = 'tripal_entity__' . $field_name;
+
+    $batch_size = 1000;
+    $num_matches = count($matches);
+    $num_batches = (int) ($num_matches / $batch_size) + 1;
+
+    // Generate the insert SQL and add to it the field-specific columns.
+    $init_sql = "
+      INSERT INTO {$field_table}
+        (bundle, deleted, entity_id, revision_id, langcode, delta, ";
+    foreach ($this->required_types[$this->bundle][$field_name] as $key => $prop_type) {
+      $init_sql .= $field_name . '_'. $key . ', ';
+    }
+    $init_sql = rtrim($init_sql, ", ");
+    $init_sql .= ") VALUES\n";
+
+    $i = 0;
+    $total = 0;
+    $batch_num = 1;
+    $sql = '';
+    $args = [];
+    foreach ($matches as $match) {
+      $title = $titles[$i];
+      $entity_id = $entities[$title];
+      // @todo: deal with fields that have multiple values.
+      // right now we just assume only one record per field.
+      $delta = 0;
+      $total++;
+      $i++;
+
+      // Add to the list of entities to insert only those
+      // that don't already exist.  We shouldn't have any that
+      // exist because the querying to find matches should have
+      // excluded existing records that are already bublished, but
+      // just in case.
+      if (!in_array($title, array_keys($existing))) {
+        $sql .= "(:bundle_$i, :deleted_$i, :entity_id_$i, :revision_id_$i, :langcode_$i, :delta_$i, ";
+        foreach ($this->required_types[$this->bundle][$field_name] as $key => $prop_type) {
+          $placeholder = ':' . $field_name . '_'. $key . '_' . $i;
+          $sql .=  $placeholder . ', ';
+          $args[$placeholder] = $match[$field_name][$delta][$key]['value']->getValue();
+        }
+        $sql = rtrim($sql, ", ");
+        $sql .= "),\n";
+        $args[":bundle_$i"] = $this->bundle;
+        $args[":deleted_$i"] = 0;
+        $args[":entity_id_$i"] = $entity_id;
+        $args[":revision_id_$i"] = 1;
+        $args[":langcode_$i"] = 'und';
+        $args[":delta_$i"] = $delta;
+
+      }
+
+      // If we've reached the size of the batch then let's do the insert.
+      if ($i == $batch_size or $total == $num_matches) {
+        if (count($args) > 0) {
+          $sql = rtrim($sql, ",\n");
+          $sql = $init_sql . $sql;
+          $database->query($sql, $args);
+        }
+        $batch_num++;
+
+        // Now reset all of the variables for the next batch.
+        $sql = '';
+        $i = 0;
+        $args = [];
+      }
+    }
+  }
+
+  /**
    * Publishes Tripal entities.
    *
    * Publishes content to Tripal from Chado or another
@@ -370,6 +466,13 @@ class TripalPublish {
     // Insert new entities
     $this->insertEntities($matches, $titles, $existing);
 
-    //
+    // Now get the list of the entity IDs. We need these
+    // for adding the fields.
+    $entities = $this->findEntities($matches, $titles);
+
+    foreach ($this->field_info as $field_name => $info) {
+      $this->insertField($field_name, $matches, $titles, $entities, $existing);
+    }
+
   }
 }
