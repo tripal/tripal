@@ -38,7 +38,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *     "content_types"
  *   },
  *   links = {
- *     "delete-form" = "/admin/tripal/config/tripalentitytype-collection/{config}/delete",
+ *     "delete-form" = "/admin/tripal/config/tripalentitytype-collection/{tripalentitytype_collection}/delete",
  *     "collection" = "/admin/tripal/config/tripalentitytype-collection"
  *   }
  * )
