@@ -46,6 +46,21 @@ interface TripalStorageInterface extends PluginInspectionInterface {
   public function getTypes();
 
   /**
+   * Returns a single propertyType object based on the parameters.
+   *
+   * @param string $bundle_name
+   *   The name of the bundle on which the field is attached that the properties
+   *   belong to.
+   * @param string $field_name
+   *   The name of the field the properties belong to.
+   * @param string $key
+   *   The key of the property type to return.
+   * @return object
+   *   An instance of the propertyType indicated.
+   */
+  public function getType();
+
+  /**
    * Inserts values in the field data store.
    *
    * The record Ids of the inserted records will be set in the property

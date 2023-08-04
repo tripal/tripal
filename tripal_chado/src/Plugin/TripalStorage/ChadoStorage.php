@@ -145,15 +145,21 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
    * @{inheritdoc}
    */
   public function getTypes() {
-    $types = [];
-    foreach ($this->property_types as $field_types) {
-      foreach ($field_types as $keys) {
-        foreach ($keys as $type) {
-          $types[] = $type;
+    return $this->property_types;
+  }
+
+  /**
+   * @{inheritdoc}
+   */
+  public function getType($bundle_name, $field_name, $key) {
+    if (array_key_exists($bundle_name, $this->property_types)) {
+      if (array_key_exists($field_name, $this->property_types[$bundle_name])) {
+        if (array_key_exists($key, $this->property_types[$bundle_name][$field_name])) {
+          return $this->property_types[$bundle_name][$field_name][$key];
         }
       }
     }
-    return $this->property_types;
+    return NULL;
   }
 
   /**
