@@ -93,7 +93,8 @@ class TripalEntityTypeForm extends EntityForm {
       '#machine_name' => [
         'exists' => '\Drupal\tripal\Entity\TripalEntityType::load',
       ],
-      '#disabled' => TRUE,
+      '#source' => 'label',
+      '#disabled' => !$tripal_entity_type->isNew(),
     ];
 
     $form['term'] = [
@@ -299,12 +300,14 @@ class TripalEntityTypeForm extends EntityForm {
     // Note: we have to reprocess the term ID Space + Accession because we can't
     // save what we learned in validate. We do not use an if around the preg_replace()
     // because in order to get here, this pattern has to work.
+    $matches = [];
     preg_match('/(.+?) \((.+?):(.+?)\)/', $values['term'], $matches);
     $idSpace = $matches[2];
     $accession = $matches[3];
 
     // Set the properties for the new Tripal Content Type
     // using those set in the form state.
+    $tripal_entity_type->setOriginalId($values['id']);
     $tripal_entity_type->setLabel($values['label']);
     $tripal_entity_type->setHelpText($values['help']);
     $tripal_entity_type->setTermIdSpace($idSpace);
