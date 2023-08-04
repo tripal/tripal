@@ -11,10 +11,10 @@ use Drupal\tripal\TripalStorage\StoragePropertyTypeBase;
 use Drupal\Tests\tripal_chado\Functional\MockClass\FieldConfigMock;
 
 /**
- * Tests that ChadoStorage can handle property fields as we expect.
+ * Tests that ChadoStorage can handle analysis fields as we expect.
  * The array of fields/properties used for these tests are designed
  * to match those in the ChadoAnalysisDefault field with values filled
- * based on a gene content type.
+ * based on a phylotree content type.
  *
  * Note: testotherfeaturefield is added to ensure we meet the unique constraint
  * on the base feature table and also to ensure we are testing multi-field functionality.
@@ -81,36 +81,6 @@ class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
         ],
       ],
     ],
-    'testotherfeaturefield' => [
-      'field_name' => 'testotherfeaturefield',
-      'base_table' => 'feature',
-      'properties' => [
-        'record_id' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store_id',
-          'chado_table' => 'feature',
-          'chado_column' => 'feature_id'
-        ],
-        'feature_type' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store',
-          'chado_table' => 'feature',
-          'chado_column' => 'type_id'
-        ],
-        'feature_organism' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-          'action' => 'store',
-          'chado_table' => 'feature',
-          'chado_column' => 'organism_id'
-        ],
-        'feature_uname' => [
-          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType',
-          'action' => 'store',
-          'chado_table' => 'feature',
-          'chado_column' => 'uniquename'
-        ],
-      ],
-    ],
   ];
 
   protected int $analysis_id;
@@ -166,13 +136,6 @@ class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
           'A_type_id' => $rdfs_comment_cvtermID,
           'A_value' => 'Note 3',
           'A_rank' => 2,
-        ]
-      ],
-      'testotherfeaturefield' => [
-        [
-          'feature_type' => $gene_cvtermID,
-          'feature_organism' => $this->organism_id,
-          'feature_uname' => 'testGene4PropTableTest',
         ]
       ],
     ];
