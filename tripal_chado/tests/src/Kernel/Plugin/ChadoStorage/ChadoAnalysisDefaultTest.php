@@ -64,14 +64,14 @@ class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
     ],
     'testanalysisfieldB' => [
       'field_name' => 'testanalysisfieldB',
-      'base_table' => 'feature',
+      'base_table' => 'phylotree',
       'properties' => [
         'B_record_id' => [
           'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
           'action' => 'store_id',
           'drupal_store' => TRUE,
-          'chado_table' => 'feature',
-          'chado_column' => 'feature_id'
+          'chado_table' => 'phylotree',
+          'chado_column' => 'phylotree_id'
         ],
         'B_phylotree_analysis' => [
           'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
@@ -84,6 +84,7 @@ class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
   ];
 
   protected int $analysis_id;
+  protected int $phylotree_id;
 
   /**
    * {@inheritdoc}
@@ -92,7 +93,7 @@ class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
     parent::setUp();
     $this->setUpChadoStorageTestEnviro();
 
-    // Create the analysis record for use with the phylotree table.
+    // Create an analysis record
     $query = $this->chado_connection->insert('1:analysis');
     $query->fields([
       'name' => 'BogusA',
@@ -100,17 +101,25 @@ class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
       'programversion' => 'versionA',
     ]);
     $this->analysis_id = $query->execute();
+
+    // Create a phylotree record. Use the null dbxref
+    $query = $this->chado_connection->insert('1:phylotree');
+    $query->fields([
+      'name' => 'BogusT',
+      'dbxref_id' => 1,
+    ]);
+    $this->phylotree_id = $query->execute();
   }
 
   /**
-   * Testing ChadoStorage on single analysis field with multiple values.
+   * Testing ChadoStorage of analysis_id in a phylotree record.
    *
    * Test Cases:
-   *   - Create Values in Chado using ChadoStorage when they don't yet exist.
+   *   - Set analysis_id when it doesn't yet exist.
    *   - Load values in Chado using ChadoStorage after we just inserted them.
    *   - Update values in Chado using ChadoStorage after we just inserted them.
    *   - [NOT IMPLEMENTED] Delete values in Chado using ChadoStorage.
-   *   - [NOT IMPLEMENTED] Ensure analysis field picks up records in Chado not added through field.
+   *   - [NOT IMPLEMENTED] Ensure phylotree field picks up records in Chado not added through field.
    */
   public function testInsertValuesForSingleField() {
 
@@ -118,7 +127,7 @@ class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
     $gene_cvtermID = $this->getCvtermID('SO', '0000704');
     $subspecies_cvtermID = $this->getCvtermID('SO', '0000704');
 
-    // Test Case: Insert valid values when they do not yet exist in Chado.
+    // Test Case: Insert an analysis_id when it does not yet exist in Chado.
     // ---------------------------------------------------------
     $insert_values = [
       'testpropertyfieldA' => [
