@@ -686,6 +686,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
     $records = $build['records'];
     $base_tables = $build['base_tables'];
     $matched_records = [];
+    //print_r($records);
 
     $transaction_chado = $this->connection->startTransaction();
     try {
@@ -1064,11 +1065,11 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
             if (is_string($value)) {
               $value = trim($value);
             }
-            if ($is_find) {
-              // If a value isn't set and we're doing a find, then ignore this propery value.
-              if (!empty($value)) {
+            // If we are trying to find values and the property is present but
+            // does not have a value set, then we will use that value as a field.
+            // Otherwise, if it has a value then we'll use it as a condition.
+            if ($is_find and !empty($value)) {
                 $records[$chado_table][$delta]['conditions'][$chado_column] = ['value' => $value, 'operation' => $operation];
-              }
             }
             else {
               $records[$chado_table][$delta]['fields'][$chado_column] = $value;
