@@ -1,6 +1,7 @@
 <?php
 
 use \Drupal\tripal\Services\TripalPublish;
+use \Drupal\tripal\Services\TripalJob;
 /**
  * @file
  * Provides an application programming interface (API) to manage
@@ -10,21 +11,32 @@ use \Drupal\tripal\Services\TripalPublish;
 /**
  * Publish content of a specified type. Uses a Tripal service.
  *
- * @param $bundle
- *   The bundle type to be published.
+ * @param string $bundle
+ *   The entity type id (bundle) to be published.
  *
- * @return
- *   The number of entities published, FALSE on failure.
+ * @param string $datastore
+ *   The plugin id for the TripalStorage backend to publish from.
+ *
+ * @param \Drupal\tripal\Services\TripalJob $job
+ *  An optional TripalJob object.
  */
-function tripal_publish($bundle) {
+function tripal_publish($bundle, $datastore, TripalJob $job = NULL) {
 
-  // @TODO: remove this hardcoding once the $datastore argument is working.
-  $datastore = 'chado_storage';
-
+  // Initialize the logger.
+  /** @var \Drupal\tripal\Services\TripalLogger $logger **/
+  $logger = \Drupal::service('tripal.logger');
 
   // Load the Publish service.
   /** @var \Drupal\tripal\Services\TripalPublish $publish */
   $publish = \Drupal::service('tripal.publish');
-  $publish->init($bundle, $datastore);
-  $publish->publish();
+
+  try {
+    $publish->init($bundle, $datastore, $job);
+    $publish->publish();
+  }
+  catch (Exception $e) {
+    if ($job) {
+      $logger->error($e->getMessage());
+    }
+  }
 }

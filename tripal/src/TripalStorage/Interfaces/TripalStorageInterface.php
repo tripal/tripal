@@ -45,12 +45,19 @@ interface TripalStorageInterface extends PluginInspectionInterface {
 
 
   /**
-   * Returns a list of property types that can uniquely identify an entity.
+   * Returns a list of property types that should be stored.
+   *
+   * In order to link data in the storage backend, the storage
+   * system must link the record in someway with Drupal entities.
+   * This most likely happens in tables in the Drupal schema
+   * (usually the `public` schema).  This function should return
+   * the list of properties that that must be stored in order
+   * to uniquely identify an entity in the datastore.
    *
    * @return @array
    *   Array of \Drupal\tripal\Base\StoragePropertyTypeBase objects.
    */
-  public function getUniqueEntityTypes();
+  public function getStoredTypes();
 
   /**
    * Inserts values in the field data store.

@@ -3,8 +3,23 @@
 namespace Drupal\tripal\Services;
 
 use \Drupal\tripal\TripalStorage\StoragePropertyValue;
+use \Drupal\tripal\Services\TripalJob;
 
 class TripalPublish {
+
+  /**
+   * The TripalJob object.
+   *
+   * @var \Drupal\tripal\Services\TripalJob $job
+   */
+  protected $job = NULL;
+
+  /**
+   * The TripalLogger object.
+   *
+   * @var \Drupal\tripal\Services\TripalLogger $logger
+   */
+  protected $logger = NULL;
 
   /**
    * The id of the entity type (bundle)
@@ -15,6 +30,7 @@ class TripalPublish {
 
   /**
    * The id of the TripalStorage plugin.
+   *
    * @var string $datastore.
    */
   protected $datastore = '';
@@ -61,10 +77,15 @@ class TripalPublish {
    * @param string $datastore
    *   The id of the TripalStorage plugin.
    */
-  public function init($bundle, $datastore) {
+  public function init($bundle, $datastore, TripalJob $job=NULL) {
 
     $this->bundle = $bundle;
     $this->datastore = $datastore;
+    $this->job = $job;
+
+    // Initialize the logger.
+    $this->logger = \Drupal::service('tripal.logger');
+    $this->logger->setJob($job);
 
     // Get the bundle object so we can get settings such as the title format.
     /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
@@ -72,7 +93,8 @@ class TripalPublish {
       ->getStorage('tripal_entity_type')
       ->loadByProperties(['name' => $bundle]);
     if (!array_key_exists($bundle, $entity_types)) {
-      // @TODO: log an error and quit
+      $error_msg = 'Could not find the entity type with an id of: "%bundle".';
+      throw new \Exception(t($error_msg, ['%bundle' => $bundle]));
     }
     $this->entity_type = $entity_types[$bundle];
 
@@ -80,14 +102,15 @@ class TripalPublish {
     $storage_manager = \Drupal::service('tripal.storage');
     $this->storage = $storage_manager->getInstance(['plugin_id' => $datastore]);
     if (!$this->storage) {
-      // @TODO: log an error and quit.
+      $error_msg = 'Could not find an instance of the TripalStorage backend: "%datastore".';
+      throw new \Exception(t($error_msg, ['%datastore' => $datastore]));
     }
 
     $this->setFieldInfo();
 
     // Get the rquired field properties that will uniquely identify an entity.
     // We only need to search on those properties.
-    $this->required_types = $this->storage->getUniqueEntityTypes();
+    $this->required_types = $this->storage->getStoredTypes();
   }
 
 
@@ -125,12 +148,17 @@ class TripalPublish {
           $prop_types = $instance->tripalTypes($field_definition);
           $field_class = get_class($instance);
           $this->storage->addTypes($this->bundle, $field_name, $prop_types);
-          $this->field_info[$field_name] = [
+          $field_info = [
             'definition' => $field_definition,
             'class' => $field_class,
-            'prop_types' => $prop_types,
+            'prop_types' => [],
             'instance' => $instance,
           ];
+          // Order the property types by key for eacy lookup.
+          foreach ($prop_types as $prop_type) {
+            $field_info['prop_types'][$prop_type->getKey()] = $prop_type;
+          }
+          $this->field_info[$field_name] = $field_info;
         }
       }
     }
@@ -184,11 +212,11 @@ class TripalPublish {
         $field_class = $field_info['class'];
 
         /** @var \Drupal\tripal\TripalStorage\StoragePropertyBase $prop_type **/
-        foreach ($field_info['prop_types'] as $prop_type) {
+        foreach ($field_info['prop_types'] as $prop_key => $prop_type) {
 
           // Add this property value to the search values array.
           $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
-              $field_class::$id, $prop_type->getKey(), $prop_type->getTerm()->getTermId(), NULL);
+              $field_class::$id, $prop_key, $prop_type->getTerm()->getTermId(), NULL);
           $search_values[$field_name][0][$prop_type->getKey()] = [
             'type' => $prop_type,
             'value' => $prop_value,
@@ -201,9 +229,66 @@ class TripalPublish {
   }
 
   /**
+   * Adds search criteria for fixed values.
+   *
+   * Sometimes type values are fixed and the user cannot change
+   * them.  An example of this is are cases where the ChadoAdditionalTypeDefault
+   * field has a type_id that will never changed.  Content types such as "mRNA"
+   * or "gene" use these.  We need to add these to our search filter.
+   *
+   * @param array $seach_values
+   */
+  protected function addFixedTypeValues(&$search_values) {
+
+    // Iterate through fields.
+    foreach ($this->field_info as $field_name => $field_info) {
+
+      /** @var \Drupal\Core\Field\FieldTypePluginManager $field_type_manager **/
+      /** @var \Drupal\Field\Entity\FieldConfig $field_definition **/
+      $field_type_manager = \Drupal::service("plugin.manager.field.field_type");
+      $field_definition = $field_info['definition'];
+      $field_class = $field_info['class'];
+      $settings = $field_definition->getSettings();
+
+      // Skip fields without a fixed value.
+      if (!array_key_exists('fixed_value', $settings)) {
+        continue;
+      }
+
+      // Get the default field values using the fixed value.
+      $configuration = [
+        'field_definition' => $field_definition,
+        'name' => $field_name,
+        'parent' => NULL,
+      ];
+      $field = $field_type_manager->createInstance($field_definition->getType(), $configuration);
+      $prop_values = $field->tripalValuesTemplate($field_definition, $settings['fixed_value']);
+
+      // Iterate through the properties and for those with a value add it to
+      // the search values.
+      /** @var \Drupal\tripal\TripalStorage\StoragePropertyValue $prop_value **/
+      foreach ($prop_values as $prop_value) {
+        if ($prop_value->getValue()) {
+          $prop_key = $prop_value->getKey();
+          $search_values[$field_name][0][$prop_key] = [
+            'type' => $this->field_info[$field_name]['prop_types'][$prop_key],
+            'value' => $prop_value,
+            'operation' => '=',
+            'definition' => $field_definition
+          ];
+        }
+      }
+    }
+  }
+
+  /**
+   * Retrieves a list of titles for the entities that should be published.
    *
    * @param array $matches
    *   The array of matches for each entity.
+   *
+   * @return array
+   *   A list of titles in order of the entities provided by the $matches array.
    */
   protected function getEntityTitles($matches) {
     $titles = [];
@@ -360,7 +445,7 @@ class TripalPublish {
    *   An associative array of entities that already existed that
    *   should be skipped
    */
-  public function insertField($field_name, $matches, $titles, $entities, $existing) {
+  protected function insertField($field_name, $matches, $titles, $entities, $existing) {
 
     $database = \Drupal::database();
     $field_table = 'tripal_entity__' . $field_name;
@@ -413,7 +498,6 @@ class TripalPublish {
         $args[":revision_id_$i"] = 1;
         $args[":langcode_$i"] = 'und';
         $args[":delta_$i"] = $delta;
-
       }
 
       // If we've reached the size of the batch then let's do the insert.
@@ -453,6 +537,7 @@ class TripalPublish {
     $search_values = [];
     $this->addRequiredValues($search_values);
     $this->addTokenValues($search_values);
+    $this->addFixedTypeValues($search_values);
 
     // Perform the query to find matching records.
     $matches = $this->storage->findValues($search_values);

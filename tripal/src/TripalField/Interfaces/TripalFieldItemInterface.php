@@ -28,17 +28,34 @@ interface TripalFieldItemInterface extends FieldItemInterface {
   public static function tripalTypes($field_definition);
 
   /**
-   * Returns an empty template array of all property values this field uses for loading and saving.
+   * Returns an array of StoragePropertyValue objects.
    *
-   * @param  object $field_definition
+   * This array seves as as "template" for loading, storing and finding
+   * fields in the underlying data store. Each fiels' property types
+   * will have a corresponding value in this array.  If the $deafult_value
+   * is provided then the property whose key is returend by the
+   * mainPropertyName() function will get set.
+   *
+   * Fields normally do not need to implement this function. However, if the
+   * $default_value argument is used and the default value is not the value
+   * stored in the underlying datastore (e.g., the value is a combination of
+   * all of the property values), then the implementing function can override
+   * this function to split the value and set the values for the other
+   * properties.
+   *
+   * @param object $field_definition
    *   The field configuration object. This can be an instance of:
    *   \Drupal\field\Entity\FieldStorageConfig or
    *   \Drupal\field\Entity\FieldConfig
    *
+   * @param $default_value
+   *   Optional. If a value is provided then then the property whose key is
+   *   returned by the mainPropertyName() function will get set to the value provided.
+   *
    * @return array
    *   Array of \Drupal\tripal\TripalStorage\StoragePropertyValue property value templates.
    */
-  public function tripalValuesTemplate($field_definition);
+  public function tripalValuesTemplate($field_definition, $default_value = NULL);
 
   /**
    * Loads the values from the given array of properties to the given entity.

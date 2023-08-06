@@ -170,13 +170,15 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
    * {@inheritDoc}
    * @see \Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface::getUniqueEntityTypes()
    */
-  public function getUniqueEntityTypes(){
+  public function getStoredTypes(){
     $ret_types = [];
     foreach ($this->property_types as $bundle_name => $field_names) {
       foreach ($field_names as $field_name => $keys) {
         foreach ($keys as $key => $prop_type) {
           $storage_settings = $prop_type->getStorageSettings();
-          if ($storage_settings['action'] == 'store_id') {
+          if (($storage_settings['action'] == 'store_id') or
+              ($storage_settings['action'] == 'store_pkey') or
+              ($storage_settings['action'] == 'store_link')) {
             $ret_types[$bundle_name][$field_name][$key] = $prop_type;
           }
         }
@@ -441,19 +443,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
    *
    * @throws \Exception
    */
-  public function selectChadoRecords(&$records, $base_tables, $chado_table, $delta, $record) {
-
-    if (!array_key_exists('conditions', $record)) {
-      throw new \Exception($this->t('Cannot select record in the Chado "@table" table due to missing conditions. Record: @record',
-          ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
-    }
-
-    // If we are selecting on the base table and we don't have a proper
-    // condition then throw and error.
-    if (!$this->hasValidConditions($record)) {
-      throw new \Exception($this->t('Cannot select record in the Chado "@table" table due to unset conditions. Record: @record',
-          ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
-    }
+  public function findChadoRecords(&$records, $base_tables, $chado_table, $delta, $record) {
+    print_r($records);
 
     // Add the record IDs as fields
     foreach ($record['conditions'] as $chado_column => $value) {
@@ -635,7 +626,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
     }
 
     // Unset the record Id for this deleted record.
-    $records[$chado_table][$delta]['conditions'][$pkey] = 0;
+    $records[$chado_table][$delta]['conditions'][$pkey]['value'] = 0;
   }
 
   /**
@@ -703,8 +694,9 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
         foreach ($deltas as $delta => $record) {
 
           // Get all matching records as defined by the $records query array.
-          $matches = $this->selectChadoRecords($records, $base_tables, $chado_table, $delta, $record);
+          $matches = $this->findChadoRecords($records, $base_tables, $chado_table, $delta, $record);
           while ($match = $matches->fetchAssoc()) {
+            print_r($match);
 
             // copy the values array and the records array for this matched record.
             $new_values = $this->copyValues($values);
@@ -713,7 +705,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
             // Update the values in the copied record and prop value objects.
             $new_records[$chado_table][$delta]['fields'] = $match;
             $this->setPropValues($new_values, $new_records);
-            $this->setRecordIds($new_values, $new_records);
+            $this->setRecordIds($new_values, $new_records, TRUE);
 
             // Store the new values object for return .
             $matched_records[] = $new_values;
@@ -737,8 +729,11 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
    *
    * @param array $records
    *   The set of Chado records.
+   * @param boolean $was_find
+   *  Set to TRUE if the values array was created using the findValues() function.
+   *  Record IDs are stored differently for finds.
    */
-  protected function setRecordIds(&$values, $records) {
+  protected function setRecordIds(&$values, $records, $was_find = FALSE) {
 
     $schema = $this->connection->schema();
 
@@ -780,20 +775,32 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
 
           // If this is the record_id property then set its value.
           if ($action == 'store_id') {
-            //$record_id = $records[$chado_table][0]['conditions'][$base_table_pkey]['value'];
-            $record_id = $records[$chado_table][0]['fields'][$base_table_pkey];
+            if ($was_find) {
+              $record_id = $records[$chado_table][0]['fields'][$base_table_pkey];
+            }
+            else {
+              $record_id = $records[$chado_table][0]['conditions'][$base_table_pkey]['value'];
+            }
             $values[$field_name][$delta][$key]['value']->setValue($record_id);
           }
           // If this is the linked record_id property then set its value.
           if ($action == 'store_pkey') {
-            //$record_id = $records[$chado_table][$delta]['conditions'][$chado_table_pkey]['value'];
-            $record_id = $records[$chado_table][$delta]['fields'][$chado_table_pkey];
+            if ($was_find) {
+              $record_id = $records[$chado_table][$delta]['fields'][$chado_table_pkey];
+            }
+            else {
+              $record_id = $records[$chado_table][$delta]['conditions'][$chado_table_pkey]['value'];
+            }
             $values[$field_name][$delta][$key]['value']->setValue($record_id);
           }
           // If this is a property managing a linked record ID then set it too.
           if ($action == 'store_link') {
-            //$record_id = $records[$base_table][0]['conditions'][$base_table_pkey]['value'];
-            $record_id = $records[$base_table][0]['fields'][$base_table_pkey];
+            if  ($was_find) {
+              $record_id = $records[$base_table][0]['fields'][$base_table_pkey];
+            }
+            else {
+              $record_id = $records[$base_table][0]['conditions'][$base_table_pkey]['value'];
+            }
             $values[$field_name][$delta][$key]['value']->setValue($record_id);
           }
         }

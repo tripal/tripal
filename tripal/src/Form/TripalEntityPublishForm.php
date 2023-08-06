@@ -27,21 +27,35 @@ class TripalEntityPublishForm extends FormBase {
    * Build the form.
    */
   function buildForm(array $form, FormStateInterface $form_state) {
-    // Get a list of all types.
-    $bundle_entities = \Drupal::entityTypeManager()
+    $bundles = [];
+    $datastores = [];
+
+    // Get a list of TripalSTorage plugins
+    /** @var \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $storage_manager **/
+    $storage_manager = \Drupal::service('tripal.storage');
+    $storage_defs = $storage_manager->getDefinitions();
+    foreach ($storage_defs as $plugin_id => $storage_def) {
+      $datastores[$plugin_id] = $storage_def['label']->__toString();
+    }
+
+    // Get the available content types (bundles)
+    $entity_types = \Drupal::entityTypeManager()
       ->getStorage('tripal_entity_type')
       ->loadByProperties([]);
-
-    // Get the available content types (bundles) and sort them
-    // for user convenience. They exist in this form:
-    // "bio_data_1" => "Organism"
-    //$bundles = ['select'] = 'Select';
-    foreach ($bundle_entities as $entity) {
-      $bundles[$entity->getName()] = $entity->getLabel();
+    foreach ($entity_types as $entity_type) {
+        $bundles[$entity_type->id()] = $entity_type->getLabel();
     }
-    // arsort($bundles);
-    // $bundles['select'] = 'Select';
-    // $bundles = array_reverse($bundles);
+
+    $form['datastore'] = [
+      '#title' => 'Storage Backend',
+      '#description' => 'Please select the data storage backend that should be used for publishing content.',
+      '#type' => 'select',
+      '#options' => $datastores,
+      '#sort_options' => TRUE,
+      '#required' => TRUE,
+    ];
+
+    /** @todo: what about different Chado instances? How do we let the user select those?**/
 
     $form['bundle'] = [
       '#title' => 'Content Type',
@@ -49,7 +63,6 @@ class TripalEntityPublishForm extends FormBase {
       '#type' => 'select',
       '#options' => $bundles,
       '#sort_options' => TRUE,
-      '#default_value' => 'bio_data_1', // Pumpkin.
       '#required' => TRUE,
     ];
 
@@ -61,14 +74,6 @@ class TripalEntityPublishForm extends FormBase {
     return $form;
   }
 
-  // /**
-  //  * Validate the form.
-  //  *
-  //  * @ todo this.
-  //  */
-  // function validateForm() {
-  //   // Do something.
-  // }
 
   /**
    * Submit the form.
@@ -79,10 +84,11 @@ class TripalEntityPublishForm extends FormBase {
     //$user = User::load(\Drupal::currentUser()->id());
     $current_user = \Drupal::currentUser();
     $bundle = $form_state->getValue('bundle');
+    $datastore = $form_state->getValue('datastore');
     $job_name = 'Publish ' . $bundle;
 
     // Invoke the job, which should call the publish job?
-    tripal_add_job($job_name, 'tripal', 'tripal_publish', [$bundle], $current_user->id());
+    tripal_add_job($job_name, 'tripal', 'tripal_publish', [$bundle, $datastore], $current_user->id());
   }
 
 }
