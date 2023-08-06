@@ -444,7 +444,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
    * @throws \Exception
    */
   public function findChadoRecords(&$records, $base_tables, $chado_table, $delta, $record) {
-    print_r($records);
 
     // Add the record IDs as fields
     foreach ($record['conditions'] as $chado_column => $value) {
@@ -683,7 +682,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
    * @{inheritdoc}
    */
   public function findValues($values) {
-    $build = $this->buildChadoRecords($values, FALSE);
+    $build = $this->buildChadoRecords($values, TRUE);
     $records = $build['records'];
     $base_tables = $build['base_tables'];
     $matched_records = [];
@@ -729,11 +728,11 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
    *
    * @param array $records
    *   The set of Chado records.
-   * @param boolean $was_find
+   * @param boolean $is_find
    *  Set to TRUE if the values array was created using the findValues() function.
    *  Record IDs are stored differently for finds.
    */
-  protected function setRecordIds(&$values, $records, $was_find = FALSE) {
+  protected function setRecordIds(&$values, $records, $is_find = FALSE) {
 
     $schema = $this->connection->schema();
 
@@ -775,7 +774,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
 
           // If this is the record_id property then set its value.
           if ($action == 'store_id') {
-            if ($was_find) {
+            if ($is_find) {
               $record_id = $records[$chado_table][0]['fields'][$base_table_pkey];
             }
             else {
@@ -785,7 +784,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
           }
           // If this is the linked record_id property then set its value.
           if ($action == 'store_pkey') {
-            if ($was_find) {
+            if ($is_find) {
               $record_id = $records[$chado_table][$delta]['fields'][$chado_table_pkey];
             }
             else {
@@ -795,7 +794,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
           }
           // If this is a property managing a linked record ID then set it too.
           if ($action == 'store_link') {
-            if  ($was_find) {
+            if  ($is_find) {
               $record_id = $records[$base_table][0]['fields'][$base_table_pkey];
             }
             else {
@@ -952,13 +951,13 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
    *   - "definition": a \Drupal\Field\Entity\FieldConfig object
    *   When the function returns, any values retrieved from the data store
    *   will be set in the StoragePropertyValue object.
-   * @param bool $is_store
-   *   Set to TRUE if we are building the record array for an insert or an
+   * @param bool $is_find
+   *   Set to TRUE if we are building the record array for finding records.
    *   update.
    * @return array
    *   An associative array.
    */
-  protected function buildChadoRecords($values, bool $is_store) {
+  protected function buildChadoRecords($values, bool $is_find = FALSE) {
 
     $schema = $this->connection->schema();
     $records = [];
@@ -1065,13 +1064,21 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
             if (is_string($value)) {
               $value = trim($value);
             }
-            $records[$chado_table][$delta]['fields'][$chado_column] = $value;
+            if ($is_find) {
+              // If a value isn't set and we're doing a find, then ignore this propery value.
+              if (!empty($value)) {
+                $records[$chado_table][$delta]['conditions'][$chado_column] = ['value' => $value, 'operation' => $operation];
+              }
+            }
+            else {
+              $records[$chado_table][$delta]['fields'][$chado_column] = $value;
 
-            // If this field should not allow an empty value that means this
-            // entire record should be removed on an update and not inserted.
-            $delete_if_empty = array_key_exists('delete_if_empty',$prop_storage_settings) ? $prop_storage_settings['delete_if_empty'] : FALSE;
-            if ($delete_if_empty) {
-              $records[$chado_table][$delta]['delete_if_empty'][] = $chado_column;
+              // If this field should not allow an empty value that means this
+              // entire record should be removed on an update and not inserted.
+              $delete_if_empty = array_key_exists('delete_if_empty',$prop_storage_settings) ? $prop_storage_settings['delete_if_empty'] : FALSE;
+              if ($delete_if_empty) {
+                $records[$chado_table][$delta]['delete_if_empty'][] = $chado_column;
+              }
             }
           }
           if ($action == 'join') {

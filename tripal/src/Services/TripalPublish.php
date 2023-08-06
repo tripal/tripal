@@ -247,10 +247,9 @@ class TripalPublish {
       /** @var \Drupal\Field\Entity\FieldConfig $field_definition **/
       $field_type_manager = \Drupal::service("plugin.manager.field.field_type");
       $field_definition = $field_info['definition'];
-      $field_class = $field_info['class'];
-      $settings = $field_definition->getSettings();
 
       // Skip fields without a fixed value.
+      $settings = $field_definition->getSettings();
       if (!array_key_exists('fixed_value', $settings)) {
         continue;
       }
@@ -268,7 +267,7 @@ class TripalPublish {
       // the search values.
       /** @var \Drupal\tripal\TripalStorage\StoragePropertyValue $prop_value **/
       foreach ($prop_values as $prop_value) {
-        if ($prop_value->getValue()) {
+        if (($prop_value->getValue())) {
           $prop_key = $prop_value->getKey();
           $search_values[$field_name][0][$prop_key] = [
             'type' => $this->field_info[$field_name]['prop_types'][$prop_key],
