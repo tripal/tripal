@@ -2,15 +2,12 @@
 
 namespace Drupal\tripal_chado\Plugin\TripalStorage;
 
-use Drupal\Core\Plugin\PluginBase;
-
+use Drupal\tripal\TripalStorage\TripalStorageBase;
 use Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface;
 use Symfony\Component\Validator\ConstraintViolation;
 
 use Drupal\tripal\Services\TripalLogger;
 use Drupal\tripal_chado\Database\ChadoConnection;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Chado implementation of the TripalStorageInterface.
@@ -21,7 +18,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   description = @Translation("Interfaces with GMOD Chado for field values."),
  * )
  */
-class ChadoStorage extends PluginBase implements TripalStorageInterface, ContainerFactoryPluginInterface {
+class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
   /**
    * An associative array that contains all of the property types that
@@ -51,13 +48,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
    * @var array
    */
   protected $id_mapping = [];
-
-    /**
-   * The logger for reporting progress, warnings and errors to admin.
-   *
-   * @var Drupal\tripal\Services\TripalLogger
-   */
-  protected $logger;
 
   /**
    * The database connection for querying Chado.
@@ -105,9 +95,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
    * @param Drupal\tripal_chado\Database\ChadoConnection $connection
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, TripalLogger $logger, ChadoConnection $connection) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $logger);
 
-    $this->logger = $logger;
     $this->connection = $connection;
   }
 
@@ -145,15 +134,21 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
    * @{inheritdoc}
    */
   public function getTypes() {
-    $types = [];
-    foreach ($this->property_types as $field_types) {
-      foreach ($field_types as $keys) {
-        foreach ($keys as $type) {
-          $types[] = $type;
+    return $this->property_types;
+  }
+
+  /**
+   * @{inheritdoc}
+   */
+  public function getPropertyType($bundle_name, $field_name, $key) {
+    if (array_key_exists($bundle_name, $this->property_types)) {
+      if (array_key_exists($field_name, $this->property_types[$bundle_name])) {
+        if (array_key_exists($key, $this->property_types[$bundle_name][$field_name])) {
+          return $this->property_types[$bundle_name][$field_name][$key];
         }
       }
     }
-    return $this->property_types;
+    return NULL;
   }
 
   /**
@@ -354,6 +349,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
 
     $build = $this->buildChadoRecords($values, TRUE);
     $records = $build['records'];
+
     $base_tables = $build['base_tables'];
     $transaction_chado = $this->connection->startTransaction();
     try {
@@ -473,7 +469,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
     foreach ($record['conditions'] as $chado_column => $value) {
       if (!empty($value['value'])) {
         $select->condition('ct.'. $chado_column, $value['value'], $value['operation']);
-      }        
+      }
     }
 
     // Execute the query.
@@ -546,7 +542,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
     }
 
     // Unset the record Id for this deleted record.
-    $records[$chado_table][$delta]['conditions'][$pkey] = 0;
+    $records[$chado_table][$delta]['conditions'][$pkey]['value'] = 0;
   }
 
   /**
@@ -930,7 +926,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
             if (array_key_exists($base_table, $base_record_ids) and $base_record_ids[$base_table] != 0) {
               $records[$table_name][$delta]['fields'][$chado_column] = $base_record_ids[$base_table];
             }
-            
+
           }
         }
         foreach ($record['conditions'] as $chado_column => $val) {

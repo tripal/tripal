@@ -3,6 +3,7 @@
 namespace Drupal\tripal\TripalStorage\Interfaces;
 
 use Drupal\Component\Plugin\PluginInspectionInterface;
+use Drupal\tripal\TripalField\TripalFieldItemBase;
 
 /**
  * Defines an interface for tripal storage plugins.
@@ -44,6 +45,53 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    *   have been added to this storage plugin type.
    */
   public function getTypes();
+
+  /**
+   * Returns a single propertyType object based on the parameters.
+   *
+   * @param string $bundle_name
+   *   The name of the bundle on which the field is attached that the properties
+   *   belong to.
+   * @param string $field_name
+   *   The name of the field the properties belong to.
+   * @param string $key
+   *   The key of the property type to return.
+   * @return object
+   *   An instance of the propertyType indicated.
+   */
+  public function getPropertyType($bundle_name, $field_name, $key);
+
+  /**
+   * Stores the field definition for a given field.
+   *
+   * NOTE: the definition for every field mentioned in the values array
+   * of an insert/update/load/find/deleteValues() method must be added
+   * using this function before the *Values() method can be called.
+   *
+   * @param string $bundle_name
+   *   The name of the bundle on which the field is attached.
+   * @param string $field_name
+   *   The name of the field based on it's annotation 'id'.
+   * @param object $field_definition
+   *   The Field Type object for this field.
+   *   If calling within a field type class, use `$this`; if calling within
+   *   automated testing use a mock of FieldConfig.
+   * @return boolean
+   *   Returns true if no errors were encountered and false otherwise.
+   */
+  public function addFieldDefinition(string $bundle_name, string $field_name, TripalFieldItemBase $field_definition);
+
+  /**
+   * Retrieves the stored field definition of a given field.
+   *
+   * @param string $bundle_name
+   *   The name of the bundle on which the field is attached.
+   * @param string $field_name
+   *   The name of the field based on it's annotation 'id'.
+   * @return object $field_definition
+   *   The Field Type object for this field.
+   */
+  public function getFieldDefinition(string $bundle_name, string $field_name);
 
   /**
    * Inserts values in the field data store.
