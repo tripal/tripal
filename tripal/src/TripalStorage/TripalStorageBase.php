@@ -89,7 +89,7 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
   /**
    * @{inheritdoc}
    */
-  public function getFieldDefinition($bundle_name, $field_name) {
+  public function getFieldDefinition(string $bundle_name, string $field_name) {
     if (array_key_exists($bundle_name, $this->field_definitions)) {
       if (array_key_exists($field_name, $this->field_definitions[$bundle_name])) {
         if (is_object($this->field_definitions[$bundle_name][$field_name])) {

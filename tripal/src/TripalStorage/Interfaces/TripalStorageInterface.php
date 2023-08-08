@@ -3,6 +3,7 @@
 namespace Drupal\tripal\TripalStorage\Interfaces;
 
 use Drupal\Component\Plugin\PluginInspectionInterface;
+use Drupal\tripal\TripalField\TripalFieldItemBase;
 
 /**
  * Defines an interface for tripal storage plugins.
@@ -78,7 +79,7 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    * @return boolean
    *   Returns true if no errors were encountered and false otherwise.
    */
-  public function addFieldDefinition($bundle_name, $field_name, $field_definition);
+  public function addFieldDefinition(string $bundle_name, string $field_name, TripalFieldItemBase $field_definition);
 
   /**
    * Retrieves the stored field definition of a given field.
@@ -90,7 +91,7 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    * @return object $field_definition
    *   The Field Type object for this field.
    */
-  public function getFieldDefinition($bundle_name, $field_name);
+  public function getFieldDefinition(string $bundle_name, string $field_name);
 
   /**
    * Inserts values in the field data store.
