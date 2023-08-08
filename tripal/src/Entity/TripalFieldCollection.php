@@ -35,7 +35,7 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *   },
  *   links = {
  *     "collection" = "/admin/tripal/config/tripalfield-collection",
- *     "delete-form" = "/admin/tripal/config/tripalfield-collection/{config}/delete"
+ *     "delete-form" = "/admin/tripal/config/tripalfield-collection/{tripalfield_collection}/delete"
  *   }
  * )
  */
