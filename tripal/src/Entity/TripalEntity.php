@@ -483,6 +483,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     $values = [];
     $tripal_storages = [];
     $fields = $entity->getFields();
+    $bundle_name = $entity->getType();
 
     // Specifically, for each field...
     foreach ($fields as $field_name => $items) {
@@ -504,6 +505,9 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           $tripal_storages[$tsid] = $tripal_storage;
         }
 
+        // Add the field definition to the storage for this field.
+        $tripal_storages[$tsid]->addFieldDefinition($bundle_name, $field_name, $item->getFieldDefinition())
+
         // Get the empty property values for this field item and the
         // property type objects.
         $prop_values = $item->tripalValuesTemplate($item->getFieldDefinition());
@@ -518,7 +522,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         $item->tripalClear($item, $field_name, $prop_types, $prop_values, $entity);
 
         // Add the property types to the storage plugin.
-        $tripal_storages[$tsid]->addTypes($entity->getType(), $field_name, $prop_types);
+        $tripal_storages[$tsid]->addTypes($bundle_name, $field_name, $prop_types);
 
         // Prepare the property values for the storage plugin.
         // Note: We are assuming the key for the value is the
