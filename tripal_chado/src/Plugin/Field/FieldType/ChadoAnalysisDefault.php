@@ -13,7 +13,7 @@ use Drupal\core\Form\FormStateInterface;
 use Drupal\core\Field\FieldDefinitionInterface;
 
 /**
- * Plugin implementation of Tripal additional type field type.
+ * Plugin implementation of default Tripal analysis field type.
  *
  * @FieldType(
  *   id = "chado_analysis_default",
