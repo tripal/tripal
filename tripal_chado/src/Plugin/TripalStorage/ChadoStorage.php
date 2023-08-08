@@ -2,15 +2,12 @@
 
 namespace Drupal\tripal_chado\Plugin\TripalStorage;
 
-use Drupal\Core\Plugin\PluginBase;
-
+use Drupal\tripal\TripalStorage\TripalStorageBase;
 use Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface;
 use Symfony\Component\Validator\ConstraintViolation;
 
 use Drupal\tripal\Services\TripalLogger;
 use Drupal\tripal_chado\Database\ChadoConnection;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Chado implementation of the TripalStorageInterface.
@@ -21,7 +18,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   description = @Translation("Interfaces with GMOD Chado for field values."),
  * )
  */
-class ChadoStorage extends PluginBase implements TripalStorageInterface, ContainerFactoryPluginInterface {
+class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
   /**
    * An associative array that contains all of the property types that
@@ -51,13 +48,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
    * @var array
    */
   protected $id_mapping = [];
-
-    /**
-   * The logger for reporting progress, warnings and errors to admin.
-   *
-   * @var Drupal\tripal\Services\TripalLogger
-   */
-  protected $logger;
 
   /**
    * The database connection for querying Chado.
@@ -105,9 +95,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
    * @param Drupal\tripal_chado\Database\ChadoConnection $connection
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, TripalLogger $logger, ChadoConnection $connection) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $logger);
 
-    $this->logger = $logger;
     $this->connection = $connection;
   }
 
