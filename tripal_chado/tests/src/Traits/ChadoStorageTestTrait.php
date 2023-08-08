@@ -470,7 +470,7 @@ trait ChadoStorageTestTrait {
     $test_term_string = 'rdfs:type';
 
     // Count total number of properties created.
-    $expected_total_properties = $expected_num['total'];
+    $expected_total_properties = $expected_property_counts['total'];
     $total_properties_created = 0;
 
     // For each of the fields we were asked to create properties...
