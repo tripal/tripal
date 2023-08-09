@@ -162,7 +162,7 @@ tripal.tripalentitytype_collection.*:
                  type: string
                  label: "Category"
                  nullable: false
-               name:
+               id:
                  type: string
                  label: "A machine readable content type id (a.k.a., the bundle ID or Entity Type ID)"
                  nullable: false

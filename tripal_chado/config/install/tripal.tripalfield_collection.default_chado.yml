@@ -4,7 +4,7 @@ description: 'Default fields configurations provided by the Tripal Chado module'
 fields:
 
     -   name: organism_abbreviation
-        content_type: bio_data_1
+        content_type: organism
         label: Abbreviation
         type: chado_string_type
         description: A shortened name (or abbreviation) for the organism (e.g. O. sativa).
@@ -31,7 +31,7 @@ fields:
                     weight: 10
 
     -   name: organism_genus
-        content_type: bio_data_1
+        content_type: organism
         label: Genus
         type: chado_string_type
         description: "The genus name of the organism."
@@ -58,7 +58,7 @@ fields:
                     weight: 15
 
     -   name: organism_species
-        content_type: bio_data_1
+        content_type: organism
         label: Species
         type: chado_string_type
         description: "The species name of the organism."
@@ -85,7 +85,7 @@ fields:
                     weight: 20
 
     -   name: organism_common_name
-        content_type: bio_data_1
+        content_type: organism
         label: Common Name
         type: chado_string_type
         description: "The common name for the organism."
@@ -112,7 +112,7 @@ fields:
                     weight: 25
 
     -   name: organism_infraspecific_name
-        content_type: bio_data_1
+        content_type: organism
         label: Infraspecies
         type: chado_string_type
         description: "The infraspecfic name for the organism."
@@ -139,7 +139,7 @@ fields:
                     weight: 30
 
     -   name: organism_comment
-        content_type: bio_data_1
+        content_type: organism
         label: Description
         type: chado_text_type
         description: A description of the organism.
@@ -165,7 +165,7 @@ fields:
               weight: 35
 
     -   name: organism_infraspecific_type
-        content_type: bio_data_1
+        content_type: organism
         label: Infraspecific Type
         type: chado_additional_type_default
         description: The connector type (e.g. subspecies, varietas, forma, etc.) for the infraspecific name.
@@ -193,7 +193,7 @@ fields:
 
 
     -   name: analysis_name
-        content_type: bio_data_2
+        content_type: analysis
         label: Name
         type: chado_string_type
         description: The name of the analysis.
@@ -220,7 +220,7 @@ fields:
               weight: 10
 
     -   name: analysis_description
-        content_type: bio_data_2
+        content_type: analysis
         label: Description
         type: chado_text_type
         description: A description of the analysis.
@@ -246,7 +246,7 @@ fields:
               weight: 15
 
     -   name: analysis_software
-        content_type: bio_data_2
+        content_type: analysis
         label: Program, Pipeline, Workflow or Method Name
         type: chado_string_type
         description: The program name (e.g. blastx, blastp, sim4, genscan. If the analysis was not derived from a software package then provide a very brief description of the pipeline, workflow or method.
@@ -273,7 +273,7 @@ fields:
               weight: 20
 
     -   name: analysis_program_version
-        content_type: bio_data_2
+        content_type: analysis
         label: Software Version
         type: chado_string_type
         description: The version of the program, pipeline or method used to perform this analysis. (e.g. TBLASTX 2.0MP-WashU [09-Nov-2000]. Enter "n/a" if no version is available or applicable.
@@ -300,7 +300,7 @@ fields:
               weight: 25
 
     -   name: analysis_algorithm
-        content_type: bio_data_2
+        content_type: analysis
         label: Algorithm
         type: chado_string_type
         description: The name of the algorithm used to produce the dataset if different from the program.
@@ -327,7 +327,7 @@ fields:
               weight: 30
 
     -   name: analysis_source
-        content_type: bio_data_2
+        content_type: analysis
         label: Data Source Name
         type: chado_string_type
         description: The name of the source where data was obtained for this analysis.
@@ -354,7 +354,7 @@ fields:
               weight: 35
 
     -   name: analysis_source_version
-        content_type: bio_data_2
+        content_type: analysis
         label: Data Source Version
         type: chado_string_type
         description: The version number of the data source (if applicable).
@@ -381,7 +381,7 @@ fields:
               weight: 40
 
     -   name: analysis_source_uri
-        content_type: bio_data_2
+        content_type: analysis
         label: Data Source URI
         type: chado_text_type
         description: The URI (e.g. web URL) where the source data can be retrieved.
@@ -407,7 +407,7 @@ fields:
               weight: 45
 
     -   name: project_name
-        content_type: bio_data_3
+        content_type: project
         label: Name
         type: chado_string_type
         description: The name of the item.
@@ -434,7 +434,7 @@ fields:
               weight: 10
 
     -   name: project_description
-        content_type: bio_data_3
+        content_type: project
         label: Description
         type: chado_text_type
         description: A description of the item.
@@ -460,7 +460,7 @@ fields:
               weight: 15
 
     -   name: study_name
-        content_type: bio_data_4
+        content_type: study
         label: Name
         type: chado_text_type
         description: The name of the item.
@@ -486,7 +486,7 @@ fields:
               weight: 10
 
     -   name: study_description
-        content_type: bio_data_4
+        content_type: study
         label: Description
         type: chado_text_type
         description: A description of the item.
@@ -512,7 +512,7 @@ fields:
               weight: 15
 
     -   name: contact_name
-        content_type: bio_data_5
+        content_type: contact
         label: Name
         type: chado_string_type
         description: The name of the item.
@@ -539,7 +539,7 @@ fields:
               weight: 10
 
     -   name: contact_description
-        content_type: bio_data_5
+        content_type: contact
         label: Description
         type: chado_string_type
         description: A description of the item.
@@ -566,7 +566,7 @@ fields:
               weight: 15
 
     -   name: contact_type
-        content_type: bio_data_5
+        content_type: contact
         label: Contact Type
         type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
@@ -593,7 +593,7 @@ fields:
               weight: 10
 
     -   name: protocol_name
-        content_type: bio_data_7
+        content_type: protocol
         label: Name
         type: chado_text_type
         description: The name of the item.
@@ -619,7 +619,7 @@ fields:
               weight: 10
 
     -   name: protocol_uri
-        content_type: bio_data_7
+        content_type: protocol
         label: URI
         type: chado_text_type
         description: The name of a biological or bioinformatics database.
@@ -645,7 +645,7 @@ fields:
               weight: 15
 
     -   name: protocol_description
-        content_type: bio_data_7
+        content_type: protocol
         label: Description
         type: chado_text_type
         description: A description of the item.
@@ -671,7 +671,7 @@ fields:
               weight: 20
 
     -   name: protocol_instrument
-        content_type: bio_data_7
+        content_type: protocol
         label: Instrument
         type: chado_text_type
         description: An instrument is a device which provides a mechanical or electronic function.
@@ -697,7 +697,7 @@ fields:
               weight: 25
 
     -   name: protocol_software
-        content_type: bio_data_7
+        content_type: protocol
         label: Software
         type: chado_text_type
         description: Computer software, or generally just software, is any set of machine-readable instructions (most often in the form of a computer program) that conform to a given syntax (sometimes referred to as a language) that is interpretable by a given processor and that directs a computer's processor to perform specific operations.
@@ -723,7 +723,7 @@ fields:
               weight: 30
 
     -   name: protocol_type
-        content_type: bio_data_7
+        content_type: protocol
         label: Protocol Type
         type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
@@ -750,7 +750,7 @@ fields:
               weight: 10
 
     -   name: gene_name
-        content_type: bio_data_8
+        content_type: gene
         label: Name
         type: chado_string_type
         description: The name of the item.
@@ -777,7 +777,7 @@ fields:
               weight: 10
 
     -   name: gene_uniquename
-        content_type: bio_data_8
+        content_type: gene
         label: Unique Name
         type: chado_text_type
         description: A name that uniquely identifies the gene within the organism.
@@ -803,7 +803,7 @@ fields:
               weight: 15
 
     -   name: gene_sequence
-        content_type: bio_data_8
+        content_type: gene
         label: Sequence
         type: chado_text_type
         description: One or more molecular sequences, possibly with associated annotation.
@@ -829,7 +829,7 @@ fields:
               weight: 20
 
     -   name: gene_length
-        content_type: bio_data_8
+        content_type: gene
         label: Sequence Length
         type: chado_integer_type
         description: The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.
@@ -855,7 +855,7 @@ fields:
               weight: 25
 
     -   name: gene_organism
-        content_type: bio_data_8
+        content_type: gene
         label: Organism
         type: chado_organism_default
         description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
@@ -881,7 +881,7 @@ fields:
               weight: 10
 
     -   name: gene_type
-        content_type: bio_data_8
+        content_type: gene
         label: Type
         type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
@@ -909,7 +909,7 @@ fields:
               weight: 10
 
     -   name: gene_is_analysis
-        content_type: bio_data_8
+        content_type: gene
         label: Is Analysis
         type: chado_boolean_type
         description: Indicates if this feature was predicted computationally using another feature.
@@ -936,7 +936,7 @@ fields:
               weight: 90
 
     -   name: gene_is_obsolete
-        content_type: bio_data_8
+        content_type: gene
         label: Is Obsolete
         type: chado_boolean_type
         description: Indicates if this record is obsolete.
@@ -963,7 +963,7 @@ fields:
               weight: 90
 
     -   name: mrna_name
-        content_type: bio_data_9
+        content_type: mRNA
         label: Name
         type: chado_string_type
         description: The name of the item.
@@ -990,7 +990,7 @@ fields:
               weight: 10
 
     -   name: mrna_uniquename
-        content_type: bio_data_9
+        content_type: mRNA
         label: Unique Name
         type: chado_text_type
         description: A name that uniquely identifies the mRNA within the organism.
@@ -1016,7 +1016,7 @@ fields:
               weight: 15
 
     -   name: mrna_sequence
-        content_type: bio_data_9
+        content_type: mRNA
         label: Sequence
         type: chado_text_type
         description: One or more molecular sequences, possibly with associated annotation.
@@ -1042,7 +1042,7 @@ fields:
               weight: 20
 
     -   name: mrna_sequence_length
-        content_type: bio_data_9
+        content_type: mRNA
         label: Sequence Length
         type: chado_integer_type
         description: The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.
@@ -1068,7 +1068,7 @@ fields:
               weight: 25
 
     -   name: mrna_organism
-        content_type: bio_data_9
+        content_type: mRNA
         label: Organism
         type: chado_organism_default
         description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
@@ -1094,7 +1094,7 @@ fields:
               weight: 10
 
     -   name: mrna_type
-        content_type: bio_data_9
+        content_type: mRNA
         label: Type
         type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
@@ -1122,7 +1122,7 @@ fields:
               weight: 10
 
     -   name: mrna_is_analysis
-        content_type: bio_data_9
+        content_type: mRNA
         label: Is Analysis
         type: chado_boolean_type
         description: Indicates if this feature was predicted computationally using another feature.
@@ -1149,7 +1149,7 @@ fields:
               weight: 90
 
     -   name: mrna_is_obsolete
-        content_type: bio_data_9
+        content_type: mRNA
         label: Is Obsolete
         type: chado_boolean_type
         description: Indicates if this record is obsolete.
@@ -1176,7 +1176,7 @@ fields:
               weight: 90
 
     -   name: phylotree_name
-        content_type: bio_data_10
+        content_type: phylotree
         label: Name
         type: chado_string_type
         description: The name of the item.
@@ -1203,7 +1203,7 @@ fields:
               weight: 10
 
     -   name: phylotree_comment
-        content_type: bio_data_10
+        content_type: phylotree
         label: Notes
         type: chado_text_type
         description: Comments, typically from users.
@@ -1229,7 +1229,7 @@ fields:
               weight: 15
 
     -   name: phylotree_type
-        content_type: bio_data_10
+        content_type: phylotree
         label: Type
         type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
@@ -1257,7 +1257,7 @@ fields:
               weight: 10
 
     -   name: physical_map_name
-        content_type: bio_data_11
+        content_type: physical_map
         label: Name
         type: chado_string_type
         description: The name of the item.
@@ -1284,7 +1284,7 @@ fields:
               weight: 10
 
     -   name: physical_map_description
-        content_type: bio_data_11
+        content_type: physical_map
         label: Description
         type: chado_text_type
         description: A description of the item.
@@ -1310,7 +1310,7 @@ fields:
               weight: 15
 
     -   name: physical_map_unit_type
-        content_type: bio_data_11
+        content_type: physical_map
         label: Unit Type
         type: chado_additional_type_default
         description: A unit of measurement is a standardized quantity of a physical quality.
@@ -1337,7 +1337,7 @@ fields:
               weight: 10
 
     -   name: dna_library_name
-        content_type: bio_data_12
+        content_type: dna_library
         label: Name
         type: chado_string_type
         description: The name of the item.
@@ -1364,7 +1364,7 @@ fields:
               weight: 10
 
     -   name: dna_library_uniquename
-        content_type: bio_data_12
+        content_type: dna_library
         label: Unique Name
         type: chado_text_type
         description: A name that uniquely identifies the DNA library on this site.
@@ -1390,7 +1390,7 @@ fields:
               weight: 15
 
     -   name: dna_library_type
-        content_type: bio_data_12
+        content_type: dna_library
         label: Library Type
         type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
@@ -1418,7 +1418,7 @@ fields:
               weight: 10
 
     -   name: dna_library_organism
-        content_type: bio_data_12
+        content_type: dna_library
         label: Organism
         type: chado_organism_default
         description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
@@ -1444,7 +1444,7 @@ fields:
               weight: 20
 
     -   name: genome_assembly_name
-        content_type: bio_data_13
+        content_type: genome_assembly
         label: Name
         type: chado_string_type
         description: The name of the item.
@@ -1471,7 +1471,7 @@ fields:
               weight: 10
 
     -   name: genome_assembly_description
-        content_type: bio_data_13
+        content_type: genome_assembly
         label: Description
         type: chado_text_type
         description: A description of the item.
@@ -1497,7 +1497,7 @@ fields:
               weight: 15
 
     -   name: genome_assembly_software
-        content_type: bio_data_13
+        content_type: genome_assembly
         label: Program, Pipeline, Workflow or Method Name
         type: chado_string_type
         description: The program name (e.g. blastx, blastp, sim4, genscan. If the analysis was not derived from a software package then provide a very brief description of the pipeline, workflow or method.
@@ -1524,7 +1524,7 @@ fields:
               weight: 20
 
     -   name: genome_assembly_program_version
-        content_type: bio_data_13
+        content_type: genome_assembly
         label: Program Version
         type: chado_string_type
         description: The version of the program, pipeline, workflow or method used to perform this analysis. (e.g. TBLASTX 2.0MP-WashU [09-Nov-2000]. Enter "n/a" if no version is available or applicable.
@@ -1552,7 +1552,7 @@ fields:
 
 
     -   name: genome_assembly_source_name
-        content_type: bio_data_13
+        content_type: genome_assembly
         label: Data Source Name
         type: chado_string_type
         description: The name of the source where data was obtained for this analysis.
@@ -1579,7 +1579,7 @@ fields:
               weight: 35
 
     -   name: genome_assembly_source_version
-        content_type: bio_data_13
+        content_type: genome_assembly
         label: Data Source Version
         type: chado_string_type
         description: The version number of the data source (if applicable).
@@ -1606,7 +1606,7 @@ fields:
               weight: 40
 
     -   name: genome_assembly_uri
-        content_type: bio_data_13
+        content_type: genome_assembly
         label: Data Source URI
         type: chado_text_type
         description: The URI (e.g. web URL) where the source data can be retrieved.
@@ -1632,7 +1632,7 @@ fields:
               weight: 45
 
     -   name: genome_assembly_type
-        content_type: bio_data_13
+        content_type: genome_assembly
         label: Type
         type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
@@ -1660,7 +1660,7 @@ fields:
               weight: 10
 
     -   name: genome_annotation_name
-        content_type: bio_data_14
+        content_type: genome_annotation
         label: Name
         type: chado_string_type
         description: The name of the item.
@@ -1687,7 +1687,7 @@ fields:
               weight: 10
 
     -   name: genome_annotation_description
-        content_type: bio_data_14
+        content_type: genome_annotation
         label: Description
         type: chado_text_type
         description: A description of the item.
@@ -1713,7 +1713,7 @@ fields:
               weight: 15
 
     -   name: genome_annotation_software
-        content_type: bio_data_14
+        content_type: genome_annotation
         label: Program, Pipeline, Workflow or Method Name
         type: chado_string_type
         description: The program name (e.g. blastx, blastp, sim4, genscan. If the analysis was not derived from a software package then provide a very brief description of the pipeline, workflow or method.
@@ -1740,7 +1740,7 @@ fields:
               weight: 20
 
     -   name: genome_annotation_prog_version
-        content_type: bio_data_14
+        content_type: genome_annotation
         label: Program Version
         type: chado_string_type
         description: The version of the program, pipeline, workflow or method used to perform this analysis. (e.g. TBLASTX 2.0MP-WashU [09-Nov-2000]. Enter "n/a" if no version is available or applicable.
@@ -1767,7 +1767,7 @@ fields:
               weight: 25
 
     -   name: genome_annotation_src_name
-        content_type: bio_data_14
+        content_type: genome_annotation
         label: Name
         type: chado_string_type
         description: The name of the source where data was obtained for this analysis.
@@ -1794,7 +1794,7 @@ fields:
               weight: 35
 
     -   name: genome_annotation_src_version
-        content_type: bio_data_14
+        content_type: genome_annotation
         label: Data Source Version
         type: chado_string_type
         description: The version number of the data source (if applicable).
@@ -1821,7 +1821,7 @@ fields:
               weight: 40
 
     -   name: genome_annotation_uri
-        content_type: bio_data_14
+        content_type: genome_annotation
         label: Data Source URI
         type: chado_text_type
         description: The URI (e.g. web URL) where the source data can be retrieved.
@@ -1847,7 +1847,7 @@ fields:
               weight: 45
 
     -   name: genome_annotation_type
-        content_type: bio_data_14
+        content_type: genome_annotation
         label: Type
         type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
@@ -1875,7 +1875,7 @@ fields:
               weight: 10
 
     -   name: genome_project_name
-        content_type: bio_data_15
+        content_type: genome_project
         label: Name
         type: chado_string_type
         description: The name of the item.
@@ -1902,7 +1902,7 @@ fields:
               weight: 10
 
     -   name: genome_project_description
-        content_type: bio_data_15
+        content_type: genome_project
         label: Description
         type: chado_text_type
         description: A description of the item.
@@ -1928,7 +1928,7 @@ fields:
               weight: 15
 
     -   name: genome_project_type
-        content_type: bio_data_15
+        content_type: genome_project
         label: Type
         type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
@@ -1956,7 +1956,7 @@ fields:
               weight: 10
 
     -   name: genetic_map_name
-        content_type: bio_data_16
+        content_type: genetic_map
         label: Name
         type: chado_string_type
         description: The name of the item.
@@ -1983,7 +1983,7 @@ fields:
               weight: 10
 
     -   name: genetic_map_description
-        content_type: bio_data_16
+        content_type: genetic_map
         label: Description
         type: chado_text_type
         description: A description of the item.
@@ -2009,7 +2009,7 @@ fields:
               weight: 15
 
     -   name: genetic_map_unit_type
-        content_type: bio_data_16
+        content_type: genetic_map
         label: Unit Type
         type: chado_additional_type_default
         description: A unit of measurement is a standardized quantity of a physical quality.
@@ -2036,7 +2036,7 @@ fields:
               weight: 10
 
     -   name: qtl_name
-        content_type: bio_data_17
+        content_type: QTL
         label: Name
         type: chado_string_type
         description: The name of the item.
@@ -2063,7 +2063,7 @@ fields:
               weight: 10
 
     -   name: qtl_unique_name
-        content_type: bio_data_17
+        content_type: QTL
         label: Uniquen Name
         type: chado_text_type
         description: A name that uniquely identifies the QTL within the organism.
@@ -2089,7 +2089,7 @@ fields:
               weight: 15
 
     -   name: qtl_sequence
-        content_type: bio_data_17
+        content_type: QTL
         label: Sequence
         type: chado_text_type
         description: One or more molecular sequences, possibly with associated annotation.
@@ -2115,7 +2115,7 @@ fields:
               weight: 20
 
     -   name: qtl_sequence_length
-        content_type: bio_data_17
+        content_type: QTL
         label: Sequence Length
         type: chado_integer_type
         description: The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.
@@ -2141,7 +2141,7 @@ fields:
               weight: 25
 
     -   name: qtl_organism
-        content_type: bio_data_17
+        content_type: QTL
         label: Organism
         type: chado_organism_default
         description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
@@ -2167,7 +2167,7 @@ fields:
               weight: 10
 
     -   name: qtl_type
-        content_type: bio_data_17
+        content_type: QTL
         label: Type
         type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
@@ -2195,7 +2195,7 @@ fields:
               weight: 10
 
     -   name: qtl_is_analysis
-        content_type: bio_data_17
+        content_type: QTL
         label: Is Analysis
         type: chado_boolean_type
         description: Indicates if this feature was predicted computationally using another feature.
@@ -2222,7 +2222,7 @@ fields:
               weight: 90
 
     -   name: qtl_is_obsolete
-        content_type: bio_data_17
+        content_type: QTL
         label: Is Obsolete
         type: chado_boolean_type
         description: Indicates if this record is obsolete.
@@ -2249,7 +2249,7 @@ fields:
               weight: 90
 
     -   name: sequence_variant_name
-        content_type: bio_data_18
+        content_type: sequence_variant
         label: Name
         type: chado_string_type
         description: The name of the item.
@@ -2276,7 +2276,7 @@ fields:
               weight: 10
 
     -   name: sequence_variant_uniquene_name
-        content_type: bio_data_18
+        content_type: sequence_variant
         label: Unique Name
         type: chado_text_type
         description: A name that uniquely identifies the sequence variant within the organism.
@@ -2302,7 +2302,7 @@ fields:
               weight: 15
 
     -   name: sequence_variant_sequence
-        content_type: bio_data_18
+        content_type: sequence_variant
         label: Sequence
         type: chado_text_type
         description: One or more molecular sequences, possibly with associated annotation.
@@ -2328,7 +2328,7 @@ fields:
               weight: 20
 
     -   name: sequence_variant_sequence_length
-        content_type: bio_data_18
+        content_type: sequence_variant
         label: Sequence Length
         type: chado_integer_type
         description: The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.
@@ -2354,7 +2354,7 @@ fields:
               weight: 25
 
     -   name: sequence_variant_organism
-        content_type: bio_data_18
+        content_type: sequence_variant
         label: Organism
         type: chado_organism_default
         description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
@@ -2380,7 +2380,7 @@ fields:
               weight: 10
 
     -   name: sequence_variant_type
-        content_type: bio_data_18
+        content_type: sequence_variant
         label: Type
         type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
@@ -2408,7 +2408,7 @@ fields:
               weight: 10
 
     -   name: sequence_variant_is_analysis
-        content_type: bio_data_18
+        content_type: sequence_variant
         label: Is Analysis
         type: chado_boolean_type
         description: Indicates if this feature was predicted computationally using another feature.
@@ -2435,7 +2435,7 @@ fields:
               weight: 90
 
     -   name: sequence_variant_is_obsolete
-        content_type: bio_data_18
+        content_type: sequence_variant
         label: Is Obsolete
         type: chado_boolean_type
         description: Indicates if this record is obsolete.
@@ -2462,7 +2462,7 @@ fields:
               weight: 90
 
     -   name: genetic_marker_name
-        content_type: bio_data_19
+        content_type: genetic_marker
         label: Name
         type: chado_string_type
         description: The name of the item.
@@ -2489,7 +2489,7 @@ fields:
               weight: 10
 
     -   name: genetic_marker_unique_name
-        content_type: bio_data_19
+        content_type: genetic_marker
         label: Unique Name
         type: chado_text_type
         description: A name that uniquely identifies the genetic marker within the organism.
@@ -2515,7 +2515,7 @@ fields:
               weight: 15
 
     -   name: genetic_marker_sequence
-        content_type: bio_data_19
+        content_type: genetic_marker
         label: Sequence
         type: chado_text_type
         description: One or more molecular sequences, possibly with associated annotation.
@@ -2541,7 +2541,7 @@ fields:
               weight: 20
 
     -   name: genetic_marker_sequence_length
-        content_type: bio_data_19
+        content_type: genetic_marker
         label: Sequence Length
         type: chado_integer_type
         description: The size (length) of a sequence, subsequence or region in a sequence,or range(s) of lengths.
@@ -2567,7 +2567,7 @@ fields:
               weight: 25
 
     -   name: genetic_marker_organism
-        content_type: bio_data_19
+        content_type: genetic_marker
         label: Organism
         type: chado_organism_default
         description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
@@ -2593,7 +2593,7 @@ fields:
               weight: 10
 
     -   name: genetic_marker_type
-        content_type: bio_data_19
+        content_type: genetic_marker
         label: Type
         type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
@@ -2621,7 +2621,7 @@ fields:
               weight: 10
 
     -   name: genetic_marker_is_analysis
-        content_type: bio_data_19
+        content_type: genetic_marker
         label: Is Analysis
         type: chado_boolean_type
         description: Indicates if this feature was predicted computationally using another feature.
@@ -2648,7 +2648,7 @@ fields:
               weight: 90
 
     -   name: genetic_marker_is_obsolete
-        content_type: bio_data_19
+        content_type: genetic_marker
         label: Is Obsolete
         type: chado_boolean_type
         description: Indicates if this record is obsolete.
@@ -2675,7 +2675,7 @@ fields:
               weight: 90
 
     -   name: phenotypic_marker_name
-        content_type: bio_data_20
+        content_type: phenotypic_marker
         label: Name
         type: chado_string_type
         description: The name of the item.
@@ -2702,7 +2702,7 @@ fields:
               weight: 10
 
     -   name: phenotypic_marker_unique_name
-        content_type: bio_data_20
+        content_type: phenotypic_marker
         label: Uniquen Name
         type: chado_text_type
         description: A name that uniquely identifies the heritable phenotypic marker within the organism.
@@ -2728,7 +2728,7 @@ fields:
               weight: 15
 
     -   name: phenotypic_marker_sequence
-        content_type: bio_data_20
+        content_type: phenotypic_marker
         label: Sequence
         type: chado_text_type
         description: One or more molecular sequences, possibly with associated annotation.
@@ -2754,7 +2754,7 @@ fields:
               weight: 20
 
     -   name: phenotypic_marker_seqlen
-        content_type: bio_data_20
+        content_type: phenotypic_marker
         label: Sequence Length
         type: chado_integer_type
         description: The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.
@@ -2780,7 +2780,7 @@ fields:
               weight: 25
 
     -   name: phenotypic_marker_organism
-        content_type: bio_data_20
+        content_type: phenotypic_marker
         label: Organism
         type: chado_organism_default
         description: A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.
@@ -2806,7 +2806,7 @@ fields:
               weight: 10
 
     -   name: phenotypic_marker_type
-        content_type: bio_data_20
+        content_type: phenotypic_marker
         label: Type
         type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
@@ -2834,7 +2834,7 @@ fields:
               weight: 10
 
     -   name: phenotypic_marker_is_analysis
-        content_type: bio_data_20
+        content_type: phenotypic_marker
         label: Is Analysis
         type: chado_boolean_type
         description: Indicates if this feature was predicted computationally using another feature.
@@ -2861,7 +2861,7 @@ fields:
               weight: 90
 
     -   name: phenotypic_marker_is_obsolete
-        content_type: bio_data_20
+        content_type: phenotypic_marker
         label: Is Obsolete
         type: chado_boolean_type
         description: Indicates if this record is obsolete.
@@ -2888,7 +2888,7 @@ fields:
               weight: 90
 
     -   name: germplasm_name
-        content_type: bio_data_21
+        content_type: germplasm
         label: Name
         type: chado_string_type
         description: The name of the item.
@@ -2915,7 +2915,7 @@ fields:
               weight: 10
 
     -   name: germplasm_unique_name
-        content_type: bio_data_21
+        content_type: germplasm
         label: Unique Name
         type: chado_text_type
         description: A name that uniquely identifies the germplasm within this organism.
@@ -2941,7 +2941,7 @@ fields:
               weight: 15
 
     -   name: germplasm_description
-        content_type: bio_data_21
+        content_type: germplasm
         label: Description
         type: chado_text_type
         description: A description of the item.
@@ -2967,7 +2967,7 @@ fields:
               weight: 20
 
     -   name: germplasm_type
-        content_type: bio_data_21
+        content_type: germplasm
         label: Type
         type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
@@ -2995,7 +2995,7 @@ fields:
               weight: 10
 
     -   name: germplasm_is_obsolete
-        content_type: bio_data_21
+        content_type: germplasm
         label: Is Obsolete
         type: chado_boolean_type
         description: Indicates if this record is obsolete.
@@ -3022,7 +3022,7 @@ fields:
               weight: 90
 
     -   name: breeding_cross_name
-        content_type: bio_data_22
+        content_type: breeding_cross
         label: Name
         type: chado_string_type
         description: The name of the item.
@@ -3049,7 +3049,7 @@ fields:
               weight: 10
 
     -   name: breeding_cross_unique_name
-        content_type: bio_data_22
+        content_type: breeding_cross
         label: Unique Name
         type: chado_text_type
         description: A name that uniquely identifies the breeding cross within this organism.
@@ -3075,7 +3075,7 @@ fields:
               weight: 15
 
     -   name: breeding_cross_description
-        content_type: bio_data_22
+        content_type: breeding_cross
         label: Description
         type: chado_text_type
         description: A description of the item.
@@ -3101,7 +3101,7 @@ fields:
               weight: 20
 
     -   name: breeding_cross_type
-        content_type: bio_data_22
+        content_type: breeding_cross
         label: Type
         type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
@@ -3129,7 +3129,7 @@ fields:
               weight: 10
 
     -   name: breeding_cross_is_obsolete
-        content_type: bio_data_22
+        content_type: breeding_cross
         label: Is Obsolete
         type: chado_boolean_type
         description: Indicates if this record is obsolete.
@@ -3156,7 +3156,7 @@ fields:
               weight: 90
 
     -   name: germplasm_variety_name
-        content_type: bio_data_23
+        content_type: germplasm_variety
         label: Name
         type: chado_string_type
         description: The name of the item.
@@ -3183,7 +3183,7 @@ fields:
               weight: 10
 
     -   name: germplasm_variety_unique_name
-        content_type: bio_data_23
+        content_type: germplasm_variety
         label: Unique Name
         type: chado_text_type
         description: A name that uniquely identifies the germplasm variety within this organism.
@@ -3209,7 +3209,7 @@ fields:
               weight: 15
 
     -   name: germplasm_variety_description
-        content_type: bio_data_23
+        content_type: germplasm_variety
         label: Description
         type: chado_text_type
         description: A description of the item.
@@ -3235,7 +3235,7 @@ fields:
               weight: 20
 
     -   name: germplasm_variety_type
-        content_type: bio_data_23
+        content_type: germplasm_variety
         label: Type
         type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
@@ -3263,7 +3263,7 @@ fields:
               weight: 10
 
     -   name: germplasm_variety_is_obsolete
-        content_type: bio_data_23
+        content_type: germplasm_variety
         label: Is Obsolete
         type: chado_boolean_type
         description: Indicates if this record is obsolete.
@@ -3290,7 +3290,7 @@ fields:
               weight: 90
 
     -   name: ril_name
-        content_type: bio_data_24
+        content_type: RIL
         label: Name
         type: chado_string_type
         description: The name of the item.
@@ -3317,7 +3317,7 @@ fields:
               weight: 10
 
     -   name: ril_unique_name
-        content_type: bio_data_24
+        content_type: RIL
         label: Unique Name
         type: chado_text_type
         description: A name that uniquely identifies the RIL within this organism.
@@ -3343,7 +3343,7 @@ fields:
               weight: 15
 
     -   name: ril_description
-        content_type: bio_data_24
+        content_type: RIL
         label: Description
         type: chado_text_type
         description: A description of the item.
@@ -3369,7 +3369,7 @@ fields:
               weight: 20
 
     -   name: ril_type
-        content_type: bio_data_24
+        content_type: RIL
         label: Type
         type: chado_additional_type_default
         description: An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in.
@@ -3397,7 +3397,7 @@ fields:
               weight: 10
 
     -   name: ril_is_obsolete
-        content_type: bio_data_24
+        content_type: RIL
         label: Is Obsolete
         type: chado_boolean_type
         description: Indicates if this record is obsolete.
@@ -3424,7 +3424,7 @@ fields:
               weight: 90
 
     -   name: biosample_name
-        content_type: bio_data_25
+        content_type: biosample
         label: Name
         type: chado_text_type
         description: The name of the item.
@@ -3450,7 +3450,7 @@ fields:
               weight: 10
 
     -   name: biosample_description
-        content_type: bio_data_25
+        content_type: biosample
         label: Description
         type: chado_text_type
         description: A description of the item.
@@ -3476,7 +3476,7 @@ fields:
               weight: 15
 
     -   name: assay_unique_name
-        content_type: bio_data_26
+        content_type: assay
         label: Unique Name
         type: chado_text_type
         description: A text token, number or something else which identifies an entity, but which may not be persistent (stable) or unique (the same identifier may identify multiple things).
@@ -3502,7 +3502,7 @@ fields:
               weight: 10
 
     -   name: assay_batch_id
-        content_type: bio_data_26
+        content_type: assay
         label: Array Batch Identifier
         type: chado_text_type
         description: A unique identifier for an array batch.
@@ -3528,7 +3528,7 @@ fields:
               weight: 15
 
     -   name: assay_name
-        content_type: bio_data_26
+        content_type: assay
         label: Name
         type: chado_text_type
         description: The name of the item.
@@ -3554,7 +3554,7 @@ fields:
               weight: 20
 
     -   name: assay_description
-        content_type: bio_data_26
+        content_type: assay
         label: Description
         type: chado_text_type
         description: A description of the item.
@@ -3581,7 +3581,7 @@ fields:
 
 
     -   name: array_design_name
-        content_type: bio_data_27
+        content_type: array_design
         label: Name
         type: chado_text_type
         description: The name of the item.
@@ -3607,7 +3607,7 @@ fields:
               weight: 10
 
     -   name: array_design_version_num
-        content_type: bio_data_27
+        content_type: array_design
         label: Array Version
         type: chado_text_type
         description: A version number is an information content entity which is a sequence of characters borne by part of each of a class of manufactured products or its packaging and indicates its order within a set of other products having the same name.
@@ -3633,7 +3633,7 @@ fields:
               weight: 15
 
     -   name: array_design_description
-        content_type: bio_data_27
+        content_type: array_design
         label: Description
         type: chado_text_type
         description: A description of the item.
@@ -3659,7 +3659,7 @@ fields:
               weight: 20
 
     -   name: array_design_dimensions
-        content_type: bio_data_27
+        content_type: array_design
         label: Array Dimensions
         type: chado_text_type
         description: The dimensions of an array.
@@ -3685,7 +3685,7 @@ fields:
               weight: 25
 
     -   name: array_design_element_dims
-        content_type: bio_data_27
+        content_type: array_design
         label: Element Dimensions
         type: chado_text_type
         description: The dimensions of an element.
@@ -3711,7 +3711,7 @@ fields:
               weight: 30
 
     -   name: array_design_substrate_type
-        content_type: bio_data_27
+        content_type: array_design
         label: Substrate Type
         type: chado_additional_type_default
         description: Controlled terms for descriptors of types of array substrates.
@@ -3738,7 +3738,7 @@ fields:
               weight: 10
 
     -   name: array_design_platform_type
-        content_type: bio_data_27
+        content_type: array_design
         label: Platform Type
         type: chado_additional_type_default
         description: The specific version (manufacturer, model, etc.) of a technology that is used to carry out a laboratory or computational experiment.
