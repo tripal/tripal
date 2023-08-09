@@ -935,6 +935,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
             }
           }
         }
+        if (!array_key_exists('conditions', $record)) print_r($record);
         foreach ($record['conditions'] as $chado_column => $val) {
           if (is_array($val) and $val[0] == 'REPLACE_BASE_RECORD_ID') {
             $base_table = $val[1];
