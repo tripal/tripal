@@ -128,39 +128,14 @@ tripal.dashboard_admin_notification_field:
 
 ##
 # Tripal Content
-##
+## 
 
-# Tripal Content:
-
-# entity.tripal_entity_type.canonical:
-#   path: "/bio_data/{tripal_entity}",
-# entity.tripal_entity_type.add-page:
-#   path: "/bio_data/add",
-# entity.tripal_entity_type.add-form:
-#   path: "/bio_data/add/{tripal_entity_type}",
-# entity.tripal_entity_type.edit-form:
-#   path: "/bio_data/{tripal_entity}/edit",
-# entity.tripal_entity_type.delete-form:
-#   path: "/bio_data/{tripal_entity}/delete",
-# entity.tripal_entity_type.collection:
-#   path: "/admin/content/bio_data",
-
-# Tripal Content Types:
-
-# entity.tripal_entity_type.canonical:
-#   path: '/admin/structure/bio_data/{tripal_entity_type}'
-# entity.tripal_entity_type.add-form:
-#   path: '/admin/structure/bio_data/add'
-# entity.tripal_entity_type.edit-form:
-#   path: '/admin/structure/bio_data/manage/{tripal_entity_type}'
-# entity.tripal_entity_type.delete-form:
-#   path: '/admin/structure/bio_data/manage/{tripal_entity_type}/delete'
-
+# Override the default entity listing page for a more informative page.
 entity.tripal_entity.add_page:
-  path: bio_data/add
+  path: tripal/add
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalEntityUIController::tripalContentAddPage'
-    _title: 'Add Biological Data'
+    _title: 'Add Tripal Content'
     _description: 'Add biological data provided by Tripal.'
   options:
     _admin_route: 'TRUE'
@@ -168,8 +143,8 @@ entity.tripal_entity.add_page:
     _permission: 'administer tripal content'
 
 # tripal_unpublish_orphans_form
-tripal.content_bio_data_unpublish:
-  path: 'admin/content/bio_data/unpublish'
+tripal.content_type_unpublish:
+  path: 'admin/content/tripal/unpublish'
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalController::tripalContentUnpublishOrphans'
     _title: 'Unpublish Orphaned Content'
@@ -178,8 +153,8 @@ tripal.content_bio_data_unpublish:
     _permission: 'publish tripal content+administer tripal content'
 
 # Bio Data Ajax Callbacks
-tripal.content_bio_data_field_attach:
-  path: 'bio_data/ajax/field_attach/{id}'
+tripal.content_type_field_attach:
+  path: 'tripal/ajax/field_attach/{id}'
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalController::tripalAttachField'
     _title: 'Attach a Field to a Content Type'
@@ -187,8 +162,8 @@ tripal.content_bio_data_field_attach:
     _permission: 'administer tripal'
 
 # Adds a +Check for new fields link on the 'Tripal Content Types' page.
-tripal.content_bio_data_field_check:
-  path: 'admin/structure/bio_data/manage/{tripal_entity_type}/fields/check'
+tripal.content_type_field_check:
+  path: 'admin/structure/tripal/manage/{tripal_entity_type}/fields/check'
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalEntityUIController::tripalCheckForFields'
     _title: 'Check for new fields'
