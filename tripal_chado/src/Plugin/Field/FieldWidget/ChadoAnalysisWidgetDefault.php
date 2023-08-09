@@ -33,11 +33,11 @@ class ChadoAnalysisWidgetDefault extends ChadoWidgetBase {
     // In addition to getting a sorted list of analyses, include
     // the analysisprop rdfs:type when it is present, e.g.
     // genome assembly or genome annotation.
-    $sql = 'SELECT A.analysis_id, A.name, TYPE.value FROM analysis A
+    $sql = 'SELECT A.analysis_id, A.name, TYPE.value FROM {1:analysis} A
       LEFT JOIN (
-        SELECT AP.analysis_id, AP.value FROM analysisprop AP
-        LEFT JOIN cvterm T ON AP.type_id=T.cvterm_id
-        LEFT JOIN cv CV ON T.cv_id=CV.cv_id
+        SELECT AP.analysis_id, AP.value FROM {1:analysisprop} AP
+        LEFT JOIN {1:cvterm} T ON AP.type_id=T.cvterm_id
+        LEFT JOIN {1:cv} CV ON T.cv_id=CV.cv_id
         WHERE T.name=:cvterm
         AND CV.name=:cv
       ) AS TYPE
