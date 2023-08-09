@@ -100,15 +100,15 @@ class TripalEntityTypeCollection implements ContainerInjectionInterface  {
    */
   public function validate($details) {
 
-    if (!array_key_exists('name', $details) or !$details['name']) {
-      $this->logger->error(t('Creation of content type, "@type", failed. No name provided.',
+    if (!array_key_exists('id', $details) or !$details['id']) {
+      $this->logger->error(t('Creation of content type, "@type", failed. No id provided.',
           ['@type' => $details['label']]));
       return FALSE;
     }
 
     if (!array_key_exists('label', $details) or !$details['label']) {
-      $this->logger->error(t('Creation of content name, "@name", failed. No label provided.',
-          ['@name' => $details['name']]));
+      $this->logger->error(t('Creation of content name, "@id", failed. No label provided.',
+          ['@id' => $details['id']]));
       return FALSE;
     }
 
@@ -198,7 +198,7 @@ class TripalEntityTypeCollection implements ContainerInjectionInterface  {
         $entityType->save();
         $this->logger->notice(t('Content type, "@type", created.',
             ['@type' => $details['label']]));
-        $bundle = $entityType->getName();
+        $bundle = $entityType->id();
       }
       else {
         $this->logger->error(t('Creation of content type, "@type", failed. The provided details were: ',

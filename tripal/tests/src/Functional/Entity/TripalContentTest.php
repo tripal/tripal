@@ -22,6 +22,8 @@ class TripalContentTest extends TripalTestBrowserBase {
     $random = $this->getRandomGenerator();
     // Provides a title with ~8 latin capitalized words.
     $values['label'] = $random->sentences(8,TRUE);
+    // Provides a machine name for the content type.
+    $values['id'] = $random->sentences(1,TRUE);
     // Provides a category with ~3 latin capitalized words.
     $values['category'] = $random->sentences(3,TRUE);
     // Provides a title with ~8 latin capitalized words.
@@ -65,9 +67,9 @@ class TripalContentTest extends TripalTestBrowserBase {
     ]);
 
     $urls = [
-      'Tripal Content Listing' => 'admin/content/bio_data',
-      'Tripal Content Type Listing' => 'admin/structure/bio_data',
-      'Add Tripal Content Listing/Form' => 'bio_data/add',
+      'Tripal Content Listing' => 'admin/content/tripal',
+      'Tripal Content Type Listing' => 'admin/structure/tripal',
+      'Add Tripal Content Listing/Form' => 'tripal/add',
     ];
 
     // Anonymous User should not be able to see any of these urls.
