@@ -33,8 +33,8 @@ class ChadoContactWidgetDefault extends ChadoWidgetBase {
     // In addition to getting a sorted list of contacts, include
     // the contact type if present, e.g.
     // Person or Institute
-    $sql = 'SELECT C.contact_id, C.name, T.name AS type FROM contact A
-      LEFT JOIN cvterm T ON C.type_id=T.cvterm_id
+    $sql = 'SELECT C.contact_id, C.name, T.name AS type FROM {1:contact} C
+      LEFT JOIN {1:cvterm} T ON C.type_id=T.cvterm_id
       ORDER BY C.name';
     $results = $chado->query($sql, []);
 
