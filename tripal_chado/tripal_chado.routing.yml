@@ -150,7 +150,7 @@ tripal_chado.cvterm_autocomplete:
     parameters:
       count:
         type: integer
-      type_id:
+      cv_id:
         type: integer
 
 tripal_chado.project_autocomplete:
