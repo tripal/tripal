@@ -94,7 +94,7 @@ class ChadoTableProjectAutocompleteTest extends ChadoTestBrowserBase {
 
     // Any project regardless of type.
     $request = Request::create(
-      'chado/project/autocomplete/0/10',
+      'chado/project/autocomplete/10/0',
       'GET',
       ['q' => 'project']
     );
@@ -105,7 +105,7 @@ class ChadoTableProjectAutocompleteTest extends ChadoTestBrowserBase {
     // Error on 0 count.
     $suggest_count = range(0, 7);
     foreach($suggest_count as $count) {
-      $suggest = $autocomplete->handleAutocomplete($request, 0, $count)
+      $suggest = $autocomplete->handleAutocomplete($request, $count, 0)
         ->getContent();
       if ($count > 0) {
 
@@ -125,19 +125,19 @@ class ChadoTableProjectAutocompleteTest extends ChadoTestBrowserBase {
     // Restrict to project with projectprop.type_id set to null (id: 1).
     // Will return - 'Project Good', 'Project Winner', 'Project Great'.
     $request = Request::create(
-      'chado/project/autocomplete/1/10',
+      'chado/project/autocomplete/10/1',
       'GET',
       ['q' => 'project']
     );
 
-    $suggest = $autocomplete->handleAutocomplete($request, 0, $count)
+    $suggest = $autocomplete->handleAutocomplete($request, $count, 0)
         ->getContent();
 
     // Test Limit/count while specifying projectprop.
     // Request will return 3 projects but suggest 1 - 3:
     $suggest_count = range(1, 3);
     foreach($suggest_count as $count) {
-      $suggest = $autocomplete->handleAutocomplete($request, 0, $count)
+      $suggest = $autocomplete->handleAutocomplete($request, $count, 0)
         ->getContent();
 
       $this->assertEquals(count(json_decode($suggest)), $count, 'Number of suggestions does not match requested count limit when projectprop specified');
@@ -178,12 +178,12 @@ class ChadoTableProjectAutocompleteTest extends ChadoTestBrowserBase {
     // Test partial keyword by prefixing with wildcard '%'
     // Will return Project Great and Project Green.
     $request = Request::create(
-      'chado/project/autocomplete/0/10',
+      'chado/project/autocomplete/10/0',
       'GET',
       ['q' => '%gre']
     );
 
-    $suggest = $autocomplete->handleAutocomplete($request, 0, 5)
+    $suggest = $autocomplete->handleAutocomplete($request, 5, 0)
       ->getContent();
 
     foreach(json_decode($suggest) as $item) {

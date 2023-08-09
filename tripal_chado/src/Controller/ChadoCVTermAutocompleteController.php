@@ -15,21 +15,21 @@ class ChadoCVTermAutocompleteController extends ControllerBase {
    *
    * @param Request request
    *
-   * @param int $cv_id
-   *   Limit the match of term to the CV with this cv_id.
-   *   Zero, the default, will return matches to any CV.
-   *
    * @param int $count
    *   Desired number of matching names to suggest.
    *   Default to 5 items.
    *   Zero will disable autocomplete.
+   *
+   * @param int $cv_id
+   *   Limit the match of term to the CV with this cv_id.
+   *   Zero, the default, will return matches to any CV.
    *
    * @return Json Object
    *   Matching cvterm rows where each row is formatted as string:
    *   cvterm.name (db.name:dbxref.accession) and is the value for
    *   the object keys label and value.
    */
-  public function handleAutocomplete(Request $request, int $cv_id = 0, int $count = 5) {
+  public function handleAutocomplete(Request $request, int $count = 5, int $cv_id = 0) {
     // Array to hold matching cvterm names.
     $response = [];
 

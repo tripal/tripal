@@ -14,20 +14,22 @@ class ChadoProjectAutocompleteController extends ControllerBase {
    * Controller method, autocomplete project name.
    *
    * @param Request request
-   * @param int $type_id
-   *   Project type set in projectprop.type_id to restrict projects to specific type.
-   *   Default to 0, return projects regardless of type.
-   *   Must be declared in autocomplete route parameter ie. ['type_id' => 0].
+   *
    * @param int $count
    *   Desired number of matching names to suggest.
    *   Default to 5 items.
-   *   Must be declared in autocomplete route parameter ie. [count => 5].
+   *   Must be declared in autocomplete route parameter i.e. ['count' => 5].
+   *
+   * @param int $type_id
+   *   Project type set in projectprop.type_id to restrict projects to specific type.
+   *   Default to 0, return projects regardless of type.
+   *   Must be declared in autocomplete route parameter i.e. ['type_id' => 0].
    *
    * @return Json Object
    *   Matching project rows in an array where project name
    *   is both the value to the array keys label and value.
    */
-  public function handleAutocomplete(Request $request, int $type_id = 0, int $count = 5) {
+  public function handleAutocomplete(Request $request, int $count = 5, int $type_id = 0) {
     // Array to hold matching project records.
     $response = [];
 

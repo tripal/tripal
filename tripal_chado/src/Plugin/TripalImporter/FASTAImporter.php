@@ -127,7 +127,7 @@ class FASTAImporter extends ChadoImporterBase {
       '#required' => TRUE,
       '#description' => t('Please enter the Sequence Ontology (SO) term name that describes the sequences in the FASTA file (e.g. gene, mRNA, polypeptide, etc...)'),
       '#autocomplete_route_name' => 'tripal_chado.cvterm_autocomplete',
-      '#autocomplete_route_parameters' => ['cv_id' => $cv_id, 'count' => 5],
+      '#autocomplete_route_parameters' => ['count' => 5, 'cv_id' => $cv_id],
     ];
 
     $form['method'] = [
@@ -294,7 +294,7 @@ class FASTAImporter extends ChadoImporterBase {
                          this type must match the type for already loaded features.'),
       '#weight' => 7,
       '#autocomplete_route_name' => 'tripal_chado.cvterm_autocomplete',
-      '#autocomplete_route_parameters' => ['cv_id' => $cv_id, 'count' => 5],
+      '#autocomplete_route_parameters' => ['count' => 5, 'cv_id' => $cv_id],
     ];
 
     return $form;
