@@ -104,7 +104,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 	/**
 	 * @{inheritdoc}
 	 */
-  public function addTypes($bundle_name, $field_name, $types) {
+  public function addTypes(string $field_name, array $types) {
 
     // Index the types by their entity type, field type and key.
     foreach ($types as $index => $type) {
@@ -116,18 +116,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
       $key = $type->getKey();
 
-      if (!array_key_exists($bundle_name, $this->property_types)) {
-        $this->property_types[$bundle_name] = [];
+      if (!array_key_exists($field_name, $this->property_types)) {
+        $this->property_types[$field_name] = [];
       }
-      if (!array_key_exists($field_name, $this->property_types[$bundle_name])) {
-        $this->property_types[$bundle_name][$field_name] = [];
-      }
-      if (array_key_exists($key, $this->property_types[$bundle_name])) {
-        $this->logger->error('Cannot add a property type, "@prop", as it already exists',
-            ['@prop' => $bundle_name . '.' . $field_name . '.' . $key]);
-        return FALSE;
-      }
-      $this->property_types[$bundle_name][$field_name][$key] = $type;
+      $this->property_types[$field_name][$key] = $type;
+
     }
   }
 
@@ -141,31 +134,31 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   /**
    * @{inheritdoc}
    */
-  public function getPropertyType($bundle_name, $field_name, $key) {
-    if (array_key_exists($bundle_name, $this->property_types)) {
-      if (array_key_exists($field_name, $this->property_types[$bundle_name])) {
-        if (array_key_exists($key, $this->property_types[$bundle_name][$field_name])) {
-          return $this->property_types[$bundle_name][$field_name][$key];
-        }
+  public function getPropertyType(string $field_name, string $key) {
+
+    if (array_key_exists($field_name, $this->property_types)) {
+      if (array_key_exists($key, $this->property_types[$field_name])) {
+        return $this->property_types[$field_name][$key];
       }
     }
+
     return NULL;
   }
 
   /**
 	 * @{inheritdoc}
 	 */
-  public function removeTypes($bundle_name, $field_name, $types) {
+  public function removeTypes(string $field_name, array $types) {
 
     foreach ($types as $type) {
       $key = $type->getKey();
-      if (array_key_exists($bundle_name, $this->property_types)) {
-        if (array_key_exists($field_name, $this->property_types[$bundle_name])) {
-          if (array_key_exists($key, $this->property_types[$bundle_name][$field_name])) {
-            unset($this->property_types[$bundle_name][$field_name][$key]);
-          }
+
+      if (array_key_exists($field_name, $this->property_types)) {
+        if (array_key_exists($key, $this->property_types[$field_name])) {
+          unset($this->property_types[$field_name][$key]);
         }
       }
+
     }
   }
 

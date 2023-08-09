@@ -254,7 +254,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
 
     // Now test ChadoStorage->addTypes()
     // param array $types = Array of \Drupal\tripal\TripalStorage\StoragePropertyTypeBase objects.
-    $chado_storage->addTypes($this->content_type, $field_name, $propertyTypes);
+    $chado_storage->addTypes($field_name, $propertyTypes);
     $retrieved_types = $chado_storage->getTypes();
     $this->assertIsArray($retrieved_types, "Unable to retrieve the PropertyTypes after adding $field_name.");
     // @update to match new format $this->assertCount(2, $retrieved_types, "Did not revieve the expected number of PropertyTypes after adding $field_name.");
@@ -263,6 +263,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     // We're going to create a TripalField and see if that works.
     $fieldconfig = new FieldConfigMock(['field_name' => $field_name, 'entity_type' => $this->content_type]);
     $fieldconfig->setMock(['label' => $field_label, 'settings' => $storage_settings]);
+    $chado_storage->addFieldDefinition($field_name, $fieldconfig);
 
     // Next we actually load the values.
     $values[$field_name] = [
@@ -366,7 +367,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
 
     // Now test ChadoStorage->addTypes()
     // param array $types = Array of \Drupal\tripal\TripalStorage\StoragePropertyTypeBase objects.
-    $chado_storage->addTypes($this->content_type, $field_name, $propertyTypes);
+    $chado_storage->addTypes($field_name, $propertyTypes);
     $retrieved_types = $chado_storage->getTypes();
     $this->assertIsArray($retrieved_types, "Unable to retrieve the PropertyTypes after adding $field_name.");
     // @update to match new format $this->assertCount(8, $retrieved_types, "Did not revieve the expected number of PropertyTypes after adding $field_name.");
@@ -375,6 +376,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     // We're going to create a TripalField and see if that works.
     $fieldconfig = new FieldConfigMock(['field_name' => $field_name, 'entity_type' => $this->content_type]);
     $fieldconfig->setMock(['label' => $field_label, 'settings' => $storage_settings]);
+    $chado_storage->addFieldDefinition($field_name, $fieldconfig);
 
     // Next we actually load the values.
     $values[$field_name] = [ 0 => [], 1 => [], 2 => [] ];
@@ -527,7 +529,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
 
     // Now test ChadoStorage->addTypes()
     // param array $types = Array of \Drupal\tripal\TripalStorage\StoragePropertyTypeBase objects.
-    $chado_storage->addTypes($this->content_type, $field_name, $propertyTypes);
+    $chado_storage->addTypes($field_name, $propertyTypes);
     $retrieved_types = $chado_storage->getTypes();
     $this->assertIsArray($retrieved_types, "Unable to retrieve the PropertyTypes after adding $field_name.");
     // @update to match new format $this->assertCount(15, $retrieved_types, "Did not revieve the expected number of PropertyTypes after adding $field_name.");
@@ -536,6 +538,7 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     // We're going to create a TripalField and see if that works.
     $fieldconfig = new FieldConfigMock(['field_name' => $field_name, 'entity_type' => $this->content_type]);
     $fieldconfig->setMock(['label' => $field_label, 'settings' => $storage_settings]);
+    $chado_storage->addFieldDefinition($field_name, $fieldconfig);
 
     // Next we actually load the values.
     $values[$field_name] = [ 0 => [] ];

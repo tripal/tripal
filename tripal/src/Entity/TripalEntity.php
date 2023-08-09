@@ -483,7 +483,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     $values = [];
     $tripal_storages = [];
     $fields = $entity->getFields();
-    $bundle_name = $entity->getType();
 
     // Specifically, for each field...
     foreach ($fields as $field_name => $items) {
@@ -506,7 +505,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         }
 
         // Add the field definition to the storage for this field.
-        $tripal_storages[$tsid]->addFieldDefinition($bundle_name, $field_name, $item->getFieldDefinition())
+        $tripal_storages[$tsid]->addFieldDefinition($field_name, $item->getFieldDefinition());
 
         // Get the empty property values for this field item and the
         // property type objects.
@@ -522,7 +521,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         $item->tripalClear($item, $field_name, $prop_types, $prop_values, $entity);
 
         // Add the property types to the storage plugin.
-        $tripal_storages[$tsid]->addTypes($bundle_name, $field_name, $prop_types);
+        $tripal_storages[$tsid]->addTypes($field_name, $prop_types);
 
         // Prepare the property values for the storage plugin.
         // Note: We are assuming the key for the value is the
@@ -588,7 +587,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     // Set the property values that should be saved in Drupal, everything
     // else will stay in the underlying data store (e.g. Chado)..
     $delta_remove = [];
-    $bundle_name = $this->getType();
     $fields = $this->getFields();
     foreach ($fields as $field_name => $items) {
       foreach($items as $item) {
@@ -605,7 +603,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         $prop_values = [];
         $prop_types = [];
         foreach ($values[$tsid][$field_name][$delta] as $key => $prop_info) {
-          $prop_type = $tripal_storages[$tsid]->getPropertyType($bundle_name, $field_name, $key);
+          $prop_type = $tripal_storages[$tsid]->getPropertyType($field_name, $key);
           $prop_value = $prop_info['value'];
           $settings = $prop_type->getStorageSettings();
           if (array_key_exists('drupal_store', $settings) and $settings['drupal_store'] == TRUE) {

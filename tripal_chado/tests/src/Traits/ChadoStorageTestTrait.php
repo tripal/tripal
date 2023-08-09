@@ -162,28 +162,7 @@ trait ChadoStorageTestTrait {
       ->willReturn($mock_idspace);
     $container->set('tripal.collection_plugin_manager.idspace', $mock_idspace_service);
 
-    // Get plugin managers we need for our testing.
-    $storage_manager = \Drupal::service('tripal.storage');
-    $this->chadoStorage = $storage_manager->createInstance('chado_storage');
-
-    // There are some values we need setup for each field.
-    // Each test implmenting this trait should have a $fields variable defined
-    // which we will use here to cater our mocks to each use case.
-    foreach ($this->fields as $field_name => $field_details) {
-
-      // We also need a FieldConfig object for *Values() methods.
-      $fieldConfig_mock = $this->createMock(\Drupal\field\Entity\FieldConfig::class);
-      $fieldConfig_mock->method('getSettings')
-        ->willReturn([
-            'storage_plugin_id' => 'chado_storage',
-            'storage_plugin_settings' => [
-              'base_table' => $field_details['base_table'],
-            ],
-        ]);
-      $fieldConfig_mock->method('getLabel')
-        ->willReturn($field_name);
-      $this->fieldConfig_mock[$field_name] = $fieldConfig_mock;
-    }
+    $this->cleanChadoStorageValues();
   }
 
   /**
@@ -519,11 +498,11 @@ trait ChadoStorageTestTrait {
         );
 
         // Set it in the protected propertyTypes array for use in tests.
-        $this->propertyTypes[$this->content_type][$field_name][$property_key] = $type;
+        $this->propertyTypes[$field_name][$property_key] = $type;
         $total_num_properties++;
       }
 
-      $this->assertCount($expected_property_counts[$field_name], $this->propertyTypes[$this->content_type][$field_name],
+      $this->assertCount($expected_property_counts[$field_name], $this->propertyTypes[$field_name],
         "We did not have the expected number of property types created for $field_name.");
     }
 
@@ -587,13 +566,13 @@ trait ChadoStorageTestTrait {
           $this->assertTrue( empty($this->propertyValues[$property_key]->getValue()),
             "The $field_name $property_key property should not have a value.");
 
-          $this->assertArrayHasKey($property_key, $this->propertyTypes[$this->content_type][$field_name],
+          $this->assertArrayHasKey($property_key, $this->propertyTypes[$field_name],
             "We expected there to already be a property type for $field_name.$property_key but there was not.");
 
           // Add the property Value + Type + Field Config to the values array.
           $this->dataStoreValues[$field_name][$delta][$property_key] = [
             'value' => $this->propertyValues[$property_key],
-            'type' => $this->propertyTypes[$this->content_type][$field_name][$property_key],
+            'type' => $this->propertyTypes[$field_name][$property_key],
             'definition' => $this->fieldConfig_mock[$field_name],
           ];
         }
@@ -627,8 +606,8 @@ trait ChadoStorageTestTrait {
    */
   public function addPropertyTypes2ChadoStorage($field_names, $expected_property_counts) {
 
-    foreach ($this->propertyTypes[$this->content_type] as $field_name => $properties) {
-      $this->chadoStorage->addTypes($this->content_type, $field_name, $properties);
+    foreach ($this->propertyTypes as $field_name => $properties) {
+      $this->chadoStorage->addTypes($field_name, $properties);
     }
     $retrieved_types = $this->chadoStorage->getTypes();
 
@@ -636,7 +615,7 @@ trait ChadoStorageTestTrait {
     $this->assertIsArray($retrieved_types,
       "Unable to retrieve the PropertyTypes after adding $field_name_string.");
     $total_num_properties = 0;
-    foreach ($retrieved_types[$this->content_type] as $field_name => $retrieved_properties) {
+    foreach ($retrieved_types as $field_name => $retrieved_properties) {
       $this->assertCount($expected_property_counts[$field_name], $retrieved_properties,
         "Did not revieve the expected number of PropertyTypes for $field_name after adding $field_name_string.");
       $total_num_properties += count($retrieved_properties);
@@ -694,6 +673,30 @@ trait ChadoStorageTestTrait {
     $this->propertyTypes = [];
     $this->propertyValues = [];
     $this->dataStoreValues = [];
+
+    // Get plugin managers we need for our testing.
+    $storage_manager = \Drupal::service('tripal.storage');
+    $this->chadoStorage = $storage_manager->createInstance('chado_storage');
+
+    // There are some values we need setup for each field.
+    // Each test implmenting this trait should have a $fields variable defined
+    // which we will use here to cater our mocks to each use case.
+    foreach ($this->fields as $field_name => $field_details) {
+
+      // We also need a FieldConfig object for *Values() methods.
+      $fieldConfig_mock = $this->createMock(\Drupal\field\Entity\FieldConfig::class);
+      $fieldConfig_mock->method('getSettings')
+        ->willReturn([
+            'storage_plugin_id' => 'chado_storage',
+            'storage_plugin_settings' => [
+              'base_table' => $field_details['base_table'],
+            ],
+        ]);
+      $fieldConfig_mock->method('getLabel')
+        ->willReturn($field_name);
+      $this->chadoStorage->addFieldDefinition($field_name, $fieldConfig_mock);
+      $this->fieldConfig_mock[$field_name] = $fieldConfig_mock;
+    }
   }
   /**
    * DEBUGGING USE ONLY: Prints out a bunch of debugging information.

@@ -6,7 +6,6 @@ use Drupal\Core\Plugin\PluginBase;
 use Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface;
 
 use Drupal\tripal\Services\TripalLogger;
-use Drupal\tripal\TripalField\TripalFieldItemBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -21,9 +20,11 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
 
   /**
    * An associative array that contains all of the field defitions that
-   * have been added to this object. It is indexed by entityType ->
-   * fieldName and the value is the FieldType object associated with that
-   * field name.
+   * have been added to this object. It is indexed by fieldName
+   * and the value is the field configuration object.
+   * This can be an instance of:
+   *   \Drupal\field\Entity\FieldStorageConfig or
+   *   \Drupal\field\Entity\FieldConfig
    *
    * @var array
    */
@@ -74,14 +75,12 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
   /**
    * @{inheritdoc}
    */
-  public function addFieldDefinition(string $bundle_name, string $field_name, TripalFieldItemBase $field_definition) {
-    if (!array_key_exists($bundle_name, $this->field_definitions)) {
-      $this->field_definitions[$bundle_name] = [];
+  public function addFieldDefinition(string $field_name, object $field_definition) {
+
+    if (!array_key_exists($field_name, $this->field_definitions)) {
+      $this->field_definitions[$field_name] = [];
     }
-    if (!array_key_exists($field_name, $this->field_definitions[$bundle_name])) {
-      $this->field_definitions[$bundle_name][$field_name] = [];
-    }
-    $this->field_definitions[$bundle_name][$field_name] = $field_definition;
+    $this->field_definitions[$field_name] = $field_definition;
 
     return TRUE;
   }
@@ -89,14 +88,14 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
   /**
    * @{inheritdoc}
    */
-  public function getFieldDefinition(string $bundle_name, string $field_name) {
-    if (array_key_exists($bundle_name, $this->field_definitions)) {
-      if (array_key_exists($field_name, $this->field_definitions[$bundle_name])) {
-        if (is_object($this->field_definitions[$bundle_name][$field_name])) {
-          return $this->field_definitions[$bundle_name][$field_name];
-        }
+  public function getFieldDefinition(string $field_name) {
+
+    if (array_key_exists($field_name, $this->field_definitions)) {
+      if (is_object($this->field_definitions[$field_name])) {
+        return $this->field_definitions[$field_name];
       }
     }
+
     return FALSE;
   }
 }

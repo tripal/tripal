@@ -13,28 +13,22 @@ interface TripalStorageInterface extends PluginInspectionInterface {
   /**
    * Adds the given array of new property types to this tripal storage plugin.
    *
-   * @param string $bundle_name
-   *   The name of the bundle on which the field is attached that the properties
-   *   belong to.
    * @param string $field_name
    *   The name of the field the properties belong to.
    * @param array $types
    *   Array of \Drupal\tripal\TripalStorage\StoragePropertyTypeBase objects.
    */
-  public function addTypes($bundle_name, $field_name, $types);
+  public function addTypes(string $field_name, array $types);
 
   /**
    * Removes the given array of property types from this tripal storage plugin.
    *
-   * @param string $bundle_name
-   *   The name of the bundle on which the field is attached that the properties
-   *   belong to.
    * @param string $field_name
    *   The name of the field the properties belong to.
    * @param array $types
    *   Array of \Drupal\tripal\TripalStorage\StoragePropertyTypeBase objects.
    */
-  public function removeTypes($bundle_name, $field_name, $types);
+  public function removeTypes(string $field_name, array $types);
 
   /**
    * Returns a list of all property types added to this storage plugin type.
@@ -59,7 +53,7 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    * @return object
    *   An instance of the propertyType indicated.
    */
-  public function getPropertyType($bundle_name, $field_name, $key);
+  public function getPropertyType(string $field_name, string $key);
 
   /**
    * Stores the field definition for a given field.
@@ -68,30 +62,28 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    * of an insert/update/load/find/deleteValues() method must be added
    * using this function before the *Values() method can be called.
    *
-   * @param string $bundle_name
-   *   The name of the bundle on which the field is attached.
    * @param string $field_name
    *   The name of the field based on it's annotation 'id'.
    * @param object $field_definition
-   *   The Field Type object for this field.
-   *   If calling within a field type class, use `$this`; if calling within
-   *   automated testing use a mock of FieldConfig.
+   *   The field configuration object. This can be an instance of:
+   *   \Drupal\field\Entity\FieldStorageConfig or
+   *   \Drupal\field\Entity\FieldConfig
    * @return boolean
    *   Returns true if no errors were encountered and false otherwise.
    */
-  public function addFieldDefinition(string $bundle_name, string $field_name, TripalFieldItemBase $field_definition);
+  public function addFieldDefinition(string $field_name, object $field_definition);
 
   /**
    * Retrieves the stored field definition of a given field.
    *
-   * @param string $bundle_name
-   *   The name of the bundle on which the field is attached.
    * @param string $field_name
    *   The name of the field based on it's annotation 'id'.
    * @return object $field_definition
-   *   The Field Type object for this field.
+   *   The field configuration object. This can be an instance of:
+   *   \Drupal\field\Entity\FieldStorageConfig or
+   *   \Drupal\field\Entity\FieldConfig
    */
-  public function getFieldDefinition(string $bundle_name, string $field_name);
+  public function getFieldDefinition(string $field_name);
 
   /**
    * Inserts values in the field data store.
