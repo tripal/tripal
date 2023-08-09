@@ -10,6 +10,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\user\UserInterface;
 use Drupal\tripal\TripalField\Interfaces\TripalFieldItemInterface;
 use Drupal\field\Entity\FieldConfig;
+use Symfony\Component\Routing\Route;
 
 
 /**
@@ -47,12 +48,12 @@ use Drupal\field\Entity\FieldConfig;
  *     "status" = "status",
  *   },
  *   links = {
- *     "canonical" = "/bio_data/{tripal_entity}",
- *     "add-page" = "/bio_data/add",
- *     "add-form" = "/bio_data/add/{tripal_entity_type}",
- *     "edit-form" = "/bio_data/{tripal_entity}/edit",
- *     "delete-form" = "/bio_data/{tripal_entity}/delete",
- *     "collection" = "/admin/content/bio_data",
+ *     "canonical" = "/tripal/{tripal_entity}",
+ *     "add-page" = "/tripal/add",
+ *     "add-form" = "/tripal/add/{tripal_entity_type}",
+ *     "edit-form" = "/tripal/{tripal_entity}/edit",
+ *     "delete-form" = "/tripal/{tripal_entity}/delete",
+ *     "collection" = "/admin/content/tripal",
  *   },
  *   bundle_entity_type = "tripal_entity_type",
  *   field_ui_base_route = "entity.tripal_entity_type.edit_form"
@@ -69,7 +70,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * @code
       $values = [
         'title' => 'laceytest'.time(),
-        'type' => 'bio_data_1',
+        'type' => 'organism',
         'uid' => 1,
       ];
       $entity = \Drupal\tripal\Entity\TripalEntity::create($values);
@@ -79,7 +80,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * @param array $values
    *   - *title: the title of the entity.
    *   - *user_id: the user_id of the user who authored the content.
-   *   - *type: the type of tripal entity this is (e.g. bio_data_1)
+   *   - *type: the type of tripal entity this is (e.g. organism)
    *   - status: whether the entity is published or not (boolean)
    *   - created: the unix timestamp for when this content was created.
    * @return object
@@ -153,35 +154,20 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    *   The alias to use. It can contain tokens the correspond to field values.
    *   Token should be be compatible with those returned by
    *   tripal_get_entity_tokens().
-   * @param array $cache
-   *   This array is used to store objects you want to cache for performance
-   *   reasons, as well as, cache related options. The following are supported:
-   *   - TripalEntityType $bundle
-   *       The bundle for the current entity.
    */
-  public function setAlias($path_alias = NULL, $cache = []) {
+  public function setAlias($path_alias = NULL) {
 
-    $system_path = "/bio_data/" . $this->getID();
-    $langcode = \Drupal::languageManager()->getCurrentLanguage()->getId();
+
+    $system_path = "/tripal/" . $this->getID();
 
     // If no alias was supplied then we should try to generate one using the
     // default format set by admins.
     if (!$path_alias) {
 
-      // Load the TripalEntityType entity for this TripalEntity (if it's not
-      // cached). First get the format for the url alias based on the bundle
-      // of the entity. Then replace all the tokens with values from the entity fields.
-      if (isset($cache['bundle'])) {
-        $bundle = $cache['bundle'];
-      }
-      else {
-        $bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
-      }
-
+      $bundle = \Drupal\tripal\Entity\TripalEntityType::load($this->getType());
       $path_alias = $bundle->getURLFormat();
       $path_alias = $this->replaceTokens($path_alias,
         ['tripal_entity_type' => $bundle]);
-
     }
 
     // Ensure there is a leading slash.
@@ -196,7 +182,6 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
     $path = \Drupal::entityTypeManager()->getStorage('path_alias')->create([
       'path' => $system_path,
       'alias' => $path_alias,
-      'langcode' => $langcode,
     ]);
     $path->save();
   }
