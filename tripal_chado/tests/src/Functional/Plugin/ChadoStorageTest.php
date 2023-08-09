@@ -270,13 +270,9 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
       0 => [
         'name'=> [
           'value' => $propertyValues['name'],
-          'type' => $propertyTypes['name'],
-          'definition' => $fieldconfig,
         ],
         'feature_id' => [
           'value' => $propertyValues['feature_id'],
-          'type' => $propertyTypes['feature_id'],
-          'definition' => $fieldconfig,
         ],
       ],
     ];
@@ -382,19 +378,13 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
     $values[$field_name] = [ 0 => [], 1 => [], 2 => [] ];
     foreach ($propertyTypes as $key => $propType) {
       $values[$field_name][0][$key] = [
-        'type' => $propType,
         'value' => clone $propertyValues[$key],
-        'definition' => $fieldconfig
       ];
       $values[$field_name][1][$key] = [
-        'type' => $propType,
         'value' => clone $propertyValues[$key],
-        'definition' => $fieldconfig
       ];
       $values[$field_name][2][$key] = [
-        'type' => $propType,
         'value' => clone $propertyValues[$key],
-        'definition' => $fieldconfig
       ];
     }
     // We also need to set the featureprop_id for each.
@@ -542,11 +532,9 @@ class ChadoStorageTest extends ChadoTestBrowserBase {
 
     // Next we actually load the values.
     $values[$field_name] = [ 0 => [] ];
-    foreach ($propertyTypes as $key => $propType) {
+    foreach ($propertyValues as $key => $propValue) {
       $values[$field_name][0][$key] = [
-        'type' => $propType,
-        'value' => $propertyValues[$key],
-        'definition' => $fieldconfig
+        'value' => $propValue,
       ];
     }
     $success = $chado_storage->loadValues($values);
