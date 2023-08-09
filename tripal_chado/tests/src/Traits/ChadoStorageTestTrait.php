@@ -572,8 +572,6 @@ trait ChadoStorageTestTrait {
           // Add the property Value + Type + Field Config to the values array.
           $this->dataStoreValues[$field_name][$delta][$property_key] = [
             'value' => $this->propertyValues[$property_key],
-            'type' => $this->propertyTypes[$field_name][$property_key],
-            'definition' => $this->fieldConfig_mock[$field_name],
           ];
         }
         $this->assertCount(sizeof($this->fields[$field_name]['properties']), $this->dataStoreValues[$field_name][$delta],
