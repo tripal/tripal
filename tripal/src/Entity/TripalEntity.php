@@ -466,10 +466,8 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * - 3rd: Delta value of the field item.
    * - 4th: the property key.
    * - 5th: One of the following keys:
-   *   - 'type': The property type object.
-   *   - 'definition':  the field definition object for the field that this
-   *     property belongs to.
    *   - 'value': the property value object.
+   *   - 'operation': the operation to use when matching this value.
    *
    * This function also returns an array of TripalStorage objects.
    *
@@ -529,10 +527,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         // as soon the values array will not contain types ;-)
         foreach ($prop_types as $prop_type) {
           $key = $prop_type->getKey();
-          $values[$tsid][$field_name][$delta][$key] = [
-            'definition' => $item->getFieldDefinition(),
-            'type' => $prop_type
-          ];
+          $values[$tsid][$field_name][$delta][$key] = [];
         }
         foreach ($prop_values as $prop_value) {
           $key = $prop_value->getKey();

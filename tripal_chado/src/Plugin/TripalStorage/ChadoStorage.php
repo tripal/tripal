@@ -570,10 +570,15 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     // Iterate through the value objects.
     foreach ($values as $field_name => $deltas) {
+
+      // Now we retrieve the field configuration.
+      $definition = $this->getFieldDefinition($field_name);
+
       foreach ($deltas as $delta => $keys) {
         foreach ($keys as $key => $info) {
-          $definition = $info['definition'];
-          $prop_type = $info['type'];
+
+          // Retrieve the property type for this value.
+          $prop_type = $this->getPropertyType($field_name, $key);
 
           // Get the field and property storage settings.
           $field_settings = $definition->getSettings();
@@ -641,11 +646,17 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     // Iterate through the value objects.
     foreach ($values as $field_name => $deltas) {
+
+      // Retrieve the field configuration.
+      $definition = $this->getFieldDefinition($field_name);
+
       foreach ($deltas as $delta => $keys) {
         foreach ($keys as $key => $info) {
-          $definition = $info['definition'];
-          $prop_type = $info['type'];
 
+          // Get the Property type for this value.
+          $prop_type = $this->getPropertyType($field_name, $key);
+
+          // Get important settings from the field configuration.
           $field_settings = $definition->getSettings();
           $storage_plugin_settings = $field_settings['storage_plugin_settings'];
           $prop_storage_settings = $prop_type->getStorageSettings();
@@ -710,7 +721,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $delta = $item[1];
       $key = $item[2];
       $info = $item[3];
-      $prop_type = $info['type'];
+      $prop_type = $this->getPropertyType($field_name, $key);
       $prop_storage_settings = $prop_type->getStorageSettings();
       $template = $prop_storage_settings['template'];
 
@@ -738,7 +749,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $delta = $item[1];
       $key = $item[2];
       $info = $item[3];
-      $prop_type = $info['type'];
+      $prop_type = $this->getPropertyType($field_name, $key);
       $prop_storage_settings = $prop_type->getStorageSettings();
       $namespace = $prop_storage_settings['namespace'];
       $callback = $prop_storage_settings['function'];
@@ -784,36 +795,40 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     // Iterate through the value objects.
     foreach ($values as $field_name => $deltas) {
+
+      // Retrieve the field configuration.
+      $definition = $this->getFieldDefinition($field_name);
+      if (!is_object($definition)) {
+        $this->logger->error($this->t('Cannot save record in Chado. The field, "@field", is missing the field definition (i.e. FieldConfig object).',
+          ['@field' => $field_name]));
+        continue;
+      }
+
       // @debug dpm(array_keys($deltas), "2nd level: deltas ($field_name)");
       foreach ($deltas as $delta => $keys) {
         // @debug dpm(array_keys($keys), "3rd level: field key name ($delta)");
         foreach ($keys as $key => $info) {
-
           // @debug dpm(array_keys($info), "4th level: info key-value pairs ($key)");
-          if (!array_key_exists('definition', $info) OR !is_object($info['definition'])) {
-            $this->logger->error($this->t('Cannot save record in Chado. The field, "@field", is missing the field definition (i.e. FieldConfig object). There should be a "definition" key in this array: @var',
-              ['@field' => $field_name, '@var' => print_r($info, TRUE)]));
-            continue;
-          }
+
+          // Ensure we have a value to work with.
           if (!array_key_exists('value', $info) OR !is_object($info['value'])) {
             $this->logger->error($this->t('Cannot save record in Chado. The field, "@field", is missing the StoragePropertyValue object.',
               ['@field' => $field_name]));
             continue;
           }
-
-          // @debug ksm($info['definition'], "$key: DEFINITION");
-          // @debug ksm($info['type'], "$key: TYPE");
-          // @debug ksm($info['value'], "$key: VALUES");
-          $definition = $info['definition'];
-          $prop_type = $info['type'];
           $prop_value = $info['value'];
+
+          // Retrieve the property type for this value.
+          $prop_type = $this->getPropertyType($field_name, $key);
+
+          // Retrieve the operation to be used for searching and if not set, use equals as the default.
           $operation = array_key_exists('operation', $info) ? $info['operation'] : '=';
 
+          // Retrieve important field settings.
           $field_label = $definition->getLabel();
           $field_settings = $definition->getSettings();
           $storage_plugin_settings = $field_settings['storage_plugin_settings'];
           $prop_storage_settings = $prop_type->getStorageSettings();
-
 
           // Make sure we have an action for this property.
           if (!array_key_exists('action', $prop_storage_settings)) {
