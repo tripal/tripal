@@ -132,7 +132,7 @@ tripal.dashboard_admin_notification_field:
 
 # Override the default entity listing page for a more informative page.
 entity.tripal_entity.add_page:
-  path: tripal/add
+  path: bio_data/add
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalEntityUIController::tripalContentAddPage'
     _title: 'Add Tripal Content'
@@ -144,7 +144,7 @@ entity.tripal_entity.add_page:
 
 # tripal_unpublish_orphans_form
 tripal.content_type_unpublish:
-  path: 'admin/content/tripal/unpublish'
+  path: 'admin/content/bio_data/unpublish'
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalController::tripalContentUnpublishOrphans'
     _title: 'Unpublish Orphaned Content'
@@ -154,7 +154,7 @@ tripal.content_type_unpublish:
 
 # Bio Data Ajax Callbacks
 tripal.content_type_field_attach:
-  path: 'tripal/ajax/field_attach/{id}'
+  path: 'bio_data/ajax/field_attach/{id}'
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalController::tripalAttachField'
     _title: 'Attach a Field to a Content Type'
@@ -163,7 +163,7 @@ tripal.content_type_field_attach:
 
 # Adds a +Check for new fields link on the 'Tripal Content Types' page.
 tripal.content_type_field_check:
-  path: 'admin/structure/tripal/manage/{tripal_entity_type}/fields/check'
+  path: 'admin/structure/bio_data/manage/{tripal_entity_type}/fields/check'
   defaults:
     _controller: '\Drupal\tripal\Controller\TripalEntityUIController::tripalCheckForFields'
     _title: 'Check for new fields'

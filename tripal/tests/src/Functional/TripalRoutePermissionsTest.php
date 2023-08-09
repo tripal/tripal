@@ -256,21 +256,21 @@ class TripalRoutePermissionsTest extends BrowserTestBase {
 
     // The URLs to check.
     $urls = [
-      'entity-canonical' => 'tripal/' . $entity_id,
-      'entity-add-page' => 'tripal/add',
-      'entity-add-form' => 'tripal/add/' . $content_type,
-      'entity-edit-form' => 'tripal/' . $entity_id . '/edit',
-      'entity-delete-form' => 'tripal/' . $entity_id . '/delete',
-      'entity-collection' => 'admin/content/tripal',
+      'entity-canonical' => 'bio_data/' . $entity_id,
+      'entity-add-page' => 'bio_data/add',
+      'entity-add-form' => 'bio_data/add/' . $content_type,
+      'entity-edit-form' => 'bio_data/' . $entity_id . '/edit',
+      'entity-delete-form' => 'bio_data/' . $entity_id . '/delete',
+      'entity-collection' => 'admin/content/bio_data',
       //'publish-content' => '',
-      'unpublish-content' => 'admin/content/tripal/unpublish',
-      'entitytype-add-form' => 'admin/structure/tripal/add',
-      'entitytype-edit-form' => 'admin/structure/tripal/manage/' . $content_type,
-      'entitytype-delete-form' => 'admin/structure/tripal/manage/' . $content_type . '/delete',
-      'entitytype-manage-fields' => 'admin/structure/tripal/manage/' . $content_type . '/fields',
-      'entitytype-manage-form' => 'admin/structure/tripal/manage/' . $content_type . '/form-display',
-      'entitytype-manage-display' => 'admin/structure/tripal/manage/' . $content_type . '/display',
-      'entitytype-collection' => 'admin/structure/tripal',
+      'unpublish-content' => 'admin/content/bio_data/unpublish',
+      'entitytype-add-form' => 'admin/structure/bio_data/add',
+      'entitytype-edit-form' => 'admin/structure/bio_data/manage/' . $content_type,
+      'entitytype-delete-form' => 'admin/structure/bio_data/manage/' . $content_type . '/delete',
+      'entitytype-manage-fields' => 'admin/structure/bio_data/manage/' . $content_type . '/fields',
+      'entitytype-manage-form' => 'admin/structure/bio_data/manage/' . $content_type . '/form-display',
+      'entitytype-manage-display' => 'admin/structure/bio_data/manage/' . $content_type . '/display',
+      'entitytype-collection' => 'admin/structure/bio_data',
     ];
 
     // Keys in the array are pages which that permission SHOULD be able to access.
