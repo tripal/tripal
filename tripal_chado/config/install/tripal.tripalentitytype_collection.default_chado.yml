@@ -7,7 +7,7 @@ content_types:
         term: OBI:0100026
         help_text: Use the organism page for an individual living system, such as animal, plant, bacteria or virus,
         category: General
-        name: organism
+        id: organism
         title_format: "[organism_genus] [organism_species] [organism_infraspecific_type] [organism_infraspecific_name]"
         url_format: "organism/[TripalEntity__entity_id]"
         synonyms:
@@ -17,7 +17,7 @@ content_types:
         term: operation:2945
         help_text: Use the analysis page to for an individual analysis, workflow or pipeline that was performed using statistical or computational means.
         category: General
-        name: analysis
+        id: analysis
         title_format: "[analysis_name]"
         url_format: "analysis/[TripalEntity__entity_id]"
         synonyms:
@@ -27,7 +27,7 @@ content_types:
         term: NCIT:C47885
         help_text: Use the project page to provide information about a project that many be linked to multiple sub components such as studies or analyses.
         category: General
-        name: project
+        id: project
         title_format: "[project_name]"
         url_format: "project/[TripalEntity__entity_id]"
         synonyms:
@@ -37,7 +37,7 @@ content_types:
         term: SIO:001066
         help_text: Use the study page for a systematic investigation.
         category: General
-        name: study
+        id: study
         title_format: "[study_name]"
         url_format: "study/[TripalEntity__entity_id]"
         synonyms:
@@ -47,7 +47,7 @@ content_types:
         term: local:contact
         help_text: Use the contage page a person or institution that can be linked as a responsible party for data or results.
         category: General
-        name: contact
+        id: contact
         title_format: "[contact_name]"
         url_format: "contact/[TripalEntity__entity_id]"
         synonyms:
@@ -57,7 +57,7 @@ content_types:
         term: TPUB:0000002
         help_text: Use the publication page for books, journal articles, or other citable work.
         category: General
-        name: pub
+        id: pub
         title_format: "[publication_title]"
         url_format: "pub/[TripalEntity__entity_id]"
         synonyms:
@@ -67,7 +67,7 @@ content_types:
         term: sep:00101
         help_text: Use the protocol page for a parameterizable description of a process.
         category: General
-        name: protocol
+        id: protocol
         title_format: "[protocol_name]"
         url_format: "protocol/[TripalEntity__entity_id]"
         synonyms:
@@ -77,7 +77,7 @@ content_types:
         term: SO:0000704
         help_text: Use the gene page for a region (or regions) that includes all of the sequence elements necessary to encode a functional transcript. A gene may include regulatory regions, transcribed regions and/or other functional sequence regions.
         category: Genomic
-        name: gene
+        id: gene
         title_format: "[gene_name]"
         url_format: "gene/[TripalEntity__entity_id]"
         synonyms:
@@ -87,7 +87,7 @@ content_types:
         term: SO:0000234
         help_text: Use the mRNA page for a messenger RNA whic is the intermediate molecule between DNA and protein. It includes UTR and coding sequences. It does not contain introns.
         category: Genomic
-        name: mRNA
+        id: mRNA
         title_format: "[mrna_name]"
         url_format: "mRNA/[TripalEntity__entity_id]"
         synonyms:
@@ -97,7 +97,7 @@ content_types:
         term: data:0872
         help_text: Use the phylogenetic tree page for data or plotting of phylogenetic trees. Usually includes information such as topology, lengths (in time or in expected amounts of variance) and a confidence interval for each length.
         category: Genomic
-        name: phylotree
+        id: phylotree
         title_format: "[phylotree_name]"
         url_format: "phylotree/[TripalEntity__entity_id]"
         synonyms:
@@ -107,7 +107,7 @@ content_types:
         term: data:1280
         help_text: Use the physical map page for a map of annotated with physical features or landmarks such as restriction sites, cloned DNA fragments, genes or genetic markers, along with the physical distances between them. Distance in a physical map is measured in base pairs. A physical map might be ordered relative to a reference map (typically a genetic map) in the process of genome sequencing.
         category: Genomic 
-        name: physical_map
+        id: physical_map
         title_format: "[physical_map_name]"
         url_format: "physical_map/[TripalEntity__entity_id]"
         synonyms:
@@ -117,7 +117,7 @@ content_types:
         term: NCIT:C16223
         help_text: Use the DNA library page for a collection of DNA molecules that have been cloned in vectors.
         category: Genomic
-        name: dna_library
+        id: dna_library
         title_format: "[dna_library_name]"
         url_format: "dna_library/[TripalEntity__entity_id]"
         synonyms:
@@ -127,7 +127,7 @@ content_types:
         term: operation:0525
         help_text: Use the genome assembly page for an analyses specifcally for genome assembly. Such an analysis typically involves one or more workflows of bioinormatics tools to generate the assembly.
         category: Genomic
-        name:  genome_assembly
+        id:  genome_assembly
         title_format: "[genome_assembly_name]"
         url_format: "genome_assembly/[TripalEntity__entity_id]"
         synonyms:
@@ -137,7 +137,7 @@ content_types:
         term: operation:0362
         help_text: Use the genome annotation page for an analyses specifcally for genome annotation. Such an analysis typically involves one or more workflows of bioinormatics tools to generate the structural and functional annotations of the genome.
         category: Genomic
-        name: genome_annotation
+        id: genome_annotation
         title_format: "[genome_annotation_name]"
         url_format: "genome_annotation/[TripalEntity__entity_id]"
         synonyms:
@@ -147,7 +147,7 @@ content_types:
         term: local:Genome Project
         help_text: Use the genome project page to provide information about a genome assembly and annotation project that many be linked to multiple sub analyses.
         category: Genomic
-        name: genome_project
+        id: genome_project
         title_format: "[genome_project_name]"
         url_format: "genome_project/[TripalEntity__entity_id]"
         synonyms:
@@ -157,7 +157,7 @@ content_types:
         term: data:1278
         help_text: Use a genetic map page for a map showing the relative positions of genetic markers in a nucleic acid sequence, based on estimation of non-physical distance such as recombination frequencies.
         category: Genetic
-        name: genetic_map
+        id: genetic_map
         title_format: "[genetic_map_name]"
         url_format: "genetic_map/[TripalEntity__entity_id]"
         synonyms:
@@ -167,7 +167,7 @@ content_types:
         term: SO:0000771
         help_text: Use a QTL page for a quantitative trait locus (QTL), which is a polymorphic locus which contains alleles that differentially affect the expression of a continuously distributed phenotypic trait. Usually it is a marker described by statistical association to quantitative variation in the particular phenotypic trait that is thought to be controlled by the cumulative action of alleles at multiple loci.
         category: Genetic
-        name: QTL
+        id: QTL
         title_format: "[qtl_name]"
         url_format: "QTL/[TripalEntity__entity_id]"
         synonyms:
@@ -177,7 +177,7 @@ content_types:
         term: SO:0001060
         help_text: Use the sequence variant page for a non exact copy of a sequence feature or genome exhibiting one or more sequence alteration.
         category: Genetic
-        name: sequence_variant
+        id: sequence_variant
         title_format: "[sequence_variant_name]"
         url_format: "sequence_variant/[TripalEntity__entity_id]"
         synonyms:
@@ -187,7 +187,7 @@ content_types:
         term: SO:0001645
         help_text: Use the genetic marker page for a measurable sequence feature that varies within a population.
         category: Genetic
-        name: genetic_marker
+        id: genetic_marker
         title_format: "[genetic_marker_name]"
         url_format: "genetic_marker/[TripalEntity__entity_id]"
         synonyms:
@@ -197,7 +197,7 @@ content_types:
         term: SO:0001500
         help_text: Use the heritable phenotypic marker page for a sequence region characterized as a single heritable trait in a phenotype screen. The heritable phenotype may be mapped to a chromosome but generally has not been characterized to a specific gene locus.
         category: Genetic
-        name: phenotypic_marker
+        id: phenotypic_marker
         title_format: "[phenotypic_marker_name]"
         url_format: "phenotypic_marker/[TripalEntity__entity_id]"
         synonyms:
@@ -207,7 +207,7 @@ content_types:
         term: CO_010:0000044
         help_text: Use the germplasm accession page for a living genetic resources such as seeds or tissues that are maintained for the purpose of animal and plant breeding, and preservation.
         category: Germplasm
-        name: germplasm
+        id: germplasm
         title_format: "[germplasm_name]"
         url_format: "germplasm/[TripalEntity__entity_id]"
         synonyms:
@@ -217,7 +217,7 @@ content_types:
         term: CO_010:0000255
         help_text: Use the breeding cross page for information about a cross between two germplasm in a breeding application.
         category: Germplasm
-        name: breeding_cross
+        id: breeding_cross
         title_format: "[breeding_cross_name]"
         url_format: "breeding_cross/[TripalEntity__entity_id]"
         synonyms:
@@ -227,7 +227,7 @@ content_types:
         term: CO_010:0000029
         help_text: Use the germplasm variety page for information about specific variety of germplasm.
         category: Germplasm
-        name: germplasm_variety
+        id: germplasm_variety
         title_format: "[germplasm_variety_name]"
         url_format: "germplasm_variety/[TripalEntity__entity_id]"
         synonyms:
@@ -237,7 +237,7 @@ content_types:
         term: CO_010:0000162
         help_text: Use the recombinant inbred line page to describe a collection of germplasm that were created by crossing and can be used to map quantitative trait loci.
         category: Germplasm
-        name: RIL
+        id: RIL
         title_format: "[ril_name]"
         url_format: "RIL/[TripalEntity__entity_id]"
         synonyms:
@@ -247,7 +247,7 @@ content_types:
         term: sep:00195
         help_text: Use the biological sample page for any material taken from a biological system for use in a systematic study.
         category: Expression
-        name: biosample
+        id: biosample
         title_format: "[biosample_name]"
         url_format: "biosample/[TripalEntity__entity_id]"
         synonyms:
@@ -257,7 +257,7 @@ content_types:
         term: OBI:0000070
         help_text: Use the assay page to describe an experimental approach used to measure the characteristics of an item.
         category: Expression
-        name: assay
+        id: assay
         title_format: "[assay_name]"
         url_format: "assay/[TripalEntity__entity_id]"
         synonyms:
@@ -267,7 +267,7 @@ content_types:
         term: EFO:0000269
         help_text: Use the array design page to describe the systematic arrangement of similar objects, usually in rows and columns, used by intstrument to perform an assay.
         category: Expression
-        name: array_design
+        id: array_design
         title_format: "[array_design_name]"
         url_format: "array_design/[TripalEntity__entity_id]"
         synonyms:
