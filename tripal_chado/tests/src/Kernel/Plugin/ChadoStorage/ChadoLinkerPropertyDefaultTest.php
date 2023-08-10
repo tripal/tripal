@@ -347,6 +347,7 @@ class ChadoLinkerPropertyDefaultTest extends ChadoTestKernelBase {
       );
     }
 
+
     // Test Case: Update values in Chado using ChadoStorage.
     // ---------------------------------------------------------
     // When updating we need all the store id/pkey/link records
