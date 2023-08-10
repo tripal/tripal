@@ -1243,7 +1243,7 @@ fields:
                 type_column: type_id
         settings:
             termIdSpace: data
-            termAccession: 0872
+            termAccession: '0872'
             fixed_value: data:0872
         display:
           view:
@@ -1270,7 +1270,7 @@ fields:
                 base_column: analysis_id
         settings:
             termIdSpace: operation
-            termAccession: 2945
+            termAccession: '2945'
         display:
           view:
             default:
