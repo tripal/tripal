@@ -938,6 +938,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
           }
         }
+        if (!array_key_exists('conditions', $record)) print_r($record);
         foreach ($record['conditions'] as $chado_column => $val) {
           if (is_array($val['value']) and $val['value'][0] == 'REPLACE_BASE_RECORD_ID') {
             $base_table = $val['value'][1];
