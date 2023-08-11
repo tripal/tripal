@@ -51,4 +51,11 @@ class ChadoFieldDebugger {
     $this->chado_connection = $connection;
     $this->logger = $logger;
   }
+
+  /**
+   * A way for ChadoStorage to tell this service which fields should be debugged.
+   */
+  public function addFieldToDebugger(string $field_name) {
+    $this->fields2debug[$field_name] = $field_name;
+  }
 }

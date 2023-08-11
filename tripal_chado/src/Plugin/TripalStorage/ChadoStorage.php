@@ -9,6 +9,7 @@ use Symfony\Component\Validator\ConstraintViolation;
 
 use Drupal\tripal\Services\TripalLogger;
 use Drupal\tripal_chado\Database\ChadoConnection;
+use Drupal\tripal_chado\Services\ChadoFieldDebugger;
 
 /**
  * Chado implementation of the TripalStorageInterface.
@@ -58,6 +59,13 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
   protected $connection;
 
   /**
+   * A service to provide debugging for fields to developers.
+   *
+   * @ var Drupal\tripal_chado\Services\ChadoFieldDebugger
+   */
+  protected $field_debugger;
+
+  /**
    * Implements ContainerFactoryPluginInterface->create().
    *
    * Since we have implemented the ContainerFactoryPluginInterface this static function
@@ -77,7 +85,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $plugin_id,
       $plugin_definition,
       $container->get('tripal.logger'),
-      $container->get('tripal_chado.database')
+      $container->get('tripal_chado.database'),
+      $container->get('tripal_chado.field_debugger')
     );
   }
 
@@ -95,10 +104,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * @param Drupal\tripal\Services\TripalLogger $logger
    * @param Drupal\tripal_chado\Database\ChadoConnection $connection
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, TripalLogger $logger, ChadoConnection $connection) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, TripalLogger $logger, ChadoConnection $connection, ChadoFieldDebugger $field_debugger) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $logger);
 
     $this->connection = $connection;
+    $this->field_debugger = $field_debugger;
   }
 
 	/**
@@ -159,6 +169,19 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         }
       }
 
+    }
+  }
+
+  /**
+   * @{inheritdoc}
+   */
+  public function addFieldDefinition(string $field_name, object $field_definition) {
+    parent::addFieldDefinition($field_name, $field_definition);
+
+    // Now check if the field debugger should be enabled for this particular field.
+    $settings = $field_definition->getSettings();
+    if (array_key_exists('debug', $settings) AND $settings['debug']) {
+      $this->field_debugger->addFieldToDebugger($field_name);
     }
   }
 

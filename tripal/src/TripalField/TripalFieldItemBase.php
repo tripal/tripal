@@ -20,25 +20,21 @@ use \RuntimeException;
 abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldItemInterface {
 
   /**
-   * A simple flag to indicate that we should enable debugging information
-   * for this field type.
-   *
-   * This will be used by ChadoStorage to tell the ChadoFieldDebugger service
-   * to display debugging information. All you need to do as a developer is
-   * set this variable to TRUE in your field and debuggin information will be
-   * displayed on the screen and in the drupal logs when you create, edit,
-   * and load content that has you field attached.
-   */
-  public bool $debug = FALSE;
-
-  /**
    * {@inheritdoc}
    */
   public static function defaultFieldSettings() {
     $settings = [
       'termIdSpace' => '',
       'termAccession' => '',
-      # 'max_delta' => 100
+      # 'max_delta' => 100,
+      // A simple flag to indicate that we should enable debugging information
+      // for this field type.
+      // This will be used by ChadoStorage to tell the ChadoFieldDebugger service
+      // to display debugging information. All you need to do as a developer is
+      // set this variable to TRUE in your field and debuggin information will be
+      // displayed on the screen and in the drupal logs when you create, edit,
+      // and load content that has you field attached.
+      'debug' => FALSE,
     ];
     return $settings + parent::defaultFieldSettings();
   }
@@ -170,6 +166,14 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $vocabulary = NULL;
     $termIdSpace = $this->getSetting('termIdSpace');
     $termAccession = $this->getSetting('termAccession');
+    $debug = $this->getSetting('debug');
+
+    $elements['debug'] = [
+      '#type' => 'checkbox',
+      '#title' => 'Enable Debugging',
+      '#description' => 'Enabling debugging on the field will print out a number of debugging messages both on screen and in the logs to help developers diagnose any problems which may be occuring.',
+      '#default_value' => $debug,
+    ];
 
     $default_vocabulary_term = '';
     $vocabulary_term = $form_state->getValue(['settings', 'field_term_fs', 'vocabulary_term']);
