@@ -20,6 +20,18 @@ use \RuntimeException;
 abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldItemInterface {
 
   /**
+   * A simple flag to indicate that we should enable debugging information
+   * for this field type.
+   *
+   * This will be used by ChadoStorage to tell the ChadoFieldDebugger service
+   * to display debugging information. All you need to do as a developer is
+   * set this variable to TRUE in your field and debuggin information will be
+   * displayed on the screen and in the drupal logs when you create, edit,
+   * and load content that has you field attached.
+   */
+  public bool $debug = FALSE;
+
+  /**
    * {@inheritdoc}
    */
   public static function defaultFieldSettings() {
