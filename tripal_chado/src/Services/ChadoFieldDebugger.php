@@ -40,6 +40,11 @@ class ChadoFieldDebugger {
   public array $fields2debug = [];
 
   /**
+   * A simple flag to indicate if there are any fields to be debugged
+   * for performances sake.
+   */
+  public bool $has_fields2debug = FALSE;
+  /**
    * Object constructor for the Chado Field debugger
    *
    * @param Drupal\tripal_chado\Database\ChadoConnection
@@ -57,5 +62,39 @@ class ChadoFieldDebugger {
    */
   public function addFieldToDebugger(string $field_name) {
     $this->fields2debug[$field_name] = $field_name;
+    $this->has_fields2debug = TRUE;
   }
+
+  /**
+   * Prints out the values array in a readable manner for debuggin purposes.
+   * This is called by ChadoStorage::buildChadoRecords().
+   */
+  public function reportValues(array $values) {
+
+    if ($this->has_fields2debug === FALSE) {
+      return;
+    }
+
+    $message = 'The values submitted to ChadoStorage are:';
+
+    $output = [];
+    $i = 0;
+    foreach ($values as $field_name => $level1) {
+      if (array_key_exists($field_name, $this->fields2debug)) {
+        $output[$field_name] = [];
+        foreach ($level1 as $delta => $level2) {
+          $output[$field_name][$delta] = [];
+          foreach ($level2 as $property_key => $level3) {
+            $val = $level3['value']->getValue();
+            $output[$field_name][$delta][$property_key] = $val;
+          }
+        }
+      }
+    }
+
+    $this->logger->notice($message, [],
+      ['drupal_set_message' => TRUE]);
+    dpm($output);
+  }
+
 }

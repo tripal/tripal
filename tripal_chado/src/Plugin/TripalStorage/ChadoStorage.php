@@ -182,6 +182,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $settings = $field_definition->getSettings();
     if (array_key_exists('debug', $settings) AND $settings['debug']) {
       $this->field_debugger->addFieldToDebugger($field_name);
+      $this->logger->notice('Debugging has been enabled for :name field.',
+        [':name' => $field_name],
+        ['drupal_set_message' => TRUE, 'logger' => FALSE]
+      );
     }
   }
 
@@ -815,6 +819,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $base_record_ids = [];
 
     // @debug dpm(array_keys($values), '1st level: field names');
+    $this->field_debugger->reportValues($values);
 
     // Iterate through the value objects.
     foreach ($values as $field_name => $deltas) {
