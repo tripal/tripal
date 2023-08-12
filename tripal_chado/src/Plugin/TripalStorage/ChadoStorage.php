@@ -231,8 +231,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $build = $this->buildChadoRecords($values, TRUE);
     $records = $build['records'];
 
-    // @debug print "Build Records: " . print_r($records, TRUE);
-
     $transaction_chado = $this->connection->startTransaction();
     try {
 
@@ -497,6 +495,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       }
     }
 
+    $this->field_debugger->reportQuery($select, "Select Query for $chado_table ($delta)");
+
     // Execute the query.
     $results = $select->execute();
     if (!$results) {
@@ -530,6 +530,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $transaction_chado->rollback();
       throw new \Exception($e);
     }
+
+    $this->field_debugger->reportValues($values, 'The values after loading is complete.');
+
     return TRUE;
   }
 
@@ -828,7 +831,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $records = [];
     $base_record_ids = [];
 
-    // @debug dpm(array_keys($values), '1st level: field names');
     $this->field_debugger->reportValues($values, 'The values submitted to ChadoStorage');
 
     // Iterate through the value objects.
@@ -842,11 +844,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         continue;
       }
 
-      // @debug dpm(array_keys($deltas), "2nd level: deltas ($field_name)");
       foreach ($deltas as $delta => $keys) {
-        // @debug dpm(array_keys($keys), "3rd level: field key name ($delta)");
         foreach ($keys as $key => $info) {
-          // @debug dpm(array_keys($info), "4th level: info key-value pairs ($key)");
 
           // Ensure we have a value to work with.
           if (!array_key_exists('value', $info) OR !is_object($info['value'])) {
@@ -991,6 +990,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         }
       }
     }
+
+    $this->field_debugger->summarizeBuiltRecords($base_record_ids, $records);
 
     return [
       'base_tables' => $base_record_ids,
