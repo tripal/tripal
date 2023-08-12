@@ -167,7 +167,7 @@ class ChadoFieldDebugger {
    * It is expected that this function will be called right before
    * query->execute() is called in all the ChadoStorage::*ChadoRecord() methods.
    *
-   * @param object $queryObject
+   * @param object $query
    *   This is the object built by the dynamic query builder. For example,
    *   if you are generating a select query then this is the object created
    *   by ChadoConnection::select() after all fields, conditions and joins
@@ -175,18 +175,33 @@ class ChadoFieldDebugger {
    * @param string $message
    *   This is a simple string to indicate who called this method.
    */
-  public function reportQuery(object $queryObject, $message) {
+  public function reportQuery(object $query, $message) {
 
     if ($this->has_fields2debug === FALSE) {
       return;
     }
 
-    dpm(
-      [
-        'query string' => (string) $queryObject,
-        'arguements' => $queryObject->arguments(),
-      ],
-      $message
-    );
+    $sql = (string) $query;
+
+    /**
+     * We would like to complete print out the query with subbed in parameters
+     * but it's driving me crazy.
+     *
+     * Usually we would use $query->arguments() to get the arguements with
+     * placeholders but there are a number of bugs here:
+     *  - in Drupal 10 $insertQuery->arguments() provides a scope error.
+     *  - $updateQuery->arguments() only provides the conditional arguments,
+     *    not those being updated (facepalm; see Drupal Issue #2005626)
+     *
+    $quoted = [];
+    foreach ((array) $query->arguments() as $index => $val) {
+      $key = 'db_placeholder_' . $index;
+      $quoted[$key] = is_null($val) ? 'NULL' : $this->chado_connection->quote($val);
+    }
+    $sql = strtr($sql, $quoted);
+    */
+
+    dpm($sql, $message . ' (See Records for parameters)');
+
   }
 }
