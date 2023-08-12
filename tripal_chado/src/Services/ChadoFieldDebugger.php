@@ -69,32 +69,76 @@ class ChadoFieldDebugger {
    * Prints out the values array in a readable manner for debuggin purposes.
    * This is called by ChadoStorage::buildChadoRecords().
    */
-  public function reportValues(array $values) {
+  public function reportValues(array $values, string $message) {
 
     if ($this->has_fields2debug === FALSE) {
       return;
     }
 
-    $message = 'The values submitted to ChadoStorage are:';
-
-    $output = [];
+    $debugging_fields = [];
+    $all_fields = [];
     $i = 0;
     foreach ($values as $field_name => $level1) {
-      if (array_key_exists($field_name, $this->fields2debug)) {
-        $output[$field_name] = [];
-        foreach ($level1 as $delta => $level2) {
-          $output[$field_name][$delta] = [];
-          foreach ($level2 as $property_key => $level3) {
-            $val = $level3['value']->getValue();
-            $output[$field_name][$delta][$property_key] = $val;
-          }
+
+      $all_fields[$field_name] = [];
+      foreach ($level1 as $delta => $level2) {
+        $all_fields[$field_name][$delta] = [];
+        foreach ($level2 as $property_key => $level3) {
+          $val = $level3['value']->getValue();
+          $all_fields[$field_name][$delta][$property_key] = $val;
         }
+      }
+
+      if (array_key_exists($field_name, $this->fields2debug)) {
+        $debugging_fields[$field_name] = $all_fields[$field_name];
       }
     }
 
-    $this->logger->notice($message, [],
-      ['drupal_set_message' => TRUE]);
-    dpm($output);
+    dpm($debugging_fields, $message . " (FIELDS SET TO BE DEBUGGED ONLY)");
+    dpm($all_fields, $message . " (ALL FIELDS)");
   }
 
+  /**
+   * Summarize the current state of chadostorage.
+   *
+   * @param ChadoStorage $chadostorage
+   *   The current chadostorage object for interrogation.
+   * @param string $message
+   *   A short message describing where this method was called from.
+   */
+  public function summarizeChadoStorage($chadostorage, $message) {
+
+    if ($this->has_fields2debug === FALSE) {
+      return;
+    }
+
+    $state = [];
+
+    // First summarize all the field properties.
+    $properties = $chadostorage->getTypes();
+    foreach ($properties as $field_name => $field_properties) {
+      $field_definition = $chadostorage->getFieldDefinition($field_name);
+      $state[$field_name] = [
+        'field name' => $field_name,
+        'field definition added' =>  is_object($field_definition),
+        'field settings' => (is_object($field_definition)) ? $field_definition->getSettings() : NULL,
+        'number of properties' => count($field_properties),
+        'properties' => [],
+      ];
+
+      foreach ($field_properties as $property_key => $propertyType) {
+
+        if (!array_key_exists('field type', $state[$field_name])) {
+          $state[$field_name]['field type'] = $propertyType->getFieldType();
+        }
+        $state[$field_name]['properties'][$property_key] = [
+          'property type' => get_class($propertyType),
+          'term' => $propertyType->getTermIdSpace() . ':' . $propertyType->getTermAccession(),
+          'storage settings' => $propertyType->getStorageSettings(),
+        ];
+      }
+    }
+
+    dpm($state, $message);
+  }
 }

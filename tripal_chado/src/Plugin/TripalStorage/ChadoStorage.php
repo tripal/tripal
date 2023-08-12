@@ -226,6 +226,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     $schema = $this->connection->schema();
 
+    $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::insertValues');
+
     $build = $this->buildChadoRecords($values, TRUE);
     $records = $build['records'];
 
@@ -368,6 +370,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    */
   public function updateValues(&$values) : bool {
 
+    $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::updateValues');
+
     $build = $this->buildChadoRecords($values, TRUE);
     $records = $build['records'];
 
@@ -507,6 +511,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    */
   public function loadValues(&$values) : bool {
 
+    $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::loadValues');
+
     $build = $this->buildChadoRecords($values, FALSE);
     $records = $build['records'];
     $base_tables = $build['base_tables'];
@@ -571,6 +577,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    */
   public function deleteValues($values) : bool {
 
+    $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::deleteValues');
+
     return FALSE;
   }
 
@@ -578,6 +586,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * @{inheritdoc}
    */
   public function findValues($match) {
+
+    $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::findValues');
 
   }
 
@@ -819,7 +829,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $base_record_ids = [];
 
     // @debug dpm(array_keys($values), '1st level: field names');
-    $this->field_debugger->reportValues($values);
+    $this->field_debugger->reportValues($values, 'The values submitted to ChadoStorage');
 
     // Iterate through the value objects.
     foreach ($values as $field_name => $deltas) {
@@ -1417,6 +1427,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * {@inheritDoc}
    */
   public function validateValues($values) {
+
+    $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::validateValues');
 
     $build = $this->buildChadoRecords($values, TRUE);
     $base_tables = $build['base_tables'];
