@@ -355,7 +355,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $update->condition($chado_column, $cond_value['value']);
     }
 
-    $this->field_debugger->reportQuery($update, "Update Query for $chado_table ($delta)");
+    $this->field_debugger->reportQuery($update, "Update Query for $chado_table ($delta). Note: aguements may only include the conditional ones, see Drupal Issue #2005626.");
 
     $rows_affected = $update->execute();
     if ($rows_affected == 0) {
