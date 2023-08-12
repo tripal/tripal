@@ -207,6 +207,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     // Insert the record.
     $insert = $this->connection->insert('1:' . $chado_table);
     $insert->fields($record['fields']);
+
+    $this->field_debugger->reportQuery($insert, "Insert Query for $chado_table ($delta)");
+
     $record_id = $insert->execute();
 
     if (!$record_id) {
@@ -351,6 +354,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     foreach ($record['conditions'] as $chado_column => $cond_value) {
       $update->condition($chado_column, $cond_value['value']);
     }
+
+    $this->field_debugger->reportQuery($update, "Update Query for $chado_table ($delta)");
+
     $rows_affected = $update->execute();
     if ($rows_affected == 0) {
       throw new \Exception($this->t('Failed to update record in the Chado "@table" table. Record: @record',
@@ -561,6 +567,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     foreach ($record['conditions'] as $chado_column => $cond_value) {
       $delete->condition($chado_column, $cond_value['value']);
     }
+
+    $this->field_debugger->reportQuery($delete, "Delete Query for $chado_table ($delta)");
+
     $rows_affected = $delete->execute();
     if ($rows_affected == 0) {
       throw new \Exception($this->t('Failed to delete a record in the Chado "@table" table. Record: @record',
