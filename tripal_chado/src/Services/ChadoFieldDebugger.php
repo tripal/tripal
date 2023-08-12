@@ -88,14 +88,9 @@ class ChadoFieldDebugger {
           $all_fields[$field_name][$delta][$property_key] = $val;
         }
       }
-
-      if (array_key_exists($field_name, $this->fields2debug)) {
-        $debugging_fields[$field_name] = $all_fields[$field_name];
-      }
     }
 
-    dpm($debugging_fields, $message . " (FIELDS SET TO BE DEBUGGED ONLY)");
-    dpm($all_fields, $message . " (ALL FIELDS)");
+    dpm($all_fields, $message);
   }
 
   /**
@@ -203,5 +198,18 @@ class ChadoFieldDebugger {
 
     dpm($sql, $message . ' (See Records for parameters)');
 
+  }
+
+  /**
+   * Print some sort of header to make reading all the output easier ;-p
+   */
+  public function printHeader(string $process_name) {
+    $this->logger->notice(
+      str_repeat('-', 9) . ' '
+      . strtoupper($process_name) . ' '
+      . str_repeat('-', 27)
+      . date("H:i:s"),
+      [], ['drupal_set_message' => TRUE, 'logger' => FALSE]
+    );
   }
 }

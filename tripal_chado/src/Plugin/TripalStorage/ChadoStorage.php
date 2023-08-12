@@ -229,6 +229,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     $schema = $this->connection->schema();
 
+    $this->field_debugger->printHeader('Insert');
     $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::insertValues');
 
     $build = $this->buildChadoRecords($values, TRUE);
@@ -374,6 +375,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    */
   public function updateValues(&$values) : bool {
 
+    $this->field_debugger->printHeader('Update');
     $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::updateValues');
 
     $build = $this->buildChadoRecords($values, TRUE);
@@ -517,6 +519,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    */
   public function loadValues(&$values) : bool {
 
+    $this->field_debugger->printHeader('Load');
     $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::loadValues');
 
     $build = $this->buildChadoRecords($values, FALSE);
@@ -589,6 +592,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    */
   public function deleteValues($values) : bool {
 
+    $this->field_debugger->printHeader('Delete');
     $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::deleteValues');
 
     return FALSE;
@@ -599,6 +603,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    */
   public function findValues($match) {
 
+    $this->field_debugger->printHeader('Find');
     $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::findValues');
 
   }
@@ -1438,6 +1443,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    */
   public function validateValues($values) {
 
+    $this->field_debugger->printHeader('Validate');
     $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::validateValues');
 
     $build = $this->buildChadoRecords($values, TRUE);
