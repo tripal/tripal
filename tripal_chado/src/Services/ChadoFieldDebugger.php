@@ -153,6 +153,11 @@ class ChadoFieldDebugger {
    *   generated using the Drupal Query Builder in the ChadoStorage::*Values() methods.
    */
   public function summarizeBuiltRecords(array $base_record_ids, array $records) {
+
+    if ($this->has_fields2debug === FALSE) {
+      return;
+    }
+
     dpm($records, 'The array describing the record queries to be generated');
     dpm($base_record_ids, 'The known primary keys for our base records');
   }
@@ -171,6 +176,10 @@ class ChadoFieldDebugger {
    *   This is a simple string to indicate who called this method.
    */
   public function reportQuery(object $queryObject, $message) {
+
+    if ($this->has_fields2debug === FALSE) {
+      return;
+    }
 
     dpm(
       [
