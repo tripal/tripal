@@ -92,8 +92,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * @param array $configuration
    * @param string $plugin_id
    * @param mixed $plugin_definition
-   * @param Drupal\tripal\Services\TripalLogger $logger
-   * @param Drupal\tripal_chado\Database\ChadoConnection $connection
+   * @param \Drupal\tripal\Services\TripalLogger $logger
+   * @param \Drupal\tripal_chado\Database\ChadoConnection $connection
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, TripalLogger $logger, ChadoConnection $connection) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $logger);
@@ -106,7 +106,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 	 */
   public function addTypes(string $field_name, array $types) {
 
-    // Index the types by their entity type, field type and key.
+    // Index the types by their field name and property key.
     foreach ($types as $index => $type) {
       if (!is_object($type) OR !is_subclass_of($type, 'Drupal\tripal\TripalStorage\StoragePropertyTypeBase')) {
         $this->logger->error('Type provided must be an object extending StoragePropertyTypeBase. Instead index @index was this: @type',
@@ -168,15 +168,13 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    */
   public function getStoredTypes(){
     $ret_types = [];
-    foreach ($this->property_types as $bundle_name => $field_names) {
-      foreach ($field_names as $field_name => $keys) {
-        foreach ($keys as $key => $prop_type) {
-          $storage_settings = $prop_type->getStorageSettings();
-          if (($storage_settings['action'] == 'store_id') or
-              ($storage_settings['action'] == 'store_pkey') or
-              ($storage_settings['action'] == 'store_link')) {
-            $ret_types[$bundle_name][$field_name][$key] = $prop_type;
-          }
+    foreach ($this->property_types as $field_name => $keys) {
+      foreach ($keys as $key => $prop_type) {
+        $storage_settings = $prop_type->getStorageSettings();
+        if (($storage_settings['action'] == 'store_id') or
+            ($storage_settings['action'] == 'store_pkey') or
+            ($storage_settings['action'] == 'store_link')) {
+          $ret_types[$field_name][$key] = $prop_type;
         }
       }
     }
@@ -220,7 +218,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     $schema = $this->connection->schema();
 
-    $build = $this->buildChadoRecords($values, TRUE);
+    $build = $this->buildChadoRecords($values);
     $records = $build['records'];
 
     // @debug print "Build Records: " . print_r($records, TRUE);
@@ -362,7 +360,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    */
   public function updateValues(&$values) : bool {
 
-    $build = $this->buildChadoRecords($values, TRUE);
+    $build = $this->buildChadoRecords($values);
     $records = $build['records'];
 
     $base_tables = $build['base_tables'];
@@ -566,7 +564,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    */
   public function loadValues(&$values) : bool {
 
-    $build = $this->buildChadoRecords($values, FALSE);
+    $build = $this->buildChadoRecords($values);
     $records = $build['records'];
     $base_tables = $build['base_tables'];
 
@@ -657,12 +655,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     foreach ($values as $field_name => $deltas) {
       foreach ($deltas as $delta => $keys) {
         foreach ($keys as $key => $info) {
-          if (in_array('definition', $options['copy'])) {
-            $new_values[$field_name][$delta][$key]['definition'] = $info['definition'];
-          }
-          if (in_array('type', $options['copy'])) {
-            $new_values[$field_name][$delta][$key]['type'] = $info['type'];
-          }
           if (in_array('operation', $options['copy'])) {
             $new_values[$field_name][$delta][$key]['operation'] = $info['operation'];
           }
@@ -679,11 +671,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * @{inheritdoc}
    */
   public function findValues($values) {
-    $build = $this->buildChadoRecords($values, TRUE);
+    $build = $this->buildChadoRecords($values);
     $records = $build['records'];
     $base_tables = $build['base_tables'];
     $matched_records = [];
-    //print_r($records);
 
     $transaction_chado = $this->connection->startTransaction();
     try {
@@ -695,7 +686,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           while ($match = $matches->fetchAssoc()) {
             print_r($match);
 
-            // copy the values array and the records array for this matched record.
+            // Copy the values array and the records array for this matched record.
             $new_values = $this->copyValues($values);
             $new_records = $records;
 
@@ -1080,8 +1071,10 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             // If we are trying to find values and the property is present but
             // does not have a value set, then we will use that value as a field.
             // Otherwise, if it has a value then we'll use it as a condition.
-            if ($is_find and !empty($value)) {
+            if ($is_find) {
+              if (!empty($value)) {
                 $records[$chado_table][$delta]['conditions'][$chado_column] = ['value' => $value, 'operation' => $operation];
+              }
             }
             else {
               $records[$chado_table][$delta]['fields'][$chado_column] = $value;
@@ -1127,7 +1120,6 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
           }
         }
-        if (!array_key_exists('conditions', $record)) print_r($record);
         foreach ($record['conditions'] as $chado_column => $val) {
           if (is_array($val['value']) and $val['value'][0] == 'REPLACE_BASE_RECORD_ID') {
             $base_table = $val['value'][1];
@@ -1579,7 +1571,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    */
   public function validateValues($values) {
 
-    $build = $this->buildChadoRecords($values, TRUE);
+    $build = $this->buildChadoRecords($values);
     $base_tables = $build['base_tables'];
     $records = $build['records'];
     $violations = [];

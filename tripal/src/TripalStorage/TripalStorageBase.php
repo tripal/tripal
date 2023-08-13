@@ -14,7 +14,7 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
   /**
    * The logger for reporting progress, warnings and errors to admin.
    *
-   * @var Drupal\tripal\Services\TripalLogger
+   * @var \Drupal\tripal\Services\TripalLogger
    */
   protected $logger;
 
@@ -64,7 +64,7 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
    * @param array $configuration
    * @param string $plugin_id
    * @param mixed $plugin_definition
-   * @param Drupal\tripal\Services\TripalLogger $logger
+   * @param \Drupal\tripal\Services\TripalLogger $logger
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, TripalLogger $logger) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);

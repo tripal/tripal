@@ -57,7 +57,7 @@ class TripalPublish {
   /**
    * The TripalStorage object.
    *
-   * @var \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $storage_manager
+   * @var \Drupal\tripal\TripalStorage\TripalStorageBase $storage
    **/
   protected $storage = NULL;
 
@@ -89,16 +89,17 @@ class TripalPublish {
 
     // Get the bundle object so we can get settings such as the title format.
     /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/
-    $entity_types = \Drupal::entityTypeManager()
-      ->getStorage('tripal_entity_type')
-      ->loadByProperties(['name' => $bundle]);
-    if (!array_key_exists($bundle, $entity_types)) {
+    /** @var \Drupal\Core\Entity\EntityTypeManager $entity_type_manager **/
+    $entity_type_manager = \Drupal::entityTypeManager();
+    $entity_type = $entity_type_manager->getStorage('tripal_entity_type')->load($bundle);
+    if (!$entity_type) {
       $error_msg = 'Could not find the entity type with an id of: "%bundle".';
       throw new \Exception(t($error_msg, ['%bundle' => $bundle]));
     }
-    $this->entity_type = $entity_types[$bundle];
+    $this->entity_type = $entity_type;
 
     // Get the storage plugin used to publish.
+    /** @var \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $storage_manager **/
     $storage_manager = \Drupal::service('tripal.storage');
     $this->storage = $storage_manager->getInstance(['plugin_id' => $datastore]);
     if (!$this->storage) {
@@ -125,9 +126,9 @@ class TripalPublish {
     // Get the field manager, field definitions for the bundle type, and
     // the field type manager.
     /** @var \Drupal\Core\Entity\EntityFieldManager $field_manager **/
+    /** @var \Drupal\Core\Field\FieldTypePluginManager $field_type_manager **/
     $field_manager = \Drupal::service('entity_field.manager');
     $field_defs = $field_manager->getFieldDefinitions('tripal_entity', $this->bundle);
-    /** @var \Drupal\Core\Field\FieldTypePluginManager $field_type_manager **/
     $field_type_manager = \Drupal::service('plugin.manager.field.field_type');
 
     // Iterate over the field definitions for the bundle and collect the
@@ -147,7 +148,8 @@ class TripalPublish {
           $instance = $field_type_manager->createInstance($field_definition->getType(), $configuration);
           $prop_types = $instance->tripalTypes($field_definition);
           $field_class = get_class($instance);
-          $this->storage->addTypes($this->bundle, $field_name, $prop_types);
+          $this->storage->addTypes($field_name, $prop_types);
+          $this->storage->addFieldDefinition($field_name, $field_definition);
           $field_info = [
             'definition' => $field_definition,
             'class' => $field_class,
@@ -172,22 +174,18 @@ class TripalPublish {
   protected function addRequiredValues(&$search_values) {
 
     // Iterate through the property types that can uniquely identify an entity.
-    foreach ($this->required_types as $bundle => $field_names) {
-      foreach ($field_names as $field_name => $keys) {
-        foreach ($keys as $key => $prop_type) {
+    foreach ($this->required_types as $field_name => $keys) {
+      foreach ($keys as $key => $prop_type) {
 
-          // Add this property value to the search values array.
-          $field_definition = $this->field_info[$field_name]['definition'];
-          $field_class = $this->field_info[$field_name]['class'];
-          $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
-              $field_class::$id, $prop_type->getKey(), $prop_type->getTerm()->getTermId(), NULL);
-          $search_values[$field_name][0][$prop_type->getKey()] = [
-            'type' => $prop_type,
-            'value' => $prop_value,
-            'operation' => '<>',
-            'definition' => $field_definition
-          ];
-        }
+        // Add this property value to the search values array.
+        $field_definition = $this->field_info[$field_name]['definition'];
+        $field_class = $this->field_info[$field_name]['class'];
+        $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
+            $field_class::$id, $prop_type->getKey(), $prop_type->getTerm()->getTermId(), NULL);
+        $search_values[$field_name][0][$prop_type->getKey()] = [
+          'value' => $prop_value,
+          'operation' => '<>',
+        ];
       }
     }
   }
@@ -218,10 +216,8 @@ class TripalPublish {
           $prop_value = new StoragePropertyValue($field_definition->getTargetEntityTypeId(),
               $field_class::$id, $prop_key, $prop_type->getTerm()->getTermId(), NULL);
           $search_values[$field_name][0][$prop_type->getKey()] = [
-            'type' => $prop_type,
             'value' => $prop_value,
             'operation' => '=',
-            'definition' => $field_definition
           ];
         }
       }
@@ -270,10 +266,8 @@ class TripalPublish {
         if (($prop_value->getValue())) {
           $prop_key = $prop_value->getKey();
           $search_values[$field_name][0][$prop_key] = [
-            'type' => $this->field_info[$field_name]['prop_types'][$prop_key],
             'value' => $prop_value,
             'operation' => '=',
-            'definition' => $field_definition
           ];
         }
       }
@@ -457,7 +451,7 @@ class TripalPublish {
     $init_sql = "
       INSERT INTO {$field_table}
         (bundle, deleted, entity_id, revision_id, langcode, delta, ";
-    foreach ($this->required_types[$this->bundle][$field_name] as $key => $prop_type) {
+    foreach ($this->required_types[$field_name] as $key => $prop_type) {
       $init_sql .= $field_name . '_'. $key . ', ';
     }
     $init_sql = rtrim($init_sql, ", ");
@@ -484,7 +478,7 @@ class TripalPublish {
       // just in case.
       if (!in_array($title, array_keys($existing))) {
         $sql .= "(:bundle_$i, :deleted_$i, :entity_id_$i, :revision_id_$i, :langcode_$i, :delta_$i, ";
-        foreach ($this->required_types[$this->bundle][$field_name] as $key => $prop_type) {
+        foreach ($this->required_types[$field_name] as $key => $prop_type) {
           $placeholder = ':' . $field_name . '_'. $key . '_' . $i;
           $sql .=  $placeholder . ', ';
           $args[$placeholder] = $match[$field_name][$delta][$key]['value']->getValue();
