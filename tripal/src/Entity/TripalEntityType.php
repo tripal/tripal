@@ -29,23 +29,22 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
  *       "html" = "Drupal\tripal\Routing\TripalEntityTypeHtmlRouteProvider",
  *     },
  *   },
- *   config_prefix = "bio_data",
+ *   config_prefix = "content_type",
  *   admin_permission = "manage tripal content types",
  *   bundle_of = "tripal_entity",
  *   entity_keys = {
- *     "id" = "name",
+ *     "id" = "id",
  *     "label" = "label",
  *   },
  *   links = {
- *     "canonical" = "/admin/structure/bio_data/{tripal_entity_type}",
- *     "add-form" = "/admin/structure/bio_data/add",
- *     "edit-form" = "/admin/structure/bio_data/manage/{tripal_entity_type}",
- *     "delete-form" = "/admin/structure/bio_data/manage/{tripal_entity_type}/delete",
- *     "collection" = "/admin/structure/bio_data"
+ *     "canonical" = "/admin/structure/tripal/{tripal_entity_type}",
+ *     "add-form" = "/admin/structure/tripal/add",
+ *     "edit-form" = "/admin/structure/tripal/manage/{tripal_entity_type}",
+ *     "delete-form" = "/admin/structure/tripal/manage/{tripal_entity_type}/delete",
+ *     "collection" = "/admin/structure/tripal"
  *   },
  *   config_export = {
  *     "id",
- *     "name",
  *     "label",
  *     "termIdSpace",
  *     "termAccession",
@@ -66,13 +65,6 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    * @var integer
    */
   protected $id;
-
-  /**
-   * The Tripal Content machine name.
-   *
-   * @var string
-   */
-  protected $name;
 
   /**
    * The Tripal Content type label.
@@ -207,15 +199,6 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    */
    public function save() {
 
-     // First we want to set an id for this content type.
-     if ($this->isNew()) {
-       $config = \Drupal::service('config.factory')->getEditable('tripal.settings');
-       $max_id = $config->get('tripal_entity_type.max_id');
-       $this->id = $max_id + 1;
-       $this->name = 'bio_data_' . $this->id;
-       $config->set('tripal_entity_type.max_id', $this->id)->save();
-     }
-
      // Set defaults for anything not already set.
      $this->setDefaults();
 
@@ -240,8 +223,8 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
     if ($this->label === NULL) {
       throw new \Exception("The label is required when creating a TripalEntityType.");
     }
-    if ($this->name === NULL) {
-      throw new \Exception("The name is required when creating a TripalEntityType.");
+    if ($this->id === NULL) {
+      throw new \Exception("The id is required when creating a TripalEntityType.");
     }
     if ($this->help_text === NULL) {
       throw new \Exception("The help text is required when creating a TripalEntityType.");
@@ -287,7 +270,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    * {@inheritdoc}
    */
   public function id() {
-    return $this->name;
+    return $this->id;
   }
 
   /**
@@ -295,27 +278,6 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
    */
   public function getID() {
     return $this->id;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setID($id) {
-    $this->id = $id;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getName() {
-    return $this->name;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setName($name) {
-    $this->name = $name;
   }
 
   /**
@@ -595,8 +557,7 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
       'required' => TRUE,
     ];
 
-    $instances = \Drupal::service('entity_field.manager')
-      ->getFieldDefinitions('tripal_entity', $this->name);
+    $instances = \Drupal::service('entity_field.manager')->getFieldDefinitions('tripal_entity', $this->id);
     foreach ($instances as $instance_name => $instance) {
 
       $use_field = TRUE;
@@ -718,4 +679,5 @@ class TripalEntityType extends ConfigEntityBundleBase implements TripalEntityTyp
       return strnatcasecmp($b_value, $a_value);
     }
   }
+
 }

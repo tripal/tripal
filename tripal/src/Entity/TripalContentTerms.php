@@ -39,8 +39,8 @@ use Drupal\tripal\TripalContentTermsInterface;
  *   },
  *   links = {
  *     "add-form" = "/admin/tripal/config/terms/add",
- *     "edit-form" = "/admin/tripal/config/terms/{config}",
- *     "delete-form" = "/admin/tripal/config/terms/{config}/delete",
+ *     "edit-form" = "/admin/tripal/config/terms/{tripal_content_terms}",
+ *     "delete-form" = "/admin/tripal/config/terms/{tripal_content_terms}/delete",
  *   }
  * )
  */

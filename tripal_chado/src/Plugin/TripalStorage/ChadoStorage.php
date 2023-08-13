@@ -2,15 +2,13 @@
 
 namespace Drupal\tripal_chado\Plugin\TripalStorage;
 
-use Drupal\Core\Plugin\PluginBase;
-
+use Drupal\tripal\TripalStorage\TripalStorageBase;
 use Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Validator\ConstraintViolation;
 
 use Drupal\tripal\Services\TripalLogger;
 use Drupal\tripal_chado\Database\ChadoConnection;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Chado implementation of the TripalStorageInterface.
@@ -21,7 +19,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   description = @Translation("Interfaces with GMOD Chado for field values."),
  * )
  */
-class ChadoStorage extends PluginBase implements TripalStorageInterface, ContainerFactoryPluginInterface {
+class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
   /**
    * An associative array that contains all of the property types that
@@ -51,13 +49,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
    * @var array
    */
   protected $id_mapping = [];
-
-    /**
-   * The logger for reporting progress, warnings and errors to admin.
-   *
-   * @var Drupal\tripal\Services\TripalLogger
-   */
-  protected $logger;
 
   /**
    * The database connection for querying Chado.
@@ -105,16 +96,15 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
    * @param Drupal\tripal_chado\Database\ChadoConnection $connection
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, TripalLogger $logger, ChadoConnection $connection) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $logger);
 
-    $this->logger = $logger;
     $this->connection = $connection;
   }
 
 	/**
 	 * @{inheritdoc}
 	 */
-  public function addTypes($bundle_name, $field_name, $types) {
+  public function addTypes(string $field_name, array $types) {
 
     // Index the types by their entity type, field type and key.
     foreach ($types as $index => $type) {
@@ -126,18 +116,11 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
 
       $key = $type->getKey();
 
-      if (!array_key_exists($bundle_name, $this->property_types)) {
-        $this->property_types[$bundle_name] = [];
+      if (!array_key_exists($field_name, $this->property_types)) {
+        $this->property_types[$field_name] = [];
       }
-      if (!array_key_exists($field_name, $this->property_types[$bundle_name])) {
-        $this->property_types[$bundle_name][$field_name] = [];
-      }
-      if (array_key_exists($key, $this->property_types[$bundle_name])) {
-        $this->logger->error('Cannot add a property type, "@prop", as it already exists',
-            ['@prop' => $bundle_name . '.' . $field_name . '.' . $key]);
-        return FALSE;
-      }
-      $this->property_types[$bundle_name][$field_name][$key] = $type;
+      $this->property_types[$field_name][$key] = $type;
+
     }
   }
 
@@ -149,17 +132,30 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
   }
 
   /**
+   * @{inheritdoc}
+   */
+  public function getPropertyType(string $field_name, string $key) {
+
+    if (array_key_exists($field_name, $this->property_types)) {
+      if (array_key_exists($key, $this->property_types[$field_name])) {
+        return $this->property_types[$field_name][$key];
+      }
+    }
+
+    return NULL;
+  }
+
+  /**
 	 * @{inheritdoc}
 	 */
-  public function removeTypes($bundle_name, $field_name, $types) {
+  public function removeTypes(string $field_name, array $types) {
 
     foreach ($types as $type) {
       $key = $type->getKey();
-      if (array_key_exists($bundle_name, $this->property_types)) {
-        if (array_key_exists($field_name, $this->property_types[$bundle_name])) {
-          if (array_key_exists($key, $this->property_types[$bundle_name][$field_name])) {
-            unset($this->property_types[$bundle_name][$field_name][$key]);
-          }
+
+      if (array_key_exists($field_name, $this->property_types)) {
+        if (array_key_exists($key, $this->property_types[$field_name])) {
+          unset($this->property_types[$field_name][$key]);
         }
       }
     }
@@ -368,6 +364,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
 
     $build = $this->buildChadoRecords($values, TRUE);
     $records = $build['records'];
+
     $base_tables = $build['base_tables'];
     $transaction_chado = $this->connection->startTransaction();
     try {
@@ -739,10 +736,15 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
 
     // Iterate through the value objects.
     foreach ($values as $field_name => $deltas) {
+
+      // Now we retrieve the field configuration.
+      $definition = $this->getFieldDefinition($field_name);
+
       foreach ($deltas as $delta => $keys) {
         foreach ($keys as $key => $info) {
-          $definition = $info['definition'];
-          $prop_type = $info['type'];
+
+          // Retrieve the property type for this value.
+          $prop_type = $this->getPropertyType($field_name, $key);
 
           // Get the field and property storage settings.
           $field_settings = $definition->getSettings();
@@ -825,11 +827,17 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
 
     // Iterate through the value objects.
     foreach ($values as $field_name => $deltas) {
+
+      // Retrieve the field configuration.
+      $definition = $this->getFieldDefinition($field_name);
+
       foreach ($deltas as $delta => $keys) {
         foreach ($keys as $key => $info) {
-          $definition = $info['definition'];
-          $prop_type = $info['type'];
 
+          // Get the Property type for this value.
+          $prop_type = $this->getPropertyType($field_name, $key);
+
+          // Get important settings from the field configuration.
           $field_settings = $definition->getSettings();
           $storage_plugin_settings = $field_settings['storage_plugin_settings'];
           $prop_storage_settings = $prop_type->getStorageSettings();
@@ -894,7 +902,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
       $delta = $item[1];
       $key = $item[2];
       $info = $item[3];
-      $prop_type = $info['type'];
+      $prop_type = $this->getPropertyType($field_name, $key);
       $prop_storage_settings = $prop_type->getStorageSettings();
       $template = $prop_storage_settings['template'];
 
@@ -922,7 +930,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
       $delta = $item[1];
       $key = $item[2];
       $info = $item[3];
-      $prop_type = $info['type'];
+      $prop_type = $this->getPropertyType($field_name, $key);
       $prop_storage_settings = $prop_type->getStorageSettings();
       $namespace = $prop_storage_settings['namespace'];
       $callback = $prop_storage_settings['function'];
@@ -968,36 +976,40 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
 
     // Iterate through the value objects.
     foreach ($values as $field_name => $deltas) {
+
+      // Retrieve the field configuration.
+      $definition = $this->getFieldDefinition($field_name);
+      if (!is_object($definition)) {
+        $this->logger->error($this->t('Cannot save record in Chado. The field, "@field", is missing the field definition (i.e. FieldConfig object).',
+          ['@field' => $field_name]));
+        continue;
+      }
+
       // @debug dpm(array_keys($deltas), "2nd level: deltas ($field_name)");
       foreach ($deltas as $delta => $keys) {
         // @debug dpm(array_keys($keys), "3rd level: field key name ($delta)");
         foreach ($keys as $key => $info) {
-
           // @debug dpm(array_keys($info), "4th level: info key-value pairs ($key)");
-          if (!array_key_exists('definition', $info) OR !is_object($info['definition'])) {
-            $this->logger->error($this->t('Cannot save record in Chado. The field, "@field", is missing the field definition (i.e. FieldConfig object). There should be a "definition" key in this array: @var',
-              ['@field' => $field_name, '@var' => print_r($info, TRUE)]));
-            continue;
-          }
+
+          // Ensure we have a value to work with.
           if (!array_key_exists('value', $info) OR !is_object($info['value'])) {
             $this->logger->error($this->t('Cannot save record in Chado. The field, "@field", is missing the StoragePropertyValue object.',
               ['@field' => $field_name]));
             continue;
           }
-
-          // @debug ksm($info['definition'], "$key: DEFINITION");
-          // @debug ksm($info['type'], "$key: TYPE");
-          // @debug ksm($info['value'], "$key: VALUES");
-          $definition = $info['definition'];
-          $prop_type = $info['type'];
           $prop_value = $info['value'];
+
+          // Retrieve the property type for this value.
+          $prop_type = $this->getPropertyType($field_name, $key);
+
+          // Retrieve the operation to be used for searching and if not set, use equals as the default.
           $operation = array_key_exists('operation', $info) ? $info['operation'] : '=';
 
+          // Retrieve important field settings.
           $field_label = $definition->getLabel();
           $field_settings = $definition->getSettings();
           $storage_plugin_settings = $field_settings['storage_plugin_settings'];
           $prop_storage_settings = $prop_type->getStorageSettings();
-
 
           // Make sure we have an action for this property.
           if (!array_key_exists('action', $prop_storage_settings)) {
@@ -1112,8 +1124,10 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
             if (array_key_exists($base_table, $base_record_ids) and $base_record_ids[$base_table] != 0) {
               $records[$table_name][$delta]['fields'][$chado_column] = $base_record_ids[$base_table];
             }
+
           }
         }
+        if (!array_key_exists('conditions', $record)) print_r($record);
         foreach ($record['conditions'] as $chado_column => $val) {
           if (is_array($val['value']) and $val['value'][0] == 'REPLACE_BASE_RECORD_ID') {
             $base_table = $val['value'][1];
@@ -1589,5 +1603,4 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface, Contain
 
     return $violations;
   }
-
 }
