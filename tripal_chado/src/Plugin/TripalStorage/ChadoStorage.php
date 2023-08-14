@@ -207,6 +207,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     // Insert the record.
     $insert = $this->connection->insert('1:' . $chado_table);
     $insert->fields($record['fields']);
+
+    $this->field_debugger->reportQuery($insert, "Insert Query for $chado_table ($delta)");
+
     $record_id = $insert->execute();
 
     if (!$record_id) {
@@ -226,10 +229,11 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
     $schema = $this->connection->schema();
 
+    $this->field_debugger->printHeader('Insert');
+    $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::insertValues');
+
     $build = $this->buildChadoRecords($values, TRUE);
     $records = $build['records'];
-
-    // @debug print "Build Records: " . print_r($records, TRUE);
 
     $transaction_chado = $this->connection->startTransaction();
     try {
@@ -351,6 +355,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     foreach ($record['conditions'] as $chado_column => $cond_value) {
       $update->condition($chado_column, $cond_value['value']);
     }
+
+    $this->field_debugger->reportQuery($update, "Update Query for $chado_table ($delta). Note: aguements may only include the conditional ones, see Drupal Issue #2005626.");
+
     $rows_affected = $update->execute();
     if ($rows_affected == 0) {
       throw new \Exception($this->t('Failed to update record in the Chado "@table" table. Record: @record',
@@ -367,6 +374,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * @{inheritdoc}
    */
   public function updateValues(&$values) : bool {
+
+    $this->field_debugger->printHeader('Update');
+    $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::updateValues');
 
     $build = $this->buildChadoRecords($values, TRUE);
     $records = $build['records'];
@@ -493,6 +503,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       }
     }
 
+    $this->field_debugger->reportQuery($select, "Select Query for $chado_table ($delta)");
+
     // Execute the query.
     $results = $select->execute();
     if (!$results) {
@@ -506,6 +518,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * @{inheritdoc}
    */
   public function loadValues(&$values) : bool {
+
+    $this->field_debugger->printHeader('Load');
+    $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::loadValues');
 
     $build = $this->buildChadoRecords($values, FALSE);
     $records = $build['records'];
@@ -524,6 +539,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       $transaction_chado->rollback();
       throw new \Exception($e);
     }
+
+    $this->field_debugger->reportValues($values, 'The values after loading is complete.');
+
     return TRUE;
   }
 
@@ -552,6 +570,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     foreach ($record['conditions'] as $chado_column => $cond_value) {
       $delete->condition($chado_column, $cond_value['value']);
     }
+
+    $this->field_debugger->reportQuery($delete, "Delete Query for $chado_table ($delta)");
+
     $rows_affected = $delete->execute();
     if ($rows_affected == 0) {
       throw new \Exception($this->t('Failed to delete a record in the Chado "@table" table. Record: @record',
@@ -571,6 +592,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    */
   public function deleteValues($values) : bool {
 
+    $this->field_debugger->printHeader('Delete');
+    $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::deleteValues');
+
     return FALSE;
   }
 
@@ -578,6 +602,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * @{inheritdoc}
    */
   public function findValues($match) {
+
+    $this->field_debugger->printHeader('Find');
+    $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::findValues');
 
   }
 
@@ -818,8 +845,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     $records = [];
     $base_record_ids = [];
 
-    // @debug dpm(array_keys($values), '1st level: field names');
-    $this->field_debugger->reportValues($values);
+    $this->field_debugger->reportValues($values, 'The values submitted to ChadoStorage');
 
     // Iterate through the value objects.
     foreach ($values as $field_name => $deltas) {
@@ -832,11 +858,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         continue;
       }
 
-      // @debug dpm(array_keys($deltas), "2nd level: deltas ($field_name)");
       foreach ($deltas as $delta => $keys) {
-        // @debug dpm(array_keys($keys), "3rd level: field key name ($delta)");
         foreach ($keys as $key => $info) {
-          // @debug dpm(array_keys($info), "4th level: info key-value pairs ($key)");
 
           // Ensure we have a value to work with.
           if (!array_key_exists('value', $info) OR !is_object($info['value'])) {
@@ -981,6 +1004,8 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
         }
       }
     }
+
+    $this->field_debugger->summarizeBuiltRecords($base_record_ids, $records);
 
     return [
       'base_tables' => $base_record_ids,
@@ -1417,6 +1442,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * {@inheritDoc}
    */
   public function validateValues($values) {
+
+    $this->field_debugger->printHeader('Validate');
+    $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::validateValues');
 
     $build = $this->buildChadoRecords($values, TRUE);
     $base_tables = $build['base_tables'];
