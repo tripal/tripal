@@ -1202,21 +1202,21 @@ fields:
               region: content
               weight: 10
 
-    -   name: phylotree_comment
+    -   name: phylotree_dbxref_id
         content_type: phylotree
-        label: Notes
-        type: chado_text_type
-        description: Comments, typically from users.
+        label: Dbxref ID
+        type: chado_integer_type
+        description: The primary key of the database reference (dbxref) to attach to this tree. This field is a placeholder until we develop a more user friendly database reference field.
         cardinality: 1
-        required: false
+        required: true
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
                 base_table: phylotree
-                base_column: comment
+                base_column: dbxref_id
         settings:
-            termIdSpace: schema
-            termAccession: comment
+            termIdSpace: data
+            termAccession: "2091"
         display:
           view:
             default:
@@ -1243,18 +1243,70 @@ fields:
                 type_column: type_id
         settings:
             termIdSpace: data
-            termAccession: 0872
+            termAccession: '0872'
             fixed_value: data:0872
         display:
           view:
             default:
               region: content
               label: above
-              weight: 10
+              weight: 20
           form:
             default:
               region: content
-              weight: 10
+              weight: 20
+
+    -   name: phylotree_analysis
+        content_type: phylotree
+        label: Analysis
+        type: chado_analysis_default
+        description: The analysis from which the tree was generated.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: phylotree
+                base_column: analysis_id
+        settings:
+            termIdSpace: operation
+            termAccession: '2945'
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 25
+          form:
+            default:
+              region: content
+              weight: 25
+
+    -   name: phylotree_comment
+        content_type: phylotree
+        label: Notes
+        type: chado_text_type
+        description: Comments, typically from users.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: phylotree
+                base_column: comment
+        settings:
+            termIdSpace: schema
+            termAccession: comment
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 30
+          form:
+            default:
+              region: content
+              weight: 30
 
     -   name: physical_map_name
         content_type: physical_map

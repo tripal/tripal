@@ -8,16 +8,20 @@ use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Test autocomplete project name.
+ *
+ * @group Tripal
+ * @group Tripal Chado
+ * @group Tripal Chado Autocomplete
  */
 class ChadoTableProjectAutocompleteTest extends ChadoTestBrowserBase {
   /**
    * Registered user with access content privileges.
-   * 
+   *
    * @var \Drupal\user\Entity\User
    */
   private $registered_user;
 
-  
+
   /**
    * Test autocomplete project name.
    */
@@ -50,7 +54,7 @@ class ChadoTableProjectAutocompleteTest extends ChadoTestBrowserBase {
 
     // Create test project records and projects with type_id set.
     $insert_project = "
-      INSERT INTO {1:project} (name, description) 
+      INSERT INTO {1:project} (name, description)
       VALUES
         ('$projects[0]', '$projects[0] description'),
         ('$projects[1]', '$projects[1] description'),
@@ -64,15 +68,14 @@ class ChadoTableProjectAutocompleteTest extends ChadoTestBrowserBase {
         ('$projects[9]', '$projects[9] description')
     ";
     $connection->query($insert_project);
-    
+
     // Set type_id of Null on projects: Good, Winner and Great.
     $ids = $connection->query("
-      SELECT project_id FROM {1:project} WHERE name 
+      SELECT project_id FROM {1:project} WHERE name
       IN ('Project Good', 'Project Winner', 'Project Great')
     ")->fetchAllKeyed(0, 0);
-    
+
     $ids = array_values($ids);
-    //var_dump($ids);
 
     $insert_type = "
       INSERT INTO {1:projectprop} (project_id, type_id)
@@ -82,88 +85,70 @@ class ChadoTableProjectAutocompleteTest extends ChadoTestBrowserBase {
         ($ids[2], 1)
     ";
     $connection->query($insert_type);
-    
+
     $m = $connection->query("select * from {1:projectprop}")
       ->fetchAllKeyed(0, 1);
-    
+
     $autocomplete = new ChadoProjectAutocompleteController();
-    $this->assertNotNull($autocomplete);
-    
+    $this->assertNotNull($autocomplete, 'Failed to create the ChadoProjectAutocompleteController');
+
     // Any project regardless of type.
     $request = Request::create(
-      'chado/project/autocomplete/0/10',
+      'chado/project/autocomplete/10/0',
       'GET',
       ['q' => 'project']
     );
 
     // Test Limit/count.
-    // Request will return all projects (10 rows) but suggest 1 - 10:
+    // Seven projects begin with the word 'Project'.
+    // Request will only return these projects (7 rows) so suggest 1 - 7:
     // Error on 0 count.
-    $suggest_count = range(0, 10);
+    $suggest_count = range(0, 7);
     foreach($suggest_count as $count) {
+      $suggest = $autocomplete->handleAutocomplete($request, $count, 0)
+        ->getContent();
       if ($count > 0) {
-        $suggest = $autocomplete->handleAutocomplete($request, 0, $count)
-          ->getContent();
-      
-        $this->assertEquals(count(json_decode($suggest)), $count);
-        
+
+        $this->assertEquals(count(json_decode($suggest)), $count, 'Number of suggestions does not match requested count limit when not specifying projectprop');
+
         // Each suggestion matches the projects that were inserted.
         foreach(json_decode($suggest) as $item) {
           $is_found = (in_array($item->value, $projects)) ? TRUE : FALSE;
-          $this->assertTrue($is_found);
+          $this->assertTrue($is_found, "Did not return the $count-th project");
         }
       }
       else {
-        $suggest = $autocomplete->handleAutocomplete($request, 0, $count)
-          ->getContent();
-
-        $this->assertEquals($suggest, '[]');    
+        $this->assertEquals($suggest, '[]', 'Passing count of zero did not return an empty array');
       }
     }
 
     // Restrict to project with projectprop.type_id set to null (id: 1).
     // Will return - 'Project Good', 'Project Winner', 'Project Great'.
     $request = Request::create(
-      'chado/project/autocomplete/1/10',
+      'chado/project/autocomplete/10/1',
       'GET',
       ['q' => 'project']
     );
-    
-    $suggest = $autocomplete->handleAutocomplete($request, 0, $count)
+
+    $suggest = $autocomplete->handleAutocomplete($request, $count, 0)
         ->getContent();
-      
-    // Test Limit/count.
+
+    // Test Limit/count while specifying projectprop.
     // Request will return 3 projects but suggest 1 - 3:
     $suggest_count = range(1, 3);
     foreach($suggest_count as $count) {
-      $suggest = $autocomplete->handleAutocomplete($request, 0, $count)
+      $suggest = $autocomplete->handleAutocomplete($request, $count, 0)
         ->getContent();
-      
-      $this->assertEquals(count(json_decode($suggest)), $count);  
+
+      $this->assertEquals(count(json_decode($suggest)), $count, 'Number of suggestions does not match requested count limit when projectprop specified');
 
       // Each suggestion matches the projects that were inserted.
       foreach(json_decode($suggest) as $item) {
         $is_found = (in_array($item->value, $projects)) ? TRUE : FALSE;
-        $this->assertTrue($is_found);
+        $this->assertTrue($is_found, "Returned a project not in the list of projects");
       }
     }
 
-    // Test partial keyword.
-    // Will return Project Great and Project Green.
-    $request = Request::create(
-      'chado/project/autocomplete/0/10',
-      'GET',
-      ['q' => 'gre']
-    );
-    
-    $suggest = $autocomplete->handleAutocomplete($request, 0, 5)
-      ->getContent();
-    
-    foreach(json_decode($suggest) as $item) {
-      $is_found = (in_array($item->value, ['Project Great', 'Project Green'])) ? TRUE : FALSE;
-      $this->assertTrue($is_found);
-    }
-    
     // Test getProjectName().
     // Ids of project with type_id set. see insert query above.
     $id_name = [];
@@ -171,23 +156,39 @@ class ChadoTableProjectAutocompleteTest extends ChadoTestBrowserBase {
       $name = ChadoProjectAutocompleteController::getProjectName($project);
       $id_name[] = $name;
       $match = (in_array($name, ['Project Good', 'Project Winner', 'Project Great'])) ? TRUE : FALSE;
-      $this->assertTrue($match);
+      $this->assertTrue($match, 'Did not match to "Project Good", "Project Winner", or "Project Great"');
     }
-
-    // Not found.
-    $not_found = ChadoProjectAutocompleteController::getProjectName(11111111111111111);
-    $this->assertEquals($not_found, '');
 
     // Test getProjectId().
     // Ids of project with type_id set. see insert query above.
     foreach($id_name as $project) {
       $id = ChadoProjectAutocompleteController::getProjectId($project);
       $match = (in_array($id, $ids)) ? TRUE : FALSE;
-      $this->assertTrue($match);
+      $this->assertTrue($match, 'Returned an ID not in set of valid IDs');
     }
 
     // Not found.
+    $not_found = ChadoProjectAutocompleteController::getProjectName(11111111111111111);
+    $this->assertEquals($not_found, '', 'Returned a project name for a non-existent name');
+
+    // Not found.
     $not_found = ChadoProjectAutocompleteController::getProjectId('Project Not Found');
-    $this->assertEquals($not_found, 0);
+    $this->assertEquals($not_found, 0, 'Returned a project ID for a non-existent name');
+
+    // Test partial keyword by prefixing with wildcard '%'
+    // Will return Project Great and Project Green.
+    $request = Request::create(
+      'chado/project/autocomplete/10/0',
+      'GET',
+      ['q' => '%gre']
+    );
+
+    $suggest = $autocomplete->handleAutocomplete($request, 5, 0)
+      ->getContent();
+
+    foreach(json_decode($suggest) as $item) {
+      $is_found = (in_array($item->value, ['Project Great', 'Project Green'])) ? TRUE : FALSE;
+      $this->assertTrue($is_found, '"%gre" matched to "'.$item->value.'" not to "Project Great" or "Project Green"');
+    }
   }
 }

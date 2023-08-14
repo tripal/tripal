@@ -23,7 +23,6 @@ use Symfony\Component\Routing\Route;
  *   label = @Translation("Tripal Content"),
  *   bundle_label = @Translation("Tripal Content type"),
  *   handlers = {
- *     "schema" = "Drupal\tripal\Entity\TripalEntityStorageSchema",
  *     "storage" = "Drupal\Core\Entity\Sql\SqlContentEntityStorage",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "list_builder" = "Drupal\tripal\ListBuilders\TripalEntityListBuilder",
@@ -452,10 +451,8 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
    * - 3rd: Delta value of the field item.
    * - 4th: the property key.
    * - 5th: One of the following keys:
-   *   - 'type': The property type object.
-   *   - 'definition':  the field definition object for the field that this
-   *     property belongs to.
    *   - 'value': the property value object.
+   *   - 'operation': the operation to use when matching this value.
    *
    * This function also returns an array of TripalStorage objects.
    *
@@ -490,6 +487,9 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           $tripal_storages[$tsid] = $tripal_storage;
         }
 
+        // Add the field definition to the storage for this field.
+        $tripal_storages[$tsid]->addFieldDefinition($field_name, $item->getFieldDefinition());
+
         // Get the empty property values for this field item and the
         // property type objects.
         $prop_values = $item->tripalValuesTemplate($item->getFieldDefinition());
@@ -503,15 +503,16 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         // property).
         $item->tripalClear($item, $field_name, $prop_types, $prop_values, $entity);
 
+        // Add the property types to the storage plugin.
+        $tripal_storages[$tsid]->addTypes($field_name, $prop_types);
 
-        // Prepare the properties for the storage plugin.
+        // Prepare the property values for the storage plugin.
+        // Note: We are assuming the key for the value is the
+        // same as the key for the type here... This is a temporary assumption
+        // as soon the values array will not contain types ;-)
         foreach ($prop_types as $prop_type) {
           $key = $prop_type->getKey();
-          $values[$tsid][$field_name][$delta][$key] = [
-            'definition' => $item->getFieldDefinition(),
-            'type' => $prop_type
-          ];
-          $tripal_storages[$tsid]->addTypes($prop_type);
+          $values[$tsid][$field_name][$delta][$key] = [];
         }
         foreach ($prop_values as $prop_value) {
           $key = $prop_value->getKey();
@@ -581,8 +582,8 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         // Load into the entity the properties that are to be stored in Drupal.
         $prop_values = [];
         $prop_types = [];
-        foreach ($values[$tsid][$field_name][$delta] as $prop_info) {
-          $prop_type = $prop_info['type'];
+        foreach ($values[$tsid][$field_name][$delta] as $key => $prop_info) {
+          $prop_type = $tripal_storages[$tsid]->getPropertyType($field_name, $key);
           $prop_value = $prop_info['value'];
           $settings = $prop_type->getStorageSettings();
           if (array_key_exists('drupal_store', $settings) and $settings['drupal_store'] == TRUE) {
@@ -675,7 +676,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           $prop_types = [];
           foreach ($values[$tsid][$field_name][$delta] as $key => $info) {
             $prop_values[] = $info['value'];
-            $prop_types[] = $info['type'];
+            $prop_types[] = $tripal_storages[$tsid]->getPropertyType($bundle, $field_name, $key);
           }
 
           // Now set the entity values for this field.

@@ -36,7 +36,8 @@ class StoragePropertyTypeBase extends StoragePropertyBase {
     $this->id = $id;
     $this->cardinality = 1;
     $this->searchability = TRUE;
-    $this->operations = array("eq","ne","contains","starts");
+    $this->operations = array('=','<>','>','>=','<','<=','STARTS_WITH','CONTAINS',
+      'ENDS_WITH','IN', 'NOT IN', 'BETWEEN', 'NOT BETWEEN');
     $this->sortable = TRUE;
     $this->readOnly_ = FALSE;
     $this->required = FALSE;

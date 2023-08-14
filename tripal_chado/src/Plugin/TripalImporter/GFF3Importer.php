@@ -4,6 +4,7 @@ namespace Drupal\tripal_chado\Plugin\TripalImporter;
 
 use Drupal\tripal_chado\TripalImporter\ChadoImporterBase;
 use Drupal\tripal\TripalVocabTerms\TripalTerm;
+use Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\InvokeCommand;
 use Drupal\Core\Ajax\ReplaceCommand;
@@ -344,6 +345,13 @@ class GFF3Importer extends ChadoImporterBase {
     // get the list of organisms
     $organisms = chado_get_organism_select_options(FALSE, TRUE);
 
+    // get the sequence ontology CV ID
+    $cv_results = $chado->select('1:cv', 'cv')
+      ->fields('cv')
+      ->condition('name', 'sequence')
+      ->execute();
+    $cv_id = $cv_results->fetchObject()->cv_id;
+
     $form['organism_id'] = [
       '#title' => t('Existing Organism'),
       '#type' => 'select',
@@ -359,6 +367,8 @@ class GFF3Importer extends ChadoImporterBase {
       '#description' => t("Optional. Use this field to specify a Sequence Ontology type
        for the default landmark sequences in the GFF fie (e.g. 'chromosome'). This is only needed if
        the landmark features (first column of the GFF3 file) are not already in the database."),
+      '#autocomplete_route_name' => 'tripal_chado.cvterm_autocomplete',
+      '#autocomplete_route_parameters' => ['count' => 5, 'cv_id' => $cv_id],
     ];
 
     $form['proteins'] = [
@@ -435,6 +445,8 @@ class GFF3Importer extends ChadoImporterBase {
        the targets are of different types then the type must be specified using the 'target_type=type' attribute
        in the GFF file. This must be a valid Sequence Ontology (SO) term. If the matches in the GFF3 file
        use specific match types (e.g. cDNA_match, EST_match, etc.) then this can be left blank. "),
+      '#autocomplete_route_name' => 'tripal_chado.cvterm_autocomplete',
+      '#autocomplete_route_parameters' => ['count' => 5, 'cv_id' => $cv_id],
     ];
 
     $form['targets']['create_target'] = [
@@ -497,12 +509,12 @@ class GFF3Importer extends ChadoImporterBase {
     // These form inputs are not yet being validated:
     // $organism_id = $form_state_values['organism_id'];
     // $target_organism_id = $form_state_values['target_organism_id'];
-    // $target_type = trim($form_state_values['target_type']);
+    $target_type = trim($form_state_values['target_type']);
     // $create_target = $form_state_values['create_target'];
     // $create_organism = $form_state_values['create_organism'];
     // $refresh = 0; //$form_state['values']['refresh'];
     // $remove = 0; //$form_state['values']['remove'];
-    // $landmark_type = trim($form_state_values['landmark_type']);
+    $landmark_type = trim($form_state_values['landmark_type']);
     // $alt_id_attr = trim($form_state_values['alt_id_attr']);
 
     $line_number = trim($form_state_values['line_number']);
@@ -532,6 +544,20 @@ class GFF3Importer extends ChadoImporterBase {
         \Drupal::messenger()->addError('Invalid replacement string.');
       }
     }
+
+    // check to make sure the types exists
+    $cv_autocomplete = new ChadoCVTermAutocompleteController();
+    $landmark_type_id = $cv_autocomplete->getCVtermId($landmark_type, 'sequence');
+    if (!$landmark_type_id) {
+      \Drupal::messenger()->addError(t("The Sequence Ontology (SO) term selected for the landmark type is not available in the database. Please check spelling or select another."));
+    }
+    if ($target_type) {
+      $target_type_id = $cv_autocomplete->getCVtermId($target_type, 'sequence');
+      if (!$target_type_id) {
+        \Drupal::messenger()->addError(t("The Sequence Ontology (SO) term selected for the target type is not available in the database. Please check spelling or select another."));
+      }
+    }
+
   }
 
   /**
