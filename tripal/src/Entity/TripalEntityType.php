@@ -37,11 +37,11 @@ use Drupal\tripal\TripalVocabTerms\TripalTerm;
  *     "label" = "label",
  *   },
  *   links = {
- *     "canonical" = "/admin/structure/tripal/{tripal_entity_type}",
- *     "add-form" = "/admin/structure/tripal/add",
- *     "edit-form" = "/admin/structure/tripal/manage/{tripal_entity_type}",
- *     "delete-form" = "/admin/structure/tripal/manage/{tripal_entity_type}/delete",
- *     "collection" = "/admin/structure/tripal"
+ *     "canonical" = "/admin/structure/bio_data/{tripal_entity_type}",
+ *     "add-form" = "/admin/structure/bio_data/add",
+ *     "edit-form" = "/admin/structure/bio_data/manage/{tripal_entity_type}",
+ *     "delete-form" = "/admin/structure/bio_data/manage/{tripal_entity_type}/delete",
+ *     "collection" = "/admin/structure/bio_data"
  *   },
  *   config_export = {
  *     "id",

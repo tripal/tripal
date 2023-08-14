@@ -379,8 +379,8 @@ function tripal_access_user_data($uid) {
 function tripal_menu_local_tasks_alter(&$data, $router_item, $root_path) {
   // Add an "Add Tripal Content" action link to the Admin >> Content >>
   // Biological Content page.
-  if ($root_path == 'admin/content/tripal') {
-    $item = menu_get_item('tripal/add');
+  if ($root_path == 'admin/content/bio_data') {
+    $item = menu_get_item('bio_data/add');
     if ($item['access']) {
       $data['actions']['output'][] = array(
         '#theme' => 'menu_local_task',
@@ -423,7 +423,7 @@ function tripal_shortcut_default_set($account) {
   //       'weight' => -35,
   //     ),
   //     array(
-  //       'link_path' => 'tripal/add',
+  //       'link_path' => 'bio_data/add',
   //       'link_title' => 'Add Tripal Content',
   //       'weight' => -30,
   //     ),

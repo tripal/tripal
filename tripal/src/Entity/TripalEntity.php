@@ -47,12 +47,12 @@ use Symfony\Component\Routing\Route;
  *     "status" = "status",
  *   },
  *   links = {
- *     "canonical" = "/tripal/{tripal_entity}",
- *     "add-page" = "/tripal/add",
- *     "add-form" = "/tripal/add/{tripal_entity_type}",
- *     "edit-form" = "/tripal/{tripal_entity}/edit",
- *     "delete-form" = "/tripal/{tripal_entity}/delete",
- *     "collection" = "/admin/content/tripal",
+ *     "canonical" = "/bio_data/{tripal_entity}",
+ *     "add-page" = "/bio_data/add",
+ *     "add-form" = "/bio_data/add/{tripal_entity_type}",
+ *     "edit-form" = "/bio_data/{tripal_entity}/edit",
+ *     "delete-form" = "/bio_data/{tripal_entity}/delete",
+ *     "collection" = "/admin/content/bio_data",
  *   },
  *   bundle_entity_type = "tripal_entity_type",
  *   field_ui_base_route = "entity.tripal_entity_type.edit_form"
@@ -157,7 +157,7 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
   public function setAlias($path_alias = NULL) {
 
 
-    $system_path = "/tripal/" . $this->getID();
+    $system_path = "/bio_data/" . $this->getID();
 
     // If no alias was supplied then we should try to generate one using the
     // default format set by admins.
