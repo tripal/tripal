@@ -671,7 +671,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
    * @{inheritdoc}
    */
   public function findValues($values) {
-    $build = $this->buildChadoRecords($values);
+    $build = $this->buildChadoRecords($values, TRUE);
     $records = $build['records'];
     $base_tables = $build['base_tables'];
     $matched_records = [];
@@ -684,7 +684,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           // Get all matching records as defined by the $records query array.
           $matches = $this->findChadoRecords($records, $base_tables, $chado_table, $delta, $record);
           while ($match = $matches->fetchAssoc()) {
-            print_r($match);
+            //print_r($match);
 
             // Copy the values array and the records array for this matched record.
             $new_values = $this->copyValues($values);
@@ -1031,6 +1031,21 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             $chado_table = $prop_storage_settings['chado_table'];
             $chado_table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
             $chado_table_pkey = $chado_table_def['primary key'];
+          }
+
+          // Make sure all of the sections are present in the $records array
+          if (!array_key_exists($chado_table, $records)) {
+            $records[$chado_table] = [];
+            $records[$chado_table][] = [];
+          }
+          if (!array_key_exists('conditions', $records[$chado_table][0])) {
+            $records[$chado_table][0]['conditions'] = [];
+          }
+          if (!array_key_exists('fields', $records[$chado_table][0])) {
+            $records[$chado_table][0]['fields'] = [];
+          }
+          if (!array_key_exists('joins', $records[$chado_table][0])) {
+            $records[$chado_table][0]['fields'] = [];
           }
 
           // This action is to store the base record primary key value.

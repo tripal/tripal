@@ -8,6 +8,34 @@ use \Drupal\tripal\Services\TripalJob;
 class TripalPublish {
 
   /**
+   * The number of items that this importer needs to process. A progress
+   * can be calculated by dividing the number of items process by this
+   * number.
+   *
+   * @var integer $total_items
+   */
+  private $total_items;
+
+  /**
+   * The number of items that have been handled so far.  This must never
+   * be below 0 and never exceed $total_items;
+   *
+   * @var integer $num_handled
+   */
+  private $num_handled;
+
+  /**
+   * The interval when the job progress should be updated. Updating the job
+   * progress incurrs a database write which takes time and if it occurs to
+   * frequently can slow down the loader.  This should be a value between
+   * 0 and 100 to indicate a percent interval (e.g. 1 means update the
+   * progress every time the num_handled increases by 1%).
+   *
+   * @var integer $interval
+   */
+  private $interval;
+
+  /**
    * The TripalJob object.
    *
    * @var \Drupal\tripal\Services\TripalJob $job
@@ -70,6 +98,13 @@ class TripalPublish {
 
 
   /**
+   * Stores the last percentage that progress was reported.
+   *
+   * @var integer
+   */
+  protected $reported;
+
+  /**
    * Initializes the publisher service.
    *
    * @param string $bundle
@@ -82,9 +117,11 @@ class TripalPublish {
     $this->bundle = $bundle;
     $this->datastore = $datastore;
     $this->job = $job;
+    $this->total_items = 0;
+    $this->interval = 1;
+    $this->num_handled = 0;
+    $this->reported = 0;
 
-
-    print_r([$bundle]);
 
     // Initialize the logger.
     $this->logger = \Drupal::service('tripal.logger');
@@ -117,6 +154,90 @@ class TripalPublish {
     // Get the rquired field properties that will uniquely identify an entity.
     // We only need to search on those properties.
     $this->required_types = $this->storage->getStoredTypes();
+  }
+
+  /**
+   * Updates the percent interval when the job progress is updated.
+   *
+   * Updating the job progress incurrs a database write which takes time
+   * and if it occurs to frequently can slow down the loader.  This should
+   * be a value between 0 and 100 to indicate a percent interval (e.g. 1
+   * means update the progress every time the num_handled increases by 1%).
+   *
+   * @param int $interval
+   *   A number between 0 and 100.
+   */
+  protected function setInterval($interval) {
+    $this->interval = $interval;
+  }
+
+  /**
+   * Adds to the count of the total number of items that have been handled.
+   *
+   * @param int $num_handled
+   */
+  protected function addItemsHandled($num_handled) {
+    $items_handled = $this->num_handled = $this->num_handled + $num_handled;
+    $this->setItemsHandled($items_handled);
+  }
+
+  /**
+   * Sets the total number if items to be processed.
+   *
+   * This should typically be called near the beginning of the loading process
+   * to indicate the number of items that must be processed.
+   *
+   * @param int $total_items
+   *   The total number of items to process.
+   */
+  protected function setTotalItems($total_items) {
+    $this->total_items = $total_items;
+  }
+
+  /**
+   * Sets the number of items that have been processed.
+   *
+   * This code was shamelessly copied from the TripalImporterBase class.
+   *
+   * @param int $total_handled
+   *   The total number of items that have been processed.
+   */
+  protected function setItemsHandled($total_handled) {
+    // First set the number of items handled.
+    $this->num_handled = $total_handled;
+
+    if ($total_handled == 0) {
+      $memory = number_format(memory_get_usage());
+      $this->logger->notice(t("Percent complete: 0%. Memory: " . $memory . " bytes.") . "\r");
+      return;
+    }
+
+    // Now see if we need to report to the user the percent done.  A message
+    // will be printed on the command-line if the job is run there.
+    if ($this->total_items) {
+      $percent = ($this->num_handled / $this->total_items) * 100;
+      $ipercent = (int) $percent;
+    }
+    else {
+      $percent = 0;
+      $ipercent = 0;
+    }
+
+    // If we've reached our interval then print update info.
+    if ($ipercent > 0 and $ipercent != $this->reported and $ipercent % $this->interval == 0) {
+      $memory = number_format(memory_get_usage());
+      $spercent = sprintf("%.2f", $percent);
+      $this->logger->notice(
+          t("Percent complete: " . $spercent . " %. Memory: " . $memory . " bytes.")
+          . "\r"
+          );
+
+      // If we have a job the update the job progress too.
+      if ($this->job) {
+        $this->job->setProgress($percent);
+      }
+      $this->reported = $ipercent;
+    }
   }
 
 
@@ -382,6 +503,9 @@ class TripalPublish {
     $num_matches = count($matches);
     $num_batches = (int) ($num_matches / $batch_size) + 1;
 
+    $this->setItemsHandled(0);
+    $this->setTotalItems($num_batches);
+
     $init_sql = "
       INSERT INTO {tripal_entity}
         (type, title, status, created, changed)
@@ -418,6 +542,7 @@ class TripalPublish {
           $sql = $init_sql . $sql;
           $database->query($sql, $args);
         }
+        $this->setItemsHandled($batch_num);
         $batch_num++;
 
         // Now reset all of the variables for the next batch.
@@ -451,6 +576,9 @@ class TripalPublish {
     $batch_size = 1000;
     $num_matches = count($matches);
     $num_batches = (int) ($num_matches / $batch_size) + 1;
+
+    $this->setItemsHandled(0);
+    $this->setTotalItems($num_batches);
 
     // Generate the insert SQL and add to it the field-specific columns.
     $init_sql = "
@@ -505,6 +633,7 @@ class TripalPublish {
           $sql = $init_sql . $sql;
           $database->query($sql, $args);
         }
+        $this->setItemsHandled($batch_num);
         $batch_num++;
 
         // Now reset all of the variables for the next batch.
@@ -538,21 +667,25 @@ class TripalPublish {
     $this->addFixedTypeValues($search_values);
 
     // Perform the query to find matching records.
+    $this->logger->notice("Step  1 of 5: Find unpublished records...                             ");
     $matches = $this->storage->findValues($search_values);
 
     // Get the titles for these entities
+    $this->logger->notice("Step  2 of 5: Generate page titles...                                 ");
     $titles = $this->getEntityTitles($matches);
 
     // Find any entities that are already in the database.
+    $this->logger->notice("Step  3 of 5: Find existing published entities...                      ");
     $existing = $this->findEntities($matches, $titles);
 
     // Insert new entities
+    $this->logger->notice("Step  4 of 5: Publish new entities...                                  ");
     $this->insertEntities($matches, $titles, $existing);
 
     // Now get the list of the entity IDs. We need these
     // for adding the fields.
+    $this->logger->notice("Step  5 of 5: Add single cardinality fields to new entities...          ");
     $entities = $this->findEntities($matches, $titles);
-
     foreach ($this->field_info as $field_name => $info) {
       $this->insertField($field_name, $matches, $titles, $entities, $existing);
     }
