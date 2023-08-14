@@ -4,7 +4,7 @@ namespace Drupal\tripal\TripalStorage;
 
 use Drupal\Core\Plugin\PluginBase;
 use Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface;
-
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal\Services\TripalLogger;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -98,4 +98,31 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
 
     return FALSE;
   }
+
+  /**
+   *
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface::publishFrom()
+   */
+  public function publishForm($form, FormStateInterface &$form_state) {
+    return [];
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface::publishFormValidate()
+   */
+  public function publishFormValidate($form, FormStateInterface &$form_state) {
+
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface::publishFromSubmit()
+   */
+  public function publishFromSubmit($form, FormStateInterface &$form_state) {
+
+  }
+
+
 }

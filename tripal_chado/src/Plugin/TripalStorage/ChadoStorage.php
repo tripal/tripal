@@ -6,7 +6,7 @@ use Drupal\tripal\TripalStorage\TripalStorageBase;
 use Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Validator\ConstraintViolation;
-
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal\Services\TripalLogger;
 use Drupal\tripal_chado\Database\ChadoConnection;
 
@@ -1594,5 +1594,31 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
     }
 
     return $violations;
+  }
+
+  /**
+   *
+   * {@inheritDoc}
+   * @see \Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface::publishFrom()
+   */
+  public function publishForm($form, FormStateInterface &$form_state) {
+
+    $chado_schemas = [];
+    $chado = \Drupal::service('tripal_chado.database');
+    foreach ($chado->getAvailableInstances() as $schema_name => $details) {
+      $chado_schemas[$schema_name] = $schema_name;
+    }
+    $default_chado = $chado->getSchemaName();
+
+    $storage_form['schema_name'] = [
+      '#type' => 'select',
+      '#title' => 'Chado Schema Name',
+      '#required' => TRUE,
+      '#description' => 'Select one of the installed Chado schemas to import into.',
+      '#options' => $chado_schemas,
+      '#default_value' => $default_chado,
+    ];
+
+    return $storage_form;
   }
 }

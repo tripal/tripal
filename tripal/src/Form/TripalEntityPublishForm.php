@@ -53,9 +53,32 @@ class TripalEntityPublishForm extends FormBase {
       '#options' => $datastores,
       '#sort_options' => TRUE,
       '#required' => TRUE,
+      '#ajax' => [
+        'callback' => '::storageAjaxCallback',
+        'wrapper' => 'storage-options'
+      ],
+    ];
+    $form['storage-options'] = [
+      '#type' => 'details',
+      '#description' => 'Please select a storage backend for additional options.',
+      '#title' => 'Storage Options',
+      '#prefix' => '<div id="storage-options">',
+      '#suffix' => '</div>',
+      '#open' => TRUE,
     ];
 
-    /** @todo: what about different Chado instances? How do we let the user select those?**/
+    // If the user has selected the data storage backend then add any
+    // form options to it that the storage backend needs.
+    if ($datastore = $form_state->getValue('datastore')) {
+      $storage = $storage_manager->getInstance(['plugin_id' => $datastore]);
+      $datastore_form = $storage->publishForm($form, $form_state);
+      if (!empty($datastore_form)) {
+        $form['storage-options'] = array_merge_recursive($form['storage-options'], $datastore_form);
+      }
+      else {
+        $form['storage-options']['#description'] = t('The storage backend did not provide any additional options.');
+      }
+    }
 
     $form['bundle'] = [
       '#title' => 'Content Type',
@@ -74,21 +97,65 @@ class TripalEntityPublishForm extends FormBase {
     return $form;
   }
 
+  /**
+   * AJAX callback for storage backend updates.
+   *
+   * @param array $form
+   *   The form array
+   * @param FormStateInterface $form_state
+   *   The form state object.
+   */
+  public function storageAjaxCallback(array &$form, FormStateInterface $form_state) {
+    return $form['storage-options'];
+  }
+
+  /**
+   *
+   * {@inheritDoc}
+   * @see \Drupal\Core\Form\FormBase::validateForm()
+   */
+  public function validateForm(array &$form, $form_state) {
+    $bundle = $form_state->getValue('bundle');
+    $datastore = $form_state->getValue('datastore');
+
+    // Run the form validate for the storage backend.
+    /** @var \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $storage_manager **/
+    $storage_manager = \Drupal::service('tripal.storage');
+    $storage = $storage_manager->getInstance(['plugin_id' => $datastore]);
+    $storage->publishFormValidate($form, $form_state);
+  }
+
 
   /**
    * Submit the form.
    */
-  function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state) {
 
-    // Get the uid of the current user.
-    //$user = User::load(\Drupal::currentUser()->id());
-    $current_user = \Drupal::currentUser();
     $bundle = $form_state->getValue('bundle');
     $datastore = $form_state->getValue('datastore');
-    $job_name = 'Publish ' . $bundle;
 
-    // Invoke the job, which should call the publish job?
-    tripal_add_job($job_name, 'tripal', 'tripal_publish', [$bundle, $datastore], $current_user->id());
+    // All otehr values will be passed in as options. These should be
+    // values provided by the storage backend form elements.  Take out
+    // those items we don't need.
+    $values = $form_state->getValues();
+    unset($values['submit_button']);
+    unset($values['form_build_id']);
+    unset($values['form_token']);
+    unset($values['form_id']);
+    unset($values['bundle']);
+    unset($values['datastore']);
+    unset($values['op']);
+
+    // Run the form submit for the storage backend.
+    /** @var \Drupal\tripal\TripalStorage\PluginManager\TripalStorageManager $storage_manager **/
+    $storage_manager = \Drupal::service('tripal.storage');
+    $storage = $storage_manager->getInstance(['plugin_id' => $datastore]);
+    $storage->publishFromSubmit($form, $form_state);
+
+    // Add the publish job.
+    $current_user = \Drupal::currentUser();
+    $job_args = [$bundle, $datastore, $values];
+    $job_name = 'Publish pages of type: ' . $bundle;
+    tripal_add_job($job_name, 'tripal', 'tripal_publish', $job_args, $current_user->id());
   }
-
 }

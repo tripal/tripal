@@ -4,6 +4,9 @@ namespace Drupal\tripal\TripalStorage\Interfaces;
 
 use Drupal\Component\Plugin\PluginInspectionInterface;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
+use Symfony\Component\HttpKernel\DependencyInjection\AddAnnotatedClassesToCachePass;
+use Drupal\Core\Form\FormStateInterface;
+
 
 /**
  * Defines an interface for tripal storage plugins.
@@ -207,5 +210,42 @@ interface TripalStorageInterface extends PluginInspectionInterface {
    *   An array of \Symfony\Component\Validator\ConstraintViolation objects.
    */
   public function validateValues($values);
+
+
+  /**
+   * Provides form elements to be added to the Tripal entity publish form.
+   *
+   * @param array $form
+   *   The form array definition.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   *
+   * @return array
+   *   A new form array definition containing the form elements to add
+   *   to the publish form.
+   */
+  public function publishForm($form, FormStateInterface &$form_state);
+
+  /**
+   * Handles validation of the publish form elements.
+   *
+   * @param array $form
+   *   The form array definition.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   *
+   */
+  public function publishFormValidate($form, FormStateInterface &$form_state);
+
+  /**
+   * Handles submission of the form elements for the storage backend.
+   *
+   * @param array $form
+   *   The form array definition.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   */
+  public function publishFromSubmit($form, FormStateInterface &$form_state);
+
 
 }

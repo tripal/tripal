@@ -77,15 +77,20 @@ class TripalPublish {
    * @param string $datastore
    *   The id of the TripalStorage plugin.
    */
-  public function init($bundle, $datastore, TripalJob $job=NULL) {
+  public function init($bundle, $datastore, $datastore_options = [], TripalJob $job = NULL) {
 
     $this->bundle = $bundle;
     $this->datastore = $datastore;
     $this->job = $job;
 
+
+    print_r([$bundle]);
+
     // Initialize the logger.
     $this->logger = \Drupal::service('tripal.logger');
-    $this->logger->setJob($job);
+    if ($job) {
+      $this->logger->setJob($job);
+    }
 
     // Get the bundle object so we can get settings such as the title format.
     /** @var \Drupal\tripal\Entity\TripalEntityType $entity_type **/

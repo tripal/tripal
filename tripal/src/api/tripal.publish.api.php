@@ -20,7 +20,7 @@ use \Drupal\tripal\Services\TripalJob;
  * @param \Drupal\tripal\Services\TripalJob $job
  *  An optional TripalJob object.
  */
-function tripal_publish($bundle, $datastore, TripalJob $job = NULL) {
+function tripal_publish($bundle, $datastore, $options = [], TripalJob $job = NULL) {
 
   // Initialize the logger.
   /** @var \Drupal\tripal\Services\TripalLogger $logger **/
@@ -31,7 +31,7 @@ function tripal_publish($bundle, $datastore, TripalJob $job = NULL) {
   $publish = \Drupal::service('tripal.publish');
 
   try {
-    $publish->init($bundle, $datastore, $job);
+    $publish->init($bundle, $datastore, $options, $job);
     $publish->publish();
   }
   catch (Exception $e) {
