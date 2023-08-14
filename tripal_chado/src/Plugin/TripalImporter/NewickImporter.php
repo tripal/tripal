@@ -225,8 +225,8 @@ class NewickImporter extends ChadoImporterBase {
   public function run() {
     $chado = \Drupal::service('tripal_chado.database');
     $arguments = $this->arguments['run_args'];
-    print_r($arguments);
-    exit;
+    // print_r($arguments);
+    // exit;
 
     // TRIPAL 4 - The type option is from an autocomplete which seems to include (SO:*) part
     // Temporarily, remove this part

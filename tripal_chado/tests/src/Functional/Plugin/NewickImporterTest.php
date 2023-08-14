@@ -80,9 +80,9 @@ class NewickImporterTest extends ChadoTestBrowserBase
       'schema_name' => $schema_name,
       'tree_name' => 'Tree 2',
       'leaf_type' => 'polypeptide (SO:0000104)',
-      'dbxref' => '',
+      'dbxref' => NULL,
       'description' => 'No description',
-      'name_re' => '',
+      'name_re' => NULL,
       'match' => 0,
       'load_later' => 0 
     ];
