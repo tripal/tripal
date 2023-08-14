@@ -435,6 +435,7 @@ class GFF3Importer extends ChadoImporterBase {
         different species then the organism must be specified using the 'target_organism=genus:species'
         attribute in the GFF file."),
       '#options' => $organisms,
+      '#empty_option' => t('- Select -'),
     ];
 
     $form['targets']['target_type'] = [
