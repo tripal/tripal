@@ -1,13 +1,10 @@
-tripal.bio_data.*:
+tripal.content_type.*:
   type: config_entity
   label: 'Tripal Content Type'
   mapping:
     id:
-      type: integer
-      label: 'ID'
-    name:
       type: string
-      label: 'Name'
+      label: 'ID'
     label:
       type: label
       label: 'Label'
