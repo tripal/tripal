@@ -207,9 +207,9 @@ class GFF3Importer extends ChadoImporterBase {
   private $landmark_types_type_ids = [];
 
   /**
-   * The results object for the landmark type cvterm.
+   * The cvterm_id for the landmark type cvterm.
    */
-  private $landmark_cvterm = NULL;
+  private $landmark_cvterm_id = NULL;
 
 
   /**
@@ -435,6 +435,7 @@ class GFF3Importer extends ChadoImporterBase {
         different species then the organism must be specified using the 'target_organism=genus:species'
         attribute in the GFF file."),
       '#options' => $organisms,
+      '#empty_option' => t('- Select -'),
     ];
 
     $form['targets']['target_type'] = [
@@ -479,7 +480,7 @@ class GFF3Importer extends ChadoImporterBase {
 
     $form['additional_options']['line_number'] = [
       '#type' => 'textfield',
-      '#title' => t('Start Line Number'),
+      '#title' => t('Starting Line Number'),
       '#description' => t('Enter the line number in the GFF file where you would like to begin processing.  The
       first line is line number 1.  This option is useful for examining loading problems with large GFF files.'),
       '#size' => 10,
@@ -547,8 +548,8 @@ class GFF3Importer extends ChadoImporterBase {
 
     // check to make sure the types exists
     $cv_autocomplete = new ChadoCVTermAutocompleteController();
-    $landmark_type_id = $cv_autocomplete->getCVtermId($landmark_type, 'sequence');
-    if (!$landmark_type_id) {
+    $landmark_cvterm_id = $cv_autocomplete->getCVtermId($landmark_type, 'sequence');
+    if (!$landmark_cvterm_id) {
       \Drupal::messenger()->addError(t("The Sequence Ontology (SO) term selected for the landmark type is not available in the database. Please check spelling or select another."));
     }
     if ($target_type) {
@@ -676,25 +677,11 @@ class GFF3Importer extends ChadoImporterBase {
       throw new \Exception(t("Cannot find the specified organism for this GFF3 file."));
     }
 
-    // If a landmark type was provided then get that object.
+    // If a landmark type was provided then get the ID.
     if ($this->default_landmark_type) {
-      $this->landmark_cvterm = $chado->select('1:cvterm', 'c')
-      ->fields('c')
-      ->condition('cv_id', $this->feature_cv->cv_id)
-      ->condition('name', $this->default_landmark_type)
-      ->execute()
-      ->fetchObject();
-
-
-      $num_found = $chado->select('1:cvterm', 'c')
-      ->fields('c')
-      ->condition('cv_id', $this->feature_cv->cv_id)
-      ->condition('name', $this->default_landmark_type)
-      ->countQuery()
-      ->execute()
-      ->fetchField();
-
-      if ($num_found == 0) {
+      $cv_autocomplete = new ChadoCVTermAutocompleteController();
+      $this->landmark_cvterm_id = $cv_autocomplete->getCVtermId($this->default_landmark_type, 'sequence');
+      if (!$this->landmark_cvterm_id) {
         throw new \Exception(t('Cannot find landmark feature type \'%landmark_type\'.',
           ['%landmark_type' => $this->default_landmark_type]));
       }
@@ -702,27 +689,11 @@ class GFF3Importer extends ChadoImporterBase {
 
     // If a target type is provided then get the ID.
     if ($this->target_type) {
-
-      $target_type = $chado->select('1:cvterm','c')
-      ->fields('c')
-      ->condition('name', $this->target_type)
-      ->condition('cv_id', $this->feature_cv->cv_id)
-      ->execute()
-      ->fetchObject();
-
-
-      $num_found = $chado->select('1:cvterm','c')
-      ->fields('c')
-      ->condition('name', $this->target_type)
-      ->condition('cv_id', $this->feature_cv->cv_id)
-      ->countQuery()
-      ->execute()
-      ->fetchField();
-
-      if ($num_found == 0) {
+      $cv_autocomplete = new ChadoCVTermAutocompleteController();
+      $this->target_type_id = $cv_autocomplete->getCVtermId($this->target_type, 'sequence');
+      if (!$this->target_type_id) {
         throw new \Exception(t("Cannot find the specified target type, %type.", ['%type' => $this->target_type]));
       }
-      $this->target_type_id = $target_type->cvterm_id;
     }
 
     // Create the cache file for storing parsed GFF entries.
@@ -1570,7 +1541,7 @@ class GFF3Importer extends ChadoImporterBase {
       ->condition('uniquename', $landmark_name);
 
     if($landmark_type) {
-      $landmark_select->condition('type_id', $this->landmark_cvterm->cvterm_id);
+      $landmark_select->condition('type_id', $this->landmark_cvterm_id);
     }
 
     // Make sure we only match on one landmark.
@@ -1627,7 +1598,7 @@ class GFF3Importer extends ChadoImporterBase {
       'uniquename' => $name,
       'name' => $name,
       // ORIGINAL CODE FROM STEPHEN
-      // 'type_id' => $this->landmark_cvterm->cvterm_id,
+      // 'type_id' => $this->landmark_cvterm_id,
       'type_id' => $this->getLandmarkTypeID($name),
       'md5checksum' => md5($residues),
       'is_analysis' => 0,
@@ -2552,9 +2523,9 @@ class GFF3Importer extends ChadoImporterBase {
         }
         // If the database lookup was not successful
         if ($rowsCount == 0) {
-          // Try to default to the default landmark type cvterm object
-          if (isset($this->landmark_cvterm)) {
-            $this->landmark_types_type_ids[$type] = $this->landmark_cvterm->cvterm_id;
+          // Try to default to the default landmark type cvterm
+          if ($this->landmark_cvterm_id) {
+            $this->landmark_types_type_ids[$type] = $this->landmark_cvterm_id;
           }
           // Else if the default could not be found (if default landmark is empty in the form)
           else {
