@@ -802,7 +802,8 @@ class TripalPublish {
     // about the entity. If the entity was previously publisehd we still may be adding new
     // information about it (say if we are publishing genes from a noSQL back-end bu the
     // original entity was created when it was first published when using the Chado backend).
-    $this->logger->notice("Step  6 of 6: Add single cardinality fields to new entities...");
+    $this->logger->notice("Step  6 of 6: Add field items to publisehd entities...");
+    $total_items = 0;
     foreach ($this->field_info as $field_name => $field_info) {
 
       // For now, skip multi valued fields.
@@ -814,10 +815,13 @@ class TripalPublish {
 
       $this->logger->notice("  Checking for published items for the field: $field_name...");
       $existing_field_items = $this->findFieldItems($field_name, $entities);
-      $this->logger->notice("  Publishing items " . number_format(count($entities) - count($existing_field_items)) . " for field: $field_name...");
+      $num_new_items =  count($entities) - count($existing_field_items);
+      $this->logger->notice("  Publishing items " . number_format($num_new_items) . " for field: $field_name...");
       $this->insertFieldItems($field_name, $matches, $titles, $entities, $existing_field_items);
+      $total_items += $num_new_items;
     }
-    $this->logger->info("Done");
+    $this->logger->notice("Published " .  number_format(count($new_matches)) . " new entities, and " . number_format($total_items) . " field values.");
+    $this->logger->notice('Done');
     return $entities;
   }
 }
