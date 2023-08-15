@@ -656,7 +656,9 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
       foreach ($deltas as $delta => $keys) {
         foreach ($keys as $key => $info) {
           if (in_array('operation', $options['copy'])) {
-            $new_values[$field_name][$delta][$key]['operation'] = $info['operation'];
+            if (array_key_exists('operation', $info)) {
+              $new_values[$field_name][$delta][$key]['operation'] = $info['operation'];
+            }
           }
           if (in_array('value', $options['copy'])) {
             $new_values[$field_name][$delta][$key]['value'] = clone $info['value'];
@@ -1036,7 +1038,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
           // Make sure all of the sections are present in the $records array
           if (!array_key_exists($chado_table, $records)) {
             $records[$chado_table] = [];
-            $records[$chado_table][] = [];
+            $records[$chado_table][0] = [];
           }
           if (!array_key_exists('conditions', $records[$chado_table][0])) {
             $records[$chado_table][0]['conditions'] = [];
@@ -1045,7 +1047,7 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             $records[$chado_table][0]['fields'] = [];
           }
           if (!array_key_exists('joins', $records[$chado_table][0])) {
-            $records[$chado_table][0]['fields'] = [];
+            $records[$chado_table][0]['joins'] = [];
           }
 
           // This action is to store the base record primary key value.
@@ -1085,10 +1087,13 @@ class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
             }
             // If we are trying to find values and the property is present but
             // does not have a value set, then we will use that value as a field.
-            // Otherwise, if it has a value then we'll use it as a condition.
+            // Otherwise, if it has a value then we'll use it as a condition to match on.
             if ($is_find) {
               if (!empty($value)) {
                 $records[$chado_table][$delta]['conditions'][$chado_column] = ['value' => $value, 'operation' => $operation];
+              }
+              else {
+                $records[$chado_table][$delta]['fields'][$chado_column] = '';
               }
             }
             else {
