@@ -4,10 +4,7 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
-use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoBpCharStoragePropertyType;
-use Drupal\core\Form\FormStateInterface;
-use Drupal\core\Field\FieldDefinitionInterface;
 
 /**
  * Plugin implementation of Default Tripal field for sequence data.
@@ -47,6 +44,7 @@ class ChadoSequenceChecksumDefault extends ChadoFieldItemBase {
    */
   public static function defaultStorageSettings() {
     $settings = parent::defaultStorageSettings();
+    $settings['storage_plugin_settings']['base_table'] = 'feature';
     return $settings;
   }
 
@@ -64,14 +62,13 @@ class ChadoSequenceChecksumDefault extends ChadoFieldItemBase {
     $mapping = $storage->load('core_mapping');
     $record_id_term = 'SIO:000729';
     $md5checksum_term = $mapping->getColumnTermId('feature', 'md5checksum');
+    $seqlen_term = $mapping->getColumnTermId('feature', 'seqlen');
 
     // Get the length of the database fields so we don't go over the size limit.
     $chado = \Drupal::service('tripal_chado.database');
     $schema = $chado->schema();
     $feature_def = $schema->getTableDef('feature', ['format' => 'Drupal']);
     $md5_checksum_len = $feature_def['fields']['md5checksum']['size'];
-
-
 
     // Return the properties for this field.
     $properties = [];
@@ -80,6 +77,11 @@ class ChadoSequenceChecksumDefault extends ChadoFieldItemBase {
         'drupal_store' => TRUE,
         'chado_table' => 'feature',
         'chado_column' => 'feature_id'
+    ]);
+    $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'seqlen', $seqlen_term, [
+      'action' => 'store',
+      'chado_column' => 'seqlen',
+      'chado_table' => 'feature'
     ]);
     $properties[] =  new ChadoBpCharStoragePropertyType($entity_type_id, self::$id, 'md5checksum', $md5checksum_term, $md5_checksum_len, [
       'action' => 'store',

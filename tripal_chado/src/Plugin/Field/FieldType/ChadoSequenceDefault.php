@@ -6,9 +6,6 @@ use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoBpCharStoragePropertyType;
-use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
-use Drupal\core\Form\FormStateInterface;
-use Drupal\core\Field\FieldDefinitionInterface;
 
 /**
  * Plugin implementation of Default Tripal field for sequence data.

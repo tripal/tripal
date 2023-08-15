@@ -4,9 +4,6 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
-use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
-use Drupal\core\Form\FormStateInterface;
-use Drupal\core\Field\FieldDefinitionInterface;
 
 /**
  * Plugin implementation of Default Tripal field for sequence data.
@@ -48,6 +45,7 @@ class ChadoSequenceLengthDefault extends ChadoFieldItemBase {
    */
   public static function defaultStorageSettings() {
     $settings = parent::defaultStorageSettings();
+    $settings['storage_plugin_settings']['base_table'] = 'feature';
     return $settings;
   }
 

@@ -2,8 +2,6 @@
 
 namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
-use Drupal\tripal\Plugin\Field\FieldWidget\TripalTextTypeWidget;
-use Drupal\tripal\TripalField\TripalWidgetBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
@@ -28,10 +26,11 @@ class ChadoSequenceWidgetDefault extends ChadoWidgetBase {
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
 
     $item_vals = $items[$delta]->getValue();
+
     $elements = [];
     $elements['record_id'] = [
       '#type' => 'value',
-      '#default_value' => $item_vals['record_id'] ?? 0,
+      '#default_value' => $rec_id_val ?? 0,
     ];
 
     $elements['residues'] = $element + [
@@ -57,8 +56,10 @@ class ChadoSequenceWidgetDefault extends ChadoWidgetBase {
       // Calculate the length of residues provided.
       $values[$val_key]['seqlen'] = strlen($values[$val_key]['residues']);
       
-      // Calculate the checksum for the residues value.
-      $values[$val_key]['md5checksum'] = md5($values[$val_key]['residues']);
+      // Calculate the checksum for the residues value if seqlen > 0
+      if ( $values[$val_key]['seqlen'] > 0 ) {
+        $values[$val_key]['md5checksum'] = md5($values[$val_key]['residues']);
+      }
     }
     return $values;
   }
