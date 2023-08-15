@@ -803,7 +803,15 @@ class TripalPublish {
     // information about it (say if we are publishing genes from a noSQL back-end bu the
     // original entity was created when it was first published when using the Chado backend).
     $this->logger->notice("Step  6 of 6: Add single cardinality fields to new entities...");
-    foreach (array_keys($this->field_info) as $field_name) {
+    foreach ($this->field_info as $field_name => $field_info) {
+
+      // For now, skip multi valued fields.
+      // @todo we need to fix this so we can support multi-valued fields.
+      if ($field_info['definition']->getSetting('cardinality') > 1) {
+        $this->logger->notice("  Skipping the multi-valued field, $field_name. Support will be added in a future release.");
+        continue;
+      }
+
       $this->logger->notice("  Checking for published items for the field: $field_name...");
       $existing_field_items = $this->findFieldItems($field_name, $entities);
       $this->logger->notice("  Publishing items " . number_format(count($entities) - count($existing_field_items)) . " for field: $field_name...");
