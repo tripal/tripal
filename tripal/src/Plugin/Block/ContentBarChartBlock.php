@@ -16,7 +16,7 @@ use Drupal\Core\Form\FormStateInterface;
  * )
  */
 class ContentBarChartBlock extends BlockBase implements BlockPluginInterface {
-  
+
   /**
    * {@inheritdoc}
    */
@@ -33,7 +33,7 @@ class ContentBarChartBlock extends BlockBase implements BlockPluginInterface {
     $entity_count_listing = [];
     while (($entity_type = $entity_types->fetchObject())) {
       $entity_count_listing[] = [
-        'name' => \Drupal::config('tripal.bio_data.' . $entity_type->type)->get('label'),
+        'name' => \Drupal::config('tripal.content_type.' . $entity_type->type)->get('label'),
         'count' => $entity_type->count,
       ];
     }

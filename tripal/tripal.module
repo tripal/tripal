@@ -432,7 +432,7 @@ function tripal_shortcut_default_set($account) {
   //       'weight' => -25,
   //     ),
   //     array(
-  //       'link_path' => 'admin/content/bio_data',
+  //       'link_path' => 'admin/content/tripal',
   //       'link_title' => 'Find Tripal Content',
   //       'weight' => -20,
   //     ),
@@ -540,7 +540,7 @@ function tripal_check_new_fields($bundle_name) {
     \Drupal::messenger()->addStatus(t('Added field: ' . $field_name));
   }
 
-  $response = new RedirectResponse("admin/structure/bio_data/manage/$bundle_name/fields");
+  $response = new RedirectResponse("admin/structure/tripal/manage/$bundle_name/fields");
   $response->send();
 }
 

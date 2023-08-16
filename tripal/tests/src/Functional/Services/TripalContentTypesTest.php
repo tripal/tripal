@@ -42,7 +42,7 @@ class TripalContentTypesTest extends TripalTestBrowserBase {
       'term' => $term,
       'help_text' => 'Use the organism page for an individual living system, such as animal, plant, bacteria or virus,',
       'category' => 'General',
-      'name' => 'organism',
+      'id' => 'organism',
       'title_format' => "[organism_genus] [organism_species] [organism_infraspecific_type] [organism_infraspecific_name]",
       'url_format' => "organism/[TripalEntity__entity_id]",
       'synonyms' => ['bio_data_1']
@@ -68,11 +68,11 @@ class TripalContentTypesTest extends TripalTestBrowserBase {
 
 
     $bad = $good;
-    unset($bad['name']);
+    unset($bad['id']);
     $is_valid = $content_type_service->validate($bad);
-    $this->assertFalse($is_valid, "A content type definition missing the 'name' should fail the validation check but it passed.");
+    $this->assertFalse($is_valid, "A content type definition missing the 'id' should fail the validation check but it passed.");
     $content_type = $content_type_service->createContentType($bad);
-    $this->assertTrue(is_null($content_type), "Created a content type when the name is incorrect.");
+    $this->assertTrue(is_null($content_type), "Created a content type when the id is incorrect.");
 
 
     $bad = $good;
