@@ -97,6 +97,10 @@ field.storage.tripal_entity.*:
         max_length:
           type: integer
           label: 'Storage Maximum length'
+        debug:
+          type: boolean
+          label: 'Flag to Enable field debugging'
+          nullable: true
         storage_plugin_id:
           type: string
           label: 'Tripal Storage Plugin Machine Name'
@@ -120,6 +124,10 @@ field.field.tripal_entity.*.*:
         termAccession:
           type: string
           label: 'Term Accession'
+        debug:
+          type: boolean
+          label: 'Flag to Enable field debugging'
+          nullable: true
         fixed_value:
           type: string
           label: "A fixed value for the field that cannot be changed."

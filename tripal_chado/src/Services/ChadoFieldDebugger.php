@@ -204,6 +204,11 @@ class ChadoFieldDebugger {
    * Print some sort of header to make reading all the output easier ;-p
    */
   public function printHeader(string $process_name) {
+
+    if ($this->has_fields2debug === FALSE) {
+      return;
+    }
+
     $this->logger->notice(
       str_repeat('-', 9) . ' '
       . strtoupper($process_name) . ' '
