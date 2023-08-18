@@ -511,6 +511,32 @@ fields:
               region: content
               weight: 15
 
+    -   name: study_contact
+        content_type: study
+        label: Contact
+        type: chado_contact_default
+        description: An individual or organization that serves as a contact for this record.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: study
+                base_column: contact_id
+        settings:
+            termIdSpace: local
+            termAccession: contact
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 20
+          form:
+            default:
+              region: content
+              weight: 20
+
     -   name: contact_name
         content_type: contact
         label: Name
@@ -3632,6 +3658,32 @@ fields:
               weight: 25
 
 
+    -   name: array_design_manufacturer
+        content_type: array_design
+        label: Contact
+        type: chado_contact_default
+        description: A manufacturer's contact details
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: arraydesign
+                base_column: manufacturer_id
+        settings:
+            termIdSpace: local
+            termAccession: contact
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 10
+          form:
+            default:
+              region: content
+              weight: 10
+
     -   name: array_design_name
         content_type: array_design
         label: Name
@@ -3652,11 +3704,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 10
+              weight: 15
           form:
             default:
               region: content
-              weight: 10
+              weight: 15
 
     -   name: array_design_version_num
         content_type: array_design
@@ -3678,11 +3730,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 15
+              weight: 20
           form:
             default:
               region: content
-              weight: 15
+              weight: 20
 
     -   name: array_design_description
         content_type: array_design
@@ -3704,11 +3756,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 20
+              weight: 25
           form:
             default:
               region: content
-              weight: 20
+              weight: 25
 
     -   name: array_design_dimensions
         content_type: array_design
@@ -3730,11 +3782,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 25
+              weight: 30
           form:
             default:
               region: content
-              weight: 25
+              weight: 30
 
     -   name: array_design_element_dims
         content_type: array_design
@@ -3756,11 +3808,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 30
+              weight: 35
           form:
             default:
               region: content
-              weight: 30
+              weight: 35
 
     -   name: array_design_substrate_type
         content_type: array_design
@@ -3783,11 +3835,11 @@ fields:
             default:
               region: content
               label: above
-              weight: 10
+              weight: 40
           form:
             default:
               region: content
-              weight: 10
+              weight: 40
 
     -   name: array_design_platform_type
         content_type: array_design
@@ -3810,8 +3862,8 @@ fields:
             default:
               region: content
               label: above
-              weight: 10
+              weight: 45
           form:
             default:
               region: content
-              weight: 10
+              weight: 45
