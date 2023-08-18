@@ -3664,7 +3664,7 @@ fields:
         type: chado_contact_default
         description: A manufacturer's contact details
         cardinality: 1
-        required: false
+        required: true
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
