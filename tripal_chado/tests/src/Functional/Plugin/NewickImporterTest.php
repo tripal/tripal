@@ -157,9 +157,39 @@ class NewickImporterTest extends ChadoTestBrowserBase
     $newick_importer->run();
     $newick_importer->postRun();
 
+    // Check for phylotree based on name
+    $results = $chado->query('SELECT COUNT(*) as c1 FROM {1:phylotree} WHERE name = :name', [
+      ':name' => 'Tree 2'
+    ]);
+    $count = 0;
+    foreach ($results as $row) {
+      $count = $row->c1;
+    }
+    $this->assertGreaterThan(0, $count, "Should have created at least one phylotree but did not.");
 
 
-    // // Check phylonode table - count should be 23 for this specific tree using this test
+    // We need to get the type id - polypeptide
+    $results = $chado->query('SELECT * FROM {1:cvterm} WHERE name = :name', [
+      'name' => 'polypeptide'
+    ]);
+    $type_id = NULL;
+    foreach ($results as $row) {
+      $type_id = $row->cvterm_id;
+    }
+
+
+    // Check for phylotree based on name and also type_id which should be there as well
+    $results = $chado->query('SELECT COUNT(*) as c1 FROM {1:phylotree} WHERE name = :name and type_id = :type_id', [
+      ':name' => 'Tree 2',
+      ':type_id' => $type_id
+    ]);
+    $count = 0;
+    foreach ($results as $row) {
+      $count = $row->c1;
+    }
+    $this->assertGreaterThan(0, $count, "Should have created at least one phylotree with associated type_id but did not.");    
+
+    // Check phylonode table - count should be 23 for this specific tree using this test
     $results = $chado->query('SELECT COUNT(*) as c1 FROM {1:phylonode}');
     $count = 0;
     foreach ($results as $row) {
@@ -168,6 +198,28 @@ class NewickImporterTest extends ChadoTestBrowserBase
     // print_r($row->c1);
     $this->assertEquals($count, 23, "Should have created 23 phylonode records but didn't.");
 
+    // Check to see if there's a phylonode with a feature_id attached to it since we added S18540_Klotzschia_glaziovii
+    // as a feature
+    $results = $chado->query('SELECT * FROM {1:phylonode} WHERE label = :label AND feature_id IS NOT NULL', [
+      ':label' => 'S18540_Klotzschia_glaziovii'
+    ]);
+    $count = 0;
+    foreach ($results as $row) {
+      $count++;
+      //$count = $row->c1;
+    }
+    // print_r($row->c1);
+    $this->assertGreaterThan(0, $count, "Should have created at least one phylonode record with a feature not being null.");
+
+    // Check to see if there's a phylonode without connected features, this happens if the feature names do not exist
+    // in the features table. There should be 22 out of 23 phylonodes like this
+    $results = $chado->query('SELECT COUNT(*) as c1 FROM {1:phylonode} WHERE feature_id IS NULL');
+    $count = 0;
+    foreach ($results as $row) {
+      $count = $row->c1;
+    }
+    // print_r($row->c1);
+    $this->assertGreaterThan(20, $count, "Should have created at least 20 phylonode records with a features being null.");    
   }
 
 }

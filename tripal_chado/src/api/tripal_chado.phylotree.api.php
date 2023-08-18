@@ -807,9 +807,10 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
                   'name' => 'sequence',
                 ],
               ];
-              // print_r($sel_values);
               $sel_columns = ['feature_id'];
+              // T3
               // $feature = chado_select_record('feature', $sel_columns, $sel_values, NULL, $schema_name);
+
               // Find the cv_id for sequence
               $cv_id = $chado->select('1:cv', 'cv')->fields('cv')->condition('name', 'sequence')->execute()->fetchObject()->cv_id;
 
@@ -1127,7 +1128,6 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $j
       $tree = tripal_phylogeny_parse_newick_file($file_name);
       // // Assign the right and left indices to the tree nodes.
       chado_assign_phylogeny_tree_indices($tree);
-      // print_r($tree);
     }
 
     // Iterate through the tree nodes and add them to Chado in accordance

@@ -225,9 +225,7 @@ class NewickImporter extends ChadoImporterBase {
   public function run() {
     $chado = $this->getChadoConnection();
     $arguments = $this->arguments['run_args'];
-    // print_r($arguments);
-    // exit;
-
+ 
     // TRIPAL 4 - The type option is from an autocomplete which seems to include (SO:*) part
     // Temporarily, remove this part
     $leaf_type = $arguments["leaf_type"];
