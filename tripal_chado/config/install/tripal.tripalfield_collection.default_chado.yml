@@ -3660,7 +3660,7 @@ fields:
 
     -   name: array_design_manufacturer
         content_type: array_design
-        label: Contact
+        label: Manufacturer
         type: chado_contact_default
         description: A manufacturer's contact details
         cardinality: 1
