@@ -107,8 +107,9 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
       $errors['phylotree_id'] = t('Please provide the ID for the tree.');
       return FALSE;
     }
-    $exists = chado_select_record('phylotree', ['phylotree_id'],
-      ['phylotree_id' => $options['phylotree_id']], ['has_record' => 1], $schema_name);
+    // $exists = chado_select_record('phylotree', ['phylotree_id'],
+    //   ['phylotree_id' => $options['phylotree_id']], ['has_record' => 1], $schema_name);
+    $exists = $chado->select('1:phylotree', 'phylotree')->fields('phylotree')->condition('phylotree_id', $options['phylotree_id'])->execute()->fetchObject();
     if (!$exists) {
       $errors['phylotree_id'] = t('The phylotree_id "%id" does not exist.',
         [ '%id' => $options['phylotree_id']]);
@@ -144,21 +145,25 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
   // Make sure the analysis exists.
   $analysis = NULL;
   if (array_key_exists('analysis_id', $options) and $options['analysis_id']) {
-    $analysis = chado_select_record('analysis',
-      ['analysis_id'], ['analysis_id' => $options['analysis_id']], NULL, $schema_name);
+    // $analysis = chado_select_record('analysis',
+    //   ['analysis_id'], ['analysis_id' => $options['analysis_id']], NULL, $schema_name);
+    $analysis = $chado->select('1:analysis', 'analysis')->fields('analysis')->condition('analysis_id', $options['analysis_id'])->execute()->fetchObject();
     if (!$analysis) {
       $errors['analysis_id'] = t('The analysis name provided does not exist.');
       return FALSE;
     }
-    $options['analysis_id'] = $analysis[0]->analysis_id;
+    // $options['analysis_id'] = $analysis[0]->analysis_id;
+    $options['analysis_id'] = $analysis->analysis_id;
   }
   if (array_key_exists('analysis', $options) and $options['analysis']) {
-    $analysis = chado_select_record('analysis', ['analysis_id'], ['name' => $options['analysis']], NULL, $schema_name);
+    // $analysis = chado_select_record('analysis', ['analysis_id'], ['name' => $options['analysis']], NULL, $schema_name);
+    $analysis = $chado->select('1:analysis', 'analysis')->fields('analysis')->condition('name', $options['analysis'])->execute()->fetchObject();
     if (!$analysis) {
       $errors['analysis'] = t('The analysis ID provided does not exist.');
       return FALSE;
     }
-    $options['analysis_id'] = $analysis[0]->analysis_id;
+    // $options['analysis_id'] = $analysis[0]->analysis_id;
+    $options['analysis_id'] = $analysis->analysis_id;
   }
 
   // Make sure the leaf type exists.
