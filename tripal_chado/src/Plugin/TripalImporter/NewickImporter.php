@@ -40,7 +40,7 @@ class NewickImporter extends ChadoImporterBase {
    */
   public function form($form, &$form_state) {
 
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     // Always call the parent form to ensure Chado is handled properly.
     $form = parent::form($form, $form_state);
 
@@ -174,7 +174,7 @@ class NewickImporter extends ChadoImporterBase {
    * @see TripalImporter::formValidate()
    */
   public function formValidate($form, &$form_state) {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     // $values = $form_state['values'];
     $values = $form_state->getValues();
 
@@ -223,7 +223,7 @@ class NewickImporter extends ChadoImporterBase {
    * @see TripalImporter::run()
    */
   public function run() {
-    $chado = \Drupal::service('tripal_chado.database');
+    $chado = $this->getChadoConnection();
     $arguments = $this->arguments['run_args'];
     // print_r($arguments);
     // exit;

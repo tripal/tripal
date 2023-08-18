@@ -52,7 +52,8 @@
  * @ingroup tripal_phylotree_api
  */
 function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $schema_name = 'chado') {
-
+  $chado = \Drupal::service('tripal_chado.database');
+  $chado->setSchemaName($schema_name);
   if ($val_type != 'insert' and $val_type != 'update') {
     // tripal_report_error('tripal_phylogeny', TRIPAL_ERROR,
     //                     "The $val_type argument must be either 'update or 'insert'.");
@@ -218,7 +219,9 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
               dbxref could not be created for db: %dbxref.', ['%dbxref' => $dbxref]);
         return FALSE;
       }
-      $dbxref = chado_insert_record('dbxref', $values, [], $schema_name);
+      // T3 OLD INSERT
+      // $dbxref = chado_insert_record('dbxref', $values, [], $schema_name);
+      $dbxref = $chado->insert('1:dbxref')->fields($values)->execute();
 
       if (!$dbxref) {
         $errors['dbxref'] = t('
@@ -247,7 +250,7 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
       $sql .= " AND NOT P.phylotree_id = :phylotree_id";
       $args[':phylotree_id'] = $options['phylotree_id'];
     }
-    $result = chado_query($sql, $args, [], $schema_name)->fetchObject();
+    $result = $chado->query($sql, $args)->fetchObject();
     if ($result) {
       $errors['name'] = t("The tree name is in use by another tree. Please provide a different unique name for this tree.");
     }
@@ -313,6 +316,9 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
  * @ingroup tripal_phylotree_api
  */
 function chado_insert_phylotree(&$options, &$errors, &$warnings, $schema_name = 'chado') {
+  $chado = \Drupal::service('tripal_chado.database');
+  $chado->setSchemaName($schema_name);
+
   global $user;
 
   $options['name_re'] = isset($options['name_re']) ? trim($options['name_re']) : NULL;
@@ -351,7 +357,10 @@ function chado_insert_phylotree(&$options, &$errors, &$warnings, $schema_name = 
     'type_id' => $options['type_id'],
   ];
 
-  $phylotree = chado_insert_record('phylotree', $values, [], $schema_name);
+  // T3 CODE
+  // $phylotree = chado_insert_record('phylotree', $values, [], $schema_name);
+  $phylotree = $chado->insert('1:phylotree')->fields($values)->execute();
+  $phylotree = $chado->select('1:phylotree', 'p')->fields('p')->condition('phylotree_id', $phylotree)->execute()->fetchAssoc();
   if (!$phylotree) {
     drupal_set_message(t('Unable to add phylotree.'), 'warning');
     // tripal_report_error($options['message_type'], TRIPAL_WARNING,
@@ -693,6 +702,8 @@ function chado_assign_phylogeny_tree_indices(&$tree, &$index = 1) {
  * @ingroup tripal_phylotree_api
  */
 function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], $parent = NULL, $schema_name = 'chado') {
+  $chado = \Drupal::service('tripal_chado.database');
+  $chado->setSchemaName($schema_name);
 
   // Used for final summary message at end of recursion.
   static $n_associated = 0;
@@ -766,6 +777,7 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
                   'name' => 'sequence',
                 ],
               ];
+              // print_r($sel_values);
               $sel_columns = ['feature_id'];
               $feature = chado_select_record('feature', $sel_columns, $sel_values, NULL, $schema_name);
               if (count($feature) > 1) {
@@ -841,7 +853,11 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
     }
 
     // Insert the new node and then add its assigned phylonode_id to the node.
-    $phylonode = chado_insert_record('phylonode', $values, [], $schema_name);
+    // $phylonode = chado_insert_record('phylonode', $values, [], $schema_name);
+    $phylonode = $chado->insert('1:phylonode')->fields($values)->execute();
+    // Get the phylonode record
+    $phylonode = $chado->select('1:phylonode', 'p')->fields('p')->condition('phylonode_id', $phylonode)->execute()->fetchAssoc();
+
     $tree['phylonode_id'] = $phylonode['phylonode_id'];
 
     // This is a taxonomic tree, so associate this node with an
@@ -851,7 +867,8 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
         'phylonode_id' => $tree['phylonode_id'],
         'organism_id' => $tree['organism_id'],
       ];
-      $pylonode_organism = chado_insert_record('phylonode_organism', $values, [], $schema_name);
+      // $pylonode_organism = chado_insert_record('phylonode_organism', $values, [], $schema_name);
+      $phylonode_organism = $chado->insert('1:phylonode_organism')->fields($values)->execute();
     }
 
     // Associate any properties.
@@ -862,7 +879,8 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
           'type_id' => $type_id,
           'value' => $value,
         ];
-        $pylonode_organism = chado_insert_record('phylonodeprop', $values, [], $schema_name);
+        // $pylonode_organism = chado_insert_record('phylonodeprop', $values, [], $schema_name);
+        $phylonode_organism = $chado->insert('1:phylonodeprop')->fields($values)->execute();
       }
     }
   }
