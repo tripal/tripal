@@ -115,7 +115,6 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
         [ '%id' => $options['phylotree_id']]);
       return FALSE;
     }
-
   }
 
   // Make sure the file exists if one is specified.
@@ -128,6 +127,7 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
         return FALSE;
       }
     }
+    
     // Make sure the file format is correct.
     if (!array_key_exists('format', $options) or
       ($options['format'] != 'newick' and $options['format'] != 'taxonomy')) {
@@ -176,7 +176,19 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
         ],
         'name' => 'Species tree',
       ];
-      $type = chado_select_record('cvterm', ['cvterm_id'], $values, NULL, $schema_name);
+      // $type = chado_select_record('cvterm', ['cvterm_id'], $values, NULL, $schema_name);
+
+
+      // Find the cv_id for EDAM
+      $cv_id = $chado->select('1:cv', 'cv')-> fields('cv')->condition('name', 'EDAM')->execute()->fetchObject()->cv_id;
+
+      $type = $chado->select('1:cvterm', 'cvterm')
+        ->fields('cvterm')
+        ->condition('name', 'Species tree')
+        ->condition('cv_id', $cv_id)
+        ->execute()
+        ->fetchObject();
+        // ->cvterm_id;
     }
     else {
       $values = [
@@ -185,14 +197,27 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
         ],
         'name' => $options['leaf_type'],
       ];
-      $type = chado_select_record('cvterm', ['cvterm_id'], $values, NULL, $schema_name);
+      // $type = chado_select_record('cvterm', ['cvterm_id'], $values, NULL, $schema_name);
+
+      // Find the cv_id for sequence
+      $cv_id = $chado->select('1:cv', 'cv')->fields('cv')->condition('name', 'sequence')->execute()->fetchObject()->cv_id;
+
+      $type = $chado->select('1:cvterm', 'cvterm')
+        ->fields('cvterm')
+        ->condition('name', $options['leaf_type'])
+        ->condition('cv_id', $cv_id)
+        ->execute()
+        ->fetchObject();
+        // ->cvterm_id;      
+
       if (!$type) {
         $errors['leaf_type'] = t('The leaf_type provided "%term" is not a valid Sequence Ontology term.',
           ['%term' => $options['leaf_type']]);
         return FALSE;
       }
     }
-    $options['type_id'] = $type[0]->cvterm_id;
+    // $options['type_id'] = $type[0]->cvterm_id;
+    $options['type_id'] = $type->cvterm_id;
   }
 
   // A Dbxref is required by the phylotree module, but if the
@@ -246,7 +271,7 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
   if (array_key_exists('name', $options) and $options['name']) {
     $sql = "
       SELECT *
-      FROM {phylotree} P
+      FROM {1:phylotree} P
       WHERE
         P.name = :name
     ";
@@ -365,7 +390,7 @@ function chado_insert_phylotree(&$options, &$errors, &$warnings, $schema_name = 
   // T3 CODE
   // $phylotree = chado_insert_record('phylotree', $values, [], $schema_name);
   $phylotree = $chado->insert('1:phylotree')->fields($values)->execute();
-  $phylotree = $chado->select('1:phylotree', 'p')->fields('p')->condition('phylotree_id', $phylotree)->execute()->fetchAssoc();
+  $phylotree = $chado->select('1:phylotree', 'phylotree')->fields('phylotree')->condition('phylotree_id', $phylotree)->execute()->fetchAssoc();
   if (!$phylotree) {
     drupal_set_message(t('Unable to add phylotree.'), 'warning');
     // tripal_report_error($options['message_type'], TRIPAL_WARNING,
@@ -784,7 +809,31 @@ function chado_phylogeny_import_tree(&$tree, $phylotree, $options, $vocab = [], 
               ];
               // print_r($sel_values);
               $sel_columns = ['feature_id'];
-              $feature = chado_select_record('feature', $sel_columns, $sel_values, NULL, $schema_name);
+              // $feature = chado_select_record('feature', $sel_columns, $sel_values, NULL, $schema_name);
+              // Find the cv_id for sequence
+              $cv_id = $chado->select('1:cv', 'cv')->fields('cv')->condition('name', 'sequence')->execute()->fetchObject()->cv_id;
+
+              // Find the cvterm_id for $options['leaf_type']
+              $cvterm_id = $chado->select('1:cvterm', 'cvterm')->fields('cvterm')
+                ->condition('name', $options['leaf_type'])
+                ->condition('cv_id', $cv_id)
+                ->execute()
+                ->fetchObject()->cvterm_id;
+
+
+              $feature = $chado->select('1:feature', 'feature')
+                ->fields('feature')
+                ->condition('type_id', $cvterm_id);
+              if (isset($sel_values['name'])) {
+                $feature = $feature->condition('name', $sel_values['name']);
+              }
+              else if (isset($sel_values['uniquename'])) {
+                $feature = $feature->condition('uniquename', $sel_values['uniquename']);
+              }
+
+              $feature =  $feature->execute()
+                ->fetchAll();
+
               if (count($feature) > 1) {
                 // Found multiple features, cannot make an association.
                 // tripal_report_error($options['message_type'], TRIPAL_WARNING,
@@ -1059,9 +1108,9 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $j
   $chado = \Drupal::service('tripal_chado.database');
   $chado->setSchemaName($schema_name);
   $transaction_chado = $chado->startTransaction();
-  print "\nNOTE: Loading of this tree file is performed using a database transaction. \n" .
-    "If the load fails or is terminated prematurely then the entire set of \n" .
-    "insertions/updates is rolled back and will not be found in the database\n\n";
+  // print "\nNOTE: Loading of this tree file is performed using a database transaction. \n" .
+  //   "If the load fails or is terminated prematurely then the entire set of \n" .
+  //   "insertions/updates is rolled back and will not be found in the database\n\n";
   try {
 
 
@@ -1071,7 +1120,7 @@ function chado_phylogeny_import_tree_file($file_name, $format, $options = [], $j
       // To be upgraded at a later time
 
       // // Parse the tree into the expected nested node format.
-      echo "Parsing newick file...\n";
+      // echo "Parsing newick file...\n";
       // T3 OLD CODE
       // module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.phylotree_newick');
       // T4 - this file is added as an API file

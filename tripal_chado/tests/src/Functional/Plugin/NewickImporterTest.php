@@ -143,13 +143,13 @@ class NewickImporterTest extends ChadoTestBrowserBase
       'leaf_type' => 'polypeptide (SO:0000104)',
       'dbxref' => NULL,
       'description' => 'No description',
-      'name_re' => NULL,
+      'name_re' => "",
       'match' => 0,
       'load_later' => 0 
     ];
 
     $file_details = [
-      'file_local' => __DIR__ . '/../../../fixtures/fasta_loader/newick_T92076.tree',
+      'file_local' => __DIR__ . '/../../../fixtures/newick_loader/newick_T92076.tree',
     ];    
 
     $newick_importer->create($run_args, $file_details);
@@ -165,8 +165,8 @@ class NewickImporterTest extends ChadoTestBrowserBase
     foreach ($results as $row) {
       $count = $row->c1;
     }
-    print_r($row->c1);
-    // $this->assertEquals($count, 23, "Should have created 23 phylonode records but didn't.");
+    // print_r($row->c1);
+    $this->assertEquals($count, 23, "Should have created 23 phylonode records but didn't.");
 
   }
 
