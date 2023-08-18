@@ -35,8 +35,9 @@ USER postgres
 
 ## Create a PostgreSQL role named ``docker`` with ``docker`` as the password and
 ## then create a database `docker` owned by the ``docker`` role.
-RUN    psql --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';" &&\
-    createdb -O docker docker \
+RUN    /etc/init.d/postgresql start &&\
+    psql --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';"  \
+    && createdb -O docker docker \
     && psql --command="CREATE USER drupaladmin WITH PASSWORD 'drupal9developmentonlylocal'" \
     && psql --command="ALTER USER drupaladmin WITH LOGIN" \
     && psql --command="ALTER USER drupaladmin WITH CREATEDB" \
