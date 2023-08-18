@@ -65,6 +65,8 @@ class ChadoContactDefault extends ChadoFieldItemBase {
 
     // Only present base tables that have a foreign key to contact.
     $elements['storage_plugin_settings']['base_table']['#options'] = $this->getBaseTables('contact');
+    // Ugly special case for the arraydesign table where manufacturer_id is mapped to contact_id
+    $elements['storage_plugin_settings']['base_table']['#options']['arraydesign'] = 'arraydesign';
 
     // Add a validation to make sure the base table has a foreign
     // key to contact_id in the chado.contact table.
@@ -102,6 +104,10 @@ class ChadoContactDefault extends ChadoFieldItemBase {
     $contact_table_def = $schema->getTableDef('contact', ['format' => 'Drupal']);
     $base_pkey_col = $base_table_def['primary key'];
     $base_fkey_col = 'contact_id';
+    // Ugly special case for the arraydesign table where manufacturer_id is mapped to contact_id
+    if ($base_table == 'arraydesign') {
+      $base_fkey_col = 'manufacturer_id';
+    }
 
     // Create variables to store the terms for the contact.
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
