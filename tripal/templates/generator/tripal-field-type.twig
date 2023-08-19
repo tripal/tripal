@@ -1,0 +1,44 @@
+<?php declare(strict_types = 1);
+
+namespace Drupal\{{ machine_name }}\Plugin\Field\FieldType;
+
+use Drupal\tripal\TripalField\TripalFieldItemBase;
+// Make sure to include the Property type class you are going to create
+// in your addTypes() method below.
+// use Drupal\tripal\TripalStorage\IntStoragePropertyType;
+use Drupal\tripal\TripalStorage\StoragePropertyValue;
+use Drupal\core\Form\FormStateInterface;
+use Drupal\core\Field\FieldDefinitionInterface;
+
+/**
+ * Plugin implementation of the '{{ field_id }}' field type.
+ *
+ * @FieldType(
+ *   id = "{{ field_id }}",
+ *   label = @Translation("{{ field_label }}"),
+ *   description = @Translation("{{ description }}"),
+ *   default_widget = "{{ widget_id }}",
+ *   default_formatter = "{{ formatter_id }}"
+ * )
+ */
+class {{ class }} extends TripalFieldItemBase {
+
+  public static $id = "{{ field_id }}";
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function tripalTypes($field_definition) {
+    $entity_type_id = $field_definition->getTargetEntityTypeId();
+    $storage_settings = $field_definition->getSettings();
+    $termIdSpace = $storage_settings['termIdSpace'];
+    $termAccession = $storage_settings['termAccession'];
+
+    return [
+      // Example Property Type for integers.
+      // new IntStoragePropertyType($entity_type_id, self::$id, "value", $termIdSpace . ':' . $termAccession),
+    ];
+  }
+
+}
+
