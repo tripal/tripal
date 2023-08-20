@@ -1,0 +1,71 @@
+<?php declare(strict_types = 1);
+
+namespace Drupal\{{ machine_name }}\Plugin\Field\FieldType;
+
+
+use Drupal\tripal\TripalField\TripalFieldItemBase;
+use Drupal\tripal\TripalStorage\StoragePropertyValue;
+use Drupal\core\Form\FormStateInterface;
+use Drupal\core\Field\FieldDefinitionInterface;
+use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
+// Make sure to include the Property type class you are going to create
+// in your addTypes() method below.
+use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
+use Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType;
+
+/**
+ * Plugin implementation of the '{{ field_id }}' field type.
+ *
+ * @FieldType(
+ *   id = "{{ field_id }}",
+ *   label = @Translation("{{ field_label }}"),
+ *   description = @Translation("{{ field_description }}"),
+ *   default_widget = "{{ widget_id }}",
+ *   default_formatter = "{{ formatter_id }}"
+ * )
+ */
+class {{ field_class }} extends ChadoFieldItemBase {
+
+  public static $id = "{{ field_id }}";
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function tripalTypes($field_definition) {
+
+    // Use the field settings to extract information we need to make generic fields.
+    $entity_type_id = $field_definition->getTargetEntityTypeId();
+    $storage_settings = $field_definition->getSettings();
+
+    // Get the base table columns needed for this field.
+    // These will be set automatically based on the content type this field is added to.
+    $base_table = $settings['base_table'];
+    $base_column = 'name';
+    $schema = \Drupal::service('tripal_chado.database')->schema();
+    $base_schema_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
+    $base_pkey_col = $base_schema_def['primary key'];
+
+    // Get the property terms by using the Chado table columns they map to.
+    $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
+    $mapping = $storage->load('core_mapping');
+
+    $record_id_term = 'SIO:000729';
+    $value_term = $mapping->getColumnTermId($base_table, $base_column);
+
+    return [
+      new ChadoIntStoragePropertyType($entity_type_id, self::$id,'record_id', $record_id_term, [
+        'action' => 'store_id',
+        'drupal_store' => TRUE,
+        'chado_table' => $base_table,
+        'chado_column' => $base_pkey_col
+      ]),
+      new ChadoVarCharStoragePropertyType($entity_type_id, self::$id, "value", $value_term, 255, [
+        'action' => 'store',
+        'chado_table' => $base_table,
+        'chado_column' => $base_column,
+      ]),
+    ];
+  }
+
+}
+
