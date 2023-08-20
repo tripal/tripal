@@ -5,7 +5,7 @@ namespace Drupal\{{ machine_name }}\Plugin\Field\FieldType;
 use Drupal\tripal\TripalField\TripalFieldItemBase;
 // Make sure to include the Property type class you are going to create
 // in your addTypes() method below.
-// use Drupal\tripal\TripalStorage\IntStoragePropertyType;
+use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\core\Form\FormStateInterface;
 use Drupal\core\Field\FieldDefinitionInterface;
@@ -29,14 +29,16 @@ class {{ class }} extends TripalFieldItemBase {
    * {@inheritdoc}
    */
   public static function tripalTypes($field_definition) {
+
+    // Use the field settings to extract information we need to make generic fields.
     $entity_type_id = $field_definition->getTargetEntityTypeId();
     $storage_settings = $field_definition->getSettings();
     $termIdSpace = $storage_settings['termIdSpace'];
     $termAccession = $storage_settings['termAccession'];
 
     return [
-      // Example Property Type for integers.
-      // new IntStoragePropertyType($entity_type_id, self::$id, "value", $termIdSpace . ':' . $termAccession),
+      // Example Property Type for strings.
+      new VarCharStoragePropertyType($entity_type_id, self::$id, "value", $termIdSpace . ':' . $termAccession, $max_length),
     ];
   }
 

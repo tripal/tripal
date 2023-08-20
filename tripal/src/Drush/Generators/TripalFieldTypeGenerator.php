@@ -6,6 +6,7 @@ use DrupalCodeGenerator\Asset\AssetCollection as Assets;
 use DrupalCodeGenerator\Attribute\Generator;
 use DrupalCodeGenerator\Command\BaseGenerator;
 use DrupalCodeGenerator\GeneratorType;
+use DrupalCodeGenerator\Utils;
 use DrupalCodeGenerator\Validator\RegExp;
 use DrupalCodeGenerator\Validator\Required;
 
@@ -31,11 +32,12 @@ final class TripalFieldTypeGenerator extends BaseGenerator {
     $label_validator = new RegExp('/^[a-zA-Z][a-zA-Z0-9- ]*[a-zA-Z0-9]$/', 'The value must be alphanumeric. We suggest focusing on a title-case human-readable name for your field.');
 
     // Field Type
-    $vars['field_id'] = $prompt->ask('FieldType id', '{machine_name}_example', $id_validator);
-    $vars['field_label'] = $prompt->ask('FieldType label', '{machine_name|camelize} Example Field Type', $label_validator);
-    $vars['description'] = $prompt->ask('FieldType description');
-    $vars['widget_id'] = $prompt->ask('Default Field Widget id', '{machine_name}_example_widget', $id_validator);
-    $vars['formatter_id'] = $prompt->ask('Default Field Formatter id', '{machine_name}_example_formatter', $id_validator);
+    $vars['field_id'] = $prompt->ask('Field Type ID', '{machine_name}_example', $id_validator);
+
+    $vars['field_label'] = $prompt->ask('Field Type Label', Utils::machine2human($vars['field_id'], TRUE) . ' Field Type', $label_validator);
+    $vars['description'] = $prompt->ask('Field Type Description');
+    $vars['widget_id'] = $prompt->ask('Default Field Widget ID', '{field_id}_widget', $id_validator);
+    $vars['formatter_id'] = $prompt->ask('Default Field Formatter ID', '{field_id}_formatter', $id_validator);
     $vars['class'] = $prompt->askClass(default: '{field_id|camelize}TypeItem');
 
     $assets->addFile('src/Plugin/Field/FieldType/{class}.php', 'tripal-field-type.twig');
