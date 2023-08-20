@@ -480,6 +480,12 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         $tsid = $item->tripalStorageId();
 
 
+        // For basic Tripal fields, developers may want to use the standard
+        // Drupal storage only. In this case, the tsid would be empty.
+        if (empty($tsid)) {
+          continue;
+        }
+
         // Create instance of the storage plugin so we can add the properties
         // to it as we go.
         if (!array_key_exists($tsid, $tripal_storages)) {
@@ -579,6 +585,12 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         $delta = $item->getName();
         $tsid = $item->tripalStorageId();
 
+        // Some simple Tripal fields may only want to use the Drupal storage
+        // In this case the tsid will be empty.
+        if (empty($tsid)) {
+          continue;
+        }
+
         // Load into the entity the properties that are to be stored in Drupal.
         $prop_values = [];
         $prop_types = [];
@@ -670,6 +682,12 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           }
           $delta = $item->getName();
           $tsid = $item->tripalStorageId();
+
+          // Some simple Tripal fields may only want to use the Drupal storage
+          // In this case the tsid will be empty.
+          if (empty($tsid)) {
+            continue;
+          }
 
           // Create a new properties array for this field item.
           $prop_values = [];
