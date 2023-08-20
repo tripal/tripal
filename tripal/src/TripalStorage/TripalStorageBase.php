@@ -31,6 +31,17 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
   protected $field_definitions = [];
 
   /**
+   * An associative array that contains all of the property types that
+   * have been added to this object. It is indexed by entityType ->
+   * fieldName -> key and the value is the
+   * Drupal\tripal\TripalStoreage\StoragePropertyValue object.
+   *
+   * @var array
+   */
+  protected $property_types = [];
+
+
+  /**
    * Implements ContainerFactoryPluginInterface->create().
    *
    * Since we have implemented the ContainerFactoryPluginInterface this static function
@@ -51,6 +62,67 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
       $plugin_definition,
       $container->get('tripal.logger'),
     );
+  }
+
+  /**
+   * @{inheritdoc}
+   */
+  public function addTypes(string $field_name, array $types) {
+
+    // Index the types by their entity type, field type and key.
+    foreach ($types as $index => $type) {
+      if (!is_object($type) OR !is_subclass_of($type, 'Drupal\tripal\TripalStorage\StoragePropertyTypeBase')) {
+        $this->logger->error('Type provided must be an object extending StoragePropertyTypeBase. Instead index @index was this: @type',
+            ['@index' => $index, '@type' => print_r($type, TRUE)]);
+        return FALSE;
+      }
+
+      $key = $type->getKey();
+
+      if (!array_key_exists($field_name, $this->property_types)) {
+        $this->property_types[$field_name] = [];
+      }
+      $this->property_types[$field_name][$key] = $type;
+
+    }
+  }
+
+  /**
+   * @{inheritdoc}
+   */
+  public function getTypes() {
+    return $this->property_types;
+  }
+
+  /**
+   * @{inheritdoc}
+   */
+  public function getPropertyType(string $field_name, string $key) {
+
+    if (array_key_exists($field_name, $this->property_types)) {
+      if (array_key_exists($key, $this->property_types[$field_name])) {
+        return $this->property_types[$field_name][$key];
+      }
+    }
+
+    return NULL;
+  }
+
+  /**
+   * @{inheritdoc}
+   */
+  public function removeTypes(string $field_name, array $types) {
+
+    foreach ($types as $type) {
+      $key = $type->getKey();
+
+      if (array_key_exists($field_name, $this->property_types)) {
+        if (array_key_exists($key, $this->property_types[$field_name])) {
+          unset($this->property_types[$field_name][$key]);
+        }
+      }
+
+    }
   }
 
   /**
