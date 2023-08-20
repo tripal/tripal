@@ -12,7 +12,7 @@ use DrupalCodeGenerator\Utils;
 
 #[Generator(
   name: 'tripal:field-widget',
-  description: 'Generates a Tripal Field Widget for developing Tripal fields with no interactiion with Chado.',
+  description: 'Generates a Tripal Widget to be used with an existing Tripal Field.',
   templatePath: __DIR__ . '/../../../templates/generator',
   type: GeneratorType::MODULE_COMPONENT,
 )]
