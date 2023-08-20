@@ -16,12 +16,12 @@ use Drupal\core\Field\FieldDefinitionInterface;
  * @FieldType(
  *   id = "{{ field_id }}",
  *   label = @Translation("{{ field_label }}"),
- *   description = @Translation("{{ description }}"),
+ *   description = @Translation("{{ field_description }}"),
  *   default_widget = "{{ widget_id }}",
  *   default_formatter = "{{ formatter_id }}"
  * )
  */
-class {{ class }} extends TripalFieldItemBase {
+class {{ field_class }} extends TripalFieldItemBase {
 
   public static $id = "{{ field_id }}";
 

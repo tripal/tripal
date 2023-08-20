@@ -36,13 +36,13 @@ final class TripalFieldTypeGenerator extends BaseGenerator {
     $vars['field_id'] = $prompt->ask('Field Type ID', '{machine_name}_example', $id_validator);
 
     $vars['field_label'] = $prompt->ask('Field Type Label', Utils::machine2human($vars['field_id'], TRUE) . ' Field Type', $label_validator);
-    $vars['description'] = $prompt->ask('Field Type Description');
+    $vars['field_description'] = $prompt->ask('Field Type Description');
     $vars['field_term'] = $prompt->ask('Field Term (IdSpace:Accession)', 'rdfs:type', $term_validator);
     $vars['widget_id'] = $prompt->ask('Default Field Widget ID', '{field_id}_widget', $id_validator);
     $vars['formatter_id'] = $prompt->ask('Default Field Formatter ID', '{field_id}_formatter', $id_validator);
-    $vars['class'] = $prompt->askClass(default: '{field_id|camelize}TypeItem');
+    $vars['field_class'] = $prompt->askClass(default: '{field_id|camelize}TypeItem');
 
-    $assets->addFile('src/Plugin/Field/FieldType/{class}.php', 'tripal-field-type.twig');
+    $assets->addFile('src/Plugin/Field/FieldType/{field_class}.php', 'tripal-field-type.twig');
   }
 
 }

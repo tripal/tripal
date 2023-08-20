@@ -36,9 +36,9 @@ final class TripalFieldFormatterGenerator extends BaseGenerator {
     $vars['formatter_label'] = $prompt->ask('Field Formatter Label', Utils::machine2human($vars['formatter_id'], TRUE), $label_validator);
     $vars['formatter_description'] = $prompt->ask('Field Formatter Description');
     $vars['field_id'] = $prompt->ask('Default Field Type id', Utils::removeSuffix($vars['formatter_id'], '_formatter'), $id_validator);
-    $vars['class'] = $prompt->askClass(default: '{formatter_id|camelize}');
+    $vars['formatter_class'] = $prompt->askClass(default: '{formatter_id|camelize}');
 
-    $assets->addFile('src/Plugin/Field/FieldFormatter/{class}.php', 'tripal-field-formatter.twig');
+    $assets->addFile('src/Plugin/Field/FieldFormatter/{formatter_class}.php', 'tripal-field-formatter.twig');
   }
 
 }
