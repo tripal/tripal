@@ -33,8 +33,11 @@ class {{ class }} extends TripalFieldItemBase {
     // Use the field settings to extract information we need to make generic fields.
     $entity_type_id = $field_definition->getTargetEntityTypeId();
     $storage_settings = $field_definition->getSettings();
-    $termIdSpace = $storage_settings['termIdSpace'];
-    $termAccession = $storage_settings['termAccession'];
+    $termIdSpace = '{{ field_term|split(':')[0] }}';
+    $termAccession = '{{ field_term|split(':')[1] }}';
+
+    // Here we set the max length to the typical size of a Drupal postgresql varchar column.
+    $max_length = 255;
 
     return [
       // Example Property Type for strings.
