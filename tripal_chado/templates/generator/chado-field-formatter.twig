@@ -27,11 +27,12 @@ class {{ formatter_class }} extends ChadoFormatterBase {
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = [];
 
-    foreach($items as $delta => $item) {
-      $elements[$delta] = [
-        "#markup" => $item->get("value")->getString(),
-      ];
-    }
+    // Use render arrays to generate markup for your field.
+    // foreach($items as $delta => $item) {
+    //   $elements[$delta] = [
+    //     "#markup" => $item->get("value")->getString(),
+    //   ];
+    // }
 
     return $elements;
   }

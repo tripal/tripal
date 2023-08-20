@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Drupal\{{ machine_name }}\Plugin\Field\FieldWidget;
+namespace Drupal\tripal_chado\Plugin\Field\FieldWidget;
 
 use Drupal\tripal\TripalField\TripalWidgetBase;
 use Drupal\Core\Field\FieldItemListInterface;
@@ -8,18 +8,18 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\tripal_chado\TripalField\ChadoWidgetBase;
 
 /**
- * Plugin implementation of the '{{ widget_id }}' field widget for '{{ field_id }}'.
+ * Plugin implementation of the 'chado_example_widget' field widget for 'chado_example'.
  *
  * @FieldWidget(
- *   id = "{{ widget_id }}",
- *   label = @Translation("{{ widget_label }}"),
- *   description = @Translation("{{ widget_description }}"),
+ *   id = "chado_example_widget",
+ *   label = @Translation("Chado Example Widget"),
+ *   description = @Translation(""),
  *   field_types = {
- *     "{{ field_id }}"
+ *     "chado_example"
  *   }
  * )
  */
-class {{ widget_class }} extends ChadoWidgetBase {
+class ChadoExampleWidget extends ChadoWidgetBase {
 
   /**
    * {@inheritdoc}
@@ -29,13 +29,13 @@ class {{ widget_class }} extends ChadoWidgetBase {
     // Grab the values for our properties based on the passed in delta.
     // For fields with a cardinality above 1, this is called one per record
     // with the delta indicating the current record.
-    // $item_vals = $items[$delta]->getValue();
+    $item_vals = $items[$delta]->getValue();
 
-    // Define your form elements here.
-    // $element['value'] = [
-    //   '#type' => 'value',
-    //   '#default_value' => $item_vals['value'] ?? 0,
-    // ];
+    // Define your form elements here.=
+    $element['value'] = [
+      '#type' => 'value',
+      '#default_value' => $item_vals['value'] ?? 0,
+    ];
 
     return $element;
   }

@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Drupal\{{ machine_name }}\Plugin\Field\FieldType;
+namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 
 use Drupal\tripal\TripalField\TripalFieldItemBase;
@@ -13,19 +13,19 @@ use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
 
 /**
- * Plugin implementation of the '{{ field_id }}' field type.
+ * Plugin implementation of the 'chado_example' field type.
  *
  * @FieldType(
- *   id = "{{ field_id }}",
- *   label = @Translation("{{ field_label }}"),
- *   description = @Translation("{{ field_description }}"),
- *   default_widget = "{{ widget_id }}",
- *   default_formatter = "{{ formatter_id }}"
+ *   id = "chado_example",
+ *   label = @Translation("Chado Example Field Type"),
+ *   description = @Translation(""),
+ *   default_widget = "chado_example_widget",
+ *   default_formatter = "chado_example_formatter"
  * )
  */
-class {{ field_class }} extends ChadoFieldItemBase {
+class ChadoExampleTypeItem extends ChadoFieldItemBase {
 
-  public static $id = "{{ field_id }}";
+  public static $id = "chado_example";
 
   /**
    * {@inheritdoc}
@@ -38,7 +38,6 @@ class {{ field_class }} extends ChadoFieldItemBase {
 
     return [
       // Add your chado property types here.
-      // This is REQUIRED before you can test this field through the UI.
     ];
   }
 
