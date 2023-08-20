@@ -1,0 +1,39 @@
+<?php declare(strict_types = 1);
+
+namespace Drupal\{{ machine_name }}\Plugin\Field\FieldFormatter;
+
+use Drupal\tripal\TripalField\TripalFormatterBase;
+use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Plugin implementation of the '{{ formatter_id }}' field formatter for '{{ field_id }}'.
+ *
+ * @FieldFormatter(
+ *   id = "{{ formatter_id }}",
+ *   label = @Translation("{{ formatter_label }}"),
+ *   description = @Translation("{{ formatter_description }}"),
+ *   field_types = {
+ *     "{{ field_id }}"
+ *   }
+ * )
+ */
+class {{ class }} extends TripalFormatterBase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function viewElements(FieldItemListInterface $items, $langcode) {
+    $elements = [];
+
+    foreach($items as $delta => $item) {
+      $elements[$delta] = [
+        "#markup" => $item->get("value")->getString(),
+      ];
+    }
+
+    return $elements;
+  }
+
+}
+
