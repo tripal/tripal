@@ -38,9 +38,9 @@ class TripalEntityForm extends ContentEntityForm {
     $bundle_entity = \Drupal\tripal\Entity\TripalEntityType::load($bundle);
 
     $entity->setTitle($values['title'][0]['value']);
-    $entity->setAlias();
     $entity->setOwnerId($values['uid'][0]['target_id']);
     $status = parent::save($form, $form_state);
+    $entity->setAlias();
 
     switch ($status) {
       case SAVED_NEW:
