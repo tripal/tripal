@@ -19,16 +19,6 @@ use Drupal\Tests\tripal_chado\Functional\MockClass\FieldConfigMock;
  * Note that the arraydesign table is a bit unusal, since the relevant
  * column is 'manufacturer_id' which corresponds to 'contact_id' in the
  * contact table.
- * # Note: quantification is not a typically created content type but we
- * # can test it in this manner anyway as the tests are in the kernel environment
- * # and do not interact with content types and fields attached to them but rather
- * # focuses on the property types/values directly. This also allows us to test
- * # phylotree directly even though at the time of writing this test, there is no
- * # dbxref_id field attached to phylotree.
- *#
- *# Note: testotherstudyfield and testotherarraydesignfield are added
- *# to ensure we meet the unique constraints on the study and arraydesign
- *# tables respectively.
  *
  *  Specific test cases:
  *   - [STUDY] Create Values in Chado using ChadoStorage when they don't yet exist.
@@ -106,28 +96,6 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
         ],
       ],
     ],
-#    // Just adds in any properties needed to meet the unique constraints on the
-#    // study table.
-#    'testotherstudyfield' => [
-#      'field_name' => 'testotherstudyfield',
-#      'base_table' => 'study',
-#      'properties' => [
-#        'other_record_id' => [
-#          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-#          'action' => 'store_id',
-#          'drupal_store' => TRUE,
-#          'chado_table' => 'study',
-#          'chado_column' => 'study_id'
-#        ],
-#        // Name is not null
-#        'name' => [
-#          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoVarCharStoragePropertyType',
-#          'action' => 'store',
-#          'chado_table' => 'study',
-#          'chado_column' => 'name'
-#        ],
-#      ],
-#    ],
     'testContactFieldArrayDesign' => [
       'field_name' => 'testContactFieldArrayDesign',
       'base_table' => 'arraydesign',
@@ -167,21 +135,6 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
         ],
       ],
     ],
-#    // Just adds in any properties needed to meet the unique constraints on the
-#    // arraydesign table.
-#    'testotherarraydesignfield' => [
-#      'field_name' => 'testotherarraydesignfield',
-#      'base_table' => 'arraydesign',
-#      'properties' => [
-#        'other_record_id' => [
-#          'propertyType class' => 'Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType',
-#          'action' => 'store_id',
-#          'drupal_store' => TRUE,
-#          'chado_table' => 'arraydesign',
-#          'chado_column' => 'arraydesign_id'
-#        ],
-#      ],
-#    ],
   ];
 
   protected array $contact_id;
@@ -240,12 +193,18 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
     $query->join('1:contact', 'linked', 'base.contact_id = linked.contact_id');
     $query->addField('linked', 'name', 'linked_name');
     $base_records = $query->execute()->fetchAll();
-    $this->assertCount(1, $base_records,
+    $this->assertCount(
+      1,
+      $base_records,
       'Only one Study record should have been created.');
     $base_dbrecord = $base_records[0];
-    $this->assertEquals($this->contact_id[0], $base_dbrecord->contact_id,
+    $this->assertEquals(
+      $this->contact_id[0],
+      $base_dbrecord->contact_id,
       "The contact_id should be the one we set.");
-    $this->assertEquals('Contact name for testing #0', $base_dbrecord->linked_name,
+    $this->assertEquals(
+      'Contact name for testing #0',
+      $base_dbrecord->linked_name,
       "Failing the extra more readable check that the contact is the one we expect.");
     $base_id = $base_dbrecord->study_id;
 
@@ -263,11 +222,6 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
           'record_id' => $base_id,
         ],
       ],
-#      'testotherstudyfield' => [
-#        [
-#          'other_record_id' => $base_id,
-#        ]
-#      ],
     ];
     $retrieved_values = $this->chadoStorageTestLoadValues($load_values);
 
@@ -308,11 +262,6 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
           'contact_id' => $this->contact_id[1], // This is the change!
         ],
       ],
-#      'testotherstudyfield' => [
-#        [
-#          'other_record_id' => $base_id,
-#        ]
-#      ],
     ];
     $this->chadoStorageTestUpdateValues($update_values);
 
@@ -322,15 +271,23 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
     $query->join('1:contact', 'linked', 'base.contact_id = linked.contact_id');
     $query->addField('linked', 'name', 'linked_name');
     $base_records = $query->execute()->fetchAll();
-    $this->assertCount(1, $base_records,
+    $this->assertCount(
+      1,
+      $base_records,
       'Only one study record should be present as we should have updated the existing one.');
 
     $base_dbrecord = $base_records[0];
-    $this->assertEquals($base_id, $base_dbrecord->study_id,
+    $this->assertEquals(
+      $base_id,
+      $base_dbrecord->study_id,
       "The study primary key should remain unchanged through update.");
-    $this->assertEquals($this->contact_id[1], $base_dbrecord->contact_id,
+    $this->assertEquals(
+      $this->contact_id[1],
+      $base_dbrecord->contact_id,
       "The contact_id should be updated to the second one inserted.");
-    $this->assertEquals('Contact name for testing #1', $base_dbrecord->linked_name,
+    $this->assertEquals(
+      'Contact name for testing #1',
+      $base_dbrecord->linked_name,
       "Failing the extra more readable check that the updated contact is the one we expect.");
   }
 
@@ -362,11 +319,6 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
           // I do not think join properties are populated on save (thinking)
         ],
       ],
-#      'testotherarraydesignfield' => [
-#        [
-#          'platformtype_id' => $null_platformtype_id,
-#        ]
-#      ],
     ];
     $this->chadoStorageTestInsertValues($insert_values);
 
@@ -381,12 +333,18 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
     $query->join('1:contact', 'linked', 'base.manufacturer_id = linked.contact_id');
     $query->addField('linked', 'name', 'linked_name');
     $records = $query->execute()->fetchAll();
-    $this->assertCount(1, $records,
+    $this->assertCount(
+      1,
+      $records,
       'Only one arraydesign record should have been created.');
     $base_dbrecord = $records[0];
-    $this->assertEquals($this->contact_id[0], $base_dbrecord->manufacturer_id,
+    $this->assertEquals(
+      $this->contact_id[0],
+      $base_dbrecord->manufacturer_id,
       "The manufacturer_id should be the one we set.");
-    $this->assertEquals('Contact name for testing #0', $base_dbrecord->linked_name,
+    $this->assertEquals(
+      'Contact name for testing #0',
+      $base_dbrecord->linked_name,
       "Failing the extra more readable check that the manufacturer is the one we expect.");
     $base_id = $base_dbrecord->arraydesign_id;
 
@@ -404,13 +362,6 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
           'record_id' => $base_id,
         ],
       ],
-#      'testotherarraydesignfield' => [
-#        [
-#          'other_record_id' => $base_id,
-#          'name' => 'ArbitraryName',
-#          'platformtype_id' => 1,
-#        ]
-#      ],
     ];
     $retrieved_values = $this->chadoStorageTestLoadValues($load_values);
 
@@ -452,12 +403,6 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
           'platformtype_id' => $null_platformtype_id,
         ],
       ],
-#      'testotherarraydesignfield' => [
-#        [
-#          'other_record_id' => $base_id,
-#          'platformtype_id' => $null_platformtype_id,
-#        ]
-#      ],
     ];
     $this->chadoStorageTestUpdateValues($update_values);
 
@@ -467,15 +412,22 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
     $query->join('1:contact', 'linked', 'base.manufacturer_id = linked.contact_id');
     $query->addField('linked', 'name', 'linked_name');
     $records = $query->execute()->fetchAll();
-    $this->assertCount(1, $records,
+    $this->assertCount(
+      1,
+      $records,
       'Only one arraydesign record should be present as we should have updated the existing one.');
 
     $base_dbrecord = $records[0];
-    $this->assertEquals($base_id, $base_dbrecord->arraydesign_id,
+    $this->assertEquals($base_id,
+      $base_dbrecord->arraydesign_id,
       "The arraydesign primary key should remain unchanged through update.");
-    $this->assertEquals($this->contact_id[1], $base_dbrecord->manufacturer_id,
+    $this->assertEquals(
+      $this->contact_id[1],
+      $base_dbrecord->manufacturer_id,
       "The manufacturer_id should be updated to the second one inserted.");
-    $this->assertEquals('Contact name for testing #1', $base_dbrecord->linked_name,
+    $this->assertEquals(
+      'Contact name for testing #1',
+      $base_dbrecord->linked_name,
       "Failing the extra more readable check that the updated manufacturer is the one we expect.");
   }
 }
