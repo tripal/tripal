@@ -30,7 +30,7 @@ class ChadoSequenceWidgetDefault extends ChadoWidgetBase {
     $elements = [];
     $elements['record_id'] = [
       '#type' => 'value',
-      '#default_value' => $rec_id_val ?? 0,
+      '#default_value' => $item_vals['record_id'] ?? 0,
     ];
 
     $elements['residues'] = $element + [
