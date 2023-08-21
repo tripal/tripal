@@ -14,7 +14,7 @@ use Drupal\Tests\tripal_chado\Functional\MockClass\FieldConfigMock;
  * Tests that ChadoStorage can handle property fields as we expect.
  * The array of fields/properties used for these tests are designed
  * to match those in the ChadoContactDefault field with values filled
- * based on two base tables: study, and arraydesign.
+ * based on two base tables: study and arraydesign.
  *
  * Note that the arraydesign table is a bit unusal, since the relevant
  * column is 'manufacturer_id' which corresponds to 'contact_id' in the
@@ -316,7 +316,6 @@ class ChadoContactDefaultTest extends ChadoTestKernelBase {
           'manufacturer_id' => $this->contact_id[0],
           'name' => 'ChadoContactDefaultTest arraydesign #1',
           'platformtype_id' => $null_platformtype_id,
-          // I do not think join properties are populated on save (thinking)
         ],
       ],
     ];
