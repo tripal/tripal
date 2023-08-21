@@ -103,11 +103,8 @@ class ChadoContactDefault extends ChadoFieldItemBase {
     $base_table_def = $schema->getTableDef($base_table, ['format' => 'Drupal']);
     $contact_table_def = $schema->getTableDef('contact', ['format' => 'Drupal']);
     $base_pkey_col = $base_table_def['primary key'];
-    $base_fkey_col = 'contact_id';
-    // Ugly special case for the arraydesign table where manufacturer_id is mapped to contact_id
-    if ($base_table == 'arraydesign') {
-      $base_fkey_col = 'manufacturer_id';
-    }
+    // Note that for the arraydesign table, this will be manufacturer_id instead of contact_id
+    $base_fkey_col = array_key_first($base_table_def['foreign keys']['contact']['columns']);
 
     // Create variables to store the terms for the contact.
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
