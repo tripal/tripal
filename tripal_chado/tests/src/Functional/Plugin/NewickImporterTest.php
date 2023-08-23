@@ -145,7 +145,7 @@ class NewickImporterTest extends ChadoTestBrowserBase
       'description' => 'No description',
       'name_re' => "",
       'match' => 0,
-      'load_later' => 0 
+      // 'load_later' => 0 
     ];
 
     $file_details = [
