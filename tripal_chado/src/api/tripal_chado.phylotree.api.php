@@ -423,23 +423,24 @@ function chado_insert_phylotree(&$options, &$errors, &$warnings, $schema_name = 
   // If caller has requested to load the file now then do so, otherwise
   // submit using a Tripal job.
   if (!array_key_exists('no_load', $options) or !$options['no_load']) {
-    if (array_key_exists('load_later', $options) and $options['load_later']) {
-      $args = [
-        $real_file_path,
-        'newick',
-        [
-          'phylotree_id' => $phylotree_id,
-          'leaf_type' => $options['leaf_type'],
-          'match' => $options['match'] ? 'uniquename' : 'name',
-          'name_re' => $options['name_re'],
-        ],
-      ];
-      if (tripal_add_job("Import Tree File: " . basename($real_file_path), $options['message_type'],
-        'chado_phylogeny_import_tree_file', $args, $user->uid)) {
-        drupal_set_message(t('The tree visualizations will appear once the tree is fully imported.'));
-      }
-    }
-    else {
+    // OLD CODE - RECOMMENDED TO BE REMOVED BY STEPHEN ON 8/23/2023 Wednesday Meeting
+    // if (array_key_exists('load_later', $options) and $options['load_later']) {
+    //   $args = [
+    //     $real_file_path,
+    //     'newick',
+    //     [
+    //       'phylotree_id' => $phylotree_id,
+    //       'leaf_type' => $options['leaf_type'],
+    //       'match' => $options['match'] ? 'uniquename' : 'name',
+    //       'name_re' => $options['name_re'],
+    //     ],
+    //   ];
+    //   if (tripal_add_job("Import Tree File: " . basename($real_file_path), $options['message_type'],
+    //     'chado_phylogeny_import_tree_file', $args, $user->uid)) {
+    //     drupal_set_message(t('The tree visualizations will appear once the tree is fully imported.'));
+    //   }
+    // }
+    // else {
       $args = [
         'phylotree_id' => $phylotree_id,
         'leaf_type' => $options['leaf_type'],
@@ -449,7 +450,7 @@ function chado_insert_phylotree(&$options, &$errors, &$warnings, $schema_name = 
         'message_opts' => $options['message_opts'],
       ];
       chado_phylogeny_import_tree_file($real_file_path, $options['format'], $args, NULL, $schema_name);
-    }
+    // }
   }
 
   return TRUE;
@@ -590,23 +591,24 @@ function chado_update_phylotree($phylotree_id, &$options, $schema_name = 'chado'
 
     // If caller has requested to load the file now then do so, otherwise
     // submit using a Tripal job.
-    if (array_key_exists('load_later', $options) and $options['load_later']) {
-      $args = [
-        $real_file_path,
-        'newick',
-        [
-          'phylotree_id' => $options['phylotree_id'],
-          'leaf_type' => $options['leaf_type'],
-          'match' => $options['match'] ? 'uniquename' : 'name',
-          'name_re' => $options['name_re'],
-        ],
-      ];
-      if (tripal_add_job("Import Tree File: " . basename($real_file_path), 'tripal_phylogeny',
-        'chado_phylogeny_import_tree_file', $args, $user->uid)) {
-        drupal_set_message(t('The tree visualizations will appear once the tree is fully imported.'));
-      }
-    }
-    else {
+    // OLD CODE - RECOMMENDED TO BE REMOVED BY STEPHEN ON 8/23/2023 Wednesday Meeting
+    // if (array_key_exists('load_later', $options) and $options['load_later']) {
+    //   $args = [
+    //     $real_file_path,
+    //     'newick',
+    //     [
+    //       'phylotree_id' => $options['phylotree_id'],
+    //       'leaf_type' => $options['leaf_type'],
+    //       'match' => $options['match'] ? 'uniquename' : 'name',
+    //       'name_re' => $options['name_re'],
+    //     ],
+    //   ];
+    //   if (tripal_add_job("Import Tree File: " . basename($real_file_path), 'tripal_phylogeny',
+    //     'chado_phylogeny_import_tree_file', $args, $user->uid)) {
+    //     drupal_set_message(t('The tree visualizations will appear once the tree is fully imported.'));
+    //   }
+    // }
+    // else {
       $args = [
         'phylotree_id' => $options['phylotree_id'],
         'leaf_type' => $options['leaf_type'],
@@ -616,7 +618,7 @@ function chado_update_phylotree($phylotree_id, &$options, $schema_name = 'chado'
         'message_opts' => $options['message_opts'],
       ];
       chado_phylogeny_import_tree_file($real_file_path, $options['format'], $args, NULL, $schema_name);
-    }
+    //}
   }
 
   return TRUE;
