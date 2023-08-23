@@ -64,7 +64,7 @@ class NewickImporter extends ChadoImporterBase {
     $tree_file = '';
     $name_re = '';
     $match = '';
-    $load_later = FALSE;  // Default is to combine tree import with current job
+    // $load_later = FALSE;  // Default is to combine tree import with current job
 
     $form_state_values = $form_state->getValues();
     $form_state_input = $form_state->getUserInput();
@@ -159,13 +159,13 @@ class NewickImporter extends ChadoImporterBase {
         'using the feature name.'),
       '#default_value' => $match,
     ];
-    $form['load_later'] = [
-      '#title' => t('Run Tree Import as a Separate Job'),
-      '#type' => 'checkbox',
-      '#description' => t('Check if tree loading should be performed as a separate job. ' .
-        'If not checked, tree loading will be combined with this job.'),
-      '#default_value' => $load_later,
-    ];
+    // $form['load_later'] = [
+    //   '#title' => t('Run Tree Import as a Separate Job'),
+    //   '#type' => 'checkbox',
+    //   '#description' => t('Check if tree loading should be performed as a separate job. ' .
+    //     'If not checked, tree loading will be combined with this job.'),
+    //   '#default_value' => $load_later,
+    // ];
 
     return $form;
   }
@@ -192,7 +192,7 @@ class NewickImporter extends ChadoImporterBase {
       'dbxref' => trim($values["dbxref"]),
       'match' => $values["match"],
       'name_re' => $values["name_re"],
-      'load_later' => $values["load_later"],
+      // 'load_later' => $values["load_later"],
     ];
 
     $errors = [];
@@ -241,7 +241,7 @@ class NewickImporter extends ChadoImporterBase {
       'dbxref' => $arguments["dbxref"],
       'match' => $arguments["match"],
       'name_re' => $arguments["name_re"],
-      'load_later' => $arguments["load_later"],
+      // 'load_later' => $arguments["load_later"],
     ];
     // pass through the job, needed for log output to show up on the "jobs page"
     if (property_exists($this, 'job')) {
