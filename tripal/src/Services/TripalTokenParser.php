@@ -176,7 +176,9 @@ class TripalTokenParser {
           $key = $field->mainPropertyName();
           if (array_key_exists($token, $this->values)) {
             $value = $this->values[$token][$key];
-            $replaced[$index] = trim(preg_replace("/\[$token\]/", $value,  $replaced[$index]));
+            if (!is_null($value)) {
+              $replaced[$index] = trim(preg_replace("/\[$token\]/", $value,  $replaced[$index]));
+            }
           }
         }
       }
