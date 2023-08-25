@@ -480,9 +480,16 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         $tsid = $item->tripalStorageId();
 
 
-        // For basic Tripal fields, developers may want to use the standard
-        // Drupal storage only. In this case, the tsid would be empty.
+        // If the Tripal Storage Backend is not set on a Tripal-based field,
+        // we will log an error and not support the field. If developers want
+        // to use Drupal storage for a Tripal-based field then they need to
+        // indicate that by using our Drupal SQL Storage option OR by not
+        // creating a Tripal-based field at all depending on their needs.
         if (empty($tsid)) {
+          \Drupal::logger('tripal')->error('The Tripal-based field :field on
+            this content type must indicate a TripalStorage backend and currently does not.',
+            [':field' => $field_name]
+          );
           continue;
         }
 
@@ -585,9 +592,16 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
         $delta = $item->getName();
         $tsid = $item->tripalStorageId();
 
-        // Some simple Tripal fields may only want to use the Drupal storage
-        // In this case the tsid will be empty.
+        // If the Tripal Storage Backend is not set on a Tripal-based field,
+        // we will log an error and not support the field. If developers want
+        // to use Drupal storage for a Tripal-based field then they need to
+        // indicate that by using our Drupal SQL Storage option OR by not
+        // creating a Tripal-based field at all depending on their needs.
         if (empty($tsid)) {
+          \Drupal::logger('tripal')->error('The Tripal-based field :field on
+            this content type must indicate a TripalStorage backend and currently does not.',
+            [':field' => $field_name]
+          );
           continue;
         }
 
@@ -683,9 +697,16 @@ class TripalEntity extends ContentEntityBase implements TripalEntityInterface {
           $delta = $item->getName();
           $tsid = $item->tripalStorageId();
 
-          // Some simple Tripal fields may only want to use the Drupal storage
-          // In this case the tsid will be empty.
+          // If the Tripal Storage Backend is not set on a Tripal-based field,
+          // we will log an error and not support the field. If developers want
+          // to use Drupal storage for a Tripal-based field then they need to
+          // indicate that by using our Drupal SQL Storage option OR by not
+          // creating a Tripal-based field at all depending on their needs.
           if (empty($tsid)) {
+            \Drupal::logger('tripal')->error('The Tripal-based field :field on
+              this content type must indicate a TripalStorage backend and currently does not.',
+              [':field' => $field_name]
+            );
             continue;
           }
 
