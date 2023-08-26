@@ -4,30 +4,28 @@ namespace Drupal\tripal_chado\Plugin\Field\FieldType;
 
 use Drupal\tripal_chado\TripalField\ChadoFieldItemBase;
 use Drupal\tripal_chado\TripalStorage\ChadoIntStoragePropertyType;
-use Drupal\tripal_chado\TripalStorage\ChadoTextStoragePropertyType;
 use Drupal\tripal_chado\TripalStorage\ChadoBpCharStoragePropertyType;
 
 /**
  * Plugin implementation of Default Tripal field for sequence data.
  *
  * @FieldType(
- *   id = "chado_sequence_default",
- *   label = @Translation("Chado Sequence Residues"),
- *   description = @Translation("Manages sequence residues for content types storing data in the chado feature table."),
- *   default_widget = "chado_sequence_widget_default",
- *   default_formatter = "chado_sequence_formatter_default",
- *   cardinality = 1,
+ *   id = "chado_sequence_checksum_default",
+ *   label = @Translation("Chado Feature Sequence Checksum"),
+ *   description = @Translation("A chado feature sequence md5 checksum"),
+ *   default_widget = "chado_sequence_checksum_widget_default",
+ *   default_formatter = "chado_sequence_checksum_formatter_default"
  * )
  */
-class ChadoSequenceDefault extends ChadoFieldItemBase {
+class ChadoSequenceChecksumDefault extends ChadoFieldItemBase {
 
-  public static $id = "chado_sequence_default";
+  public static $id = "chado_sequence_checksum_default";
 
   /**
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
-    return 'residues';
+    return 'md5checksum';
   }
 
   /**
@@ -36,7 +34,8 @@ class ChadoSequenceDefault extends ChadoFieldItemBase {
   public static function defaultFieldSettings() {
     $settings = parent::defaultFieldSettings();
     $settings['termIdSpace'] = 'data';
-    $settings['termAccession'] = '2044';
+    $settings['termAccession'] = '2190';
+    $settings['fixed_value'] = TRUE;
     return $settings;
   }
 
@@ -46,7 +45,6 @@ class ChadoSequenceDefault extends ChadoFieldItemBase {
   public static function defaultStorageSettings() {
     $settings = parent::defaultStorageSettings();
     $settings['storage_plugin_settings']['base_table'] = 'feature';
-
     return $settings;
   }
 
@@ -63,9 +61,14 @@ class ChadoSequenceDefault extends ChadoFieldItemBase {
     $storage = \Drupal::entityTypeManager()->getStorage('chado_term_mapping');
     $mapping = $storage->load('core_mapping');
     $record_id_term = 'SIO:000729';
-    $residues_term = $mapping->getColumnTermId('feature', 'residues');
-    $seqlen_term = $mapping->getColumnTermId('feature', 'seqlen');
     $md5checksum_term = $mapping->getColumnTermId('feature', 'md5checksum');
+    $seqlen_term = $mapping->getColumnTermId('feature', 'seqlen');
+
+    // Get the length of the database fields so we don't go over the size limit.
+    $chado = \Drupal::service('tripal_chado.database');
+    $schema = $chado->schema();
+    $feature_def = $schema->getTableDef('feature', ['format' => 'Drupal']);
+    $md5_checksum_len = $feature_def['fields']['md5checksum']['size'];
 
     // Return the properties for this field.
     $properties = [];
@@ -75,26 +78,16 @@ class ChadoSequenceDefault extends ChadoFieldItemBase {
         'chado_table' => 'feature',
         'chado_column' => 'feature_id'
     ]);
-    $properties[] =  new ChadoTextStoragePropertyType($entity_type_id, self::$id, 'residues', $residues_term, [
-      'action' => 'store',
-      'chado_column' => 'residues',
-      'chado_table' => 'feature'
-    ]);
-
     $properties[] =  new ChadoIntStoragePropertyType($entity_type_id, self::$id, 'seqlen', $seqlen_term, [
       'action' => 'store',
       'chado_column' => 'seqlen',
       'chado_table' => 'feature'
     ]);
-    
-    // Hard-coded as the length of MD3Checksum supported by the chado feature.md5checksum column.
-    $md5checksum_len = 32;
-    $properties[] =  new ChadoBpCharStoragePropertyType($entity_type_id, self::$id, 'md5checksum', $md5checksum_term, $md5checksum_len, [
+    $properties[] =  new ChadoBpCharStoragePropertyType($entity_type_id, self::$id, 'md5checksum', $md5checksum_term, $md5_checksum_len, [
       'action' => 'store',
       'chado_column' => 'md5checksum',
       'chado_table' => 'feature'
     ]);
-
     return $properties;
   }
 }
