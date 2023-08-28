@@ -519,10 +519,9 @@ class TripalLogger {
    *   - Server log
    *   - Drupal Message (if specified in options)
    *
-   * This function behaves differently from the Drupal::logger->debug function
-   * because no debugging information will be logged unless the TRIPAL_DEBUG
-   * environment variable is set. This if for backwards compatibility with
-   * Tripal v3.
+   * For Tripal 3, no debug messages were logged unless the TRIPAL_DEBUG
+   * environment variable is set. Under Tripal 4, debug messages are
+   * always printed.
    *
    * @param $message
    *   The message MUST be a string or object implementing __toString().
@@ -545,12 +544,10 @@ class TripalLogger {
   public function debug($message, $context = [], $options=[]) {
     if ($this->isSuppressed()) return;
 
-    // If we are not set to return debugging information and the severity level
-    // is debug then don't report the error.
-    // Get the backtrace and include in the error message, but only if the
-    // TRIPAL_DEBUG environment variable is set.
-    // (In Tripal 3 this was added to all levels)
-    if (getenv('TRIPAL_DEBUG') == 1) {
+    // If we want to implement a toggle for debug messages in the
+    // future, it could go here. Tripal 3 had an environment variable
+    // TRIPAL_DEBUG to perform this function.
+    if (true) {
       $backtrace = debug_backtrace();
       $message .= "\nBacktrace:\n";
       $i = 1;
@@ -558,11 +555,14 @@ class TripalLogger {
         $function = $backtrace[$i];
         $message .= "  $i) " . $function['function'] . "\n";
       }
-
       $this->log2job('DEBUG: ' . $message, $context);
       if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
         $message_str = $this->messageString($message, $context);
         $this->logger->debug($message_str);
+      }
+
+      if (isset($options['drupal_set_message'])) {
+        $this->log2Message('debug', $message, $context);
       }
 
       $this->log2Server('DEBUG: ' . $message, $context, $options);

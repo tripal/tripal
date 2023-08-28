@@ -21,14 +21,16 @@ use FASTAImporter;
  * @group Tripal
  * @group Tripal Chado
  * @group Tripal Chado ChadoStorage
+ * @group Tripal Chado ChadoStorage Importer
+ * @group Tripal Chado ChadoStorage Importer FASTAImporter
  */
 class FASTAImporterTest extends ChadoTestBrowserBase
 {
 
   /**
-   * Confirm basic GFF importer functionality.
+   * Confirm basic FASTA importer functionality.
    *
-   * @group gff
+   * @group FASTA
    */
   public function testFASTAImporterSimpleTest()
   {
