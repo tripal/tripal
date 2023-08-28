@@ -501,7 +501,10 @@ function chado_insert_phylotree(&$options, &$errors, &$warnings, $schema_name = 
  * @ingroup tripal_phylotree_api
  */
 function chado_update_phylotree($phylotree_id, &$options, $schema_name = 'chado') {
-  global $user;
+  // global $user; // Unused variable detected by RISH VSCODE IDE [8/27/2023]
+
+  $chado = \Drupal::service('tripal_chado.database');
+  $chado->setSchemaName($schema_name);
 
   // These are options for the tripal_report_error function. We do not
   // want to log messages to the watchdog but we do for the job and to
@@ -559,7 +562,10 @@ function chado_update_phylotree($phylotree_id, &$options, $schema_name = 'chado'
   if (array_key_exists('tree_file', $options) and $options['tree_file']) {
 
     // Remove any existing nodes
-    chado_delete_record('phylonode', ['phylotree_id' => $options['phylotree_id']], NULL,  $schema_name);
+    // chado_delete_record('phylonode', ['phylotree_id' => $options['phylotree_id']], NULL,  $schema_name);
+    $chado->delete('phylonode')
+      ->condition('phylotree_id', $options['phylotree_id'])
+      ->execute();
 
     // Make sure if we already have a file that we remove the old one.
     $sql = "
@@ -636,6 +642,9 @@ function chado_update_phylotree($phylotree_id, &$options, $schema_name = 'chado'
  */
 function chado_delete_phylotree($phylotree_id, $schema_name = 'chado') {
 
+  $chado = \Drupal::service('tripal_chado.database');
+  $chado->setSchemaName($schema_name);
+
   // If we don't have a phylotree id for this node then this isn't a node of
   // type chado_phylotree or the entry in the chado_phylotree table was lost.
   if (!$phylotree_id) {
@@ -647,7 +656,15 @@ function chado_delete_phylotree($phylotree_id, $schema_name = 'chado') {
 
   // Remove the tree
   $values = ['phylotree_id' => $phylotree_id];
-  return chado_delete_record('phylotree', $values, NULL, $schema_name);
+  // return chado_delete_record('phylotree', $values, NULL, $schema_name);
+  $status = false;
+  // RISH [8/27/2023] The below $num_deleted concept is taken from the Drupal Database API for 9.x
+  // https://www.drupal.org/docs/drupal-apis/database-api/delete-queries
+  $num_deleted = $chado->delete('phylotree')
+    ->condition('phylotree_id', $phylotree_id)
+    ->execute();
+  return TRUE;
+  
 }
 
 /**
