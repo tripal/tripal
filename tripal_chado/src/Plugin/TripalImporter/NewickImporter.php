@@ -207,6 +207,11 @@ class NewickImporter extends ChadoImporterBase {
 
     chado_validate_phylotree('insert', $options, $errors, $warnings, $chado->getSchemaName());
 
+    if ($options['tree_file'] == null && $values['file_upload_existing'] <= 0) {
+      $errors['tree_file'] = t('No tree file was submitted, please upload a file or choose one if it exists',
+      ['%file' => $options['tree_file']]);
+    }
+    
     // Now set form errors if any errors were detected.
     if (count($errors) > 0) {
       foreach ($errors as $field => $message) {
