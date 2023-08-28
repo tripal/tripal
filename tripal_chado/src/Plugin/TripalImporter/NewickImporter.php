@@ -205,12 +205,35 @@ class NewickImporter extends ChadoImporterBase {
     $errors = [];
     $warnings = [];
 
+    // Validate DBXREF
+    // dpm($options);
+    if($options['dbxref'] != "null:local:null") {
+      // // Check whether the db exists first
+      $dbxref_parts = explode(':', $options['dbxref']);
+      $db = $dbxref_parts[0];
+      // dpm($db);
+      // Lookup
+      $results = $chado->select('1:db', 'db')
+        ->fields('db')
+        ->condition('name', $db)
+        ->execute();
+      $results->allowRowCount = TRUE;
+      $count = $results->rowCount();
+      if ($count <= 0) {
+        $form_state->setError($form, "Could not find DB from the dbxref value, specify a valid dbxref value.");
+        return;
+      }
+    }
+
     chado_validate_phylotree('insert', $options, $errors, $warnings, $chado->getSchemaName());
 
     if ($options['tree_file'] == null && $values['file_upload_existing'] <= 0) {
       $errors['tree_file'] = t('No tree file was submitted, please upload a file or choose one if it exists',
       ['%file' => $options['tree_file']]);
     }
+
+
+
     
     // Now set form errors if any errors were detected.
     if (count($errors) > 0) {
