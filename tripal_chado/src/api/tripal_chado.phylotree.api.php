@@ -251,7 +251,15 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
       }
       // T3 OLD INSERT
       // $dbxref = chado_insert_record('dbxref', $values, [], $schema_name);
-      $dbxref = $chado->insert('1:dbxref')->fields($values)->execute();
+      $db_id = $chado->select('1:db', 'db')
+        ->fields('db')
+        ->condition('name', $values['db_id']['name'])
+        ->execute()
+        ->fetchAssoc()['db_id'];
+      $dbxref = $chado->insert('1:dbxref')->fields([
+        'accession' => $values['accession'],
+        'db_id' => $db_id
+      ])->execute();
 
       if (!$dbxref) {
         $errors['dbxref'] = t('

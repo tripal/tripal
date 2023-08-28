@@ -220,7 +220,7 @@ class NewickImporter extends ChadoImporterBase {
       $results->allowRowCount = TRUE;
       $count = $results->rowCount();
       if ($count <= 0) {
-        $form_state->setError($form, "Could not find DB from the dbxref value, specify a valid dbxref value.");
+        $form_state->setError($form, "Could not find DB ($db) from the dbxref value, specify a valid dbxref value.");
         return;
       }
     }
