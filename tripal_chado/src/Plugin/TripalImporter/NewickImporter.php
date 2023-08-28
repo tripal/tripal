@@ -216,7 +216,7 @@ class NewickImporter extends ChadoImporterBase {
         // form_set_error($field, $message);
         \Drupal::messenger()->addError(t("$field $message"));
       }
-      return 0;
+      return 1;
     }
     // Add any warnings if any were detected
     if (count($warnings) > 0) {
