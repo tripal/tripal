@@ -166,13 +166,6 @@ class NewickImporter extends ChadoImporterBase {
         'using the feature name.'),
       '#default_value' => $match,
     ];
-    // $form['load_later'] = [
-    //   '#title' => t('Run Tree Import as a Separate Job'),
-    //   '#type' => 'checkbox',
-    //   '#description' => t('Check if tree loading should be performed as a separate job. ' .
-    //     'If not checked, tree loading will be combined with this job.'),
-    //   '#default_value' => $load_later,
-    // ];
 
     return $form;
   }
