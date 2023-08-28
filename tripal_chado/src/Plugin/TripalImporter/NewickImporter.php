@@ -215,8 +215,8 @@ class NewickImporter extends ChadoImporterBase {
         }
         // form_set_error($field, $message);
         \Drupal::messenger()->addError(t("$field $message"));
+        $form_state->setError($form, "Please fix these errors to continue creating a job");
       }
-      return 1;
     }
     // Add any warnings if any were detected
     if (count($warnings) > 0) {
