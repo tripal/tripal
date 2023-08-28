@@ -66,6 +66,13 @@ class NewickImporter extends ChadoImporterBase {
     $match = '';
     // $load_later = FALSE;  // Default is to combine tree import with current job
 
+    // get the sequence ontology CV ID
+    $cv_results = $chado->select('1:cv', 'cv')
+      ->fields('cv')
+      ->condition('name', 'sequence')
+      ->execute();
+    $cv_id = $cv_results->fetchObject()->cv_id;
+
     $form_state_values = $form_state->getValues();
     $form_state_input = $form_state->getUserInput();
     // If we are re constructing the form from a failed validation or ajax callback
@@ -117,7 +124,7 @@ class NewickImporter extends ChadoImporterBase {
       '#default_value' => $leaf_type,
       // '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/$cv_id",
       '#autocomplete_route_name' => 'tripal_chado.cvterm_autocomplete',
-      '#autocomplete_route_parameters' => ['count' => 5]
+      '#autocomplete_route_parameters' => ['count' => 5, 'cv_id' => $cv_id]
     ];
 
     $form['dbxref'] = [
