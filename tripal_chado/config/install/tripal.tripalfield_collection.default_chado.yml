@@ -804,8 +804,8 @@ fields:
 
     -   name: gene_sequence
         content_type: gene
-        label: Sequence
-        type: chado_text_type
+        label: Sequence Residues
+        type: chado_sequence_default
         description: One or more molecular sequences, possibly with associated annotation.
         cardinality: 1
         required: false
@@ -831,7 +831,7 @@ fields:
     -   name: gene_length
         content_type: gene
         label: Sequence Length
-        type: chado_integer_type
+        type: chado_sequence_length_default
         description: The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.
         cardinality: 1
         required: false
@@ -853,6 +853,32 @@ fields:
             default:
               region: content
               weight: 25
+
+    -   name: gene_sequence_md5_checksum
+        content_type: gene
+        label: Sequence MD5 Checksum
+        type: chado_sequence_checksum_default
+        description: The 32-character checksum of the sequence, calculated using the MD5 algorithm.
+        cardinality: 1
+        required: false
+        storage_settings:
+            storage_plugin_id: chado_storage
+            storage_plugin_settings:
+                base_table: feature
+                base_column: md5checksum
+        settings:
+            termIdSpace: data
+            termAccession: "2190"
+        display:
+          view:
+            default:
+              region: content
+              label: above
+              weight: 30
+          form:
+            default:
+              region: content
+              weight: 30
 
     -   name: gene_organism
         content_type: gene
