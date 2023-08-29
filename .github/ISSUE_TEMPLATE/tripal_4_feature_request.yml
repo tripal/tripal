@@ -9,7 +9,7 @@ body:
         The following template is meant to structure your feature request.
         Please keep in mind, this issue may evolve into discussion for an extension module if it's decided that the feature is not a good fit for Tripal Core.
 
-        Go over all the follwoing points, and select the options that best apply to you.
+        Go over all the following points, and select the options that best apply to you.
   - type: dropdown
     id: existing_problem
     attributes:
