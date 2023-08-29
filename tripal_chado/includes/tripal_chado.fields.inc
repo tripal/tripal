@@ -1769,7 +1769,7 @@ function tripal_chado_bundle_instances_info_custom(&$info, $entity_type, $bundle
         'base_table' => $table_name,
         'term_accession' => '1249',
         'term_vocabulary' => 'data',
-        'term_name' => 'delete	Sequence length',
+        'term_name' => 'Sequence length',
       ],
       'widget' => [
         'type' => 'data__sequence_length_widget',
