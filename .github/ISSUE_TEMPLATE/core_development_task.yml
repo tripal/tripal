@@ -1,4 +1,4 @@
-name: Core Development Task (Form)
+name: Core Development Task
 description: For keeping track of Tripal 4 core development.
 body:
   - type: markdown

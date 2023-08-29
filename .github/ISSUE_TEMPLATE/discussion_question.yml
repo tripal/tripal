@@ -1,4 +1,4 @@
-name: Discussion / Question (Form)
+name: Discussion / Question
 description: Discuss a topic / Ask for help.
 body:
   - type: markdown
