@@ -62,7 +62,7 @@ class DrupalSqlStorage extends TripalStorageBase implements TripalStorageInterfa
   public function loadValues(&$values): bool {
     // No need to do anything here.  This is handled by the
     // default SQL storage provided by Drupal
-    return $values;
+    return TRUE;
   }
 
   /**
@@ -73,12 +73,5 @@ class DrupalSqlStorage extends TripalStorageBase implements TripalStorageInterfa
     // default SQL storage provided by Drupal
     $violations = [];
     return $violations;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  public function getStoredTypes() {
-    return $this->property_types;
   }
 }
