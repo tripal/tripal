@@ -87,9 +87,6 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
    */
   public function addFieldDefinition(string $field_name, object $field_definition) {
 
-    if (!array_key_exists($field_name, $this->field_definitions)) {
-      $this->field_definitions[$field_name] = [];
-    }
     $this->field_definitions[$field_name] = $field_definition;
 
     return TRUE;
