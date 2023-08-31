@@ -201,7 +201,7 @@ class NewickImporter extends ChadoImporterBase {
     // Validate DBXREF
     if ($options['dbxref'] and ($options['dbxref'] != "null:local:null")) {
       // The db in a dbxref must already exist, the accession can be new.
-      $dbxref_parts = explode(':', $options['dbxref']);
+      $dbxref_parts = explode(':', $options['dbxref'], 2);
       $db = $dbxref_parts[0];
       if ((count($dbxref_parts) < 2) or (strlen($db) < 1) or (strlen($dbxref_parts[1]) < 1)) {
         $form_state->setErrorByName('dbxref', "The dbxref must consist of a DB and an accession separated by a colon, specify a valid dbxref value.");
@@ -220,26 +220,22 @@ class NewickImporter extends ChadoImporterBase {
       }
     }
 
+    if ((!array_key_exists('tree_file', $options) or $options['tree_file'] == null) && $values['file_upload_existing'] <= 0) {
+      $form_state->setErrorByName('file_upload_existing', t('No tree file was submitted, please upload a file or choose one if it exists'));
+      return;
+    }
+    
     chado_validate_phylotree('insert', $options, $errors, $warnings, $chado->getSchemaName());
 
-    if ($options['tree_file'] == null && $values['file_upload_existing'] <= 0) {
-      $errors['tree_file'] = t('No tree file was submitted, please upload a file or choose one if it exists',
-      ['%file' => $options['tree_file']]);
-    }
-
-
-
-    
     // Now set form errors if any errors were detected.
     if (count($errors) > 0) {
       foreach ($errors as $field => $message) {
         if ($field == 'name') {
           $field = 'tree_name';
         }
-        // form_set_error($field, $message);
-        \Drupal::messenger()->addError(t("$field $message"));
-        $form_state->setError($form, "Please fix these errors to continue creating a job");
+        $form_state->setErrorByName($field, $message);
       }
+      $form_state->setError($form, "Please fix these errors to continue creating a job");
     }
     // Add any warnings if any were detected
     if (count($warnings) > 0) {

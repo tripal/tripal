@@ -243,35 +243,34 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
     if (!$dbxref) {
 
       $db = chado_generate_var('db', ['name' => $db_name], [], $schema_name);
-
       if (!$db) {
-        $errors['dbxref'] = t('
-              dbxref could not be created for db: %dbxref.', ['%dbxref' => $dbxref]);
+        $errors['dbxref'] = t(
+            'dbxref could not be created for %dbname:%dbxref, this DB does not exist.',
+            ['%dbname' => $db_name, '%dbxref' => $dbxref]);
         return FALSE;
       }
-      // T3 OLD INSERT
-      // $dbxref = chado_insert_record('dbxref', $values, [], $schema_name);
-      $db_id = $chado->select('1:db', 'db')
-        ->fields('db')
-        ->condition('name', $values['db_id']['name'])
-        ->execute()
-        ->fetchAssoc()['db_id'];
+
+      // Here we create the new dbxref for the specified new accession.
       $dbxref = $chado->insert('1:dbxref')->fields([
         'accession' => $values['accession'],
-        'db_id' => $db_id
+        'db_id' => $db->db_id
       ])->execute();
-
       if (!$dbxref) {
-        $errors['dbxref'] = t('
-            dbxref could not be created for db: %dbxref.', ['%dbxref' => $dbxref]);
+        $errors['dbxref'] = t(
+            'dbxref could not be created for %dbname:%dbxref.',
+            ['%dbname' => $db_name, '%dbxref' => $dbxref]);
         return FALSE;
       }
     }
-    if (is_array($dbxref)) {
+
+    if (is_object($dbxref)) {
+      $options['dbxref_id'] = $dbxref->dbxref_id;
+    }
+    elseif (is_array($dbxref)) {
       $options['dbxref_id'] = $dbxref['dbxref_id'];
     }
     else {
-      $options['dbxref_id'] = $dbxref->dbxref_id;
+      $options['dbxref_id'] = $dbxref;
     }
   }
 
@@ -291,6 +290,7 @@ function chado_validate_phylotree($val_type, &$options, &$errors, &$warnings, $s
     $result = $chado->query($sql, $args)->fetchObject();
     if ($result) {
       $errors['name'] = t("The tree name is in use by another tree. Please provide a different unique name for this tree.");
+      return FALSE;
     }
   }
 
