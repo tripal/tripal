@@ -199,21 +199,23 @@ class NewickImporter extends ChadoImporterBase {
     $warnings = [];
 
     // Validate DBXREF
-    // dpm($options);
-    if($options['dbxref'] != "null:local:null") {
-      // // Check whether the db exists first
+    if ($options['dbxref'] and ($options['dbxref'] != "null:local:null")) {
+      // The db in a dbxref must already exist, the accession can be new.
       $dbxref_parts = explode(':', $options['dbxref']);
       $db = $dbxref_parts[0];
-      // dpm($db);
+      if ((count($dbxref_parts) < 2) or (strlen($db) < 1) or (strlen($dbxref_parts[1]) < 1)) {
+        $form_state->setErrorByName('dbxref', "The dbxref must consist of a DB and an accession separated by a colon, specify a valid dbxref value.");
+        return;
+      }
       // Lookup
       $results = $chado->select('1:db', 'db')
         ->fields('db')
         ->condition('name', $db)
-        ->execute();
-      $results->allowRowCount = TRUE;
-      $count = $results->rowCount();
-      if ($count <= 0) {
-        $form_state->setError($form, "Could not find DB ($db) from the dbxref value, specify a valid dbxref value.");
+        ->execute()
+        ->fetchAll();
+      $count = count($results);
+      if ($count < 1) {
+        $form_state->setErrorByName('dbxref', "The DB \"$db\" in the dbxref value does not exist, specify a valid dbxref value.");
         return;
       }
     }
