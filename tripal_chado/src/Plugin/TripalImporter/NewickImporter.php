@@ -106,8 +106,6 @@ class NewickImporter extends ChadoImporterBase {
     $so_cv = chado_get_cv(['name' => 'sequence']);
     $cv_id = $so_cv->cv_id;
     if (!$so_cv) {
-      // drupal_set_message('The Sequence Ontolgoy does not appear to be imported.
-      //   Please import the Sequence Ontology before adding a tree.', 'error');
       \Drupal::messenger()->addError(t("The Sequence Ontolgoy does not appear to be imported.
          Please import the Sequence Ontology before adding a tree."));
     }
@@ -122,7 +120,6 @@ class NewickImporter extends ChadoImporterBase {
         tree. In this case, the word 'taxonomy' should be used."),
       '#required' => TRUE,
       '#default_value' => $leaf_type,
-      // '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/$cv_id",
       '#autocomplete_route_name' => 'tripal_chado.cvterm_autocomplete',
       '#autocomplete_route_parameters' => ['count' => 5, 'cv_id' => $cv_id]
     ];
@@ -220,11 +217,13 @@ class NewickImporter extends ChadoImporterBase {
       }
     }
 
+    // Verify that a file has been supplied.
     if ((!array_key_exists('tree_file', $options) or $options['tree_file'] == null) && $values['file_upload_existing'] <= 0) {
       $form_state->setErrorByName('file_upload_existing', t('No tree file was submitted, please upload a file or choose one if it exists'));
       return;
     }
-    
+
+    // Perform API validation.
     chado_validate_phylotree('insert', $options, $errors, $warnings, $chado->getSchemaName());
 
     // Now set form errors if any errors were detected.
@@ -240,7 +239,6 @@ class NewickImporter extends ChadoImporterBase {
     // Add any warnings if any were detected
     if (count($warnings) > 0) {
       foreach ($warnings as $field => $message) {
-        // drupal_set_message($message, 'warning');
         \Drupal::messenger()->addWarning(t("$message"));
       }
     }
@@ -252,7 +250,7 @@ class NewickImporter extends ChadoImporterBase {
   public function run() {
     $chado = $this->getChadoConnection();
     $arguments = $this->arguments['run_args'];
- 
+
     // TRIPAL 4 - The type option is from an autocomplete which seems to include (SO:*) part
     // Temporarily, remove this part
     $leaf_type = $arguments["leaf_type"];
