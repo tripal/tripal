@@ -386,11 +386,6 @@ function chado_get_tokens($base_table) {
  */
 function chado_replace_tokens($string, $record) {
 
-  // No processing needed if string is null.
-  if (!isset($string)) {
-    return $string;
-  }
-
   // Get the list of tokens.
   $tokens = chado_get_tokens($record->tablename);
 
@@ -411,7 +406,7 @@ function chado_replace_tokens($string, $record) {
         foreach ($location as $index) {
           $index = trim($index);
 
-          // if $var is an object then it is and expanded table.
+          // if $var is an object then it is an expanded table.
           // So, we'll reset $var to be this value and allow the
           // loop to continue to the next level.
           if (is_object($var) and property_exists($var, $index)) {
@@ -419,7 +414,7 @@ function chado_replace_tokens($string, $record) {
               $var = $var->$index;
             }
             else {
-              $value = $var->$index;
+              $value = $var->$index ?? '';
             }
           }
           else {
