@@ -221,6 +221,43 @@ class NewickImporterTest extends ChadoTestBrowserBase
     // print_r($row->c1);
     $this->assertGreaterThan(20, $count, "Should have created at least 20 phylonode records with a features being null.");    
 
+
+    // Let's check to see if one phylotree exists
+    $results = $chado->query('SELECT COUNT(*) as c1 FROM {1:phylotree}');
+    $count = 0;
+    foreach ($results as $row) {
+      $count = $row->c1;
+    }
+    $this->assertEquals(1, $count, "There should be one phylotree created");
+
+    // Get a phylotree_id for further testing
+    $results = $chado->query('SELECT phylotree_id FROM {1:phylotree} LIMIT 1');
+    $phylotree_id = NULL;
+    foreach ($results as $row) {
+      $phylotree_id = $results->phylotree_id;
+    }
+
+    // Let's try to cover more code for phylotree.api.php by testing chado_update_phylotree
+    $options = [
+      'job' => NULL,
+      'name' => 'New name',
+      'analysis_id' => 1,
+      'dbxref_id' => 'null:local:null',
+      'comment' => 'test comment',
+    ];
+    chado_update_phylotree($phylotree_id, $options, $schema_name);
+
+
+    // Let's try to cover more code for phylotree.api.php
+    // This will DELETE ALL TEST PHYLOTREES SO DO THIS LAST
+    // TO AVOID OTHER TESTS FAILING
+    $results = $chado->query('SELECT phylotree_id FROM {1:phylotree}');
+    foreach ($results as $row) {
+      $phylotree_id = $row->phylotree_id;
+      chado_delete_phylotree($phylotree_id, $schema_name);
+    }
+
+
     // Initialize a drupal user with the following permissions
     $account = $this->drupalCreateUser([
       // 'administer rules',

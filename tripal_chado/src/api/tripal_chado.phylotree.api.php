@@ -566,7 +566,7 @@ function chado_update_phylotree($phylotree_id, &$options, $schema_name = 'chado'
   if (array_key_exists('tree_file', $options) and $options['tree_file']) {
 
     // Remove any existing nodes
-    $chado->delete('phylonode')
+    $chado->delete('1:phylonode')
       ->condition('phylotree_id', $options['phylotree_id'])
       ->execute();
 
@@ -640,7 +640,7 @@ function chado_delete_phylotree($phylotree_id, $schema_name = 'chado') {
   $status = false;
   // RISH [8/27/2023] The below $num_deleted concept is taken from the Drupal Database API for 9.x
   // https://www.drupal.org/docs/drupal-apis/database-api/delete-queries
-  $num_deleted = $chado->delete('phylotree')
+  $num_deleted = $chado->delete('1:phylotree')
     ->condition('phylotree_id', $phylotree_id)
     ->execute();
   return TRUE;
