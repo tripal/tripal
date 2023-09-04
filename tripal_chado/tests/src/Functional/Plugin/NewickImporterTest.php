@@ -221,7 +221,7 @@ class NewickImporterTest extends ChadoTestBrowserBase
     // print_r($row->c1);
     $this->assertGreaterThan(20, $count, "Should have created at least 20 phylonode records with a features being null.");    
 
-
+    // Initialize a drupal user with the following permissions
     $account = $this->drupalCreateUser([
       // 'administer rules',
       'access administration pages',
@@ -238,11 +238,14 @@ class NewickImporterTest extends ChadoTestBrowserBase
       'view tripal content entities',
       'upload files'
     ]);
+    // Login the drupal user
     $this->drupalLogin($account);
 
+    // Check if the tripal loaders page is loadable / viewable
     $this->drupalGet('admin/tripal/loaders');
     $this->assertSession()->statusCodeEquals(200);
 
+    // Check if the newick tree loader form is viewable
     $this->drupalGet('admin/tripal/loaders/chado_newick_tree_loader');
     $this->assertSession()->statusCodeEquals(200);    
 
