@@ -101,7 +101,7 @@ abstract class ChadoImporterBase extends TripalImporterBase {
     $chado = \Drupal::service('tripal_chado.database');
 
     // Get the list of analyses.
-    $query = $chado->select('analysis', 'A');
+    $query = $chado->select('1:analysis', 'A');
     $query->fields('A', ['analysis_id', 'name']);
     $query->orderBy('A.name');
     $analyses = [];

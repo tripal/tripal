@@ -220,6 +220,37 @@ class NewickImporterTest extends ChadoTestBrowserBase
     }
     // print_r($row->c1);
     $this->assertGreaterThan(20, $count, "Should have created at least 20 phylonode records with a features being null.");    
+
+
+    $account = $this->drupalCreateUser([
+      // 'administer rules',
+      'access administration pages',
+      'administer tripal',
+      'administer users',
+      'administer permissions',
+      'access tripal content overview',
+      'allow tripal import',
+      'administer tripal content',
+      'admin tripal files',
+      'add tripal content entities',
+      'manage tripal jobs',
+      'use chado_newick_tree_loader importer',
+      'view tripal content entities',
+      'upload files'
+    ]);
+    $this->drupalLogin($account);
+
+    $this->drupalGet('admin/tripal/loaders');
+    $this->assertSession()->statusCodeEquals(200);
+
+    $this->drupalGet('admin/tripal/loaders/chado_newick_tree_loader');
+    $this->assertSession()->statusCodeEquals(200);    
+
+    // $this->drupalGet('admin/config/workflow/rules');
+    // $this->assertSession()->statusCodeEquals(200);
+
+    // Test that there is an empty reaction rule listing.
+    // $this->assertSession()->pageTextContains('There is no Reaction Rule yet.');
   }
 
 }
