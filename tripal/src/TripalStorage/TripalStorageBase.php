@@ -113,9 +113,14 @@ abstract class TripalStorageBase extends PluginBase implements TripalStorageInte
 
     // Index the types by their entity type, field type and key.
     foreach ($types as $index => $type) {
-      if (!is_object($type) OR !is_subclass_of($type, 'Drupal\tripal\TripalStorage\StoragePropertyTypeBase')) {
-        $this->logger->error('Type provided must be an object extending StoragePropertyTypeBase. Instead index @index was this: @type',
-            ['@index' => $index, '@type' => print_r($type, TRUE)]);
+      if (!is_object($type)) {
+        $this->logger->error('Type provided must be an object but instead index @index was a @type',
+            ['@index' => $index, '@type' => gettype($type)]);
+        return FALSE;
+      }
+      elseif(!is_subclass_of($type, 'Drupal\tripal\TripalStorage\StoragePropertyTypeBase')) {
+        $this->logger->error('Type provided must be an object extending StoragePropertyTypeBase. Instead index @index was of type: @type',
+            ['@index' => $index, '@type' => get_class($type)]);
         return FALSE;
       }
 
