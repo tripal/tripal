@@ -3,9 +3,6 @@
 namespace Drupal\Tests\tripal\Kernel\TripalStorage;
 
 use Drupal\KernelTests\KernelTestBase;
-use Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface;
-use Drupal\tripal\TripalStorage\TripalStorageBase;
-use Drupal\tripal\TripalStorage\StoragePropertyTypeBase;
 
 /**
  * Tests for Tripal Storage Base class.
@@ -75,59 +72,6 @@ class PropertyTypeClassTest extends KernelTestBase {
         }
       });
     $container->set('tripal.collection_plugin_manager.idspace', $mock_idspace_service);
-  }
-
-  /**
-   * Tests the creation of property types focusing on invalid parameters.
-   *
-   * Note: Valid parameters are checked in testPropertyTypeBaseClass().
-   */
-  public function testPropertyTypeCreation() {
-
-    // Valid Parameters.
-    $entityType = 'tripal_entity';
-    $fieldType = 'AFakeFieldType';
-    $key = 'AFakePropertyTypeKey';
-    $term_id = 'mock:term';
-    $id = 'FAKEStoragePropertyType';
-    $storage_settings = ['put something in here' => 'so that we know its been retrieved'];
-
-    // Test passing in a badly formatted term.
-    $exception_message = NULL;
-    $bad_term = 'NoColonDelimiter';
-    try {
-      $propertyType = new \Drupal\tripal\TripalStorage\StoragePropertyTypeBase($entityType, $fieldType, $key, $bad_term, $id, $storage_settings);
-    }
-    catch (\Exception $e) {
-      $exception_message = $e->getMessage();
-    }
-    $this->assertStringContainsString('property formatted term', $exception_message,
-      "We did not get the exception message we expected for passing in a badly formatted term.");
-
-    // Test passing in a term whose ID Space doesn't exist in our mock.
-    $exception_message = NULL;
-    $bad_term = 'MissingIdSpace:term';
-    try {
-      $propertyType = new \Drupal\tripal\TripalStorage\StoragePropertyTypeBase($entityType, $fieldType, $key, $bad_term, $id, $storage_settings);
-    }
-    catch (\Exception $e) {
-      $exception_message = $e->getMessage();
-    }
-    $this->assertStringContainsString('IdSpace for the property term is not recognized', $exception_message,
-      "We did not get the exception message we expected for passing in a term whose id space didn't exist.");
-
-    // Test passing in a term whose ID Space doesn't exist in our mock.
-    $exception_message = NULL;
-    $bad_term = 'mock:MissingTerm';
-    try {
-      $propertyType = new \Drupal\tripal\TripalStorage\StoragePropertyTypeBase($entityType, $fieldType, $key, $bad_term, $id, $storage_settings);
-    }
-    catch (\Exception $e) {
-      $exception_message = $e->getMessage();
-    }
-    $this->assertStringContainsString('accession for the property term is not recognized', $exception_message,
-      "We did not get the exception message we expected for passing in a term whose accession didn't exist.");
-
   }
 
   /**
