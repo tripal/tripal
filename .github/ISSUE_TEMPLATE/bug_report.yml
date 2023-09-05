@@ -1,0 +1,60 @@
+name: Bug Report
+description: Create a report to help us improve Tripal
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # BUG/ERROR report
+
+        ## System Information
+        All information is available in your site's administrator report area
+        (Administration Toolbar > Reports > Status Report)
+  - type: input
+    id: tripal_version
+    attributes:
+      label: Tripal Version
+  - type: input
+    id: drupal_version
+    attributes:
+      label: Drupal Version
+  - type: input
+    id: postgresql_version
+    attributes:
+      label: PostgreSQL Version
+  - type: input
+    id: php_version
+    attributes:
+      label: PHP Version
+  - type: markdown
+    attributes:
+      value: |
+        ## Issue Description
+        Please describe your issue here. Some information you might want to include:
+          - the page you're seeing the issue on
+          - what behavior you're experiencing versus what you expect
+          - really anything you think might best help us help you!
+        For required fields that do not make sense for this issue, please enter **n/a**.
+  - type: textarea
+    id: general_issue_description
+    attributes:
+      label: General Description
+      description: A general description of the issue
+    validations:
+      required: true
+  - type: textarea
+    id: steps_to_reproduce
+    attributes:
+      label: Steps to reproduce
+      description: What steps are necessary to recreate the bug/error?  Clear instructions here will make it easier for us to fix the problem!
+  - type: textarea
+    id: error_messages
+    attributes:
+      label: Error messages
+      description: Please include any error messages you find.
+      placeholder: Pasted text is automatically formatted cleanly, no need for backticks.
+      render: shell
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Upload screenshots into this field, and optionally provide a description of each.
