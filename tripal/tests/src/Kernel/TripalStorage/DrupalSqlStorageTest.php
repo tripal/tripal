@@ -91,11 +91,10 @@ class DrupalSqlStorageTest extends KernelTestBase {
     $configuration = [];
     $plugin_id = 'fakePluginName';
     $plugin_definition = [];
-    $logger = \Drupal::service('tripal.logger');;
+    $logger = \Drupal::service('tripal.logger');
     // Create a new instance of Drupal SQL Storage for testing purposes.
-    $drupalSqlStorage = new DrupalSqlStorage(
-      $configuration, $plugin_id, $plugin_definition, $logger
-    );
+    $manager = \Drupal::service('tripal.storage');
+    $drupalSqlStorage = $manager->getInstance(['plugin_id' => 'drupal_sql_storage']);
     $this->assertIsObject($drupalSqlStorage, "Unable to create Drupal SQL Storage object.");
 
     // All crud should be handled outside of TripalStorage...
