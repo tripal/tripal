@@ -231,7 +231,7 @@ function tripal_pub_importer_setup_page($action = 'new', $pub_import_id = NULL) 
         'parameters' => [],
         'quantity' => $limit,
       ];
-      $pager = theme_pager($pager);
+      $pager = theme_pager($pager) ?? '';
 
       // because this is an ajax callback, the theme_pager will set the URL to be
       // "system/ajax", so we need to reset that
