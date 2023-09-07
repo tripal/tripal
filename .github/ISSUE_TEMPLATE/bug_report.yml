@@ -46,8 +46,6 @@ body:
     attributes:
       label: Steps to reproduce
       description: What steps are necessary to recreate the bug/error?  Clear instructions here will make it easier for us to fix the problem!
-    validations:
-      required: true
   - type: textarea
     id: error_messages
     attributes:
@@ -55,12 +53,8 @@ body:
       description: Please include any error messages you find.
       placeholder: Pasted text is automatically formatted cleanly, no need for backticks.
       render: shell
-    validations:
-      required: true
   - type: textarea
     id: screenshots
     attributes:
       label: Screenshots
       description: Upload screenshots into this field, and optionally provide a description of each.
-    validations:
-      required: true
