@@ -16,7 +16,7 @@ use Drupal\Core\Ajax\ReplaceCommand;
  *    label = @Translation("Chado FASTA File Loader"),
  *    description = @Translation("Import a FASTA file into Chado"),
  *    file_types = {"fasta","txt","fa","aa","pep","nuc","faa","fna"},
- *    upload_description = @Translation("Please provide a plain text file following the <a href='https://en.wikipedia.org/wiki/FASTA_format'>FASTA format specification</a>."),
+ *    upload_description = @Translation("Please provide a plain text file following the <a target='_blank' href='https://en.wikipedia.org/wiki/FASTA_format'>FASTA format specification</a>."),
  *    upload_title = @Translation("FASTA File"),
  *    use_analysis = True,
  *    require_analysis = True,
