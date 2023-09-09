@@ -319,12 +319,6 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    */
   public function prepareFiles() {
 
-    // If no file is required then just indicate that all is good to go.
-    if ($this->plugin_definition['file_required'] == FALSE) {
-      $this->is_prepared = TRUE;
-      return;
-    }
-
     try {
       for ($i = 0; $i < count($this->arguments['files']); $i++) {
         if (!empty($this->arguments['files'][$i]['file_remote'])) {
@@ -391,6 +385,13 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
     catch (\Exception $e) {
       throw new \Exception('Cannot prepare the importer: ' . $e->getMessage());
     }
+
+
+    // If we get here and no exception has been thrown then either
+    // 1) files were added but none needed to be prepared.
+    // 2) files were not added (check for files being required happens elsewhere).
+    $this->is_prepared = TRUE;
+
   }
 
   /**
