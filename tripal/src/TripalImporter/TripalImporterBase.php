@@ -323,7 +323,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
       for ($i = 0; $i < count($this->arguments['files']); $i++) {
         if (!empty($this->arguments['files'][$i]['file_remote'])) {
           $file_remote = $this->arguments['files'][$i]['file_remote'];
-          $this->logMessage('Download file: !file_remote...', ['!file_remote' => $file_remote]);
+          $this->logger->notice('Download file: !file_remote...', ['!file_remote' => $file_remote]);
 
 
           // If this file is compressed then keepthe .gz extension so we can
@@ -333,8 +333,8 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
             $ext = '.gz';
           }
           // Create a temporary file.
-          $temp = tempnam("temporary://", 'import_') . $ext;
-          $this->logMessage("Saving as: !file", ['!file' => $temp]);
+          $temp = \Drupal::service('file_system')->tempnam("temporary://", 'import_') . $ext;
+          $this->logger->notice("Saving as: !file", ['!file' => $temp]);
 
           $url_fh = fopen($file_remote, "r");
           $tmp_fh = fopen($temp, "w");
@@ -355,7 +355,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
         // Is this file compressed?  If so, then uncompress it
         $matches = [];
         if (preg_match('/^(.*?)\.gz$/', $this->arguments['files'][$i]['file_path'], $matches)) {
-          $this->logMessage("Uncompressing: !file", ['!file' => $this->arguments['files'][$i]['file_path']]);
+          $this->logger->notice("Uncompressing: !file", ['!file' => $this->arguments['files'][$i]['file_path']]);
           $buffer_size = 4096;
           $new_file_path = $matches[1];
           $gzfile = gzopen($this->arguments['files'][$i]['file_path'], 'rb');
@@ -406,7 +406,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
       for ($i = 0; $i < count($this->arguments['files']); $i++) {
         if (!empty($this->arguments['files'][$i]['file_remote']) and
           file_exists($this->arguments['files'][$i]['file_path'])) {
-          $this->logMessage('Removing downloaded file...');
+          $this->logger->notice('Removing downloaded file...');
           unlink($this->arguments['files'][$i]['file_path']);
           $this->is_prepared = FALSE;
         }
