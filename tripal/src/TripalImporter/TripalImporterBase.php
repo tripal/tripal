@@ -468,10 +468,6 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
       $percent = ($this->num_handled / $this->total_items) * 100;
       $ipercent = (int) $percent;
     }
-    else {
-      $percent = 0;
-      $ipercent = 0;
-    }
 
     // If we've reached our interval then print update info.
     if ($ipercent > 0 and $ipercent != $this->reported and $ipercent % $this->interval == 0) {
