@@ -535,8 +535,8 @@ class GFF3Importer extends ChadoImporterBase {
 
     // check the regular expression to make sure it is valid
     set_error_handler(function () {}, E_WARNING);
-    $result_re = preg_match("/" . $re_mrna . "/", NULL);
-    $result = preg_replace("/" . $re_mrna . "/", $re_protein, NULL);
+    $result_re = preg_match("/" . $re_mrna . "/", "");
+    $result = preg_replace("/" . $re_mrna . "/", $re_protein, "");
     restore_error_handler();
     if ($result_re === FALSE) {
       \Drupal::messenger()->addError('Invalid regular expression.');
