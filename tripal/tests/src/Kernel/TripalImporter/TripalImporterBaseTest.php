@@ -463,13 +463,63 @@ class TripalImporterBaseTest extends KernelTestBase {
    */
   public function testTripalImporterBaseFiles() {
 
-    // Mock Tripal Importer Plugin.
+    // CASE --- Valid
+    // -- plain text remote file, files not required.
+    $test_file_path = 'https://raw.githubusercontent.com/tripal/tripal/4.x/LICENSE.txt';
+    $expected_args = [
+      'run_args' => ['test' => 'single run arg'],
+      'files' => [['file_remote' => $test_file_path]]
+    ];
+    $plugin_defn = $this->plugin_definition;
     $configuration = [];
     $plugin_id = 'fakeImporterName';
     $importer = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
-      [$configuration, $plugin_id, $this->plugin_definition]
+      [$configuration, $plugin_id, $plugin_defn]
     );
+    $run_args = [];
+    $file_details = ['file_remote' => $test_file_path];
+    $import_id = $importer->create($run_args, $file_details);
+
+    // Now try to prepare the file.
+    $importer->prepareFiles();
+    $retrieved_args = $importer->getArguments();
+    $this->assertIsArray($retrieved_args,
+      "We could not retrieve arguements after preparing files");
+    $this->assertArrayHasKey('file_path', $retrieved_args['files'][0],
+      "The file_path should have been set during prepareFiles().");
+
+    // Now use cleanFile() to remove any temporary files.
+    $importer->cleanFile();
+    $this->assertFileDoesNotExist($retrieved_args['files'][0]['file_path'],
+      "The temporary file created by downloading the remote file should no longer exist.");
+
+    // CASE --- Valid
+    // -- gzipped remote file, files not required.
+    $test_file_path = __DIR__ . '/../../../fixtures/importer_whitespace_test_file.txt.gz';
+    $plugin_defn = $this->plugin_definition;
+    $configuration = [];
+    $plugin_id = 'fakeImporterName';
+    $importer = $this->getMockForAbstractClass(
+      '\Drupal\tripal\TripalImporter\TripalImporterBase',
+      [$configuration, $plugin_id, $plugin_defn]
+    );
+    $run_args = [];
+    $file_details = ['file_remote' => $test_file_path];
+    $import_id = $importer->create($run_args, $file_details);
+
+    // Now try to prepare the file.
+    $importer->prepareFiles();
+    $retrieved_args = $importer->getArguments();
+    $this->assertIsArray($retrieved_args,
+      "We could not retrieve arguements after preparing files");
+    $this->assertArrayHasKey('file_path', $retrieved_args['files'][0],
+      "The file_path should have been set during prepareFiles().");
+
+    // Now use cleanFile() to remove any temporary files.
+    $importer->cleanFile();
+    $this->assertFileDoesNotExist($retrieved_args['files'][0]['file_path'],
+      "The temporary file created by downloading the remote file should no longer exist.");
   }
 
   /**
