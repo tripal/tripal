@@ -484,6 +484,22 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
       }
       $this->reported = $ipercent;
     }
+
+    // If we're done then indicate so.
+    if ($this->num_handled >= $this->total_items) {
+      $memory = number_format(memory_get_usage());
+      $spercent = sprintf("%.2f", 100);
+      $this->logger->notice(
+        t("Percent complete: " . $spercent . " %. Memory: " . $memory . " bytes.")
+         . "\r"
+      );
+
+      // If we have a job the update the job progress too.
+      if ($this->job) {
+        $this->job->setProgress(100);
+      }
+      $this->reported = 100;
+    }
   }
 
   /**
