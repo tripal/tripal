@@ -160,7 +160,8 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    *   -file_remote: provides the remote URL for the file.
    *   This argument is optional if the loader does not use the built-in
    *   file loader.
-   *
+   * @return int
+   *   Returns the import_id.
    */
   public function create($run_args, $file_details = []) {
 
@@ -245,6 +246,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
         ->execute();
 
       $this->import_id = $import_id;
+      return $import_id;
     }
     catch (\Exception $e) {
       throw new \Exception('Cannot create importer: ' . $e->getMessage());
