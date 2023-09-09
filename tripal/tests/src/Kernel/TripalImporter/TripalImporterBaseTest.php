@@ -60,7 +60,7 @@ class TripalImporterBaseTest extends KernelTestBase {
     $this->installSchema('file', ['file_usage']);
 
     // Ensure we have our tripal import tables.
-    $this->installSchema('tripal', ['tripal_import']);
+    $this->installSchema('tripal', ['tripal_import', 'tripal_jobs']);
 
     // Create and log-in a user.
     $this->setUpCurrentUser();
@@ -446,13 +446,48 @@ class TripalImporterBaseTest extends KernelTestBase {
    */
   public function testTripalImporterBaseJobs() {
 
-    // Mock Tripal Importer Plugin.
+    // CASE --- Valid
+    // -- Empty run args + no file.
+    $expected_args = ['run_args' => [], 'files' => []];
+    $plugin_defn = $this->plugin_definition;
+    $configuration = [];
+    $plugin_id = 'fakeImporterName';
+    $importer = $this->getMockForAbstractClass(
+      '\Drupal\tripal\TripalImporter\TripalImporterBase',
+      [$configuration, $plugin_id, $plugin_defn]
+    );
+    $run_args = [];
+    $file_details = [];
+    $import_id = $importer->create($run_args, $file_details);
+    $job_id = $importer->submitJob();
+    $this->assertIsNumeric($job_id,
+      "We expected to have a tripal job_id returned from submitJob().");
+
+    $job = \Drupal::service('tripal.job');
+    $job->load($job_id);
+    $importer->setJob($job);
+
+    // CASE --- Exception Expected
+    // submit job when import not yet created.
     $configuration = [];
     $plugin_id = 'fakeImporterName';
     $importer = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
       [$configuration, $plugin_id, $this->plugin_definition]
     );
+
+    $exception_msg = NULL;
+    try{
+      $importer->submitJob();
+    }
+    catch (\Exception $e) {
+      $exception_msg = $e->getMessage();
+    }
+    $this->assertNotNull($exception_msg,
+      "We did not recieve an exception when trying to submit a job when import_id not set.");
+    $this->assertStringContainsString('without an import record', $exception_msg,
+      "We did not get the exception we expected when when import_id not set.");
+
   }
 
   /**
@@ -530,12 +565,78 @@ class TripalImporterBaseTest extends KernelTestBase {
    */
   public function testTripalImporterBaseProgress() {
 
-    // Mock Tripal Importer Plugin.
+    // We need to mock the logger to test the progress reporting.
+    $container = \Drupal::getContainer();
+    $mock_logger = $this->getMockBuilder(\Drupal\tripal\Services\TripalLogger::class)
+      ->onlyMethods(['notice'])
+      ->getMock();
+    $mock_logger->method('notice')
+      ->willReturnCallback(function($message, $context, $options) {
+          print str_replace(array_keys($context), $context, $message);
+          return NULL;
+        });
+    $container->set('tripal.logger', $mock_logger);
+
     $configuration = [];
     $plugin_id = 'fakeImporterName';
     $importer = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
       [$configuration, $plugin_id, $this->plugin_definition]
     );
+
+    // Note: These methods are protected and not called elsewhere in the base
+    // class. Therefore, in order to test them here we need to use closures.
+    $that = $this;
+    $assertClosure = function ()  use ($that){
+
+      // Set the total and interval.
+      $this->setTotalItems(100);
+      $this->setInterval(40);
+
+      // Let's start by setting the number of items handled to 0.
+      // At this point we expect a message to be logged saying 0% complete.
+      ob_start();
+      $this->setItemsHandled(0);
+      $printed_output = ob_get_clean();
+      $that->assertStringContainsString('Percent complete: 0%', $printed_output,
+        "We just started so expect to see 0% printed to the log");
+
+      // Now we start by handling 20 items.
+      // At this point we do not expect any logging as we did not reach
+      // the interval to be printed at.
+      $this->addItemsHandled(20);
+
+      // handle another 20 items.
+      // At this point we should see a logged message saying we are 40% complete.
+      ob_start();
+      $this->addItemsHandled(20);
+      $printed_output = ob_get_clean();
+      $that->assertStringContainsString('40.00 %', $printed_output,
+        "We've added a total of 40/100 items so expect to see 40% printed to the log");
+
+      // handle another 20 items.
+      // At this point we do not expect any logging as we did not reach
+      // the interval to be printed at.
+      $this->addItemsHandled(20);
+
+      // handle another 20 items.
+      // At this point we should see a logged message saying we are 80% complete.
+      ob_start();
+      $this->addItemsHandled(20);
+      $printed_output = ob_get_clean();
+      $that->assertStringContainsString('Percent complete: 80.00 %', $printed_output,
+        "We've added a total of 80/100 items so expect to see 80% printed to the log");
+
+      // handle another 20 items.
+      // At this point we should see a logged message saying we are 100% complete
+      // even though this is not the typical interval.
+      ob_start();
+      $this->addItemsHandled(20);
+      $printed_output = ob_get_clean();
+      $that->assertStringContainsString('Percent complete: 100.00 %', $printed_output,
+        "We've added a total of 100/100 items so expect to see 100% printed to the log");
+    };
+    $doAssertions = $assertClosure->bindTo($importer, get_class($importer));
+    $doAssertions($this);
   }
 }
