@@ -1107,7 +1107,7 @@ function tripal_bulk_loader_progress_bar($current = 0, $total = 100, $size = 50)
   // First iteration
   if ($current == 0) {
     $new_bar = TRUE;
-    fputs(STDOUT, "Progress:\n");
+    echo "Progress:\n";
   }
 
   // Percentage round off for a more clean, consistent look
