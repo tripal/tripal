@@ -46,6 +46,8 @@ class ChadoContactWidgetDefault extends ChadoWidgetBase {
       $type_text = $contact->type ? ' (' . $contact->type . ')' : '';
       $contacts[$contact->contact_id] = $contact->name . $type_text;
     }
+    // Move our renamed 'Unknown' contact to its alphabetical position.
+    natcasesort($contacts);
 
     $item_vals = $items[$delta]->getValue();
     $record_id = $item_vals['record_id'] ?? 0;
