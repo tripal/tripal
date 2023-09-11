@@ -265,7 +265,7 @@ content_types:
        
     -   label: Array Design
         term: EFO:0000269
-        help_text: Use the array design page to describe the systematic arrangement of similar objects, usually in rows and columns, used by intstrument to perform an assay.
+        help_text: Use the array design page to describe the systematic arrangement of similar objects, usually in rows and columns, used by an instrument to perform an assay.
         category: Expression
         id: array_design
         title_format: "[array_design_name]"
