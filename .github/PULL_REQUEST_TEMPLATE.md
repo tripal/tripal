@@ -14,7 +14,7 @@
 ### Issue #
 
 <!--- Enter the Tripal version this PR applies to (i.e. either 3 or 4 ;-p) --->
-## Tripal Version:
+### Tripal Version: 
 
 ## Description
 <!--- Describe your changes in detail -->
