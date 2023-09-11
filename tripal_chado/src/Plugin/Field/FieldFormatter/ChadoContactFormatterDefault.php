@@ -28,8 +28,13 @@ class ChadoContactFormatterDefault extends ChadoFormatterBase {
     $elements = [];
 
     foreach($items as $delta => $item) {
+      $contact_name = $item->get('contact_name')->getString();
+      // Change the non-user-friendly 'null' contact, which is spedified by chado.
+      if ($contact_name == 'null') {
+        $contact_name = 'Unknown';
+      }
       $elements[$delta] = [
-        "#markup" => $item->get('contact_name')->getString()
+        "#markup" => $contact_name,
       ];
     }
 

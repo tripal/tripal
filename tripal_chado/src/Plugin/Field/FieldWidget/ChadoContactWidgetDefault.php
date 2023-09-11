@@ -39,6 +39,10 @@ class ChadoContactWidgetDefault extends ChadoWidgetBase {
     $results = $chado->query($sql, []);
 
     while ($contact = $results->fetchObject()) {
+      // Change the non-user-friendly 'null' contact, which is spedified by chado.
+      if ($contact->name == 'null') {
+        $contact->name = 'Unknown';
+      }
       $type_text = $contact->type ? ' (' . $contact->type . ')' : '';
       $contacts[$contact->contact_id] = $contact->name . $type_text;
     }
