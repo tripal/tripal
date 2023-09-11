@@ -149,7 +149,12 @@
  *
  * @ingroup tripal_chado_variables_api
  */
-function chado_generate_var($table, $values, $base_options = [], $schema_name = 'chado') {
+function chado_generate_var($table, $values, $base_options = [], $schema_name = NULL) {
+  // Set default schema.
+  if (!$schema_name) {
+    $schema_name = \Drupal::config('tripal_chado.settings')->get('default_schema');
+  }
+
   $all = new stdClass();
 
   $return_array = 0;
@@ -164,6 +169,7 @@ function chado_generate_var($table, $values, $base_options = [], $schema_name = 
   if (array_key_exists('pager', $base_options)) {
     $pager = $base_options['pager'];
   }
+
   // get description for the current table-------------------------------------
   $table_desc = chado_get_schema($table, $schema_name);
   if (!$table_desc or count($table_desc) == 0) {
@@ -598,7 +604,12 @@ function chado_generate_var($table, $values, $base_options = [], $schema_name = 
  *
  * @ingroup tripal_chado_variables_api
  */
-function chado_expand_var($object, $type, $to_expand, $table_options = [], $schema_name = 'chado') {
+function chado_expand_var($object, $type, $to_expand, $table_options = [], $schema_name = NULL) {
+
+  // Set default schema.
+  if (!$schema_name) {
+    $schema_name = \Drupal::config('tripal_chado.settings')->get('default_schema');
+  }
 
   // Make sure we have a value.
   if (!$object) {

@@ -80,32 +80,12 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
   }
 
   /**
-   * Returns the chado cvterm_id for the term with the given ID space + accession.
-   * This is completely independant of Tripal terms.
-   */
-  protected function getCvtermID($idspace, $accession) {
-
-    $connection = $this->getTestSchema();
-
-    $query = $connection->select('1:cvterm', 'cvt');
-    $query->fields('cvt', ['cvterm_id']);
-    $query->join('1:dbxref', 'dbx', 'cvt.dbxref_id = dbx.dbxref_id');
-    $query->join('1:db', 'db', 'db.db_id = dbx.db_id');
-    $query->condition('db.name', $idspace, '=');
-    $query->condition('dbx.accession', $accession, '=');
-    $result = $query->execute();
-
-    return $result->fetchField();
-
-  }
-
-  /**
    * Creates an entity pre-loaded with the given genus and species.
    *
    * This function creates the Organism content type, adds all of the default
    * fields used by Chado for an organism (including the controlled vocabulary
    * terms for the field) and then creates an organism entity. It uses
-   * `bio_data_1` as the entity type ID.
+   * `organism` as the entity type ID.
    *
    * @param string $genus
    *   The genus name
@@ -125,12 +105,12 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
       'termIdSpace' => 'OBI',
       'termAccession' => '0100026',
       'category' => 'General',
-      'name' => 'bio_data_1',
+      'id' => 'organism',
       'help_text' => 'A material entity that is an individual living system, ' .
-      'such as animal, plant, bacteria or virus, that is capable of replicating ' .
-      'or reproducing, growth and maintenance in the right environment. An ' .
-      'organism may be unicellular or made up, like humans, of many billions ' .
-      'of cells divided into specialized tissues and organs.',
+        'such as animal, plant, bacteria or virus, that is capable of replicating ' .
+        'or reproducing, growth and maintenance in the right environment. An ' .
+        'organism may be unicellular or made up, like humans, of many billions ' .
+        'of cells divided into specialized tissues and organs.',
     ]);
 
     // Create the terms that are needed for this field.
@@ -201,8 +181,8 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
     // We need these because the content type won't save properly. Technically,
     // we only need the required fields, but to mimic reality we'll add them
     // all.
-    $this->createTripalField('bio_data_1', [
-      'field_name' => 'bio_data_1_taxrank_0000005',
+    $this->createTripalField('organism', [
+      'field_name' => 'organism_taxrank_0000005',
       'field_type' => 'chado_string_type',
       'term' => $genus_term,
       'is_required' => TRUE,
@@ -213,8 +193,8 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
       ],
     ]);
 
-    $this->createTripalField('bio_data_1', [
-      'field_name' => 'bio_data_1_taxrank_0000006',
+    $this->createTripalField('organism', [
+      'field_name' => 'organism_taxrank_0000006',
       'field_type' => 'chado_string_type',
       'term' => $species_term,
       'is_required' => TRUE,
@@ -225,8 +205,8 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
       ],
     ]);
 
-    $this->createTripalField('bio_data_1', [
-      'field_name' => 'bio_data_1_taxrank_0000045',
+    $this->createTripalField('organism', [
+      'field_name' => 'organism_taxrank_0000045',
       'field_type' => 'chado_string_type',
       'term' => $infraspecies_term,
       'is_required' => FALSE,
@@ -237,8 +217,8 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
       ],
     ]);
 
-    $this->createTripalField('bio_data_1', [
-      'field_name' => 'bio_data_1_schema_description',
+    $this->createTripalField('organism', [
+      'field_name' => 'organism_schema_description',
       'field_type' => 'chado_text_type',
       'term' => $description_term,
       'is_required' => FALSE,
@@ -249,8 +229,8 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
       ],
     ]);
 
-    $this->createTripalField('bio_data_1', [
-      'field_name' => 'bio_data_1_local_abbreviation',
+    $this->createTripalField('organism', [
+      'field_name' => 'organism_local_abbreviation',
       'field_type' => 'chado_string_type',
       'term' => $abbreviation_term,
       'is_required' => FALSE,
@@ -261,8 +241,8 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
       ],
     ]);
 
-    $this->createTripalField('bio_data_1', [
-      'field_name' => 'bio_data_1_ncbitaxon_common_name',
+    $this->createTripalField('organism', [
+      'field_name' => 'organism_ncbitaxon_common_name',
       'field_type' => 'chado_string_type',
       'term' => $common_name_term,
       'is_required' => FALSE,
@@ -280,23 +260,23 @@ abstract class ChadoTestBrowserBase extends TripalTestBrowserBase {
      */
     $entity = $this->createTripalContent([
       'title' => $genus . '_' . $species,
-      'type' => 'bio_data_1',
+      'type' => 'organism',
       'user_id' => 0,
       'status' => TRUE,
     ]);
 
 
 //     // Make sure that the entity has all of the fields.
-//     $this->assertTrue($entity->hasField('bio_data_1_taxrank_0000005'), "The organism entity is missing the bio_data_1_taxrank_0000005 field");
-//     $this->assertTrue($entity->hasField('bio_data_1_taxrank_0000006'), "The organism entity is missing the bio_data_1_taxrank_0000006 field");
-//     $this->assertTrue($entity->hasField('bio_data_1_taxrank_0000045'), "The organism entity is missing the bio_data_1_taxrank_0000045 field");
-//     $this->assertTrue($entity->hasField('bio_data_1_local_abbreviation'), "The organism entity is missing the bio_data_1_local_abbreviation field");
-//     $this->assertTrue($entity->hasField('bio_data_1_ncbitaxon_common_name'), "The organism entity is missing the bio_data_1_ncbitaxon_common_name field");
-//     $this->assertTrue($entity->hasField('bio_data_1_schema_description'), "The organism entity is missing the bio_data_1_schema_description field");
+//     $this->assertTrue($entity->hasField('organism_taxrank_0000005'), "The organism entity is missing the organism_taxrank_0000005 field");
+//     $this->assertTrue($entity->hasField('organism_taxrank_0000006'), "The organism entity is missing the organism_taxrank_0000006 field");
+//     $this->assertTrue($entity->hasField('organism_taxrank_0000045'), "The organism entity is missing the organism_taxrank_0000045 field");
+//     $this->assertTrue($entity->hasField('organism_local_abbreviation'), "The organism entity is missing the organism_local_abbreviation field");
+//     $this->assertTrue($entity->hasField('organism_ncbitaxon_common_name'), "The organism entity is missing the organism_ncbitaxon_common_name field");
+//     $this->assertTrue($entity->hasField('organism_schema_description'), "The organism entity is missing the organism_schema_description field");
 
 //     // Set field property values.
-//     $entity->bio_data_1_taxrank_0000005->value =  $genus;
-//     $entity->bio_data_1_taxrank_0000006->value =  $species;
+//     $entity->organism_taxrank_0000005->value =  $genus;
+//     $entity->organism_taxrank_0000006->value =  $species;
 
 //     // Save the entity.
 //     $entity->enforceIsNew();

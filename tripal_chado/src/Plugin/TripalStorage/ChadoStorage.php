@@ -2,11 +2,14 @@
 
 namespace Drupal\tripal_chado\Plugin\TripalStorage;
 
-use Drupal\Core\Plugin\PluginBase;
+use Drupal\tripal\TripalStorage\TripalStorageBase;
 use Drupal\tripal\TripalStorage\Interfaces\TripalStorageInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Validator\ConstraintViolation;
 
-
+use Drupal\tripal\Services\TripalLogger;
+use Drupal\tripal_chado\Database\ChadoConnection;
+use Drupal\tripal_chado\Services\ChadoFieldDebugger;
 
 /**
  * Chado implementation of the TripalStorageInterface.
@@ -17,7 +20,7 @@ use Symfony\Component\Validator\ConstraintViolation;
  *   description = @Translation("Interfaces with GMOD Chado for field values."),
  * )
  */
-class ChadoStorage extends PluginBase implements TripalStorageInterface {
+class ChadoStorage extends TripalStorageBase implements TripalStorageInterface {
 
   /**
    * An associative array that contains all of the property types that
@@ -49,44 +52,85 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
   protected $id_mapping = [];
 
   /**
-   * Retrieve a Chado database connection.
+   * The database connection for querying Chado.
+   *
+   * @var Drupal\tripal_chado\Database\ChadoConnection
    */
-  protected function getChadoConnection() {
-    $chado = \Drupal::service('tripal_chado.database');
-    $chado->useTripalDbxSchemaFor(get_class());
-    return $chado;
+  protected $connection;
+
+  /**
+   * A service to provide debugging for fields to developers.
+   *
+   * @ var Drupal\tripal_chado\Services\ChadoFieldDebugger
+   */
+  protected $field_debugger;
+
+  /**
+   * Implements ContainerFactoryPluginInterface->create().
+   *
+   * Since we have implemented the ContainerFactoryPluginInterface this static function
+   * will be called behind the scenes when a Plugin Manager uses createInstance(). Specifically
+   * this method is used to determine the parameters to pass to the contructor.
+   *
+   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   * @param array $configuration
+   * @param string $plugin_id
+   * @param mixed $plugin_definition
+   *
+   * @return static
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('tripal.logger'),
+      $container->get('tripal_chado.database'),
+      $container->get('tripal_chado.field_debugger')
+    );
+  }
+
+  /**
+   * Implements __contruct().
+   *
+   * Since we have implemented the ContainerFactoryPluginInterface, the constructor
+   * will be passed additional parameters added by the create() function. This allows
+   * our plugin to use dependency injection without our plugin manager service needing
+   * to worry about it.
+   *
+   * @param array $configuration
+   * @param string $plugin_id
+   * @param mixed $plugin_definition
+   * @param Drupal\tripal\Services\TripalLogger $logger
+   * @param Drupal\tripal_chado\Database\ChadoConnection $connection
+   */
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, TripalLogger $logger, ChadoConnection $connection, ChadoFieldDebugger $field_debugger) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $logger);
+
+    $this->connection = $connection;
+    $this->field_debugger = $field_debugger;
   }
 
 	/**
 	 * @{inheritdoc}
 	 */
-  public function addTypes($types) {
-    $logger = \Drupal::service('tripal.logger');
+  public function addTypes(string $field_name, array $types) {
 
     // Index the types by their entity type, field type and key.
     foreach ($types as $index => $type) {
       if (!is_object($type) OR !is_subclass_of($type, 'Drupal\tripal\TripalStorage\StoragePropertyTypeBase')) {
-        $logger->error('Type provided must be an object extending StoragePropertyTypeBase. Instead index @index was this: @type',
+        $this->logger->error('Type provided must be an object extending StoragePropertyTypeBase. Instead index @index was this: @type',
             ['@index' => $index, '@type' => print_r($type, TRUE)]);
         return FALSE;
       }
 
-      $field_name = $type->getFieldType();
-      $entity_type = $type->getEntityType();
       $key = $type->getKey();
 
-      if (!array_key_exists($entity_type, $this->property_types)) {
-        $this->property_types[$entity_type] = [];
+      if (!array_key_exists($field_name, $this->property_types)) {
+        $this->property_types[$field_name] = [];
       }
-      if (!array_key_exists($field_name, $this->property_types[$entity_type])) {
-        $this->property_types[$entity_type][$field_name] = [];
-      }
-      if (array_key_exists($key, $this->property_types[$entity_type])) {
-        $logger->error('Cannot add a property type, "@prop", as it already exists',
-            ['@prop' => $entity_type . '.' . $field_name . '.' . $key]);
-        return FALSE;
-      }
-      $this->property_types[$entity_type][$field_name][$key] = $type;
+      $this->property_types[$field_name][$key] = $type;
+
     }
   }
 
@@ -94,33 +138,54 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    * @{inheritdoc}
    */
   public function getTypes() {
-    $types = [];
-    foreach ($this->property_types as $field_types) {
-      foreach ($field_types as $keys) {
-        foreach ($keys as $type) {
-          $types[] = $type;
-        }
+    return $this->property_types;
+  }
+
+  /**
+   * @{inheritdoc}
+   */
+  public function getPropertyType(string $field_name, string $key) {
+
+    if (array_key_exists($field_name, $this->property_types)) {
+      if (array_key_exists($key, $this->property_types[$field_name])) {
+        return $this->property_types[$field_name][$key];
       }
     }
-    return $types;
+
+    return NULL;
   }
 
   /**
 	 * @{inheritdoc}
 	 */
-  public function removeTypes($types) {
+  public function removeTypes(string $field_name, array $types) {
 
     foreach ($types as $type) {
-      $entity_type = $type->getEntityType();
-      $field_type = $type->getFieldType();
       $key = $type->getKey();
-      if (array_key_exists($entity_type, $this->property_types)) {
-        if (array_key_exists($field_type, $this->property_types[$entity_type])) {
-          if (array_key_exists($key, $this->property_types[$entity_type])) {
-            unset($this->property_types[$entity_type][$field_type][$key]);
-          }
+
+      if (array_key_exists($field_name, $this->property_types)) {
+        if (array_key_exists($key, $this->property_types[$field_name])) {
+          unset($this->property_types[$field_name][$key]);
         }
       }
+
+    }
+  }
+
+  /**
+   * @{inheritdoc}
+   */
+  public function addFieldDefinition(string $field_name, object $field_definition) {
+    parent::addFieldDefinition($field_name, $field_definition);
+
+    // Now check if the field debugger should be enabled for this particular field.
+    $settings = $field_definition->getSettings();
+    if (array_key_exists('debug', $settings) AND $settings['debug']) {
+      $this->field_debugger->addFieldToDebugger($field_name);
+      $this->logger->notice('Debugging has been enabled for :name field.',
+        [':name' => $field_name],
+        ['drupal_set_message' => TRUE, 'logger' => FALSE]
+      );
     }
   }
 
@@ -135,8 +200,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    */
   private function insertChadoRecord(&$records, $chado_table, $delta, $record) {
 
-    $chado = $this->getChadoConnection();
-    $schema = $chado->schema();
+    $schema = $this->connection->schema();
     $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
     $pkey = $table_def['primary key'];
 
@@ -155,6 +219,9 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     // @debug print "Table: $chado_table; Record: " . print_r($record, TRUE);
     $insert = $chado->insert('1:' . $chado_table);
     $insert->fields($fields);
+
+    $this->field_debugger->reportQuery($insert, "Insert Query for $chado_table ($delta)");
+
     $record_id = $insert->execute();
 
     if (!$record_id) {
@@ -163,7 +230,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     }
 
     // Update the record array to include the record id.
-    $records[$chado_table][$delta]['conditions'][$pkey] = $record_id;
+    $records[$chado_table][$delta]['conditions'][$pkey]['value'] = $record_id;
     return $record_id;
   }
 
@@ -171,15 +238,17 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
 	 * @{inheritdoc}
 	 */
   public function insertValues(&$values) : bool {
-    $chado = $this->getChadoConnection();
-    $logger = \Drupal::service('tripal.logger');
-    $schema = $chado->schema();
+
+    $schema = $this->connection->schema();
+
+    $this->field_debugger->printHeader('Insert');
+    $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::insertValues');
 
     $build = $this->buildChadoRecords($values, TRUE);
     // @debug print_r($build);
     $records = $build['records'];
 
-    $transaction_chado = $chado->startTransaction();
+    $transaction_chado = $this->connection->startTransaction();
     try {
 
       // First: Insert the base table records.
@@ -250,7 +319,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
   private function hasValidConditions($record) {
     $num_conditions = 0;
     foreach ($record['conditions'] as $chado_column => $cond_value) {
-      if (!empty($cond_value)) {
+      if (!empty($cond_value['value'])) {
         $num_conditions++;
       }
     }
@@ -289,7 +358,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    * @throws \Exception
    */
   private function updateChadoRecord(&$records, $chado_table, $delta, $record) {
-    $chado = $this->getChadoConnection();
 
     // Don't update if we don't have any conditions set.
     if (!$this->hasValidConditions($record)) {
@@ -297,11 +365,14 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
         ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
     }
 
-    $update = $chado->update('1:'.$chado_table);
+    $update = $this->connection->update('1:'.$chado_table);
     $update->fields($record['fields']);
     foreach ($record['conditions'] as $chado_column => $cond_value) {
-      $update->condition($chado_column, $cond_value);
+      $update->condition($chado_column, $cond_value['value']);
     }
+
+    $this->field_debugger->reportQuery($update, "Update Query for $chado_table ($delta). Note: aguements may only include the conditional ones, see Drupal Issue #2005626.");
+
     $rows_affected = $update->execute();
     if ($rows_affected == 0) {
       throw new \Exception($this->t('Failed to update record in the Chado "@table" table. Record: @record',
@@ -318,13 +389,15 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    * @{inheritdoc}
    */
   public function updateValues(&$values) : bool {
-    $chado = $this->getChadoConnection();
-    $logger = \Drupal::service('tripal.logger');
+
+    $this->field_debugger->printHeader('Update');
+    $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::updateValues');
 
     $build = $this->buildChadoRecords($values, TRUE);
     $records = $build['records'];
+
     $base_tables = $build['base_tables'];
-    $transaction_chado = $chado->startTransaction();
+    $transaction_chado = $this->connection->startTransaction();
     try {
 
       // Handle base table records first.
@@ -399,7 +472,6 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    * @throws \Exception
    */
   public function selectChadoRecord(&$records, $base_tables, $chado_table, $delta, $record) {
-    $chado = $this->getChadoConnection();
 
     if (!array_key_exists('conditions', $record)) {
       throw new \Exception($this->t('Cannot select record in the Chado "@table" table due to missing conditions. Record: @record',
@@ -414,7 +486,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     }
 
     // Select the fields in the chado table.
-    $select = $chado->select('1:'.$chado_table, 'ct');
+    $select = $this->connection->select('1:'.$chado_table, 'ct');
     $select->fields('ct', array_keys($record['fields']));
 
     // Add in any joins.
@@ -441,10 +513,12 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
 
     // Add the select condition
     foreach ($record['conditions'] as $chado_column => $value) {
-      if (!empty($value)) {
-        $select->condition('ct.'.$chado_column, $value);
+      if (!empty($value['value'])) {
+        $select->condition('ct.'. $chado_column, $value['value'], $value['operation']);
       }
     }
+
+    $this->field_debugger->reportQuery($select, "Select Query for $chado_table ($delta)");
 
     // Execute the query.
     $results = $select->execute();
@@ -459,14 +533,15 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    * @{inheritdoc}
    */
   public function loadValues(&$values) : bool {
-    $chado = $this->getChadoConnection();
-    $logger = \Drupal::service('tripal.logger');
+
+    $this->field_debugger->printHeader('Load');
+    $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::loadValues');
 
     $build = $this->buildChadoRecords($values, FALSE);
     $records = $build['records'];
     $base_tables = $build['base_tables'];
 
-    $transaction_chado = $chado->startTransaction();
+    $transaction_chado = $this->connection->startTransaction();
     try {
       foreach ($records as $chado_table => $deltas) {
         foreach ($deltas as $delta => $record) {
@@ -479,6 +554,9 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       $transaction_chado->rollback();
       throw new \Exception($e);
     }
+
+    $this->field_debugger->reportValues($values, 'The values after loading is complete.');
+
     return TRUE;
   }
 
@@ -492,8 +570,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    * @throws \Exception
    */
   private function deleteChadoRecord(&$records, $chado_table, $delta, $record) {
-    $chado = $this->getChadoConnection();
-    $schema = $chado->schema();
+
+    $schema = $this->connection->schema();
     $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
     $pkey = $table_def['primary key'];
 
@@ -503,10 +581,13 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           ['@table' => $chado_table, '@record' => print_r($record, TRUE)]));
     }
 
-    $delete = $chado->delete('1:'.$chado_table);
+    $delete = $this->connection->delete('1:'.$chado_table);
     foreach ($record['conditions'] as $chado_column => $cond_value) {
-      $delete->condition($chado_column, $cond_value);
+      $delete->condition($chado_column, $cond_value['value']);
     }
+
+    $this->field_debugger->reportQuery($delete, "Delete Query for $chado_table ($delta)");
+
     $rows_affected = $delete->execute();
     if ($rows_affected == 0) {
       throw new \Exception($this->t('Failed to delete a record in the Chado "@table" table. Record: @record',
@@ -518,13 +599,16 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     }
 
     // Unset the record Id for this deleted record.
-    $records[$chado_table][$delta]['conditions'][$pkey] = 0;
+    $records[$chado_table][$delta]['conditions'][$pkey]['value'] = 0;
   }
 
   /**
    * @{inheritdoc}
    */
   public function deleteValues($values) : bool {
+
+    $this->field_debugger->printHeader('Delete');
+    $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::deleteValues');
 
     return FALSE;
   }
@@ -533,6 +617,9 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    * @{inheritdoc}
    */
   public function findValues($match) {
+
+    $this->field_debugger->printHeader('Find');
+    $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::findValues');
 
   }
 
@@ -551,15 +638,20 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    *   The set of Chado records.
    */
   protected function setRecordIds(&$values, $records) {
-    $chado = $this->getChadoConnection();
-    $schema = $chado->schema();
+
+    $schema = $this->connection->schema();
 
     // Iterate through the value objects.
     foreach ($values as $field_name => $deltas) {
+
+      // Now we retrieve the field configuration.
+      $definition = $this->getFieldDefinition($field_name);
+
       foreach ($deltas as $delta => $keys) {
         foreach ($keys as $key => $info) {
-          $definition = $info['definition'];
-          $prop_type = $info['type'];
+
+          // Retrieve the property type for this value.
+          $prop_type = $this->getPropertyType($field_name, $key);
 
           // Get the field and property storage settings.
           $field_settings = $definition->getSettings();
@@ -592,17 +684,17 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
 
           // If this is the record_id property then set its value.
           if ($action == 'store_id') {
-            $record_id = $records[$chado_table][0]['conditions'][$chado_table_pkey];
+            $record_id = $records[$chado_table][0]['conditions'][$base_table_pkey]['value'];
             $values[$field_name][$delta][$key]['value']->setValue($record_id);
           }
           // If this is the linked record_id property then set its value.
           if ($action == 'store_pkey') {
-            $record_id = $records[$chado_table][$delta]['conditions'][$chado_table_pkey];
+            $record_id = $records[$chado_table][$delta]['conditions'][$chado_table_pkey]['value'];
             $values[$field_name][$delta][$key]['value']->setValue($record_id);
           }
           // If this is a property managing a linked record ID then set it too.
           if ($action == 'store_link') {
-            $record_id = $records[$base_table][0]['conditions'][$base_table_pkey];
+            $record_id = $records[$base_table][0]['conditions'][$base_table_pkey]['value'];
             $values[$field_name][$delta][$key]['value']->setValue($record_id);
           }
         }
@@ -619,19 +711,25 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    *   The set of Chado records.
    */
   protected function setPropValues(&$values, $records) {
-    $chado = $this->getChadoConnection();
-    $schema = $chado->schema();
+
+    $schema = $this->connection->schema();
 
     $replace = [];
     $function = [];
 
     // Iterate through the value objects.
     foreach ($values as $field_name => $deltas) {
+
+      // Retrieve the field configuration.
+      $definition = $this->getFieldDefinition($field_name);
+
       foreach ($deltas as $delta => $keys) {
         foreach ($keys as $key => $info) {
-          $definition = $info['definition'];
-          $prop_type = $info['type'];
 
+          // Get the Property type for this value.
+          $prop_type = $this->getPropertyType($field_name, $key);
+
+          // Get important settings from the field configuration.
           $field_settings = $definition->getSettings();
           $storage_plugin_settings = $field_settings['storage_plugin_settings'];
           $prop_storage_settings = $prop_type->getStorageSettings();
@@ -651,7 +749,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             $base_table = $storage_plugin_settings['base_table'];
             $base_table_def = $schema->getTableDef($base_table, ['format' => 'drupal']);
             $base_table_pkey = $base_table_def['primary key'];
-            $link_id = $records[$base_table][0]['conditions'][$base_table_pkey];
+            $link_id = $records[$base_table][0]['conditions'][$base_table_pkey]['value'];
             $values[$field_name][$delta][$key]['value']->setValue($link_id);
           }
 
@@ -696,7 +794,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       $delta = $item[1];
       $key = $item[2];
       $info = $item[3];
-      $prop_type = $info['type'];
+      $prop_type = $this->getPropertyType($field_name, $key);
       $prop_storage_settings = $prop_type->getStorageSettings();
       $template = $prop_storage_settings['template'];
 
@@ -724,7 +822,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       $delta = $item[1];
       $key = $item[2];
       $info = $item[3];
-      $prop_type = $info['type'];
+      $prop_type = $this->getPropertyType($field_name, $key);
       $prop_storage_settings = $prop_type->getStorageSettings();
       $namespace = $prop_storage_settings['namespace'];
       $callback = $prop_storage_settings['function'];
@@ -761,41 +859,42 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    *   An associative array.
    */
   protected function buildChadoRecords($values, bool $is_store) {
-    $logger = \Drupal::service('tripal.logger');
-    $chado = $this->getChadoConnection();
-    $schema = $chado->schema();
+
+    $schema = $this->connection->schema();
     $records = [];
     $base_record_ids = [];
 
+    $this->field_debugger->reportValues($values, 'The values submitted to ChadoStorage');
+
     // Iterate through the value objects.
     foreach ($values as $field_name => $deltas) {
+
+      // Retrieve the field configuration.
+      $definition = $this->getFieldDefinition($field_name);
+      if (!is_object($definition)) {
+        $this->logger->error($this->t('Cannot save record in Chado. The field, "@field", is missing the field definition (i.e. FieldConfig object).',
+          ['@field' => $field_name]));
+        continue;
+      }
+
       foreach ($deltas as $delta => $keys) {
         foreach ($keys as $key => $info) {
 
-          // Ensure that these required keys are availables.
-          if (!array_key_exists('definition', $info) OR !is_object($info['definition'])) {
-            $logger->error($this->t('Cannot save record in Chado. The field, "@field", is missing the field definition (i.e. FieldConfig object). There should be a "definition" key in this array: @var',
-              ['@field' => $field_name, '@var' => print_r($info, TRUE)]));
-            continue;
-          }
-          if (!array_key_exists('type', $info) OR !is_object($info['type'])) {
-            $logger->error($this->t('Cannot save record in Chado. The field, "@field", is missing the StoragePropertyType object.',
-              ['@field' => $field_name]));
-            continue;
-          }
+          // Ensure we have a value to work with.
           if (!array_key_exists('value', $info) OR !is_object($info['value'])) {
-            $logger->error($this->t('Cannot save record in Chado. The field, "@field", is missing the StoragePropertyValue object.',
+            $this->logger->error($this->t('Cannot save record in Chado. The field, "@field", is missing the StoragePropertyValue object.',
               ['@field' => $field_name]));
             continue;
           }
-
-          // @debug ksm($info['definition'], "$key: DEFINITION");
-          // @debug ksm($info['type'], "$key: TYPE");
-          // @debug ksm($info['value'], "$key: VALUES");
-          $definition = $info['definition'];
-          $prop_type = $info['type'];
           $prop_value = $info['value'];
 
+          // Retrieve the property type for this value.
+          $prop_type = $this->getPropertyType($field_name, $key);
+
+          // Retrieve the operation to be used for searching and if not set, use equals as the default.
+          $operation = array_key_exists('operation', $info) ? $info['operation'] : '=';
+
+          // Retrieve important field settings.
           $field_label = $definition->getLabel();
           $field_settings = $definition->getSettings();
           $storage_plugin_settings = $field_settings['storage_plugin_settings'];
@@ -803,7 +902,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
 
           // Make sure we have an action for this property.
           if (!array_key_exists('action', $prop_storage_settings)) {
-            $logger->error($this->t('Cannot store the property, @field.@prop ("@label"), in Chado. The property is missing an action in the property settings: @settings',
+            $this->logger->error($this->t('Cannot store the property, @field.@prop ("@label"), in Chado. The property is missing an action in the property settings: @settings',
                 ['@field' => $field_name, '@prop' => $key,
                  '@label' => $field_label, '@settings' => print_r($prop_storage_settings, TRUE)]));
             continue;
@@ -812,7 +911,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
 
           // Check that the base table for the field is set.
           if (!array_key_exists('base_table', $storage_plugin_settings)) {
-            $logger->error($this->t('Cannot store the property, @field.@prop, in Chado. The field is missing the chado base table name.',
+            $this->logger->error($this->t('Cannot store the property, @field.@prop, in Chado. The field is missing the chado base table name.',
                 ['@field' => $field_name, '@prop' => $key]));
             continue;
           }
@@ -858,7 +957,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             // some other property has already been inserted and has the ID.
             if ($record_id == 0) {
               $records[$chado_table][$delta]['fields'][$chado_table_pkey] = ['REPLACE_BASE_RECORD_ID', $chado_table];
-              $records[$chado_table][0]['conditions'][$chado_table_pkey] = ['REPLACE_BASE_RECORD_ID', $chado_table];
+              $records[$chado_table][0]['conditions'][$chado_table_pkey] = ['value' => ['REPLACE_BASE_RECORD_ID', $base_table], 'operation' => $operation];
               // Now we add the chado table to our array of core tables
               // so that we can replace it with the value for the record later.
               if (!array_key_exists($chado_table, $base_record_ids)) {
@@ -870,7 +969,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             // for use later when replacing base record ids.
             else {
               $records[$chado_table][$delta]['fields'][$chado_table_pkey] = $record_id;
-              $records[$chado_table][0]['conditions'][$chado_table_pkey] = $record_id;
+              $records[$chado_table][0]['conditions'][$chado_table_pkey] = ['value' => $record_id, 'operation' => $operation];
               $base_record_ids[$chado_table] = $record_id;
             }
           }
@@ -881,7 +980,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           // ................................................................
           if ($action == 'store_pkey') {
             $link_record_id = $prop_value->getValue();
-            $records[$chado_table][$delta]['conditions'][$chado_table_pkey] = $link_record_id;
+            $records[$chado_table][$delta]['conditions'][$chado_table_pkey] = ['value' => $link_record_id, 'operation' => $operation];
           }
           // STORE LINK: performs a join between two tables, one of which is a
           // core table and one of which is a linking table. The value which is saved
@@ -933,7 +1032,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             // entire record should be removed on an update and not inserted.
             $delete_if_empty = array_key_exists('delete_if_empty',$prop_storage_settings) ? $prop_storage_settings['delete_if_empty'] : FALSE;
             if ($delete_if_empty) {
-              $records[$chado_table][$delta]['delete_if_empty'][] = $key;
+              $records[$chado_table][$delta]['delete_if_empty'][] = $chado_column;
             }
           }
           // JOIN: performs a join across multiple tables for the purposes of
@@ -986,12 +1085,16 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             // If the base record ID is 0 then this is an insert and we
             // don't yet have the base record ID.  So, leave in the message
             // to replace the ID so we can do so later.
+            if (array_key_exists($base_table, $base_record_ids) and $base_record_ids[$base_table] != 0) {
+              $records[$table_name][$delta]['fields'][$chado_column] = $base_record_ids[$base_table];
+            }
+
           }
         }
-        // Second for all the conditions...
+        if (!array_key_exists('conditions', $record)) print_r($record);
         foreach ($record['conditions'] as $chado_column => $val) {
-          if (is_array($val) and $val[0] == 'REPLACE_BASE_RECORD_ID') {
-            $core_table = $val[1];
+          if (is_array($val['value']) and $val['value'][0] == 'REPLACE_BASE_RECORD_ID') {
+            $core_table = $val['value'][1];
 
             // If the core table is set in the base record ids array and the
             // value is not 0 then we can set this condition now!
@@ -1001,12 +1104,17 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
             // If the base record ID is 0 then this is an insert and we
             // don't yet have the base record ID.  So, leave in the message
             // to replace the ID so we can do so later.
+            if (array_key_exists($base_table, $base_record_ids) and $base_record_ids[$base_table] != 0) {
+              $records[$table_name][$delta]['conditions'][$chado_column]['value'] = $base_record_ids[$base_table];
+            }
+
           }
         }
       }
     }
+    
+    $this->field_debugger->summarizeBuiltRecords($base_record_ids, $records);
 
-    // @debug print_r($records);
     return [
       'base_tables' => $base_record_ids,
       'records' => $records
@@ -1064,8 +1172,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     // Generate aliases for the left and right tables in the join.
     $lalias = $depth == 0 ? 'ct' : 'j' . $left_table . $num_left;
     $ralias = 'j' . $right_table . $num_right;
-    $chado = $this->getChadoConnection();
-    $schema = $chado->schema();
+    $schema = $this->connection->schema();
 
     // Add the join.
     $records[$parent_table][$delta]['joins'][$right_table][$parent_column]['on'] = [
@@ -1104,8 +1211,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    *   An array to which any new violations can be added.
    */
   private function validateRequired($values, $chado_table, $record_id, $record, &$violations) {
-    $chado = $this->getChadoConnection();
-    $schema = $chado->schema();
+
+    $schema = $this->connection->schema();
     $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
     $pkey = $table_def['primary key'];
 
@@ -1161,8 +1268,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    *   An array to which any new violations can be added.
    */
   private function validateUnique($values, $chado_table, $record_id, $record, &$violations) {
-    $chado = $this->getChadoConnection();
-    $schema = $chado->schema();
+
+    $schema = $this->connection->schema();
     $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
 
     // Check if we are violating a unique constraint (if it's an insert)
@@ -1174,7 +1281,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
       $ukeys = $table_def['unique keys'];
       foreach ($ukeys as $ukey_name => $ukey_cols) {
         $ukey_cols = explode(',', $ukey_cols);
-        $query = $chado->select('1:'.$chado_table, 'ct');
+        $query = $this->connection->select('1:'.$chado_table, 'ct');
         $query->fields('ct');
         foreach ($ukey_cols as $col) {
           $col = trim($col);
@@ -1182,14 +1289,26 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
           if (array_key_exists($col, $record['fields'])) {
             $col_val = $record['fields'][$col];
           }
-          // There is an issue with postgreSQL that if the value is allowed
-          // to be null but it is in a unique constraint then it will allow
-          // it to be inserted because a Null != NULL. So, skip checking
-          // these columns in the unique constraint if they are empty.
+          // If there is not a NOT NULL constraint on this column,
+          // and it is of a string type, then we need to handle
+          // empty values specially, since they might be stored
+          // as either NULL or as an empty string in the database
+          // table. Create a condition that checks for both. For
+          // other types, e.g. integer, just check for null.
           if ($table_def['fields'][$col]['not null'] == FALSE and !$col_val) {
-            continue;
+            if (in_array($table_def['fields'][$col]['type'],
+                ['character', 'character varying', 'text'])) {
+              $query->condition($query->orConditionGroup()
+                ->condition($col, '', '=')
+                ->isNull($col));
+            }
+            else {
+              $query->isNull($col);
+            }
           }
-          $query->condition($col, $col_val);
+          else {
+            $query->condition($col, $col_val);
+          }
         }
 
         // If we have matching record, check for a unique constraint
@@ -1242,8 +1361,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    *   An array to which any new violations can be added.
    */
   private function validateFKs($values, $chado_table, $record_id, $record, &$violations) {
-    $chado = $this->getChadoConnection();
-    $schema = $chado->schema();
+
+    $schema = $this->connection->schema();
     $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
 
     $bad_fks = [];
@@ -1266,7 +1385,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
         }
 
         // Check if the id is present in the FK table.
-        $query = $chado->select($fk_table, 'fk');
+        $query = $this->connection->select($fk_table, 'fk');
         $query->fields('fk', [$rcol]);
         $query->condition($rcol, $col_val);
         $fk_id = $query->execute()->fetchField();
@@ -1305,8 +1424,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    *   An array to which any new violations can be added.
    */
   public function validateTypes($values, $chado_table, $record_id, $record, &$violations) {
-    $chado = $this->getChadoConnection();
-    $schema = $chado->schema();
+
+    $schema = $this->connection->schema();
     $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
 
     $bad_types = [];
@@ -1331,7 +1450,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
         }
       }
       else if ($info['type'] == 'boolean') {
-        if (!is_bool($col_val)) {
+        if (!is_bool($col_val) and !preg_match('/^[01]$/', $col_val)) {
           $bad_types[$col] = 'Boolean';
         }
       }
@@ -1357,7 +1476,7 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
     if (count($bad_types) > 0) {
       // Documentation for how to create a violation is here
       // https://github.com/symfony/validator/blob/6.1/ConstraintViolation.php
-      $message = 'The item cannot be saved because the following values are of the wrong type.';
+      $message = 'The item cannot be saved because the following values are of the wrong type: ';
       $params = [];
       foreach ($bad_types as $col => $col_type) {
         $message .=  ucfirst($col) . " should be $col_type. " ;
@@ -1382,8 +1501,8 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    *   An array to which any new violations can be added.
    */
   public function validateSize($values, $chado_table, $record_id, $record, &$violations) {
-    $chado = $this->getChadoConnection();
-    $schema = $chado->schema();
+
+    $schema = $this->connection->schema();
     $table_def = $schema->getTableDef($chado_table, ['format' => 'drupal']);
 
     $bad_sizes = [];
@@ -1431,6 +1550,9 @@ class ChadoStorage extends PluginBase implements TripalStorageInterface {
    * {@inheritDoc}
    */
   public function validateValues($values) {
+
+    $this->field_debugger->printHeader('Validate');
+    $this->field_debugger->summarizeChadoStorage($this, 'At the beginning of ChadoStorage::validateValues');
 
     $build = $this->buildChadoRecords($values, TRUE);
     $base_tables = $build['base_tables'];

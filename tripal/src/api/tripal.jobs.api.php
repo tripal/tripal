@@ -371,7 +371,7 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL, $max_jobs = -1, $si
   // First check if any jobs are currently running if they are, don't continue,
   // we don't want to have more than one job script running at a time.
   if (!$do_parallel and tripal_is_job_running()) {
-    print date('Y-m-d H:i:s') . ": Jobs are still running. Use the --parallel=1 option with the Drush command to run jobs in parallel.";
+    print date('Y-m-d H:i:s') . ": Jobs are still running. Use the --parallel option with the Drush command to run jobs in parallel.";
     return;
   }
 

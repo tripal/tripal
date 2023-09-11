@@ -143,14 +143,14 @@ class TripalLogger {
    */
   protected function log2Message($level, $message, $context = []) {
 
-    if (in_array($level, ['info', 'notice'])) {
-      $status = \Drupal\Core\Messenger\MessengerInterface::TYPE_STATUS;
-    }
-    else if (in_array($level, ['critical', 'error', 'emergency'])) {
+    if (in_array($level, ['emergency', 'alert', 'critical', 'error'])) {
       $status = \Drupal\Core\Messenger\MessengerInterface::TYPE_ERROR;
     }
-    else if (in_array($level, ['alert', 'warning'])) {
+    else if (in_array($level, ['warning'])) {
       $status = \Drupal\Core\Messenger\MessengerInterface::TYPE_WARNING;
+    }
+    else if (in_array($level, ['notice', 'info', 'debug'])) {
+      $status = \Drupal\Core\Messenger\MessengerInterface::TYPE_STATUS;
     }
     else {
       // Any other type of status we just won't handle.
@@ -216,7 +216,8 @@ class TripalLogger {
     $this->log2Job($message, $context);
 
     if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
-      $this->logger->notice($message, $context);
+      $message_str = $this->messageString($message, $context);
+      $this->logger->notice($message_str);
     }
 
     if (isset($options['drupal_set_message'])) {
@@ -253,7 +254,8 @@ class TripalLogger {
     $this->log2Job($message, $context);
 
     if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
-      $this->logger->info($message, $context);
+      $message_str = $this->messageString($message, $context);
+      $this->logger->info($message_str);
     }
 
     if (isset($options['drupal_set_message'])) {
@@ -299,7 +301,8 @@ class TripalLogger {
     $this->log2Job($message, $context);
 
     if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
-      $this->logger->error($message);
+      $message_str = $this->messageString($message, $context);
+      $this->logger->error($message_str);
     }
 
     if (isset($options['drupal_set_message'])) {
@@ -347,7 +350,8 @@ class TripalLogger {
     $this->log2Job($message, $context);
 
     if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
-      $this->logger->warning($message, $context);
+      $message_str = $this->messageString($message, $context);
+      $this->logger->warning($message_str);
     }
 
     if (isset($options['drupal_set_message'])) {
@@ -395,7 +399,8 @@ class TripalLogger {
     $this->log2Job($message, $context);
 
     if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
-      $this->logger->emergency($message, $context);
+      $message_str = $this->messageString($message, $context);
+      $this->logger->emergency($message_str);
     }
 
     if (isset($options['drupal_set_message'])) {
@@ -443,7 +448,8 @@ class TripalLogger {
     $this->log2Job($message, $context);
 
     if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
-      $this->logger->alert($message, $context);
+      $message_str = $this->messageString($message, $context);
+      $this->logger->alert($message_str);
     }
 
     if (isset($options['drupal_set_message'])) {
@@ -491,7 +497,8 @@ class TripalLogger {
     $this->log2Job($message, $context);
 
     if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
-      $this->logger->critical($message, $context);
+      $message_str = $this->messageString($message, $context);
+      $this->logger->critical($message_str);
     }
 
     if (isset($options['drupal_set_message'])) {
@@ -512,10 +519,9 @@ class TripalLogger {
    *   - Server log
    *   - Drupal Message (if specified in options)
    *
-   * This function behaves differently from the Drupal::logger->debug function
-   * because no debugging information will be logged unless the TRIPAL_DEBUG
-   * environment variable is set. This if for backwards compatibility with
-   * Tripal v3.
+   * For Tripal 3, no debug messages were logged unless the TRIPAL_DEBUG
+   * environment variable is set. Under Tripal 4, debug messages are
+   * always printed.
    *
    * @param $message
    *   The message MUST be a string or object implementing __toString().
@@ -538,9 +544,10 @@ class TripalLogger {
   public function debug($message, $context = [], $options=[]) {
     if ($this->isSuppressed()) return;
 
-    // Get the backtrace and include in the error message, but only if the
-    // TRIPAL_DEBUG environment variable is set.
-    if (getenv('TRIPAL_DEBUG') == 1) {
+    // If we want to implement a toggle for debug messages in the
+    // future, it could go here. Tripal 3 had an environment variable
+    // TRIPAL_DEBUG to perform this function.
+    if (true) {
       $backtrace = debug_backtrace();
       $message .= "\nBacktrace:\n";
       $i = 1;
@@ -550,7 +557,12 @@ class TripalLogger {
       }
       $this->log2job('DEBUG: ' . $message, $context);
       if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
-        $this->logger->debug($message, $context);
+        $message_str = $this->messageString($message, $context);
+        $this->logger->debug($message_str);
+      }
+
+      if (isset($options['drupal_set_message'])) {
+        $this->log2Message('debug', $message, $context);
       }
 
       $this->log2Server('DEBUG: ' . $message, $context, $options);
@@ -595,7 +607,8 @@ class TripalLogger {
   public function log($level, $message, $context = [], $options=[]) {
     if ($this->isSuppressed()) return;
 
-    if ($level != 'INFO' and $level != 'NOTICE') {
+    $level = strtolower($level);
+    if ($level != 'info' and $level != 'notice') {
       $this->log2Job(ucwords($level) . ': ' . $message, $context);
     }
     else {
@@ -603,7 +616,8 @@ class TripalLogger {
     }
 
     if (!array_key_exists('logger', $options) or $options['logger'] !== FALSE) {
-      $this->logger->log($level, $message, $context);
+      $message_str = $this->messageString($message, $context);
+      $this->logger->log($level, $message_str);
     }
 
     if (isset($options['drupal_set_message'])) {

@@ -1077,7 +1077,7 @@ function chado_delete_record($table, $match, $options = NULL, $chado_schema_name
       }
       else {
         $results = chado_schema_get_foreign_key(
-          $table_desc, $field, $value, [], 'testchado');
+          $table_desc, $field, $value, [], $chado_schema_name);
         if (sizeof($results) > 1) {
           tripal_report_error('tripal_chado', TRIPAL_ERROR,
             'chado_delete_record: When trying to find record to delete, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)',
@@ -1127,7 +1127,7 @@ function chado_delete_record($table, $match, $options = NULL, $chado_schema_name
   $sql = mb_substr($sql, 0, -4);  // Get rid of the trailing 'AND'.
 
   // Finally perform the delete.  If successful, return the updated record.
-  $result = chado_query($sql, $args, [], 'testchado');
+  $result = chado_query($sql, $args, [], $chado_schema_name);
   if ($result) {
     return TRUE;
   }

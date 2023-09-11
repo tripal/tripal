@@ -16,6 +16,8 @@ require_once 'src/api/tripal_chado.variables.api.php';
 require_once 'src/api/tripal_chado.organism.api.php';
 require_once 'src/api/tripal_chado.db.api.php';
 require_once 'src/api/tripal_chado.cv.api.php';
+require_once 'src/api/tripal_chado.property.api.php';
+require_once 'src/api/tripal_chado.phylotree.api.php';
 require_once 'src/legacyFunctions.php';
 
 /**

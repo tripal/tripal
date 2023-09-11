@@ -57,7 +57,7 @@ class TripalEntityTypeCollection implements ContainerInjectionInterface  {
   /**
    * Installs content types using all appropriate YAML files.
    *
-   * The YAML config file prefix is tripal.tripal_content_types.*
+   * The YAML config file prefix is tripal.tripalentitytype_collection.*
    */
   public function install() {
 
@@ -100,16 +100,15 @@ class TripalEntityTypeCollection implements ContainerInjectionInterface  {
    */
   public function validate($details) {
 
-    ## Name is currently autocreated as bio_data_#
-    ## but we will want to change this in a future PR.
-    # if (!array_key_exists('name', $details) or !$details['name']) {
-    #   $this->logger->error(t('Creation of content type, "@type", failed. No name provided.',
-    #       ['@type' => $details['label']]));
-    #   return FALSE;
-    # }
+    if (!array_key_exists('id', $details) or !$details['id']) {
+      $this->logger->error(t('Creation of content type, "@type", failed. No id provided.',
+          ['@type' => $details['label']]));
+      return FALSE;
+    }
 
     if (!array_key_exists('label', $details) or !$details['label']) {
-      $this->logger->error(t('Creation of content type with failed since no label provided.'));
+      $this->logger->error(t('Creation of content name, "@id", failed. No label provided.',
+          ['@id' => $details['id']]));
       return FALSE;
     }
 
@@ -120,36 +119,34 @@ class TripalEntityTypeCollection implements ContainerInjectionInterface  {
     }
 
     if (get_class($details['term']) != 'Drupal\tripal\TripalVocabTerms\TripalTerm') {
-      $this->logger->error(t('Creation of content type, "@type", failed. The provided term was not valid TripalTerm object.',
-          ['@type' => $details['label'], '@term' => $details['label']]));
+      $this->logger->error(t('Creation of content type, "@type", failed. The provided term was not a valid TripalTerm object.',
+          ['@type' => $details['label']]));
       return FALSE;
     }
 
     if (!$details['term']->isValid()) {
-      $this->logger->error(t('Creation of content type, "@type", failed. The provided term was not valid.',
-          ['@type' => $details['label'], '@term' => $details['label']]));
+      $this->logger->error(t('Creation of content type, "@type", failed. The provided TripalTerm object was not valid.',
+          ['@type' => $details['label']]));
       return FALSE;
     }
 
     if (!array_key_exists('category', $details) or !$details['category']) {
-      $this->logger->error(t('Creation of content type, "@type", failed. No category provided.',
+      $this->logger->error(t('Creation of content type, "@type", failed. No category was provided.',
           ['@type' => $details['label']]));
       return FALSE;
     }
 
     if (!array_key_exists('help_text', $details) or !$details['help_text']) {
-      $this->logger->error(t('Creation of content type, "@type", failed. No help_text provided.',
+      $this->logger->error(t('Creation of content type, "@type", failed. No help_text was provided.',
           ['@type' => $details['label']]));
       return FALSE;
     }
 
-    ## This will be added in a future PR
-    ## to keep track of the old bio_data_# used in previous versions of Tripal.
-    # if (array_key_exists('synonyms', $details) and !is_array($details['synonyms'])) {
-    #   $this->logger->error(t('Creation of content type, "@type", failed. The synonyms should be an array.',
-    #       ['@type' => $details['label']]));
-    #   return FALSE;
-    # }
+    if (array_key_exists('synonyms', $details) and !is_array($details['synonyms'])) {
+      $this->logger->error(t('Creation of content type, "@type", failed. The synonyms should be an array.',
+          ['@type' => $details['label']]));
+      return FALSE;
+    }
 
     return TRUE;
   }
@@ -164,6 +161,7 @@ class TripalEntityTypeCollection implements ContainerInjectionInterface  {
    *    - label: the human-readable label to be used for the content type.
    *    - category: a human-readable category to group like content types
    *      together.
+   *    - name: the machine-name of the content type.
    *    - help_text: a brief description for how this content type is used.
    *    - url_format: a tokenized string for specifying the format of the URL.
    *    - title_format: a tokenized string for the title.
@@ -200,7 +198,7 @@ class TripalEntityTypeCollection implements ContainerInjectionInterface  {
         $entityType->save();
         $this->logger->notice(t('Content type, "@type", created.',
             ['@type' => $details['label']]));
-        $bundle = $entityType->getName();
+        $bundle = $entityType->id();
       }
       else {
         $this->logger->error(t('Creation of content type, "@type", failed. The provided details were: ',
