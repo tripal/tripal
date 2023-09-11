@@ -1,7 +1,7 @@
 <!--- Thank you for contributing! -->
 <!--- Provide a general summary of your changes in the Title above -->
 <!--- See our Contribution Guidelines here:
-          https://github.com/tripal/tripal/blob/7.x-3.x/CONTRIBUTING.md -->
+          https://tripaldoc.readthedocs.io/en/latest/contributing.html -->
 
 
 <!---  Please set the header below based on the PR type:
@@ -11,10 +11,10 @@
 
 #
 
-Issue #
+### Issue #
 
 <!--- Enter the Tripal version this PR applies to (i.e. either 3 or 4 ;-p) --->
-### Tripal Version: 
+## Tripal Version:
 
 ## Description
 <!--- Describe your changes in detail -->
