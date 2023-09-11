@@ -35,18 +35,17 @@ class ChadoContactWidgetDefault extends ChadoWidgetBase {
     // Person or Institute
     $sql = 'SELECT C.contact_id, C.name, T.name AS type FROM {1:contact} C
       LEFT JOIN {1:cvterm} T ON C.type_id=T.cvterm_id
-      ORDER BY C.name';
+      ORDER BY LOWER(C.name)';
     $results = $chado->query($sql, []);
 
     while ($contact = $results->fetchObject()) {
       // Change the non-user-friendly 'null' contact, which is spedified by chado.
       if ($contact->name == 'null') {
-        $contact->name = 'Unknown';
+        $contact->name = '-- Unknown --';  // This will sort to the top.
       }
       $type_text = $contact->type ? ' (' . $contact->type . ')' : '';
       $contacts[$contact->contact_id] = $contact->name . $type_text;
     }
-    // Move our renamed 'Unknown' contact to its alphabetical position.
     natcasesort($contacts);
 
     $item_vals = $items[$delta]->getValue();
