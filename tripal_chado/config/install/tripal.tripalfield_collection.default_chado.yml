@@ -517,7 +517,7 @@ fields:
         type: chado_contact_default
         description: An individual or organization that serves as a contact for this record.
         cardinality: 1
-        required: false
+        required: true
         storage_settings:
             storage_plugin_id: chado_storage
             storage_plugin_settings:
