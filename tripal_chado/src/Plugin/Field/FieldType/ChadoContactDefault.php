@@ -18,7 +18,7 @@ use Drupal\core\Field\FieldDefinitionInterface;
  * @FieldType(
  *   id = "chado_contact_default",
  *   label = @Translation("Contact"),
- *   description = @Translation("An indviddual or organization that serves as a contact for this record"),
+ *   description = @Translation("An individual or organization that serves as a contact for this record"),
  *   default_widget = "chado_contact_widget_default",
  *   default_formatter = "chado_contact_formatter_default",
  *   cardinality = 1
