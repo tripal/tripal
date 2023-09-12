@@ -323,10 +323,9 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
       for ($i = 0; $i < count($this->arguments['files']); $i++) {
         if (!empty($this->arguments['files'][$i]['file_remote'])) {
           $file_remote = $this->arguments['files'][$i]['file_remote'];
-          $this->logger->notice('Download file: !file_remote...', ['!file_remote' => $file_remote]);
+          $this->logger->notice('Download file: %file_remote...', ['%file_remote' => $file_remote]);
 
-
-          // If this file is compressed then keepthe .gz extension so we can
+          // If this file is compressed then keep the .gz extension so we can
           // uncompress it.
           $ext = '';
           if (preg_match('/^(.*?)\.gz$/', $file_remote)) {
@@ -334,7 +333,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
           }
           // Create a temporary file.
           $temp = \Drupal::service('file_system')->tempnam("temporary://", 'import_') . $ext;
-          $this->logger->notice("Saving as: !file", ['!file' => $temp]);
+          $this->logger->notice('Saving as: %file', ['%file' => $temp]);
 
           $url_fh = fopen($file_remote, "r");
           $tmp_fh = fopen($temp, "w");
@@ -355,7 +354,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
         // Is this file compressed?  If so, then uncompress it
         $matches = [];
         if (preg_match('/^(.*?)\.gz$/', $this->arguments['files'][$i]['file_path'], $matches)) {
-          $this->logger->notice("Uncompressing: !file", ['!file' => $this->arguments['files'][$i]['file_path']]);
+          $this->logger->notice('Uncompressing: %file', ['%file' => $this->arguments['files'][$i]['file_path']]);
           $buffer_size = 4096;
           $new_file_path = $matches[1];
           $gzfile = gzopen($this->arguments['files'][$i]['file_path'], 'rb');

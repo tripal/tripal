@@ -242,15 +242,15 @@ class TripalImporterForm implements FormInterface {
       if ($file_local) {
         // check to see if the file is located local to Drupal
         $file_local = trim($file_local);
-        $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $file_local;
+        $dfile = \Drupal::root() . '/' . $file_local;
         if (!file_exists($dfile)) {
           // if not local to Drupal, the file must be someplace else, just use
           // the full path provided
           $dfile = $file_local;
         }
         if (!file_exists($dfile)) {
-          // form_set_error('file_local', t("Cannot find the file on the system. Check that the file exists or that the web server has permissions to read the file."));
-          $form_state->setErrorByName('file_local', t("Cannot find the file on the system. Check that the file exists or that the web server has permissions to read the file."));
+          $form_state->setErrorByName('file_local', t('Cannot find the file on the system.'
+            . ' Check that the file exists or that the web server has permission to read the file.'));
         }
       }
     }
@@ -260,13 +260,40 @@ class TripalImporterForm implements FormInterface {
         $file_existing = $form_values['file_upload_existing'];
       }
     }
+
+    // Remote file validation.
     if (array_key_exists('file_remote', $importer_def) and $importer_def['file_remote'] == TRUE) {
       $file_remote = trim($form_values['file_remote']);
+      if ($file_remote) {
+        // Validate that the remote URI is of the correct format.
+        if (filter_var($file_remote, FILTER_VALIDATE_URL) === false) {
+          $form_state->setErrorByName('file_remote', t('The Remote Path provided is not a valid URI.'));
+        }
+
+        // Validate a correct format remote URI to make sure it can be accessed.
+        else {
+          $headers = @get_headers($file_remote);
+          if (($headers === false) or (!is_array($headers)) or (!strpos($headers[0], '200'))) {
+            $form_state->setErrorByName('file_remote', t('The Remote Path provided cannot be accessed.'
+              . ' Check that it is correct.'));
+          }
+          // Some internet providers will insert content with a valid '200' response code for invalid
+          // URIs that redirects to their own search page, such as AT&T "DNS Error Assist".
+          // Try to detect this by rejecting 'http-equiv="refresh"' in the first 1000 bytes
+          else {
+            $head = file_get_contents($file_remote, false, null, 0, 1000);
+            if ((!$head) or (strpos($head, 'http-equiv="refresh"'))) {
+              $form_state->setErrorByName('file_remote', t('The Remote Path appears to be redirecting'
+                . ' to a different site. Check that it is correct.'));
+            }
+          }
+        }
+      }
     }
 
     // The user must provide at least an uploaded file or a local file path.
     if ($importer_def['file_required'] == TRUE and !$file_upload and !$file_local and !$file_remote and !$file_existing) {
-      $form_state->setErrorByName('file_local', t("You must provide a file."));
+      $form_state->setErrorByName('file_local', t('You must provide a file.'));
     }
 
     // Now allow the loader to do validation of its form additions.
