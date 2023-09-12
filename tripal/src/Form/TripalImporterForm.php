@@ -238,7 +238,7 @@ class TripalImporterForm implements FormInterface {
       if ($file_local) {
         // check to see if the file is located local to Drupal
         $file_local = trim($file_local);
-        $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $file_local;
+        $dfile = \Drupal::root() . '/' . $file_local;
         if (!file_exists($dfile)) {
           // if not local to Drupal, the file must be someplace else, just use
           // the full path provided
