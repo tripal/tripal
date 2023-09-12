@@ -218,7 +218,7 @@ class TripalImporterFormSubmitTest extends KernelTestBase {
       $this->assertIsArray($messages,
         "We expect to have status messages to the user on submission of the form.");
       $this->assertArrayHasKey('error', $messages,
-        "There should be any error messages from this form but we didn't recieve any.");
+        "There should be an error message from this form but we didn't recieve any.");
       $this->assertCount(1, $messages['error'],
         "There should be only one error message.");
       $this->assertStringContainsString('Cannot find the file', (string) $messages['error'][0],
@@ -311,7 +311,7 @@ class TripalImporterFormSubmitTest extends KernelTestBase {
       $this->assertIsArray($messages,
         "We expect to have status messages to the user on submission of the form.");
       $this->assertArrayHasKey('error', $messages,
-        "There should be any error messages from this form but we didn't recieve any.");
+        "There should be an error message from this form but we didn't recieve any.");
       $this->assertCount(1, $messages['error'],
         "There should be only one error message.");
       $this->assertStringContainsString('not a valid URI', (string) $messages['error'][0],
@@ -353,7 +353,7 @@ class TripalImporterFormSubmitTest extends KernelTestBase {
       $this->assertIsArray($messages,
         "We expect to have status messages to the user on submission of the form.");
       $this->assertArrayHasKey('error', $messages,
-        "There should be any error messages from this form but we didn't recieve any.");
+        "There should be an error message from this form but we didn't recieve any.");
       $this->assertCount(1, $messages['error'],
         "There should be only one error message.");
       $this->assertStringContainsString('cannot be accessed', (string) $messages['error'][0],
