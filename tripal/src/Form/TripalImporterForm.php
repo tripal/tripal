@@ -266,22 +266,13 @@ class TripalImporterForm implements FormInterface {
           $form_state->setErrorByName('file_remote', t('The Remote Path provided is not a valid URI.'));
         }
 
-        // Validate a correct format remote URI to make sure it can be accessed.
+        // Validate a correct format remote URI to make sure it can be
+        // accessed, with successful HTTP response code 200.
         else {
           $headers = @get_headers($file_remote);
           if (($headers === false) or (!is_array($headers)) or (!strpos($headers[0], '200'))) {
             $form_state->setErrorByName('file_remote', t('The Remote Path provided cannot be accessed.'
               . ' Check that it is correct.'));
-          }
-          // Some internet providers will insert content with a valid '200' response code for invalid
-          // URIs that redirects to their own search page, such as AT&T "DNS Error Assist".
-          // Try to detect this by rejecting 'http-equiv="refresh"' in the first 1000 bytes
-          else {
-            $head = file_get_contents($file_remote, false, null, 0, 1000);
-            if ((!$head) or (strpos($head, 'http-equiv="refresh"'))) {
-              $form_state->setErrorByName('file_remote', t('The Remote Path appears to be redirecting'
-                . ' to a different site. Check that it is correct.'));
-            }
           }
         }
       }
