@@ -10,6 +10,8 @@ use \Drupal\Tests\user\Traits\UserCreationTrait;
  *
  * Cannot test actually implemented importers as those
  * require database specific implementations.
+ *
+ * @group TripalImporter
  */
 class TripalImporterBaseTest extends KernelTestBase {
   protected $defaultTheme = 'stark';

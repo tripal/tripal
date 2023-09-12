@@ -9,6 +9,8 @@ use Drupal\KernelTests\KernelTestBase;
  *
  * Cannot test actually implemented importers as those
  * require database specific implementations.
+ *
+ * @group TripalImporter
  */
 class TripalImporterFormBuildTest extends KernelTestBase {
   protected $defaultTheme = 'stark';
