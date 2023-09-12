@@ -38,7 +38,6 @@ class TripalImporterFormSubmitTest extends KernelTestBase {
    * @var Array
    */
   protected $definitions = [
-    'fakeImporterName' => [
       'id' => 'fakeImporterName',
       'label' => 'Gemstone Loader',
       'description' => 'Imports details on the incredible diversity of gemstones created by our earth into Chado.',
@@ -53,7 +52,6 @@ class TripalImporterFormSubmitTest extends KernelTestBase {
       'file_remote' => TRUE,
       'file_required' => TRUE,
       'cardinality' => 1,
-    ],
   ];
 
   /**
@@ -118,6 +116,9 @@ class TripalImporterFormSubmitTest extends KernelTestBase {
     $this->installEntitySchema('file');
     $this->installSchema('file', ['file_usage']);
 
+    // Ensure we have our tripal import tables.
+    $this->installSchema('tripal', ['tripal_import', 'tripal_jobs']);
+
     // Create and log-in a user.
     $this->setUpCurrentUser();
 
@@ -147,18 +148,11 @@ class TripalImporterFormSubmitTest extends KernelTestBase {
     $container->set('tripal.importer', $manager);
 
     $plugin_id = 'fakeImporterName';
-    $expected = $this->definitions[$plugin_id];
-    $test_file_path = 'https://raw.githubusercontent.com/tripal/tripal/4.x/LICENSE.txt';
+    $expected = $this->definitions;
 
-    // Build the form using the Drupal form builder.
-    $form = \Drupal::formBuilder()->getForm(
-      'Drupal\tripal\Form\TripalImporterForm',
-      $plugin_id
-    );
-    $this->assertIsArray($form,
-      'We expect the form builder to return a form but it did not.');
-    $this->assertEquals('tripal_admin_form_tripalimporter', $form['#form_id'],
-      'We did not get the form id we expected.');
+    // --- CASE VALID
+    // --- Supply a valid remote path and ensure the form works!
+    $test_file_path = 'https://raw.githubusercontent.com/tripal/tripal/4.x/LICENSE.txt';
 
     // Now setup the form_state.
     $form_state = new \Drupal\Core\Form\FormState();
@@ -166,14 +160,112 @@ class TripalImporterFormSubmitTest extends KernelTestBase {
     $form_state->setValue('file_remote', $test_file_path);
 
     // Now try validation!
-    // This is expected to pass as that is a valid URL
     \Drupal::formBuilder()->submitForm(
       'Drupal\tripal\Form\TripalImporterForm',
       $form_state
     );
-
+    // And do some basic checks to ensure there were no errors.
     $this->assertTrue($form_state->isValidationComplete(),
       "We expect the form state to have been updated to indicate that validation is complete.");
+    //   Looking for form validation errors
+    $form_validation_messages = $form_state->getErrors();
+    $this->assertCount(0, $form_validation_messages,
+      "We should not have any validation errors for '$test_file_path'.");
+    //   Looking for drupal message errors.
+    $messages = \Drupal::messenger()->all();
+    $this->assertIsArray($messages,
+      "We expect to have status messages to the user on submission of the form.");
+    $this->assertArrayNotHasKey('error', $messages,
+      "There should not be any error messages from this form. Instead we recieved: " . print_r($messages, TRUE));
+    //   Now delete drupal messages so we start the next test clean.
+    \Drupal::messenger()->deleteAll();
+
+    // --- CASE ERROR
+    // --- Supply a text string that is clearly not a URL for file_remote and ensure it fails.
+    $bad_remote_uri = [
+      'lalalalalalala',
+      'http://.com',
+      'http://...',
+      'http://',
+      'http://£$"%$&*.com',
+    ];
+    foreach ($bad_remote_uri as $test_file_path) {
+      // Now setup the form_state.
+      $form_state = new \Drupal\Core\Form\FormState();
+      $form_state->addBuildInfo('args', [$plugin_id]);
+      $form_state->setValue('file_remote', $test_file_path);
+
+      // Now try validation!
+      \Drupal::formBuilder()->submitForm(
+        'Drupal\tripal\Form\TripalImporterForm',
+        $form_state
+      );
+      // And do some basic checks to ensure there were no errors.
+      $this->assertTrue($form_state->isValidationComplete(),
+        "We expect the form state to have been updated to indicate that validation is complete.");
+      //   Looking for form validation errors
+      $form_validation_messages = $form_state->getErrors();
+      $this->assertCount(1, $form_validation_messages,
+        "We expect validation errors for '$test_file_path' but did not recieve them.");
+      $this->assertArrayHasKey('file_remote', $form_validation_messages,
+        "There should be an entry for file_remote in the validation errors for '$test_file_path'.");
+      //   Looking for drupal message errors.
+      $messages = \Drupal::messenger()->all();
+      $this->assertIsArray($messages,
+        "We expect to have status messages to the user on submission of the form.");
+      $this->assertArrayHasKey('error', $messages,
+        "There should be any error messages from this form but we didn't recieve any.");
+      $this->assertCount(1, $messages['error'],
+        "There should be only one error message.");
+      $this->assertStringContainsString('not a valid URI', (string) $messages['error'][0],
+        "The error did not match the one we expected for an invalid URL passed to file_remote.");
+      $this->assertArrayNotHasKey('status', $messages,
+        "There should not be any success/status messages from this form. Instead we recieved: " . print_r($messages, TRUE));
+      //   Now delete drupal messages so we start the next test clean.
+      \Drupal::messenger()->deleteAll();
+    }
+
+    // --- CASE ERROR
+    // --- Supply a URI that is valid but does not resolve to a web page.
+    $bad_remote_uri = [
+      'http://notreallyasite.com/',
+      'https://notreallyatripalsite.github.com',
+    ];
+    foreach ($bad_remote_uri as $test_file_path) {
+      // Now setup the form_state.
+      $form_state = new \Drupal\Core\Form\FormState();
+      $form_state->addBuildInfo('args', [$plugin_id]);
+      $form_state->setValue('file_remote', $test_file_path);
+
+      // Now try validation!
+      \Drupal::formBuilder()->submitForm(
+        'Drupal\tripal\Form\TripalImporterForm',
+        $form_state
+      );
+      // And do some basic checks to ensure there were no errors.
+      $this->assertTrue($form_state->isValidationComplete(),
+        "We expect the form state to have been updated to indicate that validation is complete.");
+      //   Looking for form validation errors
+      $form_validation_messages = $form_state->getErrors();
+      $this->assertCount(1, $form_validation_messages,
+        "We expect validation errors for '$test_file_path' but did not recieve them.");
+      $this->assertArrayHasKey('file_remote', $form_validation_messages,
+        "There should be an entry for file_remote in the validation errors for '$test_file_path'.");
+      //   Looking for drupal message errors.
+      $messages = \Drupal::messenger()->all();
+      $this->assertIsArray($messages,
+        "We expect to have status messages to the user on submission of the form.");
+      $this->assertArrayHasKey('error', $messages,
+        "There should be any error messages from this form but we didn't recieve any.");
+      $this->assertCount(1, $messages['error'],
+        "There should be only one error message.");
+      $this->assertStringContainsString('cannot be accessed', (string) $messages['error'][0],
+        "The error did not match the one we expected for an invalid URL passed to file_remote.");
+      $this->assertArrayNotHasKey('status', $messages,
+        "There should not be any success/status messages from this form. Instead we recieved: " . print_r($messages, TRUE));
+      //   Now delete drupal messages so we start the next test clean.
+      \Drupal::messenger()->deleteAll();
+    }
   }
 
   /**
@@ -184,10 +276,9 @@ class TripalImporterFormSubmitTest extends KernelTestBase {
     // Mock Tripal Importer Plugin.
     $configuration = [];
     $plugin_id = 'fakeImporterName';
-    $plugin_definition = [];
     $this->mock_plugin = $this->getMockForAbstractClass(
       '\Drupal\tripal\TripalImporter\TripalImporterBase',
-      [$configuration, $plugin_id, $plugin_definition]
+      [$configuration, $plugin_id, $annotation]
     );
     $this->mock_plugin->method('form')
       ->willReturn($this->form);
@@ -199,7 +290,7 @@ class TripalImporterFormSubmitTest extends KernelTestBase {
     $manager->method('createInstance')
       ->willReturn($this->mock_plugin);
     $manager->method('getDefinitions')
-      ->willReturn($annotation);
+      ->willReturn([$plugin_id => $annotation]);
 
     return $manager;
   }
