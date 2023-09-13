@@ -227,13 +227,38 @@ class TripalImporterForm implements FormInterface {
     $importer_def = $importer_manager->getDefinitions()[$plugin_id];
 
     $file_local = NULL;
-    $file_upload = NULL;
     $file_remote = NULL;
+    $file_upload = NULL;
     $file_existing = NULL;
 
-    // Get the form values for the file.
+    // Determine which file source was specified.
     if (array_key_exists('file_local', $importer_def) and $importer_def['file_local'] == TRUE) {
       $file_local = trim($form_values['file_local']);
+    }
+    if (array_key_exists('file_upload', $importer_def) and $importer_def['file_upload'] == TRUE) {
+      $file_upload = trim($form_values['file_upload']);
+      if (array_key_exists('file_upload_existing', $form_values) and $form_values['file_upload_existing']) {
+        $file_existing = $form_values['file_upload_existing'];
+      }
+    }
+    if (array_key_exists('file_remote', $importer_def) and $importer_def['file_remote'] == TRUE) {
+      $file_remote = trim($form_values['file_remote']);
+    }
+
+    // How many methods were specified for the source of the file?
+    $n_methods = ($file_local?1:0) + ($file_remote?1:0) + (($file_upload or $file_existing)?1:0);
+    // The user must provide at least one file source method.
+    if ($n_methods == 0) {
+      $form_state->setErrorByName('file_local', t('You must provide a file location or upload a file.'));
+    }
+    // No more than one method can be specified.
+    elseif ($n_methods > 1) {
+      $field = $file_remote?'file_remote':'file_local';
+      $form_state->setErrorByName($field, t('You have specified more than one source option for'
+                                          . ' the file, only one may be used at a time.'));
+    }
+    // A single file source has been provided. If local or remote, check that it is valid.
+    else {
       // If the file is local make sure it exists on the local filesystem.
       if ($file_local) {
         // check to see if the file is located local to Drupal
@@ -249,18 +274,7 @@ class TripalImporterForm implements FormInterface {
             . ' Check that the file exists or that the web server has permission to read the file.'));
         }
       }
-    }
-    if (array_key_exists('file_upload', $importer_def) and $importer_def['file_upload'] == TRUE) {
-      $file_upload = trim($form_values['file_upload']);
-      if (array_key_exists('file_upload_existing', $form_values) and $form_values['file_upload_existing']) {
-        $file_existing = $form_values['file_upload_existing'];
-      }
-    }
-
-    // Remote file validation.
-    if (array_key_exists('file_remote', $importer_def) and $importer_def['file_remote'] == TRUE) {
-      $file_remote = trim($form_values['file_remote']);
-      if ($file_remote) {
+      elseif ($file_remote) {
         // Validate that the remote URI is of the correct format.
         if (filter_var($file_remote, FILTER_VALIDATE_URL) === false) {
           $form_state->setErrorByName('file_remote', t('The Remote Path provided is not a valid URI.'));
@@ -276,11 +290,6 @@ class TripalImporterForm implements FormInterface {
           }
         }
       }
-    }
-
-    // The user must provide at least an uploaded file or a local file path.
-    if ($importer_def['file_required'] == TRUE and !$file_upload and !$file_local and !$file_remote and !$file_existing) {
-      $form_state->setErrorByName('file_local', t('You must provide a file.'));
     }
 
     // Now allow the loader to do validation of its form additions.
