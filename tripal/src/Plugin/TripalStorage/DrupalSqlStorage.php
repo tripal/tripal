@@ -21,6 +21,26 @@ use Drupal\tripal\Services\TripalLogger;
 class DrupalSqlStorage extends TripalStorageBase implements TripalStorageInterface {
 
   /**
+   * @{inheritdoc}
+   *
+   * OVERRIDES TripalStorageBase to ensure all field properties are set
+   * to save to Drupal!
+   */
+  public function addTypes(string $field_name, array $types) {
+
+    // Esnure all properties of a field using Drupal storage is
+    // set to store it's values in the Drupal database.
+    foreach ($types as $type) {
+      $storage_settings = $type->getStorageSettings();
+      $storage_settings['drupal_store'] = TRUE;
+      $type->setStorageSettings($storage_settings);
+    }
+
+    // Now let TripalStorageBase deal with these improved property types.
+    parent::addTypes($field_name, $types);
+  }
+
+  /**
    * {@inheritDoc}
    */
   public function updateValues(&$values): bool {
