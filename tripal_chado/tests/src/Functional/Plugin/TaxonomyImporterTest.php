@@ -19,9 +19,9 @@ use TaxonomyImporter;
 /**
  * Tests for the TaxonomyImporter class
  *
- * @group Tripal
- * @group Tripal Chado
- * @group Tripal Chado ChadoStorage
+ * @group TripalImporter
+ * @group ChadoImporter
+ * @group TaxonomyImporter
  */
 class TaxonomyImporterTest extends ChadoTestBrowserBase
 {
@@ -68,9 +68,9 @@ class TaxonomyImporterTest extends ChadoTestBrowserBase
     $taxonomy_importer->prepareFiles();
     $taxonomy_importer->run();
     $taxonomy_importer->postRun();
-      
+
     // Check if Arabidopsis thaliana
-    $results = $chado->query("SELECT count(*) as c1 FROM {1:organism} 
+    $results = $chado->query("SELECT count(*) as c1 FROM {1:organism}
         where genus = 'Arabidopsis' AND species = 'thaliana';");
     $results_object = $results->fetchObject();
     $this->assertEquals(1, $results_object->c1,
@@ -82,7 +82,7 @@ class TaxonomyImporterTest extends ChadoTestBrowserBase
     ");
     $this->assertEquals(1, $results_object->c1,
         'A phylotree named Taxonomy Tree should have been created but wasnt. TaxonomyImporter test failed');
-    
+
     // Check if phylonode organism was created
     $results = $chado->query("SELECT count(*) as c1 FROM {1:phylonode_organism}");
     $this->assertEquals(1, $results_object->c1,
@@ -90,52 +90,52 @@ class TaxonomyImporterTest extends ChadoTestBrowserBase
 
     // Check if more than 5 phylonodes were created
     $results = $chado->query("SELECT count(*) as c1 FROM {1:phylonode}");
-    $this->assertGreaterThan(0, $results_object->c1, 
+    $this->assertGreaterThan(0, $results_object->c1,
         'Phylonodes count should be more than 0. TaxonomyImporter test failed.');
 
-    // Check if there are phylonodeprops like 
+    // Check if there are phylonodeprops like
     $results = $chado->query("SELECT count(*) as c1 FROM {1:phylonodeprop}");
-    $this->assertGreaterThan(0, $results_object->c1, 
-        'Phylonodeprop count should be more than 5. TaxonomyImporter test failed.'); 
-        
+    $this->assertGreaterThan(0, $results_object->c1,
+        'Phylonodeprop count should be more than 5. TaxonomyImporter test failed.');
+
     // Check more specifics in phylonodeprop - genus
     $results = $chado->query("SELECT count(*) as c1 FROM {1:phylonodeprop} WHERE value='genus'");
-    $this->assertGreaterThan(0, $results_object->c1, 
+    $this->assertGreaterThan(0, $results_object->c1,
         'Phylonodeprop genus should exist. TaxonomyImporter test failed.');
 
     // Check more specifics in phylonodeprop - species
     $results = $chado->query("SELECT count(*) as c1 FROM {1:phylonodeprop} WHERE value='species'");
-    $this->assertGreaterThan(0, $results_object->c1, 
+    $this->assertGreaterThan(0, $results_object->c1,
         'Phylonodeprop species should exist. TaxonomyImporter test failed.');
 
     // Check more specifics in phylonodeprop - family
     $results = $chado->query("SELECT count(*) as c1 FROM {1:phylonodeprop} WHERE value='family'");
-    $this->assertGreaterThan(0, $results_object->c1, 
+    $this->assertGreaterThan(0, $results_object->c1,
         'Phylonodeprop family should exist. TaxonomyImporter test failed.');
-        
+
     // Check more specifics in phylonodeprop - kingdom
     $results = $chado->query("SELECT count(*) as c1 FROM {1:phylonodeprop} WHERE value='kingdom'");
-    $this->assertGreaterThan(0, $results_object->c1, 
+    $this->assertGreaterThan(0, $results_object->c1,
         'Phylonodeprop kingdom should exist. TaxonomyImporter test failed.');
-        
+
     // Check more specifics in phylonodeprop - order
     $results = $chado->query("SELECT count(*) as c1 FROM {1:phylonodeprop} WHERE value='order'");
-    $this->assertGreaterThan(0, $results_object->c1, 
-        'Phylonodeprop order should exist. TaxonomyImporter test failed.');  
-        
+    $this->assertGreaterThan(0, $results_object->c1,
+        'Phylonodeprop order should exist. TaxonomyImporter test failed.');
+
     // Check more specifics in phylonodeprop - superkingdom
     $results = $chado->query("SELECT count(*) as c1 FROM {1:phylonodeprop} WHERE value='superkingdom'");
-    $this->assertGreaterThan(0, $results_object->c1, 
-        'Phylonodeprop superkingdom should exist. TaxonomyImporter test failed.');  
-        
+    $this->assertGreaterThan(0, $results_object->c1,
+        'Phylonodeprop superkingdom should exist. TaxonomyImporter test failed.');
+
     // Check more specifics in phylonodeprop - clade
     $results = $chado->query("SELECT count(*) as c1 FROM {1:phylonodeprop} WHERE value='clade'");
-    $this->assertGreaterThan(0, $results_object->c1, 
+    $this->assertGreaterThan(0, $results_object->c1,
         'Phylonodeprop clade should exist. TaxonomyImporter test failed.');
 
     // Check more specifics in phylonodeprop - class
     $results = $chado->query("SELECT count(*) as c1 FROM {1:phylonodeprop} WHERE value='class'");
-    $this->assertGreaterThan(0, $results_object->c1, 
+    $this->assertGreaterThan(0, $results_object->c1,
         'Phylonodeprop class should exist. TaxonomyImporter test failed.');
   }
 
