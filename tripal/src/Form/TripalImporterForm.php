@@ -37,6 +37,11 @@ class TripalImporterForm implements FormInterface {
     $importer = $importer_manager->createInstance($plugin_id);
     $importer_def = $importer_manager->getDefinitions()[$plugin_id];
 
+    if (array_key_exists('cardinality', $importer_def) and $importer_def['cardinality'] != 1) {
+      \Drupal::messenger()->addError('Error in the definition of this importer. Tripal Importers'
+        . ' currently only support cardinality of 1, see Tripal issue #1635');
+    }
+
     $form['#title'] = $importer_def['label'];
 
     $form['importer_plugin_id'] = [
