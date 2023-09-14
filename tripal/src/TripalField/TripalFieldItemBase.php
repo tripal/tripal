@@ -9,6 +9,7 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\tripal\TripalStorage\IntStoragePropertyType;
 use Drupal\tripal\TripalStorage\VarCharStoragePropertyType;
 use Drupal\tripal\TripalStorage\TextStoragePropertyType;
+use Drupal\tripal\TripalStorage\BoolStoragePropertyType;
 use Drupal\tripal\TripalStorage\StoragePropertyValue;
 use Drupal\Core\TypedData\DataDefinition;
 use \RuntimeException;
@@ -25,7 +26,15 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $settings = [
       'termIdSpace' => '',
       'termAccession' => '',
-      # 'max_delta' => 100
+      # 'max_delta' => 100,
+      // A simple flag to indicate that we should enable debugging information
+      // for this field type.
+      // This will be used by ChadoStorage to tell the ChadoFieldDebugger service
+      // to display debugging information. All you need to do as a developer is
+      // set this variable to TRUE in your field and debuggin information will be
+      // displayed on the screen and in the drupal logs when you create, edit,
+      // and load content that has you field attached.
+      'debug' => FALSE,
     ];
     return $settings + parent::defaultFieldSettings();
   }
@@ -157,6 +166,14 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
     $vocabulary = NULL;
     $termIdSpace = $this->getSetting('termIdSpace');
     $termAccession = $this->getSetting('termAccession');
+    $debug = $this->getSetting('debug');
+
+    $elements['debug'] = [
+      '#type' => 'checkbox',
+      '#title' => 'Enable Debugging',
+      '#description' => 'Enabling debugging on the field will print out a number of debugging messages both on screen and in the logs to help developers diagnose any problems which may be occuring.',
+      '#default_value' => $debug,
+    ];
 
     $default_vocabulary_term = '';
     $vocabulary_term = $form_state->getValue(['settings', 'field_term_fs', 'vocabulary_term']);
@@ -277,8 +294,11 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
       else if ($type instanceof TextStoragePropertyType) {
         $properties[$type->getKey()] = DataDefinition::create("string");
       }
+      else if ($type instanceof BoolStoragePropertyType) {
+        $properties[$type->getKey()] = DataDefinition::create("boolean");
+      }
       else {
-        throw new RuntimeException("Unknown Tripal Property Type class.");
+        throw new RuntimeException('Unknown Tripal Property Type class "' . get_class($type) . '"');
       }
     }
 
@@ -314,8 +334,16 @@ abstract class TripalFieldItemBase extends FieldItemBase implements TripalFieldI
         ];
         $schema["columns"][$type->getKey()] = $column;
       }
+      else if ($type instanceof BoolStoragePropertyType) {
+        $column = [
+          "type" => "int",
+          "size" => "tiny",
+          "pgsql_type" => "boolean",
+        ];
+        $schema["columns"][$type->getKey()] = $column;
+      }
       else {
-        throw new RuntimeException("Unknown Tripal Property Type class.");
+        throw new RuntimeException('Unknown Tripal Property Type class "' . get_class($type) . '"');
       }
     }
 

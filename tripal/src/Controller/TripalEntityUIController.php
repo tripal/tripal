@@ -43,7 +43,7 @@ class TripalEntityUIController extends ControllerBase {
       $bundles[$category]['members'][] = [
         'title' => $entity->getLabel(),
         'help' => $entity->getHelpText(),
-        'url' => Url::fromRoute('entity.tripal_entity.add_form', ['tripal_entity_type' => $entity->getName()]),
+        'url' => Url::fromRoute('entity.tripal_entity.add_form', ['tripal_entity_type' => $entity->id()]),
       ];
     }
 
@@ -84,7 +84,7 @@ class TripalEntityUIController extends ControllerBase {
    */
   public function tripalCheckForFields($tripal_entity_type) {
 
-    $bundle_name = $tripal_entity_type->getName();
+    $bundle_name = $tripal_entity_type->id();
     $term = $tripal_entity_type->getTerm();
 
     //$added = tripal_create_bundle_fields($bundle, $term);

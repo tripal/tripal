@@ -139,10 +139,31 @@ entity.chado_term_mapping.delete_form:
 
 
 tripal_chado.cvterm_autocomplete:
-  path: 'chado/cvterm/autocomplete/{count}'
+  path: 'chado/cvterm/autocomplete/{count}/{cv_id}'
   defaults:
     _controller: '\Drupal\tripal_chado\Controller\ChadoCVTermAutocompleteController::handleAutocomplete'
     _title: 'Chado Vocabulary Term Autocomplete'
     _format: json
   requirements:
     _permission: 'access content'
+  options:
+    parameters:
+      count:
+        type: integer
+      cv_id:
+        type: integer
+
+tripal_chado.project_autocomplete:
+  path: 'chado/project/autocomplete/{count}/{type_id}'
+  defaults:
+    _controller: '\Drupal\tripal_chado\Controller\ChadoProjectAutocompleteController::handleAutocomplete'
+    _title: 'Chado Project Autocomplete'
+    _format: json
+  requirements:
+    _permission: 'access content'
+  options:
+    parameters:
+      count:
+        type: integer
+      type_id:
+        type: integer

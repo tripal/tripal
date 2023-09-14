@@ -160,7 +160,8 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    *   -file_remote: provides the remote URL for the file.
    *   This argument is optional if the loader does not use the built-in
    *   file loader.
-   *
+   * @return int
+   *   Returns the import_id.
    */
   public function create($run_args, $file_details = []) {
 
@@ -245,6 +246,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
         ->execute();
 
       $this->import_id = $import_id;
+      return $import_id;
     }
     catch (\Exception $e) {
       throw new \Exception('Cannot create importer: ' . $e->getMessage());
@@ -317,28 +319,21 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
    */
   public function prepareFiles() {
 
-    // If no file is required then just indicate that all is good to go.
-    if ($this->plugin_definition['file_required'] == FALSE) {
-      $this->is_prepared = TRUE;
-      return;
-    }
-
     try {
       for ($i = 0; $i < count($this->arguments['files']); $i++) {
         if (!empty($this->arguments['files'][$i]['file_remote'])) {
           $file_remote = $this->arguments['files'][$i]['file_remote'];
-          $this->logMessage('Download file: !file_remote...', ['!file_remote' => $file_remote]);
+          $this->logger->notice('Download file: %file_remote...', ['%file_remote' => $file_remote]);
 
-
-          // If this file is compressed then keepthe .gz extension so we can
+          // If this file is compressed then keep the .gz extension so we can
           // uncompress it.
           $ext = '';
           if (preg_match('/^(.*?)\.gz$/', $file_remote)) {
             $ext = '.gz';
           }
           // Create a temporary file.
-          $temp = tempnam("temporary://", 'import_') . $ext;
-          $this->logMessage("Saving as: !file", ['!file' => $temp]);
+          $temp = \Drupal::service('file_system')->tempnam("temporary://", 'import_') . $ext;
+          $this->logger->notice('Saving as: %file', ['%file' => $temp]);
 
           $url_fh = fopen($file_remote, "r");
           $tmp_fh = fopen($temp, "w");
@@ -359,7 +354,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
         // Is this file compressed?  If so, then uncompress it
         $matches = [];
         if (preg_match('/^(.*?)\.gz$/', $this->arguments['files'][$i]['file_path'], $matches)) {
-          $this->logMessage("Uncompressing: !file", ['!file' => $this->arguments['files'][$i]['file_path']]);
+          $this->logger->notice('Uncompressing: %file', ['%file' => $this->arguments['files'][$i]['file_path']]);
           $buffer_size = 4096;
           $new_file_path = $matches[1];
           $gzfile = gzopen($this->arguments['files'][$i]['file_path'], 'rb');
@@ -389,6 +384,13 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
     catch (\Exception $e) {
       throw new \Exception('Cannot prepare the importer: ' . $e->getMessage());
     }
+
+
+    // If we get here and no exception has been thrown then either
+    // 1) files were added but none needed to be prepared.
+    // 2) files were not added (check for files being required happens elsewhere).
+    $this->is_prepared = TRUE;
+
   }
 
   /**
@@ -403,7 +405,7 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
       for ($i = 0; $i < count($this->arguments['files']); $i++) {
         if (!empty($this->arguments['files'][$i]['file_remote']) and
           file_exists($this->arguments['files'][$i]['file_path'])) {
-          $this->logMessage('Removing downloaded file...');
+          $this->logger->notice('Removing downloaded file...');
           unlink($this->arguments['files'][$i]['file_path']);
           $this->is_prepared = FALSE;
         }
@@ -461,8 +463,10 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
 
     // Now see if we need to report to the user the percent done.  A message
     // will be printed on the command-line if the job is run there.
-    $percent = ($this->num_handled / $this->total_items) * 100;
-    $ipercent = (int) $percent;
+    if ($this->total_items) {
+      $percent = ($this->num_handled / $this->total_items) * 100;
+      $ipercent = (int) $percent;
+    }
 
     // If we've reached our interval then print update info.
     if ($ipercent > 0 and $ipercent != $this->reported and $ipercent % $this->interval == 0) {
@@ -478,6 +482,22 @@ abstract class TripalImporterBase extends PluginBase implements TripalImporterIn
         $this->job->setProgress($percent);
       }
       $this->reported = $ipercent;
+    }
+
+    // If we're done then indicate so.
+    if ($this->num_handled >= $this->total_items) {
+      $memory = number_format(memory_get_usage());
+      $spercent = sprintf("%.2f", 100);
+      $this->logger->notice(
+        t("Percent complete: " . $spercent . " %. Memory: " . $memory . " bytes.")
+         . "\r"
+      );
+
+      // If we have a job the update the job progress too.
+      if ($this->job) {
+        $this->job->setProgress(100);
+      }
+      $this->reported = 100;
     }
   }
 
