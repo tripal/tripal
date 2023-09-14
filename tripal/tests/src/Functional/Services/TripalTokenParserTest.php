@@ -151,7 +151,7 @@ class TripalTokenParserTest extends TripalTestBrowserBase {
       'cardinality' => 1,
       'required' => TRUE,
       'storage_settings' => [
-        'storage_plugin_id' => 'tripal_default_storage',
+        'storage_plugin_id' => 'drupal_sql_storage',
         'storage_plugin_settings' => [],
         'max_length' => 255,
       ],
@@ -189,7 +189,7 @@ class TripalTokenParserTest extends TripalTestBrowserBase {
       'cardinality' => 1,
       'required' => TRUE,
       'storage_settings' => [
-        'storage_plugin_id' => 'tripal_default_storage',
+        'storage_plugin_id' => 'drupal_sql_storage',
         'storage_plugin_settings' => [],
         'max_length' => 255,
       ],
@@ -228,7 +228,7 @@ class TripalTokenParserTest extends TripalTestBrowserBase {
       'cardinality' => 1,
       'required' => FALSE,
       'storage_settings' => [
-        'storage_plugin_id' => 'tripal_default_storage',
+        'storage_plugin_id' => 'drupal_sql_storage',
         'storage_plugin_settings' => [],
         'max_length' => 1024,
       ],
@@ -266,7 +266,7 @@ class TripalTokenParserTest extends TripalTestBrowserBase {
       'cardinality' => 1,
       'required' => FALSE,
       'storage_settings' => [
-        'storage_plugin_id' => 'tripal_default_storage',
+        'storage_plugin_id' => 'drupal_sql_storage',
         'storage_plugin_settings' => [],
         'max_length' => 255,
       ],
@@ -304,7 +304,7 @@ class TripalTokenParserTest extends TripalTestBrowserBase {
       'cardinality' => 1,
       'required' => FALSE,
       'storage_settings' => [
-        'storage_plugin_id' => 'tripal_default_storage',
+        'storage_plugin_id' => 'drupal_sql_storage',
         'storage_plugin_settings' => [],
       ],
       'settings' => [
@@ -341,7 +341,7 @@ class TripalTokenParserTest extends TripalTestBrowserBase {
       'cardinality' => 1,
       'required' => FALSE,
       'storage_settings' => [
-        'storage_plugin_id' => 'tripal_default_storage',
+        'storage_plugin_id' => 'drupal_sql_storage',
         'storage_plugin_settings' => [],
         'max_length' => 255,
       ],
@@ -379,7 +379,7 @@ class TripalTokenParserTest extends TripalTestBrowserBase {
       'cardinality' => 1,
       'required' => FALSE,
       'storage_settings' => [
-        'storage_plugin_id' => 'tripal_default_storage',
+        'storage_plugin_id' => 'drupal_sql_storage',
         'storage_plugin_settings' => [],
         'max_length' => 255,
       ],
