@@ -37,6 +37,8 @@ use Drupal\Tests\tripal_chado\Functional\MockClass\FieldConfigMock;
  *
  * @group Tripal
  * @group Tripal Chado
+ * @group Tripal Chado Fields
+ * @group Tripal Chado Fields Analysis
  * @group ChadoStorage
  */
 class ChadoAnalysisDefaultTest extends ChadoTestKernelBase {
